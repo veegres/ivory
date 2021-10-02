@@ -4,10 +4,6 @@ import App from './App';
 import { store } from './app/store';
 import { Provider } from 'react-redux';
 import * as ServiceWorker from './ServiceWorker';
-import {MockServer} from "./MockServer";
-
-// Mocks all request start with `/api`
-MockServer({ environment: process.env.NODE_ENV })
 
 ReactDOM.render(
   <React.StrictMode>

@@ -4,17 +4,23 @@ import {restClient} from "../../app/hooks";
 
 export interface NodeConfigState {
     data?: object;
+    error?: string;
     status: 'idle' | 'loading' | 'failed';
 }
 
 const initialState: NodeConfigState = {
-    data: undefined,
     status: 'idle',
 };
 
 export const incrementAsync = createAsyncThunk(
     'node/fetchConfig',
-    async (node: string) => await restClient<object>(`/node/${node}/config`)
+    async (node: string, { rejectWithValue }) => {
+        try {
+            return await restClient<object>(`/node/${node}/config`)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
 );
 
 export const nodeConfigSlice = createSlice({
@@ -28,7 +34,11 @@ export const nodeConfigSlice = createSlice({
             })
             .addCase(incrementAsync.fulfilled, (state, action) => {
                 state.status = 'idle';
-                state.data = action.payload;
+                state.data = action.payload.response;
+            })
+            .addCase(incrementAsync.rejected, (state, action) => {
+                state.status = 'idle';
+                state.error = action.error.message;
             });
     },
 });

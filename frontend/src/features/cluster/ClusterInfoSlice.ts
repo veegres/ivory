@@ -15,6 +15,7 @@ export interface Node {
 
 export interface ClusterInfoState {
     data: Node[];
+    error?: string;
     status: 'idle' | 'loading' | 'failed';
 }
 
@@ -25,7 +26,13 @@ const initialState: ClusterInfoState = {
 
 export const incrementAsync = createAsyncThunk(
     'cluster/fetchInfo',
-    async () => await restClient<{ members: Node[] }>(`/cluster/info`)
+    async (node: string, { rejectWithValue }) => {
+        try {
+            return await restClient<{ members: Node[] }>(`/node/${node}/cluster`)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
 );
 
 export const clusterInfoSlice = createSlice({
@@ -39,7 +46,11 @@ export const clusterInfoSlice = createSlice({
             })
             .addCase(incrementAsync.fulfilled, (state, action) => {
                 state.status = 'idle';
-                state.data = action.payload.members;
+                state.data = action.payload.response.members;
+            })
+            .addCase(incrementAsync.rejected, (state, action) => {
+                state.status = 'idle';
+                state.error = action.error.message;
             });
     },
 });

@@ -6,7 +6,7 @@ import {Grid, Paper} from "@material-ui/core";
 
 export function NodeConfigComponent() {
     const dispatch = useAppDispatch();
-    const node = `p4-fr-ppl-1`;
+    const node = `P4-IO-CHAT-10`;
     useEffect(() => { dispatch(incrementAsync(node)) }, [dispatch, node])
 
     const nodeConfig = useAppSelector(selectNodeConfigData)

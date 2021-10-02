@@ -9,6 +9,7 @@ export interface ClusterList {
 
 export interface ClusterListState {
     data: ClusterList[];
+    error?: string;
     status: 'idle' | 'loading' | 'failed';
 }
 
@@ -19,7 +20,13 @@ const initialState: ClusterListState = {
 
 export const incrementAsync = createAsyncThunk(
     'cluster/fetchList',
-    async () => await restClient<ClusterList[]>(`/cluster/list`)
+    async (data, { rejectWithValue }) => {
+        try {
+            return await restClient<ClusterList[]>(`/cluster/list`)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
 );
 
 export const clusterListSlice = createSlice({
@@ -33,7 +40,11 @@ export const clusterListSlice = createSlice({
             })
             .addCase(incrementAsync.fulfilled, (state, action) => {
                 state.status = 'idle';
-                state.data = action.payload;
+                state.data = action.payload.response;
+            })
+            .addCase(incrementAsync.rejected, (state, action) => {
+                state.status = 'idle';
+                state.error = action.error.message;
             });
     },
 });

@@ -7,7 +7,7 @@ import classNames from "classnames";
 
 export function NodePatroniComponent() {
     const dispatch = useAppDispatch();
-    const node = `p4-fr-ppl-1`;
+    const node = `P4-IO-CHAT-10`;
     useEffect(() => { dispatch(incrementAsync(node)) }, [dispatch, node])
 
     const nodePatroni = useAppSelector(selectNodePatroniData)

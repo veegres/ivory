@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type Cluster struct {
@@ -23,49 +25,80 @@ func main() {
 	defer DB.Close()
 
 	// todo move it to some config folder
-	r := gin.Default()
+	router := gin.Default()
 
-	r.GET("/ping", func(context *gin.Context) { context.JSON(http.StatusOK, gin.H{"message": "pong"}) })
-	r.GET("/cluster/list", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{"response": ClusterGetList()})
-	})
-	r.PUT("/cluster/create", func(context *gin.Context) {
-		var cluster Cluster
-		context.ShouldBindJSON(&cluster)
-		ClusterUpdate(cluster)
-		context.JSON(http.StatusOK, gin.H{"response": cluster})
-	})
-	r.POST("/cluster/:name/edit", func(context *gin.Context) {
-		name := context.Param("name")
-		var nodes []string
-		context.ShouldBindJSON(&nodes)
-		ClusterUpdate(Cluster{Name: name, Nodes: nodes})
-	})
-	r.GET("/node/:name/patroni", func(context *gin.Context) {
-		name := context.Param("name")
-		response, err := http.Get("http://" + name + ":8008/patroni")
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err})
-		} else {
-			var body interface{}
-			json.NewDecoder(response.Body).Decode(&body)
-			context.JSON(http.StatusOK, gin.H{"response": body})
-		}
-	})
-	r.GET("/node/:name/config", func(context *gin.Context) {
-		name := context.Param("name")
-		response, err := http.Get("http://" + name + ":8008/config")
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err})
-		} else {
-			var body interface{}
-			json.NewDecoder(response.Body).Decode(&body)
-			context.JSON(http.StatusOK, gin.H{"response": body})
-		}
-	})
+	api := router.Group("/api")
+	{
+		api.GET("/ping", func(context *gin.Context) { context.JSON(http.StatusOK, gin.H{"message": "pong"}) })
+		api.GET("/cluster/list", func(context *gin.Context) {
+			context.JSON(http.StatusOK, gin.H{"response": ClusterGetList()})
+		})
+		api.POST("/cluster/create", func(context *gin.Context) {
+			var cluster Cluster
+			context.ShouldBindJSON(&cluster)
+			ClusterUpdate(cluster)
+			context.JSON(http.StatusOK, gin.H{"response": cluster})
+		})
+		api.PUT("/cluster/:name/edit", func(context *gin.Context) {
+			name := context.Param("name")
+			var nodes []string
+			context.ShouldBindJSON(&nodes)
+			ClusterUpdate(Cluster{Name: name, Nodes: nodes})
+		})
+		// TODO make code independent of patroni
+		/* PATRONI */
+		api.GET("/node/:name/cluster", func(context *gin.Context) {
+			name := context.Param("name")
+			response, err := http.Get("http://" + name + ":8008/cluster")
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err})
+			} else {
+				var body interface{}
+				json.NewDecoder(response.Body).Decode(&body)
+				context.JSON(http.StatusOK, gin.H{"response": body})
+			}
+		})
+		api.GET("/node/:name/patroni", func(context *gin.Context) {
+			name := context.Param("name")
+			response, err := http.Get("http://" + name + ":8008/patroni")
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err})
+			} else {
+				var body interface{}
+				json.NewDecoder(response.Body).Decode(&body)
+				context.JSON(http.StatusOK, gin.H{"response": body})
+			}
+		})
+		api.GET("/node/:name/config", func(context *gin.Context) {
+			name := context.Param("name")
+			response, err := http.Get("http://" + name + ":8008/config")
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err})
+			} else {
+				var body interface{}
+				json.NewDecoder(response.Body).Decode(&body)
+				context.JSON(http.StatusOK, gin.H{"response": body})
+			}
+		})
+		api.PATCH("/node/:name/config", func(context *gin.Context) {
+			name := context.Param("name")
+			body, _ := ioutil.ReadAll(context.Request.Body)
+			req, _ := http.NewRequest(http.MethodPatch, "http://"+name+":8008/config", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
+			response, err := http.DefaultClient.Do(req)
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err})
+			} else {
+				var body interface{}
+				json.NewDecoder(response.Body).Decode(&body)
+				context.JSON(http.StatusOK, gin.H{"response": body})
+			}
+		})
+	}
 
 	// todo how can we extract it
-	r.Run()
+	router.Run()
 }
 
 func ClusterUpdate(cluster Cluster) {

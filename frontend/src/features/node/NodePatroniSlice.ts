@@ -21,17 +21,23 @@ export interface NodePatroni {
 
 export interface ClusterListState {
     data?: NodePatroni;
+    error?: string
     status: 'idle' | 'loading' | 'failed';
 }
 
 const initialState: ClusterListState = {
-    data: undefined,
     status: 'idle',
 };
 
 export const incrementAsync = createAsyncThunk(
     'node/fetchPatroni',
-    async (node: string) => await restClient<NodePatroni>(`/node/${node}/patroni`)
+    async (node: string, { rejectWithValue }) => {
+        try {
+            return await restClient<NodePatroni>(`/node/${node}/patroni`)
+        } catch (error) {
+            return rejectWithValue(error.response.data)
+        }
+    }
 );
 
 export const nodePatroniSlice = createSlice({
@@ -45,7 +51,11 @@ export const nodePatroniSlice = createSlice({
             })
             .addCase(incrementAsync.fulfilled, (state, action) => {
                 state.status = 'idle';
-                state.data = action.payload;
+                state.data = action.payload.response;
+            })
+            .addCase(incrementAsync.rejected, (state, action) => {
+                state.status = 'idle';
+                state.error = action.error.message;
             });
     },
 });

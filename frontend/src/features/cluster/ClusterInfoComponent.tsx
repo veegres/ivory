@@ -6,7 +6,8 @@ import {useEffect} from "react";
 
 export function ClusterInfoComponent() {
     const dispatch = useAppDispatch();
-    useEffect(() => { dispatch(incrementAsync()) }, [dispatch])
+    const node = `P4-IO-CHAT-10`;
+    useEffect(() => { dispatch(incrementAsync(node)) }, [dispatch, node])
 
     const cluster = useAppSelector(selectClusterData)
     if (cluster.length === 0) return null;
