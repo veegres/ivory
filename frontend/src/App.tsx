@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {NodeCluster} from "./features/node/NodeCluster";
 import {Grid} from "@mui/material";
 import {ClusterList} from "./features/cluster/ClusterList";
@@ -8,13 +8,17 @@ import {Item} from "./features/view/Item";
 import {Header} from "./features/view/Header";
 
 export function App() {
+    const [node, setNode] = useState('')
+
     return (
         <Grid container direction="column">
             <Grid item><Header /></Grid>
-            <Grid item container><Item><ClusterList /></Item></Grid>
-            <Grid item container><Item><NodeCluster /></Item></Grid>
-            <Grid item container><Item><NodePatroni /></Item></Grid>
-            <Grid item container><Item><NodeConfig /></Item></Grid>
+            <Grid item container><Item><ClusterList setNode={setNode} /></Item></Grid>
+            <Grid item container>
+                <Item><NodePatroni node={node} /></Item>
+                <Item><NodeCluster node={node} /></Item>
+                <Item><NodeConfig node={node} /></Item>
+            </Grid>
         </Grid>
     );
 }

@@ -1,10 +1,16 @@
-import {Box, IconButton, TableCell, TableRow, TextField} from "@mui/material";
-import {Add, Delete, Remove, Save} from "@mui/icons-material";
-import {useState} from "react";
+import {Box, FormControl, IconButton, Input, TableCell, TableRow} from "@mui/material";
+import {Add, Delete, Remove, Save, Visibility} from "@mui/icons-material";
+import {Dispatch, useState} from "react";
 import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
 
-export function ClusterListRow(props: { nodes?: string[], name?: string }) {
+const SX = {
+    clusterNameIcon: { fontSize: 10 },
+    tableIcon: { fontSize: 14 },
+    input: { minWidth: '150px' }
+}
+
+export function ClusterListRow(props: { nodes?: string[], name?: string, setNode?: Dispatch<string> }) {
     const [name, setName] = useState(props.name ?? '');
     const [nodes, setNodes] = useState(props.nodes && props.nodes.length ? props.nodes : ['']);
 
@@ -16,35 +22,50 @@ export function ClusterListRow(props: { nodes?: string[], name?: string }) {
     return (
         <TableRow>
             <TableCell sx={{ verticalAlign: "top", width: '15%' }}>
-                <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between">
-                    <TextField size="small" fullWidth placeholder="Cluster Name" value={name} onChange={(event) => setName(event.target.value)}/>
-                    <Box display="flex" flexDirection="column" alignItems="center">
-                        <IconButton size="small" onClick={handleAdd}><Add sx={{ fontSize: 10 }} /></IconButton>
-                        <IconButton size="small" onClick={handleRemove}><Remove sx={{ fontSize: 10 }} /></IconButton>
+                <Box display="flex" sx={SX.input} flexDirection="row" alignItems="center" justifyContent="space-between">
+                    <FormControl fullWidth focused>
+                        <Input size="small" placeholder="Name" value={name} onChange={(event) => setName(event.target.value)}/>
+                    </FormControl>
+                    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
+                        <IconButton sx={{ padding: '2px' }} onClick={handleAdd}><Add sx={SX.clusterNameIcon} /></IconButton>
+                        <IconButton sx={{ padding: '2px' }} onClick={handleRemove}><Remove sx={SX.clusterNameIcon} /></IconButton>
                     </Box>
                 </Box>
             </TableCell>
             <TableCell sx={{ verticalAlign: "top" }}>
-                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(150px, 1fr))" gap={1}>
-                    {nodes.map((name, index) => (
-                        <Box key={index}>
-                            <TextField
+                <Box display="grid" gridTemplateColumns={`repeat(auto-fill, minmax(${SX.input.minWidth}, 1fr))`} gap={1}>
+                    {nodes.map((node, index) => (
+                        <FormControl key={index} focused>
+                            <Input
+                                color="secondary"
                                 type="string"
-                                label={`Node ${index}`}
+                                endAdornment={<ViewEndAdornment node={node} />}
+                                placeholder={`Node ${index}`}
                                 size="small"
-                                value={name}
+                                value={node}
                                 onChange={(event) => handleChange(index, event.target.value)}
                             />
-                        </Box>
+                        </FormControl>
                     ))}
                 </Box>
             </TableCell>
             <TableCell sx={{ verticalAlign: "top", width: '1%', whiteSpace: 'nowrap' }}>
-                <IconButton onClick={() => {}}><Delete fontSize="small" /></IconButton>
-                <IconButton onClick={handleUpdate}><Save fontSize="small" /></IconButton>
+                <IconButton onClick={() => {}}><Delete sx={SX.tableIcon} /></IconButton>
+                <IconButton onClick={handleUpdate}><Save sx={SX.tableIcon} /></IconButton>
             </TableCell>
         </TableRow>
     )
+
+    function ViewEndAdornment({ node }: { node: string }) {
+        const update = props.setNode
+        if (!update) return null
+
+        return (
+            <IconButton onClick={() => update(node)}>
+                <Visibility sx={SX.tableIcon} />
+            </IconButton>
+        )
+    }
 
     function handleChange(index: number, value: string) {
         setNodes((previous) => { previous[index] = value; return [...previous] })
