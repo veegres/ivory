@@ -5,6 +5,7 @@ import {blue, green} from "@mui/material/colors";
 import {Error} from "../view/Error";
 import React from "react";
 import {AxiosError} from "axios";
+import {nodeColor} from "../../app/utils";
 
 const SX = {
     nodeStatusBlock: { height: '120px', minWidth: '200px', borderRadius: '4px' },
@@ -18,7 +19,7 @@ export function NodePatroni({ node }: { node: string }) {
     return (
         <Grid container direction="row">
             <Grid item xs="auto">
-                <NodeStatus />
+                <NodeStatus role={nodePatroni?.role} />
             </Grid>
             <Grid item xs container direction="column">
                 <Grid item><Item name="Node" value={node} /></Grid>
@@ -40,9 +41,9 @@ export function NodePatroni({ node }: { node: string }) {
         )
     }
 
-    function NodeStatus() {
+    function NodeStatus(props: { role?: string }) {
         if (isLoading) return <Skeleton variant="rectangular" sx={SX.nodeStatusBlock} />
-        const background = nodePatroni?.role === "master" ? green[500] : blue[500]
+        const background = props.role ? nodeColor[props.role] : undefined
 
         return (
             <Grid container

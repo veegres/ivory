@@ -7,24 +7,25 @@ import {TableBodySkeleton} from "../view/TableBodySkeleton";
 import React from "react";
 import {TableCellFetching} from "../view/TableCellFetching";
 import {AxiosError} from "axios";
+import {nodeColor} from "../../app/utils";
 
 const SX = {
     tableLastChildRow: { 'tr:last-child td': { border: 0 } }
 }
 
 export function NodeCluster({ node }: { node: string }) {
-    const { data: members, isLoading, isFetching, isError, error } = useQuery(['node/cluster', node], () => nodeApi.cluster(node))
+    const { data: members, isLoading, isFetching, isError, error } = useQuery(
+        ['node/cluster', node],
+        () => nodeApi.cluster(node),
+        { refetchInterval: 5000 }
+    )
 
     const queryClient = useQueryClient();
     const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => {
-            await queryClient.refetchQueries(['node/cluster', node])
-        }
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', node])
     })
     const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => {
-            await queryClient.refetchQueries(['node/cluster', node])
-        }
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', node])
     })
 
     if (isError) return <Error error={error as AxiosError} />
@@ -35,8 +36,9 @@ export function NodeCluster({ node }: { node: string }) {
                 <TableRow>
                     <TableCell>Node</TableCell>
                     <TableCell>Role</TableCell>
+                    <TableCell>State</TableCell>
                     <TableCell>Lag</TableCell>
-                    <TableCellFetching isFetching={isFetching && !isLoading} />
+                    <TableCellFetching isFetching={isFetching || switchoverNode.isLoading || reinitNode.isLoading && !isLoading} />
                 </TableRow>
             </TableHead>
             <TableBodySkeleton isLoading={isLoading} cellCount={4}>
@@ -56,20 +58,27 @@ export function NodeCluster({ node }: { node: string }) {
                     return (
                         <TableRow key={node.host}>
                             <TableCell>{node.name}</TableCell>
-                            <TableCell>{node.role.toUpperCase()}</TableCell>
+                            <TableCell sx={{ color: nodeColor[node.role] }}>{node.role.toUpperCase()}</TableCell>
+                            <TableCell>{node.state}</TableCell>
                             <TableCell>{node.lag}</TableCell>
                             <TableCell align="right">
                                 <Grid container justifyContent="flex-end" alignItems="center">
                                     <Grid item>
                                         {!isLeader ? null : (
-                                            <Button color="secondary" onClick={() => switchoverNode.mutate({ node: nodePublicHost, leader: node.name })}>
+                                            <Button
+                                                color="secondary"
+                                                disabled={switchoverNode.isLoading}
+                                                onClick={() => switchoverNode.mutate({ node: nodePublicHost, leader: node.name })}>
                                                 Switchover
                                             </Button>
                                         )}
                                     </Grid>
                                     <Grid item>
                                         {isLeader ? null : (
-                                            <Button color="primary" onClick={() => reinitNode.mutate(nodePublicHost)}>
+                                            <Button
+                                                color="primary"
+                                                disabled={reinitNode.isLoading || switchoverNode.isLoading}
+                                                onClick={() => reinitNode.mutate(nodePublicHost)}>
                                                 Reinit
                                             </Button>
                                         )}
