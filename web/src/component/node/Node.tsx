@@ -6,6 +6,14 @@ import {Alert, Box, Grid, Tab, Tabs} from "@mui/material";
 import React, {useState} from "react";
 import {useStore} from "../../provider/StoreProvider";
 
+
+const SX = {
+    mainBox: { padding: '10px 20px 15px' },
+    infoAlert: { justifyContent: 'center' }
+}
+
+type InfoProps = { text: string }
+
 export function Node() {
     const { store: { activeNode } } = useStore()
     const [tab, setTab] = useState(0)
@@ -14,7 +22,7 @@ export function Node() {
         <Grid container>
             <Item>
                 <Tabulation />
-                <Box sx={{ padding: '10px 20px 15px' }}>
+                <Box sx={SX.mainBox}>
                     {!activeNode ? <NonSelectedBlock /> : <ActiveBlock />}
                 </Box>
             </Item>
@@ -45,9 +53,9 @@ export function Node() {
         }
     }
 
-    function Info(props: { text: string }) {
+    function Info(props: InfoProps) {
         return (
-            <Alert sx={{ justifyContent: 'center' }} severity={"info"} variant={"outlined"} icon={false}>
+            <Alert sx={SX.infoAlert} severity={"info"} variant={"outlined"} icon={false}>
                 {props.text}
             </Alert>
         )

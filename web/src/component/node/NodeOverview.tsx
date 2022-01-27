@@ -5,13 +5,21 @@ import {Error} from "../view/Error";
 import React from "react";
 import {AxiosError} from "axios";
 import {nodeColor} from "../../app/utils";
+import {Style} from "../../app/types";
 
 const SX = {
-    nodeStatusBlock: { height: '120px', minWidth: '200px', borderRadius: '4px' },
+    nodeStatusBlock: { height: '120px', minWidth: '200px', borderRadius: '4px', color: 'white', fontSize: '24px', fontWeight: 900 },
     item: { margin: '0px 15px' }
 }
+const style: Style = {
+    itemText: { whiteSpace: 'pre-wrap' }
+}
 
-export function NodeOverview({ node }: { node: string }) {
+type OverviewProps = { node: string }
+type ItemProps = { name: string, value?: string }
+type StatusProps = { role?: string }
+
+export function NodeOverview({ node }: OverviewProps) {
     const { data: nodePatroni, isLoading, isError, error } = useQuery(['node/patroni', node], () => nodeApi.patroni(node))
     if (isError) return <Error error={error as AxiosError} />
 
@@ -30,17 +38,17 @@ export function NodeOverview({ node }: { node: string }) {
         </Grid>
     )
 
-    function Item(props: { name: string, value?: string }) {
+    function Item(props: ItemProps) {
         if (isLoading) return <Skeleton height={24} sx={SX.item} />
 
         return (
             <Box sx={SX.item}>
-                <b>{props.name}:</b>{` `}<span style={{ whiteSpace: 'pre-wrap' }}>{props.value ?? '-'}</span>
+                <b>{props.name}:</b>{` `}<span style={style.itemText}>{props.value ?? '-'}</span>
             </Box>
         )
     }
 
-    function NodeStatus(props: { role?: string }) {
+    function NodeStatus(props: StatusProps) {
         if (isLoading) return <Skeleton variant="rectangular" sx={SX.nodeStatusBlock} />
         const background = props.role ? nodeColor[props.role] : undefined
 
@@ -48,7 +56,7 @@ export function NodeOverview({ node }: { node: string }) {
             <Grid container
                 alignContent="center"
                 justifyContent="center"
-                sx={{ ...SX.nodeStatusBlock, background, color: 'white', fontSize: '24px', fontWeight: 900 }}>
+                sx={{ ...SX.nodeStatusBlock, background }}>
                 <Grid item>{nodePatroni?.role.toUpperCase()}</Grid>
             </Grid>
         )

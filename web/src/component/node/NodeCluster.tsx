@@ -5,7 +5,7 @@ import {nodeApi} from "../../app/api";
 import {Error} from "../view/Error";
 import {TableBodySkeleton} from "../view/TableBodySkeleton";
 import React from "react";
-import {TableCellFetching} from "../view/TableCellFetching";
+import {TableHeaderLoader} from "../view/TableHeaderLoader";
 import {AxiosError} from "axios";
 import {nodeColor} from "../../app/utils";
 
@@ -13,7 +13,9 @@ const SX = {
     tableLastChildRow: { 'tr:last-child td': { border: 0 } }
 }
 
-export function NodeCluster({ node }: { node: string }) {
+type Props = { node: string }
+
+export function NodeCluster({ node }: Props) {
     const { data: members, isLoading, isFetching, isError, error } = useQuery(
         ['node/cluster', node],
         () => nodeApi.cluster(node),
@@ -38,7 +40,7 @@ export function NodeCluster({ node }: { node: string }) {
                     <TableCell>Role</TableCell>
                     <TableCell>State</TableCell>
                     <TableCell>Lag</TableCell>
-                    <TableCellFetching isFetching={isFetching || switchoverNode.isLoading || reinitNode.isLoading && !isLoading} />
+                    <TableHeaderLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading) && !isLoading} />
                 </TableRow>
             </TableHead>
             <TableBodySkeleton isLoading={isLoading} cellCount={4}>

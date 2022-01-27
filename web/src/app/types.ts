@@ -1,3 +1,6 @@
+import {CSSProperties} from "react";
+
+// SERVER
 export interface Node {
     name: string,
     timeline: number,
@@ -38,4 +41,9 @@ export interface ClusterMap {
 export interface GoResponse<TData, TError = {}> {
     response: TData
     error: TError
+}
+
+// COMMON
+export interface Style {
+    [key: string]: CSSProperties
 }

@@ -3,7 +3,7 @@ import {Cancel, CheckCircle, Delete, Edit, Visibility} from "@mui/icons-material
 import {useState} from "react";
 import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
-import {ClusterMap} from "../../app/types";
+import {ClusterMap, Style} from "../../app/types";
 import {useStore} from "../../provider/StoreProvider";
 import {ClustersActionButton} from "./ClustersActionButton";
 
@@ -11,7 +11,15 @@ const SX = {
     nodesCellIcon: { fontSize: 18 },
     nodesCellButton: { height: '22px', width: '22px' },
     nodesCellBox: { minWidth: '150px' },
-    nodesCellInput: { height: '32px' }
+    nodesCellInput: { height: '32px' },
+    chipSize: { width: '100%' },
+    firstCell: { verticalAlign: "top", width: '15%' },
+    secondCell: { verticalAlign: "top" },
+    thirdCell: { verticalAlign: "top", width: '1%' }
+}
+
+const style: Style = {
+    thirdCell: { whiteSpace: 'nowrap' }
 }
 
 type Props = {
@@ -47,13 +55,13 @@ export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
 
     return (
         <TableRow>
-            <TableCell sx={{ verticalAlign: "top", width: '15%' }}>
+            <TableCell sx={SX.firstCell}>
                 {renderClusterNameCell()}
             </TableCell>
-            <TableCell sx={{ verticalAlign: "top" }}>
+            <TableCell sx={SX.secondCell}>
                 {renderClusterNodesCell()}
             </TableCell>
-            <TableCell sx={{ verticalAlign: "top", width: '1%', whiteSpace: 'nowrap' }}>
+            <TableCell sx={SX.thirdCell} style={style.thirdCell}>
                 {renderClusterActionsCell()}
             </TableCell>
         </TableRow>
@@ -61,7 +69,7 @@ export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
 
     function renderClusterNameCell() {
         if (!isNewElement) {
-            return <Chip sx={{ width: '100%' }} label={stateName} />
+            return <Chip sx={SX.chipSize} label={stateName} />
         }
 
         return (
@@ -91,7 +99,7 @@ export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
             return (
                 <Chip
                     key={index}
-                    sx={{ width: '100%' }}
+                    sx={SX.chipSize}
                     label={node ? node : `Node ${index}`}
                     disabled={!node}
                     variant="outlined"

@@ -2,6 +2,12 @@ import {Alert, AlertColor, AlertTitle, Box, Collapse, IconButton, InputLabel} fr
 import {useState} from "react";
 import {KeyboardArrowDown, KeyboardArrowUp} from "@mui/icons-material";
 import {AxiosError} from "axios";
+import {Style} from "../../app/types";
+
+
+const style: Style = {
+    jsonInput: { padding: '10px 0px', whiteSpace: 'pre-wrap' }
+}
 
 type ErrorProps = { error: AxiosError | string }
 type GeneralProps = { message: string, type: AlertColor, title?: string, json?: string }
@@ -42,7 +48,7 @@ export function Error({ error }: ErrorProps) {
     function Json(props: JsonProps) {
         return (
             <Collapse in={isOpen}>
-                <InputLabel sx={{ padding: '10px 0px', whiteSpace: 'pre-wrap' }}>
+                <InputLabel style={style.jsonInput}>
                     {JSON.stringify(props.json, null, 4)}
                 </InputLabel>
             </Collapse>
