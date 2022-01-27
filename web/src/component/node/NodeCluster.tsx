@@ -1,10 +1,10 @@
-import {Button, Grid, Table, TableCell, TableHead, TableRow} from "@mui/material";
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Table, TableCell, TableHead, TableRow} from "@mui/material";
 import {OpenInNew} from "@mui/icons-material";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
 import {Error} from "../view/Error";
 import {TableBodySkeleton} from "../view/TableBodySkeleton";
-import React from "react";
+import React, {useState} from "react";
 import {TableHeaderLoader} from "../view/TableHeaderLoader";
 import {AxiosError} from "axios";
 import {nodeColor} from "../../app/utils";
@@ -14,8 +14,11 @@ const SX = {
 }
 
 type Props = { node: string }
+type AlertDialog = { isOpen: boolean, title?: string, content?: string, agree?: () => void }
 
 export function NodeCluster({ node }: Props) {
+    const [alertDialog, setAlertDialog] = useState<AlertDialog>({ isOpen: false })
+
     const { data: members, isLoading, isFetching, isError, error } = useQuery(
         ['node/cluster', node],
         () => nodeApi.cluster(node),
@@ -33,23 +36,26 @@ export function NodeCluster({ node }: Props) {
     if (isError) return <Error error={error as AxiosError} />
 
     return (
-        <Table size="small" sx={SX.tableLastChildRow}>
-            <TableHead>
-                <TableRow>
-                    <TableCell>Node</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>State</TableCell>
-                    <TableCell>Lag</TableCell>
-                    <TableHeaderLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading) && !isLoading} />
-                </TableRow>
-            </TableHead>
-            <TableBodySkeleton isLoading={isLoading} cellCount={5}>
-                <Content />
-            </TableBodySkeleton>
-        </Table>
+        <>
+            {renderAlertDialog()}
+            <Table size="small" sx={SX.tableLastChildRow}>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Node</TableCell>
+                        <TableCell>Role</TableCell>
+                        <TableCell>State</TableCell>
+                        <TableCell>Lag</TableCell>
+                        <TableHeaderLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading) && !isLoading} />
+                    </TableRow>
+                </TableHead>
+                <TableBodySkeleton isLoading={isLoading} cellCount={5}>
+                    {renderContent()}
+                </TableBodySkeleton>
+            </Table>
+        </>
     )
 
-    function Content() {
+    function renderContent() {
         if (!members || members.length === 0) return null
 
         return (
@@ -70,7 +76,7 @@ export function NodeCluster({ node }: Props) {
                                             <Button
                                                 color="secondary"
                                                 disabled={switchoverNode.isLoading}
-                                                onClick={() => switchoverNode.mutate({ node: nodePublicHost, leader: node.name })}>
+                                                onClick={() => handleSwitchover(nodePublicHost, node.name)}>
                                                 Switchover
                                             </Button>
                                         )}
@@ -80,7 +86,7 @@ export function NodeCluster({ node }: Props) {
                                             <Button
                                                 color="primary"
                                                 disabled={reinitNode.isLoading || switchoverNode.isLoading}
-                                                onClick={() => reinitNode.mutate(nodePublicHost)}>
+                                                onClick={() => handleReinit(nodePublicHost)}>
                                                 Reinit
                                             </Button>
                                         )}
@@ -95,5 +101,53 @@ export function NodeCluster({ node }: Props) {
                 })}
             </>
         )
+    }
+
+    function renderAlertDialog() {
+        const { isOpen, content, title, agree } = alertDialog
+        if (!content || !title || !agree) return null
+        return (
+            <Dialog
+                open={isOpen}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {title}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        {content}
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Disagree</Button>
+                    <Button onClick={() => { agree(); handleClose() }} autoFocus>Agree</Button>
+                </DialogActions>
+            </Dialog>
+        )
+    }
+
+    function handleClose() {
+        return setAlertDialog({ isOpen: false, content: undefined, title: undefined })
+    }
+
+    function handleSwitchover(node: string, leader: string) {
+        setAlertDialog({
+            isOpen: true,
+            title: 'Switchover',
+            content: 'Are you sure that you want to do Switchover? It will change the leader of your cluster.',
+            agree: () => switchoverNode.mutate({ node, leader })
+        })
+    }
+
+    function handleReinit(node: string) {
+        setAlertDialog({
+            isOpen: true,
+            title: 'Reinitialization',
+            content: 'Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.',
+            agree: () => reinitNode.mutate(node)
+        })
     }
 }
