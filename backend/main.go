@@ -32,24 +32,33 @@ func main() {
 	{
 		api.GET("/ping", func(context *gin.Context) { context.JSON(http.StatusOK, gin.H{"message": "pong"}) })
 
+		/* LOCAL DB */
 		/* CLUSTER */
-		api.GET("/cluster/list", func(context *gin.Context) {
+		api.GET("/cluster", func(context *gin.Context) {
 			context.JSON(http.StatusOK, gin.H{"response": ClusterGetList()})
 		})
-		api.POST("/cluster/create", func(context *gin.Context) {
+		api.GET("/cluster/:name", func(context *gin.Context) {
+			name := context.Param("name")
+			cluster := ClusterGet(name)
+			if cluster == nil {
+				context.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
+			} else {
+				context.JSON(http.StatusOK, gin.H{"response": cluster})
+			}
+		})
+		api.PUT("/cluster", func(context *gin.Context) {
 			var cluster Cluster
 			context.ShouldBindJSON(&cluster)
 			ClusterUpdate(cluster)
 			context.JSON(http.StatusOK, gin.H{"response": cluster})
 		})
-		api.PUT("/cluster/:name/edit", func(context *gin.Context) {
+		api.DELETE("/cluster/:name", func(context *gin.Context) {
 			name := context.Param("name")
-			var nodes []string
-			context.ShouldBindJSON(&nodes)
-			ClusterUpdate(Cluster{Name: name, Nodes: nodes})
+			ClusterDelete(name)
 		})
 
 		// TODO make code independent of patroni
+		/* PROXY */
 		/* PATRONI */
 		api.GET("/node/:name/cluster", func(context *gin.Context) {
 			name := context.Param("name")
@@ -105,6 +114,12 @@ func main() {
 	router.Run()
 }
 
+func ClusterDelete(key string) {
+	DB.Update(func(tx *bolt.Tx) error {
+		return tx.Bucket(ClusterBucket).Delete([]byte(key))
+	})
+}
+
 func ClusterUpdate(cluster Cluster) {
 	DB.Update(func(tx *bolt.Tx) error {
 		var buff bytes.Buffer
@@ -113,15 +128,32 @@ func ClusterUpdate(cluster Cluster) {
 	})
 }
 
+func ClusterGet(key string) *Cluster {
+	var cluster *Cluster
+	DB.View(func(tx *bolt.Tx) error {
+		value := tx.Bucket(ClusterBucket).Get([]byte(key))
+		if value == nil {
+			return nil
+		}
+		buff := bytes.NewBuffer(value)
+		var nodes []string
+		gob.NewDecoder(buff).Decode(&nodes)
+		tmp := Cluster{Name: key, Nodes: nodes}
+		cluster = &tmp
+		return nil
+	})
+	return cluster
+}
+
 func ClusterGetList() []Cluster {
-	var list []Cluster
+	list := make([]Cluster, 0)
 	DB.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(ClusterBucket).Cursor()
-		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
-			r := bytes.NewBuffer(v)
+		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
+			buff := bytes.NewBuffer(value)
 			var nodes []string
-			gob.NewDecoder(r).Decode(&nodes)
-			list = append(list, Cluster{Name: string(k), Nodes: nodes})
+			gob.NewDecoder(buff).Decode(&nodes)
+			list = append(list, Cluster{Name: string(key), Nodes: nodes})
 		}
 		return nil
 	})

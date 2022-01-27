@@ -1,8 +1,9 @@
-import {Box, FormControl, IconButton, Input, TableCell, TableRow} from "@mui/material";
-import {Add, Delete, Remove, Save, Visibility} from "@mui/icons-material";
-import {Dispatch, useState} from "react";
+import {Box, CircularProgress, FormControl, IconButton, Input, TableCell, TableRow} from "@mui/material";
+import {Add, CheckCircle, Delete, Remove, Visibility} from "@mui/icons-material";
+import {Dispatch, ReactNode, useState} from "react";
 import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
+import {ClusterMap} from "../../app/types";
 
 const SX = {
     clusterNameIcon: { fontSize: 10 },
@@ -15,8 +16,19 @@ export function ClusterListRow(props: { nodes?: string[], name?: string, setNode
     const [nodes, setNodes] = useState(props.nodes && props.nodes.length ? props.nodes : ['']);
 
     const queryClient = useQueryClient();
-    const { mutate } = useMutation(clusterApi.create, {
-        onSuccess: () => queryClient.invalidateQueries('cluster/list')
+    const updateCluster = useMutation(clusterApi.update, {
+        onSuccess: (data) => {
+            const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
+            map[data.name] = data.nodes
+            queryClient.setQueryData<ClusterMap>('cluster/list', map)
+        }
+    })
+    const deleteCluster = useMutation(clusterApi.delete, {
+        onSuccess: (_, name) => {
+            const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
+            delete map[name]
+            queryClient.setQueryData<ClusterMap>('cluster/list', map)
+        }
     })
 
     return (
@@ -50,15 +62,28 @@ export function ClusterListRow(props: { nodes?: string[], name?: string, setNode
                 </Box>
             </TableCell>
             <TableCell sx={{ verticalAlign: "top", width: '1%', whiteSpace: 'nowrap' }}>
-                <IconButton onClick={() => {}}><Delete sx={SX.tableIcon} /></IconButton>
-                <IconButton onClick={handleUpdate}><Save sx={SX.tableIcon} /></IconButton>
+                <CellButton isLoading={updateCluster.isLoading} onClick={handleUpdate}>
+                    <CheckCircle sx={SX.tableIcon} />
+                </CellButton>
+                <CellButton isLoading={deleteCluster.isLoading} onClick={handleDelete}>
+                    <Delete sx={SX.tableIcon} />
+                </CellButton>
             </TableCell>
         </TableRow>
     )
 
+    function CellButton(props: { isLoading: boolean, onClick: () => void, children: ReactNode }) {
+        const { isLoading, children, onClick } = props;
+        return (
+            <IconButton disabled={isLoading} onClick={onClick}>
+                {isLoading ? <CircularProgress size={14} /> : children}
+            </IconButton>
+        )
+    }
+
     function ViewEndAdornment({ node }: { node: string }) {
         const update = props.setNode
-        if (!update) return null
+        if (!update || !node) return null
 
         return (
             <IconButton onClick={() => update(node)}>
@@ -83,6 +108,10 @@ export function ClusterListRow(props: { nodes?: string[], name?: string, setNode
     }
 
     function handleUpdate() {
-        mutate({ name, nodes })
+        updateCluster.mutate({ name, nodes })
+    }
+
+    function handleDelete() {
+        deleteCluster.mutate(name)
     }
 }

@@ -6,10 +6,11 @@ import React, {Dispatch} from "react";
 import {Error} from "../view/Error";
 import {TableBodyLoading} from "../view/TableBodyLoading";
 import {TableCellFetching} from "../view/TableCellFetching";
+import {AxiosError} from "axios";
 
 export function ClusterList({ setNode }: { setNode: Dispatch<string> }) {
-    const { data: clusterList, isLoading, isFetching, isError, error } = useQuery('cluster/list', clusterApi.list)
-    if (isError) return <Error error={error} />
+    const { data: clusterMap, isLoading, isFetching, isError, error } = useQuery('cluster/list', clusterApi.list)
+    if (isError) return <Error error={error as AxiosError} />
 
     return (
         <Table size="small" sx={{ 'tr:last-child td': { border: 0 } }}>
@@ -17,7 +18,7 @@ export function ClusterList({ setNode }: { setNode: Dispatch<string> }) {
                 <TableRow>
                     <TableCell>Name</TableCell>
                     <TableCell>Nodes</TableCell>
-                    <TableCellFetching isFetching={isFetching} />
+                    <TableCellFetching isFetching={isFetching && !isLoading} />
                 </TableRow>
             </TableHead>
             <TableBodyLoading isLoading={isLoading} cellCount={3}>
@@ -27,12 +28,12 @@ export function ClusterList({ setNode }: { setNode: Dispatch<string> }) {
     )
 
     function Content() {
-        if (!clusterList || clusterList.length === 0) return null;
+        if (!clusterMap) return null
 
         return (
             <>
-                {clusterList.map(cluster => (
-                    <ClusterListRow key={cluster.name} nodes={cluster.nodes} name={cluster.name} setNode={setNode} />
+                {Object.entries(clusterMap).map(([name, nodes]) => (
+                    <ClusterListRow key={name} nodes={nodes} name={name} setNode={setNode} />
                 ))}
                 <ClusterListRow />
             </>

@@ -4,6 +4,7 @@ import { useQuery } from "react-query";
 import {blue, green} from "@mui/material/colors";
 import {Error} from "../view/Error";
 import React from "react";
+import {AxiosError} from "axios";
 
 const SX = {
     nodeStatusBlock: { height: '120px', minWidth: '200px', borderRadius: '4px' },
@@ -11,7 +12,7 @@ const SX = {
 }
 export function NodePatroni({ node }: { node: string }) {
     const { data: nodePatroni, isLoading, isError, error } = useQuery(['node/patroni', node], () => nodeApi.patroni(node))
-    if (isError) return <Error error={error} />
+    if (isError) return <Error error={error as AxiosError} />
 
     return (
         <Grid container direction="row" sx={{ padding: '10px' }}>

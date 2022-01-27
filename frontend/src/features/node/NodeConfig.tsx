@@ -5,11 +5,12 @@ import { useQuery } from "react-query";
 import {useTheme} from "../../provider/ThemeProvider";
 import {Error} from "../view/Error";
 import React from "react";
+import {AxiosError} from "axios";
 
 export function NodeConfig({ node }: { node: string }) {
     const theme = useTheme();
     const { data: nodeConfig, isLoading, isError, error } = useQuery(['node/config', node], () => nodeApi.config(node))
-    if (isError) return <Error error={error} />
+    if (isError) return <Error error={error as AxiosError} />
 
     return (
         <Grid container direction="column" style={{ padding: '20px'}}>

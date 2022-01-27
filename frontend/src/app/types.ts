@@ -30,3 +30,12 @@ export interface Cluster {
     name: string,
     nodes: string[]
 }
+
+export interface ClusterMap {
+    [name: string]: string[]
+}
+
+export interface GoResponse<TData, TError = {}> {
+    response: TData
+    error: TError
+}
