@@ -113,13 +113,13 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         const isDisabled = !name
         return isReadOnly ? (
             <>
-                <ClusterListActionButton icon={<Edit />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} />
-                <ClusterListActionButton icon={<Delete />} loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete} />
+                <ClusterListActionButton icon={<Edit />} tooltip={'Edit'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} />
+                <ClusterListActionButton icon={<Delete />} tooltip={'Delete'} loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete} />
             </>
         ) : (
             <>
-                <ClusterListActionButton icon={<Cancel />} loading={updateCluster.isLoading} disabled={!globalProps.name} onClick={toggleEdit} />
-                <ClusterListActionButton icon={<CheckCircle />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
+                <ClusterListActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} disabled={!globalProps.name} onClick={toggleEdit} />
+                <ClusterListActionButton icon={<CheckCircle />} tooltip={'Save'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
             </>
         )
     }

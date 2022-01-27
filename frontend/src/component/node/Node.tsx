@@ -33,7 +33,7 @@ export function Node() {
     }
 
     function NonSelectedBlock() {
-        return <Info text={"Please, select any node to see information!"} />
+        return <Info text={"Please, select a node to see the information!"} />
     }
 
     function ActiveBlock() {
