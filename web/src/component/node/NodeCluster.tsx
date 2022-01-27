@@ -1,5 +1,4 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Table, TableCell, TableHead, TableRow} from "@mui/material";
-import {OpenInNew} from "@mui/icons-material";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
 import {Error} from "../view/Error";
@@ -91,9 +90,6 @@ export function NodeCluster({ node }: Props) {
                                             </Button>
                                         )}
                                     </Grid>
-                                    <Grid item>
-                                        <Button href={node.api_url} target="_blank"><OpenInNew /></Button>
-                                    </Grid>
                                 </Grid>
                             </TableCell>
                         </TableRow>
@@ -122,8 +118,8 @@ export function NodeCluster({ node }: Props) {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Disagree</Button>
-                    <Button onClick={() => { agree(); handleClose() }} autoFocus>Agree</Button>
+                    <Button onClick={handleClose}>No, please, No...</Button>
+                    <Button onClick={() => { agree(); handleClose() }} autoFocus>Yes, move on!</Button>
                 </DialogActions>
             </Dialog>
         )
