@@ -5,11 +5,10 @@ import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterMap} from "../../app/types";
 import {useStore} from "../../provider/StoreProvider";
+import {ClusterListActionButton} from "./ClusterListActionButton";
 
 const SX = {
     clusterCellIcon: { fontSize: 10 },
-    actionCellIcon: { fontSize: 18 },
-    actionCellButton: { height: '32px', width: '32px' },
     nodesCellIcon: { fontSize: 18 },
     nodesCellButton: { height: '22px', width: '22px' },
     nodesCellBox: { minWidth: '150px' },
@@ -41,18 +40,18 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
     return (
         <TableRow>
             <TableCell sx={{ verticalAlign: "top", width: '15%' }}>
-                <ClusterNameCell />
+                {renderClusterNameCell()}
             </TableCell>
             <TableCell sx={{ verticalAlign: "top" }}>
-                <ClusterNodesCell />
+                {renderClusterNodesCell()}
             </TableCell>
             <TableCell sx={{ verticalAlign: "top", width: '1%', whiteSpace: 'nowrap' }}>
-                <ClusterActionsCell />
+                {renderClusterActionsCell()}
             </TableCell>
         </TableRow>
     )
 
-    function ClusterNameCell() {
+    function renderClusterNameCell() {
         if (globalProps.name) {
             return <Chip sx={{ width: '100%' }} label={name} />
         }
@@ -75,18 +74,16 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         )
     }
 
-    function ClusterNodesCell() {
+    function renderClusterNodesCell() {
         return (
             <Box display="grid" gridTemplateColumns={`repeat(auto-fill, minmax(${SX.nodesCellBox.minWidth}, 1fr))`} gap={1}>
-                {nodes.map((node, index) => (<ClusterNodesCellElement node={node} index={index} />))}
+                {nodes.map((node, index) => renderClusterNodesCellElement(node, index))}
             </Box>
         )
     }
 
-    function ClusterNodesCellElement(props: { node: string, index: number }) {
-        const { node, index } = props
-
-        const isNodeSelected = !!node && store.activeNode === node
+    function renderClusterNodesCellElement(node: string, index: number) {
+        const isNodeActive = !!node && store.activeNode === node
 
         if (isReadOnly) {
             return <Chip
@@ -95,8 +92,8 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
                 label={node ? node : `Node ${index}`}
                 disabled={!node}
                 variant="outlined"
-                color={isNodeSelected ? "primary" : "default"}
-                onClick={handleSelectedNodeChange(node, isNodeSelected)}
+                color={isNodeActive ? "primary" : "default"}
+                onClick={handleSelectedNodeChange(node, isNodeActive)}
             />
         }
 
@@ -105,7 +102,7 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
                 <OutlinedInput
                     sx={SX.nodesCellInput}
                     type="string"
-                    endAdornment={<NodeSelectButton node={node} isNodeSelected={isNodeSelected} />}
+                    endAdornment={renderNodeSelectIcon(node, isNodeActive)}
                     placeholder={`Node ${index}`}
                     size="small"
                     value={node}
@@ -115,46 +112,34 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         )
     }
 
-    function ClusterActionsCell() {
+    function renderClusterActionsCell() {
+        const isDisabled = !name
         return (
             <>
                 {isReadOnly ?
-                    <CellButton icon={<Edit />} isLoading={updateCluster.isLoading} onClick={toggleEdit} /> :
-                    <CellButton icon={<Check />} isLoading={updateCluster.isLoading} onClick={handleUpdate} />
+                    <ClusterListActionButton icon={<Edit />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} /> :
+                    <ClusterListActionButton icon={<Check />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
                 }
-                <CellButton icon={<Delete />} isLoading={deleteCluster.isLoading} onClick={handleDelete} />
+                <ClusterListActionButton icon={<Delete />} loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete} />
             </>
         )
     }
 
-    function CellButton(props: { isLoading: boolean, onClick: () => void, icon: ReactElement }) {
-        const { isLoading, icon, onClick } = props;
-        return (
-            <IconButton sx={SX.actionCellButton} disabled={isLoading || !name} onClick={onClick}>
-                {isLoading ?
-                    <CircularProgress size={SX.actionCellIcon.fontSize} /> :
-                    cloneElement(icon, { sx: SX.actionCellIcon })
-                }
-            </IconButton>
-        )
-    }
-
-    function NodeSelectButton(props: { node: string, isNodeSelected: boolean }) {
-        const { node, isNodeSelected } = props
+    function renderNodeSelectIcon(node: string, isNodeActive: boolean) {
         if (!node) return null
 
         return (
             <IconButton
                 sx={SX.nodesCellButton}
-                color={isNodeSelected ? "primary" : "default"}
-                onClick={handleSelectedNodeChange(node, isNodeSelected)}>
+                color={isNodeActive ? "primary" : "default"}
+                onClick={handleSelectedNodeChange(node, isNodeActive)}>
                 <Visibility sx={SX.nodesCellIcon} />
             </IconButton>
         )
     }
 
-    function handleSelectedNodeChange(selectedNode: string, isNodeSelected: boolean) {
-        return () => setStore({ activeNode: isNodeSelected ? '' : selectedNode })
+    function handleSelectedNodeChange(selectedNode: string, isNodeActive: boolean) {
+        return () => setStore({ activeNode: isNodeActive ? '' : selectedNode })
     }
 
     function handleChange(index: number, value: string) {
