@@ -3,7 +3,7 @@ import {OpenInNew} from "@mui/icons-material";
 import { useQuery } from "react-query";
 import {nodeApi} from "../../app/api";
 
-export function NodeClusterInfoComponent() {
+export function NodeCluster() {
     const node = `P4-IO-CHAT-10`;
     const { data: members } = useQuery(['node/cluster', node], () => nodeApi.cluster(node))
     if (!members || members.length === 0) return null;

@@ -3,7 +3,7 @@ import {nodeApi} from "../../app/api";
 import { useQuery } from "react-query";
 import {blue, green} from "@mui/material/colors";
 
-export function NodePatroniComponent() {
+export function NodePatroni() {
     const node = `P4-IO-CHAT-13`;
     const { data: nodePatroni } = useQuery(['node/patroni', node], () => nodeApi.patroni(node))
     if (!nodePatroni) return null;
