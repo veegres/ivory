@@ -5,6 +5,7 @@ networks:
 
 services:
   patroni1:
+    image: dev-patroni
     build: .
     container_name: dev-patroni1
     networks: [ dev-patroni ]
@@ -20,7 +21,7 @@ services:
       - "8001:8008"
 
   patroni2:
-    build: .
+    image: dev-patroni
     container_name: dev-patroni2
     networks: [ dev-patroni ]
     environment:
@@ -35,7 +36,7 @@ services:
       - "8002:8008"
 
   patroni3:
-    build: .
+    image: dev-patroni
     container_name: dev-patroni3
     networks: [ dev-patroni ]
     environment:
