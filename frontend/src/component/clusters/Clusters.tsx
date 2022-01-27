@@ -1,4 +1,4 @@
-import {IconButton, Table, TableCell, TableHead, TableRow} from "@mui/material";
+import {IconButton, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import { useQuery } from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClustersRow} from "./ClustersRow";
@@ -24,7 +24,11 @@ export function Clusters() {
                     <TableCell>Cluster Name</TableCell>
                     <TableCell>Nodes</TableCell>
                     <TableCellFetching isFetching={isFetching && !isLoading}>
-                        <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}><Add /></IconButton>
+                        <Tooltip title={'Add new cluster'} disableInteractive>
+                            <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}>
+                                <Add />
+                            </IconButton>
+                        </Tooltip>
                     </TableCellFetching>
                 </TableRow>
             </TableHead>
