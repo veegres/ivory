@@ -12,6 +12,7 @@ const style: Style = {
 type ErrorProps = { error: AxiosError | string }
 type GeneralProps = { message: string, type: AlertColor, title?: string, json?: string }
 type JsonProps = { json: string }
+type Button = { isShown: boolean }
 
 export function Error({ error }: ErrorProps) {
     const [isOpen, setIsOpen] = useState(false)
@@ -21,15 +22,15 @@ export function Error({ error }: ErrorProps) {
 
     const { status, statusText } = error.response
     const title = `Error code: ${status ?? 'Unknown'} (${statusText})`
-    if (status >= 400 && status < 500) return <General type={"warning"} message={error.message} title={title} />
-    if (status >= 500) return <General type={"error"} message={error.message} title={title} />
+    if (status >= 400 && status < 500) return <General type={"warning"} message={error.message} title={title} json={error.stack} />
+    if (status >= 500) return <General type={"error"} message={error.message} title={title} json={error.stack} />
 
     return <General type={"error"} message={error.message} title={title} />
 
     function General(props: GeneralProps) {
         const { message, type } = props
         return (
-            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<Button />}>
+            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<Button isShown={!!props.json} />}>
                 <AlertTitle>{props.title ?? type.toString()}</AlertTitle>
                 <Box>Message: {message}</Box>
                 {props.json ? <Json json={props.json} /> : null}
@@ -37,7 +38,9 @@ export function Error({ error }: ErrorProps) {
         )
     }
 
-    function Button() {
+    function Button(props: Button) {
+        if (!props.isShown) return null
+
         return (
             <IconButton color={"inherit"} disableRipple>
                 {isOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
