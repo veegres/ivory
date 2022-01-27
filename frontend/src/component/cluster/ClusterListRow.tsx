@@ -22,7 +22,6 @@ export function ClusterListRow(props: { nodes: string[], name: string }) {
         onSuccess: (data) => {
             const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
             map[data.name] = data.nodes
-            if (data.name !== props.name) delete map[props.name]
             queryClient.setQueryData<ClusterMap>('cluster/list', map)
         }
     })
@@ -39,7 +38,7 @@ export function ClusterListRow(props: { nodes: string[], name: string }) {
             <TableCell sx={{ verticalAlign: "top", width: '15%' }}>
                 <Box display="flex" sx={SX.input} flexDirection="row" alignItems="center" justifyContent="space-between">
                     <FormControl fullWidth focused>
-                        <Input size="small" placeholder="Name" value={name} onChange={(event) => setName(event.target.value)}/>
+                        <Input size="small" placeholder="Name" value={name} readOnly={!!props.name} onChange={(event) => setName(event.target.value)}/>
                     </FormControl>
                     <Box display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
                         <IconButton sx={{ padding: '2px' }} onClick={handleAdd}><Add sx={SX.clusterNameIcon} /></IconButton>
