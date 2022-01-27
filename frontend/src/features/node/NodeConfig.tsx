@@ -17,6 +17,7 @@ export function NodeConfig({ node }: { node: string }) {
             {isLoading ?
                 <Skeleton variant="rectangular" height={300} /> :
                 <ReactJson
+                    style={{ backgroundColor: 'inherit' }}
                     src={nodeConfig}
                     collapsed={2}
                     iconStyle="square"

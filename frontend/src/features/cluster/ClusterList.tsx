@@ -16,7 +16,7 @@ export function ClusterList({ setNode }: { setNode: Dispatch<string> }) {
         <Table size="small" sx={{ 'tr:last-child td': { border: 0 } }}>
             <TableHead>
                 <TableRow>
-                    <TableCell>Name</TableCell>
+                    <TableCell>Cluster Name</TableCell>
                     <TableCell>Nodes</TableCell>
                     <TableCellFetching isFetching={isFetching && !isLoading} />
                 </TableRow>

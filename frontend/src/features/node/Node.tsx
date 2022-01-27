@@ -12,7 +12,7 @@ export function Node(props: { name: string }) {
         <Grid container>
             <Item>
                 <Tabulation />
-                <Box sx={{ padding: '10px 20px' }}>
+                <Box sx={{ padding: '10px 20px 15px' }}>
                     <CurrentBlock />
                 </Box>
             </Item>
