@@ -1,9 +1,9 @@
 import {Button, Grid, Table, TableCell, TableHead, TableRow} from "@mui/material";
 import {OpenInNew} from "@mui/icons-material";
-import { useQuery } from "react-query";
+import {useMutation, useQuery, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
 import {Error} from "../view/Error";
-import {TableBodyLoading} from "../view/TableBodyLoading";
+import {TableBodySkeleton} from "../view/TableBodySkeleton";
 import React from "react";
 import {TableCellFetching} from "../view/TableCellFetching";
 import {AxiosError} from "axios";
@@ -14,6 +14,19 @@ const SX = {
 
 export function NodeCluster({ node }: { node: string }) {
     const { data: members, isLoading, isFetching, isError, error } = useQuery(['node/cluster', node], () => nodeApi.cluster(node))
+
+    const queryClient = useQueryClient();
+    const switchoverNode = useMutation(nodeApi.switchover, {
+        onSuccess: async () => {
+            await queryClient.refetchQueries(['node/cluster', node])
+        }
+    })
+    const reinitNode = useMutation(nodeApi.reinitialize, {
+        onSuccess: async () => {
+            await queryClient.refetchQueries(['node/cluster', node])
+        }
+    })
+
     if (isError) return <Error error={error as AxiosError} />
 
     return (
@@ -26,9 +39,9 @@ export function NodeCluster({ node }: { node: string }) {
                     <TableCellFetching isFetching={isFetching && !isLoading} />
                 </TableRow>
             </TableHead>
-            <TableBodyLoading isLoading={isLoading} cellCount={4}>
+            <TableBodySkeleton isLoading={isLoading} cellCount={4}>
                 <Content />
-            </TableBodyLoading>
+            </TableBodySkeleton>
         </Table>
     )
 
@@ -37,20 +50,38 @@ export function NodeCluster({ node }: { node: string }) {
 
         return (
             <>
-                {members.map((node) => (
-                    <TableRow key={node.host}>
-                        <TableCell>{node.name}</TableCell>
-                        <TableCell>{node.role.toUpperCase()}</TableCell>
-                        <TableCell>{node.lag}</TableCell>
-                        <TableCell align="right">
-                            <Grid container justifyContent="flex-end" alignItems="center">
-                                <Grid item>{node.role === "leader" ? <Button color="secondary">Switchover</Button> : null}</Grid>
-                                <Grid item><Button color="primary">Reinit</Button></Grid>
-                                <Grid item><Button href={node.api_url} target="_blank"><OpenInNew /></Button></Grid>
-                            </Grid>
-                        </TableCell>
-                    </TableRow>
-                ))}
+                {members.map((node) => {
+                    const nodePublicHost = node.api_url.split('/')[2]
+                    const isLeader = node.role === "leader"
+                    return (
+                        <TableRow key={node.host}>
+                            <TableCell>{node.name}</TableCell>
+                            <TableCell>{node.role.toUpperCase()}</TableCell>
+                            <TableCell>{node.lag}</TableCell>
+                            <TableCell align="right">
+                                <Grid container justifyContent="flex-end" alignItems="center">
+                                    <Grid item>
+                                        {!isLeader ? null : (
+                                            <Button color="secondary" onClick={() => switchoverNode.mutate({ node: nodePublicHost, leader: node.name })}>
+                                                Switchover
+                                            </Button>
+                                        )}
+                                    </Grid>
+                                    <Grid item>
+                                        {isLeader ? null : (
+                                            <Button color="primary" onClick={() => reinitNode.mutate(nodePublicHost)}>
+                                                Reinit
+                                            </Button>
+                                        )}
+                                    </Grid>
+                                    <Grid item>
+                                        <Button href={node.api_url} target="_blank"><OpenInNew /></Button>
+                                    </Grid>
+                                </Grid>
+                            </TableCell>
+                        </TableRow>
+                    )
+                })}
             </>
         )
     }

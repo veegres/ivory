@@ -4,7 +4,7 @@ import {clusterApi} from "../../app/api";
 import {ClustersRow} from "./ClustersRow";
 import React, {useState} from "react";
 import {Error} from "../view/Error";
-import {TableBodyLoading} from "../view/TableBodyLoading";
+import {TableBodySkeleton} from "../view/TableBodySkeleton";
 import {TableCellFetching} from "../view/TableCellFetching";
 import {AxiosError} from "axios";
 import {Add} from "@mui/icons-material";
@@ -32,7 +32,7 @@ export function Clusters() {
                     </TableCellFetching>
                 </TableRow>
             </TableHead>
-            <TableBodyLoading isLoading={isLoading} cellCount={3}>
+            <TableBodySkeleton isLoading={isLoading} cellCount={3}>
                 {Object.entries(clusterMap ?? {}).map(([name, nodes]) => {
                     const isReadOnly = name !== editNode
                     const toggleEdit = () => setEditNode(isReadOnly ? name : '')
@@ -40,7 +40,7 @@ export function Clusters() {
                     return <ClustersRow key={name} nodes={nodes} name={name} edit={edit} />
                 })}
                 {showNewElement ? <ClustersRow edit={{ closeNewElement }} /> : null}
-            </TableBodyLoading>
+            </TableBodySkeleton>
         </Table>
     )
 }

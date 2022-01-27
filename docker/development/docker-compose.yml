@@ -14,6 +14,7 @@ services:
       PATRONI_POSTGRESQL_LISTEN: "patroni1:5432"
       PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni1:5432"
       PATRONI_RESTAPI_LISTEN: "patroni1:8008"
+      PATRONI_RESTAPI_CONNECT_ADDRESS: "localhost:8001"
       PATRONI_RAFT_SELF_ADDR: "patroni1:2221"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni2:2222','patroni3:2223'"
     ports:
@@ -29,6 +30,7 @@ services:
       PATRONI_POSTGRESQL_LISTEN: "patroni2:5432"
       PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni2:5432"
       PATRONI_RESTAPI_LISTEN: "patroni2:8008"
+      PATRONI_RESTAPI_CONNECT_ADDRESS: "localhost:8002"
       PATRONI_RAFT_SELF_ADDR: "patroni2:2222"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni3:2223'"
     ports:
@@ -44,6 +46,7 @@ services:
       PATRONI_POSTGRESQL_LISTEN: "patroni3:5432"
       PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni3:5432"
       PATRONI_RESTAPI_LISTEN: "patroni3:8008"
+      PATRONI_RESTAPI_CONNECT_ADDRESS: "localhost:8003"
       PATRONI_RAFT_SELF_ADDR: "patroni3:2223"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni2:2222'"
     ports:

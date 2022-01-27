@@ -1,7 +1,7 @@
 import {Skeleton, TableBody, TableCell, TableRow} from "@mui/material";
 import {ReactNode} from "react";
 
-export function TableBodyLoading({ isLoading, cellCount, children }: { isLoading: boolean, cellCount?: number, children?: ReactNode }) {
+export function TableBodySkeleton({ isLoading, cellCount, children }: { isLoading: boolean, cellCount?: number, children?: ReactNode }) {
     return (
         <TableBody>
             {isLoading ? <Loading /> : children}

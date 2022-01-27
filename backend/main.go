@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -106,6 +107,36 @@ func main() {
 				var body interface{}
 				json.NewDecoder(response.Body).Decode(&body)
 				context.JSON(http.StatusOK, gin.H{"response": body})
+			}
+		})
+		api.POST("/node/:host/switchover", func(context *gin.Context) {
+			host := context.Param("host")
+			body, _ := ioutil.ReadAll(context.Request.Body)
+			req, _ := http.NewRequest(http.MethodPost, "http://"+host+"/switchover", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
+			response, err := http.DefaultClient.Do(req)
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err})
+			} else {
+				bodyBytes, _ := io.ReadAll(response.Body)
+				bodyMessage := string(bodyBytes)
+				context.JSON(http.StatusOK, gin.H{"response": bodyMessage})
+			}
+		})
+		api.POST("/node/:host/reinitialize", func(context *gin.Context) {
+			host := context.Param("host")
+			body, _ := ioutil.ReadAll(context.Request.Body)
+			req, _ := http.NewRequest(http.MethodPost, "http://"+host+"/reinitialize", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
+			response, err := http.DefaultClient.Do(req)
+			if err != nil {
+				context.JSON(http.StatusBadRequest, gin.H{"error": err})
+			} else {
+				bodyBytes, _ := io.ReadAll(response.Body)
+				bodyMessage := string(bodyBytes)
+				context.JSON(http.StatusOK, gin.H{"response": bodyMessage})
 			}
 		})
 	}

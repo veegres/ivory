@@ -13,6 +13,7 @@
 - [ ] Add remove button for empty elements in the center of nodes array
 - [ ] Refactor all strings from `""` to `''` and props in jsx from `=""` to `={''}`
 - [ ] Add more strict Eslint rules (imports, spaces near objects `{}`, etc), Hooks for git and Prettier
+- [ ] Think about mocks for web, do we need them for easy development
 
 ### [Long Term Plans]
 - [ ] Add opportunity to use tools as [pgcompacttable](https://github.com/dataegret/pgcompacttable) and [pg_repack](https://github.com/reorg/pg_repack)

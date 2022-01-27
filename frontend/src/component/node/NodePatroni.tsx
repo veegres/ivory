@@ -10,6 +10,7 @@ const SX = {
     nodeStatusBlock: { height: '120px', minWidth: '200px', borderRadius: '4px' },
     item: { margin: '0px 15px' }
 }
+
 export function NodePatroni({ node }: { node: string }) {
     const { data: nodePatroni, isLoading, isError, error } = useQuery(['node/patroni', node], () => nodeApi.patroni(node))
     if (isError) return <Error error={error as AxiosError} />

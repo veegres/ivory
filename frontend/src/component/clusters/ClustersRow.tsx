@@ -24,11 +24,9 @@ export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
     const { isReadOnly = false, toggleEdit = () => {}, closeNewElement = () => {} } = edit
     const isNewElement = !name
 
-    console.log(nodes)
     const { store, setStore } = useStore()
     const [stateName, setStateName] = useState(name);
     const [stateNodes, setStateNodes] = useState(nodes.length ? nodes : ['']);
-    console.log('stateNodes', stateNodes)
     if (!isReadOnly) handleAutoIncreaseElement()
 
     const queryClient = useQueryClient();
