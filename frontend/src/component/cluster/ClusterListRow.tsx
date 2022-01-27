@@ -1,6 +1,6 @@
-import {Box, Chip, CircularProgress, FormControl, IconButton, OutlinedInput, TableCell, TableRow} from "@mui/material";
+import {Box, Chip, FormControl, IconButton, OutlinedInput, TableCell, TableRow} from "@mui/material";
 import {Add, Check, Delete, Edit, Remove, Visibility} from "@mui/icons-material";
-import {cloneElement, ReactElement, useState} from "react";
+import {useState} from "react";
 import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterMap} from "../../app/types";
@@ -20,6 +20,8 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
     const { isReadOnly, toggleEdit } = globalProps.edit
     const [name, setName] = useState(globalProps.name);
     const [nodes, setNodes] = useState(globalProps.nodes.length ? globalProps.nodes : ['']);
+
+    if (!isReadOnly) handleAutoIncreaseElement()
 
     const queryClient = useQueryClient();
     const updateCluster = useMutation(clusterApi.update, {
@@ -86,15 +88,17 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         const isNodeActive = !!node && store.activeNode === node
 
         if (isReadOnly) {
-            return <Chip
-                key={index}
-                sx={{ width: '100%' }}
-                label={node ? node : `Node ${index}`}
-                disabled={!node}
-                variant="outlined"
-                color={isNodeActive ? "primary" : "default"}
-                onClick={handleSelectedNodeChange(node, isNodeActive)}
-            />
+            return (
+                <Chip
+                    key={index}
+                    sx={{ width: '100%' }}
+                    label={node ? node : `Node ${index}`}
+                    disabled={!node}
+                    variant="outlined"
+                    color={isNodeActive ? "primary" : "default"}
+                    onClick={handleSelectedNodeChange(node, isNodeActive)}
+                />
+            )
         }
 
         return (
@@ -151,6 +155,26 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         setNodes([...nodes])
     }
 
+    function handleAutoIncreaseElement() {
+        const newElements = nodes.slice(globalProps.nodes.length)
+
+        console.log(name, newElements, nodes, globalProps.nodes);
+
+        if (newElements.length >= 0) {
+            const lastIndex = newElements.length - 1
+            const preLastIndex = newElements.length - 2
+            if (newElements[lastIndex] !== '') {
+                setNodes([...nodes, ''])
+            }
+
+            if (newElements.length > 1) {
+                if (newElements[lastIndex] === '' && newElements[preLastIndex] === '') {
+                    setNodes(nodes.slice(0, nodes.length - 1))
+                }
+            }
+        }
+    }
+
     function handleRemove() {
         if (nodes.length <= 1) return
         nodes.pop()
@@ -158,8 +182,13 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
     }
 
     function handleUpdate() {
+        const newElements = nodes.slice(globalProps.nodes.length)
+        const newNodes = newElements[newElements.length - 1] === '' ? nodes.slice(0, nodes.length - 1) : nodes
+
+        console.log(newElements, newNodes)
+
         toggleEdit()
-        updateCluster.mutate({ name, nodes })
+        updateCluster.mutate({ name, nodes: newNodes })
     }
 
     function handleDelete() {
