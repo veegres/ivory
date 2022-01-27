@@ -77,7 +77,7 @@ export function ClusterListRow(props: { nodes?: string[], name?: string }) {
     function CellButton(props: { isLoading: boolean, onClick: () => void, children: ReactNode }) {
         const { isLoading, children, onClick } = props;
         return (
-            <IconButton disabled={isLoading} onClick={onClick}>
+            <IconButton disabled={isLoading || !name} onClick={onClick}>
                 {isLoading ? <CircularProgress size={14} /> : children}
             </IconButton>
         )
