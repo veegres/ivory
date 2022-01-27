@@ -12,23 +12,24 @@ const SX = {
     input: { minWidth: '150px' }
 }
 
-export function ClusterListRow(props: { nodes?: string[], name?: string }) {
+export function ClusterListRow(props: { nodes: string[], name: string }) {
     const { store, setStore } = useStore()
-    const [name, setName] = useState(props.name ?? '');
-    const [nodes, setNodes] = useState(props.nodes && props.nodes.length ? props.nodes : ['']);
+    const [name, setName] = useState(props.name);
+    const [nodes, setNodes] = useState(props.nodes.length ? props.nodes : ['']);
 
     const queryClient = useQueryClient();
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
             const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
             map[data.name] = data.nodes
+            if (data.name !== props.name) delete map[props.name]
             queryClient.setQueryData<ClusterMap>('cluster/list', map)
         }
     })
     const deleteCluster = useMutation(clusterApi.delete, {
-        onSuccess: (_, name) => {
+        onSuccess: (_, newName) => {
             const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
-            delete map[name]
+            delete map[newName]
             queryClient.setQueryData<ClusterMap>('cluster/list', map)
         }
     })

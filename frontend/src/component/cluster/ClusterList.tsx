@@ -35,7 +35,7 @@ export function ClusterList() {
                 {Object.entries(clusterMap).map(([name, nodes]) => (
                     <ClusterListRow key={name} nodes={nodes} name={name} />
                 ))}
-                <ClusterListRow />
+                <ClusterListRow name={''} nodes={['']} />
             </>
         )
     }
