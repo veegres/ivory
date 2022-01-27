@@ -1,5 +1,5 @@
 import {Box, Chip, FormControl, IconButton, OutlinedInput, TableCell, TableRow} from "@mui/material";
-import {Check, Delete, Edit, Visibility} from "@mui/icons-material";
+import {Cancel, CheckCircle, Delete, Edit, Visibility} from "@mui/icons-material";
 import {useState} from "react";
 import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
@@ -111,13 +111,15 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
 
     function renderClusterActionsCell() {
         const isDisabled = !name
-        return (
+        return isReadOnly ? (
             <>
-                {isReadOnly ?
-                    <ClusterListActionButton icon={<Edit />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} /> :
-                    <ClusterListActionButton icon={<Check />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
-                }
+                <ClusterListActionButton icon={<Edit />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} />
                 <ClusterListActionButton icon={<Delete />} loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete} />
+            </>
+        ) : (
+            <>
+                <ClusterListActionButton icon={<Cancel />} loading={updateCluster.isLoading} disabled={!globalProps.name} onClick={toggleEdit} />
+                <ClusterListActionButton icon={<CheckCircle />} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
             </>
         )
     }
