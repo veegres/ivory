@@ -1,7 +1,5 @@
 ## Ideas and things that would be cool to do
 
----
-
 ### [General]
 - [ ] Choose licence
 - [ ] Add README.md

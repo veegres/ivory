@@ -1,13 +1,10 @@
 ## Code convention
 
----
-
 #### Read this before contribution or if you have a question how to write code in correct way
 This project has pretty strict code of convention to prevent any misunderstandings, 
 disputes in PRs and simplify code readability. All new proposals about making changes 
 to code convention should be discussed among contributors.
 
----
 
 - **Styles (css)**
   - All styles (css) should be written as `css in js` by using `sx` prop (if it exists in component). 

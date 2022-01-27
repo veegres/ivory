@@ -1,10 +1,6 @@
 ## Docker environment for local development
 
----
-
 ###### This Dockerfile and docker-compose will run for you patroni cluster with 3 instances.
-
----
 
 1. Edit hosts (`/etc/hosts`), add these lines to the file
 ``` 
@@ -17,7 +13,6 @@
 docker-compose up -d
 ```
 
---- 
 **Patroni Rest API:** `patroni[1-3]:8008` (http://patroni1:8008)
 
 **Postgres ports:** `are not exported` (you can do it by yourself in docker-compose file)
