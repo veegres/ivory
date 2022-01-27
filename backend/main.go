@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -125,6 +126,7 @@ func ClusterGetList() []Cluster {
 }
 
 func setupDatabase() *bolt.DB {
+	os.Mkdir("bolt", os.ModePerm)
 	db, err := bolt.Open("bolt/cluster.db", 0600, nil)
 	if err != nil {
 		log.Fatal(err)

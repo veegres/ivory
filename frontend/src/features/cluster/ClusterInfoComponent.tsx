@@ -1,16 +1,12 @@
-import {useAppDispatch, useAppSelector} from "../../app/hooks";
-import {selectClusterData, incrementAsync} from "./ClusterInfoSlice";
 import {Button, Grid, Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
 import {OpenInNew} from "@material-ui/icons";
-import {useEffect} from "react";
+import { useQuery } from "react-query";
+import {getNodeCluster} from "../../app/api";
 
 export function ClusterInfoComponent() {
-    const dispatch = useAppDispatch();
     const node = `P4-IO-CHAT-10`;
-    useEffect(() => { dispatch(incrementAsync(node)) }, [dispatch, node])
-
-    const cluster = useAppSelector(selectClusterData)
-    if (cluster.length === 0) return null;
+    const { data: members } = useQuery(['node/cluster', node], () => getNodeCluster(node))
+    if (!members || members.length === 0) return null;
 
     return (
         <Table>
@@ -23,7 +19,7 @@ export function ClusterInfoComponent() {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {cluster.map((node) => (
+                {members.map((node) => (
                     <TableRow key={node.host}>
                         <TableCell>{node.name}</TableCell>
                         <TableCell>{node.role.toUpperCase()}</TableCell>

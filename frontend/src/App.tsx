@@ -5,7 +5,7 @@ import {ClusterListComponent} from "./features/cluster/ClusterListComponent";
 import {NodeConfigComponent} from "./features/node/NodeConfigComponent";
 import {NodePatroniComponent} from "./features/node/NodePatroniComponent";
 
-export default function App() {
+export function App() {
     return (
         <Grid container spacing={3} direction="column">
             <Grid item><Box style={{textAlign: "center", fontSize: "30px"}}>Postgres Cluster GUI</Box></Grid>

@@ -1,14 +1,11 @@
-import {useEffect} from "react";
-import {useAppDispatch, useAppSelector} from "../../app/hooks";
-import {incrementAsync, selectClusterListData} from "./ClusterListSlice";
 import {Chip, Grid, Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
+import { useQuery } from "react-query";
+import {getClusterList} from "../../app/api";
 
 export function ClusterListComponent() {
-    const dispatch = useAppDispatch();
-    useEffect(() => { dispatch(incrementAsync()) }, [dispatch])
-
-    const clusterList = useAppSelector(selectClusterListData)
-    if (clusterList.length === 0) return null;
+    const { data: clusterList } = useQuery('cluster/list', getClusterList)
+    console.log(clusterList);
+    if (!clusterList || clusterList.length === 0) return null;
     return (
         <Table>
             <TableHead>

@@ -1,15 +1,11 @@
-import {useAppDispatch, useAppSelector} from "../../app/hooks";
-import {useEffect} from "react";
-import {incrementAsync, selectNodeConfigData} from "./NodeConfigSlice";
 import ReactJson from "react-json-view";
 import {Grid, Paper} from "@material-ui/core";
+import {getNodeConfig} from "../../app/api";
+import { useQuery } from "react-query";
 
 export function NodeConfigComponent() {
-    const dispatch = useAppDispatch();
     const node = `P4-IO-CHAT-10`;
-    useEffect(() => { dispatch(incrementAsync(node)) }, [dispatch, node])
-
-    const nodeConfig = useAppSelector(selectNodeConfigData)
+    const nodeConfig = useQuery(['node/config', node], () => getNodeConfig(node))
     if (!nodeConfig) return null;
 
     return (

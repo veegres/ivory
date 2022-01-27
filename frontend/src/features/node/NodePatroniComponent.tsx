@@ -1,16 +1,12 @@
-import {useAppDispatch, useAppSelector} from "../../app/hooks";
-import {useEffect} from "react";
 import {Grid, Paper} from "@material-ui/core";
-import {incrementAsync, selectNodePatroniData} from "./NodePatroniSlice";
 import css from "./NodePatroni.module.css"
 import classNames from "classnames";
+import {getNodePatroni} from "../../app/api";
+import { useQuery } from "react-query";
 
 export function NodePatroniComponent() {
-    const dispatch = useAppDispatch();
     const node = `P4-IO-CHAT-10`;
-    useEffect(() => { dispatch(incrementAsync(node)) }, [dispatch, node])
-
-    const nodePatroni = useAppSelector(selectNodePatroniData)
+    const { data: nodePatroni } = useQuery(['node/patroni', node], () => getNodePatroni(node))
     if (!nodePatroni) return null;
 
     const roleClassName = classNames(css.role, { [css.green]: nodePatroni.role === "master" })
