@@ -5,12 +5,15 @@ import * as ServiceWorker from './ServiceWorker';
 import {QueryClient, QueryClientProvider} from "react-query";
 import { ReactQueryDevtools } from 'react-query/devtools'
 import {ThemeProvider} from "./provider/ThemeProvider";
+import {StoreProvider} from "./provider/StoreProvider";
 
 ReactDOM.render(
     <React.StrictMode>
         <QueryClientProvider client={new QueryClient()}>
             <ThemeProvider>
-                <App />
+                <StoreProvider>
+                    <App />
+                </StoreProvider>
             </ThemeProvider>
             <ReactQueryDevtools />
         </QueryClientProvider>

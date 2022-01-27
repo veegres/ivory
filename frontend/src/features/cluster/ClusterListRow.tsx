@@ -1,9 +1,10 @@
 import {Box, CircularProgress, FormControl, IconButton, Input, TableCell, TableRow} from "@mui/material";
 import {Add, CheckCircle, Delete, Remove, Visibility} from "@mui/icons-material";
-import {Dispatch, ReactNode, useState} from "react";
+import {ReactNode, useState} from "react";
 import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterMap} from "../../app/types";
+import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
     clusterNameIcon: { fontSize: 10 },
@@ -11,7 +12,8 @@ const SX = {
     input: { minWidth: '150px' }
 }
 
-export function ClusterListRow(props: { nodes?: string[], name?: string, setNode?: Dispatch<string> }) {
+export function ClusterListRow(props: { nodes?: string[], name?: string }) {
+    const { setStore } = useStore()
     const [name, setName] = useState(props.name ?? '');
     const [nodes, setNodes] = useState(props.nodes && props.nodes.length ? props.nodes : ['']);
 
@@ -82,11 +84,10 @@ export function ClusterListRow(props: { nodes?: string[], name?: string, setNode
     }
 
     function ViewEndAdornment({ node }: { node: string }) {
-        const update = props.setNode
-        if (!update || !node) return null
+        if (!node) return null
 
         return (
-            <IconButton onClick={() => update(node)}>
+            <IconButton onClick={() => setStore({ activeNode: node })}>
                 <Visibility sx={SX.tableIcon} />
             </IconButton>
         )

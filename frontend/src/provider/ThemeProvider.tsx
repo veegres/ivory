@@ -1,13 +1,21 @@
-import React, {createContext, useContext, useState} from "react";
+import React, {createContext, ReactNode, useContext, useState} from "react";
 import {createTheme, CssBaseline, PaletteMode, Theme, ThemeProvider as MuiThemeProvider} from "@mui/material";
 
-const ThemeContext = createContext<{ mode: string, info?: Theme, toggle: () => void}>({ mode: '', toggle: () => {} });
+interface ThemeContextType {
+    mode: string,
+    toggle: () => void
+    info?: Theme,
+}
+const ThemeContext = createContext<ThemeContextType>({
+    mode: '',
+    toggle: () => {}
+});
 
 export function useTheme() {
     return useContext(ThemeContext)
 }
 
-export function ThemeProvider(props: any) {
+export function ThemeProvider(props: { children: ReactNode }) {
     const [mode, setMode] = useState(getMode());
     const muiTheme = createTheme({palette: {mode}})
     return (

@@ -2,13 +2,13 @@ import {Table, TableCell, TableHead, TableRow} from "@mui/material";
 import { useQuery } from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterListRow} from "./ClusterListRow";
-import React, {Dispatch} from "react";
+import React from "react";
 import {Error} from "../view/Error";
 import {TableBodyLoading} from "../view/TableBodyLoading";
 import {TableCellFetching} from "../view/TableCellFetching";
 import {AxiosError} from "axios";
 
-export function ClusterList({ setNode }: { setNode: Dispatch<string> }) {
+export function ClusterList() {
     const { data: clusterMap, isLoading, isFetching, isError, error } = useQuery('cluster/list', clusterApi.list)
     if (isError) return <Error error={error as AxiosError} />
 
@@ -33,7 +33,7 @@ export function ClusterList({ setNode }: { setNode: Dispatch<string> }) {
         return (
             <>
                 {Object.entries(clusterMap).map(([name, nodes]) => (
-                    <ClusterListRow key={name} nodes={nodes} name={name} setNode={setNode} />
+                    <ClusterListRow key={name} nodes={nodes} name={name} />
                 ))}
                 <ClusterListRow />
             </>
