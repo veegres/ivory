@@ -4,7 +4,7 @@ import {Cluster, NodePatroni, Node, ClusterMap, GoResponse} from "./types";
 const api = axios.create({ baseURL: '/api' })
 
 export const nodeApi = {
-    patroni: (node: String) => api.get<GoResponse<NodePatroni>>(`/node/${node}/patroni`).then((response) => response.data.response),
+    patroni: (node: String) => api.get<GoResponse<NodePatroni>>(`/node/${node}/overview`).then((response) => response.data.response),
     cluster: (node: String) => api.get<GoResponse<{ members: Node[] }>>(`/node/${node}/cluster`).then((response) => response.data.response.members),
     config: (node: String) => api.get(`/node/${node}/config`).then((response) => response.data.response),
     updateConfig: ({ node, config }: { node: string, config: string}) => api.patch(`/node/${node}/config`, config)

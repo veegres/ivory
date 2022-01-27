@@ -1,7 +1,7 @@
 FROM postgres:14.0
 
 RUN apt update
-RUN apt -y install curl python3-pip
+RUN apt -y install python3-pip
 
 RUN pip install "psycopg[binary]>=3.0.0"
 RUN pip install "patroni[raft]"
