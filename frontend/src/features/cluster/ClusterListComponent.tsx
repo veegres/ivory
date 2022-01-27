@@ -1,34 +1,26 @@
-import {Chip, Grid, Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
+import {Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import { useQuery } from "react-query";
-import {getClusterList} from "../../app/api";
+import {clusterApi} from "../../app/api";
+import {ClusterCreateComponent} from "./ClusterCreateComponent";
+import React from "react";
 
 export function ClusterListComponent() {
-    const { data: clusterList } = useQuery('cluster/list', getClusterList)
-    console.log(clusterList);
+    const { data: clusterList } = useQuery('cluster/list', clusterApi.list)
     if (!clusterList || clusterList.length === 0) return null;
     return (
-        <Table>
+        <Table size="small" sx={{ 'tr:last-child td': { border: 0 } }}>
             <TableHead>
                 <TableRow>
-                    <TableCell>Name</TableCell>
+                    <TableCell sx={{ width: '15%' }}>Name</TableCell>
                     <TableCell>Nodes</TableCell>
+                    <TableCell sx={{ width: '115px' }} />
                 </TableRow>
             </TableHead>
             <TableBody>
                 {clusterList.map(cluster => (
-                    <TableRow key={cluster.name}>
-                        <TableCell>{cluster.name}</TableCell>
-                        <TableCell>
-                            <Grid container spacing={1}>
-                                {cluster.nodes.map(node => (
-                                    <Grid item key={node}>
-                                        <Chip variant="outlined" color="primary" clickable label={node} />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </TableCell>
-                    </TableRow>
+                    <ClusterCreateComponent key={cluster.name} nodes={cluster.nodes} name={cluster.name} />
                 ))}
+                <ClusterCreateComponent nodes={[]} />
             </TableBody>
         </Table>
     )

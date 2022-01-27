@@ -1,15 +1,15 @@
-import {Button, Grid, Table, TableBody, TableCell, TableHead, TableRow} from "@material-ui/core";
-import {OpenInNew} from "@material-ui/icons";
+import {Button, Grid, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {OpenInNew} from "@mui/icons-material";
 import { useQuery } from "react-query";
-import {getNodeCluster} from "../../app/api";
+import {nodeApi} from "../../app/api";
 
-export function ClusterInfoComponent() {
+export function NodeClusterInfoComponent() {
     const node = `P4-IO-CHAT-10`;
-    const { data: members } = useQuery(['node/cluster', node], () => getNodeCluster(node))
+    const { data: members } = useQuery(['node/cluster', node], () => nodeApi.cluster(node))
     if (!members || members.length === 0) return null;
 
     return (
-        <Table>
+        <Table size="small" sx={{ 'tr:last-child td': { border: 0 } }}>
             <TableHead>
                 <TableRow>
                     <TableCell>Node</TableCell>
@@ -25,7 +25,7 @@ export function ClusterInfoComponent() {
                         <TableCell>{node.role.toUpperCase()}</TableCell>
                         <TableCell>{node.lag}</TableCell>
                         <TableCell align="right">
-                            <Grid container spacing={3} justifyContent="flex-end" alignItems="center">
+                            <Grid container justifyContent="flex-end" alignItems="center">
                                 <Grid item>{node.role === "leader" ? <Button color="secondary">Switchover</Button> : null}</Grid>
                                 <Grid item><Button color="primary">Reinit</Button></Grid>
                                 <Grid item><Button href={node.api_url} target="_blank"><OpenInNew /></Button></Grid>

@@ -3,13 +3,16 @@ import ReactDOM from 'react-dom';
 import { App } from './App';
 import * as ServiceWorker from './ServiceWorker';
 import {QueryClient, QueryClientProvider} from "react-query";
+import { ReactQueryDevtools } from 'react-query/devtools'
+import {ThemeProvider} from "./provider/ThemeProvider";
 
 ReactDOM.render(
     <React.StrictMode>
         <QueryClientProvider client={new QueryClient()}>
-            {/*<ThemeProvider theme>*/}
+            <ThemeProvider>
                 <App />
-            {/*</ThemeProvider>*/}
+            </ThemeProvider>
+            <ReactQueryDevtools />
         </QueryClientProvider>
     </React.StrictMode>,
     document.getElementById('root')

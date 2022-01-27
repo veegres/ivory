@@ -10,8 +10,12 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@material-ui/core": "^4.12.3",
-    "@material-ui/icons": "^4.11.2",
+    "@babel/core": "^7.16.7",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.2.5",
+    "@mui/material": "^5.2.6",
+    "add": "^2.0.6",
     "axios": "^0.24.0",
     "classnames": "^2.3.1",
     "react": "^17.0.2",

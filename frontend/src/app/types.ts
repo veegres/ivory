@@ -26,7 +26,7 @@ export interface NodePatroni {
     server_version: string
 }
 
-export interface ClusterList {
+export interface Cluster {
     name: string,
     nodes: string[]
 }

@@ -31,6 +31,8 @@ func main() {
 	api := router.Group("/api")
 	{
 		api.GET("/ping", func(context *gin.Context) { context.JSON(http.StatusOK, gin.H{"message": "pong"}) })
+
+		/* CLUSTER */
 		api.GET("/cluster/list", func(context *gin.Context) {
 			context.JSON(http.StatusOK, gin.H{"response": ClusterGetList()})
 		})
@@ -46,6 +48,7 @@ func main() {
 			context.ShouldBindJSON(&nodes)
 			ClusterUpdate(Cluster{Name: name, Nodes: nodes})
 		})
+
 		// TODO make code independent of patroni
 		/* PATRONI */
 		api.GET("/node/:name/cluster", func(context *gin.Context) {
