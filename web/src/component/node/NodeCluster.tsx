@@ -43,7 +43,7 @@ export function NodeCluster({ node }: Props) {
                     <TableHeaderLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading) && !isLoading} />
                 </TableRow>
             </TableHead>
-            <TableBodySkeleton isLoading={isLoading} cellCount={4}>
+            <TableBodySkeleton isLoading={isLoading} cellCount={5}>
                 <Content />
             </TableBodySkeleton>
         </Table>

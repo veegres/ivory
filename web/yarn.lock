@@ -1843,6 +1843,230 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@codemirror/autocomplete@^0.19.0":
+  version "0.19.12"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/autocomplete/-/autocomplete-0.19.12.tgz#4c9e4487b45e6877807e4f16c1fffd5e7639ae52"
+  integrity sha1-TJ5Eh7ReaHeAfk8Wwf/9XnY5rlI=
+  dependencies:
+    "@codemirror/language" "^0.19.0"
+    "@codemirror/state" "^0.19.4"
+    "@codemirror/text" "^0.19.2"
+    "@codemirror/tooltip" "^0.19.12"
+    "@codemirror/view" "^0.19.0"
+    "@lezer/common" "^0.15.0"
+
+"@codemirror/basic-setup@^0.19.0":
+  version "0.19.1"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/basic-setup/-/basic-setup-0.19.1.tgz#17b27d02f15c628eb62a85d01e3e1b1958933eb4"
+  integrity sha1-F7J9AvFcYo62KoXQHj4bGViTPrQ=
+  dependencies:
+    "@codemirror/autocomplete" "^0.19.0"
+    "@codemirror/closebrackets" "^0.19.0"
+    "@codemirror/commands" "^0.19.0"
+    "@codemirror/comment" "^0.19.0"
+    "@codemirror/fold" "^0.19.0"
+    "@codemirror/gutter" "^0.19.0"
+    "@codemirror/highlight" "^0.19.0"
+    "@codemirror/history" "^0.19.0"
+    "@codemirror/language" "^0.19.0"
+    "@codemirror/lint" "^0.19.0"
+    "@codemirror/matchbrackets" "^0.19.0"
+    "@codemirror/rectangular-selection" "^0.19.0"
+    "@codemirror/search" "^0.19.0"
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/view" "^0.19.31"
+
+"@codemirror/closebrackets@^0.19.0":
+  version "0.19.0"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/closebrackets/-/closebrackets-0.19.0.tgz#69fdcee85779d638a00a42becd9f53a33a26d77f"
+  integrity sha1-af3O6Fd51jigCkK+zZ9Tozom138=
+  dependencies:
+    "@codemirror/language" "^0.19.0"
+    "@codemirror/rangeset" "^0.19.0"
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/text" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+
+"@codemirror/commands@^0.19.0":
+  version "0.19.7"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/commands/-/commands-0.19.7.tgz#b55ccc7f3c1ad4cb0ec422d50c93568dbb05cc55"
+  integrity sha1-tVzMfzwa1MsOxCLVDJNWjbsFzFU=
+  dependencies:
+    "@codemirror/language" "^0.19.0"
+    "@codemirror/matchbrackets" "^0.19.0"
+    "@codemirror/state" "^0.19.2"
+    "@codemirror/text" "^0.19.0"
+    "@codemirror/view" "^0.19.22"
+    "@lezer/common" "^0.15.0"
+
+"@codemirror/comment@^0.19.0":
+  version "0.19.0"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/comment/-/comment-0.19.0.tgz#4f23497924e9346898c2e0123011acc535a0bea6"
+  integrity sha1-TyNJeSTpNGiYwuASMBGsxTWgvqY=
+  dependencies:
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/text" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+
+"@codemirror/fold@^0.19.0":
+  version "0.19.2"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/fold/-/fold-0.19.2.tgz#9d4e0c0f9f3bb2fcded7d82bea14ce39310e8e2a"
+  integrity sha1-nU4MD587svze19gr6hTOOTEOjio=
+  dependencies:
+    "@codemirror/gutter" "^0.19.0"
+    "@codemirror/language" "^0.19.0"
+    "@codemirror/rangeset" "^0.19.0"
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/view" "^0.19.22"
+
+"@codemirror/gutter@^0.19.0", "@codemirror/gutter@^0.19.4":
+  version "0.19.9"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/gutter/-/gutter-0.19.9.tgz#bbb69f4d49570d9c1b3f3df5d134980c516cd42b"
+  integrity sha1-u7afTUlXDZwbPz310TSYDFFs1Cs=
+  dependencies:
+    "@codemirror/rangeset" "^0.19.0"
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/view" "^0.19.23"
+
+"@codemirror/highlight@^0.19.0":
+  version "0.19.7"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/highlight/-/highlight-0.19.7.tgz#91a0c9994c759f5f153861e3aae74ff9e7c7c35b"
+  integrity sha1-kaDJmUx1n18VOGHjqudP+efHw1s=
+  dependencies:
+    "@codemirror/language" "^0.19.0"
+    "@codemirror/rangeset" "^0.19.0"
+    "@codemirror/state" "^0.19.3"
+    "@codemirror/view" "^0.19.0"
+    "@lezer/common" "^0.15.0"
+    style-mod "^4.0.0"
+
+"@codemirror/history@^0.19.0":
+  version "0.19.2"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/history/-/history-0.19.2.tgz#25e3fda755f77ac1223a6ae6e9d7899f5919265e"
+  integrity sha1-JeP9p1X3esEiOmrm6deJn1kZJl4=
+  dependencies:
+    "@codemirror/state" "^0.19.2"
+    "@codemirror/view" "^0.19.0"
+
+"@codemirror/lang-json@^0.19.1":
+  version "0.19.1"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/lang-json/-/lang-json-0.19.1.tgz#616588d1422529965243c10af6c44ad0b9134fb0"
+  integrity sha1-YWWI0UIlKZZSQ8EK9sRK0LkTT7A=
+  dependencies:
+    "@codemirror/highlight" "^0.19.0"
+    "@codemirror/language" "^0.19.0"
+    "@lezer/json" "^0.15.0"
+
+"@codemirror/language@^0.19.0":
+  version "0.19.7"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/language/-/language-0.19.7.tgz#9eef8e827692d93a701b18db9d46a42be34ecca6"
+  integrity sha1-nu+OgnaS2TpwGxjbnUakK+NOzKY=
+  dependencies:
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/text" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+    "@lezer/common" "^0.15.5"
+    "@lezer/lr" "^0.15.0"
+
+"@codemirror/lint@^0.19.0":
+  version "0.19.3"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/lint/-/lint-0.19.3.tgz#84101d0967fea8df114a8f0f79965c22ccd3b3cc"
+  integrity sha1-hBAdCWf+qN8RSo8PeZZcIszTs8w=
+  dependencies:
+    "@codemirror/gutter" "^0.19.4"
+    "@codemirror/panel" "^0.19.0"
+    "@codemirror/rangeset" "^0.19.1"
+    "@codemirror/state" "^0.19.4"
+    "@codemirror/tooltip" "^0.19.5"
+    "@codemirror/view" "^0.19.0"
+    crelt "^1.0.5"
+
+"@codemirror/matchbrackets@^0.19.0":
+  version "0.19.3"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/matchbrackets/-/matchbrackets-0.19.3.tgz#1f430ada6fa21af2205280ff344ef57bb95dd3cb"
+  integrity sha1-H0MK2m+iGvIgUoD/NE71e7ld08s=
+  dependencies:
+    "@codemirror/language" "^0.19.0"
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+    "@lezer/common" "^0.15.0"
+
+"@codemirror/panel@^0.19.0":
+  version "0.19.1"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/panel/-/panel-0.19.1.tgz#bf77d27b962cf16357139e50864d0eb69d634441"
+  integrity sha1-v3fSe5Ys8WNXE55Qhk0Otp1jREE=
+  dependencies:
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+
+"@codemirror/rangeset@^0.19.0", "@codemirror/rangeset@^0.19.1", "@codemirror/rangeset@^0.19.5":
+  version "0.19.6"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/rangeset/-/rangeset-0.19.6.tgz#2562850cb4ce7dd30088f4d13a13860b67e7d384"
+  integrity sha1-JWKFDLTOfdMAiPTROhOGC2fn04Q=
+  dependencies:
+    "@codemirror/state" "^0.19.0"
+
+"@codemirror/rectangular-selection@^0.19.0":
+  version "0.19.1"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/rectangular-selection/-/rectangular-selection-0.19.1.tgz#5a88ece4fb68ce5682539497db8a64fc015aae63"
+  integrity sha1-Wojs5PtozlaCU5SX24pk/AFarmM=
+  dependencies:
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/text" "^0.19.4"
+    "@codemirror/view" "^0.19.0"
+
+"@codemirror/search@^0.19.0":
+  version "0.19.5"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/search/-/search-0.19.5.tgz#cae88292a6b4a6d6e6a8b6218fe62355cf7f6055"
+  integrity sha1-yuiCkqa0ptbmqLYhj+YjVc9/YFU=
+  dependencies:
+    "@codemirror/panel" "^0.19.0"
+    "@codemirror/rangeset" "^0.19.0"
+    "@codemirror/state" "^0.19.3"
+    "@codemirror/text" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+    crelt "^1.0.5"
+
+"@codemirror/state@^0.19.0", "@codemirror/state@^0.19.2", "@codemirror/state@^0.19.3", "@codemirror/state@^0.19.4", "@codemirror/state@^0.19.5":
+  version "0.19.6"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/state/-/state-0.19.6.tgz#d631f041d39ce41b7891b099fca26cb1fdb9763e"
+  integrity sha1-1jHwQdOc5Bt4kbCZ/KJssf25dj4=
+  dependencies:
+    "@codemirror/text" "^0.19.0"
+
+"@codemirror/text@^0.19.0", "@codemirror/text@^0.19.2", "@codemirror/text@^0.19.4":
+  version "0.19.6"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/text/-/text-0.19.6.tgz#9adcbd8137f69b75518eacd30ddb16fd67bbac45"
+  integrity sha1-mty9gTf2m3VRjqzTDdsW/We7rEU=
+
+"@codemirror/theme-one-dark@^0.19.1":
+  version "0.19.1"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/theme-one-dark/-/theme-one-dark-0.19.1.tgz#648b9cbe37186a2b7bd2a83fb483dc7aa18ce218"
+  integrity sha1-ZIucvjcYait70qg/tIPceqGM4hg=
+  dependencies:
+    "@codemirror/highlight" "^0.19.0"
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+
+"@codemirror/tooltip@^0.19.12", "@codemirror/tooltip@^0.19.5":
+  version "0.19.13"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/tooltip/-/tooltip-0.19.13.tgz#4af381aead14d9d7091258bdd6a5de7dc5f56915"
+  integrity sha1-SvOBrq0U2dcJEli91qXefcX1aRU=
+  dependencies:
+    "@codemirror/state" "^0.19.0"
+    "@codemirror/view" "^0.19.0"
+
+"@codemirror/view@^0.19.0", "@codemirror/view@^0.19.15", "@codemirror/view@^0.19.22", "@codemirror/view@^0.19.23", "@codemirror/view@^0.19.31":
+  version "0.19.40"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@codemirror/view/-/view-0.19.40.tgz#1be9cac1725568b7fba2252658a6f255b29339eb"
+  integrity sha1-G+nKwXJVaLf7oiUmWKbyVbKTOes=
+  dependencies:
+    "@codemirror/rangeset" "^0.19.5"
+    "@codemirror/state" "^0.19.3"
+    "@codemirror/text" "^0.19.0"
+    style-mod "^4.0.0"
+    w3c-keyname "^2.2.4"
+
 "@csstools/normalize.css@*":
   version "12.0.0"
   resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@csstools/normalize.css/-/normalize.css-12.0.0.tgz#a9583a75c3f150667771f30b60d9f059473e62c4"
@@ -2162,6 +2386,25 @@
     "@types/node" "*"
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
+
+"@lezer/common@^0.15.0", "@lezer/common@^0.15.5":
+  version "0.15.11"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@lezer/common/-/common-0.15.11.tgz#965b5067036305f12e8a3efc344076850be1d3a8"
+  integrity sha1-lltQZwNjBfEuij78NEB2hQvh06g=
+
+"@lezer/json@^0.15.0":
+  version "0.15.0"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@lezer/json/-/json-0.15.0.tgz#b96c1161eb8514e05f4eaaec95c68376e76e539f"
+  integrity sha1-uWwRYeuFFOBfTqrslcaDduduU58=
+  dependencies:
+    "@lezer/lr" "^0.15.0"
+
+"@lezer/lr@^0.15.0":
+  version "0.15.7"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@lezer/lr/-/lr-0.15.7.tgz#e7e6a8a106c6474b4586a66a3e60ba85f1faf368"
+  integrity sha1-5+aooQbGR0tFhqZqPmC6hfH682g=
+  dependencies:
+    "@lezer/common" "^0.15.0"
 
 "@mui/base@5.0.0-alpha.62":
   version "5.0.0-alpha.62"
@@ -2528,6 +2771,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/codemirror@^5.60.5":
+  version "5.60.5"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@types/codemirror/-/codemirror-5.60.5.tgz#5b989a3b4bbe657458cf372c92b6bfda6061a2b7"
+  integrity sha1-W5iaO0u+ZXRYzzcskra/2mBhorc=
+  dependencies:
+    "@types/tern" "*"
+
 "@types/connect-history-api-fallback@^1.3.5":
   version "1.3.5"
   resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@types/connect-history-api-fallback/-/connect-history-api-fallback-1.3.5.tgz#d1f7a8a09d0ed5a57aee5ae9c18ab9b803205dae"
@@ -2804,6 +3054,13 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
   integrity sha512-RJJrrySY7A8havqpGObOB4W92QXKJo63/jFLLgpvOtsGUqbQZ9Sbgl35KMm1DjC6j7AvmmU2bIno+3IyEaemaw==
 
+"@types/tern@*":
+  version "0.23.4"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@types/tern/-/tern-0.23.4.tgz#03926eb13dbeaf3ae0d390caf706b2643a0127fb"
+  integrity sha1-A5JusT2+rzrg05DK9wayZDoBJ/s=
+  dependencies:
+    "@types/estree" "*"
+
 "@types/trusted-types@^2.0.2":
   version "2.0.2"
   resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@types/trusted-types/-/trusted-types-2.0.2.tgz#fc25ad9943bcac11cceb8168db4f275e0e72e756"
@@ -2907,6 +3164,17 @@
   dependencies:
     "@typescript-eslint/types" "5.9.0"
     eslint-visitor-keys "^3.0.0"
+
+"@uiw/react-codemirror@^4.3.3":
+  version "4.3.3"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/@uiw/react-codemirror/-/react-codemirror-4.3.3.tgz#c74deb63e6da06d077493cee99e8685914d122af"
+  integrity sha1-x03rY+baBtB3STzumehoWRTRIq8=
+  dependencies:
+    "@babel/runtime" "^7.16.3"
+    "@codemirror/basic-setup" "^0.19.0"
+    "@codemirror/state" "^0.19.5"
+    "@codemirror/theme-one-dark" "^0.19.1"
+    "@codemirror/view" "^0.19.15"
 
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
@@ -3835,11 +4103,6 @@ cjs-module-lexer@^1.0.0:
   resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/cjs-module-lexer/-/cjs-module-lexer-1.2.2.tgz#9f84ba3244a512f3a54e5277e8eef4c489864e40"
   integrity sha1-n4S6MkSlEvOlTlJ36O70xImGTkA=
 
-classnames@^2.3.1:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.1.tgz#dfcfa3891e306ec1dad105d0e88f4417b8535e8e"
-  integrity sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
-
 clean-css@^5.2.2:
   version "5.2.2"
   resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/clean-css/-/clean-css-5.2.2.tgz#d3a7c6ee2511011e051719838bdcf8314dc4548d"
@@ -4100,6 +4363,11 @@ cosmiconfig@^7.0.1:
     parse-json "^5.0.0"
     path-type "^4.0.0"
     yaml "^1.10.0"
+
+crelt@^1.0.5:
+  version "1.0.5"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/crelt/-/crelt-1.0.5.tgz#57c0d52af8c859e354bace1883eb2e1eb182bb94"
+  integrity sha1-V8DVKvjIWeNUus4Yg+suHrGCu5Q=
 
 cross-fetch@^3.0.4:
   version "3.1.4"
@@ -9352,6 +9620,11 @@ style-loader@^3.3.1:
   resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/style-loader/-/style-loader-3.3.1.tgz#057dfa6b3d4d7c7064462830f9113ed417d38575"
   integrity sha1-BX36az1NfHBkRigw+RE+1BfThXU=
 
+style-mod@^4.0.0:
+  version "4.0.0"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/style-mod/-/style-mod-4.0.0.tgz#97e7c2d68b592975f2ca7a63d0dd6fcacfe35a01"
+  integrity sha1-l+fC1otZKXXyynpj0N1vys/jWgE=
+
 stylehacks@^5.0.1:
   version "5.0.1"
   resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/stylehacks/-/stylehacks-5.0.1.tgz#323ec554198520986806388c7fdaebc38d2c06fb"
@@ -9856,6 +10129,11 @@ w3c-hr-time@^1.0.2:
   integrity sha512-z8P5DvDNjKDoFIHK7q8r8lackT6l+jo/Ye3HOle7l9nICP9lf1Ci25fy9vHd0JOWewkIFzXIEig3TdKT7JQ5fQ==
   dependencies:
     browser-process-hrtime "^1.0.0"
+
+w3c-keyname@^2.2.4:
+  version "2.2.4"
+  resolved "https://artifactory.ib-ci.com:443/artifactory/api/npm/npm-release/w3c-keyname/-/w3c-keyname-2.2.4.tgz#4ade6916f6290224cdbd1db8ac49eab03d0eef6b"
+  integrity sha1-St5pFvYpAiTNvR24rEnqsD0O72s=
 
 w3c-xmlserializer@^2.0.0:
   version "2.0.0"

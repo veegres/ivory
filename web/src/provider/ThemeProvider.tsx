@@ -2,12 +2,12 @@ import React, {createContext, ReactNode, useContext, useState} from "react";
 import {createTheme, CssBaseline, PaletteMode, Theme, ThemeProvider as MuiThemeProvider} from "@mui/material";
 
 interface ThemeContextType {
-    mode: string,
+    mode?: "dark" | "light",
     toggle: () => void
     info?: Theme,
 }
 const ThemeContext = createContext<ThemeContextType>({
-    mode: '',
+    mode: undefined,
     toggle: () => {}
 });
 

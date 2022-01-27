@@ -7,7 +7,8 @@ export const nodeApi = {
     patroni: (node: String) => api.get<GoResponse<NodePatroni>>(`/node/${node}/patroni`).then((response) => response.data.response),
     cluster: (node: String) => api.get<GoResponse<{ members: Node[] }>>(`/node/${node}/cluster`).then((response) => response.data.response.members),
     config: (node: String) => api.get(`/node/${node}/config`).then((response) => response.data.response),
-
+    updateConfig: ({ node, config }: { node: string, config: string}) => api.patch(`/node/${node}/config`, config)
+        .then((response) => response.data.response),
     switchover: ({ node, leader, candidate }: { node: string, leader: string, candidate?: string }) =>
         api.post(`/node/${node}/switchover`, { candidate, leader })
         .then((response) => response.data.response),

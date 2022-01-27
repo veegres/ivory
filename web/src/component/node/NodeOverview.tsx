@@ -9,7 +9,8 @@ import {Style} from "../../app/types";
 
 const SX = {
     nodeStatusBlock: { height: '120px', minWidth: '200px', borderRadius: '4px', color: 'white', fontSize: '24px', fontWeight: 900 },
-    item: { margin: '0px 15px' }
+    item: { margin: '0px 15px' },
+    title: { color: 'text.secondary', fontWeight: 'bold' }
 }
 const style: Style = {
     itemText: { whiteSpace: 'pre-wrap' }
@@ -43,7 +44,9 @@ export function NodeOverview({ node }: OverviewProps) {
 
         return (
             <Box sx={SX.item}>
-                <b>{props.name}:</b>{` `}<span style={style.itemText}>{props.value ?? '-'}</span>
+                <Box component={"span"} sx={SX.title}>{props.name}:</Box>
+                {` `}
+                <span style={style.itemText}>{props.value ?? '-'}</span>
             </Box>
         )
     }
