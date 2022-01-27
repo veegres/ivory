@@ -22,11 +22,13 @@ type Props = {
 
 export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
     const { isReadOnly = false, toggleEdit = () => {}, closeNewElement = () => {} } = edit
+    const isNewElement = !name
 
+    console.log(nodes)
     const { store, setStore } = useStore()
     const [stateName, setStateName] = useState(name);
     const [stateNodes, setStateNodes] = useState(nodes.length ? nodes : ['']);
-
+    console.log('stateNodes', stateNodes)
     if (!isReadOnly) handleAutoIncreaseElement()
 
     const queryClient = useQueryClient();
@@ -60,7 +62,7 @@ export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
     )
 
     function renderClusterNameCell() {
-        if (name) {
+        if (!isNewElement) {
             return <Chip sx={{ width: '100%' }} label={stateName} />
         }
 
@@ -125,7 +127,7 @@ export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
             </>
         ) : (
             <>
-                <ClustersActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} onClick={!name ? closeNewElement : toggleEdit} />
+                <ClustersActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} onClick={handleCancel} />
                 <ClustersActionButton icon={<CheckCircle />} tooltip={'Save'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
             </>
         )
@@ -170,8 +172,14 @@ export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
 
     function handleUpdate() {
         const newNodes = stateNodes[stateNodes.length - 1] === '' ? stateNodes.slice(0, stateNodes.length - 1) : stateNodes
-        toggleEdit()
+        if (isNewElement) closeNewElement(); else toggleEdit()
+        setStateNodes(newNodes)
         updateCluster.mutate({ name: stateName, nodes: newNodes })
+    }
+
+    function handleCancel() {
+        if (isNewElement) closeNewElement(); else toggleEdit()
+        setStateNodes(nodes)
     }
 
     function handleDelete() {

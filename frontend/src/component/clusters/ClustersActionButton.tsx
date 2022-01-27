@@ -17,9 +17,11 @@ type Props = {
 export function ClustersActionButton({ loading, icon, onClick, tooltip, disabled = false }: Props) {
     return (
         <Tooltip title={tooltip} placement="top" disableInteractive>
-            <IconButton sx={SX.button} disabled={loading || disabled} onClick={onClick}>
-                {loading ? <CircularProgress size={SX.icon.fontSize} /> : cloneElement(icon, { sx: SX.icon })}
-            </IconButton>
+            <span>
+                <IconButton sx={SX.button} disabled={loading || disabled} onClick={onClick}>
+                    {loading ? <CircularProgress size={SX.icon.fontSize} /> : cloneElement(icon, { sx: SX.icon })}
+                </IconButton>
+            </span>
         </Tooltip>
     )
 }
