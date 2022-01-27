@@ -1,9 +1,9 @@
 import React from 'react';
-import {Node} from "./features/node/Node";
+import {Node} from "./component/node/Node";
 import {Grid} from "@mui/material";
-import {ClusterList} from "./features/cluster/ClusterList";
-import {Item} from "./features/view/Item";
-import {Header} from "./features/view/Header";
+import {ClusterList} from "./component/cluster/ClusterList";
+import {Item} from "./component/view/Item";
+import {Header} from "./component/view/Header";
 
 export function App() {
     return (
