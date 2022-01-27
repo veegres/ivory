@@ -1,5 +1,5 @@
 import {Item} from "../view/Item";
-import {NodePatroni} from "./NodePatroni";
+import {NodeOverview} from "./NodeOverview";
 import {NodeCluster} from "./NodeCluster";
 import {NodeConfig} from "./NodeConfig";
 import {Alert, Box, Grid, Tab, Tabs} from "@mui/material";
@@ -38,7 +38,7 @@ export function Node() {
 
     function ActiveBlock() {
         switch (tab) {
-            case 0: return <NodePatroni node={activeNode} />
+            case 0: return <NodeOverview node={activeNode} />
             case 1: return <NodeCluster node={activeNode} />
             case 2: return <NodeConfig node={activeNode} />
             default: return <Info text={"Coming soon — we're working on it!"} />
