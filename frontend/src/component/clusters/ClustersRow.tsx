@@ -5,7 +5,7 @@ import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterMap} from "../../app/types";
 import {useStore} from "../../provider/StoreProvider";
-import {ClusterListActionButton} from "./ClusterListActionButton";
+import {ClustersActionButton} from "./ClustersActionButton";
 
 const SX = {
     nodesCellIcon: { fontSize: 18 },
@@ -14,7 +14,7 @@ const SX = {
     nodesCellInput: { height: '32px' }
 }
 
-export function ClusterListRow(globalProps: { name: string, nodes: string[], edit: { isReadOnly: boolean, toggleEdit: () => void } }) {
+export function ClustersRow(globalProps: { name: string, nodes: string[], edit: { isReadOnly: boolean, toggleEdit: () => void } }) {
     const { store, setStore } = useStore()
     const { isReadOnly, toggleEdit } = globalProps.edit
     const [name, setName] = useState(globalProps.name);
@@ -113,13 +113,13 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         const isDisabled = !name
         return isReadOnly ? (
             <>
-                <ClusterListActionButton icon={<Edit />} tooltip={'Edit'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} />
-                <ClusterListActionButton icon={<Delete />} tooltip={'Delete'} loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete} />
+                <ClustersActionButton icon={<Edit />} tooltip={'Edit'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} />
+                <ClustersActionButton icon={<Delete />} tooltip={'Delete'} loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete} />
             </>
         ) : (
             <>
-                <ClusterListActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} disabled={!globalProps.name} onClick={toggleEdit} />
-                <ClusterListActionButton icon={<CheckCircle />} tooltip={'Save'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
+                <ClustersActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} disabled={!globalProps.name} onClick={toggleEdit} />
+                <ClustersActionButton icon={<CheckCircle />} tooltip={'Save'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
             </>
         )
     }

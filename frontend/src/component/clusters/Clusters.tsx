@@ -1,14 +1,14 @@
 import {Table, TableCell, TableHead, TableRow} from "@mui/material";
 import { useQuery } from "react-query";
 import {clusterApi} from "../../app/api";
-import {ClusterListRow} from "./ClusterListRow";
+import {ClustersRow} from "./ClustersRow";
 import React, {useState} from "react";
 import {Error} from "../view/Error";
 import {TableBodyLoading} from "../view/TableBodyLoading";
 import {TableCellFetching} from "../view/TableCellFetching";
 import {AxiosError} from "axios";
 
-export function ClusterList() {
+export function Clusters() {
     const [editNode, setEditNode] = useState('')
     const { data: clusterMap, isLoading, isFetching, isError, error } = useQuery('cluster/list', clusterApi.list)
     if (isError) return <Error error={error as AxiosError} />
@@ -37,9 +37,9 @@ export function ClusterList() {
                     const isReadOnly = name !== editNode
                     const toggleEdit = () => setEditNode(isReadOnly ? name : '')
                     const edit = { isReadOnly, toggleEdit }
-                    return <ClusterListRow key={name} nodes={nodes} name={name} edit={edit} />
+                    return <ClustersRow key={name} nodes={nodes} name={name} edit={edit} />
                 })}
-                <ClusterListRow name={''} nodes={['']} edit={{ isReadOnly: false, toggleEdit: () => {} }} />
+                <ClustersRow name={''} nodes={['']} edit={{ isReadOnly: false, toggleEdit: () => {} }} />
             </>
         )
     }
