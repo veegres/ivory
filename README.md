@@ -1,3 +1,3 @@
-# Visualisation of postgres cluster
+# Ivory (postgres cluster visualization)
 
-Status - In development
+Ivory is a project which is designed to simplify and visualize work with postgres clusters

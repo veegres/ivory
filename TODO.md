@@ -1,8 +1,8 @@
 ## Ideas and things that would be cool to do
 
 ### [General]
-- [ ] Choose licence
-- [ ] Add README.md
+- [x] Choose licence
+- [ ] Fill README.md
 - [ ] Add docker container with configured (storage)
 - [ ] Add versioning and push image to docker hub
 
