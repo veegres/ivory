@@ -39,7 +39,7 @@ export function Clusters() {
                     const edit = { isReadOnly, toggleEdit }
                     return <ClustersRow key={name} nodes={nodes} name={name} edit={edit} />
                 })}
-                <ClustersRow name={''} nodes={['']} edit={{ isReadOnly: false, toggleEdit: () => {} }} />
+                <ClustersRow />
             </>
         )
     }

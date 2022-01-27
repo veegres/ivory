@@ -11,7 +11,7 @@ type Props = {
     loading: boolean,
     onClick: () => void,
     tooltip: string
-    disabled: boolean,
+    disabled?: boolean,
 }
 
 export function ClustersActionButton({ loading, icon, onClick, tooltip, disabled = false }: Props) {

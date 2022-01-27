@@ -14,11 +14,17 @@ const SX = {
     nodesCellInput: { height: '32px' }
 }
 
-export function ClustersRow(globalProps: { name: string, nodes: string[], edit: { isReadOnly: boolean, toggleEdit: () => void } }) {
+type Props = {
+    name?: string,
+    nodes?: string[],
+    edit?: { isReadOnly: boolean, toggleEdit: () => void }
+}
+
+export function ClustersRow({ name = '', nodes = [''], edit = { isReadOnly: false, toggleEdit: () => {} } }: Props) {
     const { store, setStore } = useStore()
-    const { isReadOnly, toggleEdit } = globalProps.edit
-    const [name, setName] = useState(globalProps.name);
-    const [nodes, setNodes] = useState(globalProps.nodes.length ? globalProps.nodes : ['']);
+    const { isReadOnly, toggleEdit } = edit
+    const [stateName, setStateName] = useState(name);
+    const [stateNodes, setStateNodes] = useState(nodes.length ? nodes : ['']);
 
     if (!isReadOnly) handleAutoIncreaseElement()
 
@@ -53,8 +59,8 @@ export function ClustersRow(globalProps: { name: string, nodes: string[], edit: 
     )
 
     function renderClusterNameCell() {
-        if (globalProps.name) {
-            return <Chip sx={{ width: '100%' }} label={name} />
+        if (name) {
+            return <Chip sx={{ width: '100%' }} label={stateName} />
         }
 
         return (
@@ -62,8 +68,8 @@ export function ClustersRow(globalProps: { name: string, nodes: string[], edit: 
                 <OutlinedInput
                     sx={SX.nodesCellInput}
                     placeholder="Name"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
+                    value={stateName}
+                    onChange={(event) => setStateName(event.target.value)}
                 />
             </FormControl>
         )
@@ -72,7 +78,7 @@ export function ClustersRow(globalProps: { name: string, nodes: string[], edit: 
     function renderClusterNodesCell() {
         return (
             <Box display="grid" gridTemplateColumns={`repeat(auto-fill, minmax(${SX.nodesCellBox.minWidth}, 1fr))`} gap={1}>
-                {nodes.map((node, index) => renderClusterNodesCellElement(node, index))}
+                {stateNodes.map((node, index) => renderClusterNodesCellElement(node, index))}
             </Box>
         )
     }
@@ -110,7 +116,7 @@ export function ClustersRow(globalProps: { name: string, nodes: string[], edit: 
     }
 
     function renderClusterActionsCell() {
-        const isDisabled = !name
+        const isDisabled = !stateName
         return isReadOnly ? (
             <>
                 <ClustersActionButton icon={<Edit />} tooltip={'Edit'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit} />
@@ -118,7 +124,7 @@ export function ClustersRow(globalProps: { name: string, nodes: string[], edit: 
             </>
         ) : (
             <>
-                <ClustersActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} disabled={!globalProps.name} onClick={toggleEdit} />
+                <ClustersActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} disabled={!name} onClick={toggleEdit} />
                 <ClustersActionButton icon={<CheckCircle />} tooltip={'Save'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
             </>
         )
@@ -142,32 +148,32 @@ export function ClustersRow(globalProps: { name: string, nodes: string[], edit: 
     }
 
     function handleChange(index: number, value: string) {
-        setNodes((previous) => { previous[index] = value; return [...previous] })
+        setStateNodes((previous) => { previous[index] = value; return [...previous] })
     }
 
     function handleAutoIncreaseElement() {
-        if (nodes.length > 0) {
-            const lastIndex = nodes.length - 1
-            const preLastIndex = nodes.length - 2
-            if (nodes[lastIndex] !== '') {
-                setNodes([...nodes, ''])
+        if (stateNodes.length > 0) {
+            const lastIndex = stateNodes.length - 1
+            const preLastIndex = stateNodes.length - 2
+            if (stateNodes[lastIndex] !== '') {
+                setStateNodes([...stateNodes, ''])
             }
 
-            if (nodes.length > 1) {
-                if (nodes[lastIndex] === '' && nodes[preLastIndex] === '') {
-                    setNodes(nodes.slice(0, nodes.length - 1))
+            if (stateNodes.length > 1) {
+                if (stateNodes[lastIndex] === '' && stateNodes[preLastIndex] === '') {
+                    setStateNodes(stateNodes.slice(0, stateNodes.length - 1))
                 }
             }
         }
     }
 
     function handleUpdate() {
-        const newNodes = nodes[nodes.length - 1] === '' ? nodes.slice(0, nodes.length - 1) : nodes
+        const newNodes = stateNodes[stateNodes.length - 1] === '' ? stateNodes.slice(0, stateNodes.length - 1) : stateNodes
         toggleEdit()
-        updateCluster.mutate({ name, nodes: newNodes })
+        updateCluster.mutate({ name: stateName, nodes: newNodes })
     }
 
     function handleDelete() {
-        deleteCluster.mutate(name)
+        deleteCluster.mutate(stateName)
     }
 }
