@@ -1,7 +1,6 @@
 import {Box, Grid, Skeleton} from "@mui/material";
 import {nodeApi} from "../../app/api";
 import { useQuery } from "react-query";
-import {blue, green} from "@mui/material/colors";
 import {Error} from "../view/Error";
 import React from "react";
 import {AxiosError} from "axios";
