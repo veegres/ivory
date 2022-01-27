@@ -17,12 +17,13 @@ const SX = {
 type Props = {
     name?: string,
     nodes?: string[],
-    edit?: { isReadOnly: boolean, toggleEdit: () => void }
+    edit?: { isReadOnly?: boolean, toggleEdit?: () => void, closeNewElement?: () => void }
 }
 
-export function ClustersRow({ name = '', nodes = [''], edit = { isReadOnly: false, toggleEdit: () => {} } }: Props) {
+export function ClustersRow({ name = '', nodes = [''], edit = {}}: Props) {
+    const { isReadOnly = false, toggleEdit = () => {}, closeNewElement = () => {} } = edit
+
     const { store, setStore } = useStore()
-    const { isReadOnly, toggleEdit } = edit
     const [stateName, setStateName] = useState(name);
     const [stateNodes, setStateNodes] = useState(nodes.length ? nodes : ['']);
 
@@ -124,7 +125,7 @@ export function ClustersRow({ name = '', nodes = [''], edit = { isReadOnly: fals
             </>
         ) : (
             <>
-                <ClustersActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} disabled={!name} onClick={toggleEdit} />
+                <ClustersActionButton icon={<Cancel />} tooltip={'Cancel'} loading={updateCluster.isLoading} onClick={!name ? closeNewElement : toggleEdit} />
                 <ClustersActionButton icon={<CheckCircle />} tooltip={'Save'} loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate} />
             </>
         )
