@@ -7,7 +7,7 @@ import React, {useState} from "react";
 import {useStore} from "../../provider/StoreProvider";
 
 export function Node() {
-    const { store } = useStore()
+    const { store: { activeNode } } = useStore()
     const [tab, setTab] = useState(0)
 
     return (
@@ -15,7 +15,7 @@ export function Node() {
             <Item>
                 <Tabulation />
                 <Box sx={{ padding: '10px 20px 15px' }}>
-                    <CurrentBlock />
+                    {!activeNode ? <NonSelectedBlock /> : <ActiveBlock />}
                 </Box>
             </Item>
         </Grid>
@@ -23,21 +23,33 @@ export function Node() {
 
     function Tabulation() {
         return (
-            <Tabs value={tab} onChange={(_, value) => setTab(value)} centered disabled={!store.activeNode}>
-                <Tab label={"Overview"} />
-                <Tab label={"Cluster"} />
-                <Tab label={"Config"} />
-                <Tab label={"Cleaning"} />
+            <Tabs value={tab} onChange={(_, value) => setTab(value)} centered>
+                <Tab label={"Overview"} disabled={!activeNode} />
+                <Tab label={"Cluster"} disabled={!activeNode} />
+                <Tab label={"Config"} disabled={!activeNode} />
+                <Tab label={"Cleaning"} disabled={!activeNode} />
             </Tabs>
         )
     }
 
-    function CurrentBlock() {
+    function NonSelectedBlock() {
+        return <Info text={"Please, select any node to see information!"} />
+    }
+
+    function ActiveBlock() {
         switch (tab) {
-            case 0: return <NodePatroni node={store.activeNode} />
-            case 1: return <NodeCluster node={store.activeNode} />
-            case 2: return <NodeConfig node={store.activeNode} />
-            default: return <Alert severity={"info"}>Coming soon — we're working on it!</Alert>
+            case 0: return <NodePatroni node={activeNode} />
+            case 1: return <NodeCluster node={activeNode} />
+            case 2: return <NodeConfig node={activeNode} />
+            default: return <Info text={"Coming soon — we're working on it!"} />
         }
+    }
+
+    function Info(props: { text: string }) {
+        return (
+            <Alert sx={{ justifyContent: 'center' }} severity={"info"} variant={"outlined"} icon={false}>
+                {props.text}
+            </Alert>
+        )
     }
 }

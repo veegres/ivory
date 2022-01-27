@@ -13,7 +13,7 @@ const SX = {
 }
 
 export function ClusterListRow(props: { nodes?: string[], name?: string }) {
-    const { setStore } = useStore()
+    const { store, setStore } = useStore()
     const [name, setName] = useState(props.name ?? '');
     const [nodes, setNodes] = useState(props.nodes && props.nodes.length ? props.nodes : ['']);
 
@@ -85,9 +85,11 @@ export function ClusterListRow(props: { nodes?: string[], name?: string }) {
 
     function ViewEndAdornment({ node }: { node: string }) {
         if (!node) return null
-
+        const isSameNode = store.activeNode === node
         return (
-            <IconButton onClick={() => setStore({ activeNode: node })}>
+            <IconButton
+                color={isSameNode ? "secondary" : "default"}
+                onClick={() => setStore({ activeNode: isSameNode ? '' : node })}>
                 <Visibility sx={SX.tableIcon} />
             </IconButton>
         )
