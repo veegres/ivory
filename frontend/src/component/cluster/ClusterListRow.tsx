@@ -1,5 +1,5 @@
 import {Box, Chip, FormControl, IconButton, OutlinedInput, TableCell, TableRow} from "@mui/material";
-import {Add, Check, Delete, Edit, Remove, Visibility} from "@mui/icons-material";
+import {Check, Delete, Edit, Visibility} from "@mui/icons-material";
 import {useState} from "react";
 import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
@@ -8,7 +8,6 @@ import {useStore} from "../../provider/StoreProvider";
 import {ClusterListActionButton} from "./ClusterListActionButton";
 
 const SX = {
-    clusterCellIcon: { fontSize: 10 },
     nodesCellIcon: { fontSize: 18 },
     nodesCellButton: { height: '22px', width: '22px' },
     nodesCellBox: { minWidth: '150px' },
@@ -59,20 +58,14 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         }
 
         return (
-            <Box display="flex" sx={SX.nodesCellBox} flexDirection="row" alignItems="center" justifyContent="space-between">
-                <FormControl fullWidth>
-                    <OutlinedInput
-                        sx={SX.nodesCellInput}
-                        placeholder="Name"
-                        value={name}
-                        onChange={(event) => setName(event.target.value)}
-                    />
-                </FormControl>
-                <Box display="flex" flexDirection="column" alignItems="center" justifyContent="space-between">
-                    <IconButton sx={{ padding: '2px' }} onClick={handleAdd}><Add sx={SX.clusterCellIcon} /></IconButton>
-                    <IconButton sx={{ padding: '2px' }} onClick={handleRemove}><Remove sx={SX.clusterCellIcon} /></IconButton>
-                </Box>
-            </Box>
+            <FormControl fullWidth>
+                <OutlinedInput
+                    sx={SX.nodesCellInput}
+                    placeholder="Name"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                />
+            </FormControl>
         )
     }
 
@@ -150,43 +143,24 @@ export function ClusterListRow(globalProps: { name: string, nodes: string[], edi
         setNodes((previous) => { previous[index] = value; return [...previous] })
     }
 
-    function handleAdd() {
-        nodes.push("")
-        setNodes([...nodes])
-    }
-
     function handleAutoIncreaseElement() {
-        const newElements = nodes.slice(globalProps.nodes.length)
-
-        console.log(name, newElements, nodes, globalProps.nodes);
-
-        if (newElements.length >= 0) {
-            const lastIndex = newElements.length - 1
-            const preLastIndex = newElements.length - 2
-            if (newElements[lastIndex] !== '') {
+        if (nodes.length > 0) {
+            const lastIndex = nodes.length - 1
+            const preLastIndex = nodes.length - 2
+            if (nodes[lastIndex] !== '') {
                 setNodes([...nodes, ''])
             }
 
-            if (newElements.length > 1) {
-                if (newElements[lastIndex] === '' && newElements[preLastIndex] === '') {
+            if (nodes.length > 1) {
+                if (nodes[lastIndex] === '' && nodes[preLastIndex] === '') {
                     setNodes(nodes.slice(0, nodes.length - 1))
                 }
             }
         }
     }
 
-    function handleRemove() {
-        if (nodes.length <= 1) return
-        nodes.pop()
-        setNodes([...nodes])
-    }
-
     function handleUpdate() {
-        const newElements = nodes.slice(globalProps.nodes.length)
-        const newNodes = newElements[newElements.length - 1] === '' ? nodes.slice(0, nodes.length - 1) : nodes
-
-        console.log(newElements, newNodes)
-
+        const newNodes = nodes[nodes.length - 1] === '' ? nodes.slice(0, nodes.length - 1) : nodes
         toggleEdit()
         updateCluster.mutate({ name, nodes: newNodes })
     }
