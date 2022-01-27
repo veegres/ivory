@@ -1,0 +1,50 @@
+version: "3.8"
+
+networks:
+  dev-patroni:
+
+services:
+  patroni1:
+    build: .
+    container_name: dev-patroni1
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni1"
+      PATRONI_POSTGRESQL_LISTEN: "patroni1:5432"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni1:5432"
+      PATRONI_RESTAPI_LISTEN: "patroni1:8008"
+      PATRONI_RAFT_SELF_ADDR: "patroni1:2221"
+      PATRONI_RAFT_PARTNER_ADDRS: "'patroni2:2222','patroni3:2223'"
+    ports:
+      - "5431:5432"
+      - "8001:8008"
+
+  patroni2:
+    build: .
+    container_name: dev-patroni2
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni2"
+      PATRONI_POSTGRESQL_LISTEN: "patroni2:5432"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni2:5432"
+      PATRONI_RESTAPI_LISTEN: "patroni2:8008"
+      PATRONI_RAFT_SELF_ADDR: "patroni2:2222"
+      PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni3:2223'"
+    ports:
+      - "5432:5432"
+      - "8002:8008"
+
+  patroni3:
+    build: .
+    container_name: dev-patroni3
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni3"
+      PATRONI_POSTGRESQL_LISTEN: "patroni3:5432"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni3:5432"
+      PATRONI_RESTAPI_LISTEN: "patroni3:8008"
+      PATRONI_RAFT_SELF_ADDR: "patroni3:2223"
+      PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni2:2222'"
+    ports:
+      - "5433:5432"
+      - "8003:8008"

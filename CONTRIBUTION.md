@@ -10,6 +10,7 @@
 
 ### [Backend]
 - [ ] Improve architecture and package structure
+- [ ] Add default value for patroni ports
 
 ### [Web]
 - [ ] Refactor all nested function components <> to render() or extract to separate file (diff behave could cause a problems)

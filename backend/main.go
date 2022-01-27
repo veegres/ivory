@@ -37,9 +37,9 @@ func main() {
 		api.GET("/cluster", func(context *gin.Context) {
 			context.JSON(http.StatusOK, gin.H{"response": ClusterGetList()})
 		})
-		api.GET("/cluster/:name", func(context *gin.Context) {
-			name := context.Param("name")
-			cluster := ClusterGet(name)
+		api.GET("/cluster/:host", func(context *gin.Context) {
+			host := context.Param("host")
+			cluster := ClusterGet(host)
 			if cluster == nil {
 				context.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
 			} else {
@@ -52,17 +52,17 @@ func main() {
 			ClusterUpdate(cluster)
 			context.JSON(http.StatusOK, gin.H{"response": cluster})
 		})
-		api.DELETE("/cluster/:name", func(context *gin.Context) {
-			name := context.Param("name")
-			ClusterDelete(name)
+		api.DELETE("/cluster/:host", func(context *gin.Context) {
+			host := context.Param("host")
+			ClusterDelete(host)
 		})
 
 		// TODO make code independent of patroni
 		/* PROXY */
 		/* PATRONI */
-		api.GET("/node/:name/cluster", func(context *gin.Context) {
-			name := context.Param("name")
-			response, err := http.Get("http://" + name + ":8008/cluster")
+		api.GET("/node/:host/cluster", func(context *gin.Context) {
+			host := context.Param("host")
+			response, err := http.Get("http://" + host + "/cluster")
 			if err != nil {
 				context.JSON(http.StatusBadRequest, gin.H{"error": err})
 			} else {
@@ -71,9 +71,9 @@ func main() {
 				context.JSON(http.StatusOK, gin.H{"response": body})
 			}
 		})
-		api.GET("/node/:name/patroni", func(context *gin.Context) {
-			name := context.Param("name")
-			response, err := http.Get("http://" + name + ":8008/patroni")
+		api.GET("/node/:host/patroni", func(context *gin.Context) {
+			host := context.Param("host")
+			response, err := http.Get("http://" + host + "/patroni")
 			if err != nil {
 				context.JSON(http.StatusBadRequest, gin.H{"error": err})
 			} else {
@@ -82,9 +82,9 @@ func main() {
 				context.JSON(http.StatusOK, gin.H{"response": body})
 			}
 		})
-		api.GET("/node/:name/config", func(context *gin.Context) {
-			name := context.Param("name")
-			response, err := http.Get("http://" + name + ":8008/config")
+		api.GET("/node/:host/config", func(context *gin.Context) {
+			host := context.Param("host")
+			response, err := http.Get("http://" + host + "/config")
 			if err != nil {
 				context.JSON(http.StatusBadRequest, gin.H{"error": err})
 			} else {
@@ -93,10 +93,10 @@ func main() {
 				context.JSON(http.StatusOK, gin.H{"response": body})
 			}
 		})
-		api.PATCH("/node/:name/config", func(context *gin.Context) {
-			name := context.Param("name")
+		api.PATCH("/node/:host/config", func(context *gin.Context) {
+			host := context.Param("host")
 			body, _ := ioutil.ReadAll(context.Request.Body)
-			req, _ := http.NewRequest(http.MethodPatch, "http://"+name+":8008/config", bytes.NewReader(body))
+			req, _ := http.NewRequest(http.MethodPatch, "http://"+host+"/config", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 			response, err := http.DefaultClient.Do(req)
