@@ -15,11 +15,11 @@ export function ClusterCreateComponent(props: { nodes?: string[], name?: string 
 
     return (
         <TableRow>
-            <TableCell sx={{ verticalAlign: "top" }}>
+            <TableCell sx={{ verticalAlign: "top", width: '15%' }}>
                 <TextField fullWidth placeholder="Cluster Name" size="small" value={name} onChange={(event) => setName(event.target.value)}/>
             </TableCell>
             <TableCell sx={{ verticalAlign: "top" }}>
-                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(150px, 1fr))" gap={2} sx={{ padding: '0px 10px' }}>
+                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(150px, 1fr))" gap={1}>
                     {nodes.map((name, index) => (
                         <Box key={index}>
                             <TextField
@@ -31,12 +31,10 @@ export function ClusterCreateComponent(props: { nodes?: string[], name?: string 
                             />
                         </Box>
                     ))}
-                    <Box>
-                        <IconButton onClick={handleAdd}><Add /></IconButton>
-                    </Box>
                 </Box>
             </TableCell>
-            <TableCell sx={{ verticalAlign: "top" }}>
+            <TableCell sx={{ verticalAlign: "top", width: '1%', whiteSpace: 'nowrap' }}>
+                <IconButton onClick={handleAdd}><Add /></IconButton>
                 <IconButton><Delete /></IconButton>
                 <IconButton onClick={handleCreate}><Save /></IconButton>
             </TableCell>

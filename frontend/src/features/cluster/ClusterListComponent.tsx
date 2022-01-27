@@ -11,16 +11,16 @@ export function ClusterListComponent() {
         <Table size="small" sx={{ 'tr:last-child td': { border: 0 } }}>
             <TableHead>
                 <TableRow>
-                    <TableCell sx={{ width: '15%' }}>Name</TableCell>
+                    <TableCell>Name</TableCell>
                     <TableCell>Nodes</TableCell>
-                    <TableCell sx={{ width: '115px' }} />
+                    <TableCell />
                 </TableRow>
             </TableHead>
             <TableBody>
                 {clusterList.map(cluster => (
                     <ClusterCreateComponent key={cluster.name} nodes={cluster.nodes} name={cluster.name} />
                 ))}
-                <ClusterCreateComponent nodes={[]} />
+                <ClusterCreateComponent />
             </TableBody>
         </Table>
     )
