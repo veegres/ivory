@@ -1,5 +1,5 @@
 import ReactJson from "react-json-view";
-import {Grid, Skeleton} from "@mui/material";
+import {Box, Skeleton} from "@mui/material";
 import {nodeApi} from "../../app/api";
 import { useQuery } from "react-query";
 import {useTheme} from "../../provider/ThemeProvider";
@@ -13,23 +13,20 @@ export function NodeConfig({ node }: { node: string }) {
     if (isError) return <Error error={error as AxiosError} />
 
     return (
-        <Grid container direction="column" style={{ padding: '20px'}}>
-            <Grid item style={{fontSize: "20px"}}>Config</Grid>
-            <Grid item>
-                {isLoading ?
-                    <Skeleton variant="rectangular" height={300} /> :
-                    <ReactJson
-                        src={nodeConfig}
-                        collapsed={2}
-                        iconStyle="square"
-                        displayDataTypes={false}
-                        onEdit={() => {}}
-                        onDelete={() => {}}
-                        onAdd={() => {}}
-                        theme={theme.mode === 'dark' ? 'apathy' : 'apathy:inverted'}
-                    />
-                }
-            </Grid>
-        </Grid>
+        <Box>
+            {isLoading ?
+                <Skeleton variant="rectangular" height={300} /> :
+                <ReactJson
+                    src={nodeConfig}
+                    collapsed={2}
+                    iconStyle="square"
+                    displayDataTypes={false}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                    onAdd={() => {}}
+                    theme={theme.mode === 'dark' ? 'apathy' : 'apathy:inverted'}
+                />
+            }
+        </Box>
      )
 }

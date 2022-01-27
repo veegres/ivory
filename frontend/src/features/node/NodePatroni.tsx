@@ -15,7 +15,7 @@ export function NodePatroni({ node }: { node: string }) {
     if (isError) return <Error error={error as AxiosError} />
 
     return (
-        <Grid container direction="row" sx={{ padding: '10px' }}>
+        <Grid container direction="row">
             <Grid item xs="auto">
                 <NodeStatus />
             </Grid>

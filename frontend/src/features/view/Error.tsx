@@ -9,10 +9,10 @@ export function Error({ error }: { error: AxiosError }) {
     if (!error.response) return <General type={"error"} message={"Error is not detected"} />
 
     const { status, statusText } = error.response
-    switch (status) {
-        case 404: return <General type={"warning"} message={error.message} />
-        default: return <General type={"error"} message={error.message} />
-    }
+    if (status >= 400 && status < 500) return <General type={"warning"} message={error.message} />
+    if (status >= 500) return <General type={"error"} message={error.message} />
+
+    return <General type={"error"} message={error.message} />
 
     function General(props: { message: string, type: AlertColor }) {
         const { message, type } = props
