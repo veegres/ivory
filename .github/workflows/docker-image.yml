@@ -1,11 +1,8 @@
 name: Realease Docker Image
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        required: true
-        default: '0.1.*'
+  release:
+    
 
 jobs:
 
@@ -22,6 +19,8 @@ jobs:
     - uses: actions/setup-node@v2.5.1
       with:
         node-version: '16'
+        
+    - run: echo ${{ env.RELEASE_VERSION }}
       
     - name: Install & Build web
       working-directory: web
