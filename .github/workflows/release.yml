@@ -1,4 +1,4 @@
-name: Realease Docker Image
+name: Realease
 
 on:
   release:
@@ -35,9 +35,6 @@ jobs:
       run: |
         go version
         GOOS=linux GOARCH=amd64 go build -o build
-      
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ivory:$(date +%s)
     
     
   publish:
@@ -45,5 +42,26 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-    - name: publish
-      run: echo 'publishing'
+    - name: Login to DockerHub Registry
+      uses: docker/login-action@v1 
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1 
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ github.token }}
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          aelsegeev/ivory:latest
+          aelsegeev/ivory:${{ github.event.release.tag_name }}
+          ghcr.io/veegres/ivory:latest
+          ghcr.io/veegres/ivory:${{ github.event.release.tag_name }}
+
