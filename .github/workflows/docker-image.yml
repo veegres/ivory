@@ -10,7 +10,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2.1.5
+      with:
+        go-version: '1.17'
     - uses: actions/setup-node@v2.5.1
+      with:
+        node-version: '16'
     
     - name: ls
       run: ls -l
@@ -18,7 +22,7 @@ jobs:
     - name: Install & Build npm
       working-directory: web
       run: |
-        node version
+        node -v
         yarn version
         yarn install
         yarn run build
