@@ -1,25 +1,29 @@
-name: Docker Image CI
+name: Realease Docker Image
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        default: '0.1.*'
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
     steps:
+    # fetch repository
     - uses: actions/checkout@v2
+    # setup go
     - uses: actions/setup-go@v2.1.5
       with:
         go-version: '1.17'
+    # setup node (yarn, npm)
     - uses: actions/setup-node@v2.5.1
       with:
         node-version: '16'
-    
-    - name: ls
-      run: ls -l
       
-    - name: Install & Build npm
+    - name: Install & Build web
       working-directory: web
       run: |
         node -v
@@ -27,7 +31,7 @@ jobs:
         yarn install
         yarn run build
       
-    - name: Intall & Build go binary
+    - name: Intall & Build binary for service
       working-directory: service
       run: |
         go version
