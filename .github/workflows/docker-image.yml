@@ -10,15 +10,18 @@ jobs:
     steps:
     - uses: actions/setup-go@v2.1.5
     - uses: actions/setup-node@v2.5.1
+    
+    - name: ls
+      run: ls -l
       
     - name: Install & Build npm
-      working-directory: ./web
+      working-directory: web
       run: |
         npm install
-        npm --prefix web run build
+        npm run build
       
     - name: Intall & Build go binary
-      working-directory: ./service
+      working-directory: service
       run: GOOS=linux GOARCH=amd64 go build -o build
       
     - name: Build the Docker image
