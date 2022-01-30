@@ -15,7 +15,7 @@ jobs:
       run: ls -l
       
     - name: Install & Build npm
-      working-directory: web
+      working-directory: ./web
       run: |
         npm install
         npm run build
