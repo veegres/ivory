@@ -8,6 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - uses: actions/setup-go@v2.1.5
     - uses: actions/setup-node@v2.5.1
     
@@ -15,6 +16,7 @@ jobs:
       run: ls -l
       
     - name: Install & Build npm
+      working-directory: web
       run: |
         npm install
         npm run build
