@@ -18,8 +18,8 @@ jobs:
     - name: Install & Build npm
       working-directory: web
       run: |
-        npm install
-        npm run build
+        yarn install
+        yarn run build
       
     - name: Intall & Build go binary
       working-directory: service
