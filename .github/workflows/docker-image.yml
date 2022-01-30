@@ -8,14 +8,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
     - uses: actions/setup-go@v2.1.5
     - uses: actions/setup-node@v2.5.1
       
-    - name: Build npm
-      run: npm --prefix web run build
+    - name: Install & Build npm
+      working-directory: web
+      run: |
+        npm install
+        npm --prefix web run build
       
-    - name: Build go binary
+    - name: Intall & Build go binary
+      working-directory: service
       run: GOOS=linux GOARCH=amd64 go build -o build
       
     - name: Build the Docker image
