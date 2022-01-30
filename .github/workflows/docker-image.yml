@@ -18,12 +18,16 @@ jobs:
     - name: Install & Build npm
       working-directory: web
       run: |
+        node version
+        yarn version
         yarn install
         yarn run build
       
     - name: Intall & Build go binary
       working-directory: service
-      run: GOOS=linux GOARCH=amd64 go build -o build
+      run: |
+        go version
+        GOOS=linux GOARCH=amd64 go build -o build
       
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag ivory:$(date +%s)
