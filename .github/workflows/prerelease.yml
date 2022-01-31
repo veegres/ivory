@@ -2,7 +2,7 @@ name: Prerelease
 
 on:
   release:
-    type: [ prereleased ]
+    types: [ prereleased ]
 
 jobs:
 

@@ -1,8 +1,8 @@
-name: Realease
+name: Release
 
 on:
   release:
-    type: [ released ]
+    types: [ released ]
 
 jobs:
 
