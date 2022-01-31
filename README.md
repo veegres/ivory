@@ -17,6 +17,6 @@ If you're interested in contributing to the Ivory project:
 
 - Please, check the main ideas for enhancements in [CONTRIBUTING.md](https://github.com/veegres/ivory/blob/master/CONTRIBUTING.md)
 - Learn how to set up your local environment in this [README.md](https://github.com/veegres/ivory/tree/master/docker/development)
-- Learn hot to run frontend in this [README.md](https://github.com/veegres/ivory/blob/master/web/README.md)
-- Learn hot to run backend in this [README.md](https://github.com/veegres/ivory/blob/master/service/README.md)
+- Learn how to run frontend in this [README.md](https://github.com/veegres/ivory/blob/master/web/README.md)
+- Learn how to run backend in this [README.md](https://github.com/veegres/ivory/blob/master/service/README.md)
 - Look through our style guide _(in progress)_

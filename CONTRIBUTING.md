@@ -3,13 +3,12 @@
 ### [General]
 
 - [x] Choose licence
-- [ ] Fill README.md
-- [ ] Add docker container with configured (storage)
-- [ ] Add versioning and push image to docker hub
+- [ ] Add option to change data folder for docker mount
+- [x] Add versioning and push image to docker hub
 
 ### [Backend]
 
-- [ ] Improve architecture and package structure
+- [x] Improve architecture and package structure
 - [ ] Add default value for patroni ports
 
 ### [Web]
