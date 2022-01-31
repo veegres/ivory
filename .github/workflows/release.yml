@@ -68,7 +68,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          aelsegeev/ivory:latest
-          aelsegeev/ivory:0.0.1
+          aelsergeev/ivory:latest
+          aelsergeev/ivory:${{ github.event.release.tag_name }}
           ghcr.io/veegres/ivory:latest
-          ghcr.io/veegres/ivory:0.0.1
+          ghcr.io/veegres/ivory:${{ github.event.release.tag_name }}
