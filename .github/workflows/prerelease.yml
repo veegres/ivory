@@ -2,7 +2,7 @@ name: Realease
 
 on:
   release:
-    type: [prerelease]
+    type: [prereleased]
     
 jobs:
 
