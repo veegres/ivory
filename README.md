@@ -4,17 +4,19 @@ Ivory is the open-source project which is designed to simplify and visualize wor
 
 Ivory allows you to save all your cluster nodes and see cluster status, do reinit, switchover, edit config of the cluster
 
-### Get started
+## Get started
 
 You can simply start and run container from Docker Hub or GitHub Container repository
 
 - Docker Hub `docker pull aelsergeev/ivory`
 - GitHub Container repository `docker pull veegres/ivory`
 
-### Contributing
+## Contributing
 
 If you're interested in contributing to the Ivory project:
 
-- Please, check the main ideas for enhancements in [CONTRIBUTING.md](https://github.com/veegres/ivory/blob/master/TODO.md)
+- Please, check the main ideas for enhancements in [CONTRIBUTING.md](https://github.com/veegres/ivory/blob/master/CONTRIBUTING.md)
 - Learn how to set up your local environment in this [README.md](https://github.com/veegres/ivory/tree/master/docker/development)
+- Learn hot to run frontend in this [README.md](https://github.com/veegres/ivory/blob/master/web/README.md)
+- Learn hot to run backend in this [README.md](https://github.com/veegres/ivory/blob/master/service/README.md)
 - Look through our style guide _(in progress)_

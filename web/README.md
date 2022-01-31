@@ -1,6 +1,6 @@
-## Frontend development
+# Frontend development
 
-### Build
+## Build
 
 Use `yarn install` to download all libraries.
 
@@ -12,7 +12,7 @@ In the project directory, you can run:
 
 You can use `npm` if you want to.
 
-### Learn More
+## Learn More
 
 This app is build by:
 

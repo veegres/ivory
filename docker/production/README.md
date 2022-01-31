@@ -12,7 +12,7 @@ while you do not connect this container to network of the environment. You can d
 
 5. (optional) `docker network connect development_dev-patroni ivory` - connect to dev environment
 
-P.S. Dockerfile is located in root path, because of docker restrictions
+Dockerfile is located in root path, because of docker restrictions
 
-P.S.S In production it will work only with full domains name like _google.com_, just _google_ won't work cause container doesn't know anything about your local
+In production it will work only with full domains name like _google.com_, just _google_ won't work cause container doesn't know anything about your local
 machine network

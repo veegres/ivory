@@ -1,6 +1,6 @@
 ## Docker environment for local development
 
-###### This Dockerfile and docker-compose will run for you patroni cluster with 3 instances.
+This Dockerfile and docker-compose will run for you patroni cluster with 3 instances.
 
 1. Edit hosts (`/etc/hosts`), add these lines to the file
 
