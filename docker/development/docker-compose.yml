@@ -1,0 +1,52 @@
+version: "3.8"
+
+networks:
+  dev-patroni:
+
+services:
+  haproxy:
+    image: haproxy
+    container_name: dev-patroni-haproxy
+    networks: [ dev-patroni ]
+    ports:
+      - "8008:8008" # patroni port
+      - "8404:8404" # haproxy statistic
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+
+  patroni1:
+    image: dev-patroni
+    build: .
+    container_name: dev-patroni1
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni1"
+      PATRONI_POSTGRESQL_LISTEN: "patroni1:5432"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni1:5432"
+      PATRONI_RESTAPI_LISTEN: "patroni1:8008"
+      PATRONI_RAFT_SELF_ADDR: "patroni1:2221"
+      PATRONI_RAFT_PARTNER_ADDRS: "'patroni2:2222','patroni3:2223'"
+
+  patroni2:
+    image: dev-patroni
+    container_name: dev-patroni2
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni2"
+      PATRONI_POSTGRESQL_LISTEN: "patroni2:5432"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni2:5432"
+      PATRONI_RESTAPI_LISTEN: "patroni2:8008"
+      PATRONI_RAFT_SELF_ADDR: "patroni2:2222"
+      PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni3:2223'"
+
+  patroni3:
+    image: dev-patroni
+    container_name: dev-patroni3
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni3"
+      PATRONI_POSTGRESQL_LISTEN: "patroni3:5432"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni3:5432"
+      PATRONI_RESTAPI_LISTEN: "patroni3:8008"
+      PATRONI_RAFT_SELF_ADDR: "patroni3:2223"
+      PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni2:2222'"

@@ -1,0 +1,15 @@
+{
+  "short_name": "Ivory",
+  "name": "Ivory",
+  "icons": [
+    {
+      "src": "postgres.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
