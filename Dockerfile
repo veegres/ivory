@@ -14,6 +14,6 @@ COPY docker/production/nginx.conf /etc/nginx/nginx.conf
 COPY docker/production/entrypoint.sh /usr/local/bin/
 RUN chmod 777 /usr/local/bin/entrypoint.sh
 
-EXPOSE 80 8080
+EXPOSE 80
 WORKDIR /opt
 ENTRYPOINT ["entrypoint.sh"]
