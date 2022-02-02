@@ -11,7 +11,7 @@ jobs:
     environment: production
     steps:
 
-      # Set up envirenment
+      # Set up environment
       - name: Checkout & fetch repository
         uses: actions/checkout@v2
 
@@ -45,7 +45,7 @@ jobs:
         working-directory: service
         run: |
           go version
-          GOOS=linux GOARCH=amd64 go build -o build
+          GOOS=linux GOARCH=amd64 go build -o build/ivory
       
 
       # Publish docker
