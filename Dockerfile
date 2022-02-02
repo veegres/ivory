@@ -1,7 +1,9 @@
 FROM ubuntu
 
 RUN apt update
-RUN apt install -y nginx curl htop
+RUN apt install -y curl htop
+RUN apt install -y nginx
+RUN apt install -y libdbi-perl libdbd-pg-perl
 
 # move build files to container
 COPY service/build /opt/service
@@ -13,6 +15,10 @@ COPY docker/production/nginx.conf /etc/nginx/nginx.conf
 # move docker entry file to container
 COPY docker/production/entrypoint.sh /usr/local/bin/
 RUN chmod 777 /usr/local/bin/entrypoint.sh
+
+# set up pgcompacttable
+RUN curl --create-dir -o /opt/tools/pgcompacttable https://raw.githubusercontent.com/dataegret/pgcompacttable/master/bin/pgcompacttable
+RUN chmod +x /opt/tools/pgcompacttable
 
 EXPOSE 80
 WORKDIR /opt
