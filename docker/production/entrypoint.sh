@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # print service info
 grep PRETTY_NAME /etc/os-release
