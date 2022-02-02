@@ -8,8 +8,8 @@ Ivory allows you to save all your cluster nodes and see cluster status, do reini
 
 You can simply start and run container from Docker Hub or GitHub Container repository
 
-- Docker Hub `docker pull aelsergeev/ivory`
-- GitHub Container repository `docker pull veegres/ivory`
+- Docker Hub `docker run -p 80:80 aelsergeev/ivory`
+- GitHub Container repository `docker run -p 80:80 ghcr.io/veegres/ivory`
 
 ## Contributing
 

@@ -2,7 +2,9 @@
 
 This Dockerfile and docker-compose will run for you patroni cluster with 3 instances.
 
-1. Edit hosts (`/etc/hosts`), add these lines to the file
+### Run
+
+1. Add to your hosts (`/etc/hosts`) these lines to the file
 
 ``` 
 127.0.0.1 patroni1
@@ -10,14 +12,14 @@ This Dockerfile and docker-compose will run for you patroni cluster with 3 insta
 127.0.0.1 patroni3
 ```
 
-2. Run Docker
+2. Run Docker Compose
 
 ```
 docker-compose up -d
 ```
 
-**Patroni Rest API:** `patroni[1-3]:8008` (http://patroni1:8008)
+### Connection
 
-**Postgres ports:** `are not exported` (you can do it by yourself in docker-compose file)
-
-**HAProxy statistics:** `localhost:8408`
+- **Patroni Rest API:** `patroni[1-3]:8008` (example http://patroni1:8008)
+- **Postgres ports:** `are not exposed` (you can do it by yourself in docker-compose file)
+- **HAProxy statistics:** `localhost:8408`
