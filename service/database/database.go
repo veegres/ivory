@@ -10,7 +10,7 @@ var DB *bolt.DB
 var ClusterBucketName = []byte("Cluster")
 
 func Start() {
-	DB = setupDatabase("bolt", "cluster.db")
+	DB = setupDatabase("cluster.db")
 }
 
 func ClusterRepository() ClusterRepositoryStruct {
@@ -22,8 +22,9 @@ func ClusterRepository() ClusterRepositoryStruct {
 	}
 }
 
-func setupDatabase(dirName string, dbName string) *bolt.DB {
-	_ = os.Mkdir(dirName, os.ModePerm)
+func setupDatabase(dbName string) *bolt.DB {
+	dirName := "data/bolt"
+	_ = os.MkdirAll(dirName, os.ModePerm)
 	db, err := bolt.Open(dirName+"/"+dbName, 0600, nil)
 
 	if err != nil {

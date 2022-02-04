@@ -22,4 +22,5 @@ RUN chmod +x /opt/tools/pgcompacttable
 
 EXPOSE 80
 WORKDIR /opt
+VOLUME /opt/data
 ENTRYPOINT ["entrypoint.sh"]
