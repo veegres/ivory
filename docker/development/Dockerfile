@@ -1,4 +1,4 @@
-FROM postgres:14.0
+FROM postgres:14.1
 
 RUN apt update
 RUN apt -y install python3-pip

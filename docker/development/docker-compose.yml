@@ -10,13 +10,14 @@ services:
     networks: [ dev-patroni ]
     ports:
       - "8008:8008" # patroni port
+      - "5432:5432" # postgres port
       - "8404:8404" # haproxy statistic
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
 
   patroni1:
-    image: dev-patroni
     build: .
+    image: dev-patroni
     container_name: dev-patroni1
     networks: [ dev-patroni ]
     environment:
