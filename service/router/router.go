@@ -16,6 +16,7 @@ func Start() {
 	api.GET("/ping", pong)
 	r.ProxyGroup(api)
 	r.ClusterGroup(api)
+	r.CliGroup(api)
 
 	_ = r.router.Run()
 }

@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-// TODO make code independent of patroni
+// ProxyGroup TODO make code independent of patroni
 func (r routes) ProxyGroup(group *gin.RouterGroup) {
 	node := group.Group("/node")
 	node.GET("/:host/cluster", getNodeCluster)
@@ -25,7 +25,7 @@ func getNodeCluster(context *gin.Context) {
 	host := context.Param("host")
 	response, err := http.Get("http://" + host + "/cluster")
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
 		var body interface{}
 		_ = json.NewDecoder(response.Body).Decode(&body)
@@ -37,7 +37,7 @@ func getNodeOverview(context *gin.Context) {
 	host := context.Param("host")
 	response, err := http.Get("http://" + host + "/patroni")
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
 		var body interface{}
 		_ = json.NewDecoder(response.Body).Decode(&body)
@@ -49,7 +49,7 @@ func getNodeConfig(context *gin.Context) {
 	host := context.Param("host")
 	response, err := http.Get("http://" + host + "/config")
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
 		var body interface{}
 		_ = json.NewDecoder(response.Body).Decode(&body)
@@ -65,7 +65,7 @@ func patchNodeConfig(context *gin.Context) {
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
 		var body interface{}
 		_ = json.NewDecoder(response.Body).Decode(&body)
@@ -81,7 +81,7 @@ func postNodeSwitchover(context *gin.Context) {
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
 		bodyBytes, _ := io.ReadAll(response.Body)
 		bodyMessage := string(bodyBytes)
@@ -97,7 +97,7 @@ func postNodeReinitialize(context *gin.Context) {
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	} else {
 		bodyBytes, _ := io.ReadAll(response.Body)
 		bodyMessage := string(bodyBytes)
