@@ -84,9 +84,9 @@ bootstrap:
     #- hostssl all all 0.0.0.0/0 md5
 
   # Additional script to be launched after initial cluster creation (will be passed the connection URL as parameter)
-  # post_init: /usr/local/bin/setup_cluster.sh
+  post_init: /opt/patroni-initdb.sh
 
-  # Some additional users users which needs to be created after initializing new cluster
+  # Some additional users which needs to be created after initializing new cluster
   users:
     admin:
       password: admin
