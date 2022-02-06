@@ -5,6 +5,7 @@ import {NodeConfig} from "./NodeConfig";
 import {Alert, Box, Grid, Tab, Tabs} from "@mui/material";
 import React, {useState} from "react";
 import {useStore} from "../../provider/StoreProvider";
+import {NodeBloat} from "./NodeBloat";
 
 
 const SX = {
@@ -34,8 +35,8 @@ export function Node() {
             <Tabs value={tab} onChange={(_, value) => setTab(value)} centered>
                 <Tab label={"Overview"} disabled={!activeNode} />
                 <Tab label={"Cluster"} disabled={!activeNode} />
-                <Tab label={"Config"} disabled={!activeNode} />
-                <Tab label={"Cleaning"} disabled={!activeNode} />
+                <Tab label={"Config"} disabled={!activeNode}/>
+                <Tab label={"Bloat"} disabled={!activeNode}/>
             </Tabs>
         )
     }
@@ -50,8 +51,12 @@ export function Node() {
                 return <NodeOverview node={activeNode}/>
             case 1:
                 return <NodeCluster node={activeNode}/>
-            case 2: return <NodeConfig node={activeNode} />
-            default: return <Info text={"Coming soon — we're working on it!"} />
+            case 2:
+                return <NodeConfig node={activeNode}/>
+            case 3:
+                return <NodeBloat node={activeNode}/>
+            default:
+                return <Info text={"Coming soon — we're working on it!"}/>
         }
     }
 

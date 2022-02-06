@@ -19,17 +19,17 @@ export function NodeCluster({node}: Props) {
     const [alertDialog, setAlertDialog] = useState<AlertDialog>({isOpen: false})
 
     const {data: members, isLoading, isFetching, isError, error} = useQuery(
-        ['node/cluster', node],
+        ['node/cluster'],
         () => nodeApi.cluster(node),
         {refetchInterval: 5000}
     )
 
     const queryClient = useQueryClient();
     const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', node])
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster'])
     })
     const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', node])
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster'])
     })
 
     if (isError) return <Error error={error as AxiosError}/>
@@ -41,6 +41,7 @@ export function NodeCluster({node}: Props) {
                 <TableHead>
                     <TableRow>
                         <TableCell>Node</TableCell>
+                        <TableCell>Host</TableCell>
                         <TableCell>Role</TableCell>
                         <TableCell>State</TableCell>
                         <TableCell>Lag</TableCell>
@@ -65,6 +66,7 @@ export function NodeCluster({node}: Props) {
                     return (
                         <TableRow key={node.host}>
                             <TableCell>{node.name}</TableCell>
+                            <TableCell>{node.host}:{node.port}</TableCell>
                             <TableCell sx={{color: nodeColor[node.role]}}>{node.role.toUpperCase()}</TableCell>
                             <TableCell>{node.state}</TableCell>
                             <TableCell>{node.lag}</TableCell>

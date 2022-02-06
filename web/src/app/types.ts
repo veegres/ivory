@@ -12,7 +12,7 @@ export interface Node {
     api_url: string
 }
 
-export interface NodePatroni {
+export interface NodeOverview {
     database_system_identifier: string,
     postmaster_start_time: string,
     timeline: number,
@@ -36,6 +36,27 @@ export interface Cluster {
 
 export interface ClusterMap {
     [name: string]: string[]
+}
+
+export interface Connection {
+    host: string
+    port: number
+    username: string
+    password: string
+}
+
+export interface Target {
+    dbName?: string
+    schema?: string
+    table?: string
+    excludeSchema?: string
+    excludeTable?: string
+}
+
+export interface PgCompactTable {
+    connection: Connection
+    target?: Target
+    ratio?: number
 }
 
 export interface GoResponse<TData, TError = {}> {

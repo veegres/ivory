@@ -21,7 +21,7 @@ type ItemProps = { name: string, value?: string }
 type StatusProps = { role?: string }
 
 export function NodeOverview({node}: OverviewProps) {
-    const {data: nodePatroni, isLoading, isError, error} = useQuery(['node/patroni', node], () => nodeApi.patroni(node))
+    const {data: nodePatroni, isLoading, isError, error} = useQuery(['node/overview', node], () => nodeApi.overview(node))
     if (isError) return <Error error={error as AxiosError}/>
 
     return (
