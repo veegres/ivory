@@ -9,9 +9,10 @@ services:
     container_name: dev-patroni-haproxy
     networks: [ dev-patroni ]
     ports:
-      - "8008:8008" # patroni port
-      - "5432:5432" # postgres port
+      - "8008:8008" # patroni general port
       - "8404:8404" # haproxy statistic
+      - "8001-8003:8001-8003" # patroni ports
+      - "5001-5003:5001-5003" # postgres ports
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
 
@@ -22,9 +23,9 @@ services:
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni1"
-      PATRONI_POSTGRESQL_LISTEN: "patroni1:5432"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni1:5432"
-      PATRONI_RESTAPI_LISTEN: "patroni1:8008"
+      PATRONI_POSTGRESQL_LISTEN: "patroni1:5001"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni1:5001"
+      PATRONI_RESTAPI_LISTEN: "patroni1:8001"
       PATRONI_RAFT_SELF_ADDR: "patroni1:2221"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni2:2222','patroni3:2223'"
 
@@ -34,9 +35,9 @@ services:
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni2"
-      PATRONI_POSTGRESQL_LISTEN: "patroni2:5432"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni2:5432"
-      PATRONI_RESTAPI_LISTEN: "patroni2:8008"
+      PATRONI_POSTGRESQL_LISTEN: "patroni2:5002"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni2:5002"
+      PATRONI_RESTAPI_LISTEN: "patroni2:8002"
       PATRONI_RAFT_SELF_ADDR: "patroni2:2222"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni3:2223'"
 
@@ -46,8 +47,8 @@ services:
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni3"
-      PATRONI_POSTGRESQL_LISTEN: "patroni3:5432"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni3:5432"
-      PATRONI_RESTAPI_LISTEN: "patroni3:8008"
+      PATRONI_POSTGRESQL_LISTEN: "patroni3:5003"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni3:5003"
+      PATRONI_RESTAPI_LISTEN: "patroni3:8003"
       PATRONI_RAFT_SELF_ADDR: "patroni3:2223"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni2:2222'"
