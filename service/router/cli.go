@@ -20,7 +20,7 @@ func runPgcompacttable(context *gin.Context) {
 
 	sb := []string{
 		"--host", cli.Connection.Host,
-		"--port", cli.Connection.Port,
+		"--port", strconv.Itoa(cli.Connection.Port),
 		"--user", cli.Connection.Username,
 		"--password", cli.Connection.Password,
 	}
@@ -40,12 +40,12 @@ func runPgcompacttable(context *gin.Context) {
 		if cli.Target.ExcludeTable != "" {
 			sb = append(sb, "--excludeTable", cli.Target.ExcludeTable)
 		}
-		if cli.Target.Ratio != 0 {
-			sb = append(sb, "--delay-ratio", strconv.Itoa(int(cli.Target.Ratio)))
-		}
 	}
 	if len(sb) == 8 {
 		sb = append(sb, "--all")
+	}
+	if cli.Ratio != 0 {
+		sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Ratio))
 	}
 	sb = append(sb, "--verbose")
 
