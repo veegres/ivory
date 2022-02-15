@@ -1,11 +1,11 @@
 import axios from "axios";
-import {Cluster, ClusterMap, GoResponse, Node, NodeOverview, PgCompactTable} from "./types";
+import {Cluster, ClusterMap, CompactTable, Node, NodeOverview, PgCompactTable, Response} from "./types";
 
 const api = axios.create({ baseURL: '/api' })
 
 export const nodeApi = {
-    overview: (node: String) => api.get<GoResponse<NodeOverview>>(`/node/${node}/overview`).then((response) => response.data.response),
-    cluster: (node: String) => api.get<GoResponse<{ members: Node[] }>>(`/node/${node}/cluster`).then((response) => response.data.response.members),
+    overview: (node: String) => api.get<Response<NodeOverview>>(`/node/${node}/overview`).then((response) => response.data.response),
+    cluster: (node: String) => api.get<Response<{ members: Node[] }>>(`/node/${node}/cluster`).then((response) => response.data.response.members),
     config: (node: String) => api.get(`/node/${node}/config`).then((response) => response.data.response),
     updateConfig: ({node, config}: { node: string, config: string }) => api.patch(`/node/${node}/config`, config)
         .then((response) => response.data.response),
@@ -17,9 +17,9 @@ export const nodeApi = {
 }
 
 export const clusterApi = {
-    get: (name: string) => api.get<GoResponse<Cluster>>(`/cluster/${name}`)
+    get: (name: string) => api.get<Response<Cluster>>(`/cluster/${name}`)
         .then((response) => response.data.response),
-    list: () => api.get<GoResponse<Cluster[]>>(`/cluster`)
+    list: () => api.get<Response<Cluster[]>>(`/cluster`)
         .then((response) => response.data.response.reduce(
             (prev, current) => {
                 prev[current.name] = current.nodes;
@@ -27,13 +27,13 @@ export const clusterApi = {
             },
             {} as ClusterMap
         )),
-    update: (cluster: Cluster) => api.put<GoResponse<Cluster>>(`/cluster`, cluster)
+    update: (cluster: Cluster) => api.put<Response<Cluster>>(`/cluster`, cluster)
         .then((response) => response.data.response),
     delete: (name: string) => api.delete(`/cluster/${name}`)
         .then((response) => response.data.response)
 }
 
 export const cliApi = {
-    pgcompacttable: (pgCompactTable: PgCompactTable) => api.post<GoResponse<string[]>>(`/cli/pgcompacttable`, pgCompactTable)
+    pgcompacttable: (pgCompactTable: PgCompactTable) => api.post<Response<CompactTable>>(`/cli/pgcompacttable`, pgCompactTable)
         .then((response) => response.data.response),
 }

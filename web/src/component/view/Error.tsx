@@ -1,9 +1,8 @@
-import {Alert, AlertColor, AlertTitle, Box, Collapse, IconButton, InputLabel} from "@mui/material";
+import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material";
 import {useState} from "react";
-import {KeyboardArrowDown, KeyboardArrowUp} from "@mui/icons-material";
 import {AxiosError} from "axios";
 import {Style} from "../../app/types";
-
+import {OpenButton} from "./OpenButton";
 
 const style: Style = {
     jsonInput: {padding: '10px 0px', whiteSpace: 'pre-wrap'}
@@ -12,7 +11,6 @@ const style: Style = {
 type ErrorProps = { error: AxiosError | string }
 type GeneralProps = { message: string, type: AlertColor, title?: string, json?: string }
 type JsonProps = { json: string }
-type Button = { isShown: boolean }
 
 export function Error({error}: ErrorProps) {
     const [isOpen, setIsOpen] = useState(false)
@@ -30,21 +28,11 @@ export function Error({error}: ErrorProps) {
     function General(props: GeneralProps) {
         const {message, type} = props
         return (
-            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<Button isShown={!!props.json}/>}>
+            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenButton show={!!props.json} open={isOpen}/>}>
                 <AlertTitle>{props.title ?? type.toString()}</AlertTitle>
                 <Box>Message: {message}</Box>
                 {props.json ? <Json json={props.json}/> : null}
             </Alert>
-        )
-    }
-
-    function Button(props: Button) {
-        if (!props.isShown) return null
-
-        return (
-            <IconButton color={"inherit"} disableRipple>
-                {isOpen ? <KeyboardArrowUp/> : <KeyboardArrowDown/>}
-            </IconButton>
         )
     }
 

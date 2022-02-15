@@ -6,3 +6,13 @@ the following import will work as expected without errors:
 
 `import logo from './logo.svg';`
 */
+
+// Custom map types for EventSource.addEventListener()
+
+interface EventSourceEventMap {
+    "error": Event;
+    "message": MessageEvent;
+    "log": MessageEvent;
+    "status": MessageEvent;
+    "open": Event;
+}
