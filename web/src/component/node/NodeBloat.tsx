@@ -1,51 +1,48 @@
-import {Box, Button, Grid, LinearProgress, TextField} from "@mui/material";
-import {useQuery} from "react-query";
+import {Button, CircularProgress, Grid, TextField} from "@mui/material";
+import {useMutation, useQuery} from "react-query";
 import {cliApi, nodeApi} from "../../app/api";
 import {useState} from "react";
-import {Connection, Target} from "../../app/types";
-
-const SX = {
-    console: {width: '100%', background: '#000000D8', padding: '20px', borderRadius: '5px', color: '#d0d0d0'},
-    line: {'&:hover': {color: 'white'}}
-}
+import {Auth, Target} from "../../app/types";
+import {Error} from "../view/Error";
+import {AxiosError} from "axios";
+import {NodeJob} from "./NodeJob";
 
 type Props = { node: string }
 
 export function NodeBloat({node}: Props) {
-    const [connection, setConnection] = useState<Connection>({host: '', port: 0, username: '', password: ''})
+    const [auth, setAuth] = useState<Auth>({username: '', password: ''})
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
+    const [jobs, setJobs] = useState<{ cmd: string, uuid: string }[]>([])
 
-    useQuery(['node/cluster'], () => nodeApi.cluster(node), {
-        onSuccess: data => data.forEach(node => {
-            if (node.role === "leader") setConnection({...connection, host: node.host, port: node.port})
-        })
-    })
-    const compact = useQuery(
-        ['cli/pgcompacttable', node],
-        () => cliApi.pgcompacttable({connection, target, ratio}),
-        {enabled: false}
-    )
+    const leader = useQuery(['node/cluster'], () => nodeApi.cluster(node).then((cluster) => {
+        return cluster.filter(node => node.role === "leader")[0]
+    }))
+    const compact = useMutation(cliApi.pgcompacttable, {onSuccess: (job) => setJobs([...jobs, job])})
+
+    if (leader.isLoading) return <CircularProgress/>
+    if (leader.isError) return <Error error={leader.error as AxiosError}/>
+    if (!leader.data) return <Error error={"No leader found"}/>
 
     return (
         <Grid container direction={"column"} gap={2}>
             {renderForm()}
-            {renderConsole(compact.isFetching, compact.data)}
+            {jobs.map(({cmd, uuid}) => <NodeJob key={uuid} cmd={cmd} uuid={uuid}/>)}
         </Grid>
     )
 
     function renderForm() {
         return (
             <>
-                <Grid item container direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
-                    <Grid item display={"flex"} gap={2}>
+                <Grid item container direction={"row"} justifyContent={"space-between"} alignItems={"center"} flexWrap={"nowrap"}>
+                    <Grid item container gap={2}>
                         <TextField
                             required size={"small"} label="Username" variant="standard"
-                            onChange={(e) => setConnection({...connection, username: e.target.value})}
+                            onChange={(e) => setAuth({...auth, username: e.target.value})}
                         />
                         <TextField
                             required size={"small"} label="Password" type="password" variant="standard"
-                            onChange={(e) => setConnection({...connection, password: e.target.value})}
+                            onChange={(e) => setAuth({...auth, password: e.target.value})}
                         />
                         <TextField
                             size={"small"} label="Ratio" type="number" variant="standard"
@@ -53,7 +50,7 @@ export function NodeBloat({node}: Props) {
                         />
                     </Grid>
                     <Grid item>
-                        <Button variant="contained" size={"small"} disabled={compact.isFetching} onClick={() => compact.refetch()}>
+                        <Button variant="contained" disabled={compact.isLoading} onClick={handleRun}>
                             RUN
                         </Button>
                     </Grid>
@@ -84,15 +81,11 @@ export function NodeBloat({node}: Props) {
         )
     }
 
-    function renderConsole(isFetching: boolean, lines?: string[]) {
-        if (!lines && !isFetching) return null
-
-        return (
-            <Box display={"p"} sx={SX.console}>
-                {isFetching ? <LinearProgress color="inherit"/> : (
-                    lines!!.map((line, index) => (<Box key={index} sx={SX.line}>{line}</Box>))
-                )}
-            </Box>
-        )
+    function handleRun() {
+        const {data} = leader
+        if (data) {
+            const connection = {host: data.host, port: data.port, ...auth}
+            compact.mutate({connection, target, ratio})
+        }
     }
 }

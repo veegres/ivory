@@ -48,7 +48,7 @@ export function NodeCluster({node}: Props) {
                         <TableHeaderLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading) && !isLoading}/>
                     </TableRow>
                 </TableHead>
-                <TableBodySkeleton isLoading={isLoading} cellCount={5}>
+                <TableBodySkeleton isLoading={isLoading} cellCount={6}>
                     {renderContent()}
                 </TableBodySkeleton>
             </Table>
@@ -56,7 +56,7 @@ export function NodeCluster({node}: Props) {
     )
 
     function renderContent() {
-        if (!members || members.length === 0) return null
+        if (!members) return <Error error={"No data"}/>
 
         return (
             <>

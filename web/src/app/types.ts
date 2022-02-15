@@ -38,11 +38,14 @@ export interface ClusterMap {
     [name: string]: string[]
 }
 
-export interface Connection {
-    host: string
-    port: number
+export interface Auth {
     username: string
     password: string
+}
+
+export interface Connection extends Auth {
+    host: string
+    port: number
 }
 
 export interface Target {
@@ -59,12 +62,27 @@ export interface PgCompactTable {
     ratio?: number
 }
 
-export interface GoResponse<TData, TError = {}> {
+export interface Response<TData, TError = {}> {
     response: TData
     error: TError
+}
+
+export interface CompactTable {
+    cmd: string,
+    uuid: string,
+}
+
+export interface EventJob {
+    isFetching: boolean
+    logs: string[]
 }
 
 // COMMON
 export interface Style {
     [key: string]: CSSProperties
+}
+
+export enum EventStatus {
+    START = "start",
+    FINISH = "finish"
 }
