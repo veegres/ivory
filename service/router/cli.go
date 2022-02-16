@@ -13,13 +13,13 @@ import (
 )
 
 func (r routes) CliGroup(group *gin.RouterGroup) {
-	jobs := make(map[uuid.UUID]chan []byte)
+	jobs := make(map[uuid.UUID]chan [2][]byte)
 	node := group.Group("/cli")
 	node.POST("/pgcompacttable", postPgcompacttable(jobs))
 	node.GET("/pgcompacttable/:uuid/stream", stream(jobs))
 }
 
-func postPgcompacttable(jobs map[uuid.UUID]chan []byte) func(context *gin.Context) {
+func postPgcompacttable(jobs map[uuid.UUID]chan [2][]byte) func(context *gin.Context) {
 	return func(context *gin.Context) {
 		var cli PgCompactTable
 		_ = context.ShouldBindJSON(&cli)
@@ -57,18 +57,18 @@ func postPgcompacttable(jobs map[uuid.UUID]chan []byte) func(context *gin.Contex
 
 		jobUuid := uuid.New()
 		go func() {
+			jobs[jobUuid] = make(chan [2][]byte)
 			cmd := exec.Command("pgcompacttable", sb...)
 			pipe, err := cmd.StdoutPipe()
 			if err := cmd.Start(); err != nil {
-				context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				jobs[jobUuid] <- [2][]byte{[]byte("server"), []byte(err.Error())}
 			}
-			jobs[jobUuid] = make(chan []byte)
 			reader := bufio.NewReader(pipe)
 			line, _, err := reader.ReadLine()
 			var output []string
 			for err == nil {
 				output = append(output, string(line))
-				jobs[jobUuid] <- line
+				jobs[jobUuid] <- [2][]byte{[]byte("log"), line}
 				line, _, err = reader.ReadLine()
 			}
 			close(jobs[jobUuid])
@@ -81,14 +81,8 @@ func postPgcompacttable(jobs map[uuid.UUID]chan []byte) func(context *gin.Contex
 	}
 }
 
-func stream(jobs map[uuid.UUID]chan []byte) func(context *gin.Context) {
+func stream(jobs map[uuid.UUID]chan [2][]byte) func(context *gin.Context) {
 	return func(context *gin.Context) {
-		jobUuid, err := uuid.Parse(context.Param("uuid"))
-		job := jobs[jobUuid]
-		if err != nil || job == nil {
-			context.AbortWithStatus(404)
-			return
-		}
 		// notify proxy that it shouldn't enable any caching
 		context.Writer.Header().Set("Cache-Control", "no-transform")
 		// force using correct event-stream if there is no proxy
@@ -96,9 +90,17 @@ func stream(jobs map[uuid.UUID]chan []byte) func(context *gin.Context) {
 		context.SSEvent("status", "start")
 		context.Writer.Flush()
 
+		jobUuid, err := uuid.Parse(context.Param("uuid"))
+		job := jobs[jobUuid]
+		if err != nil || job == nil {
+			context.SSEvent("server", "Logs streaming failed: 404 Not Found")
+			context.SSEvent("status", "finish")
+			return
+		}
+
 		context.Stream(func(w io.Writer) bool {
 			if line, ok := <-job; ok {
-				context.SSEvent("log", string(line))
+				context.SSEvent(string(line[0]), string(line[1]))
 				return true
 			}
 

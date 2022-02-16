@@ -18,7 +18,7 @@ export function NodeBloat({node}: Props) {
     const leader = useQuery(['node/cluster'], () => nodeApi.cluster(node).then((cluster) => {
         return cluster.filter(node => node.role === "leader")[0]
     }))
-    const compact = useMutation(cliApi.pgcompacttable, {onSuccess: (job) => setJobs([...jobs, job])})
+    const compact = useMutation(cliApi.pgcompacttable, {onSuccess: (job) => setJobs([job, ...jobs])})
 
     if (leader.isLoading) return <CircularProgress/>
     if (leader.isError) return <Error error={leader.error as AxiosError}/>
