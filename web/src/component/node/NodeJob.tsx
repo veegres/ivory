@@ -8,12 +8,13 @@ const SX = {
     line: {'&:hover': {color: '#f6f6f6'}},
     header: {fontWeight: 'bold'},
     arrow: {'&:hover': {background: '#90CAF919'}, margin: '3px 0', cursor: 'pointer'},
+    loader: {margin: '10px 0 5px'}
 }
 
-type Props = { uuid: string, cmd: string }
+type Props = { uuid: string, cmd: string, logOpen?: boolean }
 
-export function NodeJob({uuid, cmd}: Props) {
-    const [open, setOpen] = useState(false)
+export function NodeJob({uuid, cmd, logOpen = true}: Props) {
+    const [open, setOpen] = useState(logOpen)
     const {isFetching, logs} = useEventJob(uuid)
 
     return (
@@ -43,7 +44,7 @@ export function NodeJob({uuid, cmd}: Props) {
                 <Box display={"p"}>
                     {logs.map((line, index) => (<Box key={index} sx={SX.line}>{line}</Box>))}
                 </Box>
-                {isFetching ? <LinearProgress color="inherit"/> : null}
+                {isFetching ? <LinearProgress sx={SX.loader} color="inherit"/> : null}
             </>
         )
     }

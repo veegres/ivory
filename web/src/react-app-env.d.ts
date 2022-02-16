@@ -14,5 +14,6 @@ interface EventSourceEventMap {
     "message": MessageEvent;
     "log": MessageEvent;
     "status": MessageEvent;
+    "server": MessageEvent;
     "open": Event;
 }
