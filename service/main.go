@@ -1,11 +1,12 @@
 package main
 
 import (
-	"ivory/database"
+	"ivory/persistence"
 	"ivory/router"
 )
 
 func main() {
-	database.Start()
+	persistence.Database.Build("cluster.db")
+	persistence.File.Build()
 	router.Start()
 }

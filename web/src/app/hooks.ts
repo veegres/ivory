@@ -1,35 +1,47 @@
 import {useEffect, useState} from "react";
-import {EventJob, EventStatus} from "./types";
+import {EventJob, EventStream, JobStatus} from "./types";
+import {isJobEnded} from "./utils";
+import {useQuery} from "react-query";
+import {bloatApi} from "./api";
 
-export function useEventJob(uuid: string): EventJob {
+export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean): EventJob {
     const [logs, setLogs] = useState<string[]>([])
-    const [isFetching, setIsFetching] = useState<boolean>(false)
+    const [status, setStatus] = useState<JobStatus>(initStatus)
+    const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
+
+    const {isFetching} = useQuery(['node/bloat/logs', uuid], () => bloatApi.getLogs(uuid), {
+        onSuccess: data => setLogs(data),
+        enabled: isJobEnded(initStatus) && isOpen && logs.length === 0
+    })
 
     useEffect(() => {
-        // TODO we shouldn't run it if status of a job is finished
-        const es = new EventSource(`/api/cli/pgcompacttable/${uuid}/stream`)
+        if (isJobEnded(initStatus)) return
+
+        const es = new EventSource(`/api/cli/bloat/${uuid}/stream`)
         const close = () => {
             es.close();
-            setIsFetching(false)
+            setEventSourceFetching(false)
         }
-        const logs = (log: string) => setLogs((old) => [...old, log])
-        es.onopen = () => setIsFetching(true)
-        es.addEventListener("log", (e) => logs(e.data))
-        es.addEventListener("server", (e) => logs(e.data))
-        es.addEventListener("status", (e) => {
-            if (e.data === EventStatus.FINISH) close()
+        const addLog = (log: string) => setLogs((old) => [...old, log])
+        es.onopen = () => setEventSourceFetching(true)
+        es.addEventListener("log", (e) => addLog(e.data))
+        es.addEventListener("server", (e) => addLog(e.data))
+        es.addEventListener("status", (e) => setStatus(e.data))
+        es.addEventListener("stream", (e) => {
+            if (e.data === EventStream.FINISH) close()
         })
         es.onerror = () => {
-            setIsFetching(false);
-            logs("Logs streaming error: Trying to reestablish it")
+            setEventSourceFetching(false);
+            addLog("Logs streaming error: Trying to reestablish connection")
         }
 
         return () => es.close()
-    }, [uuid])
+    }, [uuid, initStatus])
 
 
     return {
-        isFetching,
-        logs
+        isFetching: isEventSourceFetching || isFetching,
+        logs,
+        status
     }
 }

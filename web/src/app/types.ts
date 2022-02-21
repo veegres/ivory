@@ -56,7 +56,7 @@ export interface Target {
     excludeTable?: string
 }
 
-export interface PgCompactTable {
+export interface CompactTableRequest {
     connection: Connection
     target?: Target
     ratio?: number
@@ -68,13 +68,24 @@ export interface Response<TData, TError = {}> {
 }
 
 export interface CompactTable {
-    cmd: string,
     uuid: string,
+    status: JobStatus,
+    command: string,
+    commandArgs: string,
+    logsPath: string
 }
 
 export interface EventJob {
     isFetching: boolean
     logs: string[]
+    status: JobStatus
+}
+
+export enum JobStatus {
+    PENDING,
+    RUNNING,
+    FINISHED,
+    FAILED
 }
 
 // COMMON
@@ -82,7 +93,7 @@ export interface Style {
     [key: string]: CSSProperties
 }
 
-export enum EventStatus {
+export enum EventStream {
     START = "start",
-    FINISH = "finish"
+    FINISH = "end"
 }

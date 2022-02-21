@@ -2,8 +2,8 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"ivory/database"
 	. "ivory/model"
+	"ivory/persistence"
 	"net/http"
 )
 
@@ -16,27 +16,32 @@ func (r routes) ClusterGroup(group *gin.RouterGroup) {
 }
 
 func getClusterList(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"response": database.ClusterRepository().List()})
+	list, err := persistence.Database.Cluster.List()
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	} else {
+		context.JSON(http.StatusOK, gin.H{"response": list})
+	}
 }
 
 func getClusterByHost(context *gin.Context) {
 	host := context.Param("host")
-	cluster := database.ClusterRepository().Get(host)
-	if cluster == nil {
-		context.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
+	cluster, err := persistence.Database.Cluster.Get(host)
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	} else {
 		context.JSON(http.StatusOK, gin.H{"response": cluster})
 	}
 }
 
 func putClusterByHost(context *gin.Context) {
-	var cluster Cluster
+	var cluster ClusterModel
 	_ = context.ShouldBindJSON(&cluster)
-	database.ClusterRepository().Update(cluster)
+	_ = persistence.Database.Cluster.Update(cluster)
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
 func deleteClusterByHost(context *gin.Context) {
 	host := context.Param("host")
-	database.ClusterRepository().Delete(host)
+	_ = persistence.Database.Cluster.Delete(host)
 }

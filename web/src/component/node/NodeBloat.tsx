@@ -1,11 +1,12 @@
 import {Button, CircularProgress, Grid, TextField} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
-import {cliApi, nodeApi} from "../../app/api";
+import {bloatApi, nodeApi} from "../../app/api";
 import {useState} from "react";
-import {Auth, Target} from "../../app/types";
+import {Auth, CompactTable, Target} from "../../app/types";
 import {Error} from "../view/Error";
 import {AxiosError} from "axios";
 import {NodeJob} from "./NodeJob";
+import {isJobEnded} from "../../app/utils";
 
 type Props = { node: string }
 
@@ -13,21 +14,22 @@ export function NodeBloat({node}: Props) {
     const [auth, setAuth] = useState<Auth>({username: '', password: ''})
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
-    const [jobs, setJobs] = useState<{ cmd: string, uuid: string }[]>([])
+    const [jobs, setJobs] = useState<CompactTable[]>([])
 
-    const leader = useQuery(['node/cluster'], () => nodeApi.cluster(node).then((cluster) => {
+    const initJobs = useQuery(['node/bloat'], bloatApi.list, {onSuccess: (initJobs) => setJobs(initJobs)})
+    const leader = useQuery(['node/leader'], () => nodeApi.cluster(node).then((cluster) => {
         return cluster.filter(node => node.role === "leader")[0]
     }))
-    const compact = useMutation(cliApi.pgcompacttable, {onSuccess: (job) => setJobs([job, ...jobs])})
+    const compact = useMutation(bloatApi.add, {onSuccess: (job) => setJobs([job, ...jobs])})
 
-    if (leader.isLoading) return <CircularProgress/>
+    if (leader.isLoading || initJobs.isLoading) return <CircularProgress/>
     if (leader.isError) return <Error error={leader.error as AxiosError}/>
     if (!leader.data) return <Error error={"No leader found"}/>
 
     return (
         <Grid container direction={"column"} gap={2}>
             {renderForm()}
-            {jobs.map(({cmd, uuid}) => <NodeJob key={uuid} cmd={cmd} uuid={uuid}/>)}
+            {jobs.map((value) => <NodeJob key={value.uuid} compactTable={value} logOpen={!isJobEnded(value.status)}/>)}
         </Grid>
     )
 
