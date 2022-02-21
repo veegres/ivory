@@ -58,47 +58,43 @@ export function NodeCluster({node}: Props) {
     function renderContent() {
         if (!members) return <Error error={"No data"}/>
 
-        return (
-            <>
-                {members.map((node) => {
-                    const nodePublicHost = node.api_url.split('/')[2]
-                    const isLeader = node.role === "leader"
-                    return (
-                        <TableRow key={node.host}>
-                            <TableCell>{node.name}</TableCell>
-                            <TableCell>{node.host}:{node.port}</TableCell>
-                            <TableCell sx={{color: nodeColor[node.role]}}>{node.role.toUpperCase()}</TableCell>
-                            <TableCell>{node.state}</TableCell>
-                            <TableCell>{node.lag}</TableCell>
-                            <TableCell align="right">
-                                <Grid container justifyContent="flex-end" alignItems="center">
-                                    <Grid item>
-                                        {!isLeader ? null : (
-                                            <Button
-                                                color="secondary"
-                                                disabled={switchoverNode.isLoading}
-                                                onClick={() => handleSwitchover(nodePublicHost, node.name)}>
-                                                Switchover
-                                            </Button>
-                                        )}
-                                    </Grid>
-                                    <Grid item>
-                                        {isLeader ? null : (
-                                            <Button
-                                                color="primary"
-                                                disabled={reinitNode.isLoading || switchoverNode.isLoading}
-                                                onClick={() => handleReinit(nodePublicHost)}>
-                                                Reinit
-                                            </Button>
-                                        )}
-                                    </Grid>
-                                </Grid>
-                            </TableCell>
-                        </TableRow>
-                    )
-                })}
-            </>
-        )
+        return members.map((node) => {
+            const nodePublicHost = node.api_url.split('/')[2]
+            const isLeader = node.role === "leader"
+            return (
+                <TableRow key={node.host}>
+                    <TableCell>{node.name}</TableCell>
+                    <TableCell>{node.host}:{node.port}</TableCell>
+                    <TableCell sx={{color: nodeColor[node.role]}}>{node.role.toUpperCase()}</TableCell>
+                    <TableCell>{node.state}</TableCell>
+                    <TableCell>{node.lag}</TableCell>
+                    <TableCell align="right">
+                        <Grid container justifyContent="flex-end" alignItems="center">
+                            <Grid item>
+                                {!isLeader ? null : (
+                                    <Button
+                                        color="secondary"
+                                        disabled={switchoverNode.isLoading}
+                                        onClick={() => handleSwitchover(nodePublicHost, node.name)}>
+                                        Switchover
+                                    </Button>
+                                )}
+                            </Grid>
+                            <Grid item>
+                                {isLeader ? null : (
+                                    <Button
+                                        color="primary"
+                                        disabled={reinitNode.isLoading || switchoverNode.isLoading}
+                                        onClick={() => handleReinit(nodePublicHost)}>
+                                        Reinit
+                                    </Button>
+                                )}
+                            </Grid>
+                        </Grid>
+                    </TableCell>
+                </TableRow>
+            )
+        })
     }
 
     function renderAlertDialog() {

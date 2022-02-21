@@ -1,6 +1,6 @@
 package model
 
-type Cluster struct {
+type ClusterModel struct {
 	Name  string   `json:"name"`
 	Nodes []string `json:"nodes"`
 }
