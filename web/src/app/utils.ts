@@ -8,10 +8,10 @@ export const nodeColor: { [key: string]: string } = {
 }
 
 export const jobStatus: { [key: number]: { name: string, color: string } } = {
-    [JobStatus.PENDING]: {name: "PENDING", color: "#f6f6f6"},
+    [JobStatus.PENDING]: {name: "PENDING", color: "#b9b9b9"},
     [JobStatus.RUNNING]: {name: "RUNNING", color: "#b97800"},
     [JobStatus.FINISHED]: {name: "FINISHED", color: "#00b919"},
-    [JobStatus.FAILED]: {name: "FAILED", color: "#b90000"},
+    [JobStatus.FAILED]: {name: "FAILED", color: "#d20000"},
 }
 
 export const isJobEnded = (status: JobStatus) => status === JobStatus.FAILED || status === JobStatus.FINISHED

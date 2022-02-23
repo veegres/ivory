@@ -43,5 +43,5 @@ export const bloatApi = {
     delete: (uuid: string) =>
         api.delete(`/cli/bloat/${uuid}`).then((response) => response.data.response),
     getLogs: (uuid: string) =>
-        api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"}).then((response) => response.data.split("\n"))
+        api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"}).then(({data}) => data === "" ? [] : data.split("\n"))
 }

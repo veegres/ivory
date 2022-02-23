@@ -12,13 +12,13 @@ type ClusterRepository struct {
 }
 
 func (r ClusterRepository) List() ([]ClusterModel, error) {
-	modelMap, err := r.common.getList(r.bucket)
-	modelList := make([]ClusterModel, 0)
-	for key, value := range modelMap {
-		var nodes []string
-		buff := bytes.NewBuffer(value)
+	bytesList, err := r.common.getList(r.bucket)
+	modelList := make([]ClusterModel, len(bytesList))
+	for i, el := range bytesList {
+		nodes := make([]string, 0)
+		buff := bytes.NewBuffer(el.value)
 		_ = gob.NewDecoder(buff).Decode(&nodes)
-		modelList = append(modelList, ClusterModel{Name: key, Nodes: nodes})
+		modelList[i] = ClusterModel{Name: el.key, Nodes: nodes}
 	}
 	return modelList, err
 }

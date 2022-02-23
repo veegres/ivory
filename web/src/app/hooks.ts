@@ -28,7 +28,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         es.addEventListener("server", (e) => addLog(e.data))
         es.addEventListener("status", (e) => setStatus(e.data))
         es.addEventListener("stream", (e) => {
-            if (e.data === EventStream.FINISH) close()
+            if (e.data === EventStream.END) close()
         })
         es.onerror = () => {
             setEventSourceFetching(false);

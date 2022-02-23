@@ -95,5 +95,5 @@ export interface Style {
 
 export enum EventStream {
     START = "start",
-    FINISH = "end"
+    END = "end"
 }

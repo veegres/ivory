@@ -19,6 +19,11 @@ type common struct {
 	bolt *bolt.DB
 }
 
+type Element struct {
+	key   string
+	value []byte
+}
+
 func (d database) Build(dbName string) {
 	dirName := "data/bolt"
 	_ = os.MkdirAll(dirName, os.ModePerm)
@@ -52,12 +57,12 @@ func (d database) Build(dbName string) {
 	Database = d
 }
 
-func (d common) getList(bucket []byte) (map[string][]byte, error) {
-	list := make(map[string][]byte)
+func (d common) getList(bucket []byte) ([]Element, error) {
+	list := make([]Element, 0)
 	err := d.bolt.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(bucket).Cursor()
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-			list[string(key)] = value
+			list = append(list, Element{string(key), value})
 		}
 		return nil
 	})

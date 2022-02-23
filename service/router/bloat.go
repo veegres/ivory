@@ -7,29 +7,33 @@ import (
 	"io"
 	. "ivory/model"
 	"ivory/persistence"
+	. "ivory/service"
 	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 func (r routes) CliGroup(group *gin.RouterGroup) {
 	pendingJobs := make(chan CompactTableModel)
-	activeJobs := make(map[uuid.UUID]Job)
-	go job(pendingJobs, activeJobs)
+	activeJobs := make(map[uuid.UUID]*Job)
+	w := worker{pendingJobs, activeJobs}.Build()
 
 	node := group.Group("/cli")
 	node.GET("/bloat", getCompactTableList)
-	node.POST("/bloat", postCompactTable(pendingJobs, activeJobs))
+	node.POST("/bloat", w.postCompactTable)
 	node.DELETE("/bloat/:uuid", deleteCompactTable)
 	node.GET("/bloat/:uuid", getCompactTable)
 	node.GET("/bloat/:uuid/logs", getCompactTableLogs)
-	node.GET("/bloat/:uuid/stream", stream(activeJobs))
+	node.GET("/bloat/:uuid/stream", w.stream)
 }
 
 func getCompactTableLogs(context *gin.Context) {
 	jobUuid, _ := uuid.Parse(context.Param("uuid"))
 	job, _ := persistence.Database.CompactTable.Get(jobUuid)
+	context.Writer.Header().Set("Cache-Control", "no-transform")
 	context.File(job.LogsPath)
 }
 
@@ -66,141 +70,139 @@ func deleteCompactTable(context *gin.Context) {
 	}
 }
 
-func postCompactTable(pending chan CompactTableModel, active map[uuid.UUID]Job) func(context *gin.Context) {
-	return func(context *gin.Context) {
-		var cli CompactTableRequest
-		_ = context.ShouldBindJSON(&cli)
-
-		sb := []string{
-			"--host", cli.Connection.Host,
-			"--port", strconv.Itoa(cli.Connection.Port),
-			"--user", cli.Connection.Username,
-			"--password", cli.Connection.Password,
-		}
-		if cli.Target != nil {
-			if cli.Target.DbName != "" {
-				sb = append(sb, "--dbname", cli.Target.DbName)
-			}
-			if cli.Target.Schema != "" {
-				sb = append(sb, "--schema", cli.Target.Schema)
-			}
-			if cli.Target.Table != "" {
-				sb = append(sb, "--table", cli.Target.Table)
-			}
-			if cli.Target.ExcludeSchema != "" {
-				sb = append(sb, "--excludeSchema", cli.Target.ExcludeSchema)
-			}
-			if cli.Target.ExcludeTable != "" {
-				sb = append(sb, "--excludeTable", cli.Target.ExcludeTable)
-			}
-		}
-		if len(sb) == 8 {
-			sb = append(sb, "--all")
-		}
-		if cli.Ratio != 0 {
-			sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Ratio))
-		}
-		sb = append(sb, "--verbose")
-
-		jobUuid := uuid.New()
-		compactTableModel := CompactTableModel{
-			Uuid:        jobUuid,
-			Status:      PENDING,
-			Command:     "pgcompacttable " + strings.Join(sb, " "),
-			CommandArgs: sb,
-			LogsPath:    persistence.File.CompactTable.Create(jobUuid),
-		}
-		err := persistence.Database.CompactTable.Update(compactTableModel)
-		if err != nil {
-			_ = context.AbortWithError(http.StatusBadRequest, err)
-		}
-		active[jobUuid] = Job{Event: make(chan Event)}
-		go func() {
-			pending <- compactTableModel
-		}()
-
-		context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": compactTableModel})
-	}
+type worker struct {
+	pendingJobs chan CompactTableModel
+	activeJobs  map[uuid.UUID]*Job
 }
 
-func stream(jobs map[uuid.UUID]Job) func(context *gin.Context) {
-	return func(context *gin.Context) {
-		// notify proxy that it shouldn't enable any caching
-		context.Writer.Header().Set("Cache-Control", "no-transform")
-		// force using correct event-stream if there is no proxy
-		context.Writer.Header().Set("Content-Type", "text/event-stream")
-		context.SSEvent(STREAM.String(), "start")
-		context.Writer.Flush()
-
-		jobUuid, err := uuid.Parse(context.Param("uuid"))
-		job := jobs[jobUuid]
-		job.IncrementSubs()
-		if err != nil || job.Event == nil {
-			context.SSEvent(SERVER.String(), "Logs streaming failed: 404 Not Found")
-			return
-		}
-
-		context.Stream(func(w io.Writer) bool {
-			if event, ok := <-job.Event; ok {
-				context.SSEvent(event.Name.String(), event.Message)
-				return true
-			}
-
-			return false
-		})
-
-		job.DecrementSubs()
-		context.SSEvent(STREAM.String(), "end")
-	}
+func (w worker) Build() worker {
+	go w.initiate()
+	go w.runner()
+	return w
 }
 
-func job(pending chan CompactTableModel, active map[uuid.UUID]Job) {
-	initialJobs(pending)
+func (w worker) postCompactTable(context *gin.Context) {
+	var cli CompactTableRequest
+	_ = context.ShouldBindJSON(&cli)
 
-	// TODO change to run multiple jobs
-	for model := range pending {
-		jobUuid := model.Uuid
-		event := active[jobUuid].Event
-
-		cmd := exec.Command("pgcompacttable", model.CommandArgs...)
-		pipe, _ := cmd.StdoutPipe()
-		if err := cmd.Start(); err != nil {
-			event <- Event{Name: SERVER, Message: err.Error()}
-			updateStatus(model, event, FAILED)
-			return
-		}
-
-		updateStatus(model, event, RUNNING)
-		reader := bufio.NewReader(pipe)
-		line, _, err := reader.ReadLine()
-		file, _ := persistence.File.CompactTable.Open(model.LogsPath)
-		for err == nil {
-			lineString := string(line)
-			_, errFile := file.WriteString(lineString + "\n")
-			if errFile != nil {
-				updateStatus(model, event, FAILED)
-				return
-			}
-			event <- Event{Name: LOG, Message: lineString}
-			line, _, err = reader.ReadLine()
-		}
-
-		updateStatus(model, event, FINISHED)
-		close(event)
-
-		go cleanJob(jobUuid, active)
+	sb := []string{
+		"--host", cli.Connection.Host,
+		"--port", strconv.Itoa(cli.Connection.Port),
+		"--user", cli.Connection.Username,
+		"--password", cli.Connection.Password,
 	}
+	if cli.Target != nil {
+		if cli.Target.DbName != "" {
+			sb = append(sb, "--dbname", cli.Target.DbName)
+		}
+		if cli.Target.Schema != "" {
+			sb = append(sb, "--schema", cli.Target.Schema)
+		}
+		if cli.Target.Table != "" {
+			sb = append(sb, "--table", cli.Target.Table)
+		}
+		if cli.Target.ExcludeSchema != "" {
+			sb = append(sb, "--excludeSchema", cli.Target.ExcludeSchema)
+		}
+		if cli.Target.ExcludeTable != "" {
+			sb = append(sb, "--excludeTable", cli.Target.ExcludeTable)
+		}
+	}
+	if len(sb) == 8 {
+		sb = append(sb, "--all")
+	}
+	if cli.Ratio != 0 {
+		sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Ratio))
+	}
+	sb = append(sb, "--verbose")
+
+	jobUuid := uuid.New()
+	compactTableModel := CompactTableModel{
+		Uuid:        jobUuid,
+		Status:      PENDING,
+		Command:     "pgcompacttable " + strings.Join(sb, " "),
+		CommandArgs: sb,
+		LogsPath:    persistence.File.CompactTable.Create(jobUuid),
+		CreatedAt:   time.Now().UnixNano(),
+	}
+	err := persistence.Database.CompactTable.Update(compactTableModel)
+	if err != nil {
+		_ = context.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	w.activeJobs[jobUuid] = &Job{Events: make(map[chan Event]bool), Subscribers: new(int), Status: PENDING, Mutex: &sync.Mutex{}}
+	w.pendingJobs <- compactTableModel
+
+	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": compactTableModel})
 }
 
-func cleanJob(jobUuid uuid.UUID, jobs map[uuid.UUID]Job) {
-	// TODO this thing DOESN't work
-	for jobs[jobUuid].GetSubs() == 0 {
-		delete(jobs, jobUuid)
+func (w worker) stream(context *gin.Context) {
+	// notify proxy that it shouldn't enable any caching
+	context.Writer.Header().Set("Cache-Control", "no-transform")
+	// force using correct event-stream if there is no proxy
+	context.Writer.Header().Set("Content-Type", "text/event-stream")
+
+	context.SSEvent(STREAM.String(), "start")
+	defer context.SSEvent(STREAM.String(), "end")
+	context.Writer.Flush()
+
+	jobUuid, err := uuid.Parse(context.Param("uuid"))
+	job := w.activeJobs[jobUuid]
+	if err != nil || job == nil || job.Events == nil {
+		context.SSEvent(SERVER.String(), "Logs streaming failed: 404 Not Found")
 		return
 	}
+
+	context.SSEvent(STATUS.String(), job.Status)
+	channel := job.Subscribe()
+	context.Stream(func(w io.Writer) bool {
+		if event, ok := <-channel; ok {
+			context.SSEvent(event.Name.String(), event.Message)
+			return true
+		} else {
+			return false
+		}
+	})
+	job.Unsubscribe(channel)
+	context.SSEvent(STATUS.String(), job.Status)
 }
 
-func initialJobs(pending chan CompactTableModel) {
+func (w worker) runner() {
+	for model := range w.pendingJobs {
+		model := model
+		go func() {
+			jobUuid := model.Uuid
+
+			cmd := exec.Command("pgcompacttable", model.CommandArgs...)
+			pipe, _ := cmd.StdoutPipe()
+			if errStart := cmd.Start(); errStart != nil {
+				w.updateStatus(model, FAILED, errStart.Error())
+				return
+			}
+
+			w.updateStatus(model, RUNNING, "")
+			reader := bufio.NewReader(pipe)
+			line, _, err := reader.ReadLine()
+			file, _ := persistence.File.CompactTable.Open(model.LogsPath)
+			for err == nil {
+				lineString := string(line)
+				_, errFile := file.WriteString(lineString + "\n")
+				if errFile != nil {
+					w.updateStatus(model, FAILED, errFile.Error())
+					return
+				}
+				w.sendEvents(jobUuid, LOG, lineString)
+				line, _, err = reader.ReadLine()
+			}
+
+			w.updateStatus(model, FINISHED, "")
+			w.closeEvents(jobUuid)
+			w.clean(jobUuid)
+		}()
+	}
+}
+
+func (w worker) initiate() {
 	runningJobs, _ := persistence.Database.CompactTable.ListByStatus(RUNNING)
 	for _, runningJob := range runningJobs {
 		_ = persistence.Database.CompactTable.UpdateStatus(runningJob, FAILED)
@@ -208,15 +210,43 @@ func initialJobs(pending chan CompactTableModel) {
 
 	pendingJobs, _ := persistence.Database.CompactTable.ListByStatus(PENDING)
 	for _, pendingJob := range pendingJobs {
-		pending <- pendingJob
+		pendingJob := pendingJob
+		go func() { w.pendingJobs <- pendingJob }()
 	}
 }
 
-func updateStatus(model CompactTableModel, event chan Event, status JobStatus) {
+func (w worker) clean(uuid uuid.UUID) {
+	go func() {
+		for {
+			if w.activeJobs[uuid].Size() == 0 {
+				// TODO FIX fatal error: concurrent map read and map write
+				delete(w.activeJobs, uuid)
+				return
+			}
+		}
+	}()
+}
+
+func (w worker) closeEvents(uuid uuid.UUID) {
+	for subscriber := range w.activeJobs[uuid].Events {
+		close(subscriber)
+	}
+}
+
+func (w worker) sendEvents(uuid uuid.UUID, eventType EventType, message string) {
+	for subscriber := range w.activeJobs[uuid].Events {
+		subscriber <- Event{Name: eventType, Message: message}
+	}
+}
+
+func (w worker) updateStatus(model CompactTableModel, status JobStatus, message string) {
 	dbErr := persistence.Database.CompactTable.UpdateStatus(model, status)
 	if dbErr != nil {
-		event <- Event{Name: SERVER, Message: dbErr.Error()}
+		w.sendEvents(model.Uuid, SERVER, dbErr.Error())
 	} else {
-		event <- Event{Name: STATUS, Message: status.String()}
+		w.activeJobs[model.Uuid].Status = status
+		if message != "" {
+			w.sendEvents(model.Uuid, SERVER, message)
+		}
 	}
 }

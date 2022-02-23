@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	. "ivory/model"
 	"os"
+	"sort"
 )
 
 type CompactTableRepository struct {
@@ -14,28 +15,34 @@ type CompactTableRepository struct {
 }
 
 func (r CompactTableRepository) List() ([]CompactTableModel, error) {
-	modelMap, err := r.common.getList(r.bucket)
-	modelList := make([]CompactTableModel, 0)
-	for _, value := range modelMap {
+	bytesList, err := r.common.getList(r.bucket)
+	modelList := make([]CompactTableModel, len(bytesList))
+	for i, el := range bytesList {
 		var model CompactTableModel
-		buff := bytes.NewBuffer(value)
+		buff := bytes.NewBuffer(el.value)
 		_ = gob.NewDecoder(buff).Decode(&model)
-		modelList = append(modelList, model)
+		modelList[i] = model
 	}
+	sort.Slice(modelList, func(i, j int) bool {
+		return modelList[i].CreatedAt > modelList[j].CreatedAt
+	})
 	return modelList, err
 }
 
 func (r CompactTableRepository) ListByStatus(status JobStatus) ([]CompactTableModel, error) {
-	modelMap, err := r.common.getList(r.bucket)
+	bytesList, err := r.common.getList(r.bucket)
 	modelList := make([]CompactTableModel, 0)
-	for _, value := range modelMap {
+	for _, el := range bytesList {
 		var model CompactTableModel
-		buff := bytes.NewBuffer(value)
+		buff := bytes.NewBuffer(el.value)
 		_ = gob.NewDecoder(buff).Decode(&model)
 		if model.Status == status {
 			modelList = append(modelList, model)
 		}
 	}
+	sort.Slice(modelList, func(i, j int) bool {
+		return modelList[i].CreatedAt > modelList[j].CreatedAt
+	})
 	return modelList, err
 }
 
