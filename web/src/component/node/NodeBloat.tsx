@@ -6,7 +6,6 @@ import {Auth, CompactTable, Target} from "../../app/types";
 import {Error} from "../view/Error";
 import {AxiosError} from "axios";
 import {NodeJob} from "./NodeJob";
-import {isJobEnded} from "../../app/utils";
 
 type Props = { node: string }
 
@@ -29,7 +28,7 @@ export function NodeBloat({node}: Props) {
     return (
         <Grid container direction={"column"} gap={2}>
             {renderForm()}
-            {jobs.map((value) => <NodeJob key={value.uuid} compactTable={value} logOpen={!isJobEnded(value.status)}/>)}
+            {jobs.map((value) => <NodeJob key={value.uuid} compactTable={value}/>)}
         </Grid>
     )
 
