@@ -15,6 +15,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
     })
 
     useEffect(() => {
+        setStatus(initStatus)
         if (isJobEnded(initStatus)) return
 
         const es = new EventSource(`/api/cli/bloat/${uuid}/stream`)
