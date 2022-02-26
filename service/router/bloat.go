@@ -207,12 +207,16 @@ func (w worker) runner() {
 
 			// Run command
 			cmd := exec.Command("pgcompacttable", model.CommandArgs...)
-			w.elements[jobUuid].job.SetCommand(cmd)
-			pipe, _ := cmd.StdoutPipe()
+			pipe, errPipe := cmd.StdoutPipe()
+			if errPipe != nil {
+				w.jobStatusHandler(model, FAILED, true, errPipe)
+				return
+			}
 			if errStart := cmd.Start(); errStart != nil {
 				w.jobStatusHandler(model, FAILED, true, errStart)
 				return
 			}
+			w.elements[jobUuid].job.SetCommand(cmd)
 
 			// Read and write logs from command
 			w.jobStatusHandler(model, RUNNING, false, nil)
@@ -225,11 +229,15 @@ func (w worker) runner() {
 					w.jobStatusHandler(model, FAILED, true, errFileWrite)
 					return
 				}
-				time.Sleep(10 * time.Second)
 				w.sendEvents(jobUuid, LOG, lineString)
 				line, _, errReadLine = reader.ReadLine()
 			}
 
+			// Wait when pipe will be closed
+			if errWait := cmd.Wait(); errWait != nil {
+				w.jobStatusHandler(model, FAILED, true, errWait)
+				return
+			}
 			w.jobStatusHandler(model, FINISHED, true, nil)
 		}()
 	}
@@ -264,12 +272,17 @@ func (w worker) stopper() {
 		id := id
 		go func() {
 			job := w.elements[id].job
-			err := job.GetCommand().Process.Kill()
-			// TODO err should return "process not found" but it doesn't
-			if err == nil {
-				w.jobStatusHandler(w.elements[id].model, STOPPED, true, nil)
-			} else {
-				w.jobStatusHandler(w.elements[id].model, job.GetStatus(), true, err)
+			if cmd := job.GetCommand(); cmd != nil {
+				err := job.GetCommand().Process.Kill()
+				if err == nil {
+					w.jobStatusHandler(w.elements[id].model, STOPPED, true, nil)
+				} else {
+					if job.IsJobActive() {
+						w.jobStatusHandler(w.elements[id].model, FINISHED, true, err)
+					} else {
+						w.jobStatusHandler(w.elements[id].model, job.GetStatus(), true, err)
+					}
+				}
 			}
 		}()
 	}
@@ -279,8 +292,11 @@ func (w worker) jobStatusHandler(model *CompactTableModel, status JobStatus, clo
 	element := w.elements[model.Uuid]
 	if element != nil {
 		dbErr := persistence.Database.CompactTable.UpdateStatus(*model, status)
-		if dbErr != nil || err != nil {
+		if dbErr != nil {
 			w.sendEvents(model.Uuid, SERVER, dbErr.Error())
+		}
+		if err != nil {
+			w.sendEvents(model.Uuid, SERVER, err.Error())
 		}
 
 		element.job.SetStatus(status)
