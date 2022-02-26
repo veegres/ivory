@@ -2,7 +2,7 @@ import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/mat
 import {useState} from "react";
 import {AxiosError} from "axios";
 import {Style} from "../../app/types";
-import {OpenButton} from "./OpenButton";
+import {OpenIcon} from "./OpenIcon";
 
 const style: Style = {
     jsonInput: {padding: '10px 0px', whiteSpace: 'pre-wrap'}
@@ -28,7 +28,7 @@ export function Error({error}: ErrorProps) {
     function General(props: GeneralProps) {
         const {message, type} = props
         return (
-            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenButton show={!!props.json} open={isOpen}/>}>
+            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={!!props.json} open={isOpen}/>}>
                 <AlertTitle>{props.title ?? type.toString()}</AlertTitle>
                 <Box>Message: {message}</Box>
                 {props.json ? <Json json={props.json}/> : null}

@@ -2,6 +2,7 @@ package service
 
 import (
 	. "ivory/model"
+	"os/exec"
 	"sync"
 )
 
@@ -9,6 +10,7 @@ type Job struct {
 	subscribers map[chan Event]bool
 	status      JobStatus
 	size        int
+	command     *exec.Cmd
 	mutex       *sync.Mutex
 }
 
@@ -20,26 +22,23 @@ func (j Job) Create() *Job {
 	return &j
 }
 
-func (j *Job) Status() JobStatus {
+func (j *Job) SetCommand(cmd *exec.Cmd) {
+	j.mutex.Lock()
+	j.command = cmd
+	j.mutex.Unlock()
+}
+
+func (j *Job) GetCommand() *exec.Cmd {
+	return j.command
+}
+
+func (j *Job) GetStatus() JobStatus {
 	return j.status
 }
 
-func (j *Job) Next() JobStatus {
+func (j *Job) SetStatus(status JobStatus) {
 	j.mutex.Lock()
-	switch j.status {
-	case PENDING:
-		j.status = RUNNING
-	case RUNNING:
-		j.status = FINISHED
-	}
-	tmp := j.status
-	j.mutex.Unlock()
-	return tmp
-}
-
-func (j *Job) Failed() {
-	j.mutex.Lock()
-	j.status = FAILED
+	j.status = status
 	j.mutex.Unlock()
 }
 
@@ -50,7 +49,7 @@ func (j *Job) Subscribers() map[chan Event]bool {
 func (j *Job) Subscribe() chan Event {
 	var channel chan Event
 	j.mutex.Lock()
-	if j.Status() != FINISHED {
+	if j.GetStatus() != FINISHED {
 		channel = make(chan Event)
 		j.subscribers[channel] = true
 		j.incrementSubs()
@@ -70,8 +69,8 @@ func (j *Job) Size() int {
 	return j.size
 }
 
-func (j *Job) IsFinished() bool {
-	return j.Status() == FINISHED && j.Size() == 0
+func (j *Job) IsJobActive() bool {
+	return j.GetStatus() == PENDING || j.GetStatus() == RUNNING || j.Size() != 0
 }
 
 func (j *Job) incrementSubs() int {

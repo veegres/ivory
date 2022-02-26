@@ -15,11 +15,11 @@ export function NodeBloat({node}: Props) {
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
-    const initJobs = useQuery(['node/bloat'], bloatApi.list, {onSuccess: (initJobs) => setJobs(initJobs)})
+    const initJobs = useQuery(['node/bloat/list'], bloatApi.list, {onSuccess: (initJobs) => setJobs(initJobs)})
     const leader = useQuery(['node/leader'], () => nodeApi.cluster(node).then((cluster) => {
         return cluster.filter(node => node.role === "leader")[0]
     }))
-    const compact = useMutation(bloatApi.add, {onSuccess: (job) => setJobs([job, ...jobs])})
+    const compact = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
 
     if (leader.isLoading || initJobs.isLoading) return <CircularProgress/>
     if (leader.isError) return <Error error={leader.error as AxiosError}/>
