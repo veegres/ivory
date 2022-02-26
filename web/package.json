@@ -10,7 +10,7 @@
   "dependencies": {
     "@babel/core": "^7.17.5",
     "@codemirror/lang-json": "^0.19.1",
-    "@emotion/react": "^11.7.1",
+    "@emotion/react": "^11.8.1",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.2.5",
     "@mui/material": "^5.4.3",
