@@ -15,7 +15,7 @@
     "@mui/icons-material": "^5.4.2",
     "@mui/material": "^5.4.3",
     "@uiw/react-codemirror": "^4.3.3",
-    "axios": "^0.25.0",
+    "axios": "^0.26.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-query": "^3.34.16",
