@@ -1,10 +1,9 @@
 import {Box, Divider, Grid, IconButton, LinearProgress, Tooltip} from "@mui/material";
 import {useEventJob} from "../../app/hooks";
-import {useState} from "react";
-import {OpenButton} from "../view/OpenButton";
+import React, {ReactElement, useState} from "react";
+import {OpenIcon} from "../view/OpenIcon";
 import {CompactTable} from "../../app/types";
-import {jobStatus} from "../../app/utils";
-import {Clear} from "@mui/icons-material";
+import {Clear, Stop} from "@mui/icons-material";
 import {useMutation, useQueryClient} from "react-query";
 import {bloatApi} from "../../app/api";
 
@@ -29,25 +28,21 @@ export function NodeJob({compactTable}: Props) {
 
     const queryClient = useQueryClient();
     const deleteJob = useMutation(bloatApi.delete, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/bloat'])
+        onSuccess: async () => await queryClient.refetchQueries(['node/bloat/list'])
     })
+    const stopJob = useMutation(bloatApi.stop)
 
-    const {name, color} = jobStatus[status]
     return (
         <Box sx={SX.console}>
             <Grid container sx={SX.header} onClick={() => setOpen(!open)}>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
                     <Grid item>Command</Grid>
                     <Grid item container xs={"auto"} sx={SX.separator}>
-                        <Box sx={{color}}>{name}</Box>
-                        <Tooltip title={"Remove"} placement={"top"}>
-                            <IconButton sx={SX.button} size={"small"} onClick={(e) => {
-                                e.stopPropagation();
-                                deleteJob.mutate(uuid)
-                            }}>
-                                <Clear sx={{fontSize: 18}}/>
-                            </IconButton>
-                        </Tooltip>
+                        <Box sx={{color: status.color}}>{status.name}</Box>
+                        {status.active ?
+                            renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid)) :
+                            renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid))
+                        }
                     </Grid>
                 </Grid>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
@@ -57,7 +52,7 @@ export function NodeJob({compactTable}: Props) {
                         <Box>
                             <Tooltip title={"Open"}>
                                 <IconButton sx={SX.button} size={"small"}>
-                                    <OpenButton open={open} size={20}/>
+                                    <OpenIcon open={open} size={18}/>
                                 </IconButton>
                             </Tooltip>
                         </Box>
@@ -81,6 +76,19 @@ export function NodeJob({compactTable}: Props) {
                 </Box>
                 {isFetching ? <LinearProgress sx={SX.loader} color="inherit"/> : null}
             </>
+        )
+    }
+
+    function renderJobButton(title: string, icon: ReactElement, onClick: () => void) {
+        return (
+            <Tooltip title={title} placement={"top"}>
+                <IconButton sx={SX.button} size={"small"} onClick={(e) => {
+                    e.stopPropagation();
+                    onClick()
+                }}>
+                    {React.cloneElement(icon, {sx: {fontSize: 18}})}
+                </IconButton>
+            </Tooltip>
         )
     }
 }

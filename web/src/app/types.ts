@@ -75,17 +75,12 @@ export interface CompactTable {
     logsPath: string
 }
 
-export interface EventJob {
-    isFetching: boolean
-    logs: string[]
-    status: JobStatus
-}
-
 export enum JobStatus {
     PENDING,
     RUNNING,
     FINISHED,
-    FAILED
+    FAILED,
+    STOPPED
 }
 
 // COMMON

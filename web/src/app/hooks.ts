@@ -1,24 +1,30 @@
 import {useEffect, useState} from "react";
-import {EventJob, EventStream, JobStatus} from "./types";
-import {isJobEnded} from "./utils";
+import {EventStream, JobStatus} from "./types";
 import {useQuery} from "react-query";
 import {bloatApi} from "./api";
+import {jobStatus} from "./utils";
+
+export interface EventJob {
+    isFetching: boolean;
+    logs: string[];
+    status: { name: string; color: string; active: boolean }
+}
 
 export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean): EventJob {
     const [logs, setLogs] = useState<string[]>([])
-    const [status, setStatus] = useState<JobStatus>(initStatus)
+    const [status, setStatus] = useState(jobStatus[initStatus])
     const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
 
-    const {isFetching} = useQuery(['node/bloat/logs', uuid], () => bloatApi.getLogs(uuid), {
+    const {isFetching} = useQuery(['node/bloat/logs', uuid], () => bloatApi.logs(uuid), {
         onSuccess: data => setLogs(data),
-        enabled: isJobEnded(initStatus) && isOpen && logs.length === 0
+        enabled: !jobStatus[initStatus].active && isOpen && logs.length === 0
     })
 
     useEffect(() => {
-        setStatus(initStatus)
-        if (isJobEnded(initStatus)) return
+        setStatus(jobStatus[initStatus])
+        if (!jobStatus[initStatus].active) return
 
-        const es = new EventSource(`/api/cli/bloat/${uuid}/stream`)
+        const es = bloatApi.stream(uuid)
         const close = () => {
             es.close();
             setEventSourceFetching(false)
@@ -27,7 +33,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         es.onopen = () => setEventSourceFetching(true)
         es.addEventListener("log", (e) => addLog(e.data))
         es.addEventListener("server", (e) => addLog(e.data))
-        es.addEventListener("status", (e) => setStatus(e.data))
+        es.addEventListener("status", (e) => setStatus(jobStatus[e.data]))
         es.addEventListener("stream", (e) => {
             if (e.data === EventStream.END) close()
         })

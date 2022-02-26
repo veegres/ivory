@@ -7,11 +7,10 @@ export const nodeColor: { [key: string]: string } = {
     replica: blue[500]
 }
 
-export const jobStatus: { [key: number]: { name: string, color: string } } = {
-    [JobStatus.PENDING]: {name: "PENDING", color: "#b9b9b9"},
-    [JobStatus.RUNNING]: {name: "RUNNING", color: "#b97800"},
-    [JobStatus.FINISHED]: {name: "FINISHED", color: "#00b919"},
-    [JobStatus.FAILED]: {name: "FAILED", color: "#d20000"},
+export const jobStatus: { [key: number]: { name: string, color: string, active: boolean } } = {
+    [JobStatus.PENDING]: {name: "PENDING", color: "#b9b9b9", active: true},
+    [JobStatus.RUNNING]: {name: "RUNNING", color: "#b97800", active: true},
+    [JobStatus.FINISHED]: {name: "FINISHED", color: "#00b919", active: false},
+    [JobStatus.FAILED]: {name: "FAILED", color: "#d20000", active: false},
+    [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
 }
-
-export const isJobEnded = (status: JobStatus) => status === JobStatus.FAILED || status === JobStatus.FINISHED

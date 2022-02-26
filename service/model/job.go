@@ -9,6 +9,7 @@ const (
 	RUNNING
 	FINISHED
 	FAILED
+	STOPPED
 )
 
 func (j JobStatus) String() string {

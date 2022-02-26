@@ -2,6 +2,7 @@ package router
 
 import (
 	"bufio"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"io"
@@ -21,11 +22,13 @@ func (r routes) CliGroup(group *gin.RouterGroup) {
 
 	node := group.Group("/cli")
 	node.GET("/bloat", getCompactTableList)
-	node.POST("/bloat", w.createCompactTable)
-	node.DELETE("/bloat/:uuid", deleteCompactTable)
 	node.GET("/bloat/:uuid", getCompactTable)
 	node.GET("/bloat/:uuid/logs", getCompactTableLogs)
-	node.GET("/bloat/:uuid/stream", w.stream)
+
+	node.POST("/bloat/job/start", w.StartJob)
+	node.POST("/bloat/job/:uuid/stop", w.StopJob)
+	node.DELETE("/bloat/job/:uuid/delete", w.DeleteJob)
+	node.GET("/bloat/job/:uuid/stream", w.StreamJob)
 }
 
 func getCompactTableLogs(context *gin.Context) {
@@ -52,54 +55,30 @@ func getCompactTable(context *gin.Context) {
 	if err != nil {
 		_ = context.AbortWithError(http.StatusBadRequest, parseErr)
 	}
-
 	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": compactTable})
 }
 
-// TODO fix deletion for PENDING AND RUNNING jobs
-func deleteCompactTable(context *gin.Context) {
-	jobUuid, _ := uuid.Parse(context.Param("uuid"))
-	errFile := persistence.File.CompactTable.Delete(jobUuid)
-	if errFile != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, errFile)
-	}
-	errDb := persistence.Database.CompactTable.Delete(jobUuid)
-	if errDb != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, errDb)
-	}
-}
-
 type worker struct {
-	models chan CompactTableModel
-	jobs   map[uuid.UUID]*Job
-	mutex  *sync.Mutex
+	start    chan uuid.UUID
+	stop     chan uuid.UUID
+	elements map[uuid.UUID]*element
+	mutex    *sync.Mutex
 }
 
 func (w worker) Build() *worker {
-	w.models = make(chan CompactTableModel)
-	w.jobs = make(map[uuid.UUID]*Job)
+	w.start = make(chan uuid.UUID)
+	w.stop = make(chan uuid.UUID)
+	w.elements = make(map[uuid.UUID]*element)
 	w.mutex = &sync.Mutex{}
 
 	go w.initializer()
 	go w.runner()
 	go w.cleaner()
+	go w.stopper()
 	return &w
 }
 
-func (w worker) CreateJob(model CompactTableModel) {
-	w.models <- model
-	w.mutex.Lock()
-	w.jobs[model.Uuid] = Job{}.Create()
-	w.mutex.Unlock()
-}
-
-func (w worker) DeleteJob(id uuid.UUID) {
-	w.mutex.Lock()
-	delete(w.jobs, id)
-	w.mutex.Unlock()
-}
-
-func (w worker) createCompactTable(context *gin.Context) {
+func (w worker) StartJob(context *gin.Context) {
 	var cli CompactTableRequest
 	_ = context.ShouldBindJSON(&cli)
 
@@ -147,30 +126,33 @@ func (w worker) createCompactTable(context *gin.Context) {
 	if err != nil {
 		_ = context.AbortWithError(http.StatusBadRequest, err)
 	}
-	w.CreateJob(compactTableModel)
+	w.addElement(compactTableModel)
 
 	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": compactTableModel})
 }
 
-// TODO we should stream logs from file if job already running and we missed some logs
-func (w worker) stream(context *gin.Context) {
+// StreamJob TODO we should stream logs from file if job already running and we missed some logs
+func (w worker) StreamJob(context *gin.Context) {
 	// notify proxy that it shouldn't enable any caching
 	context.Writer.Header().Set("Cache-Control", "no-transform")
 	// force using correct event-stream if there is no proxy
 	context.Writer.Header().Set("Content-Type", "text/event-stream")
 
+	// start and end stream
 	context.SSEvent(STREAM.String(), "start")
 	defer context.SSEvent(STREAM.String(), "end")
 	context.Writer.Flush()
 
+	// find stream job
 	jobUuid, err := uuid.Parse(context.Param("uuid"))
-	job := w.jobs[jobUuid]
+	job := w.elements[jobUuid].job
 	if err != nil || job == nil {
 		context.SSEvent(SERVER.String(), "Logs streaming failed: 404 Not Found")
 		return
 	}
 
-	context.SSEvent(STATUS.String(), job.Status())
+	// subscribe to stream and stream logs
+	context.SSEvent(STATUS.String(), job.GetStatus())
 	channel := job.Subscribe()
 	if channel != nil {
 		context.Stream(func(w io.Writer) bool {
@@ -183,39 +165,72 @@ func (w worker) stream(context *gin.Context) {
 		})
 		job.Unsubscribe(channel)
 	}
-	context.SSEvent(STATUS.String(), job.Status())
+	context.SSEvent(STATUS.String(), job.GetStatus())
+}
+
+func (w worker) DeleteJob(context *gin.Context) {
+	jobUuid, _ := uuid.Parse(context.Param("uuid"))
+
+	element := w.elements[jobUuid]
+	if element != nil && element.job.IsJobActive() {
+		_ = context.AbortWithError(http.StatusForbidden, errors.New("job is active"))
+		return
+	}
+
+	errFile := persistence.File.CompactTable.Delete(jobUuid)
+	if errFile != nil {
+		_ = context.AbortWithError(http.StatusBadRequest, errFile)
+	}
+	errDb := persistence.Database.CompactTable.Delete(jobUuid)
+	if errDb != nil {
+		_ = context.AbortWithError(http.StatusBadRequest, errDb)
+	}
+}
+
+func (w worker) StopJob(context *gin.Context) {
+	jobUuid, _ := uuid.Parse(context.Param("uuid"))
+	w.stop <- jobUuid
 }
 
 func (w worker) runner() {
-	for model := range w.models {
-		model := model
+	for id := range w.start {
+		model := w.elements[id].model
 		go func() {
 			jobUuid := model.Uuid
 
-			cmd := exec.Command("pgcompacttable", model.CommandArgs...)
-			pipe, _ := cmd.StdoutPipe()
-			if errStart := cmd.Start(); errStart != nil {
-				w.updateStatus(model, errStart)
+			// Open file to write command logs
+			file, errFileOpen := persistence.File.CompactTable.Open(model.LogsPath)
+			if errFileOpen != nil {
+				w.jobStatusHandler(model, FAILED, true, errFileOpen)
 				return
 			}
 
-			w.updateStatus(model, nil)
-			reader := bufio.NewReader(pipe)
-			line, _, err := reader.ReadLine()
-			file, _ := persistence.File.CompactTable.Open(model.LogsPath)
-			for err == nil {
-				lineString := string(line)
-				_, errFile := file.WriteString(lineString + "\n")
-				if errFile != nil {
-					w.updateStatus(model, errFile)
-					return
-				}
-				w.sendEvents(jobUuid, LOG, lineString)
-				line, _, err = reader.ReadLine()
+			// Run command
+			cmd := exec.Command("pgcompacttable", model.CommandArgs...)
+			w.elements[jobUuid].job.SetCommand(cmd)
+			pipe, _ := cmd.StdoutPipe()
+			if errStart := cmd.Start(); errStart != nil {
+				w.jobStatusHandler(model, FAILED, true, errStart)
+				return
 			}
 
-			w.updateStatus(model, nil)
-			w.closeEvents(jobUuid)
+			// Read and write logs from command
+			w.jobStatusHandler(model, RUNNING, false, nil)
+			reader := bufio.NewReader(pipe)
+			line, _, errReadLine := reader.ReadLine()
+			for errReadLine == nil {
+				lineString := string(line)
+				_, errFileWrite := file.WriteString(lineString + "\n")
+				if errFileWrite != nil {
+					w.jobStatusHandler(model, FAILED, true, errFileWrite)
+					return
+				}
+				time.Sleep(10 * time.Second)
+				w.sendEvents(jobUuid, LOG, lineString)
+				line, _, errReadLine = reader.ReadLine()
+			}
+
+			w.jobStatusHandler(model, FINISHED, true, nil)
 		}()
 	}
 }
@@ -229,43 +244,85 @@ func (w worker) initializer() {
 	pendingJobs, _ := persistence.Database.CompactTable.ListByStatus(PENDING)
 	for _, pendingJob := range pendingJobs {
 		pendingJob := pendingJob
-		go func() { w.models <- pendingJob }()
+		go func() { w.addElement(pendingJob) }()
 	}
 }
 
 func (w worker) cleaner() {
 	ticket := time.NewTicker(10 * time.Second)
 	for range ticket.C {
-		for id, job := range w.jobs {
-			if job.IsFinished() {
-				w.DeleteJob(id)
+		for id, element := range w.elements {
+			if !element.job.IsJobActive() {
+				w.removeElement(id)
 			}
 		}
 	}
 }
 
-func (w worker) closeEvents(uuid uuid.UUID) {
-	for subscriber := range w.jobs[uuid].Subscribers() {
-		close(subscriber)
+func (w worker) stopper() {
+	for id := range w.stop {
+		id := id
+		go func() {
+			job := w.elements[id].job
+			err := job.GetCommand().Process.Kill()
+			// TODO err should return "process not found" but it doesn't
+			if err == nil {
+				w.jobStatusHandler(w.elements[id].model, STOPPED, true, nil)
+			} else {
+				w.jobStatusHandler(w.elements[id].model, job.GetStatus(), true, err)
+			}
+		}()
 	}
 }
 
-func (w worker) sendEvents(uuid uuid.UUID, eventType EventType, message string) {
-	for subscriber := range w.jobs[uuid].Subscribers() {
-		subscriber <- Event{Name: eventType, Message: message}
-	}
-}
+func (w worker) jobStatusHandler(model *CompactTableModel, status JobStatus, close bool, err error) {
+	element := w.elements[model.Uuid]
+	if element != nil {
+		dbErr := persistence.Database.CompactTable.UpdateStatus(*model, status)
+		if dbErr != nil || err != nil {
+			w.sendEvents(model.Uuid, SERVER, dbErr.Error())
+		}
 
-func (w worker) updateStatus(model CompactTableModel, err error) {
-	job := w.jobs[model.Uuid]
-	dbErr := persistence.Database.CompactTable.UpdateStatus(model, job.Next())
-	if dbErr != nil {
-		job.Failed()
-		w.sendEvents(model.Uuid, SERVER, dbErr.Error())
-	} else {
-		if err != nil {
-			job.Failed()
-			w.sendEvents(model.Uuid, SERVER, err.Error())
+		element.job.SetStatus(status)
+
+		if close == true {
+			w.closeEvents(model.Uuid)
 		}
 	}
+}
+
+func (w worker) sendEvents(id uuid.UUID, eventType EventType, message string) {
+	element := w.elements[id]
+	if element != nil {
+		for subscriber := range element.job.Subscribers() {
+			subscriber <- Event{Name: eventType, Message: message}
+		}
+	}
+}
+
+func (w worker) closeEvents(id uuid.UUID) {
+	element := w.elements[id]
+	if element != nil {
+		for subscriber := range element.job.Subscribers() {
+			close(subscriber)
+		}
+	}
+}
+
+type element struct {
+	job   *Job
+	model *CompactTableModel
+}
+
+func (w worker) addElement(model CompactTableModel) {
+	w.mutex.Lock()
+	w.elements[model.Uuid] = &element{job: Job{}.Create(), model: &model}
+	w.mutex.Unlock()
+	w.start <- model.Uuid
+}
+
+func (w worker) removeElement(id uuid.UUID) {
+	w.mutex.Lock()
+	delete(w.elements, id)
+	w.mutex.Unlock()
 }

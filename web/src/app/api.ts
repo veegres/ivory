@@ -36,12 +36,16 @@ export const clusterApi = {
 }
 
 export const bloatApi = {
-    add: (ctr: CompactTableRequest) =>
-        api.post<Response<CompactTable>>(`/cli/bloat`, ctr).then((response) => response.data.response),
     list: () =>
         api.get<Response<CompactTable[]>>(`/cli/bloat`).then((response) => response.data.response),
+    logs: (uuid: string) =>
+        api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"}).then(({data}) => data === "" ? [] : data.split("\n")),
+
+    start: (ctr: CompactTableRequest) =>
+        api.post<Response<CompactTable>>(`/cli/bloat/job/start`, ctr).then((response) => response.data.response),
+    stop: (uuid: string) =>
+        api.post<Response<CompactTable>>(`/cli/bloat/job/${uuid}/stop`).then((response) => response.data.response),
     delete: (uuid: string) =>
-        api.delete(`/cli/bloat/${uuid}`).then((response) => response.data.response),
-    getLogs: (uuid: string) =>
-        api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"}).then(({data}) => data === "" ? [] : data.split("\n"))
+        api.delete(`/cli/bloat/job/${uuid}/delete`).then((response) => response.data.response),
+    stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
 }
