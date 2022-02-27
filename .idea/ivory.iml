@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="Go" enabled="true" />
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/docker" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/service" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/web" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/service/bolt" />
+      <excludeFolder url="file://$MODULE_DIR$/web/build" />
+      <excludeFolder url="file://$MODULE_DIR$/service/build" />
+      <excludeFolder url="file://$MODULE_DIR$/service/data" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/httpRequests" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
