@@ -27,7 +27,7 @@ jobs:
           go-version: '1.17'
 
       - name: Set up Node (yarn, npm)
-        uses: actions/setup-node@v2.5.1
+        uses: actions/setup-node@v3
         with:
           node-version: '16'
 
