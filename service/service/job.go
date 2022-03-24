@@ -70,7 +70,7 @@ func (j *Job) Size() int {
 }
 
 func (j *Job) IsJobActive() bool {
-	return j.GetStatus() == PENDING || j.GetStatus() == RUNNING || j.Size() != 0
+	return j.GetStatus() == PENDING || j.GetStatus() == RUNNING
 }
 
 func (j *Job) incrementSubs() int {
