@@ -49,7 +49,7 @@ func (j *Job) Subscribers() map[chan Event]bool {
 func (j *Job) Subscribe() chan Event {
 	var channel chan Event
 	j.mutex.Lock()
-	if j.GetStatus() != FINISHED {
+	if j.IsJobActive() {
 		channel = make(chan Event)
 		j.subscribers[channel] = true
 		j.incrementSubs()

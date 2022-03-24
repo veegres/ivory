@@ -10,6 +10,7 @@ import (
 	"ivory/persistence"
 	. "ivory/service"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -147,12 +148,14 @@ func (w worker) StreamJob(context *gin.Context) {
 	jobUuid, err := uuid.Parse(context.Param("uuid"))
 	job := w.elements[jobUuid].job
 	if err != nil || job == nil {
-		context.SSEvent(SERVER.String(), "Logs streaming failed: 404 Not Found")
+		context.SSEvent(SERVER.String(), "Logs streaming failed: Stream Not Found")
 		return
 	}
 
 	// subscribe to stream and stream logs
 	context.SSEvent(STATUS.String(), job.GetStatus())
+	context.Writer.Flush()
+
 	channel := job.Subscribe()
 	if channel != nil {
 		context.Stream(func(w io.Writer) bool {
@@ -165,7 +168,9 @@ func (w worker) StreamJob(context *gin.Context) {
 		})
 		job.Unsubscribe(channel)
 	}
+
 	context.SSEvent(STATUS.String(), job.GetStatus())
+	context.Writer.Flush()
 }
 
 func (w worker) DeleteJob(context *gin.Context) {
@@ -194,51 +199,41 @@ func (w worker) StopJob(context *gin.Context) {
 
 func (w worker) runner() {
 	for id := range w.start {
+		element := w.elements[id]
 		model := w.elements[id].model
+		jobUuid := model.Uuid
 		go func() {
-			jobUuid := model.Uuid
-
-			// Open file to write command logs
-			file, errFileOpen := persistence.File.CompactTable.Open(model.LogsPath)
-			if errFileOpen != nil {
-				w.jobStatusHandler(model, FAILED, true, errFileOpen)
-				return
-			}
+			w.jobStatusHandler(element, RUNNING, nil)
 
 			// Run command
 			cmd := exec.Command("pgcompacttable", model.CommandArgs...)
 			pipe, errPipe := cmd.StdoutPipe()
 			if errPipe != nil {
-				w.jobStatusHandler(model, FAILED, true, errPipe)
+				w.jobStatusHandler(element, FAILED, errPipe)
 				return
 			}
 			if errStart := cmd.Start(); errStart != nil {
-				w.jobStatusHandler(model, FAILED, true, errStart)
+				w.jobStatusHandler(element, FAILED, errStart)
 				return
 			}
 			w.elements[jobUuid].job.SetCommand(cmd)
 
 			// Read and write logs from command
-			w.jobStatusHandler(model, RUNNING, false, nil)
 			reader := bufio.NewReader(pipe)
 			line, _, errReadLine := reader.ReadLine()
 			for errReadLine == nil {
 				lineString := string(line)
-				_, errFileWrite := file.WriteString(lineString + "\n")
-				if errFileWrite != nil {
-					w.jobStatusHandler(model, FAILED, true, errFileWrite)
-					return
-				}
-				w.sendEvents(jobUuid, LOG, lineString)
+				w.addLogElement(element, LOG, lineString)
 				line, _, errReadLine = reader.ReadLine()
 			}
 
 			// Wait when pipe will be closed
 			if errWait := cmd.Wait(); errWait != nil {
-				w.jobStatusHandler(model, FAILED, true, errWait)
+				w.jobStatusHandler(element, FAILED, errWait)
 				return
 			}
-			w.jobStatusHandler(model, FINISHED, true, nil)
+
+			w.jobStatusHandler(element, FINISHED, nil)
 		}()
 	}
 }
@@ -260,7 +255,7 @@ func (w worker) cleaner() {
 	ticket := time.NewTicker(10 * time.Second)
 	for range ticket.C {
 		for id, element := range w.elements {
-			if !element.job.IsJobActive() {
+			if !element.job.IsJobActive() && element.job.Size() == 0 {
 				w.removeElement(id)
 			}
 		}
@@ -271,16 +266,17 @@ func (w worker) stopper() {
 	for id := range w.stop {
 		id := id
 		go func() {
-			job := w.elements[id].job
+			element := w.elements[id]
+			job := element.job
 			if cmd := job.GetCommand(); cmd != nil {
 				err := job.GetCommand().Process.Kill()
 				if err == nil {
-					w.jobStatusHandler(w.elements[id].model, STOPPED, true, nil)
+					w.jobStatusHandler(element, STOPPED, nil)
 				} else {
 					if job.IsJobActive() {
-						w.jobStatusHandler(w.elements[id].model, FINISHED, true, err)
+						w.jobStatusHandler(element, FINISHED, err)
 					} else {
-						w.jobStatusHandler(w.elements[id].model, job.GetStatus(), true, err)
+						w.jobStatusHandler(element, job.GetStatus(), err)
 					}
 				}
 			}
@@ -288,52 +284,43 @@ func (w worker) stopper() {
 	}
 }
 
-func (w worker) jobStatusHandler(model *CompactTableModel, status JobStatus, close bool, err error) {
-	element := w.elements[model.Uuid]
-	if element != nil {
-		dbErr := persistence.Database.CompactTable.UpdateStatus(*model, status)
-		if dbErr != nil {
-			w.sendEvents(model.Uuid, SERVER, dbErr.Error())
-		}
-		if err != nil {
-			w.sendEvents(model.Uuid, SERVER, err.Error())
-		}
-
-		element.job.SetStatus(status)
-
-		if close == true {
-			w.closeEvents(model.Uuid)
-		}
+func (w worker) jobStatusHandler(element *element, status JobStatus, err error) {
+	model := element.model
+	element.job.SetStatus(status)
+	dbErr := persistence.Database.CompactTable.UpdateStatus(*model, status)
+	if dbErr != nil {
+		w.addLogElement(element, SERVER, dbErr.Error())
+	}
+	if err != nil {
+		w.addLogElement(element, SERVER, err.Error())
 	}
 }
 
-func (w worker) sendEvents(id uuid.UUID, eventType EventType, message string) {
-	element := w.elements[id]
-	if element != nil {
-		for subscriber := range element.job.Subscribers() {
-			subscriber <- Event{Name: eventType, Message: message}
-		}
+func (w worker) addLogElement(element *element, eventType EventType, message string) {
+	_, errFileWrite := element.file.WriteString(message + "\n")
+	if errFileWrite != nil {
+		w.sendEvents(element.job, SERVER, errFileWrite.Error())
+		return
 	}
+	w.sendEvents(element.job, eventType, message)
 }
 
-func (w worker) closeEvents(id uuid.UUID) {
-	element := w.elements[id]
-	if element != nil {
-		for subscriber := range element.job.Subscribers() {
-			// TODO we can close it earlier then it will finish streaming
-			close(subscriber)
-		}
+func (w worker) sendEvents(job *Job, eventType EventType, message string) {
+	for subscriber := range job.Subscribers() {
+		subscriber <- Event{Name: eventType, Message: message}
 	}
 }
 
 type element struct {
 	job   *Job
 	model *CompactTableModel
+	file  *os.File
 }
 
 func (w worker) addElement(model CompactTableModel) {
 	w.mutex.Lock()
-	w.elements[model.Uuid] = &element{job: Job{}.Create(), model: &model}
+	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
+	w.elements[model.Uuid] = &element{job: Job{}.Create(), model: &model, file: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid
 }
