@@ -320,6 +320,7 @@ func (w worker) closeEvents(id uuid.UUID) {
 	element := w.elements[id]
 	if element != nil {
 		for subscriber := range element.job.Subscribers() {
+			// TODO we can close it earlier then it will finish streaming
 			close(subscriber)
 		}
 	}
