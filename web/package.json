@@ -15,7 +15,7 @@
     "@codemirror/lang-json": "^0.19.2",
     "@emotion/react": "^11.8.1",
     "@emotion/styled": "^11.8.1",
-    "@mui/icons-material": "^5.4.2",
+    "@mui/icons-material": "^5.5.1",
     "@mui/material": "^5.5.2",
     "@uiw/react-codemirror": "^4.5.1",
     "autoprefixer": "^10.4.4",
