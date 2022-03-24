@@ -13,7 +13,7 @@ jobs:
 
       # Set up environment
       - name: Checkout & fetch repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
