@@ -10,8 +10,8 @@ docker-compose up -d
 
 ### Connection
 
-- **Patroni Rest API:** `localhost:8001-8003` (example http://patroni1:8008)
-- **Postgres Ports:** `localhost:5001-5003` (example `psql --host=localhost --port=5003 --username=postgres`, `password=password`)
+- **Patroni Rest API:** `localhost:[8001-8003]` (example http://patroni1:8008)
+- **Postgres Ports:** `localhost:[5001-5003]` (example `psql --host=localhost --port=5003 --username=postgres`, `password=password`)
 - **HAProxy Statistics:** `localhost:8408`
 
 
