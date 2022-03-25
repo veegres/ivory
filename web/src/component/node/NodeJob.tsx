@@ -1,4 +1,4 @@
-import {Box, Divider, Grid, IconButton, LinearProgress, Tooltip} from "@mui/material";
+import {Box, CircularProgress, Divider, Grid, IconButton, LinearProgress, Tooltip} from "@mui/material";
 import {useEventJob} from "../../app/hooks";
 import React, {ReactElement, useState} from "react";
 import {OpenIcon} from "../view/OpenIcon";
@@ -16,6 +16,7 @@ const SX = {
     divider: {margin: '5px 0'},
     logs: {maxHeight: '350px', overflow: 'auto'},
     button: {padding: '1px', marginLeft: '4px', color: '#f6f6f6'},
+    jobButton: {fontSize: 18},
     separator: {marginLeft: '10px'}
 }
 
@@ -23,7 +24,7 @@ type Props = { compactTable: CompactTable }
 
 export function NodeJob({compactTable}: Props) {
     const {uuid, status: initStatus, command} = compactTable
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(true)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
     const queryClient = useQueryClient();
@@ -40,8 +41,8 @@ export function NodeJob({compactTable}: Props) {
                     <Grid item container xs={"auto"} sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
                         {status.active ?
-                            renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid)) :
-                            renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid))
+                            renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isLoading) :
+                            renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isLoading)
                         }
                     </Grid>
                 </Grid>
@@ -70,24 +71,33 @@ export function NodeJob({compactTable}: Props) {
             <>
                 <Divider sx={SX.divider} textAlign={"left"} light={true}>LOGS</Divider>
                 <Box display={"p"} sx={SX.logs}>
-                    {logs.length !== 0 ? logs.map((line, index) => (<Box key={index} sx={SX.line}>{line}</Box>)) : (
-                        <Box sx={SX.emptyLine}>{"< EMPTY >"}</Box>
-                    )}
+                    {logs.length === 0 ? isFetching ? (
+                        <Box sx={SX.emptyLine}>{"< WAITING FOR LOGS >"}</Box>
+                    ) : (
+                        <Box sx={SX.emptyLine}>{"< NO LOGS >"}</Box>
+                    ) : logs.map((line, index) => (
+                        <Box key={index} sx={SX.line}>{line}</Box>
+                    ))}
                 </Box>
                 {isFetching ? <LinearProgress sx={SX.loader} color="inherit"/> : null}
             </>
         )
     }
 
-    function renderJobButton(title: string, icon: ReactElement, onClick: () => void) {
+    function renderJobButton(title: string, icon: ReactElement, onClick: () => void, isLoading: boolean) {
         return (
             <Tooltip title={title} placement={"top"}>
-                <IconButton sx={SX.button} size={"small"} onClick={(e) => {
-                    e.stopPropagation();
-                    onClick()
-                }}>
-                    {React.cloneElement(icon, {sx: {fontSize: 18}})}
-                </IconButton>
+                <Box>
+                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 2} sx={SX.button} /> : (
+                        <IconButton
+                            sx={SX.button}
+                            size={"small"}
+                            onClick={(e) => {e.stopPropagation(); onClick()}}
+                        >
+                            {React.cloneElement(icon, {sx: SX.jobButton})}
+                        </IconButton>
+                    )}
+                </Box>
             </Tooltip>
         )
     }
