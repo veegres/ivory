@@ -15,7 +15,8 @@ const SX = {
     loader: {margin: '10px 0 5px'},
     divider: {margin: '5px 0'},
     logs: {maxHeight: '350px', overflow: 'auto'},
-    button: {padding: '1px', marginLeft: '4px', color: '#f6f6f6'},
+    button: {padding: '1px', color: '#f6f6f6'},
+    tooltipBox: {marginLeft: '4px'},
     jobButton: {fontSize: 18},
     separator: {marginLeft: '10px'}
 }
@@ -50,13 +51,13 @@ export function NodeJob({compactTable}: Props) {
                     <Grid item>{command}</Grid>
                     <Grid item container xs={"auto"} sx={SX.separator}>
                         <Tooltip title={uuid}><Box>{uuid.substring(0, 8)}</Box></Tooltip>
-                        <Box>
-                            <Tooltip title={"Open"}>
+                        <Tooltip title={"Open"}>
+                            <Box sx={SX.tooltipBox}>
                                 <IconButton sx={SX.button} size={"small"}>
                                     <OpenIcon open={open} size={18}/>
                                 </IconButton>
-                            </Tooltip>
-                        </Box>
+                            </Box>
+                        </Tooltip>
                     </Grid>
                 </Grid>
             </Grid>
@@ -87,8 +88,8 @@ export function NodeJob({compactTable}: Props) {
     function renderJobButton(title: string, icon: ReactElement, onClick: () => void, isLoading: boolean) {
         return (
             <Tooltip title={title} placement={"top"}>
-                <Box>
-                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 2} sx={SX.button} /> : (
+                <Box sx={SX.tooltipBox}>
+                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 2} /> : (
                         <IconButton
                             sx={SX.button}
                             size={"small"}
