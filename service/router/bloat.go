@@ -149,11 +149,20 @@ func (w worker) StreamJob(context *gin.Context) {
 	element := w.elements[jobUuid]
 	if err != nil || element == nil {
 		context.SSEvent(SERVER.String(), "Logs streaming failed: Stream Not Found")
+		model, modelErr := persistence.Database.CompactTable.Get(jobUuid)
+		if modelErr != nil {
+			context.SSEvent(STATUS.String(), UNKNOWN.String())
+		} else {
+			context.SSEvent(STATUS.String(), model.Status)
+		}
 		return
 	}
 	job := element.job
 	model := element.model
 
+	// subscribe to stream and show status
+	// we have to subscribe as soon as possible to prevent Job deletion
+	channel := job.Subscribe()
 	context.SSEvent(STATUS.String(), job.GetStatus())
 	context.Writer.Flush()
 
@@ -172,7 +181,6 @@ func (w worker) StreamJob(context *gin.Context) {
 	}
 
 	// subscribe to stream and stream logs
-	channel := job.Subscribe()
 	if channel != nil {
 		context.Stream(func(w io.Writer) bool {
 			if event, ok := <-channel; ok {
@@ -310,6 +318,9 @@ func (w worker) jobStatusHandler(element *element, status JobStatus, err error) 
 	if err != nil {
 		w.addLogElement(element, SERVER, err.Error())
 	}
+	if !element.job.IsJobActive() {
+		w.closeEvents(element.job)
+	}
 }
 
 func (w worker) addLogElement(element *element, eventType EventType, message string) {
@@ -324,6 +335,12 @@ func (w worker) addLogElement(element *element, eventType EventType, message str
 func (w worker) sendEvents(job *Job, eventType EventType, message string) {
 	for subscriber := range job.Subscribers() {
 		subscriber <- Event{Name: eventType, Message: message}
+	}
+}
+
+func (w worker) closeEvents(job *Job) {
+	for subscriber := range job.Subscribers() {
+		close(subscriber)
 	}
 }
 
