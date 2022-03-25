@@ -25,7 +25,7 @@ type Props = { compactTable: CompactTable }
 
 export function NodeJob({compactTable}: Props) {
     const {uuid, status: initStatus, command} = compactTable
-    const [open, setOpen] = useState(true)
+    const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
     const queryClient = useQueryClient();
