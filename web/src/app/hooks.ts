@@ -47,7 +47,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
 
 
     return {
-        isFetching: isEventSourceFetching || isFetching,
+        isFetching: isEventSourceFetching || isFetching || status.active,
         logs,
         status
     }
