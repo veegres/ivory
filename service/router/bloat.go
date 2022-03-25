@@ -34,9 +34,9 @@ func (r routes) CliGroup(group *gin.RouterGroup) {
 
 func getCompactTableLogs(context *gin.Context) {
 	jobUuid, _ := uuid.Parse(context.Param("uuid"))
-	job, _ := persistence.Database.CompactTable.Get(jobUuid)
+	model, _ := persistence.Database.CompactTable.Get(jobUuid)
 	context.Writer.Header().Set("Cache-Control", "no-transform")
-	context.File(job.LogsPath)
+	context.File(model.LogsPath)
 }
 
 func getCompactTableList(context *gin.Context) {
@@ -146,16 +146,32 @@ func (w worker) StreamJob(context *gin.Context) {
 
 	// find stream job
 	jobUuid, err := uuid.Parse(context.Param("uuid"))
-	job := w.elements[jobUuid].job
-	if err != nil || job == nil {
+	element := w.elements[jobUuid]
+	if err != nil || element == nil {
 		context.SSEvent(SERVER.String(), "Logs streaming failed: Stream Not Found")
 		return
 	}
+	job := element.job
+	model := element.model
 
-	// subscribe to stream and stream logs
 	context.SSEvent(STATUS.String(), job.GetStatus())
 	context.Writer.Flush()
 
+	// stream logs from file
+	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		context.SSEvent(LOG.String(), scanner.Text())
+	}
+	if errScanner := scanner.Err(); errScanner != nil {
+		context.SSEvent(LOG.String(), errScanner.Error())
+	}
+	errFileClose := file.Close()
+	if errFileClose != nil {
+		context.SSEvent(LOG.String(), errFileClose.Error())
+	}
+
+	// subscribe to stream and stream logs
 	channel := job.Subscribe()
 	if channel != nil {
 		context.Stream(func(w io.Writer) bool {
