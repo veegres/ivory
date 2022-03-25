@@ -10,6 +10,7 @@ const (
 	FINISHED
 	FAILED
 	STOPPED
+	UNKNOWN
 )
 
 func (j JobStatus) String() string {

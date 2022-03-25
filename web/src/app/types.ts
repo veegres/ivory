@@ -80,7 +80,8 @@ export enum JobStatus {
     RUNNING,
     FINISHED,
     FAILED,
-    STOPPED
+    STOPPED,
+    UNKNOWN
 }
 
 // COMMON
