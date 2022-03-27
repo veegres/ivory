@@ -1,7 +1,5 @@
-import {Box, Chip, FormControl, IconButton, OutlinedInput} from "@mui/material";
+import {Box, Chip, FormControl, OutlinedInput} from "@mui/material";
 import {useStore} from "../../provider/StoreProvider";
-import {Visibility} from "@mui/icons-material";
-import {useEffect, useState} from "react";
 
 const SX = {
     nodesCellIcon: {fontSize: 18},
@@ -13,61 +11,52 @@ const SX = {
 
 type Props = {
     nodes: string[],
-    isReadOnly: false,
-    onChange: (nodes: string[]) => string[],
+    isReadOnly: boolean,
+    onChange: (nodes: string[]) => void,
 }
 
 export function ClustersRowNodes({ nodes, isReadOnly, onChange } : Props) {
-    const [stateNodes, setStateNodes] = useState(nodes.length ? nodes : ['']);
     const {store, setStore} = useStore()
-
-    useEffect(() => { onChange(stateNodes) }, [stateNodes])
 
     return (
         <Box display="grid" gridTemplateColumns={`repeat(auto-fill, minmax(${SX.nodesCellBox.minWidth}, 1fr))`} gap={1}>
-            {stateNodes.map((node, index) => renderClusterNodesCellElement(node, index))}
+            {isReadOnly ? renderChips(nodes) : renderInputs(nodes)}
         </Box>
     )
 
-    function renderClusterNodesCellElement(node: string, index: number) {
-        const isNodeActive = !!node && store.activeNode === node
+    function renderInputs(nodes: string[]) {
+        const nodesWithEmptyElement = nodes[nodes.length - 1] === '' ? nodes : [...nodes, '']
 
-        return isReadOnly ? (
-            <Chip
-                key={index}
-                sx={SX.chipSize}
-                label={node ? node : `Node ${index}`}
-                disabled={!node}
-                variant="outlined"
-                color={isNodeActive ? "primary" : "default"}
-                onClick={handleSelectedNodeChange(node, isNodeActive)}
-            />
-        ) : (
+        return nodesWithEmptyElement.map((node, index) => (
             <FormControl key={index}>
                 <OutlinedInput
                     sx={SX.nodesCellInput}
                     type="string"
-                    endAdornment={renderNodeSelectIcon(node, isNodeActive)}
                     placeholder={`Node ${index}`}
                     size="small"
                     value={node}
                     onChange={(event) => handleChange(index, event.target.value)}
                 />
             </FormControl>
-        )
+        ))
     }
 
-    function renderNodeSelectIcon(node: string, isNodeActive: boolean) {
-        if (!node) return null
+    function renderChips(nodes: string[]) {
+        return nodes.map((node, index) => {
+            const isNodeActive = !!node && store.activeNode === node
 
-        return (
-            <IconButton
-                sx={SX.nodesCellButton}
-                color={isNodeActive ? "primary" : "default"}
-                onClick={handleSelectedNodeChange(node, isNodeActive)}>
-                <Visibility sx={SX.nodesCellIcon} />
-            </IconButton>
-        )
+            return (
+                <Chip
+                    key={index}
+                    sx={SX.chipSize}
+                    label={node ? node : `Node ${index}`}
+                    disabled={!node}
+                    variant="outlined"
+                    color={isNodeActive ? "primary" : "default"}
+                    onClick={handleSelectedNodeChange(node, isNodeActive)}
+                />
+            )
+        })
     }
 
     function handleSelectedNodeChange(selectedNode: string, isNodeActive: boolean) {
@@ -75,6 +64,7 @@ export function ClustersRowNodes({ nodes, isReadOnly, onChange } : Props) {
     }
 
     function handleChange(index: number, value: string) {
-        setStateNodes((previous) => { previous[index] = value; return [...previous] })
+        nodes[index] = value
+        onChange(nodes.filter(node => !!node))
     }
 }
