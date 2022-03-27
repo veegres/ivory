@@ -13,9 +13,7 @@ const SX = {
     nodesCellBox: {minWidth: '150px'},
     nodesCellInput: {height: '32px'},
     chipSize: {width: '100%'},
-    firstCell: {verticalAlign: "top", width: '15%'},
-    secondCell: {verticalAlign: "top"},
-    thirdCell: {verticalAlign: "top", width: '1%'}
+    cell: {verticalAlign: "top"},
 }
 
 const style: Style = {
@@ -29,11 +27,7 @@ type Props = {
 }
 
 export function ClustersRow({name = '', nodes = [''], edit = {}}: Props) {
-    const {
-        isReadOnly = false, toggleEdit = () => {
-        }, closeNewElement = () => {
-        }
-    } = edit
+    const {isReadOnly = false, toggleEdit = () => {}, closeNewElement = () => {}} = edit
     const isNewElement = !name
 
     const {store, setStore} = useStore()
@@ -59,13 +53,13 @@ export function ClustersRow({name = '', nodes = [''], edit = {}}: Props) {
 
     return (
         <TableRow>
-            <TableCell sx={SX.firstCell}>
+            <TableCell sx={SX.cell}>
                 {renderClusterNameCell()}
             </TableCell>
-            <TableCell sx={SX.secondCell}>
+            <TableCell sx={SX.cell}>
                 {renderClusterNodesCell()}
             </TableCell>
-            <TableCell sx={SX.thirdCell} style={style.thirdCell}>
+            <TableCell sx={SX.cell} style={style.thirdCell}>
                 {renderClusterActionsCell()}
             </TableCell>
         </TableRow>
