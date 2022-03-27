@@ -14,7 +14,7 @@ type Props = {
     disabled?: boolean,
 }
 
-export function ClustersActionButton({ loading, icon, onClick, tooltip, disabled = false }: Props) {
+export function ClustersRowButton({ loading, icon, onClick, tooltip, disabled = false }: Props) {
     return (
         <Tooltip title={tooltip} placement="top" disableInteractive>
             <span>

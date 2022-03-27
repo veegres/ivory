@@ -46,7 +46,7 @@ export function Clusters() {
 
                     return <ClustersRow key={name} nodes={nodes} name={name} edit={edit}/>
                 })}
-                {showNewElement ? <ClustersRow edit={{closeNewElement}}/> : null}
+                {showNewElement ? <ClustersRow nodes={[]} name={''} edit={{closeNewElement}}/> : null}
             </TableBodySkeleton>
         </Table>
     )
