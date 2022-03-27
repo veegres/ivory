@@ -10,7 +10,9 @@ import {AxiosError} from "axios";
 import {Add} from "@mui/icons-material";
 
 const SX = {
-    table: {'tr:last-child td': {border: 0}}
+    table: {'tr:last-child td': {border: 0}},
+    nameCell: {width: '15%'},
+    buttonCell: {width: '1%'}
 }
 
 export function Clusters() {
@@ -25,9 +27,9 @@ export function Clusters() {
         <Table size="small" sx={SX.table}>
             <TableHead>
                 <TableRow>
-                    <TableCell>Cluster Name</TableCell>
+                    <TableCell sx={SX.nameCell}>Cluster Name</TableCell>
                     <TableCell>Nodes</TableCell>
-                    <TableHeaderLoader isFetching={isFetching && !isLoading}>
+                    <TableHeaderLoader sx={SX.buttonCell} isFetching={isFetching && !isLoading}>
                         <Tooltip title={'Add new cluster'} disableInteractive>
                             <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}>
                                 <Add/>
