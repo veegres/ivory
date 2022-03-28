@@ -33,7 +33,7 @@
     "@types/react-dom": "17.0.14",
     "@types/react-router-dom": "5.3.3",
     "react-scripts": "5.0.0",
-    "typescript": "4.6.2"
+    "typescript": "4.6.3"
   },
   "eslintConfig": {
     "extends": "react-app"
