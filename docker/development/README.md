@@ -5,7 +5,8 @@ This Dockerfile and docker-compose will run for you patroni cluster with 3 insta
 ### Run
 
 ```
-docker-compose up -d
+1. docker-compose build
+2. docker-compose up -d
 ```
 
 ### Connection
