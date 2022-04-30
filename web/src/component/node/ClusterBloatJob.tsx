@@ -23,7 +23,7 @@ const SX = {
 
 type Props = { compactTable: CompactTable }
 
-export function NodeJob({compactTable}: Props) {
+export function ClusterBloatJob({compactTable}: Props) {
     const {uuid, status: initStatus, command} = compactTable
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)

@@ -1,5 +1,5 @@
 import {blue, green} from "@mui/material/colors";
-import {JobStatus} from "./types";
+import {ColorsMap, JobStatus, Node} from "./types";
 
 export const nodeColor: { [key: string]: string } = {
     master: green[500],
@@ -14,4 +14,21 @@ export const jobStatus: { [key: number]: { name: string, color: string, active: 
     [JobStatus.FINISHED]: {name: "FINISHED", color: "#00b919", active: false},
     [JobStatus.FAILED]: {name: "FAILED", color: "#d20000", active: false},
     [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
+}
+
+export const createColorsMap = (nodes?: Node[]) => {
+    return nodes?.reduce(
+        (map, node) => {
+            const isLeader = node.role === "leader"
+            const color = isLeader ? "success" : "primary"
+            map[node.host] = color
+            map[node.api_url.split('/')[2]] = color
+            return map
+        },
+        {} as ColorsMap
+    )
+}
+
+export const activeNode = (nodes?: Node[]) => {
+    return nodes?.find(node => node.role === "leader")?.api_url.split('/')[2]
 }

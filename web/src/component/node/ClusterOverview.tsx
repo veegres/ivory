@@ -1,38 +1,36 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Table, TableCell, TableHead, TableRow} from "@mui/material";
-import {useMutation, useQuery, useQueryClient} from "react-query";
+import {useMutation, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
 import {Error} from "../view/Error";
-import {TableBodySkeleton} from "../view/TableBodySkeleton";
+import {TableBody} from "../view/TableBody";
 import React, {useState} from "react";
-import {TableHeaderLoader} from "../view/TableHeaderLoader";
+import {TableCellLoader} from "../view/TableCellLoader";
 import {AxiosError} from "axios";
 import {nodeColor} from "../../app/utils";
+import {Node} from "../../app/types";
 
 const SX = {
     tableLastChildRow: {'tr:last-child td': {border: 0}}
 }
 
-type Props = { node: string }
+type Props = { cluster: string }
 type AlertDialog = { isOpen: boolean, title?: string, content?: string, agree?: () => void }
 
-export function NodeCluster({node}: Props) {
+export function ClusterOverview({cluster}: Props) {
     const [alertDialog, setAlertDialog] = useState<AlertDialog>({isOpen: false})
 
-    const {data: members, isLoading, isFetching, isError, error} = useQuery(
-        ['node/cluster'],
-        () => nodeApi.cluster(node),
-        {refetchInterval: 5000}
-    )
-
     const queryClient = useQueryClient();
+    const clusterState = queryClient.getQueryState<Node[], AxiosError>(["node/cluster", cluster])
     const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/cluster'])
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', cluster])
     })
     const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/cluster'])
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', cluster])
     })
 
-    if (isError) return <Error error={error as AxiosError}/>
+    if (!clusterState) return <Error error={"Data not found"}/>
+    const {data: members, isFetching, error} = clusterState
+    if (error) return <Error error={error}/>
 
     return (
         <>
@@ -45,12 +43,12 @@ export function NodeCluster({node}: Props) {
                         <TableCell>Role</TableCell>
                         <TableCell>State</TableCell>
                         <TableCell>Lag</TableCell>
-                        <TableHeaderLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading) && !isLoading}/>
+                        <TableCellLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
-                <TableBodySkeleton isLoading={isLoading} cellCount={6}>
+                <TableBody isLoading={isFetching} cellCount={6}>
                     {renderContent()}
-                </TableBodySkeleton>
+                </TableBody>
             </Table>
         </>
     )

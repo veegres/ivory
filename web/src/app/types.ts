@@ -93,3 +93,11 @@ export enum EventStream {
     START = "start",
     END = "end"
 }
+
+export interface ColorsMap {
+    [name: string]: 'success' | 'primary'
+}
+
+export interface NodeRoleMap {
+    [name: string]: 'leader' | 'replica'
+}
