@@ -5,7 +5,8 @@ import {useMutation, useQueryClient} from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterMap, Style} from "../../app/types";
 import {ClustersRowButton} from "./ClustersRowButton";
-import {ClustersRowNodes} from "./ClustersRowNodes";
+import {DynamicInputs} from "../view/DynamicInputs";
+import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
     nodesCellIcon: {fontSize: 18},
@@ -29,6 +30,7 @@ type Props = {
 export function ClustersRow({name, nodes, edit = {}}: Props) {
     const {isReadOnly = false, toggleEdit = () => {}, closeNewElement = () => {}} = edit
     const isNewElement = !name
+    const {setStore, isClusterActive} = useStore()
 
     const [stateName, setStateName] = useState(name);
     const [stateNodes, setStateNodes] = useState(nodes);
@@ -55,7 +57,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                 {renderClusterNameCell()}
             </TableCell>
             <TableCell sx={SX.cell}>
-                <ClustersRowNodes nodes={stateNodes} isReadOnly={isReadOnly} onChange={n => setStateNodes(n)} />
+                <DynamicInputs inputs={stateNodes} editable={!isReadOnly} placeholder={`Node`} onChange={n => setStateNodes(n)} />
             </TableCell>
             <TableCell sx={SX.cell} style={style.thirdCell}>
                 {isReadOnly ? renderReadButtons(!stateName) : renderActionButtons(!stateName)}
@@ -64,11 +66,14 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     )
 
     function renderClusterNameCell() {
-        if (!isNewElement) {
-            return <Chip sx={SX.chipSize} label={stateName}/>
-        }
-
-        return (
+        const active = isClusterActive(stateName)
+        return !isNewElement ? (
+            <Chip
+                sx={SX.chipSize}
+                color={active ? "primary" : "default"}
+                label={stateName}
+                onClick={() => setStore({ activeNode: active ? '' : stateName })}/>
+        ) : (
             <FormControl fullWidth>
                 <OutlinedInput
                     sx={SX.nodesCellInput}
