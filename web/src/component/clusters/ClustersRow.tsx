@@ -1,12 +1,13 @@
 import {Chip, FormControl, OutlinedInput, TableCell, TableRow} from "@mui/material";
 import {Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material";
 import {useState} from "react";
-import {useMutation, useQueryClient} from "react-query";
-import {clusterApi} from "../../app/api";
+import {useMutation, useQuery, useQueryClient} from "react-query";
+import {clusterApi, nodeApi} from "../../app/api";
 import {ClusterMap, Style} from "../../app/types";
 import {ClustersRowButton} from "./ClustersRowButton";
 import {DynamicInputs} from "../view/DynamicInputs";
 import {useStore} from "../../provider/StoreProvider";
+import {activeNode, createColorsMap} from "../../app/utils";
 
 const SX = {
     nodesCellIcon: {fontSize: 18},
@@ -34,8 +35,10 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
 
     const [stateName, setStateName] = useState(name);
     const [stateNodes, setStateNodes] = useState(nodes);
+    const isActive = isClusterActive(stateName)
 
     const queryClient = useQueryClient();
+    const { data } = useQuery(['node/cluster', name], () => nodeApi.cluster(stateNodes[0]))
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
             const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
@@ -57,7 +60,13 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                 {renderClusterNameCell()}
             </TableCell>
             <TableCell sx={SX.cell}>
-                <DynamicInputs inputs={stateNodes} editable={!isReadOnly} placeholder={`Node`} onChange={n => setStateNodes(n)} />
+                <DynamicInputs
+                    inputs={stateNodes}
+                    colors={createColorsMap(data)}
+                    editable={!isReadOnly}
+                    placeholder={`Node`}
+                    onChange={n => setStateNodes(n)}
+                />
             </TableCell>
             <TableCell sx={SX.cell} style={style.thirdCell}>
                 {isReadOnly ? renderReadButtons(!stateName) : renderActionButtons(!stateName)}
@@ -66,13 +75,13 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     )
 
     function renderClusterNameCell() {
-        const active = isClusterActive(stateName)
         return !isNewElement ? (
             <Chip
                 sx={SX.chipSize}
-                color={active ? "primary" : "default"}
+                color={isActive ? "primary" : "default"}
                 label={stateName}
-                onClick={() => setStore({ activeNode: active ? '' : stateName })}/>
+                onClick={handleChipClick}
+            />
         ) : (
             <FormControl fullWidth>
                 <OutlinedInput
@@ -138,5 +147,15 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
 
     function handleDelete() {
         deleteCluster.mutate(stateName)
+    }
+
+    function handleChipClick() {
+        setStore(!isActive ? {
+            activeCluster: stateName,
+            activeNode: activeNode(data)
+        } : {
+            activeCluster: '',
+            activeNode: ''
+        })
     }
 }

@@ -18,7 +18,7 @@ const highlightExtension = {
 
 type Props = { node: string }
 
-export function NodeConfig({node}: Props) {
+export function ClusterConfig({node}: Props) {
     const theme = useTheme();
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState('')

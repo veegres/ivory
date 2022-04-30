@@ -9,7 +9,7 @@ const SX = {
 
 type Props = { isFetching: boolean, children?: ReactElement, sx?: SxProps<Theme> }
 
-export function TableHeaderLoader({isFetching, children, sx}: Props) {
+export function TableCellLoader({isFetching, children, sx}: Props) {
     return (
         <TableCell sx={sx}>
             <Box display={"flex"} justifyContent={"right"} alignItems={"center"} gap={1}>

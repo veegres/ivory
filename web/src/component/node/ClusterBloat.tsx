@@ -5,11 +5,11 @@ import {useState} from "react";
 import {Auth, CompactTable, Target} from "../../app/types";
 import {Error} from "../view/Error";
 import {AxiosError} from "axios";
-import {NodeJob} from "./NodeJob";
+import {ClusterBloatJob} from "./ClusterBloatJob";
 
 type Props = { node: string }
 
-export function NodeBloat({node}: Props) {
+export function ClusterBloat({node}: Props) {
     const [auth, setAuth] = useState<Auth>({username: '', password: ''})
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
@@ -28,7 +28,7 @@ export function NodeBloat({node}: Props) {
     return (
         <Grid container direction={"column"} gap={2}>
             {renderForm()}
-            {jobs.map((value) => <NodeJob key={value.uuid} compactTable={value}/>)}
+            {jobs.map((value) => <ClusterBloatJob key={value.uuid} compactTable={value}/>)}
         </Grid>
     )
 

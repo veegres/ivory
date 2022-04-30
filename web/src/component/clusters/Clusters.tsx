@@ -4,14 +4,14 @@ import {clusterApi} from "../../app/api";
 import {ClustersRow} from "./ClustersRow";
 import React, {useState} from "react";
 import {Error} from "../view/Error";
-import {TableBodySkeleton} from "../view/TableBodySkeleton";
-import {TableHeaderLoader} from "../view/TableHeaderLoader";
+import {TableBody} from "../view/TableBody";
+import {TableCellLoader} from "../view/TableCellLoader";
 import {AxiosError} from "axios";
 import {Add} from "@mui/icons-material";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
-    nameCell: {width: '15%'},
+    nameCell: {width: '200px'},
     buttonCell: {width: '1%'}
 }
 
@@ -29,16 +29,16 @@ export function Clusters() {
                 <TableRow>
                     <TableCell sx={SX.nameCell}>Cluster Name</TableCell>
                     <TableCell>Nodes</TableCell>
-                    <TableHeaderLoader sx={SX.buttonCell} isFetching={isFetching && !isLoading}>
+                    <TableCellLoader sx={SX.buttonCell} isFetching={isFetching && !isLoading}>
                         <Tooltip title={'Add new cluster'} disableInteractive>
                             <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}>
                                 <Add/>
                             </IconButton>
                         </Tooltip>
-                    </TableHeaderLoader>
+                    </TableCellLoader>
                 </TableRow>
             </TableHead>
-            <TableBodySkeleton isLoading={isLoading} cellCount={3}>
+            <TableBody isLoading={isLoading} cellCount={3}>
                 {Object.entries(clusterMap ?? {}).map(([name, nodes]) => {
                     const isReadOnly = name !== editNode
                     const toggleEdit = () => setEditNode(isReadOnly ? name : '')
@@ -47,7 +47,7 @@ export function Clusters() {
                     return <ClustersRow key={name} nodes={nodes} name={name} edit={edit}/>
                 })}
                 {showNewElement ? <ClustersRow nodes={[]} name={''} edit={{closeNewElement}}/> : null}
-            </TableBodySkeleton>
+            </TableBody>
         </Table>
     )
 }

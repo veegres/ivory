@@ -1,70 +1,67 @@
-import {Item} from "../view/Item";
-import {NodeOverview} from "./NodeOverview";
-import {NodeCluster} from "./NodeCluster";
-import {NodeConfig} from "./NodeConfig";
-import {Alert, Box, Grid, Tab, Tabs} from "@mui/material";
-import React, {useState} from "react";
-import {useStore} from "../../provider/StoreProvider";
-import {NodeBloat} from "./NodeBloat";
-
+import {Box, Grid, Skeleton} from "@mui/material";
+import {nodeApi} from "../../app/api";
+import {useQuery} from "react-query";
+import {Error} from "../view/Error";
+import React from "react";
+import {AxiosError} from "axios";
+import {nodeColor} from "../../app/utils";
+import {Style} from "../../app/types";
 
 const SX = {
-    mainBox: {padding: '10px 20px 15px'},
-    infoAlert: {justifyContent: 'center'}
+    nodeStatusBlock: {height: '120px', minWidth: '200px', borderRadius: '4px', color: 'white', fontSize: '24px', fontWeight: 900},
+    item: {margin: '0px 15px'},
+    title: {color: 'text.secondary', fontWeight: 'bold'}
+}
+const style: Style = {
+    itemText: {whiteSpace: 'pre-wrap'}
 }
 
-type InfoProps = { text: string }
+type OverviewProps = { node: string }
+type ItemProps = { name: string, value?: string }
+type StatusProps = { role?: string }
 
-export function Node() {
-    const {store: {activeNode}} = useStore()
-    const [tab, setTab] = useState(0)
+export function Node({node}: OverviewProps) {
+    const {data: nodePatroni, isLoading, isError, error} = useQuery(['node/overview', node], () => nodeApi.overview(node))
+    if (isError) return <Error error={error as AxiosError}/>
 
     return (
-        <Grid container>
-            <Item>
-                <Tabulation/>
-                <Box sx={SX.mainBox}>
-                    {!activeNode ? <NonSelectedBlock/> : <ActiveBlock/>}
-                </Box>
-            </Item>
+        <Grid container direction="row">
+            <Grid item xs="auto">
+                <NodeStatus role={nodePatroni?.role}/>
+            </Grid>
+            <Grid item xs container direction="column">
+                <Grid item><Item name="Node" value={node}/></Grid>
+                <Grid item><Item name="State" value={nodePatroni?.state} /></Grid>
+                <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope} /></Grid>
+                <Grid item><Item name="Timeline" value={nodePatroni?.timeline.toString()} /></Grid>
+                <Grid item><Item name="Xlog" value={JSON.stringify(nodePatroni?.xlog, null, 4)} /></Grid>
+            </Grid>
         </Grid>
     )
 
-    function Tabulation() {
+    function Item(props: ItemProps) {
+        if (isLoading) return <Skeleton height={24} sx={SX.item}/>
+
         return (
-            <Tabs value={tab} onChange={(_, value) => setTab(value)} centered>
-                <Tab label={"Overview"} disabled={!activeNode} />
-                <Tab label={"Cluster"} disabled={!activeNode} />
-                <Tab label={"Config"} disabled={!activeNode}/>
-                <Tab label={"Bloat"} disabled={!activeNode}/>
-            </Tabs>
+            <Box sx={SX.item}>
+                <Box component={"span"} sx={SX.title}>{props.name}:</Box>
+                {` `}
+                <span style={style.itemText}>{props.value ?? '-'}</span>
+            </Box>
         )
     }
 
-    function NonSelectedBlock() {
-        return <Info text={"Please, select a node to see the information!"} />
-    }
+    function NodeStatus(props: StatusProps) {
+        if (isLoading) return <Skeleton variant="rectangular" sx={SX.nodeStatusBlock}/>
+        const background = props.role ? nodeColor[props.role] : undefined
 
-    function ActiveBlock() {
-        switch (tab) {
-            case 0:
-                return <NodeOverview node={activeNode}/>
-            case 1:
-                return <NodeCluster node={activeNode}/>
-            case 2:
-                return <NodeConfig node={activeNode}/>
-            case 3:
-                return <NodeBloat node={activeNode}/>
-            default:
-                return <Info text={"Coming soon — we're working on it!"}/>
-        }
-    }
-
-    function Info(props: InfoProps) {
         return (
-            <Alert sx={SX.infoAlert} severity={"info"} variant={"outlined"} icon={false}>
-                {props.text}
-            </Alert>
+            <Grid container
+                  alignContent="center"
+                  justifyContent="center"
+                  sx={{...SX.nodeStatusBlock, background}}>
+                <Grid item>{nodePatroni?.role.toUpperCase()}</Grid>
+            </Grid>
         )
     }
 }
