@@ -9,6 +9,12 @@ import ReactCodeMirror, {EditorView} from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
+import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
+
+const highlightExtension = {
+    dark: syntaxHighlighting(oneDarkHighlightStyle),
+    light: syntaxHighlighting(defaultHighlightStyle)
+}
 
 type Props = { node: string }
 
@@ -28,7 +34,6 @@ export function NodeConfig({node}: Props) {
 
     const isDark = theme.mode === "dark"
     const codeMirrorTheme = EditorView.theme({}, {dark: isDark})
-    const extensions = isDark ? [json(), oneDarkHighlightStyle] : [json()]
     return (
         <Grid container flexWrap={"nowrap"}>
             <Grid item flexGrow={1}>
@@ -36,7 +41,7 @@ export function NodeConfig({node}: Props) {
                     value={stringify(config)}
                     theme={codeMirrorTheme}
                     editable={isEditable}
-                    extensions={extensions}
+                    extensions={[json(), isDark ? highlightExtension.dark : highlightExtension.light]}
                     onChange={(value) => setConfigState(value)}
                 />
             </Grid>
