@@ -6,6 +6,8 @@ import React from "react";
 import {AxiosError} from "axios";
 import {nodeColor} from "../../app/utils";
 import {Style} from "../../app/types";
+import {useStore} from "../../provider/StoreProvider";
+import {Info} from "../view/Info";
 
 const SX = {
     nodeStatusBlock: {height: '120px', minWidth: '200px', borderRadius: '4px', color: 'white', fontSize: '24px', fontWeight: 900},
@@ -16,12 +18,16 @@ const style: Style = {
     itemText: {whiteSpace: 'pre-wrap'}
 }
 
-type OverviewProps = { node: string }
 type ItemProps = { name: string, value?: string }
 type StatusProps = { role?: string }
 
-export function Node({node}: OverviewProps) {
-    const {data: nodePatroni, isLoading, isError, error} = useQuery(['node/overview', node], () => nodeApi.overview(node))
+export function Node() {
+    const { store: { activeNode } } = useStore()
+    const {data: nodePatroni, isLoading, isError, error} = useQuery(
+        ['node/overview', activeNode],
+        () => activeNode ? nodeApi.overview(activeNode) : undefined
+    )
+    if (!activeNode) return <Info text={"Please, select a node to see the information!"} />
     if (isError) return <Error error={error as AxiosError}/>
 
     return (
@@ -30,7 +36,7 @@ export function Node({node}: OverviewProps) {
                 <NodeStatus role={nodePatroni?.role}/>
             </Grid>
             <Grid item xs container direction="column">
-                <Grid item><Item name="Node" value={node}/></Grid>
+                <Grid item><Item name="Node" value={activeNode}/></Grid>
                 <Grid item><Item name="State" value={nodePatroni?.state} /></Grid>
                 <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope} /></Grid>
                 <Grid item><Item name="Timeline" value={nodePatroni?.timeline.toString()} /></Grid>
