@@ -1,4 +1,4 @@
-import {Button, CircularProgress, Grid, TextField} from "@mui/material";
+import {Button, Grid, LinearProgress, TextField} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
 import {bloatApi, nodeApi} from "../../app/api";
 import {useState} from "react";
@@ -21,7 +21,7 @@ export function ClusterBloat({node}: Props) {
     }))
     const compact = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
 
-    if (leader.isLoading || initJobs.isLoading) return <CircularProgress/>
+    if (leader.isLoading || initJobs.isLoading) return <LinearProgress />
     if (leader.isError) return <Error error={leader.error as AxiosError}/>
     if (!leader.data) return <Error error={"No leader found"}/>
 

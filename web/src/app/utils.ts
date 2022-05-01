@@ -30,5 +30,5 @@ export const createColorsMap = (nodes?: Node[]) => {
 }
 
 export const activeNode = (nodes?: Node[]) => {
-    return nodes?.find(node => node.role === "leader")?.api_url.split('/')[2]
+    return nodes?.find(node => node.role === "leader")?.api_url.split('/')[2] ?? ''
 }

@@ -8,14 +8,14 @@ const style: Style = {
     jsonInput: {padding: '10px 0px', whiteSpace: 'pre-wrap'}
 }
 
-type ErrorProps = { error: AxiosError | string }
+type ErrorProps = { error: AxiosError | string, type?: AlertColor }
 type GeneralProps = { message: string, type: AlertColor, title?: string, json?: string }
 type JsonProps = { json: string }
 
-export function Error({error}: ErrorProps) {
+export function Error({error, type}: ErrorProps) {
     const [isOpen, setIsOpen] = useState(false)
 
-    if (typeof error === "string") return <General type={"error"} message={error}/>
+    if (typeof error === "string") return <General type={type ?? "warning"} message={error}/>
     if (!error.response) return <General type={"error"} message={"Error is not detected"}/>
 
     const {status, statusText} = error.response
@@ -29,7 +29,7 @@ export function Error({error}: ErrorProps) {
         const {message, type} = props
         return (
             <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={!!props.json} open={isOpen}/>}>
-                <AlertTitle>{props.title ?? type.toString()}</AlertTitle>
+                <AlertTitle>{props.title ?? type.toString().toUpperCase()}</AlertTitle>
                 <Box>Message: {message}</Box>
                 {props.json ? <Json json={props.json}/> : null}
             </Alert>
