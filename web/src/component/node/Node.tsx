@@ -8,6 +8,7 @@ import {nodeColor} from "../../app/utils";
 import {Style} from "../../app/types";
 import {useStore} from "../../provider/StoreProvider";
 import {Info} from "../view/Info";
+import {Block} from "../view/Block";
 
 const SX = {
     nodeStatusBlock: {height: '120px', minWidth: '200px', borderRadius: '4px', color: 'white', fontSize: '24px', fontWeight: 900},
@@ -22,28 +23,37 @@ type ItemProps = { name: string, value?: string }
 type StatusProps = { role?: string }
 
 export function Node() {
-    const { store: { activeNode } } = useStore()
+    const { store: { activeNode, activeCluster } } = useStore()
     const {data: nodePatroni, isLoading, isError, error} = useQuery(
         ['node/overview', activeNode],
         () => activeNode ? nodeApi.overview(activeNode) : undefined
     )
-    if (!activeNode) return <Info text={"Please, select a node to see the information!"} />
-    if (isError) return <Error error={error as AxiosError}/>
 
     return (
-        <Grid container direction="row">
-            <Grid item xs="auto">
-                <NodeStatus role={nodePatroni?.role}/>
-            </Grid>
-            <Grid item xs container direction="column">
-                <Grid item><Item name="Node" value={activeNode}/></Grid>
-                <Grid item><Item name="State" value={nodePatroni?.state} /></Grid>
-                <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope} /></Grid>
-                <Grid item><Item name="Timeline" value={nodePatroni?.timeline.toString()} /></Grid>
-                <Grid item><Item name="Xlog" value={JSON.stringify(nodePatroni?.xlog, null, 4)} /></Grid>
-            </Grid>
-        </Grid>
+        <Block withPadding visible={!!activeCluster.name}>
+            {renderContent()}
+        </Block>
     )
+
+    function renderContent() {
+        if (!activeNode) return <Info text={"Please, select a node to see the information!"} />
+        if (isError) return <Error error={error as AxiosError}/>
+
+        return (
+            <Grid container direction="row">
+                <Grid item xs="auto">
+                    <NodeStatus role={nodePatroni?.role}/>
+                </Grid>
+                <Grid item xs container direction="column">
+                    <Grid item><Item name="Node" value={activeNode}/></Grid>
+                    <Grid item><Item name="State" value={nodePatroni?.state} /></Grid>
+                    <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope} /></Grid>
+                    <Grid item><Item name="Timeline" value={nodePatroni?.timeline.toString()} /></Grid>
+                    <Grid item><Item name="Xlog" value={JSON.stringify(nodePatroni?.xlog, null, 4)} /></Grid>
+                </Grid>
+            </Grid>
+        )
+    }
 
     function Item(props: ItemProps) {
         if (isLoading) return <Skeleton height={24} sx={SX.item}/>
@@ -56,6 +66,7 @@ export function Node() {
             </Box>
         )
     }
+
 
     function NodeStatus(props: StatusProps) {
         if (isLoading) return <Skeleton variant="rectangular" sx={SX.nodeStatusBlock}/>

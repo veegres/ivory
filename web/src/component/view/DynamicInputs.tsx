@@ -19,35 +19,37 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
     const colorsMap = colors ?? {}
     return (
         <Box display="grid" gridTemplateColumns={SX.gridTemplateColumns} gap={1}>
-            {editable ? renderInputs(inputs) : renderChips(inputs)}
+            {editable ? renderInputs() : renderChips()}
         </Box>
     )
 
-    function renderInputs(nodes: string[]) {
-        const nodesWithEmptyElement = nodes[nodes.length - 1] === '' ? nodes : [...nodes, '']
-
-        return nodesWithEmptyElement.map((node, index) => (
-            <FormControl key={index} color={colorsMap[node]} focused={!!colorsMap[node]}>
-                <OutlinedInput
-                    sx={SX.input}
-                    type="string"
-                    placeholder={`${placeholder} ${index}`}
-                    size="small"
-                    value={node}
-                    onChange={(event) => handleChange(index, event.target.value)}
-                />
-            </FormControl>
-        ))
+    function renderInputs() {
+        const nodesWithEmptyElement = inputs[inputs.length - 1] === '' ? inputs : [...inputs, '']
+        return nodesWithEmptyElement.map((input, index) => {
+            const color = colorsMap[input.toLowerCase()]
+            return (
+                <FormControl key={index} color={color} focused={!!color}>
+                    <OutlinedInput
+                        sx={SX.input}
+                        type="string"
+                        placeholder={`${placeholder} ${index}`}
+                        size="small"
+                        value={input}
+                        onChange={(event) => handleChange(index, event.target.value)}
+                    />
+                </FormControl>
+            )
+        })
     }
 
-    function renderChips(nodes: string[]) {
-        return nodes.map((node, index) => (
+    function renderChips() {
+        return inputs.map((input, index) => (
             <Chip
                 key={index}
                 sx={SX.chip}
-                color={colorsMap[node]}
-                label={node ? node : `Node ${index}`}
-                disabled={!node}
+                color={colorsMap[input.toLowerCase()]}
+                label={input ? input : `Node ${index}`}
+                disabled={!input}
                 variant="outlined"
             />
         ))

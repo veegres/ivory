@@ -17,7 +17,7 @@ export function ClusterBloat({node}: Props) {
 
     const initJobs = useQuery(['node/bloat/list'], bloatApi.list, {onSuccess: (initJobs) => setJobs(initJobs)})
     const leader = useQuery(['node/leader'], () => nodeApi.cluster(node).then((cluster) => {
-        return cluster.filter(node => node.role === "leader")[0]
+        return cluster.filter(node => node.isLeader)[0]
     }))
     const compact = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
 

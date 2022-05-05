@@ -1,7 +1,7 @@
 import {CSSProperties} from "react";
 
 // SERVER
-export interface Node {
+export interface NodeResponse {
     name: string,
     timeline: number,
     lag: number,
@@ -98,6 +98,7 @@ export interface ColorsMap {
     [name: string]: 'success' | 'primary'
 }
 
-export interface NodeRoleMap {
-    [name: string]: 'leader' | 'replica'
+export interface Node extends NodeResponse{
+    api_domain: string
+    isLeader: boolean
 }

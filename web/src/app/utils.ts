@@ -19,10 +19,9 @@ export const jobStatus: { [key: number]: { name: string, color: string, active: 
 export const createColorsMap = (nodes?: Node[]) => {
     return nodes?.reduce(
         (map, node) => {
-            const isLeader = node.role === "leader"
-            const color = isLeader ? "success" : "primary"
+            const color = node.isLeader ? "success" : "primary"
             map[node.host] = color
-            map[node.api_url.split('/')[2]] = color
+            map[node.api_domain] = color
             return map
         },
         {} as ColorsMap
@@ -30,5 +29,8 @@ export const createColorsMap = (nodes?: Node[]) => {
 }
 
 export const activeNode = (nodes?: Node[]) => {
-    return nodes?.find(node => node.role === "leader")?.api_url.split('/')[2] ?? ''
+    const leader = nodes?.find(node => node.isLeader)
+    return leader ? leader.api_domain : ''
 }
+
+export const getPatroniDomain = (url: string) => url.split('/')[2]

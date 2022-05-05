@@ -1,5 +1,6 @@
 import axios from "axios";
-import {Cluster, ClusterMap, CompactTable, CompactTableRequest, Node, NodeOverview, Response} from "./types";
+import {Cluster, ClusterMap, CompactTable, CompactTableRequest, NodeOverview, NodeResponse, Response} from "./types";
+import {getPatroniDomain} from "./utils";
 
 const api = axios.create({ baseURL: '/api' })
 
@@ -7,7 +8,13 @@ export const nodeApi = {
     overview: (node: String) =>
         api.get<Response<NodeOverview>>(`/node/${node}/overview`).then((response) => response.data.response),
     cluster: (node: String) =>
-        api.get<Response<{ members: Node[] }>>(`/node/${node}/cluster`).then((response) => response.data.response.members),
+        api.get<Response<{ members: NodeResponse[] }>>(`/node/${node}/cluster`).then(
+            (response) => response.data.response.members.map((node) => ({
+                ...node,
+                api_domain: getPatroniDomain(node.api_url),
+                isLeader: node.role === "leader"
+            }))
+        ),
     config: (node: String) =>
         api.get(`/node/${node}/config`).then((response) => response.data.response),
     updateConfig: ({node, config}: { node: string, config: string }) =>

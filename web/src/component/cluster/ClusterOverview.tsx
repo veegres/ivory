@@ -1,4 +1,4 @@
-import {Button, Grid, Table, TableCell, TableHead, TableRow} from "@mui/material";
+import {Button, Grid, Radio, Table, TableCell, TableHead, TableRow} from "@mui/material";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
 import {Error} from "../view/Error";
@@ -13,16 +13,18 @@ import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
     tableLastChildRow: {'tr:last-child td': {border: 0}},
-    clickable: { cursor: "pointer" }
+    clickable: {cursor: "pointer"},
+    cellCheckbox: {width: "1%"},
+    cellButton: {width: "1%"},
 }
 
-type Props = { cluster: string }
+type Props = {cluster: string}
 type AlertDialogState = {open: boolean, title: string, content: string, onAgree: () => void}
 
 export function ClusterOverview({cluster}: Props) {
     const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {},}
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const { setStore } = useStore()
+    const { setStore, store } = useStore()
 
     const clusterState = useQuery<Node[], AxiosError>(["node/cluster", cluster])
     const queryClient = useQueryClient();
@@ -42,12 +44,13 @@ export function ClusterOverview({cluster}: Props) {
             <Table size="small" sx={SX.tableLastChildRow}>
                 <TableHead>
                     <TableRow>
+                        <TableCell sx={SX.cellCheckbox} />
                         <TableCell>Role</TableCell>
                         <TableCell>Node</TableCell>
                         <TableCell>Host</TableCell>
                         <TableCell>State</TableCell>
                         <TableCell>Lag</TableCell>
-                        <TableCellLoader isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
+                        <TableCellLoader sx={SX.cellButton} isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
                 <TableBody isLoading={isLoading} cellCount={6}>
@@ -61,15 +64,16 @@ export function ClusterOverview({cluster}: Props) {
         if (!members) return <Error error={"No data"}/>
 
         return members.map((node) => {
-            const nodePublicHost = node.api_url.split('/')[2]
-            const isLeader = node.role === "leader"
+            const {api_domain, name, port, host, role, state, lag, isLeader} = node
+            const isChecked = store.activeNode === api_domain
             return (
-                <TableRow key={node.host} onClick={() => setStore({ activeNode: nodePublicHost })}>
-                    <TableCell sx={{...SX.clickable, color: nodeColor[node.role]}}>{node.role.toUpperCase()}</TableCell>
-                    <TableCell sx={SX.clickable}>{node.name}</TableCell>
-                    <TableCell sx={SX.clickable}>{node.host}:{node.port}</TableCell>
-                    <TableCell>{node.state}</TableCell>
-                    <TableCell>{node.lag}</TableCell>
+                <TableRow sx={SX.clickable} key={host} onClick={handleCheck(isChecked, api_domain)}>
+                    <TableCell><Radio checked={isChecked} size={"small"} /></TableCell>
+                    <TableCell sx={{color: nodeColor[role]}}>{role.toUpperCase()}</TableCell>
+                    <TableCell>{name}</TableCell>
+                    <TableCell>{host}:{port}</TableCell>
+                    <TableCell>{state}</TableCell>
+                    <TableCell>{lag}</TableCell>
                     <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                         <Grid container justifyContent="flex-end" alignItems="center">
                             <Grid item>
@@ -77,14 +81,14 @@ export function ClusterOverview({cluster}: Props) {
                                     <Button
                                         color="primary"
                                         disabled={reinitNode.isLoading || switchoverNode.isLoading}
-                                        onClick={() => handleReinit(nodePublicHost)}>
+                                        onClick={() => handleReinit(api_domain)}>
                                         Reinit
                                     </Button>
                                 ) : (
                                     <Button
                                         color="secondary"
                                         disabled={switchoverNode.isLoading}
-                                        onClick={() => handleSwitchover(nodePublicHost, node.name)}>
+                                        onClick={() => handleSwitchover(api_domain, name)}>
                                         Switchover
                                     </Button>
                                 )}
@@ -94,6 +98,10 @@ export function ClusterOverview({cluster}: Props) {
                 </TableRow>
             )
         })
+    }
+
+    function handleCheck(checked: boolean, domain: string) {
+        return () => setStore({ activeNode: checked ? '' : domain })
     }
 
     function handleSwitchover(node: string, leader: string) {
