@@ -5,6 +5,7 @@ import React, {useState} from "react";
 import {useStore} from "../../provider/StoreProvider";
 import {ClusterBloat} from "./ClusterBloat";
 import {Info} from "../view/Info";
+import {Block} from "../view/Block";
 
 
 const SX = {
@@ -19,14 +20,15 @@ export function Cluster() {
 
     const [tab, setTab] = useState(0)
 
+    // TODO add menu items, think how to show leader
     return (
-        <Box>
+        <Block withPadding>
             <Box sx={SX.headBox}>
                 <Tabulation/>
-                {!activeNode ? null : (
+                {!activeCluster.node ? null : (
                     <FormControl sx={SX.from} size={"small"} variant={"standard"}>
-                        <Select value={activeNode}>
-                            <MenuItem value={activeNode}>{activeNode}</MenuItem>
+                        <Select value={activeCluster.node}>
+                            <MenuItem value={activeCluster.node}>{activeCluster.node}</MenuItem>
                         </Select>
                     </FormControl>
                 )}
@@ -38,7 +40,7 @@ export function Cluster() {
                     <ActiveBlock/>
                 )}
             </Box>
-        </Box>
+        </Block>
     )
 
     function Tabulation() {
