@@ -14,8 +14,7 @@ import {useStore} from "../../provider/StoreProvider";
 const SX = {
     tableLastChildRow: {'tr:last-child td': {border: 0}},
     clickable: {cursor: "pointer"},
-    cellCheckbox: {width: "1%"},
-    cellButton: {width: "1%"},
+    actionCell: {width: "50px"},
 }
 
 type Props = {cluster: string}
@@ -47,13 +46,13 @@ export function ClusterOverview({cluster}: Props) {
             <Table size="small" sx={SX.tableLastChildRow}>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={SX.cellCheckbox} />
+                        <TableCell sx={SX.actionCell} />
                         <TableCell>Role</TableCell>
                         <TableCell>Node</TableCell>
                         <TableCell>Host</TableCell>
                         <TableCell>State</TableCell>
                         <TableCell>Lag</TableCell>
-                        <TableCellLoader sx={SX.cellButton} isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
+                        <TableCellLoader sx={SX.actionCell} isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
                 <TableBody isLoading={isLoading} cellCount={7}>
