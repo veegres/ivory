@@ -1,12 +1,12 @@
 import {createContext, ReactNode, useContext, useState} from "react";
 
 interface StoreType {
-    activeCluster: { name: string, node: string },
+    activeCluster: { name: string, node: string, tab: number },
     activeNode: string
 }
 
 interface StoreTypeParam {
-    activeCluster?: { name: string, node: string }
+    activeCluster?: { name: string, node: string, tab: number }
     activeNode?: string
 }
 
@@ -15,16 +15,18 @@ interface StoreContextType {
     setStore: (store: StoreTypeParam) => void
     isClusterActive: (name: string) => boolean
     isNodeActive: (name: string) => boolean
+    isOverviewOpen: () => boolean
 }
 
 const initialStore: StoreType = {
-    activeCluster: { name: "", node: "" },
+    activeCluster: { name: "", node: "", tab: 0 },
     activeNode: "",
 }
 
 const StoreContext = createContext<StoreContextType>({
     store: initialStore, setStore: () => {},
     isClusterActive: () => false, isNodeActive: () => false,
+    isOverviewOpen: () => false,
 })
 
 export function useStore() {
@@ -33,13 +35,16 @@ export function useStore() {
 
 export function StoreProvider(props: { children: ReactNode }) {
     const [state, setState] = useState(initialStore)
-
-    const setStore = (store: StoreTypeParam) => setState({ ...state, ...store })
-    const isClusterActive = (name: string) => name === state.activeCluster.name
-    const isNodeActive = (name: string) => name === state.activeNode
-
+    const { activeCluster, activeNode } = state
+    const value = {
+        store: state,
+        setStore: (store: StoreTypeParam) => setState({ ...state, ...store }),
+        isClusterActive: (name: string) => name === activeCluster.name,
+        isNodeActive: (name: string) => name === activeNode,
+        isOverviewOpen: () => !!activeCluster.name && activeCluster.tab === 0
+    }
     return (
-        <StoreContext.Provider value={{ store: state, setStore, isClusterActive, isNodeActive }}>
+        <StoreContext.Provider value={value}>
             {props.children}
         </StoreContext.Provider>
     )

@@ -26,7 +26,10 @@ export function ClusterOverview({cluster}: Props) {
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setStore, store } = useStore()
 
-    const clusterState = useQuery<Node[], AxiosError>(["node/cluster", cluster])
+    const clusterState = useQuery<Node[], AxiosError>(
+        ["node/cluster", cluster],
+        {retry: 0, refetchOnMount: false}
+    )
     const queryClient = useQueryClient();
     const switchoverNode = useMutation(nodeApi.switchover, {
         onSuccess: async () => await queryClient.refetchQueries(['node/cluster', cluster])
@@ -53,7 +56,7 @@ export function ClusterOverview({cluster}: Props) {
                         <TableCellLoader sx={SX.cellButton} isFetching={(isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
-                <TableBody isLoading={isLoading} cellCount={6}>
+                <TableBody isLoading={isLoading} cellCount={7}>
                     {renderContent()}
                 </TableBody>
             </Table>
