@@ -1,5 +1,5 @@
-import {Chip, FormControl, OutlinedInput, TableCell, TableRow} from "@mui/material";
-import {Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material";
+import {Box, Chip, FormControl, OutlinedInput, TableCell, TableRow} from "@mui/material";
+import {Cached, Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material";
 import {useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {clusterApi, nodeApi} from "../../app/api";
@@ -10,9 +10,6 @@ import {useStore} from "../../provider/StoreProvider";
 import {activeNode, createColorsMap} from "../../app/utils";
 
 const SX = {
-    nodesCellIcon: {fontSize: 18},
-    nodesCellButton: {height: '22px', width: '22px'},
-    nodesCellBox: {minWidth: '150px'},
     nodesCellInput: {height: '32px'},
     chipSize: {width: '100%'},
     cell: {verticalAlign: "top"},
@@ -38,7 +35,11 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     const isActive = isClusterActive(stateName)
 
     const queryClient = useQueryClient();
-    const { data } = useQuery(['node/cluster', name], () => nodeApi.cluster(stateNodes[0]))
+    const { data, isFetching, refetch } = useQuery(
+        ['node/cluster', name],
+        () => nodeApi.cluster(stateNodes[0]),
+        {retry: 0}
+    )
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
             const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
@@ -76,12 +77,15 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
 
     function renderClusterNameCell() {
         return !isNewElement ? (
-            <Chip
-                sx={SX.chipSize}
-                color={isActive ? "primary" : "default"}
-                label={stateName}
-                onClick={handleChipClick}
-            />
+            <Box display={"flex"} flexDirection={"row"}>
+                <Chip
+                    sx={SX.chipSize}
+                    color={isActive ? "primary" : "default"}
+                    label={stateName}
+                    onClick={handleChipClick}
+                />
+                <ClustersRowButton icon={<Cached />} loading={isFetching} onClick={refetch} tooltip={"Reload"} />
+            </Box>
         ) : (
             <FormControl fullWidth>
                 <OutlinedInput
@@ -150,7 +154,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     }
 
     function handleChipClick() {
-        const activeCluster = !isActive ? {name: stateName, node: activeNode(data)} : {name: '', node: ''}
-        setStore({ activeCluster, activeNode: '' })
+        const cluster = !isActive ? {name: stateName, node: activeNode(data)} : {name: '', node: ''}
+        setStore({ activeCluster: {...cluster, tab: 0}, activeNode: '' })
     }
 }

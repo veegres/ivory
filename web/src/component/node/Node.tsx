@@ -23,14 +23,14 @@ type ItemProps = { name: string, value?: string }
 type StatusProps = { role?: string }
 
 export function Node() {
-    const { store: { activeNode, activeCluster } } = useStore()
+    const { store: { activeNode }, isOverviewOpen } = useStore()
     const {data: nodePatroni, isLoading, isError, error} = useQuery(
         ['node/overview', activeNode],
         () => activeNode ? nodeApi.overview(activeNode) : undefined
     )
 
     return (
-        <Block withPadding visible={!!activeCluster.name}>
+        <Block withPadding visible={isOverviewOpen()}>
             {renderContent()}
         </Block>
     )

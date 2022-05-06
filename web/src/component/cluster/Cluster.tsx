@@ -1,7 +1,7 @@
 import {ClusterOverview} from "./ClusterOverview";
 import {ClusterConfig} from "./ClusterConfig";
 import {Box, FormControl, MenuItem, Select, Tab, Tabs} from "@mui/material";
-import React, {useState} from "react";
+import React from "react";
 import {useStore} from "../../provider/StoreProvider";
 import {ClusterBloat} from "./ClusterBloat";
 import {Info} from "../view/Info";
@@ -15,10 +15,8 @@ const SX = {
 }
 
 export function Cluster() {
-    const {store: {activeCluster, activeNode}} = useStore()
+    const {store: {activeCluster}, setStore} = useStore()
     const disabled = !activeCluster.name
-
-    const [tab, setTab] = useState(0)
 
     // TODO add menu items, think how to show leader
     return (
@@ -45,7 +43,7 @@ export function Cluster() {
 
     function Tabulation() {
         return (
-            <Tabs value={tab} onChange={(_, value) => setTab(value)}>
+            <Tabs value={activeCluster.tab} onChange={(_, value) => setStore({activeCluster: {...activeCluster, tab: value}})}>
                 <Tab label={"Overview"} disabled={disabled} />
                 <Tab label={"Config"} disabled={disabled}/>
                 <Tab label={"Bloat"} disabled={disabled}/>
@@ -54,13 +52,13 @@ export function Cluster() {
     }
 
     function ActiveBlock() {
-        switch (tab) {
+        switch (activeCluster.tab) {
             case 0:
                 return <ClusterOverview cluster={activeCluster.name}/>
             case 1:
-                return <ClusterConfig node={activeNode}/>
+                return <ClusterConfig node={activeCluster.node}/>
             case 2:
-                return <ClusterBloat node={activeNode}/>
+                return <ClusterBloat node={activeCluster.node}/>
             default:
                 return <Info text={"Coming soon — we're working on it!"}/>
         }

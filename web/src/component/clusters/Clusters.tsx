@@ -12,7 +12,7 @@ import {Block} from "../view/Block";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
-    nameCell: {width: '200px'},
+    nameCell: {width: '220px'},
     buttonCell: {width: '1%'}
 }
 
