@@ -28,7 +28,7 @@ type Props = {
 export function ClustersRow({name, nodes, edit = {}}: Props) {
     const {isReadOnly = false, toggleEdit = () => {}, closeNewElement = () => {}} = edit
     const isNewElement = !name
-    const {setStore, isClusterActive} = useStore()
+    const {store, setStore, isClusterActive} = useStore()
 
     const [stateName, setStateName] = useState(name);
     const [stateNodes, setStateNodes] = useState(nodes);
@@ -155,6 +155,6 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
 
     function handleChipClick() {
         const cluster = !isActive ? {name: stateName, node: activeNode(data)} : {name: '', node: ''}
-        setStore({ activeCluster: {...cluster, tab: 0}, activeNode: '' })
+        setStore({ activeCluster: {...cluster, tab: store.activeCluster.tab}, activeNode: '' })
     }
 }
