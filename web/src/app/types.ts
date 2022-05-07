@@ -57,6 +57,7 @@ export interface Target {
 }
 
 export interface CompactTableRequest {
+    cluster: string
     connection: Connection
     target?: Target
     ratio?: number

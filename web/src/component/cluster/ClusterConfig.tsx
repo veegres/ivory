@@ -16,15 +16,15 @@ const highlightExtension = {
     light: syntaxHighlighting(defaultHighlightStyle)
 }
 
-type Props = { node: string }
+type Props = { leader: string }
 
-export function ClusterConfig({node}: Props) {
+export function ClusterConfig({leader}: Props) {
     const theme = useTheme();
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState('')
 
     const queryClient = useQueryClient();
-    const {data: config, isLoading, isError, error} = useQuery(['node/config', node], () => nodeApi.config(node))
+    const {data: config, isLoading, isError, error} = useQuery(['node/config', leader], () => nodeApi.config(leader))
     const updateConfig = useMutation(nodeApi.updateConfig, {
         onSuccess: async () => await queryClient.refetchQueries('node/config')
     })
@@ -59,7 +59,7 @@ export function ClusterConfig({node}: Props) {
         return (
             <>
                 {renderButton(<Cancel/>, "Cancel", () => setIsEditable(false))}
-                {renderButton(<SaveAlt/>, "Save", () => handleUpdate(node, configState))}
+                {renderButton(<SaveAlt/>, "Save", () => handleUpdate(leader, configState))}
             </>
         )
     }

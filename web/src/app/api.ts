@@ -43,8 +43,8 @@ export const clusterApi = {
 }
 
 export const bloatApi = {
-    list: () =>
-        api.get<Response<CompactTable[]>>(`/cli/bloat`).then((response) => response.data.response),
+    list: (name: string) =>
+        api.get<Response<CompactTable[]>>(`/cli/bloat/cluster/${name}`).then((response) => response.data.response),
     logs: (uuid: string) =>
         api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"}).then(({data}) => data === "" ? [] : data.split("\n")),
 

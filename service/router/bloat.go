@@ -25,6 +25,7 @@ func (r routes) CliGroup(group *gin.RouterGroup) {
 	node.GET("/bloat", getCompactTableList)
 	node.GET("/bloat/:uuid", getCompactTable)
 	node.GET("/bloat/:uuid/logs", getCompactTableLogs)
+	node.GET("/bloat/cluster/:name", getCompactTableListByCluster)
 
 	node.POST("/bloat/job/start", w.StartJob)
 	node.POST("/bloat/job/:uuid/stop", w.StopJob)
@@ -41,6 +42,15 @@ func getCompactTableLogs(context *gin.Context) {
 
 func getCompactTableList(context *gin.Context) {
 	list, err := persistence.Database.CompactTable.List()
+	if err != nil {
+		_ = context.AbortWithError(http.StatusBadRequest, err)
+	}
+	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": list})
+}
+
+func getCompactTableListByCluster(context *gin.Context) {
+	cluster := context.Param("name")
+	list, err := persistence.Database.CompactTable.ListByCluster(cluster)
 	if err != nil {
 		_ = context.AbortWithError(http.StatusBadRequest, err)
 	}
@@ -117,6 +127,7 @@ func (w worker) StartJob(context *gin.Context) {
 	jobUuid := uuid.New()
 	compactTableModel := CompactTableModel{
 		Uuid:        jobUuid,
+		Cluster:     cli.Cluster,
 		Status:      PENDING,
 		Command:     "pgcompacttable " + strings.Join(sb, " "),
 		CommandArgs: sb,
@@ -132,7 +143,6 @@ func (w worker) StartJob(context *gin.Context) {
 	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": compactTableModel})
 }
 
-// StreamJob TODO we should stream logs from file if job already running and we missed some logs
 func (w worker) StreamJob(context *gin.Context) {
 	// notify proxy that it shouldn't enable any caching
 	context.Writer.Header().Set("Cache-Control", "no-transform")

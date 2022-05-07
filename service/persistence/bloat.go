@@ -15,35 +15,19 @@ type CompactTableRepository struct {
 }
 
 func (r CompactTableRepository) List() ([]CompactTableModel, error) {
-	bytesList, err := r.common.getList(r.bucket)
-	modelList := make([]CompactTableModel, len(bytesList))
-	for i, el := range bytesList {
-		var model CompactTableModel
-		buff := bytes.NewBuffer(el.value)
-		_ = gob.NewDecoder(buff).Decode(&model)
-		modelList[i] = model
-	}
-	sort.Slice(modelList, func(i, j int) bool {
-		return modelList[i].CreatedAt > modelList[j].CreatedAt
-	})
-	return modelList, err
+	return r.list(nil)
 }
 
 func (r CompactTableRepository) ListByStatus(status JobStatus) ([]CompactTableModel, error) {
-	bytesList, err := r.common.getList(r.bucket)
-	modelList := make([]CompactTableModel, 0)
-	for _, el := range bytesList {
-		var model CompactTableModel
-		buff := bytes.NewBuffer(el.value)
-		_ = gob.NewDecoder(buff).Decode(&model)
-		if model.Status == status {
-			modelList = append(modelList, model)
-		}
-	}
-	sort.Slice(modelList, func(i, j int) bool {
-		return modelList[i].CreatedAt > modelList[j].CreatedAt
+	return r.list(func(model CompactTableModel) bool {
+		return model.Status == status
 	})
-	return modelList, err
+}
+
+func (r CompactTableRepository) ListByCluster(cluster string) ([]CompactTableModel, error) {
+	return r.list(func(model CompactTableModel) bool {
+		return model.Cluster == cluster
+	})
 }
 
 func (r CompactTableRepository) Get(uuid uuid.UUID) (CompactTableModel, error) {
@@ -66,6 +50,27 @@ func (r CompactTableRepository) UpdateStatus(compactTable CompactTableModel, sta
 
 func (r CompactTableRepository) Delete(uuid uuid.UUID) error {
 	return r.common.delete(r.bucket, uuid.String())
+}
+
+func (r CompactTableRepository) list(filter func(model CompactTableModel) bool) ([]CompactTableModel, error) {
+	bytesList, err := r.common.getList(r.bucket)
+	modelList := make([]CompactTableModel, 0)
+	for _, el := range bytesList {
+		var model CompactTableModel
+		buff := bytes.NewBuffer(el.value)
+		_ = gob.NewDecoder(buff).Decode(&model)
+		if filter == nil || filter(model) {
+			modelList = append(modelList, model)
+		}
+	}
+	r.sortDescByCreatedAt(modelList)
+	return modelList, err
+}
+
+func (r CompactTableRepository) sortDescByCreatedAt(list []CompactTableModel) {
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].CreatedAt > list[j].CreatedAt
+	})
 }
 
 type CompactTableFile struct {
