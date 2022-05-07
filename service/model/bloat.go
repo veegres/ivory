@@ -20,6 +20,7 @@ type Target struct {
 }
 
 type CompactTableRequest struct {
+	Cluster    string       `json:"cluster"`
 	Connection DbConnection `json:"connection"`
 	Target     *Target      `json:"target"`
 	Ratio      int          `json:"ratio"`
@@ -27,6 +28,7 @@ type CompactTableRequest struct {
 
 type CompactTableModel struct {
 	Uuid        uuid.UUID `json:"uuid"`
+	Cluster     string    `json:"cluster"`
 	Status      JobStatus `json:"status"`
 	Command     string    `json:"command"`
 	CommandArgs []string  `json:"commandArgs"`

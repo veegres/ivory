@@ -43,9 +43,9 @@ export function Cluster() {
             case 0:
                 return <ClusterOverview cluster={activeCluster.name}/>
             case 1:
-                return <ClusterConfig node={activeCluster.leader}/>
+                return <ClusterConfig leader={activeCluster.leader}/>
             case 2:
-                return <ClusterBloat node={activeCluster.leader}/>
+                return <ClusterBloat leader={activeCluster.leader} cluster={activeCluster.name}/>
             default:
                 return <Info text={"Coming soon — we're working on it!"}/>
         }

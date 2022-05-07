@@ -10,20 +10,22 @@ const SX = {
     jobsLoader: {minHeight: "4px", margin: "10px 0"},
 }
 
-type Props = { node: string }
+type Props = { leader: string, cluster: string }
 
-export function ClusterBloat({node}: Props) {
+export function ClusterBloat({leader, cluster}: Props) {
     const [auth, setAuth] = useState<Auth>({username: '', password: ''})
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
-    const initJobs = useQuery(['node/bloat/list'], bloatApi.list, {
-        onSuccess: (initJobs) => setJobs(initJobs)
-    })
+    const initJobs = useQuery(
+        ['node/bloat/list', cluster],
+        () => bloatApi.list(cluster),
+        {onSuccess: (initJobs) => setJobs(initJobs)}
+    )
     const compact = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
 
-    const [domain, port] = node.split(":")
+    const [domain, port] = leader.split(":")
 
     return (
         <Box>
@@ -87,6 +89,6 @@ export function ClusterBloat({node}: Props) {
 
     function handleRun() {
         const connection = {host: domain, port: Number(port), ...auth}
-        compact.mutate({connection, target, ratio})
+        compact.mutate({connection, target, ratio, cluster})
     }
 }
