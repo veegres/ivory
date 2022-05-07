@@ -1,11 +1,14 @@
-import {Button, Grid, LinearProgress, TextField} from "@mui/material";
+import {Box, Button, Grid, LinearProgress, TextField} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
-import {bloatApi, nodeApi} from "../../app/api";
+import {bloatApi} from "../../app/api";
 import {useState} from "react";
 import {Auth, CompactTable, Target} from "../../app/types";
 import {Error} from "../view/Error";
-import {AxiosError} from "axios";
 import {ClusterBloatJob} from "./ClusterBloatJob";
+
+const SX = {
+    jobsLoader: {minHeight: "4px", margin: "10px 0"},
+}
 
 type Props = { node: string }
 
@@ -15,27 +18,27 @@ export function ClusterBloat({node}: Props) {
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
-    const initJobs = useQuery(['node/bloat/list'], bloatApi.list, {onSuccess: (initJobs) => setJobs(initJobs)})
-    const leader = useQuery(['node/leader'], () => nodeApi.cluster(node).then((cluster) => {
-        return cluster.filter(node => node.isLeader)[0]
-    }))
+    const initJobs = useQuery(['node/bloat/list'], bloatApi.list, {
+        onSuccess: (initJobs) => setJobs(initJobs)
+    })
     const compact = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
 
-    if (leader.isLoading || initJobs.isLoading) return <LinearProgress />
-    if (leader.isError) return <Error error={leader.error as AxiosError}/>
-    if (!leader.data) return <Error error={"No leader found"}/>
+    const [domain, port] = node.split(":")
 
     return (
-        <Grid container direction={"column"} gap={2}>
-            {renderForm()}
-            {jobs.map((value) => <ClusterBloatJob key={value.uuid} compactTable={value}/>)}
-        </Grid>
+        <Box>
+            {domain && port ? renderForm() : <Error error={"No leader found"}/>}
+            <Box sx={SX.jobsLoader}>{initJobs.isFetching ? <LinearProgress/> : null}</Box>
+            <Grid container gap={2}>
+                {jobs.map((value) => <ClusterBloatJob key={value.uuid} compactTable={value}/>)}
+            </Grid>
+        </Box>
     )
 
     function renderForm() {
         return (
-            <>
-                <Grid item container direction={"row"} justifyContent={"space-between"} alignItems={"center"} flexWrap={"nowrap"}>
+            <Box>
+                <Grid container direction={"row"} justifyContent={"space-between"} alignItems={"center"} flexWrap={"nowrap"}>
                     <Grid item container gap={2}>
                         <TextField
                             required size={"small"} label="Username" variant="standard"
@@ -51,12 +54,12 @@ export function ClusterBloat({node}: Props) {
                         />
                     </Grid>
                     <Grid item>
-                        <Button variant="contained" disabled={compact.isLoading} onClick={handleRun}>
+                        <Button variant="contained" size={"small"} disabled={compact.isLoading} onClick={handleRun}>
                             RUN
                         </Button>
                     </Grid>
                 </Grid>
-                <Grid item container gap={2}>
+                <Grid container gap={2}>
                     <TextField
                         size={"small"} label="Database Name" variant="standard"
                         onChange={(e) => setTarget({...target, dbName: e.target.value})}
@@ -78,15 +81,12 @@ export function ClusterBloat({node}: Props) {
                         onChange={(e) => setTarget({...target, excludeTable: e.target.value})}
                     />
                 </Grid>
-            </>
+            </Box>
         )
     }
 
     function handleRun() {
-        const {data} = leader
-        if (data) {
-            const connection = {host: data.host, port: data.port, ...auth}
-            compact.mutate({connection, target, ratio})
-        }
+        const connection = {host: domain, port: Number(port), ...auth}
+        compact.mutate({connection, target, ratio})
     }
 }

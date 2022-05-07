@@ -154,7 +154,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     }
 
     function handleChipClick() {
-        const cluster = !isActive ? {name: stateName, node: activeNode(data)} : {name: '', node: ''}
+        const cluster = !isActive ? {name: stateName, leader: activeNode(data)} : {name: '', leader: ''}
         setStore({ activeCluster: {...cluster, tab: store.activeCluster.tab}, activeNode: '' })
     }
 }

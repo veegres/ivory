@@ -1,12 +1,12 @@
 import {createContext, ReactNode, useContext, useState} from "react";
 
 interface StoreType {
-    activeCluster: { name: string, node: string, tab: number },
+    activeCluster: { name: string, leader: string, tab: number },
     activeNode: string
 }
 
 interface StoreTypeParam {
-    activeCluster?: { name: string, node: string, tab: number }
+    activeCluster?: { name: string, leader: string, tab: number }
     activeNode?: string
 }
 
@@ -19,7 +19,7 @@ interface StoreContextType {
 }
 
 const initialStore: StoreType = {
-    activeCluster: { name: "", node: "", tab: 0 },
+    activeCluster: { name: "", leader: "", tab: 0 },
     activeNode: "",
 }
 
@@ -41,7 +41,7 @@ export function StoreProvider(props: { children: ReactNode }) {
         setStore: (store: StoreTypeParam) => setState({ ...state, ...store }),
         isClusterActive: (name: string) => name === activeCluster.name,
         isNodeActive: (name: string) => name === activeNode,
-        isOverviewOpen: () => !!activeCluster.name && activeCluster.tab === 0
+        isOverviewOpen: () => !!activeCluster.leader && activeCluster.tab === 0
     }
     return (
         <StoreContext.Provider value={value}>
