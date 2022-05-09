@@ -6,6 +6,7 @@ import {useStore} from "../../provider/StoreProvider";
 import {ClusterBloat} from "./ClusterBloat";
 import {Info} from "../view/Info";
 import {Block} from "../view/Block";
+import {useQuery} from "react-query";
 
 
 const SX = {
@@ -18,8 +19,10 @@ export function Cluster() {
     const {store: {activeCluster}, setStore} = useStore()
     const disabled = !activeCluster.name
 
+    const clusters = useQuery('cluster/list')
+
     return (
-        <Block withPadding>
+        <Block withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeCluster.tab} onChange={(_, value) => handleChange(value)}>
                     <Tab label={"Overview"} disabled={disabled} />
