@@ -63,6 +63,21 @@ export interface CompactTableRequest {
     ratio?: number
 }
 
+export interface SecretStatus {
+    key: boolean
+    ref: boolean
+}
+
+export interface SecretSetRequest {
+    key: string
+    ref: string
+}
+
+export interface SecretUpdateRequest {
+    previousKey: string
+    newKey: string
+}
+
 export interface Response<TData, TError = {}> {
     response: TData
     error: TError

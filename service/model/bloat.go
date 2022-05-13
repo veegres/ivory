@@ -27,11 +27,12 @@ type CompactTableRequest struct {
 }
 
 type CompactTableModel struct {
-	Uuid        uuid.UUID `json:"uuid"`
-	Cluster     string    `json:"cluster"`
-	Status      JobStatus `json:"status"`
-	Command     string    `json:"command"`
-	CommandArgs []string  `json:"commandArgs"`
-	LogsPath    string    `json:"logsPath"`
-	CreatedAt   int64     `json:"createdAt"`
+	Uuid         uuid.UUID `json:"uuid"`
+	CredentialId uuid.UUID `json:"credentialId"`
+	Cluster      string    `json:"cluster"`
+	Status       JobStatus `json:"status"`
+	Command      string    `json:"command"`
+	CommandArgs  []string  `json:"commandArgs"`
+	LogsPath     string    `json:"logsPath"`
+	CreatedAt    int64     `json:"createdAt"`
 }

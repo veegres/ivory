@@ -1,5 +1,16 @@
 import axios from "axios";
-import {Cluster, ClusterMap, CompactTable, CompactTableRequest, NodeOverview, NodeResponse, Response} from "./types";
+import {
+    Cluster,
+    ClusterMap,
+    CompactTable,
+    CompactTableRequest,
+    NodeOverview,
+    NodeResponse,
+    Response,
+    SecretSetRequest,
+    SecretStatus,
+    SecretUpdateRequest
+} from "./types";
 import {getPatroniDomain} from "./utils";
 
 const api = axios.create({ baseURL: '/api' })
@@ -55,4 +66,15 @@ export const bloatApi = {
     delete: (uuid: string) =>
         api.delete(`/cli/bloat/job/${uuid}/delete`).then((response) => response.data.response),
     stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
+}
+
+export const secretApi = {
+    get: () =>
+        api.get<Response<SecretStatus>>(`/secret`).then((response) => response.data.response),
+    set: (request: SecretSetRequest) =>
+        api.post<Response<string>>(`/secret/set`, request).then((response) => response.data.response),
+    update: (request: SecretUpdateRequest) =>
+        api.post<Response<string>>(`/secret/update`, request).then((response) => response.data.response),
+    clean: () =>
+        api.post<Response<string>>(`/secret/clean`).then((response) => response.data.response),
 }

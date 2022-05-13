@@ -9,9 +9,11 @@ type Props = {
     children: ReactNode
     withPadding?: boolean
     visible?: boolean
+    elevation?: number
 }
 
 export function Block(props: Props) {
+    const elevation = props.elevation ?? 4
     const visible = props.visible ?? true
     const padding = props.withPadding ? "10px 20px" : "0";
 
@@ -19,7 +21,7 @@ export function Block(props: Props) {
 
     return (
         <Grid container>
-            <Paper elevation={4} sx={{ ...SX.paper, padding}}>
+            <Paper elevation={elevation} sx={{ ...SX.paper, padding}}>
                 {props.children}
             </Paper>
         </Grid>

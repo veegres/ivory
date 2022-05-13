@@ -5,11 +5,10 @@ import {useTheme} from "../../provider/ThemeProvider";
 
 const SX = {
     title: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace'},
-    sides: {fontSize: '20px', margin: '5px 20px', height: '100%', fontWeight: 900, borderRadius: '15px'},
+    sides: {fontSize: '20px', margin: '5px 20px', height: '100%', fontWeight: 900, borderRadius: '15px', flex: "1 1 0"},
     caption: {fontSize: '12px', fontWeight: 500, fontFamily: 'monospace'},
-    container: {marginBottom: '10px'},
     emblem: {padding: '5px 15px'},
-    buttons: {padding: '0px 5px'}
+    buttons: {padding: '0px 5px', float: "right"}
 }
 
 export function Header() {
@@ -17,7 +16,7 @@ export function Header() {
     const color = theme.info?.palette.primary.main
 
     return (
-        <Grid container sx={SX.container} justifyContent="space-between" alignItems="center">
+        <Grid container justifyContent={"space-between"} alignItems={"center"} flexWrap={"nowrap"}>
             <Grid item sx={{...SX.sides, borderLeft: `1px solid ${color}`}}>
                 <Box sx={SX.emblem}>VEEGRES</Box>
             </Grid>
