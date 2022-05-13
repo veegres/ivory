@@ -2,7 +2,6 @@ package router
 
 import (
 	"bufio"
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"io"
@@ -43,30 +42,34 @@ func getCompactTableLogs(context *gin.Context) {
 func getCompactTableList(context *gin.Context) {
 	list, err := persistence.Database.CompactTable.List()
 	if err != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, err)
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": list})
+	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
 func getCompactTableListByCluster(context *gin.Context) {
 	cluster := context.Param("name")
 	list, err := persistence.Database.CompactTable.ListByCluster(cluster)
 	if err != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, err)
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": list})
+	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
 func getCompactTable(context *gin.Context) {
 	jobUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, parseErr)
+		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
+		return
 	}
 	compactTable, err := persistence.Database.CompactTable.Get(jobUuid)
 	if err != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, parseErr)
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": compactTable})
+	context.JSON(http.StatusOK, gin.H{"response": compactTable})
 }
 
 type worker struct {
@@ -93,11 +96,19 @@ func (w worker) StartJob(context *gin.Context) {
 	var cli CompactTableRequest
 	_ = context.ShouldBindJSON(&cli)
 
+	// TODO move decryption to another method (encapsulate)
+	user := cli.Connection.Username
+	pass, errCred := Encrypt(cli.Connection.Password, Secret.Get())
+	// TODO think to move it and do from frontend
+	key, errCred := persistence.Database.Credential.UpdateCredential(Credential{Username: user, Password: pass})
+	if errCred != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errCred.Error()})
+		return
+	}
+
 	sb := []string{
 		"--host", cli.Connection.Host,
 		"--port", strconv.Itoa(cli.Connection.Port),
-		"--user", cli.Connection.Username,
-		"--password", cli.Connection.Password,
 	}
 	if cli.Target != nil {
 		if cli.Target.DbName != "" {
@@ -126,21 +137,23 @@ func (w worker) StartJob(context *gin.Context) {
 
 	jobUuid := uuid.New()
 	compactTableModel := CompactTableModel{
-		Uuid:        jobUuid,
-		Cluster:     cli.Cluster,
-		Status:      PENDING,
-		Command:     "pgcompacttable " + strings.Join(sb, " "),
-		CommandArgs: sb,
-		LogsPath:    persistence.File.CompactTable.Create(jobUuid),
-		CreatedAt:   time.Now().UnixNano(),
+		Uuid:         jobUuid,
+		CredentialId: key,
+		Cluster:      cli.Cluster,
+		Status:       PENDING,
+		Command:      "pgcompacttable " + strings.Join(sb, " "),
+		CommandArgs:  sb,
+		LogsPath:     persistence.File.CompactTable.Create(jobUuid),
+		CreatedAt:    time.Now().UnixNano(),
 	}
-	err := persistence.Database.CompactTable.Update(compactTableModel)
-	if err != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, err)
+	errCompactTable := persistence.Database.CompactTable.Update(compactTableModel)
+	if errCompactTable != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errCompactTable.Error()})
+		return
 	}
 	w.addElement(compactTableModel)
 
-	context.AbortWithStatusJSON(http.StatusOK, gin.H{"response": compactTableModel})
+	context.JSON(http.StatusOK, gin.H{"response": compactTableModel})
 }
 
 func (w worker) StreamJob(context *gin.Context) {
@@ -212,17 +225,19 @@ func (w worker) DeleteJob(context *gin.Context) {
 
 	element := w.elements[jobUuid]
 	if element != nil && element.job.IsJobActive() {
-		_ = context.AbortWithError(http.StatusForbidden, errors.New("job is active"))
+		context.JSON(http.StatusBadRequest, gin.H{"error": "job is active"})
 		return
 	}
 
 	errFile := persistence.File.CompactTable.Delete(jobUuid)
 	if errFile != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, errFile)
+		context.JSON(http.StatusBadRequest, gin.H{"error": errFile.Error()})
+		return
 	}
 	errDb := persistence.Database.CompactTable.Delete(jobUuid)
 	if errDb != nil {
-		_ = context.AbortWithError(http.StatusBadRequest, errDb)
+		context.JSON(http.StatusBadRequest, gin.H{"error": errDb.Error()})
+		return
 	}
 }
 
@@ -239,8 +254,22 @@ func (w worker) runner() {
 		go func() {
 			w.jobStatusHandler(element, RUNNING, nil)
 
+			// Get password
+			// TODO move decryption to another method (encapsulate)
+			credential, _ := persistence.Database.Credential.GetCredential(model.CredentialId)
+			password, errDecrypt := Decrypt(credential.Password, Secret.Get())
+			if errDecrypt != nil {
+				w.jobStatusHandler(element, FAILED, errDecrypt)
+				return
+			}
+			credentialArgs := []string{
+				"--user", credential.Username,
+				"--password", password,
+			}
+
 			// Run command
-			cmd := exec.Command("pgcompacttable", model.CommandArgs...)
+			args := append(model.CommandArgs, credentialArgs...)
+			cmd := exec.Command("pgcompacttable", args...)
 			pipe, errPipe := cmd.StdoutPipe()
 			if errPipe != nil {
 				w.jobStatusHandler(element, FAILED, errPipe)

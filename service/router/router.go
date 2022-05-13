@@ -17,6 +17,7 @@ func Start() {
 	r.ProxyGroup(api)
 	r.ClusterGroup(api)
 	r.CliGroup(api)
+	r.CredentialGroup(api)
 
 	_ = r.router.Run()
 }
