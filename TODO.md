@@ -24,6 +24,7 @@
   - [ ] add action buttons to overview tab
   - [ ] when stream is finished we should reload logs on open button
 - [ ] Add navigation (router + urls)
+- [ ] Add footer with information about the project, link to github and year
 - [ ] Refactor all nested function components `<>` to `render()` or extract to separate file (diff behave could cause a problems)
 - [ ] Add remove button for empty elements in the center of nodes array
 - [ ] Refactor all strings from `''` to `""` and props in jsx from `=""` to `={""}`
