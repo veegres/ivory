@@ -34,3 +34,13 @@ export const activeNode = (nodes?: Node[]) => {
 }
 
 export const getPatroniDomain = (url: string) => url.split('/')[2]
+
+
+export const unicodeAnimal = [
+    "🐘", "🐇", "🐈", "🐋", "🐒", "🐢", "🐣", "🐬", "🐉",
+    "🐩", "🦄", "🦥", "🦫", "🦭", "🦋", "🦉", "🦎", "🦙",
+    "🦦", "🦢", "🦤", "🦞", "🦒", "🦕", "🦔", "🦌", "🦜",
+]
+export const randomUnicodeAnimal = () => {
+    return unicodeAnimal[Math.floor(Math.random() * unicodeAnimal.length)]
+}
