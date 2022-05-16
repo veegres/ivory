@@ -1,13 +1,15 @@
 import {createContext, ReactNode, useContext, useState} from "react";
 
 interface StoreType {
-    activeCluster: { name: string, leader: string, tab: number },
+    activeCluster: { name: string, leader: string, tab: number }
     activeNode: string
+    credentialsOpen: boolean
 }
 
 interface StoreTypeParam {
     activeCluster?: { name: string, leader: string, tab: number }
     activeNode?: string
+    credentialsOpen?: boolean
 }
 
 interface StoreContextType {
@@ -21,6 +23,7 @@ interface StoreContextType {
 const initialStore: StoreType = {
     activeCluster: { name: "", leader: "", tab: 0 },
     activeNode: "",
+    credentialsOpen: false,
 }
 
 const StoreContext = createContext<StoreContextType>({

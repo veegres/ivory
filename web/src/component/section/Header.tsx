@@ -1,8 +1,9 @@
 import {Box, Grid, IconButton} from "@mui/material";
-import {Brightness4, Brightness7} from "@mui/icons-material";
+import {LightMode, Nightlight, Security} from "@mui/icons-material";
 import React, {useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
 import {randomUnicodeAnimal} from "../../app/utils";
+import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
     title: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', cursor: "pointer"},
@@ -14,6 +15,7 @@ const SX = {
 
 export function Header() {
     const theme = useTheme()
+    const { setStore } = useStore()
     const [animal, setAnimal] = useState("")
     const color = theme.info?.palette.primary.main
 
@@ -28,8 +30,11 @@ export function Header() {
             </Grid>
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>
                 <Box sx={SX.buttons}>
+                    <IconButton onClick={() => setStore({ credentialsOpen: true })}>
+                        <Security/>
+                    </IconButton>
                     <IconButton onClick={theme.toggle}>
-                        {theme.mode === 'dark' ? <Brightness7/> : <Brightness4/>}
+                        {theme.mode === 'dark' ? <LightMode/> : <Nightlight/>}
                     </IconButton>
                 </Box>
             </Grid>

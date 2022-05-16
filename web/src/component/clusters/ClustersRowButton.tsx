@@ -1,5 +1,5 @@
 import {cloneElement, ReactElement} from "react";
-import {CircularProgress, IconButton, Tooltip} from "@mui/material";
+import {Box, CircularProgress, IconButton, Tooltip} from "@mui/material";
 
 const SX = {
     icon: { fontSize: 18 },
@@ -17,11 +17,11 @@ type Props = {
 export function ClustersRowButton({ loading, icon, onClick, tooltip, disabled = false }: Props) {
     return (
         <Tooltip title={tooltip} placement="top" disableInteractive>
-            <span>
+            <Box component={"span"}>
                 <IconButton sx={SX.button} disabled={loading || disabled} onClick={onClick}>
                     {loading ? <CircularProgress size={SX.icon.fontSize}/> : cloneElement(icon, {sx: SX.icon})}
                 </IconButton>
-            </span>
+            </Box>
         </Tooltip>
     )
 }

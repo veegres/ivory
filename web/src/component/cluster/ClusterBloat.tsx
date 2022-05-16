@@ -2,7 +2,7 @@ import {Box, Button, Grid, LinearProgress, TextField} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
 import {bloatApi} from "../../app/api";
 import {useState} from "react";
-import {Auth, CompactTable, Target} from "../../app/types";
+import {Credential, CompactTable, Target} from "../../app/types";
 import {Error} from "../view/Error";
 import {ClusterBloatJob} from "./ClusterBloatJob";
 
@@ -13,7 +13,7 @@ const SX = {
 type Props = { leader: string, cluster: string }
 
 export function ClusterBloat({leader, cluster}: Props) {
-    const [auth, setAuth] = useState<Auth>({username: '', password: ''})
+    const [auth, setAuth] = useState<Credential>({username: '', password: ''})
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
