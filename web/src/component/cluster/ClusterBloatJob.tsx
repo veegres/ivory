@@ -6,6 +6,7 @@ import {CompactTable} from "../../app/types";
 import {Clear, Stop} from "@mui/icons-material";
 import {useMutation, useQueryClient} from "react-query";
 import {bloatApi} from "../../app/api";
+import {shortUuid} from "../../app/utils";
 
 const SX = {
     console: {fontSize: '13px', width: '100%', background: '#000000D8', padding: '10px 20px', borderRadius: '5px', color: '#e0e0e0'},
@@ -18,13 +19,14 @@ const SX = {
     button: {padding: '1px', color: '#f6f6f6'},
     tooltipBox: {marginLeft: '4px'},
     jobButton: {fontSize: 18},
-    separator: {marginLeft: '10px'}
+    separator: {marginLeft: '10px'},
+    credential: {color: "#536081", margin: "0 4px"}
 }
 
 type Props = { compactTable: CompactTable }
 
 export function ClusterBloatJob({compactTable}: Props) {
-    const {uuid, status: initStatus, command} = compactTable
+    const {uuid, status: initStatus, command, credentialId} = compactTable
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
@@ -38,7 +40,10 @@ export function ClusterBloatJob({compactTable}: Props) {
         <Box sx={SX.console}>
             <Grid container sx={SX.header} onClick={() => setOpen(!open)}>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
-                    <Grid item>Command</Grid>
+                    <Grid item container>
+                        <Box>Command</Box>
+                        <Box sx={SX.credential}>[credential: {shortUuid(credentialId)}]</Box>
+                    </Grid>
                     <Grid item container xs={"auto"} sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
                         {status.active ?
@@ -48,9 +53,9 @@ export function ClusterBloatJob({compactTable}: Props) {
                     </Grid>
                 </Grid>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
-                    <Grid item>{command}</Grid>
+                    <Grid item>{command} --username ... --password ...</Grid>
                     <Grid item container xs={"auto"} sx={SX.separator}>
-                        <Tooltip title={uuid}><Box>{uuid.substring(0, 8)}</Box></Tooltip>
+                        <Tooltip title={uuid}><Box>{shortUuid(uuid)}</Box></Tooltip>
                         <Tooltip title={"Open"}>
                             <Box sx={SX.tooltipBox}>
                                 <IconButton sx={SX.button} size={"small"}>

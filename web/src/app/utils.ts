@@ -35,6 +35,7 @@ export const activeNode = (nodes?: Node[]) => {
 
 export const getPatroniDomain = (url: string) => url.split('/')[2]
 
+export const shortUuid = (uuid: string) => uuid.substring(0, 8)
 
 export const unicodeAnimal = [
     "🐘", "🐇", "🐈", "🐋", "🐒", "🐢", "🐣", "🐬", "🐉",

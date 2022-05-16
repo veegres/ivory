@@ -3,6 +3,7 @@ package service
 import (
 	"crypto/md5"
 	"errors"
+	"github.com/google/uuid"
 	"ivory/persistence"
 	"sync"
 )
@@ -51,7 +52,7 @@ func (s *secret) Set(key string, decrypted string) error {
 	err = persistence.Database.Credential.UpdateRefs(ref, decrypted)
 	s.mutex.Unlock()
 	if err != nil {
-		s.Clean()
+		err = s.Clean()
 	}
 	return err
 }
@@ -60,24 +61,38 @@ func (s *secret) Update(previousKey string, newKey string) error {
 	previousKeySha1 := md5.Sum([]byte(previousKey))
 	newKeySha1 := md5.Sum([]byte(newKey))
 	s.mutex.Lock()
+
+	var err error
 	if s.IsRefEmpty() {
-		return errors.New("there is not secret")
+		err = errors.New("there is not secret")
 	}
 	if previousKeySha1 != s.key {
-		return errors.New("the secret is not correct")
+		err = errors.New("the secret is not correct")
 	}
 
 	s.key = newKeySha1
+	credentialMap := persistence.Database.Credential.GetCredentialMap()
+	for id, credential := range credentialMap {
+		id, _ := uuid.Parse(id)
+		oldEncodedPass := credential.Password
+		decodedPass, _ := Decrypt(oldEncodedPass, previousKeySha1)
+		newEncodedPass, _ := Encrypt(decodedPass, newKeySha1)
+		credential.Password = newEncodedPass
+		_, err = persistence.Database.Credential.UpdateCredential(id, credential)
+	}
+
 	s.mutex.Unlock()
-	return nil
+	return err
 }
 
-func (s *secret) Clean() {
+func (s *secret) Clean() error {
 	s.mutex.Lock()
 	s.ref = ""
 	s.key = [16]byte{}
-	_ = persistence.Database.Credential.UpdateRefs("", "")
+	err := persistence.Database.Credential.UpdateRefs("", "")
+	err = persistence.Database.Credential.DeleteCredentials()
 	s.mutex.Unlock()
+	return err
 }
 
 func (s *secret) IsRefEmpty() bool {

@@ -100,7 +100,7 @@ func (w worker) StartJob(context *gin.Context) {
 	user := cli.Connection.Username
 	pass, errCred := Encrypt(cli.Connection.Password, Secret.Get())
 	// TODO think to move it and do from frontend
-	key, errCred := persistence.Database.Credential.UpdateCredential(Credential{Username: user, Password: pass})
+	key, errCred := persistence.Database.Credential.CreateCredential(Credential{Username: user, Password: pass})
 	if errCred != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errCred.Error()})
 		return

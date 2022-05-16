@@ -44,14 +44,23 @@ func (r CredentialRepository) GetDecryptedRef() string {
 	return str
 }
 
-func (r CredentialRepository) UpdateCredential(credential Credential) (uuid.UUID, error) {
+func (r CredentialRepository) CreateCredential(credential Credential) (uuid.UUID, error) {
 	key, err := uuid.NewUUID()
 	err = r.common.update(r.credentialBucket, key.String(), credential)
 	return key, err
 }
 
+func (r CredentialRepository) UpdateCredential(id uuid.UUID, credential Credential) (uuid.UUID, error) {
+	err := r.common.update(r.credentialBucket, id.String(), credential)
+	return id, err
+}
+
 func (r CredentialRepository) DeleteCredential(key uuid.UUID) error {
 	return r.common.delete(r.credentialBucket, key.String())
+}
+
+func (r CredentialRepository) DeleteCredentials() error {
+	return r.common.deleteAll(r.credentialBucket)
 }
 
 func (r CredentialRepository) GetCredentialMap() map[string]Credential {
@@ -61,6 +70,7 @@ func (r CredentialRepository) GetCredentialMap() map[string]Credential {
 		var credential Credential
 		buff := bytes.NewBuffer(el.value)
 		_ = gob.NewDecoder(buff).Decode(&credential)
+		credential.Password = "configured"
 		credentialMap[el.key] = credential
 	}
 	return credentialMap

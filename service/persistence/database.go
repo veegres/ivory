@@ -111,6 +111,14 @@ func (d common) delete(bucket []byte, key string) error {
 	})
 }
 
+func (d common) deleteAll(bucket []byte) error {
+	return d.bolt.Update(func(tx *bolt.Tx) error {
+		err := tx.DeleteBucket(bucket)
+		_, err = tx.CreateBucket(bucket)
+		return err
+	})
+}
+
 func (d common) update(bucket []byte, key string, value interface{}) error {
 	return d.bolt.Update(func(tx *bolt.Tx) error {
 		var buff bytes.Buffer

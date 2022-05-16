@@ -20,7 +20,7 @@ export function InitialSecret() {
                     <li>
                         <b>Secret word</b> — this word will be used for encrypt and decrypt sensitive
                         data like passwords. Please, don't spread this word among a lot of people
-                        it will prevent leaking sensitive information. Ivory hold this word only in memory,
+                        it will prevent leaking sensitive data. Ivory keeps this word only in memory,
                         it means every time when Ivory will be rebooted you need to pass this word, so
                         please do not forget it.
                     </li>

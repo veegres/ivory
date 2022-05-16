@@ -38,12 +38,16 @@ export interface ClusterMap {
     [name: string]: string[]
 }
 
-export interface Auth {
+export interface Credential {
     username: string
     password: string
 }
 
-export interface Connection extends Auth {
+export interface CredentialMap {
+    [uuid: string]: Credential
+}
+
+export interface Connection extends Credential {
     host: string
     port: number
 }
@@ -86,6 +90,7 @@ export interface Response<TData, TError = {}> {
 export interface CompactTable {
     uuid: string,
     status: JobStatus,
+    credentialId: string,
     command: string,
     commandArgs: string,
     logsPath: string

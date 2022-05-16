@@ -1,4 +1,4 @@
-import {CircularProgress, Grid, IconButton, Skeleton, Tooltip} from "@mui/material";
+import {Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip} from "@mui/material";
 import {nodeApi} from "../../app/api";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {useTheme} from "../../provider/ThemeProvider";
@@ -68,9 +68,9 @@ export function ClusterConfig({leader}: Props) {
     }, disabled = false) {
         return (
             <Tooltip title={tooltip} placement="left" arrow>
-                <span>
+                <Box component={"span"}>
                     <IconButton onClick={onClick} disabled={disabled}>{icon}</IconButton>
-                </span>
+                </Box>
             </Tooltip>
         )
     }
