@@ -8,15 +8,15 @@
     "test": "react-scripts test"
   },
   "dependencies": {
-    "@babel/core": "7.17.8",
+    "@babel/core": "7.17.12",
     "@babel/plugin-syntax-flow": "7.16.7",
     "@babel/plugin-transform-react-jsx": "7.17.3",
     "@babel/runtime": "7.17.8",
     "@codemirror/lang-json": "0.20.0",
     "@emotion/react": "11.9.0",
     "@emotion/styled": "11.8.1",
-    "@mui/icons-material": "5.5.1",
-    "@mui/material": "5.6.3",
+    "@mui/icons-material": "5.6.2",
+    "@mui/material": "5.7.0",
     "@uiw/react-codemirror": "4.7.0",
     "autoprefixer": "10.4.4",
     "axios": "0.26.1",
