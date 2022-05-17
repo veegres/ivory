@@ -4,7 +4,18 @@ import {Error} from "../view/Error";
 import {AxiosError} from "axios";
 import {Credential} from "../../app/types";
 import {Info} from "../view/Info";
-import {Avatar, Box, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Tooltip} from "@mui/material";
+import {
+    Avatar,
+    Box,
+    CircularProgress,
+    IconButton, LinearProgress,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    TextField,
+    Tooltip
+} from "@mui/material";
 import React from "react";
 import {Delete, Lock} from "@mui/icons-material";
 import {shortUuid} from "../../app/utils";
@@ -15,7 +26,7 @@ const SX = {
 }
 
 export function CredentialsContent() {
-    const { data: credentials, isError, error, refetch } = useQuery("credentials", credentialApi.get)
+    const { data: credentials, isError, error, isFetching, refetch } = useQuery("credentials", credentialApi.get)
     const deleteCredentials = useMutation(credentialApi.delete, { onSuccess: refetch })
 
     if (isError) return <Error error={error as AxiosError} />
@@ -25,14 +36,17 @@ export function CredentialsContent() {
     if (list.length === 0) return <Info text={"There is no credentials yet"} />
 
     return (
-        <List disablePadding>
-            {list.map(([key, value]) => (
-                <ListItem key={key} secondaryAction={renderSecondaryAction(key)}>
-                    <ListItemAvatar >{renderAvatar(key)}</ListItemAvatar>
-                    <ListItemText primary={renderSecondary(value)} />
-                </ListItem>
-            ))}
-        </List>
+        <>
+            {isFetching ? <LinearProgress /> : null}
+            <List disablePadding>
+                {list.map(([key, value]) => (
+                    <ListItem key={key} secondaryAction={renderSecondaryAction(key)}>
+                        <ListItemAvatar >{renderAvatar(key)}</ListItemAvatar>
+                        <ListItemText primary={renderSecondary(value)} />
+                    </ListItem>
+                ))}
+            </List>
+        </>
     )
 
 
@@ -59,6 +73,8 @@ export function CredentialsContent() {
     }
 
     function renderSecondaryAction(uuid: string) {
+        if (deleteCredentials.isLoading && deleteCredentials.variables === uuid) return <CircularProgress size={25} />
+
         return (
             <IconButton onClick={() => deleteCredentials.mutate(uuid)}>
                 <Delete />
