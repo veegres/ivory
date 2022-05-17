@@ -5,7 +5,7 @@ import {secretApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";
 
 const SX = {
-    box: { height: "100%", width: "30%", minWidth: "300px" },
+    box: { height: "100%", width: "30%", minWidth: "500px" },
     button: { margin: "0 10px" },
     header: { fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer" }
 }
