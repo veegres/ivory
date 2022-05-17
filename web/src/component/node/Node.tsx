@@ -26,7 +26,8 @@ export function Node() {
     const { store: { activeNode }, isOverviewOpen } = useStore()
     const {data: nodePatroni, isLoading, isError, error} = useQuery(
         ['node/overview', activeNode],
-        () => activeNode ? nodeApi.overview(activeNode) : undefined
+        () => nodeApi.overview(activeNode),
+        {enabled: !!activeNode}
     )
 
     return (

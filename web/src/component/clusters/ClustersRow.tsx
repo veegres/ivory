@@ -38,7 +38,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     const { data, isFetching, refetch } = useQuery(
         ['node/cluster', name],
         () => nodeApi.cluster(stateNodes[0]),
-        {retry: 0}
+        {retry: 0, enabled: stateNodes[0] !== undefined}
     )
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
