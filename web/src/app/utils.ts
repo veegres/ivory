@@ -20,8 +20,8 @@ export const createColorsMap = (nodes?: Node[]) => {
     return nodes?.reduce(
         (map, node) => {
             const color = node.isLeader ? "success" : "primary"
-            map[node.host] = color
-            map[node.api_domain] = color
+            map[node.host.toLowerCase()] = color
+            map[node.api_domain.toLowerCase()] = color
             return map
         },
         {} as ColorsMap
