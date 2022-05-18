@@ -14,12 +14,12 @@ export function Credentials() {
     return (
         <Dialog open={store.credentialsOpen} onClose={handleClose}>
             <DialogTitle display={"flex"} alignItems={"center"} justifyContent={"space-between"} gap={1}>
-                <Security fontSize={"medium"} />
+                <Security fontSize={"medium"}/>
                 <Box>Credentials</Box>
-                <IconButton size={"small"} onClick={handleClose}><Close /></IconButton>
+                <IconButton size={"small"} onClick={handleClose}><Close/></IconButton>
             </DialogTitle>
             <DialogContent sx={SX.dialog}>
-                <CredentialsContent />
+                <CredentialsContent/>
             </DialogContent>
         </Dialog>
     )

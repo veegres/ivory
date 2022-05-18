@@ -94,7 +94,7 @@ export function ClusterBloatJob({compactTable}: Props) {
         return (
             <Tooltip title={title} placement={"top"}>
                 <Box sx={SX.tooltipBox}>
-                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 2} /> : (
+                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 2}/> : (
                         <IconButton
                             sx={SX.button}
                             size={"small"}

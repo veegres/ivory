@@ -43,7 +43,7 @@ export function ClusterConfig({leader}: Props) {
                     editable={isEditable}
                     extensions={[json(), isDark ? highlightExtension.dark : highlightExtension.light]}
                     onChange={(value) => setConfigState(value)}
-                />
+               />
             </Grid>
             <Grid item xs={"auto"} display={"flex"} flexDirection={"column"}>
                 {renderUpdateButtons()}

@@ -42,11 +42,11 @@ export function ClusterOverview({cluster}: Props) {
 
     return (
         <>
-            <AlertDialog {...alertDialog} onClose={() => setAlertDialog(initAlertDialog)} />
+            <AlertDialog {...alertDialog} onClose={() => setAlertDialog(initAlertDialog)}/>
             <Table size="small" sx={SX.tableLastChildRow}>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={SX.actionCell} />
+                        <TableCell sx={SX.actionCell}/>
                         <TableCell>Role</TableCell>
                         <TableCell>Node</TableCell>
                         <TableCell>Host</TableCell>
@@ -70,7 +70,7 @@ export function ClusterOverview({cluster}: Props) {
             const isChecked = store.activeNode === api_domain
             return (
                 <TableRow sx={SX.clickable} key={host} onClick={handleCheck(isChecked, api_domain)}>
-                    <TableCell><Radio checked={isChecked} size={"small"} /></TableCell>
+                    <TableCell><Radio checked={isChecked} size={"small"}/></TableCell>
                     <TableCell sx={{color: nodeColor[role]}}>{role.toUpperCase()}</TableCell>
                     <TableCell>{name}</TableCell>
                     <TableCell>{host}:{port}</TableCell>

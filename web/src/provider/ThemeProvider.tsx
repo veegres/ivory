@@ -22,7 +22,7 @@ export function ThemeProvider(props: { children: ReactNode }) {
     return (
         <ThemeContext.Provider value={{ mode, toggle, info: muiTheme }}>
             <MuiThemeProvider theme={muiTheme}>
-                <CssBaseline />
+                <CssBaseline/>
                 {props.children}
             </MuiThemeProvider>
         </ThemeContext.Provider>

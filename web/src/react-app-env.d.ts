@@ -1,4 +1,4 @@
-/// <reference types="react-scripts" />
+/// <reference types="react-scripts"/>
 /*
 These type declarations add support for importing resource files
 such as bmp, gif, jpeg, jpg, png, webp, and svg. That means that
