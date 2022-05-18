@@ -7,10 +7,10 @@ import {Credentials} from "./component/credentials/Credentials";
 export function App() {
     return (
         <Grid sx={{ height: "100vh" }} container direction={"column"} spacing={2} flexWrap={"nowrap"}>
-            <Grid item><Header /></Grid>
+            <Grid item><Header/></Grid>
             <Grid item container flexGrow={1} justifyContent={"center"} alignItems={"center"}>
-                <Body />
-                <Credentials />
+                <Body/>
+                <Credentials/>
             </Grid>
         </Grid>
     );

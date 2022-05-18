@@ -12,10 +12,10 @@ ReactDOM.render(
         <QueryClientProvider client={new QueryClient()}>
             <ThemeProvider>
                 <StoreProvider>
-                    <App />
+                    <App/>
                 </StoreProvider>
             </ThemeProvider>
-            <ReactQueryDevtools />
+            <ReactQueryDevtools/>
         </QueryClientProvider>
     </React.StrictMode>,
     document.getElementById('root')

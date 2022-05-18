@@ -45,15 +45,15 @@ export function ClusterBloat({leader, cluster}: Props) {
                         <TextField
                             required size={"small"} label="Username" variant="standard"
                             onChange={(e) => setAuth({...auth, username: e.target.value})}
-                        />
+                       />
                         <TextField
                             required size={"small"} label="Password" type="password" variant="standard"
                             onChange={(e) => setAuth({...auth, password: e.target.value})}
-                        />
+                       />
                         <TextField
                             size={"small"} label="Ratio" type="number" variant="standard"
                             onChange={(e) => setRadio(parseInt(e.target.value))}
-                        />
+                       />
                     </Grid>
                     <Grid item>
                         <Button variant="contained" size={"small"} disabled={compact.isLoading} onClick={handleRun}>
@@ -65,23 +65,23 @@ export function ClusterBloat({leader, cluster}: Props) {
                     <TextField
                         size={"small"} label="Database Name" variant="standard"
                         onChange={(e) => setTarget({...target, dbName: e.target.value})}
-                    />
+                   />
                     <TextField
                         size={"small"} label="Schema" variant="standard"
                         onChange={(e) => setTarget({...target, schema: e.target.value})}
-                    />
+                   />
                     <TextField
                         size={"small"} label="Table" variant="standard"
                         onChange={(e) => setTarget({...target, table: e.target.value})}
-                    />
+                   />
                     <TextField
                         size={"small"} label="Exclude Schema" variant="standard"
                         onChange={(e) => setTarget({...target, excludeSchema: e.target.value})}
-                    />
+                   />
                     <TextField
                         size={"small"} label="Exclude Table" variant="standard"
                         onChange={(e) => setTarget({...target, excludeTable: e.target.value})}
-                    />
+                   />
                 </Grid>
             </Box>
         )

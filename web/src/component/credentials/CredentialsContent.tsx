@@ -29,20 +29,20 @@ export function CredentialsContent() {
     const { data: credentials, isError, error, isFetching, refetch } = useQuery("credentials", credentialApi.get)
     const deleteCredentials = useMutation(credentialApi.delete, { onSuccess: refetch })
 
-    if (isError) return <Error error={error as AxiosError} />
-    if (!credentials) return <Error error={"No data"} />
+    if (isError) return <Error error={error as AxiosError}/>
+    if (!credentials) return <Error error={"No data"}/>
 
     const list = Object.entries<Credential>(credentials)
-    if (list.length === 0) return <Info text={"There is no credentials yet"} />
+    if (list.length === 0) return <Info text={"There is no credentials yet"}/>
 
     return (
         <>
-            {isFetching ? <LinearProgress /> : null}
+            {isFetching ? <LinearProgress/> : null}
             <List disablePadding>
                 {list.map(([key, value]) => (
                     <ListItem key={key} secondaryAction={renderSecondaryAction(key)}>
                         <ListItemAvatar >{renderAvatar(key)}</ListItemAvatar>
-                        <ListItemText primary={renderSecondary(value)} />
+                        <ListItemText primary={renderSecondary(value)}/>
                     </ListItem>
                 ))}
             </List>
@@ -66,18 +66,18 @@ export function CredentialsContent() {
         const name = username === "" ? "empty" : username
         return (
             <Box display={"flex"} justifyContent={"space-evenly"}>
-                <TextField size={"small"} variant={"standard"} label={"username"} value={name} disabled />
-                <TextField size={"small"} variant={"standard"} label={"password"} value={password} disabled />
+                <TextField size={"small"} variant={"standard"} label={"username"} value={name} disabled/>
+                <TextField size={"small"} variant={"standard"} label={"password"} value={password} disabled/>
             </Box>
         )
     }
 
     function renderSecondaryAction(uuid: string) {
-        if (deleteCredentials.isLoading && deleteCredentials.variables === uuid) return <CircularProgress size={25} />
+        if (deleteCredentials.isLoading && deleteCredentials.variables === uuid) return <CircularProgress size={25}/>
 
         return (
             <IconButton onClick={() => deleteCredentials.mutate(uuid)}>
-                <Delete />
+                <Delete/>
             </IconButton>
         )
     }

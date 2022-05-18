@@ -67,7 +67,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                     editable={!isReadOnly}
                     placeholder={`Node`}
                     onChange={n => setStateNodes(n)}
-                />
+               />
             </TableCell>
             <TableCell sx={SX.cell} style={style.thirdCell}>
                 {isReadOnly ? renderReadButtons(!stateName) : renderActionButtons(!stateName)}
@@ -83,8 +83,8 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                     color={isActive ? "primary" : "default"}
                     label={stateName}
                     onClick={handleChipClick}
-                />
-                <ClustersRowButton icon={<Cached />} loading={isFetching} onClick={refetch} tooltip={"Reload"} />
+               />
+                <ClustersRowButton icon={<Cached/>} loading={isFetching} onClick={refetch} tooltip={"Reload"}/>
             </Box>
         ) : (
             <FormControl fullWidth>
@@ -93,7 +93,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                     placeholder="Name"
                     value={stateName}
                     onChange={(event) => setStateName(event.target.value)}
-                />
+               />
             </FormControl>
         )
     }
@@ -107,14 +107,14 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                     loading={updateCluster.isLoading}
                     disabled={isDisabled}
                     onClick={toggleEdit}
-                />
+               />
                 <ClustersRowButton
-                    icon={<Delete />}
+                    icon={<Delete/>}
                     tooltip={'Delete'}
                     loading={deleteCluster.isLoading}
                     disabled={isDisabled}
                     onClick={handleDelete}
-                />
+               />
             </>
         )
     }
@@ -127,14 +127,14 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                     tooltip={'Cancel'}
                     loading={updateCluster.isLoading}
                     onClick={handleCancel}
-                />
+               />
                 <ClustersRowButton
                     icon={<CheckCircle/>}
                     tooltip={'Save'}
                     loading={updateCluster.isLoading}
                     disabled={isDisabled}
                     onClick={handleUpdate}
-                />
+               />
             </>
         )
     }

@@ -3,7 +3,7 @@ import {CSSProperties} from "react";
 // SERVER
 export interface NodeResponse {
     name: string,
-    timeline: number,
+    timeline?: number,
     lag: number,
     state: string,
     host: string,
@@ -14,19 +14,20 @@ export interface NodeResponse {
 
 export interface NodeOverview {
     database_system_identifier: string,
-    postmaster_start_time: string,
-    timeline: number,
-    cluster_unlocked: boolean,
+    pending_restart?: boolean
+    postmaster_start_time?: string,
+    timeline?: number,
+    cluster_unlocked?: boolean,
     patroni: { scope: string, version: string },
     state: string,
     role: string,
-    xlog: {
+    xlog?: {
         received_location: number,
         replayed_timestamp: string,
         paused: boolean,
         replayed_location: number
     }
-    server_version: string
+    server_version?: string
 }
 
 export interface Cluster {

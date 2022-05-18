@@ -17,6 +17,6 @@ export function SecretTextField(props: Props) {
             size={"small"}
             label={label}
             onChange={onChange}
-        />
+       />
     )
 }

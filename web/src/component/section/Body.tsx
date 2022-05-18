@@ -14,16 +14,16 @@ import {secretApi} from "../../app/api";
 export function Body() {
     const { data: status, isLoading, isError, error } = useQuery("secret", secretApi.get)
 
-    if (isError) return <Block><Error error={error as AxiosError} /></Block>
-    if (isLoading) return <CircularProgress />
-    if (!status?.ref) return <InitialSecret />
-    if (!status?.key) return <RepeatSecret />
+    if (isError) return <Block><Error error={error as AxiosError}/></Block>
+    if (isLoading) return <CircularProgress/>
+    if (!status?.ref) return <InitialSecret/>
+    if (!status?.key) return <RepeatSecret/>
 
     return (
         <Stack sx={{ width: "100%", height: "100%" }} spacing={1}>
-            <Clusters />
-            <Cluster />
-            <Node />
+            <Clusters/>
+            <Cluster/>
+            <Node/>
         </Stack>
     )
 }

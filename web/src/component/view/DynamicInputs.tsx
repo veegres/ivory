@@ -36,7 +36,7 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
                         size="small"
                         value={input}
                         onChange={(event) => handleChange(index, event.target.value)}
-                    />
+                   />
                 </FormControl>
             )
         })
@@ -51,7 +51,7 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
                 label={input ? input : `Node ${index}`}
                 disabled={!input}
                 variant="outlined"
-            />
+           />
         ))
     }
 

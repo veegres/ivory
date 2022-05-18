@@ -25,17 +25,17 @@ export function Cluster() {
         <Block withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeCluster.tab} onChange={(_, value) => handleChange(value)}>
-                    <Tab label={"Overview"} disabled={disabled} />
+                    <Tab label={"Overview"} disabled={disabled}/>
                     <Tab label={"Config"} disabled={disabled}/>
                     <Tab label={"Bloat"} disabled={disabled}/>
                 </Tabs>
                 {!activeCluster.leader ? null : (
-                    <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"} />
+                    <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"}/>
                 )}
             </Box>
             <Box sx={SX.mainBox}>
                 {!disabled ? renderActiveBlock() : (
-                    <Info text={"Please, select a cluster to see the information!"} />
+                    <Info text={"Please, select a cluster to see the information!"}/>
                 )}
             </Box>
         </Block>

@@ -37,7 +37,7 @@ export function Node() {
     )
 
     function renderContent() {
-        if (!activeNode) return <Info text={"Please, select a node to see the information!"} />
+        if (!activeNode) return <Info text={"Please, select a node to see the information!"}/>
         if (isError) return <Error error={error as AxiosError}/>
 
         return (
@@ -47,10 +47,10 @@ export function Node() {
                 </Grid>
                 <Grid item xs container direction="column">
                     <Grid item><Item name="Node" value={activeNode}/></Grid>
-                    <Grid item><Item name="State" value={nodePatroni?.state} /></Grid>
-                    <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope} /></Grid>
-                    <Grid item><Item name="Timeline" value={nodePatroni?.timeline.toString()} /></Grid>
-                    <Grid item><Item name="Xlog" value={JSON.stringify(nodePatroni?.xlog, null, 4)} /></Grid>
+                    <Grid item><Item name="State" value={nodePatroni?.state}/></Grid>
+                    <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope}/></Grid>
+                    <Grid item><Item name="Timeline" value={nodePatroni?.timeline?.toString()}/></Grid>
+                    <Grid item><Item name="Xlog" value={JSON.stringify(nodePatroni?.xlog, null, 4)}/></Grid>
                 </Grid>
             </Grid>
         )
@@ -74,10 +74,7 @@ export function Node() {
         const background = props.role ? nodeColor[props.role] : undefined
 
         return (
-            <Grid container
-                  alignContent="center"
-                  justifyContent="center"
-                  sx={{...SX.nodeStatusBlock, background}}>
+            <Grid container alignContent="center" justifyContent="center" sx={{...SX.nodeStatusBlock, background}}>
                 <Grid item>{nodePatroni?.role.toUpperCase()}</Grid>
             </Grid>
         )
