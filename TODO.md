@@ -7,6 +7,7 @@
 - [x] Add versioning and push image to docker hub
 - [ ] Add oportunity to save password and defer from postgres & patroni
 - [ ] Add oportunity to support certs for patroni
+- [ ] Add oportunity to use/check more commonly used queries for managing DB (bloat of index, bloat of table, active queries, etc)
 
 ### [Backend]
 
@@ -46,8 +47,8 @@
 - [ ] Add backups that can be manage by Ivory, think how to restore it (pg_backrest - point in time, pg_dump - easier, pg_restore etc)
 - [ ] Add some basics live time graphics to Node Overview (like memory, disk size, core, cpu, etc)
 - [ ] Add opportunity to add some grafana graphs
-- [X] Add opportunity to use tool [pg_compacttable](https://github.com/dataegret/pgcompacttable)
-- [ ] Add opportunity to use tool [pg_repack](https://github.com/reorg/pg_repack)
+- [x] Add opportunity to use tool [pg_compacttable](https://github.com/dataegret/pgcompacttable)
+- [ ] Add opportunity to use tool as [pg_repack](https://github.com/reorg/pg_repack) or [pg_squeeze](https://github.com/cybertec-postgresql/pg_squeeze)
 - [ ] Add opportunity to collect and see different [Postgres Checkups](https://gitlab.com/postgres-ai/postgres-checkup)
 - [ ] Think about support other tools as Patroni - [PgPool 2](https://www.pgpool.net/), [PAF](http://clusterlabs.github.io/PAF/), [repmgr](https://repmgr.org/), [Stolon](https://github.com/sorintlab/stolon), etc
 - [ ] Think about support sharding tools as [Citus](https://www.citusdata.com/), [Postgres-XL](https://www.postgres-xl.org/), etc (can we?)
