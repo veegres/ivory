@@ -5,6 +5,8 @@
 - [x] Choose licence
 - [ ] Add option to change data folder for docker mount
 - [x] Add versioning and push image to docker hub
+- [ ] Add oportunity to save password and defer from postgres & patroni
+- [ ] Add oportunity to support certs for patroni
 
 ### [Backend]
 
@@ -24,7 +26,7 @@
   - [ ] add action buttons to overview tab
   - [ ] when stream is finished we should reload logs on open button
 - [ ] Add navigation (router + urls)
-- [ ] Add footer with information about the project, link to github and year
+- [ ] Add footer with information about the project, link to github and year, etc
 - [ ] Refactor all nested function components `<>` to `render()` or extract to separate file (diff behave could cause a problems)
 - [ ] Add remove button for empty elements in the center of nodes array
 - [ ] Refactor all strings from `''` to `""` and props in jsx from `=""` to `={""}`
@@ -37,13 +39,14 @@
 - [ ] Stability
   - [ ] add tests to backend, think about frontend
   - [ ] cover all edge cases (errors, loadings, etc)
-- [ ] Add password storage for patroni clusters and postgres nodes (for pgcompact table)
+- [x] Add password storage for patroni clusters and postgres nodes (for pgcompact table)
   - [x] add secret to encrypt passwords
-  - [ ] add passwords storage with interface
-  - [ ] use secret to show and do action (reinit, switchover, clean bloat, etc)
+  - [x] add passwords storage with interface
+  - [x] use secret to show and do action (reinit, switchover, clean bloat, etc)
+- [ ] Add backups that can be manage by Ivory, think how to restore it (pg_backrest - point in time, pg_dump - easier, pg_restore etc)
 - [ ] Add some basics live time graphics to Node Overview (like memory, disk size, core, cpu, etc)
 - [ ] Add opportunity to add some grafana graphs
-- [X] Add opportunity to use tool [pgcompacttable](https://github.com/dataegret/pgcompacttable)
+- [X] Add opportunity to use tool [pg_compacttable](https://github.com/dataegret/pgcompacttable)
 - [ ] Add opportunity to use tool [pg_repack](https://github.com/reorg/pg_repack)
 - [ ] Add opportunity to collect and see different [Postgres Checkups](https://gitlab.com/postgres-ai/postgres-checkup)
 - [ ] Think about support other tools as Patroni - [PgPool 2](https://www.pgpool.net/), [PAF](http://clusterlabs.github.io/PAF/), [repmgr](https://repmgr.org/), [Stolon](https://github.com/sorintlab/stolon), etc
