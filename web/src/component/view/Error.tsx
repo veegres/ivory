@@ -10,11 +10,8 @@ const style: Style = {
 
 type ErrorProps = { error: AxiosError | string, type?: AlertColor }
 type GeneralProps = { message: string, type: AlertColor, title?: string, json?: string }
-type JsonProps = { json: string }
 
 export function Error({error, type}: ErrorProps) {
-    const [isOpen, setIsOpen] = useState(false)
-
     if (typeof error === "string") return <General type={type ?? "warning"} message={error}/>
     if (!error.response) return <General type={"error"} message={"Error is not detected"}/>
 
@@ -26,23 +23,19 @@ export function Error({error, type}: ErrorProps) {
     return <General type={"error"} message={error.message} title={title}/>
 
     function General(props: GeneralProps) {
-        const {message, type} = props
+        const [isOpen, setIsOpen] = useState(false)
+        const {message, type, json, title} = props
+        const isJson = !!json
         return (
-            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={!!props.json} open={isOpen}/>}>
-                <AlertTitle>{props.title ?? type.toString().toUpperCase()}</AlertTitle>
+            <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={isJson} open={isOpen}/>}>
+                <AlertTitle>{title ?? type.toString().toUpperCase()}</AlertTitle>
                 <Box>Message: {message}</Box>
-                {props.json ? <Json json={props.json}/> : null}
+                <Collapse in={isJson && isOpen}>
+                    <InputLabel style={style.jsonInput}>
+                        {JSON.stringify(json, null, 4)}
+                    </InputLabel>
+                </Collapse>
             </Alert>
-        )
-    }
-
-    function Json(props: JsonProps) {
-        return (
-            <Collapse in={isOpen}>
-                <InputLabel style={style.jsonInput}>
-                    {JSON.stringify(props.json, null, 4)}
-                </InputLabel>
-            </Collapse>
         )
     }
 }
