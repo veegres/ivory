@@ -3,14 +3,12 @@
 Ivory is a open-source project which is designed to simplify and visualize work with postgres clusters
 
 Ivory allows you to do such things as:
-- keep all of your cluster in one place
-- monitor cluster status, do reinit and switchover
-- edit config of the cluster
-- clean bloat
+- [keep all of your cluster in one place](https://github.com/veegres/ivory/blob/master/doc/clusters.md)
+- [monitor cluster status, do reinit and switchover](https://github.com/veegres/ivory/blob/master/doc/overview.md)
+- [edit config of the cluster](https://github.com/veegres/ivory/blob/master/doc/config.md)
+- [clean bloat](https://github.com/veegres/ivory/blob/master/doc/bloat.md)
 
 ![Demo](https://github.com/veegres/ivory/blob/master/doc/images/demo.gif)
-
-More examples you can find in `doc` package.
 
 ## Get started
 
