@@ -12,7 +12,7 @@ import {ClusterTabs} from "../../app/types";
 
 const SX = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
-    infoBox: {margin: '5px 0'},
+    infoBox: {padding: '5px 0'},
     chip: {margin: "auto 0", minWidth: "150px"},
 }
 
@@ -54,9 +54,9 @@ export function Cluster() {
         <Block withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeCluster.tab} onChange={(_, value) => handleChange(value)}>
-                    <Tab label={"Overview"} disabled={disabled}/>
-                    <Tab label={"Config"} disabled={disabled}/>
-                    <Tab label={"Bloat"} disabled={disabled}/>
+                    <Tab label={"Overview"}/>
+                    <Tab label={"Config"}/>
+                    <Tab label={"Bloat"}/>
                 </Tabs>
                 <Box>
                     {!activeCluster.leader ? null : (
@@ -81,7 +81,7 @@ export function Cluster() {
     }
 
     function renderInfoBlock() {
-        if (disabled || !tab?.info) return null
+        if (!tab?.info) return null
         return (
             <Collapse in={isInfoOpen}>
                 <Alert severity="info" onClose={() => setIsInfoOpen(false)}>{tab.info}</Alert>
