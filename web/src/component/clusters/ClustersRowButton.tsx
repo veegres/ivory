@@ -3,7 +3,7 @@ import {Box, CircularProgress, IconButton, Tooltip} from "@mui/material";
 
 const SX = {
     icon: { fontSize: 18 },
-    button: { height: '32px', width: '32px' },
+    button: { height: "32px", width: "32px" },
 }
 
 type Props = {
@@ -19,7 +19,7 @@ export function ClustersRowButton({ loading, icon, onClick, tooltip, disabled = 
         <Tooltip title={tooltip} placement="top" disableInteractive>
             <Box component={"span"}>
                 <IconButton sx={SX.button} disabled={loading || disabled} onClick={onClick}>
-                    {loading ? <CircularProgress size={SX.icon.fontSize}/> : cloneElement(icon, {sx: SX.icon})}
+                    {loading ? <CircularProgress size={SX.icon.fontSize - 2}/> : cloneElement(icon, {sx: SX.icon})}
                 </IconButton>
             </Box>
         </Tooltip>
