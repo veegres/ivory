@@ -39,6 +39,10 @@ export interface ClusterMap {
     [name: string]: string[]
 }
 
+export interface ClusterTabs {
+    [key: number]: { body: JSX.Element, info?: JSX.Element }
+}
+
 export interface Credential {
     username: string
     password: string
