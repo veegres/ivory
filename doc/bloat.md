@@ -1,4 +1,4 @@
-# Bloat
+# [☰](https://github.com/veegres/ivory/blob/master/README.md) Bloat
 
 In this block you can run and monitor status of bloat cleaning.
 Bloat cleaning provides by [pgcompacttable](https://github.com/dataegret/pgcompacttable) tool.
