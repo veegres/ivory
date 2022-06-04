@@ -1,8 +1,16 @@
 # Ivory (patroni cluster visualization)
 
-Ivory is the open-source project which is designed to simplify and visualize work with postgres clusters
+Ivory is a open-source project which is designed to simplify and visualize work with postgres clusters
 
-Ivory allows you to save all your cluster nodes and see cluster status, do reinit, switchover, edit config of the cluster
+Ivory allows you to do such things as:
+- keep all of your cluster in one place
+- monitor cluster status, do reinit and switchover
+- edit config of the cluster
+- clean bloat
+
+![Demo](https://github.com/veegres/ivory/blob/master/doc/images/demo.gif)
+
+More examples you can find in `doc` package.
 
 ## Get started
 
