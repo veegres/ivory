@@ -1,4 +1,4 @@
-# Overview
+# [☰](https://github.com/veegres/ivory/blob/master/README.md) Overview
 
 In this block you can see overview of your cluster and do reinit and switchover.
 You can click on specific node and check the information about this instance.
