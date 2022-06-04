@@ -1,6 +1,6 @@
 import {ClusterOverview} from "./ClusterOverview";
 import {ClusterConfig} from "./ClusterConfig";
-import {Alert, Box, Chip, Collapse, IconButton, Link, Tab, Tabs} from "@mui/material";
+import {Alert, Box, Chip, Collapse, Fade, IconButton, Link, Tab, Tabs, Tooltip} from "@mui/material";
 import React, {useState} from "react";
 import {useStore} from "../../provider/StoreProvider";
 import {ClusterBloat} from "./ClusterBloat";
@@ -13,6 +13,7 @@ import {ClusterTabs} from "../../app/types";
 const SX = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
     infoBox: {padding: '5px 0'},
+    actionBox: {display: "flex", alignItems: "center"},
     chip: {margin: "auto 0", minWidth: "150px"},
 }
 
@@ -58,16 +59,7 @@ export function Cluster() {
                     <Tab label={"Config"}/>
                     <Tab label={"Bloat"}/>
                 </Tabs>
-                <Box>
-                    {!activeCluster.leader ? null : (
-                        <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"}/>
-                    )}
-                    {!tab?.info ? null : (
-                        <IconButton color={"primary"} onClick={() => setIsInfoOpen(!isInfoOpen)}>
-                            <InfoOutlined/>
-                        </IconButton>
-                    )}
-                </Box>
+                {renderActionBlock()}
             </Box>
             <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
             <Box>{renderMainBlock()}</Box>
@@ -77,7 +69,7 @@ export function Cluster() {
     function renderMainBlock() {
         if (disabled) return <Info text={"Please, select a cluster to see the information!"}/>
         if (!tab) return <Info text={"Coming soon — we're working on it!"}/>
-        else return tab.body
+        return tab.body
     }
 
     function renderInfoBlock() {
@@ -86,6 +78,27 @@ export function Cluster() {
             <Collapse in={isInfoOpen}>
                 <Alert severity="info" onClose={() => setIsInfoOpen(false)}>{tab.info}</Alert>
             </Collapse>
+        )
+    }
+
+    function renderActionBlock() {
+        return (
+            <Box sx={SX.actionBox}>
+                <Box>
+                    <Fade in={!!activeCluster.leader}>
+                        <Tooltip title={"All requests go to this node!"} placement={"top"}>
+                            <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"}/>
+                        </Tooltip>
+                    </Fade>
+                </Box>
+                <Tooltip title={"Tab Information"} placement={"top"}>
+                    <Box>
+                        <IconButton color={"primary"} disabled={!tab?.info} onClick={() => setIsInfoOpen(!isInfoOpen)}>
+                            <InfoOutlined/>
+                        </IconButton>
+                    </Box>
+                </Tooltip>
+            </Box>
         )
     }
 
