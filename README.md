@@ -21,8 +21,8 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 
 If you're interested in contributing to the Ivory project:
 
-- Please, check the main ideas for enhancements in [CONTRIBUTING.md](https://github.com/veegres/ivory/blob/master/CONTRIBUTING.md)
+- Please, check the main ideas for enhancements in [TODO.md](https://github.com/veegres/ivory/blob/master/TODO.md)
 - Learn how to set up your local environment in this [README.md](https://github.com/veegres/ivory/tree/master/docker/development)
 - Learn how to run frontend in this [README.md](https://github.com/veegres/ivory/blob/master/web/README.md)
 - Learn how to run backend in this [README.md](https://github.com/veegres/ivory/blob/master/service/README.md)
-- Look through our style guide _(in progress)_
+- Look through our style guide _(coming soon)_
