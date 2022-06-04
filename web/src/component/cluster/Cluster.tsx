@@ -1,25 +1,53 @@
 import {ClusterOverview} from "./ClusterOverview";
 import {ClusterConfig} from "./ClusterConfig";
-import {Box, Chip, Tab, Tabs} from "@mui/material";
-import React from "react";
+import {Alert, Box, Chip, Collapse, IconButton, Link, Tab, Tabs} from "@mui/material";
+import React, {useState} from "react";
 import {useStore} from "../../provider/StoreProvider";
 import {ClusterBloat} from "./ClusterBloat";
 import {Info} from "../view/Info";
 import {Block} from "../view/Block";
 import {useQuery} from "react-query";
-
+import {InfoOutlined} from "@mui/icons-material";
 
 const SX = {
-    headBox: {display: "flex", justifyContent: "space-between"},
-    mainBox: {marginTop: '10px'},
+    headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
+    infoBox: {margin: '5px 0'},
     chip: {margin: "auto 0", minWidth: "150px"},
+}
+
+const TABS: { [key: number]: any } = {
+    0: {
+        body: <ClusterOverview/>,
+    },
+    1: {
+        body: <ClusterConfig/>,
+        info: <>
+            You can change your postgres configurations here (it will be applied on all cluster nodes).
+            It doesn't rewrite all your config, it call patches the existing configuration. If you want to
+            remove (reset) some setting just patch it with <i>null</i>. Be aware that some of the parameters
+            requires a restart of postgres. More information how it works you can find in
+            patroni <Link href={"https://patroni.readthedocs.io/en/latest/SETTINGS.html"} target={"_blank"}>site</Link>.
+        </>
+    },
+    2: {
+        body: <ClusterBloat/>,
+        info: <>
+            You can reduce size of bloated tables and indexes without heavy locks here. It base on the
+            tool <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link>.
+            It is installed beside Ivory and will be used by Ivory. Ivory provides visualisation,
+            helps to keep information about job and logs in one place by each cluster while you need it.
+            Please be aware that you can run this tool only in master node and In target database contrib module
+            pgstattuple should be installed via <i>create extension if not exists pgstattuple;</i>
+        </>
+    },
 }
 
 export function Cluster() {
     const {store: {activeCluster}, setStore} = useStore()
+    const [isInfoOpen, setIsInfoOpen] = useState(false)
     const disabled = !activeCluster.name
-
     const clusters = useQuery('cluster/list')
+    const tab = TABS[activeCluster.tab]
 
     return (
         <Block withPadding visible={clusters.isSuccess}>
@@ -29,29 +57,35 @@ export function Cluster() {
                     <Tab label={"Config"} disabled={disabled}/>
                     <Tab label={"Bloat"} disabled={disabled}/>
                 </Tabs>
-                {!activeCluster.leader ? null : (
-                    <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"}/>
-                )}
+                <Box>
+                    {!activeCluster.leader ? null : (
+                        <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"}/>
+                    )}
+                    {!tab.info ? null : (
+                        <IconButton color={"primary"} onClick={() => setIsInfoOpen(!isInfoOpen)}>
+                            <InfoOutlined/>
+                        </IconButton>
+                    )}
+                </Box>
             </Box>
-            <Box sx={SX.mainBox}>
-                {!disabled ? renderActiveBlock() : (
-                    <Info text={"Please, select a cluster to see the information!"}/>
-                )}
-            </Box>
+            <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
+            <Box>{renderMainBlock()}</Box>
         </Block>
     )
 
-    function renderActiveBlock() {
-        switch (activeCluster.tab) {
-            case 0:
-                return <ClusterOverview cluster={activeCluster.name}/>
-            case 1:
-                return <ClusterConfig leader={activeCluster.leader}/>
-            case 2:
-                return <ClusterBloat leader={activeCluster.leader} cluster={activeCluster.name}/>
-            default:
-                return <Info text={"Coming soon — we're working on it!"}/>
-        }
+    function renderMainBlock() {
+        if (disabled) return <Info text={"Please, select a cluster to see the information!"}/>
+        if (!tab) return <Info text={"Coming soon — we're working on it!"}/>
+        else return tab.body
+    }
+
+    function renderInfoBlock() {
+        if (disabled || !tab.info) return null
+        return (
+            <Collapse in={isInfoOpen}>
+                <Alert severity="info" onClose={() => setIsInfoOpen(false)}>{tab.info}</Alert>
+            </Collapse>
+        )
     }
 
     function handleChange(value: number) {

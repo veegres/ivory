@@ -10,16 +10,16 @@ import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
 import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
+import {useStore} from "../../provider/StoreProvider";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
     light: syntaxHighlighting(defaultHighlightStyle)
 }
 
-type Props = { leader: string }
-
-export function ClusterConfig({leader}: Props) {
+export function ClusterConfig() {
     const theme = useTheme();
+    const {store: {activeCluster: {leader}}} = useStore()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState('')
 

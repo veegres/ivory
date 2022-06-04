@@ -17,13 +17,12 @@ const SX = {
     actionCell: {width: "50px"},
 }
 
-type Props = {cluster: string}
 type AlertDialogState = {open: boolean, title: string, content: string, onAgree: () => void}
 
-export function ClusterOverview({cluster}: Props) {
+export function ClusterOverview() {
     const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {},}
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const { setStore, store } = useStore()
+    const { setStore, store: { activeCluster: { name: cluster }, activeNode } } = useStore()
 
     const clusterState = useQuery<Node[], AxiosError>(
         ["node/cluster", cluster],
@@ -67,7 +66,7 @@ export function ClusterOverview({cluster}: Props) {
 
         return members.map((node) => {
             const {api_domain, name, port, host, role, state, lag, isLeader} = node
-            const isChecked = store.activeNode === api_domain
+            const isChecked = activeNode === api_domain
             return (
                 <TableRow sx={SX.clickable} key={host} onClick={handleCheck(isChecked, api_domain)}>
                     <TableCell><Radio checked={isChecked} size={"small"}/></TableCell>

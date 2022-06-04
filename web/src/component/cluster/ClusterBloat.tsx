@@ -5,14 +5,14 @@ import {useState} from "react";
 import {Credential, CompactTable, Target} from "../../app/types";
 import {Error} from "../view/Error";
 import {ClusterBloatJob} from "./ClusterBloatJob";
+import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
     jobsLoader: {minHeight: "4px", margin: "10px 0"},
 }
 
-type Props = { leader: string, cluster: string }
-
-export function ClusterBloat({leader, cluster}: Props) {
+export function ClusterBloat() {
+    const {store: {activeCluster: {name: cluster, leader}}} = useStore()
     const [auth, setAuth] = useState<Credential>({username: '', password: ''})
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
