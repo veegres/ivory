@@ -1,6 +1,6 @@
 # Ivory (patroni cluster visualization)
 
-Ivory is a open-source project which is designed to simplify and visualize work with postgres clusters
+Ivory is an open-source project which is designed to simplify and visualize work with postgres clusters
 
 Ivory allows you to do such things as:
 - [keep all of your cluster in one place](https://github.com/veegres/ivory/blob/master/doc/clusters.md)
