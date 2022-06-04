@@ -8,6 +8,7 @@ import {Info} from "../view/Info";
 import {Block} from "../view/Block";
 import {useQuery} from "react-query";
 import {InfoOutlined} from "@mui/icons-material";
+import {ClusterTabs} from "../../app/types";
 
 const SX = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -15,7 +16,7 @@ const SX = {
     chip: {margin: "auto 0", minWidth: "150px"},
 }
 
-const TABS: { [key: number]: any } = {
+const TABS: ClusterTabs = {
     0: {
         body: <ClusterOverview/>,
     },
@@ -61,7 +62,7 @@ export function Cluster() {
                     {!activeCluster.leader ? null : (
                         <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"}/>
                     )}
-                    {!tab.info ? null : (
+                    {!tab?.info ? null : (
                         <IconButton color={"primary"} onClick={() => setIsInfoOpen(!isInfoOpen)}>
                             <InfoOutlined/>
                         </IconButton>
@@ -80,7 +81,7 @@ export function Cluster() {
     }
 
     function renderInfoBlock() {
-        if (disabled || !tab.info) return null
+        if (disabled || !tab?.info) return null
         return (
             <Collapse in={isInfoOpen}>
                 <Alert severity="info" onClose={() => setIsInfoOpen(false)}>{tab.info}</Alert>
