@@ -6,12 +6,14 @@ import {QueryClient, QueryClientProvider} from "react-query";
 import {ReactQueryDevtools} from 'react-query/devtools'
 import {ThemeProvider} from "./provider/ThemeProvider";
 import {StoreProvider} from "./provider/StoreProvider";
+import {CssBaseline} from "@mui/material";
 
 ReactDOM.render(
     <React.StrictMode>
         <QueryClientProvider client={new QueryClient()}>
             <ThemeProvider>
                 <StoreProvider>
+                    <CssBaseline enableColorScheme />
                     <App/>
                 </StoreProvider>
             </ThemeProvider>
