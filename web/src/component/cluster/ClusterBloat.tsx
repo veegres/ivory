@@ -1,4 +1,4 @@
-import {Box, Button, Grid, IconButton, LinearProgress, TextField, Tooltip} from "@mui/material";
+import {Box, Button, Grid, IconButton, TextField, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
 import {bloatApi} from "../../app/api";
 import {useState} from "react";
@@ -7,6 +7,7 @@ import {Error} from "../view/Error";
 import {ClusterBloatJob} from "./ClusterBloatJob";
 import {useStore} from "../../provider/StoreProvider";
 import {Replay} from "@mui/icons-material";
+import {LinearProgressStateful} from "../view/LinearProgressStateful";
 
 const SX = {
     jobsLoader: {minHeight: "4px", margin: "10px 0"},
@@ -29,7 +30,7 @@ export function ClusterBloat() {
     return (
         <Box>
             {leader ? renderForm() : <Error error={"No leader found"}/>}
-            <Box sx={SX.jobsLoader}>{initJobs.isFetching || start.isLoading ? <LinearProgress/> : null}</Box>
+            <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} />
             <Grid container gap={2}>
                 {jobs.map((value) => <ClusterBloatJob key={value.uuid} compactTable={value}/>)}
             </Grid>
@@ -81,7 +82,7 @@ export function ClusterBloat() {
                     <Button variant="contained" size={"small"} disabled={start.isLoading} onClick={handleRun}>
                         RUN
                     </Button>
-                    <Tooltip title={"Reload Jobs"} placement={"top"}>
+                    <Tooltip title={"Reload Jobs"} placement={"left"}>
                         <Box component={"span"}>
                             <IconButton onClick={() => initJobs.refetch()} disabled={initJobs.isFetching}>
                                 <Replay/>

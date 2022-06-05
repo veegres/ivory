@@ -1,4 +1,4 @@
-import {Box, CircularProgress, Divider, Grid, IconButton, LinearProgress, Tooltip} from "@mui/material";
+import {Box, CircularProgress, Divider, Grid, IconButton, Tooltip} from "@mui/material";
 import {useEventJob} from "../../app/hooks";
 import React, {ReactElement, useState} from "react";
 import {OpenIcon} from "../view/OpenIcon";
@@ -7,19 +7,20 @@ import {Clear, Stop} from "@mui/icons-material";
 import {useMutation, useQueryClient} from "react-query";
 import {bloatApi} from "../../app/api";
 import {shortUuid} from "../../app/utils";
+import {LinearProgressStateful} from "../view/LinearProgressStateful";
 
 const SX = {
-    console: {fontSize: '13px', width: '100%', background: '#000000D8', padding: '10px 20px', borderRadius: '5px', color: '#e0e0e0'},
-    line: {'&:hover': {color: '#ffffff'}},
-    emptyLine: {textAlign: 'center'},
-    header: {fontWeight: 'bold', cursor: 'pointer'},
-    loader: {margin: '10px 0 5px'},
-    divider: {margin: '5px 0'},
-    logs: {maxHeight: '350px', overflow: 'auto'},
-    button: {padding: '1px', color: '#f6f6f6'},
-    tooltipBox: {marginLeft: '4px'},
+    console: {fontSize: "13px", width: "100%", background: '#000000D8', padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
+    line: {"&:hover": {color: '#ffffff'}},
+    emptyLine: {textAlign: "center"},
+    header: {fontWeight: "bold", cursor: "pointer"},
+    loader: {margin: "10px 0 5px"},
+    divider: {margin: "5px 0"},
+    logs: {maxHeight: "350px", overflow: "auto"},
+    button: {padding: "1px", color: '#f6f6f6'},
+    tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
     jobButton: {fontSize: 18},
-    separator: {marginLeft: '10px'},
+    separator: {marginLeft: "10px"},
     credential: {color: "#536081", margin: "0 4px"}
 }
 
@@ -85,7 +86,7 @@ export function ClusterBloatJob({compactTable}: Props) {
                         <Box key={index} sx={SX.line}>{line}</Box>
                     ))}
                 </Box>
-                {isFetching ? <LinearProgress sx={SX.loader} color="inherit"/> : null}
+                <LinearProgressStateful sx={SX.loader} isFetching={isFetching} color={"inherit"} line />
             </>
         )
     }
@@ -94,7 +95,7 @@ export function ClusterBloatJob({compactTable}: Props) {
         return (
             <Tooltip title={title} placement={"top"}>
                 <Box sx={SX.tooltipBox}>
-                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 2}/> : (
+                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 3}/> : (
                         <IconButton
                             sx={SX.button}
                             size={"small"}

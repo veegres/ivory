@@ -17,7 +17,9 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
 
     const {isFetching} = useQuery(['node/bloat/logs', uuid], () => bloatApi.logs(uuid), {
         onSuccess: data => setLogs(data),
-        enabled: !jobStatus[initStatus].active && isOpen && logs.length === 0
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
+        enabled: !status.active && isOpen
     })
 
     useEffect(() => {
