@@ -8,7 +8,7 @@ import {useMutation, useQueryClient} from "react-query";
 import {bloatApi} from "../../app/api";
 import {shortUuid} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
-import classes from "../../classes/scroll.module.css"
+import classes from "../../style/scroll.module.css"
 
 const SX = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
