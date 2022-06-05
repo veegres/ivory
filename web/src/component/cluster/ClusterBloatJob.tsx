@@ -1,4 +1,4 @@
-import {Box, CircularProgress, Divider, Grid, IconButton, Tooltip} from "@mui/material";
+import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
 import {useEventJob} from "../../app/hooks";
 import React, {ReactElement, useState} from "react";
 import {OpenIcon} from "../view/OpenIcon";
@@ -68,15 +68,7 @@ export function ClusterBloatJob({compactTable}: Props) {
                     </Grid>
                 </Grid>
             </Grid>
-            {renderLogs()}
-        </Box>
-    )
-
-    function renderLogs() {
-        if (!open) return
-
-        return (
-            <>
+            <Collapse in={open}>
                 <Divider sx={SX.divider} textAlign={"left"} light>LOGS</Divider>
                 <Box display={"p"} sx={SX.logs} className={classes.scroll}>
                     {logs.length === 0 ? isFetching ? (
@@ -88,9 +80,9 @@ export function ClusterBloatJob({compactTable}: Props) {
                     ))}
                 </Box>
                 <LinearProgressStateful sx={SX.loader} isFetching={isFetching} color={"inherit"} line />
-            </>
-        )
-    }
+            </Collapse>
+        </Box>
+    )
 
     function renderJobButton(title: string, icon: ReactElement, onClick: () => void, isLoading: boolean) {
         return (
