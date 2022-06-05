@@ -17,7 +17,7 @@ type JobWorker interface {
 	Start(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error)
 	Stream(jobUuid uuid.UUID, stream func(event Event))
 	Delete(jobUuid uuid.UUID) error
-	Stop(jobUuid uuid.UUID)
+	Stop(jobUuid uuid.UUID) error
 }
 
 type worker struct {
@@ -134,8 +134,13 @@ func (w *worker) Delete(jobUuid uuid.UUID) error {
 	return nil
 }
 
-func (w *worker) Stop(jobUuid uuid.UUID) {
-	w.stop <- jobUuid
+func (w *worker) Stop(jobUuid uuid.UUID) error {
+	if w.elements[jobUuid] != nil {
+		w.stop <- jobUuid
+		return nil
+	} else {
+		return errors.New("there is no such active job")
+	}
 }
 
 func (w *worker) runner() {
@@ -222,6 +227,9 @@ func (w *worker) stopper() {
 		id := id
 		go func() {
 			element := w.elements[id]
+			if element == nil {
+				return
+			}
 			job := element.job
 			if cmd := job.GetCommand(); cmd != nil {
 				err := job.GetCommand().Process.Kill()
