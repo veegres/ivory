@@ -11,6 +11,7 @@ import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
 import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
 import {useStore} from "../../provider/StoreProvider";
+import {Node} from "../../app/types";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
@@ -24,11 +25,16 @@ export function ClusterConfig() {
     const [configState, setConfigState] = useState('')
 
     const queryClient = useQueryClient();
-    const {data: config, isLoading, isError, error} = useQuery(['node/config', leader], () => nodeApi.config(leader))
+    const {data: config, isLoading, isError, error} = useQuery(
+        ['node/config', leader],
+        () => nodeApi.config(leader!!.api_domain),
+        { enabled: leader !== undefined }
+    )
     const updateConfig = useMutation(nodeApi.updateConfig, {
         onSuccess: async () => await queryClient.refetchQueries('node/config')
     })
 
+    if (!leader) return <Error error={"Instance Not Found"}/>
     if (isError) return <Error error={error as AxiosError}/>
     if (isLoading) return <Skeleton variant="rectangular" height={300}/>
 
@@ -46,14 +52,14 @@ export function ClusterConfig() {
                />
             </Grid>
             <Grid item xs={"auto"} display={"flex"} flexDirection={"column"}>
-                {renderUpdateButtons()}
+                {renderUpdateButtons(leader, configState, updateConfig.isLoading, isEditable)}
                 {renderButton(<CopyAll/>, "Copy", handleCopyAll)}
             </Grid>
         </Grid>
     )
 
-    function renderUpdateButtons() {
-        if (updateConfig.isLoading) return renderButton(<CircularProgress size={25}/>, "Saving", undefined, true)
+    function renderUpdateButtons(leader: Node, configState: string, isLoading: boolean, isEditable: boolean) {
+        if (isLoading) return renderButton(<CircularProgress size={25}/>, "Saving", undefined, true)
         if (!isEditable) return renderButton(<Edit/>, "Edit", () => setIsEditable(true))
 
         return (
@@ -64,8 +70,7 @@ export function ClusterConfig() {
         )
     }
 
-    function renderButton(icon: ReactElement, tooltip: string, onClick = () => {
-    }, disabled = false) {
+    function renderButton(icon: ReactElement, tooltip: string, onClick = () => {}, disabled = false) {
         return (
             <Tooltip title={tooltip} placement="left" arrow>
                 <Box component={"span"}>
@@ -80,9 +85,9 @@ export function ClusterConfig() {
         return navigator.clipboard.writeText(currentConfig)
     }
 
-    function handleUpdate(node: string, config: string) {
+    function handleUpdate(node: Node, config: string) {
         setIsEditable(false)
-        if (configState) updateConfig.mutate({node, config})
+        if (configState) updateConfig.mutate({node: node.api_domain, config})
     }
 
     function stringify(json?: any) {
