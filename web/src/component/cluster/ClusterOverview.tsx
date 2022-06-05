@@ -20,7 +20,7 @@ const SX = {
 type AlertDialogState = {open: boolean, title: string, content: string, onAgree: () => void}
 
 export function ClusterOverview() {
-    const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {},}
+    const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {}}
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setStore, store: { activeCluster: { name: cluster }, activeNode } } = useStore()
 
@@ -41,7 +41,7 @@ export function ClusterOverview() {
 
     return (
         <>
-            <AlertDialog {...alertDialog} onClose={() => setAlertDialog(initAlertDialog)}/>
+            <AlertDialog {...alertDialog} onClose={() => setAlertDialog({...alertDialog, open: false})}/>
             <Table size="small" sx={SX.tableLastChildRow}>
                 <TableHead>
                     <TableRow>

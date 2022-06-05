@@ -8,7 +8,7 @@ import {
     Avatar,
     Box,
     CircularProgress,
-    IconButton, LinearProgress,
+    IconButton,
     List,
     ListItem,
     ListItemAvatar,
@@ -19,6 +19,7 @@ import {
 import React from "react";
 import {Delete, Lock} from "@mui/icons-material";
 import {shortUuid} from "../../app/utils";
+import {LinearProgressStateful} from "../view/LinearProgressStateful";
 
 const SX = {
     field: { margin: "0 5px", width: "100%" },
@@ -37,7 +38,7 @@ export function CredentialsContent() {
 
     return (
         <>
-            {isFetching ? <LinearProgress/> : null}
+            <LinearProgressStateful isFetching={isFetching} />
             <List disablePadding>
                 {list.map(([key, value]) => (
                     <ListItem key={key} secondaryAction={renderSecondaryAction(key)}>
