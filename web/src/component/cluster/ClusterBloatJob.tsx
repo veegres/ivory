@@ -11,8 +11,8 @@ import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import classes from "../../classes/scroll.module.css"
 
 const SX = {
-    console: {fontSize: "13px", width: "100%", background: '#000000D8', padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
-    line: {"&:hover": {color: '#ffffff'}},
+    console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
+    line: {"&:hover": {color: "#ffffff"}},
     emptyLine: {textAlign: "center"},
     header: {fontWeight: "bold", cursor: "pointer"},
     loader: {margin: "10px 0 5px"},
