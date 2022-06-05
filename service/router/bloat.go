@@ -1,24 +1,17 @@
 package router
 
 import (
-	"bufio"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"io"
 	. "ivory/model"
 	"ivory/persistence"
-	. "ivory/service"
+	"ivory/service"
 	"net/http"
-	"os"
-	"os/exec"
 	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 func (r routes) CliGroup(group *gin.RouterGroup) {
-	w := worker{}.Build()
+	w := service.CreateJobWorker()
 
 	node := group.Group("/cli")
 	node.GET("/bloat", getCompactTableList)
@@ -26,15 +19,25 @@ func (r routes) CliGroup(group *gin.RouterGroup) {
 	node.GET("/bloat/:uuid/logs", getCompactTableLogs)
 	node.GET("/bloat/cluster/:name", getCompactTableListByCluster)
 
-	node.POST("/bloat/job/start", w.StartJob)
-	node.POST("/bloat/job/:uuid/stop", w.StopJob)
-	node.DELETE("/bloat/job/:uuid/delete", w.DeleteJob)
-	node.GET("/bloat/job/:uuid/stream", w.StreamJob)
+	node.POST("/bloat/job/start", startJob(w))
+	node.POST("/bloat/job/:uuid/stop", stopJob(w))
+	node.DELETE("/bloat/job/:uuid/delete", deleteJob(w))
+	node.GET("/bloat/job/:uuid/stream", streamJob(w))
 }
 
 func getCompactTableLogs(context *gin.Context) {
-	jobUuid, _ := uuid.Parse(context.Param("uuid"))
-	model, _ := persistence.Database.CompactTable.Get(jobUuid)
+	jobUuid, errUuid := uuid.Parse(context.Param("uuid"))
+	if errUuid != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errUuid.Error()})
+		return
+	}
+
+	model, errModel := persistence.Database.CompactTable.Get(jobUuid)
+	if errModel != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errModel.Error()})
+		return
+	}
+
 	context.Writer.Header().Set("Cache-Control", "no-transform")
 	context.File(model.LogsPath)
 }
@@ -72,333 +75,113 @@ func getCompactTable(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": compactTable})
 }
 
-type worker struct {
-	start    chan uuid.UUID
-	stop     chan uuid.UUID
-	elements map[uuid.UUID]*element
-	mutex    *sync.Mutex
-}
+func startJob(jobWorker service.JobWorker) func(context *gin.Context) {
+	return func(context *gin.Context) {
+		var cli CompactTableRequest
+		_ = context.ShouldBindJSON(&cli)
 
-func (w worker) Build() *worker {
-	w.start = make(chan uuid.UUID)
-	w.stop = make(chan uuid.UUID)
-	w.elements = make(map[uuid.UUID]*element)
-	w.mutex = &sync.Mutex{}
-
-	go w.initializer()
-	go w.runner()
-	go w.cleaner()
-	go w.stopper()
-	return &w
-}
-
-func (w worker) StartJob(context *gin.Context) {
-	var cli CompactTableRequest
-	_ = context.ShouldBindJSON(&cli)
-
-	// TODO move decryption to another method (encapsulate)
-	user := cli.Connection.Username
-	pass, errCred := Encrypt(cli.Connection.Password, Secret.Get())
-	// TODO think to move it and do from frontend
-	key, errCred := persistence.Database.Credential.CreateCredential(Credential{Username: user, Password: pass})
-	if errCred != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errCred.Error()})
-		return
-	}
-
-	sb := []string{
-		"--host", cli.Connection.Host,
-		"--port", strconv.Itoa(cli.Connection.Port),
-	}
-	if cli.Target != nil {
-		if cli.Target.DbName != "" {
-			sb = append(sb, "--dbname", cli.Target.DbName)
+		// TODO move decryption to another method (encapsulate)
+		user := cli.Connection.Username
+		pass, errCred := service.Encrypt(cli.Connection.Password, service.Secret.Get())
+		// TODO think to move it and do from frontend
+		credId, errCred := persistence.Database.Credential.CreateCredential(Credential{Username: user, Password: pass})
+		if errCred != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errCred.Error()})
+			return
 		}
-		if cli.Target.Schema != "" {
-			sb = append(sb, "--schema", cli.Target.Schema)
+
+		sb := []string{
+			"--host", cli.Connection.Host,
+			"--port", strconv.Itoa(cli.Connection.Port),
 		}
-		if cli.Target.Table != "" {
-			sb = append(sb, "--table", cli.Target.Table)
-		}
-		if cli.Target.ExcludeSchema != "" {
-			sb = append(sb, "--excludeSchema", cli.Target.ExcludeSchema)
-		}
-		if cli.Target.ExcludeTable != "" {
-			sb = append(sb, "--excludeTable", cli.Target.ExcludeTable)
-		}
-	}
-	if len(sb) == 8 {
-		sb = append(sb, "--all")
-	}
-	if cli.Ratio != 0 {
-		sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Ratio))
-	}
-	sb = append(sb, "--verbose")
-
-	jobUuid := uuid.New()
-	compactTableModel := CompactTableModel{
-		Uuid:         jobUuid,
-		CredentialId: key,
-		Cluster:      cli.Cluster,
-		Status:       PENDING,
-		Command:      "pgcompacttable " + strings.Join(sb, " "),
-		CommandArgs:  sb,
-		LogsPath:     persistence.File.CompactTable.Create(jobUuid),
-		CreatedAt:    time.Now().UnixNano(),
-	}
-	errCompactTable := persistence.Database.CompactTable.Update(compactTableModel)
-	if errCompactTable != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errCompactTable.Error()})
-		return
-	}
-	w.addElement(compactTableModel)
-
-	context.JSON(http.StatusOK, gin.H{"response": compactTableModel})
-}
-
-func (w worker) StreamJob(context *gin.Context) {
-	// notify proxy that it shouldn't enable any caching
-	context.Writer.Header().Set("Cache-Control", "no-transform")
-	// force using correct event-stream if there is no proxy
-	context.Writer.Header().Set("Content-Type", "text/event-stream")
-
-	// start and end stream
-	context.SSEvent(STREAM.String(), "start")
-	defer context.SSEvent(STREAM.String(), "end")
-	context.Writer.Flush()
-
-	// find stream job
-	jobUuid, err := uuid.Parse(context.Param("uuid"))
-	element := w.elements[jobUuid]
-	if err != nil || element == nil {
-		context.SSEvent(SERVER.String(), "Logs streaming failed: Stream Not Found")
-		model, modelErr := persistence.Database.CompactTable.Get(jobUuid)
-		if modelErr != nil {
-			context.SSEvent(STATUS.String(), UNKNOWN.String())
-		} else {
-			context.SSEvent(STATUS.String(), model.Status)
-		}
-		return
-	}
-	job := element.job
-	model := element.model
-
-	// subscribe to stream and show status
-	// we have to subscribe as soon as possible to prevent Job deletion
-	channel := job.Subscribe()
-	context.SSEvent(STATUS.String(), job.GetStatus())
-	context.Writer.Flush()
-
-	// stream logs from file
-	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		context.SSEvent(LOG.String(), scanner.Text())
-	}
-	if errScanner := scanner.Err(); errScanner != nil {
-		context.SSEvent(LOG.String(), errScanner.Error())
-	}
-	errFileClose := file.Close()
-	if errFileClose != nil {
-		context.SSEvent(LOG.String(), errFileClose.Error())
-	}
-
-	// subscribe to stream and stream logs
-	if channel != nil {
-		context.Stream(func(w io.Writer) bool {
-			if event, ok := <-channel; ok {
-				context.SSEvent(event.Name.String(), event.Message)
-				return true
-			} else {
-				return false
+		if cli.Target != nil {
+			if cli.Target.DbName != "" {
+				sb = append(sb, "--dbname", cli.Target.DbName)
 			}
+			if cli.Target.Schema != "" {
+				sb = append(sb, "--schema", cli.Target.Schema)
+			}
+			if cli.Target.Table != "" {
+				sb = append(sb, "--table", cli.Target.Table)
+			}
+			if cli.Target.ExcludeSchema != "" {
+				sb = append(sb, "--excludeSchema", cli.Target.ExcludeSchema)
+			}
+			if cli.Target.ExcludeTable != "" {
+				sb = append(sb, "--excludeTable", cli.Target.ExcludeTable)
+			}
+		}
+		if len(sb) == 8 {
+			sb = append(sb, "--all")
+		}
+		if cli.Ratio != 0 {
+			sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Ratio))
+		}
+		sb = append(sb, "--verbose")
+
+		model, errStart := jobWorker.Start(credId, cli.Cluster, sb)
+		if errStart != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errStart.Error()})
+			return
+		}
+
+		context.JSON(http.StatusOK, gin.H{"response": model})
+
+	}
+}
+
+func stopJob(jobWorker service.JobWorker) func(context *gin.Context) {
+	return func(context *gin.Context) {
+		jobUuid, errUuid := uuid.Parse(context.Param("uuid"))
+		if errUuid != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errUuid.Error()})
+			return
+		}
+		jobWorker.Stop(jobUuid)
+	}
+}
+
+func deleteJob(jobWorker service.JobWorker) func(context *gin.Context) {
+	return func(context *gin.Context) {
+		jobUuid, errUuid := uuid.Parse(context.Param("uuid"))
+		if errUuid != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errUuid.Error()})
+			return
+		}
+
+		err := jobWorker.Delete(jobUuid)
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+}
+
+func streamJob(jobWorker service.JobWorker) func(context *gin.Context) {
+	return func(context *gin.Context) {
+		// notify proxy that it shouldn't enable any caching
+		context.Writer.Header().Set("Cache-Control", "no-transform")
+		// force using correct event-stream if there is no proxy
+		context.Writer.Header().Set("Content-Type", "text/event-stream")
+
+		// start and end stream
+		context.SSEvent(STREAM.String(), "start")
+		defer context.SSEvent(STREAM.String(), "end")
+		context.Writer.Flush()
+
+		// find stream job
+		jobUuid, err := uuid.Parse(context.Param("uuid"))
+		if err == nil {
+			context.SSEvent(SERVER.String(), "Logs streaming failed: Cannot parse UUID")
+			return
+		}
+
+		jobWorker.Stream(jobUuid, func(event Event) {
+			context.SSEvent(event.Name.String(), event.Message)
+			context.Writer.Flush()
 		})
-		job.Unsubscribe(channel)
+
+		// finish stream (final flush)
+		context.Writer.Flush()
 	}
-
-	context.SSEvent(STATUS.String(), job.GetStatus())
-	context.Writer.Flush()
-}
-
-func (w worker) DeleteJob(context *gin.Context) {
-	jobUuid, _ := uuid.Parse(context.Param("uuid"))
-
-	element := w.elements[jobUuid]
-	if element != nil && element.job.IsJobActive() {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "job is active"})
-		return
-	}
-
-	errFile := persistence.File.CompactTable.Delete(jobUuid)
-	if errFile != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errFile.Error()})
-		return
-	}
-	errDb := persistence.Database.CompactTable.Delete(jobUuid)
-	if errDb != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errDb.Error()})
-		return
-	}
-}
-
-func (w worker) StopJob(context *gin.Context) {
-	jobUuid, _ := uuid.Parse(context.Param("uuid"))
-	w.stop <- jobUuid
-}
-
-func (w worker) runner() {
-	for id := range w.start {
-		element := w.elements[id]
-		model := w.elements[id].model
-		jobUuid := model.Uuid
-		go func() {
-			w.jobStatusHandler(element, RUNNING, nil)
-
-			// Get password
-			// TODO move decryption to another method (encapsulate)
-			credential, _ := persistence.Database.Credential.GetCredential(model.CredentialId)
-			password, errDecrypt := Decrypt(credential.Password, Secret.Get())
-			if errDecrypt != nil {
-				w.jobStatusHandler(element, FAILED, errDecrypt)
-				return
-			}
-			credentialArgs := []string{
-				"--user", credential.Username,
-				"--password", password,
-			}
-
-			// Run command
-			args := append(model.CommandArgs, credentialArgs...)
-			cmd := exec.Command("pgcompacttable", args...)
-			pipe, errPipe := cmd.StdoutPipe()
-			if errPipe != nil {
-				w.jobStatusHandler(element, FAILED, errPipe)
-				return
-			}
-			if errStart := cmd.Start(); errStart != nil {
-				w.jobStatusHandler(element, FAILED, errStart)
-				return
-			}
-			w.elements[jobUuid].job.SetCommand(cmd)
-
-			// Read and write logs from command
-			reader := bufio.NewReader(pipe)
-			line, _, errReadLine := reader.ReadLine()
-			for errReadLine == nil {
-				lineString := string(line)
-				w.addLogElement(element, LOG, lineString)
-				line, _, errReadLine = reader.ReadLine()
-			}
-
-			// Wait when pipe will be closed
-			if errWait := cmd.Wait(); errWait != nil {
-				w.jobStatusHandler(element, FAILED, errWait)
-				return
-			}
-
-			w.jobStatusHandler(element, FINISHED, nil)
-		}()
-	}
-}
-
-func (w worker) initializer() {
-	runningJobs, _ := persistence.Database.CompactTable.ListByStatus(RUNNING)
-	for _, runningJob := range runningJobs {
-		_ = persistence.Database.CompactTable.UpdateStatus(runningJob, FAILED)
-	}
-
-	pendingJobs, _ := persistence.Database.CompactTable.ListByStatus(PENDING)
-	for _, pendingJob := range pendingJobs {
-		pendingJob := pendingJob
-		go func() { w.addElement(pendingJob) }()
-	}
-}
-
-func (w worker) cleaner() {
-	ticket := time.NewTicker(10 * time.Second)
-	for range ticket.C {
-		for id, element := range w.elements {
-			if !element.job.IsJobActive() && element.job.Size() == 0 {
-				w.removeElement(id)
-			}
-		}
-	}
-}
-
-func (w worker) stopper() {
-	for id := range w.stop {
-		id := id
-		go func() {
-			element := w.elements[id]
-			job := element.job
-			if cmd := job.GetCommand(); cmd != nil {
-				err := job.GetCommand().Process.Kill()
-				if err == nil {
-					w.jobStatusHandler(element, STOPPED, nil)
-				} else {
-					if job.IsJobActive() {
-						w.jobStatusHandler(element, FINISHED, err)
-					} else {
-						w.jobStatusHandler(element, job.GetStatus(), err)
-					}
-				}
-			}
-		}()
-	}
-}
-
-func (w worker) jobStatusHandler(element *element, status JobStatus, err error) {
-	model := element.model
-	element.job.SetStatus(status)
-	dbErr := persistence.Database.CompactTable.UpdateStatus(*model, status)
-	if dbErr != nil {
-		w.addLogElement(element, SERVER, dbErr.Error())
-	}
-	if err != nil {
-		w.addLogElement(element, SERVER, err.Error())
-	}
-	if !element.job.IsJobActive() {
-		w.closeEvents(element.job)
-	}
-}
-
-func (w worker) addLogElement(element *element, eventType EventType, message string) {
-	_, errFileWrite := element.file.WriteString(message + "\n")
-	if errFileWrite != nil {
-		w.sendEvents(element.job, SERVER, errFileWrite.Error())
-		return
-	}
-	w.sendEvents(element.job, eventType, message)
-}
-
-func (w worker) sendEvents(job Job, eventType EventType, message string) {
-	for subscriber := range job.Subscribers() {
-		subscriber <- Event{Name: eventType, Message: message}
-	}
-}
-
-func (w worker) closeEvents(job Job) {
-	for subscriber := range job.Subscribers() {
-		close(subscriber)
-	}
-}
-
-type element struct {
-	job   Job
-	model *CompactTableModel
-	file  *os.File
-}
-
-func (w worker) addElement(model CompactTableModel) {
-	w.mutex.Lock()
-	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
-	w.elements[model.Uuid] = &element{job: CreateJob(), model: &model, file: file}
-	w.mutex.Unlock()
-	w.start <- model.Uuid
-}
-
-func (w worker) removeElement(id uuid.UUID) {
-	w.mutex.Lock()
-	delete(w.elements, id)
-	w.mutex.Unlock()
 }
