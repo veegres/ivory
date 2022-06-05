@@ -73,12 +73,7 @@ func (w *worker) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	element := w.elements[jobUuid]
 	if element == nil {
 		stream(Event{Name: SERVER, Message: "Logs streaming failed: Stream Not Found"})
-		model, modelErr := persistence.Database.CompactTable.Get(jobUuid)
-		if modelErr != nil {
-			stream(Event{Name: STATUS, Message: UNKNOWN.String()})
-		} else {
-			stream(Event{Name: STATUS, Message: model.Status.String()})
-		}
+		stream(Event{Name: STATUS, Message: UNKNOWN.String()})
 		return
 	}
 	job := element.job
@@ -105,12 +100,8 @@ func (w *worker) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 
 	// subscribe to stream and stream logs
 	if channel != nil {
-		for {
-			if event, ok := <-channel; ok {
-				stream(event)
-			} else {
-				break
-			}
+		for event := range channel {
+			stream(event)
 		}
 		job.Unsubscribe(channel)
 	}

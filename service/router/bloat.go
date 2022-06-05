@@ -177,6 +177,7 @@ func streamJob(jobWorker service.JobWorker) func(context *gin.Context) {
 		jobUuid, err := uuid.Parse(context.Param("uuid"))
 		if err != nil {
 			context.SSEvent(SERVER.String(), "Logs streaming failed: Cannot parse UUID")
+			context.SSEvent(STATUS.String(), UNKNOWN.String())
 			return
 		}
 
