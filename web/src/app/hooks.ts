@@ -45,9 +45,8 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         return () => es.close()
     }, [uuid, initStatus])
 
-
     return {
-        isFetching: isEventSourceFetching || isFetching || status.active,
+        isFetching: isEventSourceFetching || isFetching,
         logs,
         status
     }

@@ -28,9 +28,8 @@ export const createColorsMap = (nodes?: Node[]) => {
     )
 }
 
-export const activeNode = (nodes?: Node[]) => {
-    const leader = nodes?.find(node => node.isLeader)
-    return leader ? leader.api_domain : ''
+export const activeNode = (nodes?: Node[]): Node | undefined => {
+    return nodes?.find(node => node.isLeader)
 }
 
 export const getPatroniDomain = (url: string) => url.split('/')[2]

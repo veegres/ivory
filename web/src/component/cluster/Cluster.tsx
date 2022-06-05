@@ -87,7 +87,7 @@ export function Cluster() {
                 <Box>
                     <Fade in={!!activeCluster.leader}>
                         <Tooltip title={"All requests go to this node!"} placement={"top"}>
-                            <Chip sx={SX.chip} color={"success"} label={activeCluster.leader} variant={"outlined"}/>
+                            <Chip sx={SX.chip} color={"success"} label={activeCluster.leader?.api_domain} variant={"outlined"}/>
                         </Tooltip>
                     </Fade>
                 </Box>
