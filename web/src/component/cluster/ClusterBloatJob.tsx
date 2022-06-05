@@ -8,6 +8,7 @@ import {useMutation, useQueryClient} from "react-query";
 import {bloatApi} from "../../app/api";
 import {shortUuid} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
+import classes from "../../classes/scroll.module.css"
 
 const SX = {
     console: {fontSize: "13px", width: "100%", background: '#000000D8', padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
@@ -16,7 +17,7 @@ const SX = {
     header: {fontWeight: "bold", cursor: "pointer"},
     loader: {margin: "10px 0 5px"},
     divider: {margin: "5px 0"},
-    logs: {maxHeight: "350px", overflow: "auto"},
+    logs: {maxHeight: "350px", overflow: "auto", colorScheme: "dark"},
     button: {padding: "1px", color: '#f6f6f6'},
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
     jobButton: {fontSize: 18},
@@ -76,8 +77,8 @@ export function ClusterBloatJob({compactTable}: Props) {
 
         return (
             <>
-                <Divider sx={SX.divider} textAlign={"left"} light={true}>LOGS</Divider>
-                <Box display={"p"} sx={SX.logs}>
+                <Divider sx={SX.divider} textAlign={"left"} light>LOGS</Divider>
+                <Box display={"p"} sx={SX.logs} className={classes.scroll}>
                     {logs.length === 0 ? isFetching ? (
                         <Box sx={SX.emptyLine}>{"< WAITING FOR LOGS >"}</Box>
                     ) : (
