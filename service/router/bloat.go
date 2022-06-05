@@ -371,20 +371,20 @@ func (w worker) addLogElement(element *element, eventType EventType, message str
 	w.sendEvents(element.job, eventType, message)
 }
 
-func (w worker) sendEvents(job *Job, eventType EventType, message string) {
+func (w worker) sendEvents(job Job, eventType EventType, message string) {
 	for subscriber := range job.Subscribers() {
 		subscriber <- Event{Name: eventType, Message: message}
 	}
 }
 
-func (w worker) closeEvents(job *Job) {
+func (w worker) closeEvents(job Job) {
 	for subscriber := range job.Subscribers() {
 		close(subscriber)
 	}
 }
 
 type element struct {
-	job   *Job
+	job   Job
 	model *CompactTableModel
 	file  *os.File
 }
@@ -392,7 +392,7 @@ type element struct {
 func (w worker) addElement(model CompactTableModel) {
 	w.mutex.Lock()
 	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
-	w.elements[model.Uuid] = &element{job: Job{}.Create(), model: &model, file: file}
+	w.elements[model.Uuid] = &element{job: CreateJob(), model: &model, file: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid
 }
