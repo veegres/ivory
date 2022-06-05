@@ -137,7 +137,11 @@ func stopJob(jobWorker service.JobWorker) func(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": errUuid.Error()})
 			return
 		}
-		jobWorker.Stop(jobUuid)
+		errStop := jobWorker.Stop(jobUuid)
+		if errStop != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errStop.Error()})
+			return
+		}
 	}
 }
 
@@ -171,7 +175,7 @@ func streamJob(jobWorker service.JobWorker) func(context *gin.Context) {
 
 		// find stream job
 		jobUuid, err := uuid.Parse(context.Param("uuid"))
-		if err == nil {
+		if err != nil {
 			context.SSEvent(SERVER.String(), "Logs streaming failed: Cannot parse UUID")
 			return
 		}
