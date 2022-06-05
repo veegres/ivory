@@ -1,16 +1,21 @@
-import {Box, Button, Grid, IconButton, TextField, Tooltip} from "@mui/material";
+import {Box, Button, Collapse, Grid, IconButton, TextField, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
 import {bloatApi} from "../../app/api";
 import {useState} from "react";
-import {Credential, CompactTable, Target} from "../../app/types";
+import {Credential, CompactTable, Target, Style} from "../../app/types";
 import {Error} from "../view/Error";
 import {ClusterBloatJob} from "./ClusterBloatJob";
 import {useStore} from "../../provider/StoreProvider";
 import {Replay} from "@mui/icons-material";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
+import {TransitionGroup} from "react-transition-group";
 
 const SX = {
-    jobsLoader: {minHeight: "4px", margin: "10px 0"},
+    jobsLoader: {minHeight: "4px", margin: "10px 0"}
+}
+
+const style: Style = {
+    transition: {display: "flex", flexDirection: "column", gap: "10px"}
 }
 
 export function ClusterBloat() {
@@ -31,9 +36,13 @@ export function ClusterBloat() {
         <Box>
             {leader ? renderForm() : <Error error={"No leader found"}/>}
             <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} />
-            <Grid container gap={2}>
-                {jobs.map((value) => <ClusterBloatJob key={value.uuid} compactTable={value}/>)}
-            </Grid>
+            <TransitionGroup style={style.transition}>
+                {jobs.map((value) => (
+                    <Collapse key={value.uuid}>
+                        <ClusterBloatJob key={value.uuid} compactTable={value}/>
+                    </Collapse>
+                ))}
+            </TransitionGroup>
         </Box>
     )
 

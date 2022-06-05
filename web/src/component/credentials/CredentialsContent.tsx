@@ -31,7 +31,7 @@ export function CredentialsContent() {
     const deleteCredentials = useMutation(credentialApi.delete, { onSuccess: refetch })
 
     if (isError) return <Error error={error as AxiosError}/>
-    if (!credentials) return <Error error={"No data"}/>
+    if (!credentials) return <Info text={"No data"}/>
 
     const list = Object.entries<Credential>(credentials)
     if (list.length === 0) return <Info text={"There is no credentials yet"}/>
