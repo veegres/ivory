@@ -55,7 +55,7 @@ export function ClusterBloatJob({compactTable}: Props) {
                     </Grid>
                 </Grid>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
-                    <Grid item>{command} --username ... --password ...</Grid>
+                    <Grid item>{command}</Grid>
                     <Grid item container xs={"auto"} sx={SX.separator}>
                         <Tooltip title={uuid}><Box>{shortUuid(uuid)}</Box></Tooltip>
                         <Tooltip title={"Open"}>
