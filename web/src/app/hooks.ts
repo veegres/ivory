@@ -32,7 +32,11 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
             setEventSourceFetching(false)
         }
         const addLog = (log: string) => setLogs((old) => [...old, log])
-        es.onopen = () => setEventSourceFetching(true)
+        es.onopen = () => {
+            setLogs([])
+            setEventSourceFetching(true)
+            addLog("Logs streaming open: New connection was established")
+        }
         es.addEventListener("log", (e) => addLog(e.data))
         es.addEventListener("server", (e) => addLog(e.data))
         es.addEventListener("status", (e) => setStatus(jobStatus[e.data]))
