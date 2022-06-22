@@ -94,24 +94,30 @@ func startJob(jobWorker service.JobWorker) func(context *gin.Context) {
 			"--host", cli.Connection.Host,
 			"--port", strconv.Itoa(cli.Connection.Port),
 		}
+		isDefaultTarget := true
 		if cli.Target != nil {
 			if cli.Target.DbName != "" {
 				sb = append(sb, "--dbname", cli.Target.DbName)
+				isDefaultTarget = false
 			}
 			if cli.Target.Schema != "" {
 				sb = append(sb, "--schema", cli.Target.Schema)
+				isDefaultTarget = false
 			}
 			if cli.Target.Table != "" {
 				sb = append(sb, "--table", cli.Target.Table)
+				isDefaultTarget = false
 			}
 			if cli.Target.ExcludeSchema != "" {
 				sb = append(sb, "--excludeSchema", cli.Target.ExcludeSchema)
+				isDefaultTarget = false
 			}
 			if cli.Target.ExcludeTable != "" {
 				sb = append(sb, "--excludeTable", cli.Target.ExcludeTable)
+				isDefaultTarget = false
 			}
 		}
-		if len(sb) == 8 {
+		if isDefaultTarget {
 			sb = append(sb, "--all")
 		}
 		if cli.Ratio != 0 {
