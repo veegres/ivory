@@ -11,7 +11,7 @@
     "@babel/core": "7.17.12",
     "@babel/plugin-syntax-flow": "7.16.7",
     "@babel/plugin-transform-react-jsx": "7.17.3",
-    "@babel/runtime": "7.17.8",
+    "@babel/runtime": "7.18.9",
     "@codemirror/lang-json": "0.20.0",
     "@emotion/react": "11.9.0",
     "@emotion/styled": "11.8.1",
