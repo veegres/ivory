@@ -9,15 +9,16 @@ import {bloatApi} from "../../app/api";
 import {shortUuid} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import classes from "../../style/scroll.module.css"
+import {DynamicRowVirtualizer} from "../view/DynamicRowVirtualizer";
 
 const SX = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
-    line: {"&:hover": {color: "#ffffff"}},
+    row: {"&:hover": {color: "#ffffff"}},
     emptyLine: {textAlign: "center"},
     header: {fontWeight: "bold", cursor: "pointer"},
     loader: {margin: "10px 0 5px"},
     divider: {margin: "5px 0"},
-    logs: {maxHeight: "350px", overflow: "auto", colorScheme: "dark"},
+    logs: {colorScheme: "dark"},
     button: {padding: "1px", color: '#f6f6f6'},
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
     jobButton: {fontSize: 18},
@@ -70,15 +71,19 @@ export function ClusterBloatJob({compactTable}: Props) {
             </Grid>
             <Collapse in={open}>
                 <Divider sx={SX.divider} textAlign={"left"} light>LOGS</Divider>
-                <Box display={"p"} sx={SX.logs} className={classes.scroll}>
-                    {logs.length === 0 ? isFetching ? (
-                        <Box sx={SX.emptyLine}>{"< WAITING FOR LOGS >"}</Box>
-                    ) : (
-                        <Box sx={SX.emptyLine}>{"< NO LOGS >"}</Box>
-                    ) : logs.map((line, index) => (
-                        <Box key={index} sx={SX.line}>{line}</Box>
-                    ))}
-                </Box>
+                {logs.length === 0 ? isFetching ? (
+                    <Box sx={SX.emptyLine}>{"< WAITING FOR LOGS >"}</Box>
+                ) : (
+                    <Box sx={SX.emptyLine}>{"< NO LOGS >"}</Box>
+                ) : (
+                    <DynamicRowVirtualizer
+                        sx={SX.logs}
+                        className={classes.scroll}
+                        sxVirtualRow={SX.row}
+                        height={350}
+                        rows={logs}
+                    />
+                )}
                 <LinearProgressStateful sx={SX.loader} isFetching={isFetching} color={"inherit"} line />
             </Collapse>
         </Box>
