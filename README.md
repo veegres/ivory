@@ -14,8 +14,8 @@ Ivory allows you to do such things as:
 
 You can simply start and run container from Docker Hub or GitHub Container repository
 
-- Docker Hub `docker run -p 80:80 aelsergeev/ivory`
-- GitHub Container repository `docker run -p 80:80 ghcr.io/veegres/ivory`
+- Docker Hub `docker run -p 80:80 --restart always aelsergeev/ivory`
+- GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 
 ## Contributing
 
