@@ -34,7 +34,7 @@
     "@types/react": "17.0.42",
     "@types/react-dom": "17.0.14",
     "@types/react-router-dom": "5.3.3",
-    "react-scripts": "5.0.0",
+    "react-scripts": "5.0.1",
     "typescript": "4.6.4"
   },
   "eslintConfig": {
