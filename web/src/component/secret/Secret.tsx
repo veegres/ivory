@@ -36,14 +36,14 @@ export function Secret(props: Props) {
             </Box>
             {children}
             <Box>
-                <Button sx={SX.button} variant={"contained"} onClick={() => setReq.mutate({ ref: refWord, key: keyWord })}>
-                    Done
-                </Button>
                 {!clean ? null : (
                     <Button sx={SX.button} variant={"contained"} onClick={() => cleanReq.mutate()}>
                         Clean
                     </Button>
                 )}
+                <Button sx={SX.button} variant={"contained"} onClick={() => setReq.mutate({ ref: refWord, key: keyWord })}>
+                    Done
+                </Button>
             </Box>
         </Grid>
     )
