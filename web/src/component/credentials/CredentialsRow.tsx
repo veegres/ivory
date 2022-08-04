@@ -1,12 +1,13 @@
-import {Box, FormHelperText, Tooltip} from "@mui/material";
+import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material";
 import {CredentialsInput} from "./CredentialsInput";
 import React, {ReactElement, useEffect, useRef, useState} from "react";
 import {CredentialOptions} from "../../app/utils";
-import {Credential} from "../../app/types";
+import {Credential, CredentialType} from "../../app/types";
 
 const SX = {
     row: { display: "flex", alignItems: "center", gap: "15px", padding: "5px 20px"},
     buttons: { display: "flex" },
+    toggle: { height: "32px" },
 }
 
 type Props = {
@@ -22,18 +23,18 @@ export function CredentialsRow(props: Props) {
     const { renderButtons, credential, disabled, onChangeCredential, onEmpty, error } = props
     const [username, setUsername] = useState(credential.username)
     const [password, setPassword] = useState(credential.password)
-    const [type, setType] = useState(credential.type)
+    const [type, toggleType] = useState(credential.type)
 
     const prevDisabledRef = useRef<boolean>()
     useEffect(handlePropsEffect, [credential])
     useEffect(handleDisableEffect, [disabled, credential.username, credential.password])
     useEffect(handleEmptyEffect, [username, password, onEmpty])
 
-    const option = CredentialOptions[type]
     return (
         <Box sx={SX.row}>
             <Box display={"inline-flex"} flexDirection={"column"}>
-                <Tooltip title={option.name} placement={"top"}>{option.icon}</Tooltip>
+                {renderToggle()}
+                {/* we need this to have the same indent as in input */}
                 <FormHelperText>{" "}</FormHelperText>
             </Box>
             <CredentialsInput
@@ -54,10 +55,25 @@ export function CredentialsRow(props: Props) {
             />
             <Box display={"inline-flex"} flexDirection={"column"}>
                 <Box sx={SX.buttons}>{renderButtons}</Box>
+                {/* we need this to have the same indent as in input */}
                 <FormHelperText>{" "}</FormHelperText>
             </Box>
         </Box>
     )
+
+    function renderToggle() {
+        const option = CredentialOptions[type]
+
+        return (
+            <Tooltip title={option.name} placement={"top"}>
+                <Box component={"span"}>
+                    <ToggleButton value={type} size={"small"} sx={SX.toggle} disabled={disabled} onClick={handleToggleType}>
+                        {option.icon}
+                    </ToggleButton>
+                </Box>
+            </Tooltip>
+        )
+    }
 
     function handleUsername(value: string) {
         setUsername(value)
@@ -69,16 +85,30 @@ export function CredentialsRow(props: Props) {
         onChangeCredential({ username, password: value, type })
     }
 
+    function handleToggleType() {
+        switch (type) {
+            case CredentialType.POSTGRES:
+                toggleType(CredentialType.PATRONI)
+                break
+            case CredentialType.PATRONI:
+                toggleType(CredentialType.POSTGRES)
+                break
+            default:
+                toggleType(CredentialType.POSTGRES)
+        }
+    }
+
     function handlePropsEffect() {
         setUsername(credential.username)
         setPassword(credential.password)
-        setType(credential.type)
+        toggleType(credential.type)
     }
 
     function handleDisableEffect() {
         if (!prevDisabledRef.current && disabled) {
             setUsername(credential.username)
             setPassword(credential.password)
+            toggleType(credential.type)
         }
         if (prevDisabledRef.current && !disabled) {
             setPassword("")
