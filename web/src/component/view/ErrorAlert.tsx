@@ -11,9 +11,9 @@ const style: Style = {
 type ErrorProps = { error: AxiosError | string, type?: AlertColor }
 type GeneralProps = { message: string, type: AlertColor, title?: string, json?: string }
 
-export function Error({error, type}: ErrorProps) {
+export function ErrorAlert({error, type}: ErrorProps) {
     if (typeof error === "string") return <General type={type ?? "warning"} message={error}/>
-    if (!error.response) return <General type={"error"} message={"Error is not detected"}/>
+    if (!error.response) return <General type={"error"} message={"ErrorAlert is not detected"}/>
 
     const {status, statusText} = error.response
     const title = `Error code: ${status ?? 'Unknown'} (${statusText})`

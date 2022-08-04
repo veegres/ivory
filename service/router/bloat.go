@@ -78,15 +78,9 @@ func getCompactTable(context *gin.Context) {
 func startJob(jobWorker service.JobWorker) func(context *gin.Context) {
 	return func(context *gin.Context) {
 		var cli CompactTableRequest
-		_ = context.ShouldBindJSON(&cli)
-
-		// TODO move decryption to another method (encapsulate)
-		user := cli.Connection.Username
-		pass, errCred := service.Encrypt(cli.Connection.Password, service.Secret.Get())
-		// TODO think to move it and do from frontend
-		credId, errCred := persistence.Database.Credential.CreateCredential(Credential{Username: user, Password: pass})
-		if errCred != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": errCred.Error()})
+		parseErr := context.ShouldBindJSON(&cli)
+		if parseErr != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 			return
 		}
 
@@ -125,7 +119,7 @@ func startJob(jobWorker service.JobWorker) func(context *gin.Context) {
 		}
 		sb = append(sb, "--verbose")
 
-		model, errStart := jobWorker.Start(credId, cli.Cluster, sb)
+		model, errStart := jobWorker.Start(cli.Connection.CredId, cli.Cluster, sb)
 		if errStart != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": errStart.Error()})
 			return

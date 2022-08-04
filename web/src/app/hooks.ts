@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {EventStream, JobStatus} from "./types";
 import {useQuery} from "react-query";
 import {bloatApi} from "./api";
-import {jobStatus} from "./utils";
+import {JobOptions} from "./utils";
 
 export interface EventJob {
     isFetching: boolean;
@@ -12,7 +12,7 @@ export interface EventJob {
 
 export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean): EventJob {
     const [logs, setLogs] = useState<string[]>([])
-    const [status, setStatus] = useState(jobStatus[initStatus])
+    const [status, setStatus] = useState(JobOptions[initStatus])
     const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
 
     const {isFetching} = useQuery(['node/bloat/logs', uuid], () => bloatApi.logs(uuid), {
@@ -23,8 +23,8 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
     })
 
     useEffect(() => {
-        setStatus(jobStatus[initStatus])
-        if (!jobStatus[initStatus].active) return
+        setStatus(JobOptions[initStatus])
+        if (!JobOptions[initStatus].active) return
 
         const es = bloatApi.stream(uuid)
         const close = () => {
@@ -37,10 +37,10 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
             setEventSourceFetching(true)
             addLog("Logs streaming open: New connection was established")
         }
-        es.addEventListener("log", (e) => addLog(e.data))
-        es.addEventListener("server", (e) => addLog(e.data))
-        es.addEventListener("status", (e) => setStatus(jobStatus[e.data]))
-        es.addEventListener("stream", (e) => {
+        es.addEventListener("log", (e: MessageEvent<string>) => addLog(e.data))
+        es.addEventListener("server", (e: MessageEvent<string>) => addLog(e.data))
+        es.addEventListener("status", (e: MessageEvent<JobStatus>) => setStatus(JobOptions[e.data]))
+        es.addEventListener("stream", (e: MessageEvent<EventStream>) => {
             if (e.data === EventStream.END) close()
         })
         es.onerror = () => {

@@ -1,10 +1,10 @@
 import {Box, Grid, Skeleton} from "@mui/material";
 import {nodeApi} from "../../app/api";
 import {useQuery} from "react-query";
-import {Error} from "../view/Error";
+import {ErrorAlert} from "../view/ErrorAlert";
 import React from "react";
 import {AxiosError} from "axios";
-import {nodeColor} from "../../app/utils";
+import {NodeColor} from "../../app/utils";
 import {Style} from "../../app/types";
 import {useStore} from "../../provider/StoreProvider";
 import {Info} from "../view/Info";
@@ -38,7 +38,7 @@ export function Node() {
 
     function renderContent() {
         if (!activeNode) return <Info text={"Please, select a node to see the information!"}/>
-        if (isError) return <Error error={error as AxiosError}/>
+        if (isError) return <ErrorAlert error={error as AxiosError}/>
 
         return (
             <Grid container direction="row">
@@ -71,7 +71,7 @@ export function Node() {
 
     function NodeStatus(props: StatusProps) {
         if (isLoading) return <Skeleton variant="rectangular" sx={SX.nodeStatusBlock}/>
-        const background = props.role ? nodeColor[props.role] : undefined
+        const background = props.role ? NodeColor[props.role] : undefined
 
         return (
             <Grid container alignContent="center" justifyContent="center" sx={{...SX.nodeStatusBlock, background}}>

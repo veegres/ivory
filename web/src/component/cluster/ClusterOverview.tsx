@@ -1,12 +1,12 @@
 import {Button, Grid, Radio, Table, TableCell, TableHead, TableRow} from "@mui/material";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
-import {Error} from "../view/Error";
+import {ErrorAlert} from "../view/ErrorAlert";
 import {TableBody} from "../view/TableBody";
 import React, {useState} from "react";
 import {TableCellLoader} from "../view/TableCellLoader";
 import {AxiosError} from "axios";
-import {nodeColor} from "../../app/utils";
+import {NodeColor} from "../../app/utils";
 import {Node} from "../../app/types";
 import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
@@ -37,7 +37,7 @@ export function ClusterOverview() {
     })
 
     const {data: members, isLoading, isFetching, error} = clusterState
-    if (error) return <Error error={error}/>
+    if (error) return <ErrorAlert error={error}/>
 
     return (
         <>
@@ -62,7 +62,7 @@ export function ClusterOverview() {
     )
 
     function renderContent() {
-        if (!members) return <Error error={"No data"}/>
+        if (!members) return <ErrorAlert error={"No data"}/>
 
         return members.map((node) => {
             const {api_domain, name, port, host, role, state, lag, isLeader} = node
@@ -70,7 +70,7 @@ export function ClusterOverview() {
             return (
                 <TableRow sx={SX.clickable} key={host} onClick={handleCheck(isChecked, api_domain)}>
                     <TableCell><Radio checked={isChecked} size={"small"}/></TableCell>
-                    <TableCell sx={{color: nodeColor[role]}}>{role.toUpperCase()}</TableCell>
+                    <TableCell sx={{color: NodeColor[role]}}>{role.toUpperCase()}</TableCell>
                     <TableCell>{name}</TableCell>
                     <TableCell>{host}:{port}</TableCell>
                     <TableCell>{state}</TableCell>

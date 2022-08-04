@@ -1,6 +1,11 @@
 import {CSSProperties} from "react";
 
-// SERVER
+export interface Response<TData, TError = {}> {
+    response: TData
+    error: TError
+}
+
+// NODE
 export interface NodeResponse {
     name: string,
     timeline?: number,
@@ -10,6 +15,12 @@ export interface NodeResponse {
     role: string,
     port: number,
     api_url: string
+}
+
+export interface Node extends NodeResponse{
+    api_domain: string
+    isLeader: boolean
+    credId?: string
 }
 
 export interface NodeOverview {
@@ -30,9 +41,14 @@ export interface NodeOverview {
     server_version?: string
 }
 
+// CLUSTER
 export interface Cluster {
     name: string,
-    nodes: string[]
+    certsId?: string,
+    patroniCredId?: string,
+    postgresCredId?: string,
+    nodes: string[],
+    tags?: string[]
 }
 
 export interface ClusterMap {
@@ -43,35 +59,7 @@ export interface ClusterTabs {
     [key: number]: { body: JSX.Element, info?: JSX.Element }
 }
 
-export interface Credential {
-    username: string
-    password: string
-}
-
-export interface CredentialMap {
-    [uuid: string]: Credential
-}
-
-export interface Connection extends Credential {
-    host: string
-    port: number
-}
-
-export interface Target {
-    dbName?: string
-    schema?: string
-    table?: string
-    excludeSchema?: string
-    excludeTable?: string
-}
-
-export interface CompactTableRequest {
-    cluster: string
-    connection: Connection
-    target?: Target
-    ratio?: number
-}
-
+// SECRET
 export interface SecretStatus {
     key: boolean
     ref: boolean
@@ -87,9 +75,42 @@ export interface SecretUpdateRequest {
     newKey: string
 }
 
-export interface Response<TData, TError = {}> {
-    response: TData
-    error: TError
+// CREDENTIAL
+export interface Credential {
+    username: string
+    password: string
+    type: CredentialType
+}
+
+export enum CredentialType {
+    POSTGRES,
+    PATRONI
+}
+
+export interface CredentialMap {
+    [uuid: string]: Credential
+}
+
+// BLOAT
+export interface Connection {
+    host: string
+    port: number
+    credId: string
+}
+
+export interface Target {
+    dbName?: string
+    schema?: string
+    table?: string
+    excludeSchema?: string
+    excludeTable?: string
+}
+
+export interface CompactTableRequest {
+    cluster: string
+    connection: Connection
+    target?: Target
+    ratio?: number
 }
 
 export interface CompactTable {
@@ -110,21 +131,16 @@ export enum JobStatus {
     UNKNOWN
 }
 
-// COMMON
-export interface Style {
-    [key: string]: CSSProperties
-}
-
 export enum EventStream {
     START = "start",
     END = "end"
 }
 
-export interface ColorsMap {
-    [name: string]: 'success' | 'primary'
+// COMMON
+export interface Style {
+    [key: string]: CSSProperties
 }
 
-export interface Node extends NodeResponse{
-    api_domain: string
-    isLeader: boolean
+export interface ColorsMap {
+    [name: string]: 'success' | 'primary'
 }

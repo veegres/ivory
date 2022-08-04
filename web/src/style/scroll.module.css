@@ -1,16 +1,16 @@
 /* we can modify scrollbar only via styles otherwise we have problem with types */
 /* width */
-.scroll::-webkit-scrollbar {
+.tiny::-webkit-scrollbar {
     width: 4px;
 }
 
 /* Track */
-.scroll::-webkit-scrollbar-track {
+.tiny::-webkit-scrollbar-track {
     background: inherit;
 }
 
 /* Handle */
-.scroll::-webkit-scrollbar-thumb {
+.tiny::-webkit-scrollbar-thumb {
     background: #6b6b6b;
     border-radius: 2px;
 }

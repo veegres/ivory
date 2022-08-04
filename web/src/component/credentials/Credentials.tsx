@@ -5,7 +5,7 @@ import React from "react";
 import {CredentialsContent} from "./CredentialsContent";
 
 const SX = {
-    dialog: { width: "600px" }
+    content: { width: "600px" },
 }
 
 export function Credentials() {
@@ -18,7 +18,7 @@ export function Credentials() {
                 <Box>Credentials</Box>
                 <IconButton size={"small"} onClick={handleClose}><Close/></IconButton>
             </DialogTitle>
-            <DialogContent sx={SX.dialog}>
+            <DialogContent sx={SX.content}>
                 <CredentialsContent/>
             </DialogContent>
         </Dialog>

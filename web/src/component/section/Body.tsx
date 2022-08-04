@@ -1,5 +1,5 @@
 import {Block} from "../view/Block";
-import {Error} from "../view/Error";
+import {ErrorAlert} from "../view/ErrorAlert";
 import {AxiosError} from "axios";
 import {CircularProgress, Stack} from "@mui/material";
 import {InitialSecret} from "../secret/InitialSecret";
@@ -14,7 +14,7 @@ import {secretApi} from "../../app/api";
 export function Body() {
     const { data: status, isLoading, isError, error } = useQuery("secret", secretApi.get)
 
-    if (isError) return <Block><Error error={error as AxiosError}/></Block>
+    if (isError) return <Block><ErrorAlert error={error as AxiosError}/></Block>
     if (isLoading) return <CircularProgress/>
     if (!status?.ref) return <InitialSecret/>
     if (!status?.key) return <RepeatSecret/>

@@ -19,6 +19,7 @@ func (r routes) CredentialGroup(group *gin.RouterGroup) {
 	credential := group.Group("/credential")
 	credential.GET("", getCredentials)
 	credential.POST("", postCredential)
+	credential.PATCH("/:uuid", patchCredential)
 	credential.DELETE("/:uuid", deleteCredential)
 }
 
@@ -77,28 +78,54 @@ func getCredentials(context *gin.Context) {
 
 func postCredential(context *gin.Context) {
 	var credential Credential
-	_ = context.ShouldBindJSON(&credential)
+	err := context.ShouldBindJSON(&credential)
 	password, err := service.Encrypt(credential.Password, service.Secret.Get())
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	encryptedCredential := Credential{Username: credential.Username, Password: password}
-	key, err := persistence.Database.Credential.CreateCredential(encryptedCredential)
+	key, cred, err := persistence.Database.Credential.CreateCredential(encryptedCredential)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": key})
+
+	context.JSON(http.StatusOK, gin.H{"response": gin.H{"key": key.String(), "credential": cred}})
 }
 
-func deleteCredential(context *gin.Context) {
-	jobUuid, parseErr := uuid.Parse(context.Param("uuid"))
+func patchCredential(context *gin.Context) {
+	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	deleteErr := persistence.Database.Credential.DeleteCredential(jobUuid)
+
+	var credential Credential
+	err := context.ShouldBindJSON(&credential)
+	password, err := service.Encrypt(credential.Password, service.Secret.Get())
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	encryptedCredential := Credential{Username: credential.Username, Password: password}
+	_, cred, err := persistence.Database.Credential.UpdateCredential(credUuid, encryptedCredential)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": cred})
+}
+
+func deleteCredential(context *gin.Context) {
+	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
+	if parseErr != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
+		return
+	}
+	deleteErr := persistence.Database.Credential.DeleteCredential(credUuid)
 	if deleteErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
