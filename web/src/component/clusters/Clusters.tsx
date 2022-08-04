@@ -3,7 +3,7 @@ import {useQuery} from "react-query";
 import {clusterApi} from "../../app/api";
 import {ClustersRow} from "./ClustersRow";
 import React, {useState} from "react";
-import {Error} from "../view/Error";
+import {ErrorAlert} from "../view/ErrorAlert";
 import {TableBody} from "../view/TableBody";
 import {TableCellLoader} from "../view/TableCellLoader";
 import {AxiosError} from "axios";
@@ -28,7 +28,7 @@ export function Clusters() {
     )
 
     function renderContent() {
-        if (isError) return <Error error={error as AxiosError}/>
+        if (isError) return <ErrorAlert error={error as AxiosError}/>
 
         return (
             <Table size="small" sx={SX.table}>

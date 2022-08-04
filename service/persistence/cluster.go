@@ -15,24 +15,24 @@ func (r ClusterRepository) List() ([]ClusterModel, error) {
 	bytesList, err := r.common.getList(r.bucket)
 	modelList := make([]ClusterModel, len(bytesList))
 	for i, el := range bytesList {
-		nodes := make([]string, 0)
+		var cluster ClusterModel
 		buff := bytes.NewBuffer(el.value)
-		_ = gob.NewDecoder(buff).Decode(&nodes)
-		modelList[i] = ClusterModel{Name: el.key, Nodes: nodes}
+		_ = gob.NewDecoder(buff).Decode(&cluster)
+		modelList[i] = cluster
 	}
 	return modelList, err
 }
 
 func (r ClusterRepository) Get(key string) (ClusterModel, error) {
 	value, err := r.common.get(r.bucket, key)
-	var nodes []string
+	var cluster ClusterModel
 	buff := bytes.NewBuffer(value)
-	_ = gob.NewDecoder(buff).Decode(&nodes)
-	return ClusterModel{Name: key, Nodes: nodes}, err
+	_ = gob.NewDecoder(buff).Decode(&cluster)
+	return cluster, err
 }
 
 func (r ClusterRepository) Update(cluster ClusterModel) error {
-	return r.common.update(r.bucket, cluster.Name, cluster.Nodes)
+	return r.common.update(r.bucket, cluster.Name, cluster)
 }
 
 func (r ClusterRepository) Delete(key string) error {

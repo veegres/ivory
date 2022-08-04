@@ -44,15 +44,17 @@ func (r CredentialRepository) GetDecryptedRef() string {
 	return str
 }
 
-func (r CredentialRepository) CreateCredential(credential Credential) (uuid.UUID, error) {
+func (r CredentialRepository) CreateCredential(credential Credential) (uuid.UUID, Credential, error) {
 	key, err := uuid.NewUUID()
 	err = r.common.update(r.credentialBucket, key.String(), credential)
-	return key, err
+	cred := Credential{Username: credential.Username, Password: "configured", Type: credential.Type}
+	return key, cred, err
 }
 
-func (r CredentialRepository) UpdateCredential(id uuid.UUID, credential Credential) (uuid.UUID, error) {
+func (r CredentialRepository) UpdateCredential(id uuid.UUID, credential Credential) (uuid.UUID, Credential, error) {
 	err := r.common.update(r.credentialBucket, id.String(), credential)
-	return id, err
+	cred := Credential{Username: credential.Username, Password: "configured", Type: credential.Type}
+	return id, cred, err
 }
 
 func (r CredentialRepository) DeleteCredential(key uuid.UUID) error {

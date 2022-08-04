@@ -1,19 +1,26 @@
 import {blue, green} from "@mui/material/colors";
-import {ColorsMap, JobStatus, Node} from "./types";
+import {ColorsMap, CredentialType, JobStatus, Node} from "./types";
+import {ReactElement} from "react";
+import {HeartBroken, Storage} from "@mui/icons-material";
 
-export const nodeColor: { [key: string]: string } = {
+export const NodeColor: { [key: string]: string } = {
     master: green[500],
     leader: green[500],
     replica: blue[500]
 }
 
-export const jobStatus: { [key: number]: { name: string, color: string, active: boolean } } = {
+export const JobOptions: { [key in JobStatus]: { name: string, color: string, active: boolean } } = {
     [JobStatus.PENDING]: {name: "PENDING", color: "#b9b9b9", active: true},
     [JobStatus.UNKNOWN]: {name: "UNKNOWN", color: "#5b3b00", active: false},
     [JobStatus.RUNNING]: {name: "RUNNING", color: "#b97800", active: true},
     [JobStatus.FINISHED]: {name: "FINISHED", color: "#00b919", active: false},
     [JobStatus.FAILED]: {name: "FAILED", color: "#d20000", active: false},
     [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
+}
+
+export const CredentialOptions: { [key in CredentialType]: { name: string, color: string, icon: ReactElement } } = {
+    [CredentialType.POSTGRES]: {name: "POSTGRES", color: blue[300], icon: <Storage sx={{color: blue[300]}} /> },
+    [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken sx={{color: green[300]}} /> }
 }
 
 export const createColorsMap = (nodes?: Node[]) => {

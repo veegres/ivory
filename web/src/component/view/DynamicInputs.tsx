@@ -31,9 +31,9 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
                 <FormControl key={index} color={color} focused={!!color}>
                     <OutlinedInput
                         sx={SX.input}
-                        type="string"
+                        type={"string"}
                         placeholder={`${placeholder} ${index}`}
-                        size="small"
+                        size={"small"}
                         value={input}
                         onChange={(event) => handleChange(index, event.target.value)}
                    />
@@ -50,7 +50,7 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
                 color={colorsMap[input.toLowerCase()]}
                 label={input ? input : `Node ${index}`}
                 disabled={!input}
-                variant="outlined"
+                variant={"outlined"}
            />
         ))
     }

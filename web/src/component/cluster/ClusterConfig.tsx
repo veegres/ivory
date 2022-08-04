@@ -2,7 +2,7 @@ import {Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip} from "@mui/m
 import {nodeApi} from "../../app/api";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {useTheme} from "../../provider/ThemeProvider";
-import {Error} from "../view/Error";
+import {ErrorAlert} from "../view/ErrorAlert";
 import React, {ReactElement, useState} from "react";
 import {AxiosError} from "axios";
 import ReactCodeMirror, {EditorView} from "@uiw/react-codemirror";
@@ -34,8 +34,8 @@ export function ClusterConfig() {
         onSuccess: async () => await queryClient.refetchQueries('node/config')
     })
 
-    if (!leader) return <Error error={"Instance Not Found"}/>
-    if (isError) return <Error error={error as AxiosError}/>
+    if (!leader) return <ErrorAlert error={"Instance Not Found"}/>
+    if (isError) return <ErrorAlert error={error as AxiosError}/>
     if (isLoading) return <Skeleton variant="rectangular" height={300}/>
 
     const isDark = theme.mode === "dark"

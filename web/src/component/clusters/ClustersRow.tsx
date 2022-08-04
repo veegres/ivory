@@ -1,10 +1,15 @@
 import {Box, Chip, FormControl, OutlinedInput, TableCell, TableRow} from "@mui/material";
-import {Cached, Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material";
 import {useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "react-query";
 import {clusterApi, nodeApi} from "../../app/api";
 import {ClusterMap, Style} from "../../app/types";
-import {ClustersRowButton} from "./ClustersRowButton";
+import {
+    CancelIconButton,
+    DeleteIconButton,
+    EditIconButton,
+    RefreshIconButton,
+    SaveIconButton,
+} from "../view/IconButtons";
 import {DynamicInputs} from "../view/DynamicInputs";
 import {useStore} from "../../provider/StoreProvider";
 import {activeNode, createColorsMap} from "../../app/utils";
@@ -84,7 +89,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
                     label={stateName}
                     onClick={handleChipClick}
                />
-                <ClustersRowButton icon={<Cached/>} loading={isFetching} onClick={refetch} tooltip={"Reload"}/>
+                <RefreshIconButton loading={isFetching} onClick={refetch}/>
             </Box>
         ) : (
             <FormControl fullWidth>
@@ -101,20 +106,8 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     function renderReadButtons(isDisabled: boolean) {
         return (
             <>
-                <ClustersRowButton
-                    icon={<Edit/>}
-                    tooltip={'Edit'}
-                    loading={updateCluster.isLoading}
-                    disabled={isDisabled}
-                    onClick={toggleEdit}
-               />
-                <ClustersRowButton
-                    icon={<Delete/>}
-                    tooltip={'Delete'}
-                    loading={deleteCluster.isLoading}
-                    disabled={isDisabled}
-                    onClick={handleDelete}
-               />
+                <EditIconButton loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit}/>
+                <DeleteIconButton loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete}/>
             </>
         )
     }
@@ -122,19 +115,8 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     function renderActionButtons(isDisabled: boolean) {
         return (
             <>
-                <ClustersRowButton
-                    icon={<Cancel/>}
-                    tooltip={'Cancel'}
-                    loading={updateCluster.isLoading}
-                    onClick={handleCancel}
-               />
-                <ClustersRowButton
-                    icon={<CheckCircle/>}
-                    tooltip={'Save'}
-                    loading={updateCluster.isLoading}
-                    disabled={isDisabled}
-                    onClick={handleUpdate}
-               />
+                <CancelIconButton loading={updateCluster.isLoading} onClick={handleCancel}/>
+                <SaveIconButton loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate}/>
             </>
         )
     }

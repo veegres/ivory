@@ -3,7 +3,7 @@ import {
     Cluster,
     ClusterMap,
     CompactTable,
-    CompactTableRequest,
+    CompactTableRequest, Credential,
     CredentialMap,
     NodeOverview,
     NodeResponse,
@@ -81,6 +81,12 @@ export const secretApi = {
 }
 
 export const credentialApi = {
-    get: () => api.get<Response<CredentialMap>>(`/credential`).then((response) => response.data.response),
-    delete: (uuid: string) => api.delete(`/credential/${uuid}`).then((response) => response.data.response)
+    get: () =>
+        api.get<Response<CredentialMap>>(`/credential`).then((response) => response.data.response),
+    create: (credential: Credential) =>
+        api.post<Response<{key: string, credential: Credential}>>(`/credential`, credential).then((response) => response.data.response),
+    update: ({ uuid, credential }: { uuid: string, credential: Credential }) =>
+        api.patch<Response<Credential>>(`/credential/${uuid}`, credential).then((response) => response.data.response),
+    delete: (uuid: string) =>
+        api.delete(`/credential/${uuid}`).then((response) => response.data.response)
 }

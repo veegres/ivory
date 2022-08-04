@@ -8,7 +8,7 @@ import {useMutation, useQueryClient} from "react-query";
 import {bloatApi} from "../../app/api";
 import {shortUuid} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
-import classes from "../../style/scroll.module.css"
+import scroll from "../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../view/DynamicRowVirtualizer";
 
 const SX = {
@@ -78,7 +78,7 @@ export function ClusterBloatJob({compactTable}: Props) {
                 ) : (
                     <DynamicRowVirtualizer
                         sx={SX.logs}
-                        className={classes.scroll}
+                        className={scroll.tiny}
                         sxVirtualRow={SX.row}
                         height={350}
                         rows={logs}

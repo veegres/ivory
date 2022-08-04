@@ -78,7 +78,7 @@ func (s *secret) Update(previousKey string, newKey string) error {
 		decodedPass, _ := Decrypt(oldEncodedPass, previousKeySha1)
 		newEncodedPass, _ := Encrypt(decodedPass, newKeySha1)
 		credential.Password = newEncodedPass
-		_, err = persistence.Database.Credential.UpdateCredential(id, credential)
+		_, _, err = persistence.Database.Credential.UpdateCredential(id, credential)
 	}
 
 	s.mutex.Unlock()
