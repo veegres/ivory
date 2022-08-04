@@ -79,13 +79,13 @@ func getCredentials(context *gin.Context) {
 func postCredential(context *gin.Context) {
 	var credential Credential
 	err := context.ShouldBindJSON(&credential)
-	password, err := service.Encrypt(credential.Password, service.Secret.Get())
+	encryptedPassword, err := service.Encrypt(credential.Password, service.Secret.Get())
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	encryptedCredential := Credential{Username: credential.Username, Password: password}
+	encryptedCredential := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
 	key, cred, err := persistence.Database.Credential.CreateCredential(encryptedCredential)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -104,13 +104,13 @@ func patchCredential(context *gin.Context) {
 
 	var credential Credential
 	err := context.ShouldBindJSON(&credential)
-	password, err := service.Encrypt(credential.Password, service.Secret.Get())
+	encryptedPassword, err := service.Encrypt(credential.Password, service.Secret.Get())
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	encryptedCredential := Credential{Username: credential.Username, Password: password}
+	encryptedCredential := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
 	_, cred, err := persistence.Database.Credential.UpdateCredential(credUuid, encryptedCredential)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -42,7 +42,7 @@ export function CredentialsNew() {
     }
 
     function handleCancel() {
-        setCredential(initCredential)
+        setCredential({ ...initCredential, type: credential.type })
         setClean(false)
     }
 

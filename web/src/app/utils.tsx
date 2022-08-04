@@ -19,8 +19,8 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
 }
 
 export const CredentialOptions: { [key in CredentialType]: { name: string, color: string, icon: ReactElement } } = {
-    [CredentialType.POSTGRES]: {name: "POSTGRES", color: blue[300], icon: <Storage sx={{color: blue[300]}} /> },
-    [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken sx={{color: green[300]}} /> }
+    [CredentialType.POSTGRES]: {name: "POSTGRES", color: blue[300], icon: <Storage sx={{color: blue[300]}} />},
+    [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken sx={{color: green[300]}} />}
 }
 
 export const createColorsMap = (nodes?: Node[]) => {
