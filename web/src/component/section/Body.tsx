@@ -20,7 +20,7 @@ export function Body() {
     if (!status?.key) return <RepeatSecret/>
 
     return (
-        <Stack sx={{ width: "100%", height: "100%" }} spacing={1}>
+        <Stack sx={{ width: "100%", height: "100%", gap: 1 }}>
             <Clusters/>
             <Cluster/>
             <Node/>

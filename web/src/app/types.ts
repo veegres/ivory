@@ -56,7 +56,7 @@ export interface ClusterMap {
 }
 
 export interface ClusterTabs {
-    [key: number]: { body: JSX.Element, info?: JSX.Element }
+    [key: number]: { body: ReactNode, info?: ReactNode }
 }
 
 // SECRET
