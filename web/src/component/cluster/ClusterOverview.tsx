@@ -12,7 +12,7 @@ import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
-    tableLastChildRow: {'tr:last-child td': {border: 0}},
+    table: {'tr:last-child td': {border: 0}},
     clickable: {cursor: "pointer"},
     actionCell: {width: "50px"},
 }
@@ -42,7 +42,7 @@ export function ClusterOverview() {
     return (
         <>
             <AlertDialog {...alertDialog} onClose={() => setAlertDialog({...alertDialog, open: false})}/>
-            <Table size="small" sx={SX.tableLastChildRow}>
+            <Table size="small" sx={SX.table}>
                 <TableHead>
                     <TableRow>
                         <TableCell sx={SX.actionCell}/>

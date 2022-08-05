@@ -2,7 +2,7 @@ import {Grid, Paper} from "@mui/material";
 import {ReactNode} from "react";
 
 const SX = {
-    paper: {width: '100%', margin: '10px 5%'}
+    paper: {width: '100%', margin: '10px 5%', minWidth: "750px"}
 }
 
 type Props = {
