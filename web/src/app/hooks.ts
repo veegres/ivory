@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {EventStream, JobStatus} from "./types";
-import {useQuery} from "react-query";
-import {bloatApi} from "./api";
+import {useQueries, useQuery} from "react-query";
+import {bloatApi, nodeApi} from "./api";
 import {JobOptions} from "./utils";
 
 export interface EventJob {
@@ -55,5 +55,49 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         isFetching: isEventSourceFetching || isFetching,
         logs,
         status
+    }
+}
+
+
+export function useSmartClusterQuery(name: string, nodes: string[]) {
+    const [nodeIndex, setNodeIndex] = useState(0)
+    const [nodeQueries, setNodeQueries] = useState(getNodeQueries(nodeIndex, nodes))
+    const [isRefetching, setIsRefetching] = useState(false)
+
+    const result = useQueries(nodeQueries)
+
+    useEffect(handleEffectIncrease, [nodeIndex, result, isRefetching])
+
+    return {
+        instance: nodes[nodeIndex],
+        instanceResult: result[nodeIndex] ?? {},
+        update: (nodes: string[]) => {
+            setNodeIndex(0)
+            setNodeQueries(getNodeQueries(nodeIndex, nodes))
+        },
+        refetch: () => {
+            setNodeIndex(0)
+            setIsRefetching(true)
+        }
+    }
+
+    function handleEffectIncrease() {
+        const node = result[nodeIndex] ?? {}
+        if (node.isError && nodeIndex < result.length - 1) setNodeIndex(nodeIndex + 1)
+        if (node.isIdle || (node.isError && isRefetching)) node.refetch()
+        if (node.isSuccess || nodeIndex === result.length - 1) setIsRefetching(false)
+    }
+
+    /**
+     * Create array of queries that should be requested be `useQueries()` in new rerender
+     * @param currentIndex
+     * @param nodes
+     */
+    function getNodeQueries(currentIndex: number, nodes: string[]) {
+        return nodes.map((node) => ({
+            queryKey: [`node/cluster`, node],
+            queryFn: () => nodeApi.cluster(node),
+            retry: 0, enabled: false
+        }))
     }
 }

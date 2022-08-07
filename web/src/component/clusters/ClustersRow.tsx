@@ -1,7 +1,7 @@
 import {Box, Chip, FormControl, OutlinedInput, TableCell, TableRow} from "@mui/material";
 import {useState} from "react";
-import {useMutation, useQuery, useQueryClient} from "react-query";
-import {clusterApi, nodeApi} from "../../app/api";
+import {useMutation, useQueryClient} from "react-query";
+import {clusterApi} from "../../app/api";
 import {ClusterMap, Style} from "../../app/types";
 import {
     CancelIconButton,
@@ -13,6 +13,7 @@ import {
 import {DynamicInputs} from "../view/DynamicInputs";
 import {useStore} from "../../provider/StoreProvider";
 import {activeNode, createColorsMap} from "../../app/utils";
+import {useSmartClusterQuery} from "../../app/hooks";
 
 const SX = {
     nodesCellInput: {height: '32px'},
@@ -39,12 +40,9 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     const [stateNodes, setStateNodes] = useState(nodes);
     const isActive = isClusterActive(stateName)
 
+    const {instance, instanceResult: {data, isFetching}, update, refetch} = useSmartClusterQuery(stateName, stateNodes)
+
     const queryClient = useQueryClient();
-    const { data, isFetching, refetch } = useQuery(
-        ['node/cluster', name],
-        () => nodeApi.cluster(stateNodes[0]),
-        {retry: 0, enabled: stateNodes[0] !== undefined}
-    )
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
             const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
@@ -124,6 +122,7 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     function handleUpdate() {
         if (isNewElement) closeNewElement(); else toggleEdit()
         updateCluster.mutate({name: stateName, nodes: stateNodes})
+        update(stateNodes)
     }
 
     function handleCancel() {
@@ -136,7 +135,11 @@ export function ClustersRow({name, nodes, edit = {}}: Props) {
     }
 
     function handleChipClick() {
-        const cluster = !isActive ? {name: stateName, leader: activeNode(data)} : {name: '', leader: undefined}
+        const cluster = !isActive ? {
+            name: stateName, instance: instance, leader: activeNode(data)
+        } : {
+            name: "", instance: "", leader: undefined
+        }
         setStore({ activeCluster: {...cluster, tab: store.activeCluster.tab}, activeNode: '' })
     }
 }

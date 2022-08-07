@@ -1,20 +1,30 @@
 import {ClusterOverview} from "./ClusterOverview";
 import {ClusterConfig} from "./ClusterConfig";
-import {Alert, Box, Chip, Collapse, Fade, IconButton, Link, Tab, Tabs, Tooltip} from "@mui/material";
+import {
+    Alert, Box, Chip, Collapse, Divider, Fade, Link,
+    Tab, Tabs, ToggleButton, ToggleButtonGroup, Tooltip
+} from "@mui/material";
 import React, {useState} from "react";
 import {useStore} from "../../provider/StoreProvider";
 import {ClusterBloat} from "./ClusterBloat";
 import {Info} from "../view/Info";
 import {Block} from "../view/Block";
 import {useQuery} from "react-query";
-import {InfoOutlined} from "@mui/icons-material";
+import {InfoOutlined, Settings} from "@mui/icons-material";
 import {ClusterTabs} from "../../app/types";
+import {ClusterSettings} from "./ClusterSettings";
 
 const SX = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
     infoBox: {padding: '5px 0'},
-    actionBox: {display: "flex", alignItems: "center"},
+    actionBox: {display: "flex", alignItems: "center", gap: 1},
     chip: {margin: "auto 0", minWidth: "150px"},
+    settingsBox: {height: "100%", display: "flex", flexDirection: "row"},
+    mainBox: {display: "flex", flexDirection: "row"},
+    leftMainBlock: {flexGrow: 1, overflowX: "auto"},
+    rightMainBlock: {},
+    divider: {margin: "0 10px"},
+    collapse: {height: "100%"}
 }
 
 const TABS: ClusterTabs = {
@@ -46,7 +56,8 @@ const TABS: ClusterTabs = {
 
 export function Cluster() {
     const {store: {activeCluster}, setStore} = useStore()
-    const [isInfoOpen, setIsInfoOpen] = useState(false)
+    const [infoOpen, setInfoOpen] = useState(false)
+    const [settingsOpen, setSettingsOpen] = useState(false)
     const disabled = !activeCluster.name
     const clusters = useQuery('cluster/list')
     const tab = TABS[activeCluster.tab]
@@ -62,7 +73,10 @@ export function Cluster() {
                 {renderActionBlock()}
             </Box>
             <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
-            <Box>{renderMainBlock()}</Box>
+            <Box sx={SX.mainBox}>
+                <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
+                <Box sx={SX.rightMainBlock}>{renderSettingsBlock()}</Box>
+            </Box>
         </Block>
     )
 
@@ -72,33 +86,55 @@ export function Cluster() {
         return tab.body
     }
 
-    function renderInfoBlock() {
-        if (!tab?.info) return null
-        return (
-            <Collapse in={isInfoOpen}>
-                <Alert severity="info" onClose={() => setIsInfoOpen(false)}>{tab.info}</Alert>
-            </Collapse>
-        )
-    }
-
     function renderActionBlock() {
         return (
             <Box sx={SX.actionBox}>
                 <Box>
                     <Fade in={!!activeCluster.leader}>
                         <Tooltip title={"All requests go to this node!"} placement={"top"}>
-                            <Chip sx={SX.chip} color={"success"} label={activeCluster.leader?.api_domain} variant={"outlined"}/>
+                            <Chip sx={SX.chip} label={activeCluster.leader?.api_domain} variant={"outlined"}/>
                         </Tooltip>
                     </Fade>
                 </Box>
-                <Tooltip title={"Tab Information"} placement={"top"}>
-                    <Box>
-                        <IconButton color={"primary"} disabled={!tab?.info} onClick={() => setIsInfoOpen(!isInfoOpen)}>
-                            <InfoOutlined/>
-                        </IconButton>
-                    </Box>
-                </Tooltip>
+                <ToggleButtonGroup size={"small"}>
+                    <ToggleButton
+                        value={"settings"}
+                        disabled={disabled}
+                        selected={!disabled && settingsOpen}
+                        onClick={() => setSettingsOpen(!settingsOpen)}
+                    >
+                        <Tooltip title={"Cluster Settings"} placement={"top"}><Settings/></Tooltip>
+                    </ToggleButton>
+                    <ToggleButton
+                        value={"info"}
+                        selected={!!tab?.info && infoOpen}
+                        disabled={!tab?.info}
+                        onClick={() => setInfoOpen(!infoOpen)}
+                    >
+                        <Tooltip title={"Tab Information"} placement={"top"}><InfoOutlined/></Tooltip>
+                    </ToggleButton>
+                </ToggleButtonGroup>
             </Box>
+        )
+    }
+
+    function renderInfoBlock() {
+        if (!tab?.info) return null
+        return (
+            <Collapse in={infoOpen}>
+                <Alert severity="info" onClose={() => setInfoOpen(false)}>{tab.info}</Alert>
+            </Collapse>
+        )
+    }
+
+    function renderSettingsBlock() {
+        return (
+            <Collapse sx={SX.collapse} in={!disabled && settingsOpen} orientation={"horizontal"}>
+                <Box sx={SX.settingsBox}>
+                    <Divider sx={SX.divider} orientation={"vertical"} flexItem/>
+                    {!disabled && settingsOpen && <ClusterSettings />}
+                </Box>
+            </Collapse>
         )
     }
 

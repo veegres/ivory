@@ -1,5 +1,5 @@
 import {blue, green} from "@mui/material/colors";
-import {ColorsMap, CredentialType, JobStatus, Node} from "./types";
+import {ColorsMap, CredentialType, JobStatus, Instance} from "./types";
 import {ReactElement} from "react";
 import {HeartBroken, Storage} from "@mui/icons-material";
 
@@ -23,7 +23,7 @@ export const CredentialOptions: { [key in CredentialType]: { name: string, color
     [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken sx={{color: green[300]}} />}
 }
 
-export const createColorsMap = (nodes?: Node[]) => {
+export const createColorsMap = (nodes?: Instance[]) => {
     return nodes?.reduce(
         (map, node) => {
             const color = node.isLeader ? "success" : "primary"
@@ -35,7 +35,7 @@ export const createColorsMap = (nodes?: Node[]) => {
     )
 }
 
-export const activeNode = (nodes?: Node[]): Node | undefined => {
+export const activeNode = (nodes?: Instance[]): Instance | undefined => {
     return nodes?.find(node => node.isLeader)
 }
 

@@ -11,7 +11,7 @@ import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
 import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
 import {useStore} from "../../provider/StoreProvider";
-import {Node} from "../../app/types";
+import {Instance} from "../../app/types";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
@@ -58,7 +58,7 @@ export function ClusterConfig() {
         </Grid>
     )
 
-    function renderUpdateButtons(leader: Node, configState: string, isLoading: boolean, isEditable: boolean) {
+    function renderUpdateButtons(leader: Instance, configState: string, isLoading: boolean, isEditable: boolean) {
         if (isLoading) return renderButton(<CircularProgress size={25}/>, "Saving", undefined, true)
         if (!isEditable) return renderButton(<Edit/>, "Edit", () => setIsEditable(true))
 
@@ -85,7 +85,7 @@ export function ClusterConfig() {
         return navigator.clipboard.writeText(currentConfig)
     }
 
-    function handleUpdate(node: Node, config: string) {
+    function handleUpdate(node: Instance, config: string) {
         setIsEditable(false)
         if (configState) updateConfig.mutate({node: node.api_domain, config})
     }

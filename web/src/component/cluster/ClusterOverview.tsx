@@ -7,7 +7,7 @@ import React, {useState} from "react";
 import {TableCellLoader} from "../view/TableCellLoader";
 import {AxiosError} from "axios";
 import {NodeColor} from "../../app/utils";
-import {Node} from "../../app/types";
+import {Instance} from "../../app/types";
 import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
 
@@ -22,18 +22,18 @@ type AlertDialogState = {open: boolean, title: string, content: string, onAgree:
 export function ClusterOverview() {
     const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {}}
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const { setStore, store: { activeCluster: { name: cluster }, activeNode } } = useStore()
+    const { setStore, store: { activeCluster: { instance }, activeNode } } = useStore()
 
-    const clusterState = useQuery<Node[], AxiosError>(
-        ["node/cluster", cluster],
+    const clusterState = useQuery<Instance[], AxiosError>(
+        ["node/cluster", instance],
         {retry: 0, refetchOnMount: false}
     )
     const queryClient = useQueryClient();
     const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', cluster])
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', instance])
     })
     const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', cluster])
+        onSuccess: async () => await queryClient.refetchQueries(['node/cluster', instance])
     })
 
     const {data: members, isLoading, isFetching, error} = clusterState

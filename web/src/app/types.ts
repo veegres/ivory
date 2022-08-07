@@ -1,4 +1,4 @@
-import {CSSProperties} from "react";
+import {CSSProperties, ReactNode} from "react";
 
 export interface Response<TData, TError = {}> {
     response: TData
@@ -6,7 +6,7 @@ export interface Response<TData, TError = {}> {
 }
 
 // NODE
-export interface NodeResponse {
+export interface InstanceResponse {
     name: string,
     timeline?: number,
     lag: number,
@@ -17,13 +17,13 @@ export interface NodeResponse {
     api_url: string
 }
 
-export interface Node extends NodeResponse{
+export interface Instance extends InstanceResponse{
     api_domain: string
     isLeader: boolean
     credId?: string
 }
 
-export interface NodeOverview {
+export interface InstanceOverview {
     database_system_identifier: string,
     pending_restart?: boolean
     postmaster_start_time?: string,
