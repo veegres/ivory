@@ -1,14 +1,17 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {Node} from "../app/types";
+import {Instance} from "../app/types";
+
+
+interface ActiveClusterType { name: string, instance: string, leader?: Instance, tab: number }
 
 interface StoreType {
-    activeCluster: { name: string, leader?: Node, tab: number }
+    activeCluster: ActiveClusterType
     activeNode: string
     credentialsOpen: boolean
 }
 
 interface StoreTypeParam {
-    activeCluster?: { name: string, leader?: Node, tab: number }
+    activeCluster?: ActiveClusterType
     activeNode?: string
     credentialsOpen?: boolean
 }
@@ -22,7 +25,7 @@ interface StoreContextType {
 }
 
 const initialStore: StoreType = {
-    activeCluster: { name: "", leader: undefined, tab: 0 },
+    activeCluster: { name: "", instance: "", leader: undefined, tab: 0 },
     activeNode: "",
     credentialsOpen: false,
 }
