@@ -7,6 +7,7 @@ import (
 	"ivory/persistence"
 	"ivory/service"
 	"net/http"
+	"strconv"
 )
 
 func (r routes) CredentialGroup(group *gin.RouterGroup) {
@@ -72,7 +73,16 @@ func cleanSecret(context *gin.Context) {
 }
 
 func getCredentials(context *gin.Context) {
-	credentials := persistence.Database.Credential.GetCredentialMap()
+	credentialType := context.Request.URL.Query().Get("type")
+
+	var credentials map[string]Credential
+	if credentialType != "" {
+		number, _ := strconv.Atoi(credentialType)
+		credentials = persistence.Database.Credential.GetCredentialsByType(CredentialType(number))
+	} else {
+		credentials = persistence.Database.Credential.GetCredentials()
+	}
+
 	context.JSON(http.StatusOK, gin.H{"response": credentials})
 }
 

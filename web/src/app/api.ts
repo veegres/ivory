@@ -11,7 +11,7 @@ import {
     SecretSetRequest,
     SecretStatus,
     SecretUpdateRequest,
-    Instance
+    InstanceMap, CredentialType
 } from "./types";
 import {getPatroniDomain} from "./utils";
 
@@ -22,11 +22,15 @@ export const nodeApi = {
         api.get<Response<InstanceOverview>>(`/node/${node}/overview`).then((response) => response.data.response),
     cluster: (node: String) =>
         api.get<Response<{ members: InstanceResponse[] }>>(`/node/${node}/cluster`)
-            .then<Instance[]>((response) => response.data.response.members.map((node) => ({
-                ...node,
-                api_domain: getPatroniDomain(node.api_url),
-                isLeader: node.role === "leader"
-            }))),
+            .then<InstanceMap>((response) => response.data.response.members.reduce(
+                (map, instance) => {
+                    const api_domain = getPatroniDomain(instance.api_url)
+                    const leader = instance.role === "leader"
+                    map[api_domain] = {...instance, api_domain, leader}
+                    return map
+                },
+                {} as InstanceMap
+            )),
     config: (node: String) =>
         api.get(`/node/${node}/config`).then((response) => response.data.response),
     updateConfig: ({node, config}: { node: string, config: string }) =>
@@ -42,9 +46,9 @@ export const clusterApi = {
         api.get<Response<Cluster>>(`/cluster/${name}`).then((response) => response.data.response),
     list: () =>
         api.get<Response<Cluster[]>>(`/cluster`).then((response) => response.data.response.reduce(
-            (prev, current) => {
-                prev[current.name] = current.nodes;
-                return prev
+            (map, cluster) => {
+                map[cluster.name] = cluster
+                return map
             },
             {} as ClusterMap
         )),
@@ -56,16 +60,22 @@ export const clusterApi = {
 
 export const bloatApi = {
     list: (name: string) =>
-        api.get<Response<CompactTable[]>>(`/cli/bloat/cluster/${name}`).then((response) => response.data.response),
+        api.get<Response<CompactTable[]>>(`/cli/bloat/cluster/${name}`)
+            .then((response) => response.data.response),
     logs: (uuid: string) =>
-        api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"}).then(({data}) => data === "" ? [] : data.split("\n")),
+        api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"})
+            .then(({data}) => data === "" ? [] : data.split("\n")),
 
     start: (ctr: CompactTableRequest) =>
-        api.post<Response<CompactTable>>(`/cli/bloat/job/start`, ctr).then((response) => response.data.response),
+        api.post<Response<CompactTable>>(`/cli/bloat/job/start`, ctr)
+            .then((response) => response.data.response),
     stop: (uuid: string) =>
-        api.post<Response<CompactTable>>(`/cli/bloat/job/${uuid}/stop`).then((response) => response.data.response),
+        api.post<Response<CompactTable>>(`/cli/bloat/job/${uuid}/stop`)
+            .then((response) => response.data.response),
     delete: (uuid: string) =>
-        api.delete(`/cli/bloat/job/${uuid}/delete`).then((response) => response.data.response),
+        api.delete(`/cli/bloat/job/${uuid}/delete`)
+            .then((response) => response.data.response),
+
     stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
 }
 
@@ -81,12 +91,16 @@ export const secretApi = {
 }
 
 export const credentialApi = {
-    get: () =>
-        api.get<Response<CredentialMap>>(`/credential`).then((response) => response.data.response),
+    get: (type?: CredentialType) =>
+        api.get<Response<CredentialMap>>(`/credential`, { params: { type } })
+            .then((response) => response.data.response),
     create: (credential: Credential) =>
-        api.post<Response<{key: string, credential: Credential}>>(`/credential`, credential).then((response) => response.data.response),
+        api.post<Response<{key: string, credential: Credential}>>(`/credential`, credential)
+            .then((response) => response.data.response),
     update: ({ uuid, credential }: { uuid: string, credential: Credential }) =>
-        api.patch<Response<Credential>>(`/credential/${uuid}`, credential).then((response) => response.data.response),
+        api.patch<Response<Credential>>(`/credential/${uuid}`, credential)
+            .then((response) => response.data.response),
     delete: (uuid: string) =>
-        api.delete(`/credential/${uuid}`).then((response) => response.data.response)
+        api.delete(`/credential/${uuid}`)
+            .then((response) => response.data.response)
 }

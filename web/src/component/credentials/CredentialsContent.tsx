@@ -21,7 +21,7 @@ const SX = {
 }
 
 export function CredentialsContent() {
-    const { data: credentials, isError, error, isFetching } = useQuery("credentials", credentialApi.get)
+    const { data: credentials, isError, error, isFetching } = useQuery("credentials", () => credentialApi.get())
     if (isError) return <ErrorAlert error={error as AxiosError}/>
 
     return (

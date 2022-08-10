@@ -1,12 +1,13 @@
-import {blue, green} from "@mui/material/colors";
-import {ColorsMap, CredentialType, JobStatus, Instance} from "./types";
+import {blue, green, orange} from "@mui/material/colors";
+import {ColorsMap, CredentialType, JobStatus, InstanceMap} from "./types";
 import {ReactElement} from "react";
 import {HeartBroken, Storage} from "@mui/icons-material";
 
-export const NodeColor: { [key: string]: string } = {
+export const InstanceColor: { [key: string]: string } = {
     master: green[500],
     leader: green[500],
-    replica: blue[500]
+    replica: blue[500],
+    unknown: orange[500]
 }
 
 export const JobOptions: { [key in JobStatus]: { name: string, color: string, active: boolean } } = {
@@ -23,20 +24,16 @@ export const CredentialOptions: { [key in CredentialType]: { name: string, color
     [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken sx={{color: green[300]}} />}
 }
 
-export const createColorsMap = (nodes?: Instance[]) => {
-    return nodes?.reduce(
+export const createColorsMap = (nodes: InstanceMap) => {
+    return Object.values(nodes).reduce(
         (map, node) => {
-            const color = node.isLeader ? "success" : "primary"
+            const color = node.leader ? "success" : "primary"
             map[node.host.toLowerCase()] = color
             map[node.api_domain.toLowerCase()] = color
             return map
         },
         {} as ColorsMap
     )
-}
-
-export const activeNode = (nodes?: Instance[]): Instance | undefined => {
-    return nodes?.find(node => node.isLeader)
 }
 
 export const getPatroniDomain = (url: string) => url.split('/')[2]

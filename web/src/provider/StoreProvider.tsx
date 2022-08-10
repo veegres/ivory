@@ -1,20 +1,14 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {Instance} from "../app/types";
+import {Cluster, Instance} from "../app/types";
 
+// ACTIVE CLUSTER
+interface ActiveClusterType { cluster?: Cluster, instance?: Instance, tab: number }
+export const initialActiveCluster: ActiveClusterType = { cluster: undefined, instance: undefined, tab: 0 }
 
-interface ActiveClusterType { name: string, instance: string, leader?: Instance, tab: number }
-
-interface StoreType {
-    activeCluster: ActiveClusterType
-    activeNode: string
-    credentialsOpen: boolean
-}
-
-interface StoreTypeParam {
-    activeCluster?: ActiveClusterType
-    activeNode?: string
-    credentialsOpen?: boolean
-}
+// STORE
+interface StoreType { activeCluster: ActiveClusterType, activeNode: string, credentialsOpen: boolean }
+interface StoreTypeParam { activeCluster?: ActiveClusterType, activeNode?: string, credentialsOpen?: boolean }
+export const initialStore: StoreType = { activeCluster: initialActiveCluster, activeNode: "", credentialsOpen: false }
 
 interface StoreContextType {
     store: StoreType
@@ -22,12 +16,6 @@ interface StoreContextType {
     isClusterActive: (name: string) => boolean
     isNodeActive: (name: string) => boolean
     isOverviewOpen: () => boolean
-}
-
-const initialStore: StoreType = {
-    activeCluster: { name: "", instance: "", leader: undefined, tab: 0 },
-    activeNode: "",
-    credentialsOpen: false,
 }
 
 const StoreContext = createContext<StoreContextType>({
@@ -46,9 +34,9 @@ export function StoreProvider(props: { children: ReactNode }) {
     const value = {
         store: state,
         setStore: (store: StoreTypeParam) => setState({ ...state, ...store }),
-        isClusterActive: (name: string) => name === activeCluster.name,
+        isClusterActive: (name: string) => name === activeCluster.cluster?.name,
         isNodeActive: (name: string) => name === activeNode,
-        isOverviewOpen: () => !!activeCluster.leader && activeCluster.tab === 0
+        isOverviewOpen: () => !!activeCluster.instance && activeCluster.tab === 0
     }
     return (
         <StoreContext.Provider value={value}>
