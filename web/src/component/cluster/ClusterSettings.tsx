@@ -1,40 +1,43 @@
-import {Autocomplete, Box, Stack, TextField} from "@mui/material";
+import {Autocomplete, Stack, TextField} from "@mui/material";
 import React from "react";
-import {useStore} from "../../provider/StoreProvider";
+import {Cluster, CredentialType, Instance} from "../../app/types";
+import {ClusterPassword} from "./ClusterPassword";
 
 const SX = {
     settings: { width: "250px", gap: 1 }
 }
 
-export function ClusterSettings() {
-    const {store: {activeCluster, activeNode}, setStore} = useStore()
+type Props = {
+    cluster: Cluster
+    instance?: Instance
+}
 
-    console.log(activeNode);
+export function ClusterSettings(props: Props) {
+    const { cluster, instance } = props
+
+    const passPostgres = cluster.postgresCredId ?? ""
+    const passPatroni = cluster.patroniCredId ?? ""
 
     return (
         <Stack sx={SX.settings}>
-            <Box>{activeCluster.name ?? "No Leader"}</Box>
-            <Box>{activeNode ?? "No Node"}</Box>
             <Autocomplete
-                options={[]}
+                value={instance?.api_domain ?? ""}
+                options={cluster.nodes}
                 renderInput={(params) => <TextField {...params} size={"small"} label={"Default Node"} />}
             />
+            <ClusterPassword label={"Postgres Password"} type={CredentialType.POSTGRES} pass={passPostgres} />
+            <ClusterPassword label={"Patroni Password"} type={CredentialType.PATRONI} pass={passPatroni} />
             <Autocomplete
+                value={cluster.certsId}
                 options={[]}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Postgres Password"} />}
-            />
-            <Autocomplete
-                options={[]}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Patroni Password"} />}
-            />
-            <Autocomplete
-                options={[]}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Certs"} />}
+                disabled={true}
+                renderInput={(params) => <TextField {...params} size={"small"} label={"Certs (not implemented)"} />}
             />
             <Autocomplete
                 multiple
                 options={[]}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Tags"} />}
+                disabled={true}
+                renderInput={(params) => <TextField {...params} size={"small"} label={"Tags (not implemented)"} />}
             />
         </Stack>
     )

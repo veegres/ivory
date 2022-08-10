@@ -11,7 +11,7 @@ import {Info} from "../view/Info";
 import {Block} from "../view/Block";
 import {useQuery} from "react-query";
 import {InfoOutlined, Settings} from "@mui/icons-material";
-import {ClusterTabs} from "../../app/types";
+import {ClusterTabs, Cluster as ClusterType, Instance} from "../../app/types";
 import {ClusterSettings} from "./ClusterSettings";
 
 const SX = {
@@ -29,10 +29,10 @@ const SX = {
 
 const TABS: ClusterTabs = {
     0: {
-        body: <ClusterOverview/>,
+        body: (cluster: ClusterType, instance: Instance) => <ClusterOverview cluster={cluster} instance={instance}/>,
     },
     1: {
-        body: <ClusterConfig/>,
+        body: (cluster: ClusterType, instance: Instance) => <ClusterConfig cluster={cluster} instance={instance}/>,
         info: <>
             You can change your postgres configurations here (it will be applied on all cluster nodes).
             It doesn't rewrite all your config, it call patches the existing configuration. If you want to
@@ -42,7 +42,7 @@ const TABS: ClusterTabs = {
         </>
     },
     2: {
-        body: <ClusterBloat/>,
+        body: (cluster: ClusterType, instance: Instance) => <ClusterBloat cluster={cluster} instance={instance}/>,
         info: <>
             You can reduce size of bloated tables and indexes without heavy locks here. It base on the
             tool <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link>.
@@ -54,18 +54,22 @@ const TABS: ClusterTabs = {
     },
 }
 
+export type TapProps = {
+    cluster: ClusterType
+    instance: Instance
+}
+
 export function Cluster() {
-    const {store: {activeCluster}, setStore} = useStore()
+    const {store: {activeCluster: {cluster, instance, tab: tabId}}, setStore} = useStore()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const disabled = !activeCluster.name
     const clusters = useQuery('cluster/list')
-    const tab = TABS[activeCluster.tab]
+    const tab = TABS[tabId]
 
     return (
         <Block withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
-                <Tabs value={activeCluster.tab} onChange={(_, value) => handleChange(value)}>
+                <Tabs value={tabId} onChange={(_, value) => handleChange(value)}>
                     <Tab label={"Overview"}/>
                     <Tab label={"Config"}/>
                     <Tab label={"Bloat"}/>
@@ -81,26 +85,27 @@ export function Cluster() {
     )
 
     function renderMainBlock() {
-        if (disabled) return <Info text={"Please, select a cluster to see the information!"}/>
+        if (!cluster) return <Info text={"Please, select a cluster to see the information!"}/>
+        if (!instance) return <Info text={"Please, select a cluster with active Node"}/>
         if (!tab) return <Info text={"Coming soon — we're working on it!"}/>
-        return tab.body
+        return tab.body(cluster, instance)
     }
 
     function renderActionBlock() {
         return (
             <Box sx={SX.actionBox}>
                 <Box>
-                    <Fade in={!!activeCluster.leader}>
+                    <Fade in={!!instance}>
                         <Tooltip title={"All requests go to this node!"} placement={"top"}>
-                            <Chip sx={SX.chip} label={activeCluster.leader?.api_domain} variant={"outlined"}/>
+                            <Chip sx={SX.chip} label={instance?.api_domain} variant={"outlined"}/>
                         </Tooltip>
                     </Fade>
                 </Box>
                 <ToggleButtonGroup size={"small"}>
                     <ToggleButton
                         value={"settings"}
-                        disabled={disabled}
-                        selected={!disabled && settingsOpen}
+                        disabled={!cluster}
+                        selected={!cluster && settingsOpen}
                         onClick={() => setSettingsOpen(!settingsOpen)}
                     >
                         <Tooltip title={"Cluster Settings"} placement={"top"}><Settings/></Tooltip>
@@ -129,16 +134,16 @@ export function Cluster() {
 
     function renderSettingsBlock() {
         return (
-            <Collapse sx={SX.collapse} in={!disabled && settingsOpen} orientation={"horizontal"}>
+            <Collapse sx={SX.collapse} in={cluster && settingsOpen} orientation={"horizontal"}>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.divider} orientation={"vertical"} flexItem/>
-                    {!disabled && settingsOpen && <ClusterSettings />}
+                    {cluster && settingsOpen && <ClusterSettings cluster={cluster} instance={instance} />}
                 </Box>
             </Collapse>
         )
     }
 
     function handleChange(value: number) {
-        setStore({activeCluster: {...activeCluster, tab: value}})
+        setStore({activeCluster: {cluster, instance, tab: value}})
     }
 }

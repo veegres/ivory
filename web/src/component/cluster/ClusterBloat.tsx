@@ -2,10 +2,9 @@ import {Box, Button, Collapse, Grid, IconButton, TextField, Tooltip} from "@mui/
 import {useMutation, useQuery} from "react-query";
 import {bloatApi} from "../../app/api";
 import {useState} from "react";
-import {CompactTable, Style, Target} from "../../app/types";
+import {Cluster, CompactTable, Instance, Style, Target} from "../../app/types";
 import {ErrorAlert} from "../view/ErrorAlert";
 import {ClusterBloatJob} from "./ClusterBloatJob";
-import {useStore} from "../../provider/StoreProvider";
 import {Replay} from "@mui/icons-material";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
@@ -18,22 +17,27 @@ const style: Style = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}
 }
 
-export function ClusterBloat() {
-    const {store: {activeCluster: {name: cluster, leader}}} = useStore()
+type Props = {
+    cluster: Cluster
+    instance: Instance
+}
+
+export function ClusterBloat(props: Props) {
+    const { cluster, instance } = props
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
     const initJobs = useQuery(
-        ['node/bloat/list', cluster],
-        () => bloatApi.list(cluster),
+        ['node/bloat/list', cluster.name],
+        () => bloatApi.list(cluster.name),
         {onSuccess: (initJobs) => setJobs(initJobs)}
     )
     const start = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
 
     return (
         <Box>
-            {leader ? renderForm() : <ErrorAlert error={"No leader found"}/>}
+            {instance.leader ? renderForm() : <ErrorAlert error={"No leader found"}/>}
             <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} />
             <TransitionGroup style={style.transition}>
                 {jobs.map((value) => (
@@ -77,7 +81,7 @@ export function ClusterBloat() {
                     </Grid>
                 </Grid>
                 <Grid item container width={"auto"} direction={"column"} alignItems={"center"} justifyContent={"space-between"}>
-                    <Button variant={"contained"} disabled={start.isLoading || !leader?.credId} onClick={handleRun}>
+                    <Button variant={"contained"} disabled={start.isLoading || !cluster.postgresCredId} onClick={handleRun}>
                         RUN
                     </Button>
                     <Tooltip title={"Reload Jobs"} placement={"left"}>
@@ -93,11 +97,14 @@ export function ClusterBloat() {
     }
 
     function handleRun() {
-        if (leader && leader.credId) {
-            const { host, port, credId } = leader
-            start.mutate({connection: { host, port, credId }, target, ratio, cluster})
-        } else {
-            throw new Error(`cannot handle run the leader is ${leader}`)
+        if (cluster?.postgresCredId) {
+            const { host, port } = instance
+            start.mutate({
+                connection: { host, port, credId: cluster.postgresCredId },
+                target,
+                ratio,
+                cluster: cluster.name
+            })
         }
     }
 }

@@ -9,6 +9,7 @@ import {TableCellLoader} from "../view/TableCellLoader";
 import {AxiosError} from "axios";
 import {Add} from "@mui/icons-material";
 import {Block} from "../view/Block";
+import {ClustersRowNew} from "./ClustersRowNew";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
@@ -46,20 +47,19 @@ export function Clusters() {
                     </TableRow>
                 </TableHead>
                 <TableBody isLoading={isLoading} cellCount={3}>
-                    {Object.entries(clusterMap ?? {}).map(([name, nodes]) => {
-                        const isReadOnly = name !== editNode
-                        const toggleEdit = () => setEditNode(isReadOnly ? name : '')
-                        const edit = {isReadOnly, toggleEdit, closeNewElement}
-
-                        return <ClustersRow key={name} nodes={nodes} name={name} edit={edit}/>
-                    })}
-                    {showNewElement ? <ClustersRow nodes={[]} name={''} edit={{closeNewElement}}/> : null}
+                    {renderRows()}
+                    <ClustersRowNew show={showNewElement} close={() => setShowNewElement(false)} />
                 </TableBody>
             </Table>
         )
     }
 
-    function closeNewElement() {
-        setShowNewElement(false)
+    function renderRows() {
+        return Object.entries(clusterMap ?? {}).map(([name, cluster]) => {
+            const editable = name === editNode
+            const toggle = () => setEditNode(editable ? '' : name)
+
+            return <ClustersRow key={name} cluster={cluster} name={name} editable={editable} toggle={toggle}/>
+        })
     }
 }

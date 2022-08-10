@@ -65,17 +65,14 @@ func (r CredentialRepository) DeleteCredentials() error {
 	return r.common.deleteAll(r.credentialBucket)
 }
 
-func (r CredentialRepository) GetCredentialMap() map[string]Credential {
-	bytesList, _ := r.common.getList(r.credentialBucket)
-	credentialMap := make(map[string]Credential)
-	for _, el := range bytesList {
-		var credential Credential
-		buff := bytes.NewBuffer(el.value)
-		_ = gob.NewDecoder(buff).Decode(&credential)
-		credential.Password = "configured"
-		credentialMap[el.key] = credential
-	}
-	return credentialMap
+func (r CredentialRepository) GetCredentials() map[string]Credential {
+	return r.getMap(nil)
+}
+
+func (r CredentialRepository) GetCredentialsByType(credentialType CredentialType) map[string]Credential {
+	return r.getMap(func(credential Credential) bool {
+		return credential.Type == credentialType
+	})
 }
 
 func (r CredentialRepository) GetCredential(uuid uuid.UUID) (Credential, error) {
@@ -84,4 +81,19 @@ func (r CredentialRepository) GetCredential(uuid uuid.UUID) (Credential, error) 
 	buff := bytes.NewBuffer(value)
 	_ = gob.NewDecoder(buff).Decode(&credential)
 	return credential, err
+}
+
+func (r CredentialRepository) getMap(filter func(credential Credential) bool) map[string]Credential {
+	bytesList, _ := r.common.getList(r.credentialBucket)
+	credentialMap := make(map[string]Credential)
+	for _, el := range bytesList {
+		var credential Credential
+		buff := bytes.NewBuffer(el.value)
+		_ = gob.NewDecoder(buff).Decode(&credential)
+		credential.Password = "configured"
+		if filter == nil || filter(credential) {
+			credentialMap[el.key] = credential
+		}
+	}
+	return credentialMap
 }

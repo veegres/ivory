@@ -10,31 +10,29 @@ import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
 import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
-import {useStore} from "../../provider/StoreProvider";
 import {Instance} from "../../app/types";
+import {TapProps} from "./Cluster";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
     light: syntaxHighlighting(defaultHighlightStyle)
 }
 
-export function ClusterConfig() {
+export function ClusterConfig(props: TapProps) {
     const theme = useTheme();
-    const {store: {activeCluster: {leader}}} = useStore()
+    const { instance } = props
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState('')
 
     const queryClient = useQueryClient();
     const {data: config, isLoading, isError, error} = useQuery(
-        ['node/config', leader],
-        () => nodeApi.config(leader!!.api_domain),
-        { enabled: leader !== undefined }
+        ['node/config', instance],
+        () => nodeApi.config(instance.api_domain),
     )
     const updateConfig = useMutation(nodeApi.updateConfig, {
         onSuccess: async () => await queryClient.refetchQueries('node/config')
     })
 
-    if (!leader) return <ErrorAlert error={"Instance Not Found"}/>
     if (isError) return <ErrorAlert error={error as AxiosError}/>
     if (isLoading) return <Skeleton variant="rectangular" height={300}/>
 
@@ -52,20 +50,20 @@ export function ClusterConfig() {
                />
             </Grid>
             <Grid item xs={"auto"} display={"flex"} flexDirection={"column"}>
-                {renderUpdateButtons(leader, configState, updateConfig.isLoading, isEditable)}
+                {renderUpdateButtons(instance, configState, updateConfig.isLoading, isEditable)}
                 {renderButton(<CopyAll/>, "Copy", handleCopyAll)}
             </Grid>
         </Grid>
     )
 
-    function renderUpdateButtons(leader: Instance, configState: string, isLoading: boolean, isEditable: boolean) {
+    function renderUpdateButtons(instance: Instance, configState: string, isLoading: boolean, isEditable: boolean) {
         if (isLoading) return renderButton(<CircularProgress size={25}/>, "Saving", undefined, true)
         if (!isEditable) return renderButton(<Edit/>, "Edit", () => setIsEditable(true))
 
         return (
             <>
                 {renderButton(<Cancel/>, "Cancel", () => setIsEditable(false))}
-                {renderButton(<SaveAlt/>, "Save", () => handleUpdate(leader, configState))}
+                {renderButton(<SaveAlt/>, "Save", () => handleUpdate(instance, configState))}
             </>
         )
     }

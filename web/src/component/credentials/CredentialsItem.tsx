@@ -1,7 +1,7 @@
 import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../view/IconButtons";
 import React, {useEffect, useState} from "react";
 import {Credential, CredentialMap} from "../../app/types";
-import {useMutation, useQuery, useQueryClient} from "react-query";
+import {useMutation, useQueryClient} from "react-query";
 import {credentialApi} from "../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
 
@@ -19,8 +19,9 @@ export function CredentialsItem(props: Props) {
     useEffect(() => { setCredential(credential) }, [credential])
 
     const queryClient = useQueryClient();
-    const { refetch } = useQuery("credentials", credentialApi.get)
-    const deleteCredentials = useMutation(credentialApi.delete, { onSuccess: refetch })
+    const deleteCredentials = useMutation(credentialApi.delete, {
+        onSuccess: async () => await queryClient.refetchQueries("credentials")
+    })
     const updateCredentials = useMutation(credentialApi.update, {
         onSuccess: (data) => {
             const map = queryClient.getQueryData<CredentialMap>('credentials') ?? {}

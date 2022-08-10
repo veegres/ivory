@@ -19,8 +19,11 @@ export interface InstanceResponse {
 
 export interface Instance extends InstanceResponse{
     api_domain: string
-    isLeader: boolean
-    credId?: string
+    leader: boolean
+}
+
+export interface InstanceMap {
+    [instance: string]: Instance
 }
 
 export interface InstanceOverview {
@@ -52,11 +55,11 @@ export interface Cluster {
 }
 
 export interface ClusterMap {
-    [name: string]: string[]
+    [name: string]: Cluster
 }
 
 export interface ClusterTabs {
-    [key: number]: { body: ReactNode, info?: ReactNode }
+    [key: number]: { body: (cluster: Cluster, instance: Instance) => ReactNode, info?: ReactNode }
 }
 
 // SECRET

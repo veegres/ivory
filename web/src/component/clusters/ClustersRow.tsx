@@ -1,145 +1,81 @@
-import {Box, Chip, FormControl, OutlinedInput, TableCell, TableRow} from "@mui/material";
+import {Box, Chip, TableRow} from "@mui/material";
 import {useState} from "react";
-import {useMutation, useQueryClient} from "react-query";
-import {clusterApi} from "../../app/api";
-import {ClusterMap, Style} from "../../app/types";
-import {
-    CancelIconButton,
-    DeleteIconButton,
-    EditIconButton,
-    RefreshIconButton,
-    SaveIconButton,
-} from "../view/IconButtons";
+import {Cluster} from "../../app/types";
+import {RefreshIconButton,} from "../view/IconButtons";
 import {DynamicInputs} from "../view/DynamicInputs";
-import {useStore} from "../../provider/StoreProvider";
-import {activeNode, createColorsMap} from "../../app/utils";
+import {initialActiveCluster, useStore} from "../../provider/StoreProvider";
+import {createColorsMap} from "../../app/utils";
 import {useSmartClusterQuery} from "../../app/hooks";
+import {ClustersRowRead} from "./ClustersRowRead";
+import {ClustersRowUpdate} from "./ClustersRowUpdate";
+import {ClustersCell} from "./ClustersCell";
 
 const SX = {
-    nodesCellInput: {height: '32px'},
     chipSize: {width: '100%'},
-    cell: {verticalAlign: "top"},
-}
-
-const style: Style = {
-    thirdCell: {whiteSpace: 'nowrap'}
 }
 
 type Props = {
     name: string,
-    nodes: string[],
-    edit?: { isReadOnly?: boolean, toggleEdit?: () => void, closeNewElement?: () => void }
+    cluster: Cluster,
+    editable: boolean,
+    toggle: () => void,
 }
 
-export function ClustersRow({name, nodes, edit = {}}: Props) {
-    const {isReadOnly = false, toggleEdit = () => {}, closeNewElement = () => {}} = edit
-    const isNewElement = !name
+export function ClustersRow({name, cluster, editable, toggle}: Props) {
     const {store, setStore, isClusterActive} = useStore()
 
-    const [stateName, setStateName] = useState(name);
-    const [stateNodes, setStateNodes] = useState(nodes);
-    const isActive = isClusterActive(stateName)
+    const [stateNodes, setStateNodes] = useState(cluster.nodes);
+    const isActive = isClusterActive(name)
 
-    const {instance, instanceResult: {data, isFetching}, update, refetch} = useSmartClusterQuery(stateName, stateNodes)
-
-    const queryClient = useQueryClient();
-    const updateCluster = useMutation(clusterApi.update, {
-        onSuccess: (data) => {
-            const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
-            map[data.name] = data.nodes
-            queryClient.setQueryData<ClusterMap>('cluster/list', map)
-        }
-    })
-    const deleteCluster = useMutation(clusterApi.delete, {
-        onSuccess: (_, newName) => {
-            const map = queryClient.getQueryData<ClusterMap>('cluster/list') ?? {} as ClusterMap
-            delete map[newName]
-            queryClient.setQueryData<ClusterMap>('cluster/list', map)
-        }
-    })
+    const {instance, instanceResult, update, refetch} = useSmartClusterQuery(name, stateNodes)
+    const {data, isFetching} = instanceResult
+    const instanceMap = data ?? {}
 
     return (
         <TableRow>
-            <TableCell sx={SX.cell}>
-                {renderClusterNameCell()}
-            </TableCell>
-            <TableCell sx={SX.cell}>
+            <ClustersCell>
+                <Box display={"flex"} flexDirection={"row"}>
+                    <Chip
+                        sx={SX.chipSize}
+                        color={isActive ? "primary" : "default"}
+                        label={name}
+                        onClick={handleChipClick}
+                    />
+                    <RefreshIconButton loading={isFetching} onClick={refetch}/>
+                </Box>
+            </ClustersCell>
+            <ClustersCell>
                 <DynamicInputs
                     inputs={stateNodes}
-                    colors={createColorsMap(data)}
-                    editable={!isReadOnly}
+                    colors={createColorsMap(instanceMap)}
+                    editable={editable}
                     placeholder={`Node`}
                     onChange={n => setStateNodes(n)}
                />
-            </TableCell>
-            <TableCell sx={SX.cell} style={style.thirdCell}>
-                {isReadOnly ? renderReadButtons(!stateName) : renderActionButtons(!stateName)}
-            </TableCell>
+            </ClustersCell>
+            <ClustersCell>
+                {!editable ? (
+                    <ClustersRowRead name={name} edit={toggle}/>
+                ) : (
+                    <ClustersRowUpdate
+                        name={name}
+                        nodes={stateNodes}
+                        toggle={toggle}
+                        onUpdate={() => update(stateNodes)}
+                    />
+                )}
+            </ClustersCell>
         </TableRow>
     )
 
-    function renderClusterNameCell() {
-        return !isNewElement ? (
-            <Box display={"flex"} flexDirection={"row"}>
-                <Chip
-                    sx={SX.chipSize}
-                    color={isActive ? "primary" : "default"}
-                    label={stateName}
-                    onClick={handleChipClick}
-               />
-                <RefreshIconButton loading={isFetching} onClick={refetch}/>
-            </Box>
-        ) : (
-            <FormControl fullWidth>
-                <OutlinedInput
-                    sx={SX.nodesCellInput}
-                    placeholder="Name"
-                    value={stateName}
-                    onChange={(event) => setStateName(event.target.value)}
-               />
-            </FormControl>
-        )
-    }
-
-    function renderReadButtons(isDisabled: boolean) {
-        return (
-            <>
-                <EditIconButton loading={updateCluster.isLoading} disabled={isDisabled} onClick={toggleEdit}/>
-                <DeleteIconButton loading={deleteCluster.isLoading} disabled={isDisabled} onClick={handleDelete}/>
-            </>
-        )
-    }
-
-    function renderActionButtons(isDisabled: boolean) {
-        return (
-            <>
-                <CancelIconButton loading={updateCluster.isLoading} onClick={handleCancel}/>
-                <SaveIconButton loading={updateCluster.isLoading} disabled={isDisabled} onClick={handleUpdate}/>
-            </>
-        )
-    }
-
-    function handleUpdate() {
-        if (isNewElement) closeNewElement(); else toggleEdit()
-        updateCluster.mutate({name: stateName, nodes: stateNodes})
-        update(stateNodes)
-    }
-
-    function handleCancel() {
-        if (isNewElement) closeNewElement(); else toggleEdit()
-        setStateNodes([...nodes])
-    }
-
-    function handleDelete() {
-        deleteCluster.mutate(stateName)
-    }
-
     function handleChipClick() {
-        const cluster = !isActive ? {
-            name: stateName, instance: instance, leader: activeNode(data)
-        } : {
-            name: "", instance: "", leader: undefined
-        }
-        setStore({ activeCluster: {...cluster, tab: store.activeCluster.tab}, activeNode: '' })
+        // either find leader or set instance that we were sent request to
+        const activeInstance = Object.values(instanceMap).find(node => node.leader) ?? instanceMap[instance]
+        const activeCluster = isActive ? initialActiveCluster : {cluster: cluster, instance: activeInstance}
+
+        setStore({
+            activeCluster: {...activeCluster, tab: store.activeCluster.tab},
+            activeNode: ''
+        })
     }
 }

@@ -71,7 +71,7 @@ func (s *secret) Update(previousKey string, newKey string) error {
 	}
 
 	s.key = newKeySha1
-	credentialMap := persistence.Database.Credential.GetCredentialMap()
+	credentialMap := persistence.Database.Credential.GetCredentials()
 	for id, credential := range credentialMap {
 		id, _ := uuid.Parse(id)
 		oldEncodedPass := credential.Password
