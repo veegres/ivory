@@ -23,7 +23,8 @@ const SX = {
     mainBox: {display: "flex", flexDirection: "row"},
     leftMainBlock: {flexGrow: 1, overflowX: "auto"},
     rightMainBlock: {},
-    divider: {margin: "0 10px"},
+    dividerVertical: {margin: "0 10px"},
+    dividerHorizontal: {margin: "10px 0"},
     collapse: {height: "100%"}
 }
 
@@ -105,7 +106,7 @@ export function Cluster() {
                     <ToggleButton
                         value={"settings"}
                         disabled={!cluster}
-                        selected={!cluster && settingsOpen}
+                        selected={cluster && settingsOpen}
                         onClick={() => setSettingsOpen(!settingsOpen)}
                     >
                         <Tooltip title={"Cluster Settings"} placement={"top"}><Settings/></Tooltip>
@@ -128,6 +129,7 @@ export function Cluster() {
         return (
             <Collapse in={infoOpen}>
                 <Alert severity="info" onClose={() => setInfoOpen(false)}>{tab.info}</Alert>
+                <Divider sx={SX.dividerHorizontal} orientation={"horizontal"} flexItem/>
             </Collapse>
         )
     }
@@ -136,7 +138,7 @@ export function Cluster() {
         return (
             <Collapse sx={SX.collapse} in={cluster && settingsOpen} orientation={"horizontal"}>
                 <Box sx={SX.settingsBox}>
-                    <Divider sx={SX.divider} orientation={"vertical"} flexItem/>
+                    <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
                     {cluster && settingsOpen && <ClusterSettings cluster={cluster} instance={instance} />}
                 </Box>
             </Collapse>
