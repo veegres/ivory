@@ -7,7 +7,7 @@ import {AxiosError} from "axios";
 import {InstanceColor} from "../../app/utils";
 import {Style} from "../../app/types";
 import {useStore} from "../../provider/StoreProvider";
-import {Info} from "../view/Info";
+import {InfoAlert} from "../view/InfoAlert";
 import {Block} from "../view/Block";
 
 const SX = {
@@ -37,7 +37,7 @@ export function Node() {
     )
 
     function renderContent() {
-        if (!activeNode) return <Info text={"Please, select a node to see the information!"}/>
+        if (!activeNode) return <InfoAlert text={"Please, select a node to see the information!"}/>
         if (isError) return <ErrorAlert error={error as AxiosError}/>
 
         return (

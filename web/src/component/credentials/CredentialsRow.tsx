@@ -1,6 +1,6 @@
 import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material";
 import {CredentialsInput} from "./CredentialsInput";
-import React, {ReactElement, useEffect, useRef, useState} from "react";
+import React, {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
 import {CredentialOptions} from "../../app/utils";
 import {Credential, CredentialType} from "../../app/types";
 
@@ -68,7 +68,7 @@ export function CredentialsRow(props: Props) {
             <Tooltip title={option.name} placement={"top"}>
                 <Box component={"span"}>
                     <ToggleButton value={type} size={"small"} sx={SX.toggle} disabled={disabled} onClick={handleToggleType}>
-                        {option.icon}
+                        {cloneElement(option.icon, { sx: { color: option.color } })}
                     </ToggleButton>
                 </Box>
             </Tooltip>

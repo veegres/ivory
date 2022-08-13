@@ -23,7 +23,7 @@ export function ClusterSettings(props: Props) {
             <Autocomplete
                 value={instance?.api_domain ?? ""}
                 options={cluster.nodes}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Default Node"} />}
+                renderInput={(params) => <TextField {...params} size={"small"} label={"Default Instance"} />}
             />
             <ClusterPassword label={"Postgres Password"} type={CredentialType.POSTGRES} pass={passPostgres} />
             <ClusterPassword label={"Patroni Password"} type={CredentialType.PATRONI} pass={passPatroni} />
