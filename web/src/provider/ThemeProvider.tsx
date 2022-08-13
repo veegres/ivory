@@ -2,12 +2,12 @@ import React, {createContext, ReactNode, useContext, useState} from "react";
 import {createTheme, CssBaseline, PaletteMode, Theme, ThemeProvider as MuiThemeProvider} from "@mui/material";
 
 interface ThemeContextType {
-    mode?: "dark" | "light",
+    mode: "dark" | "light",
     toggle: () => void
     info?: Theme,
 }
 const ThemeContext = createContext<ThemeContextType>({
-    mode: undefined,
+    mode: "light",
     toggle: () => {
     }
 });
@@ -29,14 +29,14 @@ export function ThemeProvider(props: { children: ReactNode }) {
     );
 
     function getMode() {
-        const storageMode = localStorage.getItem('theme')
-        return storageMode == null ? 'light' : storageMode as PaletteMode
+        const storageMode = localStorage.getItem("theme")
+        return storageMode == null ? "light" : storageMode as PaletteMode
     }
 
     function toggle() {
         setMode((prevMode) => {
-            const currentMode = prevMode === 'light' ? 'dark' : 'light'
-            localStorage.setItem('theme', currentMode)
+            const currentMode = prevMode === "light" ? "dark" : "light"
+            localStorage.setItem("theme", currentMode)
             return currentMode
         });
     }

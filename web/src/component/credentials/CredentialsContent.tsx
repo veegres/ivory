@@ -3,7 +3,7 @@ import {credentialApi} from "../../app/api";
 import {ErrorAlert} from "../view/ErrorAlert";
 import {AxiosError} from "axios";
 import {Credential} from "../../app/types";
-import {Info} from "../view/Info";
+import {InfoAlert} from "../view/InfoAlert";
 import {Box, Collapse} from "@mui/material";
 import React from "react";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
@@ -34,7 +34,7 @@ export function CredentialsContent() {
 
     function renderList() {
         const list = Object.entries<Credential>(credentials ?? {})
-        if (list.length === 0) return <Info text={"There is no credentials yet"}/>
+        if (list.length === 0) return <InfoAlert text={"There is no credentials yet"}/>
 
         return (
             <Box sx={SX.list} className={scroll.tiny}>

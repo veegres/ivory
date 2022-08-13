@@ -34,7 +34,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
     return (
         <TableRow>
             <ClustersCell>
-                <Box display={"flex"} flexDirection={"row"}>
+                <Box display={"flex"} flexDirection={"row"} alignItems={"center"}>
                     <Chip
                         sx={SX.chipSize}
                         color={isActive ? "primary" : "default"}

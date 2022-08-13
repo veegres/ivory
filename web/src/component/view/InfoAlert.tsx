@@ -7,7 +7,7 @@ const SX = {
 
 type Props = { text: string }
 
-export function Info(props: Props) {
+export function InfoAlert(props: Props) {
     return (
         <Alert sx={SX.infoAlert} severity={"info"} variant={"outlined"} icon={false}>
             {props.text}
