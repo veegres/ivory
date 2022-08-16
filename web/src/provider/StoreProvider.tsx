@@ -1,28 +1,51 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {Cluster, Instance} from "../app/types";
-
-// ACTIVE CLUSTER
-interface ActiveClusterType { cluster?: Cluster, instance?: Instance, tab: number }
-export const initialActiveCluster: ActiveClusterType = { cluster: undefined, instance: undefined, tab: 0 }
+import {ActiveCluster} from "../app/types";
 
 // STORE
-interface StoreType { activeCluster: ActiveClusterType, activeNode: string, credentialsOpen: boolean }
-interface StoreTypeParam { activeCluster?: ActiveClusterType, activeNode?: string, credentialsOpen?: boolean }
-export const initialStore: StoreType = { activeCluster: initialActiveCluster, activeNode: "", credentialsOpen: false }
-
-interface StoreContextType {
-    store: StoreType
-    setStore: (store: StoreTypeParam) => void
-    isClusterActive: (name: string) => boolean
-    isNodeActive: (name: string) => boolean
-    isOverviewOpen: () => boolean
+interface StoreType {
+    activeCluster?: ActiveCluster, activeClusterTab: number,
+    activeInstance?: string, activeInstanceTab: number,
+    credentialsOpen: boolean
+}
+const initialStore: StoreType = {
+    activeCluster: undefined, activeClusterTab: 0,
+    activeInstance: undefined, activeInstanceTab: 0,
+    credentialsOpen: false
 }
 
-const StoreContext = createContext<StoreContextType>({
-    store: initialStore, setStore: () => {},
-    isClusterActive: () => false, isNodeActive: () => false,
-    isOverviewOpen: () => false,
-})
+// CONTEXT
+interface StoreContextType {
+    store: StoreType
+
+    setCluster: (cluster?: ActiveCluster) => void,
+    setClusterTab: (tab: number) => void,
+    isClusterActive: (name: string) => boolean
+    isClusterOverviewOpen: () => boolean
+
+    setInstance: (instance?: string) => void,
+    setInstanceTab: (tab: number) => void,
+    isInstanceActive: (name: string) => boolean,
+
+    toggleCredentialsWindow: () => void,
+}
+const initialStoreContext: StoreContextType = {
+    store: initialStore,
+
+    setCluster: () => void 0,
+    setClusterTab: () => void 0,
+    isClusterActive: () => false,
+    isClusterOverviewOpen: () => false,
+
+    setInstance: () => void 0,
+    setInstanceTab: () => void 0,
+    isInstanceActive: () => false,
+
+    toggleCredentialsWindow: () => void 0,
+}
+
+
+// CREATE STORE CONTEXT
+const StoreContext = createContext(initialStoreContext)
 
 export function useStore() {
     return useContext(StoreContext)
@@ -30,13 +53,20 @@ export function useStore() {
 
 export function StoreProvider(props: { children: ReactNode }) {
     const [state, setState] = useState(initialStore)
-    const { activeCluster, activeNode } = state
-    const value = {
+    const { activeCluster, activeClusterTab, activeInstance } = state
+    const value: StoreContextType = {
         store: state,
-        setStore: (store: StoreTypeParam) => setState({ ...state, ...store }),
-        isClusterActive: (name: string) => name === activeCluster.cluster?.name,
-        isNodeActive: (name: string) => name === activeNode,
-        isOverviewOpen: () => !!activeCluster.instance && activeCluster.tab === 0
+
+        setCluster: (cluster?: ActiveCluster) => setState({...state, activeCluster: cluster, activeInstance: undefined}),
+        setClusterTab: (tab: number) => setState({...state, activeClusterTab: tab}),
+        isClusterActive: (name: string) => name === activeCluster?.cluster?.name,
+        isClusterOverviewOpen: () => !!activeCluster?.instance && activeClusterTab === 0,
+
+        setInstance: (instance?: string) => setState({...state, activeInstance: instance}),
+        setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
+        isInstanceActive: (name: string) => name === activeInstance,
+
+        toggleCredentialsWindow: () => setState({...state, credentialsOpen: !state.credentialsOpen})
     }
     return (
         <StoreContext.Provider value={value}>

@@ -9,10 +9,11 @@ type Props = {
     nodes: string[]
     toggle: () => void
     onUpdate?: () => void
+    onClose?: () => void
 }
 
 export function ClustersRowUpdate(props: Props) {
-    const { toggle, onUpdate, name, nodes } = props
+    const { toggle, onUpdate, onClose, name, nodes } = props
     const queryClient = useQueryClient();
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
@@ -26,10 +27,15 @@ export function ClustersRowUpdate(props: Props) {
 
     return (
         <Box display={"flex"}>
-            <CancelIconButton loading={false} disabled={updateCluster.isLoading} onClick={toggle}/>
+            <CancelIconButton loading={false} disabled={updateCluster.isLoading} onClick={handleClose}/>
             <SaveIconButton loading={updateCluster.isLoading} disabled={!name} onClick={handleUpdate}/>
         </Box>
     )
+
+    function handleClose() {
+        toggle()
+        if (onClose) onClose()
+    }
 
     function handleUpdate() {
         updateCluster.mutate({ name , nodes })

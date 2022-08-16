@@ -32,11 +32,11 @@ export function Clusters() {
         if (isError) return <ErrorAlert error={error as AxiosError}/>
 
         return (
-            <Table size="small" sx={SX.table}>
+            <Table size={"small"} sx={SX.table}>
                 <TableHead>
                     <TableRow>
                         <TableCell sx={SX.nameCell}>Cluster Name</TableCell>
-                        <TableCell>Nodes</TableCell>
+                        <TableCell>Instances</TableCell>
                         <TableCellLoader sx={SX.buttonCell} isFetching={isFetching && !isLoading}>
                             <Tooltip title={'Add new cluster'} disableInteractive>
                                 <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}>
