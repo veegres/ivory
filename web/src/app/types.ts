@@ -1,29 +1,31 @@
 import {CSSProperties, ReactNode} from "react";
 
 export interface Response<TData, TError = {}> {
-    response: TData
-    error: TError
+    response: TData,
+    error: TError,
 }
 
 // NODE
 export interface InstanceResponse {
     name: string,
-    timeline?: number,
-    lag: number,
     state: string,
-    host: string,
     role: string,
+    host: string,
     port: number,
     api_url: string
+    lag?: number,
+    timeline?: number,
 }
 
 export interface Instance extends InstanceResponse{
-    api_domain: string
-    leader: boolean
+    api_domain: string,
+    leader: boolean,
+    inCluster: boolean,
+    inInstances: boolean,
 }
 
 export interface InstanceMap {
-    [instance: string]: Instance
+    [instance: string]: Instance,
 }
 
 export interface InstanceOverview {
@@ -51,69 +53,76 @@ export interface Cluster {
     patroniCredId?: string,
     postgresCredId?: string,
     nodes: string[],
-    tags?: string[]
+    tags?: string[],
 }
 
 export interface ClusterMap {
-    [name: string]: Cluster
+    [name: string]: Cluster,
 }
 
 export interface ClusterTabs {
-    [key: number]: { body: (cluster: Cluster, instance: Instance) => ReactNode, info?: ReactNode }
+    [key: number]: { body: (cluster: ActiveCluster) => ReactNode, info?: ReactNode }
+}
+
+export interface ActiveCluster {
+    cluster: Cluster,
+    instance?: Instance,
+    instances: InstanceMap,
+    warning: boolean,
 }
 
 // SECRET
 export interface SecretStatus {
-    key: boolean
-    ref: boolean
+    key: boolean,
+    ref: boolean,
 }
 
 export interface SecretSetRequest {
-    key: string
-    ref: string
+    key: string,
+    ref: string,
 }
 
 export interface SecretUpdateRequest {
-    previousKey: string
-    newKey: string
+    previousKey: string,
+    newKey: string,
 }
 
 // CREDENTIAL
 export interface Credential {
-    username: string
-    password: string
-    type: CredentialType
+    username: string,
+    password: string,
+    type: CredentialType,
 }
 
 export enum CredentialType {
     POSTGRES,
-    PATRONI
+    PATRONI,
 }
 
 export interface CredentialMap {
-    [uuid: string]: Credential
+    [uuid: string]: Credential,
 }
 
 // BLOAT
 export interface Connection {
-    host: string
-    port: number
-    credId: string
+    host: string,
+    port: number,
+    credId: string,
 }
 
 export interface Target {
-    dbName?: string
-    schema?: string
-    table?: string
-    excludeSchema?: string
-    excludeTable?: string
+    dbName?: string,
+    schema?: string,
+    table?: string,
+    excludeSchema?: string,
+    excludeTable?: string,
 }
 
 export interface CompactTableRequest {
-    cluster: string
-    connection: Connection
-    target?: Target
-    ratio?: number
+    cluster: string,
+    connection: Connection,
+    target?: Target,
+    ratio?: number,
 }
 
 export interface CompactTable {
@@ -131,19 +140,19 @@ export enum JobStatus {
     FINISHED,
     FAILED,
     STOPPED,
-    UNKNOWN
+    UNKNOWN,
 }
 
 export enum EventStream {
     START = "start",
-    END = "end"
+    END = "end",
 }
 
 // COMMON
 export interface Style {
-    [key: string]: CSSProperties
+    [key: string]: CSSProperties,
 }
 
 export interface ColorsMap {
-    [name: string]: 'success' | 'primary'
+    [name: string]: 'success' | 'primary',
 }

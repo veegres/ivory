@@ -1,20 +1,22 @@
-import {Box, Button, Radio, Table, TableCell, TableHead, TableRow} from "@mui/material";
-import {useMutation, useQuery} from "react-query";
+import {Box, Button, Radio, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
+import {useMutation, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
 import {TableBody} from "../view/TableBody";
 import React, {useState} from "react";
 import {TableCellLoader} from "../view/TableCellLoader";
-import {AxiosError} from "axios";
 import {InstanceColor} from "../../app/utils";
 import {InstanceMap} from "../../app/types";
 import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
-import {TapProps} from "./Cluster";
+import {TabProps} from "./Cluster";
+import {Warning} from "@mui/icons-material";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
-    clickable: {cursor: "pointer"},
-    actionCell: {width: "70px"},
+    row: {cursor: "pointer"},
+    cell: {padding: "5px 10px", height: "40px"},
+    actionCell: {width: "40px"},
+    warningCell: {width: "30px"},
     roleCell: {width: "110px"},
     buttonCell: {width: "160px"},
 }
@@ -22,20 +24,18 @@ const SX = {
 type AlertDialogState = {open: boolean, title: string, content: string, onAgree: () => void}
 const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {}}
 
-export function ClusterOverview(props: TapProps) {
-    const { cluster, instance } = props
+export function ClusterOverview({info}: TabProps) {
+    const { instance, instances } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const { setStore, store: { activeNode } } = useStore()
+    const { setInstance, store: { activeInstance } } = useStore()
 
-    const instanceMap = useQuery<InstanceMap, AxiosError>(
-        ["node/cluster", instance.api_domain],
-        {retry: 0, refetchOnMount: false}
-    )
+    const queryClient = useQueryClient();
+    const instanceMap = queryClient.getQueryState<InstanceMap>(["node/cluster", instance?.api_domain])
     const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => await instanceMap.refetch()
+        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", instance?.api_domain])
     })
     const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => await instanceMap.refetch()
+        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", instance?.api_domain])
     })
 
     return (
@@ -45,15 +45,16 @@ export function ClusterOverview(props: TapProps) {
                 <TableHead>
                     <TableRow>
                         <TableCell sx={SX.actionCell}/>
+                        <TableCell sx={SX.warningCell}/>
                         <TableCell sx={SX.roleCell}>Role</TableCell>
                         <TableCell align={"center"}>Patroni</TableCell>
                         <TableCell align={"center"}>Postgres</TableCell>
                         <TableCell align={"center"}>State</TableCell>
                         <TableCell align={"center"}>Lag</TableCell>
-                        <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMap.isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
+                        <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMap?.isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
-                <TableBody isLoading={instanceMap.isLoading} cellCount={7}>
+                <TableBody isLoading={!!instanceMap?.isFetching} cellCount={7}>
                     {renderContent()}
                 </TableBody>
             </Table>
@@ -61,52 +62,70 @@ export function ClusterOverview(props: TapProps) {
     )
 
     function renderContent() {
-        return cluster.nodes.map((name) => {
-            const isChecked = activeNode === name
-            const element = instanceMap.data ? instanceMap.data[name] : undefined
-            const { role, port, host, state, lag, api_domain, leader } = element ??
-            { host: "-", port: "-", role: "unknown", api_domain: "-", lag: "-", leader: false, state: "-" }
+        return Object.entries(instances).map(([key, element]) => {
+            const { role, port, host, state, lag, inInstances, inCluster } = element
+            const isChecked = activeInstance === key
 
             return (
-                <TableRow sx={SX.clickable} key={name} onClick={handleCheck(isChecked, name)}>
-                    <TableCell><Radio checked={isChecked} size={"small"}/></TableCell>
+                <TableRow sx={SX.row} key={key} onClick={handleCheck(isChecked, key)}>
+                    <TableCell sx={SX.cell}><Radio checked={isChecked} size={"small"}/></TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
                     <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
-                    <TableCell align={"center"}>{name}</TableCell>
-                    <TableCell align={"center"}>{host}:{port}</TableCell>
-                    <TableCell align={"center"}>{state}</TableCell>
-                    <TableCell align={"center"}>{lag}</TableCell>
-                    <TableCell align={"right"} onClick={(e) => e.stopPropagation()}>
-                        {element && renderButton(api_domain, host, leader)}
+                    <TableCell sx={SX.cell} align={"center"}>{key}</TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>{host}:{port ? port : "-"}</TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>{state}</TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>{lag}</TableCell>
+                    <TableCell sx={SX.cell} align={"right"} onClick={(e) => e.stopPropagation()}>
+                        <Box display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
+                            {renderButton(key, host, role)}
+                        </Box>
                     </TableCell>
                 </TableRow>
             )
         })
     }
 
-    function renderButton(instance: string, host: string, leader: boolean) {
+    function renderButton(instance: string, host: string, type: string) {
+        switch (type) {
+            case "leader": return (
+                <Button
+                    color={"primary"}
+                    disabled={reinitNode.isLoading || switchoverNode.isLoading}
+                    onClick={() => handleReinit(instance)}>
+                    Reinit
+                </Button>
+            )
+            case "replica": return (
+                <Button
+                    color={"secondary"}
+                    disabled={switchoverNode.isLoading}
+                    onClick={() => handleSwitchover(instance, host)}>
+                    Switchover
+                </Button>
+            )
+            default: return null
+        }
+
+    }
+
+    function renderWarning(inCluster: boolean, inInstances: boolean) {
+        if (inCluster && inInstances) return null
+
+        let title = "Instance is not in cluster list or cluster itself!"
+        if (inCluster && !inInstances) title = "Instance is not in your cluster list!"
+        if (!inCluster && inInstances) title = "Instance is not in cluster!"
+
         return (
-            <Box display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                {!leader ? (
-                    <Button
-                        color={"primary"}
-                        disabled={reinitNode.isLoading || switchoverNode.isLoading}
-                        onClick={() => handleReinit(instance)}>
-                        Reinit
-                    </Button>
-                ) : (
-                    <Button
-                        color={"secondary"}
-                        disabled={switchoverNode.isLoading}
-                        onClick={() => handleSwitchover(instance, host)}>
-                        Switchover
-                    </Button>
-                )}
+            <Box display={"flex"}>
+                <Tooltip title={title} placement={"top"}>
+                    <Warning color={"warning"} fontSize={"small"} />
+                </Tooltip>
             </Box>
         )
     }
 
     function handleCheck(checked: boolean, domain: string) {
-        return () => setStore({ activeNode: checked ? '' : domain })
+        return () => setInstance(checked ? '' : domain)
     }
 
     function handleSwitchover(instance: string, host: string) {

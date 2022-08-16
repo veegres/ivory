@@ -1,10 +1,9 @@
 import {Box, Chip, TableRow} from "@mui/material";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Cluster} from "../../app/types";
 import {RefreshIconButton,} from "../view/IconButtons";
 import {DynamicInputs} from "../view/DynamicInputs";
-import {initialActiveCluster, useStore} from "../../provider/StoreProvider";
-import {createColorsMap} from "../../app/utils";
+import {useStore} from "../../provider/StoreProvider";
 import {useSmartClusterQuery} from "../../app/hooks";
 import {ClustersRowRead} from "./ClustersRowRead";
 import {ClustersRowUpdate} from "./ClustersRowUpdate";
@@ -22,14 +21,13 @@ type Props = {
 }
 
 export function ClustersRow({name, cluster, editable, toggle}: Props) {
-    const {store, setStore, isClusterActive} = useStore()
-
-    const [stateNodes, setStateNodes] = useState(cluster.nodes);
+    const {setCluster, isClusterActive} = useStore()
     const isActive = isClusterActive(name)
 
-    const {instance, instanceResult, update, refetch} = useSmartClusterQuery(name, stateNodes)
-    const {data, isFetching} = instanceResult
-    const instanceMap = data ?? {}
+    const [stateNodes, setStateNodes] = useState(cluster.nodes);
+    const {instance, instances, colors, isFetching, warning, update, refetch} = useSmartClusterQuery(name, stateNodes)
+
+    useEffect(handleEffectStoreUpdate, [isActive, cluster, warning, instance, instances])
 
     return (
         <TableRow>
@@ -47,21 +45,22 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
             <ClustersCell>
                 <DynamicInputs
                     inputs={stateNodes}
-                    colors={createColorsMap(instanceMap)}
+                    colors={colors}
                     editable={editable}
-                    placeholder={`Node`}
+                    placeholder={`Instance`}
                     onChange={n => setStateNodes(n)}
                />
             </ClustersCell>
             <ClustersCell>
                 {!editable ? (
-                    <ClustersRowRead name={name} edit={toggle}/>
+                    <ClustersRowRead name={name} toggle={toggle}/>
                 ) : (
                     <ClustersRowUpdate
                         name={name}
                         nodes={stateNodes}
                         toggle={toggle}
                         onUpdate={() => update(stateNodes)}
+                        onClose={() => setStateNodes(cluster.nodes)}
                     />
                 )}
             </ClustersCell>
@@ -69,13 +68,10 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
     )
 
     function handleChipClick() {
-        // either find leader or set instance that we were sent request to
-        const activeInstance = Object.values(instanceMap).find(node => node.leader) ?? instanceMap[instance]
-        const activeCluster = isActive ? initialActiveCluster : {cluster: cluster, instance: activeInstance}
+        setCluster(!isActive ? {cluster, warning, instance, instances} : undefined)
+    }
 
-        setStore({
-            activeCluster: {...activeCluster, tab: store.activeCluster.tab},
-            activeNode: ''
-        })
+    function handleEffectStoreUpdate() {
+        if (isActive) setCluster({cluster, warning, instance, instances})
     }
 }

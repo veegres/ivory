@@ -26,7 +26,7 @@ export const nodeApi = {
                 (map, instance) => {
                     const api_domain = getPatroniDomain(instance.api_url)
                     const leader = instance.role === "leader"
-                    map[api_domain] = {...instance, api_domain, leader}
+                    map[api_domain] = {...instance, api_domain, leader, inCluster: true, inInstances: false}
                     return map
                 },
                 {} as InstanceMap

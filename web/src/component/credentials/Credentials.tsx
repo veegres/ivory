@@ -9,22 +9,18 @@ const SX = {
 }
 
 export function Credentials() {
-    const { store, setStore } = useStore()
+    const { store, toggleCredentialsWindow } = useStore()
 
     return (
-        <Dialog open={store.credentialsOpen} onClose={handleClose}>
+        <Dialog open={store.credentialsOpen} onClose={toggleCredentialsWindow}>
             <DialogTitle display={"flex"} alignItems={"center"} justifyContent={"space-between"} gap={1}>
                 <Security fontSize={"medium"}/>
                 <Box>Credentials</Box>
-                <IconButton size={"small"} onClick={handleClose}><Close/></IconButton>
+                <IconButton size={"small"} onClick={toggleCredentialsWindow}><Close/></IconButton>
             </DialogTitle>
             <DialogContent sx={SX.content}>
                 <CredentialsContent/>
             </DialogContent>
         </Dialog>
     )
-
-    function handleClose() {
-        setStore({ credentialsOpen: false })
-    }
 }

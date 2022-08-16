@@ -11,23 +11,24 @@ import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
 import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
 import {Instance} from "../../app/types";
-import {TapProps} from "./Cluster";
+import {TabProps} from "./Cluster";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
     light: syntaxHighlighting(defaultHighlightStyle)
 }
 
-export function ClusterConfig(props: TapProps) {
+export function ClusterConfig({info}: TabProps) {
     const theme = useTheme();
-    const { instance } = props
+    const { instance } = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState('')
 
     const queryClient = useQueryClient();
     const {data: config, isLoading, isError, error} = useQuery(
         ['node/config', instance],
-        () => nodeApi.config(instance.api_domain),
+        () => { if (instance) return nodeApi.config(instance.api_domain) },
+        { enabled: !!instance }
     )
     const updateConfig = useMutation(nodeApi.updateConfig, {
         onSuccess: async () => await queryClient.refetchQueries('node/config')
@@ -38,6 +39,10 @@ export function ClusterConfig(props: TapProps) {
 
     const isDark = theme.mode === "dark"
     const codeMirrorTheme = EditorView.theme({}, {dark: isDark})
+
+    if (!instance) return <ErrorAlert error={"Cannot detect any cluster alive instance, probably something has happened or you have some problems in your set up"} />
+    if (!instance.leader) return <ErrorAlert error={"Cannot detect cluster instance leader, probably something has happened"} />
+
     return (
         <Grid container flexWrap={"nowrap"}>
             <Grid item flexGrow={1}>

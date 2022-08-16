@@ -1,19 +1,15 @@
 import {Autocomplete, Stack, TextField} from "@mui/material";
 import React from "react";
-import {Cluster, CredentialType, Instance} from "../../app/types";
+import {CredentialType} from "../../app/types";
 import {ClusterPassword} from "./ClusterPassword";
+import {TabProps} from "./Cluster";
 
 const SX = {
     settings: { width: "250px", gap: 1 }
 }
 
-type Props = {
-    cluster: Cluster
-    instance?: Instance
-}
-
-export function ClusterSettings(props: Props) {
-    const { cluster, instance } = props
+export function ClusterSettings({info}: TabProps) {
+    const { instances, instance, cluster } = info
 
     const passPostgres = cluster.postgresCredId ?? ""
     const passPatroni = cluster.patroniCredId ?? ""
@@ -22,7 +18,7 @@ export function ClusterSettings(props: Props) {
         <Stack sx={SX.settings}>
             <Autocomplete
                 value={instance?.api_domain ?? ""}
-                options={cluster.nodes}
+                options={Object.keys(instances)}
                 renderInput={(params) => <TextField {...params} size={"small"} label={"Default Instance"} />}
             />
             <ClusterPassword label={"Postgres Password"} type={CredentialType.POSTGRES} pass={passPostgres} />

@@ -1,7 +1,7 @@
 import {ClusterOverview} from "./ClusterOverview";
 import {ClusterConfig} from "./ClusterConfig";
 import {
-    Alert, Box, Collapse, Divider, Fade, Link,
+    Alert, Box, Collapse, Divider, Link,
     Tab, Tabs, ToggleButton, ToggleButtonGroup, Tooltip
 } from "@mui/material";
 import React, {useState} from "react";
@@ -11,7 +11,7 @@ import {InfoAlert} from "../view/InfoAlert";
 import {Block} from "../view/Block";
 import {useQuery} from "react-query";
 import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
-import {ClusterTabs, Cluster as ClusterType, Instance, CredentialType} from "../../app/types";
+import {ClusterTabs, CredentialType, ActiveCluster} from "../../app/types";
 import {ClusterSettings} from "./ClusterSettings";
 import {IconInfo} from "../view/IconInfo";
 import {CredentialOptions} from "../../app/utils";
@@ -35,10 +35,10 @@ const SX = {
 
 const TABS: ClusterTabs = {
     0: {
-        body: (cluster: ClusterType, instance: Instance) => <ClusterOverview cluster={cluster} instance={instance}/>,
+        body: (cluster: ActiveCluster) => <ClusterOverview info={cluster}/>,
     },
     1: {
-        body: (cluster: ClusterType, instance: Instance) => <ClusterConfig cluster={cluster} instance={instance}/>,
+        body: (cluster: ActiveCluster) => <ClusterConfig info={cluster}/>,
         info: <>
             You can change your postgres configurations here (it will be applied on all cluster nodes).
             It doesn't rewrite all your config, it call patches the existing configuration. If you want to
@@ -48,7 +48,7 @@ const TABS: ClusterTabs = {
         </>
     },
     2: {
-        body: (cluster: ClusterType, instance: Instance) => <ClusterBloat cluster={cluster} instance={instance}/>,
+        body: (cluster: ActiveCluster) => <ClusterBloat info={cluster}/>,
         info: <>
             You can reduce size of bloated tables and indexes without heavy locks here. It base on the
             tool <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link>.
@@ -60,22 +60,21 @@ const TABS: ClusterTabs = {
     },
 }
 
-export type TapProps = {
-    cluster: ClusterType
-    instance: Instance
+export type TabProps = {
+    info: ActiveCluster
 }
 
 export function Cluster() {
-    const {store: {activeCluster: {cluster, instance, tab: tabId}}, setStore} = useStore()
+    const {store: {activeCluster, activeClusterTab}, setClusterTab} = useStore()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const clusters = useQuery('cluster/list')
-    const tab = TABS[tabId]
+    const tab = TABS[activeClusterTab]
 
     return (
         <Block withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
-                <Tabs value={tabId} onChange={(_, value) => handleChange(value)}>
+                <Tabs value={activeClusterTab} onChange={(_, value) => handleChange(value)}>
                     <Tab label={"Overview"}/>
                     <Tab label={"Config"}/>
                     <Tab label={"Bloat"}/>
@@ -91,13 +90,14 @@ export function Cluster() {
     )
 
     function renderMainBlock() {
-        if (!cluster) return <InfoAlert text={"Please, select a cluster to see the information!"}/>
-        if (!instance) return <InfoAlert text={"Please, select a cluster with active Node"}/>
+        if (!activeCluster) return <InfoAlert text={"Please, select a cluster to see the information!"}/>
         if (!tab) return <InfoAlert text={"Coming soon — we're working on it!"}/>
-        return tab.body(cluster, instance)
+        return tab.body(activeCluster)
     }
 
     function renderActionBlock() {
+        const cluster = activeCluster?.cluster
+        const instance = activeCluster?.instance
         const postgres = CredentialOptions[CredentialType.POSTGRES]
         const patroni = CredentialOptions[CredentialType.PATRONI]
         const infoItems = [
@@ -107,18 +107,18 @@ export function Cluster() {
         ]
 
         const warningItems = [
-            { icon: <Warning />,  name: "Warning", active: false, color: orange[500] }
+            { icon: <Warning />,  name: "Warning", active: !!activeCluster?.warning, color: orange[500] }
         ]
 
         return (
             <Box sx={SX.rightBox}>
-                <Fade in={!!instance}>
+                {activeCluster && (
                     <Box sx={SX.rightBox}>
                         <IconInfo items={warningItems} />
                         <IconInfo items={infoItems} />
-                        <InfoBox tooltip={"Default Instance"} withPadding>{instance?.api_domain}</InfoBox>
+                        <InfoBox tooltip={"Default Instance"} withPadding>{instance?.api_domain ?? "Unknown"}</InfoBox>
                     </Box>
-                </Fade>
+                )}
                 <ToggleButtonGroup size={"small"}>
                     <ToggleButton
                         sx={SX.toggleButton}
@@ -154,17 +154,19 @@ export function Cluster() {
     }
 
     function renderSettingsBlock() {
+        if (!activeCluster) return null
+
         return (
-            <Collapse sx={SX.collapse} in={cluster && settingsOpen} orientation={"horizontal"}>
+            <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    {cluster && settingsOpen && <ClusterSettings cluster={cluster} instance={instance} />}
+                    <ClusterSettings info={activeCluster} />
                 </Box>
             </Collapse>
         )
     }
 
     function handleChange(value: number) {
-        setStore({activeCluster: {cluster, instance, tab: value}})
+        setClusterTab(value)
     }
 }

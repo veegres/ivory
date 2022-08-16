@@ -15,7 +15,7 @@ const SX = {
 
 export function Header() {
     const theme = useTheme()
-    const { setStore } = useStore()
+    const { toggleCredentialsWindow } = useStore()
     const [animal, setAnimal] = useState("")
     const color = theme.info?.palette.primary.main
 
@@ -30,7 +30,7 @@ export function Header() {
             </Grid>
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>
                 <Box sx={SX.buttons}>
-                    <IconButton onClick={() => setStore({ credentialsOpen: true })}>
+                    <IconButton onClick={toggleCredentialsWindow}>
                         <Security/>
                     </IconButton>
                     <IconButton onClick={theme.toggle}>

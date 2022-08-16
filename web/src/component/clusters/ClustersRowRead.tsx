@@ -6,12 +6,12 @@ import {Box} from "@mui/material";
 
 type Props = {
     name: string
-    edit: () => void
+    toggle: () => void
     onDelete?: () => void
 }
 
 export function ClustersRowRead(props: Props) {
-    const { edit, onDelete, name } = props
+    const { toggle, onDelete, name } = props
     const queryClient = useQueryClient();
     const deleteCluster = useMutation(clusterApi.delete, {
         onSuccess: (_, newName) => {
@@ -24,7 +24,7 @@ export function ClustersRowRead(props: Props) {
 
     return (
         <Box display={"flex"}>
-            <EditIconButton loading={false} disabled={deleteCluster.isLoading} onClick={edit}/>
+            <EditIconButton loading={false} disabled={deleteCluster.isLoading} onClick={toggle}/>
             <DeleteIconButton loading={deleteCluster.isLoading} onClick={handleDelete}/>
         </Box>
     )

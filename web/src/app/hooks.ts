@@ -1,8 +1,8 @@
-import {useEffect, useState} from "react";
-import {EventStream, JobStatus} from "./types";
+import {useEffect, useMemo, useState} from "react";
+import {EventStream, Instance, InstanceMap, JobStatus} from "./types";
 import {useQueries, useQuery} from "react-query";
 import {bloatApi, nodeApi} from "./api";
-import {JobOptions} from "./utils";
+import {createColorsMap, JobOptions} from "./utils";
 
 export interface EventJob {
     isFetching: boolean;
@@ -58,45 +58,94 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
     }
 }
 
+const initialInstance: Instance = { name: "-", host: "-", port: 0, role: "unknown", api_domain: "-", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false }
 
-export function useSmartClusterQuery(name: string, nodes: string[]) {
-    const [nodeIndex, setNodeIndex] = useState(0)
-    const [nodeQueries, setNodeQueries] = useState(getNodeQueries(nodeIndex, nodes))
+export function useSmartClusterQuery(name: string, instanceNames: string[]) {
+    const [index, setIndex] = useState(0)
+    const [nodeQueries, setNodeQueries] = useState(getNodeQueries(instanceNames))
     const [isRefetching, setIsRefetching] = useState(false)
 
     const result = useQueries(nodeQueries)
+    const instance = result[index] ?? {}
+    const instanceMap = instance.data ?? {}
 
-    useEffect(handleEffectIncrease, [nodeIndex, result, isRefetching])
+    useEffect(handleEffectIncrease, [index, instance, isRefetching])
+
+    const activeInstance = useMemo(() => handleMemoActiveInstance(), [instanceMap, index])
+    const colors = useMemo(() => createColorsMap(instanceMap), [instanceMap])
+    const [instances, warning] = useMemo(() => handleMemoInstances(), [instanceMap, instanceNames])
 
     return {
-        instance: nodes[nodeIndex],
-        instanceResult: result[nodeIndex] ?? {},
+        instance: activeInstance,
+        instances: instances,
+        isFetching: instance.isFetching,
+        warning: warning,
+        colors,
         update: (nodes: string[]) => {
-            setNodeIndex(0)
-            setNodeQueries(getNodeQueries(nodeIndex, nodes))
+            setIndex(0)
+            setNodeQueries(getNodeQueries(nodes))
         },
         refetch: () => {
-            setNodeIndex(0)
+            setIndex(0)
             setIsRefetching(true)
         }
     }
 
+    /**
+     * Fetching each instance while we don't have success request
+     */
     function handleEffectIncrease() {
-        const node = result[nodeIndex] ?? {}
-        if (node.isError && nodeIndex < result.length - 1) setNodeIndex(nodeIndex + 1)
-        if (node.isIdle || (node.isError && isRefetching)) node.refetch()
-        if (node.isSuccess || nodeIndex === result.length - 1) setIsRefetching(false)
+        if (instance.isError && index < result.length - 1) setIndex(index + 1)
+        if (instance.isIdle || (instance.isError && isRefetching)) instance.refetch()
+        if (instance.isSuccess || index === result.length - 1) setIsRefetching(false)
+    }
+
+    /**
+     * Combine instances from patroni and from ivory
+     */
+    function handleMemoInstances(): [InstanceMap, boolean] {
+        const map: InstanceMap = {}
+        let warning: boolean = false
+
+        for (const key in instanceMap) {
+            if (instanceNames.includes(key)) {
+                map[key] = { ...instanceMap[key], inInstances: true }
+            } else {
+                map[key] = { ...instanceMap[key], inInstances: false }
+            }
+        }
+
+        for (const value of instanceNames) {
+            if (!map[value]) {
+                map[value] = initialInstance
+            }
+        }
+
+        for (const key in map) {
+            const value = map[key]
+            if (!value.inInstances || !value.inCluster) {
+                warning = true
+            }
+        }
+
+        return [map, warning]
+    }
+
+    /**
+     * Either find leader or set instance that we were sending request to
+     */
+    function handleMemoActiveInstance() {
+        return Object.values(instanceMap).find(instance => instance.leader) ?? instanceMap[index]
     }
 
     /**
      * Create array of queries that should be requested be `useQueries()` in new rerender
-     * @param currentIndex
-     * @param nodes
+     * @param instances
      */
-    function getNodeQueries(currentIndex: number, nodes: string[]) {
-        return nodes.map((node) => ({
-            queryKey: [`node/cluster`, node],
-            queryFn: () => nodeApi.cluster(node),
+    function getNodeQueries(instances: string[]) {
+        return instances.map((instance) => ({
+            queryKey: [`node/cluster`, instance],
+            queryFn: () => nodeApi.cluster(instance),
             retry: 0, enabled: false
         }))
     }

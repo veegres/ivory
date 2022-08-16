@@ -1,13 +1,14 @@
 import {Box, Button, Collapse, Grid, IconButton, TextField, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
 import {bloatApi} from "../../app/api";
-import {useState} from "react";
-import {Cluster, CompactTable, Instance, Style, Target} from "../../app/types";
+import React, {useState} from "react";
+import {CompactTable, Style, Target} from "../../app/types";
 import {ErrorAlert} from "../view/ErrorAlert";
 import {ClusterBloatJob} from "./ClusterBloatJob";
 import {Replay} from "@mui/icons-material";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
+import {TabProps} from "./Cluster";
 
 const SX = {
     jobsLoader: {minHeight: "4px", margin: "10px 0"}
@@ -17,13 +18,8 @@ const style: Style = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}
 }
 
-type Props = {
-    cluster: Cluster
-    instance: Instance
-}
-
-export function ClusterBloat(props: Props) {
-    const { cluster, instance } = props
+export function ClusterBloat({info}: TabProps) {
+    const { cluster, instance } = info
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
@@ -34,6 +30,8 @@ export function ClusterBloat(props: Props) {
         {onSuccess: (initJobs) => setJobs(initJobs)}
     )
     const start = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
+
+    if (!instance) return <ErrorAlert error={"Cannot detect any cluster alive instance, probably something has happened or you have some problems in your set up"} />
 
     return (
         <Box>
@@ -97,7 +95,7 @@ export function ClusterBloat(props: Props) {
     }
 
     function handleRun() {
-        if (cluster?.postgresCredId) {
+        if (instance && cluster?.postgresCredId) {
             const { host, port } = instance
             start.mutate({
                 connection: { host, port, credId: cluster.postgresCredId },

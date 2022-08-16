@@ -23,21 +23,21 @@ type ItemProps = { name: string, value?: string }
 type StatusProps = { role?: string }
 
 export function Node() {
-    const { store: { activeNode }, isOverviewOpen } = useStore()
+    const { store: { activeInstance }, isClusterOverviewOpen } = useStore()
     const {data: nodePatroni, isLoading, isError, error} = useQuery(
-        ['node/overview', activeNode],
-        () => nodeApi.overview(activeNode),
-        {enabled: !!activeNode}
+        ['node/overview', activeInstance],
+        () => { if (activeInstance) return nodeApi.overview(activeInstance) },
+        {enabled: !!activeInstance}
     )
 
     return (
-        <Block withPadding visible={isOverviewOpen()}>
+        <Block withPadding visible={isClusterOverviewOpen()}>
             {renderContent()}
         </Block>
     )
 
     function renderContent() {
-        if (!activeNode) return <InfoAlert text={"Please, select a node to see the information!"}/>
+        if (!activeInstance) return <InfoAlert text={"Please, select a node to see the information!"}/>
         if (isError) return <ErrorAlert error={error as AxiosError}/>
 
         return (
@@ -46,7 +46,7 @@ export function Node() {
                     <NodeStatus role={nodePatroni?.role}/>
                 </Grid>
                 <Grid item xs container direction="column">
-                    <Grid item><Item name="Node" value={activeNode}/></Grid>
+                    <Grid item><Item name="Node" value={activeInstance}/></Grid>
                     <Grid item><Item name="State" value={nodePatroni?.state}/></Grid>
                     <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope}/></Grid>
                     <Grid item><Item name="Timeline" value={nodePatroni?.timeline?.toString()}/></Grid>
