@@ -66,14 +66,14 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     const [isRefetching, setIsRefetching] = useState(false)
 
     const result = useQueries(nodeQueries)
-    const instance = result[index] ?? {}
-    const instanceMap = instance.data ?? {}
+    const instance = useMemo(() => result[index] ?? {}, [result, index])
+    const instanceMap = useMemo(() => instance.data ?? {}, [instance])
 
-    useEffect(handleEffectIncrease, [index, instance, isRefetching])
+    useEffect(handleEffectIncrease, [index, instance, isRefetching, result.length])
 
-    const activeInstance = useMemo(() => handleMemoActiveInstance(), [instanceMap, index])
+    const activeInstance = useMemo(() => handleMemoActiveInstance(index, instanceMap), [instanceMap, index])
     const colors = useMemo(() => createColorsMap(instanceMap), [instanceMap])
-    const [instances, warning] = useMemo(() => handleMemoInstances(), [instanceMap, instanceNames])
+    const [instances, warning] = useMemo(() => handleMemoInstances(instanceMap, instanceNames), [instanceMap, instanceNames])
 
     return {
         instance: activeInstance,
@@ -103,7 +103,7 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     /**
      * Combine instances from patroni and from ivory
      */
-    function handleMemoInstances(): [InstanceMap, boolean] {
+    function handleMemoInstances(instanceMap: InstanceMap, instanceNames: string[]): [InstanceMap, boolean] {
         const map: InstanceMap = {}
         let warning: boolean = false
 
@@ -134,7 +134,7 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     /**
      * Either find leader or set instance that we were sending request to
      */
-    function handleMemoActiveInstance() {
+    function handleMemoActiveInstance(index: number, instanceMap: InstanceMap) {
         return Object.values(instanceMap).find(instance => instance.leader) ?? instanceMap[index]
     }
 

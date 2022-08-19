@@ -27,7 +27,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
     const [stateNodes, setStateNodes] = useState(cluster.nodes);
     const {instance, instances, colors, isFetching, warning, update, refetch} = useSmartClusterQuery(name, stateNodes)
 
-    useEffect(handleEffectStoreUpdate, [isActive, cluster, warning, instance, instances])
+    useEffect(handleEffectStoreUpdate, [isActive, cluster, warning, instance, instances, setCluster])
 
     return (
         <TableRow>
