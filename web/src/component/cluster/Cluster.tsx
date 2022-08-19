@@ -101,9 +101,9 @@ export function Cluster() {
         const postgres = CredentialOptions[CredentialType.POSTGRES]
         const patroni = CredentialOptions[CredentialType.PATRONI]
         const infoItems = [
-            { icon: <Article />, name: "Certs", active: false },
-            { icon: postgres.icon, name: "Postgres Password", active: !!cluster?.postgresCredId },
-            { icon: patroni.icon, name: "Patroni Password", active: !!cluster?.patroniCredId }
+            { icon: <Article />, name: "Patroni Certs", active: false },
+            { icon: patroni.icon, name: "Patroni Password", active: !!cluster?.patroniCredId },
+            { icon: postgres.icon, name: "Postgres Password", active: !!cluster?.postgresCredId }
         ]
 
         const warningItems = [

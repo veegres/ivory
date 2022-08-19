@@ -36,7 +36,7 @@ export function ClustersRowNew(props: Props) {
                 <DynamicInputs
                     inputs={stateNodes}
                     editable={true}
-                    placeholder={`Node`}
+                    placeholder={`Instance`}
                     onChange={n => setStateNodes(n)}
                 />
             </ClustersCell>

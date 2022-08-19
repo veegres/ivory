@@ -16,7 +16,7 @@ const SX = {
     row: {cursor: "pointer"},
     cell: {padding: "5px 10px", height: "40px"},
     actionCell: {width: "40px"},
-    warningCell: {width: "30px"},
+    warningCell: {width: "40px"},
     roleCell: {width: "110px"},
     buttonCell: {width: "160px"},
 }
@@ -87,7 +87,7 @@ export function ClusterOverview({info}: TabProps) {
 
     function renderButton(instance: string, host: string, type: string) {
         switch (type) {
-            case "leader": return (
+            case "replica": return (
                 <Button
                     color={"primary"}
                     disabled={reinitNode.isLoading || switchoverNode.isLoading}
@@ -95,7 +95,7 @@ export function ClusterOverview({info}: TabProps) {
                     Reinit
                 </Button>
             )
-            case "replica": return (
+            case "leader": return (
                 <Button
                     color={"secondary"}
                     disabled={switchoverNode.isLoading}

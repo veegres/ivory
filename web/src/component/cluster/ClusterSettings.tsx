@@ -17,7 +17,7 @@ export function ClusterSettings({info}: TabProps) {
     return (
         <Stack sx={SX.settings}>
             <Autocomplete
-                value={instance?.api_domain ?? ""}
+                value={instance?.api_domain}
                 options={Object.keys(instances)}
                 renderInput={(params) => <TextField {...params} size={"small"} label={"Default Instance"} />}
             />
@@ -27,13 +27,13 @@ export function ClusterSettings({info}: TabProps) {
                 value={cluster.certsId}
                 options={[]}
                 disabled={true}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Certs (not implemented)"} />}
+                renderInput={(params) => <TextField {...params} size={"small"} label={"Patroni Certs (coming soon)"} />}
             />
             <Autocomplete
                 multiple
                 options={[]}
                 disabled={true}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Tags (not implemented)"} />}
+                renderInput={(params) => <TextField {...params} size={"small"} label={"Tags (coming soon)"} />}
             />
         </Stack>
     )
