@@ -1,5 +1,5 @@
 import {Box, Chip, TableRow} from "@mui/material";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Cluster} from "../../app/types";
 import {RefreshIconButton,} from "../view/IconButtons";
 import {DynamicInputs} from "../view/DynamicInputs";
@@ -22,12 +22,13 @@ type Props = {
 
 export function ClustersRow({name, cluster, editable, toggle}: Props) {
     const {setCluster, isClusterActive} = useStore()
+    const isActiveRef = useRef<boolean>()
     const isActive = isClusterActive(name)
 
     const [stateNodes, setStateNodes] = useState(cluster.nodes);
     const {instance, instances, colors, isFetching, warning, update, refetch} = useSmartClusterQuery(name, stateNodes)
 
-    useEffect(handleEffectStoreUpdate, [isActive, cluster, warning, instance, instances, setCluster])
+    useEffect(handleEffectStoreUpdate, [isActive, isActiveRef, cluster, warning, instance, instances, setCluster])
 
     return (
         <TableRow>
@@ -59,7 +60,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
                         name={name}
                         nodes={stateNodes}
                         toggle={toggle}
-                        onUpdate={() => update(stateNodes)}
+                        onUpdate={handleUpdate}
                         onClose={() => setStateNodes(cluster.nodes)}
                     />
                 )}
@@ -67,11 +68,20 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
         </TableRow>
     )
 
+    // TODO these functions are async can cause some problems, come up with better solution
+    function handleUpdate() {
+        update(stateNodes)
+        if (isActive) setCluster({cluster, warning, instance, instances})
+    }
+
     function handleChipClick() {
         setCluster(!isActive ? {cluster, warning, instance, instances} : undefined)
     }
 
     function handleEffectStoreUpdate() {
-        if (isActive) setCluster({cluster, warning, instance, instances})
+        if (isActive && isActiveRef.current !== isActive) {
+            setCluster({cluster, warning, instance, instances})
+        }
+        isActiveRef.current = isActive
     }
 }

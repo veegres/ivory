@@ -60,6 +60,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
 
 const initialInstance: Instance = { name: "-", host: "-", port: 0, role: "unknown", api_domain: "-", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false }
 
+// TODO It should be simplified right now it generates a lot of renders
 export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     const [index, setIndex] = useState(0)
     const [nodeQueries, setNodeQueries] = useState(getNodeQueries(instanceNames))
