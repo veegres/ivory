@@ -15,7 +15,7 @@ import {
 } from "./types";
 import {getPatroniDomain} from "./utils";
 
-const api = axios.create({ baseURL: '/api', timeout: 1000 })
+const api = axios.create({ baseURL: '/api' })
 
 export const nodeApi = {
     overview: (node: String) =>

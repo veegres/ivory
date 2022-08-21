@@ -65,8 +65,8 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
 
     const instanceQueries = useMemo(() => getNodeQueries(index, name, instanceNames), [index, name, instanceNames])
     const queries = useQueries(instanceQueries)
-    const query = useMemo(() => queries[index] ?? {}, [queries, index])
-    const clusterInstances = useMemo(() => query.data ?? {}, [query])
+    const query = queries[index] ?? {}
+    const clusterInstances = useMemo(() => query.data ?? {}, [query.data])
 
     const colors = useMemo(() => createColorsMap(clusterInstances), [clusterInstances])
     const [instances, warning] = useMemo(() => handleMemoInstances(clusterInstances, instanceNames), [clusterInstances, instanceNames])

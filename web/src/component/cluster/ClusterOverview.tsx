@@ -14,8 +14,8 @@ import {Warning} from "@mui/icons-material";
 const SX = {
     table: {'tr:last-child td': {border: 0}},
     row: {cursor: "pointer"},
-    cell: {padding: "5px 10px", height: "40px"},
-    actionCell: {width: "40px"},
+    cell: {padding: "5px 10px", height: "50px"},
+    actionCell: {width: "58px"},
     warningCell: {width: "40px"},
     roleCell: {width: "110px"},
     buttonCell: {width: "160px"},
@@ -25,17 +25,17 @@ type AlertDialogState = {open: boolean, title: string, content: string, onAgree:
 const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {}}
 
 export function ClusterOverview({info}: TabProps) {
-    const { instance, instances } = info
+    const { instance, cluster, instances } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setInstance, store: { activeInstance } } = useStore()
 
     const queryClient = useQueryClient();
-    const instanceMap = queryClient.getQueryState<InstanceMap>(["node/cluster", instance?.api_domain])
+    const instanceMap = queryClient.getQueryState<InstanceMap>(["node/cluster", cluster.name, instance.api_domain])
     const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", instance?.api_domain])
+        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain])
     })
     const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", instance?.api_domain])
+        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain])
     })
 
     return (
@@ -54,7 +54,7 @@ export function ClusterOverview({info}: TabProps) {
                         <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMap?.isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
-                <TableBody isLoading={!!instanceMap?.isFetching} cellCount={7}>
+                <TableBody isLoading={!!instanceMap?.isFetching} cellCount={8}>
                     {renderContent()}
                 </TableBody>
             </Table>
