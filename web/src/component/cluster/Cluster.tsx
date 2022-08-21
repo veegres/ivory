@@ -14,7 +14,7 @@ import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
 import {ClusterTabs, CredentialType, ActiveCluster} from "../../app/types";
 import {ClusterSettings} from "./ClusterSettings";
 import {IconInfo} from "../view/IconInfo";
-import {CredentialOptions} from "../../app/utils";
+import {CredentialOptions, InstanceColor} from "../../app/utils";
 import {orange} from "@mui/material/colors";
 import {InfoBox} from "../view/InfoBox";
 
@@ -140,12 +140,15 @@ export function Cluster() {
             { icon: <Warning />,  name: "Warning", active: warning, color: orange[500] }
         ]
 
-        const defaultInstanceName = instance?.inCluster ? instance.api_domain : "Unknown"
         return (
             <Box sx={SX.rightBox}>
                 <IconInfo items={warningItems} />
                 <IconInfo items={infoItems} />
-                <InfoBox tooltip={"Default Instance"} withPadding>{defaultInstanceName}</InfoBox>
+                <InfoBox tooltip={`Default Instance: ${instance.api_domain}`} withPadding>
+                    <Box sx={{color: InstanceColor[instance.role]}}>
+                        {instance.role.toUpperCase()}
+                    </Box>
+                </InfoBox>
             </Box>
         )
     }
