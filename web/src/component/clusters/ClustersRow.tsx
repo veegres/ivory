@@ -1,5 +1,5 @@
 import {Box, Chip, TableRow} from "@mui/material";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Cluster} from "../../app/types";
 import {RefreshIconButton,} from "../view/IconButtons";
 import {DynamicInputs} from "../view/DynamicInputs";
@@ -22,13 +22,15 @@ type Props = {
 
 export function ClustersRow({name, cluster, editable, toggle}: Props) {
     const {setCluster, isClusterActive} = useStore()
-    const isActiveRef = useRef<boolean>()
-    const isActive = isClusterActive(name)
+    const active = isClusterActive(name)
 
     const [stateNodes, setStateNodes] = useState(cluster.nodes);
-    const {instance, instances, colors, isFetching, warning, update, refetch} = useSmartClusterQuery(name, stateNodes)
+    const {instance, instances, colors, isFetching, warning, refetch} = useSmartClusterQuery(name, cluster.nodes)
+    const activeCluster = useMemo(() => ({cluster, warning, instance, instances}), [cluster, warning, instance, instances])
 
-    useEffect(handleEffectStoreUpdate, [isActive, isActiveRef, cluster, warning, instance, instances, setCluster])
+    // we need disable cause it thinks that function can be updated, and it causes endless recursion
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(handleEffectStoreUpdate, [active, activeCluster])
 
     return (
         <TableRow>
@@ -36,9 +38,9 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
                 <Box display={"flex"} flexDirection={"row"} alignItems={"center"}>
                     <Chip
                         sx={SX.chipSize}
-                        color={isActive ? "primary" : "default"}
+                        color={active ? "primary" : "default"}
                         label={name}
-                        onClick={handleChipClick}
+                        onClick={() => setCluster(active ? undefined : activeCluster)}
                     />
                     <RefreshIconButton loading={isFetching} onClick={refetch}/>
                 </Box>
@@ -60,7 +62,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
                         name={name}
                         nodes={stateNodes}
                         toggle={toggle}
-                        onUpdate={handleUpdate}
+                        onUpdate={refetch}
                         onClose={() => setStateNodes(cluster.nodes)}
                     />
                 )}
@@ -68,20 +70,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
         </TableRow>
     )
 
-    // TODO these functions are async can cause some problems, come up with better solution
-    function handleUpdate() {
-        update(stateNodes)
-        if (isActive) setCluster({cluster, warning, instance, instances})
-    }
-
-    function handleChipClick() {
-        setCluster(!isActive ? {cluster, warning, instance, instances} : undefined)
-    }
-
     function handleEffectStoreUpdate() {
-        if (isActive && isActiveRef.current !== isActive) {
-            setCluster({cluster, warning, instance, instances})
-        }
-        isActiveRef.current = isActive
+        if (active) setCluster(activeCluster)
     }
 }

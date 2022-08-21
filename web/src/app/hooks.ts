@@ -60,17 +60,13 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
 
 const initialInstance = (api_domain: string) => ({ api_domain, name: "-", host: "-", port: 0, role: "unknown", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false })
 
-// TODO It should be simplified right now it generates a lot of renders
 export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     const [index, setIndex] = useState(0)
-    const [nodeQueries, setNodeQueries] = useState(getNodeQueries(instanceNames))
-    const [isRefetching, setIsRefetching] = useState(false)
 
-    const queries = useQueries(nodeQueries)
+    const instanceQueries = useMemo(() => getNodeQueries(index, name, instanceNames), [index, name, instanceNames])
+    const queries = useQueries(instanceQueries)
     const query = useMemo(() => queries[index] ?? {}, [queries, index])
     const clusterInstances = useMemo(() => query.data ?? {}, [query])
-
-    useEffect(handleEffectIncrease, [index, query, isRefetching, queries.length])
 
     const colors = useMemo(() => createColorsMap(clusterInstances), [clusterInstances])
     const [instances, warning] = useMemo(() => handleMemoInstances(clusterInstances, instanceNames), [clusterInstances, instanceNames])
@@ -82,37 +78,21 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
         warning: warning,
         colors: colors,
         isFetching: query.isFetching,
-        update: (nodes: string[]) => {
-            setIndex(0)
-            setNodeQueries(getNodeQueries(nodes))
-        },
-        refetch: () => {
-            setIndex(0)
-            setIsRefetching(true)
-        }
-    }
-
-    /**
-     * Fetching each query while we don't have success request
-     */
-    function handleEffectIncrease() {
-        if (query.isError && index < queries.length - 1) setIndex(index + 1)
-        if (query.isIdle || (query.isError && isRefetching)) query.refetch()
-        if (query.isSuccess || index === queries.length - 1) setIsRefetching(false)
+        refetch: () => setIndex(0)
     }
 
     /**
      * Combine instances from patroni and from ivory
      */
-    function handleMemoInstances(instanceMap: InstanceMap, instanceNames: string[]): [InstanceMap, boolean] {
+    function handleMemoInstances(clusterInstances: InstanceMap, instanceNames: string[]): [InstanceMap, boolean] {
         const map: InstanceMap = {}
         let warning: boolean = false
 
-        for (const key in instanceMap) {
+        for (const key in clusterInstances) {
             if (instanceNames.includes(key)) {
-                map[key] = { ...instanceMap[key], inInstances: true }
+                map[key] = { ...clusterInstances[key], inInstances: true }
             } else {
-                map[key] = { ...instanceMap[key], inInstances: false }
+                map[key] = { ...clusterInstances[key], inInstances: false }
             }
         }
 
@@ -142,13 +122,17 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
 
     /**
      * Create array of queries that should be requested be `useQueries()` in new rerender
+     * @param index
+     * @param name
      * @param instances
      */
-    function getNodeQueries(instances: string[]) {
-        return instances.map((instance) => ({
-            queryKey: [`node/cluster`, instance],
+    function getNodeQueries(index: number, name: string, instances: string[]) {
+        return instances.map((instance, j) => ({
+            queryKey: ["node/cluster", name, instance],
             queryFn: () => nodeApi.cluster(instance),
-            retry: 0, enabled: false, force: true,
+            retry: 0,
+            enabled: index === j,
+            onError: () => { if (index < instances.length - 1) setIndex(index + 1) }
         }))
     }
 }
