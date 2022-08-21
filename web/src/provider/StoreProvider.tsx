@@ -55,7 +55,7 @@ export function useStore() {
 
 export function StoreProvider(props: { children: ReactNode }) {
     const [state, setState] = useState(initialStore)
-    const { activeCluster, activeClusterTab, activeInstance } = state
+    const { activeCluster, activeInstance } = state
 
     const value: StoreContextType = {
         store: state,
@@ -65,8 +65,8 @@ export function StoreProvider(props: { children: ReactNode }) {
             if (activeCluster) setState({...state, activeCluster: {...activeCluster, instance}})
         },
         setClusterTab: (tab: number) => setState({...state, activeClusterTab: tab}),
-        isClusterActive: (name: string) => name === activeCluster?.cluster?.name,
-        isClusterOverviewOpen: () => !!activeCluster && activeClusterTab === 0,
+        isClusterActive: (name: string) => name === activeCluster?.cluster.name,
+        isClusterOverviewOpen: () => !!activeCluster && state.activeClusterTab === 0,
 
         setInstance: (instance?: string) => setState({...state, activeInstance: instance}),
         setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),

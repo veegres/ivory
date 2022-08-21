@@ -27,9 +27,9 @@ export function ClusterConfig({info}: TabProps) {
 
     const queryClient = useQueryClient();
     const {data: config, isLoading, isError, error} = useQuery(
-        ['node/config', instance],
-        () => { if (instance) return nodeApi.config(instance.api_domain) },
-        { enabled: !!instance }
+        ['node/config', instance.api_domain],
+        () => nodeApi.config(instance.api_domain),
+        { enabled: instance.inCluster }
     )
     const updateConfig = useMutation(nodeApi.updateConfig, {
         onSuccess: async () => await queryClient.refetchQueries('node/config')
@@ -41,7 +41,7 @@ export function ClusterConfig({info}: TabProps) {
     const isDark = theme.mode === "dark"
     const codeMirrorTheme = EditorView.theme({}, {dark: isDark})
 
-    if (!instance) return <ClusterNoInstanceError />
+    if (!instance.inCluster) return <ClusterNoInstanceError />
 
     return (
         <Grid container flexWrap={"nowrap"}>
