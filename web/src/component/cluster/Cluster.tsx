@@ -97,28 +97,10 @@ export function Cluster() {
 
     function renderActionBlock() {
         const cluster = activeCluster?.cluster
-        const instance = activeCluster?.instance
-        const postgres = CredentialOptions[CredentialType.POSTGRES]
-        const patroni = CredentialOptions[CredentialType.PATRONI]
-        const infoItems = [
-            { icon: <Article />, name: "Patroni Certs", active: false },
-            { icon: patroni.icon, name: "Patroni Password", active: !!cluster?.patroniCredId },
-            { icon: postgres.icon, name: "Postgres Password", active: !!cluster?.postgresCredId }
-        ]
-
-        const warningItems = [
-            { icon: <Warning />,  name: "Warning", active: !!activeCluster?.warning, color: orange[500] }
-        ]
 
         return (
             <Box sx={SX.rightBox}>
-                {activeCluster && (
-                    <Box sx={SX.rightBox}>
-                        <IconInfo items={warningItems} />
-                        <IconInfo items={infoItems} />
-                        <InfoBox tooltip={"Default Instance"} withPadding>{instance?.api_domain ?? "Unknown"}</InfoBox>
-                    </Box>
-                )}
+                {renderShortClusterInfo()}
                 <ToggleButtonGroup size={"small"}>
                     <ToggleButton
                         sx={SX.toggleButton}
@@ -139,6 +121,31 @@ export function Cluster() {
                         <Tooltip title={"Tab Information"} placement={"top"}><InfoOutlined/></Tooltip>
                     </ToggleButton>
                 </ToggleButtonGroup>
+            </Box>
+        )
+    }
+
+    function renderShortClusterInfo() {
+        if (!activeCluster) return null
+        const {cluster, instance, warning} = activeCluster
+        const postgres = CredentialOptions[CredentialType.POSTGRES]
+        const patroni = CredentialOptions[CredentialType.PATRONI]
+
+        const infoItems = [
+            { icon: <Article />, name: "Patroni Certs", active: false },
+            { icon: patroni.icon, name: "Patroni Password", active: !!cluster.patroniCredId },
+            { icon: postgres.icon, name: "Postgres Password", active: !!cluster.postgresCredId }
+        ]
+        const warningItems = [
+            { icon: <Warning />,  name: "Warning", active: warning, color: orange[500] }
+        ]
+
+        const defaultInstanceName = instance?.inCluster ? instance.api_domain : "Unknown"
+        return (
+            <Box sx={SX.rightBox}>
+                <IconInfo items={warningItems} />
+                <IconInfo items={infoItems} />
+                <InfoBox tooltip={"Default Instance"} withPadding>{defaultInstanceName}</InfoBox>
             </Box>
         )
     }

@@ -12,6 +12,7 @@ import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
 import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
 import {Instance} from "../../app/types";
 import {TabProps} from "./Cluster";
+import {ClusterNoInstanceError} from "./ClusterError";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
@@ -40,8 +41,7 @@ export function ClusterConfig({info}: TabProps) {
     const isDark = theme.mode === "dark"
     const codeMirrorTheme = EditorView.theme({}, {dark: isDark})
 
-    if (!instance) return <ErrorAlert error={"Cannot detect any cluster alive instance, probably something has happened or you have some problems in your set up"} />
-    if (!instance.leader) return <ErrorAlert error={"Cannot detect cluster instance leader, probably something has happened"} />
+    if (!instance) return <ClusterNoInstanceError />
 
     return (
         <Grid container flexWrap={"nowrap"}>

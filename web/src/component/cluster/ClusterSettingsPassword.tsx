@@ -1,9 +1,9 @@
 import {shortUuid} from "../../app/utils";
 import {Autocomplete, Box, TextField} from "@mui/material";
-import React, {useState} from "react";
-import {useQuery} from "react-query";
+import React, {useMemo, useState} from "react";
+import {useQuery, UseQueryResult} from "react-query";
 import {credentialApi} from "../../app/api";
-import {CredentialType} from "../../app/types";
+import {CredentialMap, CredentialType} from "../../app/types";
 
 type Value = {
     key: string
@@ -17,26 +17,29 @@ type Props = {
     label: string
 }
 
-export function ClusterPassword(props: Props) {
+export function ClusterSettingsPassword(props: Props) {
     const { type, pass, label } = props
     const [value, setValue] = useState<Value | null>(null);
     const [inputValue, setInputValue] = useState(pass);
 
     const query = useQuery(["credentials", type], () => credentialApi.get(type))
-    const list = Object.entries(query.data ?? {}).map(([key, value]) => ({ key, short: shortUuid(key), username: value.username }))
-
+    const options = useMemo(() => handleMemoOptions(query), [query])
 
     return (
         <Autocomplete
-            options={list}
+            options={options}
             value={value}
-            onChange={(event, value) => setValue(value)}
+            onChange={(_, value) => setValue(value)}
             inputValue={inputValue}
-            onInputChange={(event, value) => setInputValue(value)}
+            onInputChange={(_, value) => setInputValue(value)}
             getOptionLabel={(option) => `${option.username} [${option.short}]`}
             isOptionEqualToValue={(option, value) => option.key === value.key}
             renderOption={(props, option) => <Box component="li" {...props}>{option.username} [{option.short}]</Box>}
             renderInput={(params) => <TextField {...params} size={"small"} label={label} />}
         />
     )
+
+    function handleMemoOptions(query: UseQueryResult<CredentialMap>) {
+        return Object.entries(query.data ?? {}).map(([key, value]) => ({ key, short: shortUuid(key), username: value.username }))
+    }
 }
