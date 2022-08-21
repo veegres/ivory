@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from "react";
-import {EventStream, Instance, InstanceMap, JobStatus} from "./types";
+import {EventStream, InstanceMap, JobStatus} from "./types";
 import {useQueries, useQuery} from "react-query";
 import {bloatApi, nodeApi} from "./api";
 import {createColorsMap, JobOptions} from "./utils";
@@ -58,7 +58,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
     }
 }
 
-const initialInstance: Instance = { name: "-", host: "-", port: 0, role: "unknown", api_domain: "-", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false }
+const initialInstance = (api_domain: string) => ({ api_domain, name: "-", host: "-", port: 0, role: "unknown", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false })
 
 // TODO It should be simplified right now it generates a lot of renders
 export function useSmartClusterQuery(name: string, instanceNames: string[]) {
@@ -66,22 +66,22 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     const [nodeQueries, setNodeQueries] = useState(getNodeQueries(instanceNames))
     const [isRefetching, setIsRefetching] = useState(false)
 
-    const result = useQueries(nodeQueries)
-    const instance = useMemo(() => result[index] ?? {}, [result, index])
-    const instanceMap = useMemo(() => instance.data ?? {}, [instance])
+    const queries = useQueries(nodeQueries)
+    const query = useMemo(() => queries[index] ?? {}, [queries, index])
+    const clusterInstances = useMemo(() => query.data ?? {}, [query])
 
-    useEffect(handleEffectIncrease, [index, instance, isRefetching, result.length])
+    useEffect(handleEffectIncrease, [index, query, isRefetching, queries.length])
 
-    const activeInstance = useMemo(() => handleMemoActiveInstance(index, instanceMap), [instanceMap, index])
-    const colors = useMemo(() => createColorsMap(instanceMap), [instanceMap])
-    const [instances, warning] = useMemo(() => handleMemoInstances(instanceMap, instanceNames), [instanceMap, instanceNames])
+    const colors = useMemo(() => createColorsMap(clusterInstances), [clusterInstances])
+    const [instances, warning] = useMemo(() => handleMemoInstances(clusterInstances, instanceNames), [clusterInstances, instanceNames])
+    const defaultInstance = useMemo(() => handleMemoActiveInstance(instances), [instances])
 
     return {
-        instance: activeInstance,
+        instance: defaultInstance,
         instances: instances,
-        isFetching: instance.isFetching,
         warning: warning,
-        colors,
+        colors: colors,
+        isFetching: query.isFetching,
         update: (nodes: string[]) => {
             setIndex(0)
             setNodeQueries(getNodeQueries(nodes))
@@ -93,12 +93,12 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     }
 
     /**
-     * Fetching each instance while we don't have success request
+     * Fetching each query while we don't have success request
      */
     function handleEffectIncrease() {
-        if (instance.isError && index < result.length - 1) setIndex(index + 1)
-        if (instance.isIdle || (instance.isError && isRefetching)) instance.refetch()
-        if (instance.isSuccess || index === result.length - 1) setIsRefetching(false)
+        if (query.isError && index < queries.length - 1) setIndex(index + 1)
+        if (query.isIdle || (query.isError && isRefetching)) query.refetch()
+        if (query.isSuccess || index === queries.length - 1) setIsRefetching(false)
     }
 
     /**
@@ -118,7 +118,7 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
 
         for (const value of instanceNames) {
             if (!map[value]) {
-                map[value] = initialInstance
+                map[value] = initialInstance(value)
             }
         }
 
@@ -133,10 +133,11 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
     }
 
     /**
-     * Either find leader or set instance that we were sending request to
+     * Either find leader or set query that we were sending request to
      */
-    function handleMemoActiveInstance(index: number, instanceMap: InstanceMap) {
-        return Object.values(instanceMap).find(instance => instance.leader) ?? instanceMap[index]
+    function handleMemoActiveInstance(instances: InstanceMap) {
+        const values = Object.values(instances)
+        return values.find(instance => instance.leader) ?? values[0]
     }
 
     /**
@@ -147,7 +148,7 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
         return instances.map((instance) => ({
             queryKey: [`node/cluster`, instance],
             queryFn: () => nodeApi.cluster(instance),
-            retry: 0, enabled: false
+            retry: 0, enabled: false, force: true,
         }))
     }
 }

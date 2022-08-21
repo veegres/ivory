@@ -3,12 +3,12 @@ import {useMutation, useQuery} from "react-query";
 import {bloatApi} from "../../app/api";
 import React, {useState} from "react";
 import {CompactTable, Style, Target} from "../../app/types";
-import {ErrorAlert} from "../view/ErrorAlert";
 import {ClusterBloatJob} from "./ClusterBloatJob";
 import {Replay} from "@mui/icons-material";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
 import {TabProps} from "./Cluster";
+import {ClusterNoInstanceError, ClusterNoLeaderError} from "./ClusterError";
 
 const SX = {
     jobsLoader: {minHeight: "4px", margin: "10px 0"}
@@ -31,11 +31,11 @@ export function ClusterBloat({info}: TabProps) {
     )
     const start = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
 
-    if (!instance) return <ErrorAlert error={"Cannot detect any cluster alive instance, probably something has happened or you have some problems in your set up"} />
+    if (!instance) return <ClusterNoInstanceError />
 
     return (
         <Box>
-            {instance.leader ? renderForm() : <ErrorAlert error={"No leader found"}/>}
+            {instance.leader ? renderForm() : <ClusterNoLeaderError />}
             <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} />
             <TransitionGroup style={style.transition}>
                 {jobs.map((value) => (

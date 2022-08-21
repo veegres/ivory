@@ -66,7 +66,7 @@ export interface ClusterTabs {
 
 export interface ActiveCluster {
     cluster: Cluster,
-    instance?: Instance,
+    instance: Instance,
     instances: InstanceMap,
     warning: boolean,
 }
