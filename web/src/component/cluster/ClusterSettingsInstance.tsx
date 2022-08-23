@@ -5,7 +5,8 @@ import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
     box: { display: "flex", gap: 1 },
-    autocomplete: { flex: "auto" }
+    autocomplete: { flex: "auto" },
+    toggle: { width: "30px" }
 }
 
 type Props = {
@@ -37,6 +38,7 @@ export function ClusterSettingsInstance(props: Props) {
             <ToggleButtonGroup size={"small"}>
                 <Tooltip title={"AUTO"} placement={"top"}>
                     <ToggleButton
+                        sx={SX.toggle}
                         value={"auto"}
                         selected={detection === "auto"}
                         onClick={() => setClusterDetection("auto")}>
@@ -45,6 +47,7 @@ export function ClusterSettingsInstance(props: Props) {
                 </Tooltip>
                 <Tooltip title={"MANUAL"} placement={"top"}>
                     <ToggleButton
+                        sx={SX.toggle}
                         value={"manual"}
                         selected={detection === "manual"}
                         onClick={() => setClusterDetection("manual")}>
