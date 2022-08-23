@@ -8,8 +8,9 @@ import {useAutoInstanceDetection, useManualInstanceDetection} from "../../app/ho
 import {ClustersRowRead} from "./ClustersRowRead";
 import {ClustersRowUpdate} from "./ClustersRowUpdate";
 import {ClustersCell} from "./ClustersCell";
-import {initialInstance} from "../../app/utils";
+import {initialInstance, InstanceColor} from "../../app/utils";
 import {InfoTitle} from "../view/InfoTitle";
+import {orange, purple} from "@mui/material/colors";
 
 const SX = {
     chip: {width: "100%"},
@@ -49,7 +50,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
         <TableRow>
             <ClustersCell>
                 <Box sx={SX.clusterName}>
-                    <Tooltip title={renderChipTooltip()} placement={"top"}>
+                    <Tooltip title={renderChipTooltip()} placement={"right-start"} arrow disableInteractive>
                         <Chip
                             sx={SX.chip}
                             color={isActive ? "primary" : "default"}
@@ -87,8 +88,9 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
 
     function renderChipTooltip() {
         const items = [
-            { name: "Detection", value: detection.toUpperCase() },
-            { name: "Default Instance", value: instance.api_domain },
+            { name: "Detection", value: detection, bgColor: purple[400] },
+            { name: "Instance", value: instance.api_domain, bgColor: InstanceColor[instance.role] },
+            { name: "Warning", value: warning ? "Yes" : "No", bgColor: orange[500] }
         ]
 
         return <InfoTitle items={items} />

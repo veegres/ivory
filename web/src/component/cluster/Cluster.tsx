@@ -15,7 +15,7 @@ import {ClusterTabs, CredentialType, ActiveCluster} from "../../app/types";
 import {ClusterSettings} from "./ClusterSettings";
 import {InfoIcons} from "../view/InfoIcons";
 import {CredentialOptions, InstanceColor} from "../../app/utils";
-import {orange} from "@mui/material/colors";
+import {orange, purple} from "@mui/material/colors";
 import {InfoBox} from "../view/InfoBox";
 import {InfoTitle} from "../view/InfoTitle";
 
@@ -138,11 +138,11 @@ export function Cluster() {
             { icon: postgres.icon, name: "Postgres Password", active: !!cluster.postgresCredId }
         ]
         const warningItems = [
-            { icon: <Warning />,  name: "Warning", active: warning, color: orange[500] }
+            { icon: <Warning />,  name: "Warning", active: warning, iconColor: orange[500] }
         ]
         const roleTooltip = [
-            { name: "Detection", value: detection.toUpperCase() },
-            { name: "Default Instance", value: instance.api_domain }
+            { name: "Detection", value: detection, bgColor: purple[400] },
+            { name: "Instance", value: instance.api_domain, bgColor: InstanceColor[instance.role] }
         ]
 
         return (

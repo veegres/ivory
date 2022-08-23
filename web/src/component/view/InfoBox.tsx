@@ -20,7 +20,7 @@ export function InfoBox(props: Props) {
     const borderRadius = withRadius ? "15px" : "4px"
 
     return (
-        <Tooltip title={tooltip} placement={"top"}>
+        <Tooltip title={tooltip} placement={"top"} arrow>
             <Box sx={{ ...SX.box, padding, borderRadius, border: `1px solid ${info?.palette.divider}` }}>
                 {children}
             </Box>
