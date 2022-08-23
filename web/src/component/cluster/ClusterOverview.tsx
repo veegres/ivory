@@ -1,11 +1,10 @@
 import {Box, Button, Radio, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
-import {useMutation, useQueryClient} from "react-query";
+import {useMutation, useQuery, useQueryClient} from "react-query";
 import {nodeApi} from "../../app/api";
 import {TableBody} from "../view/TableBody";
 import React, {useState} from "react";
 import {TableCellLoader} from "../view/TableCellLoader";
 import {InstanceColor} from "../../app/utils";
-import {InstanceMap} from "../../app/types";
 import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
 import {TabProps} from "./Cluster";
@@ -29,8 +28,11 @@ export function ClusterOverview({info}: TabProps) {
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setInstance, store: { activeInstance } } = useStore()
 
+    const instanceMap = useQuery(
+        ["node/cluster", cluster.name, instance.api_domain],
+        () => nodeApi.cluster(instance.api_domain)
+    )
     const queryClient = useQueryClient();
-    const instanceMap = queryClient.getQueryState<InstanceMap>(["node/cluster", cluster.name, instance.api_domain])
     const switchoverNode = useMutation(nodeApi.switchover, {
         onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain])
     })
@@ -51,10 +53,10 @@ export function ClusterOverview({info}: TabProps) {
                         <TableCell align={"center"}>Postgres</TableCell>
                         <TableCell align={"center"}>State</TableCell>
                         <TableCell align={"center"}>Lag</TableCell>
-                        <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMap?.isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
+                        <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMap.isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
-                <TableBody isLoading={!!instanceMap?.isFetching} cellCount={8}>
+                <TableBody isLoading={instanceMap.isFetching} cellCount={8}>
                     {renderContent()}
                 </TableBody>
             </Table>
