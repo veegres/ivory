@@ -12,7 +12,7 @@ type Props = {
     items: Item[]
 }
 
-export function IconInfo(props: Props) {
+export function InfoIcons(props: Props) {
     const { info, mode } = useTheme()
     const { items } = props
     return (

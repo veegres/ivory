@@ -13,10 +13,11 @@ import {useQuery} from "react-query";
 import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
 import {ClusterTabs, CredentialType, ActiveCluster} from "../../app/types";
 import {ClusterSettings} from "./ClusterSettings";
-import {IconInfo} from "../view/IconInfo";
+import {InfoIcons} from "../view/InfoIcons";
 import {CredentialOptions, InstanceColor} from "../../app/utils";
 import {orange} from "@mui/material/colors";
 import {InfoBox} from "../view/InfoBox";
+import {InfoTitle} from "../view/InfoTitle";
 
 const SX = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -127,7 +128,7 @@ export function Cluster() {
 
     function renderShortClusterInfo() {
         if (!activeCluster) return null
-        const {cluster, instance, warning} = activeCluster
+        const {cluster, instance, warning, detection} = activeCluster
         const postgres = CredentialOptions[CredentialType.POSTGRES]
         const patroni = CredentialOptions[CredentialType.PATRONI]
 
@@ -139,12 +140,16 @@ export function Cluster() {
         const warningItems = [
             { icon: <Warning />,  name: "Warning", active: warning, color: orange[500] }
         ]
+        const roleTooltip = [
+            { name: "Detection", value: detection.toUpperCase() },
+            { name: "Default Instance", value: instance.api_domain }
+        ]
 
         return (
             <Box sx={SX.rightBox}>
-                <IconInfo items={warningItems} />
-                <IconInfo items={infoItems} />
-                <InfoBox tooltip={`Default Instance: ${instance.api_domain}`} withPadding>
+                <InfoIcons items={warningItems} />
+                <InfoIcons items={infoItems} />
+                <InfoBox tooltip={<InfoTitle items={roleTooltip} />} withPadding>
                     <Box sx={{color: InstanceColor[instance.role]}}>
                         {instance.role.toUpperCase()}
                     </Box>

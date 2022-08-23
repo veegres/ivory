@@ -1,8 +1,8 @@
 import {useEffect, useMemo, useState} from "react";
-import {EventStream, InstanceMap, JobStatus} from "./types";
+import {Cluster, EventStream, Instance, InstanceDetection, InstanceMap, JobStatus} from "./types";
 import {useQueries, useQuery} from "react-query";
 import {bloatApi, nodeApi} from "./api";
-import {createColorsMap, JobOptions} from "./utils";
+import {combineInstances, createInstanceColors, JobOptions} from "./utils";
 
 export interface EventJob {
     isFetching: boolean;
@@ -58,58 +58,46 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
     }
 }
 
-const initialInstance = (api_domain: string) => ({ api_domain, name: "-", host: "-", port: 0, role: "unknown", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false })
 
-export function useSmartClusterQuery(name: string, instanceNames: string[]) {
-    const [index, setIndex] = useState(0)
+export function useManualInstanceDetection(use: boolean, cluster: Cluster, selected: Instance): InstanceDetection {
+    const query = useQuery(
+        ["node/cluster", cluster.name, selected?.api_domain],
+        () => { if (selected) return nodeApi.cluster(selected.api_domain) },
+        {enabled: use && !!selected}
+    )
 
-    const instanceQueries = useMemo(() => getNodeQueries(index, name, instanceNames), [index, name, instanceNames])
-    const queries = useQueries(instanceQueries)
-    const query = queries[index] ?? {}
     const clusterInstances = useMemo(() => query.data ?? {}, [query.data])
-
-    const colors = useMemo(() => createColorsMap(clusterInstances), [clusterInstances])
-    const [instances, warning] = useMemo(() => handleMemoInstances(clusterInstances, instanceNames), [clusterInstances, instanceNames])
-    const defaultInstance = useMemo(() => handleMemoActiveInstance(instances), [instances])
+    const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
+    const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
+    if (!instances[selected.api_domain]) instances[selected.api_domain] = selected
+    const instance = instances[selected.api_domain]
 
     return {
-        instance: defaultInstance,
-        instances: instances,
-        warning: warning,
-        colors: colors,
-        isFetching: query.isFetching,
-        refetch: () => setIndex(0)
+        active: { cluster, instance, instances, warning },
+        colors,
+        fetching: query.isFetching,
+        refetch: query.refetch,
     }
+}
 
-    /**
-     * Combine instances from patroni and from ivory
-     */
-    function handleMemoInstances(clusterInstances: InstanceMap, instanceNames: string[]): [InstanceMap, boolean] {
-        const map: InstanceMap = {}
-        let warning: boolean = false
+export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
+    const [index, setIndex] = useState(0)
 
-        for (const key in clusterInstances) {
-            if (instanceNames.includes(key)) {
-                map[key] = { ...clusterInstances[key], inInstances: true }
-            } else {
-                map[key] = { ...clusterInstances[key], inInstances: false }
-            }
-        }
+    const instanceQueries = useMemo(() => getNodeQueries(index, cluster.name, cluster.nodes), [index, cluster.name, cluster.nodes])
+    const queries = useQueries(instanceQueries)
+    const query = queries[index] ?? {}
 
-        for (const value of instanceNames) {
-            if (!map[value]) {
-                map[value] = initialInstance(value)
-            }
-        }
+    const clusterInstances = useMemo(() => query.data ?? {}, [query.data])
+    const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
+    const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
 
-        for (const key in map) {
-            const value = map[key]
-            if (!value.inInstances || !value.inCluster) {
-                warning = true
-            }
-        }
+    const instance = useMemo(() => handleMemoActiveInstance(instances), [instances])
 
-        return [map, warning]
+    return {
+        active: { cluster, instance, instances, warning },
+        colors,
+        fetching: query.isFetching,
+        refetch: () => setIndex(0)
     }
 
     /**
@@ -131,7 +119,7 @@ export function useSmartClusterQuery(name: string, instanceNames: string[]) {
             queryKey: ["node/cluster", name, instance],
             queryFn: () => nodeApi.cluster(instance),
             retry: 0,
-            enabled: index === j,
+            enabled: use && index === j,
             onError: () => { if (index < instances.length - 1) setIndex(index + 1) }
         }))
     }

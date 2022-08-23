@@ -1,5 +1,5 @@
 import {blue, green, orange} from "@mui/material/colors";
-import {ColorsMap, CredentialType, JobStatus, InstanceMap} from "./types";
+import {ColorsMap, CredentialType, JobStatus, InstanceMap, Instance} from "./types";
 import {ReactElement} from "react";
 import {HeartBroken, Storage} from "@mui/icons-material";
 
@@ -24,7 +24,7 @@ export const CredentialOptions: { [key in CredentialType]: { name: string, color
     [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken />}
 }
 
-export const createColorsMap = (nodes: InstanceMap) => {
+export const createInstanceColors = (nodes: InstanceMap) => {
     return Object.values(nodes).reduce(
         (map, node) => {
             const color = node.leader ? "success" : "primary"
@@ -34,6 +34,39 @@ export const createColorsMap = (nodes: InstanceMap) => {
         },
         {} as ColorsMap
     )
+}
+
+export const initialInstance: (api_domain: string) => Instance = (api_domain: string) => ({ api_domain, name: "-", host: "-", port: 0, role: "unknown", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false })
+
+/**
+ * Combine instances from patroni and from ivory
+ */
+export const combineInstances = (instanceNames: string[], instanceInCluster: InstanceMap): [InstanceMap, boolean] => {
+    const map: InstanceMap = {}
+    let warning: boolean = false
+
+    for (const key in instanceInCluster) {
+        if (instanceNames.includes(key)) {
+            map[key] = { ...instanceInCluster[key], inInstances: true }
+        } else {
+            map[key] = { ...instanceInCluster[key], inInstances: false }
+        }
+    }
+
+    for (const value of instanceNames) {
+        if (!map[value]) {
+            map[value] = initialInstance(value)
+        }
+    }
+
+    for (const key in map) {
+        const value = map[key]
+        if (!value.inInstances || !value.inCluster) {
+            warning = true
+        }
+    }
+
+    return [map, warning]
 }
 
 export const getPatroniDomain = (url: string) => url.split('/')[2]

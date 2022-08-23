@@ -1,5 +1,5 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {ActiveCluster, Instance} from "../app/types";
+import {ActiveCluster, DetectionType, Instance} from "../app/types";
 
 // STORE
 interface StoreType {
@@ -19,6 +19,7 @@ interface StoreContextType {
 
     setCluster: (cluster?: ActiveCluster) => void,
     setClusterInstance: (instance: Instance) => void,
+    setClusterDetection: (detection: DetectionType) => void
     setClusterTab: (tab: number) => void,
     isClusterActive: (name: string) => boolean
     isClusterOverviewOpen: () => boolean
@@ -34,6 +35,7 @@ const initialStoreContext: StoreContextType = {
 
     setCluster: () => void 0,
     setClusterInstance: () => void 0,
+    setClusterDetection: () => void 0,
     setClusterTab: () => void 0,
     isClusterActive: () => false,
     isClusterOverviewOpen: () => false,
@@ -60,9 +62,12 @@ export function StoreProvider(props: { children: ReactNode }) {
     const value: StoreContextType = {
         store: state,
 
-        setCluster: (cluster?: ActiveCluster) => setState({...state, activeCluster: cluster, activeInstance: undefined}),
+        setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster, activeInstance: undefined})),
         setClusterInstance: (instance: Instance) => {
-            if (activeCluster) setState({...state, activeCluster: {...activeCluster, instance}})
+            if (activeCluster) setState({...state, activeCluster: {...activeCluster, instance, detection: "manual"}})
+        },
+        setClusterDetection: (detection: DetectionType) => {
+            if (activeCluster) setState({...state, activeCluster: {...activeCluster, detection}})
         },
         setClusterTab: (tab: number) => setState({...state, activeClusterTab: tab}),
         isClusterActive: (name: string) => name === activeCluster?.cluster.name,

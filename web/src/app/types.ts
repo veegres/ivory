@@ -64,11 +64,26 @@ export interface ClusterTabs {
     [key: number]: { body: (cluster: ActiveCluster) => ReactNode, info?: ReactNode }
 }
 
+export type DetectionType = "auto" | "manual"
+
 export interface ActiveCluster {
     cluster: Cluster,
     instance: Instance,
     instances: InstanceMap,
     warning: boolean,
+    detection: DetectionType,
+}
+
+export interface InstanceDetection {
+    active: {
+        cluster: Cluster,
+        instance: Instance,
+        instances: InstanceMap,
+        warning: boolean,
+    },
+    colors: ColorsMap,
+    fetching: boolean,
+    refetch: () => void,
 }
 
 // SECRET
