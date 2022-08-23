@@ -1,45 +1,74 @@
 import {shortUuid} from "../../app/utils";
 import {Autocomplete, Box, TextField} from "@mui/material";
-import React, {useMemo, useState} from "react";
-import {useQuery, UseQueryResult} from "react-query";
-import {credentialApi} from "../../app/api";
-import {CredentialMap, CredentialType} from "../../app/types";
+import React, {useEffect, useMemo, useState} from "react";
+import {useMutation, useQuery, useQueryClient} from "react-query";
+import {clusterApi, credentialApi} from "../../app/api";
+import {Cluster, ClusterMap, CredentialMap, CredentialType} from "../../app/types";
+
+const keys = {
+    [CredentialType.POSTGRES]: "postgresCredId",
+    [CredentialType.PATRONI]: "patroniCredId",
+}
 
 type Value = {
     key: string
     short: string
-    username: string
+    username?: string
 }
 
 type Props = {
     type: CredentialType
-    pass: string
+    cluster: Cluster
+    credId: string
     label: string
 }
 
 export function ClusterSettingsPassword(props: Props) {
-    const { type, pass, label } = props
-    const [value, setValue] = useState<Value | null>(null);
-    const [inputValue, setInputValue] = useState(pass);
+    const { type, label, cluster, credId } = props
+    const passKey = keys[type]
+    const [value, setValue] = useState<Value | null>(null)
+    const [inputValue, setInputValue] = useState(credId);
 
     const query = useQuery(["credentials", type], () => credentialApi.get(type))
-    const options = useMemo(() => handleMemoOptions(query), [query])
+    const queryClient = useQueryClient();
+    const updateCluster = useMutation(clusterApi.update, {
+        onSuccess: (data) => {
+            const map = queryClient.getQueryData<ClusterMap>("cluster/list") ?? {} as ClusterMap
+            map[data.name] = data
+            queryClient.setQueryData<ClusterMap>("cluster/list", map)
+        }
+    })
+
+    const map = useMemo(() => query.data ?? {}, [query.data])
+    const options = useMemo(() => handleMemoOptions(map), [map])
+
+    useEffect(handleEffectValue, [credId, map])
 
     return (
         <Autocomplete
             options={options}
             value={value}
-            onChange={(_, value) => setValue(value)}
+            onChange={(_, value) => handleOnChange(value)}
             inputValue={inputValue}
+            loading={query.isLoading || updateCluster.isLoading}
             onInputChange={(_, value) => setInputValue(value)}
             getOptionLabel={(option) => `${option.username} [${option.short}]`}
             isOptionEqualToValue={(option, value) => option.key === value.key}
-            renderOption={(props, option) => <Box component="li" {...props}>{option.username} [{option.short}]</Box>}
+            renderOption={(props, option) => <Box component={"li"} {...props}>{option.username} [{option.short}]</Box>}
             renderInput={(params) => <TextField {...params} size={"small"} label={label} />}
         />
     )
 
-    function handleMemoOptions(query: UseQueryResult<CredentialMap>) {
-        return Object.entries(query.data ?? {}).map(([key, value]) => ({ key, short: shortUuid(key), username: value.username }))
+    function handleOnChange(value: Value | null) {
+        updateCluster.mutate({...cluster, [passKey]: value?.key})
+    }
+
+    function handleEffectValue() {
+        if (credId) setValue({ key: credId, short: shortUuid(credId), username: map[credId]?.username })
+        else setValue(null)
+    }
+
+    function handleMemoOptions(map: CredentialMap) {
+        return Object.entries(map).map(([key, value]) => ({ key, short: shortUuid(key), username: value.username }))
     }
 }
