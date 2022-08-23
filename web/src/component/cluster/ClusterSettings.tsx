@@ -12,14 +12,14 @@ const SX = {
 export function ClusterSettings({info}: TabProps) {
     const { instances, instance, cluster, detection } = info
 
-    const passPostgres = cluster.postgresCredId ?? ""
-    const passPatroni = cluster.patroniCredId ?? ""
+    const postgresCredId = cluster.postgresCredId ?? ""
+    const patroniCredId = cluster.patroniCredId ?? ""
 
     return (
         <Stack sx={SX.settings}>
             <ClusterSettingsInstance instance={instance.api_domain} instances={instances} detection={detection} />
-            <ClusterSettingsPassword label={"Postgres Password"} type={CredentialType.POSTGRES} pass={passPostgres} />
-            <ClusterSettingsPassword label={"Patroni Password"} type={CredentialType.PATRONI} pass={passPatroni} />
+            <ClusterSettingsPassword label={"Postgres Password"} type={CredentialType.POSTGRES} credId={postgresCredId} cluster={cluster} />
+            <ClusterSettingsPassword label={"Patroni Password"} type={CredentialType.PATRONI} credId={patroniCredId} cluster={cluster} />
             <Autocomplete
                 value={cluster.certsId}
                 options={[]}
