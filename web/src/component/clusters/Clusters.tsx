@@ -13,7 +13,7 @@ import {ClustersRowNew} from "./ClustersRowNew";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
-    nameCell: {width: '250px'},
+    nameCell: {width: '220px'},
     buttonCell: {width: '1%'}
 }
 
