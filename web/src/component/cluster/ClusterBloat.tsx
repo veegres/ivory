@@ -1,17 +1,19 @@
-import {Box, Button, Collapse, Grid, IconButton, TextField, Tooltip} from "@mui/material";
+import {Box, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "react-query";
 import {bloatApi} from "../../app/api";
 import React, {useState} from "react";
 import {CompactTable, Style, Target} from "../../app/types";
 import {ClusterBloatJob} from "./ClusterBloatJob";
-import {Replay} from "@mui/icons-material";
+import {Cached} from "@mui/icons-material";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
 import {TabProps} from "./Cluster";
 import {ClusterNoInstanceError, ClusterNoLeaderError} from "./ClusterError";
 
 const SX = {
-    jobsLoader: {minHeight: "4px", margin: "10px 0"}
+    jobsLoader: {minHeight: "4px", margin: "10px 0"},
+    form: {display: "grid", flexGrow: 1, padding: "0 20px", gridTemplateColumns: "repeat(3, 1fr)", gridColumnGap: "30px", gridRowGap: "5px"},
+    buttons: {display: "flex", alignItems: "center", gap: 1},
 }
 
 const style: Style = {
@@ -49,48 +51,46 @@ export function ClusterBloat({info}: TabProps) {
 
     function renderForm() {
         return (
-            <Grid container justifyContent={"space-between"} flexWrap={"nowrap"}>
-                <Grid item container flexGrow={1} direction={"column"} alignItems={"center"} >
-                    <Grid item container gap={2}>
-                        <TextField
-                            size={"small"} label={"Database Name"} variant={"standard"}
-                            onChange={(e) => setTarget({...target, dbName: e.target.value})}
-                        />
-                        <TextField
-                            size={"small"} label="Schema" variant={"standard"}
-                            onChange={(e) => setTarget({...target, schema: e.target.value})}
-                        />
-                        <TextField
-                            size={"small"} label={"Table"} variant={"standard"}
-                            onChange={(e) => setTarget({...target, table: e.target.value})}
-                        />
-                        <TextField
-                            size={"small"} label={"Exclude Schema"} variant={"standard"}
-                            onChange={(e) => setTarget({...target, excludeSchema: e.target.value})}
-                        />
-                        <TextField
-                            size={"small"} label={"Exclude Table"} variant={"standard"}
-                            onChange={(e) => setTarget({...target, excludeTable: e.target.value})}
-                        />
-                        <TextField
-                            size={"small"} label={"Ratio"} type={"number"} variant={"standard"}
-                            onChange={(e) => setRadio(parseInt(e.target.value))}
-                        />
-                    </Grid>
-                </Grid>
-                <Grid item container width={"auto"} direction={"column"} alignItems={"center"} justifyContent={"space-between"}>
-                    <Button variant={"contained"} disabled={start.isLoading || !cluster.postgresCredId} onClick={handleRun}>
-                        RUN
-                    </Button>
-                    <Tooltip title={"Reload Jobs"} placement={"left"}>
-                        <Box component={"span"}>
-                            <IconButton onClick={() => initJobs.refetch()} disabled={initJobs.isFetching}>
-                                <Replay/>
-                            </IconButton>
-                        </Box>
-                    </Tooltip>
-                </Grid>
-            </Grid>
+            <Box sx={SX.form}>
+                <TextField
+                    size={"small"} label={"Database Name"} variant={"standard"}
+                    onChange={(e) => setTarget({...target, dbName: e.target.value})}
+                />
+                <TextField
+                    size={"small"} label="Schema" variant={"standard"}
+                    onChange={(e) => setTarget({...target, schema: e.target.value})}
+                />
+                <TextField
+                    size={"small"} label={"Table"} variant={"standard"}
+                    onChange={(e) => setTarget({...target, table: e.target.value})}
+                />
+                <TextField
+                    size={"small"} label={"Exclude Schema"} variant={"standard"}
+                    onChange={(e) => setTarget({...target, excludeSchema: e.target.value})}
+                />
+                <TextField
+                    size={"small"} label={"Exclude Table"} variant={"standard"}
+                    onChange={(e) => setTarget({...target, excludeTable: e.target.value})}
+                />
+                <Box sx={SX.buttons}>
+                    <TextField sx={{ flexGrow: 1 }}
+                        size={"small"} label={"Ratio"} type={"number"} variant={"standard"}
+                        onChange={(e) => setRadio(parseInt(e.target.value))}
+                    />
+                    <Box sx={SX.buttons}>
+                        <Button variant={"text"} disabled={start.isLoading || !cluster.postgresCredId} onClick={handleRun}>
+                            RUN
+                        </Button>
+                        <Tooltip title={"Refresh list of Jobs"} placement={"top"}>
+                            <Box component={"span"}>
+                                <IconButton onClick={() => initJobs.refetch()} disabled={initJobs.isFetching}>
+                                    <Cached />
+                                </IconButton>
+                            </Box>
+                        </Tooltip>
+                    </Box>
+                </Box>
+            </Box>
         )
     }
 

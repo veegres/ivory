@@ -10,7 +10,7 @@ import {ClustersRowUpdate} from "./ClustersRowUpdate";
 import {ClustersCell} from "./ClustersCell";
 import {initialInstance, InstanceColor} from "../../app/utils";
 import {InfoTitle} from "../view/InfoTitle";
-import {orange, purple} from "@mui/material/colors";
+import {grey, orange, purple} from "@mui/material/colors";
 
 const SX = {
     chip: {width: "100%"},
@@ -90,7 +90,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
         const items = [
             { name: "Detection", value: detection, bgColor: purple[400] },
             { name: "Instance", value: instance.api_domain, bgColor: InstanceColor[instance.role] },
-            { name: "Warning", value: warning ? "Yes" : "No", bgColor: orange[500] }
+            { name: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500] }
         ]
 
         return <InfoTitle items={items} />
@@ -101,7 +101,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
     }
 
     function handleEffectStoreUpdate() {
-        if (isActive){
+        if (isActive) {
             setCluster({warning, cluster, instance, instances, detection})
         }
     }
