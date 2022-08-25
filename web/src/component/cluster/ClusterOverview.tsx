@@ -30,7 +30,8 @@ export function ClusterOverview({info}: TabProps) {
 
     const instanceMap = useQuery(
         ["node/cluster", cluster.name, instance.api_domain],
-        () => nodeApi.cluster(instance.api_domain)
+        () => nodeApi.cluster(instance.api_domain),
+        { retry: 0 }
     )
     const queryClient = useQueryClient();
     const switchoverNode = useMutation(nodeApi.switchover, {

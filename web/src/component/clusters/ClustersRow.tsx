@@ -1,5 +1,5 @@
 import {Box, Chip, TableRow, Tooltip} from "@mui/material";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Cluster, DetectionType} from "../../app/types";
 import {RefreshIconButton,} from "../view/IconButtons";
 import {DynamicInputs} from "../view/DynamicInputs";
@@ -27,6 +27,7 @@ type Props = {
 export function ClustersRow({name, cluster, editable, toggle}: Props) {
     const {setCluster, isClusterActive, store} = useStore()
     const [detection, setDetection] = useState<DetectionType>("auto")
+    const detectionRef = useRef(detection)
     const [manualInstance, setManualInstance] = useState(initialInstance(""))
     const isActive = isClusterActive(name)
     const isDetectionManual = detection === "manual"
@@ -41,7 +42,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(handleEffectStoreUpdate, [isActive, warning, cluster, instance, instances, detection])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(handleEffectRefetch, [isActive, detection])
+    useEffect(handleEffectRefetch, [isActive, detection, detectionRef])
 
     useEffect(handleEffectDetection, [isActive, store.activeCluster, detection])
     useEffect(handleEffectManualInstance, [isActive, store.activeCluster, manualInstance])
@@ -97,7 +98,10 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
     }
 
     function handleEffectRefetch() {
-        if (isActive) refetch()
+        if (isActive && detection !== detectionRef.current) {
+            refetch()
+            detectionRef.current = detection
+        }
     }
 
     function handleEffectStoreUpdate() {
