@@ -91,7 +91,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
     const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
 
-    const instance = useMemo(() => handleMemoActiveInstance(instances), [instances])
+    const instance = useMemo(() => handleMemoActiveInstance(instances, index), [instances, index])
 
     return {
         active: { cluster, instance, instances, warning },
@@ -103,9 +103,9 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     /**
      * Either find leader or set query that we were sending request to
      */
-    function handleMemoActiveInstance(instances: InstanceMap) {
+    function handleMemoActiveInstance(instances: InstanceMap, index: number) {
         const values = Object.values(instances)
-        return values.find(instance => instance.leader) ?? values[0]
+        return values.find(instance => instance.leader) ?? values[index]
     }
 
     /**
@@ -120,7 +120,9 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
             queryFn: () => nodeApi.cluster(instance),
             retry: 0,
             enabled: use && index === j,
-            onError: () => { if (index < instances.length - 1) setIndex(index + 1) }
+            onError: () => {
+                if (index < instances.length - 1) setIndex(index => index + 1)
+            }
         }))
     }
 }
