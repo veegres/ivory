@@ -144,6 +144,7 @@ func (w *worker) runner() {
 
 			// Get password
 			// TODO move decryption to another method (encapsulate)
+			// TODO fix crash when there is no password with this id
 			credential, _ := persistence.Database.Credential.GetCredential(model.CredentialId)
 			password, errDecrypt := Decrypt(credential.Password, Secret.Get())
 			if errDecrypt != nil {
