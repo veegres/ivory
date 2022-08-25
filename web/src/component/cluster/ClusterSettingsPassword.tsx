@@ -41,6 +41,7 @@ export function ClusterSettingsPassword(props: Props) {
 
     const map = useMemo(() => query.data ?? {}, [query.data])
     const options = useMemo(() => handleMemoOptions(map), [map])
+    const isPasswordRemoved = !!value && !map[credId]
 
     useEffect(handleEffectValue, [credId, map])
 
@@ -52,10 +53,18 @@ export function ClusterSettingsPassword(props: Props) {
             inputValue={inputValue}
             loading={query.isLoading || updateCluster.isLoading}
             onInputChange={(_, value) => setInputValue(value)}
-            getOptionLabel={(option) => `${option.username} [${option.short}]`}
+            getOptionLabel={(option) => `${option.username ?? "***"} [${option.short}]`}
             isOptionEqualToValue={(option, value) => option.key === value.key}
             renderOption={(props, option) => <Box component={"li"} {...props}>{option.username} [{option.short}]</Box>}
-            renderInput={(params) => <TextField {...params} size={"small"} label={label} />}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    size={"small"}
+                    label={label}
+                    error={isPasswordRemoved}
+                    helperText={isPasswordRemoved && "password was removed"}
+                />
+            )}
         />
     )
 
