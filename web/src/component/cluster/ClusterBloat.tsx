@@ -8,7 +8,7 @@ import {Cached} from "@mui/icons-material";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
 import {TabProps} from "./Cluster";
-import {ClusterNoInstanceError, ClusterNoLeaderError} from "./ClusterError";
+import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./ClusterError";
 
 const SX = {
     jobsLoader: {minHeight: "4px", margin: "10px 0"},
@@ -37,7 +37,7 @@ export function ClusterBloat({info}: TabProps) {
 
     return (
         <Box>
-            {instance.leader ? renderForm() : <ClusterNoLeaderError />}
+            {renderForm()}
             <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} />
             <TransitionGroup style={style.transition}>
                 {jobs.map((value) => (
@@ -50,6 +50,9 @@ export function ClusterBloat({info}: TabProps) {
     )
 
     function renderForm() {
+        if (!instance.leader) return <ClusterNoLeaderError />
+        if (!cluster.postgresCredId) return <ClusterNoPostgresPassword />
+
         return (
             <Box sx={SX.form}>
                 <TextField
@@ -78,7 +81,7 @@ export function ClusterBloat({info}: TabProps) {
                         onChange={(e) => setRadio(parseInt(e.target.value))}
                     />
                     <Box sx={SX.buttons}>
-                        <Button variant={"text"} disabled={start.isLoading || !cluster.postgresCredId} onClick={handleRun}>
+                        <Button variant={"text"} disabled={start.isLoading} onClick={handleRun}>
                             RUN
                         </Button>
                         <Tooltip title={"Refresh list of Jobs"} placement={"top"}>

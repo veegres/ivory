@@ -8,3 +8,7 @@ export function ClusterNoInstanceError() {
 export function ClusterNoLeaderError() {
     return <ErrorAlert error={"Default instance is not a leader, probably something has happened or you've change it"}/>
 }
+
+export function ClusterNoPostgresPassword() {
+    return <ErrorAlert error={"You haven't set up postgres password for this cluster. Please, do it in the cluster settings bar"}/>
+}
