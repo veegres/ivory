@@ -9,6 +9,15 @@ This Dockerfile and docker-compose will run for you patroni cluster with 3 insta
 2. docker-compose up -d
 ```
 
+### Set up pgcompacttable
+
+```
+1. Install Perl DBI library (Debian: apt install libdbi-perl libdbd-pg-perl)
+2. curl -o /usr/bin/pgcompacttable https://raw.githubusercontent.com/dataegret/pgcompacttable/master/bin/pgcompacttable
+3. chmod +x /usr/bin/pgcompacttable
+```
+Now you can use pgcompacttable from your console, Ivory will use it as well
+
 ### Connection
 
 - **Patroni Rest API:** `localhost:[8001-8003]` (example http://patroni1:8008)

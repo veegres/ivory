@@ -6,7 +6,7 @@ import {TabProps} from "./Cluster";
 import {ClusterSettingsInstance} from "./ClusterSettingsInstance";
 
 const SX = {
-    settings: { width: "250px", gap: 1 }
+    settings: { width: "250px", gap: "12px", padding: "8px 0" }
 }
 
 export function ClusterSettings({info}: TabProps) {
