@@ -1,4 +1,4 @@
-# Ivory (patroni cluster visualization)
+# Ivory (patroni cluster management)
 
 Ivory is an open-source project which is designed to simplify and visualize work with postgres clusters
 

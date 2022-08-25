@@ -83,6 +83,8 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, selec
 export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
     const [index, setIndex] = useState(0)
 
+    // we need disable cause it thinks that function can be updated
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const instanceQueries = useMemo(() => getNodeQueries(index, cluster.name, cluster.nodes), [index, cluster.name, cluster.nodes])
     const queries = useQueries(instanceQueries)
     const query = queries[index] ?? {}
