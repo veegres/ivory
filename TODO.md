@@ -5,9 +5,16 @@
 - [x] Choose licence
 - [ ] Add option to change data folder for docker mount
 - [x] Add versioning and push image to docker hub
-- [ ] Add oportunity to save password and defer from postgres & patroni
-- [ ] Add oportunity to support certs for patroni
-- [ ] Add oportunity to use/check more commonly used queries for managing DB (bloat of index, bloat of table, active queries, etc)
+- [x] Add opportunity to save password and defer them from postgres & patroni
+- [ ] Add opportunity to support certs for patroni and maybe postgres (do we need it?)
+- [ ] Add opportunity to use/check more commonly used queries for managing DB (bloat of index, bloat of table, active queries, etc)
+  - [ ] active queries - place them in instance block to be able to check queries for each instance
+  - [ ] bloat queries - place them in bloat tab to be able to switch and easily start bloat cleaning
+  - [ ] other queries - make separate tab for them, think where to place it and how we can add customisation feature for them
+- [ ] Add check of active queries to Instance block and function to kill them
+- [ ] Support more patroni features like (schedule times, do switchover for direct instance, reload, etc)
+- [ ] Add opportunity set up new cluster automatically by entering name and one of the instance
+- [ ] Add tags to cluster, we should be able to filter by them
 
 ### [Backend]
 
@@ -24,7 +31,7 @@
 - [ ] Change main cluster table
   - [x] add request for each cluster to show nodes role in that table
   - [x] make possibility to open bloat, cluster once or only for master
-  - [ ] add action buttons to overview tab
+  - [ ] add action buttons to Instance overview tab
   - [ ] when stream is finished we should reload logs on open button
 - [ ] Add navigation (router + urls)
 - [ ] Add footer with information about the project, link to github and year, etc
@@ -34,6 +41,7 @@
 - [ ] Add more strict Eslint rules (imports, spaces near objects `{}`, etc), Hooks for git and Prettier
 - [ ] Think about mocks for web, do we need them for easy development
 - [ ] Move all shown strings, text to one file
+- [ ] Improve cluster detection by patroni name without port (pros and cons)
 
 ### [Long Term Plans]
 
