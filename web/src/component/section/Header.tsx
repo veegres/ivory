@@ -26,7 +26,7 @@ export function Header() {
             </Grid>
             <Grid item textAlign={"center"}>
                 <Box sx={{...SX.title, color}} onClick={handleAnimal}>{animal} Ivory {animal}</Box>
-                <Box sx={SX.caption}>[postgres cluster visualization]</Box>
+                <Box sx={SX.caption}>[postgres cluster management]</Box>
             </Grid>
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>
                 <Box sx={SX.buttons}>
