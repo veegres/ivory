@@ -144,11 +144,14 @@ func (w *worker) runner() {
 
 			// Get password
 			// TODO move decryption to another method (encapsulate)
-			// TODO fix crash when there is no password with this id
-			credential, _ := persistence.Database.Credential.GetCredential(model.CredentialId)
+			credential, errCred := persistence.Database.Credential.GetCredential(model.CredentialId)
+			if errCred != nil {
+				w.jobStatusHandler(element, FAILED, errors.New("Find credential error: "+errCred.Error()))
+				return
+			}
 			password, errDecrypt := Decrypt(credential.Password, Secret.Get())
 			if errDecrypt != nil {
-				w.jobStatusHandler(element, FAILED, errDecrypt)
+				w.jobStatusHandler(element, FAILED, errors.New("Decrypt credential error: "+errDecrypt.Error()))
 				return
 			}
 			credentialArgs := []string{
@@ -161,11 +164,11 @@ func (w *worker) runner() {
 			cmd := exec.Command("pgcompacttable", args...)
 			pipe, errPipe := cmd.StdoutPipe()
 			if errPipe != nil {
-				w.jobStatusHandler(element, FAILED, errPipe)
+				w.jobStatusHandler(element, FAILED, errors.New("pgcompacttable execution error: "+errPipe.Error()))
 				return
 			}
 			if errStart := cmd.Start(); errStart != nil {
-				w.jobStatusHandler(element, FAILED, errStart)
+				w.jobStatusHandler(element, FAILED, errors.New("pgcompacttable execution error: "+errStart.Error()))
 				return
 			}
 			w.elements[jobUuid].job.SetCommand(cmd)
@@ -181,7 +184,7 @@ func (w *worker) runner() {
 
 			// Wait when pipe will be closed
 			if errWait := cmd.Wait(); errWait != nil {
-				w.jobStatusHandler(element, FAILED, errWait)
+				w.jobStatusHandler(element, FAILED, errors.New("pgcompacttable execution error: "+errWait.Error()))
 				return
 			}
 
@@ -224,14 +227,14 @@ func (w *worker) stopper() {
 			}
 			job := element.job
 			if cmd := job.GetCommand(); cmd != nil {
-				err := job.GetCommand().Process.Kill()
-				if err == nil {
+				killErr := job.GetCommand().Process.Kill()
+				if killErr == nil {
 					w.jobStatusHandler(element, STOPPED, nil)
 				} else {
 					if job.IsJobActive() {
-						w.jobStatusHandler(element, FINISHED, err)
+						w.jobStatusHandler(element, FINISHED, errors.New("Kill pgcompacttable error: "+killErr.Error()))
 					} else {
-						w.jobStatusHandler(element, job.GetStatus(), err)
+						w.jobStatusHandler(element, job.GetStatus(), errors.New("Kill pgcompacttable error: "+killErr.Error()))
 					}
 				}
 			}

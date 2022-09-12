@@ -3,6 +3,7 @@ package persistence
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"github.com/boltdb/bolt"
 	"log"
 	"os"
@@ -100,7 +101,11 @@ func (d common) get(bucket []byte, key string) ([]byte, error) {
 	var value []byte
 	err := d.bolt.View(func(tx *bolt.Tx) error {
 		value = tx.Bucket(bucket).Get([]byte(key))
-		return nil
+		if value == nil {
+			return errors.New("no such element")
+		} else {
+			return nil
+		}
 	})
 	return value, err
 }
