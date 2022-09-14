@@ -11,6 +11,7 @@ type routes struct {
 
 func Start() {
 	r := routes{router: gin.Default()}
+	r.router.UseH2C = true
 
 	api := r.router.Group("/api")
 	api.GET("/ping", pong)
