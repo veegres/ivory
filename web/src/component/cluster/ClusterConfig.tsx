@@ -1,11 +1,11 @@
 import {Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip} from "@mui/material";
 import {nodeApi} from "../../app/api";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {useTheme} from "../../provider/ThemeProvider";
 import {ErrorAlert} from "../view/ErrorAlert";
-import React, {ReactElement, useState} from "react";
+import React, {ReactElement, useEffect, useState} from "react";
 import {AxiosError} from "axios";
-import ReactCodeMirror, {EditorView} from "@uiw/react-codemirror";
+import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
@@ -13,6 +13,7 @@ import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
 import {Instance} from "../../app/types";
 import {TabProps} from "./Cluster";
 import {ClusterNoInstanceError} from "./ClusterError";
+import {EditorView} from "@codemirror/view";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
@@ -25,15 +26,14 @@ export function ClusterConfig({info}: TabProps) {
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState('')
 
-    const queryClient = useQueryClient();
-    const {data: config, isLoading, isError, error} = useQuery(
-        ['node/config', instance.api_domain],
+    const {data: config, isLoading, isError, error, refetch} = useQuery(
+        ["node/config", instance.api_domain],
         () => nodeApi.config(instance.api_domain),
         { enabled: instance.inCluster }
     )
-    const updateConfig = useMutation(nodeApi.updateConfig, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/config"])
-    })
+    const updateConfig = useMutation(nodeApi.updateConfig, {onSuccess: refetch})
+
+    useEffect(() => setConfigState(stringify(config)), [config])
 
     if (isError) return <ErrorAlert error={error as AxiosError}/>
     if (isLoading) return <Skeleton variant="rectangular" height={300}/>
@@ -47,7 +47,7 @@ export function ClusterConfig({info}: TabProps) {
         <Grid container flexWrap={"nowrap"}>
             <Grid item flexGrow={1}>
                 <ReactCodeMirror
-                    value={stringify(config)}
+                    value={configState}
                     theme={codeMirrorTheme}
                     editable={isEditable}
                     extensions={[json(), isDark ? highlightExtension.dark : highlightExtension.light]}
@@ -67,7 +67,7 @@ export function ClusterConfig({info}: TabProps) {
 
         return (
             <>
-                {renderButton(<Cancel/>, "Cancel", () => setIsEditable(false))}
+                {renderButton(<Cancel/>, "Cancel", handleCancel)}
                 {renderButton(<SaveAlt/>, "Save", () => handleUpdate(instance, configState))}
             </>
         )
@@ -86,6 +86,11 @@ export function ClusterConfig({info}: TabProps) {
     function handleCopyAll() {
         const currentConfig = configState ? configState : stringify(config)
         return navigator.clipboard.writeText(currentConfig)
+    }
+
+    function handleCancel() {
+        setIsEditable(false)
+        setConfigState(stringify(config))
     }
 
     function handleUpdate(node: Instance, config: string) {
