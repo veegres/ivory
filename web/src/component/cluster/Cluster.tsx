@@ -9,7 +9,7 @@ import {useStore} from "../../provider/StoreProvider";
 import {ClusterBloat} from "./ClusterBloat";
 import {InfoAlert} from "../view/InfoAlert";
 import {Block} from "../view/Block";
-import {useQuery} from "react-query";
+import {useQuery} from "@tanstack/react-query";
 import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
 import {ClusterTabs, CredentialType, ActiveCluster} from "../../app/types";
 import {ClusterSettings} from "./ClusterSettings";
@@ -69,7 +69,7 @@ export function Cluster() {
     const {store: {activeCluster, activeClusterTab}, setClusterTab} = useStore()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useQuery('cluster/list')
+    const clusters = useQuery(["cluster/list"])
     const tab = TABS[activeClusterTab]
 
     return (

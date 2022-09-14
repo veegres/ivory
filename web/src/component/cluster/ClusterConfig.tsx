@@ -1,6 +1,6 @@
 import {Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip} from "@mui/material";
 import {nodeApi} from "../../app/api";
-import {useMutation, useQuery, useQueryClient} from "react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useTheme} from "../../provider/ThemeProvider";
 import {ErrorAlert} from "../view/ErrorAlert";
 import React, {ReactElement, useState} from "react";
@@ -32,7 +32,7 @@ export function ClusterConfig({info}: TabProps) {
         { enabled: instance.inCluster }
     )
     const updateConfig = useMutation(nodeApi.updateConfig, {
-        onSuccess: async () => await queryClient.refetchQueries('node/config')
+        onSuccess: async () => await queryClient.refetchQueries(["node/config"])
     })
 
     if (isError) return <ErrorAlert error={error as AxiosError}/>

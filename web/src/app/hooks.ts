@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useState} from "react";
 import {Cluster, EventStream, Instance, InstanceDetection, InstanceMap, JobStatus} from "./types";
-import {useQueries, useQuery} from "react-query";
+import {useQueries, useQuery} from "@tanstack/react-query";
 import {bloatApi, nodeApi} from "./api";
 import {combineInstances, createInstanceColors, JobOptions} from "./utils";
 
@@ -15,7 +15,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
     const [status, setStatus] = useState(JobOptions[initStatus])
     const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
 
-    const {isFetching} = useQuery(['node/bloat/logs', uuid], () => bloatApi.logs(uuid), {
+    const {isFetching} = useQuery(["node/bloat/logs", uuid], () => bloatApi.logs(uuid), {
         onSuccess: data => setLogs(data),
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
@@ -86,7 +86,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     // we need disable cause it thinks that function can be updated
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const instanceQueries = useMemo(() => getNodeQueries(index, cluster.name, cluster.nodes), [index, cluster.name, cluster.nodes])
-    const queries = useQueries(instanceQueries)
+    const queries = useQueries({ queries: instanceQueries })
     const query = queries[index] ?? {}
 
     const clusterInstances = useMemo(() => query.data ?? {}, [query.data])

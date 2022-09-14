@@ -1,5 +1,5 @@
 import {Box, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/material";
-import {useMutation, useQuery} from "react-query";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {bloatApi} from "../../app/api";
 import React, {useState} from "react";
 import {CompactTable, Style, Target} from "../../app/types";

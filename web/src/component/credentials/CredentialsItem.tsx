@@ -1,7 +1,7 @@
 import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../view/IconButtons";
 import React, {useEffect, useState} from "react";
 import {Credential, CredentialMap} from "../../app/types";
-import {useMutation, useQueryClient} from "react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
 
@@ -20,13 +20,13 @@ export function CredentialsItem(props: Props) {
 
     const queryClient = useQueryClient();
     const deleteCredentials = useMutation(credentialApi.delete, {
-        onSuccess: async () => await queryClient.refetchQueries("credentials")
+        onSuccess: async () => await queryClient.refetchQueries(["credentials"])
     })
     const updateCredentials = useMutation(credentialApi.update, {
         onSuccess: (data) => {
-            const map = queryClient.getQueryData<CredentialMap>('credentials') ?? {}
+            const map = queryClient.getQueryData<CredentialMap>(["credentials"]) ?? {}
             map[uuid] = data
-            queryClient.setQueryData<CredentialMap>('credentials', map)
+            queryClient.setQueryData<CredentialMap>(["credentials"], map)
             setEdit(false)
         }
     })

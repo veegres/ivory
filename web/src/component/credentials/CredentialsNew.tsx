@@ -1,6 +1,6 @@
 import {CredentialsRow} from "./CredentialsRow";
 import React, {useState} from "react";
-import {useMutation, useQueryClient} from "react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {Credential, CredentialMap, CredentialType} from "../../app/types";
 import {CancelIconButton, SaveIconButton} from "../view/IconButtons";
@@ -14,9 +14,9 @@ export function CredentialsNew() {
     const queryClient = useQueryClient();
     const createCredentials = useMutation(credentialApi.create, {
         onSuccess: ({key, credential}) => {
-            const map = queryClient.getQueryData<CredentialMap>('credentials') ?? {}
+            const map = queryClient.getQueryData<CredentialMap>(["credentials"]) ?? {}
             map[key] = credential
-            queryClient.setQueryData<CredentialMap>('credentials', map)
+            queryClient.setQueryData<CredentialMap>(["credentials"], map)
             handleCancel()
         }
     })

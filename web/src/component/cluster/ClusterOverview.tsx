@@ -1,5 +1,5 @@
 import {Box, Button, Radio, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
-import {useMutation, useQuery, useQueryClient} from "react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {nodeApi} from "../../app/api";
 import {TableBody} from "../view/TableBody";
 import React, {useState} from "react";

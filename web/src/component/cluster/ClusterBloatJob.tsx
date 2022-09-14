@@ -4,7 +4,7 @@ import React, {ReactElement, useState} from "react";
 import {OpenIcon} from "../view/OpenIcon";
 import {CompactTable} from "../../app/types";
 import {Clear, Stop} from "@mui/icons-material";
-import {useMutation, useQueryClient} from "react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {bloatApi} from "../../app/api";
 import {shortUuid} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
@@ -35,7 +35,7 @@ export function ClusterBloatJob({compactTable}: Props) {
 
     const queryClient = useQueryClient();
     const deleteJob = useMutation(bloatApi.delete, {
-        onSuccess: async () => await queryClient.refetchQueries(['node/bloat/list'])
+        onSuccess: async () => await queryClient.refetchQueries(["node/bloat/list"])
     })
     const stopJob = useMutation(bloatApi.stop)
 
