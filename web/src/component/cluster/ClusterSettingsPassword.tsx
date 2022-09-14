@@ -1,7 +1,7 @@
 import {shortUuid} from "../../app/utils";
 import {Autocomplete, Box, TextField} from "@mui/material";
 import React, {useEffect, useMemo, useState} from "react";
-import {useMutation, useQuery, useQueryClient} from "react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {clusterApi, credentialApi} from "../../app/api";
 import {Cluster, ClusterMap, CredentialMap, CredentialType} from "../../app/types";
 
@@ -33,9 +33,9 @@ export function ClusterSettingsPassword(props: Props) {
     const queryClient = useQueryClient();
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
-            const map = queryClient.getQueryData<ClusterMap>("cluster/list") ?? {} as ClusterMap
+            const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {} as ClusterMap
             map[data.name] = data
-            queryClient.setQueryData<ClusterMap>("cluster/list", map)
+            queryClient.setQueryData<ClusterMap>(["cluster/list"], map)
         }
     })
 

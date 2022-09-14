@@ -1,5 +1,5 @@
 import {IconButton, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
-import {useQuery} from "react-query";
+import {useQuery} from "@tanstack/react-query";
 import {clusterApi} from "../../app/api";
 import {ClustersRow} from "./ClustersRow";
 import React, {useState} from "react";
@@ -20,7 +20,7 @@ const SX = {
 export function Clusters() {
     const [editNode, setEditNode] = useState('')
     const [showNewElement, setShowNewElement] = useState(false)
-    const {data: clusterMap, isLoading, isFetching, isError, error} = useQuery('cluster/list', clusterApi.list)
+    const {data: clusterMap, isLoading, isFetching, isError, error} = useQuery(["cluster/list"], clusterApi.list)
 
     return (
         <Block>

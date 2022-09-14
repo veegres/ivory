@@ -1,6 +1,6 @@
 import {Box, Grid, Skeleton} from "@mui/material";
 import {nodeApi} from "../../app/api";
-import {useQuery} from "react-query";
+import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../view/ErrorAlert";
 import React from "react";
 import {AxiosError} from "axios";

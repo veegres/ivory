@@ -8,11 +8,11 @@ import {Clusters} from "../clusters/Clusters";
 import {Cluster} from "../cluster/Cluster";
 import {Node} from "../node/Node";
 import React from "react";
-import {useQuery} from "react-query";
+import {useQuery} from "@tanstack/react-query";
 import {secretApi} from "../../app/api";
 
 export function Body() {
-    const { data: status, isLoading, isError, error } = useQuery("secret", secretApi.get)
+    const { data: status, isLoading, isError, error } = useQuery(["secret"], secretApi.get)
 
     if (isError) return <Block><ErrorAlert error={error as AxiosError}/></Block>
     if (isLoading) return <CircularProgress/>

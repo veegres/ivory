@@ -1,6 +1,6 @@
 import {Box, Button, Grid} from "@mui/material";
 import React, {ReactNode, useState} from "react";
-import {useMutation, useQueryClient} from "react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {secretApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";
 
@@ -23,10 +23,10 @@ export function Secret(props: Props) {
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
     const queryClient = useQueryClient();
     const setReq = useMutation(secretApi.set, {
-        onSuccess: async () => await queryClient.refetchQueries("secret")
+        onSuccess: async () => await queryClient.refetchQueries(["secret"])
     })
     const cleanReq = useMutation(secretApi.clean, {
-        onSuccess: async () => await queryClient.refetchQueries("secret")
+        onSuccess: async () => await queryClient.refetchQueries(["secret"])
     })
 
     return (

@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {App} from './App';
 import * as ServiceWorker from './ServiceWorker';
-import {QueryClient, QueryClientProvider} from "react-query";
-import {ReactQueryDevtools} from 'react-query/devtools'
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
 import {ThemeProvider} from "./provider/ThemeProvider";
 import {StoreProvider} from "./provider/StoreProvider";
 import {CssBaseline} from "@mui/material";
