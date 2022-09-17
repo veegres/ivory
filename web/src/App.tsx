@@ -3,13 +3,17 @@ import {Grid} from "@mui/material";
 import {Header} from "./component/section/Header";
 import {Body} from "./component/section/Body";
 import {Credentials} from "./component/credentials/Credentials";
+import {useQuery} from "@tanstack/react-query";
+import {infoApi} from "./app/api";
 
 export function App() {
+    const info = useQuery(["info"], infoApi.get)
+
     return (
         <Grid sx={{ height: "100vh", minWidth: "1010px" }} container direction={"column"} spacing={2} flexWrap={"nowrap"}>
-            <Grid item><Header/></Grid>
+            <Grid item><Header company={info.data?.company} show={!info.isLoading && !info.isError} /></Grid>
             <Grid item container flexGrow={1} justifyContent={"center"} alignItems={"center"}>
-                <Body/>
+                <Body info={info} />
                 <Credentials/>
             </Grid>
         </Grid>

@@ -11,7 +11,7 @@ import {TabProps} from "./Cluster";
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./ClusterError";
 
 const SX = {
-    jobsLoader: {minHeight: "4px", margin: "10px 0"},
+    jobsLoader: {margin: "15px 0"},
     form: {display: "grid", flexGrow: 1, padding: "0 20px", gridTemplateColumns: "repeat(3, 1fr)", gridColumnGap: "30px", gridRowGap: "5px"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
 }
@@ -38,7 +38,7 @@ export function ClusterBloat({info}: TabProps) {
     return (
         <Box>
             {renderForm()}
-            <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} />
+            <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} color={"inherit"} />
             <TransitionGroup style={style.transition}>
                 {jobs.map((value) => (
                     <Collapse key={value.uuid}>

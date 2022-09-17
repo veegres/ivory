@@ -86,6 +86,12 @@ export interface InstanceDetection {
     refetch: () => void,
 }
 
+// INFO
+export interface AppInfo {
+    company: string,
+    secret: SecretStatus,
+}
+
 // SECRET
 export interface SecretStatus {
     key: boolean,

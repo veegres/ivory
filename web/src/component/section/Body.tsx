@@ -8,16 +8,21 @@ import {Clusters} from "../clusters/Clusters";
 import {Cluster} from "../cluster/Cluster";
 import {Node} from "../node/Node";
 import React from "react";
-import {useQuery} from "@tanstack/react-query";
-import {secretApi} from "../../app/api";
+import {AppInfo} from "../../app/types";
+import {UseQueryResult} from "@tanstack/react-query";
 
-export function Body() {
-    const { data: status, isLoading, isError, error } = useQuery(["secret"], secretApi.get)
+type Props = {
+    info: UseQueryResult<AppInfo>,
+}
+
+export function Body(props: Props) {
+    const { isError, isLoading, data, error } = props.info
 
     if (isError) return <Block><ErrorAlert error={error as AxiosError}/></Block>
     if (isLoading) return <CircularProgress/>
-    if (!status?.ref) return <InitialSecret/>
-    if (!status?.key) return <RepeatSecret/>
+    if (!data) return <Block><ErrorAlert error={"Something bad happened, we cannot get application initial information"}/></Block>
+    if (!data.secret.ref) return <InitialSecret/>
+    if (!data.secret.key) return <RepeatSecret/>
 
     return (
         <Stack sx={{ width: "100%", height: "100%", gap: 1 }}>

@@ -11,11 +11,11 @@ import {
     SecretSetRequest,
     SecretStatus,
     SecretUpdateRequest,
-    InstanceMap, CredentialType
+    InstanceMap, CredentialType, AppInfo
 } from "./types";
 import {getPatroniDomain} from "./utils";
 
-const api = axios.create({ baseURL: '/api', timeout: 1000 })
+const api = axios.create({ baseURL: '/api' })
 
 export const nodeApi = {
     overview: (node: String) =>
@@ -43,7 +43,7 @@ export const nodeApi = {
 
 export const clusterApi = {
     get: (name: string) =>
-        api.get<Response<Cluster>>(`/cluster/${name}`).then((response) => response.data.response),
+        api.get<Response<Cluster>>(`/cluster/${name}`, { timeout: 1000 }).then((response) => response.data.response),
     list: () =>
         api.get<Response<Cluster[]>>(`/cluster`).then((response) => response.data.response.reduce(
             (map, cluster) => {
@@ -77,6 +77,10 @@ export const bloatApi = {
             .then((response) => response.data.response),
 
     stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
+}
+
+export const infoApi = {
+    get: () => api.get<Response<AppInfo>>(`/info`).then((response) => response.data.response)
 }
 
 export const secretApi = {

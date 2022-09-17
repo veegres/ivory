@@ -1,0 +1,4 @@
+/* css in js doesn't support user-select */
+.none {
+    user-select: none;
+}

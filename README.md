@@ -17,6 +17,14 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 - Docker Hub `docker run -p 80:80 --restart always aelsergeev/ivory`
 - GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 
+### Docker environment variables
+
+You can customize Ivory by providing some environment variables to the docker container
+
+```
+IVORY_COMPANY_LABEL - set up custom company name at the left top corner
+```
+
 ## Contributing
 
 If you're interested in contributing to the Ivory project:
