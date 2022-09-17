@@ -21,7 +21,7 @@ export const nodeApi = {
     overview: (node: String) =>
         api.get<Response<InstanceOverview>>(`/node/${node}/overview`).then((response) => response.data.response),
     cluster: (node: String) =>
-        api.get<Response<{ members: InstanceResponse[] }>>(`/node/${node}/cluster`)
+        api.get<Response<{ members: InstanceResponse[] }>>(`/node/${node}/cluster`, { timeout: 1000 })
             .then<InstanceMap>((response) => response.data.response.members.reduce(
                 (map, instance) => {
                     const api_domain = getPatroniDomain(instance.api_url)
@@ -43,7 +43,7 @@ export const nodeApi = {
 
 export const clusterApi = {
     get: (name: string) =>
-        api.get<Response<Cluster>>(`/cluster/${name}`, { timeout: 1000 }).then((response) => response.data.response),
+        api.get<Response<Cluster>>(`/cluster/${name}`).then((response) => response.data.response),
     list: () =>
         api.get<Response<Cluster[]>>(`/cluster`).then((response) => response.data.response.reduce(
             (map, cluster) => {
