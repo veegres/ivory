@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"github.com/google/uuid"
+	. "ivory/model"
 	"ivory/persistence"
 	"sync"
 )
@@ -106,4 +107,11 @@ func (s *secret) IsSecretEmpty() bool {
 		}
 	}
 	return true
+}
+
+func (s *secret) Status() SecretStatus {
+	return SecretStatus{
+		Key: !s.IsSecretEmpty(),
+		Ref: !s.IsRefEmpty(),
+	}
 }

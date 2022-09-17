@@ -27,7 +27,7 @@ export function InitialSecret() {
                 </ul>
             </Typography>
             <SecretTextField label={"Reference word"} onChange={(e) => setRef(e.target.value)}/>
-            <SecretTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)}/>
+            <SecretTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)} hidden/>
         </Secret>
     )
 }

@@ -1,13 +1,16 @@
 import {Box, Button, Grid} from "@mui/material";
 import React, {ReactNode, useState} from "react";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {secretApi} from "../../app/api";
+import {useMutation, useQuery} from "@tanstack/react-query";
+import {infoApi, secretApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";
+import {LinearProgressStateful} from "../view/LinearProgressStateful";
+import select from "../../style/select.module.css";
 
 const SX = {
     box: { height: "100%", width: "30%", minWidth: "500px" },
     button: { margin: "0 10px" },
-    header: { fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer" }
+    header: { fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer" },
+    buttons: { margin: "8px 0" }
 }
 
 type Props = {
@@ -21,27 +24,40 @@ type Props = {
 export function Secret(props: Props) {
     const { keyWord, refWord, children, clean, header } = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
-    const queryClient = useQueryClient();
+    const info = useQuery(["info"], infoApi.get);
     const setReq = useMutation(secretApi.set, {
-        onSuccess: async () => await queryClient.refetchQueries(["secret"])
+        onSuccess: async () => await info.refetch()
     })
     const cleanReq = useMutation(secretApi.clean, {
-        onSuccess: async () => await queryClient.refetchQueries(["secret"])
+        onSuccess: async () => await info.refetch()
     })
+
+    const fetching = cleanReq.isLoading || setReq.isLoading || info.isFetching
 
     return (
         <Grid container sx={SX.box} direction={"column"} alignItems={"center"} justifyContent={"center"}>
-            <Box sx={SX.header} onClick={() => setAnimal(randomUnicodeAnimal())}>
+            <Box sx={SX.header} className={select.none} onClick={() => setAnimal(randomUnicodeAnimal())}>
                 {header} {animal}
             </Box>
             {children}
-            <Box>
+            <LinearProgressStateful isFetching={fetching} line color={"inherit"} />
+            <Box sx={SX.buttons}>
                 {!clean ? null : (
-                    <Button sx={SX.button} variant={"contained"} onClick={() => cleanReq.mutate()}>
+                    <Button
+                        sx={SX.button}
+                        variant={"contained"}
+                        disabled={fetching}
+                        onClick={() => cleanReq.mutate()}
+                    >
                         Clean
                     </Button>
                 )}
-                <Button sx={SX.button} variant={"contained"} onClick={() => setReq.mutate({ ref: refWord, key: keyWord })}>
+                <Button
+                    sx={SX.button}
+                    variant={"contained"}
+                    disabled={fetching}
+                    onClick={() => setReq.mutate({ ref: refWord, key: keyWord })}
+                >
                     Done
                 </Button>
             </Box>

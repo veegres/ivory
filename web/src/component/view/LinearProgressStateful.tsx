@@ -2,7 +2,7 @@ import {Box, LinearProgress} from "@mui/material";
 import {SxProps} from "@mui/system";
 
 const SX = {
-    box: { minHeight: "4px" }
+    box: { minHeight: "4px", margin: "5px 0", width: "100%" }
 }
 
 type Props = {

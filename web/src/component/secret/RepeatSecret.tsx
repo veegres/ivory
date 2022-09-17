@@ -17,7 +17,7 @@ export function RepeatSecret() {
                 start working with Ivory from scratch by providing new secret word. Also it will help
                 if you suddenly forget the secret word.
             </Typography>
-            <SecretTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)}/>
+            <SecretTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)} hidden/>
         </Secret>
     )
 }

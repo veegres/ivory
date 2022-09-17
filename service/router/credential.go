@@ -12,7 +12,7 @@ import (
 
 func (r routes) CredentialGroup(group *gin.RouterGroup) {
 	secret := group.Group("/secret")
-	secret.GET("", getExistence)
+	secret.GET("", getStatus)
 	secret.POST("/set", setSecret)
 	secret.POST("/update", updateSecret)
 	secret.POST("/clean", cleanSecret)
@@ -24,11 +24,8 @@ func (r routes) CredentialGroup(group *gin.RouterGroup) {
 	credential.DELETE("/:uuid", deleteCredential)
 }
 
-func getExistence(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"response": SecretStatus{
-		Key: !service.Secret.IsSecretEmpty(),
-		Ref: !service.Secret.IsRefEmpty(),
-	}})
+func getStatus(context *gin.Context) {
+	context.JSON(http.StatusOK, gin.H{"response": service.Secret.Status()})
 }
 
 func setSecret(context *gin.Context) {
