@@ -17,12 +17,12 @@ func Start() {
 	auth := os.Getenv("IVORY_AUTHENTICATION")
 	var authHandler gin.HandlerFunc
 	if auth == "basic" {
-		username := os.Getenv("IVORY_BASIC_USERNAME")
+		user := os.Getenv("IVORY_BASIC_USER")
 		password := os.Getenv("IVORY_BASIC_PASSWORD")
-		if username == "" || password == "" {
-			panic("Provide IVORY_BASIC_USERNAME and IVORY_BASIC_PASSWORD when you use IVORY_AUTHENTICATION=basic")
+		if user == "" || password == "" {
+			panic("Provide IVORY_BASIC_USER and IVORY_BASIC_PASSWORD when you use IVORY_AUTHENTICATION=basic")
 		}
-		authHandler = gin.BasicAuth(gin.Accounts{username: password})
+		authHandler = gin.BasicAuth(gin.Accounts{user: password})
 	} else {
 		auth = "none"
 		authHandler = func(context *gin.Context) {}

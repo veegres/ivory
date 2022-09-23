@@ -22,7 +22,10 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 You can customize Ivory by providing some environment variables to the docker container
 
 ```
-IVORY_COMPANY_LABEL - set up custom company name at the left top corner
+IVORY_COMPANY_LABEL  - set up custom company name at the left top corner
+IVORY_AUTHENTICATION - set up authentication type "none" or "basic"
+IVORY_BASIC_USER     - set up user for basic authentication field is mandatory
+IVORY_BASIC_PASSWORD - set up password for basic authentication field is mandatory
 ```
 
 ## Contributing

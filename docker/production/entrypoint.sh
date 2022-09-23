@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 # print service info
 grep PRETTY_NAME /etc/os-release
+pgcompacttable --version
 nginx -v
 
 # run go service
@@ -12,7 +13,6 @@ export GIN_MODE=release
 /usr/sbin/nginx &
 
 # wait for any process to exit
-# shellcheck disable=SC2039
 wait -n
 
 # exit with status of process that exited first
