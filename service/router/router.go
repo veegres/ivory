@@ -12,24 +12,48 @@ type routes struct {
 }
 
 func Start() {
+	// TODO think how to move this to UI set up page it can be next after secret page
+	companyLabel := os.Getenv("IVORY_COMPANY_LABEL")
+	auth := os.Getenv("IVORY_AUTHENTICATION")
+	var authHandler gin.HandlerFunc
+	if auth == "basic" {
+		username := os.Getenv("IVORY_BASIC_USERNAME")
+		password := os.Getenv("IVORY_BASIC_PASSWORD")
+		if username == "" || password == "" {
+			panic("Provide IVORY_BASIC_USERNAME and IVORY_BASIC_PASSWORD when you use IVORY_AUTHENTICATION=basic")
+		}
+		authHandler = gin.BasicAuth(gin.Accounts{username: password})
+	} else {
+		auth = "none"
+		authHandler = func(context *gin.Context) {}
+	}
+
 	r := routes{router: gin.Default()}
 	r.router.UseH2C = true
 
 	api := r.router.Group("/api")
 	api.GET("/ping", pong)
-	api.GET("/info", info)
-	r.ProxyGroup(api)
-	r.ClusterGroup(api)
-	r.CliGroup(api)
-	r.CredentialGroup(api)
+	api.GET("/info", info(companyLabel, auth))
+
+	authApi := api.Group("/", authHandler)
+	r.ProxyGroup(authApi)
+	r.ClusterGroup(authApi)
+	r.CliGroup(authApi)
+	r.CredentialGroup(authApi)
 
 	_ = r.router.Run()
 }
 
-func pong(context *gin.Context) { context.JSON(http.StatusOK, gin.H{"message": "pong"}) }
-func info(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"response": gin.H{
-		"company": os.Getenv("IVORY_COMPANY_LABEL"),
-		"secret":  service.Secret.Status(),
-	}})
+func pong(context *gin.Context) {
+	context.JSON(http.StatusOK, gin.H{"message": "pong"})
+}
+
+func info(company string, auth string) func(context *gin.Context) {
+	return func(context *gin.Context) {
+		context.JSON(http.StatusOK, gin.H{"response": gin.H{
+			"company": company,
+			"auth":    auth,
+			"secret":  service.Secret.Status(),
+		}})
+	}
 }
