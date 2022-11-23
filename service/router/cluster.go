@@ -43,5 +43,10 @@ func putClusterByHost(context *gin.Context) {
 
 func deleteClusterByHost(context *gin.Context) {
 	host := context.Param("host")
-	_ = persistence.Database.Cluster.Delete(host)
+	err := persistence.Database.Cluster.Delete(host)
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	} else {
+		context.JSON(http.StatusOK, gin.H{"response": "deleted"})
+	}
 }

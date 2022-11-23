@@ -5,8 +5,9 @@ import (
 	"encoding/gob"
 	"github.com/google/uuid"
 	. "ivory/model"
-	"os"
 	"sort"
+	"strings"
+	"time"
 )
 
 type CompactTableRepository struct {
@@ -38,8 +39,24 @@ func (r CompactTableRepository) Get(uuid uuid.UUID) (CompactTableModel, error) {
 	return model, err
 }
 
-func (r CompactTableRepository) Update(compactTable CompactTableModel) error {
-	return r.common.update(r.bucket, compactTable.Uuid.String(), compactTable)
+func (r CompactTableRepository) Create(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error) {
+	jobUuid := uuid.New()
+	compactTableModel := CompactTableModel{
+		Uuid:         jobUuid,
+		CredentialId: credentialId,
+		Cluster:      cluster,
+		Status:       PENDING,
+		Command:      "pgcompacttable " + strings.Join(args, " "),
+		CommandArgs:  args,
+		LogsPath:     File.CompactTable.Create(jobUuid),
+		CreatedAt:    time.Now().UnixNano(),
+	}
+
+	err := r.common.update(r.bucket, jobUuid.String(), compactTableModel)
+	if err != nil {
+		return nil, err
+	}
+	return &compactTableModel, nil
 }
 
 func (r CompactTableRepository) UpdateStatus(compactTable CompactTableModel, status JobStatus) error {
@@ -49,7 +66,10 @@ func (r CompactTableRepository) UpdateStatus(compactTable CompactTableModel, sta
 }
 
 func (r CompactTableRepository) Delete(uuid uuid.UUID) error {
-	return r.common.delete(r.bucket, uuid.String())
+	var err error
+	err = File.CompactTable.Delete(uuid)
+	err = r.common.delete(r.bucket, uuid.String())
+	return err
 }
 
 func (r CompactTableRepository) list(filter func(model CompactTableModel) bool) ([]CompactTableModel, error) {
@@ -71,22 +91,4 @@ func (r CompactTableRepository) sortDescByCreatedAt(list []CompactTableModel) {
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].CreatedAt > list[j].CreatedAt
 	})
-}
-
-type CompactTableFile struct {
-	dir string
-}
-
-func (r CompactTableFile) Create(uuid uuid.UUID) string {
-	path := r.dir + "/" + uuid.String() + ".log"
-	_, _ = os.Create(path)
-	return path
-}
-
-func (r CompactTableFile) Open(path string) (*os.File, error) {
-	return os.OpenFile(path, os.O_RDWR, 0666)
-}
-
-func (r CompactTableFile) Delete(uuid uuid.UUID) error {
-	return os.Remove(r.dir + "/" + uuid.String() + ".log")
 }

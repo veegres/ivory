@@ -40,6 +40,7 @@ func Start() {
 	r.ClusterGroup(authApi)
 	r.CliGroup(authApi)
 	r.CredentialGroup(authApi)
+	r.CertGroup(authApi)
 
 	_ = r.router.Run()
 }
