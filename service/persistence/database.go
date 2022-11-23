@@ -15,6 +15,7 @@ type database struct {
 	Cluster      *ClusterRepository
 	CompactTable *CompactTableRepository
 	Credential   *CredentialRepository
+	Cert         *CertRepository
 }
 
 type common struct {
@@ -27,9 +28,9 @@ type element struct {
 }
 
 func (d *database) Build(dbName string) {
-	dirName := "data/bolt"
-	_ = os.MkdirAll(dirName, os.ModePerm)
-	db, err := bolt.Open(dirName+"/"+dbName, 0600, nil)
+	path := "data/bolt"
+	_ = os.MkdirAll(path, os.ModePerm)
+	db, err := bolt.Open(path+"/"+dbName, 0600, nil)
 
 	if err != nil {
 		log.Fatal(err)
@@ -44,6 +45,12 @@ func (d *database) Build(dbName string) {
 	compactTableName := []byte("CompactTable")
 	_ = db.Update(func(tx *bolt.Tx) error {
 		_, _ = tx.CreateBucketIfNotExists(compactTableName)
+		return nil
+	})
+
+	certName := []byte("Cert")
+	_ = db.Update(func(tx *bolt.Tx) error {
+		_, _ = tx.CreateBucketIfNotExists(certName)
 		return nil
 	})
 
@@ -74,6 +81,10 @@ func (d *database) Build(dbName string) {
 		CompactTable: &CompactTableRepository{
 			common: common,
 			bucket: compactTableName,
+		},
+		Cert: &CertRepository{
+			common: common,
+			bucket: certName,
 		},
 		Credential: &CredentialRepository{
 			common:           common,

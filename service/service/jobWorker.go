@@ -8,10 +8,25 @@ import (
 	"ivory/persistence"
 	"os"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 )
+
+func CreateJobWorker() JobWorker {
+	worker := &worker{
+		start:    make(chan uuid.UUID),
+		stop:     make(chan uuid.UUID),
+		elements: make(map[uuid.UUID]*element),
+		mutex:    &sync.Mutex{},
+	}
+
+	// run channel subscribers
+	go worker.initializer()
+	go worker.runner()
+	go worker.cleaner()
+	go worker.stopper()
+	return worker
+}
 
 type JobWorker interface {
 	Start(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error)
@@ -33,40 +48,13 @@ type element struct {
 	file  *os.File
 }
 
-func CreateJobWorker() JobWorker {
-	worker := &worker{
-		start:    make(chan uuid.UUID),
-		stop:     make(chan uuid.UUID),
-		elements: make(map[uuid.UUID]*element),
-		mutex:    &sync.Mutex{},
-	}
-
-	// run channel subscribers
-	go worker.initializer()
-	go worker.runner()
-	go worker.cleaner()
-	go worker.stopper()
-	return worker
-}
-
 func (w *worker) Start(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error) {
-	jobUuid := uuid.New()
-	compactTableModel := CompactTableModel{
-		Uuid:         jobUuid,
-		CredentialId: credentialId,
-		Cluster:      cluster,
-		Status:       PENDING,
-		Command:      "pgcompacttable " + strings.Join(args, " "),
-		CommandArgs:  args,
-		LogsPath:     persistence.File.CompactTable.Create(jobUuid),
-		CreatedAt:    time.Now().UnixNano(),
+	compactTable, err := persistence.Database.CompactTable.Create(credentialId, cluster, args)
+	if err != nil {
+		return nil, err
 	}
-	errCompactTable := persistence.Database.CompactTable.Update(compactTableModel)
-	if errCompactTable != nil {
-		return nil, errCompactTable
-	}
-	w.addElement(compactTableModel)
-	return &compactTableModel, nil
+	w.addElement(compactTable)
+	return compactTable, nil
 }
 
 func (w *worker) Stream(jobUuid uuid.UUID, stream func(event Event)) {
@@ -202,7 +190,7 @@ func (w *worker) initializer() {
 	pendingJobs, _ := persistence.Database.CompactTable.ListByStatus(PENDING)
 	for _, pendingJob := range pendingJobs {
 		pendingJob := pendingJob
-		go func() { w.addElement(pendingJob) }()
+		go func() { w.addElement(&pendingJob) }()
 	}
 }
 
@@ -278,10 +266,10 @@ func (w *worker) closeEvents(job Job) {
 	}
 }
 
-func (w *worker) addElement(model CompactTableModel) {
+func (w *worker) addElement(model *CompactTableModel) {
 	w.mutex.Lock()
 	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
-	w.elements[model.Uuid] = &element{job: CreateJob(), model: &model, file: file}
+	w.elements[model.Uuid] = &element{job: CreateJob(), model: model, file: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid
 }
