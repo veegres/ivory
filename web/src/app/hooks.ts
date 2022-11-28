@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {Cluster, EventStream, Instance, InstanceDetection, InstanceMap, JobStatus} from "./types";
 import {QueryKey, useQueries, useQuery, useQueryClient} from "@tanstack/react-query";
 import {bloatApi, nodeApi} from "./api";
@@ -84,12 +84,13 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, selec
 export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
     const [index, setIndex] = useState(0)
     const activeNodeName = cluster.nodes[index]
+    const safeNodeName = useRef(activeNodeName)
 
     // we need disable cause it thinks that function can be updated
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const instanceQueries = useMemo(() => getNodeQueries(index, cluster.name, cluster.nodes), [index, cluster.name, cluster.nodes])
     const queries = useQueries({ queries: instanceQueries })
-    const query = queries[index] ?? {}
+    const query = useMemo(() => queries[index] ?? {}, [queries, index])
 
     const clusterInstances = useMemo(() => query.data ?? {}, [query.data])
     const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
@@ -101,7 +102,10 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
         active: { cluster, instance, instances, warning },
         colors,
         fetching: query.isFetching,
-        refetch: () => setIndex(0)
+        refetch: () => {
+            if (index === 0) query.refetch()
+            else setIndex(0)
+        }
     }
 
     /**
@@ -109,7 +113,9 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
      */
     function handleMemoActiveInstance(instances: InstanceMap, name: string) {
         const values = Object.values(instances)
-        return values.find(instance => instance.leader) ?? instances[name]
+        const value = values.find(instance => instance.leader) ?? instances[name] ?? instances[safeNodeName.current]
+        safeNodeName.current = value.api_domain
+        return value
     }
 
     /**
@@ -124,6 +130,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
             queryFn: () => nodeApi.cluster(instance),
             retry: 0,
             enabled: use && index === j,
+            onSuccess: () => { console.log("onSuccess", index) },
             onError: () => {
                 if (index < instances.length - 1) setIndex(index => index + 1)
             }
@@ -131,20 +138,25 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     }
 }
 
+// TODO think how we can optimise it and update react-query by update response without refetch
 /**
  * Simplify handling `onSuccess` and `onError` requests for react-query client
  * providing common approach with request refetch and custom toast messages for
  * mutation requests
  *
  * @param queryKey
+ * @param onSuccess it will be fired after refetch
  */
-export function useMutationOptions(queryKey?: QueryKey) {
+export function useMutationOptions(queryKey?: QueryKey, onSuccess?: () => void) {
     const { enqueueSnackbar } = useSnackbar()
     const queryClient = useQueryClient();
 
     return {
         queryClient,
-        onSuccess: queryKey === undefined ? undefined : () => queryClient.refetchQueries(queryKey),
+        onSuccess: queryKey === undefined ? undefined : async () => {
+            await queryClient.refetchQueries(queryKey)
+            if (onSuccess) onSuccess()
+        },
         onError: (error: any) => enqueueSnackbar(getErrorMessage(error), { variant: "error" }),
     }
 }

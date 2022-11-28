@@ -1,7 +1,6 @@
 import {CancelIconButton, SaveIconButton} from "../view/IconButtons";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import {clusterApi} from "../../app/api";
-import {ClusterMap} from "../../app/types";
 import {Box} from "@mui/material";
 import {useMutationOptions} from "../../app/hooks";
 
@@ -15,19 +14,9 @@ type Props = {
 
 export function ClustersRowUpdate(props: Props) {
     const { toggle, onUpdate, onClose, name, nodes } = props
-    const { onError } = useMutationOptions()
 
-    const queryClient = useQueryClient();
-    const updateCluster = useMutation(clusterApi.update, {
-        onSuccess: (data) => {
-            const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {}
-            map[data.name] = data
-            queryClient.setQueryData<ClusterMap>(["cluster/list"], map)
-            toggle()
-            if (onUpdate) onUpdate()
-        },
-        onError,
-    })
+    const updateMutationOptions = useMutationOptions(["cluster/list"], handleSuccess)
+    const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (
         <Box display={"flex"}>
@@ -35,6 +24,11 @@ export function ClustersRowUpdate(props: Props) {
             <SaveIconButton loading={updateCluster.isLoading} disabled={!name} onClick={handleUpdate}/>
         </Box>
     )
+
+    function handleSuccess() {
+        toggle()
+        if (onUpdate) onUpdate()
+    }
 
     function handleClose() {
         toggle()

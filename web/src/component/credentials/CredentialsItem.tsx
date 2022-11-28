@@ -1,7 +1,7 @@
 import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../view/IconButtons";
 import React, {useEffect, useState} from "react";
-import {Credential, CredentialMap} from "../../app/types";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {Credential} from "../../app/types";
+import {useMutation} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
 import {useMutationOptions} from "../../app/hooks";
@@ -21,17 +21,9 @@ export function CredentialsItem(props: Props) {
     useEffect(() => { setCredential(credential) }, [credential])
 
     const deleteOptions = useMutationOptions(["credentials"])
-    const queryClient = useQueryClient();
     const deleteCredentials = useMutation(credentialApi.delete, deleteOptions)
-    const updateCredentials = useMutation(credentialApi.update, {
-        onSuccess: (data) => {
-            const map = queryClient.getQueryData<CredentialMap>(["credentials"]) ?? {}
-            map[uuid] = data
-            queryClient.setQueryData<CredentialMap>(["credentials"], map)
-            setEdit(false)
-        },
-        onError: deleteOptions.onError,
-    })
+    const updateOptions = useMutationOptions(["credentials"], () => setEdit(false))
+    const updateCredentials = useMutation(credentialApi.update, updateOptions)
 
     return (
         <CredentialsRow
