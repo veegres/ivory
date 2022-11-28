@@ -1,5 +1,4 @@
 import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
-import {useEventJob, useMutationOptions} from "../../app/hooks";
 import React, {ReactElement, useState} from "react";
 import {OpenIcon} from "../view/OpenIcon";
 import {CompactTable} from "../../app/types";
@@ -10,6 +9,8 @@ import {shortUuid} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import scroll from "../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../view/DynamicRowVirtualizer";
+import {useMutationOptions} from "../../hook/QueryCustom";
+import {useEventJob} from "../../hook/EventJob";
 
 const SX = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},

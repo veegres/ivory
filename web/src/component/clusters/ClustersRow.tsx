@@ -4,13 +4,13 @@ import {Cluster, DetectionType} from "../../app/types";
 import {RefreshIconButton,} from "../view/IconButtons";
 import {DynamicInputs} from "../view/DynamicInputs";
 import {useStore} from "../../provider/StoreProvider";
-import {useAutoInstanceDetection, useManualInstanceDetection} from "../../app/hooks";
 import {ClustersRowRead} from "./ClustersRowRead";
 import {ClustersRowUpdate} from "./ClustersRowUpdate";
 import {ClustersCell} from "./ClustersCell";
 import {initialInstance, InstanceColor} from "../../app/utils";
 import {InfoTitle} from "../view/InfoTitle";
 import {grey, orange, purple} from "@mui/material/colors";
+import {useAutoInstanceDetection, useManualInstanceDetection} from "../../hook/InstanceDetection";
 
 const SX = {
     chip: {width: "100%"},

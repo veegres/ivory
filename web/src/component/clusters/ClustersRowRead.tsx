@@ -2,7 +2,7 @@ import {DeleteIconButton, EditIconButton} from "../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";
 import {clusterApi} from "../../app/api";
 import {Box} from "@mui/material";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 type Props = {
     name: string

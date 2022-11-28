@@ -4,7 +4,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, credentialApi} from "../../app/api";
 import {Cluster, CredentialMap, CredentialType} from "../../app/types";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 const keys = {
     [CredentialType.POSTGRES]: "postgresCredId",

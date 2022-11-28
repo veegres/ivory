@@ -5,7 +5,7 @@ import {infoApi, secretApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import select from "../../style/select.module.css";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 const SX = {
     box: { height: "100%", width: "30%", minWidth: "500px" },

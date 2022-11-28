@@ -6,7 +6,7 @@ import {useTheme} from "../../provider/ThemeProvider";
 import {DeleteIconButton} from "../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../app/api";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 const SX = {
     item: { display: "flex", alignItems: "center", padding: "5px 30px", margin: "5px 10px", borderRadius: "5px" },

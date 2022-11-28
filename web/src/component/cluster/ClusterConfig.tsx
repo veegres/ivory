@@ -13,7 +13,7 @@ import {Instance} from "../../app/types";
 import {TabProps} from "./Cluster";
 import {ClusterNoInstanceError} from "./ClusterError";
 import {EditorView} from "@codemirror/view";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
