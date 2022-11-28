@@ -29,7 +29,7 @@ export function ClusterSettingsPassword(props: Props) {
     const [value, setValue] = useState<Value | null>(null)
     const [inputValue, setInputValue] = useState(credId);
 
-    const query = useQuery(["credentials", type], () => credentialApi.get(type))
+    const query = useQuery(["credentials", type], () => credentialApi.list(type))
     const queryClient = useQueryClient();
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {

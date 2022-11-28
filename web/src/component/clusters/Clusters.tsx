@@ -6,7 +6,6 @@ import React, {useState} from "react";
 import {ErrorAlert} from "../view/ErrorAlert";
 import {TableBody} from "../view/TableBody";
 import {TableCellLoader} from "../view/TableCellLoader";
-import {AxiosError} from "axios";
 import {Add} from "@mui/icons-material";
 import {Block} from "../view/Block";
 import {ClustersRowNew} from "./ClustersRowNew";
@@ -29,7 +28,7 @@ export function Clusters() {
     )
 
     function renderContent() {
-        if (isError) return <ErrorAlert error={error as AxiosError}/>
+        if (isError) return <ErrorAlert error={error}/>
 
         return (
             <Table size={"small"} sx={SX.table}>

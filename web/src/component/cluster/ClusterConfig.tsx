@@ -4,7 +4,6 @@ import {useMutation, useQuery} from "@tanstack/react-query";
 import {useTheme} from "../../provider/ThemeProvider";
 import {ErrorAlert} from "../view/ErrorAlert";
 import React, {ReactElement, useEffect, useState} from "react";
-import {AxiosError} from "axios";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
@@ -35,7 +34,7 @@ export function ClusterConfig({info}: TabProps) {
 
     useEffect(() => setConfigState(stringify(config)), [config])
 
-    if (isError) return <ErrorAlert error={error as AxiosError}/>
+    if (isError) return <ErrorAlert error={error}/>
     if (isLoading) return <Skeleton variant="rectangular" height={300}/>
 
     const isDark = theme.mode === "dark"

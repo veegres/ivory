@@ -124,6 +124,18 @@ export interface CredentialMap {
     [uuid: string]: Credential,
 }
 
+// CERT
+
+export interface Cert {
+    fileId: string,
+    fileName: string,
+    path: string,
+}
+
+export interface CertMap {
+    [uuid: string]: Cert,
+}
+
 // BLOAT
 export interface Connection {
     host: string,

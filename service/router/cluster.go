@@ -19,9 +19,9 @@ func getClusterList(context *gin.Context) {
 	list, err := persistence.Database.Cluster.List()
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	} else {
-		context.JSON(http.StatusOK, gin.H{"response": list})
+		return
 	}
+	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
 func getClusterByHost(context *gin.Context) {
@@ -29,9 +29,9 @@ func getClusterByHost(context *gin.Context) {
 	cluster, err := persistence.Database.Cluster.Get(host)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	} else {
-		context.JSON(http.StatusOK, gin.H{"response": cluster})
+		return
 	}
+	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
 func putClusterByHost(context *gin.Context) {
@@ -46,7 +46,7 @@ func deleteClusterByHost(context *gin.Context) {
 	err := persistence.Database.Cluster.Delete(host)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-	} else {
-		context.JSON(http.StatusOK, gin.H{"response": "deleted"})
+		return
 	}
+	context.JSON(http.StatusOK, gin.H{"response": "deleted"})
 }

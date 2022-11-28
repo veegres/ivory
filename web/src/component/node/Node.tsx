@@ -3,7 +3,6 @@ import {nodeApi} from "../../app/api";
 import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../view/ErrorAlert";
 import React from "react";
-import {AxiosError} from "axios";
 import {InstanceColor} from "../../app/utils";
 import {Style} from "../../app/types";
 import {useStore} from "../../provider/StoreProvider";
@@ -38,7 +37,7 @@ export function Node() {
 
     function renderContent() {
         if (!activeInstance) return <InfoAlert text={"Please, select a node to see the information!"}/>
-        if (isError) return <ErrorAlert error={error as AxiosError}/>
+        if (isError) return <ErrorAlert error={error}/>
 
         return (
             <Grid container direction="row">
