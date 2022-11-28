@@ -4,7 +4,7 @@ import {Credential, CredentialMap} from "../../app/types";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 type Props = {
     uuid: string,
@@ -16,15 +16,13 @@ export function CredentialsItem(props: Props) {
     const [edit, setEdit] = useState(false)
     const [empty, setEmpty] = useState(false)
     const [credential, setCredential] = useState(props.credential)
-    const { onError } = useToast()
+
 
     useEffect(() => { setCredential(credential) }, [credential])
 
+    const deleteOptions = useMutationOptions(["credentials"])
     const queryClient = useQueryClient();
-    const deleteCredentials = useMutation(credentialApi.delete, {
-        onSuccess: async () => await queryClient.refetchQueries(["credentials"]),
-        onError,
-    })
+    const deleteCredentials = useMutation(credentialApi.delete, deleteOptions)
     const updateCredentials = useMutation(credentialApi.update, {
         onSuccess: (data) => {
             const map = queryClient.getQueryData<CredentialMap>(["credentials"]) ?? {}
@@ -32,7 +30,7 @@ export function CredentialsItem(props: Props) {
             queryClient.setQueryData<CredentialMap>(["credentials"], map)
             setEdit(false)
         },
-        onError,
+        onError: deleteOptions.onError,
     })
 
     return (

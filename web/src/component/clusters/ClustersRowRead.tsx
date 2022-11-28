@@ -3,7 +3,7 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterMap} from "../../app/types";
 import {Box} from "@mui/material";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 type Props = {
     name: string
@@ -13,11 +13,11 @@ type Props = {
 
 export function ClustersRowRead(props: Props) {
     const { toggle, onDelete, name } = props
-    const { onError } = useToast()
+    const { onError } = useMutationOptions()
     const queryClient = useQueryClient();
     const deleteCluster = useMutation(clusterApi.delete, {
         onSuccess: (_, newName) => {
-            const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {} as ClusterMap
+            const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {}
             delete map[newName]
             queryClient.setQueryData<ClusterMap>(["cluster/list"], map)
             if (onDelete) onDelete()

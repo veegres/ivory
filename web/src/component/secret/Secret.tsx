@@ -5,7 +5,7 @@ import {infoApi, secretApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import select from "../../style/select.module.css";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 const SX = {
     box: { height: "100%", width: "30%", minWidth: "500px" },
@@ -25,17 +25,13 @@ type Props = {
 export function Secret(props: Props) {
     const { keyWord, refWord, children, clean, header } = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
-    const { onError } = useToast()
 
     const info = useQuery(["info"], infoApi.get);
-    const setReq = useMutation(secretApi.set, {
-        onSuccess: async () => await info.refetch(),
-        onError,
-    })
-    const cleanReq = useMutation(secretApi.clean, {
-        onSuccess: async () => await info.refetch(),
-        onError,
-    })
+
+    const setReqOptions = useMutationOptions(["info"])
+    const setReq = useMutation(secretApi.set, setReqOptions)
+    const cleanReqOptions = useMutationOptions(["info"])
+    const cleanReq = useMutation(secretApi.clean, cleanReqOptions)
 
     const fetching = cleanReq.isLoading || setReq.isLoading || info.isFetching
 

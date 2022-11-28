@@ -3,7 +3,7 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {clusterApi} from "../../app/api";
 import {ClusterMap} from "../../app/types";
 import {Box} from "@mui/material";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 type Props = {
     name: string
@@ -15,12 +15,12 @@ type Props = {
 
 export function ClustersRowUpdate(props: Props) {
     const { toggle, onUpdate, onClose, name, nodes } = props
-    const { onError } = useToast()
+    const { onError } = useMutationOptions()
 
     const queryClient = useQueryClient();
     const updateCluster = useMutation(clusterApi.update, {
         onSuccess: (data) => {
-            const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {} as ClusterMap
+            const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {}
             map[data.name] = data
             queryClient.setQueryData<ClusterMap>(["cluster/list"], map)
             toggle()
