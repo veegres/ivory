@@ -6,6 +6,7 @@ import {useTheme} from "../../provider/ThemeProvider";
 import {DeleteIconButton} from "../view/IconButtons";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {certApi} from "../../app/api";
+import {useToast} from "../../app/hooks";
 
 const SX = {
     item: { display: "flex", alignItems: "center", padding: "5px 30px", margin: "5px 10px", borderRadius: "5px" },
@@ -20,10 +21,12 @@ type Props = {
 export function CertsItem(props: Props) {
     const { cert } = props
     const { info } = useTheme()
+    const { onError } = useToast()
 
     const queryClient = useQueryClient();
-    const deleteCert = useMutation(["certs/delete"], certApi.delete, {
-        onSuccess: async () => await queryClient.refetchQueries(["certs"])
+    const deleteCert = useMutation(certApi.delete, {
+        onSuccess: async () => await queryClient.refetchQueries(["certs"]),
+        onError,
     })
 
     return (

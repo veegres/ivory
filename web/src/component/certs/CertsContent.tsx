@@ -9,7 +9,8 @@ import {TransitionGroup} from "react-transition-group";
 import {ErrorAlert} from "../view/ErrorAlert";
 import {UploadButton} from "../view/UploadButton";
 import {CertsItem} from "./CertsItem";
-import {AxiosError} from "axios";
+import {getErrorMessage} from "../../app/utils";
+import {useToast} from "../../app/hooks";
 
 const SX = {
     progress: { margin: "10px 0" },
@@ -18,13 +19,16 @@ const SX = {
 
 export function CertsContent() {
     const [progress, setProgress] = useState<ProgressEvent>()
+    const { onError } = useToast()
+
     const { data: certs, isError, error, isFetching, refetch } = useQuery(["certs"], certApi.list)
-    const upload = useMutation(["certs/upload"], certApi.upload, {
-        onSuccess: async () => refetch()
+    const upload = useMutation(certApi.upload, {
+        onSuccess: async () => refetch(),
+        onError,
     })
 
     if (isError) return <ErrorAlert error={error}/>
-    const [loading, uploadError] = getUploadInfo()
+    const { loading, error: uploadError } = getUploadInfo()
 
     return (
         <Box>
@@ -52,20 +56,13 @@ export function CertsContent() {
     }
 
     function getUploadInfo() {
-        let error
-        if (upload.isError) {
-            if (upload.error instanceof AxiosError) {
-                error = upload.error.response?.data["error"]
-            } else {
-                error = "unknown"
-            }
-        }
+        const error = upload.isError ? getErrorMessage(upload.error) : undefined
         const loading = {
             isLoading: upload.isLoading,
             loaded: progress?.loaded,
             total: progress?.total,
         }
-        return [loading, error]
+        return { loading, error }
     }
 
     function handleUpload(file: File) {

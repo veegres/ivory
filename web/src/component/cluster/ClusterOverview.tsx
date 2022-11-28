@@ -9,6 +9,7 @@ import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
 import {TabProps} from "./Cluster";
 import {Warning} from "@mui/icons-material";
+import {useToast} from "../../app/hooks";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
@@ -27,6 +28,7 @@ export function ClusterOverview({info}: TabProps) {
     const { instance, cluster, instances } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setInstance, store: { activeInstance } } = useStore()
+    const { onError } = useToast()
 
     const instanceMap = useQuery(
         ["node/cluster", cluster.name, instance.api_domain],
@@ -35,10 +37,12 @@ export function ClusterOverview({info}: TabProps) {
     )
     const queryClient = useQueryClient();
     const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain])
+        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain]),
+        onError,
     })
     const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain])
+        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain]),
+        onError,
     })
 
     return (

@@ -4,6 +4,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {clusterApi, credentialApi} from "../../app/api";
 import {Cluster, ClusterMap, CredentialMap, CredentialType} from "../../app/types";
+import {useToast} from "../../app/hooks";
 
 const keys = {
     [CredentialType.POSTGRES]: "postgresCredId",
@@ -28,6 +29,7 @@ export function ClusterSettingsPassword(props: Props) {
     const passKey = keys[type]
     const [value, setValue] = useState<Value | null>(null)
     const [inputValue, setInputValue] = useState(credId);
+    const { onError } = useToast()
 
     const query = useQuery(["credentials", type], () => credentialApi.list(type))
     const queryClient = useQueryClient();
@@ -36,7 +38,8 @@ export function ClusterSettingsPassword(props: Props) {
             const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {} as ClusterMap
             map[data.name] = data
             queryClient.setQueryData<ClusterMap>(["cluster/list"], map)
-        }
+        },
+        onError,
     })
 
     const map = useMemo(() => query.data ?? {}, [query.data])

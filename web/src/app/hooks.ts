@@ -2,7 +2,8 @@ import {useEffect, useMemo, useState} from "react";
 import {Cluster, EventStream, Instance, InstanceDetection, InstanceMap, JobStatus} from "./types";
 import {useQueries, useQuery} from "@tanstack/react-query";
 import {bloatApi, nodeApi} from "./api";
-import {combineInstances, createInstanceColors, JobOptions} from "./utils";
+import {combineInstances, createInstanceColors, getErrorMessage, JobOptions} from "./utils";
+import {useSnackbar} from "notistack";
 
 export interface EventJob {
     isFetching: boolean;
@@ -126,5 +127,13 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
                 if (index < instances.length - 1) setIndex(index => index + 1)
             }
         }))
+    }
+}
+
+export function useToast() {
+    const { enqueueSnackbar } = useSnackbar()
+
+    return {
+        onError: (error: any) => enqueueSnackbar(getErrorMessage(error), { variant: "error" })
     }
 }

@@ -1,5 +1,5 @@
 import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
-import {useEventJob} from "../../app/hooks";
+import {useEventJob, useToast} from "../../app/hooks";
 import React, {ReactElement, useState} from "react";
 import {OpenIcon} from "../view/OpenIcon";
 import {CompactTable} from "../../app/types";
@@ -32,12 +32,16 @@ export function ClusterBloatJob({compactTable}: Props) {
     const {uuid, status: initStatus, command, credentialId} = compactTable
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
+    const { onError } = useToast()
 
     const queryClient = useQueryClient();
     const deleteJob = useMutation(bloatApi.delete, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/bloat/list"])
+        onSuccess: async () => await queryClient.refetchQueries(["node/bloat/list"]),
+        onError,
     })
-    const stopJob = useMutation(bloatApi.stop)
+    const stopJob = useMutation(bloatApi.stop, {
+        onError,
+    })
 
     return (
         <Box sx={SX.console}>
