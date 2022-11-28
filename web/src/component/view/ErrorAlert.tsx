@@ -8,11 +8,12 @@ const style: Style = {
     jsonInput: {padding: '10px 0px', whiteSpace: 'pre-wrap'}
 }
 
-type ErrorProps = { error: AxiosError | string, type?: AlertColor }
+type ErrorProps = { error: AxiosError | string | unknown, type?: AlertColor }
 type GeneralProps = { message: string, type: AlertColor, title?: string, json?: string }
 
 export function ErrorAlert({error, type}: ErrorProps) {
     if (typeof error === "string") return <General type={type ?? "warning"} message={error}/>
+    if (!(error instanceof AxiosError)) return <General type={type ?? "warning"} message={"unknown error"}/>
     if (!error.response) return <General type={"error"} message={"ErrorAlert is not detected"}/>
 
     const {status, statusText} = error.response

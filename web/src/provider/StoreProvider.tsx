@@ -5,12 +5,13 @@ import {ActiveCluster, DetectionType, Instance} from "../app/types";
 interface StoreType {
     activeCluster?: ActiveCluster, activeClusterTab: number,
     activeInstance?: string, activeInstanceTab: number,
-    credentialsOpen: boolean
+    credentialsOpen: boolean,
+    certsOpen: boolean,
 }
 const initialStore: StoreType = {
     activeCluster: undefined, activeClusterTab: 0,
     activeInstance: undefined, activeInstanceTab: 0,
-    credentialsOpen: false
+    credentialsOpen: false, certsOpen: false,
 }
 
 // CONTEXT
@@ -29,6 +30,7 @@ interface StoreContextType {
     isInstanceActive: (name: string) => boolean,
 
     toggleCredentialsWindow: () => void,
+    toggleCertsWindow: () => void,
 }
 const initialStoreContext: StoreContextType = {
     store: initialStore,
@@ -45,6 +47,7 @@ const initialStoreContext: StoreContextType = {
     isInstanceActive: () => false,
 
     toggleCredentialsWindow: () => void 0,
+    toggleCertsWindow: () => void 0,
 }
 
 
@@ -77,7 +80,8 @@ export function StoreProvider(props: { children: ReactNode }) {
         setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
         isInstanceActive: (name: string) => name === activeInstance,
 
-        toggleCredentialsWindow: () => setState({...state, credentialsOpen: !state.credentialsOpen})
+        toggleCredentialsWindow: () => setState({...state, credentialsOpen: !state.credentialsOpen}),
+        toggleCertsWindow: () => setState({...state, certsOpen: !state.certsOpen}),
     }
     return (
         <StoreContext.Provider value={value}>

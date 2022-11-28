@@ -1,7 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {ErrorAlert} from "../view/ErrorAlert";
-import {AxiosError} from "axios";
 import {Credential} from "../../app/types";
 import {InfoAlert} from "../view/InfoAlert";
 import {Box, Collapse} from "@mui/material";
@@ -21,8 +20,8 @@ const SX = {
 }
 
 export function CredentialsContent() {
-    const { data: credentials, isError, error, isFetching } = useQuery(["credentials"], () => credentialApi.get())
-    if (isError) return <ErrorAlert error={error as AxiosError}/>
+    const { data: credentials, isError, error, isFetching } = useQuery(["credentials"], () => credentialApi.list())
+    if (isError) return <ErrorAlert error={error}/>
 
     return (
         <Box>

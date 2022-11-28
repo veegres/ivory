@@ -1,5 +1,5 @@
 import {Box, Grid, IconButton} from "@mui/material";
-import {LightMode, Nightlight, Security} from "@mui/icons-material";
+import {BadgeOutlined, LightMode, Nightlight, Security} from "@mui/icons-material";
 import React, {useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
 import {randomUnicodeAnimal} from "../../app/utils";
@@ -22,7 +22,7 @@ type Props = {
 export function Header(props: Props) {
     const { company, show } = props
     const theme = useTheme()
-    const { toggleCredentialsWindow } = useStore()
+    const { toggleCredentialsWindow, toggleCertsWindow } = useStore()
     const [animal, setAnimal] = useState("")
     const color = theme.info?.palette.primary.main
 
@@ -38,6 +38,9 @@ export function Header(props: Props) {
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>
                 {show && (
                     <Box sx={SX.buttons}>
+                        <IconButton onClick={toggleCertsWindow}>
+                            <BadgeOutlined/>
+                        </IconButton>
                         <IconButton onClick={toggleCredentialsWindow}>
                             <Security/>
                         </IconButton>

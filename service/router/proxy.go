@@ -26,11 +26,12 @@ func getNodeCluster(context *gin.Context) {
 	response, err := http.Get("http://" + host + "/cluster")
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		var body interface{}
-		_ = json.NewDecoder(response.Body).Decode(&body)
-		context.JSON(http.StatusOK, gin.H{"response": body})
+		return
 	}
+
+	var body interface{}
+	_ = json.NewDecoder(response.Body).Decode(&body)
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
 func getNodeOverview(context *gin.Context) {
@@ -38,11 +39,11 @@ func getNodeOverview(context *gin.Context) {
 	response, err := http.Get("http://" + host + "/patroni")
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		var body interface{}
-		_ = json.NewDecoder(response.Body).Decode(&body)
-		context.JSON(http.StatusOK, gin.H{"response": body})
+		return
 	}
+	var body interface{}
+	_ = json.NewDecoder(response.Body).Decode(&body)
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
 func getNodeConfig(context *gin.Context) {
@@ -50,27 +51,28 @@ func getNodeConfig(context *gin.Context) {
 	response, err := http.Get("http://" + host + "/config")
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		var body interface{}
-		_ = json.NewDecoder(response.Body).Decode(&body)
-		context.JSON(http.StatusOK, gin.H{"response": body})
+		return
 	}
+	var body interface{}
+	_ = json.NewDecoder(response.Body).Decode(&body)
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
 func patchNodeConfig(context *gin.Context) {
 	host := context.Param("host")
-	body, _ := ioutil.ReadAll(context.Request.Body)
-	req, _ := http.NewRequest(http.MethodPatch, "http://"+host+"/config", bytes.NewReader(body))
+	body, err := ioutil.ReadAll(context.Request.Body)
+	req, err := http.NewRequest(http.MethodPatch, "http://"+host+"/config", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		var body interface{}
-		_ = json.NewDecoder(response.Body).Decode(&body)
-		context.JSON(http.StatusOK, gin.H{"response": body})
+		return
 	}
+
+	var bodyDecoded interface{}
+	_ = json.NewDecoder(response.Body).Decode(&bodyDecoded)
+	context.JSON(http.StatusOK, gin.H{"response": bodyDecoded})
 }
 
 func postNodeSwitchover(context *gin.Context) {
@@ -82,11 +84,11 @@ func postNodeSwitchover(context *gin.Context) {
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		bodyBytes, _ := io.ReadAll(response.Body)
-		bodyMessage := string(bodyBytes)
-		context.JSON(http.StatusOK, gin.H{"response": bodyMessage})
+		return
 	}
+	bodyBytes, _ := io.ReadAll(response.Body)
+	bodyMessage := string(bodyBytes)
+	context.JSON(http.StatusOK, gin.H{"response": bodyMessage})
 }
 
 func postNodeReinitialize(context *gin.Context) {
@@ -98,9 +100,9 @@ func postNodeReinitialize(context *gin.Context) {
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		bodyBytes, _ := io.ReadAll(response.Body)
-		bodyMessage := string(bodyBytes)
-		context.JSON(http.StatusOK, gin.H{"response": bodyMessage})
+		return
 	}
+	bodyBytes, _ := io.ReadAll(response.Body)
+	bodyMessage := string(bodyBytes)
+	context.JSON(http.StatusOK, gin.H{"response": bodyMessage})
 }

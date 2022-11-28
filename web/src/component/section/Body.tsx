@@ -1,6 +1,5 @@
 import {Block} from "../view/Block";
 import {ErrorAlert} from "../view/ErrorAlert";
-import {AxiosError} from "axios";
 import {CircularProgress, Stack} from "@mui/material";
 import {InitialSecret} from "../secret/InitialSecret";
 import {RepeatSecret} from "../secret/RepeatSecret";
@@ -18,7 +17,7 @@ type Props = {
 export function Body(props: Props) {
     const { isError, isLoading, data, error } = props.info
 
-    if (isError) return <Block><ErrorAlert error={error as AxiosError}/></Block>
+    if (isError) return <Block><ErrorAlert error={error}/></Block>
     if (isLoading) return <CircularProgress/>
     if (!data) return <Block><ErrorAlert error={"Something bad happened, we cannot get application initial information"}/></Block>
     if (!data.secret.ref) return <InitialSecret/>

@@ -5,6 +5,7 @@ import {Body} from "./component/section/Body";
 import {Credentials} from "./component/credentials/Credentials";
 import {useQuery} from "@tanstack/react-query";
 import {infoApi} from "./app/api";
+import {Certs} from "./component/certs/Certs";
 
 export function App() {
     const info = useQuery(["info"], infoApi.get)
@@ -15,6 +16,7 @@ export function App() {
             <Grid item container flexGrow={1} justifyContent={"center"} alignItems={"center"}>
                 <Body info={info} />
                 <Credentials/>
+                <Certs/>
             </Grid>
         </Grid>
     );

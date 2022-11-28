@@ -25,14 +25,10 @@ func (r CertRepository) List() ([]CertModel, error) {
 }
 
 func (r CertRepository) Create(fileName string) (*CertModel, error) {
-	certUuid := uuid.New()
-	certModel := CertModel{
-		FileId:   certUuid,
-		FileName: fileName,
-		Path:     File.Certs.Create(certUuid),
-	}
+	fileId := uuid.New()
+	certModel := CertModel{FileId: fileId, FileName: fileName, Path: File.Certs.Create(fileId)}
 
-	err := r.common.update(r.bucket, certUuid.String(), certModel)
+	err := r.common.update(r.bucket, fileId.String(), certModel)
 	if err != nil {
 		return nil, err
 	}
