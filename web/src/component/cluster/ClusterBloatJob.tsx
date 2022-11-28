@@ -1,10 +1,10 @@
 import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
-import {useEventJob, useToast} from "../../app/hooks";
+import {useEventJob, useMutationOptions} from "../../app/hooks";
 import React, {ReactElement, useState} from "react";
 import {OpenIcon} from "../view/OpenIcon";
 import {CompactTable} from "../../app/types";
 import {Clear, Stop} from "@mui/icons-material";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import {bloatApi} from "../../app/api";
 import {shortUuid} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
@@ -32,16 +32,11 @@ export function ClusterBloatJob({compactTable}: Props) {
     const {uuid, status: initStatus, command, credentialId} = compactTable
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
-    const { onError } = useToast()
 
-    const queryClient = useQueryClient();
-    const deleteJob = useMutation(bloatApi.delete, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/bloat/list"]),
-        onError,
-    })
-    const stopJob = useMutation(bloatApi.stop, {
-        onError,
-    })
+    const deleteOptions = useMutationOptions(["node/bloat/list"])
+    const deleteJob = useMutation(bloatApi.delete, deleteOptions)
+    const stopOptions = useMutationOptions()
+    const stopJob = useMutation(bloatApi.stop, stopOptions)
 
     return (
         <Box sx={SX.console}>

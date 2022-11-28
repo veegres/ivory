@@ -9,7 +9,7 @@ import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
 import {TabProps} from "./Cluster";
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./ClusterError";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 const SX = {
     jobsLoader: {margin: "15px 0"},
@@ -26,7 +26,7 @@ export function ClusterBloat({info}: TabProps) {
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
-    const { onError } = useToast()
+    const { onError } = useMutationOptions()
 
     const initJobs = useQuery(
         ['node/bloat/list', cluster.name],

@@ -1,6 +1,6 @@
 import {useEffect, useMemo, useState} from "react";
 import {Cluster, EventStream, Instance, InstanceDetection, InstanceMap, JobStatus} from "./types";
-import {useQueries, useQuery} from "@tanstack/react-query";
+import {QueryKey, useQueries, useQuery, useQueryClient} from "@tanstack/react-query";
 import {bloatApi, nodeApi} from "./api";
 import {combineInstances, createInstanceColors, getErrorMessage, JobOptions} from "./utils";
 import {useSnackbar} from "notistack";
@@ -130,10 +130,21 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     }
 }
 
-export function useToast() {
+/**
+ * Simplify handling `onSuccess` and `onError` requests for react-query client
+ * providing common approach with request refetch and custom toast messages for
+ * mutation requests
+ *
+ * @param queryKey
+ */
+export function useMutationOptions(queryKey?: QueryKey) {
     const { enqueueSnackbar } = useSnackbar()
+    const queryClient = useQueryClient();
 
     return {
-        onError: (error: any) => enqueueSnackbar(getErrorMessage(error), { variant: "error" })
+        queryClient,
+        onSuccess: queryKey === undefined ? undefined : () => queryClient.refetchQueries(queryKey),
+        onError: (error: any) => enqueueSnackbar(getErrorMessage(error), { variant: "error" }),
     }
 }
+

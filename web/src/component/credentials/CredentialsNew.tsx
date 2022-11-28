@@ -4,14 +4,14 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {Credential, CredentialMap, CredentialType} from "../../app/types";
 import {CancelIconButton, SaveIconButton} from "../view/IconButtons";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 export function CredentialsNew() {
     const initCredential: Credential = { username: "", password: "", type: CredentialType.POSTGRES }
     const [credential, setCredential] = useState(initCredential)
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)
-    const { onError } = useToast()
+    const { onError } = useMutationOptions()
 
     const queryClient = useQueryClient();
     const createCredentials = useMutation(credentialApi.create, {

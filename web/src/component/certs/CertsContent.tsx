@@ -10,7 +10,7 @@ import {ErrorAlert} from "../view/ErrorAlert";
 import {UploadButton} from "../view/UploadButton";
 import {CertsItem} from "./CertsItem";
 import {getErrorMessage} from "../../app/utils";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 const SX = {
     progress: { margin: "10px 0" },
@@ -19,13 +19,10 @@ const SX = {
 
 export function CertsContent() {
     const [progress, setProgress] = useState<ProgressEvent>()
-    const { onError } = useToast()
 
-    const { data: certs, isError, error, isFetching, refetch } = useQuery(["certs"], certApi.list)
-    const upload = useMutation(certApi.upload, {
-        onSuccess: async () => refetch(),
-        onError,
-    })
+    const { data: certs, isError, error, isFetching } = useQuery(["certs"], certApi.list)
+    const uploadOptions = useMutationOptions(["certs"])
+    const upload = useMutation(certApi.upload, uploadOptions)
 
     if (isError) return <ErrorAlert error={error}/>
     const { loading, error: uploadError } = getUploadInfo()

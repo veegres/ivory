@@ -1,5 +1,5 @@
 import {Box, Button, Radio, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {nodeApi} from "../../app/api";
 import {TableBody} from "../view/TableBody";
 import React, {useState} from "react";
@@ -9,7 +9,7 @@ import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
 import {TabProps} from "./Cluster";
 import {Warning} from "@mui/icons-material";
-import {useToast} from "../../app/hooks";
+import {useMutationOptions} from "../../app/hooks";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
@@ -28,22 +28,16 @@ export function ClusterOverview({info}: TabProps) {
     const { instance, cluster, instances } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setInstance, store: { activeInstance } } = useStore()
-    const { onError } = useToast()
 
     const instanceMap = useQuery(
         ["node/cluster", cluster.name, instance.api_domain],
         () => nodeApi.cluster(instance.api_domain),
         { retry: 0 }
     )
-    const queryClient = useQueryClient();
-    const switchoverNode = useMutation(nodeApi.switchover, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain]),
-        onError,
-    })
-    const reinitNode = useMutation(nodeApi.reinitialize, {
-        onSuccess: async () => await queryClient.refetchQueries(["node/cluster", cluster.name, instance.api_domain]),
-        onError,
-    })
+    const switchoverNodeOptions = useMutationOptions(["node/cluster", cluster.name, instance.api_domain])
+    const switchoverNode = useMutation(nodeApi.switchover, switchoverNodeOptions)
+    const reinitNodeOptions = useMutationOptions(["node/cluster", cluster.name, instance.api_domain])
+    const reinitNode = useMutation(nodeApi.reinitialize, reinitNodeOptions)
 
     return (
         <>
