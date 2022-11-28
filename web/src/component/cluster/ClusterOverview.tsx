@@ -9,7 +9,7 @@ import {AlertDialog} from "../view/AlertDialog";
 import {useStore} from "../../provider/StoreProvider";
 import {TabProps} from "./Cluster";
 import {Warning} from "@mui/icons-material";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},

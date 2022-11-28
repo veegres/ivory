@@ -4,7 +4,7 @@ import {useMutation} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {Credential, CredentialType} from "../../app/types";
 import {CancelIconButton, SaveIconButton} from "../view/IconButtons";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 export function CredentialsNew() {
     const initCredential: Credential = { username: "", password: "", type: CredentialType.POSTGRES }

@@ -4,7 +4,7 @@ import {Credential} from "../../app/types";
 import {useMutation} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
-import {useMutationOptions} from "../../app/hooks";
+import {useMutationOptions} from "../../hook/QueryCustom";
 
 type Props = {
     uuid: string,
