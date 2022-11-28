@@ -83,6 +83,7 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, selec
 
 export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
     const [index, setIndex] = useState(0)
+    const activeNodeName = cluster.nodes[index]
 
     // we need disable cause it thinks that function can be updated
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,7 +95,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
     const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
 
-    const instance = useMemo(() => handleMemoActiveInstance(instances, index), [instances, index])
+    const instance = useMemo(() => handleMemoActiveInstance(instances, activeNodeName), [instances, activeNodeName])
 
     return {
         active: { cluster, instance, instances, warning },
@@ -106,9 +107,9 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     /**
      * Either find leader or set query that we were sending request to
      */
-    function handleMemoActiveInstance(instances: InstanceMap, index: number) {
+    function handleMemoActiveInstance(instances: InstanceMap, name: string) {
         const values = Object.values(instances)
-        return values.find(instance => instance.leader) ?? values[index]
+        return values.find(instance => instance.leader) ?? instances[name]
     }
 
     /**
