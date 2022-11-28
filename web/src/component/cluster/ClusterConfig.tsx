@@ -13,6 +13,7 @@ import {Instance} from "../../app/types";
 import {TabProps} from "./Cluster";
 import {ClusterNoInstanceError} from "./ClusterError";
 import {EditorView} from "@codemirror/view";
+import {useToast} from "../../app/hooks";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
@@ -24,13 +25,17 @@ export function ClusterConfig({info}: TabProps) {
     const { instance } = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState('')
+    const { onError } = useToast()
 
     const {data: config, isLoading, isError, error, refetch} = useQuery(
         ["node/config", instance.api_domain],
         () => nodeApi.config(instance.api_domain),
         { enabled: instance.inCluster }
     )
-    const updateConfig = useMutation(nodeApi.updateConfig, {onSuccess: refetch})
+    const updateConfig = useMutation(nodeApi.updateConfig, {
+        onSuccess: async () => refetch(),
+        onError,
+    })
 
     useEffect(() => setConfigState(stringify(config)), [config])
 

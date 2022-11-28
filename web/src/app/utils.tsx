@@ -2,6 +2,7 @@ import {blue, green, orange} from "@mui/material/colors";
 import {ColorsMap, CredentialType, JobStatus, InstanceMap, Instance} from "./types";
 import {ReactElement} from "react";
 import {HeartBroken, Storage} from "@mui/icons-material";
+import {AxiosError} from "axios";
 
 export const InstanceColor: { [key: string]: string } = {
     master: green[500],
@@ -80,4 +81,14 @@ export const unicodeAnimal = [
 ]
 export const randomUnicodeAnimal = () => {
     return unicodeAnimal[Math.floor(Math.random() * unicodeAnimal.length)]
+}
+
+export const getErrorMessage = (error: any): string => {
+    let message = "unknown"
+    if (error instanceof AxiosError) {
+        if (error.response) message = error.response.data["error"]
+        else if (error.message) message = error.message
+    }
+    if (typeof error === "string") message = error
+    return message
 }

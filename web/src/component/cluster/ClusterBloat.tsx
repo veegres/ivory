@@ -9,6 +9,7 @@ import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
 import {TabProps} from "./Cluster";
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./ClusterError";
+import {useToast} from "../../app/hooks";
 
 const SX = {
     jobsLoader: {margin: "15px 0"},
@@ -25,13 +26,17 @@ export function ClusterBloat({info}: TabProps) {
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
+    const { onError } = useToast()
 
     const initJobs = useQuery(
         ['node/bloat/list', cluster.name],
         () => bloatApi.list(cluster.name),
         {onSuccess: (initJobs) => setJobs(initJobs)}
     )
-    const start = useMutation(bloatApi.start, {onSuccess: (job) => setJobs([job, ...jobs])})
+    const start = useMutation(bloatApi.start, {
+        onSuccess: (job) => setJobs([job, ...jobs]),
+        onError,
+    })
 
     if (!instance) return <ClusterNoInstanceError />
 
