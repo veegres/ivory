@@ -1,9 +1,9 @@
 import {shortUuid} from "../../app/utils";
 import {Autocomplete, Box, TextField} from "@mui/material";
 import React, {useEffect, useMemo, useState} from "react";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, credentialApi} from "../../app/api";
-import {Cluster, ClusterMap, CredentialMap, CredentialType} from "../../app/types";
+import {Cluster, CredentialMap, CredentialType} from "../../app/types";
 import {useMutationOptions} from "../../app/hooks";
 
 const keys = {
@@ -29,18 +29,11 @@ export function ClusterSettingsPassword(props: Props) {
     const passKey = keys[type]
     const [value, setValue] = useState<Value | null>(null)
     const [inputValue, setInputValue] = useState(credId);
-    const { onError } = useMutationOptions()
 
     const query = useQuery(["credentials", type], () => credentialApi.list(type))
-    const queryClient = useQueryClient();
-    const updateCluster = useMutation(clusterApi.update, {
-        onSuccess: (data) => {
-            const map = queryClient.getQueryData<ClusterMap>(["cluster/list"]) ?? {}
-            map[data.name] = data
-            queryClient.setQueryData<ClusterMap>(["cluster/list"], map)
-        },
-        onError,
-    })
+
+    const updateMutationOptions = useMutationOptions(["cluster/list"])
+    const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     const map = useMemo(() => query.data ?? {}, [query.data])
     const options = useMemo(() => handleMemoOptions(map), [map])

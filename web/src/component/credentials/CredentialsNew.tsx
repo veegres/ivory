@@ -1,8 +1,8 @@
 import {CredentialsRow} from "./CredentialsRow";
 import React, {useState} from "react";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import {credentialApi} from "../../app/api";
-import {Credential, CredentialMap, CredentialType} from "../../app/types";
+import {Credential, CredentialType} from "../../app/types";
 import {CancelIconButton, SaveIconButton} from "../view/IconButtons";
 import {useMutationOptions} from "../../app/hooks";
 
@@ -11,18 +11,9 @@ export function CredentialsNew() {
     const [credential, setCredential] = useState(initCredential)
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)
-    const { onError } = useMutationOptions()
 
-    const queryClient = useQueryClient();
-    const createCredentials = useMutation(credentialApi.create, {
-        onSuccess: ({key, credential}) => {
-            const map = queryClient.getQueryData<CredentialMap>(["credentials"]) ?? {}
-            map[key] = credential
-            queryClient.setQueryData<CredentialMap>(["credentials"], map)
-            handleCancel()
-        },
-        onError,
-    })
+    const createOptions = useMutationOptions(["credentials"], handleCancel)
+    const createCredentials = useMutation(credentialApi.create, createOptions)
 
     return (
         <CredentialsRow
