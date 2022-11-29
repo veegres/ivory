@@ -1,16 +1,39 @@
 /* we can modify scrollbar only via styles otherwise we have problem with types */
-/* width */
+
+/* ----- SHOW ----- */
+
+.show {
+    overflow-y: scroll;
+}
+
+/* ----- TINY ----- */
+
 .tiny::-webkit-scrollbar {
     width: 4px;
+    height: 4px;
 }
 
-/* Track */
-.tiny::-webkit-scrollbar-track {
-    background: inherit;
+/* ----- DEFAULT ----- */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
 }
 
-/* Handle */
-.tiny::-webkit-scrollbar-thumb {
-    background: #6b6b6b;
-    border-radius: 2px;
+::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background: rgba(100, 100, 100, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: rgba(100, 100, 100, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 100, 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: rgba(100, 100, 100, 0.5);
 }
