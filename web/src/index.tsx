@@ -8,8 +8,12 @@ import {StoreProvider} from "./provider/StoreProvider";
 import {CssBaseline} from "@mui/material";
 import {createRoot} from "react-dom/client";
 import {SnackbarProvider} from "notistack";
+import scroll from "./style/scroll.module.css"
 
-const container = document.getElementById('root');
+// we want to show always scroll bar to avoid resizing
+document.body.classList.add(scroll.show)
+
+const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(
     <React.StrictMode>
