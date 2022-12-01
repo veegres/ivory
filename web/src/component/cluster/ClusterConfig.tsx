@@ -44,9 +44,10 @@ export function ClusterConfig({info}: TabProps) {
 
     if (!instance.inCluster) return <ClusterNoInstanceError />
 
+    const border = `1px solid ${isEditable && theme.info ? theme.info.palette.divider : "transparent"}`
     return (
         <Grid container flexWrap={"nowrap"}>
-            <Grid item flexGrow={1}>
+            <Grid item flexGrow={1} sx={{ border }}>
                 <ReactCodeMirror
                     value={configState}
                     theme={codeMirrorTheme}
