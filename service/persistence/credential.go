@@ -44,38 +44,38 @@ func (r CredentialRepository) GetDecryptedRef() string {
 	return str
 }
 
-func (r CredentialRepository) CreateCredential(credential Credential) (uuid.UUID, Credential, error) {
+func (r CredentialRepository) Create(credential Credential) (uuid.UUID, Credential, error) {
 	key := uuid.New()
 	err := r.common.update(r.credentialBucket, key.String(), credential)
 	cred := Credential{Username: credential.Username, Password: "configured", Type: credential.Type}
 	return key, cred, err
 }
 
-func (r CredentialRepository) UpdateCredential(key uuid.UUID, credential Credential) (uuid.UUID, Credential, error) {
+func (r CredentialRepository) Update(key uuid.UUID, credential Credential) (uuid.UUID, Credential, error) {
 	err := r.common.update(r.credentialBucket, key.String(), credential)
 	cred := Credential{Username: credential.Username, Password: "configured", Type: credential.Type}
 	return key, cred, err
 }
 
-func (r CredentialRepository) DeleteCredential(key uuid.UUID) error {
+func (r CredentialRepository) Delete(key uuid.UUID) error {
 	return r.common.delete(r.credentialBucket, key.String())
 }
 
-func (r CredentialRepository) DeleteCredentials() error {
+func (r CredentialRepository) DeleteAll() error {
 	return r.common.deleteAll(r.credentialBucket)
 }
 
-func (r CredentialRepository) GetCredentials() map[string]Credential {
-	return r.getMap(nil)
+func (r CredentialRepository) List() map[string]Credential {
+	return r.getCredentialsMap(nil)
 }
 
-func (r CredentialRepository) GetCredentialsByType(credentialType CredentialType) map[string]Credential {
-	return r.getMap(func(credential Credential) bool {
+func (r CredentialRepository) ListByType(credentialType CredentialType) map[string]Credential {
+	return r.getCredentialsMap(func(credential Credential) bool {
 		return credential.Type == credentialType
 	})
 }
 
-func (r CredentialRepository) GetCredential(uuid uuid.UUID) (Credential, error) {
+func (r CredentialRepository) Get(uuid uuid.UUID) (Credential, error) {
 	value, err := r.common.get(r.credentialBucket, uuid.String())
 	var credential Credential
 	buff := bytes.NewBuffer(value)
@@ -83,7 +83,7 @@ func (r CredentialRepository) GetCredential(uuid uuid.UUID) (Credential, error) 
 	return credential, err
 }
 
-func (r CredentialRepository) getMap(filter func(credential Credential) bool) map[string]Credential {
+func (r CredentialRepository) getCredentialsMap(filter func(credential Credential) bool) map[string]Credential {
 	bytesList, _ := r.common.getList(r.credentialBucket)
 	credentialMap := make(map[string]Credential)
 	for _, el := range bytesList {

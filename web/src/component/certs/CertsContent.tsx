@@ -11,6 +11,7 @@ import {UploadButton} from "../view/UploadButton";
 import {CertsItem} from "./CertsItem";
 import {getErrorMessage} from "../../app/utils";
 import {useMutationOptions} from "../../hook/QueryCustom";
+import {Cert} from "../../app/types";
 
 const SX = {
     progress: { margin: "10px 0" },
@@ -36,15 +37,15 @@ export function CertsContent() {
     )
 
     function renderList() {
-        const list = certs ?? []
+        const list = Object.entries<Cert>(certs ?? {})
         if (list.length === 0) return <InfoAlert text={"There is no certs yet"}/>
 
         return (
             <Box sx={SX.list} className={scroll.tiny}>
                 <TransitionGroup>
-                    {list.map((cert) => (
-                        <Collapse key={cert.fileId}>
-                            <CertsItem cert={cert}/>
+                    {list.map(([key, cert]) => (
+                        <Collapse key={key}>
+                            <CertsItem uuid={key} cert={cert}/>
                         </Collapse>
                     ))}
                 </TransitionGroup>

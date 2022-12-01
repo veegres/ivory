@@ -35,6 +35,6 @@ export function ClusterSettingsCert(props: Props) {
     }
 
     function handleMemoOptions(): Option[] {
-        return query.data?.map(({ fileId, fileName }) => ({ key: fileId, short: shortUuid(fileId), name: fileName })) ?? []
+        return Object.entries(query.data ?? {}).map(([key, value]) => ({ key, short: shortUuid(key), name: value.fileName }))
     }
 }

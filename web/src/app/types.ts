@@ -127,7 +127,6 @@ export interface CredentialMap {
 // CERT
 
 export interface Cert {
-    fileId: string,
     fileName: string,
     path: string,
 }

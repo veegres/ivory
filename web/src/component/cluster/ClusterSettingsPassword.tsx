@@ -23,11 +23,10 @@ export function ClusterSettingsPassword(props: Props) {
     const passKey = keys[type]
 
     const query = useQuery(["credentials", type], () => credentialApi.list(type))
+    const options = useMemo(handleMemoOptions, [query.data])
 
     const updateMutationOptions = useMutationOptions(["cluster/list"])
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
-
-    const options = useMemo(handleMemoOptions, [query.data])
 
     return (
         <Autocomplete
