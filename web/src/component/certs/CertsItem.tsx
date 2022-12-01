@@ -15,11 +15,12 @@ const SX = {
 }
 
 type Props = {
-    cert: Cert
+    cert: Cert,
+    uuid: string,
 }
 
 export function CertsItem(props: Props) {
-    const { cert } = props
+    const { cert, uuid } = props
     const { info } = useTheme()
 
     const deleteOptions = useMutationOptions(["certs"])
@@ -31,7 +32,7 @@ export function CertsItem(props: Props) {
                 <TextSnippetOutlined />
                 <Box sx={SX.name}>{cert.fileName}</Box>
             </Box>
-            <DeleteIconButton loading={deleteCert.isLoading} onClick={() => deleteCert.mutate(cert.fileId)} />
+            <DeleteIconButton loading={deleteCert.isLoading} onClick={() => deleteCert.mutate(uuid)} />
         </Box>
     )
 }

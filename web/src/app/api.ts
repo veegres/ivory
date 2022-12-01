@@ -11,7 +11,7 @@ import {
     SecretSetRequest,
     SecretStatus,
     SecretUpdateRequest,
-    InstanceMap, CredentialType, AppInfo, Cert
+    InstanceMap, CredentialType, AppInfo, Cert, CertMap
 } from "./types";
 import {getPatroniDomain} from "./utils";
 
@@ -132,7 +132,7 @@ export const credentialApi = {
 
 export const certApi = {
     list: () => api
-        .get<Response<Cert[]>>(`/cert`)
+        .get<Response<CertMap>>(`/cert`)
         .then((response => response.data.response)),
     upload: ({ file, setProgress }: { file: File, setProgress?: (progressEvent: ProgressEvent) => void } ) => {
         const formData = new FormData()

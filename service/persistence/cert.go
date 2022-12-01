@@ -12,23 +12,23 @@ type CertRepository struct {
 	bucket []byte
 }
 
-func (r CertRepository) List() ([]CertModel, error) {
+func (r CertRepository) List() (map[string]CertModel, error) {
 	bytesList, err := r.common.getList(r.bucket)
-	modelList := make([]CertModel, len(bytesList))
-	for i, el := range bytesList {
-		var cluster CertModel
+	certMap := make(map[string]CertModel)
+	for _, el := range bytesList {
+		var cert CertModel
 		buff := bytes.NewBuffer(el.value)
-		_ = gob.NewDecoder(buff).Decode(&cluster)
-		modelList[i] = cluster
+		err = gob.NewDecoder(buff).Decode(&cert)
+		certMap[el.key] = cert
 	}
-	return modelList, err
+	return certMap, err
 }
 
 func (r CertRepository) Create(fileName string) (*CertModel, error) {
-	fileId := uuid.New()
-	certModel := CertModel{FileId: fileId, FileName: fileName, Path: File.Certs.Create(fileId)}
+	key := uuid.New()
+	certModel := CertModel{FileName: fileName, Path: File.Certs.Create(key)}
 
-	err := r.common.update(r.bucket, fileId.String(), certModel)
+	err := r.common.update(r.bucket, key.String(), certModel)
 	if err != nil {
 		return nil, err
 	}

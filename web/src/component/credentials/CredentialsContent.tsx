@@ -38,9 +38,9 @@ export function CredentialsContent() {
         return (
             <Box sx={SX.list} className={scroll.tiny}>
                 <TransitionGroup>
-                    {list.map(([uuid, credential]) => (
-                        <Collapse key={uuid}>
-                            <CredentialsItem uuid={uuid} credential={credential}/>
+                    {list.map(([key, credential]) => (
+                        <Collapse key={key}>
+                            <CredentialsItem uuid={key} credential={credential}/>
                         </Collapse>
                     ))}
                 </TransitionGroup>

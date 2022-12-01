@@ -72,14 +72,14 @@ func (s *secret) Update(previousKey string, newKey string) error {
 	}
 
 	s.key = newKeySha1
-	credentialMap := persistence.Database.Credential.GetCredentials()
+	credentialMap := persistence.Database.Credential.List()
 	for id, credential := range credentialMap {
 		id, _ := uuid.Parse(id)
 		oldEncodedPass := credential.Password
 		decodedPass, _ := Decrypt(oldEncodedPass, previousKeySha1)
 		newEncodedPass, _ := Encrypt(decodedPass, newKeySha1)
 		credential.Password = newEncodedPass
-		_, _, err = persistence.Database.Credential.UpdateCredential(id, credential)
+		_, _, err = persistence.Database.Credential.Update(id, credential)
 	}
 
 	s.mutex.Unlock()
@@ -91,7 +91,7 @@ func (s *secret) Clean() error {
 	s.ref = ""
 	s.key = [16]byte{}
 	err := persistence.Database.Credential.UpdateRefs("", "")
-	err = persistence.Database.Credential.DeleteCredentials()
+	err = persistence.Database.Credential.DeleteAll()
 	s.mutex.Unlock()
 	return err
 }

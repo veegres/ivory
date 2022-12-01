@@ -132,7 +132,7 @@ func (w *worker) runner() {
 
 			// Get password
 			// TODO move decryption to another method (encapsulate)
-			credential, errCred := persistence.Database.Credential.GetCredential(model.CredentialId)
+			credential, errCred := persistence.Database.Credential.Get(model.CredentialId)
 			if errCred != nil {
 				w.jobStatusHandler(element, FAILED, errors.New("Find credential error: "+errCred.Error()))
 				return
