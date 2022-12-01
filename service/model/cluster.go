@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type ClusterModel struct {
 	Name           string     `json:"name"`
-	CertsId        *uuid.UUID `json:"certsId"`
+	CertId         *uuid.UUID `json:"certId"`
 	PatroniCredId  *uuid.UUID `json:"patroniCredId"`
 	PostgresCredId *uuid.UUID `json:"postgresCredId"`
 	Nodes          []string   `json:"nodes"`

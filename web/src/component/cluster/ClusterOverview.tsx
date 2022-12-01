@@ -1,7 +1,6 @@
-import {Box, Button, Radio, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
+import {Box, Button, Radio, Table, TableBody, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {nodeApi} from "../../app/api";
-import {TableBody} from "../view/TableBody";
 import React, {useState} from "react";
 import {TableCellLoader} from "../view/TableCellLoader";
 import {InstanceColor} from "../../app/utils";
@@ -55,7 +54,7 @@ export function ClusterOverview({info}: TabProps) {
                         <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMap.isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
                     </TableRow>
                 </TableHead>
-                <TableBody isLoading={instanceMap.isFetching} cellCount={8}>
+                <TableBody>
                     {renderContent()}
                 </TableBody>
             </Table>

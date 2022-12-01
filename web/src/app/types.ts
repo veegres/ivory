@@ -49,7 +49,7 @@ export interface InstanceOverview {
 // CLUSTER
 export interface Cluster {
     name: string,
-    certsId?: string,
+    certId?: string,
     patroniCredId?: string,
     postgresCredId?: string,
     nodes: string[],

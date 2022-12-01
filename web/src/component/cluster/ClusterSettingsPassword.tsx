@@ -1,20 +1,14 @@
 import {shortUuid} from "../../app/utils";
-import {Autocomplete, Box, TextField} from "@mui/material";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, credentialApi} from "../../app/api";
-import {Cluster, CredentialMap, CredentialType} from "../../app/types";
+import {Cluster, CredentialType} from "../../app/types";
 import {useMutationOptions} from "../../hook/QueryCustom";
+import {Autocomplete, Option} from "../view/Autocomplete";
 
 const keys = {
     [CredentialType.POSTGRES]: "postgresCredId",
     [CredentialType.PATRONI]: "patroniCredId",
-}
-
-type Value = {
-    key: string
-    short: string
-    username?: string
 }
 
 type Props = {
@@ -27,53 +21,29 @@ type Props = {
 export function ClusterSettingsPassword(props: Props) {
     const { type, label, cluster, credId } = props
     const passKey = keys[type]
-    const [value, setValue] = useState<Value | null>(null)
-    const [inputValue, setInputValue] = useState(credId);
 
     const query = useQuery(["credentials", type], () => credentialApi.list(type))
 
     const updateMutationOptions = useMutationOptions(["cluster/list"])
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
-    const map = useMemo(() => query.data ?? {}, [query.data])
-    const options = useMemo(() => handleMemoOptions(map), [map])
-    const isPasswordRemoved = !!value && !map[credId]
-
-    useEffect(handleEffectValue, [credId, map])
+    const options = useMemo(handleMemoOptions, [query.data])
 
     return (
         <Autocomplete
+            label={label}
+            selected={{key: credId, short: shortUuid(credId)}}
             options={options}
-            value={value}
-            onChange={(_, value) => handleOnChange(value)}
-            inputValue={inputValue}
             loading={query.isLoading || updateCluster.isLoading}
-            onInputChange={(_, value) => setInputValue(value)}
-            getOptionLabel={(option) => `${option.username ?? "***"} [${option.short}]`}
-            isOptionEqualToValue={(option, value) => option.key === value.key}
-            renderOption={(props, option) => <Box component={"li"} {...props}>{option.username} [{option.short}]</Box>}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    size={"small"}
-                    label={label}
-                    error={isPasswordRemoved}
-                    helperText={isPasswordRemoved && "password was removed"}
-                />
-            )}
+            onUpdate={handleUpdate}
         />
     )
 
-    function handleOnChange(value: Value | null) {
-        updateCluster.mutate({...cluster, [passKey]: value?.key})
+    function handleUpdate(option: Option | null) {
+        updateCluster.mutate({...cluster, [passKey]: option?.key})
     }
 
-    function handleEffectValue() {
-        if (credId) setValue({ key: credId, short: shortUuid(credId), username: map[credId]?.username })
-        else setValue(null)
-    }
-
-    function handleMemoOptions(map: CredentialMap) {
-        return Object.entries(map).map(([key, value]) => ({ key, short: shortUuid(key), username: value.username }))
+    function handleMemoOptions(): Option[] {
+        return Object.entries(query.data ?? {}).map(([key, value]) => ({ key, short: shortUuid(key), name: value.username }))
     }
 }
