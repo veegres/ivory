@@ -1,7 +1,7 @@
 package model
 
 type Proxy interface {
-    Cluster(cluster string, instance Instance) (interface{}, error)
+    Info(cluster string, instance Instance) (interface{}, error)
     Overview(cluster string, instance Instance) (interface{}, error)
     Config(cluster string, instance Instance) (interface{}, error)
     ConfigUpdate(cluster string, instance Instance) (interface{}, error)
