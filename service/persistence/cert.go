@@ -12,6 +12,14 @@ type CertRepository struct {
 	bucket []byte
 }
 
+func (r CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
+    value, err := r.common.get(r.bucket, uuid.String())
+    var credential CertModel
+    buff := bytes.NewBuffer(value)
+    err = gob.NewDecoder(buff).Decode(&credential)
+    return credential, err
+}
+
 func (r CertRepository) List() (map[string]CertModel, error) {
 	bytesList, err := r.common.getList(r.bucket)
 	certMap := make(map[string]CertModel)
