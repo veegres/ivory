@@ -7,7 +7,7 @@ import (
 var Patroni = &ptr{}
 type ptr struct{}
 
-func (p ptr) Cluster(cluster string, instance Instance) (interface{}, error) {
+func (p ptr) Info(cluster string, instance Instance) (interface{}, error) {
     return proxy.Get(cluster, instance, "/cluster")
 }
 
