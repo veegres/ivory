@@ -79,7 +79,7 @@ func (r CredentialRepository) Get(uuid uuid.UUID) (Credential, error) {
 	value, err := r.common.get(r.credentialBucket, uuid.String())
 	var credential Credential
 	buff := bytes.NewBuffer(value)
-	_ = gob.NewDecoder(buff).Decode(&credential)
+	err = gob.NewDecoder(buff).Decode(&credential)
 	return credential, err
 }
 

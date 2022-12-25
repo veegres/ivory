@@ -43,6 +43,10 @@ func (r FilePersistence) Open(path string) (*os.File, error) {
 	return os.OpenFile(path, os.O_RDWR, 0666)
 }
 
+func (r FilePersistence) Read(path string) ([]byte, error) {
+    return os.ReadFile(path)
+}
+
 func (r FilePersistence) Delete(uuid uuid.UUID) error {
 	return os.Remove(r.path + "/" + uuid.String() + r.fileNameExt)
 }
