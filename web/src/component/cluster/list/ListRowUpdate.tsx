@@ -1,8 +1,8 @@
-import {CancelIconButton, SaveIconButton} from "../view/IconButtons";
+import {CancelIconButton, SaveIconButton} from "../../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";
-import {clusterApi} from "../../app/api";
+import {clusterApi} from "../../../app/api";
 import {Box} from "@mui/material";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 type Props = {
     name: string
@@ -12,7 +12,7 @@ type Props = {
     onClose?: () => void
 }
 
-export function ClustersRowUpdate(props: Props) {
+export function ListRowUpdate(props: Props) {
     const { toggle, onUpdate, onClose, name, nodes } = props
 
     const updateMutationOptions = useMutationOptions(["cluster/list"], handleSuccess)

@@ -3,9 +3,9 @@ import {ErrorAlert} from "../view/ErrorAlert";
 import {Skeleton, Stack} from "@mui/material";
 import {InitialSecret} from "../secret/InitialSecret";
 import {RepeatSecret} from "../secret/RepeatSecret";
-import {Clusters} from "../clusters/Clusters";
-import {Cluster} from "../cluster/Cluster";
-import {Node} from "../node/Node";
+import {List as ClusterList} from "../cluster/list/List";
+import {Overview as ClusterOverview} from "../cluster/overview/Overview";
+import {Instance as ClusterInstance} from "../cluster/instance/Instance";
 import React from "react";
 import {AppInfo} from "../../app/types";
 import {UseQueryResult} from "@tanstack/react-query";
@@ -29,9 +29,9 @@ export function Body(props: Props) {
 
     return (
         <Stack sx={SX.stack}>
-            <Clusters/>
-            <Cluster/>
-            <Node/>
+            <ClusterList/>
+            <ClusterOverview/>
+            <ClusterInstance/>
         </Stack>
     )
 

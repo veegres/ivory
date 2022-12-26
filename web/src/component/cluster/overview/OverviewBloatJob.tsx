@@ -1,16 +1,16 @@
 import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
 import React, {ReactElement, useState} from "react";
-import {OpenIcon} from "../view/OpenIcon";
-import {CompactTable} from "../../app/types";
+import {OpenIcon} from "../../view/OpenIcon";
+import {CompactTable} from "../../../app/types";
 import {Clear, Stop} from "@mui/icons-material";
 import {useMutation} from "@tanstack/react-query";
-import {bloatApi} from "../../app/api";
-import {shortUuid} from "../../app/utils";
-import {LinearProgressStateful} from "../view/LinearProgressStateful";
-import scroll from "../../style/scroll.module.css"
-import {DynamicRowVirtualizer} from "../view/DynamicRowVirtualizer";
-import {useMutationOptions} from "../../hook/QueryCustom";
-import {useEventJob} from "../../hook/EventJob";
+import {bloatApi} from "../../../app/api";
+import {shortUuid} from "../../../app/utils";
+import {LinearProgressStateful} from "../../view/LinearProgressStateful";
+import scroll from "../../../style/scroll.module.css"
+import {DynamicRowVirtualizer} from "../../view/DynamicRowVirtualizer";
+import {useMutationOptions} from "../../../hook/QueryCustom";
+import {useEventJob} from "../../../hook/EventJob";
 
 const SX = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
@@ -29,7 +29,7 @@ const SX = {
 
 type Props = { compactTable: CompactTable }
 
-export function ClusterBloatJob({compactTable}: Props) {
+export function OverviewBloatJob({compactTable}: Props) {
     const {uuid, status: initStatus, command, credentialId} = compactTable
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)

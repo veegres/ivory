@@ -1,5 +1,5 @@
 import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material";
-import {useStore} from "../../provider/StoreProvider";
+import {useStore} from "../../../provider/StoreProvider";
 import {Close, Security} from "@mui/icons-material";
 import React from "react";
 import {CredentialsContent} from "./CredentialsContent";

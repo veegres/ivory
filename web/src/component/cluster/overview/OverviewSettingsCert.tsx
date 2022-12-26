@@ -1,17 +1,17 @@
 import React, {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {certApi, clusterApi} from "../../app/api";
-import {Autocomplete, Option} from "../view/Autocomplete";
-import {shortUuid} from "../../app/utils";
-import {useMutationOptions} from "../../hook/QueryCustom";
-import {Cluster} from "../../app/types";
+import {certApi, clusterApi} from "../../../app/api";
+import {Autocomplete, Option} from "../../view/Autocomplete";
+import {shortUuid} from "../../../app/utils";
+import {useMutationOptions} from "../../../hook/QueryCustom";
+import {Cluster} from "../../../app/types";
 
 type Props = {
     certId: string,
     cluster: Cluster,
 }
 
-export function ClusterSettingsCert(props: Props) {
+export function OverviewSettingsCert(props: Props) {
     const { certId, cluster } = props
 
     const query = useQuery(["certs"], certApi.list)

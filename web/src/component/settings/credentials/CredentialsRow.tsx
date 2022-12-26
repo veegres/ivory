@@ -1,8 +1,8 @@
 import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material";
 import {CredentialsInput} from "./CredentialsInput";
 import React, {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
-import {CredentialOptions} from "../../app/utils";
-import {Credential, CredentialType} from "../../app/types";
+import {CredentialOptions} from "../../../app/utils";
+import {Credential, CredentialType} from "../../../app/types";
 
 const SX = {
     row: { display: "flex", alignItems: "center", gap: "15px", padding: "5px 20px"},

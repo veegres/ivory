@@ -54,7 +54,7 @@
   - [x] add passwords storage with interface
   - [x] use secret to show and do action (reinit, switchover, clean bloat, etc)
 - [ ] Add backups that can be manage by Ivory, think how to restore it (pg_backrest - point in time, pg_dump - easier, pg_restore etc)
-- [ ] Add some basics live time graphics to Node Overview (like memory, disk size, core, cpu, etc)
+- [ ] Add some basics live time graphics to Instance Overview (like memory, disk size, core, cpu, etc)
 - [ ] Add opportunity to add some grafana graphs
 - [x] Add opportunity to use tool [pg_compacttable](https://github.com/dataegret/pgcompacttable)
 - [ ] Add opportunity to use tool as [pg_repack](https://github.com/reorg/pg_repack) or [pg_squeeze](https://github.com/cybertec-postgresql/pg_squeeze)

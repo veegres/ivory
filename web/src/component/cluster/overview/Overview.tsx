@@ -1,23 +1,23 @@
-import {ClusterOverview} from "./ClusterOverview";
-import {ClusterConfig} from "./ClusterConfig";
+import {OverviewInstances} from "./OverviewInstances";
+import {OverviewConfig} from "./OverviewConfig";
 import {
     Alert, Box, Collapse, Divider, Link,
     Tab, Tabs, ToggleButton, ToggleButtonGroup, Tooltip
 } from "@mui/material";
 import React, {useState} from "react";
-import {useStore} from "../../provider/StoreProvider";
-import {ClusterBloat} from "./ClusterBloat";
-import {InfoAlert} from "../view/InfoAlert";
-import {Block} from "../view/Block";
+import {useStore} from "../../../provider/StoreProvider";
+import {OverviewBloat} from "./OverviewBloat";
+import {InfoAlert} from "../../view/InfoAlert";
+import {Block} from "../../view/Block";
 import {useQuery} from "@tanstack/react-query";
 import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
-import {ClusterTabs, CredentialType, ActiveCluster} from "../../app/types";
-import {ClusterSettings} from "./ClusterSettings";
-import {InfoIcons} from "../view/InfoIcons";
-import {CredentialOptions, InstanceColor} from "../../app/utils";
+import {ClusterTabs, CredentialType, ActiveCluster} from "../../../app/types";
+import {OverviewSettings} from "./OverviewSettings";
+import {InfoIcons} from "../../view/InfoIcons";
+import {CredentialOptions, InstanceColor} from "../../../app/utils";
 import {orange, purple} from "@mui/material/colors";
-import {InfoBox} from "../view/InfoBox";
-import {InfoTitle} from "../view/InfoTitle";
+import {InfoBox} from "../../view/InfoBox";
+import {InfoTitle} from "../../view/InfoTitle";
 
 const SX = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -36,10 +36,10 @@ const SX = {
 
 const TABS: ClusterTabs = {
     0: {
-        body: (cluster: ActiveCluster) => <ClusterOverview info={cluster}/>,
+        body: (cluster: ActiveCluster) => <OverviewInstances info={cluster}/>,
     },
     1: {
-        body: (cluster: ActiveCluster) => <ClusterConfig info={cluster}/>,
+        body: (cluster: ActiveCluster) => <OverviewConfig info={cluster}/>,
         info: <>
             You can change your postgres configurations here (it will be applied on all cluster nodes).
             It doesn't rewrite all your config, it call patches the existing configuration. If you want to
@@ -49,7 +49,7 @@ const TABS: ClusterTabs = {
         </>
     },
     2: {
-        body: (cluster: ActiveCluster) => <ClusterBloat info={cluster}/>,
+        body: (cluster: ActiveCluster) => <OverviewBloat info={cluster}/>,
         info: <>
             You can reduce size of bloated tables and indexes without heavy locks here. It base on the
             tool <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link>.
@@ -65,7 +65,7 @@ export type TabProps = {
     info: ActiveCluster
 }
 
-export function Cluster() {
+export function Overview() {
     const {store: {activeCluster, activeClusterTab}, setClusterTab} = useStore()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
@@ -76,7 +76,7 @@ export function Cluster() {
         <Block withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => handleChange(value)}>
-                    <Tab label={"Overview"}/>
+                    <Tab label={"Instances"}/>
                     <Tab label={"Config"}/>
                     <Tab label={"Bloat"}/>
                 </Tabs>
@@ -110,7 +110,7 @@ export function Cluster() {
                         selected={cluster && settingsOpen}
                         onClick={() => setSettingsOpen(!settingsOpen)}
                     >
-                        <Tooltip title={"Cluster Settings"} placement={"top"}><Settings/></Tooltip>
+                        <Tooltip title={"luster Settings"} placement={"top"}><Settings/></Tooltip>
                     </ToggleButton>
                     <ToggleButton
                         sx={SX.toggleButton}
@@ -175,7 +175,7 @@ export function Cluster() {
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    <ClusterSettings info={activeCluster} />
+                    <OverviewSettings info={activeCluster} />
                 </Box>
             </Collapse>
         )

@@ -1,14 +1,14 @@
 import {IconButton, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
-import {clusterApi} from "../../app/api";
-import {ClustersRow} from "./ClustersRow";
+import {clusterApi} from "../../../app/api";
+import {ListRow} from "./ListRow";
 import React, {useState} from "react";
-import {ErrorAlert} from "../view/ErrorAlert";
-import {TableBody} from "../view/TableBody";
-import {TableCellLoader} from "../view/TableCellLoader";
+import {ErrorAlert} from "../../view/ErrorAlert";
+import {TableBody} from "../../view/TableBody";
+import {TableCellLoader} from "../../view/TableCellLoader";
 import {Add} from "@mui/icons-material";
-import {Block} from "../view/Block";
-import {ClustersRowNew} from "./ClustersRowNew";
+import {Block} from "../../view/Block";
+import {ListRowNew} from "./ListRowNew";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
@@ -16,7 +16,7 @@ const SX = {
     buttonCell: {width: '1%'}
 }
 
-export function Clusters() {
+export function List() {
     const [editNode, setEditNode] = useState('')
     const [showNewElement, setShowNewElement] = useState(false)
     const {data: clusterMap, isLoading, isFetching, isError, error} = useQuery(["cluster/list"], clusterApi.list)
@@ -47,7 +47,7 @@ export function Clusters() {
                 </TableHead>
                 <TableBody isLoading={isLoading} cellCount={3}>
                     {renderRows()}
-                    <ClustersRowNew show={showNewElement} close={() => setShowNewElement(false)} />
+                    <ListRowNew show={showNewElement} close={() => setShowNewElement(false)} />
                 </TableBody>
             </Table>
         )
@@ -58,7 +58,7 @@ export function Clusters() {
             const editable = name === editNode
             const toggle = () => setEditNode(editable ? '' : name)
 
-            return <ClustersRow key={name} cluster={cluster} name={name} editable={editable} toggle={toggle}/>
+            return <ListRow key={name} cluster={cluster} name={name} editable={editable} toggle={toggle}/>
         })
     }
 }

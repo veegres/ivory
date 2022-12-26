@@ -1,10 +1,10 @@
-import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../view/IconButtons";
+import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../view/IconButtons";
 import React, {useEffect, useState} from "react";
-import {Credential} from "../../app/types";
+import {Credential} from "../../../app/types";
 import {useMutation} from "@tanstack/react-query";
-import {credentialApi} from "../../app/api";
+import {credentialApi} from "../../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 type Props = {
     uuid: string,
