@@ -10,9 +10,9 @@ import (
 func (r routes) ClusterGroup(group *gin.RouterGroup) {
 	cluster := group.Group("/cluster")
 	cluster.GET("", getClusterList)
-	cluster.GET("/:host", getClusterByHost)
-	cluster.PUT("", putClusterByHost)
-	cluster.DELETE("/:host", deleteClusterByHost)
+	cluster.GET("/:name", getClusterByName)
+	cluster.PUT("", putClusterByName)
+	cluster.DELETE("/:name", deleteClusterByName)
 }
 
 func getClusterList(context *gin.Context) {
@@ -24,9 +24,9 @@ func getClusterList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
-func getClusterByHost(context *gin.Context) {
-	host := context.Param("host")
-	cluster, err := persistence.Database.Cluster.Get(host)
+func getClusterByName(context *gin.Context) {
+	name := context.Param("name")
+	cluster, err := persistence.Database.Cluster.Get(name)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -34,16 +34,16 @@ func getClusterByHost(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
-func putClusterByHost(context *gin.Context) {
+func putClusterByName(context *gin.Context) {
 	var cluster ClusterModel
 	_ = context.ShouldBindJSON(&cluster)
 	_ = persistence.Database.Cluster.Update(cluster)
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
-func deleteClusterByHost(context *gin.Context) {
-	host := context.Param("host")
-	err := persistence.Database.Cluster.Delete(host)
+func deleteClusterByName(context *gin.Context) {
+	name := context.Param("name")
+	err := persistence.Database.Cluster.Delete(name)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
