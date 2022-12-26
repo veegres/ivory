@@ -22,7 +22,7 @@ type Props = {
     header: string
 }
 
-export function Secret(props: Props) {
+export function StartupBlock(props: Props) {
     const { keyWord, refWord, children, clean, header } = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 

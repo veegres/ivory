@@ -1,8 +1,8 @@
 import {Block} from "../view/Block";
 import {ErrorAlert} from "../view/ErrorAlert";
 import {Skeleton, Stack} from "@mui/material";
-import {InitialSecret} from "../secret/InitialSecret";
-import {RepeatSecret} from "../secret/RepeatSecret";
+import {StartupInitial} from "../startup/StartupInitial";
+import {StartupReboot} from "../startup/StartupReboot";
 import {List as ClusterList} from "../cluster/list/List";
 import {Overview as ClusterOverview} from "../cluster/overview/Overview";
 import {Instance as ClusterInstance} from "../cluster/instance/Instance";
@@ -24,8 +24,8 @@ export function Body(props: Props) {
     if (isLoading) return renderLoading()
     if (isError) return renderError(error)
     if (!data) return renderError("Something bad happened, we cannot get application initial information")
-    if (!data.secret.ref) return <InitialSecret/>
-    if (!data.secret.key) return <RepeatSecret/>
+    if (!data.secret.ref) return <StartupInitial/>
+    if (!data.secret.key) return <StartupReboot/>
 
     return (
         <Stack sx={SX.stack}>

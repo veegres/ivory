@@ -1,15 +1,15 @@
 import React, {useState} from "react";
-import {Secret} from "./Secret";
-import {SecretTextField} from "./SecretTextField";
+import {StartupBlock} from "./StartupBlock";
+import {StartupTextField} from "./StartupTextField";
 import {Typography} from "@mui/material";
 
 
 
-export function RepeatSecret() {
+export function StartupReboot() {
     const [key, setKey] = useState("")
 
     return (
-        <Secret keyWord={key} refWord={""} clean={true} header={"Welcome Back"}>
+        <StartupBlock keyWord={key} refWord={""} clean={true} header={"Welcome Back"}>
             <Typography variant={"caption"}>
                 Looks like Ivory was rebooted. Please, provide the <b>Secret word</b> to be able
                 to continue working with sensitive data.
@@ -17,7 +17,7 @@ export function RepeatSecret() {
                 start working with Ivory from scratch by providing new secret word. Also it will help
                 if you suddenly forget the secret word.
             </Typography>
-            <SecretTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)} hidden/>
-        </Secret>
+            <StartupTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)} hidden/>
+        </StartupBlock>
     )
 }

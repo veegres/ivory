@@ -1,14 +1,14 @@
 import React, {useState} from "react";
-import {Secret} from "./Secret";
-import {SecretTextField} from "./SecretTextField";
+import {StartupBlock} from "./StartupBlock";
+import {StartupTextField} from "./StartupTextField";
 import {Typography} from "@mui/material";
 
-export function InitialSecret() {
+export function StartupInitial() {
     const [key, setKey] = useState("")
     const [ref, setRef] = useState("")
 
     return (
-        <Secret keyWord={key} refWord={ref} clean={false} header={"Welcome"}>
+        <StartupBlock keyWord={key} refWord={ref} clean={false} header={"Welcome"}>
             <Typography variant={"caption"}>
                 This is <b>Ivory</b> — the tool that will help you manage your postgres clusters. Please, provide
                 some information to make your sensitive data safe while using Ivory.
@@ -26,8 +26,8 @@ export function InitialSecret() {
                     </li>
                 </ul>
             </Typography>
-            <SecretTextField label={"Reference word"} onChange={(e) => setRef(e.target.value)}/>
-            <SecretTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)} hidden/>
-        </Secret>
+            <StartupTextField label={"Reference word"} onChange={(e) => setRef(e.target.value)}/>
+            <StartupTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)} hidden/>
+        </StartupBlock>
     )
 }
