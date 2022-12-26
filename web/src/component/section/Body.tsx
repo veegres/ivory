@@ -1,6 +1,6 @@
 import {Block} from "../view/Block";
 import {ErrorAlert} from "../view/ErrorAlert";
-import {CircularProgress, Stack} from "@mui/material";
+import {Skeleton, Stack} from "@mui/material";
 import {InitialSecret} from "../secret/InitialSecret";
 import {RepeatSecret} from "../secret/RepeatSecret";
 import {Clusters} from "../clusters/Clusters";
@@ -10,6 +10,10 @@ import React from "react";
 import {AppInfo} from "../../app/types";
 import {UseQueryResult} from "@tanstack/react-query";
 
+const SX = {
+    stack: { width: "100%", height: "100%", gap: 1 }
+}
+
 type Props = {
     info: UseQueryResult<AppInfo>,
 }
@@ -17,17 +21,43 @@ type Props = {
 export function Body(props: Props) {
     const { isError, isLoading, data, error } = props.info
 
-    if (isError) return <Block><ErrorAlert error={error}/></Block>
-    if (isLoading) return <CircularProgress/>
-    if (!data) return <Block><ErrorAlert error={"Something bad happened, we cannot get application initial information"}/></Block>
+    if (isLoading) return renderLoading()
+    if (isError) return renderError(error)
+    if (!data) return renderError("Something bad happened, we cannot get application initial information")
     if (!data.secret.ref) return <InitialSecret/>
     if (!data.secret.key) return <RepeatSecret/>
 
     return (
-        <Stack sx={{ width: "100%", height: "100%", gap: 1 }}>
+        <Stack sx={SX.stack}>
             <Clusters/>
             <Cluster/>
             <Node/>
         </Stack>
     )
+
+    function renderError(error: any) {
+        return (
+            <Stack sx={SX.stack}>
+                <Block><ErrorAlert error={error}/></Block>
+            </Stack>
+        )
+    }
+
+    function renderLoading() {
+        return (
+            <Stack sx={SX.stack}>
+                {renderSkeleton()}
+                {renderSkeleton()}
+                {renderSkeleton()}
+            </Stack>
+        )
+    }
+
+    function renderSkeleton() {
+        return (
+            <Block>
+                <Skeleton variant={"rectangular"} width={"100%"} height={200} />
+            </Block>
+        )
+    }
 }
