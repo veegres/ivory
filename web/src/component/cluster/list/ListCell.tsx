@@ -9,7 +9,7 @@ type Props = {
     children: ReactNode
 }
 
-export function ClustersCell(props: Props) {
+export function ListCell(props: Props) {
     const { children } = props
     return (
         <TableCell sx={SX.cell}>{children}</TableCell>

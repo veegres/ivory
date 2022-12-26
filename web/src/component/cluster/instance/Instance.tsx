@@ -1,13 +1,13 @@
 import {Box, Grid, Skeleton} from "@mui/material";
-import {nodeApi} from "../../app/api";
+import {nodeApi} from "../../../app/api";
 import {useQuery} from "@tanstack/react-query";
-import {ErrorAlert} from "../view/ErrorAlert";
+import {ErrorAlert} from "../../view/ErrorAlert";
 import React from "react";
-import {InstanceColor} from "../../app/utils";
-import {Style} from "../../app/types";
-import {useStore} from "../../provider/StoreProvider";
-import {InfoAlert} from "../view/InfoAlert";
-import {Block} from "../view/Block";
+import {InstanceColor} from "../../../app/utils";
+import {Style} from "../../../app/types";
+import {useStore} from "../../../provider/StoreProvider";
+import {InfoAlert} from "../../view/InfoAlert";
+import {Block} from "../../view/Block";
 
 const SX = {
     nodeStatusBlock: {height: '120px', minWidth: '200px', borderRadius: '4px', color: 'white', fontSize: '24px', fontWeight: 900},
@@ -21,7 +21,7 @@ const style: Style = {
 type ItemProps = { name: string, value?: string }
 type StatusProps = { role?: string }
 
-export function Node() {
+export function Instance() {
     const { store: { activeInstance }, isClusterOverviewOpen } = useStore()
     const {data: nodePatroni, isLoading, isError, error} = useQuery(
         ['node/overview', activeInstance],

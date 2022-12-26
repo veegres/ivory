@@ -1,15 +1,15 @@
 import {useQuery} from "@tanstack/react-query";
-import {credentialApi} from "../../app/api";
-import {ErrorAlert} from "../view/ErrorAlert";
-import {Credential} from "../../app/types";
-import {InfoAlert} from "../view/InfoAlert";
+import {credentialApi} from "../../../app/api";
+import {ErrorAlert} from "../../view/ErrorAlert";
+import {Credential} from "../../../app/types";
+import {InfoAlert} from "../../view/InfoAlert";
 import {Box, Collapse} from "@mui/material";
 import React from "react";
-import {LinearProgressStateful} from "../view/LinearProgressStateful";
+import {LinearProgressStateful} from "../../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
 import {CredentialsItem} from "./CredentialsItem";
 import {CredentialsNew} from "./CredentialsNew";
-import scroll from "../../style/scroll.module.css"
+import scroll from "../../../style/scroll.module.css"
 
 const SX = {
     field: { margin: "0 5px", width: "100%" },

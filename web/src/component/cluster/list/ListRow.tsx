@@ -1,16 +1,16 @@
 import {Box, Chip, TableRow, Tooltip} from "@mui/material";
 import {useEffect, useRef, useState} from "react";
-import {Cluster, DetectionType} from "../../app/types";
-import {RefreshIconButton,} from "../view/IconButtons";
-import {DynamicInputs} from "../view/DynamicInputs";
-import {useStore} from "../../provider/StoreProvider";
-import {ClustersRowRead} from "./ClustersRowRead";
-import {ClustersRowUpdate} from "./ClustersRowUpdate";
-import {ClustersCell} from "./ClustersCell";
-import {initialInstance, InstanceColor} from "../../app/utils";
-import {InfoTitle} from "../view/InfoTitle";
+import {Cluster, DetectionType} from "../../../app/types";
+import {RefreshIconButton,} from "../../view/IconButtons";
+import {DynamicInputs} from "../../view/DynamicInputs";
+import {useStore} from "../../../provider/StoreProvider";
+import {ListRowRead} from "./ListRowRead";
+import {ListRowUpdate} from "./ListRowUpdate";
+import {ListCell} from "./ListCell";
+import {initialInstance, InstanceColor} from "../../../app/utils";
+import {InfoTitle} from "../../view/InfoTitle";
 import {grey, orange, purple} from "@mui/material/colors";
-import {useAutoInstanceDetection, useManualInstanceDetection} from "../../hook/InstanceDetection";
+import {useAutoInstanceDetection, useManualInstanceDetection} from "../../../hook/InstanceDetection";
 
 const SX = {
     chip: {width: "100%"},
@@ -24,7 +24,7 @@ type Props = {
     toggle: () => void,
 }
 
-export function ClustersRow({name, cluster, editable, toggle}: Props) {
+export function ListRow({name, cluster, editable, toggle}: Props) {
     const {setCluster, isClusterActive, store} = useStore()
     const [detection, setDetection] = useState<DetectionType>("auto")
     const detectionRef = useRef(detection)
@@ -49,7 +49,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
 
     return (
         <TableRow>
-            <ClustersCell>
+            <ListCell>
                 <Box sx={SX.clusterName}>
                     <Tooltip title={renderChipTooltip()} placement={"right-start"} arrow disableInteractive>
                         <Chip
@@ -61,8 +61,8 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
                     </Tooltip>
                     <RefreshIconButton loading={fetching} onClick={refetch}/>
                 </Box>
-            </ClustersCell>
-            <ClustersCell>
+            </ListCell>
+            <ListCell>
                 <DynamicInputs
                     inputs={stateNodes}
                     colors={colors}
@@ -70,12 +70,12 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
                     placeholder={`Instance`}
                     onChange={n => setStateNodes(n)}
                 />
-            </ClustersCell>
-            <ClustersCell>
+            </ListCell>
+            <ListCell>
                 {!editable ? (
-                    <ClustersRowRead name={name} toggle={toggle}/>
+                    <ListRowRead name={name} toggle={toggle}/>
                 ) : (
-                    <ClustersRowUpdate
+                    <ListRowUpdate
                         name={name}
                         nodes={stateNodes}
                         toggle={toggle}
@@ -83,7 +83,7 @@ export function ClustersRow({name, cluster, editable, toggle}: Props) {
                         onClose={() => setStateNodes(cluster.nodes)}
                     />
                 )}
-            </ClustersCell>
+            </ListCell>
         </TableRow>
     )
 

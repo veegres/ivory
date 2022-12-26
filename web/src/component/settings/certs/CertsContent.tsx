@@ -1,17 +1,17 @@
 import React, {useState} from "react";
 import {Box, Collapse} from "@mui/material";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {certApi} from "../../app/api";
-import {LinearProgressStateful} from "../view/LinearProgressStateful";
-import {InfoAlert} from "../view/InfoAlert";
-import scroll from "../../style/scroll.module.css";
+import {certApi} from "../../../app/api";
+import {LinearProgressStateful} from "../../view/LinearProgressStateful";
+import {InfoAlert} from "../../view/InfoAlert";
+import scroll from "../../../style/scroll.module.css";
 import {TransitionGroup} from "react-transition-group";
-import {ErrorAlert} from "../view/ErrorAlert";
-import {UploadButton} from "../view/UploadButton";
+import {ErrorAlert} from "../../view/ErrorAlert";
+import {UploadButton} from "../../view/UploadButton";
 import {CertsItem} from "./CertsItem";
-import {getErrorMessage} from "../../app/utils";
-import {useMutationOptions} from "../../hook/QueryCustom";
-import {Cert} from "../../app/types";
+import {getErrorMessage} from "../../../app/utils";
+import {useMutationOptions} from "../../../hook/QueryCustom";
+import {Cert} from "../../../app/types";
 
 const SX = {
     progress: { margin: "10px 0" },

@@ -2,10 +2,10 @@ import React from 'react';
 import {Grid} from "@mui/material";
 import {Header} from "./component/section/Header";
 import {Body} from "./component/section/Body";
-import {Credentials} from "./component/credentials/Credentials";
+import {Credentials} from "./component/settings/credentials/Credentials";
 import {useQuery} from "@tanstack/react-query";
 import {infoApi} from "./app/api";
-import {Certs} from "./component/certs/Certs";
+import {Certs} from "./component/settings/certs/Certs";
 
 export function App() {
     const info = useQuery(["info"], infoApi.get)

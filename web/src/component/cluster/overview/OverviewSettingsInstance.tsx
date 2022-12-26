@@ -1,7 +1,7 @@
 import {Autocomplete, Box, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import React, {useMemo, useState} from "react";
-import {DetectionType, InstanceMap} from "../../app/types";
-import {useStore} from "../../provider/StoreProvider";
+import {DetectionType, InstanceMap} from "../../../app/types";
+import {useStore} from "../../../provider/StoreProvider";
 
 const SX = {
     box: { display: "flex", gap: 1 },
@@ -15,7 +15,7 @@ type Props = {
     detection: DetectionType
 }
 
-export function ClusterSettingsInstance(props: Props) {
+export function OverviewSettingsInstance(props: Props) {
     const { setClusterInstance, setClusterDetection } = useStore()
     const { instance, instances, detection } = props
     const [inputValue, setInputValue] = useState<string | undefined>(instance);

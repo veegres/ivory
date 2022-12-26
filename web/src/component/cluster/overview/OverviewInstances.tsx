@@ -1,14 +1,14 @@
 import {Box, Button, Radio, Table, TableBody, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {nodeApi} from "../../app/api";
+import {nodeApi} from "../../../app/api";
 import React, {useState} from "react";
-import {TableCellLoader} from "../view/TableCellLoader";
-import {InstanceColor} from "../../app/utils";
-import {AlertDialog} from "../view/AlertDialog";
-import {useStore} from "../../provider/StoreProvider";
-import {TabProps} from "./Cluster";
+import {TableCellLoader} from "../../view/TableCellLoader";
+import {InstanceColor} from "../../../app/utils";
+import {AlertDialog} from "../../view/AlertDialog";
+import {useStore} from "../../../provider/StoreProvider";
+import {TabProps} from "./Overview";
 import {Warning} from "@mui/icons-material";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
@@ -23,7 +23,7 @@ const SX = {
 type AlertDialogState = {open: boolean, title: string, content: string, onAgree: () => void}
 const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {}}
 
-export function ClusterOverview({info}: TabProps) {
+export function OverviewInstances({info}: TabProps) {
     const { instance, cluster, instances } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setInstance, store: { activeInstance } } = useStore()

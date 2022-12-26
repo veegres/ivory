@@ -1,26 +1,26 @@
 import {Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip} from "@mui/material";
-import {nodeApi} from "../../app/api";
+import {nodeApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {useTheme} from "../../provider/ThemeProvider";
-import {ErrorAlert} from "../view/ErrorAlert";
+import {useTheme} from "../../../provider/ThemeProvider";
+import {ErrorAlert} from "../../view/ErrorAlert";
 import React, {ReactElement, useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
 import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
-import {Instance} from "../../app/types";
-import {TabProps} from "./Cluster";
-import {ClusterNoInstanceError} from "./ClusterError";
+import {Instance} from "../../../app/types";
+import {TabProps} from "./Overview";
+import {ClusterNoInstanceError} from "./OverviewError";
 import {EditorView} from "@codemirror/view";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 const highlightExtension = {
     dark: syntaxHighlighting(oneDarkHighlightStyle),
     light: syntaxHighlighting(defaultHighlightStyle)
 }
 
-export function ClusterConfig({info}: TabProps) {
+export function OverviewConfig({info}: TabProps) {
     const theme = useTheme();
     const { instance } = info
     const [isEditable, setIsEditable] = useState(false)

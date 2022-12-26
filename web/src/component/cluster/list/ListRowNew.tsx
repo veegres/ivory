@@ -1,8 +1,8 @@
 import {FormControl, OutlinedInput, TableRow} from "@mui/material";
-import {DynamicInputs} from "../view/DynamicInputs";
+import {DynamicInputs} from "../../view/DynamicInputs";
 import {useState} from "react";
-import {ClustersRowUpdate} from "./ClustersRowUpdate";
-import {ClustersCell} from "./ClustersCell";
+import {ListRowUpdate} from "./ListRowUpdate";
+import {ListCell} from "./ListCell";
 
 const SX = {
     nodesCellInput: {height: '32px'},
@@ -13,7 +13,7 @@ type Props = {
     close: () => void
 }
 
-export function ClustersRowNew(props: Props) {
+export function ListRowNew(props: Props) {
     const { show, close } = props
     const [stateName, setStateName] = useState('');
     const [stateNodes, setStateNodes] = useState(['']);
@@ -22,7 +22,7 @@ export function ClustersRowNew(props: Props) {
 
     return (
         <TableRow>
-            <ClustersCell>
+            <ListCell>
                 <FormControl fullWidth>
                     <OutlinedInput
                         sx={SX.nodesCellInput}
@@ -31,23 +31,23 @@ export function ClustersRowNew(props: Props) {
                         onChange={(event) => setStateName(event.target.value)}
                     />
                 </FormControl>
-            </ClustersCell>
-            <ClustersCell>
+            </ListCell>
+            <ListCell>
                 <DynamicInputs
                     inputs={stateNodes}
                     editable={true}
                     placeholder={`Instance`}
                     onChange={n => setStateNodes(n)}
                 />
-            </ClustersCell>
-            <ClustersCell>
-                <ClustersRowUpdate
+            </ListCell>
+            <ListCell>
+                <ListRowUpdate
                     name={stateName}
                     nodes={stateNodes}
                     toggle={toggle}
                     onUpdate={clean}
                 />
-            </ClustersCell>
+            </ListCell>
         </TableRow>
     )
 

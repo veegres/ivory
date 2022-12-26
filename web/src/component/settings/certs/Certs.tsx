@@ -1,7 +1,7 @@
 import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material";
 import {BadgeOutlined, Close} from "@mui/icons-material";
 import React from "react";
-import {useStore} from "../../provider/StoreProvider";
+import {useStore} from "../../../provider/StoreProvider";
 import {CertsContent} from "./CertsContent";
 
 const SX = {

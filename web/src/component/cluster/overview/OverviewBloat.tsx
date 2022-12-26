@@ -1,15 +1,15 @@
 import {Box, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {bloatApi} from "../../app/api";
+import {bloatApi} from "../../../app/api";
 import React, {useState} from "react";
-import {CompactTable, Style, Target} from "../../app/types";
-import {ClusterBloatJob} from "./ClusterBloatJob";
+import {CompactTable, Style, Target} from "../../../app/types";
+import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Cached} from "@mui/icons-material";
-import {LinearProgressStateful} from "../view/LinearProgressStateful";
+import {LinearProgressStateful} from "../../view/LinearProgressStateful";
 import {TransitionGroup} from "react-transition-group";
-import {TabProps} from "./Cluster";
-import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./ClusterError";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {TabProps} from "./Overview";
+import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 const SX = {
     jobsLoader: {margin: "15px 0"},
@@ -21,7 +21,7 @@ const style: Style = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}
 }
 
-export function ClusterBloat({info}: TabProps) {
+export function OverviewBloat({info}: TabProps) {
     const { cluster, instance } = info
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
@@ -45,7 +45,7 @@ export function ClusterBloat({info}: TabProps) {
             <TransitionGroup style={style.transition}>
                 {jobs.map((value) => (
                     <Collapse key={value.uuid}>
-                        <ClusterBloatJob key={value.uuid} compactTable={value}/>
+                        <OverviewBloatJob key={value.uuid} compactTable={value}/>
                     </Collapse>
                 ))}
             </TransitionGroup>

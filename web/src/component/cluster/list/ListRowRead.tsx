@@ -1,8 +1,8 @@
-import {DeleteIconButton, EditIconButton} from "../view/IconButtons";
+import {DeleteIconButton, EditIconButton} from "../../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";
-import {clusterApi} from "../../app/api";
+import {clusterApi} from "../../../app/api";
 import {Box} from "@mui/material";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 type Props = {
     name: string
@@ -10,7 +10,7 @@ type Props = {
     onDelete?: () => void
 }
 
-export function ClustersRowRead(props: Props) {
+export function ListRowRead(props: Props) {
     const { toggle, onDelete, name } = props
 
     const deleteMutationOptions = useMutationOptions(["cluster/list"], onDelete)

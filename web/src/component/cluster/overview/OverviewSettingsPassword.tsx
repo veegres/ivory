@@ -1,10 +1,10 @@
-import {shortUuid} from "../../app/utils";
+import {shortUuid} from "../../../app/utils";
 import React, {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {clusterApi, credentialApi} from "../../app/api";
-import {Cluster, CredentialType} from "../../app/types";
-import {useMutationOptions} from "../../hook/QueryCustom";
-import {Autocomplete, Option} from "../view/Autocomplete";
+import {clusterApi, credentialApi} from "../../../app/api";
+import {Cluster, CredentialType} from "../../../app/types";
+import {useMutationOptions} from "../../../hook/QueryCustom";
+import {Autocomplete, Option} from "../../view/Autocomplete";
 
 const keys = {
     [CredentialType.POSTGRES]: "postgresCredId",
@@ -18,7 +18,7 @@ type Props = {
     label: string
 }
 
-export function ClusterSettingsPassword(props: Props) {
+export function OverviewSettingsPassword(props: Props) {
     const { type, label, cluster, credId } = props
     const passKey = keys[type]
 

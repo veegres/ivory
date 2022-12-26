@@ -1,4 +1,4 @@
-import {ErrorAlert} from "../view/ErrorAlert";
+import {ErrorAlert} from "../../view/ErrorAlert";
 import React from "react";
 
 export function ClusterNoInstanceError() {
