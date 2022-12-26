@@ -2,13 +2,13 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-    . "ivory/model"
-    "ivory/service"
-    "net/http"
+	. "ivory/model"
+	"ivory/service"
+	"net/http"
 )
 
 func (r routes) ProxyGroup(group *gin.RouterGroup) {
-	node := group.Group("/:cluster/instance")
+	node := group.Group("/instance")
 	node.GET("/info", getInstanceInfo)
 	node.GET("/overview", getInstanceOverview)
 	node.GET("/config", getInstanceConfig)
@@ -18,11 +18,10 @@ func (r routes) ProxyGroup(group *gin.RouterGroup) {
 }
 
 func getInstanceInfo(context *gin.Context) {
-    cluster := context.Param("cluster")
-    var instance Instance
-    err := context.ShouldBindJSON(&instance)
+	var instance InstanceRequest
+	err := context.ShouldBindJSON(&instance)
 
-    body, err := service.Patroni.Info(cluster, instance)
+	body, err := service.Patroni.Info(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -31,11 +30,10 @@ func getInstanceInfo(context *gin.Context) {
 }
 
 func getInstanceOverview(context *gin.Context) {
-    cluster := context.Param("cluster")
-    var instance Instance
-    err := context.ShouldBindJSON(&instance)
+	var instance InstanceRequest
+	err := context.ShouldBindJSON(&instance)
 
-    body, err := service.Patroni.Overview(cluster, instance)
+	body, err := service.Patroni.Overview(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -44,53 +42,49 @@ func getInstanceOverview(context *gin.Context) {
 }
 
 func getInstanceConfig(context *gin.Context) {
-    cluster := context.Param("cluster")
-    var instance Instance
-    err := context.ShouldBindJSON(&instance)
+	var instance InstanceRequest
+	err := context.ShouldBindJSON(&instance)
 
-    body, err := service.Patroni.Config(cluster, instance)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    context.JSON(http.StatusOK, gin.H{"response": body})
+	body, err := service.Patroni.Config(instance)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
 func patchInstanceConfig(context *gin.Context) {
-    cluster := context.Param("cluster")
-    var instance Instance
-    err := context.ShouldBindJSON(&instance)
+	var instance InstanceRequest
+	err := context.ShouldBindJSON(&instance)
 
-    body, err := service.Patroni.ConfigUpdate(cluster, instance)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    context.JSON(http.StatusOK, gin.H{"response": body})
+	body, err := service.Patroni.ConfigUpdate(instance)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
 func postInstanceSwitchover(context *gin.Context) {
-    cluster := context.Param("cluster")
-    var instance Instance
-    err := context.ShouldBindJSON(&instance)
+	var instance InstanceRequest
+	err := context.ShouldBindJSON(&instance)
 
-    body, err := service.Patroni.Switchover(cluster, instance)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    context.JSON(http.StatusOK, gin.H{"response": body})
+	body, err := service.Patroni.Switchover(instance)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
 func postInstanceReinitialize(context *gin.Context) {
-    cluster := context.Param("cluster")
-    var instance Instance
-    err := context.ShouldBindJSON(&instance)
+	var instance InstanceRequest
+	err := context.ShouldBindJSON(&instance)
 
-    body, err := service.Patroni.Reinitialize(cluster, instance)
-    if err != nil {
-        context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-    context.JSON(http.StatusOK, gin.H{"response": body})
+	body, err := service.Patroni.Reinitialize(instance)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
