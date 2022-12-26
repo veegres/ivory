@@ -4,45 +4,46 @@ import (
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-    "encoding/json"
-    "github.com/google/uuid"
-    "ivory/model"
-    "ivory/persistence"
+	"encoding/json"
+	"github.com/google/uuid"
+	"ivory/model"
+	"ivory/persistence"
 	"net/http"
 	"strconv"
 )
 
 var proxy = &prx{}
+
 type prx struct{}
 
-func (p *prx) Get(cluster string, instance model.Instance, path string) (interface{}, error) {
-    return p.send(http.MethodGet, cluster, instance, path)
+func (p *prx) Get(instance model.InstanceRequest, path string) (interface{}, error) {
+	return p.send(http.MethodGet, instance, path)
 }
 
-func (p *prx) Post(cluster string, instance model.Instance, path string) (interface{}, error) {
-    return p.send(http.MethodPost, cluster, instance, path)
+func (p *prx) Post(instance model.InstanceRequest, path string) (interface{}, error) {
+	return p.send(http.MethodPost, instance, path)
 }
 
-func (p *prx) Put(cluster string, instance model.Instance, path string) (interface{}, error) {
-    return p.send(http.MethodPut, cluster, instance, path)
+func (p *prx) Put(instance model.InstanceRequest, path string) (interface{}, error) {
+	return p.send(http.MethodPut, instance, path)
 }
 
-func (p *prx) Patch(cluster string, instance model.Instance, path string) (interface{}, error) {
-    return p.send(http.MethodPatch, cluster, instance, path)
+func (p *prx) Patch(instance model.InstanceRequest, path string) (interface{}, error) {
+	return p.send(http.MethodPatch, instance, path)
 }
 
-func (p *prx) Delete(cluster string, instance model.Instance, path string) (interface{}, error) {
-    return p.send(http.MethodDelete, cluster, instance, path)
+func (p *prx) Delete(instance model.InstanceRequest, path string) (interface{}, error) {
+	return p.send(http.MethodDelete, instance, path)
 }
 
-func (p *prx) send(method string, cluster string, instance model.Instance, path string) (interface{}, error) {
-	clusterInfo, err := persistence.Database.Cluster.Get(cluster)
+func (p *prx) send(method string, instance model.InstanceRequest, path string) (interface{}, error) {
+	clusterInfo, err := persistence.Database.Cluster.Get(instance.Cluster)
 	client, protocol, err := p.getClient(clusterInfo.CertId)
-    domain := instance.Host+":"+strconv.Itoa(int(instance.Port))
-    req, err := p.getRequest(clusterInfo.PatroniCredId, method, protocol, domain, path, instance.Body)
-    res, err := client.Do(req)
-    var body interface{}
-    return json.NewDecoder(res.Body).Decode(&body), err
+	domain := instance.Host + ":" + strconv.Itoa(int(instance.Port))
+	req, err := p.getRequest(clusterInfo.PatroniCredId, method, protocol, domain, path, instance.Body)
+	res, err := client.Do(req)
+	var body interface{}
+	return json.NewDecoder(res.Body).Decode(&body), err
 }
 
 func (p *prx) getRequest(
@@ -55,14 +56,14 @@ func (p *prx) getRequest(
 ) (*http.Request, error) {
 	var err error
 
-    req, err := http.NewRequest(method, protocol+"://"+domain+path, bytes.NewReader([]byte(body)))
-    req.Header.Set("Content-Type", "application/json")
-    req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
+	req, err := http.NewRequest(method, protocol+"://"+domain+path, bytes.NewReader([]byte(body)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
 	if passwordId != nil {
 		passInfo, errPass := persistence.Database.Credential.Get(*passwordId)
 		err = errPass
-        req.SetBasicAuth(passInfo.Username, passInfo.Password)
+		req.SetBasicAuth(passInfo.Username, passInfo.Password)
 	}
 
 	return req, err

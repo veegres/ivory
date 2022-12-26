@@ -1,16 +1,18 @@
 package model
 
-type Proxy interface {
-    Info(cluster string, instance Instance) (interface{}, error)
-    Overview(cluster string, instance Instance) (interface{}, error)
-    Config(cluster string, instance Instance) (interface{}, error)
-    ConfigUpdate(cluster string, instance Instance) (interface{}, error)
-    Switchover(cluster string, instance Instance) (interface{}, error)
-    Reinitialize(cluster string, instance Instance) (interface{}, error)
+// InstanceApi TODO add common return types to cast interface to them and create mappers for each impl (patroni)
+type InstanceApi interface {
+	Info(instance InstanceRequest) (interface{}, error)
+	Overview(instance InstanceRequest) (interface{}, error)
+	Config(instance InstanceRequest) (interface{}, error)
+	ConfigUpdate(instance InstanceRequest) (interface{}, error)
+	Switchover(instance InstanceRequest) (interface{}, error)
+	Reinitialize(instance InstanceRequest) (interface{}, error)
 }
 
-type Instance struct {
-	Host   string `json:"host"`
-	Port   int8   `json:"port"`
-	Body   string `json:"body"`
+type InstanceRequest struct {
+	Cluster string `json:"cluster"`
+	Host    string `json:"host"`
+	Port    int8   `json:"port"`
+	Body    string `json:"body"`
 }

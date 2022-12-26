@@ -25,6 +25,7 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, selec
     }
 }
 
+// TODO consider moving this to backend
 export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
     const [index, setIndex] = useState(0)
     const activeNodeName = cluster.nodes[index]
