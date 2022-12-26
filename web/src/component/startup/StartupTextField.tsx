@@ -9,7 +9,7 @@ type Props = {
     onChange: StandardInputProps['onChange']
 }
 
-export function SecretTextField(props: Props) {
+export function StartupTextField(props: Props) {
     const { label, onChange, hidden = false } = props
     const [showPassword, setShowPassword] = useState(false)
     return (
