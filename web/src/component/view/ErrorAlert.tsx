@@ -17,7 +17,7 @@ export function ErrorAlert({error, type}: ErrorProps) {
     if (!error.response) return <General type={"error"} message={"ErrorAlert is not detected"}/>
 
     const {status, statusText} = error.response
-    const title = `Error code: ${status ?? 'Unknown'} (${statusText})`
+    const title = `Error code: ${status ?? 'Unknown Code'} (${statusText ?? 'Unknown Error Name'})`
     if (status >= 400 && status < 500) return <General type={"warning"} message={error.message} title={title} json={error.stack}/>
     if (status >= 500) return <General type={"error"} message={error.message} title={title} json={error.stack}/>
 
