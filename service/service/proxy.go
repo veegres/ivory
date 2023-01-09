@@ -39,7 +39,9 @@ func send[R any](method string, instance model.InstanceRequest, path string) (R,
 	req, err := getRequest(clusterInfo.PatroniCredId, method, protocol, domain, path, instance.Body)
 	res, err := client.Do(req)
 	var body R
-	err = json.NewDecoder(res.Body).Decode(&body)
+	if err == nil {
+		err = json.NewDecoder(res.Body).Decode(&body)
+	}
 	return body, err
 }
 

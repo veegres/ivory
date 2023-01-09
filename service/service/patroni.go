@@ -11,37 +11,46 @@ var PatroniInstanceApiImpl = &patroniInstanceApiImpl{}
 type patroniInstanceApiImpl struct{}
 
 func (p patroniInstanceApiImpl) Info(instance InstanceRequest) (InstanceInfo, error) {
+	var info InstanceInfo
+
 	response, err := Get[PatroniInfo](instance, "/patroni")
-	info := InstanceInfo{
-		Sidecar: Sidecar{Host: instance.Host, Port: instance.Port},
-		Role:    response.Role,
-		State:   response.State,
+	if err == nil {
+		info = InstanceInfo{
+			Sidecar: Sidecar{Host: instance.Host, Port: instance.Port},
+			Role:    response.Role,
+			State:   response.State,
+		}
 	}
+
 	return info, err
 }
 
 func (p patroniInstanceApiImpl) Overview(instance InstanceRequest) ([]Instance, error) {
 	var err error
-	response, err := Get[PatroniCluster](instance, "/cluster")
 	var overview []Instance
-	for _, patroniInstance := range response.Members {
-		domainString := strings.Split(patroniInstance.ApiUrl, "/")[2]
-		domain := strings.Split(domainString, ":")
-		host := domain[0]
-		port, errCast := strconv.Atoi(domain[1])
-		if errCast == nil {
-			err = errCast
-			break
-		}
 
-		overview = append(overview, Instance{
-			State:    patroniInstance.State,
-			Role:     patroniInstance.Role,
-			Lag:      patroniInstance.Lag,
-			Database: Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-			Sidecar:  Sidecar{Host: host, Port: int8(port)},
-		})
+	response, err := Get[PatroniCluster](instance, "/cluster")
+	if err == nil {
+		for _, patroniInstance := range response.Members {
+			domainString := strings.Split(patroniInstance.ApiUrl, "/")[2]
+			domain := strings.Split(domainString, ":")
+			host := domain[0]
+			port, errCast := strconv.Atoi(domain[1])
+			if errCast == nil {
+				err = errCast
+				break
+			}
+
+			overview = append(overview, Instance{
+				State:    patroniInstance.State,
+				Role:     patroniInstance.Role,
+				Lag:      patroniInstance.Lag,
+				Database: Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
+				Sidecar:  Sidecar{Host: host, Port: int8(port)},
+			})
+		}
 	}
+
 	return overview, err
 }
 
