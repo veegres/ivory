@@ -75,9 +75,9 @@ func getCredentials(context *gin.Context) {
 	var credentials map[string]Credential
 	if credentialType != "" {
 		number, _ := strconv.Atoi(credentialType)
-		credentials = persistence.Database.Credential.ListByType(CredentialType(number))
+		credentials = persistence.BoltDB.Credential.ListByType(CredentialType(number))
 	} else {
-		credentials = persistence.Database.Credential.List()
+		credentials = persistence.BoltDB.Credential.List()
 	}
 
 	context.JSON(http.StatusOK, gin.H{"response": credentials})
@@ -93,7 +93,7 @@ func postCredential(context *gin.Context) {
 	}
 
 	encryptedCredential := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
-	key, cred, err := persistence.Database.Credential.Create(encryptedCredential)
+	key, cred, err := persistence.BoltDB.Credential.Create(encryptedCredential)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -118,7 +118,7 @@ func patchCredential(context *gin.Context) {
 	}
 
 	encryptedCredential := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
-	_, cred, err := persistence.Database.Credential.Update(credUuid, encryptedCredential)
+	_, cred, err := persistence.BoltDB.Credential.Update(credUuid, encryptedCredential)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -132,7 +132,7 @@ func deleteCredential(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	deleteErr := persistence.Database.Credential.Delete(credUuid)
+	deleteErr := persistence.BoltDB.Credential.Delete(credUuid)
 	if deleteErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return

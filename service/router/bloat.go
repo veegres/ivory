@@ -32,7 +32,7 @@ func getCompactTableLogs(context *gin.Context) {
 		return
 	}
 
-	model, errModel := persistence.Database.CompactTable.Get(jobUuid)
+	model, errModel := persistence.BoltDB.CompactTable.Get(jobUuid)
 	if errModel != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errModel.Error()})
 		return
@@ -43,7 +43,7 @@ func getCompactTableLogs(context *gin.Context) {
 }
 
 func getCompactTableList(context *gin.Context) {
-	list, err := persistence.Database.CompactTable.List()
+	list, err := persistence.BoltDB.CompactTable.List()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -53,7 +53,7 @@ func getCompactTableList(context *gin.Context) {
 
 func getCompactTableListByCluster(context *gin.Context) {
 	cluster := context.Param("name")
-	list, err := persistence.Database.CompactTable.ListByCluster(cluster)
+	list, err := persistence.BoltDB.CompactTable.ListByCluster(cluster)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -67,7 +67,7 @@ func getCompactTable(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	compactTable, err := persistence.Database.CompactTable.Get(jobUuid)
+	compactTable, err := persistence.BoltDB.CompactTable.Get(jobUuid)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

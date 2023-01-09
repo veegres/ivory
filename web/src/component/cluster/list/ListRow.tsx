@@ -90,7 +90,7 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
     function renderChipTooltip() {
         const items = [
             { name: "Detection", value: detection, bgColor: purple[400] },
-            { name: "Instance", value: instance.api_domain, bgColor: InstanceColor[instance.role] },
+            { name: "Instance", value: instance.sidecar.host, bgColor: InstanceColor[instance.role] },
             { name: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500] }
         ]
 

@@ -16,7 +16,7 @@ func (r routes) CertGroup(group *gin.RouterGroup) {
 }
 
 func getCertList(context *gin.Context) {
-	list, err := persistence.Database.Cert.List()
+	list, err := persistence.BoltDB.Cert.List()
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -26,7 +26,7 @@ func getCertList(context *gin.Context) {
 
 func deleteCert(context *gin.Context) {
 	certUuid, err := uuid.Parse(context.Param("uuid"))
-	err = persistence.Database.Cert.Delete(certUuid)
+	err = persistence.BoltDB.Cert.Delete(certUuid)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -45,7 +45,7 @@ func postUploadCert(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "file format is not correct, required .crt file"})
 		return
 	}
-	cert, err := persistence.Database.Cert.Create(file.Filename)
+	cert, err := persistence.BoltDB.Cert.Create(file.Filename)
 	err = context.SaveUploadedFile(file, cert.Path)
 	if err != nil {
 		context.JSON(http.StatusOK, gin.H{"error": err.Error()})

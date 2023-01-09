@@ -16,7 +16,7 @@ func (r routes) ClusterGroup(group *gin.RouterGroup) {
 }
 
 func getClusterList(context *gin.Context) {
-	list, err := persistence.Database.Cluster.List()
+	list, err := persistence.BoltDB.Cluster.List()
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -26,7 +26,7 @@ func getClusterList(context *gin.Context) {
 
 func getClusterByName(context *gin.Context) {
 	name := context.Param("name")
-	cluster, err := persistence.Database.Cluster.Get(name)
+	cluster, err := persistence.BoltDB.Cluster.Get(name)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -37,13 +37,13 @@ func getClusterByName(context *gin.Context) {
 func putClusterByName(context *gin.Context) {
 	var cluster ClusterModel
 	_ = context.ShouldBindJSON(&cluster)
-	_ = persistence.Database.Cluster.Update(cluster)
+	_ = persistence.BoltDB.Cluster.Update(cluster)
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
 func deleteClusterByName(context *gin.Context) {
 	name := context.Param("name")
-	err := persistence.Database.Cluster.Delete(name)
+	err := persistence.BoltDB.Cluster.Delete(name)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

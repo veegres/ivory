@@ -27,7 +27,7 @@ export function OverviewBloat({info}: TabProps) {
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
-    const initJobs = useQuery(['node/bloat/list', cluster.name], () => bloatApi.list(cluster.name), {
+    const initJobs = useQuery(['instance/bloat/list', cluster.name], () => bloatApi.list(cluster.name), {
         onSuccess: (initJobs) => setJobs(initJobs)
     })
     const { onError } = useMutationOptions()
@@ -102,7 +102,7 @@ export function OverviewBloat({info}: TabProps) {
 
     function handleRun() {
         if (instance && cluster?.postgresCredId) {
-            const { host, port } = instance
+            const { database: { host, port }} = instance
             start.mutate({
                 connection: { host, port, credId: cluster.postgresCredId },
                 target,

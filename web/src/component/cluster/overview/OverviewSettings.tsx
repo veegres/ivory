@@ -17,9 +17,11 @@ export function OverviewSettings({info}: TabProps) {
     const patroniCredId = cluster.patroniCredId ?? ""
     const patroniCertId = cluster.certId ?? ""
 
+    const domain = `${instance.sidecar.host}:${instance.sidecar.port}`
+
     return (
         <Stack sx={SX.settings}>
-            <OverviewSettingsInstance instance={instance.api_domain} instances={instances} detection={detection} />
+            <OverviewSettingsInstance instance={domain} instances={instances} detection={detection} />
             <OverviewSettingsPassword label={"Postgres Password"} type={CredentialType.POSTGRES} credId={postgresCredId} cluster={cluster} />
             <OverviewSettingsPassword label={"Patroni Password"} type={CredentialType.PATRONI} credId={patroniCredId} cluster={cluster} />
             <OverviewSettingsCert certId={patroniCertId} cluster={cluster} />

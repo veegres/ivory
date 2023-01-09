@@ -142,7 +142,7 @@ export function Overview() {
         ]
         const roleTooltip = [
             { name: "Detection", value: detection, bgColor: purple[400] },
-            { name: "Instance", value: instance.api_domain, bgColor: InstanceColor[instance.role] }
+            { name: "Instance", value: instance.sidecar.host, bgColor: InstanceColor[instance.role] }
         ]
 
         return (

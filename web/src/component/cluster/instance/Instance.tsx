@@ -24,8 +24,8 @@ type StatusProps = { role?: string }
 export function Instance() {
     const { store: { activeInstance }, isClusterOverviewOpen } = useStore()
     const {data: nodePatroni, isLoading, isError, error} = useQuery(
-        ['node/overview', activeInstance],
-        () => { if (activeInstance) return nodeApi.overview(activeInstance) },
+        ['instance/overview', activeInstance],
+        () => { if (activeInstance) return nodeApi.info(activeInstance) },
         {enabled: !!activeInstance}
     )
 
@@ -45,7 +45,8 @@ export function Instance() {
                     <NodeStatus role={nodePatroni?.role}/>
                 </Grid>
                 <Grid item xs container direction="column">
-                    <Grid item><Item name="Node" value={activeInstance}/></Grid>
+                    <Grid item><Item name="Node" value={activeInstance?.host}/></Grid>
+                    <Grid item><Item name="Node" value={activeInstance?.port.toString()}/></Grid>
                     <Grid item><Item name="State" value={nodePatroni?.state}/></Grid>
                     <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope}/></Grid>
                     <Grid item><Item name="Timeline" value={nodePatroni?.timeline?.toString()}/></Grid>

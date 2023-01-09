@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	persistence.Database.Build("cluster.db")
+	persistence.BoltDB.Build("cluster.db")
 	persistence.File.Build()
-	service.Secret.Create(persistence.Database.Credential.GetEncryptedRef())
+	service.Secret.Create(persistence.BoltDB.Credential.GetEncryptedRef())
 	router.Start()
 }

@@ -1,5 +1,5 @@
 import {blue, green, orange} from "@mui/material/colors";
-import {ColorsMap, CredentialType, JobStatus, InstanceMap, Instance} from "./types";
+import {ColorsMap, CredentialType, InstanceLocal, JobStatus, OverviewMap} from "./types";
 import {ReactElement} from "react";
 import {HeartBroken, Storage} from "@mui/icons-material";
 import {AxiosError} from "axios";
@@ -25,25 +25,35 @@ export const CredentialOptions: { [key in CredentialType]: { name: string, color
     [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken />}
 }
 
-export const createInstanceColors = (nodes: InstanceMap) => {
-    return Object.values(nodes).reduce(
-        (map, node) => {
-            const color = node.leader ? "success" : "primary"
-            map[node.host.toLowerCase()] = color
-            map[node.api_domain.toLowerCase()] = color
+export const createInstanceColors = (instances: OverviewMap) => {
+    return Object.values(instances).reduce(
+        (map, instance) => {
+            map[instance.sidecar.host.toLowerCase()] = instance.leader ? "success" : "primary"
             return map
         },
         {} as ColorsMap
     )
 }
 
-export const initialInstance: (api_domain: string) => Instance = (api_domain: string) => ({ api_domain, name: "-", host: "-", port: 0, role: "unknown", api_url: "-", lag: undefined, leader: false, state: "-", inInstances: true, inCluster: false })
+export const initialInstance: (domain: string) => InstanceLocal = (domain: string) => {
+    const [host, port] = domain.split(":")
+    return ({
+        state: "-",
+        role: "unknown",
+        lag: undefined,
+        sidecar: {host, port: parseInt(port)},
+        database: {host: "-", port: 0},
+        leader: false,
+        inInstances: true,
+        inCluster: false
+    });
+}
 
 /**
  * Combine instances from patroni and from ivory
  */
-export const combineInstances = (instanceNames: string[], instanceInCluster: InstanceMap): [InstanceMap, boolean] => {
-    const map: InstanceMap = {}
+export const combineInstances = (instanceNames: string[], instanceInCluster: OverviewMap): [OverviewMap, boolean] => {
+    const map: OverviewMap = {}
     let warning: boolean = false
 
     for (const key in instanceInCluster) {
