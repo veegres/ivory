@@ -20,7 +20,10 @@ const SX = {
 }
 
 export function CredentialsContent() {
-    const { data: credentials, isError, error, isFetching } = useQuery(["credentials"], () => credentialApi.list())
+    const { data: credentials, isError, error, isFetching } = useQuery(
+        ["credentials"],
+        () => credentialApi.list()
+    )
     if (isError) return <ErrorAlert error={error}/>
 
     return (

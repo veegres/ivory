@@ -11,6 +11,7 @@ import scroll from "../../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../../view/DynamicRowVirtualizer";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useEventJob} from "../../../hook/EventJob";
+import {ConsoleBlock} from "../../view/ConsoleBlock";
 
 const SX = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
@@ -34,13 +35,13 @@ export function OverviewBloatJob({compactTable}: Props) {
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
-    const deleteOptions = useMutationOptions(["node/bloat/list"])
+    const deleteOptions = useMutationOptions(["instance/bloat/list"])
     const deleteJob = useMutation(bloatApi.delete, deleteOptions)
     const stopOptions = useMutationOptions()
     const stopJob = useMutation(bloatApi.stop, stopOptions)
 
     return (
-        <Box sx={SX.console}>
+        <ConsoleBlock>
             <Grid container sx={SX.header} onClick={() => setOpen(!open)}>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
                     <Grid item container>
@@ -86,7 +87,7 @@ export function OverviewBloatJob({compactTable}: Props) {
                 )}
                 <LinearProgressStateful sx={SX.loader} isFetching={isFetching} color={"inherit"} line />
             </Collapse>
-        </Box>
+        </ConsoleBlock>
     )
 
     function renderJobButton(title: string, icon: ReactElement, onClick: () => void, isLoading: boolean) {

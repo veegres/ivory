@@ -8,7 +8,7 @@ import React, {useState} from "react";
 import {useStore} from "../../../provider/StoreProvider";
 import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../view/InfoAlert";
-import {Block} from "../../view/Block";
+import {PageBlock} from "../../view/PageBlock";
 import {useQuery} from "@tanstack/react-query";
 import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
 import {ClusterTabs, CredentialType, ActiveCluster} from "../../../app/types";
@@ -73,7 +73,7 @@ export function Overview() {
     const tab = TABS[activeClusterTab]
 
     return (
-        <Block withPadding visible={clusters.isSuccess}>
+        <PageBlock withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => handleChange(value)}>
                     <Tab label={"Instances"}/>
@@ -87,7 +87,7 @@ export function Overview() {
                 <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
                 <Box sx={SX.rightMainBlock}>{renderSettingsBlock()}</Box>
             </Box>
-        </Block>
+        </PageBlock>
     )
 
     function renderMainBlock() {

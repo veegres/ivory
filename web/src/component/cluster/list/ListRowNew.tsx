@@ -26,7 +26,7 @@ export function ListRowNew(props: Props) {
                 <FormControl fullWidth>
                     <OutlinedInput
                         sx={SX.nodesCellInput}
-                        placeholder="Name"
+                        placeholder={"Name"}
                         value={stateName}
                         onChange={(event) => setStateName(event.target.value)}
                     />

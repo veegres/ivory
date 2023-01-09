@@ -12,7 +12,7 @@ type Props = {
     elevation?: number
 }
 
-export function Block(props: Props) {
+export function PageBlock(props: Props) {
     const elevation = props.elevation ?? 4
     const visible = props.visible ?? true
     const padding = props.withPadding ? "10px 20px" : "0";

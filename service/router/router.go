@@ -35,6 +35,7 @@ func Start() {
 	api.GET("/ping", pong)
 	api.GET("/info", info(companyLabel, auth))
 
+	// TODO we shouldn't allow any request if there is no secret set think of creating mw
 	authApi := api.Group("/", authHandler)
 	r.ProxyGroup(authApi)
 	r.ClusterGroup(authApi)

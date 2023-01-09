@@ -1,9 +1,9 @@
 import {Box, Button, Radio, Table, TableBody, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {nodeApi} from "../../../app/api";
+import {instanceApi} from "../../../app/api";
 import React, {useState} from "react";
 import {TableCellLoader} from "../../view/TableCellLoader";
-import {InstanceColor} from "../../../app/utils";
+import {getSidecarDomain, InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/AlertDialog";
 import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
@@ -12,7 +12,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {ActiveInstance} from "../../../app/types";
 
 const SX = {
-    table: {'tr:last-child td': {border: 0}},
+    table: {"tr:last-child td": {border: 0}},
     row: {cursor: "pointer"},
     cell: {padding: "5px 10px", height: "50px"},
     actionCell: {width: "58px"},
@@ -22,7 +22,7 @@ const SX = {
 }
 
 type AlertDialogState = {open: boolean, title: string, content: string, onAgree: () => void}
-const initAlertDialog = {open: false, title: '', content: '', onAgree: () => {}}
+const initAlertDialog = {open: false, title: "", content: "", onAgree: () => {}}
 
 export function OverviewInstances({info}: TabProps) {
     const { instance, cluster, instances } = info
@@ -30,14 +30,14 @@ export function OverviewInstances({info}: TabProps) {
     const { setInstance, store: { activeInstance } } = useStore()
 
     const instanceMap = useQuery(
-        ["instance/overview", cluster.name, instance.sidecar.host],
-        () => { if (activeInstance) return nodeApi.overview(activeInstance) },
+        ["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port],
+        () => activeInstance ? instanceApi.overview(activeInstance) : {},
         { retry: 0 }
     )
-    const switchoverNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host])
-    const switchoverNode = useMutation(nodeApi.switchover, switchoverNodeOptions)
-    const reinitNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host])
-    const reinitNode = useMutation(nodeApi.reinitialize, reinitNodeOptions)
+    const switchoverNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port])
+    const switchoverNode = useMutation(instanceApi.switchover, switchoverNodeOptions)
+    const reinitNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port])
+    const reinitNode = useMutation(instanceApi.reinitialize, reinitNodeOptions)
 
     return (
         <>
@@ -65,7 +65,7 @@ export function OverviewInstances({info}: TabProps) {
     function renderContent() {
         return Object.entries(instances).map(([key, element]) => {
             const { role, sidecar, database, state, lag, inInstances, inCluster } = element
-            const isChecked = activeInstance?.host === key
+            const isChecked = activeInstance ? getSidecarDomain(activeInstance) === key : false
             const instance = { host: sidecar.host, port: sidecar.port, cluster: cluster.name }
 
             return (
@@ -73,8 +73,12 @@ export function OverviewInstances({info}: TabProps) {
                     <TableCell sx={SX.cell}><Radio checked={isChecked} size={"small"}/></TableCell>
                     <TableCell sx={SX.cell} align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
                     <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
-                    <TableCell sx={SX.cell} align={"center"}>{sidecar.host}:{sidecar.port}</TableCell>
-                    <TableCell sx={SX.cell} align={"center"}>{database.host}:{database.port}</TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>
+                        {sidecar.host}:{sidecar.port === 0 ? "-" : sidecar.port}
+                    </TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>
+                        {database.host}:{database.port === 0 ? "-" : database.port}
+                    </TableCell>
                     <TableCell sx={SX.cell} align={"center"}>{state}</TableCell>
                     <TableCell sx={SX.cell} align={"center"}>{lag}</TableCell>
                     <TableCell sx={SX.cell} align={"right"} onClick={(e) => e.stopPropagation()}>
@@ -134,8 +138,8 @@ export function OverviewInstances({info}: TabProps) {
         setAlertDialog({
             open: true,
             title: `Switchover [${instance.host}]`,
-            content: 'Are you sure that you want to do Switchover? It will change the leader of your cluster.',
-            onAgree: () => switchoverNode.mutate({ ...instance, body: { candidate: instance.host }})
+            content: "Are you sure that you want to do Switchover? It will change the leader of your cluster.",
+            onAgree: () => switchoverNode.mutate({ ...instance, body: { leader: instance.host }})
         })
     }
 
@@ -143,7 +147,7 @@ export function OverviewInstances({info}: TabProps) {
         setAlertDialog({
             open: true,
             title: `Reinitialization [${instance.host}]`,
-            content: 'Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.',
+            content: "Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.",
             onAgree: () => reinitNode.mutate(instance)
         })
     }

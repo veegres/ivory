@@ -12,13 +12,13 @@ type Props = {
     colors?: ColorsMap,
     placeholder: string,
     editable: boolean,
-    onChange: (nodes: string[]) => void,
+    onChange: (values: string[]) => void,
 }
 
 export function DynamicInputs({ inputs, editable, placeholder, onChange, colors} : Props) {
     const colorsMap = colors ?? {}
     return (
-        <Box display="grid" gridTemplateColumns={SX.gridTemplateColumns} gap={1}>
+        <Box display={"grid"} gridTemplateColumns={SX.gridTemplateColumns} gap={1}>
             {editable ? renderInputs() : renderChips()}
         </Box>
     )
@@ -48,7 +48,7 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
                 key={index}
                 sx={SX.chip}
                 color={colorsMap[input.toLowerCase()]}
-                label={input ? input : `Node ${index}`}
+                label={input ? input : `Instance ${index}`}
                 disabled={!input}
                 variant={"outlined"}
            />

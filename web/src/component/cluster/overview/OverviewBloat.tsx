@@ -10,11 +10,13 @@ import {TransitionGroup} from "react-transition-group";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
+import { ConsoleBlock } from "../../view/ConsoleBlock";
 
 const SX = {
     jobsLoader: {margin: "15px 0"},
+    jobsEmpty: {textAlign: "center"},
     form: {display: "grid", flexGrow: 1, padding: "0 20px", gridTemplateColumns: "repeat(3, 1fr)", gridColumnGap: "30px", gridRowGap: "5px"},
-    buttons: {display: "flex", alignItems: "center", gap: 1},
+    buttons: {display: "flex", alignItems: "center", gap: 1}
 }
 
 const style: Style = {
@@ -27,21 +29,29 @@ export function OverviewBloat({info}: TabProps) {
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
-    const initJobs = useQuery(['instance/bloat/list', cluster.name], () => bloatApi.list(cluster.name), {
-        onSuccess: (initJobs) => setJobs(initJobs)
-    })
+    const initJobs = useQuery(
+        ['instance/bloat/list', cluster.name],
+        () => bloatApi.list(cluster.name),
+        { onSuccess: (initJobs) => setJobs(initJobs) }
+    )
     const { onError } = useMutationOptions()
     const start = useMutation(bloatApi.start, {
         onSuccess: (job) => setJobs([job, ...jobs]),
         onError,
     })
 
-    if (!instance) return <ClusterNoInstanceError />
-
     return (
         <Box>
             {renderForm()}
             <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} color={"inherit"} />
+            {renderJobs()}
+        </Box>
+    )
+
+    function renderJobs() {
+        if (jobs.length === 0) return <ConsoleBlock sx={SX.jobsEmpty}>There is no jobs yet</ConsoleBlock>
+
+        return (
             <TransitionGroup style={style.transition}>
                 {jobs.map((value) => (
                     <Collapse key={value.uuid}>
@@ -49,10 +59,11 @@ export function OverviewBloat({info}: TabProps) {
                     </Collapse>
                 ))}
             </TransitionGroup>
-        </Box>
-    )
+        )
+    }
 
     function renderForm() {
+        if (!instance.inCluster) return <ClusterNoInstanceError />
         if (!instance.leader) return <ClusterNoLeaderError />
         if (!cluster.postgresCredId) return <ClusterNoPostgresPassword />
 
