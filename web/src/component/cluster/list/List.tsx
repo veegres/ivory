@@ -7,24 +7,27 @@ import {ErrorAlert} from "../../view/ErrorAlert";
 import {TableBody} from "../../view/TableBody";
 import {TableCellLoader} from "../../view/TableCellLoader";
 import {Add} from "@mui/icons-material";
-import {Block} from "../../view/Block";
+import {PageBlock} from "../../view/PageBlock";
 import {ListRowNew} from "./ListRowNew";
 
 const SX = {
-    table: {'tr:last-child td': {border: 0}},
-    nameCell: {width: '220px'},
-    buttonCell: {width: '1%'}
+    table: {"tr:last-child td": {border: 0}},
+    nameCell: {width: "220px"},
+    buttonCell: {width: "1%"}
 }
 
 export function List() {
-    const [editNode, setEditNode] = useState('')
+    const [editNode, setEditNode] = useState("")
     const [showNewElement, setShowNewElement] = useState(false)
-    const {data: clusterMap, isLoading, isFetching, isError, error} = useQuery(["cluster/list"], clusterApi.list)
+    const {data: clusterMap, isLoading, isFetching, isError, error} = useQuery(
+        ["cluster/list"],
+        clusterApi.list,
+    )
 
     return (
-        <Block>
+        <PageBlock>
             {renderContent()}
-        </Block>
+        </PageBlock>
     )
 
     function renderContent() {
@@ -37,7 +40,7 @@ export function List() {
                         <TableCell sx={SX.nameCell}>Cluster Name</TableCell>
                         <TableCell>Instances</TableCell>
                         <TableCellLoader sx={SX.buttonCell} isFetching={isFetching && !isLoading}>
-                            <Tooltip title={'Add new cluster'} disableInteractive>
+                            <Tooltip title={"Add new cluster"} disableInteractive>
                                 <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}>
                                     <Add/>
                                 </IconButton>
@@ -56,7 +59,7 @@ export function List() {
     function renderRows() {
         return Object.entries(clusterMap ?? {}).map(([name, cluster]) => {
             const editable = name === editNode
-            const toggle = () => setEditNode(editable ? '' : name)
+            const toggle = () => setEditNode(editable ? "" : name)
 
             return <ListRow key={name} cluster={cluster} name={name} editable={editable} toggle={toggle}/>
         })

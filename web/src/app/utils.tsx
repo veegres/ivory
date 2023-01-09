@@ -1,5 +1,5 @@
 import {blue, green, orange} from "@mui/material/colors";
-import {ColorsMap, CredentialType, InstanceLocal, JobStatus, OverviewMap} from "./types";
+import {ColorsMap, CredentialType, InstanceLocal, JobStatus, InstanceMap} from "./types";
 import {ReactElement} from "react";
 import {HeartBroken, Storage} from "@mui/icons-material";
 import {AxiosError} from "axios";
@@ -25,10 +25,11 @@ export const CredentialOptions: { [key in CredentialType]: { name: string, color
     [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken />}
 }
 
-export const createInstanceColors = (instances: OverviewMap) => {
+export const createInstanceColors = (instances: InstanceMap) => {
     return Object.values(instances).reduce(
         (map, instance) => {
-            map[instance.sidecar.host.toLowerCase()] = instance.leader ? "success" : "primary"
+            const domain = getSidecarDomain(instance.sidecar)
+            map[domain] = instance.leader ? "success" : "primary"
             return map
         },
         {} as ColorsMap
@@ -36,12 +37,11 @@ export const createInstanceColors = (instances: OverviewMap) => {
 }
 
 export const initialInstance: (domain: string) => InstanceLocal = (domain: string) => {
-    const [host, port] = domain.split(":")
     return ({
         state: "-",
         role: "unknown",
         lag: undefined,
-        sidecar: {host, port: parseInt(port)},
+        sidecar: getHostAndPort(domain),
         database: {host: "-", port: 0},
         leader: false,
         inInstances: true,
@@ -52,8 +52,8 @@ export const initialInstance: (domain: string) => InstanceLocal = (domain: strin
 /**
  * Combine instances from patroni and from ivory
  */
-export const combineInstances = (instanceNames: string[], instanceInCluster: OverviewMap): [OverviewMap, boolean] => {
-    const map: OverviewMap = {}
+export const combineInstances = (instanceNames: string[], instanceInCluster: InstanceMap): [InstanceMap, boolean] => {
+    const map: InstanceMap = {}
     let warning: boolean = false
 
     for (const key in instanceInCluster) {
@@ -80,7 +80,12 @@ export const combineInstances = (instanceNames: string[], instanceInCluster: Ove
     return [map, warning]
 }
 
-export const getPatroniDomain = (url: string) => url.split('/')[2]
+export const getSidecarDomain = ({ host, port }: { host: string, port: number }) => `${host.toLowerCase()}:${port}`
+
+export const getHostAndPort = (domain: string) => {
+    const [host, port] = domain.split(":")
+    return { host, port: port ? parseInt(port) : 0 }
+}
 
 export const shortUuid = (uuid: string) => uuid.substring(0, 8)
 

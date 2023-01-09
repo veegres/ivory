@@ -19,72 +19,88 @@ func (r routes) ProxyGroup(group *gin.RouterGroup) {
 
 func getInstanceInfo(context *gin.Context) {
 	var instance InstanceRequest
-	err := context.ShouldBindJSON(&instance)
-
-	body, err := service.PatroniInstanceApiImpl.Info(instance)
+	err := context.ShouldBindQuery(&instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": body})
+
+	body, status, err := service.PatroniInstanceApiImpl.Info(instance)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(status, gin.H{"response": body})
 }
 
 func getInstanceOverview(context *gin.Context) {
 	var instance InstanceRequest
-	err := context.ShouldBindJSON(&instance)
-
-	body, err := service.PatroniInstanceApiImpl.Overview(instance)
+	err := context.ShouldBindQuery(&instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": body})
+
+	body, status, err := service.PatroniInstanceApiImpl.Overview(instance)
+	handleResponse(context, body, status, err)
 }
 
 func getInstanceConfig(context *gin.Context) {
 	var instance InstanceRequest
-	err := context.ShouldBindJSON(&instance)
-
-	body, err := service.PatroniInstanceApiImpl.Config(instance)
+	err := context.ShouldBindQuery(&instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": body})
+
+	body, status, err := service.PatroniInstanceApiImpl.Config(instance)
+	handleResponse(context, body, status, err)
 }
 
 func patchInstanceConfig(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
-
-	body, err := service.PatroniInstanceApiImpl.ConfigUpdate(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": body})
+
+	body, status, err := service.PatroniInstanceApiImpl.ConfigUpdate(instance)
+	handleResponse(context, body, status, err)
 }
 
 func postInstanceSwitchover(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
-
-	body, err := service.PatroniInstanceApiImpl.Switchover(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": body})
+
+	body, status, err := service.PatroniInstanceApiImpl.Switchover(instance)
+	handleResponse(context, body, status, err)
 }
 
 func postInstanceReinitialize(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
-
-	body, err := service.PatroniInstanceApiImpl.Reinitialize(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": body})
+
+	body, status, err := service.PatroniInstanceApiImpl.Reinitialize(instance)
+	handleResponse(context, body, status, err)
+}
+
+func handleResponse(context *gin.Context, body any, status int, err error) {
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if status >= 200 && status < 300 {
+		context.JSON(status, gin.H{"response": body})
+	} else {
+		context.JSON(status, gin.H{"error": body})
+	}
 }

@@ -1,13 +1,13 @@
-import {Cluster, InstanceLocal, InstanceDetection, OverviewMap} from "../app/types";
+import {Cluster, InstanceLocal, InstanceDetection, InstanceMap} from "../app/types";
 import {useQueries, useQuery} from "@tanstack/react-query";
-import {nodeApi} from "../app/api";
+import {instanceApi} from "../app/api";
 import {useMemo, useRef, useState} from "react";
-import {combineInstances, createInstanceColors} from "../app/utils";
+import {combineInstances, createInstanceColors, getHostAndPort} from "../app/utils";
 
 export function useManualInstanceDetection(use: boolean, cluster: Cluster, selected: InstanceLocal): InstanceDetection {
     const query = useQuery(
-        ["instance/overview", cluster.name, selected?.sidecar.host],
-        () => { if (selected) return nodeApi.overview({ host: selected.sidecar.host, port: selected.sidecar.port, cluster: cluster.name }) },
+        ["instance/overview", cluster.name, selected.sidecar.host, selected.sidecar.port],
+        () => selected ? instanceApi.overview({ host: selected.sidecar.host, port: selected.sidecar.port, cluster: cluster.name }) : {},
         {enabled: use && !!selected}
     )
 
@@ -56,7 +56,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     /**
      * Either find leader or set query that we were sending request to
      */
-    function handleMemoActiveInstance(instances: OverviewMap, name: string) {
+    function handleMemoActiveInstance(instances: InstanceMap, name: string) {
         const values = Object.values(instances)
         const value = values.find(instance => instance.leader) ?? instances[name] ?? instances[safeNodeName.current]
         safeNodeName.current = value.sidecar.host
@@ -71,10 +71,10 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
      */
     function getNodeQueries(index: number, name: string, instances: string[]) {
         return instances.map((instance, j) => {
-            const [host, port] = instance.split(":")
+            const domain = getHostAndPort(instance)
             return ({
-                queryKey: ["instance/overview", name, instance],
-                queryFn: () => nodeApi.overview({ host, port: parseInt(port), cluster: cluster.name }),
+                queryKey: ["instance/overview", name, domain.host, domain.port],
+                queryFn: () => instanceApi.overview({ ...domain, cluster: cluster.name }),
                 retry: 0,
                 enabled: use && index === j,
                 onError: () => {

@@ -2,37 +2,37 @@ package model
 
 // InstanceApi TODO add common return types to cast interface to them and create mappers for each impl (patroni)
 type InstanceApi interface {
-	Info(instance InstanceRequest) (InstanceInfo, error)
-	Overview(instance InstanceRequest) ([]Instance, error)
-	Config(instance InstanceRequest) (interface{}, error)
-	ConfigUpdate(instance InstanceRequest) (interface{}, error)
-	Switchover(instance InstanceRequest) (interface{}, error)
-	Reinitialize(instance InstanceRequest) (interface{}, error)
+	Info(instance InstanceRequest) (InstanceInfo, int, error)
+	Overview(instance InstanceRequest) ([]Instance, int, error)
+	Config(instance InstanceRequest) (any, int, error)
+	ConfigUpdate(instance InstanceRequest) (any, int, error)
+	Switchover(instance InstanceRequest) (any, int, error)
+	Reinitialize(instance InstanceRequest) (any, int, error)
 }
 
 type InstanceRequest struct {
-	Cluster string `json:"cluster"`
-	Host    string `json:"host"`
-	Port    int8   `json:"port"`
-	Body    string `json:"body"`
+	Cluster string `json:"cluster" form:"cluster"`
+	Host    string `json:"host" form:"host"`
+	Port    int    `json:"port" form:"port"`
+	Body    any    `json:"body" form:"body"`
 }
 
 type Instance struct {
 	State    string   `json:"state"`
 	Role     string   `json:"role"`
-	Lag      int32    `json:"lag"`
+	Lag      int      `json:"lag"`
 	Database Database `json:"database"`
 	Sidecar  Sidecar  `json:"sidecar"`
 }
 
 type Database struct {
 	Host string `json:"host"`
-	Port int8   `json:"port"`
+	Port int    `json:"port"`
 }
 
 type Sidecar struct {
 	Host string `json:"host"`
-	Port int8   `json:"port"`
+	Port int    `json:"port"`
 }
 
 type InstanceInfo struct {

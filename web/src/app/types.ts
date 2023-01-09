@@ -14,14 +14,18 @@ export interface Instance {
     state: string,
     role: string,
     lag?: number,
-    database: {
-        host: string,
-        port: number,
-    },
-    sidecar: {
-        host: string,
-        port: number,
-    }
+    database: Database,
+    sidecar: Sidecar,
+}
+
+export interface Database {
+    host: string,
+    port: number,
+}
+
+export interface Sidecar {
+    host: string,
+    port: number,
 }
 
 export interface InstanceLocal extends Instance {
@@ -30,26 +34,14 @@ export interface InstanceLocal extends Instance {
     inInstances: boolean,
 }
 
-export interface OverviewMap {
+export interface InstanceMap {
     [instance: string]: InstanceLocal,
 }
 
-export interface InstanceOverview {
-    database_system_identifier: string,
-    pending_restart?: boolean
-    postmaster_start_time?: string,
-    timeline?: number,
-    cluster_unlocked?: boolean,
-    patroni: { scope: string, version: string },
+export interface InstanceInfo {
     state: string,
     role: string,
-    xlog?: {
-        received_location: number,
-        replayed_timestamp: string,
-        paused: boolean,
-        replayed_location: number
-    }
-    server_version?: string
+    sidecar: Sidecar,
 }
 
 // CLUSTER
@@ -75,7 +67,7 @@ export type DetectionType = "auto" | "manual"
 export interface ActiveCluster {
     cluster: Cluster,
     instance: InstanceLocal,
-    instances: OverviewMap,
+    instances: InstanceMap,
     warning: boolean,
     detection: DetectionType,
 }
@@ -90,7 +82,7 @@ export interface InstanceDetection {
     active: {
         cluster: Cluster,
         instance: InstanceLocal,
-        instances: OverviewMap,
+        instances: InstanceMap,
         warning: boolean,
     },
     colors: ColorsMap,

@@ -5,14 +5,15 @@ import {
     CompactTable,
     CompactTableRequest, Credential,
     CredentialMap,
-    InstanceOverview,
+    InstanceInfo,
     Instance,
     Response,
     SecretSetRequest,
     SecretStatus,
     SecretUpdateRequest,
-    OverviewMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest
+    InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest
 } from "./types";
+import {getSidecarDomain} from "./utils";
 
 const api = axios.create({ baseURL: '/api' })
 
@@ -22,22 +23,23 @@ const api = axios.create({ baseURL: '/api' })
 // - try to make args that can be use than directly in react-query hooks
 // - can be problems with same route as for DELETE / GET / POST
 
-export const nodeApi = {
+export const instanceApi = {
     info: (request: InstanceRequest) => api
-        .get<Response<InstanceOverview>>(`/instance/info`, { data: request })
+        .get<Response<InstanceInfo>>(`/instance/info`, { params: request })
         .then((response) => response.data.response),
     overview: (request: InstanceRequest) => api
-        .get<Response<Instance[]>>(`/instance/overview`, { data: request, timeout: 1000 })
-        .then<OverviewMap>((response) => response.data.response.reduce(
+        .get<Response<Instance[]>>(`/instance/overview`, { params: request })
+        .then<InstanceMap>((response) => response.data.response.reduce(
             (map, instance) => {
                 const leader = instance.role === "leader"
-                map[instance.database.host] = {...instance, leader, inCluster: true, inInstances: false}
+                const domain = getSidecarDomain(instance.sidecar)
+                map[domain] = {...instance, leader, inCluster: true, inInstances: false}
                 return map
             },
-            {} as OverviewMap
+            {} as InstanceMap
         )),
     config: (request: InstanceRequest) => api
-        .get(`/instance/config`, { data: request })
+        .get(`/instance/config`, { params: request })
         .then((response) => response.data.response),
     updateConfig: (request: InstanceRequest) => api
         .patch(`/instance/config`, request)

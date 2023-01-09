@@ -1,5 +1,5 @@
 import {Box, Grid, Skeleton} from "@mui/material";
-import {nodeApi} from "../../../app/api";
+import {instanceApi} from "../../../app/api";
 import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import React from "react";
@@ -7,15 +7,15 @@ import {InstanceColor} from "../../../app/utils";
 import {Style} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/InfoAlert";
-import {Block} from "../../view/Block";
+import {PageBlock} from "../../view/PageBlock";
 
 const SX = {
-    nodeStatusBlock: {height: '120px', minWidth: '200px', borderRadius: '4px', color: 'white', fontSize: '24px', fontWeight: 900},
-    item: {margin: '0px 15px'},
-    title: {color: 'text.secondary', fontWeight: 'bold'}
+    instanceStatusBlock: {height: "120px", minWidth: "200px", borderRadius: "4px", color: "white", fontSize: "24px", fontWeight: 900},
+    item: {margin: "0px 15px"},
+    title: {color: "text.secondary", fontWeight: "bold"}
 }
 const style: Style = {
-    itemText: {whiteSpace: 'pre-wrap'}
+    itemText: {whiteSpace: "pre-wrap"}
 }
 
 type ItemProps = { name: string, value?: string }
@@ -23,34 +23,31 @@ type StatusProps = { role?: string }
 
 export function Instance() {
     const { store: { activeInstance }, isClusterOverviewOpen } = useStore()
-    const {data: nodePatroni, isLoading, isError, error} = useQuery(
-        ['instance/overview', activeInstance],
-        () => { if (activeInstance) return nodeApi.info(activeInstance) },
+    const {data: instance, isLoading, isError, error} = useQuery(
+        ["instance/info", activeInstance?.host, activeInstance?.port],
+        () => activeInstance ? instanceApi.info(activeInstance) : undefined,
         {enabled: !!activeInstance}
     )
 
     return (
-        <Block withPadding visible={isClusterOverviewOpen()}>
+        <PageBlock withPadding visible={isClusterOverviewOpen()}>
             {renderContent()}
-        </Block>
+        </PageBlock>
     )
 
     function renderContent() {
-        if (!activeInstance) return <InfoAlert text={"Please, select a node to see the information!"}/>
+        if (!activeInstance) return <InfoAlert text={"Please, select a instance to see the information!"}/>
         if (isError) return <ErrorAlert error={error}/>
 
         return (
-            <Grid container direction="row">
-                <Grid item xs="auto">
-                    <NodeStatus role={nodePatroni?.role}/>
+            <Grid container direction={"row"}>
+                <Grid item xs={"auto"}>
+                    <InstanceStatus role={instance?.role}/>
                 </Grid>
-                <Grid item xs container direction="column">
-                    <Grid item><Item name="Node" value={activeInstance?.host}/></Grid>
-                    <Grid item><Item name="Node" value={activeInstance?.port.toString()}/></Grid>
-                    <Grid item><Item name="State" value={nodePatroni?.state}/></Grid>
-                    <Grid item><Item name="Scope" value={nodePatroni?.patroni.scope}/></Grid>
-                    <Grid item><Item name="Timeline" value={nodePatroni?.timeline?.toString()}/></Grid>
-                    <Grid item><Item name="Xlog" value={JSON.stringify(nodePatroni?.xlog, null, 4)}/></Grid>
+                <Grid item xs container direction={"column"}>
+                    <Grid item><Item name={"Node"} value={activeInstance?.host}/></Grid>
+                    <Grid item><Item name={"Port"} value={activeInstance?.port.toString()}/></Grid>
+                    <Grid item><Item name={"State"} value={instance?.state}/></Grid>
                 </Grid>
             </Grid>
         )
@@ -69,13 +66,13 @@ export function Instance() {
     }
 
 
-    function NodeStatus(props: StatusProps) {
-        if (isLoading) return <Skeleton variant="rectangular" sx={SX.nodeStatusBlock}/>
+    function InstanceStatus(props: StatusProps) {
+        if (isLoading) return <Skeleton variant="rectangular" sx={SX.instanceStatusBlock}/>
         const background = props.role ? InstanceColor[props.role] : undefined
 
         return (
-            <Grid container alignContent="center" justifyContent="center" sx={{...SX.nodeStatusBlock, background}}>
-                <Grid item>{nodePatroni?.role.toUpperCase()}</Grid>
+            <Grid container alignContent="center" justifyContent="center" sx={{...SX.instanceStatusBlock, background}}>
+                <Grid item>{instance?.role.toUpperCase()}</Grid>
             </Grid>
         )
     }
