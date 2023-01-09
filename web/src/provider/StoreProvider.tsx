@@ -1,10 +1,10 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {ActiveCluster, DetectionType, Instance} from "../app/types";
+import {ActiveCluster, ActiveInstance, DetectionType, InstanceLocal} from "../app/types";
 
 // STORE
 interface StoreType {
     activeCluster?: ActiveCluster, activeClusterTab: number,
-    activeInstance?: string, activeInstanceTab: number,
+    activeInstance?: ActiveInstance, activeInstanceTab: number,
     credentialsOpen: boolean,
     certsOpen: boolean,
 }
@@ -19,15 +19,15 @@ interface StoreContextType {
     store: StoreType
 
     setCluster: (cluster?: ActiveCluster) => void,
-    setClusterInstance: (instance: Instance) => void,
+    setClusterInstance: (instance: InstanceLocal) => void,
     setClusterDetection: (detection: DetectionType) => void
     setClusterTab: (tab: number) => void,
     isClusterActive: (name: string) => boolean
     isClusterOverviewOpen: () => boolean
 
-    setInstance: (instance?: string) => void,
+    setInstance: (instance?: ActiveInstance) => void,
     setInstanceTab: (tab: number) => void,
-    isInstanceActive: (name: string) => boolean,
+    isInstanceActive: (instance?: ActiveInstance) => boolean,
 
     toggleCredentialsWindow: () => void,
     toggleCertsWindow: () => void,
@@ -66,7 +66,7 @@ export function StoreProvider(props: { children: ReactNode }) {
         store: state,
 
         setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster, activeInstance: undefined})),
-        setClusterInstance: (instance: Instance) => {
+        setClusterInstance: (instance: InstanceLocal) => {
             if (activeCluster) setState({...state, activeCluster: {...activeCluster, instance, detection: "manual"}})
         },
         setClusterDetection: (detection: DetectionType) => {
@@ -76,9 +76,9 @@ export function StoreProvider(props: { children: ReactNode }) {
         isClusterActive: (name: string) => name === activeCluster?.cluster.name,
         isClusterOverviewOpen: () => !!activeCluster && state.activeClusterTab === 0,
 
-        setInstance: (instance?: string) => setState({...state, activeInstance: instance}),
+        setInstance: (instance?: ActiveInstance) => setState({...state, activeInstance: instance}),
         setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
-        isInstanceActive: (name: string) => name === activeInstance,
+        isInstanceActive: (instance?: ActiveInstance) => instance === activeInstance,
 
         toggleCredentialsWindow: () => setState({...state, credentialsOpen: !state.credentialsOpen}),
         toggleCertsWindow: () => setState({...state, certsOpen: !state.certsOpen}),

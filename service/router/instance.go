@@ -21,7 +21,7 @@ func getInstanceInfo(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 
-	body, err := service.Patroni.Info(instance)
+	body, err := service.PatroniInstanceApiImpl.Info(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -33,7 +33,7 @@ func getInstanceOverview(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 
-	body, err := service.Patroni.Overview(instance)
+	body, err := service.PatroniInstanceApiImpl.Overview(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -45,7 +45,7 @@ func getInstanceConfig(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 
-	body, err := service.Patroni.Config(instance)
+	body, err := service.PatroniInstanceApiImpl.Config(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -57,7 +57,7 @@ func patchInstanceConfig(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 
-	body, err := service.Patroni.ConfigUpdate(instance)
+	body, err := service.PatroniInstanceApiImpl.ConfigUpdate(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -69,7 +69,7 @@ func postInstanceSwitchover(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 
-	body, err := service.Patroni.Switchover(instance)
+	body, err := service.PatroniInstanceApiImpl.Switchover(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,7 +81,7 @@ func postInstanceReinitialize(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 
-	body, err := service.Patroni.Reinitialize(instance)
+	body, err := service.PatroniInstanceApiImpl.Reinitialize(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

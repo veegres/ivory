@@ -12,41 +12,38 @@ import (
 	"strconv"
 )
 
-var proxy = &prx{}
-
-type prx struct{}
-
-func (p *prx) Get(instance model.InstanceRequest, path string) (interface{}, error) {
-	return p.send(http.MethodGet, instance, path)
+func Get[R any](instance model.InstanceRequest, path string) (R, error) {
+	return send[R](http.MethodGet, instance, path)
 }
 
-func (p *prx) Post(instance model.InstanceRequest, path string) (interface{}, error) {
-	return p.send(http.MethodPost, instance, path)
+func Post[R any](instance model.InstanceRequest, path string) (R, error) {
+	return send[R](http.MethodPost, instance, path)
 }
 
-func (p *prx) Put(instance model.InstanceRequest, path string) (interface{}, error) {
-	return p.send(http.MethodPut, instance, path)
+func Put[R any](instance model.InstanceRequest, path string) (R, error) {
+	return send[R](http.MethodPut, instance, path)
 }
 
-func (p *prx) Patch(instance model.InstanceRequest, path string) (interface{}, error) {
-	return p.send(http.MethodPatch, instance, path)
+func Patch[R any](instance model.InstanceRequest, path string) (R, error) {
+	return send[R](http.MethodPatch, instance, path)
 }
 
-func (p *prx) Delete(instance model.InstanceRequest, path string) (interface{}, error) {
-	return p.send(http.MethodDelete, instance, path)
+func Delete[R any](instance model.InstanceRequest, path string) (R, error) {
+	return send[R](http.MethodDelete, instance, path)
 }
 
-func (p *prx) send(method string, instance model.InstanceRequest, path string) (interface{}, error) {
-	clusterInfo, err := persistence.Database.Cluster.Get(instance.Cluster)
-	client, protocol, err := p.getClient(clusterInfo.CertId)
+func send[R any](method string, instance model.InstanceRequest, path string) (R, error) {
+	clusterInfo, err := persistence.BoltDB.Cluster.Get(instance.Cluster)
+	client, protocol, err := getClient(clusterInfo.CertId)
 	domain := instance.Host + ":" + strconv.Itoa(int(instance.Port))
-	req, err := p.getRequest(clusterInfo.PatroniCredId, method, protocol, domain, path, instance.Body)
+	req, err := getRequest(clusterInfo.PatroniCredId, method, protocol, domain, path, instance.Body)
 	res, err := client.Do(req)
-	var body interface{}
-	return json.NewDecoder(res.Body).Decode(&body), err
+	var body R
+	err = json.NewDecoder(res.Body).Decode(&body)
+	return body, err
 }
 
-func (p *prx) getRequest(
+func getRequest(
 	passwordId *uuid.UUID,
 	method string,
 	protocol string,
@@ -61,7 +58,7 @@ func (p *prx) getRequest(
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
 	if passwordId != nil {
-		passInfo, errPass := persistence.Database.Credential.Get(*passwordId)
+		passInfo, errPass := persistence.BoltDB.Credential.Get(*passwordId)
 		err = errPass
 		req.SetBasicAuth(passInfo.Username, passInfo.Password)
 	}
@@ -69,13 +66,13 @@ func (p *prx) getRequest(
 	return req, err
 }
 
-func (p *prx) getClient(certId *uuid.UUID) (*http.Client, string, error) {
+func getClient(certId *uuid.UUID) (*http.Client, string, error) {
 	var err error
 	var caCertPool *x509.CertPool
 	protocol := "http"
 
 	if certId != nil {
-		certInfo, errCert := persistence.Database.Cert.Get(*certId)
+		certInfo, errCert := persistence.BoltDB.Cert.Get(*certId)
 		caCert, errCert := persistence.File.Certs.Read(certInfo.Path)
 		caCertPool = x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)

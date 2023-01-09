@@ -1,6 +1,6 @@
 import {Autocomplete, Box, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import React, {useMemo, useState} from "react";
-import {DetectionType, InstanceMap} from "../../../app/types";
+import {DetectionType, OverviewMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 
 const SX = {
@@ -11,7 +11,7 @@ const SX = {
 
 type Props = {
     instance: string
-    instances: InstanceMap
+    instances: OverviewMap
     detection: DetectionType
 }
 

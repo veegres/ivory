@@ -9,6 +9,7 @@ import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
 import {Warning} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
+import {ActiveInstance} from "../../../app/types";
 
 const SX = {
     table: {'tr:last-child td': {border: 0}},
@@ -29,13 +30,13 @@ export function OverviewInstances({info}: TabProps) {
     const { setInstance, store: { activeInstance } } = useStore()
 
     const instanceMap = useQuery(
-        ["node/cluster", cluster.name, instance.api_domain],
-        () => nodeApi.cluster(instance.api_domain),
+        ["instance/overview", cluster.name, instance.sidecar.host],
+        () => { if (activeInstance) return nodeApi.overview(activeInstance) },
         { retry: 0 }
     )
-    const switchoverNodeOptions = useMutationOptions(["node/cluster", cluster.name, instance.api_domain])
+    const switchoverNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host])
     const switchoverNode = useMutation(nodeApi.switchover, switchoverNodeOptions)
-    const reinitNodeOptions = useMutationOptions(["node/cluster", cluster.name, instance.api_domain])
+    const reinitNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host])
     const reinitNode = useMutation(nodeApi.reinitialize, reinitNodeOptions)
 
     return (
@@ -63,21 +64,22 @@ export function OverviewInstances({info}: TabProps) {
 
     function renderContent() {
         return Object.entries(instances).map(([key, element]) => {
-            const { role, port, host, state, lag, inInstances, inCluster } = element
-            const isChecked = activeInstance === key
+            const { role, sidecar, database, state, lag, inInstances, inCluster } = element
+            const isChecked = activeInstance?.host === key
+            const instance = { host: sidecar.host, port: sidecar.port, cluster: cluster.name }
 
             return (
-                <TableRow sx={SX.row} key={key} onClick={handleCheck(isChecked, key)}>
+                <TableRow sx={SX.row} key={key} onClick={handleCheck(instance, isChecked)}>
                     <TableCell sx={SX.cell}><Radio checked={isChecked} size={"small"}/></TableCell>
                     <TableCell sx={SX.cell} align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
                     <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
-                    <TableCell sx={SX.cell} align={"center"}>{key}</TableCell>
-                    <TableCell sx={SX.cell} align={"center"}>{host}:{port ? port : "-"}</TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>{sidecar.host}:{sidecar.port}</TableCell>
+                    <TableCell sx={SX.cell} align={"center"}>{database.host}:{database.port}</TableCell>
                     <TableCell sx={SX.cell} align={"center"}>{state}</TableCell>
                     <TableCell sx={SX.cell} align={"center"}>{lag}</TableCell>
                     <TableCell sx={SX.cell} align={"right"} onClick={(e) => e.stopPropagation()}>
                         <Box display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                            {renderButton(key, host, role)}
+                            {renderButton(instance, role)}
                         </Box>
                     </TableCell>
                 </TableRow>
@@ -85,7 +87,7 @@ export function OverviewInstances({info}: TabProps) {
         })
     }
 
-    function renderButton(instance: string, host: string, type: string) {
+    function renderButton(instance: ActiveInstance, type: string) {
         switch (type) {
             case "replica": return (
                 <Button
@@ -99,7 +101,7 @@ export function OverviewInstances({info}: TabProps) {
                 <Button
                     color={"secondary"}
                     disabled={switchoverNode.isLoading}
-                    onClick={() => handleSwitchover(instance, host)}>
+                    onClick={() => handleSwitchover(instance)}>
                     Switchover
                 </Button>
             )
@@ -124,23 +126,23 @@ export function OverviewInstances({info}: TabProps) {
         )
     }
 
-    function handleCheck(checked: boolean, domain: string) {
-        return () => setInstance(checked ? '' : domain)
+    function handleCheck(instance: ActiveInstance, checked: boolean) {
+        return () => setInstance(checked ? undefined : instance)
     }
 
-    function handleSwitchover(instance: string, host: string) {
+    function handleSwitchover(instance: ActiveInstance) {
         setAlertDialog({
             open: true,
-            title: `Switchover [${instance}]`,
+            title: `Switchover [${instance.host}]`,
             content: 'Are you sure that you want to do Switchover? It will change the leader of your cluster.',
-            onAgree: () => switchoverNode.mutate({node: instance, leader: host})
+            onAgree: () => switchoverNode.mutate({ ...instance, body: { candidate: instance.host }})
         })
     }
 
-    function handleReinit(instance: string) {
+    function handleReinit(instance: ActiveInstance) {
         setAlertDialog({
             open: true,
-            title: `Reinitialization [${instance}]`,
+            title: `Reinitialization [${instance.host}]`,
             content: 'Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.',
             onAgree: () => reinitNode.mutate(instance)
         })

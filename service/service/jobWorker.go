@@ -49,7 +49,7 @@ type element struct {
 }
 
 func (w *worker) Start(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error) {
-	compactTable, err := persistence.Database.CompactTable.Create(credentialId, cluster, args)
+	compactTable, err := persistence.BoltDB.CompactTable.Create(credentialId, cluster, args)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (w *worker) Delete(jobUuid uuid.UUID) error {
 	if errFile != nil {
 		return errFile
 	}
-	errDb := persistence.Database.CompactTable.Delete(jobUuid)
+	errDb := persistence.BoltDB.CompactTable.Delete(jobUuid)
 	if errDb != nil {
 		return errDb
 	}
@@ -132,7 +132,7 @@ func (w *worker) runner() {
 
 			// Get password
 			// TODO move decryption to another method (encapsulate)
-			credential, errCred := persistence.Database.Credential.Get(model.CredentialId)
+			credential, errCred := persistence.BoltDB.Credential.Get(model.CredentialId)
 			if errCred != nil {
 				w.jobStatusHandler(element, FAILED, errors.New("Find credential error: "+errCred.Error()))
 				return
@@ -182,12 +182,12 @@ func (w *worker) runner() {
 }
 
 func (w *worker) initializer() {
-	runningJobs, _ := persistence.Database.CompactTable.ListByStatus(RUNNING)
+	runningJobs, _ := persistence.BoltDB.CompactTable.ListByStatus(RUNNING)
 	for _, runningJob := range runningJobs {
-		_ = persistence.Database.CompactTable.UpdateStatus(runningJob, FAILED)
+		_ = persistence.BoltDB.CompactTable.UpdateStatus(runningJob, FAILED)
 	}
 
-	pendingJobs, _ := persistence.Database.CompactTable.ListByStatus(PENDING)
+	pendingJobs, _ := persistence.BoltDB.CompactTable.ListByStatus(PENDING)
 	for _, pendingJob := range pendingJobs {
 		pendingJob := pendingJob
 		go func() { w.addElement(&pendingJob) }()
@@ -233,7 +233,7 @@ func (w *worker) stopper() {
 func (w *worker) jobStatusHandler(element *element, status JobStatus, err error) {
 	model := element.model
 	element.job.SetStatus(status)
-	dbErr := persistence.Database.CompactTable.UpdateStatus(*model, status)
+	dbErr := persistence.BoltDB.CompactTable.UpdateStatus(*model, status)
 	if dbErr != nil {
 		w.addLogElement(element, SERVER, dbErr.Error())
 	}

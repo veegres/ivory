@@ -5,27 +5,33 @@ export interface Response<TData, TError = {}> {
     error: TError,
 }
 
-// NODE
-export interface InstanceResponse {
-    name: string,
-    state: string,
-    role: string,
-    host: string,
-    port: number,
-    api_url: string
-    lag?: number,
-    timeline?: number,
+// INSTANCE
+export interface InstanceRequest extends ActiveInstance {
+    body?: any,
 }
 
-export interface Instance extends InstanceResponse{
-    api_domain: string,
+export interface Instance {
+    state: string,
+    role: string,
+    lag?: number,
+    database: {
+        host: string,
+        port: number,
+    },
+    sidecar: {
+        host: string,
+        port: number,
+    }
+}
+
+export interface InstanceLocal extends Instance {
     leader: boolean,
     inCluster: boolean,
     inInstances: boolean,
 }
 
-export interface InstanceMap {
-    [instance: string]: Instance,
+export interface OverviewMap {
+    [instance: string]: InstanceLocal,
 }
 
 export interface InstanceOverview {
@@ -68,17 +74,23 @@ export type DetectionType = "auto" | "manual"
 
 export interface ActiveCluster {
     cluster: Cluster,
-    instance: Instance,
-    instances: InstanceMap,
+    instance: InstanceLocal,
+    instances: OverviewMap,
     warning: boolean,
     detection: DetectionType,
+}
+
+export interface ActiveInstance {
+    cluster: string,
+    host: string,
+    port: number,
 }
 
 export interface InstanceDetection {
     active: {
         cluster: Cluster,
-        instance: Instance,
-        instances: InstanceMap,
+        instance: InstanceLocal,
+        instances: OverviewMap,
         warning: boolean,
     },
     colors: ColorsMap,

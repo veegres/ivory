@@ -6,14 +6,13 @@ import {
     CompactTableRequest, Credential,
     CredentialMap,
     InstanceOverview,
-    InstanceResponse,
+    Instance,
     Response,
     SecretSetRequest,
     SecretStatus,
     SecretUpdateRequest,
-    InstanceMap, CredentialType, AppInfo, Cert, CertMap
+    OverviewMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest
 } from "./types";
-import {getPatroniDomain} from "./utils";
 
 const api = axios.create({ baseURL: '/api' })
 
@@ -24,31 +23,30 @@ const api = axios.create({ baseURL: '/api' })
 // - can be problems with same route as for DELETE / GET / POST
 
 export const nodeApi = {
-    overview: (node: String) => api
-        .get<Response<InstanceOverview>>(`/node/${node}/overview`)
+    info: (request: InstanceRequest) => api
+        .get<Response<InstanceOverview>>(`/instance/info`, { data: request })
         .then((response) => response.data.response),
-    cluster: (node: String) => api
-        .get<Response<{ members: InstanceResponse[] }>>(`/node/${node}/cluster`, { timeout: 1000 })
-        .then<InstanceMap>((response) => response.data.response.members.reduce(
+    overview: (request: InstanceRequest) => api
+        .get<Response<Instance[]>>(`/instance/overview`, { data: request, timeout: 1000 })
+        .then<OverviewMap>((response) => response.data.response.reduce(
             (map, instance) => {
-                const api_domain = getPatroniDomain(instance.api_url)
                 const leader = instance.role === "leader"
-                map[api_domain] = {...instance, api_domain, leader, inCluster: true, inInstances: false}
+                map[instance.database.host] = {...instance, leader, inCluster: true, inInstances: false}
                 return map
             },
-            {} as InstanceMap
+            {} as OverviewMap
         )),
-    config: (node: String) => api
-        .get(`/node/${node}/config`)
+    config: (request: InstanceRequest) => api
+        .get(`/instance/config`, { data: request })
         .then((response) => response.data.response),
-    updateConfig: ({node, config}: { node: string, config: string }) => api
-        .patch(`/node/${node}/config`, config)
+    updateConfig: (request: InstanceRequest) => api
+        .patch(`/instance/config`, request)
         .then((response) => response.data.response),
-    switchover: ({node, leader, candidate}: { node: string, leader: string, candidate?: string }) => api
-        .post(`/node/${node}/switchover`, {candidate, leader})
+    switchover: (request: InstanceRequest) => api
+        .post(`/instance/switchover`, request)
         .then((response) => response.data.response),
-    reinitialize: (node: string, force: boolean = true) => api
-        .post(`/node/${node}/reinitialize`, {force: force})
+    reinitialize: (request: InstanceRequest) => api
+        .post(`/instance/reinitialize`, request)
         .then((response) => response.data.response)
 }
 

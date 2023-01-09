@@ -31,7 +31,7 @@ func (s *secret) Get() [16]byte {
 
 func (s *secret) Set(key string, decrypted string) error {
 	if decrypted == "" {
-		decrypted = persistence.Database.Credential.GetDecryptedRef()
+		decrypted = persistence.BoltDB.Credential.GetDecryptedRef()
 	}
 	keySha1 := md5.Sum([]byte(key))
 	ref, err := Encrypt(decrypted, keySha1)
@@ -50,7 +50,7 @@ func (s *secret) Set(key string, decrypted string) error {
 			return errors.New("the secret is not correct")
 		}
 	}
-	err = persistence.Database.Credential.UpdateRefs(ref, decrypted)
+	err = persistence.BoltDB.Credential.UpdateRefs(ref, decrypted)
 	s.mutex.Unlock()
 	if err != nil {
 		err = s.Clean()
@@ -72,14 +72,14 @@ func (s *secret) Update(previousKey string, newKey string) error {
 	}
 
 	s.key = newKeySha1
-	credentialMap := persistence.Database.Credential.List()
+	credentialMap := persistence.BoltDB.Credential.List()
 	for id, credential := range credentialMap {
 		id, _ := uuid.Parse(id)
 		oldEncodedPass := credential.Password
 		decodedPass, _ := Decrypt(oldEncodedPass, previousKeySha1)
 		newEncodedPass, _ := Encrypt(decodedPass, newKeySha1)
 		credential.Password = newEncodedPass
-		_, _, err = persistence.Database.Credential.Update(id, credential)
+		_, _, err = persistence.BoltDB.Credential.Update(id, credential)
 	}
 
 	s.mutex.Unlock()
@@ -90,8 +90,8 @@ func (s *secret) Clean() error {
 	s.mutex.Lock()
 	s.ref = ""
 	s.key = [16]byte{}
-	err := persistence.Database.Credential.UpdateRefs("", "")
-	err = persistence.Database.Credential.DeleteAll()
+	err := persistence.BoltDB.Credential.UpdateRefs("", "")
+	err = persistence.BoltDB.Credential.DeleteAll()
 	s.mutex.Unlock()
 	return err
 }

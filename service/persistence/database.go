@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var Database *database
+var BoltDB *database
 
 type database struct {
 	Cluster      *ClusterRepository
@@ -73,7 +73,7 @@ func (d *database) Build(dbName string) {
 	})
 
 	common := common{bolt: db}
-	Database = &database{
+	BoltDB = &database{
 		Cluster: &ClusterRepository{
 			common: common,
 			bucket: clusterName,
