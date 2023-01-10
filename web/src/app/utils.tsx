@@ -28,19 +28,21 @@ export const CredentialOptions: { [key in CredentialType]: { name: string, color
 export const createInstanceColors = (instances: InstanceMap) => {
     return Object.values(instances).reduce(
         (map, instance) => {
-            const domain = getSidecarDomain(instance.sidecar)
-            map[domain] = instance.leader ? "success" : "primary"
+            if (instance.inCluster) {
+                const domain = getDomain(instance.sidecar)
+                map[domain] = instance.leader ? "success" : "primary"
+            }
             return map
         },
         {} as ColorsMap
     )
 }
 
-export const initialInstance: (domain: string) => InstanceLocal = (domain: string) => {
+export const initialInstance: (domain?: string) => InstanceLocal = (domain = "-") => {
     return ({
         state: "-",
         role: "unknown",
-        lag: undefined,
+        lag: -1,
         sidecar: getHostAndPort(domain),
         database: {host: "-", port: 0},
         leader: false,
@@ -80,7 +82,9 @@ export const combineInstances = (instanceNames: string[], instanceInCluster: Ins
     return [map, warning]
 }
 
-export const getSidecarDomain = ({ host, port }: { host: string, port: number }) => `${host.toLowerCase()}:${port}`
+export const getDomain = ({ host, port }: { host: string, port: number }) => {
+    return `${host.toLowerCase()}${port ? `:${port}` : "" }`
+}
 
 export const getHostAndPort = (domain: string) => {
     const [host, port] = domain.split(":")

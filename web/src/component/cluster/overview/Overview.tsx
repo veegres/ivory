@@ -14,7 +14,7 @@ import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
 import {ClusterTabs, CredentialType, ActiveCluster} from "../../../app/types";
 import {OverviewSettings} from "./OverviewSettings";
 import {InfoIcons} from "../../view/InfoIcons";
-import {CredentialOptions, InstanceColor} from "../../../app/utils";
+import {CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
 import {orange, purple} from "@mui/material/colors";
 import {InfoBox} from "../../view/InfoBox";
 import {InfoTitle} from "../../view/InfoTitle";
@@ -142,7 +142,7 @@ export function Overview() {
         ]
         const roleTooltip = [
             { name: "Detection", value: detection, bgColor: purple[400] },
-            { name: "Instance", value: instance.sidecar.host, bgColor: InstanceColor[instance.role] }
+            { name: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] }
         ]
 
         return (

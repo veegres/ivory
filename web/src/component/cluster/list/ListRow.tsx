@@ -1,13 +1,13 @@
 import {Box, Chip, TableRow, Tooltip} from "@mui/material";
 import {useEffect, useRef, useState} from "react";
-import {Cluster, DetectionType} from "../../../app/types";
+import {Cluster, DetectionType, InstanceLocal} from "../../../app/types";
 import {RefreshIconButton,} from "../../view/IconButtons";
 import {DynamicInputs} from "../../view/DynamicInputs";
 import {useStore} from "../../../provider/StoreProvider";
 import {ListRowRead} from "./ListRowRead";
 import {ListRowUpdate} from "./ListRowUpdate";
 import {ListCell} from "./ListCell";
-import {initialInstance, InstanceColor} from "../../../app/utils";
+import {getDomain, initialInstance, InstanceColor} from "../../../app/utils";
 import {InfoTitle} from "../../view/InfoTitle";
 import {grey, orange, purple} from "@mui/material/colors";
 import {useAutoInstanceDetection, useManualInstanceDetection} from "../../../hook/InstanceDetection";
@@ -28,13 +28,13 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
     const {setCluster, isClusterActive, store} = useStore()
     const [detection, setDetection] = useState<DetectionType>("auto")
     const detectionRef = useRef(detection)
-    const [manualInstance, setManualInstance] = useState(initialInstance(""))
+    const [manualState, setManualState] = useState({ instances: {}, instance: initialInstance() })
     const isActive = isClusterActive(name)
     const isDetectionManual = detection === "manual"
 
     const [stateNodes, setStateNodes] = useState(cluster.nodes);
     const auto = useAutoInstanceDetection(!isDetectionManual, cluster)
-    const manual = useManualInstanceDetection(isDetectionManual, cluster, manualInstance)
+    const manual = useManualInstanceDetection(isDetectionManual, cluster, manualState)
 
     const {active: {warning, instance, instances}, colors, fetching, refetch} = isDetectionManual ? manual : auto
 
@@ -45,7 +45,7 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
     useEffect(handleEffectRefetch, [isActive, detection, detectionRef])
 
     useEffect(handleEffectDetection, [isActive, store.activeCluster, detection])
-    useEffect(handleEffectManualInstance, [isActive, store.activeCluster, manualInstance])
+    useEffect(handleEffectManualInstance, [isActive, store.activeCluster, manualState])
 
     return (
         <TableRow>
@@ -90,7 +90,7 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
     function renderChipTooltip() {
         const items = [
             { name: "Detection", value: detection, bgColor: purple[400] },
-            { name: "Instance", value: instance.sidecar.host, bgColor: InstanceColor[instance.role] },
+            { name: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] },
             { name: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500] }
         ]
 
@@ -121,10 +121,17 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
 
     function handleEffectManualInstance() {
         if (isActive && store.activeCluster) {
-            const storeManualInstance = store.activeCluster.instance
-            if (manualInstance !== storeManualInstance) {
-                setManualInstance(storeManualInstance)
+            const storeManualInstance = {
+                instance: store.activeCluster.instance,
+                instances: store.activeCluster.instances,
+            }
+            if (!isInstancesEqual(manualState.instance, storeManualInstance.instance)) {
+                setManualState(storeManualInstance)
             }
         }
+    }
+
+    function isInstancesEqual(i1: InstanceLocal, i2: InstanceLocal) {
+        return i1.sidecar.host === i2.sidecar.host && i1.sidecar.port === i2.sidecar.port
     }
 }
