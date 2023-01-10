@@ -32,8 +32,7 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, state
     }
 }
 
-// TODO #1 consider moving this to backend
-// TODO #2 investigate why it sends a lot of request after switchover or when chose manual instance or refetch (probably problem in index change `enabled: use && index === j`)
+// TODO consider moving this to backend
 export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
     const [index, setIndex] = useState(0)
     const [nodes, setNodes] = useState(cluster.nodes)

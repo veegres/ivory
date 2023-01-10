@@ -1,7 +1,7 @@
 import {Box, Button, Radio, Table, TableBody, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {useIsFetching, useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useMemo, useState} from "react";
 import {TableCellLoader} from "../../view/TableCellLoader";
 import {getDomain, InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/AlertDialog";
@@ -32,16 +32,10 @@ export function OverviewInstances({info}: TabProps) {
         () => ["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port],
         [instance.sidecar, cluster.name]
     )
-
     const instanceMapFetching = useIsFetching(queryKey)
     const options = useMutationOptions(queryKey)
     const switchover = useMutation(instanceApi.switchover, options)
     const reinit = useMutation(instanceApi.reinitialize, options)
-
-    useEffect(
-        () => { options.queryClient.refetchQueries(queryKey).then() },
-        [queryKey, options.queryClient]
-    )
 
     return (
         <>
