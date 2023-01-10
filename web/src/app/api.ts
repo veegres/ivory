@@ -13,7 +13,7 @@ import {
     SecretUpdateRequest,
     InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest
 } from "./types";
-import {getSidecarDomain} from "./utils";
+import {getDomain} from "./utils";
 
 const api = axios.create({ baseURL: '/api' })
 
@@ -32,7 +32,7 @@ export const instanceApi = {
         .then<InstanceMap>((response) => response.data.response.reduce(
             (map, instance) => {
                 const leader = instance.role === "leader"
-                const domain = getSidecarDomain(instance.sidecar)
+                const domain = getDomain(instance.sidecar)
                 map[domain] = {...instance, leader, inCluster: true, inInstances: false}
                 return map
             },

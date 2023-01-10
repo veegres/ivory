@@ -3,7 +3,7 @@ import {useMutation, useQuery} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
 import React, {useState} from "react";
 import {TableCellLoader} from "../../view/TableCellLoader";
-import {getSidecarDomain, InstanceColor} from "../../../app/utils";
+import {getDomain, InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/AlertDialog";
 import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
@@ -65,7 +65,7 @@ export function OverviewInstances({info}: TabProps) {
     function renderContent() {
         return Object.entries(instances).map(([key, element]) => {
             const { role, sidecar, database, state, lag, inInstances, inCluster } = element
-            const isChecked = activeInstance ? getSidecarDomain(activeInstance) === key : false
+            const isChecked = activeInstance ? getDomain(activeInstance) === key : false
             const instance = { host: sidecar.host, port: sidecar.port, cluster: cluster.name }
 
             return (

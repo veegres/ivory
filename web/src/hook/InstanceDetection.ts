@@ -2,20 +2,27 @@ import {Cluster, InstanceLocal, InstanceDetection, InstanceMap} from "../app/typ
 import {useQueries, useQuery} from "@tanstack/react-query";
 import {instanceApi} from "../app/api";
 import {useMemo, useRef, useState} from "react";
-import {combineInstances, createInstanceColors, getHostAndPort} from "../app/utils";
+import {combineInstances, createInstanceColors, getDomain, getHostAndPort} from "../app/utils";
 
-export function useManualInstanceDetection(use: boolean, cluster: Cluster, selected: InstanceLocal): InstanceDetection {
+type ManualState = {
+    instance: InstanceLocal,
+    instances: InstanceMap,
+}
+
+export function useManualInstanceDetection(use: boolean, cluster: Cluster, state: ManualState): InstanceDetection {
+    const { instance: selected } = state
+
     const query = useQuery(
-        ["instance/overview", cluster.name, selected.sidecar.host, selected.sidecar.port],
-        () => selected ? instanceApi.overview({ host: selected.sidecar.host, port: selected.sidecar.port, cluster: cluster.name }) : {},
+        ["manual", "instance/overview", cluster.name, selected.sidecar.host, selected.sidecar.port],
+        () => instanceApi.overview({ ...selected.sidecar, cluster: cluster.name }),
         {enabled: use && !!selected}
     )
 
-    const clusterInstances = useMemo(() => query.data ?? {}, [query.data])
+    const clusterInstances = useMemo(() => query.data ?? state.instances, [query.data, state.instances])
     const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
     const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
-    if (!instances[selected.sidecar.host]) instances[selected.sidecar.host] = selected
-    const instance = instances[selected.sidecar.host]
+
+    const instance = instances[getDomain(selected.sidecar)]
 
     return {
         active: { cluster, instance, instances, warning },
@@ -54,12 +61,12 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     }
 
     /**
-     * Either find leader or set query that we were sending request to
+     * Either find leader or set query that we send request to
      */
     function handleMemoActiveInstance(instances: InstanceMap, name: string) {
         const values = Object.values(instances)
         const value = values.find(instance => instance.leader) ?? instances[name] ?? instances[safeNodeName.current]
-        safeNodeName.current = value.sidecar.host
+        safeNodeName.current = getDomain(value.sidecar)
         return value
     }
 
@@ -73,7 +80,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
         return instances.map((instance, j) => {
             const domain = getHostAndPort(instance)
             return ({
-                queryKey: ["instance/overview", name, domain.host, domain.port],
+                queryKey: ["auto", "instance/overview", name, domain.host, domain.port],
                 queryFn: () => instanceApi.overview({ ...domain, cluster: cluster.name }),
                 retry: 0,
                 enabled: use && index === j,

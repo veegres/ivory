@@ -13,7 +13,7 @@ export interface InstanceRequest extends ActiveInstance {
 export interface Instance {
     state: string,
     role: string,
-    lag?: number,
+    lag: number,
     database: Database,
     sidecar: Sidecar,
 }

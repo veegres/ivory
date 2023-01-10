@@ -5,7 +5,7 @@ import {OverviewSettingsPassword} from "./OverviewSettingsPassword";
 import {TabProps} from "./Overview";
 import {OverviewSettingsInstance} from "./OverviewSettingsInstance";
 import {OverviewSettingsCert} from "./OverviewSettingsCert";
-import {getSidecarDomain} from "../../../app/utils";
+import {getDomain} from "../../../app/utils";
 
 const SX = {
     settings: { width: "250px", gap: "12px", padding: "8px 0" }
@@ -20,7 +20,7 @@ export function OverviewSettings({info}: TabProps) {
 
     return (
         <Stack sx={SX.settings}>
-            <OverviewSettingsInstance instance={getSidecarDomain(instance.sidecar)} instances={instances} detection={detection} />
+            <OverviewSettingsInstance instance={getDomain(instance.sidecar)} instances={instances} detection={detection} />
             <OverviewSettingsPassword label={"Postgres Password"} type={CredentialType.POSTGRES} credId={postgresCredId} cluster={cluster} />
             <OverviewSettingsPassword label={"Patroni Password"} type={CredentialType.PATRONI} credId={patroniCredId} cluster={cluster} />
             <OverviewSettingsCert certId={patroniCertId} cluster={cluster} />

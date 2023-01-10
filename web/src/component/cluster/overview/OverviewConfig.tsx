@@ -28,7 +28,7 @@ export function OverviewConfig({info}: TabProps) {
 
     const {data: config, isLoading, isError, error} = useQuery(
         ["instance/config", instance.sidecar.host],
-        () => instanceApi.config({host: instance.sidecar.host, port: instance.sidecar.port, cluster: cluster.name}),
+        () => instanceApi.config({...instance.sidecar, cluster: cluster.name}),
         {enabled: instance.inCluster}
     )
     const updateOptions = useMutationOptions(["instance/config", instance.sidecar.host], () => setIsEditable(false))
@@ -96,8 +96,7 @@ export function OverviewConfig({info}: TabProps) {
 
     function handleUpdate(instance: InstanceLocal, config: string) {
         if (configState) updateConfig.mutate({
-            host: instance.sidecar.host,
-            port: instance.sidecar.port,
+            ...instance.sidecar,
             cluster: cluster.name,
             body: JSON.parse(config)
         })
