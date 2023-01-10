@@ -1,7 +1,7 @@
 import {Box, Button, Radio, Table, TableBody, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useIsFetching, useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
-import React, {useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {TableCellLoader} from "../../view/TableCellLoader";
 import {getDomain, InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/AlertDialog";
@@ -27,17 +27,21 @@ const initAlertDialog = {open: false, title: "", content: "", onAgree: () => {}}
 export function OverviewInstances({info}: TabProps) {
     const { instance, cluster, instances } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const { setInstance, store: { activeInstance } } = useStore()
-
-    const instanceMap = useQuery(
-        ["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port],
-        () => activeInstance ? instanceApi.overview(activeInstance) : {},
-        { retry: 0 }
+    const { setInstance, store: { activeInstance, activeCluster } } = useStore()
+    const queryKey = useMemo(
+        () => [activeCluster?.detection, "instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port],
+        [instance.sidecar, cluster.name, activeCluster?.detection]
     )
-    const switchoverNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port])
-    const switchoverNode = useMutation(instanceApi.switchover, switchoverNodeOptions)
-    const reinitNodeOptions = useMutationOptions(["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port])
-    const reinitNode = useMutation(instanceApi.reinitialize, reinitNodeOptions)
+
+    const instanceMapFetching = useIsFetching(queryKey)
+    const options = useMutationOptions(queryKey)
+    const switchover = useMutation(instanceApi.switchover, options)
+    const reinit = useMutation(instanceApi.reinitialize, options)
+
+    useEffect(
+        () => { options.queryClient.refetchQueries(queryKey).then() },
+        [queryKey, options.queryClient]
+    )
 
     return (
         <>
@@ -52,7 +56,7 @@ export function OverviewInstances({info}: TabProps) {
                         <TableCell align={"center"}>Postgres</TableCell>
                         <TableCell align={"center"}>State</TableCell>
                         <TableCell align={"center"}>Lag</TableCell>
-                        <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMap.isFetching || switchoverNode.isLoading || reinitNode.isLoading)}/>
+                        <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMapFetching > 0 || switchover.isLoading || reinit.isLoading)}/>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -96,7 +100,7 @@ export function OverviewInstances({info}: TabProps) {
             case "replica": return (
                 <Button
                     color={"primary"}
-                    disabled={reinitNode.isLoading || switchoverNode.isLoading}
+                    disabled={reinit.isLoading || switchover.isLoading}
                     onClick={() => handleReinit(instance)}>
                     Reinit
                 </Button>
@@ -104,7 +108,7 @@ export function OverviewInstances({info}: TabProps) {
             case "leader": return (
                 <Button
                     color={"secondary"}
-                    disabled={switchoverNode.isLoading}
+                    disabled={switchover.isLoading}
                     onClick={() => handleSwitchover(instance)}>
                     Switchover
                 </Button>
@@ -139,7 +143,7 @@ export function OverviewInstances({info}: TabProps) {
             open: true,
             title: `Switchover [${instance.host}]`,
             content: "Are you sure that you want to do Switchover? It will change the leader of your cluster.",
-            onAgree: () => switchoverNode.mutate({ ...instance, body: { leader: instance.host }})
+            onAgree: () => switchover.mutate({ ...instance, body: { leader: instance.host }})
         })
     }
 
@@ -148,7 +152,7 @@ export function OverviewInstances({info}: TabProps) {
             open: true,
             title: `Reinitialization [${instance.host}]`,
             content: "Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.",
-            onAgree: () => reinitNode.mutate(instance)
+            onAgree: () => reinit.mutate(instance)
         })
     }
 }
