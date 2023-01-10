@@ -2,7 +2,7 @@ import {Cluster, InstanceLocal, InstanceDetection, InstanceMap} from "../app/typ
 import {useQueries, useQuery} from "@tanstack/react-query";
 import {instanceApi} from "../app/api";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {combineInstances, createInstanceColors, getDomain, getHostAndPort} from "../app/utils";
+import {combineInstances, createInstanceColors, getDomain, getHostAndPort, initialInstance} from "../app/utils";
 
 type ManualState = {
     instance: InstanceLocal,
@@ -13,7 +13,7 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, state
     const { instance: selected } = state
 
     const query = useQuery(
-        ["manual", "instance/overview", cluster.name, selected.sidecar.host, selected.sidecar.port],
+        ["instance/overview", cluster.name, selected.sidecar.host, selected.sidecar.port],
         () => instanceApi.overview({ ...selected.sidecar, cluster: cluster.name }),
         {enabled: use && !!selected}
     )
@@ -32,31 +32,28 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, state
     }
 }
 
-// TODO consider moving this to backend
+// TODO #1 consider moving this to backend
+// TODO #2 investigate why it sends a lot of request after switchover or when chose manual instance or refetch (probably problem in index change `enabled: use && index === j`)
 export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
     const [index, setIndex] = useState(0)
-    const activeNodeName = cluster.nodes[index]
+    const [nodes, setNodes] = useState(cluster.nodes)
+    const activeNodeName = nodes[index]
     const safeNodeName = useRef(activeNodeName)
+    const safeData = useRef<InstanceMap>({})
 
     // we need disable cause it thinks that function can be updated
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const instanceQueries = useMemo(() => getNodeQueries(index, cluster.name, cluster.nodes), [index, cluster.name, cluster.nodes])
+    const instanceQueries = useMemo(() => getNodeQueries(index, cluster.name, nodes), [index, cluster.name, nodes])
     const queries = useQueries({ queries: instanceQueries })
     const query = useMemo(() => queries[index] ?? {}, [queries, index])
 
-    const clusterInstances = useMemo(() => query.data ?? {}, [query.data])
+    const clusterInstances = useMemo(handleMemoClusterInstances, [query.data])
     const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
     const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
-
     const instance = useMemo(() => handleMemoActiveInstance(instances, activeNodeName), [instances, activeNodeName])
 
-    // TODO it helps to refetch current instance query by using just instance sidecar info, but when we don't have leader it points doesn't right query...
-    useEffect(
-        () => { cluster.nodes.forEach((node, i) => {
-            if (node === getDomain(instance.sidecar)) setIndex(i)
-        })},
-        [cluster.nodes, instance.sidecar]
-    )
+    useEffect(handleUseEffectSetIndex, [nodes, instance.sidecar])
+    useEffect(handleUseEffectSetNodes, [cluster.nodes, instances])
 
     return {
         active: { cluster, instance, instances, warning },
@@ -69,11 +66,44 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     }
 
     /**
-     * Either find leader or set query that we send request to
+     * We want to update index each time when primary instance was changed (either
+     * this is a missed leader or potentially something else)
+     */
+    function handleUseEffectSetIndex() {
+        const index = nodes.findIndex(node => node === getDomain(instance.sidecar))
+        if (index !== -1) setIndex(index)
+    }
+
+    /**
+     * When we get combined instances from request and from cluster list,
+     * we need to have local cluster instances list and add missed instances from
+     * request there
+     */
+    function handleUseEffectSetNodes() {
+        const newNodes = [...cluster.nodes]
+        for (const key of Object.keys(instances)) {
+            if (!newNodes.includes(key)) newNodes.push(key)
+        }
+        setNodes(newNodes)
+    }
+
+    /**
+     * When there is new request query, we will get undefined for `query.data`
+     * we don't want to lose previous data that is why we need ref `safeData`
+     */
+    function handleMemoClusterInstances() {
+        if (!query.data) return safeData.current
+        safeData.current = query.data
+        return query.data
+    }
+
+    /**
+     * Either find leader or set query that we send request to.
+     * We need ref `safeNodeName` to be able to chose previous instance.
      */
     function handleMemoActiveInstance(instances: InstanceMap, name: string) {
         const values = Object.values(instances)
-        const value = values.find(instance => instance.leader) ?? instances[name] ?? instances[safeNodeName.current]
+        const value = values.find(instance => instance.leader) ?? instances[name] ?? instances[safeNodeName.current] ?? initialInstance()
         safeNodeName.current = getDomain(value.sidecar)
         return value
     }
@@ -88,7 +118,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
         return instances.map((instance, j) => {
             const domain = getHostAndPort(instance)
             return ({
-                queryKey: ["auto", "instance/overview", name, domain.host, domain.port],
+                queryKey: ["instance/overview", name, domain.host, domain.port],
                 queryFn: () => instanceApi.overview({ ...domain, cluster: cluster.name }),
                 retry: 0,
                 enabled: use && index === j,
