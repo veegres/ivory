@@ -1,7 +1,7 @@
 import {Cluster, InstanceLocal, InstanceDetection, InstanceMap} from "../app/types";
 import {useQueries, useQuery} from "@tanstack/react-query";
 import {instanceApi} from "../app/api";
-import {useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {combineInstances, createInstanceColors, getDomain, getHostAndPort} from "../app/utils";
 
 type ManualState = {
@@ -49,6 +49,14 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
 
     const instance = useMemo(() => handleMemoActiveInstance(instances, activeNodeName), [instances, activeNodeName])
+
+    // TODO it helps to refetch current instance query by using just instance sidecar info, but when we don't have leader it points doesn't right query...
+    useEffect(
+        () => { cluster.nodes.forEach((node, i) => {
+            if (node === getDomain(instance.sidecar)) setIndex(i)
+        })},
+        [cluster.nodes, instance.sidecar]
+    )
 
     return {
         active: { cluster, instance, instances, warning },
