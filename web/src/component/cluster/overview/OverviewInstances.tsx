@@ -27,10 +27,10 @@ const initAlertDialog = {open: false, title: "", content: "", onAgree: () => {}}
 export function OverviewInstances({info}: TabProps) {
     const { instance, cluster, instances } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const { setInstance, store: { activeInstance, activeCluster } } = useStore()
+    const { setInstance, store: { activeInstance } } = useStore()
     const queryKey = useMemo(
-        () => [activeCluster?.detection, "instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port],
-        [instance.sidecar, cluster.name, activeCluster?.detection]
+        () => ["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port],
+        [instance.sidecar, cluster.name]
     )
 
     const instanceMapFetching = useIsFetching(queryKey)
