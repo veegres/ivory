@@ -18,8 +18,8 @@ export function useMutationOptions(queryKey?: QueryKey, onSuccess?: (data: any) 
     return {
         queryClient,
         onSuccess: queryKey === undefined ? undefined : async (data: any) => {
-            // TODO refetch doesn't work for switchover
-            // console.log("refetch", queryKey)
+            // TODO refetch doesn't work for switchover / reinit
+            console.log("refetch", queryKey)
             await queryClient.refetchQueries(queryKey)
             if (onSuccess) onSuccess(data)
         },
