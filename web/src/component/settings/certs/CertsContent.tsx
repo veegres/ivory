@@ -1,69 +1,25 @@
 import React, {useState} from "react";
-import {Box, Collapse} from "@mui/material";
-import {useMutation, useQuery} from "@tanstack/react-query";
-import {certApi} from "../../../app/api";
-import {LinearProgressStateful} from "../../view/LinearProgressStateful";
-import {InfoAlert} from "../../view/InfoAlert";
-import scroll from "../../../style/scroll.module.css";
-import {TransitionGroup} from "react-transition-group";
-import {ErrorAlert} from "../../view/ErrorAlert";
-import {UploadButton} from "../../view/UploadButton";
-import {CertsItem} from "./CertsItem";
-import {getErrorMessage} from "../../../app/utils";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Cert} from "../../../app/types";
+import {Box, Tab, Tabs} from "@mui/material";
+import {CertsNew} from "./CertsNew";
+import {CertsList} from "./CertsList";
 
 const SX = {
-    progress: { margin: "10px 0" },
-    list: { maxHeight: "500px", overflowY: "auto" },
+    tabs: { minHeight: "25px", margin: "0 0 10px 0" },
+    tab: { minHeight: "25px", padding: "8px 12px", textTransform: "none" },
 }
 
 export function CertsContent() {
-    const [progress, setProgress] = useState<ProgressEvent>()
-
-    const { data: certs, isError, error, isFetching } = useQuery(["certs"], certApi.list)
-    const uploadOptions = useMutationOptions(["certs"])
-    const upload = useMutation(certApi.upload, uploadOptions)
-
-    if (isError) return <ErrorAlert error={error}/>
-    const { loading, error: uploadError } = getUploadInfo()
+    const [tab, setTab] = useState(0)
 
     return (
         <Box>
-            <UploadButton accept={".crt"} maxSize={"1MB"} onUpload={handleUpload} loading={loading} error={uploadError} />
-            <LinearProgressStateful sx={SX.progress} color={"inherit"} isFetching={isFetching} line />
-            {renderList()}
+            <Tabs sx={SX.tabs} value={tab} variant={"fullWidth"} centered>
+                <Tab sx={SX.tab} label={"Client RootCA"} onClick={() => setTab(0)}/>
+                <Tab sx={SX.tab} label={"Client CA"} onClick={() => setTab(1)}/>
+                <Tab sx={SX.tab} label={"Client Key"} onClick={() => setTab(2)}/>
+            </Tabs>
+            <CertsNew />
+            <CertsList />
         </Box>
     )
-
-    function renderList() {
-        const list = Object.entries<Cert>(certs ?? {})
-        if (list.length === 0) return <InfoAlert text={"There is no certs yet"}/>
-
-        return (
-            <Box sx={SX.list} className={scroll.tiny}>
-                <TransitionGroup>
-                    {list.map(([key, cert]) => (
-                        <Collapse key={key}>
-                            <CertsItem uuid={key} cert={cert}/>
-                        </Collapse>
-                    ))}
-                </TransitionGroup>
-            </Box>
-        )
-    }
-
-    function getUploadInfo() {
-        const error = upload.isError ? getErrorMessage(upload.error) : undefined
-        const loading = {
-            isLoading: upload.isLoading,
-            loaded: progress?.loaded,
-            total: progress?.total,
-        }
-        return { loading, error }
-    }
-
-    function handleUpload(file: File) {
-        upload.mutate({file, setProgress})
-    }
 }
