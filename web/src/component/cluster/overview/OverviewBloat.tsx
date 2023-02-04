@@ -65,7 +65,7 @@ export function OverviewBloat({info}: TabProps) {
     function renderForm() {
         if (!instance.inCluster) return <ClusterNoInstanceError />
         if (!instance.leader) return <ClusterNoLeaderError />
-        if (!cluster.postgresCredId) return <ClusterNoPostgresPassword />
+        if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword />
 
         return (
             <Box sx={SX.form}>
@@ -112,10 +112,10 @@ export function OverviewBloat({info}: TabProps) {
     }
 
     function handleRun() {
-        if (instance && cluster?.postgresCredId) {
+        if (instance && cluster.credentials?.postgresId) {
             const { database: { host, port }} = instance
             start.mutate({
-                connection: { host, port, credId: cluster.postgresCredId },
+                connection: { host, port, credId: cluster.credentials.postgresId },
                 target,
                 ratio,
                 cluster: cluster.name

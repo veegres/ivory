@@ -6,7 +6,7 @@ const SX = {
     value: { borderRadius: "3px", padding: "0 3px" }
 }
 
-type Item = { name: string, value: string, color?: string, bgColor?: string }
+type Item = { label: string, value: string, bgColor?: string }
 type Props = {
     items: Item[]
 }
@@ -21,12 +21,12 @@ export function InfoTitle(props: Props) {
     )
 
     function renderItem(item: Item, index: number) {
-        const { bgColor, name, value, color } = item
+        const { bgColor, label, value } = item
 
         return (
             <Box key={index} sx={SX.row}>
-                <Box sx={SX.name}>{name}:</Box>
-                <Box sx={SX.value} color={color} bgcolor={bgColor}>{value}</Box>
+                <Box sx={SX.name}>{label}:</Box>
+                <Box sx={SX.value} bgcolor={bgColor}>{value}</Box>
             </Box>
         )
     }

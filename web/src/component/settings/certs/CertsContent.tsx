@@ -26,7 +26,7 @@ export function CertsContent() {
     return (
         <Box sx={SX.box}>
             <Tabs sx={SX.tabs} value={tab} variant={"fullWidth"} centered onChange={(_, value) => setTab(value)}>
-                {Object.values(TABS).map(value => (<Tab sx={SX.tab} label={value.label} />))}
+                {Object.entries(TABS).map(([key, value]) => (<Tab key={key} sx={SX.tab} label={value.label} />))}
             </Tabs>
             <CertsNew type={TABS[tab].type} />
             <CertsList type={TABS[tab].type} />

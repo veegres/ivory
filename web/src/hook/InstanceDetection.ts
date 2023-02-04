@@ -2,7 +2,14 @@ import {Cluster, InstanceLocal, InstanceDetection, InstanceMap} from "../app/typ
 import {useQueries, useQuery} from "@tanstack/react-query";
 import {instanceApi} from "../app/api";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {combineInstances, createInstanceColors, getDomain, getHostAndPort, initialInstance} from "../app/utils";
+import {
+    combineInstances,
+    createInstanceColors,
+    getDomain,
+    getDomains,
+    getHostAndPort,
+    initialInstance
+} from "../app/utils";
 
 type ManualState = {
     instance: InstanceLocal,
@@ -20,7 +27,7 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, state
 
     const clusterInstances = useMemo(() => query.data ?? state.instances, [query.data, state.instances])
     const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
-    const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
+    const [instances, warning] = useMemo(() => combineInstances(cluster.instances, clusterInstances), [cluster.instances, clusterInstances])
 
     const instance = instances[getDomain(selected.sidecar)]
 
@@ -35,7 +42,7 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, state
 // TODO consider moving this to backend
 export function useAutoInstanceDetection(use: boolean, cluster: Cluster): InstanceDetection {
     const [index, setIndex] = useState(0)
-    const [nodes, setNodes] = useState(cluster.nodes)
+    const [nodes, setNodes] = useState(getDomains(cluster.instances))
     const activeNodeName = nodes[index]
     const safeNodeName = useRef(activeNodeName)
     const safeData = useRef<InstanceMap>({})
@@ -48,11 +55,11 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
 
     const clusterInstances = useMemo(handleMemoClusterInstances, [query.data])
     const colors = useMemo(() => createInstanceColors(clusterInstances), [clusterInstances])
-    const [instances, warning] = useMemo(() => combineInstances(cluster.nodes, clusterInstances), [cluster.nodes, clusterInstances])
+    const [instances, warning] = useMemo(() => combineInstances(cluster.instances, clusterInstances), [cluster.instances, clusterInstances])
     const instance = useMemo(() => handleMemoActiveInstance(instances, activeNodeName), [instances, activeNodeName])
 
     useEffect(handleUseEffectSetIndex, [nodes, instance.sidecar])
-    useEffect(handleUseEffectSetNodes, [cluster.nodes, instances])
+    useEffect(handleUseEffectSetNodes, [cluster.instances, instances])
 
     return {
         active: { cluster, instance, instances, warning },
@@ -79,7 +86,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
      * request there
      */
     function handleUseEffectSetNodes() {
-        const newNodes = [...cluster.nodes]
+        const newNodes = getDomains(cluster.instances)
         for (const key of Object.keys(instances)) {
             if (!newNodes.includes(key)) newNodes.push(key)
         }

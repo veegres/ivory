@@ -1,4 +1,4 @@
-import {CSSProperties, ReactNode} from "react";
+import {CSSProperties, ReactElement, ReactNode} from "react";
 
 export interface Response<TData, TError = {}> {
     response: TData,
@@ -47,11 +47,21 @@ export interface InstanceInfo {
 // CLUSTER
 export interface Cluster {
     name: string,
-    certId?: string,
-    patroniCredId?: string,
-    postgresCredId?: string,
-    nodes: string[],
+    certs: Certs,
+    credentials: Credentials,
+    instances: Sidecar[],
     tags?: string[],
+}
+
+export interface Certs {
+    clientCAId?: string,
+    clientCertId?: string,
+    clientKeyId?: string,
+}
+
+export interface Credentials {
+    patroniId?: string,
+    postgresId?: string,
 }
 
 export interface ClusterMap {
@@ -222,4 +232,12 @@ export interface Style {
 
 export interface ColorsMap {
     [name: string]: 'success' | 'primary',
+}
+
+export interface EnumOptions {
+    name: string,
+    label: string,
+    color: string,
+    icon: ReactElement,
+    badge?: string,
 }

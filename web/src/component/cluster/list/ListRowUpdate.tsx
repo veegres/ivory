@@ -3,6 +3,8 @@ import {useMutation} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {Box} from "@mui/material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
+import {Sidecar} from "../../../app/types";
+import {getHostAndPort} from "../../../app/utils";
 
 type Props = {
     name: string
@@ -36,6 +38,7 @@ export function ListRowUpdate(props: Props) {
     }
 
     function handleUpdate() {
-        updateCluster.mutate({ name , nodes })
+        const instances: Sidecar[] = nodes.map(value => getHostAndPort(value))
+        updateCluster.mutate({ name, instances, certs: {}, credentials: {} })
     }
 }
