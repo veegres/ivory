@@ -11,7 +11,7 @@ import {
     SecretSetRequest,
     SecretStatus,
     SecretUpdateRequest,
-    InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest
+    InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest, CertUploadRequest, CertAddRequest
 } from "./types";
 import {getDomain} from "./utils";
 
@@ -134,8 +134,10 @@ export const certApi = {
     list: () => api
         .get<Response<CertMap>>(`/cert`)
         .then((response => response.data.response)),
-    upload: ({ file, setProgress }: { file: File, setProgress?: (progressEvent: ProgressEvent) => void } ) => {
+    upload: (request: CertUploadRequest ) => {
+        const { file, type, setProgress } = request
         const formData = new FormData()
+        formData.append("type", type.toString())
         formData.append("file", file)
         const config = {
             headers: {"Content-Type": "multipart/form-data"},
@@ -147,6 +149,9 @@ export const certApi = {
             .post<Response<Cert>>(`/cert/upload`, formData, config)
             .then((response) => response.data.response)
     },
+    add: (request: CertAddRequest) => api
+        .post<Response<Cert>>(`/cert/add`, request)
+        .then((response) => response.data.response),
     delete: (uuid: string) => api
         .delete(`/cert/${uuid}`)
         .then((response) => response.data.response)

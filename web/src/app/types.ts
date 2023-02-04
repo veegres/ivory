@@ -59,7 +59,11 @@ export interface ClusterMap {
 }
 
 export interface ClusterTabs {
-    [key: number]: { body: (cluster: ActiveCluster) => ReactNode, info?: ReactNode }
+    [key: number]: {
+        label: string,
+        body: (cluster: ActiveCluster) => ReactNode,
+        info?: ReactNode,
+    }
 }
 
 export type DetectionType = "auto" | "manual"
@@ -129,14 +133,41 @@ export interface CredentialMap {
 }
 
 // CERT
-
 export interface Cert {
     fileName: string,
+    fileUsageType: FileUsageType,
     path: string,
+    type: CertType,
 }
 
 export interface CertMap {
     [uuid: string]: Cert,
+}
+
+export enum FileUsageType {
+    UPLOAD,
+    PATH,
+}
+
+export enum CertType {
+    CLIENT_CA,
+    CLIENT_CERT,
+    CLIENT_KEY,
+}
+
+export interface CertUploadRequest {
+    file: File,
+    type: CertType,
+    setProgress?: (progressEvent: ProgressEvent) => void
+}
+
+export interface CertAddRequest {
+    path: string,
+    type: CertType,
+}
+
+export interface CertTabs {
+    [key: number]: {label: string, type: CertType}
 }
 
 // BLOAT
