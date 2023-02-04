@@ -4,7 +4,7 @@ import React, {ChangeEvent, DragEvent, useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
 
 const SX = {
-    box: { padding: "5px", height: "140px" },
+    box: { padding: "5px", height: "100%" },
     upload: {
         width: "100%",
         height: "100%",

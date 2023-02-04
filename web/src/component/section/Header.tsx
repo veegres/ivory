@@ -1,5 +1,5 @@
-import {Box, Grid, IconButton} from "@mui/material";
-import {BadgeOutlined, LightMode, Nightlight, Security} from "@mui/icons-material";
+import {Box, Grid, IconButton, Tooltip} from "@mui/material";
+import {LightMode, Lock, Nightlight, Security} from "@mui/icons-material";
 import React, {useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
 import {randomUnicodeAnimal} from "../../app/utils";
@@ -38,12 +38,12 @@ export function Header(props: Props) {
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>
                 {show && (
                     <Box sx={SX.buttons}>
-                        <IconButton onClick={toggleCertsWindow}>
-                            <BadgeOutlined/>
-                        </IconButton>
-                        <IconButton onClick={toggleCredentialsWindow}>
-                            <Security/>
-                        </IconButton>
+                        <Tooltip title={"Certificate Manager"}>
+                            <IconButton onClick={toggleCertsWindow}><Security/></IconButton>
+                        </Tooltip>
+                        <Tooltip title={"Password Manager"}>
+                            <IconButton onClick={toggleCredentialsWindow}><Lock/></IconButton>
+                        </Tooltip>
                         <IconButton onClick={theme.toggle}>
                             {theme.mode === 'dark' ? <LightMode/> : <Nightlight/>}
                         </IconButton>

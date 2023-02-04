@@ -34,11 +34,11 @@ type Patroni struct {
 }
 
 type Xlog struct {
-	Location          int  `json:"location"`
-	ReceivedLocation  int  `json:"received_location"`
-	ReplayedTimestamp int  `json:"replayed_timestamp"`
-	Paused            bool `json:"paused"`
-	ReplayedLocation  int  `json:"replayed_location"`
+	Location          int    `json:"location"`
+	ReceivedLocation  int    `json:"received_location"`
+	ReplayedTimestamp string `json:"replayed_timestamp"`
+	Paused            bool   `json:"paused"`
+	ReplayedLocation  int    `json:"replayed_location"`
 }
 
 type PatroniReplication struct {

@@ -15,7 +15,7 @@ export function Certs() {
         <Dialog open={store.certsOpen} onClose={toggleCertsWindow}>
             <DialogTitle display={"flex"} alignItems={"center"} justifyContent={"space-between"} gap={1}>
                 <BadgeOutlined fontSize={"medium"}/>
-                <Box>Certs</Box>
+                <Box>Certificate Manager</Box>
                 <IconButton size={"small"} onClick={toggleCertsWindow}><Close/></IconButton>
             </DialogTitle>
             <DialogContent sx={SX.content}>

@@ -15,7 +15,7 @@ export function Credentials() {
         <Dialog open={store.credentialsOpen} onClose={toggleCredentialsWindow}>
             <DialogTitle display={"flex"} alignItems={"center"} justifyContent={"space-between"} gap={1}>
                 <Security fontSize={"medium"}/>
-                <Box>Credentials</Box>
+                <Box>Password Manager</Box>
                 <IconButton size={"small"} onClick={toggleCredentialsWindow}><Close/></IconButton>
             </DialogTitle>
             <DialogContent sx={SX.content}>
