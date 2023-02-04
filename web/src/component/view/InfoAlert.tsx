@@ -2,7 +2,7 @@ import {Alert} from "@mui/material";
 import React from "react";
 
 const SX = {
-    infoAlert: {justifyContent: 'center'}
+    infoAlert: {justifyContent: "center"}
 }
 
 type Props = { text: string }

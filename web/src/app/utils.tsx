@@ -1,7 +1,7 @@
 import {blue, green, orange} from "@mui/material/colors";
-import {ColorsMap, CredentialType, InstanceLocal, JobStatus, InstanceMap} from "./types";
-import {ReactElement} from "react";
-import {HeartBroken, Storage} from "@mui/icons-material";
+import {ColorsMap, CredentialType, InstanceLocal, JobStatus, InstanceMap, FileUsageType} from "./types";
+import React, {ReactElement} from "react";
+import {FilePresentOutlined, HeartBroken, Storage, UploadFileOutlined} from "@mui/icons-material";
 import {AxiosError} from "axios";
 
 export const InstanceColor: { [key: string]: string } = {
@@ -20,9 +20,20 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
     [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
 }
 
-export const CredentialOptions: { [key in CredentialType]: { name: string, color: string, icon: ReactElement } } = {
+export const CredentialOptions: {[key in CredentialType]: {name: string, color: string, icon: ReactElement}} = {
     [CredentialType.POSTGRES]: {name: "POSTGRES", color: blue[300], icon: <Storage />},
     [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken />}
+}
+
+export const FileUsage: {[key in CredentialType]: {title: string, icon: ReactElement}} = {
+    [FileUsageType.UPLOAD]: {
+        icon: <UploadFileOutlined />,
+        title: "Cert Upload",
+    },
+    [FileUsageType.PATH]: {
+        icon: <FilePresentOutlined />,
+        title: "Cert Path",
+    },
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {

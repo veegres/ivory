@@ -3,9 +3,10 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"ivory/model"
 	"ivory/persistence"
 	"net/http"
-	"strings"
+	"strconv"
 )
 
 func (r routes) CertGroup(group *gin.RouterGroup) {
@@ -13,6 +14,7 @@ func (r routes) CertGroup(group *gin.RouterGroup) {
 	cert.GET("", getCertList)
 	cert.DELETE("/:uuid", deleteCert)
 	cert.POST("/upload", postUploadCert)
+	cert.POST("/add", postAddCert)
 }
 
 func getCertList(context *gin.Context) {
@@ -35,21 +37,36 @@ func deleteCert(context *gin.Context) {
 }
 
 func postUploadCert(context *gin.Context) {
+	certType, err := strconv.Atoi(context.PostForm("type"))
 	file, err := context.FormFile("file")
 	if file.Size > 1000000 {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "maximum size is 1MB"})
 		return
 	}
-	fileFormat := strings.Split(file.Filename, ".")[1]
-	if fileFormat != "crt" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "file format is not correct, required .crt file"})
-		return
-	}
-	cert, err := persistence.BoltDB.Cert.Create(file.Filename)
+
+	cert, err := persistence.BoltDB.Cert.Create(file.Filename, model.CertType(certType), model.FileUsageType(model.UPLOAD))
 	err = context.SaveUploadedFile(file, cert.Path)
 	if err != nil {
-		context.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	context.JSON(http.StatusOK, gin.H{"response": cert})
+}
+
+func postAddCert(context *gin.Context) {
+	var certRequest model.CertRequest
+	parseErr := context.ShouldBindJSON(&certRequest)
+	if parseErr != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
+		return
+	}
+
+	cert, err := persistence.BoltDB.Cert.Create(certRequest.Path, certRequest.Type, model.FileUsageType(model.PATH))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	context.JSON(http.StatusOK, gin.H{"response": cert})
 }

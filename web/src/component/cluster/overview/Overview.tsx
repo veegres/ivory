@@ -36,9 +36,11 @@ const SX = {
 
 const TABS: ClusterTabs = {
     0: {
+        label: "Instance",
         body: (cluster: ActiveCluster) => <OverviewInstances info={cluster}/>,
     },
     1: {
+        label: "Config",
         body: (cluster: ActiveCluster) => <OverviewConfig info={cluster}/>,
         info: <>
             You can change your postgres configurations here (it will be applied on all cluster nodes).
@@ -49,6 +51,7 @@ const TABS: ClusterTabs = {
         </>
     },
     2: {
+        label: "Bloat",
         body: (cluster: ActiveCluster) => <OverviewBloat info={cluster}/>,
         info: <>
             You can reduce size of bloated tables and indexes without heavy locks here. It base on the
@@ -75,10 +78,8 @@ export function Overview() {
     return (
         <PageBlock withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
-                <Tabs value={activeClusterTab} onChange={(_, value) => handleChange(value)}>
-                    <Tab label={"Instances"}/>
-                    <Tab label={"Config"}/>
-                    <Tab label={"Bloat"}/>
+                <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
+                    {Object.values(TABS).map(value => (<Tab label={value.label} />))}
                 </Tabs>
                 {renderActionBlock()}
             </Box>
@@ -179,9 +180,5 @@ export function Overview() {
                 </Box>
             </Collapse>
         )
-    }
-
-    function handleChange(value: number) {
-        setClusterTab(value)
     }
 }

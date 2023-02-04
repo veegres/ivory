@@ -2,24 +2,34 @@ import React, {useState} from "react";
 import {Box, Tab, Tabs} from "@mui/material";
 import {CertsNew} from "./CertsNew";
 import {CertsList} from "./CertsList";
+import {CertTabs, CertType} from "../../../app/types";
 
 const SX = {
-    tabs: { minHeight: "25px", margin: "0 0 10px 0" },
+    box: { display: "flex", flexDirection: "column", gap: 1 },
+    tabs: { minHeight: "25px" },
     tab: { minHeight: "25px", padding: "8px 12px", textTransform: "none" },
+}
+
+const TABS: CertTabs = {
+    0: { label: "Client CA", type: CertType.CLIENT_CA },
+    1: { label: "Client Cert", type: CertType.CLIENT_CERT },
+    2: { label: "Client Key", type: CertType.CLIENT_KEY }
+}
+
+export type CertTypeProps = {
+    type: CertType,
 }
 
 export function CertsContent() {
     const [tab, setTab] = useState(0)
 
     return (
-        <Box>
-            <Tabs sx={SX.tabs} value={tab} variant={"fullWidth"} centered>
-                <Tab sx={SX.tab} label={"Client RootCA"} onClick={() => setTab(0)}/>
-                <Tab sx={SX.tab} label={"Client CA"} onClick={() => setTab(1)}/>
-                <Tab sx={SX.tab} label={"Client Key"} onClick={() => setTab(2)}/>
+        <Box sx={SX.box}>
+            <Tabs sx={SX.tabs} value={tab} variant={"fullWidth"} centered onChange={(_, value) => setTab(value)}>
+                {Object.values(TABS).map(value => (<Tab sx={SX.tab} label={value.label} />))}
             </Tabs>
-            <CertsNew />
-            <CertsList />
+            <CertsNew type={TABS[tab].type} />
+            <CertsList type={TABS[tab].type} />
         </Box>
     )
 }

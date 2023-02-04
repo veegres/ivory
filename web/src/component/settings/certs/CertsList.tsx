@@ -9,23 +9,29 @@ import {useQuery} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {LinearProgressStateful} from "../../view/LinearProgressStateful";
+import {CertTypeProps} from "./CertsContent";
 
 const SX = {
-    progress: {margin: "10px 0"},
     list: { maxHeight: "500px", overflowY: "auto" },
 }
 
-export function CertsList() {
+export function CertsList(props: CertTypeProps) {
     const { data: certs, isError, error, isFetching } = useQuery(["certs"], certApi.list)
-
-    if (isError) return <ErrorAlert error={error}/>
-
-    const list = Object.entries<Cert>(certs ?? {})
-    if (list.length === 0) return <InfoAlert text={"There is no certs yet"}/>
 
     return (
         <>
-            <LinearProgressStateful sx={SX.progress} color={"inherit"} isFetching={isFetching} line />
+            <LinearProgressStateful color={"inherit"} isFetching={isFetching} line />
+            {renderBody()}
+        </>
+    )
+
+    function renderBody() {
+        if (isError) return <ErrorAlert error={error}/>
+
+        const list = Object.entries<Cert>(certs ?? {})
+        if (list.length === 0) return <InfoAlert text={"There is no certs yet"}/>
+
+        return (
             <Box sx={SX.list} className={scroll.tiny}>
                 <TransitionGroup>
                     {list.map(([key, cert]) => (
@@ -35,6 +41,6 @@ export function CertsList() {
                     ))}
                 </TransitionGroup>
             </Box>
-        </>
-    )
+        )
+    }
 }
