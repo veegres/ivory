@@ -4,7 +4,7 @@ import {CertsTabPath} from "./CertsTabPath";
 import {CertsTabUpload} from "./CertsTabUpload";
 import {CertTypeProps} from "./CertsContent";
 import {FileUsageType} from "../../../app/types";
-import {FileUsage} from "../../../app/utils";
+import {FileUsageOptions} from "../../../app/utils";
 
 const SX = {
     box: { display: "flex", height: "120px" },
@@ -16,17 +16,17 @@ const SX = {
 export function CertsNew(props: CertTypeProps) {
     const [tab, setTab] = useState(FileUsageType.UPLOAD)
 
-    const upload = FileUsage[FileUsageType.UPLOAD]
-    const path = FileUsage[FileUsageType.PATH]
+    const upload = FileUsageOptions[FileUsageType.UPLOAD]
+    const path = FileUsageOptions[FileUsageType.PATH]
 
     return (
         <Box sx={SX.box}>
             <ToggleButtonGroup sx={SX.group} orientation={"vertical"} size={"small"} exclusive value={tab}>
                 <ToggleButton sx={SX.button} onClick={() => setTab(FileUsageType.UPLOAD)} value={FileUsageType.UPLOAD}>
-                    <Tooltip placement={"right"} title={upload.title}>{upload.icon}</Tooltip>
+                    <Tooltip placement={"right"} title={upload.label}>{upload.icon}</Tooltip>
                 </ToggleButton>
                 <ToggleButton sx={SX.button} onClick={() => setTab(FileUsageType.PATH)} value={FileUsageType.PATH}>
-                    <Tooltip placement={"right"} title={path.title}>{path.icon}</Tooltip>
+                    <Tooltip placement={"right"} title={path.label}>{path.icon}</Tooltip>
                 </ToggleButton>
             </ToggleButtonGroup>
             <Box sx={SX.tab}>{renderTab()}</Box>

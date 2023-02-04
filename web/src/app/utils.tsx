@@ -1,7 +1,16 @@
-import {blue, green, orange} from "@mui/material/colors";
-import {ColorsMap, CredentialType, InstanceLocal, JobStatus, InstanceMap, FileUsageType} from "./types";
-import React, {ReactElement} from "react";
-import {FilePresentOutlined, HeartBroken, Storage, UploadFileOutlined} from "@mui/icons-material";
+import React from "react";
+import {blue, green, indigo, orange} from "@mui/material/colors";
+import {
+    ColorsMap,
+    CredentialType,
+    InstanceLocal,
+    JobStatus,
+    InstanceMap,
+    FileUsageType,
+    CertType,
+    EnumOptions, Sidecar
+} from "./types";
+import {FilePresentOutlined, HeartBroken, Shield, Storage, UploadFileOutlined} from "@mui/icons-material";
 import {AxiosError} from "axios";
 
 export const InstanceColor: { [key: string]: string } = {
@@ -20,20 +29,29 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
     [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
 }
 
-export const CredentialOptions: {[key in CredentialType]: {name: string, color: string, icon: ReactElement}} = {
-    [CredentialType.POSTGRES]: {name: "POSTGRES", color: blue[300], icon: <Storage />},
-    [CredentialType.PATRONI]: {name: "PATRONI", color: green[300], icon: <HeartBroken />}
+export const CredentialOptions: {[key in CredentialType]: EnumOptions} = {
+    [CredentialType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage />},
+    [CredentialType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken />}
 }
 
-export const FileUsage: {[key in CredentialType]: {title: string, icon: ReactElement}} = {
-    [FileUsageType.UPLOAD]: {
-        icon: <UploadFileOutlined />,
-        title: "Cert Upload",
+export const CertOptions: {[key in CertType]: EnumOptions} = {
+    [CertType.CLIENT_CA]: {
+        name: "CLIENT_CA", label: "Client CA", color: blue[300],
+        icon: <Shield />, badge: "CA",
     },
-    [FileUsageType.PATH]: {
-        icon: <FilePresentOutlined />,
-        title: "Cert Path",
+    [CertType.CLIENT_CERT]: {
+        name: "CLIENT_CERT", label: "Client Cert", color: green[300],
+        icon: <Shield />, badge: "C",
     },
+    [CertType.CLIENT_KEY]: {
+        name: "CLIENT_KEY", label: "Client Key", color: green[300],
+        icon: <Shield />, badge: "K",
+    }
+}
+
+export const FileUsageOptions: {[key in FileUsageType]: EnumOptions} = {
+    [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: indigo[300], icon: <UploadFileOutlined />},
+    [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: indigo[300], icon: <FilePresentOutlined />},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {
@@ -49,28 +67,29 @@ export const createInstanceColors = (instances: InstanceMap) => {
     )
 }
 
-export const initialInstance: (domain?: string) => InstanceLocal = (domain = "-") => {
+export const initialInstance = (sidecar?: Sidecar) => {
+    const defaultSidecar = sidecar ?? {host: "-", port: 8008}
     return ({
         state: "-",
         role: "unknown",
         lag: -1,
-        sidecar: getHostAndPort(domain),
+        sidecar: defaultSidecar,
         database: {host: "-", port: 0},
         leader: false,
         inInstances: true,
         inCluster: false
-    });
+    }) as InstanceLocal;
 }
 
 /**
  * Combine instances from patroni and from ivory
  */
-export const combineInstances = (instanceNames: string[], instanceInCluster: InstanceMap): [InstanceMap, boolean] => {
+export const combineInstances = (instanceNames: Sidecar[], instanceInCluster: InstanceMap): [InstanceMap, boolean] => {
     const map: InstanceMap = {}
     let warning: boolean = false
 
     for (const key in instanceInCluster) {
-        if (instanceNames.includes(key)) {
+        if (getDomains(instanceNames).includes(key)) {
             map[key] = { ...instanceInCluster[key], inInstances: true }
         } else {
             map[key] = { ...instanceInCluster[key], inInstances: false }
@@ -78,8 +97,9 @@ export const combineInstances = (instanceNames: string[], instanceInCluster: Ins
     }
 
     for (const value of instanceNames) {
-        if (!map[value]) {
-            map[value] = initialInstance(value)
+        const domain = getDomain(value)
+        if (!map[domain]) {
+            map[domain] = initialInstance(value)
         }
     }
 
@@ -93,13 +113,17 @@ export const combineInstances = (instanceNames: string[], instanceInCluster: Ins
     return [map, warning]
 }
 
-export const getDomain = ({ host, port }: { host: string, port: number }) => {
+export const getDomain = ({ host, port }: Sidecar) => {
     return `${host.toLowerCase()}${port ? `:${port}` : "" }`
+}
+
+export const getDomains = (sidecars: Sidecar[]) => {
+    return sidecars.map(value => getDomain(value))
 }
 
 export const getHostAndPort = (domain: string) => {
     const [host, port] = domain.split(":")
-    return { host, port: port ? parseInt(port) : 0 }
+    return { host, port: port ? parseInt(port) : 8008 }
 }
 
 export const shortUuid = (uuid: string) => uuid.substring(0, 8)

@@ -1,6 +1,6 @@
 import {Autocomplete, Stack, TextField} from "@mui/material";
 import React from "react";
-import {CredentialType} from "../../../app/types";
+import {CertType, CredentialType} from "../../../app/types";
 import {OverviewSettingsPassword} from "./OverviewSettingsPassword";
 import {TabProps} from "./Overview";
 import {OverviewSettingsInstance} from "./OverviewSettingsInstance";
@@ -14,16 +14,14 @@ const SX = {
 export function OverviewSettings({info}: TabProps) {
     const { instances, instance, cluster, detection } = info
 
-    const postgresCredId = cluster.postgresCredId ?? ""
-    const patroniCredId = cluster.patroniCredId ?? ""
-    const patroniCertId = cluster.certId ?? ""
-
     return (
         <Stack sx={SX.settings}>
             <OverviewSettingsInstance instance={getDomain(instance.sidecar)} instances={instances} detection={detection} />
-            <OverviewSettingsPassword label={"Postgres Password"} type={CredentialType.POSTGRES} credId={postgresCredId} cluster={cluster} />
-            <OverviewSettingsPassword label={"Patroni Password"} type={CredentialType.PATRONI} credId={patroniCredId} cluster={cluster} />
-            <OverviewSettingsCert certId={patroniCertId} cluster={cluster} />
+            <OverviewSettingsPassword type={CredentialType.POSTGRES} cluster={cluster} />
+            <OverviewSettingsPassword type={CredentialType.PATRONI} cluster={cluster} />
+            <OverviewSettingsCert type={CertType.CLIENT_CA} cluster={cluster} />
+            <OverviewSettingsCert type={CertType.CLIENT_CERT} cluster={cluster} />
+            <OverviewSettingsCert type={CertType.CLIENT_KEY} cluster={cluster} />
             <Autocomplete
                 multiple
                 options={[]}

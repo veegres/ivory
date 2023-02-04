@@ -1,5 +1,5 @@
 import {Box, Chip, TableRow, Tooltip} from "@mui/material";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {Cluster, DetectionType, InstanceLocal} from "../../../app/types";
 import {RefreshIconButton,} from "../../view/IconButtons";
 import {DynamicInputs} from "../../view/DynamicInputs";
@@ -32,7 +32,8 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
     const isActive = isClusterActive(name)
     const isDetectionManual = detection === "manual"
 
-    const [stateNodes, setStateNodes] = useState(cluster.nodes);
+    const nodes = useMemo(() => cluster.instances.map(value => getDomain(value)), [cluster.instances])
+    const [stateNodes, setStateNodes] = useState(nodes);
     const auto = useAutoInstanceDetection(!isDetectionManual, cluster)
     const manual = useManualInstanceDetection(isDetectionManual, cluster, manualState)
 
@@ -80,7 +81,7 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
                         nodes={stateNodes}
                         toggle={toggle}
                         onUpdate={refetch}
-                        onClose={() => setStateNodes(cluster.nodes)}
+                        onClose={() => setStateNodes(nodes)}
                     />
                 )}
             </ListCell>
@@ -89,9 +90,9 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
 
     function renderChipTooltip() {
         const items = [
-            { name: "Detection", value: detection, bgColor: purple[400] },
-            { name: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] },
-            { name: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500] }
+            { label: "Detection", value: detection, bgColor: purple[400] },
+            { label: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] },
+            { label: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500] }
         ]
 
         return <InfoTitle items={items} />

@@ -1,26 +1,26 @@
-import {shortUuid} from "../../../app/utils";
+import {CredentialOptions, shortUuid} from "../../../app/utils";
 import React, {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, credentialApi} from "../../../app/api";
-import {Cluster, CredentialType} from "../../../app/types";
+import {Cluster, Credentials, CredentialType} from "../../../app/types";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {Autocomplete, Option} from "../../view/Autocomplete";
 
 const keys = {
-    [CredentialType.POSTGRES]: "postgresCredId",
-    [CredentialType.PATRONI]: "patroniCredId",
+    [CredentialType.POSTGRES]: "postgresId",
+    [CredentialType.PATRONI]: "patroniId",
 }
 
 type Props = {
     type: CredentialType
     cluster: Cluster
-    credId: string
-    label: string
 }
 
 export function OverviewSettingsPassword(props: Props) {
-    const { type, label, cluster, credId } = props
+    const { type, cluster } = props
     const passKey = keys[type]
+    const passId = cluster.credentials[passKey as keyof Credentials] ?? ""
+    const { label } = CredentialOptions[type]
 
     const query = useQuery(["credentials", type], () => credentialApi.list(type))
     const options = useMemo(handleMemoOptions, [query.data])
@@ -31,7 +31,7 @@ export function OverviewSettingsPassword(props: Props) {
     return (
         <Autocomplete
             label={label}
-            selected={{key: credId, short: shortUuid(credId)}}
+            selected={{key: passId, short: shortUuid(passId)}}
             options={options}
             loading={query.isLoading || updateCluster.isLoading}
             onUpdate={handleUpdate}
@@ -39,7 +39,7 @@ export function OverviewSettingsPassword(props: Props) {
     )
 
     function handleUpdate(option: Option | null) {
-        updateCluster.mutate({...cluster, [passKey]: option?.key})
+        updateCluster.mutate({...cluster, credentials: {[passKey]: option?.key}})
     }
 
     function handleMemoOptions(): Option[] {

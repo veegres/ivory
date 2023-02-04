@@ -2,17 +2,26 @@ import React, {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {certApi, clusterApi} from "../../../app/api";
 import {Autocomplete, Option} from "../../view/Autocomplete";
-import {shortUuid} from "../../../app/utils";
+import {CertOptions, shortUuid} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Cluster} from "../../../app/types";
+import {Certs, CertType, Cluster} from "../../../app/types";
+
+const keys = {
+    [CertType.CLIENT_CA]: "clientCAId",
+    [CertType.CLIENT_CERT]: "clientCertId",
+    [CertType.CLIENT_KEY]: "clientKeyId",
+}
 
 type Props = {
-    certId: string,
+    type: CertType,
     cluster: Cluster,
 }
 
 export function OverviewSettingsCert(props: Props) {
-    const { certId, cluster } = props
+    const { type, cluster } = props
+    const certKey = keys[type]
+    const certId = cluster.certs[certKey as keyof Certs] ?? ""
+    const { label } = CertOptions[type]
 
     const query = useQuery(["certs"], certApi.list)
     const options = useMemo(handleMemoOptions, [query.data])
@@ -22,7 +31,7 @@ export function OverviewSettingsCert(props: Props) {
 
     return (
         <Autocomplete
-            label={"Patroni Cert"}
+            label={label}
             selected={{key: certId, short: shortUuid(certId)}}
             options={options}
             loading={query.isLoading || updateCluster.isLoading}
@@ -31,7 +40,7 @@ export function OverviewSettingsCert(props: Props) {
     )
 
     function handleUpdate(option: Option | null) {
-        updateCluster.mutate({...cluster, certId: option?.key})
+        updateCluster.mutate({...cluster, certs: {...cluster.certs, [certKey]: option?.key}})
     }
 
     function handleMemoOptions(): Option[] {

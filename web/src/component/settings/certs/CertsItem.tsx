@@ -6,7 +6,7 @@ import {DeleteIconButton} from "../../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {FileUsage} from "../../../app/utils";
+import {FileUsageOptions} from "../../../app/utils";
 
 const SX = {
     item: { display: "flex", alignItems: "center", padding: "5px 10px", margin: "5px 10px", borderRadius: "5px", gap: 2 },
@@ -33,11 +33,11 @@ export function CertsItem(props: Props) {
     const deleteOptions = useMutationOptions(["certs"])
     const deleteCert = useMutation(certApi.delete, deleteOptions)
 
-    const fileUsage = FileUsage[cert.fileUsageType]
+    const fileUsage = FileUsageOptions[cert.fileUsageType]
 
     return (
         <Box sx={{...SX.item, border: `1px solid ${info?.palette.divider}`}}>
-            <Tooltip placement={"top"} title={fileUsage.title}>
+            <Tooltip placement={"top"} title={fileUsage.label}>
                 {fileUsage.icon}
             </Tooltip>
             <Tooltip placement={"top-start"} title={cert.fileName}>

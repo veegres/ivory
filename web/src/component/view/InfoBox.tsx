@@ -1,5 +1,5 @@
 import {Box, Tooltip} from "@mui/material";
-import {ReactElement, ReactNode} from "react";
+import React, {ReactElement, ReactNode} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
 
 const SX = {

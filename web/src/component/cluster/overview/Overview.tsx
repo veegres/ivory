@@ -10,11 +10,11 @@ import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
 import {useQuery} from "@tanstack/react-query";
-import {Article, InfoOutlined, Settings, Warning} from "@mui/icons-material";
-import {ClusterTabs, CredentialType, ActiveCluster} from "../../../app/types";
+import {InfoOutlined, Settings, Warning} from "@mui/icons-material";
+import {ClusterTabs, CredentialType, ActiveCluster, CertType} from "../../../app/types";
 import {OverviewSettings} from "./OverviewSettings";
 import {InfoIcons} from "../../view/InfoIcons";
-import {CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
+import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
 import {orange, purple} from "@mui/material/colors";
 import {InfoBox} from "../../view/InfoBox";
 import {InfoTitle} from "../../view/InfoTitle";
@@ -79,7 +79,7 @@ export function Overview() {
         <PageBlock withPadding visible={clusters.isSuccess}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
-                    {Object.values(TABS).map(value => (<Tab label={value.label} />))}
+                    {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label} />))}
                 </Tabs>
                 {renderActionBlock()}
             </Box>
@@ -130,20 +130,20 @@ export function Overview() {
     function renderShortClusterInfo() {
         if (!activeCluster) return null
         const {cluster, instance, warning, detection} = activeCluster
-        const postgres = CredentialOptions[CredentialType.POSTGRES]
-        const patroni = CredentialOptions[CredentialType.PATRONI]
 
         const infoItems = [
-            { icon: <Article />, name: "Patroni Certs", active: !!cluster.certId },
-            { icon: patroni.icon, name: "Patroni Password", active: !!cluster.patroniCredId },
-            { icon: postgres.icon, name: "Postgres Password", active: !!cluster.postgresCredId }
+            { ...CredentialOptions[CredentialType.POSTGRES], active: !!cluster.credentials.postgresId },
+            { ...CredentialOptions[CredentialType.PATRONI], active: !!cluster.credentials.patroniId },
+            { ...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId },
+            { ...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId },
+            { ...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId }
         ]
         const warningItems = [
-            { icon: <Warning />,  name: "Warning", active: warning, iconColor: orange[500] }
+            { icon: <Warning />,  label: "Warning", active: warning, iconColor: orange[500] }
         ]
         const roleTooltip = [
-            { name: "Detection", value: detection, bgColor: purple[400] },
-            { name: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] }
+            { label: "Detection", value: detection, bgColor: purple[400] },
+            { label: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] }
         ]
 
         return (
