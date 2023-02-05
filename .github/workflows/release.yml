@@ -41,7 +41,7 @@ jobs:
           yarn install
           yarn run build
 
-      - name: Intall & Build binary for service
+      - name: Install & Build binary for service
         working-directory: service
         run: |
           go version
