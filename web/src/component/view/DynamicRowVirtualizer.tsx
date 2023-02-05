@@ -3,15 +3,17 @@ import {useVirtualizer} from "@tanstack/react-virtual";
 import {Box} from "@mui/material";
 import {SxProps} from "@mui/system";
 import {Theme} from "@mui/material/styles";
+import {AutoScrolling} from "./AutoScrolling";
 
 const SX = {
     container: {width: "100%", overflow: "auto", contain: "strict"},
-    boxRelative: {width: "100%", position: "relative"},
     boxAbsolute: {position: "absolute", top: 0, left: 0, width: "100%"},
+    boxRelative: {width: "100%", position: "relative"},
 }
 
 type Props = {
     height: number;
+    auto: boolean;
     rows: string[],
     sx?: SxProps<Theme>,
     className?: string,
@@ -20,10 +22,12 @@ type Props = {
 }
 
 /**
- *
- * Guide https://tanstack.com/virtual/v3/docs/examples/react/dynamic
+ *  This Component uses `@tanstack/react-virtual` to render only visible elements.
+ *  Dynamic means that the height of the element is unknown before render
+ *  Guide https://tanstack.com/virtual/v3/docs/examples/react/dynamic
  */
-export function DynamicRowVirtualizer({rows, height, sx, className, sxVirtualRow, classNameVirtualRow}: Props) {
+export function DynamicRowVirtualizer(props: Props) {
+    const {rows, height, sx, className, sxVirtualRow, classNameVirtualRow, auto} = props
     const parentRef = useRef<Element>(null)
 
     const virtualizer = useVirtualizer({
@@ -33,24 +37,25 @@ export function DynamicRowVirtualizer({rows, height, sx, className, sxVirtualRow
     })
 
     const items = virtualizer.getVirtualItems()
-
     return (
-        <Box ref={parentRef} sx={{...sx, ...SX.container}} className={className} style={{height: `${height}px`}}>
-            <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
-                <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0].start}px)`}}>
-                    {items.map((virtualRow) => (
-                        <Box
-                            ref={virtualizer.measureElement}
-                            key={virtualRow.key}
-                            data-index={virtualRow.index}
-                        >
-                            <Box sx={sxVirtualRow} className={classNameVirtualRow}>
-                                {rows[virtualRow.index]}
+        <AutoScrolling auto={auto} length={rows.length} scroll={virtualizer.scrollToIndex}>
+            <Box ref={parentRef} sx={{...sx, ...SX.container}} className={className} style={{height: `${height}px`}}>
+                <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
+                    <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0].start}px)`}}>
+                        {items.map((virtualRow) => (
+                            <Box
+                                ref={virtualizer.measureElement}
+                                key={virtualRow.key}
+                                data-index={virtualRow.index}
+                            >
+                                <Box sx={sxVirtualRow} className={classNameVirtualRow}>
+                                    {rows[virtualRow.index]}
+                                </Box>
                             </Box>
-                        </Box>
-                    ))}
+                        ))}
+                    </Box>
                 </Box>
             </Box>
-        </Box>
+        </AutoScrolling>
     )
 }
