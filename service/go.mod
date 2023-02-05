@@ -1,6 +1,6 @@
 module ivory
 
-go 1.18
+go 1.20
 
 require (
 	github.com/boltdb/bolt v1.3.1
