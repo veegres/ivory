@@ -70,7 +70,10 @@ func (r CertRepository) Create(pathStr string, certType CertType, fileUsageType 
 
 func (r CertRepository) Delete(certUuid uuid.UUID) error {
 	var err error
-	err = File.Certs.Delete(certUuid)
+	cert, err := r.Get(certUuid)
+	if cert.FileUsageType == FileUsageType(UPLOAD) {
+		err = File.Certs.Delete(certUuid)
+	}
 	err = r.common.delete(r.bucket, certUuid.String())
 	return err
 }
