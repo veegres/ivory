@@ -9,15 +9,15 @@
 /* ----- TINY ----- */
 
 .tiny::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 6px;
+    height: 6px;
 }
 
 /* ----- DEFAULT ----- */
 
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {

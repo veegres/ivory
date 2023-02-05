@@ -15,7 +15,7 @@ import {ConsoleBlock} from "../../view/ConsoleBlock";
 
 const SX = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
-    row: {"&:hover": {color: "#ffffff"}},
+    row: {"&:hover": {color: "#bcddf8"}},
     emptyLine: {textAlign: "center"},
     header: {fontWeight: "bold", cursor: "pointer"},
     loader: {margin: "10px 0 5px"},
@@ -25,7 +25,7 @@ const SX = {
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
     jobButton: {fontSize: 18},
     separator: {marginLeft: "10px"},
-    credential: {color: "#536081", margin: "0 4px"}
+    credential: {color: "rgba(192,192,192,0.7)", fontWeight: 500}
 }
 
 type Props = { compactTable: CompactTable }
@@ -44,9 +44,11 @@ export function OverviewBloatJob({compactTable}: Props) {
         <ConsoleBlock>
             <Grid container sx={SX.header} onClick={() => setOpen(!open)}>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
-                    <Grid item container>
+                    <Grid item container gap={1}>
                         <Box>Command</Box>
-                        <Box sx={SX.credential}>[credential: {shortUuid(credentialId)}]</Box>
+                        <Tooltip title={"Postgres Password ID"} placement={"right"}>
+                            <Box sx={SX.credential}>{shortUuid(credentialId)}</Box>
+                        </Tooltip>
                     </Grid>
                     <Grid item container xs={"auto"} sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
@@ -79,6 +81,7 @@ export function OverviewBloatJob({compactTable}: Props) {
                 ) : (
                     <DynamicRowVirtualizer
                         sx={SX.logs}
+                        auto={status.active && open}
                         className={scroll.tiny}
                         sxVirtualRow={SX.row}
                         height={350}
