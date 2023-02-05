@@ -31,7 +31,7 @@ export function CertsList(props: CertTypeProps) {
         if (isError) return <ErrorAlert error={error}/>
 
         const list = Object.entries<Cert>(certs ?? {})
-        if (list.length === 0) return <InfoAlert text={"There is no certs yet"}/>
+        if (list.length === 0) return <InfoAlert text={"There is no files yet"}/>
 
         return (
             <Box sx={SX.list} className={scroll.tiny}>
