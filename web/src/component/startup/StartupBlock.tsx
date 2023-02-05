@@ -6,6 +6,7 @@ import {randomUnicodeAnimal} from "../../app/utils";
 import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import select from "../../style/select.module.css";
 import {useMutationOptions} from "../../hook/QueryCustom";
+import {useStore} from "../../provider/StoreProvider";
 
 const SX = {
     box: { height: "100%", width: "30%", minWidth: "500px" },
@@ -23,6 +24,7 @@ type Props = {
 }
 
 export function StartupBlock(props: Props) {
+    const { clear } = useStore()
     const { keyWord, refWord, children, clean, header } = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 
@@ -30,7 +32,7 @@ export function StartupBlock(props: Props) {
 
     const setReqOptions = useMutationOptions(["info"])
     const setReq = useMutation(secretApi.set, setReqOptions)
-    const cleanReqOptions = useMutationOptions(["info"])
+    const cleanReqOptions = useMutationOptions(["info"], clear)
     const cleanReq = useMutation(secretApi.clean, cleanReqOptions)
 
     const fetching = cleanReq.isLoading || setReq.isLoading || info.isFetching

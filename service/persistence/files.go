@@ -44,9 +44,15 @@ func (r FilePersistence) Open(path string) (*os.File, error) {
 }
 
 func (r FilePersistence) Read(path string) ([]byte, error) {
-    return os.ReadFile(path)
+	return os.ReadFile(path)
 }
 
 func (r FilePersistence) Delete(uuid uuid.UUID) error {
 	return os.Remove(r.path + "/" + uuid.String() + r.fileNameExt)
+}
+
+func (r FilePersistence) DeleteAll() error {
+	err := os.RemoveAll(r.path + "/")
+	err = os.Mkdir(r.path, os.ModePerm)
+	return err
 }

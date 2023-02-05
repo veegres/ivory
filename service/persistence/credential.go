@@ -66,11 +66,11 @@ func (r CredentialRepository) DeleteAll() error {
 }
 
 func (r CredentialRepository) List() map[string]Credential {
-	return r.getCredentialsMap(nil)
+	return r.getCredentialMap(nil)
 }
 
 func (r CredentialRepository) ListByType(credentialType CredentialType) map[string]Credential {
-	return r.getCredentialsMap(func(credential Credential) bool {
+	return r.getCredentialMap(func(credential Credential) bool {
 		return credential.Type == credentialType
 	})
 }
@@ -83,14 +83,18 @@ func (r CredentialRepository) Get(uuid uuid.UUID) (Credential, error) {
 	return credential, err
 }
 
-func (r CredentialRepository) getCredentialsMap(filter func(credential Credential) bool) map[string]Credential {
+func (r CredentialRepository) getCredentialMap(filter func(credential Credential) bool) map[string]Credential {
 	bytesList, _ := r.common.getList(r.credentialBucket)
 	credentialMap := make(map[string]Credential)
 	for _, el := range bytesList {
 		var credential Credential
 		buff := bytes.NewBuffer(el.value)
 		_ = gob.NewDecoder(buff).Decode(&credential)
+
+		// hide password
 		credential.Password = "configured"
+
+		// filter elements in the list by lambda
 		if filter == nil || filter(credential) {
 			credentialMap[el.key] = credential
 		}

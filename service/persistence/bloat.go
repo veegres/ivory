@@ -72,6 +72,12 @@ func (r CompactTableRepository) Delete(uuid uuid.UUID) error {
 	return err
 }
 
+func (r CompactTableRepository) DeleteAll() error {
+	err := File.CompactTable.DeleteAll()
+	err = r.common.deleteAll(r.bucket)
+	return err
+}
+
 func (r CompactTableRepository) list(filter func(model CompactTableModel) bool) ([]CompactTableModel, error) {
 	bytesList, err := r.common.getList(r.bucket)
 	modelList := make([]CompactTableModel, 0)

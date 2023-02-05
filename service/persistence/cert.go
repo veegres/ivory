@@ -25,15 +25,13 @@ func (r CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
 }
 
 func (r CertRepository) List() (map[string]CertModel, error) {
-	bytesList, err := r.common.getList(r.bucket)
-	certMap := make(map[string]CertModel)
-	for _, el := range bytesList {
-		var cert CertModel
-		buff := bytes.NewBuffer(el.value)
-		err = gob.NewDecoder(buff).Decode(&cert)
-		certMap[el.key] = cert
-	}
-	return certMap, err
+	return r.getCertMap(nil)
+}
+
+func (r CertRepository) ListByType(certType CertType) (map[string]CertModel, error) {
+	return r.getCertMap(func(cert CertModel) bool {
+		return cert.Type == certType
+	})
 }
 
 func (r CertRepository) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*CertModel, error) {
@@ -75,4 +73,26 @@ func (r CertRepository) Delete(certUuid uuid.UUID) error {
 	err = File.Certs.Delete(certUuid)
 	err = r.common.delete(r.bucket, certUuid.String())
 	return err
+}
+
+func (r CertRepository) DeleteAll() error {
+	err := File.Certs.DeleteAll()
+	err = r.common.deleteAll(r.bucket)
+	return err
+}
+
+func (r CertRepository) getCertMap(filter func(cert CertModel) bool) (map[string]CertModel, error) {
+	bytesList, err := r.common.getList(r.bucket)
+	certMap := make(map[string]CertModel)
+	for _, el := range bytesList {
+		var cert CertModel
+		buff := bytes.NewBuffer(el.value)
+		err = gob.NewDecoder(buff).Decode(&cert)
+
+		// filter elements in the list by lambda
+		if filter == nil || filter(cert) {
+			certMap[el.key] = cert
+		}
+	}
+	return certMap, err
 }

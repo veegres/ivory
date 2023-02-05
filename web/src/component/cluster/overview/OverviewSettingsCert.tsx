@@ -23,7 +23,7 @@ export function OverviewSettingsCert(props: Props) {
     const certId = cluster.certs[certKey as keyof Certs] ?? ""
     const { label } = CertOptions[type]
 
-    const query = useQuery(["certs"], certApi.list)
+    const query = useQuery(["certs", type], () => certApi.list(type))
     const options = useMemo(handleMemoOptions, [query.data])
 
     const updateMutationOptions = useMutationOptions(["cluster/list"])

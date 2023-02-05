@@ -91,7 +91,12 @@ func (s *secret) Clean() error {
 	s.ref = ""
 	s.key = [16]byte{}
 	err := persistence.BoltDB.Credential.UpdateRefs("", "")
+
 	err = persistence.BoltDB.Credential.DeleteAll()
+	err = persistence.BoltDB.Cert.DeleteAll()
+	err = persistence.BoltDB.Cluster.DeleteAll()
+	err = persistence.BoltDB.CompactTable.DeleteAll()
+
 	s.mutex.Unlock()
 	return err
 }

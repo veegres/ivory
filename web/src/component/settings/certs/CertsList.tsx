@@ -16,7 +16,9 @@ const SX = {
 }
 
 export function CertsList(props: CertTypeProps) {
-    const { data: certs, isError, error, isFetching } = useQuery(["certs"], certApi.list)
+    const { type } = props
+    const query = useQuery(["certs", type], () => certApi.list(type))
+    const { data: certs, isError, error, isFetching } = query
 
     return (
         <>

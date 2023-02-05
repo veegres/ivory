@@ -11,7 +11,7 @@ import {
     SecretSetRequest,
     SecretStatus,
     SecretUpdateRequest,
-    InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest, CertUploadRequest, CertAddRequest
+    InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest, CertUploadRequest, CertAddRequest, CertType
 } from "./types";
 import {getDomain} from "./utils";
 
@@ -131,8 +131,8 @@ export const credentialApi = {
 }
 
 export const certApi = {
-    list: () => api
-        .get<Response<CertMap>>(`/cert`)
+    list: (type?: CertType) => api
+        .get<Response<CertMap>>(`/cert`, { params: { type } })
         .then((response => response.data.response)),
     upload: (request: CertUploadRequest ) => {
         const { file, type, setProgress } = request
