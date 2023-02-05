@@ -11,7 +11,7 @@ import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
 import {useQuery} from "@tanstack/react-query";
 import {InfoOutlined, Settings, Warning} from "@mui/icons-material";
-import {ClusterTabs, CredentialType, ActiveCluster, CertType} from "../../../app/types";
+import {ClusterTabs, CredentialType, ActiveCluster, CertType, ClusterMap} from "../../../app/types";
 import {OverviewSettings} from "./OverviewSettings";
 import {InfoIcons} from "../../view/InfoIcons";
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
@@ -69,14 +69,15 @@ export type TabProps = {
 }
 
 export function Overview() {
-    const {store: {activeCluster, activeClusterTab}, setClusterTab} = useStore()
+    const {store, setClusterTab} = useStore()
+    const {activeCluster, activeClusterTab} = store
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useQuery(["cluster/list"])
+    const clusters = useQuery<ClusterMap>(["cluster/list"])
     const tab = TABS[activeClusterTab]
 
     return (
-        <PageBlock withPadding visible={clusters.isSuccess}>
+        <PageBlock withPadding visible={clusters.isSuccess && Object.entries(clusters.data ?? {}).length !== 0}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
                     {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label} />))}

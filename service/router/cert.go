@@ -3,7 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"ivory/model"
+	. "ivory/model"
 	"ivory/persistence"
 	"net/http"
 	"strconv"
@@ -18,11 +18,22 @@ func (r routes) CertGroup(group *gin.RouterGroup) {
 }
 
 func getCertList(context *gin.Context) {
-	list, err := persistence.BoltDB.Cert.List()
+	certType := context.Request.URL.Query().Get("type")
+
+	var err error
+	var list map[string]CertModel
+	if certType != "" {
+		number, _ := strconv.Atoi(certType)
+		list, err = persistence.BoltDB.Cert.ListByType(CertType(number))
+	} else {
+		list, err = persistence.BoltDB.Cert.List()
+	}
+
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
@@ -44,7 +55,7 @@ func postUploadCert(context *gin.Context) {
 		return
 	}
 
-	cert, err := persistence.BoltDB.Cert.Create(file.Filename, model.CertType(certType), model.FileUsageType(model.UPLOAD))
+	cert, err := persistence.BoltDB.Cert.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
 	err = context.SaveUploadedFile(file, cert.Path)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -55,14 +66,14 @@ func postUploadCert(context *gin.Context) {
 }
 
 func postAddCert(context *gin.Context) {
-	var certRequest model.CertRequest
+	var certRequest CertRequest
 	parseErr := context.ShouldBindJSON(&certRequest)
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
 
-	cert, err := persistence.BoltDB.Cert.Create(certRequest.Path, certRequest.Type, model.FileUsageType(model.PATH))
+	cert, err := persistence.BoltDB.Cert.Create(certRequest.Path, certRequest.Type, FileUsageType(PATH))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

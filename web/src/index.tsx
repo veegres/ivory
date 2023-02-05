@@ -10,9 +10,10 @@ import {createRoot} from "react-dom/client";
 import {SnackbarProvider} from "notistack";
 import scroll from "./style/scroll.module.css"
 
-// we want to show always scroll bar to avoid resizing
+// always show scroll bar to avoid resizing
 document.body.classList.add(scroll.show)
 
+// render react app
 const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(

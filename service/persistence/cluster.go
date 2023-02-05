@@ -38,3 +38,7 @@ func (r ClusterRepository) Update(cluster ClusterModel) error {
 func (r ClusterRepository) Delete(key string) error {
 	return r.common.delete(r.bucket, key)
 }
+
+func (r ClusterRepository) DeleteAll() error {
+	return r.common.deleteAll(r.bucket)
+}

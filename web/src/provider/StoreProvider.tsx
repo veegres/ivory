@@ -1,5 +1,6 @@
 import {createContext, ReactNode, useContext, useState} from "react";
 import {ActiveCluster, ActiveInstance, DetectionType, InstanceLocal} from "../app/types";
+import {useQueryClient} from "@tanstack/react-query";
 
 // STORE
 interface StoreType {
@@ -31,6 +32,8 @@ interface StoreContextType {
 
     toggleCredentialsWindow: () => void,
     toggleCertsWindow: () => void,
+
+    clear: () => void,
 }
 const initialStoreContext: StoreContextType = {
     store: initialStore,
@@ -48,6 +51,8 @@ const initialStoreContext: StoreContextType = {
 
     toggleCredentialsWindow: () => void 0,
     toggleCertsWindow: () => void 0,
+
+    clear: () => void 0,
 }
 
 
@@ -60,32 +65,43 @@ export function useStore() {
 
 export function StoreProvider(props: { children: ReactNode }) {
     const [state, setState] = useState(initialStore)
-    const { activeCluster, activeInstance } = state
+    const queryClient = useQueryClient();
 
-    const value: StoreContextType = {
-        store: state,
-
-        setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster, activeInstance: undefined})),
-        setClusterInstance: (instance: InstanceLocal) => {
-            if (activeCluster) setState({...state, activeCluster: {...activeCluster, instance, detection: "manual"}})
-        },
-        setClusterDetection: (detection: DetectionType) => {
-            if (activeCluster) setState({...state, activeCluster: {...activeCluster, detection}})
-        },
-        setClusterTab: (tab: number) => setState({...state, activeClusterTab: tab}),
-        isClusterActive: (name: string) => name === activeCluster?.cluster.name,
-        isClusterOverviewOpen: () => !!activeCluster && state.activeClusterTab === 0,
-
-        setInstance: (instance?: ActiveInstance) => setState({...state, activeInstance: instance}),
-        setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
-        isInstanceActive: (instance?: ActiveInstance) => instance === activeInstance,
-
-        toggleCredentialsWindow: () => setState({...state, credentialsOpen: !state.credentialsOpen}),
-        toggleCertsWindow: () => setState({...state, certsOpen: !state.certsOpen}),
-    }
+    const value = getStoreContext()
     return (
         <StoreContext.Provider value={value}>
             {props.children}
         </StoreContext.Provider>
     )
+
+    function getStoreContext(): StoreContextType {
+        const { activeCluster, activeInstance } = state
+
+        return {
+            store: state,
+
+            setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster, activeInstance: undefined})),
+            setClusterInstance: (instance: InstanceLocal) => {
+                if (activeCluster) setState({...state, activeCluster: {...activeCluster, instance, detection: "manual"}})
+            },
+            setClusterDetection: (detection: DetectionType) => {
+                if (activeCluster) setState({...state, activeCluster: {...activeCluster, detection}})
+            },
+            setClusterTab: (tab: number) => setState({...state, activeClusterTab: tab}),
+            isClusterActive: (name: string) => name === activeCluster?.cluster.name,
+            isClusterOverviewOpen: () => !!activeCluster && state.activeClusterTab === 0,
+
+            setInstance: (instance?: ActiveInstance) => setState({...state, activeInstance: instance}),
+            setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
+            isInstanceActive: (instance?: ActiveInstance) => instance === activeInstance,
+
+            toggleCredentialsWindow: () => setState({...state, credentialsOpen: !state.credentialsOpen}),
+            toggleCertsWindow: () => setState({...state, certsOpen: !state.certsOpen}),
+
+            clear: () => {
+                queryClient.clear()
+                setState(initialStore)
+            }
+        }
+    }
 }
