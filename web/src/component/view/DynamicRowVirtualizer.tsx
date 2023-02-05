@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import {Box} from "@mui/material";
 import {SxProps} from "@mui/system";
@@ -20,7 +20,7 @@ type Props = {
 }
 
 export function DynamicRowVirtualizer({ rows, height, sx, className, sxVirtualRow, classNameVirtualRow }: Props) {
-    const parentRef = React.useRef<HTMLDivElement>()
+    const parentRef = useRef<Element>(null)
 
     const rowVirtualizer = useVirtualizer({
         count: rows.length,
@@ -33,8 +33,8 @@ export function DynamicRowVirtualizer({ rows, height, sx, className, sxVirtualRo
             <Box sx={SX.boxSize} style={{height: rowVirtualizer.getTotalSize()}}>
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => (
                     <Box
+                        ref={parentRef}
                         key={virtualRow.index}
-                        ref={virtualRow.measureElement}
                         sx={SX.virtualRow}
                         style={{transform: `translateY(${virtualRow.start}px)`}}
                     >

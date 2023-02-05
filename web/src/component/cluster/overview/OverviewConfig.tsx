@@ -7,17 +7,17 @@ import React, {ReactElement, useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
-import {oneDarkHighlightStyle} from "@codemirror/theme-one-dark";
-import {syntaxHighlighting, defaultHighlightStyle} from "@codemirror/language";
 import {InstanceLocal} from "../../../app/types";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
-import {EditorView} from "@codemirror/view";
 import {useMutationOptions} from "../../../hook/QueryCustom";
+import {darculaInit} from "@uiw/codemirror-theme-darcula";
+import {materialLightInit} from "@uiw/codemirror-theme-material";
 
-const highlightExtension = {
-    dark: syntaxHighlighting(oneDarkHighlightStyle),
-    light: syntaxHighlighting(defaultHighlightStyle)
+const options = {settings: {background: "transparent", gutterBackground: "transparent"}}
+const themes = {
+    dark: darculaInit(options),
+    light: materialLightInit(options),
 }
 
 export function OverviewConfig({info}: TabProps) {
@@ -40,18 +40,15 @@ export function OverviewConfig({info}: TabProps) {
     if (isError) return <ErrorAlert error={error}/>
     if (isLoading) return <Skeleton variant={"rectangular"} height={300}/>
 
-    const isDark = theme.mode === "dark"
-    const codeMirrorTheme = EditorView.theme({}, {dark: isDark})
-
     const border = `1px solid ${isEditable && theme.info ? theme.info.palette.divider : "transparent"}`
     return (
         <Grid container flexWrap={"nowrap"}>
             <Grid item flexGrow={1} sx={{border}}>
                 <ReactCodeMirror
                     value={configState}
-                    theme={codeMirrorTheme}
                     editable={isEditable}
-                    extensions={[json(), isDark ? highlightExtension.dark : highlightExtension.light]}
+                    theme={themes[theme.mode]}
+                    extensions={[json()]}
                     onChange={(value) => setConfigState(value)}
                 />
             </Grid>
