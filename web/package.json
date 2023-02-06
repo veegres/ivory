@@ -15,7 +15,7 @@
     "@codemirror/autocomplete": "6.2.0",
     "@codemirror/lang-json": "6.0.0",
     "@codemirror/language": "6.2.1",
-    "@codemirror/lint": "6.0.0",
+    "@codemirror/lint": "6.1.0",
     "@codemirror/search": "6.2.0",
     "@codemirror/state": "6.1.1",
     "@codemirror/theme-one-dark": "6.1.0",
