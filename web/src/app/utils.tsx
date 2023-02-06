@@ -1,5 +1,5 @@
 import React from "react";
-import {blue, green, indigo, orange} from "@mui/material/colors";
+import {blue, green, indigo, orange, purple} from "@mui/material/colors";
 import {
     ColorsMap,
     CredentialType,
@@ -23,9 +23,9 @@ export const InstanceColor: { [key: string]: string } = {
 export const JobOptions: { [key in JobStatus]: { name: string, color: string, active: boolean } } = {
     [JobStatus.PENDING]: {name: "PENDING", color: "#a9a9a9", active: true},
     [JobStatus.UNKNOWN]: {name: "UNKNOWN", color: "#5b3b00", active: false},
-    [JobStatus.RUNNING]: {name: "RUNNING", color: "rgba(255,166,0,0.7)", active: true},
-    [JobStatus.FINISHED]: {name: "FINISHED", color: "rgba(0,185,25,0.7)", active: false},
-    [JobStatus.FAILED]: {name: "FAILED", color: "rgba(210,0,0,0.7)", active: false},
+    [JobStatus.RUNNING]: {name: "RUNNING", color: "rgba(255,166,0,0.9)", active: true},
+    [JobStatus.FINISHED]: {name: "FINISHED", color: "rgba(0,185,25,0.9)", active: false},
+    [JobStatus.FAILED]: {name: "FAILED", color: "rgba(210,0,0,0.9)", active: false},
     [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
 }
 
@@ -36,15 +36,15 @@ export const CredentialOptions: {[key in CredentialType]: EnumOptions} = {
 
 export const CertOptions: {[key in CertType]: EnumOptions} = {
     [CertType.CLIENT_CA]: {
-        name: "CLIENT_CA", label: "Client CA", color: blue[300],
+        name: "CLIENT_CA", label: "Client CA", color: purple[300],
         icon: <Shield />, badge: "CA",
     },
     [CertType.CLIENT_CERT]: {
-        name: "CLIENT_CERT", label: "Client Cert", color: green[300],
+        name: "CLIENT_CERT", label: "Client Cert", color: purple[300],
         icon: <Shield />, badge: "C",
     },
     [CertType.CLIENT_KEY]: {
-        name: "CLIENT_KEY", label: "Client Key", color: green[300],
+        name: "CLIENT_KEY", label: "Client Key", color: purple[300],
         icon: <Shield />, badge: "K",
     }
 }
