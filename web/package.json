@@ -22,7 +22,7 @@
     "@codemirror/view": "6.7.3",
     "@emotion/react": "11.10.4",
     "@emotion/styled": "11.10.4",
-    "@lezer/common": "1.0.1",
+    "@lezer/common": "1.0.2",
     "@mui/icons-material": "5.11.0",
     "@mui/lab": "5.0.0-alpha.118",
     "@mui/material": "5.11.7",
