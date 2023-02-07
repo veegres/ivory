@@ -15,7 +15,7 @@ import {ConsoleBlock} from "../../view/ConsoleBlock";
 
 const SX: SxPropsMap = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
-    row: {"&:hover": {color: "#bcddf8"}},
+    row: {"&:hover": {color: "#7ec4ee"}},
     emptyLine: {textAlign: "center"},
     header: {fontWeight: "bold", cursor: "pointer"},
     loader: {margin: "10px 0 5px"},
