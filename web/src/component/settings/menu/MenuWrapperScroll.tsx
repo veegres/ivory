@@ -5,7 +5,7 @@ import {mergeSxProps} from "../../../app/utils";
 import {SxPropsMap} from "../../../app/types";
 
 const SX: SxPropsMap = {
-    box: {height: "100%", overflowY: "auto"},
+    box: {height: "100%", overflowY: "auto", padding: "0 5px"},
 }
 
 type Props = {

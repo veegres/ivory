@@ -30,7 +30,7 @@ export function MenuContent(props: Props) {
                     <Divider/>
                     <MenuItemButton item={Settings.CERTIFICATE} onUpdate={onUpdate}/>
                 </MenuItemBox>
-                <MenuItemBox name={"Reset"}>
+                <MenuItemBox name={"Danger Zone"}>
                     <MenuItemText
                         title={"Erase all data"}
                         description={"Once you erase all data, there is no going back. Please be certain."}
