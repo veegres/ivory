@@ -1,6 +1,6 @@
 import {FileUploadOutlined} from "@mui/icons-material";
 import {Box, ButtonBase, CircularProgress} from "@mui/material";
-import React, {ChangeEvent, DragEvent, useState} from "react";
+import {ChangeEvent, DragEvent, useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
 
 const SX = {

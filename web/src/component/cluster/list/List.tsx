@@ -2,7 +2,7 @@ import {Box, IconButton, Table, TableCell, TableHead, TableRow, Tooltip} from "@
 import {useQuery} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {ListRow} from "./ListRow";
-import React, {useState} from "react";
+import {useState} from "react";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {TableBody} from "../../view/TableBody";
 import {TableCellLoader} from "../../view/TableCellLoader";

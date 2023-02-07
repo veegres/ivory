@@ -6,13 +6,12 @@ import {useQueryClient} from "@tanstack/react-query";
 interface StoreType {
     activeCluster?: ActiveCluster, activeClusterTab: number,
     activeInstance?: ActiveInstance, activeInstanceTab: number,
-    credentialsOpen: boolean,
-    certsOpen: boolean,
+    settings: boolean,
 }
 const initialStore: StoreType = {
     activeCluster: undefined, activeClusterTab: 0,
     activeInstance: undefined, activeInstanceTab: 0,
-    credentialsOpen: false, certsOpen: false,
+    settings: false,
 }
 
 // CONTEXT
@@ -30,8 +29,7 @@ interface StoreContextType {
     setInstanceTab: (tab: number) => void,
     isInstanceActive: (instance?: ActiveInstance) => boolean,
 
-    toggleCredentialsWindow: () => void,
-    toggleCertsWindow: () => void,
+    toggleSettingsDialog: () => void,
 
     clear: () => void,
 }
@@ -49,8 +47,7 @@ const initialStoreContext: StoreContextType = {
     setInstanceTab: () => void 0,
     isInstanceActive: () => false,
 
-    toggleCredentialsWindow: () => void 0,
-    toggleCertsWindow: () => void 0,
+    toggleSettingsDialog: () => void 0,
 
     clear: () => void 0,
 }
@@ -95,8 +92,7 @@ export function StoreProvider(props: { children: ReactNode }) {
             setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
             isInstanceActive: (instance?: ActiveInstance) => instance === activeInstance,
 
-            toggleCredentialsWindow: () => setState({...state, credentialsOpen: !state.credentialsOpen}),
-            toggleCertsWindow: () => setState({...state, certsOpen: !state.certsOpen}),
+            toggleSettingsDialog: () => setState({...state, settings: !state.settings}),
 
             clear: () => {
                 queryClient.clear()

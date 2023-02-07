@@ -1,5 +1,5 @@
 import {Autocomplete as MuiAutocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material";
-import React, {useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 
 export type Option = {
     key: string,

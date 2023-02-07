@@ -1,11 +1,9 @@
-import React from 'react';
 import {Grid} from "@mui/material";
 import {Header} from "./component/section/Header";
 import {Body} from "./component/section/Body";
-import {Credentials} from "./component/settings/credentials/Credentials";
 import {useQuery} from "@tanstack/react-query";
 import {infoApi} from "./app/api";
-import {Certs} from "./component/settings/certs/Certs";
+import {Menu} from "./component/settings/menu/Menu";
 
 export function App() {
     const info = useQuery(["info"], infoApi.get)
@@ -15,8 +13,7 @@ export function App() {
             <Grid item><Header company={info.data?.company} show={!info.isLoading && !info.isError} /></Grid>
             <Grid item container flexGrow={1} justifyContent={"center"} alignItems={"center"}>
                 <Body info={info} />
-                <Credentials/>
-                <Certs/>
+                <Menu />
             </Grid>
         </Grid>
     );

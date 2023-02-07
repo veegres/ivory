@@ -1,5 +1,4 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
-import React from "react";
 
 type Props = { open: boolean, title: string, content: string, onAgree: () => void, onClose: () => void }
 

@@ -1,7 +1,7 @@
 import {Box, Button, Radio, Table, TableBody, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {useIsFetching, useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
-import React, {useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {TableCellLoader} from "../../view/TableCellLoader";
 import {getDomain, InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/AlertDialog";

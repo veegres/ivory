@@ -1,9 +1,9 @@
 import {Alert, Box, TextField} from "@mui/material";
-import React, {useState} from "react";
+import {useState} from "react";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
-import {CertTypeProps} from "./CertsContent";
+import {CertTypeProps} from "./Certs";
 import {CheckCircle} from "@mui/icons-material";
 import {LoadingButton} from "@mui/lab";
 

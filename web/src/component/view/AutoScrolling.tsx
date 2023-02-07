@@ -1,5 +1,5 @@
 import {Box, Button} from "@mui/material";
-import React, {ReactElement, ReactNode, useEffect, useState} from "react";
+import {ReactElement, ReactNode, useEffect, useState} from "react";
 import {ArrowDownward, ArrowUpward, Pause, PlayArrow} from "@mui/icons-material";
 
 const SX = {

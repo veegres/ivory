@@ -1,5 +1,5 @@
 import {CredentialsRow} from "./CredentialsRow";
-import React, {useState} from "react";
+import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
 import {credentialApi} from "../../../app/api";
 import {Credential, CredentialType} from "../../../app/types";
@@ -29,8 +29,8 @@ export function CredentialsNew() {
     function renderButtons() {
         return (
             <>
-                <CancelIconButton loading={false} onClick={handleCancel} disabled={!clean || createCredentials.isLoading}/>
-                <SaveIconButton loading={createCredentials.isLoading} onClick={handleCreate} disabled={empty}/>
+                <CancelIconButton size={36} onClick={handleCancel} disabled={!clean || createCredentials.isLoading}/>
+                <SaveIconButton size={36} loading={createCredentials.isLoading} onClick={handleCreate} disabled={empty}/>
             </>
         )
     }

@@ -1,6 +1,6 @@
 import {Box, Tooltip} from "@mui/material";
 import React from "react";
-import {Cert, Style} from "../../../app/types";
+import {Cert, StylePropsMap} from "../../../app/types";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {DeleteIconButton} from "../../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";
@@ -16,7 +16,7 @@ const SX = {
 }
 
 
-const style: Style = {
+const style: StylePropsMap = {
     break: {textOverflow: "ellipsis", whiteSpace: 'nowrap', overflow: "hidden"},
 }
 

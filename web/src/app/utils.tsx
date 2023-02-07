@@ -1,4 +1,3 @@
-import React from "react";
 import {blue, green, indigo, orange, purple} from "@mui/material/colors";
 import {
     ColorsMap,
@@ -8,10 +7,19 @@ import {
     InstanceMap,
     FileUsageType,
     CertType,
-    EnumOptions, Sidecar
+    EnumOptions, Sidecar, Settings
 } from "./types";
-import {FilePresentOutlined, HeartBroken, Shield, Storage, UploadFileOutlined} from "@mui/icons-material";
+import {
+    FilePresentOutlined,
+    HeartBroken, InfoTwoTone,
+    LockTwoTone,
+    MenuOpen, SecurityTwoTone,
+    Shield,
+    Storage,
+    UploadFileOutlined
+} from "@mui/icons-material";
 import {AxiosError} from "axios";
+import {SxProps, Theme} from "@mui/material";
 
 export const InstanceColor: { [key: string]: string } = {
     master: green[500],
@@ -52,6 +60,13 @@ export const CertOptions: {[key in CertType]: EnumOptions} = {
 export const FileUsageOptions: {[key in FileUsageType]: EnumOptions} = {
     [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: indigo[300], icon: <UploadFileOutlined />},
     [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: indigo[300], icon: <FilePresentOutlined />},
+}
+
+export const SettingOptions: {[key in Settings]: EnumOptions} = {
+    [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen />},
+    [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone />},
+    [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone />},
+    [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone />},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {
@@ -145,4 +160,8 @@ export const getErrorMessage = (error: any): string => {
     }
     if (typeof error === "string") message = error
     return message
+}
+
+export const mergeSxProps = (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => {
+    return [sx1, ...(Array.isArray(sx2) ? sx2 : [sx2])]
 }

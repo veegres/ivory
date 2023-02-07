@@ -1,10 +1,10 @@
 import {UploadButton} from "../../view/UploadButton";
-import React, {useState} from "react";
+import {useState} from "react";
 import {getErrorMessage} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
-import {CertTypeProps} from "./CertsContent";
+import {CertTypeProps} from "./Certs";
 
 export function CertsTabUpload(props: CertTypeProps) {
     const { type } = props

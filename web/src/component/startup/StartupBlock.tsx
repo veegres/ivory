@@ -1,5 +1,5 @@
 import {Box, Button, Grid} from "@mui/material";
-import React, {ReactNode, useState} from "react";
+import {ReactNode, useState} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {infoApi, secretApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";

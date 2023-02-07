@@ -1,4 +1,4 @@
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {certApi, clusterApi} from "../../../app/api";
 import {Autocomplete, Option} from "../../view/Autocomplete";

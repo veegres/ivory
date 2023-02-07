@@ -2,9 +2,8 @@ import {Box, Grid, Skeleton} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../../view/ErrorAlert";
-import React from "react";
 import {InstanceColor} from "../../../app/utils";
-import {Style} from "../../../app/types";
+import {StylePropsMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
@@ -14,7 +13,7 @@ const SX = {
     item: {margin: "0px 15px"},
     title: {color: "text.secondary", fontWeight: "bold"}
 }
-const style: Style = {
+const style: StylePropsMap = {
     itemText: {whiteSpace: "pre-wrap"}
 }
 

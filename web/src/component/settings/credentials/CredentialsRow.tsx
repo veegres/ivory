@@ -1,13 +1,13 @@
 import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material";
 import {CredentialsInput} from "./CredentialsInput";
-import React, {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
+import {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
 import {CredentialOptions} from "../../../app/utils";
 import {Credential, CredentialType} from "../../../app/types";
 
 const SX = {
-    row: { display: "flex", alignItems: "center", gap: "15px", padding: "5px 20px"},
-    buttons: { display: "flex" },
-    toggle: { height: "32px" },
+    row: {display: "flex", alignItems: "center", gap: "15px", margin: "5px 10px 0px"},
+    buttons: {display: "flex"},
+    toggle: {height: "36px"},
 }
 
 type Props = {
@@ -20,7 +20,7 @@ type Props = {
 }
 
 export function CredentialsRow(props: Props) {
-    const { renderButtons, credential, disabled, onChangeCredential, onEmpty, error } = props
+    const {renderButtons, credential, disabled, onChangeCredential, onEmpty, error} = props
     const [username, setUsername] = useState(credential.username)
     const [password, setPassword] = useState(credential.password)
     const [type, toggleType] = useState(credential.type)
@@ -65,10 +65,10 @@ export function CredentialsRow(props: Props) {
         const option = CredentialOptions[type]
 
         return (
-            <Tooltip title={option.name} placement={"top"}>
+            <Tooltip title={option.name} placement={"top"} disableInteractive>
                 <Box component={"span"}>
-                    <ToggleButton value={type} size={"small"} sx={SX.toggle} disabled={disabled} onClick={handleToggleType}>
-                        {cloneElement(option.icon, { sx: { color: option.color } })}
+                    <ToggleButton sx={SX.toggle} size={"small"} value={type} disabled={disabled} onClick={handleToggleType}>
+                        {cloneElement(option.icon, {sx: {color: option.color}})}
                     </ToggleButton>
                 </Box>
             </Tooltip>
@@ -77,12 +77,12 @@ export function CredentialsRow(props: Props) {
 
     function handleUsername(value: string) {
         setUsername(value)
-        onChangeCredential({ username: value, password, type })
+        onChangeCredential({username: value, password, type})
     }
 
     function handlePassword(value: string) {
         setPassword(value)
-        onChangeCredential({ username, password: value, type })
+        onChangeCredential({username, password: value, type})
     }
 
     function handleToggleType() {

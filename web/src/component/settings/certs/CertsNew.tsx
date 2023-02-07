@@ -1,8 +1,8 @@
 import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
-import React, {useState} from "react";
+import {useState} from "react";
 import {CertsTabPath} from "./CertsTabPath";
 import {CertsTabUpload} from "./CertsTabUpload";
-import {CertTypeProps} from "./CertsContent";
+import {CertTypeProps} from "./Certs";
 import {FileUsageType} from "../../../app/types";
 import {FileUsageOptions} from "../../../app/utils";
 
