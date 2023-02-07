@@ -9,7 +9,7 @@ import {LoadingButton} from "@mui/lab";
 import {SxPropsMap} from "../../../app/types";
 
 const SX: SxPropsMap = {
-    box: { display: "flex", flexDirection: "column", padding: "5px", justifyContent: "space-between", height: "100%" },
+    box: { display: "flex", flexDirection: "column", padding: "5px", justifyContent: "space-between", height: "100%", gap: "12px" },
     form: { display: "flex", alignItems: "center", gap: 1 },
     textField: { flexGrow: 1 },
     alert: { padding: "0 14px", borderRadius: "15px" },
