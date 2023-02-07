@@ -12,6 +12,13 @@ const SX: SxPropsMap = {
     text: {fontSize: 14},
 }
 
+const links = {
+    git: "https://github.com/veegres/ivory",
+    repository: "https://hub.docker.com/r/aelsergeev/ivory",
+    issues: "https://github.com/veegres/ivory/issues",
+    release: "https://github.com/veegres/ivory/releases",
+}
+
 export function About() {
     return (
         <MenuWrapper>
@@ -22,13 +29,13 @@ export function About() {
                     postgres clusters.
                 </Box>
                 <MenuItemBox name={"Links"}>
-                    <MenuItemText title={"GitHub"} button={renderLink("https://github.com/veegres/ivory")}/>
+                    <MenuItemText title={"GitHub"} button={renderLink(links.git)}/>
                     <Divider/>
-                    <MenuItemText title={"Docker Hub"} button={renderLink("https://hub.docker.com/r/aelsergeev/ivory")}/>
+                    <MenuItemText title={"Docker Hub"} button={renderLink(links.repository)}/>
                     <Divider/>
-                    <MenuItemText title={"Contribution & Issues"} button={renderLink("https://github.com/veegres/ivory/issues")}/>
+                    <MenuItemText title={"Contribution & Issues"} button={renderLink(links.issues)}/>
                     <Divider/>
-                    <MenuItemText title={"Releases"} button={renderLink("https://github.com/veegres/ivory/releases")}/>
+                    <MenuItemText title={"Releases"} button={renderLink(links.release)}/>
                 </MenuItemBox>
             </MenuWrapperScroll>
         </MenuWrapper>
