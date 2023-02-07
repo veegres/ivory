@@ -1,5 +1,5 @@
 import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
-import React, {ReactElement, useState} from "react";
+import {cloneElement, ReactElement, useState} from "react";
 import {OpenIcon} from "../../view/OpenIcon";
 import {CompactTable} from "../../../app/types";
 import {Clear, Stop} from "@mui/icons-material";
@@ -103,7 +103,7 @@ export function OverviewBloatJob({compactTable}: Props) {
                             size={"small"}
                             onClick={(e) => {e.stopPropagation(); onClick()}}
                         >
-                            {React.cloneElement(icon, {sx: SX.jobButton})}
+                            {cloneElement(icon, {sx: SX.jobButton})}
                         </IconButton>
                     )}
                 </Box>

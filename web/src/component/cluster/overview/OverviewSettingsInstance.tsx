@@ -1,5 +1,5 @@
 import {Autocomplete, Box, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
-import React, {useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {DetectionType, InstanceMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 

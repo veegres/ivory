@@ -1,5 +1,4 @@
-import {Box, LinearProgress} from "@mui/material";
-import {SxProps} from "@mui/system";
+import {Box, LinearProgress, SxProps} from "@mui/material";
 
 const SX = {
     box: { minHeight: "4px", margin: "5px 0", width: "100%" }

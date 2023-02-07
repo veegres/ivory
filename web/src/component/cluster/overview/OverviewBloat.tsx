@@ -1,8 +1,8 @@
 import {Box, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/material";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
-import React, {useState} from "react";
-import {CompactTable, Style, Target} from "../../../app/types";
+import {useState} from "react";
+import {CompactTable, StylePropsMap, Target} from "../../../app/types";
 import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Cached} from "@mui/icons-material";
 import {LinearProgressStateful} from "../../view/LinearProgressStateful";
@@ -19,7 +19,7 @@ const SX = {
     buttons: {display: "flex", alignItems: "center", gap: 1}
 }
 
-const style: Style = {
+const style: StylePropsMap = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}
 }
 

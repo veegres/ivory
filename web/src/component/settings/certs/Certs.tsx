@@ -1,26 +1,22 @@
-import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material";
-import {BadgeOutlined, Close} from "@mui/icons-material";
-import React from "react";
-import {useStore} from "../../../provider/StoreProvider";
-import {CertsContent} from "./CertsContent";
+import {useState} from "react";
+import {CertsNew} from "./CertsNew";
+import {CertsList} from "./CertsList";
+import {CertType} from "../../../app/types";
+import {MenuWrapper} from "../menu/MenuWrapper";
+import {CertsTab, TABS} from "./CertsTab";
 
-const SX = {
-    content: { width: "600px" },
+export type CertTypeProps = {
+    type: CertType,
 }
 
 export function Certs() {
-    const { store, toggleCertsWindow } = useStore()
+    const [tab, setTab] = useState(0)
 
     return (
-        <Dialog open={store.certsOpen} onClose={toggleCertsWindow}>
-            <DialogTitle display={"flex"} alignItems={"center"} justifyContent={"space-between"} gap={1}>
-                <BadgeOutlined fontSize={"medium"}/>
-                <Box>Certificate Manager</Box>
-                <IconButton size={"small"} onClick={toggleCertsWindow}><Close/></IconButton>
-            </DialogTitle>
-            <DialogContent sx={SX.content}>
-                <CertsContent/>
-            </DialogContent>
-        </Dialog>
+        <MenuWrapper>
+            <CertsTab tab={tab} setTab={setTab}/>
+            <CertsNew type={TABS[tab].type}/>
+            <CertsList type={TABS[tab].type}/>
+        </MenuWrapper>
     )
 }

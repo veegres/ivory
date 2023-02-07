@@ -1,22 +1,23 @@
 import {cloneElement, ReactElement} from "react";
 import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material";
-import {Cached, Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material";
+import {ArrowBack, Cached, Cancel, CheckCircle, Close, Delete, Edit} from "@mui/icons-material";
 
-type ButtonProps = {
+type ButtonProps = Props & {
     icon: ReactElement,
-    size?: number,
-    loading: boolean,
     onClick: () => void,
     tooltip: string
-    disabled?: boolean,
 }
 
-export function IconButton({ loading, icon, onClick, tooltip, disabled = false, size = 32 }: ButtonProps) {
-    const fontSize = Math.floor(size * 0.56) // 0.56 is ratio for size = 32 and fontSize = 18
+export function IconButton(props: ButtonProps) {
+    const { icon, onClick, tooltip, disabled = false, size = 32 } = props
+    const loading = props.loading ?? false
+    // 0.56 is ratio for size = 32 and fontSize = 18
+    const fontSize = Math.floor(size * 0.56)
+
     return (
-        <Tooltip title={tooltip} placement="top" disableInteractive>
+        <Tooltip title={tooltip} placement={"top"} disableInteractive>
             <Box component={"span"}>
-                <MuiIconButton sx={{ height: `${size}px`, width: `${size}px` }} disabled={loading || disabled} onClick={onClick}>
+                <MuiIconButton sx={{height: `${size}px`, width: `${size}px`}} disabled={loading || disabled} onClick={onClick}>
                     {loading ? <CircularProgress size={fontSize - 2}/> : cloneElement(icon, {sx: { fontSize }})}
                 </MuiIconButton>
             </Box>
@@ -25,32 +26,43 @@ export function IconButton({ loading, icon, onClick, tooltip, disabled = false, 
 }
 
 type Props = {
-    loading: boolean,
+    loading?: boolean,
     onClick: () => void,
+    size?: number,
     disabled?: boolean,
 }
 
-export function EditIconButton(prop: Props) {
-    const { loading, onClick, disabled = false } = prop;
-    return <IconButton icon={<Edit/>} tooltip={"Edit"} loading={loading} disabled={disabled} onClick={onClick}/>
+export function EditIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Edit/>} tooltip={"Edit"}/>
 }
 
-export function DeleteIconButton(prop: Props) {
-    const { loading, onClick, disabled = false } = prop;
-    return <IconButton icon={<Delete/>} tooltip={"Delete"} loading={loading} disabled={disabled} onClick={onClick}/>
+export function DeleteIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Delete/>} tooltip={"Delete"}/>
 }
 
-export function CancelIconButton(prop: Props) {
-    const { loading, onClick, disabled = false } = prop;
-    return <IconButton icon={<Cancel/>} tooltip={"Cancel"} loading={loading} disabled={disabled} onClick={onClick}/>
+export function CancelIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Cancel/>} tooltip={"Cancel"}/>
 }
 
-export function SaveIconButton(prop: Props) {
-    const { loading, onClick, disabled = false } = prop;
-    return <IconButton icon={<CheckCircle/>} tooltip={"Save"} loading={loading} disabled={disabled} onClick={onClick}/>
+export function SaveIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<CheckCircle/>} tooltip={"Save"} />
 }
 
-export function RefreshIconButton(prop: Props) {
-    const { loading, onClick, disabled = false } = prop;
-    return <IconButton icon={<Cached/>} tooltip={"Refresh"} loading={loading} disabled={disabled} onClick={onClick}/>
+export function RefreshIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Cached/>} tooltip={"Refresh"}/>
+}
+
+export function BackIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<ArrowBack/>} tooltip={"Back"}/>
+}
+
+export function CloseIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Close/>} tooltip={"Close"}/>
 }

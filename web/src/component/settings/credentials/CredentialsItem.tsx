@@ -1,5 +1,5 @@
 import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../view/IconButtons";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {Credential} from "../../../app/types";
 import {useMutation} from "@tanstack/react-query";
 import {credentialApi} from "../../../app/api";
@@ -12,13 +12,15 @@ type Props = {
 }
 
 export function CredentialsItem(props: Props) {
-    const { uuid } = props
+    const {uuid} = props
     const [edit, setEdit] = useState(false)
     const [empty, setEmpty] = useState(false)
     const [credential, setCredential] = useState(props.credential)
 
 
-    useEffect(() => { setCredential(credential) }, [credential])
+    useEffect(() => {
+        setCredential(credential)
+    }, [credential])
 
     const deleteOptions = useMutationOptions(["credentials"])
     const deleteCredentials = useMutation(credentialApi.delete, deleteOptions)
@@ -39,8 +41,8 @@ export function CredentialsItem(props: Props) {
     function renderReadButtons() {
         return (
             <>
-                <EditIconButton loading={false} onClick={() => setEdit(true)} disabled={deleteCredentials.isLoading}/>
-                <DeleteIconButton loading={deleteCredentials.isLoading} onClick={handleDelete}/>
+                <EditIconButton size={36} onClick={() => setEdit(true)} disabled={deleteCredentials.isLoading}/>
+                <DeleteIconButton size={36} loading={deleteCredentials.isLoading} onClick={handleDelete}/>
             </>
         )
     }
@@ -48,8 +50,8 @@ export function CredentialsItem(props: Props) {
     function renderWriteButtons() {
         return (
             <>
-                <CancelIconButton loading={false} onClick={() => setEdit(false)} disabled={updateCredentials.isLoading}/>
-                <SaveIconButton loading={updateCredentials.isLoading} onClick={handleUpdate} disabled={empty}/>
+                <CancelIconButton size={36} onClick={() => setEdit(false)} disabled={updateCredentials.isLoading}/>
+                <SaveIconButton size={36} loading={updateCredentials.isLoading} onClick={handleUpdate} disabled={empty}/>
             </>
         )
     }
@@ -59,6 +61,6 @@ export function CredentialsItem(props: Props) {
     }
 
     function handleUpdate() {
-        updateCredentials.mutate({ uuid, credential })
+        updateCredentials.mutate({uuid, credential})
     }
 }

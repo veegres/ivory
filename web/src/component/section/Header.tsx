@@ -1,6 +1,6 @@
 import {Box, Grid, IconButton, Tooltip} from "@mui/material";
-import {LightMode, Lock, Nightlight, Security} from "@mui/icons-material";
-import React, {useState} from "react";
+import {Settings} from "@mui/icons-material";
+import {useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {useStore} from "../../provider/StoreProvider";
@@ -22,7 +22,7 @@ type Props = {
 export function Header(props: Props) {
     const { company, show } = props
     const theme = useTheme()
-    const { toggleCredentialsWindow, toggleCertsWindow } = useStore()
+    const { toggleSettingsDialog } = useStore()
     const [animal, setAnimal] = useState("")
     const color = theme.info?.palette.primary.main
 
@@ -38,15 +38,9 @@ export function Header(props: Props) {
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>
                 {show && (
                     <Box sx={SX.buttons}>
-                        <Tooltip title={"Certificate Manager"}>
-                            <IconButton onClick={toggleCertsWindow}><Security/></IconButton>
-                        </Tooltip>
                         <Tooltip title={"Password Manager"}>
-                            <IconButton onClick={toggleCredentialsWindow}><Lock/></IconButton>
+                            <IconButton onClick={toggleSettingsDialog}><Settings/></IconButton>
                         </Tooltip>
-                        <IconButton onClick={theme.toggle}>
-                            {theme.mode === 'dark' ? <LightMode/> : <Nightlight/>}
-                        </IconButton>
                     </Box>
                 )}
             </Grid>

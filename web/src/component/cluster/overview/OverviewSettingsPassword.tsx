@@ -1,5 +1,5 @@
 import {CredentialOptions, shortUuid} from "../../../app/utils";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, credentialApi} from "../../../app/api";
 import {Cluster, Credentials, CredentialType} from "../../../app/types";

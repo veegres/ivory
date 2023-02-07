@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import {useState} from "react";
 import {StartupBlock} from "./StartupBlock";
 import {StartupTextField} from "./StartupTextField";
 import {Typography} from "@mui/material";

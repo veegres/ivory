@@ -1,5 +1,5 @@
 import {Box, CircularProgress, TableCell, Theme} from "@mui/material";
-import React, {cloneElement, ReactElement} from "react";
+import {cloneElement, ReactElement} from "react";
 import {SxProps} from "@mui/system";
 
 

@@ -1,8 +1,8 @@
 import {FormControl, FormHelperText, InputLabel, OutlinedInput} from "@mui/material";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 
 const SX = {
-    input: { height: "32px" }
+    input: { height: "36px" },
 }
 
 type Props = {

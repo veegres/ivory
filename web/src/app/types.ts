@@ -1,4 +1,5 @@
 import {CSSProperties, ReactElement, ReactNode} from "react";
+import {SxProps, Theme} from "@mui/material";
 
 export interface Response<TData, TError = {}> {
     response: TData,
@@ -225,8 +226,17 @@ export enum EventStream {
     END = "end",
 }
 
+// SETTINGS
+
+export enum Settings {
+    MENU,
+    PASSWORD,
+    CERTIFICATE,
+    ABOUT,
+}
+
 // COMMON
-export interface Style {
+export interface StylePropsMap {
     [key: string]: CSSProperties,
 }
 
@@ -237,7 +247,7 @@ export interface ColorsMap {
 export interface EnumOptions {
     name: string,
     label: string,
-    color: string,
     icon: ReactElement,
+    color?: string,
     badge?: string,
 }

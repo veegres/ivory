@@ -3,7 +3,7 @@ import {instanceApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {ErrorAlert} from "../../view/ErrorAlert";
-import React, {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
