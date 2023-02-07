@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../app/types";
 
 const SX: SxPropsMap = {
     wrapper: {borderRadius: "8px"},
-    container: {display: "flex", flexDirection: "column", gap: 1, margin: "0 10px"},
+    container: {display: "flex", flexDirection: "column", gap: 1},
 }
 
 type Props = {

@@ -1,6 +1,6 @@
-import {Box, Dialog, DialogContent, DialogTitle} from "@mui/material";
+import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material";
 import {useStore} from "../../../provider/StoreProvider";
-import {cloneElement, useState} from "react";
+import {useState} from "react";
 import {MenuContent} from "./MenuContent";
 import {Settings, SxPropsMap} from "../../../app/types";
 import {SettingOptions} from "../../../app/utils";
@@ -8,11 +8,13 @@ import {Credentials} from "../credentials/Credentials";
 import {Certs} from "../certs/Certs";
 import {InfoAlert} from "../../view/InfoAlert";
 import {BackIconButton, CloseIconButton} from "../../view/IconButtons";
+import {About} from "../about/About";
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
-    content: {minWidth: "600px", height: "50vh"},
-    title: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1}
+    content: {minWidth: "600px", height: "60vh"},
+    title: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
+    menuIcon: { padding: "8px" },
 }
 
 export function Menu() {
@@ -23,7 +25,9 @@ export function Menu() {
     return (
         <Dialog sx={SX.dialog} open={store.settings} onClose={toggleSettingsDialog}>
             <DialogTitle sx={SX.title}>
-                {page === Settings.MENU ? cloneElement(options.icon, {sx: {fontSize: 25}}) : (
+                {page === Settings.MENU ? (
+                    <IconButton disableRipple>{options.icon}</IconButton>
+                ): (
                     <BackIconButton size={40} onClick={() => setPage(Settings.MENU)}/>
                 )}
                 <Box>{options.label}</Box>
@@ -43,6 +47,8 @@ export function Menu() {
                 return <Credentials/>
             case Settings.CERTIFICATE:
                 return <Certs/>
+            case Settings.ABOUT:
+                return <About/>
             default:
                 return <InfoAlert text={"Not implemented yet"}/>
         }
