@@ -1,11 +1,13 @@
-import {Box, LinearProgress, SxProps} from "@mui/material";
+import {Box, LinearProgress, SxProps, Theme} from "@mui/material";
+import {SxPropsMap} from "../../app/types";
+import {mergeSxProps} from "../../app/utils";
 
-const SX = {
+const SX: SxPropsMap = {
     box: { minHeight: "4px", margin: "5px 0", width: "100%" }
 }
 
 type Props = {
-    sx?: SxProps,
+    sx?: SxProps<Theme>,
     variant?: "determinate" | "indeterminate" | "buffer" | "query",
     color?: "secondary" | "success" | "inherit" | "warning" | "error" | "primary" | "info",
     line?: boolean,
@@ -15,7 +17,7 @@ type Props = {
 export function LinearProgressStateful(props: Props) {
     const { isFetching, sx, variant, color, line } = props
     return (
-        <Box sx={{...SX.box, ...sx}}>
+        <Box sx={mergeSxProps(SX.box, sx)}>
             {isFetching ? (
                 <LinearProgress variant={variant} color={color} />
             ) : !line ? null : (

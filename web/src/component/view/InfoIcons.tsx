@@ -3,8 +3,9 @@ import {useTheme} from "../../provider/ThemeProvider";
 import {InfoBox} from "./InfoBox";
 import {InfoTitle} from "./InfoTitle";
 import {Box} from "@mui/material";
+import {SxPropsMap} from "../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     box: { display: "flex", alignItems: "center", justifyContent: "center" },
     badge: {
         position: "absolute", color: "white", fontSize: "8px", fontWeight: "bold",

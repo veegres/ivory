@@ -1,9 +1,9 @@
-import {ToggleButtonGroup} from "@mui/lab";
-import {ToggleButton} from "@mui/material";
+import {ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {DarkModeTwoTone, LightModeTwoTone} from "@mui/icons-material";
 import {useTheme} from "../../../provider/ThemeProvider";
+import {SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     button: {padding: "3px 8px"},
 }
 export function MenuThemeChanger() {

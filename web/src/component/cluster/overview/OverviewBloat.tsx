@@ -2,7 +2,7 @@ import {Box, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/materi
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
 import {useState} from "react";
-import {CompactTable, StylePropsMap, Target} from "../../../app/types";
+import {CompactTable, StylePropsMap, SxPropsMap, Target} from "../../../app/types";
 import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Cached} from "@mui/icons-material";
 import {LinearProgressStateful} from "../../view/LinearProgressStateful";
@@ -12,7 +12,7 @@ import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword}
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import { ConsoleBlock } from "../../view/ConsoleBlock";
 
-const SX = {
+const SX: SxPropsMap = {
     jobsLoader: {margin: "15px 0"},
     jobsEmpty: {textAlign: "center"},
     form: {display: "grid", flexGrow: 1, padding: "0 20px", gridTemplateColumns: "repeat(3, 1fr)", gridColumnGap: "30px", gridRowGap: "5px"},

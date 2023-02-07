@@ -240,6 +240,10 @@ export interface StylePropsMap {
     [key: string]: CSSProperties,
 }
 
+export interface SxPropsMap {
+    [key: string]: SxProps<Theme>,
+}
+
 export interface ColorsMap {
     [name: string]: 'success' | 'primary',
 }

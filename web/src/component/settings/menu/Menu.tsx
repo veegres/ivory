@@ -2,14 +2,14 @@ import {Box, Dialog, DialogContent, DialogTitle} from "@mui/material";
 import {useStore} from "../../../provider/StoreProvider";
 import {cloneElement, useState} from "react";
 import {MenuContent} from "./MenuContent";
-import {Settings} from "../../../app/types";
+import {Settings, SxPropsMap} from "../../../app/types";
 import {SettingOptions} from "../../../app/utils";
 import {Credentials} from "../credentials/Credentials";
 import {Certs} from "../certs/Certs";
 import {InfoAlert} from "../../view/InfoAlert";
 import {BackIconButton, CloseIconButton} from "../../view/IconButtons";
 
-const SX = {
+const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {minWidth: "600px", height: "50vh"},
     title: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1}

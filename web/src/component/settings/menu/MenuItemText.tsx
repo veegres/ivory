@@ -1,8 +1,9 @@
 import {Box, ListItem} from "@mui/material";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {ReactNode} from "react";
+import {SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     description: {fontSize: "10px"},
     list: {display: "flex", justifyContent: "space-between", gap: 1, padding: "5px 16px"},
     body: {display: "flex", flexDirection: "column", margin: "7px 0px"},

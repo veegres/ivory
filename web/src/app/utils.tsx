@@ -162,6 +162,15 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
+/**
+ * This function is needed to fix typescript issues when
+ * `sx` can be an array and `SxProps` can be an array type
+ *
+ * https://github.com/mui/material-ui/issues/29900
+ *
+ * @param sx1
+ * @param sx2
+ */
 export const mergeSxProps = (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => {
     return [sx1, ...(Array.isArray(sx2) ? sx2 : [sx2])]
 }

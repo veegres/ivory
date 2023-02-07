@@ -1,6 +1,6 @@
 import {Box, Tooltip} from "@mui/material";
 import React from "react";
-import {Cert, StylePropsMap} from "../../../app/types";
+import {Cert, StylePropsMap, SxPropsMap} from "../../../app/types";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {DeleteIconButton} from "../../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";
@@ -8,7 +8,7 @@ import {certApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {FileUsageOptions} from "../../../app/utils";
 
-const SX = {
+const SX: SxPropsMap = {
     item: { display: "flex", alignItems: "center", padding: "5px 10px", margin: "5px 10px", borderRadius: "5px", gap: 2 },
     body: { flexGrow: 1, display: "flex", gap: 2 },
     name: { flexBasis: "150px" },

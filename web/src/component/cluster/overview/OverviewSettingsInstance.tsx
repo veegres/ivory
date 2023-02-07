@@ -1,9 +1,9 @@
 import {Autocomplete, Box, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {useMemo, useState} from "react";
-import {DetectionType, InstanceMap} from "../../../app/types";
+import {DetectionType, InstanceMap, SxPropsMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 
-const SX = {
+const SX: SxPropsMap = {
     box: { display: "flex", gap: 1 },
     autocomplete: { flex: "auto" },
     toggle: { width: "30px" }

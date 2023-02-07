@@ -1,9 +1,9 @@
 import {SettingOptions} from "../../../app/utils";
 import {ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import {NavigateNext} from "@mui/icons-material";
-import {Settings} from "../../../app/types";
+import {Settings, SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     button: {borderRadius: "8px", padding: "12px 16px"},
     label: {margin: "0px"}
 }

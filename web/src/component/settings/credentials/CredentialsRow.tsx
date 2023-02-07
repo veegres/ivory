@@ -2,9 +2,9 @@ import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material";
 import {CredentialsInput} from "./CredentialsInput";
 import {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
 import {CredentialOptions} from "../../../app/utils";
-import {Credential, CredentialType} from "../../../app/types";
+import {Credential, CredentialType, SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     row: {display: "flex", alignItems: "center", gap: "15px", margin: "5px 10px 0px"},
     buttons: {display: "flex"},
     toggle: {height: "36px"},

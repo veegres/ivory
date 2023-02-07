@@ -3,12 +3,12 @@ import {instanceApi} from "../../../app/api";
 import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {InstanceColor} from "../../../app/utils";
-import {StylePropsMap} from "../../../app/types";
+import {StylePropsMap, SxPropsMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
 
-const SX = {
+const SX: SxPropsMap = {
     instanceStatusBlock: {height: "120px", minWidth: "200px", borderRadius: "4px", color: "white", fontSize: "24px", fontWeight: 900},
     item: {margin: "0px 15px"},
     title: {color: "text.secondary", fontWeight: "bold"}

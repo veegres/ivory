@@ -11,7 +11,7 @@ import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
 import {useQuery} from "@tanstack/react-query";
 import {InfoOutlined, Settings, Warning} from "@mui/icons-material";
-import {ClusterTabs, CredentialType, ActiveCluster, CertType, ClusterMap} from "../../../app/types";
+import {ClusterTabs, CredentialType, ActiveCluster, CertType, ClusterMap, SxPropsMap} from "../../../app/types";
 import {OverviewSettings} from "./OverviewSettings";
 import {InfoIcons} from "../../view/InfoIcons";
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
@@ -19,7 +19,7 @@ import {orange, purple} from "@mui/material/colors";
 import {InfoBox} from "../../view/InfoBox";
 import {InfoTitle} from "../../view/InfoTitle";
 
-const SX = {
+const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
     infoBox: {padding: '5px 0'},
     rightBox: {display: "flex", alignItems: "center", gap: 1},

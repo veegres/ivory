@@ -3,10 +3,10 @@ import {useState} from "react";
 import {CertsTabPath} from "./CertsTabPath";
 import {CertsTabUpload} from "./CertsTabUpload";
 import {CertTypeProps} from "./Certs";
-import {FileUsageType} from "../../../app/types";
+import {FileUsageType, SxPropsMap} from "../../../app/types";
 import {FileUsageOptions} from "../../../app/utils";
 
-const SX = {
+const SX: SxPropsMap = {
     box: { display: "flex", height: "120px" },
     group: { minHeight: "25px", padding: "5px" },
     button: { flexGrow: 1, borderRadius: "15px" },
