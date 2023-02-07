@@ -1,5 +1,5 @@
 import {Divider} from "@mui/material";
-import {Settings} from "../../../app/types";
+import {Settings, SxPropsMap} from "../../../app/types";
 import {MenuItemBox} from "./MenuItemBox";
 import {MenuItemText} from "./MenuItemText";
 import {MenuItemButton} from "./MenuItemButton";
@@ -8,7 +8,7 @@ import {MenuEraseButton} from "./MenuEraseButton";
 import {MenuWrapper} from "./MenuWrapper";
 import {MenuWrapperScroll} from "./MenuWrapperScroll";
 
-const SX = {
+const SX: SxPropsMap = {
     list: {display: "flex", flexDirection: "column", gap: 3},
 }
 

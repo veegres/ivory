@@ -1,7 +1,7 @@
 import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
 import {cloneElement, ReactElement, useState} from "react";
 import {OpenIcon} from "../../view/OpenIcon";
-import {CompactTable} from "../../../app/types";
+import {CompactTable, SxPropsMap} from "../../../app/types";
 import {Clear, Stop} from "@mui/icons-material";
 import {useMutation} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
@@ -13,7 +13,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useEventJob} from "../../../hook/EventJob";
 import {ConsoleBlock} from "../../view/ConsoleBlock";
 
-const SX = {
+const SX: SxPropsMap = {
     console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
     row: {"&:hover": {color: "#bcddf8"}},
     emptyLine: {textAlign: "center"},
@@ -23,7 +23,6 @@ const SX = {
     logs: {colorScheme: "dark"},
     button: {padding: "1px", color: '#f6f6f6'},
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
-    jobButton: {fontSize: 18},
     separator: {marginLeft: "10px"},
     credential: {color: "rgba(192,192,192,0.7)", fontWeight: 500}
 }
@@ -94,16 +93,17 @@ export function OverviewBloatJob({compactTable}: Props) {
     )
 
     function renderJobButton(title: string, icon: ReactElement, onClick: () => void, isLoading: boolean) {
+        const fontSize = 18
         return (
             <Tooltip title={title} placement={"top"}>
                 <Box sx={SX.tooltipBox}>
-                    {isLoading ? <CircularProgress size={SX.jobButton.fontSize - 3}/> : (
+                    {isLoading ? <CircularProgress size={fontSize - 3}/> : (
                         <IconButton
                             sx={SX.button}
                             size={"small"}
                             onClick={(e) => {e.stopPropagation(); onClick()}}
                         >
-                            {cloneElement(icon, {sx: SX.jobButton})}
+                            {cloneElement(icon, {sx: { fontSize }})}
                         </IconButton>
                     )}
                 </Box>

@@ -1,8 +1,7 @@
 import {Box, Chip, FormControl, OutlinedInput} from "@mui/material";
-import {ColorsMap} from "../../app/types";
+import {ColorsMap, SxPropsMap} from "../../app/types";
 
-const SX = {
-    gridTemplateColumns: `repeat(auto-fill, 175px)`,
+const SX: SxPropsMap = {
     chip: {width: '100%'},
     input: {height: '32px'},
 }
@@ -18,7 +17,7 @@ type Props = {
 export function DynamicInputs({ inputs, editable, placeholder, onChange, colors} : Props) {
     const colorsMap = colors ?? {}
     return (
-        <Box display={"grid"} gridTemplateColumns={SX.gridTemplateColumns} gap={1}>
+        <Box display={"grid"} gridTemplateColumns={"repeat(auto-fill, 175px)"} gap={1}>
             {editable ? renderInputs() : renderChips()}
         </Box>
     )

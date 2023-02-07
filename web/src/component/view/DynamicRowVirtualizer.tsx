@@ -1,11 +1,12 @@
 import {useRef} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
-import {Box} from "@mui/material";
-import {SxProps} from "@mui/system";
+import {Box, SxProps} from "@mui/material";
 import {Theme} from "@mui/material/styles";
 import {AutoScrolling} from "./AutoScrolling";
+import {SxPropsMap} from "../../app/types";
+import {mergeSxProps} from "../../app/utils";
 
-const SX = {
+const SX: SxPropsMap = {
     container: {width: "100%", overflow: "auto", contain: "strict"},
     boxAbsolute: {position: "absolute", top: 0, left: 0, width: "100%"},
     boxRelative: {width: "100%", position: "relative"},
@@ -39,7 +40,7 @@ export function DynamicRowVirtualizer(props: Props) {
     const items = virtualizer.getVirtualItems()
     return (
         <AutoScrolling auto={auto} length={rows.length} scroll={virtualizer.scrollToIndex}>
-            <Box ref={parentRef} sx={{...sx, ...SX.container}} className={className} style={{height: `${height}px`}}>
+            <Box ref={parentRef} sx={mergeSxProps(sx, SX.container)} className={className} style={{height: `${height}px`}}>
                 <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
                     <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0].start}px)`}}>
                         {items.map((virtualRow) => (

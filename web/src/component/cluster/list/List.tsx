@@ -10,8 +10,9 @@ import {Add} from "@mui/icons-material";
 import {PageBlock} from "../../view/PageBlock";
 import {ListRowNew} from "./ListRowNew";
 import {InfoAlert} from "../../view/InfoAlert";
+import {SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
     nameCell: {width: "220px"},
     buttonCell: {width: "1%"},

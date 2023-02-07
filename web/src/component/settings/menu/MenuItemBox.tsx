@@ -1,8 +1,9 @@
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
 import {useTheme} from "../../../provider/ThemeProvider";
+import {SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     wrapper: {borderRadius: "8px"},
     container: {display: "flex", flexDirection: "column", gap: 1, margin: "0 10px"},
 }

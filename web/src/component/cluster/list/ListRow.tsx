@@ -1,6 +1,6 @@
 import {Box, Chip, TableRow, Tooltip} from "@mui/material";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {Cluster, DetectionType, InstanceLocal} from "../../../app/types";
+import {Cluster, DetectionType, InstanceLocal, SxPropsMap} from "../../../app/types";
 import {RefreshIconButton,} from "../../view/IconButtons";
 import {DynamicInputs} from "../../view/DynamicInputs";
 import {useStore} from "../../../provider/StoreProvider";
@@ -12,7 +12,7 @@ import {InfoTitle} from "../../view/InfoTitle";
 import {grey, orange, purple} from "@mui/material/colors";
 import {useAutoInstanceDetection, useManualInstanceDetection} from "../../../hook/InstanceDetection";
 
-const SX = {
+const SX: SxPropsMap = {
     chip: {width: "100%"},
     clusterName: {display: "flex", justifyContent: "center", alignItems: "center", gap: "3px"}
 }

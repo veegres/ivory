@@ -5,8 +5,9 @@ import {useTheme} from "../../provider/ThemeProvider";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {useStore} from "../../provider/StoreProvider";
 import select from "../../style/select.module.css";
+import {SxPropsMap} from "../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     title: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', cursor: "pointer"},
     sides: {fontSize: '20px', margin: '5px 20px', height: '100%', fontWeight: 900, borderRadius: '15px', flex: "1 1 0"},
     caption: {fontSize: '12px', fontWeight: 500, fontFamily: 'monospace'},

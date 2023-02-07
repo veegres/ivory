@@ -1,7 +1,8 @@
 import {Grid, Paper} from "@mui/material";
 import {ReactNode} from "react";
+import {SxPropsMap} from "../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     paper: {width: '100%', margin: '10px 5%', minWidth: "750px"}
 }
 

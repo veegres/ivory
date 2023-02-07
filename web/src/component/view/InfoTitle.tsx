@@ -1,6 +1,7 @@
 import {Box} from "@mui/material";
+import {SxPropsMap} from "../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     row: { display: "flex", gap: 1, justifyContent: "space-between", margin: "3px 0" },
     name: { fontWeight: "bold" },
     value: { borderRadius: "3px", padding: "0 3px" }

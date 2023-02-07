@@ -9,9 +9,9 @@ import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
 import {Warning} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {ActiveInstance} from "../../../app/types";
+import {ActiveInstance, SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
     row: {cursor: "pointer"},
     cell: {padding: "5px 10px", height: "50px"},

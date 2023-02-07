@@ -1,13 +1,17 @@
-import {Box, CircularProgress, TableCell, Theme} from "@mui/material";
+import {Box, CircularProgress, SxProps, TableCell, Theme} from "@mui/material";
 import {cloneElement, ReactElement} from "react";
-import {SxProps} from "@mui/system";
+import {SxPropsMap} from "../../app/types";
 
 
-const SX = {
+const SX: SxPropsMap = {
     button: {height: '30px', width: '30px'}
 }
 
-type Props = { isFetching: boolean, children?: ReactElement, sx?: SxProps<Theme> }
+type Props = {
+    isFetching: boolean,
+    children?: ReactElement,
+    sx?: SxProps<Theme>
+}
 
 export function TableCellLoader({isFetching, children, sx}: Props) {
     return (

@@ -7,8 +7,9 @@ import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import select from "../../style/select.module.css";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useStore} from "../../provider/StoreProvider";
+import {SxPropsMap} from "../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     box: { height: "100%", width: "30%", minWidth: "500px" },
     button: { margin: "0 10px" },
     header: { fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer" },

@@ -1,7 +1,8 @@
 import {ReactNode} from "react";
 import {TableCell} from "@mui/material";
+import {SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     cell: {verticalAlign: "top"},
 }
 

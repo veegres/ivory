@@ -2,8 +2,10 @@ import {FileUploadOutlined} from "@mui/icons-material";
 import {Box, ButtonBase, CircularProgress} from "@mui/material";
 import {ChangeEvent, DragEvent, useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
+import {SxPropsMap} from "../../app/types";
+import {mergeSxProps} from "../../app/utils";
 
-const SX = {
+const SX: SxPropsMap = {
     box: { padding: "5px", height: "100%" },
     upload: {
         width: "100%",
@@ -88,11 +90,10 @@ export function UploadButton(props: Props) {
     }
 
     function getBlueBoxSX() {
-        return {
-            ...SX.upload,
+        return mergeSxProps(SX.upload, {
             pointerEvents: "none",
             boxShadow: `inset 0px 0px 50px 50px ${color[mode] ?? "none"}`
-        }
+        })
     }
 
     function handleChange(event: ChangeEvent<HTMLInputElement>) {

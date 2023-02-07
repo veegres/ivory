@@ -1,13 +1,13 @@
 import {Autocomplete, Stack, TextField} from "@mui/material";
 import React from "react";
-import {CertType, CredentialType} from "../../../app/types";
+import {CertType, CredentialType, SxPropsMap} from "../../../app/types";
 import {OverviewSettingsPassword} from "./OverviewSettingsPassword";
 import {TabProps} from "./Overview";
 import {OverviewSettingsInstance} from "./OverviewSettingsInstance";
 import {OverviewSettingsCert} from "./OverviewSettingsCert";
 import {getDomain} from "../../../app/utils";
 
-const SX = {
+const SX: SxPropsMap = {
     settings: { width: "250px", gap: "12px", padding: "8px 0" }
 }
 

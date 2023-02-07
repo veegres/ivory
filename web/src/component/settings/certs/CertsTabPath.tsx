@@ -6,8 +6,9 @@ import {certApi} from "../../../app/api";
 import {CertTypeProps} from "./Certs";
 import {CheckCircle} from "@mui/icons-material";
 import {LoadingButton} from "@mui/lab";
+import {SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     box: { display: "flex", flexDirection: "column", padding: "5px", justifyContent: "space-between", height: "100%" },
     form: { display: "flex", alignItems: "center", gap: 1 },
     textField: { flexGrow: 1 },

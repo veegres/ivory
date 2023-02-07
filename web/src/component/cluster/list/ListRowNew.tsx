@@ -3,8 +3,9 @@ import {DynamicInputs} from "../../view/DynamicInputs";
 import {useState} from "react";
 import {ListRowUpdate} from "./ListRowUpdate";
 import {ListCell} from "./ListCell";
+import {SxPropsMap} from "../../../app/types";
 
-const SX = {
+const SX: SxPropsMap = {
     nodesCellInput: {height: '32px'},
 }
 
