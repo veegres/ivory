@@ -26,6 +26,7 @@ export function OverviewSettingsInstance(props: Props) {
         <Box sx={SX.box}>
             <Autocomplete
                 sx={SX.autocomplete}
+                size={"small"}
                 options={options}
                 value={instance}
                 disableClearable
@@ -33,7 +34,7 @@ export function OverviewSettingsInstance(props: Props) {
                 inputValue={inputValue}
                 isOptionEqualToValue={(option, value) => option === value}
                 onInputChange={(_, value) => setInputValue(value)}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Default Instance"} />}
+                renderInput={(params) => <TextField {...params} label={"Default Instance"} />}
             />
             <ToggleButtonGroup size={"small"}>
                 <Tooltip title={"AUTO"} placement={"top"}>

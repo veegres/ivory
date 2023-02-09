@@ -1,5 +1,5 @@
 import {Autocomplete as MuiAutocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material";
-import {useMemo, useState} from "react";
+import {HTMLAttributes, useMemo, useState} from "react";
 
 export type Option = {
     key: string,
@@ -27,6 +27,7 @@ export function Autocomplete(props: Props) {
 
     return (
         <MuiAutocomplete
+            size={"small"}
             autoHighlight={true}
             options={options}
             value={value}
@@ -46,7 +47,6 @@ export function Autocomplete(props: Props) {
         return (
             <TextField
                 {...params}
-                size={"small"}
                 label={label}
                 error={isOptionNotFound}
                 helperText={isOptionNotFound && "element wasn't found"}
@@ -54,7 +54,7 @@ export function Autocomplete(props: Props) {
         )
     }
 
-    function renderOption(props: React.HTMLAttributes<HTMLLIElement>, option: Option) {
+    function renderOption(props: HTMLAttributes<HTMLLIElement>, option: Option) {
         return (
             <Box component={"li"} {...props}>
                 {getLabel(option.short, option.name)}
