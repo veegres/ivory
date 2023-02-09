@@ -36,7 +36,7 @@ const SX: SxPropsMap = {
 
 const TABS: ClusterTabs = {
     0: {
-        label: "Instance",
+        label: "Instances",
         body: (cluster: ActiveCluster) => <OverviewInstances info={cluster}/>,
     },
     1: {
