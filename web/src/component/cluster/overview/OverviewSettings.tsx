@@ -1,4 +1,4 @@
-import {Autocomplete, Stack, TextField} from "@mui/material";
+import {Autocomplete, Divider, Stack, TextField} from "@mui/material";
 import React from "react";
 import {CertType, CredentialType, SxPropsMap} from "../../../app/types";
 import {OverviewSettingsPassword} from "./OverviewSettingsPassword";
@@ -17,11 +17,14 @@ export function OverviewSettings({info}: TabProps) {
     return (
         <Stack sx={SX.settings}>
             <OverviewSettingsInstance instance={getDomain(instance.sidecar)} instances={instances} detection={detection} />
+            <Divider variant={"middle"}/>
             <OverviewSettingsPassword type={CredentialType.POSTGRES} cluster={cluster} />
             <OverviewSettingsPassword type={CredentialType.PATRONI} cluster={cluster} />
+            <Divider variant={"middle"}/>
             <OverviewSettingsCert type={CertType.CLIENT_CA} cluster={cluster} />
             <OverviewSettingsCert type={CertType.CLIENT_CERT} cluster={cluster} />
             <OverviewSettingsCert type={CertType.CLIENT_KEY} cluster={cluster} />
+            <Divider variant={"middle"}/>
             <Autocomplete
                 multiple
                 options={[]}
