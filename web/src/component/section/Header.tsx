@@ -39,7 +39,7 @@ export function Header(props: Props) {
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>
                 {show && (
                     <Box sx={SX.buttons}>
-                        <Tooltip title={"Password Manager"}>
+                        <Tooltip title={"Settings"}>
                             <IconButton onClick={toggleSettingsDialog}><Settings/></IconButton>
                         </Tooltip>
                     </Box>
