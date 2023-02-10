@@ -11,7 +11,7 @@ import {AppInfo, SxPropsMap} from "../../app/types";
 import {UseQueryResult} from "@tanstack/react-query";
 
 const SX: SxPropsMap = {
-    stack: { width: "100%", height: "100%", gap: 1 }
+    stack: { width: "100%", height: "100%", gap: 4 }
 }
 
 type Props = {
