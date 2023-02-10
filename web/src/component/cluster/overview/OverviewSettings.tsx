@@ -1,4 +1,4 @@
-import {Autocomplete, Divider, Stack, TextField} from "@mui/material";
+import {Divider, Stack} from "@mui/material";
 import React from "react";
 import {CertType, CredentialType, SxPropsMap} from "../../../app/types";
 import {OverviewSettingsPassword} from "./OverviewSettingsPassword";
@@ -6,6 +6,7 @@ import {TabProps} from "./Overview";
 import {OverviewSettingsInstance} from "./OverviewSettingsInstance";
 import {OverviewSettingsCert} from "./OverviewSettingsCert";
 import {getDomain} from "../../../app/utils";
+import {OverviewSettingsTags} from "./OverviewSettingsTags";
 
 const SX: SxPropsMap = {
     settings: { width: "250px", gap: "12px", padding: "8px 0" }
@@ -25,12 +26,7 @@ export function OverviewSettings({info}: TabProps) {
             <OverviewSettingsCert type={CertType.CLIENT_CERT} cluster={cluster} />
             <OverviewSettingsCert type={CertType.CLIENT_KEY} cluster={cluster} />
             <Divider variant={"middle"}/>
-            <Autocomplete
-                multiple
-                options={[]}
-                disabled={true}
-                renderInput={(params) => <TextField {...params} size={"small"} label={"Tags (coming soon)"} />}
-            />
+            <OverviewSettingsTags/>
         </Stack>
     )
 }

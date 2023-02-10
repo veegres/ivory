@@ -1,12 +1,9 @@
 import {Autocomplete as MuiAutocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material";
 import {HTMLAttributes, useMemo, useState} from "react";
 
-export type Option = {
-    key: string,
-    short: string,
-    name: string,
-}
+const defaultName = "***"
 
+export type Option = {key: string, short: string, name: string}
 type Props = {
     selected: {
         key: string,
@@ -18,11 +15,9 @@ type Props = {
     label: string,
 }
 
-const defaultName = "***"
-
 export function Autocomplete(props: Props) {
     const { onUpdate, loading, label, selected } = props
-    const [inputValue, setInputValue] = useState<string>("")
+    const [inputValue, setInputValue] = useState("")
     const {value, options, isOptionNotFound} = useMemo(handleMemoOptions, [selected, props.options])
 
     return (

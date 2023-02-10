@@ -164,7 +164,7 @@ export function Overview() {
         if (!tab?.info) return null
         return (
             <Collapse in={infoOpen}>
-                <Alert severity="info" onClose={() => setInfoOpen(false)}>{tab.info}</Alert>
+                <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{tab.info}</Alert>
                 <Divider sx={SX.dividerHorizontal} orientation={"horizontal"} flexItem/>
             </Collapse>
         )
