@@ -11,9 +11,11 @@ import {PageBlock} from "../../view/PageBlock";
 import {ListRowNew} from "./ListRowNew";
 import {InfoAlert} from "../../view/InfoAlert";
 import {SxPropsMap} from "../../../app/types";
+import {ListTags} from "./ListTags";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
+    tags: {position: "relative", height: 0, top: "-35px"},
     nameCell: {width: "220px"},
     buttonCell: {width: "1%"},
     padding: {padding: "10px 20px"},
@@ -27,8 +29,14 @@ export function List() {
     const rows = Object.entries(clusterMap ?? {})
 
     return (
-        <PageBlock>
+        <PageBlock withMarginTop={"35px"}>
+            <Box sx={SX.tags}><ListTags/></Box>
             {renderContent()}
+            {!isError && !showNewElement && !rows.length && (
+                <Box sx={SX.padding}>
+                    <InfoAlert text={"Please, add a cluster to get started"}/>
+                </Box>
+            )}
         </PageBlock>
     )
 
@@ -36,33 +44,25 @@ export function List() {
         if (isError) return <ErrorAlert error={error}/>
 
         return (
-            <>
-                <Table size={"small"} sx={SX.table}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={SX.nameCell}>Cluster Name</TableCell>
-                            <TableCell>Instances</TableCell>
-                            <TableCellLoader sx={SX.buttonCell} isFetching={isFetching && !isLoading}>
-                                <Tooltip title={"Add new cluster"} disableInteractive>
-                                    <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}>
-                                        <Add/>
-                                    </IconButton>
-                                </Tooltip>
-                            </TableCellLoader>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody isLoading={isLoading} cellCount={3}>
-                        {renderRows()}
-                        <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
-                    </TableBody>
-
-                </Table>
-                {!showNewElement && !rows.length && (
-                    <Box sx={SX.padding}>
-                        <InfoAlert text={"Please, add a cluster to get started"}/>
-                    </Box>
-                )}
-            </>
+            <Table size={"small"} sx={SX.table}>
+                <TableHead>
+                    <TableRow sx={{height: "20px"}}>
+                        <TableCell sx={SX.nameCell}>Cluster Name</TableCell>
+                        <TableCell>Instances</TableCell>
+                        <TableCellLoader sx={SX.buttonCell} isFetching={isFetching && !isLoading}>
+                            <Tooltip title={"Add new cluster"} disableInteractive>
+                                <IconButton disabled={showNewElement} onClick={() => setShowNewElement(true)}>
+                                    <Add/>
+                                </IconButton>
+                            </Tooltip>
+                        </TableCellLoader>
+                    </TableRow>
+                </TableHead>
+                <TableBody isLoading={isLoading} cellCount={3}>
+                    {renderRows()}
+                    <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
+                </TableBody>
+            </Table>
         )
     }
 
