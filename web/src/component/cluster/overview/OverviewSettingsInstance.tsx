@@ -4,9 +4,9 @@ import {DetectionType, InstanceMap, SxPropsMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 
 const SX: SxPropsMap = {
-    box: { display: "flex", gap: 1 },
-    autocomplete: { flex: "auto" },
-    toggle: { width: "30px" }
+    box: {display: "flex", gap: 1},
+    autocomplete: {flex: "auto"},
+    toggle: {width: "30px"}
 }
 
 type Props = {
@@ -16,8 +16,8 @@ type Props = {
 }
 
 export function OverviewSettingsInstance(props: Props) {
-    const { setClusterInstance, setClusterDetection } = useStore()
-    const { instance, instances, detection } = props
+    const {setClusterInstance, setClusterDetection} = useStore()
+    const {instance, instances, detection} = props
     const [inputValue, setInputValue] = useState<string | undefined>(instance);
 
     const options = useMemo(() => Object.keys(instances), [instances])
@@ -34,7 +34,7 @@ export function OverviewSettingsInstance(props: Props) {
                 inputValue={inputValue}
                 isOptionEqualToValue={(option, value) => option === value}
                 onInputChange={(_, value) => setInputValue(value)}
-                renderInput={(params) => <TextField {...params} label={"Default Instance"} />}
+                renderInput={(params) => <TextField {...params} label={"Default Instance"}/>}
             />
             <ToggleButtonGroup size={"small"}>
                 <Tooltip title={"AUTO"} placement={"top"}>

@@ -11,16 +11,23 @@ import {getErrorMessage} from "../app/utils";
  * @param onSuccess it will be fired after refetch
  */
 // TODO think how we can optimise it and update react-query by updating state without refetch
-export function useMutationOptions(queryKey?: QueryKey, onSuccess?: (data: any) => void) {
-    const { enqueueSnackbar } = useSnackbar()
+export function useMutationOptions(queryKey?: QueryKey | QueryKey, onSuccess?: (data: any) => void) {
+    const {enqueueSnackbar} = useSnackbar()
     const queryClient = useQueryClient();
 
     return {
         queryClient,
-        onSuccess: queryKey === undefined ? undefined : async (data: any) => {
-            await queryClient.refetchQueries(queryKey)
-            if (onSuccess) onSuccess(data)
-        },
-        onError: (error: any) => enqueueSnackbar(getErrorMessage(error), { variant: "error" }),
+        onSuccess: queryKey && handleSuccess,
+        onError: (error: any) => enqueueSnackbar(getErrorMessage(error), {variant: "error"}),
+    }
+
+    async function handleSuccess(data: any) {
+        if (!Array.isArray(queryKey)) await queryClient.refetchQueries(queryKey)
+        else {
+            for (const key of queryKey) {
+                await queryClient.refetchQueries(key)
+            }
+        }
+        if (onSuccess) onSuccess(data)
     }
 }

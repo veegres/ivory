@@ -28,7 +28,7 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
     const {setCluster, isClusterActive, store} = useStore()
     const [detection, setDetection] = useState<DetectionType>("auto")
     const detectionRef = useRef(detection)
-    const [manualState, setManualState] = useState({ instances: {}, instance: initialInstance() })
+    const [manualState, setManualState] = useState({instances: {}, instance: initialInstance()})
     const isActive = isClusterActive(name)
     const isDetectionManual = detection === "manual"
 
@@ -39,7 +39,7 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
 
     const {active: {warning, instance, instances}, colors, fetching, refetch} = isDetectionManual ? manual : auto
 
-    // we need disable cause it thinks that function can be updated, and it causes endless recursion
+    // NOTE: we need disable cause it thinks that function can be updated, and it causes endless recursion
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(handleEffectStoreUpdate, [isActive, warning, cluster, instance, instances, detection])
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,7 +57,13 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
                             sx={SX.chip}
                             color={isActive ? "primary" : "default"}
                             label={name}
-                            onClick={() => setCluster(isActive ? undefined : {warning, cluster, instance, instances, detection})}
+                            onClick={() => setCluster(isActive ? undefined : {
+                                warning,
+                                cluster,
+                                instance,
+                                instances,
+                                detection
+                            })}
                         />
                     </Tooltip>
                     <RefreshIconButton loading={fetching} onClick={refetch}/>
@@ -90,12 +96,12 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
 
     function renderChipTooltip() {
         const items = [
-            { label: "Detection", value: detection, bgColor: purple[400] },
-            { label: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] },
-            { label: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500] }
+            {label: "Detection", value: detection, bgColor: purple[400]},
+            {label: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role]},
+            {label: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500]}
         ]
 
-        return <InfoTitle items={items} />
+        return <InfoTitle items={items}/>
     }
 
     function handleEffectRefetch() {
@@ -106,8 +112,10 @@ export function ListRow({name, cluster, editable, toggle}: Props) {
     }
 
     function handleEffectStoreUpdate() {
-        if (isActive) {
-            setCluster({warning, cluster, instance, instances, detection})
+        if (isActive) setCluster({warning, cluster, instance, instances, detection})
+
+        return () => {
+            if (isActive) setCluster(undefined)
         }
     }
 

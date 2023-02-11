@@ -6,11 +6,13 @@ import {useQueryClient} from "@tanstack/react-query";
 interface StoreType {
     activeCluster?: ActiveCluster, activeClusterTab: number,
     activeInstance?: ActiveInstance, activeInstanceTab: number,
+    activeTags: string[],
     settings: boolean,
 }
 const initialStore: StoreType = {
     activeCluster: undefined, activeClusterTab: 0,
     activeInstance: undefined, activeInstanceTab: 0,
+    activeTags: ["ALL"],
     settings: false,
 }
 
@@ -29,6 +31,7 @@ interface StoreContextType {
     setInstanceTab: (tab: number) => void,
     isInstanceActive: (instance?: ActiveInstance) => boolean,
 
+    setTags: (tags: string[]) => void,
     toggleSettingsDialog: () => void,
 
     clear: () => void,
@@ -47,6 +50,7 @@ const initialStoreContext: StoreContextType = {
     setInstanceTab: () => void 0,
     isInstanceActive: () => false,
 
+    setTags: () => void 0,
     toggleSettingsDialog: () => void 0,
 
     clear: () => void 0,
@@ -92,6 +96,7 @@ export function StoreProvider(props: { children: ReactNode }) {
             setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
             isInstanceActive: (instance?: ActiveInstance) => instance === activeInstance,
 
+            setTags: (tags: string[]) => setState({...state, activeTags: tags}),
             toggleSettingsDialog: () => setState({...state, settings: !state.settings}),
 
             clear: () => {

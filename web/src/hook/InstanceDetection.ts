@@ -17,11 +17,11 @@ type ManualState = {
 }
 
 export function useManualInstanceDetection(use: boolean, cluster: Cluster, state: ManualState): InstanceDetection {
-    const { instance: selected } = state
+    const {instance: selected} = state
 
     const query = useQuery(
-        ["instance/overview", cluster.name, selected.sidecar.host, selected.sidecar.port],
-        () => instanceApi.overview({ ...selected.sidecar, cluster: cluster.name }),
+        ["instance/overview", cluster.name],
+        () => instanceApi.overview({...selected.sidecar, cluster: cluster.name}),
         {enabled: use && !!selected}
     )
 
@@ -32,7 +32,7 @@ export function useManualInstanceDetection(use: boolean, cluster: Cluster, state
     const instance = instances[getDomain(selected.sidecar)]
 
     return {
-        active: { cluster, instance, instances, warning },
+        active: {cluster, instance, instances, warning},
         colors,
         fetching: query.isFetching,
         refetch: query.refetch,
@@ -50,7 +50,7 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     // we need disable cause it thinks that function can be updated
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const instanceQueries = useMemo(() => getNodeQueries(index, cluster.name, nodes), [index, cluster.name, nodes])
-    const queries = useQueries({ queries: instanceQueries })
+    const queries = useQueries({queries: instanceQueries})
     const query = useMemo(() => queries[index] ?? {}, [queries, index])
 
     const clusterInstances = useMemo(handleMemoClusterInstances, [query.data])
@@ -61,8 +61,10 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     useEffect(handleUseEffectSetIndex, [nodes, instance.sidecar])
     useEffect(handleUseEffectSetNodes, [cluster.instances, instances])
 
+    console.log(cluster.name, query);
+
     return {
-        active: { cluster, instance, instances, warning },
+        active: {cluster, instance, instances, warning},
         colors,
         fetching: query.isFetching,
         refetch: () => {
@@ -117,15 +119,15 @@ export function useAutoInstanceDetection(use: boolean, cluster: Cluster): Instan
     /**
      * Create array of queries that should be requested be `useQueries()` in new rerender
      * @param index
-     * @param name
+     * @param cluster
      * @param instances
      */
-    function getNodeQueries(index: number, name: string, instances: string[]) {
+    function getNodeQueries(index: number, cluster: string, instances: string[]) {
         return instances.map((instance, j) => {
             const domain = getHostAndPort(instance)
             return ({
-                queryKey: ["instance/overview", name, domain.host, domain.port],
-                queryFn: () => instanceApi.overview({ ...domain, cluster: cluster.name }),
+                queryKey: ["instance/overview", cluster],
+                queryFn: () => instanceApi.overview({...domain, cluster}),
                 retry: 0,
                 enabled: use && index === j,
                 onError: () => {

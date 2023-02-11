@@ -16,41 +16,44 @@ func (r routes) ClusterListGroup(group *gin.RouterGroup) {
 }
 
 func getClusterList(context *gin.Context) {
-	tags := context.Request.URL.Query()["tags"]
+	tags := context.Request.URL.Query()["tags[]"]
 
-	listMap := make(map[string]bool)
-	list := make([]ClusterModel, 0)
 	if len(tags) == 0 {
-		listAll, err := persistence.BoltDB.Cluster.List()
+		list, err := persistence.BoltDB.Cluster.List()
 		if err != nil {
 			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		list = listAll
+		context.JSON(http.StatusOK, gin.H{"response": list})
 	} else {
+		listMap := make(map[string]bool)
 		for _, tag := range tags {
-			tagClusters, err := persistence.BoltDB.Tag.Get(tag)
+			clusters, err := persistence.BoltDB.Tag.Get(tag)
 			if err != nil {
 				context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 				return
 			}
 
-			clusters, err := persistence.BoltDB.Cluster.ListByName(tagClusters)
-			if err != nil {
-				context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-				return
-			}
-
-			for _, cluster := range clusters {
-				if !listMap[cluster.Name] {
-					listMap[cluster.Name] = true
-					list = append(list, cluster)
+			for _, c := range clusters {
+				if !listMap[c] {
+					listMap[c] = true
 				}
 			}
 		}
+
+		listName := make([]string, 0)
+		for k, _ := range listMap {
+			listName = append(listName, k)
+		}
+
+		list, err := persistence.BoltDB.Cluster.ListByName(listName)
+		if err != nil {
+			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		context.JSON(http.StatusOK, gin.H{"response": list})
 	}
 
-	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
 func getClusterByName(context *gin.Context) {
@@ -102,9 +105,14 @@ func putClusterByName(context *gin.Context) {
 
 func deleteClusterByName(context *gin.Context) {
 	name := context.Param("name")
-	err := persistence.BoltDB.Cluster.Delete(name)
-	if err != nil {
-		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	errTag := persistence.BoltDB.Tag.UpdateCluster(name, nil)
+	if errTag != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": errTag.Error()})
+		return
+	}
+	errCluster := persistence.BoltDB.Cluster.Delete(name)
+	if errCluster != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": errCluster.Error()})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"response": "deleted"})

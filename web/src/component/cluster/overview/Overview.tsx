@@ -77,10 +77,10 @@ export function Overview() {
     const tab = TABS[activeClusterTab]
 
     return (
-        <PageBlock withPadding visible={clusters.isSuccess && Object.entries(clusters.data ?? {}).length !== 0}>
+        <PageBlock withPadding visible={Object.keys(clusters.data ?? {}).length !== 0}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
-                    {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label} />))}
+                    {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label}/>))}
                 </Tabs>
                 {renderActionBlock()}
             </Box>
@@ -112,7 +112,7 @@ export function Overview() {
                         selected={cluster && settingsOpen}
                         onClick={() => setSettingsOpen(!settingsOpen)}
                     >
-                        <Tooltip title={"luster Settings"} placement={"top"}><Settings/></Tooltip>
+                        <Tooltip title={"Cluster Settings"} placement={"top"}><Settings/></Tooltip>
                     </ToggleButton>
                     <ToggleButton
                         sx={SX.toggleButton}
@@ -133,25 +133,25 @@ export function Overview() {
         const {cluster, instance, warning, detection} = activeCluster
 
         const infoItems = [
-            { ...CredentialOptions[CredentialType.POSTGRES], active: !!cluster.credentials.postgresId },
-            { ...CredentialOptions[CredentialType.PATRONI], active: !!cluster.credentials.patroniId },
-            { ...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId },
-            { ...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId },
-            { ...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId }
+            {...CredentialOptions[CredentialType.POSTGRES], active: !!cluster.credentials.postgresId},
+            {...CredentialOptions[CredentialType.PATRONI], active: !!cluster.credentials.patroniId},
+            {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
+            {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
+            {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
         ]
         const warningItems = [
-            { icon: <Warning />,  label: "Warning", active: warning, iconColor: orange[500] }
+            {icon: <Warning/>, label: "Warning", active: warning, iconColor: orange[500]}
         ]
         const roleTooltip = [
-            { label: "Detection", value: detection, bgColor: purple[400] },
-            { label: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role] }
+            {label: "Detection", value: detection, bgColor: purple[400]},
+            {label: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role]}
         ]
 
         return (
             <Box sx={SX.rightBox}>
-                <InfoIcons items={warningItems} />
-                <InfoIcons items={infoItems} />
-                <InfoBox tooltip={<InfoTitle items={roleTooltip} />} withPadding>
+                <InfoIcons items={warningItems}/>
+                <InfoIcons items={infoItems}/>
+                <InfoBox tooltip={<InfoTitle items={roleTooltip}/>} withPadding>
                     <Box sx={{color: InstanceColor[instance.role]}}>
                         {instance.role.toUpperCase()}
                     </Box>
@@ -177,7 +177,7 @@ export function Overview() {
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    <OverviewSettings info={activeCluster} />
+                    <OverviewSettings info={activeCluster}/>
                 </Box>
             </Collapse>
         )

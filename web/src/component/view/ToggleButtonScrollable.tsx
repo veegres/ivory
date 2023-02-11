@@ -1,6 +1,6 @@
 import {SxPropsMap} from "../../app/types";
 import {useTheme} from "../../provider/ThemeProvider";
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {Box, TabScrollButton, ToggleButton} from "@mui/material";
 
 const ALL = "ALL"
@@ -25,8 +25,6 @@ export function ToggleButtonScrollable(props: Props) {
     const { info } = useTheme()
     const scrollRef = useRef<Element>(null)
     const [selected, setSelected] = useState(new Set([ALL, ...(props.selected ?? [])]))
-
-    useEffect(handleEffectUpdate, [selected, onUpdate])
 
     const isAll = selected.has(ALL)
     const count = isAll ? "0" : selected.size.toString()
@@ -81,19 +79,17 @@ export function ToggleButtonScrollable(props: Props) {
             tmp.add(value)
             setSelected(tmp)
         }
+        onUpdate([...tmp])
     }
 
     function handleClickAll() {
         const tmp = new Set([ALL])
         setSelected(tmp)
+        onUpdate([...tmp])
     }
 
     function handleScroll(scrollOffset: number) {
         const element = scrollRef.current
         if (element) element.scroll(element.scrollLeft += scrollOffset, 0)
-    }
-
-    function handleEffectUpdate() {
-        onUpdate([...selected])
     }
 }

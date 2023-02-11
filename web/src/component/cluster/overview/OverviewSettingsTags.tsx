@@ -26,7 +26,6 @@ export function OverviewSettingsTags(props: Props) {
     )
 
     function handleUpdate(tags: string[]) {
-        console.log(tags)
         updateCluster.mutate({...props.cluster, tags})
     }
 }

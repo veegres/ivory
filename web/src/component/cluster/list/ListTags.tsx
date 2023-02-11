@@ -1,17 +1,22 @@
 import {ToggleButtonScrollable} from "../../view/ToggleButtonScrollable";
 import {useQuery} from "@tanstack/react-query";
 import {tagApi} from "../../../app/api";
+import {useStore} from "../../../provider/StoreProvider";
+import {Box} from "@mui/material";
+import {SxPropsMap} from "../../../app/types";
 
+const SX: SxPropsMap = {
+    tags: {position: "relative", height: 0, top: "-35px"},
+}
 
 export function ListTags() {
+    const { setTags } = useStore()
     const query = useQuery(["tag/list"], tagApi.list)
     const { data } = query
 
     return (
-        <ToggleButtonScrollable tags={data ?? []} onUpdate={handleUpdate}/>
+        <Box sx={SX.tags}>
+            <ToggleButtonScrollable tags={data ?? []} onUpdate={setTags}/>
+        </Box>
     )
-
-    function handleUpdate() {
-
-    }
 }
