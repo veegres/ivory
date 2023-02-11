@@ -26,7 +26,7 @@ export function OverviewSettings({info}: TabProps) {
             <OverviewSettingsCert type={CertType.CLIENT_CERT} cluster={cluster} />
             <OverviewSettingsCert type={CertType.CLIENT_KEY} cluster={cluster} />
             <Divider variant={"middle"}/>
-            <OverviewSettingsTags/>
+            <OverviewSettingsTags cluster={cluster}/>
         </Stack>
     )
 }

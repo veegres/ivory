@@ -12,19 +12,17 @@ type Option = { label: string, exist: boolean }
 type TagMap = { [key: string]: boolean }
 type Props = {
     tags: string[],
+    selected: string[],
     loading: boolean,
     onUpdate: (tags: string[]) => void,
 }
 
 export function AutocompleteTags(props: Props) {
-    const {tags, onUpdate, loading} = props
+    const {tags, selected, onUpdate, loading} = props
     const [inputValue, setInputValue] = useState("")
-    const [objects, setObjects] = useState(getTagsObject(tags))
+    const [tagMap, setTagMap] = useState(getTagMap(tags))
 
     useEffect(handleEffectTagsUpdate, [tags])
-
-    const objectsNew = inputValue && !objects[inputValue] ? {...objects, [inputValue]: false} : objects
-    const options: Option[] = Object.entries(objectsNew).map(([label, exist]) => ({label, exist}))
 
     return (
         <Autocomplete
@@ -32,7 +30,8 @@ export function AutocompleteTags(props: Props) {
             size={"small"}
             autoHighlight
             loading={loading}
-            options={options}
+            options={getOptions(getTagMapWithInput(inputValue, tagMap))}
+            defaultValue={getOptions(getTagMap(selected))}
             // NOTE: we need to check is option undefined, because after search when you remove tag it returns
             // undefined, probably this is a bag in mui library
             getOptionLabel={(option) => option?.label ?? ""}
@@ -62,7 +61,15 @@ export function AutocompleteTags(props: Props) {
         )
     }
 
-    function getTagsObject(tags: string[]) {
+    function getTagMapWithInput(input: string, map: TagMap) {
+        return input && !map[input] ? {...map, [input]: false} : map
+    }
+
+    function getOptions(entries: TagMap) {
+        return Object.entries(entries).map(([label, exist]) => ({label, exist}))
+    }
+
+    function getTagMap(tags: string[]) {
         return tags.reduce(
             (previousValue, tag) => ({...previousValue, [tag]: true}),
             {} as TagMap
@@ -70,12 +77,12 @@ export function AutocompleteTags(props: Props) {
     }
 
     function handleEffectTagsUpdate() {
-        setObjects(getTagsObject(tags))
+        setTagMap(getTagMap(tags))
     }
 
     function handleOnChange(o: SyntheticEvent<Element, Event>, v: Option[]) {
         const tags = v.map(v => v.label)
-        setObjects({...objects, ...getTagsObject(tags)})
+        setTagMap({...tagMap, ...getTagMap(tags)})
         onUpdate(tags)
     }
 }
