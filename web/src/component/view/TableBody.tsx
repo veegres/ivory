@@ -1,4 +1,4 @@
-import {Skeleton, TableBody as TableBodyMui, TableCell, TableRow} from "@mui/material";
+import {Skeleton, TableBody as MuiTableBody, TableCell, TableRow} from "@mui/material";
 import {ReactNode} from "react";
 
 type Props = {
@@ -13,12 +13,12 @@ export function TableBody(props: Props) {
     const cellCountLocal = cellCount ?? 1, rowCountLocal = rowCount ?? 3
 
     return (
-        <TableBodyMui>
-            {isLoading ? <Loading/> : children}
-        </TableBodyMui>
+        <MuiTableBody>
+            {isLoading ? renderLoading() : children}
+        </MuiTableBody>
     )
 
-    function Loading() {
+    function renderLoading() {
         const cells = []
         for (let i = 0; i < cellCountLocal; i++) {
             cells.push(<TableCell key={i}><Skeleton width={'100%'}/></TableCell>)

@@ -15,7 +15,7 @@ import {
 } from "./types";
 import {getDomain} from "./utils";
 
-const api = axios.create({ baseURL: '/api' })
+const api = axios.create({baseURL: '/api'})
 
 // TODO we should simplify usage of react-query hooks
 // Possible solutions:
@@ -25,10 +25,10 @@ const api = axios.create({ baseURL: '/api' })
 
 export const instanceApi = {
     info: (request: InstanceRequest) => api
-        .get<Response<InstanceInfo>>(`/instance/info`, { params: request })
+        .get<Response<InstanceInfo>>(`/instance/info`, {params: request})
         .then((response) => response.data.response),
     overview: (request: InstanceRequest) => api
-        .get<Response<Instance[]>>(`/instance/overview`, { params: request })
+        .get<Response<Instance[]>>(`/instance/overview`, {params: request})
         .then<InstanceMap>((response) => response.data.response.reduce(
             (map, instance) => {
                 const leader = instance.role === "leader"
@@ -39,7 +39,7 @@ export const instanceApi = {
             {} as InstanceMap
         )),
     config: (request: InstanceRequest) => api
-        .get(`/instance/config`, { params: request })
+        .get(`/instance/config`, {params: request})
         .then((response) => response.data.response),
     updateConfig: (request: InstanceRequest) => api
         .patch(`/instance/config`, request)
@@ -57,7 +57,7 @@ export const clusterApi = {
         .get<Response<Cluster>>(`/cluster/${name}`)
         .then((response) => response.data.response),
     list: (tags?: string[]) => api
-        .get<Response<Cluster[]>>(`/cluster`, { params: tags })
+        .get<Response<Cluster[]>>(`/cluster`, {params: {tags}})
         .then((response) => response.data.response.reduce(
             (map, cluster) => {
                 map[cluster.name] = cluster
@@ -123,12 +123,12 @@ export const secretApi = {
 
 export const credentialApi = {
     list: (type?: CredentialType) => api
-        .get<Response<CredentialMap>>(`/credential`, { params: { type } })
+        .get<Response<CredentialMap>>(`/credential`, {params: {type}})
         .then((response) => response.data.response),
     create: (credential: Credential) => api
-        .post<Response<{key: string, credential: Credential}>>(`/credential`, credential)
+        .post<Response<{ key: string, credential: Credential }>>(`/credential`, credential)
         .then((response) => response.data.response),
-    update: ({ uuid, credential }: { uuid: string, credential: Credential }) => api
+    update: ({uuid, credential}: { uuid: string, credential: Credential }) => api
         .patch<Response<Credential>>(`/credential/${uuid}`, credential)
         .then((response) => response.data.response),
     delete: (uuid: string) => api
@@ -138,10 +138,10 @@ export const credentialApi = {
 
 export const certApi = {
     list: (type?: CertType) => api
-        .get<Response<CertMap>>(`/cert`, { params: { type } })
+        .get<Response<CertMap>>(`/cert`, {params: {type}})
         .then((response => response.data.response)),
-    upload: (request: CertUploadRequest ) => {
-        const { file, type, setProgress } = request
+    upload: (request: CertUploadRequest) => {
+        const {file, type, setProgress} = request
         const formData = new FormData()
         formData.append("type", type.toString())
         formData.append("file", file)

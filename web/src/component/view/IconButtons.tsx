@@ -1,6 +1,6 @@
 import {cloneElement, ReactElement} from "react";
 import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material";
-import {ArrowBack, Cached, Cancel, CheckCircle, Close, Delete, Edit} from "@mui/icons-material";
+import {Add, ArrowBack, AutoFixHigh, Cached, Cancel, CheckCircle, Close, Delete, Edit} from "@mui/icons-material";
 
 type ButtonProps = Props & {
     icon: ReactElement,
@@ -9,7 +9,7 @@ type ButtonProps = Props & {
 }
 
 export function IconButton(props: ButtonProps) {
-    const { icon, onClick, tooltip, disabled = false, size = 32 } = props
+    const {icon, onClick, tooltip, disabled = false, size = 32} = props
     const loading = props.loading ?? false
     // 0.56 is ratio for size = 32 and fontSize = 18
     const fontSize = Math.floor(size * 0.56)
@@ -66,3 +66,14 @@ export function CloseIconButton(props: Props) {
     const { disabled } = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<Close/>} tooltip={"Close"}/>
 }
+
+export function AddIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Add/>} tooltip={"Add"}/>
+}
+
+export function AutoIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoFixHigh/>} tooltip={"Auto Detection (coming soon)"}/>
+}
+

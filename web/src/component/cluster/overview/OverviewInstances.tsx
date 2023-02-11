@@ -50,7 +50,10 @@ export function OverviewInstances({info}: TabProps) {
                         <TableCell align={"center"}>Postgres</TableCell>
                         <TableCell align={"center"}>State</TableCell>
                         <TableCell align={"center"}>Lag</TableCell>
-                        <TableCellLoader sx={SX.buttonCell} isFetching={(instanceMapFetching > 0 || switchover.isLoading || reinit.isLoading)}/>
+                        <TableCellLoader
+                            sx={SX.buttonCell}
+                            isFetching={(instanceMapFetching > 0 || switchover.isLoading || reinit.isLoading)}
+                        />
                     </TableRow>
                 </TableHead>
                 <TableBody>

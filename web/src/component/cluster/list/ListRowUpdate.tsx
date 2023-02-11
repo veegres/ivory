@@ -3,8 +3,12 @@ import {useMutation} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {Box} from "@mui/material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Sidecar} from "../../../app/types";
+import {Sidecar, SxPropsMap} from "../../../app/types";
 import {getHostAndPort} from "../../../app/utils";
+
+const SX: SxPropsMap = {
+    box: {display: "flex", justifyContent: "flex-end"},
+}
 
 type Props = {
     name: string
@@ -15,13 +19,13 @@ type Props = {
 }
 
 export function ListRowUpdate(props: Props) {
-    const { toggle, onUpdate, onClose, name, nodes } = props
+    const {toggle, onUpdate, onClose, name, nodes} = props
 
     const updateMutationOptions = useMutationOptions(["cluster/list"], handleSuccess)
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (
-        <Box display={"flex"}>
+        <Box sx={SX.box}>
             <CancelIconButton loading={false} disabled={updateCluster.isLoading} onClick={handleClose}/>
             <SaveIconButton loading={updateCluster.isLoading} disabled={!name} onClick={handleUpdate}/>
         </Box>
@@ -39,6 +43,6 @@ export function ListRowUpdate(props: Props) {
 
     function handleUpdate() {
         const instances: Sidecar[] = nodes.map(value => getHostAndPort(value))
-        updateCluster.mutate({ name, instances, certs: {}, credentials: {} })
+        updateCluster.mutate({name, instances, certs: {}, credentials: {}, tags: []})
     }
 }

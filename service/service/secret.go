@@ -96,6 +96,7 @@ func (s *secret) Clean() error {
 	err = persistence.BoltDB.Cert.DeleteAll()
 	err = persistence.BoltDB.Cluster.DeleteAll()
 	err = persistence.BoltDB.CompactTable.DeleteAll()
+	err = persistence.BoltDB.Tag.DeleteAll()
 
 	s.mutex.Unlock()
 	return err

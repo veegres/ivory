@@ -25,14 +25,14 @@ func (r ClusterRepository) List() ([]ClusterModel, error) {
 
 func (r ClusterRepository) ListByName(clusters []string) ([]ClusterModel, error) {
 	bytesList, err := r.common.getList(r.bucket)
-	modelList := make([]ClusterModel, len(bytesList))
-	for i, el := range bytesList {
+	modelList := make([]ClusterModel, 0)
+	for _, el := range bytesList {
 		var cluster ClusterModel
 		for _, c := range clusters {
 			if c == el.key {
 				buff := bytes.NewBuffer(el.value)
 				_ = gob.NewDecoder(buff).Decode(&cluster)
-				modelList[i] = cluster
+				modelList = append(modelList, cluster)
 			}
 		}
 	}
