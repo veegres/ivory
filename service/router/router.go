@@ -37,8 +37,9 @@ func Start() {
 
 	// TODO we shouldn't allow any request if there is no secret set think of creating mw
 	authApi := api.Group("/", authHandler)
-	r.ProxyGroup(authApi)
-	r.ClusterGroup(authApi)
+	r.ClusterListGroup(authApi)
+	r.InstanceGroup(authApi)
+	r.TagGroup(authApi)
 	r.CliGroup(authApi)
 	r.CredentialGroup(authApi)
 	r.CertGroup(authApi)

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (r routes) ProxyGroup(group *gin.RouterGroup) {
+func (r routes) InstanceGroup(group *gin.RouterGroup) {
 	node := group.Group("/instance")
 	node.GET("/info", getInstanceInfo)
 	node.GET("/overview", getInstanceOverview)

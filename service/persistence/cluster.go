@@ -23,6 +23,22 @@ func (r ClusterRepository) List() ([]ClusterModel, error) {
 	return modelList, err
 }
 
+func (r ClusterRepository) ListByName(clusters []string) ([]ClusterModel, error) {
+	bytesList, err := r.common.getList(r.bucket)
+	modelList := make([]ClusterModel, len(bytesList))
+	for i, el := range bytesList {
+		var cluster ClusterModel
+		for _, c := range clusters {
+			if c == el.key {
+				buff := bytes.NewBuffer(el.value)
+				_ = gob.NewDecoder(buff).Decode(&cluster)
+				modelList[i] = cluster
+			}
+		}
+	}
+	return modelList, err
+}
+
 func (r ClusterRepository) Get(key string) (ClusterModel, error) {
 	value, err := r.common.get(r.bucket, key)
 	var cluster ClusterModel

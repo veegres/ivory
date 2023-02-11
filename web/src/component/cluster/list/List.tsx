@@ -24,7 +24,7 @@ const SX: SxPropsMap = {
 export function List() {
     const [editNode, setEditNode] = useState("")
     const [showNewElement, setShowNewElement] = useState(false)
-    const query = useQuery(["cluster/list"], clusterApi.list)
+    const query = useQuery(["cluster/list"], () => clusterApi.list())
     const {data: clusterMap, isLoading, isFetching, isError, error} = query
     const rows = Object.entries(clusterMap ?? {})
 

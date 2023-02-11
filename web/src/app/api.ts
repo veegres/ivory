@@ -56,8 +56,8 @@ export const clusterApi = {
     get: (name: string) => api
         .get<Response<Cluster>>(`/cluster/${name}`)
         .then((response) => response.data.response),
-    list: () => api
-        .get<Response<Cluster[]>>(`/cluster`)
+    list: (tags?: string[]) => api
+        .get<Response<Cluster[]>>(`/cluster`, { params: tags })
         .then((response) => response.data.response.reduce(
             (map, cluster) => {
                 map[cluster.name] = cluster
@@ -71,6 +71,12 @@ export const clusterApi = {
     delete: (name: string) => api
         .delete(`/cluster/${name}`)
         .then((response) => response.data.response)
+}
+
+export const tagApi = {
+    list: () => api
+        .get<Response<string[]>>(`/tag`)
+        .then((response) => response.data.response),
 }
 
 export const bloatApi = {
