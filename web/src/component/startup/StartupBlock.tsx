@@ -31,9 +31,9 @@ export function StartupBlock(props: Props) {
 
     const info = useQuery(["info"], infoApi.get);
 
-    const setReqOptions = useMutationOptions(["info"])
+    const setReqOptions = useMutationOptions([["info"]])
     const setReq = useMutation(secretApi.set, setReqOptions)
-    const cleanReqOptions = useMutationOptions(["info"], clear)
+    const cleanReqOptions = useMutationOptions([["info"]], clear)
     const cleanReq = useMutation(secretApi.clean, cleanReqOptions)
 
     const fetching = cleanReq.isLoading || setReq.isLoading || info.isFetching

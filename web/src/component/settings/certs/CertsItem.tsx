@@ -30,7 +30,7 @@ export function CertsItem(props: Props) {
     const { cert, uuid } = props
     const { info } = useTheme()
 
-    const deleteOptions = useMutationOptions(["certs"])
+    const deleteOptions = useMutationOptions([["certs"]])
     const deleteCert = useMutation(certApi.delete, deleteOptions)
 
     const fileUsage = FileUsageOptions[cert.fileUsageType]

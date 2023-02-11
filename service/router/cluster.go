@@ -42,7 +42,7 @@ func getClusterList(context *gin.Context) {
 		}
 
 		listName := make([]string, 0)
-		for k, _ := range listMap {
+		for k := range listMap {
 			listName = append(listName, k)
 		}
 

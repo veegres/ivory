@@ -13,7 +13,7 @@ export function OverviewSettingsTags(props: Props) {
     const { data, isLoading } = query
     const tags = data ?? [];
 
-    const updateMutationOptions = useMutationOptions(["cluster/list"], query.refetch)
+    const updateMutationOptions = useMutationOptions([["cluster/list"]], query.refetch)
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (
