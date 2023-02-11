@@ -20,7 +20,7 @@ export function CertsTabPath(props: CertTypeProps) {
     const { type } = props
     const [path, setPath] = useState("")
 
-    const addOptions = useMutationOptions(["certs"], () => setPath(""))
+    const addOptions = useMutationOptions([["certs"]], () => setPath(""))
     const add = useMutation(certApi.add, addOptions)
 
     return (

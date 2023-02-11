@@ -33,7 +33,7 @@ export function OverviewInstances({info}: TabProps) {
         [instance.sidecar, cluster.name]
     )
     const instanceMapFetching = useIsFetching(queryKey)
-    const options = useMutationOptions(queryKey)
+    const options = useMutationOptions([queryKey])
     const switchover = useMutation(instanceApi.switchover, options)
     const reinit = useMutation(instanceApi.reinitialize, options)
 

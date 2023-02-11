@@ -12,7 +12,7 @@ export function CredentialsNew() {
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)
 
-    const createOptions = useMutationOptions(["credentials"], handleCancel)
+    const createOptions = useMutationOptions([["credentials"]], handleCancel)
     const createCredentials = useMutation(credentialApi.create, createOptions)
 
     return (

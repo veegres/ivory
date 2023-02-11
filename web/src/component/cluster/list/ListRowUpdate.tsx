@@ -21,7 +21,7 @@ type Props = {
 export function ListRowUpdate(props: Props) {
     const {toggle, onUpdate, onClose, name, nodes} = props
 
-    const updateMutationOptions = useMutationOptions(["cluster/list"], handleSuccess)
+    const updateMutationOptions = useMutationOptions([["cluster/list"]], handleSuccess)
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (

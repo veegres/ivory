@@ -10,7 +10,7 @@ export function CertsTabUpload(props: CertTypeProps) {
     const { type } = props
     const [progress, setProgress] = useState<ProgressEvent>()
 
-    const uploadOptions = useMutationOptions(["certs"])
+    const uploadOptions = useMutationOptions([["certs"]])
     const upload = useMutation(certApi.upload, uploadOptions)
     const { loading, error: uploadError } = getUploadInfo()
 

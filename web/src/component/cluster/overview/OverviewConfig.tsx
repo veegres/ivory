@@ -31,7 +31,7 @@ export function OverviewConfig({info}: TabProps) {
         () => instanceApi.config({...instance.sidecar, cluster: cluster.name}),
         {enabled: instance.inCluster}
     )
-    const updateOptions = useMutationOptions(["instance/config", instance.sidecar.host], () => setIsEditable(false))
+    const updateOptions = useMutationOptions([["instance/config", instance.sidecar.host]], () => setIsEditable(false))
     const updateConfig = useMutation(instanceApi.updateConfig, updateOptions)
 
     useEffect(() => setConfigState(stringify(config)), [config])

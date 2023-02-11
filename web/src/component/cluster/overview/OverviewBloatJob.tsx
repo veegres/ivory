@@ -34,7 +34,7 @@ export function OverviewBloatJob({compactTable}: Props) {
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
-    const deleteOptions = useMutationOptions(["instance/bloat/list"])
+    const deleteOptions = useMutationOptions([["instance/bloat/list"]])
     const deleteJob = useMutation(bloatApi.delete, deleteOptions)
     const stopOptions = useMutationOptions()
     const stopJob = useMutation(bloatApi.stop, stopOptions)

@@ -6,7 +6,7 @@ import {LoadingButton} from "@mui/lab";
 
 export function MenuEraseButton() {
     const { clear } = useStore()
-    const cleanOptions = useMutationOptions(["info"], clear)
+    const cleanOptions = useMutationOptions([["info"]], clear)
     const clean = useMutation(secretApi.clean, cleanOptions)
 
     return (

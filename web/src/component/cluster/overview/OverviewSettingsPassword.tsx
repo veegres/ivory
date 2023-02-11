@@ -25,7 +25,7 @@ export function OverviewSettingsPassword(props: Props) {
     const query = useQuery(["credentials", type], () => credentialApi.list(type))
     const options = useMemo(handleMemoOptions, [query.data])
 
-    const updateMutationOptions = useMutationOptions(["cluster/list"])
+    const updateMutationOptions = useMutationOptions([["cluster/list"]])
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (
