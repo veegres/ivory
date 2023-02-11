@@ -1,4 +1,4 @@
-import {HTMLAttributes, SyntheticEvent, useEffect, useState} from "react";
+import {HTMLAttributes, SyntheticEvent, useEffect, useMemo, useState} from "react";
 import {Autocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material";
 import {SxPropsMap} from "../../app/types";
 
@@ -24,14 +24,17 @@ export function AutocompleteTags(props: Props) {
 
     useEffect(handleEffectTagsUpdate, [tags])
 
+    const options = useMemo(() => getOptions(getTagMapWithInput(inputValue, tagMap)), [inputValue, tagMap])
+    const value = useMemo(() => getOptions(getTagMap(selected)), [selected])
+
     return (
         <Autocomplete
             multiple
             size={"small"}
             autoHighlight
             loading={loading}
-            options={getOptions(getTagMapWithInput(inputValue, tagMap))}
-            defaultValue={getOptions(getTagMap(selected))}
+            options={options}
+            value={value}
             // NOTE: we need to check is option undefined, because after search when you remove tag it returns
             // undefined, probably this is a bag in mui library
             getOptionLabel={(option) => option?.label ?? ""}

@@ -77,7 +77,7 @@ func putClusterByName(context *gin.Context) {
 		tagMap[tag] = true
 	}
 	tagList := make([]string, 0)
-	for key, _ := range tagMap {
+	for key := range tagMap {
 		tagList = append(tagList, key)
 	}
 
