@@ -29,14 +29,14 @@ export interface Sidecar {
     port: number,
 }
 
-export interface InstanceLocal extends Instance {
+export interface DefaultInstance extends Instance {
     leader: boolean,
     inCluster: boolean,
     inInstances: boolean,
 }
 
 export interface InstanceMap {
-    [instance: string]: InstanceLocal,
+    [instance: string]: DefaultInstance,
 }
 
 export interface InstanceInfo {
@@ -81,8 +81,8 @@ export type DetectionType = "auto" | "manual"
 
 export interface ActiveCluster {
     cluster: Cluster,
-    instance: InstanceLocal,
-    instances: InstanceMap,
+    defaultInstance: DefaultInstance,
+    combinedInstanceMap: InstanceMap,
     warning: boolean,
     detection: DetectionType,
 }
@@ -94,12 +94,9 @@ export interface ActiveInstance {
 }
 
 export interface InstanceDetection {
-    active: {
-        cluster: Cluster,
-        instance: InstanceLocal,
-        instances: InstanceMap,
-        warning: boolean,
-    },
+    defaultInstance: DefaultInstance,
+    combinedInstanceMap: InstanceMap,
+    warning: boolean,
     colors: ColorsMap,
     fetching: boolean,
     refetch: () => void,

@@ -58,7 +58,6 @@ export function ListTable(props: Props) {
                 <ListRow
                     key={name}
                     cluster={cluster}
-                    name={name}
                     editable={editable}
                     toggle={toggle}
                 />

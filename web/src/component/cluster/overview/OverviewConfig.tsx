@@ -7,7 +7,7 @@ import {ReactElement, useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
-import {InstanceLocal} from "../../../app/types";
+import {DefaultInstance} from "../../../app/types";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
@@ -22,21 +22,21 @@ const themes = {
 
 export function OverviewConfig({info}: TabProps) {
     const theme = useTheme();
-    const {instance, cluster} = info
+    const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
 
     const {data: config, isLoading, isError, error} = useQuery(
-        ["instance/config", instance.sidecar.host],
-        () => instanceApi.config({...instance.sidecar, cluster: cluster.name}),
-        {enabled: instance.inCluster}
+        ["instance/config", defaultInstance.sidecar.host],
+        () => instanceApi.config({...defaultInstance.sidecar, cluster: cluster.name}),
+        {enabled: defaultInstance.inCluster}
     )
-    const updateOptions = useMutationOptions([["instance/config", instance.sidecar.host]], () => setIsEditable(false))
+    const updateOptions = useMutationOptions([["instance/config", defaultInstance.sidecar.host]], () => setIsEditable(false))
     const updateConfig = useMutation(instanceApi.updateConfig, updateOptions)
 
     useEffect(() => setConfigState(stringify(config)), [config])
 
-    if (!instance.inCluster) return <ClusterNoInstanceError/>
+    if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (isError) return <ErrorAlert error={error}/>
     if (isLoading) return <Skeleton variant={"rectangular"} height={300}/>
 
@@ -53,13 +53,13 @@ export function OverviewConfig({info}: TabProps) {
                 />
             </Grid>
             <Grid item xs={"auto"} display={"flex"} flexDirection={"column"}>
-                {renderUpdateButtons(instance, configState, updateConfig.isLoading, isEditable)}
+                {renderUpdateButtons(defaultInstance, configState, updateConfig.isLoading, isEditable)}
                 {renderButton(<CopyAll/>, "Copy", handleCopyAll)}
             </Grid>
         </Grid>
     )
 
-    function renderUpdateButtons(instance: InstanceLocal, configState: string, isLoading: boolean, isEditable: boolean) {
+    function renderUpdateButtons(instance: DefaultInstance, configState: string, isLoading: boolean, isEditable: boolean) {
         if (isLoading) return renderButton(<CircularProgress size={25}/>, "Saving", undefined, true)
         if (!isEditable) return renderButton(<Edit/>, "Edit", () => setIsEditable(true))
 
@@ -91,7 +91,7 @@ export function OverviewConfig({info}: TabProps) {
         setConfigState(stringify(config))
     }
 
-    function handleUpdate(instance: InstanceLocal, config: string) {
+    function handleUpdate(instance: DefaultInstance, config: string) {
         if (configState) updateConfig.mutate({
             ...instance.sidecar,
             cluster: cluster.name,

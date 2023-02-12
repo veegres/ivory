@@ -25,12 +25,12 @@ type AlertDialogState = {open: boolean, title: string, content: string, onAgree:
 const initAlertDialog = {open: false, title: "", content: "", onAgree: () => {}}
 
 export function OverviewInstances({info}: TabProps) {
-    const { instance, cluster, instances } = info
+    const { defaultInstance, cluster, combinedInstanceMap } = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const { setInstance, store: { activeInstance } } = useStore()
     const queryKey = useMemo(
-        () => ["instance/overview", cluster.name, instance.sidecar.host, instance.sidecar.port],
-        [instance.sidecar, cluster.name]
+        () => ["instance/overview", cluster.name, defaultInstance.sidecar.host, defaultInstance.sidecar.port],
+        [defaultInstance.sidecar, cluster.name]
     )
     const instanceMapFetching = useIsFetching(queryKey)
     const options = useMutationOptions([queryKey])
@@ -64,7 +64,7 @@ export function OverviewInstances({info}: TabProps) {
     )
 
     function renderContent() {
-        return Object.entries(instances).map(([key, element]) => {
+        return Object.entries(combinedInstanceMap).map(([key, element]) => {
             const { role, sidecar, database, state, lag, inInstances, inCluster } = element
             const isChecked = activeInstance ? getDomain(activeInstance) === key : false
             const instance = { host: sidecar.host, port: sidecar.port, cluster: cluster.name }

@@ -130,7 +130,7 @@ export function Overview() {
 
     function renderShortClusterInfo() {
         if (!activeCluster) return null
-        const {cluster, instance, warning, detection} = activeCluster
+        const {cluster, defaultInstance, warning, detection} = activeCluster
 
         const infoItems = [
             {...CredentialOptions[CredentialType.POSTGRES], active: !!cluster.credentials.postgresId},
@@ -144,7 +144,7 @@ export function Overview() {
         ]
         const roleTooltip = [
             {label: "Detection", value: detection, bgColor: purple[400]},
-            {label: "Instance", value: getDomain(instance.sidecar), bgColor: InstanceColor[instance.role]}
+            {label: "Instance", value: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]}
         ]
 
         return (
@@ -152,8 +152,8 @@ export function Overview() {
                 <InfoIcons items={warningItems}/>
                 <InfoIcons items={infoItems}/>
                 <InfoBox tooltip={<InfoTitle items={roleTooltip}/>} withPadding>
-                    <Box sx={{color: InstanceColor[instance.role]}}>
-                        {instance.role.toUpperCase()}
+                    <Box sx={{color: InstanceColor[defaultInstance.role]}}>
+                        {defaultInstance.role.toUpperCase()}
                     </Box>
                 </InfoBox>
             </Box>
