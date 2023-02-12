@@ -24,7 +24,7 @@ const style: StylePropsMap = {
 }
 
 export function OverviewBloat({info}: TabProps) {
-    const { cluster, instance } = info
+    const { cluster, defaultInstance } = info
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
     const [jobs, setJobs] = useState<CompactTable[]>([])
@@ -63,8 +63,8 @@ export function OverviewBloat({info}: TabProps) {
     }
 
     function renderForm() {
-        if (!instance.inCluster) return <ClusterNoInstanceError />
-        if (!instance.leader) return <ClusterNoLeaderError />
+        if (!defaultInstance.inCluster) return <ClusterNoInstanceError />
+        if (!defaultInstance.leader) return <ClusterNoLeaderError />
         if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword />
 
         return (
@@ -112,8 +112,8 @@ export function OverviewBloat({info}: TabProps) {
     }
 
     function handleRun() {
-        if (instance && cluster.credentials?.postgresId) {
-            const { database: { host, port }} = instance
+        if (defaultInstance && cluster.credentials?.postgresId) {
+            const { database: { host, port }} = defaultInstance
             start.mutate({
                 connection: { host, port, credId: cluster.credentials.postgresId },
                 target,

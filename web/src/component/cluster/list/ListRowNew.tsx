@@ -1,7 +1,7 @@
 import {FormControl, OutlinedInput, TableRow} from "@mui/material";
 import {DynamicInputs} from "../../view/DynamicInputs";
 import {useState} from "react";
-import {ListRowUpdate} from "./ListRowUpdate";
+import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";
 import {SxPropsMap} from "../../../app/types";
 
@@ -42,7 +42,7 @@ export function ListRowNew(props: Props) {
                 />
             </ListCell>
             <ListCell>
-                <ListRowUpdate
+                <ListCellUpdate
                     name={stateName}
                     nodes={stateNodes}
                     toggle={toggle}

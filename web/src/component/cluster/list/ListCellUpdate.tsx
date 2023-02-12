@@ -18,7 +18,7 @@ type Props = {
     onClose?: () => void
 }
 
-export function ListRowUpdate(props: Props) {
+export function ListCellUpdate(props: Props) {
     const {toggle, onUpdate, onClose, name, nodes} = props
 
     const updateMutationOptions = useMutationOptions([["cluster/list"]], handleSuccess)

@@ -14,7 +14,7 @@ type Props = {
     toggle: () => void
 }
 
-export function ListRowRead(props: Props) {
+export function ListCellRead(props: Props) {
     const {toggle, name} = props
 
     const deleteMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]])

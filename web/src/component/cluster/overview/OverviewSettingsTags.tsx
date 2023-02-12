@@ -10,7 +10,7 @@ type Props = {
 
 export function OverviewSettingsTags(props: Props) {
     const query = useQuery(["tag/list"], tagApi.list)
-    const { data, isLoading } = query
+    const {data, isLoading} = query
     const tags = data ?? [];
 
     const updateMutationOptions = useMutationOptions([["cluster/list"]], query.refetch)

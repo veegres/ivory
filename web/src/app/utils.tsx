@@ -2,7 +2,7 @@ import {blue, green, indigo, orange, purple} from "@mui/material/colors";
 import {
     ColorsMap,
     CredentialType,
-    InstanceLocal,
+    DefaultInstance,
     JobStatus,
     InstanceMap,
     FileUsageType,
@@ -82,7 +82,7 @@ export const createInstanceColors = (instances: InstanceMap) => {
     )
 }
 
-export const initialInstance = (sidecar?: Sidecar) => {
+export const initialInstance = (sidecar?: Sidecar): DefaultInstance => {
     const defaultSidecar = sidecar ?? {host: "-", port: 8008}
     return ({
         state: "-",
@@ -93,7 +93,7 @@ export const initialInstance = (sidecar?: Sidecar) => {
         leader: false,
         inInstances: true,
         inCluster: false
-    }) as InstanceLocal;
+    });
 }
 
 /**

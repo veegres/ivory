@@ -1,5 +1,5 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {ActiveCluster, ActiveInstance, DetectionType, InstanceLocal} from "../app/types";
+import {ActiveCluster, ActiveInstance, DetectionType, DefaultInstance} from "../app/types";
 import {useQueryClient} from "@tanstack/react-query";
 
 // STORE
@@ -21,7 +21,7 @@ interface StoreContextType {
     store: StoreType
 
     setCluster: (cluster?: ActiveCluster) => void,
-    setClusterInstance: (instance: InstanceLocal) => void,
+    setClusterInstance: (instance: DefaultInstance) => void,
     setClusterDetection: (detection: DetectionType) => void
     setClusterTab: (tab: number) => void,
     isClusterActive: (name: string) => boolean
@@ -68,6 +68,8 @@ export function StoreProvider(props: { children: ReactNode }) {
     const [state, setState] = useState(initialStore)
     const queryClient = useQueryClient();
 
+    console.log("active", state.activeCluster?.cluster.name, state.activeCluster)
+
     const value = getStoreContext()
     return (
         <StoreContext.Provider value={value}>
@@ -82,8 +84,8 @@ export function StoreProvider(props: { children: ReactNode }) {
             store: state,
 
             setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster, activeInstance: undefined})),
-            setClusterInstance: (instance: InstanceLocal) => {
-                if (activeCluster) setState({...state, activeCluster: {...activeCluster, instance, detection: "manual"}})
+            setClusterInstance: (instance: DefaultInstance) => {
+                if (activeCluster) setState({...state, activeCluster: {...activeCluster, defaultInstance: instance, detection: "manual"}})
             },
             setClusterDetection: (detection: DetectionType) => {
                 if (activeCluster) setState({...state, activeCluster: {...activeCluster, detection}})
