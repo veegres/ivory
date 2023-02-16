@@ -5,7 +5,6 @@ import {grey, orange, purple} from "@mui/material/colors";
 import {getDomain, InstanceColor} from "../../../app/utils";
 import {InfoTitle} from "../../view/InfoTitle";
 import {useStore} from "../../../provider/StoreProvider";
-import {useEffect} from "react";
 
 const SX: SxPropsMap = {
     chip: {width: "100%"},
@@ -24,11 +23,6 @@ export function ListCellChip(props: Props) {
     const {isClusterActive, setCluster, setInstance, store} = useStore()
     const detection = store.activeCluster?.detection ?? "auto"
     const isActive = isClusterActive(cluster.name)
-
-    // we ignore this line cause this effect uses setCluster
-    // which are always changing in during store update, and it causes endless recursion
-    // eslint-disable-next-line
-    useEffect(handleEffectDestroy, [])
 
     return (
         <Box sx={SX.clusterName}>
@@ -63,9 +57,5 @@ export function ListCellChip(props: Props) {
             setInstance(undefined)
             setCluster({cluster, defaultInstance, combinedInstanceMap, warning, detection})
         }
-    }
-
-    function handleEffectDestroy() {
-        return () => setCluster(undefined)
     }
 }
