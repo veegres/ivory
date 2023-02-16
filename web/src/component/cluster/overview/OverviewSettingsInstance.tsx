@@ -1,4 +1,12 @@
-import {Autocomplete, Box, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
+import {
+    Autocomplete,
+    AutocompleteChangeReason,
+    Box,
+    TextField,
+    ToggleButton,
+    ToggleButtonGroup,
+    Tooltip
+} from "@mui/material";
 import {useMemo, useState} from "react";
 import {DetectionType, InstanceMap, SxPropsMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
@@ -30,7 +38,7 @@ export function OverviewSettingsInstance(props: Props) {
                 options={options}
                 value={instance}
                 disableClearable
-                onChange={(_, value) => handleOnChange(value)}
+                onChange={(_, value, reason) => handleOnChange(value, reason)}
                 inputValue={inputValue}
                 isOptionEqualToValue={(option, value) => option === value}
                 onInputChange={(_, value) => setInputValue(value)}
@@ -59,7 +67,7 @@ export function OverviewSettingsInstance(props: Props) {
         </Box>
     )
 
-    function handleOnChange(value?: string) {
-        if (value) setClusterInstance(instances[value])
+    function handleOnChange(value: string, reason: AutocompleteChangeReason) {
+        if (value && reason === "selectOption") setClusterInstance(instances[value])
     }
 }

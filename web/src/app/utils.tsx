@@ -25,7 +25,7 @@ export const InstanceColor: { [key: string]: string } = {
     master: green[500],
     leader: green[500],
     replica: blue[500],
-    unknown: orange[500]
+    unknown: orange[500],
 }
 
 export const JobOptions: { [key in JobStatus]: { name: string, color: string, active: boolean } } = {
@@ -96,10 +96,14 @@ export const initialInstance = (sidecar?: Sidecar): DefaultInstance => {
     });
 }
 
+export const isSidecarEqual = (sidecar1?: Sidecar, sidecar2?: Sidecar): boolean => {
+    return sidecar1?.host === sidecar2?.host && sidecar1?.port === sidecar2?.port
+}
+
 /**
  * Combine instances from patroni and from ivory
  */
-export const combineInstances = (instanceNames: Sidecar[], instanceInCluster: InstanceMap): [InstanceMap, boolean] => {
+export const combineInstances = (instanceNames: Sidecar[], instanceInCluster: InstanceMap) => {
     const map: InstanceMap = {}
     let warning: boolean = false
 
@@ -125,7 +129,10 @@ export const combineInstances = (instanceNames: Sidecar[], instanceInCluster: In
         }
     }
 
-    return [map, warning]
+    return {
+        combinedInstanceMap: map,
+        warning,
+    }
 }
 
 export const getDomain = ({ host, port }: Sidecar) => {

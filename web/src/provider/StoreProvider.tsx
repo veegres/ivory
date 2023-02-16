@@ -68,8 +68,6 @@ export function StoreProvider(props: { children: ReactNode }) {
     const [state, setState] = useState(initialStore)
     const queryClient = useQueryClient();
 
-    console.log("active", state.activeCluster?.cluster.name, state.activeCluster)
-
     const value = getStoreContext()
     return (
         <StoreContext.Provider value={value}>
@@ -83,7 +81,7 @@ export function StoreProvider(props: { children: ReactNode }) {
         return {
             store: state,
 
-            setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster, activeInstance: undefined})),
+            setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster})),
             setClusterInstance: (instance: DefaultInstance) => {
                 if (activeCluster) setState({...state, activeCluster: {...activeCluster, defaultInstance: instance, detection: "manual"}})
             },

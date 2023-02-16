@@ -21,13 +21,14 @@ export function ListCellChip(props: Props) {
     const {cluster, instanceDetection} = props
     const {defaultInstance, combinedInstanceMap, warning, fetching, refetch} = instanceDetection
 
-    const {isClusterActive, setCluster, store} = useStore()
+    const {isClusterActive, setCluster, setInstance, store} = useStore()
     const detection = store.activeCluster?.detection ?? "auto"
     const isActive = isClusterActive(cluster.name)
 
-    // NOTE: we don't want to use `setCluster` as deps cause it causes endless recursion/updates
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(handleEffectStoreUpdate, [isActive, cluster, defaultInstance, combinedInstanceMap, warning, detection])
+    // we ignore this line cause this effect uses setCluster
+    // which are always changing in during store update, and it causes endless recursion
+    // eslint-disable-next-line
+    useEffect(handleEffectDestroy, [])
 
     return (
         <Box sx={SX.clusterName}>
@@ -36,7 +37,7 @@ export function ListCellChip(props: Props) {
                     sx={SX.chip}
                     color={isActive ? "primary" : "default"}
                     label={cluster.name}
-                    onClick={() => setCluster(isActive ? undefined : {cluster, defaultInstance, combinedInstanceMap, warning, detection})}
+                    onClick={handleClick}
                 />
             </Tooltip>
             <RefreshIconButton loading={fetching} onClick={refetch}/>
@@ -53,12 +54,18 @@ export function ListCellChip(props: Props) {
         return <InfoTitle items={items}/>
     }
 
-    function handleEffectStoreUpdate() {
-        if (isActive) setCluster({cluster, defaultInstance, combinedInstanceMap, warning, detection})
+    function handleClick() {
+        if (isActive) {
+            setInstance(undefined)
+            setCluster(undefined)
 
-        return () => {
-            if (isActive) setCluster(undefined)
+        } else {
+            setInstance(undefined)
+            setCluster({cluster, defaultInstance, combinedInstanceMap, warning, detection})
         }
     }
 
+    function handleEffectDestroy() {
+        return () => setCluster(undefined)
+    }
 }
