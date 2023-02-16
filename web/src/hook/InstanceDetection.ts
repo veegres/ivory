@@ -109,6 +109,10 @@ export function useInstanceDetection(name: string, instances: Sidecar[]): Instan
         if (isActive) {
             setCluster({...activeCluster, defaultInstance, ...combine})
         }
+
+        return () => {
+            if (isActive) setCluster(undefined)
+        }
     }
 
     function handleMemoInstanceMap() {
