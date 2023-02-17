@@ -24,7 +24,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
 
     const colors =  useMemo(handleMemoColors, [instanceMap])
     const combine = useMemo(handleMemoCombine, [instances, instanceMap])
-    const defaultInstance = useMemo(handleMemoDefaultInstance, [isActive, activeCluster, combine])
+    const defaultInstance = handleDefaultInstance()
 
     useEffect(handleEffectNextRequest, [errorUpdateCount, instances, refetch])
     useEffect(handleEffectDetectionChange, [isActive, activeCluster, instances, refetch, remove])
@@ -135,8 +135,10 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
 
     /**
      * Either find leader or set query that we send request to.
+     * P.S. we cannot use memo for this function because `combine` doesn't change
+     * but we still need changed it every time for clusters without any seccuss request
      */
-    function handleMemoDefaultInstance() {
+    function handleDefaultInstance() {
         const map = combine.combinedInstanceMap
 
         if (defaultDetection.current === "manual") {
