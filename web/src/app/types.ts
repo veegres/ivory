@@ -96,9 +96,11 @@ export interface ActiveInstance {
 export interface InstanceDetection {
     defaultInstance: DefaultInstance,
     combinedInstanceMap: InstanceMap,
+    detection: DetectionType,
     warning: boolean,
     colors: ColorsMap,
     fetching: boolean,
+    active: boolean,
     refetch: () => void,
 }
 

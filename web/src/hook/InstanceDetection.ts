@@ -1,21 +1,21 @@
-import {DetectionType, InstanceDetection, InstanceMap, Sidecar} from "../app/types";
+import {Cluster, DetectionType, InstanceDetection, InstanceMap, Sidecar} from "../app/types";
 import {useQuery} from "@tanstack/react-query";
 import {instanceApi} from "../app/api";
 import {useEffect, useMemo, useRef} from "react";
 import {combineInstances, createInstanceColors, getDomain, initialInstance, isSidecarEqual} from "../app/utils";
 import {useStore} from "../provider/StoreProvider";
 
-export function useInstanceDetection(name: string, instances: Sidecar[]): InstanceDetection {
+export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
     const {store: {activeCluster}, setCluster} = useStore()
-    const isActive = !!activeCluster && name === activeCluster.cluster.name
+    const isActive = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const defaultDetection = useRef<DetectionType>("auto")
     const defaultSidecar = useRef(instances[0])
     const previousData = useRef<InstanceMap>({})
 
     const query = useQuery(
-        ["instance/overview", name],
-        () => instanceApi.overview({...defaultSidecar.current, cluster: name}),
+        ["instance/overview", cluster.name],
+        () => instanceApi.overview({...defaultSidecar.current, cluster: cluster.name}),
         {retry: false}
     )
     const {errorUpdateCount, refetch, remove, data, isFetching} = query
@@ -24,7 +24,7 @@ export function useInstanceDetection(name: string, instances: Sidecar[]): Instan
 
     const colors =  useMemo(handleMemoColors, [instanceMap])
     const combine = useMemo(handleMemoCombine, [instances, instanceMap])
-    const defaultInstance = useMemo(handleMemoDefaultInstance, [activeCluster, combine])
+    const defaultInstance = useMemo(handleMemoDefaultInstance, [isActive, activeCluster, combine])
 
     useEffect(handleEffectNextRequest, [errorUpdateCount, instances, refetch])
     useEffect(handleEffectDetectionChange, [isActive, activeCluster, instances, refetch, remove])
@@ -32,13 +32,15 @@ export function useInstanceDetection(name: string, instances: Sidecar[]): Instan
     // we ignore this line cause this effect uses activeCluster and setCluster
     // which are always changing in this function, and it causes endless recursion
     // eslint-disable-next-line
-    useEffect(handleRequestUpdate, [isActive, defaultInstance, combine])
+    useEffect(handleRequestUpdate, [isActive, cluster, defaultInstance, combine])
 
     return {
         defaultInstance,
         combinedInstanceMap: combine.combinedInstanceMap,
         warning: combine.warning,
+        detection: isActive ? activeCluster.detection : defaultDetection.current,
         colors,
+        active: isActive,
         fetching: isFetching,
         refetch: handleRefetch,
     }
@@ -107,7 +109,7 @@ export function useInstanceDetection(name: string, instances: Sidecar[]): Instan
      */
     function handleRequestUpdate() {
         if (isActive) {
-            setCluster({...activeCluster, defaultInstance, ...combine})
+            setCluster({...activeCluster, cluster, defaultInstance, ...combine})
         }
 
         return () => {
@@ -137,9 +139,13 @@ export function useInstanceDetection(name: string, instances: Sidecar[]): Instan
     function handleMemoDefaultInstance() {
         const map = combine.combinedInstanceMap
 
-        if (activeCluster && defaultDetection.current === "manual") {
-            const selected = map[getDomain(activeCluster.defaultInstance.sidecar)]
-            return selected ?? initialInstance(activeCluster.defaultInstance.sidecar)
+        if (defaultDetection.current === "manual") {
+            if (isActive) {
+                const sidecar = activeCluster.defaultInstance.sidecar
+                return map[getDomain(sidecar)] ?? initialInstance(sidecar)
+            } else {
+                return map[getDomain(defaultSidecar.current)] ?? initialInstance(defaultSidecar.current)
+            }
         } else {
             const leader = Object.values(map).find(i => i.leader)
             return leader ?? map[getDomain(defaultSidecar.current)]

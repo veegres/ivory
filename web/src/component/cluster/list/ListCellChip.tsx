@@ -18,18 +18,17 @@ type Props = {
 
 export function ListCellChip(props: Props) {
     const {cluster, instanceDetection} = props
-    const {defaultInstance, combinedInstanceMap, warning, fetching, refetch} = instanceDetection
+    const {defaultInstance, combinedInstanceMap, warning} = instanceDetection
+    const {fetching, active, detection, refetch} = instanceDetection
 
-    const {isClusterActive, setCluster, setInstance, store} = useStore()
-    const detection = store.activeCluster?.detection ?? "auto"
-    const isActive = isClusterActive(cluster.name)
+    const {setCluster, setInstance} = useStore()
 
     return (
         <Box sx={SX.clusterName}>
             <Tooltip title={renderChipTooltip()} placement={"right-start"} arrow disableInteractive>
                 <Chip
                     sx={SX.chip}
-                    color={isActive ? "primary" : "default"}
+                    color={active ? "primary" : "default"}
                     label={cluster.name}
                     onClick={handleClick}
                 />
@@ -49,10 +48,9 @@ export function ListCellChip(props: Props) {
     }
 
     function handleClick() {
-        if (isActive) {
+        if (active) {
             setInstance(undefined)
             setCluster(undefined)
-
         } else {
             setInstance(undefined)
             setCluster({cluster, defaultInstance, combinedInstanceMap, warning, detection})
