@@ -20,7 +20,7 @@ export function ListRow(props: Props) {
     const {name, instances} = cluster
     const [stateNodes, setStateNodes] = useState(getDomains(instances))
 
-    const instanceDetection = useInstanceDetection(name, instances)
+    const instanceDetection = useInstanceDetection(cluster, instances)
 
     return (
         <TableRow>
