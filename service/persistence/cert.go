@@ -1,8 +1,6 @@
 package persistence
 
 import (
-	"bytes"
-	"encoding/gob"
 	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
@@ -17,19 +15,15 @@ type CertRepository struct {
 }
 
 func (r CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
-	value, err := r.common.get(r.bucket, uuid.String())
-	var credential CertModel
-	buff := bytes.NewBuffer(value)
-	err = gob.NewDecoder(buff).Decode(&credential)
-	return credential, err
+	return Get[CertModel](r.bucket, uuid.String())
 }
 
 func (r CertRepository) List() (map[string]CertModel, error) {
-	return r.getCertMap(nil)
+	return GetMap[CertModel](r.bucket, nil)
 }
 
 func (r CertRepository) ListByType(certType CertType) (map[string]CertModel, error) {
-	return r.getCertMap(func(cert CertModel) bool {
+	return GetMap[CertModel](r.bucket, func(cert CertModel) bool {
 		return cert.Type == certType
 	})
 }
@@ -61,7 +55,7 @@ func (r CertRepository) Create(pathStr string, certType CertType, fileUsageType 
 		return nil, errors.New("unknown certificate type")
 	}
 
-	err := r.common.update(r.bucket, key.String(), cert)
+	err := Update(r.bucket, key.String(), cert)
 	if err != nil {
 		return nil, err
 	}
@@ -74,28 +68,12 @@ func (r CertRepository) Delete(certUuid uuid.UUID) error {
 	if cert.FileUsageType == FileUsageType(UPLOAD) {
 		err = File.Certs.Delete(certUuid)
 	}
-	err = r.common.delete(r.bucket, certUuid.String())
+	err = Delete(r.bucket, certUuid.String())
 	return err
 }
 
 func (r CertRepository) DeleteAll() error {
 	err := File.Certs.DeleteAll()
-	err = r.common.deleteAll(r.bucket)
+	err = DeleteAll(r.bucket)
 	return err
-}
-
-func (r CertRepository) getCertMap(filter func(cert CertModel) bool) (map[string]CertModel, error) {
-	bytesList, err := r.common.getList(r.bucket)
-	certMap := make(map[string]CertModel)
-	for _, el := range bytesList {
-		var cert CertModel
-		buff := bytes.NewBuffer(el.value)
-		err = gob.NewDecoder(buff).Decode(&cert)
-
-		// filter elements in the list by lambda
-		if filter == nil || filter(cert) {
-			certMap[el.key] = cert
-		}
-	}
-	return certMap, err
 }

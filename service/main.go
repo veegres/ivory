@@ -9,6 +9,10 @@ import (
 func main() {
 	persistence.BoltDB.Build("cluster.db")
 	persistence.File.Build()
-	service.Secret.Create(persistence.BoltDB.Credential.GetEncryptedRef())
+	ref, err := persistence.BoltDB.Credential.GetEncryptedRef()
+	if err != nil {
+		panic(err)
+	}
+	service.Secret.Create(ref)
 	router.Start()
 }

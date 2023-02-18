@@ -1,8 +1,6 @@
 package persistence
 
 import (
-	"bytes"
-	"encoding/gob"
 	"github.com/google/uuid"
 	. "ivory/model"
 	"sort"
@@ -32,11 +30,7 @@ func (r CompactTableRepository) ListByCluster(cluster string) ([]CompactTableMod
 }
 
 func (r CompactTableRepository) Get(uuid uuid.UUID) (CompactTableModel, error) {
-	value, err := r.common.get(r.bucket, uuid.String())
-	var model CompactTableModel
-	buff := bytes.NewBuffer(value)
-	_ = gob.NewDecoder(buff).Decode(&model)
-	return model, err
+	return Get[CompactTableModel](r.bucket, uuid.String())
 }
 
 func (r CompactTableRepository) Create(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error) {
@@ -52,7 +46,7 @@ func (r CompactTableRepository) Create(credentialId uuid.UUID, cluster string, a
 		CreatedAt:    time.Now().UnixNano(),
 	}
 
-	err := r.common.update(r.bucket, jobUuid.String(), compactTableModel)
+	err := Update(r.bucket, jobUuid.String(), compactTableModel)
 	if err != nil {
 		return nil, err
 	}
@@ -62,33 +56,24 @@ func (r CompactTableRepository) Create(credentialId uuid.UUID, cluster string, a
 func (r CompactTableRepository) UpdateStatus(compactTable CompactTableModel, status JobStatus) error {
 	tmp := compactTable
 	tmp.Status = status
-	return r.common.update(r.bucket, tmp.Uuid.String(), tmp)
+	return Update(r.bucket, tmp.Uuid.String(), tmp)
 }
 
 func (r CompactTableRepository) Delete(uuid uuid.UUID) error {
 	var err error
 	err = File.CompactTable.Delete(uuid)
-	err = r.common.delete(r.bucket, uuid.String())
+	err = Delete(r.bucket, uuid.String())
 	return err
 }
 
 func (r CompactTableRepository) DeleteAll() error {
 	err := File.CompactTable.DeleteAll()
-	err = r.common.deleteAll(r.bucket)
+	err = DeleteAll(r.bucket)
 	return err
 }
 
 func (r CompactTableRepository) list(filter func(model CompactTableModel) bool) ([]CompactTableModel, error) {
-	bytesList, err := r.common.getList(r.bucket)
-	modelList := make([]CompactTableModel, 0)
-	for _, el := range bytesList {
-		var model CompactTableModel
-		buff := bytes.NewBuffer(el.value)
-		_ = gob.NewDecoder(buff).Decode(&model)
-		if filter == nil || filter(model) {
-			modelList = append(modelList, model)
-		}
-	}
+	modelList, err := GetList[CompactTableModel](r.bucket, filter)
 	r.sortDescByCreatedAt(modelList)
 	return modelList, err
 }
