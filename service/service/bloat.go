@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"github.com/google/uuid"
+	"ivory/config"
 	. "ivory/model"
 	"ivory/persistence"
 	"os"
@@ -12,12 +13,41 @@ import (
 	"time"
 )
 
-func CreateJobWorker() JobWorker {
-	worker := &worker{
-		start:    make(chan uuid.UUID),
-		stop:     make(chan uuid.UUID),
-		elements: make(map[uuid.UUID]*element),
-		mutex:    &sync.Mutex{},
+type BloatService struct {
+	start              chan uuid.UUID
+	stop               chan uuid.UUID
+	elements           map[uuid.UUID]*element
+	mutex              *sync.Mutex
+	bloatRepository    *persistence.CompactTableRepository
+	passwordRepository *persistence.PasswordRepository
+	bloatFile          *config.FilePersistence
+	secretService      *SecretService
+	encryption         *Encryption
+}
+
+type element struct {
+	job   Job
+	model *CompactTableModel
+	file  *os.File
+}
+
+func NewBloatService(
+	bloatRepository *persistence.CompactTableRepository,
+	passwordRepository *persistence.PasswordRepository,
+	file *config.FilePersistence,
+	secretService *SecretService,
+	encryption *Encryption,
+) *BloatService {
+	worker := &BloatService{
+		start:              make(chan uuid.UUID),
+		stop:               make(chan uuid.UUID),
+		elements:           make(map[uuid.UUID]*element),
+		mutex:              &sync.Mutex{},
+		bloatRepository:    bloatRepository,
+		passwordRepository: passwordRepository,
+		bloatFile:          file,
+		secretService:      secretService,
+		encryption:         encryption,
 	}
 
 	// run channel subscribers
@@ -28,28 +58,8 @@ func CreateJobWorker() JobWorker {
 	return worker
 }
 
-type JobWorker interface {
-	Start(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error)
-	Stream(jobUuid uuid.UUID, stream func(event Event))
-	Delete(jobUuid uuid.UUID) error
-	Stop(jobUuid uuid.UUID) error
-}
-
-type worker struct {
-	start    chan uuid.UUID
-	stop     chan uuid.UUID
-	elements map[uuid.UUID]*element
-	mutex    *sync.Mutex
-}
-
-type element struct {
-	job   Job
-	model *CompactTableModel
-	file  *os.File
-}
-
-func (w *worker) Start(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error) {
-	compactTable, err := persistence.BoltDB.CompactTable.Create(credentialId, cluster, args)
+func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []string) (*CompactTableModel, error) {
+	compactTable, err := w.bloatRepository.Create(credentialId, cluster, args)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +67,7 @@ func (w *worker) Start(credentialId uuid.UUID, cluster string, args []string) (*
 	return compactTable, nil
 }
 
-func (w *worker) Stream(jobUuid uuid.UUID, stream func(event Event)) {
+func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	element := w.elements[jobUuid]
 	if element == nil {
 		stream(Event{Name: SERVER, Message: "Logs streaming failed: Stream Not Found"})
@@ -73,7 +83,7 @@ func (w *worker) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	stream(Event{Name: STATUS, Message: job.GetStatus().String()})
 
 	// stream logs from file
-	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
+	file, _ := w.bloatFile.Open(model.LogsPath)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		stream(Event{Name: LOG, Message: scanner.Text()})
@@ -97,23 +107,23 @@ func (w *worker) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	stream(Event{Name: STATUS, Message: job.GetStatus().String()})
 }
 
-func (w *worker) Delete(jobUuid uuid.UUID) error {
+func (w *BloatService) Delete(jobUuid uuid.UUID) error {
 	element := w.elements[jobUuid]
 	if element != nil && element.job.IsJobActive() {
 		return errors.New("job is active")
 	}
-	errFile := persistence.File.CompactTable.Delete(jobUuid)
+	errFile := w.bloatFile.Delete(jobUuid)
 	if errFile != nil {
 		return errFile
 	}
-	errDb := persistence.BoltDB.CompactTable.Delete(jobUuid)
+	errDb := w.bloatRepository.Delete(jobUuid)
 	if errDb != nil {
 		return errDb
 	}
 	return nil
 }
 
-func (w *worker) Stop(jobUuid uuid.UUID) error {
+func (w *BloatService) Stop(jobUuid uuid.UUID) error {
 	if w.elements[jobUuid] != nil {
 		w.stop <- jobUuid
 		return nil
@@ -122,7 +132,7 @@ func (w *worker) Stop(jobUuid uuid.UUID) error {
 	}
 }
 
-func (w *worker) runner() {
+func (w *BloatService) runner() {
 	for id := range w.start {
 		element := w.elements[id]
 		model := w.elements[id].model
@@ -132,12 +142,12 @@ func (w *worker) runner() {
 
 			// Get password
 			// TODO move decryption to another method (encapsulate)
-			credential, errCred := persistence.BoltDB.Credential.Get(model.CredentialId)
+			credential, errCred := w.passwordRepository.Get(model.CredentialId)
 			if errCred != nil {
 				w.jobStatusHandler(element, FAILED, errors.New("Find credential error: "+errCred.Error()))
 				return
 			}
-			password, errDecrypt := Decrypt(credential.Password, Secret.Get())
+			password, errDecrypt := w.encryption.Decrypt(credential.Password, w.secretService.Get())
 			if errDecrypt != nil {
 				w.jobStatusHandler(element, FAILED, errors.New("Decrypt credential error: "+errDecrypt.Error()))
 				return
@@ -181,20 +191,20 @@ func (w *worker) runner() {
 	}
 }
 
-func (w *worker) initializer() {
-	runningJobs, _ := persistence.BoltDB.CompactTable.ListByStatus(RUNNING)
+func (w *BloatService) initializer() {
+	runningJobs, _ := w.bloatRepository.ListByStatus(RUNNING)
 	for _, runningJob := range runningJobs {
-		_ = persistence.BoltDB.CompactTable.UpdateStatus(runningJob, FAILED)
+		_ = w.bloatRepository.UpdateStatus(runningJob, FAILED)
 	}
 
-	pendingJobs, _ := persistence.BoltDB.CompactTable.ListByStatus(PENDING)
+	pendingJobs, _ := w.bloatRepository.ListByStatus(PENDING)
 	for _, pendingJob := range pendingJobs {
 		pendingJob := pendingJob
 		go func() { w.addElement(&pendingJob) }()
 	}
 }
 
-func (w *worker) cleaner() {
+func (w *BloatService) cleaner() {
 	ticket := time.NewTicker(10 * time.Second)
 	for range ticket.C {
 		for id, element := range w.elements {
@@ -205,7 +215,7 @@ func (w *worker) cleaner() {
 	}
 }
 
-func (w *worker) stopper() {
+func (w *BloatService) stopper() {
 	for id := range w.stop {
 		id := id
 		go func() {
@@ -230,10 +240,10 @@ func (w *worker) stopper() {
 	}
 }
 
-func (w *worker) jobStatusHandler(element *element, status JobStatus, err error) {
+func (w *BloatService) jobStatusHandler(element *element, status JobStatus, err error) {
 	model := element.model
 	element.job.SetStatus(status)
-	dbErr := persistence.BoltDB.CompactTable.UpdateStatus(*model, status)
+	dbErr := w.bloatRepository.UpdateStatus(*model, status)
 	if dbErr != nil {
 		w.addLogElement(element, SERVER, dbErr.Error())
 	}
@@ -245,7 +255,7 @@ func (w *worker) jobStatusHandler(element *element, status JobStatus, err error)
 	}
 }
 
-func (w *worker) addLogElement(element *element, eventType EventType, message string) {
+func (w *BloatService) addLogElement(element *element, eventType EventType, message string) {
 	_, errFileWrite := element.file.WriteString(message + "\n")
 	if errFileWrite != nil {
 		w.sendEvents(element.job, SERVER, errFileWrite.Error())
@@ -254,27 +264,27 @@ func (w *worker) addLogElement(element *element, eventType EventType, message st
 	w.sendEvents(element.job, eventType, message)
 }
 
-func (w *worker) sendEvents(job Job, eventType EventType, message string) {
+func (w *BloatService) sendEvents(job Job, eventType EventType, message string) {
 	for subscriber := range job.Subscribers() {
 		subscriber <- Event{Name: eventType, Message: message}
 	}
 }
 
-func (w *worker) closeEvents(job Job) {
+func (w *BloatService) closeEvents(job Job) {
 	for subscriber := range job.Subscribers() {
 		close(subscriber)
 	}
 }
 
-func (w *worker) addElement(model *CompactTableModel) {
+func (w *BloatService) addElement(model *CompactTableModel) {
 	w.mutex.Lock()
-	file, _ := persistence.File.CompactTable.Open(model.LogsPath)
-	w.elements[model.Uuid] = &element{job: CreateJob(), model: model, file: file}
+	file, _ := w.bloatFile.Open(model.LogsPath)
+	w.elements[model.Uuid] = &element{job: *NewJob(), model: model, file: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid
 }
 
-func (w *worker) removeElement(id uuid.UUID) {
+func (w *BloatService) removeElement(id uuid.UUID) {
 	w.mutex.Lock()
 	delete(w.elements, id)
 	w.mutex.Unlock()

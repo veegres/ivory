@@ -9,24 +9,24 @@ import (
 	"strconv"
 )
 
-func (r routes) CertGroup(group *gin.RouterGroup) {
-	cert := group.Group("/cert")
-	cert.GET("", getCertList)
-	cert.DELETE("/:uuid", deleteCert)
-	cert.POST("/upload", postUploadCert)
-	cert.POST("/add", postAddCert)
+type CertRouter struct {
+	repository *persistence.CertRepository
 }
 
-func getCertList(context *gin.Context) {
+func NewCertRouter(repository *persistence.CertRepository) *CertRouter {
+	return &CertRouter{repository: repository}
+}
+
+func (r *CertRouter) GetCertList(context *gin.Context) {
 	certType := context.Request.URL.Query().Get("type")
 
 	var err error
 	var list map[string]CertModel
 	if certType != "" {
 		number, _ := strconv.Atoi(certType)
-		list, err = persistence.BoltDB.Cert.ListByType(CertType(number))
+		list, err = r.repository.ListByType(CertType(number))
 	} else {
-		list, err = persistence.BoltDB.Cert.List()
+		list, err = r.repository.List()
 	}
 
 	if err != nil {
@@ -37,9 +37,9 @@ func getCertList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
-func deleteCert(context *gin.Context) {
+func (r *CertRouter) DeleteCert(context *gin.Context) {
 	certUuid, err := uuid.Parse(context.Param("uuid"))
-	err = persistence.BoltDB.Cert.Delete(certUuid)
+	err = r.repository.Delete(certUuid)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -47,7 +47,7 @@ func deleteCert(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "deleted"})
 }
 
-func postUploadCert(context *gin.Context) {
+func (r *CertRouter) PostUploadCert(context *gin.Context) {
 	certType, err := strconv.Atoi(context.PostForm("type"))
 	file, err := context.FormFile("file")
 	if file.Size > 1000000 {
@@ -55,7 +55,7 @@ func postUploadCert(context *gin.Context) {
 		return
 	}
 
-	cert, err := persistence.BoltDB.Cert.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
+	cert, err := r.repository.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
 	err = context.SaveUploadedFile(file, cert.Path)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -65,7 +65,7 @@ func postUploadCert(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cert})
 }
 
-func postAddCert(context *gin.Context) {
+func (r *CertRouter) PostAddCert(context *gin.Context) {
 	var certRequest CertRequest
 	parseErr := context.ShouldBindJSON(&certRequest)
 	if parseErr != nil {
@@ -73,7 +73,7 @@ func postAddCert(context *gin.Context) {
 		return
 	}
 
-	cert, err := persistence.BoltDB.Cert.Create(certRequest.Path, certRequest.Type, FileUsageType(PATH))
+	cert, err := r.repository.Create(certRequest.Path, certRequest.Type, FileUsageType(PATH))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -1,23 +1,30 @@
 package persistence
 
+import "ivory/config"
+
 type TagRepository struct {
-	common common
-	bucket []byte
+	bucket *config.Bucket[[]string]
 }
 
-func (t TagRepository) List() ([]string, error) {
-	return GetKeyList(t.bucket)
+func NewTagRepository(bucket *config.Bucket[[]string]) *TagRepository {
+	return &TagRepository{
+		bucket: bucket,
+	}
 }
 
-func (t TagRepository) Get(tag string) ([]string, error) {
-	return Get[[]string](t.bucket, tag)
+func (t *TagRepository) List() ([]string, error) {
+	return t.bucket.GetKeyList()
 }
 
-func (t TagRepository) GetMap() (map[string][]string, error) {
-	return GetMap[[]string](t.bucket, nil)
+func (t *TagRepository) Get(tag string) ([]string, error) {
+	return t.bucket.Get(tag)
 }
 
-func (t TagRepository) UpdateCluster(cluster string, tags []string) error {
+func (t *TagRepository) GetMap() (map[string][]string, error) {
+	return t.bucket.GetMap(nil)
+}
+
+func (t *TagRepository) UpdateCluster(cluster string, tags []string) error {
 	tagMap, err := t.GetMap()
 	if err != nil {
 		return err
@@ -47,12 +54,12 @@ func (t TagRepository) UpdateCluster(cluster string, tags []string) error {
 	// NOTE: update tags
 	for k, v := range tagMap {
 		if v != nil {
-			err := Update[[]string](t.bucket, k, v)
+			err := t.bucket.Update(k, v)
 			if err != nil {
 				return err
 			}
 		} else {
-			err := Delete(t.bucket, k)
+			err := t.bucket.Delete(k)
 			if err != nil {
 				return err
 			}
@@ -62,10 +69,10 @@ func (t TagRepository) UpdateCluster(cluster string, tags []string) error {
 	return nil
 }
 
-func (t TagRepository) Delete(tag string) error {
-	return Delete(t.bucket, tag)
+func (t *TagRepository) Delete(tag string) error {
+	return t.bucket.Delete(tag)
 }
 
-func (t TagRepository) DeleteAll() error {
-	return DeleteAll(t.bucket)
+func (t *TagRepository) DeleteAll() error {
+	return t.bucket.DeleteAll()
 }
