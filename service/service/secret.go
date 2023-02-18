@@ -31,7 +31,11 @@ func (s *secret) Get() [16]byte {
 
 func (s *secret) Set(key string, decrypted string) error {
 	if decrypted == "" {
-		decrypted = persistence.BoltDB.Credential.GetDecryptedRef()
+		var err error
+		decrypted, err = persistence.BoltDB.Credential.GetDecryptedRef()
+		if err != nil {
+			return err
+		}
 	}
 	keySha1 := md5.Sum([]byte(key))
 	ref, err := Encrypt(decrypted, keySha1)
@@ -66,13 +70,18 @@ func (s *secret) Update(previousKey string, newKey string) error {
 	var err error
 	if s.IsRefEmpty() {
 		err = errors.New("there is not secret")
+		return err
 	}
 	if previousKeySha1 != s.key {
 		err = errors.New("the secret is not correct")
+		return err
 	}
 
 	s.key = newKeySha1
-	credentialMap := persistence.BoltDB.Credential.List()
+	credentialMap, err := persistence.BoltDB.Credential.List()
+	if err != nil {
+		return err
+	}
 	for id, credential := range credentialMap {
 		id, _ := uuid.Parse(id)
 		oldEncodedPass := credential.Password

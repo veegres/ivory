@@ -14,7 +14,7 @@ func (t TagRepository) Get(tag string) ([]string, error) {
 }
 
 func (t TagRepository) GetMap() (map[string][]string, error) {
-	return GetMap[[]string](t.bucket)
+	return GetMap[[]string](t.bucket, nil)
 }
 
 func (t TagRepository) UpdateCluster(cluster string, tags []string) error {

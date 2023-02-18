@@ -31,7 +31,6 @@ func getStatus(context *gin.Context) {
 func setSecret(context *gin.Context) {
 	var body SecretSetRequest
 	err := context.ShouldBindJSON(&body)
-
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "body isn't correct"})
 		return
@@ -51,7 +50,11 @@ func setSecret(context *gin.Context) {
 
 func updateSecret(context *gin.Context) {
 	var secret SecretUpdateRequest
-	_ = context.ShouldBindJSON(&secret)
+	errParse := context.ShouldBindJSON(&secret)
+	if errParse != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
+		return
+	}
 	err := service.Secret.Update(secret.PreviousKey, secret.NewKey)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -72,12 +75,18 @@ func cleanSecret(context *gin.Context) {
 func getCredentials(context *gin.Context) {
 	credentialType := context.Request.URL.Query().Get("type")
 
+	var err error
 	var credentials map[string]Credential
 	if credentialType != "" {
 		number, _ := strconv.Atoi(credentialType)
-		credentials = persistence.BoltDB.Credential.ListByType(CredentialType(number))
+		credentials, err = persistence.BoltDB.Credential.ListByType(CredentialType(number))
 	} else {
-		credentials = persistence.BoltDB.Credential.List()
+		credentials, err = persistence.BoltDB.Credential.List()
+	}
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	context.JSON(http.StatusOK, gin.H{"response": credentials})

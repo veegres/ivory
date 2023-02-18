@@ -3,7 +3,6 @@ package persistence
 import (
 	"bytes"
 	"encoding/gob"
-	"errors"
 	"github.com/boltdb/bolt"
 	"log"
 	"os"
@@ -104,61 +103,7 @@ type common struct {
 	bolt *bolt.DB
 }
 
-type element struct {
-	key   string
-	value []byte
-}
-
-func (d common) getList(bucket []byte) ([]element, error) {
-	list := make([]element, 0)
-	err := d.bolt.View(func(tx *bolt.Tx) error {
-		cursor := tx.Bucket(bucket).Cursor()
-		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-			list = append(list, element{string(key), value})
-		}
-		return nil
-	})
-	return list, err
-}
-
-func (d common) get(bucket []byte, key string) ([]byte, error) {
-	var value []byte
-	err := d.bolt.View(func(tx *bolt.Tx) error {
-		value = tx.Bucket(bucket).Get([]byte(key))
-		if value == nil {
-			return errors.New("no such element")
-		} else {
-			return nil
-		}
-	})
-	return value, err
-}
-
-func (d common) delete(bucket []byte, key string) error {
-	return d.bolt.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket(bucket).Delete([]byte(key))
-	})
-}
-
-func (d common) deleteAll(bucket []byte) error {
-	return d.bolt.Update(func(tx *bolt.Tx) error {
-		err := tx.DeleteBucket(bucket)
-		_, err = tx.CreateBucket(bucket)
-		return err
-	})
-}
-
-func (d common) update(bucket []byte, key string, value interface{}) error {
-	return d.bolt.Update(func(tx *bolt.Tx) error {
-		var buff bytes.Buffer
-		_ = gob.NewEncoder(&buff).Encode(value)
-		return tx.Bucket(bucket).Put([]byte(key), buff.Bytes())
-	})
-}
-
-// TODO change all implementations to these generic methods
-
-func GetList[T any](bucket []byte) ([]T, error) {
+func GetList[T any](bucket []byte, filter func(el T) bool) ([]T, error) {
 	result := make([]T, 0)
 	err := BoltDB.db.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(bucket).Cursor()
@@ -169,7 +114,9 @@ func GetList[T any](bucket []byte) ([]T, error) {
 			if err != nil {
 				return err
 			}
-			result = append(result, el)
+			if filter == nil || filter(el) {
+				result = append(result, el)
+			}
 		}
 		return nil
 	})
@@ -188,7 +135,7 @@ func GetKeyList(bucket []byte) ([]string, error) {
 	return result, err
 }
 
-func GetMap[T any](bucket []byte) (map[string]T, error) {
+func GetMap[T any](bucket []byte, filter func(el T) bool) (map[string]T, error) {
 	result := make(map[string]T)
 	err := BoltDB.db.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(bucket).Cursor()
@@ -199,7 +146,9 @@ func GetMap[T any](bucket []byte) (map[string]T, error) {
 			if err != nil {
 				return err
 			}
-			result[string(key)] = el
+			if filter == nil || filter(el) {
+				result[string(key)] = el
+			}
 		}
 		return nil
 	})
@@ -223,12 +172,6 @@ func Get[T any](bucket []byte, key string) (T, error) {
 	return value, err
 }
 
-func Delete(bucket []byte, key string) error {
-	return BoltDB.db.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket(bucket).Delete([]byte(key))
-	})
-}
-
 func Update[T any](bucket []byte, key string, value T) error {
 	return BoltDB.db.Update(func(tx *bolt.Tx) error {
 		var buff bytes.Buffer
@@ -237,6 +180,12 @@ func Update[T any](bucket []byte, key string, value T) error {
 			return err
 		}
 		return tx.Bucket(bucket).Put([]byte(key), buff.Bytes())
+	})
+}
+
+func Delete(bucket []byte, key string) error {
+	return BoltDB.db.Update(func(tx *bolt.Tx) error {
+		return tx.Bucket(bucket).Delete([]byte(key))
 	})
 }
 

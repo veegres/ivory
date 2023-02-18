@@ -135,8 +135,8 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
 
     /**
      * Either find leader or set query that we send request to.
-     * P.S. we cannot use memo for this function because `combine` doesn't change
-     * but we still need changed it every time for clusters without any seccuss request
+     * P.S. we cannot use memo for this function because `combine` doesn't change,
+     * but we still need to change it every time for clusters without any success request
      */
     function handleDefaultInstance() {
         const map = combine.combinedInstanceMap
