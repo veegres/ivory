@@ -3,21 +3,18 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	. "ivory/model"
-	"ivory/service"
 	"net/http"
 )
 
-func (r routes) InstanceGroup(group *gin.RouterGroup) {
-	node := group.Group("/instance")
-	node.GET("/info", getInstanceInfo)
-	node.GET("/overview", getInstanceOverview)
-	node.GET("/config", getInstanceConfig)
-	node.PATCH("/config", patchInstanceConfig)
-	node.POST("/switchover", postInstanceSwitchover)
-	node.POST("/reinitialize", postInstanceReinitialize)
+type InstanceRouter struct {
+	instanceService InstanceService
 }
 
-func getInstanceInfo(context *gin.Context) {
+func NewInstanceRouter(instanceService InstanceService) *InstanceRouter {
+	return &InstanceRouter{instanceService: instanceService}
+}
+
+func (r *InstanceRouter) GetInstanceInfo(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindQuery(&instance)
 	if err != nil {
@@ -25,7 +22,7 @@ func getInstanceInfo(context *gin.Context) {
 		return
 	}
 
-	body, status, err := service.PatroniInstanceApiImpl.Info(instance)
+	body, status, err := r.instanceService.Info(instance)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -33,7 +30,7 @@ func getInstanceInfo(context *gin.Context) {
 	context.JSON(status, gin.H{"response": body})
 }
 
-func getInstanceOverview(context *gin.Context) {
+func (r *InstanceRouter) GetInstanceOverview(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindQuery(&instance)
 	if err != nil {
@@ -41,11 +38,11 @@ func getInstanceOverview(context *gin.Context) {
 		return
 	}
 
-	body, status, err := service.PatroniInstanceApiImpl.Overview(instance)
-	handleResponse(context, body, status, err)
+	body, status, err := r.instanceService.Overview(instance)
+	r.handleResponse(context, body, status, err)
 }
 
-func getInstanceConfig(context *gin.Context) {
+func (r *InstanceRouter) GetInstanceConfig(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindQuery(&instance)
 	if err != nil {
@@ -53,11 +50,11 @@ func getInstanceConfig(context *gin.Context) {
 		return
 	}
 
-	body, status, err := service.PatroniInstanceApiImpl.Config(instance)
-	handleResponse(context, body, status, err)
+	body, status, err := r.instanceService.Config(instance)
+	r.handleResponse(context, body, status, err)
 }
 
-func patchInstanceConfig(context *gin.Context) {
+func (r *InstanceRouter) PatchInstanceConfig(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 	if err != nil {
@@ -65,11 +62,11 @@ func patchInstanceConfig(context *gin.Context) {
 		return
 	}
 
-	body, status, err := service.PatroniInstanceApiImpl.ConfigUpdate(instance)
-	handleResponse(context, body, status, err)
+	body, status, err := r.instanceService.ConfigUpdate(instance)
+	r.handleResponse(context, body, status, err)
 }
 
-func postInstanceSwitchover(context *gin.Context) {
+func (r *InstanceRouter) PostInstanceSwitchover(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 	if err != nil {
@@ -77,11 +74,11 @@ func postInstanceSwitchover(context *gin.Context) {
 		return
 	}
 
-	body, status, err := service.PatroniInstanceApiImpl.Switchover(instance)
-	handleResponse(context, body, status, err)
+	body, status, err := r.instanceService.Switchover(instance)
+	r.handleResponse(context, body, status, err)
 }
 
-func postInstanceReinitialize(context *gin.Context) {
+func (r *InstanceRouter) PostInstanceReinitialize(context *gin.Context) {
 	var instance InstanceRequest
 	err := context.ShouldBindJSON(&instance)
 	if err != nil {
@@ -89,11 +86,11 @@ func postInstanceReinitialize(context *gin.Context) {
 		return
 	}
 
-	body, status, err := service.PatroniInstanceApiImpl.Reinitialize(instance)
-	handleResponse(context, body, status, err)
+	body, status, err := r.instanceService.Reinitialize(instance)
+	r.handleResponse(context, body, status, err)
 }
 
-func handleResponse(context *gin.Context, body any, status int, err error) {
+func (r *InstanceRouter) handleResponse(context *gin.Context, body any, status int, err error) {
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

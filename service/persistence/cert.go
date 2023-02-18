@@ -4,31 +4,39 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
+	"ivory/config"
 	. "ivory/model"
 	"path"
 	"strings"
 )
 
 type CertRepository struct {
-	common common
-	bucket []byte
+	bucket *config.Bucket[CertModel]
+	file   *config.FilePersistence
 }
 
-func (r CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
-	return Get[CertModel](r.bucket, uuid.String())
+func NewCertRepository(bucket *config.Bucket[CertModel], file *config.FilePersistence) *CertRepository {
+	return &CertRepository{
+		bucket: bucket,
+		file:   file,
+	}
 }
 
-func (r CertRepository) List() (map[string]CertModel, error) {
-	return GetMap[CertModel](r.bucket, nil)
+func (r *CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
+	return r.bucket.Get(uuid.String())
 }
 
-func (r CertRepository) ListByType(certType CertType) (map[string]CertModel, error) {
-	return GetMap[CertModel](r.bucket, func(cert CertModel) bool {
+func (r *CertRepository) List() (map[string]CertModel, error) {
+	return r.bucket.GetMap(nil)
+}
+
+func (r *CertRepository) ListByType(certType CertType) (map[string]CertModel, error) {
+	return r.bucket.GetMap(func(cert CertModel) bool {
 		return cert.Type == certType
 	})
 }
 
-func (r CertRepository) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*CertModel, error) {
+func (r *CertRepository) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*CertModel, error) {
 	formats := []string{".crt", ".key", ".chain"}
 	key := uuid.New()
 	cert := CertModel{FileUsageType: fileUsageType, Type: certType}
@@ -47,7 +55,7 @@ func (r CertRepository) Create(pathStr string, certType CertType, fileUsageType 
 	switch fileUsageType {
 	case FileUsageType(UPLOAD):
 		cert.FileName = fileName
-		cert.Path = File.Certs.Create(key)
+		cert.Path = r.file.Create(key)
 	case FileUsageType(PATH):
 		cert.FileName = fileName
 		cert.Path = pathStr
@@ -55,25 +63,25 @@ func (r CertRepository) Create(pathStr string, certType CertType, fileUsageType 
 		return nil, errors.New("unknown certificate type")
 	}
 
-	err := Update(r.bucket, key.String(), cert)
+	err := r.bucket.Update(key.String(), cert)
 	if err != nil {
 		return nil, err
 	}
 	return &cert, nil
 }
 
-func (r CertRepository) Delete(certUuid uuid.UUID) error {
+func (r *CertRepository) Delete(certUuid uuid.UUID) error {
 	var err error
 	cert, err := r.Get(certUuid)
 	if cert.FileUsageType == FileUsageType(UPLOAD) {
-		err = File.Certs.Delete(certUuid)
+		err = r.file.Delete(certUuid)
 	}
-	err = Delete(r.bucket, certUuid.String())
+	err = r.bucket.Delete(certUuid.String())
 	return err
 }
 
-func (r CertRepository) DeleteAll() error {
-	err := File.Certs.DeleteAll()
-	err = DeleteAll(r.bucket)
+func (r *CertRepository) DeleteAll() error {
+	err := r.file.DeleteAll()
+	err = r.bucket.DeleteAll()
 	return err
 }

@@ -6,14 +6,20 @@ import (
 	"strings"
 )
 
-var PatroniInstanceApiImpl = &patroniInstanceApiImpl{}
+type patroniInstanceService struct {
+	proxy *Proxy
+}
 
-type patroniInstanceApiImpl struct{}
+func NewPatroniService(proxy *Proxy) InstanceService {
+	return &patroniInstanceService{
+		proxy: proxy,
+	}
+}
 
-func (p patroniInstanceApiImpl) Info(instance InstanceRequest) (InstanceInfo, int, error) {
+func (p *patroniInstanceService) Info(instance InstanceRequest) (InstanceInfo, int, error) {
 	var info InstanceInfo
 
-	response, status, err := Get[PatroniInfo](instance, "/patroni")
+	response, status, err := NewProxyRequest[PatroniInfo](p.proxy).Get(instance, "/patroni")
 	if err == nil {
 		info = InstanceInfo{
 			Sidecar: Sidecar{Host: instance.Host, Port: instance.Port},
@@ -25,11 +31,11 @@ func (p patroniInstanceApiImpl) Info(instance InstanceRequest) (InstanceInfo, in
 	return info, status, err
 }
 
-func (p patroniInstanceApiImpl) Overview(instance InstanceRequest) ([]Instance, int, error) {
+func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance, int, error) {
 	var err error
 	var overview []Instance
 
-	response, status, err := Get[PatroniCluster](instance, "/cluster")
+	response, status, err := NewProxyRequest[PatroniCluster](p.proxy).Get(instance, "/cluster")
 	if err == nil {
 		for _, patroniInstance := range response.Members {
 			domainString := strings.Split(patroniInstance.ApiUrl, "/")[2]
@@ -59,18 +65,18 @@ func (p patroniInstanceApiImpl) Overview(instance InstanceRequest) ([]Instance, 
 	return overview, status, err
 }
 
-func (p patroniInstanceApiImpl) Config(instance InstanceRequest) (any, int, error) {
-	return Get[any](instance, "/config")
+func (p *patroniInstanceService) Config(instance InstanceRequest) (any, int, error) {
+	return NewProxyRequest[any](p.proxy).Get(instance, "/config")
 }
 
-func (p patroniInstanceApiImpl) ConfigUpdate(instance InstanceRequest) (any, int, error) {
-	return Patch[any](instance, "/config")
+func (p *patroniInstanceService) ConfigUpdate(instance InstanceRequest) (any, int, error) {
+	return NewProxyRequest[any](p.proxy).Patch(instance, "/config")
 }
 
-func (p patroniInstanceApiImpl) Switchover(instance InstanceRequest) (any, int, error) {
-	return Post[string](instance, "/switchover")
+func (p *patroniInstanceService) Switchover(instance InstanceRequest) (any, int, error) {
+	return NewProxyRequest[string](p.proxy).Post(instance, "/switchover")
 }
 
-func (p patroniInstanceApiImpl) Reinitialize(instance InstanceRequest) (any, int, error) {
-	return Post[string](instance, "/reinitialize")
+func (p *patroniInstanceService) Reinitialize(instance InstanceRequest) (any, int, error) {
+	return NewProxyRequest[string](p.proxy).Post(instance, "/reinitialize")
 }

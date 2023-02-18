@@ -9,36 +9,56 @@ import (
 	"sync"
 )
 
-var Secret *secret
-
-type secret struct {
-	key   [16]byte
-	ref   string
-	mutex *sync.Mutex
+type SecretService struct {
+	key                    [16]byte
+	ref                    string
+	mutex                  *sync.Mutex
+	passwordRepository     *persistence.PasswordRepository
+	secretRepository       *persistence.SecretRepository
+	clusterRepository      *persistence.ClusterRepository
+	certRepository         *persistence.CertRepository
+	tagRepository          *persistence.TagRepository
+	compactTableRepository *persistence.CompactTableRepository
+	encryption             *Encryption
 }
 
-func (s *secret) Create(ref string) {
-	Secret = &secret{
-		key:   [16]byte{},
-		ref:   ref,
-		mutex: &sync.Mutex{},
+func NewSecretService(
+	passwordRepository *persistence.PasswordRepository,
+	secretRepository *persistence.SecretRepository,
+	clusterRepository *persistence.ClusterRepository,
+	certRepository *persistence.CertRepository,
+	tagRepository *persistence.TagRepository,
+	compactTableRepository *persistence.CompactTableRepository,
+	encryption *Encryption,
+) *SecretService {
+	return &SecretService{
+		key:                    [16]byte{},
+		ref:                    "",
+		mutex:                  &sync.Mutex{},
+		passwordRepository:     passwordRepository,
+		secretRepository:       secretRepository,
+		compactTableRepository: compactTableRepository,
+		clusterRepository:      clusterRepository,
+		certRepository:         certRepository,
+		tagRepository:          tagRepository,
+		encryption:             encryption,
 	}
 }
 
-func (s *secret) Get() [16]byte {
+func (s *SecretService) Get() [16]byte {
 	return s.key
 }
 
-func (s *secret) Set(key string, decrypted string) error {
+func (s *SecretService) Set(key string, decrypted string) error {
 	if decrypted == "" {
 		var err error
-		decrypted, err = persistence.BoltDB.Credential.GetDecryptedRef()
+		decrypted, err = s.secretRepository.GetDecryptedRef()
 		if err != nil {
 			return err
 		}
 	}
 	keySha1 := md5.Sum([]byte(key))
-	ref, err := Encrypt(decrypted, keySha1)
+	ref, err := s.encryption.Encrypt(decrypted, keySha1)
 	if err != nil {
 		return err
 	}
@@ -54,7 +74,7 @@ func (s *secret) Set(key string, decrypted string) error {
 			return errors.New("the secret is not correct")
 		}
 	}
-	err = persistence.BoltDB.Credential.UpdateRefs(ref, decrypted)
+	err = s.secretRepository.UpdateRefs(ref, decrypted)
 	s.mutex.Unlock()
 	if err != nil {
 		err = s.Clean()
@@ -62,7 +82,7 @@ func (s *secret) Set(key string, decrypted string) error {
 	return err
 }
 
-func (s *secret) Update(previousKey string, newKey string) error {
+func (s *SecretService) Update(previousKey string, newKey string) error {
 	previousKeySha1 := md5.Sum([]byte(previousKey))
 	newKeySha1 := md5.Sum([]byte(newKey))
 	s.mutex.Lock()
@@ -78,44 +98,45 @@ func (s *secret) Update(previousKey string, newKey string) error {
 	}
 
 	s.key = newKeySha1
-	credentialMap, err := persistence.BoltDB.Credential.List()
+	credentialMap, err := s.passwordRepository.List()
 	if err != nil {
 		return err
 	}
 	for id, credential := range credentialMap {
 		id, _ := uuid.Parse(id)
 		oldEncodedPass := credential.Password
-		decodedPass, _ := Decrypt(oldEncodedPass, previousKeySha1)
-		newEncodedPass, _ := Encrypt(decodedPass, newKeySha1)
+		decodedPass, _ := s.encryption.Decrypt(oldEncodedPass, previousKeySha1)
+		newEncodedPass, _ := s.encryption.Encrypt(decodedPass, newKeySha1)
 		credential.Password = newEncodedPass
-		_, _, err = persistence.BoltDB.Credential.Update(id, credential)
+		_, _, err = s.passwordRepository.Update(id, credential)
 	}
 
 	s.mutex.Unlock()
 	return err
 }
 
-func (s *secret) Clean() error {
+func (s *SecretService) Clean() error {
 	s.mutex.Lock()
+
 	s.ref = ""
 	s.key = [16]byte{}
-	err := persistence.BoltDB.Credential.UpdateRefs("", "")
+	err := s.secretRepository.UpdateRefs("", "")
 
-	err = persistence.BoltDB.Credential.DeleteAll()
-	err = persistence.BoltDB.Cert.DeleteAll()
-	err = persistence.BoltDB.Cluster.DeleteAll()
-	err = persistence.BoltDB.CompactTable.DeleteAll()
-	err = persistence.BoltDB.Tag.DeleteAll()
+	err = s.passwordRepository.DeleteAll()
+	err = s.certRepository.DeleteAll()
+	err = s.clusterRepository.DeleteAll()
+	err = s.compactTableRepository.DeleteAll()
+	err = s.tagRepository.DeleteAll()
 
 	s.mutex.Unlock()
 	return err
 }
 
-func (s *secret) IsRefEmpty() bool {
+func (s *SecretService) IsRefEmpty() bool {
 	return s.ref == ""
 }
 
-func (s *secret) IsSecretEmpty() bool {
+func (s *SecretService) IsSecretEmpty() bool {
 	for _, b := range s.key {
 		if b != 0 {
 			return false
@@ -124,7 +145,7 @@ func (s *secret) IsSecretEmpty() bool {
 	return true
 }
 
-func (s *secret) Status() SecretStatus {
+func (s *SecretService) Status() SecretStatus {
 	return SecretStatus{
 		Key: !s.IsSecretEmpty(),
 		Ref: !s.IsRefEmpty(),

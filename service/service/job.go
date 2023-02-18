@@ -6,19 +6,7 @@ import (
 	"sync"
 )
 
-type Job interface {
-	SetCommand(cmd *exec.Cmd)
-	GetCommand() *exec.Cmd
-	GetStatus() JobStatus
-	SetStatus(status JobStatus)
-	Subscribers() map[chan Event]bool
-	Subscribe() chan Event
-	Unsubscribe(channel chan Event)
-	Size() int
-	IsJobActive() bool
-}
-
-type job struct {
+type Job struct {
 	subscribers map[chan Event]bool
 	status      JobStatus
 	size        int
@@ -26,8 +14,8 @@ type job struct {
 	mutex       *sync.Mutex
 }
 
-func CreateJob() Job {
-	return &job{
+func NewJob() *Job {
+	return &Job{
 		subscribers: make(map[chan Event]bool),
 		size:        0,
 		status:      PENDING,
@@ -35,31 +23,31 @@ func CreateJob() Job {
 	}
 }
 
-func (j *job) SetCommand(cmd *exec.Cmd) {
+func (j *Job) SetCommand(cmd *exec.Cmd) {
 	j.mutex.Lock()
 	j.command = cmd
 	j.mutex.Unlock()
 }
 
-func (j *job) GetCommand() *exec.Cmd {
+func (j *Job) GetCommand() *exec.Cmd {
 	return j.command
 }
 
-func (j *job) GetStatus() JobStatus {
+func (j *Job) GetStatus() JobStatus {
 	return j.status
 }
 
-func (j *job) SetStatus(status JobStatus) {
+func (j *Job) SetStatus(status JobStatus) {
 	j.mutex.Lock()
 	j.status = status
 	j.mutex.Unlock()
 }
 
-func (j *job) Subscribers() map[chan Event]bool {
+func (j *Job) Subscribers() map[chan Event]bool {
 	return j.subscribers
 }
 
-func (j *job) Subscribe() chan Event {
+func (j *Job) Subscribe() chan Event {
 	var channel chan Event
 	j.mutex.Lock()
 	if j.IsJobActive() {
@@ -71,27 +59,27 @@ func (j *job) Subscribe() chan Event {
 	return channel
 }
 
-func (j *job) Unsubscribe(channel chan Event) {
+func (j *Job) Unsubscribe(channel chan Event) {
 	j.mutex.Lock()
 	delete(j.subscribers, channel)
 	j.decrementSubs()
 	j.mutex.Unlock()
 }
 
-func (j *job) Size() int {
+func (j *Job) Size() int {
 	return j.size
 }
 
-func (j *job) IsJobActive() bool {
+func (j *Job) IsJobActive() bool {
 	return j.GetStatus() == PENDING || j.GetStatus() == RUNNING
 }
 
-func (j *job) incrementSubs() int {
+func (j *Job) incrementSubs() int {
 	j.size++
 	return j.size
 }
 
-func (j *job) decrementSubs() int {
+func (j *Job) decrementSubs() int {
 	j.size--
 	return j.size
 }

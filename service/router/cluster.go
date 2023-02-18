@@ -7,19 +7,23 @@ import (
 	"net/http"
 )
 
-func (r routes) ClusterListGroup(group *gin.RouterGroup) {
-	cluster := group.Group("/cluster")
-	cluster.GET("", getClusterList)
-	cluster.GET("/:name", getClusterByName)
-	cluster.PUT("", putClusterByName)
-	cluster.DELETE("/:name", deleteClusterByName)
+type ClusterRouter struct {
+	clusterRepository *persistence.ClusterRepository
+	tagRepository     *persistence.TagRepository
 }
 
-func getClusterList(context *gin.Context) {
+func NewClusterRouter(
+	clusterRepository *persistence.ClusterRepository,
+	tagRepository *persistence.TagRepository,
+) *ClusterRouter {
+	return &ClusterRouter{clusterRepository: clusterRepository, tagRepository: tagRepository}
+}
+
+func (r *ClusterRouter) GetClusterList(context *gin.Context) {
 	tags := context.Request.URL.Query()["tags[]"]
 
 	if len(tags) == 0 {
-		list, err := persistence.BoltDB.Cluster.List()
+		list, err := r.clusterRepository.List()
 		if err != nil {
 			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -28,7 +32,7 @@ func getClusterList(context *gin.Context) {
 	} else {
 		listMap := make(map[string]bool)
 		for _, tag := range tags {
-			clusters, err := persistence.BoltDB.Tag.Get(tag)
+			clusters, err := r.tagRepository.Get(tag)
 			if err != nil {
 				context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 				return
@@ -46,7 +50,7 @@ func getClusterList(context *gin.Context) {
 			listName = append(listName, k)
 		}
 
-		list, err := persistence.BoltDB.Cluster.ListByName(listName)
+		list, err := r.clusterRepository.ListByName(listName)
 		if err != nil {
 			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -56,9 +60,9 @@ func getClusterList(context *gin.Context) {
 
 }
 
-func getClusterByName(context *gin.Context) {
+func (r *ClusterRouter) GetClusterByName(context *gin.Context) {
 	name := context.Param("name")
-	cluster, err := persistence.BoltDB.Cluster.Get(name)
+	cluster, err := r.clusterRepository.Get(name)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -66,7 +70,7 @@ func getClusterByName(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
-func putClusterByName(context *gin.Context) {
+func (r *ClusterRouter) PutClusterByName(context *gin.Context) {
 	var cluster ClusterModel
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
@@ -85,7 +89,7 @@ func putClusterByName(context *gin.Context) {
 	}
 
 	// NOTE: create tags in db with cluster name
-	err := persistence.BoltDB.Tag.UpdateCluster(cluster.Name, tagList)
+	err := r.tagRepository.UpdateCluster(cluster.Name, tagList)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -94,7 +98,7 @@ func putClusterByName(context *gin.Context) {
 	cluster.Tags = tagList
 
 	// NOTE: update cluster
-	errCluster := persistence.BoltDB.Cluster.Update(cluster)
+	errCluster := r.clusterRepository.Update(cluster)
 	if errCluster != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errCluster.Error()})
 		return
@@ -103,14 +107,14 @@ func putClusterByName(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
-func deleteClusterByName(context *gin.Context) {
+func (r *ClusterRouter) DeleteClusterByName(context *gin.Context) {
 	name := context.Param("name")
-	errTag := persistence.BoltDB.Tag.UpdateCluster(name, nil)
+	errTag := r.tagRepository.UpdateCluster(name, nil)
 	if errTag != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errTag.Error()})
 		return
 	}
-	errCluster := persistence.BoltDB.Cluster.Delete(name)
+	errCluster := r.clusterRepository.Delete(name)
 	if errCluster != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errCluster.Error()})
 		return

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"io"
+	"ivory/config"
 	"ivory/model"
 	"ivory/persistence"
 	"net/http"
@@ -16,34 +17,70 @@ import (
 	"time"
 )
 
-func Get[R any](instance model.InstanceRequest, path string) (R, int, error) {
-	return send[R](http.MethodGet, instance, path, 1+time.Second)
+type ProxyRequest[R any] struct {
+	proxy *Proxy
 }
 
-func Post[R any](instance model.InstanceRequest, path string) (R, int, error) {
-	return send[R](http.MethodPost, instance, path, 0)
+func NewProxyRequest[R any](proxy *Proxy) *ProxyRequest[R] {
+	return &ProxyRequest[R]{
+		proxy: proxy,
+	}
 }
 
-func Put[R any](instance model.InstanceRequest, path string) (R, int, error) {
-	return send[R](http.MethodPut, instance, path, 0)
+func (p *ProxyRequest[R]) Get(instance model.InstanceRequest, path string) (R, int, error) {
+	response, status, err := p.proxy.send(http.MethodGet, instance, path, 1+time.Second)
+	return response.(R), status, err
 }
 
-func Patch[R any](instance model.InstanceRequest, path string) (R, int, error) {
-	return send[R](http.MethodPatch, instance, path, 0)
+func (p *ProxyRequest[R]) Post(instance model.InstanceRequest, path string) (R, int, error) {
+	response, status, err := p.proxy.send(http.MethodPost, instance, path, 0)
+	return response.(R), status, err
 }
 
-func Delete[R any](instance model.InstanceRequest, path string) (R, int, error) {
-	return send[R](http.MethodDelete, instance, path, 0)
+func (p *ProxyRequest[R]) Put(instance model.InstanceRequest, path string) (R, int, error) {
+	response, status, err := p.proxy.send(http.MethodPut, instance, path, 0)
+	return response.(R), status, err
 }
 
-func send[R any](method string, instance model.InstanceRequest, path string, timeout time.Duration) (R, int, error) {
-	clusterInfo, err := persistence.BoltDB.Cluster.Get(instance.Cluster)
-	client, protocol, err := getClient(clusterInfo.Certs, timeout)
+func (p *ProxyRequest[R]) Patch(instance model.InstanceRequest, path string) (R, int, error) {
+	response, status, err := p.proxy.send(http.MethodPatch, instance, path, 0)
+	return response.(R), status, err
+}
+
+func (p *ProxyRequest[R]) Delete(instance model.InstanceRequest, path string) (R, int, error) {
+	response, status, err := p.proxy.send(http.MethodDelete, instance, path, 0)
+	return response.(R), status, err
+}
+
+type Proxy struct {
+	clusterRepository  *persistence.ClusterRepository
+	passwordRepository *persistence.PasswordRepository
+	certRepository     *persistence.CertRepository
+	certFile           *config.FilePersistence
+}
+
+func NewProxy(
+	clusterRepository *persistence.ClusterRepository,
+	passwordRepository *persistence.PasswordRepository,
+	certRepository *persistence.CertRepository,
+	certFile *config.FilePersistence,
+) *Proxy {
+	return &Proxy{
+		clusterRepository:  clusterRepository,
+		passwordRepository: passwordRepository,
+		certRepository:     certRepository,
+		certFile:           certFile,
+	}
+}
+
+func (p *Proxy) send(method string, instance model.InstanceRequest, path string, timeout time.Duration) (interface{}, int, error) {
+	clusterInfo, err := p.clusterRepository.Get(instance.Cluster)
+	client, protocol, err := p.getClient(clusterInfo.Certs, timeout)
 	domain := instance.Host + ":" + strconv.Itoa(instance.Port)
-	req, err := getRequest(clusterInfo.Credentials.PatroniId, method, protocol, domain, path, instance.Body)
+	req, err := p.getRequest(clusterInfo.Credentials.PatroniId, method, protocol, domain, path, instance.Body)
 	res, err := client.Do(req)
 
-	var body R
+	var body interface{}
 	var status int
 	if res != nil && err == nil {
 		contentType := res.Header.Get("Content-Type")
@@ -64,7 +101,7 @@ func send[R any](method string, instance model.InstanceRequest, path string, tim
 	return body, status, err
 }
 
-func getRequest(
+func (p *Proxy) getRequest(
 	passwordId *uuid.UUID,
 	method string,
 	protocol string,
@@ -84,7 +121,7 @@ func getRequest(
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
 	if passwordId != nil {
-		passInfo, errPass := persistence.BoltDB.Credential.Get(*passwordId)
+		passInfo, errPass := p.passwordRepository.Get(*passwordId)
 		err = errPass
 		req.SetBasicAuth(passInfo.Username, passInfo.Password)
 	}
@@ -92,16 +129,16 @@ func getRequest(
 	return req, err
 }
 
-func getClient(certs model.Certs, timeout time.Duration) (*http.Client, string, error) {
-	// TODO error overturning doesn't work it should be changed to a lot of returns with errors
+func (p *Proxy) getClient(certs model.Certs, timeout time.Duration) (*http.Client, string, error) {
+	// TODO error overloading doesn't work it should be changed to a lot of returns with errors
 	var err error
 	var rootCa *x509.CertPool
 	protocol := "http"
 
 	// Setting Client CA
 	if certs.ClientCAId != nil {
-		clientCAInfo, errCert := persistence.BoltDB.Cert.Get(*certs.ClientCAId)
-		clientCA, errCert := persistence.File.Certs.Read(clientCAInfo.Path)
+		clientCAInfo, errCert := p.certRepository.Get(*certs.ClientCAId)
+		clientCA, errCert := p.certFile.Read(clientCAInfo.Path)
 		rootCa = x509.NewCertPool()
 		rootCa.AppendCertsFromPEM(clientCA)
 		protocol = "https"
@@ -111,8 +148,8 @@ func getClient(certs model.Certs, timeout time.Duration) (*http.Client, string, 
 	// Setting Client Cert with Client Private Key
 	var certificates []tls.Certificate
 	if certs.ClientCertId != nil && certs.ClientKeyId != nil {
-		clientCertInfo, errCert := persistence.BoltDB.Cert.Get(*certs.ClientCertId)
-		clientKeyInfo, errCert := persistence.BoltDB.Cert.Get(*certs.ClientKeyId)
+		clientCertInfo, errCert := p.certRepository.Get(*certs.ClientCertId)
+		clientKeyInfo, errCert := p.certRepository.Get(*certs.ClientKeyId)
 
 		cert, errCert := tls.LoadX509KeyPair(clientCertInfo.Path, clientKeyInfo.Path)
 		certificates = append(certificates, cert)

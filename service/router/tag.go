@@ -6,13 +6,16 @@ import (
 	"net/http"
 )
 
-func (r routes) TagGroup(group *gin.RouterGroup) {
-	tag := group.Group("/tag")
-	tag.GET("", getTagList)
+type TagRouter struct {
+	repository *persistence.TagRepository
 }
 
-func getTagList(context *gin.Context) {
-	list, err := persistence.BoltDB.Tag.List()
+func NewTagRouter(repository *persistence.TagRepository) *TagRouter {
+	return &TagRouter{repository: repository}
+}
+
+func (r *TagRouter) GetTagList(context *gin.Context) {
+	list, err := r.repository.List()
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

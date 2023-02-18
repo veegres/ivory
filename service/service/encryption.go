@@ -6,8 +6,14 @@ import (
 	"encoding/base64"
 )
 
+type Encryption struct{}
+
+func NewEncryption() *Encryption {
+	return &Encryption{}
+}
+
 // Encrypt method is to encrypt or hide any classified text
-func Encrypt(text string, secret [16]byte) (string, error) {
+func (e *Encryption) Encrypt(text string, secret [16]byte) (string, error) {
 	block, err := aes.NewCipher(secret[:])
 	if err != nil {
 		return "", err
@@ -17,16 +23,16 @@ func Encrypt(text string, secret [16]byte) (string, error) {
 	iv := cipherText[:aes.BlockSize]
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(cipherText[aes.BlockSize:], plainText)
-	return encode(cipherText), nil
+	return e.encode(cipherText), nil
 }
 
 // Decrypt method is to extract back the encrypted text
-func Decrypt(text string, secret [16]byte) (string, error) {
+func (e *Encryption) Decrypt(text string, secret [16]byte) (string, error) {
 	block, err := aes.NewCipher(secret[:])
 	if err != nil {
 		return "", err
 	}
-	cipherText := decode(text)
+	cipherText := e.decode(text)
 	iv := cipherText[:aes.BlockSize]
 	cipherText = cipherText[aes.BlockSize:]
 	stream := cipher.NewCFBDecrypter(block, iv)
@@ -34,11 +40,11 @@ func Decrypt(text string, secret [16]byte) (string, error) {
 	return string(cipherText), nil
 }
 
-func encode(b []byte) string {
+func (e *Encryption) encode(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func decode(s string) []byte {
+func (e *Encryption) decode(s string) []byte {
 	data, _ := base64.StdEncoding.DecodeString(s)
 	return data
 }
