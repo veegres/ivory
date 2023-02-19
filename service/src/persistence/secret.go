@@ -11,24 +11,24 @@ type SecretRepository struct {
 }
 
 func NewSecretRepository(bucket *config.Bucket[string]) *SecretRepository {
-	encryptedRefKey := "refEncrypted"
-	decryptedRefKey := "refDecrypted"
-	if _, err := bucket.Get(encryptedRefKey); err == nil {
-		err := bucket.Update(encryptedRefKey, "")
+	encryptedRef := "encryptedRef"
+	decryptedRef := "decryptedRef"
+	if _, err := bucket.Get(encryptedRef); err != nil {
+		err := bucket.Update(encryptedRef, "")
 		if err != nil {
 			panic(err)
 		}
 	}
-	if _, err := bucket.Get(decryptedRefKey); err == nil {
-		err := bucket.Update(decryptedRefKey, "")
+	if _, err := bucket.Get(decryptedRef); err != nil {
+		err := bucket.Update(decryptedRef, "")
 		if err != nil {
 			panic(err)
 		}
 	}
 	return &SecretRepository{
 		bucket:          bucket,
-		encryptedRefKey: encryptedRefKey,
-		decryptedRefKey: decryptedRefKey,
+		encryptedRefKey: encryptedRef,
+		decryptedRefKey: decryptedRef,
 	}
 }
 

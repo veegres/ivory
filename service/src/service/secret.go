@@ -31,9 +31,14 @@ func NewSecretService(
 	compactTableRepository *persistence.CompactTableRepository,
 	encryption *Encryption,
 ) *SecretService {
+	encryptedRef, err := secretRepository.GetEncryptedRef()
+	if err != nil {
+		panic(err)
+	}
+
 	return &SecretService{
 		key:                    [16]byte{},
-		ref:                    "",
+		ref:                    encryptedRef,
 		mutex:                  &sync.Mutex{},
 		passwordRepository:     passwordRepository,
 		secretRepository:       secretRepository,
@@ -49,32 +54,32 @@ func (s *SecretService) Get() [16]byte {
 	return s.key
 }
 
-func (s *SecretService) Set(key string, decrypted string) error {
-	if decrypted == "" {
+func (s *SecretService) Set(decryptedKey string, decryptedRef string) error {
+	if decryptedRef == "" {
 		var err error
-		decrypted, err = s.secretRepository.GetDecryptedRef()
+		decryptedRef, err = s.secretRepository.GetDecryptedRef()
 		if err != nil {
 			return err
 		}
 	}
-	keySha1 := md5.Sum([]byte(key))
-	ref, err := s.encryption.Encrypt(decrypted, keySha1)
+	encryptedKey := md5.Sum([]byte(decryptedKey))
+	encryptedRef, err := s.encryption.Encrypt(decryptedRef, encryptedKey)
 	if err != nil {
 		return err
 	}
 	s.mutex.Lock()
 	if s.IsRefEmpty() {
-		s.key = keySha1
-		s.ref = ref
+		s.key = encryptedKey
+		s.ref = encryptedRef
 	} else {
-		if s.ref == ref {
-			s.key = keySha1
+		if s.ref == encryptedRef {
+			s.key = encryptedKey
 		} else {
 			s.mutex.Unlock()
 			return errors.New("the secret is not correct")
 		}
 	}
-	err = s.secretRepository.UpdateRefs(ref, decrypted)
+	err = s.secretRepository.UpdateRefs(encryptedRef, decryptedRef)
 	s.mutex.Unlock()
 	if err != nil {
 		err = s.Clean()
@@ -88,8 +93,8 @@ func (s *SecretService) Update(previousKey string, newKey string) error {
 	s.mutex.Lock()
 
 	var err error
-	if s.IsRefEmpty() {
-		err = errors.New("there is not secret")
+	if s.IsSecretEmpty() {
+		err = errors.New("there is no secret")
 		return err
 	}
 	if previousKeySha1 != s.key {
