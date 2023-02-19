@@ -9,6 +9,7 @@ import {Certs} from "../certs/Certs";
 import {InfoAlert} from "../../view/InfoAlert";
 import {BackIconButton, CloseIconButton} from "../../view/IconButtons";
 import {About} from "../about/About";
+import {Secret} from "../secret/Secret";
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
@@ -49,6 +50,8 @@ export function Menu() {
                 return <Credentials/>
             case Settings.CERTIFICATE:
                 return <Certs/>
+            case Settings.SECRET:
+                return <Secret/>
             case Settings.ABOUT:
                 return <About/>
             default:
