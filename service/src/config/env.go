@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 )
 
@@ -35,6 +36,12 @@ func NewEnv() *Env {
 			panic("Provide IVORY_BASIC_USER and IVORY_BASIC_PASSWORD when you use IVORY_AUTHENTICATION=basic")
 		}
 	}
+
+	log.Println("IVORY ENV VARIABLES")
+	log.Println("IVORY_COMPANY_LABEL:", company)
+	log.Println("IVORY_AUTHENTICATION:", auth)
+	log.Println("IVORY_BASIC_USER:", user)
+	log.Println("IVORY_BASIC_PASSWORD:", password)
 
 	return &Env{
 		Company:  company,
