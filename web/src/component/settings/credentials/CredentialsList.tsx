@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query";
-import {credentialApi} from "../../../app/api";
+import {passwordApi} from "../../../app/api";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {Credential} from "../../../app/types";
 import {InfoAlert} from "../../view/InfoAlert";
@@ -11,7 +11,7 @@ import {LinearProgressStateful} from "../../view/LinearProgressStateful";
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
 
 export function CredentialsList() {
-    const query = useQuery(["credentials"], () => credentialApi.list())
+    const query = useQuery(["credentials"], () => passwordApi.list())
     const {data: credentials, isError, error, isFetching} = query
 
     return (

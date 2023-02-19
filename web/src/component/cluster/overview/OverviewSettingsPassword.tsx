@@ -1,7 +1,7 @@
 import {CredentialOptions, shortUuid} from "../../../app/utils";
 import {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {clusterApi, credentialApi} from "../../../app/api";
+import {clusterApi, passwordApi} from "../../../app/api";
 import {Cluster, Credentials, CredentialType} from "../../../app/types";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {Autocomplete, Option} from "../../view/Autocomplete";
@@ -22,7 +22,7 @@ export function OverviewSettingsPassword(props: Props) {
     const passId = cluster.credentials[passKey as keyof Credentials] ?? ""
     const { label } = CredentialOptions[type]
 
-    const query = useQuery(["credentials", type], () => credentialApi.list(type))
+    const query = useQuery(["credentials", type], () => passwordApi.list(type))
     const options = useMemo(handleMemoOptions, [query.data])
 
     const updateMutationOptions = useMutationOptions([["cluster/list"]])
