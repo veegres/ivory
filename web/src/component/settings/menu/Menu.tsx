@@ -1,6 +1,6 @@
 import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material";
 import {useStore} from "../../../provider/StoreProvider";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {MenuContent} from "./MenuContent";
 import {Settings, SxPropsMap} from "../../../app/types";
 import {SettingOptions} from "../../../app/utils";
@@ -21,6 +21,8 @@ export function Menu() {
     const [page, setPage] = useState(Settings.MENU)
     const {store, toggleSettingsDialog} = useStore()
     const options = SettingOptions[page]
+
+    useEffect(handleEffectSettingsClose, [store.settings])
 
     return (
         <Dialog sx={SX.dialog} open={store.settings} onClose={toggleSettingsDialog}>
@@ -52,5 +54,9 @@ export function Menu() {
             default:
                 return <InfoAlert text={"Not implemented yet"}/>
         }
+    }
+
+    function handleEffectSettingsClose() {
+        if (!store.settings) setPage(Settings.MENU)
     }
 }
