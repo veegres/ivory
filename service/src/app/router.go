@@ -2,11 +2,11 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"ivory/router"
+	"ivory/src/router"
 	"net/http"
 )
 
-func NewRouter(di *DI) {
+func NewRouter(di *Context) {
 	authHandler := func(context *gin.Context) {}
 	if di.env.Username != nil && di.env.Password != nil {
 		authHandler = gin.BasicAuth(gin.Accounts{*di.env.Username: *di.env.Password})

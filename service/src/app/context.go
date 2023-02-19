@@ -1,14 +1,14 @@
 package app
 
 import (
-	"ivory/config"
-	"ivory/model"
-	"ivory/persistence"
-	"ivory/router"
-	"ivory/service"
+	"ivory/src/config"
+	. "ivory/src/model"
+	"ivory/src/persistence"
+	"ivory/src/router"
+	"ivory/src/service"
 )
 
-type DI struct {
+type Context struct {
 	env            *config.Env
 	infoRouter     *router.InfoRouter
 	clusterRouter  *router.ClusterRouter
@@ -20,16 +20,16 @@ type DI struct {
 	instanceRouter *router.InstanceRouter
 }
 
-func NewDI() *DI {
+func NewContext() *Context {
 	env := config.NewEnv()
 
 	db := config.NewBoltDB("ivory.db")
-	clusterBucket := config.NewBoltBucket[model.ClusterModel](db, "Cluster")
-	compactTableBucket := config.NewBoltBucket[model.CompactTableModel](db, "CompactTable")
-	certBucket := config.NewBoltBucket[model.CertModel](db, "Cert")
+	clusterBucket := config.NewBoltBucket[ClusterModel](db, "Cluster")
+	compactTableBucket := config.NewBoltBucket[CompactTableModel](db, "CompactTable")
+	certBucket := config.NewBoltBucket[CertModel](db, "Cert")
 	tagBucket := config.NewBoltBucket[[]string](db, "Tag")
 	secretBucket := config.NewBoltBucket[string](db, "Secret")
-	passwordBucket := config.NewBoltBucket[model.Credential](db, "Password")
+	passwordBucket := config.NewBoltBucket[Credential](db, "Password")
 
 	compactTableFiles := config.NewFilePersistence("pgcompacttable", ".log")
 	certFiles := config.NewFilePersistence("cert", ".crt")
@@ -47,7 +47,7 @@ func NewDI() *DI {
 	bloatService := service.NewBloatService(compactTableRepo, passwordRepo, compactTableFiles, secretService, encryption)
 	patroniService := service.NewPatroniService(proxy)
 
-	return &DI{
+	return &Context{
 		env:            env,
 		infoRouter:     router.NewInfoRouter(env, secretService),
 		clusterRouter:  router.NewClusterRouter(clusterRepo, tagRepo),

@@ -4,8 +4,8 @@ import (
 	"crypto/md5"
 	"errors"
 	"github.com/google/uuid"
-	. "ivory/model"
-	"ivory/persistence"
+	. "ivory/src/model"
+	"ivory/src/persistence"
 	"sync"
 )
 

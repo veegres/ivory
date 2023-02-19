@@ -2,8 +2,8 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	. "ivory/model"
-	"ivory/service"
+	. "ivory/src/model"
+	"ivory/src/service"
 	"net/http"
 )
 

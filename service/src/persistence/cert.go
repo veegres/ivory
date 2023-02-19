@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
-	"ivory/config"
-	. "ivory/model"
+	"ivory/src/config"
+	. "ivory/src/model"
 	"path"
 	"strings"
 )

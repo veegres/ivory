@@ -1,6 +1,8 @@
 package persistence
 
-import "ivory/config"
+import (
+	"ivory/src/config"
+)
 
 type TagRepository struct {
 	bucket *config.Bucket[[]string]

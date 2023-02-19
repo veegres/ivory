@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	"ivory/config"
-	. "ivory/model"
+	"ivory/src/config"
+	. "ivory/src/model"
 )
 
 type ClusterRepository struct {
