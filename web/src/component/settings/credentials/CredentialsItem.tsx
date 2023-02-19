@@ -2,7 +2,7 @@ import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from
 import {useEffect, useState} from "react";
 import {Credential} from "../../../app/types";
 import {useMutation} from "@tanstack/react-query";
-import {credentialApi} from "../../../app/api";
+import {passwordApi} from "../../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 
@@ -23,9 +23,9 @@ export function CredentialsItem(props: Props) {
     }, [credential])
 
     const deleteOptions = useMutationOptions([["credentials"]])
-    const deleteCredentials = useMutation(credentialApi.delete, deleteOptions)
+    const deleteCredentials = useMutation(passwordApi.delete, deleteOptions)
     const updateOptions = useMutationOptions([["credentials"]], () => setEdit(false))
-    const updateCredentials = useMutation(credentialApi.update, updateOptions)
+    const updateCredentials = useMutation(passwordApi.update, updateOptions)
 
     return (
         <CredentialsRow

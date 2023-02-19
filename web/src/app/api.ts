@@ -1,16 +1,7 @@
 import axios from "axios";
 import {
-    Cluster,
-    ClusterMap,
-    CompactTable,
-    CompactTableRequest, Credential,
-    CredentialMap,
-    InstanceInfo,
-    Instance,
-    Response,
-    SecretSetRequest,
-    SecretStatus,
-    SecretUpdateRequest,
+    Cluster, ClusterMap, CompactTable, CompactTableRequest, Credential,
+    CredentialMap, InstanceInfo, Instance, Response, SecretSetRequest, SecretStatus, SecretUpdateRequest,
     InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest, CertUploadRequest, CertAddRequest, CertType
 } from "./types";
 import {getDomain} from "./utils";
@@ -121,18 +112,18 @@ export const secretApi = {
         .then((response) => response.data.response),
 }
 
-export const credentialApi = {
+export const passwordApi = {
     list: (type?: CredentialType) => api
-        .get<Response<CredentialMap>>(`/credential`, {params: {type}})
+        .get<Response<CredentialMap>>(`/password`, {params: {type}})
         .then((response) => response.data.response),
     create: (credential: Credential) => api
-        .post<Response<{ key: string, credential: Credential }>>(`/credential`, credential)
+        .post<Response<{ key: string, credential: Credential }>>(`/password`, credential)
         .then((response) => response.data.response),
     update: ({uuid, credential}: { uuid: string, credential: Credential }) => api
-        .patch<Response<Credential>>(`/credential/${uuid}`, credential)
+        .patch<Response<Credential>>(`/password/${uuid}`, credential)
         .then((response) => response.data.response),
     delete: (uuid: string) => api
-        .delete(`/credential/${uuid}`)
+        .delete(`/password/${uuid}`)
         .then((response) => response.data.response)
 }
 
