@@ -2,8 +2,8 @@ package persistence
 
 import (
 	"github.com/google/uuid"
-	"ivory/config"
-	. "ivory/model"
+	"ivory/src/config"
+	. "ivory/src/model"
 	"sort"
 	"strings"
 	"time"

@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"ivory/persistence"
+	"ivory/src/persistence"
 	"net/http"
 )
 

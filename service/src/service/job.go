@@ -1,7 +1,7 @@
 package service
 
 import (
-	. "ivory/model"
+	. "ivory/src/model"
 	"os/exec"
 	"sync"
 )

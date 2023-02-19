@@ -3,9 +3,9 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	. "ivory/model"
-	"ivory/persistence"
-	"ivory/service"
+	. "ivory/src/model"
+	"ivory/src/persistence"
+	"ivory/src/service"
 	"net/http"
 	"strconv"
 )
