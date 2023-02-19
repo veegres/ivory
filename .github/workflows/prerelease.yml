@@ -45,7 +45,7 @@ jobs:
         working-directory: service
         run: |
           go version
-          GOOS=linux GOARCH=amd64 go build -o build/ivory
+          make build
         
 
         # Publish docker
@@ -62,7 +62,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Build and push docker
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           platforms: linux/amd64,linux/arm64

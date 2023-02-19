@@ -23,7 +23,7 @@ jobs:
       working-directory: service
       run: |
         go version
-        GOOS=linux GOARCH=amd64 go build -o build/ivory
+        make build
 
 #     - name: Test
 #       run: go test
