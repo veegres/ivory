@@ -11,7 +11,7 @@ import {
 } from "./types";
 import {
     FilePresentOutlined,
-    HeartBroken, InfoTwoTone,
+    HeartBroken, InfoTwoTone, Key,
     LockTwoTone,
     MenuOpen, SecurityTwoTone,
     Shield,
@@ -37,36 +37,28 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
     [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
 }
 
-export const CredentialOptions: {[key in CredentialType]: EnumOptions} = {
-    [CredentialType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage />},
-    [CredentialType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken />}
+export const CredentialOptions: { [key in CredentialType]: EnumOptions } = {
+    [CredentialType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage/>},
+    [CredentialType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken/>}
 }
 
-export const CertOptions: {[key in CertType]: EnumOptions} = {
-    [CertType.CLIENT_CA]: {
-        name: "CLIENT_CA", label: "Client CA", color: purple[300],
-        icon: <Shield />, badge: "CA",
-    },
-    [CertType.CLIENT_CERT]: {
-        name: "CLIENT_CERT", label: "Client Cert", color: purple[300],
-        icon: <Shield />, badge: "C",
-    },
-    [CertType.CLIENT_KEY]: {
-        name: "CLIENT_KEY", label: "Client Key", color: purple[300],
-        icon: <Shield />, badge: "K",
-    }
+export const CertOptions: { [key in CertType]: EnumOptions } = {
+    [CertType.CLIENT_CA]: {name: "CLIENT_CA", label: "Client CA", color: purple[300], icon: <Shield/>, badge: "CA"},
+    [CertType.CLIENT_CERT]: {name: "CLIENT_CERT", label: "Client Cert", color: purple[300], icon: <Shield/>, badge: "C"},
+    [CertType.CLIENT_KEY]: {name: "CLIENT_KEY", label: "Client Key", color: purple[300], icon: <Shield/>, badge: "K"}
 }
 
-export const FileUsageOptions: {[key in FileUsageType]: EnumOptions} = {
-    [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: indigo[300], icon: <UploadFileOutlined />},
-    [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: indigo[300], icon: <FilePresentOutlined />},
+export const FileUsageOptions: { [key in FileUsageType]: EnumOptions } = {
+    [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: indigo[300], icon: <UploadFileOutlined/>},
+    [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: indigo[300], icon: <FilePresentOutlined/>},
 }
 
-export const SettingOptions: {[key in Settings]: EnumOptions} = {
-    [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen />},
-    [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone />},
-    [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone />},
-    [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone />},
+export const SettingOptions: { [key in Settings]: EnumOptions } = {
+    [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen/>},
+    [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone/>},
+    [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>},
+    [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <Key/>},
+    [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {
@@ -109,9 +101,9 @@ export const combineInstances = (instanceNames: Sidecar[], instanceInCluster: In
 
     for (const key in instanceInCluster) {
         if (getDomains(instanceNames).includes(key)) {
-            map[key] = { ...instanceInCluster[key], inInstances: true }
+            map[key] = {...instanceInCluster[key], inInstances: true}
         } else {
-            map[key] = { ...instanceInCluster[key], inInstances: false }
+            map[key] = {...instanceInCluster[key], inInstances: false}
         }
     }
 
@@ -135,8 +127,8 @@ export const combineInstances = (instanceNames: Sidecar[], instanceInCluster: In
     }
 }
 
-export const getDomain = ({ host, port }: Sidecar) => {
-    return `${host.toLowerCase()}${port ? `:${port}` : "" }`
+export const getDomain = ({host, port}: Sidecar) => {
+    return `${host.toLowerCase()}${port ? `:${port}` : ""}`
 }
 
 export const getDomains = (sidecars: Sidecar[]) => {
@@ -145,7 +137,7 @@ export const getDomains = (sidecars: Sidecar[]) => {
 
 export const getHostAndPort = (domain: string) => {
     const [host, port] = domain.split(":")
-    return { host, port: port ? parseInt(port) : 8008 }
+    return {host, port: port ? parseInt(port) : 8008}
 }
 
 export const shortUuid = (uuid: string) => uuid.substring(0, 8)

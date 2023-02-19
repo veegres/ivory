@@ -6,6 +6,7 @@ import {SxPropsMap} from "../../../app/types";
 const SX: SxPropsMap = {
     button: {padding: "3px 8px"},
 }
+
 export function MenuThemeChanger() {
     const {mode, set} = useTheme()
 

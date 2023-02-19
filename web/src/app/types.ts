@@ -231,6 +231,7 @@ export enum Settings {
     MENU,
     PASSWORD,
     CERTIFICATE,
+    SECRET,
     ABOUT,
 }
 
