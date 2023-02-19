@@ -16,24 +16,25 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    company?: string,
+    company: string,
     show: boolean,
 }
 
 export function Header(props: Props) {
-    const { company, show } = props
+    const {company, show} = props
     const theme = useTheme()
-    const { toggleSettingsDialog } = useStore()
+    const {toggleSettingsDialog} = useStore()
     const [animal, setAnimal] = useState("")
     const color = theme.info?.palette.primary.main
 
     return (
         <Grid container justifyContent={"space-between"} alignItems={"center"} flexWrap={"nowrap"}>
             <Grid item sx={{...SX.sides, borderLeft: `1px solid ${color}`}}>
-                {show && <Box sx={SX.emblem}>{company ? company.toUpperCase() : "VEEGRES"}</Box>}
+                {show && <Box sx={SX.emblem}>{company.toUpperCase()}</Box>}
             </Grid>
             <Grid item textAlign={"center"}>
-                <Box sx={{...SX.title, color}} className={select.none} onClick={handleAnimal}>{animal} Ivory {animal}</Box>
+                <Box sx={{...SX.title, color}} className={select.none}
+                     onClick={handleAnimal}>{animal} Ivory {animal}</Box>
                 <Box sx={SX.caption}>[postgres cluster management]</Box>
             </Grid>
             <Grid item sx={{...SX.sides, borderRight: `1px solid ${color}`}}>

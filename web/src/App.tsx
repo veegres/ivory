@@ -9,11 +9,11 @@ export function App() {
     const info = useQuery(["info"], infoApi.get)
 
     return (
-        <Grid sx={{ height: "100vh", minWidth: "1010px" }} container direction={"column"} spacing={2} flexWrap={"nowrap"}>
-            <Grid item><Header company={info.data?.company} show={!info.isLoading && !info.isError} /></Grid>
+        <Grid sx={{height: "100vh", minWidth: "1010px"}} container direction={"column"} spacing={2} flexWrap={"nowrap"}>
+            <Grid item><Header company={info.data?.company ?? "VEEGRES"} show={!info.isLoading && !info.isError}/></Grid>
             <Grid item container flexGrow={1} justifyContent={"center"} alignItems={"center"}>
-                <Body info={info} />
-                <Menu />
+                <Body info={info}/>
+                <Menu/>
             </Grid>
         </Grid>
     );
