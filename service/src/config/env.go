@@ -40,8 +40,8 @@ func NewEnv() *Env {
 	log.Println("IVORY ENV VARIABLES")
 	log.Println("IVORY_COMPANY_LABEL:", company)
 	log.Println("IVORY_AUTHENTICATION:", auth)
-	log.Println("IVORY_BASIC_USER:", user)
-	log.Println("IVORY_BASIC_PASSWORD:", password)
+	log.Println("IVORY_BASIC_USER:", user != nil)
+	log.Println("IVORY_BASIC_PASSWORD:", password != nil)
 
 	return &Env{
 		Company:  company,
