@@ -48,7 +48,7 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 			}
 
 			var lag int
-			if _, ok := patroniInstance.Lag.(string); ok {
+			if ok := patroniInstance.Lag; ok == nil {
 				lag = -1
 			}
 

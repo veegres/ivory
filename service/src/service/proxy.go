@@ -28,28 +28,57 @@ func NewProxyRequest[R any](proxy *Proxy) *ProxyRequest[R] {
 }
 
 func (p *ProxyRequest[R]) Get(instance InstanceRequest, path string) (R, int, error) {
-	response, status, err := p.proxy.send(http.MethodGet, instance, path, 1+time.Second)
-	return response.(R), status, err
+	response, errRes := p.proxy.send(http.MethodGet, instance, path, 1+time.Second)
+	body, status, errParse := p.parseResponse(response)
+	return body, status, errors.Join(errRes, errParse)
 }
 
 func (p *ProxyRequest[R]) Post(instance InstanceRequest, path string) (R, int, error) {
-	response, status, err := p.proxy.send(http.MethodPost, instance, path, 0)
-	return response.(R), status, err
+	response, errRes := p.proxy.send(http.MethodPost, instance, path, 0)
+	body, status, errParse := p.parseResponse(response)
+	return body, status, errors.Join(errRes, errParse)
 }
 
 func (p *ProxyRequest[R]) Put(instance InstanceRequest, path string) (R, int, error) {
-	response, status, err := p.proxy.send(http.MethodPut, instance, path, 0)
-	return response.(R), status, err
+	response, errRes := p.proxy.send(http.MethodPut, instance, path, 0)
+	body, status, errParse := p.parseResponse(response)
+	return body, status, errors.Join(errRes, errParse)
 }
 
 func (p *ProxyRequest[R]) Patch(instance InstanceRequest, path string) (R, int, error) {
-	response, status, err := p.proxy.send(http.MethodPatch, instance, path, 0)
-	return response.(R), status, err
+	response, errRes := p.proxy.send(http.MethodPatch, instance, path, 0)
+	body, status, errParse := p.parseResponse(response)
+	return body, status, errors.Join(errRes, errParse)
 }
 
 func (p *ProxyRequest[R]) Delete(instance InstanceRequest, path string) (R, int, error) {
-	response, status, err := p.proxy.send(http.MethodDelete, instance, path, 0)
-	return response.(R), status, err
+	response, errRes := p.proxy.send(http.MethodDelete, instance, path, 0)
+	body, status, errParse := p.parseResponse(response)
+	return body, status, errors.Join(errRes, errParse)
+}
+
+func (p *ProxyRequest[R]) parseResponse(res *http.Response) (R, int, error) {
+	var err error
+	var body R
+	var status int
+	if res != nil && err == nil {
+		contentType := res.Header.Get("Content-Type")
+		status = res.StatusCode
+
+		switch contentType {
+		case "application/json":
+			errJson := json.NewDecoder(res.Body).Decode(&body)
+			err = errors.Join(err, errJson)
+		case "text/html":
+			text, errRead := io.ReadAll(res.Body)
+			reflect.ValueOf(&body).Elem().SetString(string(text))
+			err = errors.Join(err, errRead)
+		default:
+			errDef := errors.New("doesn't support such Content-Type in response")
+			err = errors.Join(err, errDef)
+		}
+	}
+	return body, status, err
 }
 
 type Proxy struct {
@@ -73,32 +102,13 @@ func NewProxy(
 	}
 }
 
-func (p *Proxy) send(method string, instance InstanceRequest, path string, timeout time.Duration) (interface{}, int, error) {
+func (p *Proxy) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
 	clusterInfo, err := p.clusterRepository.Get(instance.Cluster)
 	client, protocol, err := p.getClient(clusterInfo.Certs, timeout)
 	domain := instance.Host + ":" + strconv.Itoa(instance.Port)
 	req, err := p.getRequest(clusterInfo.Credentials.PatroniId, method, protocol, domain, path, instance.Body)
 	res, err := client.Do(req)
-
-	var body interface{}
-	var status int
-	if res != nil && err == nil {
-		contentType := res.Header.Get("Content-Type")
-		status = res.StatusCode
-
-		switch contentType {
-		case "application/json":
-			err = json.NewDecoder(res.Body).Decode(&body)
-		case "text/html":
-			text, errRead := io.ReadAll(res.Body)
-			reflect.ValueOf(&body).Elem().SetString(string(text))
-			err = errRead
-		default:
-			err = errors.New("doesn't support such Content-Type in response")
-		}
-	}
-
-	return body, status, err
+	return res, err
 }
 
 func (p *Proxy) getRequest(
