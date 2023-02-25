@@ -16,10 +16,7 @@ type BloatRouter struct {
 }
 
 func NewBloatRouter(bloatService *service.BloatService, repository *persistence.CompactTableRepository) *BloatRouter {
-	return &BloatRouter{
-		bloatService: bloatService,
-		repository:   repository,
-	}
+	return &BloatRouter{bloatService: bloatService, repository: repository}
 }
 
 func (r *BloatRouter) GetCompactTableLogs(context *gin.Context) {

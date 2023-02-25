@@ -11,7 +11,7 @@ type PatroniInstance struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
 	ApiUrl   string `json:"api_url"`
-	Lag      any    `json:"lag"`
+	Lag      *int   `json:"lag"`
 	Timeline int    `json:"timeline"`
 }
 

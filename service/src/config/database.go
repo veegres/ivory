@@ -129,11 +129,11 @@ func (b *Bucket[T]) Delete(key string) error {
 
 func (b *Bucket[T]) DeleteAll() error {
 	return b.db.Update(func(tx *bolt.Tx) error {
-		err := tx.Bucket(b.name).DeleteBucket(b.name)
+		err := tx.DeleteBucket(b.name)
 		if err != nil {
 			return err
 		}
-		_, err = tx.Bucket(b.name).CreateBucket(b.name)
+		_, err = tx.CreateBucket(b.name)
 		return err
 	})
 }
