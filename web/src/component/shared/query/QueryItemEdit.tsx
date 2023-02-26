@@ -1,7 +1,11 @@
-import {QueryItemEditor} from "./QueryItemEditor";
-import {Query, SxPropsMap} from "../../../app/types";
+import {QueryEditor} from "./QueryEditor";
+import {SxPropsMap} from "../../../app/types";
 import {Box} from "@mui/material";
 import {CopyIconButton, SaveIconButton} from "../../view/IconButtons";
+import {useMutation} from "@tanstack/react-query";
+import {queryApi} from "../../../app/api";
+import {useState} from "react";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 1},
@@ -10,23 +14,34 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    query: Query,
+    id: string,
+    query: string,
 }
 
 export function QueryItemEdit(props: Props) {
+    const {id, query} = props
+    const [newQuery, setNewQuery] = useState(query)
+
+    const updateOptions = useMutationOptions([["query", "map"]])
+    const update = useMutation(queryApi.update, updateOptions)
+
     return (
         <Box sx={SX.box}>
             <Box sx={SX.editor}>
-                <QueryItemEditor value={props.query.default} editable={true} onUpdate={() => {}}/>
+                <QueryEditor value={query} editable={true} onUpdate={setNewQuery}/>
             </Box>
             <Box sx={SX.buttons}>
-                <SaveIconButton placement={"left"} onClick={() => {}}/>
+                <SaveIconButton loading={update.isLoading} placement={"left"} onClick={handleUpdate}/>
                 <CopyIconButton placement={"left"} onClick={handleCopy}/>
             </Box>
         </Box>
     )
 
+    function handleUpdate() {
+        update.mutate({id, query: {query: newQuery}})
+    }
+
     function handleCopy() {
-        return navigator.clipboard.writeText(props.query.default)
+        return navigator.clipboard.writeText(query)
     }
 }

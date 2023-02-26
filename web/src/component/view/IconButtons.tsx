@@ -1,7 +1,7 @@
 import {cloneElement, ReactElement} from "react";
 import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material";
 import {
-    Add, ArrowBack, AutoFixHigh, Cached, Cancel, CheckCircle, Close, CopyAll, Delete, Edit, PlayArrow, Undo
+    Add, ArrowBack, AutoFixHigh, Cached, Cancel, CheckCircle, Close, CopyAll, Delete, Edit, PlayArrow, Restore
 } from "@mui/icons-material";
 
 type Color = 'inherit' | 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
@@ -22,7 +22,7 @@ export function IconButton(props: ButtonProps) {
     const fontSize = Math.floor(size * 0.56)
 
     return (
-        <Tooltip title={tooltip} placement={placement} disableInteractive>
+        <Tooltip title={tooltip} placement={placement ?? "top"} disableInteractive>
             <Box component={"span"}>
                 <MuiIconButton sx={{height: `${size}px`, width: `${size}px`}} color={color} disabled={loading || disabled} onClick={onClick}>
                     {loading ? <CircularProgress size={fontSize - 2}/> : cloneElement(icon, {sx: { fontSize }})}
@@ -91,9 +91,9 @@ export function PlayIconButton(props: Props) {
     return <IconButton {...props} disabled={disabled ?? false} icon={<PlayArrow/>} tooltip={"Run"}/>
 }
 
-export function UndoIconButton(props: Props) {
+export function RestoreIconButton(props: Props) {
     const { disabled } = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Undo/>} tooltip={"Undo"}/>
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Restore/>} tooltip={"Restore"}/>
 }
 
 export function CopyIconButton(props: Props) {

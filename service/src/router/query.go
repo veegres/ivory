@@ -23,7 +23,7 @@ func (r *QueryRouter) PutQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	var query Query
+	var query QueryRequest
 	err := context.ShouldBindJSON(&query)
 	_, response, err := r.queryService.Update(queryUuid, query)
 	if err != nil {
@@ -34,9 +34,9 @@ func (r *QueryRouter) PutQuery(context *gin.Context) {
 }
 
 func (r *QueryRouter) PostQuery(context *gin.Context) {
-	var query Query
+	var query QueryRequest
 	err := context.ShouldBindJSON(&query)
-	_, response, err := r.queryService.Create(query)
+	_, response, err := r.queryService.Create(Manual, query)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

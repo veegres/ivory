@@ -1,12 +1,13 @@
 import {Query, SxPropsMap} from "../../../app/types";
 import {Box, Collapse, Divider, Paper} from "@mui/material";
-import {EditIconButton, PlayIconButton, UndoIconButton} from "../../view/IconButtons";
+import {CancelIconButton, EditIconButton, PlayIconButton, RestoreIconButton} from "../../view/IconButtons";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {useState} from "react";
 import {QueryItemInfo} from "./QueryItemInfo";
 import {QueryItemEdit} from "./QueryItemEdit";
 import {QueryItemPlay} from "./QueryItemPlay";
 import {InfoAlert} from "../../view/InfoAlert";
+import {QueryItemRestore} from "./QueryItemRestore";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", fontSize: "15px"},
@@ -15,10 +16,11 @@ const SX: SxPropsMap = {
     title: {flexGrow: 1, display: "flex", alignItems: "center", cursor: "pointer", gap: 1},
     name: {fontWeight: "bold"},
     creation: {fontSize: "12px", fontFamily: "monospace"},
-    buttons: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1}
+    buttons: {display: "flex", alignItems: "center"},
+    type: {padding: "0 8px", cursor: "pointer"},
 }
 
-enum BodyType {INFO, EDIT, PLAY}
+enum BodyType {INFO, EDIT, RESTORE, PLAY}
 
 type Props = {
     id: string,
@@ -34,15 +36,24 @@ export function QueryItem(props: Props) {
     return (
         <Paper sx={SX.box} variant={"outlined"}>
             <Box sx={SX.head}>
-                <Box sx={SX.title} onClick={handleToggleBody(BodyType.INFO)}>
+                <Box sx={SX.title} onClick={open ? handleCancel : handleToggleBody(BodyType.INFO)}>
                     <Box sx={SX.name}>{query.name}</Box>
                     <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
                 </Box>
                 <Box sx={SX.buttons}>
-                    <UndoIconButton size={28} onClick={() => {
-                    }}/>
-                    <EditIconButton size={28} onClick={handleToggleBody(BodyType.EDIT)}/>
-                    <PlayIconButton size={28} color={"success"} onClick={handleToggleBody(BodyType.PLAY)}/>
+                    {open && (
+                        <>
+                            <Box sx={{...SX.type, color: info?.palette.text.disabled}} onClick={handleCancel}>
+                                {BodyType[body]}
+                            </Box>
+                            <CancelIconButton onClick={handleCancel}/>
+                        </>
+                    )}
+                    {!open && query.default !== query.custom && (
+                        <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
+                    )}
+                    {!open && <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>}
+                    <PlayIconButton color={"success"} onClick={handleToggleBody(BodyType.PLAY)}/>
                 </Box>
             </Box>
             <Collapse in={open}>
@@ -55,9 +66,11 @@ export function QueryItem(props: Props) {
     function renderBody() {
         switch (body) {
             case BodyType.INFO:
-                return <QueryItemInfo query={query}/>
+                return <QueryItemInfo query={query.custom} description={query.description}/>
             case BodyType.EDIT:
-                return <QueryItemEdit query={query}/>
+                return <QueryItemEdit id={id} query={query.custom}/>
+            case BodyType.RESTORE:
+                return <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
             case BodyType.PLAY:
                 return <QueryItemPlay id={id}/>
             default:
@@ -65,11 +78,15 @@ export function QueryItem(props: Props) {
         }
     }
 
+    function handleCancel() {
+        setBody(BodyType.INFO)
+        setOpen(false)
+    }
+
     function handleToggleBody(type: BodyType) {
         return () => {
-            if (body === type && open) setOpen(false)
-            else setOpen(true)
             setBody(type)
+            setOpen(true)
         }
     }
 }
