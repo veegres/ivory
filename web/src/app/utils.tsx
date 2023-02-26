@@ -20,6 +20,8 @@ import {
 } from "@mui/icons-material";
 import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
+import {darculaInit} from "@uiw/codemirror-theme-darcula";
+import {materialLightInit} from "@uiw/codemirror-theme-material";
 
 export const InstanceColor: { [key: string]: string } = {
     master: green[500],
@@ -172,4 +174,11 @@ export const getErrorMessage = (error: any): string => {
  */
 export const mergeSxProps = (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => {
     return [sx1, ...(Array.isArray(sx2) ? sx2 : [sx2])]
+}
+
+// CodeMirror theme
+export const CodeOptions = {settings: {background: "transparent", gutterBackground: "transparent"}}
+export const CodeThemes = {
+    dark: darculaInit(CodeOptions),
+    light: materialLightInit(CodeOptions),
 }

@@ -18,6 +18,7 @@ import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../..
 import {orange, purple} from "@mui/material/colors";
 import {InfoBox} from "../../view/InfoBox";
 import {InfoTitle} from "../../view/InfoTitle";
+import {OverviewActivities} from "./OverviewActivities";
 
 const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -61,6 +62,10 @@ const TABS: ClusterTabs = {
             Please be aware that you can run this tool only in master node and In target database contrib module
             pgstattuple should be installed via <i>create extension if not exists pgstattuple;</i>
         </>
+    },
+    3: {
+        label: "Activities",
+        body: (cluster: ActiveCluster) => <OverviewActivities info={cluster}/>,
     },
 }
 

@@ -10,25 +10,17 @@ import (
 )
 
 type SecretService struct {
-	key                    [16]byte
-	ref                    string
-	mutex                  *sync.Mutex
-	passwordRepository     *persistence.PasswordRepository
-	secretRepository       *persistence.SecretRepository
-	clusterRepository      *persistence.ClusterRepository
-	certRepository         *persistence.CertRepository
-	tagRepository          *persistence.TagRepository
-	compactTableRepository *persistence.CompactTableRepository
-	encryption             *Encryption
+	key                [16]byte
+	ref                string
+	mutex              *sync.Mutex
+	secretRepository   *persistence.SecretRepository
+	passwordRepository *persistence.PasswordRepository
+	encryption         *Encryption
 }
 
 func NewSecretService(
-	passwordRepository *persistence.PasswordRepository,
 	secretRepository *persistence.SecretRepository,
-	clusterRepository *persistence.ClusterRepository,
-	certRepository *persistence.CertRepository,
-	tagRepository *persistence.TagRepository,
-	compactTableRepository *persistence.CompactTableRepository,
+	passwordRepository *persistence.PasswordRepository,
 	encryption *Encryption,
 ) *SecretService {
 	encryptedRef, err := secretRepository.GetEncryptedRef()
@@ -37,16 +29,12 @@ func NewSecretService(
 	}
 
 	return &SecretService{
-		key:                    [16]byte{},
-		ref:                    encryptedRef,
-		mutex:                  &sync.Mutex{},
-		passwordRepository:     passwordRepository,
-		secretRepository:       secretRepository,
-		compactTableRepository: compactTableRepository,
-		clusterRepository:      clusterRepository,
-		certRepository:         certRepository,
-		tagRepository:          tagRepository,
-		encryption:             encryption,
+		key:                [16]byte{},
+		ref:                encryptedRef,
+		mutex:              &sync.Mutex{},
+		secretRepository:   secretRepository,
+		passwordRepository: passwordRepository,
+		encryption:         encryption,
 	}
 }
 
@@ -125,16 +113,10 @@ func (s *SecretService) Clean() error {
 
 	s.ref = ""
 	s.key = [16]byte{}
-	err := s.secretRepository.UpdateRefs("", "")
-
-	err = s.passwordRepository.DeleteAll()
-	err = s.certRepository.DeleteAll()
-	err = s.clusterRepository.DeleteAll()
-	err = s.compactTableRepository.DeleteAll()
-	err = s.tagRepository.DeleteAll()
+	errUpdateRef := s.secretRepository.UpdateRefs("", "")
 
 	s.mutex.Unlock()
-	return err
+	return errUpdateRef
 }
 
 func (s *SecretService) IsRefEmpty() bool {

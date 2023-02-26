@@ -1,24 +1,17 @@
-import {Box, CircularProgress, Grid, IconButton, Skeleton, Tooltip} from "@mui/material";
+import {Grid, Skeleton} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {ErrorAlert} from "../../view/ErrorAlert";
-import {ReactElement, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {Cancel, CopyAll, Edit, SaveAlt} from "@mui/icons-material";
 import {DefaultInstance} from "../../../app/types";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {darculaInit} from "@uiw/codemirror-theme-darcula";
-import {materialLightInit} from "@uiw/codemirror-theme-material";
-
-const options = {settings: {background: "transparent", gutterBackground: "transparent"}}
-const themes = {
-    dark: darculaInit(options),
-    light: materialLightInit(options),
-}
+import {CodeThemes} from "../../../app/utils";
+import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../view/IconButtons";
 
 export function OverviewConfig({info}: TabProps) {
     const theme = useTheme();
@@ -42,42 +35,33 @@ export function OverviewConfig({info}: TabProps) {
 
     const border = `1px solid ${isEditable && theme.info ? theme.info.palette.divider : "transparent"}`
     return (
-        <Grid container flexWrap={"nowrap"}>
+        <Grid container flexWrap={"nowrap"} gap={1}>
             <Grid item flexGrow={1} sx={{border}}>
                 <ReactCodeMirror
                     value={configState}
                     editable={isEditable}
-                    theme={themes[theme.mode]}
+                    autoFocus={isEditable}
+                    basicSetup={{highlightActiveLine: false, highlightActiveLineGutter: isEditable}}
+                    theme={CodeThemes[theme.mode]}
                     extensions={[json()]}
                     onChange={(value) => setConfigState(value)}
                 />
             </Grid>
             <Grid item xs={"auto"} display={"flex"} flexDirection={"column"}>
                 {renderUpdateButtons(defaultInstance, configState, updateConfig.isLoading, isEditable)}
-                {renderButton(<CopyAll/>, "Copy", handleCopyAll)}
+                <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
             </Grid>
         </Grid>
     )
 
     function renderUpdateButtons(instance: DefaultInstance, configState: string, isLoading: boolean, isEditable: boolean) {
-        if (isLoading) return renderButton(<CircularProgress size={25}/>, "Saving", undefined, true)
-        if (!isEditable) return renderButton(<Edit/>, "Edit", () => setIsEditable(true))
+        if (!isEditable) return <EditIconButton placement={"left"} size={35} onClick={() => setIsEditable(true)}/>
 
         return (
             <>
-                {renderButton(<Cancel/>, "Cancel", handleCancel)}
-                {renderButton(<SaveAlt/>, "Save", () => handleUpdate(instance, configState))}
+                <CancelIconButton placement={"left"} size={35} disabled={isLoading} onClick={handleCancel}/>
+                <SaveIconButton placement={"left"} size={35} loading={isLoading} onClick={() => handleUpdate(instance, configState)}/>
             </>
-        )
-    }
-
-    function renderButton(icon: ReactElement, tooltip: string, onClick = () => {}, disabled = false) {
-        return (
-            <Tooltip title={tooltip} placement={"left"} arrow>
-                <Box component={"span"}>
-                    <IconButton onClick={onClick} disabled={disabled}>{icon}</IconButton>
-                </Box>
-            </Tooltip>
         )
     }
 
