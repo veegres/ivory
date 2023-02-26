@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"github.com/google/uuid"
+	"ivory/src/constant"
 	. "ivory/src/model"
 	"ivory/src/persistence"
 )
@@ -29,12 +30,69 @@ func (s *QueryService) GetMap(queryType *QueryType) (map[string]Query, error) {
 	}
 }
 
-func (s *QueryService) Create(query Query) (uuid.UUID, Query, error) {
-	return s.queryRepository.Create(query)
+func (s *QueryService) Create(creation QueryCreation, query QueryRequest) (*uuid.UUID, *Query, error) {
+	if query.Name == nil || query.Type == nil || query.Description == nil {
+		return nil, nil, errors.New("all fields have to be filled")
+	}
+
+	return s.queryRepository.Create(Query{
+		Name:        *query.Name,
+		Type:        *query.Type,
+		Creation:    creation,
+		Description: *query.Description,
+		Default:     query.Query,
+		Custom:      query.Query,
+	})
 }
 
-func (s *QueryService) Update(key uuid.UUID, query Query) (uuid.UUID, Query, error) {
-	return s.queryRepository.Update(key, query)
+func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Query, error) {
+	currentQuery, err := s.queryRepository.Get(key)
+	if err != nil {
+		return nil, nil, err
+	}
+	if currentQuery.Creation == System {
+		if query.Name != nil {
+			return nil, nil, errors.New("name change is not allowed for creation type system")
+		}
+		if query.Type != nil {
+			return nil, nil, errors.New("type change is not allowed for creation type system")
+		}
+		if query.Description != nil {
+			return nil, nil, errors.New("description change is not allowed for creation type system")
+		}
+
+		return s.queryRepository.Update(key, Query{
+			Name:        currentQuery.Name,
+			Type:        currentQuery.Type,
+			Creation:    currentQuery.Creation,
+			Description: currentQuery.Description,
+			Default:     currentQuery.Default,
+			Custom:      query.Query,
+		})
+	} else {
+		n := currentQuery.Name
+		t := currentQuery.Type
+		d := currentQuery.Description
+
+		if query.Name != nil {
+			n = *query.Name
+		}
+		if query.Type != nil {
+			t = *query.Type
+		}
+		if query.Description != nil {
+			d = *query.Description
+		}
+
+		return s.queryRepository.Update(key, Query{
+			Name:        n,
+			Type:        t,
+			Creation:    currentQuery.Creation,
+			Description: d,
+			Default:     currentQuery.Default,
+			Custom:      query.Query,
+		})
+	}
 }
 
 func (s *QueryService) DeleteAll() error {
@@ -48,11 +106,11 @@ func (s *QueryService) createDefaultQueries() error {
 		return nil
 	}
 
-	_, _, errRun := s.queryRepository.Create(s.runningQuery())
+	_, _, errRun := s.Create(System, s.runningQuery())
 	if errRun != nil {
 		return errRun
 	}
-	_, _, errCon := s.queryRepository.Create(s.connectionQuery())
+	_, _, errCon := s.Create(System, s.connectionQuery())
 	if errCon != nil {
 		return errCon
 	}
@@ -60,43 +118,12 @@ func (s *QueryService) createDefaultQueries() error {
 	return nil
 }
 
-const defaultRunningQuery = `SELECT
-	pid AS process_id,
-	pg_blocking_pids(pid) AS blocked_by_process_id,
-	now() - pg_stat_activity.query_start AS duration,
-	query,
-	state,
-	usename,
-	application_name,
-	client_addr
-FROM pg_stat_activity
-WHERE now() - pg_stat_activity.query_start IS NOT NULL
-AND state <> 'idle'
-AND query NOT LIKE 'START_REPLICATION SLOT%'
-ORDER BY now() - pg_stat_activity.query_start DESC;`
-
-func (s *QueryService) runningQuery() Query {
-	return Query{
-		Name:        "Running Queries",
-		Type:        ACTIVITY,
-		Creation:    System,
-		Edited:      nil,
-		Description: "This query will check currently running queries",
-		Default:     defaultRunningQuery,
-	}
+func (s *QueryService) runningQuery() QueryRequest {
+	n, t, d := "Running Queries", ACTIVITY, "This query will check currently running queries"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultRunningQuery}
 }
 
-const defaultConnectionQuery = `SELECT datname, state, count(*)
-FROM pg_stat_activity
-GROUP BY 1, 2 ORDER BY 1, 2;`
-
-func (s *QueryService) connectionQuery() Query {
-	return Query{
-		Name:        "All Connections",
-		Type:        ACTIVITY,
-		Creation:    System,
-		Edited:      nil,
-		Description: "This query will show list of all connections",
-		Default:     defaultConnectionQuery,
-	}
+func (s *QueryService) connectionQuery() QueryRequest {
+	n, t, d := "All Connections", ACTIVITY, "This query will show list of all connections"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultConnectionQuery}
 }

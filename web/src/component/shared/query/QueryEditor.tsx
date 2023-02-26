@@ -9,7 +9,7 @@ type Props = {
     onUpdate?: (value: string) => void,
 }
 
-export function QueryItemEditor(props: Props) {
+export function QueryEditor(props: Props) {
     const {value, editable, onUpdate} = props
     const theme = useTheme();
 
@@ -18,6 +18,7 @@ export function QueryItemEditor(props: Props) {
             value={value}
             editable={editable}
             autoFocus={editable}
+            minHeight={editable ? "100px" : "auto"}
             basicSetup={{lineNumbers: false, foldGutter: false, highlightActiveLine: false}}
             theme={CodeThemes[theme.mode]}
             extensions={[sql({dialect: PostgreSQL})]}

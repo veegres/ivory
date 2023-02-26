@@ -23,5 +23,12 @@ type Query struct {
 	Creation    QueryCreation `json:"creation"`
 	Description string        `json:"description"`
 	Default     string        `json:"default"`
-	Edited      *string       `json:"edited"`
+	Custom      string        `json:"custom"`
+}
+
+type QueryRequest struct {
+	Name        *string    `json:"name"`
+	Type        *QueryType `json:"type"`
+	Description *string    `json:"description"`
+	Query       string     `json:"query"`
 }

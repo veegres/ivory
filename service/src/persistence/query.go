@@ -16,6 +16,10 @@ func NewQueryRepository(bucket *config.Bucket[Query]) *QueryRepository {
 	}
 }
 
+func (r *QueryRepository) Get(uuid uuid.UUID) (Query, error) {
+	return r.bucket.Get(uuid.String())
+}
+
 func (r *QueryRepository) Map() (map[string]Query, error) {
 	return r.bucket.GetMap(nil)
 }
@@ -26,15 +30,15 @@ func (r *QueryRepository) MapByType(queryType QueryType) (map[string]Query, erro
 	})
 }
 
-func (r *QueryRepository) Create(query Query) (uuid.UUID, Query, error) {
+func (r *QueryRepository) Create(query Query) (*uuid.UUID, *Query, error) {
 	key := uuid.New()
 	err := r.bucket.Update(key.String(), query)
-	return key, query, err
+	return &key, &query, err
 }
 
-func (r *QueryRepository) Update(key uuid.UUID, query Query) (uuid.UUID, Query, error) {
+func (r *QueryRepository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query, error) {
 	err := r.bucket.Update(key.String(), query)
-	return key, query, err
+	return &key, &query, err
 }
 
 func (r *QueryRepository) Delete(tag string) error {

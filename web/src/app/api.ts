@@ -21,7 +21,7 @@ import {
     CertUploadRequest,
     CertAddRequest,
     CertType,
-    Query, QueryMap, QueryType
+    Query, QueryMap, QueryType, QueryRequest
 } from "./types";
 import {getDomain} from "./utils";
 
@@ -123,10 +123,10 @@ export const queryApi = {
     map: (type?: QueryType) => api
         .get<Response<QueryMap>>(`/query`, {params: {type}})
         .then((response) => response.data.response),
-    update: (id: string, query: Query) => api
+    update: ({id, query}: {id: string, query: QueryRequest}) => api
         .put<Response<Query>>(`/query/${id}`, query)
         .then((response) => response.data.response),
-    create: (query: Query) => api
+    create: (query: QueryRequest) => api
         .post<Response<Query>>(`/query`, query)
         .then((response) => response.data.response),
 }

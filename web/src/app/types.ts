@@ -245,7 +245,14 @@ export interface Query {
     creation: QueryCreation,
     description: string,
     default: string,
-    edited?: string,
+    custom: string,
+}
+
+export interface QueryRequest {
+    name?: string,
+    type?: QueryType,
+    description?: string,
+    query: string,
 }
 
 export interface QueryMap {

@@ -1,6 +1,7 @@
 import {Box} from "@mui/material";
-import {Query, SxPropsMap} from "../../../app/types";
-import {QueryItemEditor} from "./QueryItemEditor";
+import {SxPropsMap} from "../../../app/types";
+import {QueryEditor} from "./QueryEditor";
+import {QueryInfo} from "./QueryInfo";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -8,16 +9,18 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    query: Query,
+    description: string,
+    query: string,
 }
 
 export function QueryItemInfo(props: Props) {
+    const {query, description} = props
     return (
         <Box sx={SX.box}>
-            <Box sx={SX.paper}>{props.query.description}</Box>
-            <Box sx={SX.paper}>
-                <QueryItemEditor value={props.query.default} editable={false}/>
-            </Box>
+            <QueryInfo>{description}</QueryInfo>
+            <QueryInfo>
+                <QueryEditor value={query} editable={false}/>
+            </QueryInfo>
         </Box>
     )
 }
