@@ -1,13 +1,13 @@
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {secretApi} from "../../../app/api";
+import {infoApi} from "../../../app/api";
 import {useStore} from "../../../provider/StoreProvider";
 import {LoadingButton} from "@mui/lab";
 
 export function MenuEraseButton() {
     const { clear } = useStore()
     const cleanOptions = useMutationOptions([["info"]], clear)
-    const clean = useMutation(secretApi.clean, cleanOptions)
+    const clean = useMutation(infoApi.erase, cleanOptions)
 
     return (
         <LoadingButton

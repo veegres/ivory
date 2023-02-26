@@ -1,8 +1,27 @@
 import axios from "axios";
 import {
-    Cluster, ClusterMap, CompactTable, CompactTableRequest, Credential,
-    CredentialMap, InstanceInfo, Instance, Response, SecretSetRequest, SecretStatus, SecretUpdateRequest,
-    InstanceMap, CredentialType, AppInfo, Cert, CertMap, InstanceRequest, CertUploadRequest, CertAddRequest, CertType
+    Cluster,
+    ClusterMap,
+    CompactTable,
+    CompactTableRequest,
+    Credential,
+    CredentialMap,
+    InstanceInfo,
+    Instance,
+    Response,
+    SecretSetRequest,
+    SecretStatus,
+    SecretUpdateRequest,
+    InstanceMap,
+    CredentialType,
+    AppInfo,
+    Cert,
+    CertMap,
+    InstanceRequest,
+    CertUploadRequest,
+    CertAddRequest,
+    CertType,
+    Query, QueryMap, QueryType
 } from "./types";
 import {getDomain} from "./utils";
 
@@ -94,7 +113,22 @@ export const bloatApi = {
 export const infoApi = {
     get: () => api
         .get<Response<AppInfo>>(`/info`)
+        .then((response) => response.data.response),
+    erase: () => api
+        .post<Response<string>>(`/erase`)
         .then((response) => response.data.response)
+}
+
+export const queryApi = {
+    map: (type?: QueryType) => api
+        .get<Response<QueryMap>>(`/query`, {params: {type}})
+        .then((response) => response.data.response),
+    update: (id: string, query: Query) => api
+        .put<Response<Query>>(`/query/${id}`, query)
+        .then((response) => response.data.response),
+    create: (query: Query) => api
+        .post<Response<Query>>(`/query`, query)
+        .then((response) => response.data.response),
 }
 
 export const secretApi = {

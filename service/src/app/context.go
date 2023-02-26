@@ -18,6 +18,8 @@ type Context struct {
 	passwordRouter *router.PasswordRouter
 	tagRouter      *router.TagRouter
 	instanceRouter *router.InstanceRouter
+	queryRouter    *router.QueryRouter
+	eraseRouter    *router.EraseRouter
 }
 
 func NewContext() *Context {
@@ -30,6 +32,7 @@ func NewContext() *Context {
 	tagBucket := config.NewBoltBucket[[]string](db, "Tag")
 	secretBucket := config.NewBoltBucket[string](db, "Secret")
 	passwordBucket := config.NewBoltBucket[Credential](db, "Password")
+	queryBucket := config.NewBoltBucket[Query](db, "Query")
 
 	compactTableFiles := config.NewFilePersistence("pgcompacttable", ".log")
 	certFiles := config.NewFilePersistence("cert", ".crt")
@@ -40,13 +43,17 @@ func NewContext() *Context {
 	tagRepo := persistence.NewTagRepository(tagBucket)
 	secretRepo := persistence.NewSecretRepository(secretBucket)
 	passwordRepo := persistence.NewPasswordRepository(passwordBucket)
+	queryRepo := persistence.NewQueryRepository(queryBucket)
 
 	encryption := service.NewEncryption()
 	proxy := service.NewProxy(clusterRepo, passwordRepo, certRepo, certFiles)
-	secretService := service.NewSecretService(passwordRepo, secretRepo, clusterRepo, certRepo, tagRepo, compactTableRepo, encryption)
+	secretService := service.NewSecretService(secretRepo, passwordRepo, encryption)
+	queryService := service.NewQueryService(queryRepo, secretService)
 	bloatService := service.NewBloatService(compactTableRepo, passwordRepo, compactTableFiles, secretService, encryption)
 	patroniService := service.NewPatroniService(proxy)
+	eraseService := service.NewEraseService(passwordRepo, clusterRepo, certRepo, tagRepo, compactTableRepo, queryService, secretService)
 
+	// TODO refactor: router shouldn't use repos, change to service usage
 	return &Context{
 		env:            env,
 		infoRouter:     router.NewInfoRouter(env, secretService),
@@ -57,5 +64,7 @@ func NewContext() *Context {
 		passwordRouter: router.NewPasswordRouter(passwordRepo, secretService, encryption),
 		tagRouter:      router.NewTagRouter(tagRepo),
 		instanceRouter: router.NewInstanceRouter(patroniService),
+		queryRouter:    router.NewQueryRouter(queryService),
+		eraseRouter:    router.NewEraseRouter(eraseService),
 	}
 }

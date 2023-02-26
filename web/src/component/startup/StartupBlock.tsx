@@ -34,7 +34,7 @@ export function StartupBlock(props: Props) {
     const setReqOptions = useMutationOptions([["info"]])
     const setReq = useMutation(secretApi.set, setReqOptions)
     const cleanReqOptions = useMutationOptions([["info"]], clear)
-    const cleanReq = useMutation(secretApi.clean, cleanReqOptions)
+    const cleanReq = useMutation(infoApi.erase, cleanReqOptions)
 
     const fetching = cleanReq.isLoading || setReq.isLoading || info.isFetching
 
@@ -49,11 +49,12 @@ export function StartupBlock(props: Props) {
                 {!clean ? null : (
                     <Button
                         sx={SX.button}
-                        variant={"contained"}
+                        variant={"outlined"}
+                        color={"error"}
                         disabled={fetching}
                         onClick={() => cleanReq.mutate()}
                     >
-                        Clean
+                        Erase
                     </Button>
                 )}
                 <Button

@@ -177,7 +177,7 @@ export interface CertAddRequest {
 }
 
 export interface CertTabs {
-    [key: number]: {label: string, type: CertType}
+    [key: number]: { label: string, type: CertType }
 }
 
 // BLOAT
@@ -225,8 +225,34 @@ export enum EventStream {
     END = "end",
 }
 
-// SETTINGS
+// QUERY
+export enum QueryType {
+    BLOAT,
+    ACTIVITY,
+    REPLICATION,
+    STATISTIC,
+    OTHER,
+}
 
+export enum QueryCreation {
+    Manual = "manual",
+    System = "system",
+}
+
+export interface Query {
+    name: string,
+    type: QueryType,
+    creation: QueryCreation,
+    description: string,
+    default: string,
+    edited?: string,
+}
+
+export interface QueryMap {
+    [key: string]: Query,
+}
+
+// SETTINGS
 export enum Settings {
     MENU,
     PASSWORD,

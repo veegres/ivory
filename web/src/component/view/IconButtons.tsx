@@ -1,23 +1,30 @@
 import {cloneElement, ReactElement} from "react";
 import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material";
-import {Add, ArrowBack, AutoFixHigh, Cached, Cancel, CheckCircle, Close, Delete, Edit} from "@mui/icons-material";
+import {
+    Add, ArrowBack, AutoFixHigh, Cached, Cancel, CheckCircle, Close, CopyAll, Delete, Edit, PlayArrow, Undo
+} from "@mui/icons-material";
+
+type Color = 'inherit' | 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
+type Placement = "bottom-end" | 'bottom-start' | 'bottom' | 'left-end' | 'left-start' | 'left' | 'right-end' | 'right-start' | 'right' | 'top-end' | 'top-start' | 'top'
 
 type ButtonProps = Props & {
     icon: ReactElement,
     onClick: () => void,
-    tooltip: string
+    tooltip: string,
+    color?: Color,
+    placement?: Placement,
 }
 
 export function IconButton(props: ButtonProps) {
-    const {icon, onClick, tooltip, disabled = false, size = 32} = props
+    const {icon, color, placement, onClick, tooltip, disabled = false, size = 32} = props
     const loading = props.loading ?? false
     // 0.56 is ratio for size = 32 and fontSize = 18
     const fontSize = Math.floor(size * 0.56)
 
     return (
-        <Tooltip title={tooltip} placement={"top"} disableInteractive>
+        <Tooltip title={tooltip} placement={placement} disableInteractive>
             <Box component={"span"}>
-                <MuiIconButton sx={{height: `${size}px`, width: `${size}px`}} disabled={loading || disabled} onClick={onClick}>
+                <MuiIconButton sx={{height: `${size}px`, width: `${size}px`}} color={color} disabled={loading || disabled} onClick={onClick}>
                     {loading ? <CircularProgress size={fontSize - 2}/> : cloneElement(icon, {sx: { fontSize }})}
                 </MuiIconButton>
             </Box>
@@ -30,6 +37,8 @@ type Props = {
     onClick: () => void,
     size?: number,
     disabled?: boolean,
+    color?: Color,
+    placement?: Placement,
 }
 
 export function EditIconButton(props: Props) {
@@ -75,5 +84,20 @@ export function AddIconButton(props: Props) {
 export function AutoIconButton(props: Props) {
     const { disabled } = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<AutoFixHigh/>} tooltip={"Auto Detection (coming soon)"}/>
+}
+
+export function PlayIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<PlayArrow/>} tooltip={"Run"}/>
+}
+
+export function UndoIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Undo/>} tooltip={"Undo"}/>
+}
+
+export function CopyIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<CopyAll/>} tooltip={"Copy"}/>
 }
 

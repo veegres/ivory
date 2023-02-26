@@ -28,6 +28,8 @@ func NewRouter(di *Context) {
 	passwordRouter(safe, di.passwordRouter)
 	tagRouter(safe, di.tagRouter)
 	instanceRouter(safe, di.instanceRouter)
+	queryRouter(safe, di.queryRouter)
+	eraseRouter(safe, di.eraseRouter)
 
 	err := engine.Run()
 	if err != nil {
@@ -100,5 +102,16 @@ func instanceRouter(g *gin.RouterGroup, r *router.InstanceRouter) {
 	instance.PATCH("/config", r.PatchInstanceConfig)
 	instance.POST("/switchover", r.PostInstanceSwitchover)
 	instance.POST("/reinitialize", r.PostInstanceReinitialize)
+}
 
+func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
+	query := g.Group("/query")
+	query.GET("", r.GetQueryMap)
+	query.POST("", r.PostQuery)
+	query.PUT("/:uuid", r.PutQuery)
+}
+
+func eraseRouter(g *gin.RouterGroup, r *router.EraseRouter) {
+	erase := g.Group("/erase")
+	erase.POST("", r.Erase)
 }
