@@ -4,7 +4,7 @@ type Props = {
     id: string,
 }
 
-export function QueryItemPlay(props: Props) {
+export function QueryItemRun(props: Props) {
     const {id} = props
     return (
         <Table size={"small"}>
