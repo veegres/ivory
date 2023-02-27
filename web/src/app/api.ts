@@ -129,6 +129,9 @@ export const queryApi = {
     create: (query: QueryRequest) => api
         .post<Response<Query>>(`/query`, query)
         .then((response) => response.data.response),
+    delete: (uuid: string) => api
+        .delete(`/query/${uuid}`)
+        .then((response) => response.data.response)
 }
 
 export const secretApi = {

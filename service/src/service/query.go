@@ -95,6 +95,18 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 	}
 }
 
+func (s *QueryService) Delete(key uuid.UUID) error {
+	currentQuery, err := s.queryRepository.Get(key)
+	if err != nil {
+		return err
+	}
+	if currentQuery.Creation == Manual {
+		return s.queryRepository.Delete(key)
+	} else {
+		return errors.New("deletion of system queries is restricted")
+	}
+}
+
 func (s *QueryService) DeleteAll() error {
 	errDel := s.queryRepository.DeleteAll()
 	errDefQueries := s.createDefaultQueries()

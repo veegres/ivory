@@ -34,15 +34,17 @@ export function QueryItemRestore(props: Props) {
             <QueryInfo><QueryEditor value={def} editable={false}/></QueryInfo>
             <Box sx={SX.button}>
                 <Tooltip title={"Restore"} placement={"top"} disableInteractive>
-                    <LoadingButton
-                        disabled={def === custom}
-                        loading={update.isLoading}
-                        size={"small"}
-                        variant={"outlined"}
-                        onClick={handleUpdate}
-                    >
-                        <KeyboardDoubleArrowRight/>
-                    </LoadingButton>
+                    <span>
+                        <LoadingButton
+                            disabled={def === custom}
+                            loading={update.isLoading}
+                            size={"small"}
+                            variant={"outlined"}
+                            onClick={handleUpdate}
+                        >
+                            <KeyboardDoubleArrowRight/>
+                        </LoadingButton>
+                    </span>
                 </Tooltip>
             </Box>
             <QueryInfo><QueryEditor value={custom} editable={false}/></QueryInfo>
