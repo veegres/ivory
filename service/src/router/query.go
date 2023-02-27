@@ -65,3 +65,17 @@ func (r *QueryRouter) GetQueryMap(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{"response": queryMap})
 	}
 }
+
+func (r *QueryRouter) DeleteQuery(context *gin.Context) {
+	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
+	if parseErr != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
+		return
+	}
+	err := r.queryService.Delete(queryUuid)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": "query was deleted"})
+}

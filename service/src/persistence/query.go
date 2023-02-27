@@ -41,8 +41,8 @@ func (r *QueryRepository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query
 	return &key, &query, err
 }
 
-func (r *QueryRepository) Delete(tag string) error {
-	return r.bucket.Delete(tag)
+func (r *QueryRepository) Delete(key uuid.UUID) error {
+	return r.bucket.Delete(key.String())
 }
 
 func (r *QueryRepository) DeleteAll() error {

@@ -1,6 +1,12 @@
-import {Query, SxPropsMap} from "../../../app/types";
+import {Query, QueryCreation, SxPropsMap} from "../../../app/types";
 import {Box, Paper} from "@mui/material";
-import {CancelIconButton, EditIconButton, PlayIconButton, RestoreIconButton} from "../../view/IconButtons";
+import {
+    CancelIconButton,
+    DeleteIconButton,
+    EditIconButton,
+    PlayIconButton,
+    RestoreIconButton
+} from "../../view/IconButtons";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {useState} from "react";
 import {QueryItemInfo} from "./QueryItemInfo";
@@ -8,6 +14,9 @@ import {QueryItemEdit} from "./QueryItemEdit";
 import {QueryItemRun} from "./QueryItemRun";
 import {QueryItemRestore} from "./QueryItemRestore";
 import {QueryItemBody} from "./QueryItemBody";
+import {useMutationOptions} from "../../../hook/QueryCustom";
+import {useMutation} from "@tanstack/react-query";
+import {queryApi} from "../../../app/api";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", fontSize: "15px"},
@@ -32,6 +41,9 @@ export function QueryItem(props: Props) {
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
 
+    const removeOptions = useMutationOptions([["query", "map"]])
+    const remove = useMutation(queryApi.delete, removeOptions)
+
     return (
         <Paper sx={SX.box} variant={"outlined"}>
             <Box sx={SX.head}>
@@ -40,6 +52,7 @@ export function QueryItem(props: Props) {
                     <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
                 </Box>
                 <Box sx={SX.buttons}>
+                    {!open && query.creation === QueryCreation.Manual && <DeleteIconButton onClick={handleDelete}/>}
                     {renderCancelButton()}
                     {!open && query.default !== query.custom && (
                         <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
@@ -81,5 +94,9 @@ export function QueryItem(props: Props) {
 
     function handleToggleBody(type: BodyType) {
         return () => setBody(type)
+    }
+
+    function handleDelete() {
+        remove.mutate(id)
     }
 }

@@ -156,8 +156,13 @@ export const randomUnicodeAnimal = () => {
 export const getErrorMessage = (error: any): string => {
     let message = "unknown"
     if (error instanceof AxiosError) {
-        if (error.response) message = error.response.data["error"]
-        else if (error.message) message = error.message
+        if (error.response) {
+            if (error.response.data["error"] !== undefined) message = error.response.data["error"]
+            else message = error.response.data
+        } else {
+            if (error.message) message = error.message
+            else message = "unknown"
+        }
     }
     if (typeof error === "string") message = error
     return message
