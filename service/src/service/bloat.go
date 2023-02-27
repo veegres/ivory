@@ -70,8 +70,8 @@ func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []stri
 func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	element := w.elements[jobUuid]
 	if element == nil {
-		stream(Event{Name: SERVER, Message: "Logs streaming failed: Stream Not Found"})
-		stream(Event{Name: STATUS, Message: UNKNOWN.String()})
+		stream(Event{Type: SERVER, Message: "Logs streaming failed: Stream Not Found"})
+		stream(Event{Type: STATUS, Message: UNKNOWN.String()})
 		return
 	}
 	job := element.job
@@ -80,20 +80,20 @@ func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	// subscribe to stream and show status
 	// we have to subscribe as soon as possible to prevent Job deletion
 	channel := job.Subscribe()
-	stream(Event{Name: STATUS, Message: job.GetStatus().String()})
+	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
 
 	// stream logs from file
 	file, _ := w.bloatFile.Open(model.LogsPath)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		stream(Event{Name: LOG, Message: scanner.Text()})
+		stream(Event{Type: LOG, Message: scanner.Text()})
 	}
 	if errScanner := scanner.Err(); errScanner != nil {
-		stream(Event{Name: LOG, Message: errScanner.Error()})
+		stream(Event{Type: LOG, Message: errScanner.Error()})
 	}
 	errFileClose := file.Close()
 	if errFileClose != nil {
-		stream(Event{Name: LOG, Message: errFileClose.Error()})
+		stream(Event{Type: LOG, Message: errFileClose.Error()})
 	}
 
 	// subscribe to stream and stream logs
@@ -104,7 +104,7 @@ func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 		job.Unsubscribe(channel)
 	}
 
-	stream(Event{Name: STATUS, Message: job.GetStatus().String()})
+	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
 }
 
 func (w *BloatService) Delete(jobUuid uuid.UUID) error {
@@ -266,7 +266,7 @@ func (w *BloatService) addLogElement(element *element, eventType EventType, mess
 
 func (w *BloatService) sendEvents(job Job, eventType EventType, message string) {
 	for subscriber := range job.Subscribers() {
-		subscriber <- Event{Name: eventType, Message: message}
+		subscriber <- Event{Type: eventType, Message: message}
 	}
 }
 

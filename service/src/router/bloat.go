@@ -168,7 +168,7 @@ func (r *BloatRouter) StreamJob(context *gin.Context) {
 	}
 
 	r.bloatService.Stream(jobUuid, func(event Event) {
-		context.SSEvent(event.Name.String(), event.Message)
+		context.SSEvent(event.Type.String(), event.Message)
 		context.Writer.Flush()
 	})
 

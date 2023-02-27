@@ -31,6 +31,6 @@ func (s EventType) String() string {
 }
 
 type Event struct {
-	Name    EventType
+	Type    EventType
 	Message string
 }
