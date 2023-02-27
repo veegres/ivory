@@ -1,18 +1,17 @@
 import {Query, SxPropsMap} from "../../../app/types";
-import {Box, Collapse, Divider, Paper} from "@mui/material";
+import {Box, Paper} from "@mui/material";
 import {CancelIconButton, EditIconButton, PlayIconButton, RestoreIconButton} from "../../view/IconButtons";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {useState} from "react";
 import {QueryItemInfo} from "./QueryItemInfo";
 import {QueryItemEdit} from "./QueryItemEdit";
-import {QueryItemPlay} from "./QueryItemPlay";
-import {InfoAlert} from "../../view/InfoAlert";
+import {QueryItemRun} from "./QueryItemRun";
 import {QueryItemRestore} from "./QueryItemRestore";
+import {QueryItemBody} from "./QueryItemBody";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", fontSize: "15px"},
     head: {display: "flex", padding: "5px 15px"},
-    body: {padding: "8px 15px", fontSize: "13px"},
     title: {flexGrow: 1, display: "flex", alignItems: "center", cursor: "pointer", gap: 1},
     name: {fontWeight: "bold"},
     creation: {fontSize: "12px", fontFamily: "monospace"},
@@ -20,7 +19,7 @@ const SX: SxPropsMap = {
     type: {padding: "0 8px", cursor: "pointer"},
 }
 
-enum BodyType {INFO, EDIT, RESTORE, PLAY}
+enum BodyType {INFO, EDIT, RESTORE, RUN}
 
 type Props = {
     id: string,
@@ -30,8 +29,8 @@ type Props = {
 export function QueryItem(props: Props) {
     const {id, query} = props
     const {info} = useTheme()
-    const [open, setOpen] = useState(false)
-    const [body, setBody] = useState<BodyType>(BodyType.INFO)
+    const [body, setBody] = useState<BodyType>()
+    const open = body !== undefined
 
     return (
         <Paper sx={SX.box} variant={"outlined"}>
@@ -41,52 +40,46 @@ export function QueryItem(props: Props) {
                     <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
                 </Box>
                 <Box sx={SX.buttons}>
-                    {open && (
-                        <>
-                            <Box sx={{...SX.type, color: info?.palette.text.disabled}} onClick={handleCancel}>
-                                {BodyType[body]}
-                            </Box>
-                            <CancelIconButton onClick={handleCancel}/>
-                        </>
-                    )}
+                    {renderCancelButton()}
                     {!open && query.default !== query.custom && (
                         <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
                     )}
                     {!open && <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>}
-                    <PlayIconButton color={"success"} onClick={handleToggleBody(BodyType.PLAY)}/>
+                    <PlayIconButton color={"success"} onClick={handleToggleBody(BodyType.RUN)}/>
                 </Box>
             </Box>
-            <Collapse in={open}>
-                <Divider/>
-                <Box sx={SX.body}>{renderBody()}</Box>
-            </Collapse>
+            <QueryItemBody show={body === BodyType.INFO}>
+                <QueryItemInfo query={query.custom} description={query.description}/>
+            </QueryItemBody>
+            <QueryItemBody show={body === BodyType.EDIT}>
+                <QueryItemEdit id={id} query={query.custom}/>
+            </QueryItemBody>
+            <QueryItemBody show={body === BodyType.RESTORE}>
+                <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
+            </QueryItemBody>
+            <QueryItemBody show={body === BodyType.RUN}>
+                <QueryItemRun id={id}/>
+            </QueryItemBody>
         </Paper>
     )
 
-    function renderBody() {
-        switch (body) {
-            case BodyType.INFO:
-                return <QueryItemInfo query={query.custom} description={query.description}/>
-            case BodyType.EDIT:
-                return <QueryItemEdit id={id} query={query.custom}/>
-            case BodyType.RESTORE:
-                return <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
-            case BodyType.PLAY:
-                return <QueryItemPlay id={id}/>
-            default:
-                return <InfoAlert text={"Not implemented yet"}/>
-        }
+    function renderCancelButton() {
+        if (!open) return
+        return (
+            <>
+                <Box sx={{...SX.type, color: info?.palette.text.disabled}} onClick={handleCancel}>
+                    {BodyType[body]}
+                </Box>
+                <CancelIconButton onClick={handleCancel}/>
+            </>
+        )
     }
 
     function handleCancel() {
-        setBody(BodyType.INFO)
-        setOpen(false)
+        setBody(undefined)
     }
 
     function handleToggleBody(type: BodyType) {
-        return () => {
-            setBody(type)
-            setOpen(true)
-        }
+        return () => setBody(type)
     }
 }
