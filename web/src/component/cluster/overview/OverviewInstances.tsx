@@ -21,13 +21,16 @@ const SX: SxPropsMap = {
     buttonCell: {width: "160px"},
 }
 
-type AlertDialogState = {open: boolean, title: string, content: string, onAgree: () => void}
-const initAlertDialog = {open: false, title: "", content: "", onAgree: () => {}}
+type AlertDialogState = { open: boolean, title: string, content: string, onAgree: () => void }
+const initAlertDialog = {
+    open: false, title: "", content: "", onAgree: () => {
+    }
+}
 
 export function OverviewInstances({info}: TabProps) {
-    const { defaultInstance, cluster, combinedInstanceMap } = info
+    const {defaultInstance, cluster, combinedInstanceMap} = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const { setInstance, store: { activeInstance } } = useStore()
+    const {setInstance, store: {activeInstance}} = useStore()
     const queryKey = useMemo(
         () => ["instance/overview", cluster.name, defaultInstance.sidecar.host, defaultInstance.sidecar.port],
         [defaultInstance.sidecar, cluster.name]
@@ -65,9 +68,9 @@ export function OverviewInstances({info}: TabProps) {
 
     function renderContent() {
         return Object.entries(combinedInstanceMap).map(([key, element]) => {
-            const { role, sidecar, database, state, lag, inInstances, inCluster } = element
-            const isChecked = activeInstance ? getDomain(activeInstance) === key : false
-            const instance = { host: sidecar.host, port: sidecar.port, cluster: cluster.name }
+            const {role, sidecar, database, state, lag, inInstances, inCluster} = element
+            const isChecked = activeInstance ? getDomain(activeInstance.sidecar) === key : false
+            const instance = {cluster: cluster.name, sidecar: sidecar, database: database}
 
             return (
                 <TableRow sx={SX.row} key={key} onClick={handleCheck(instance, isChecked)}>
@@ -94,23 +97,26 @@ export function OverviewInstances({info}: TabProps) {
 
     function renderButton(instance: ActiveInstance, type: string) {
         switch (type) {
-            case "replica": return (
-                <Button
-                    color={"primary"}
-                    disabled={reinit.isLoading || switchover.isLoading}
-                    onClick={() => handleReinit(instance)}>
-                    Reinit
-                </Button>
-            )
-            case "leader": return (
-                <Button
-                    color={"secondary"}
-                    disabled={switchover.isLoading}
-                    onClick={() => handleSwitchover(instance)}>
-                    Switchover
-                </Button>
-            )
-            default: return null
+            case "replica":
+                return (
+                    <Button
+                        color={"primary"}
+                        disabled={reinit.isLoading || switchover.isLoading}
+                        onClick={() => handleReinit(instance)}>
+                        Reinit
+                    </Button>
+                )
+            case "leader":
+                return (
+                    <Button
+                        color={"secondary"}
+                        disabled={switchover.isLoading}
+                        onClick={() => handleSwitchover(instance)}>
+                        Switchover
+                    </Button>
+                )
+            default:
+                return null
         }
 
     }
@@ -125,7 +131,7 @@ export function OverviewInstances({info}: TabProps) {
         return (
             <Box display={"flex"}>
                 <Tooltip title={title} placement={"top"}>
-                    <Warning color={"warning"} fontSize={"small"} />
+                    <Warning color={"warning"} fontSize={"small"}/>
                 </Tooltip>
             </Box>
         )
@@ -138,18 +144,27 @@ export function OverviewInstances({info}: TabProps) {
     function handleSwitchover(instance: ActiveInstance) {
         setAlertDialog({
             open: true,
-            title: `Switchover [${instance.host}]`,
+            title: `Switchover [${instance.sidecar.host}]`,
             content: "Are you sure that you want to do Switchover? It will change the leader of your cluster.",
-            onAgree: () => switchover.mutate({ ...instance, body: { leader: instance.host }})
+            onAgree: () => switchover.mutate({
+                cluster: instance.cluster,
+                host: instance.sidecar.host,
+                port: instance.sidecar.port,
+                body: {leader: instance.sidecar.host},
+            })
         })
     }
 
     function handleReinit(instance: ActiveInstance) {
         setAlertDialog({
             open: true,
-            title: `Reinitialization [${instance.host}]`,
+            title: `Reinitialization [${instance.sidecar.host}]`,
             content: "Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.",
-            onAgree: () => reinit.mutate(instance)
+            onAgree: () => reinit.mutate({
+                cluster: instance.cluster,
+                host: instance.sidecar.host,
+                port: instance.sidecar.port,
+            })
         })
     }
 }

@@ -3,15 +3,19 @@ import {instanceApi} from "../../../app/api";
 import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {InstanceColor} from "../../../app/utils";
-import {StylePropsMap, SxPropsMap} from "../../../app/types";
+import {QueryType, StylePropsMap, SxPropsMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
+import {Query} from "../../shared/query/Query";
 
 const SX: SxPropsMap = {
-    instanceStatusBlock: {height: "120px", minWidth: "200px", borderRadius: "4px", color: "white", fontSize: "24px", fontWeight: 900},
-    item: {margin: "0px 15px"},
-    title: {color: "text.secondary", fontWeight: "bold"}
+    instanceStatusBlock: {height: "120px", minWidth: "250px", borderRadius: "4px", color: "white", fontSize: "24px", fontWeight: 900},
+    item: {margin: "0px 5px"},
+    title: {color: "text.secondary", fontWeight: "bold"},
+    content: {display: "flex", gap: 2},
+    info: {display: "flex", flexDirection: "column", gap: 1},
+    query: {flexGrow: 1, overflow: "auto"},
 }
 const style: StylePropsMap = {
     itemText: {whiteSpace: "pre-wrap"}
@@ -21,10 +25,10 @@ type ItemProps = { name: string, value?: string }
 type StatusProps = { role?: string }
 
 export function Instance() {
-    const { store: { activeInstance }, isClusterOverviewOpen } = useStore()
+    const {store: {activeInstance}, isClusterOverviewOpen} = useStore()
     const {data: instance, isLoading, isError, error} = useQuery(
-        ["instance/info", activeInstance?.host, activeInstance?.port],
-        () => activeInstance ? instanceApi.info(activeInstance) : undefined,
+        ["instance/info", activeInstance?.sidecar.host, activeInstance?.sidecar.port],
+        () => activeInstance ? instanceApi.info({cluster: activeInstance.cluster, ...activeInstance.sidecar}) : undefined,
         {enabled: !!activeInstance}
     )
 
@@ -39,16 +43,17 @@ export function Instance() {
         if (isError) return <ErrorAlert error={error}/>
 
         return (
-            <Grid container direction={"row"}>
-                <Grid item xs={"auto"}>
+            <Box sx={SX.content}>
+                <Box sx={SX.query}>
+                    <Query type={QueryType.ACTIVITY} cluster={activeInstance.cluster} db={activeInstance.database}/>
+                </Box>
+                <Box sx={SX.info}>
                     <InstanceStatus role={instance?.role}/>
-                </Grid>
-                <Grid item xs container direction={"column"}>
-                    <Grid item><Item name={"Node"} value={activeInstance?.host}/></Grid>
-                    <Grid item><Item name={"Port"} value={activeInstance?.port.toString()}/></Grid>
-                    <Grid item><Item name={"State"} value={instance?.state}/></Grid>
-                </Grid>
-            </Grid>
+                    <Item name={"State"} value={instance?.state}/>
+                    <Item name={"Sidecar"} value={`${activeInstance.sidecar.host}:${activeInstance.sidecar.port.toString()}`}/>
+                    <Item name={"Database"} value={`${activeInstance.database.host}:${activeInstance.database.port.toString()}`}/>
+                </Box>
+            </Box>
         )
     }
 
