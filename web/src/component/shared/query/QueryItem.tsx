@@ -1,4 +1,4 @@
-import {Query, QueryCreation, SxPropsMap} from "../../../app/types";
+import {Database, Query, QueryCreation, SxPropsMap} from "../../../app/types";
 import {Box, Paper} from "@mui/material";
 import {
     CancelIconButton,
@@ -15,7 +15,7 @@ import {QueryItemRun} from "./QueryItemRun";
 import {QueryItemRestore} from "./QueryItemRestore";
 import {QueryItemBody} from "./QueryItemBody";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 
 const SX: SxPropsMap = {
@@ -33,15 +33,23 @@ enum BodyType {INFO, EDIT, RESTORE, RUN}
 type Props = {
     id: string,
     query: Query,
+    cluster: string,
+    db: Database,
 }
 
 export function QueryItem(props: Props) {
-    const {id, query} = props
+    const {id, query, cluster, db} = props
     const {info} = useTheme()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
 
-    const removeOptions = useMutationOptions([["query", "map"]])
+    const result = useQuery(
+        ["query", "run", id],
+        () => queryApi.run({queryUuid: id, clusterName: cluster, db}),
+        {enabled: false, retry: false},
+    )
+
+    const removeOptions = useMutationOptions([["query", "map", id]])
     const remove = useMutation(queryApi.delete, removeOptions)
 
     return (
@@ -58,7 +66,7 @@ export function QueryItem(props: Props) {
                         <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
                     )}
                     {!open && <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>}
-                    <PlayIconButton color={"success"} onClick={handleToggleBody(BodyType.RUN)}/>
+                    <PlayIconButton color={"success"} loading={result.isFetching} onClick={handleRun}/>
                 </Box>
             </Box>
             <QueryItemBody show={body === BodyType.INFO}>
@@ -71,7 +79,7 @@ export function QueryItem(props: Props) {
                 <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
             <QueryItemBody show={body === BodyType.RUN}>
-                <QueryItemRun id={id}/>
+                <QueryItemRun data={result.data} error={result.error} loading={result.isLoading}/>
             </QueryItemBody>
         </Paper>
     )
@@ -94,6 +102,11 @@ export function QueryItem(props: Props) {
 
     function handleToggleBody(type: BodyType) {
         return () => setBody(type)
+    }
+
+    function handleRun() {
+        result.refetch().then()
+        handleToggleBody(BodyType.RUN)()
     }
 
     function handleDelete() {

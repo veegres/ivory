@@ -79,3 +79,23 @@ func (r *QueryRouter) DeleteQuery(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, gin.H{"response": "query was deleted"})
 }
+
+func (r *QueryRouter) PostRunQuery(context *gin.Context) {
+	var req QueryRunRequest
+	err := context.ShouldBindJSON(&req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fields, rows, err := r.queryService.Run(req.QueryUuid, req.ClusterName, req.Db)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": QueryRunResponse{
+		Fields: fields,
+		Rows:   rows,
+	}})
+}

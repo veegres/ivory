@@ -21,7 +21,7 @@ import {
     CertUploadRequest,
     CertAddRequest,
     CertType,
-    Query, QueryMap, QueryType, QueryRequest
+    Query, QueryMap, QueryType, QueryRequest, QueryRunRequest, QueryRunResponse
 } from "./types";
 import {getDomain} from "./utils";
 
@@ -131,7 +131,10 @@ export const queryApi = {
         .then((response) => response.data.response),
     delete: (uuid: string) => api
         .delete(`/query/${uuid}`)
-        .then((response) => response.data.response)
+        .then((response) => response.data.response),
+    run: (req: QueryRunRequest) => api
+        .post<Response<QueryRunResponse>>(`/query/run`, req)
+        .then((response) => response.data.response),
 }
 
 export const secretApi = {

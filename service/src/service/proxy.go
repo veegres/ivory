@@ -131,6 +131,7 @@ func (p *Proxy) getRequest(
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
 	if passwordId != nil {
+		// TODO password should be decoded
 		passInfo, errPass := p.passwordRepository.Get(*passwordId)
 		err = errPass
 		req.SetBasicAuth(passInfo.Username, passInfo.Password)

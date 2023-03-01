@@ -1,5 +1,9 @@
 package model
 
+import (
+	"github.com/google/uuid"
+)
+
 type QueryType int8
 
 const (
@@ -31,4 +35,21 @@ type QueryRequest struct {
 	Type        *QueryType `json:"type"`
 	Description *string    `json:"description"`
 	Query       string     `json:"query"`
+}
+
+type QueryRunRequest struct {
+	QueryUuid   uuid.UUID `json:"queryUuid"`
+	ClusterName string    `json:"clusterName"`
+	Db          Database  `json:"db"`
+}
+
+type QueryField struct {
+	Name        string `json:"name"`
+	DataType    string `json:"dataType"`
+	DataTypeOID uint32 `json:"dataTypeOID"`
+}
+
+type QueryRunResponse struct {
+	Fields []QueryField `json:"fields"`
+	Rows   [][]any      `json:"rows"`
 }

@@ -259,6 +259,24 @@ export interface QueryMap {
     [key: string]: Query,
 }
 
+export interface QueryRunRequest {
+    queryUuid: string,
+    clusterName: string,
+    db: Database,
+}
+
+
+export interface QueryField {
+    name: string,
+    dataType: string,
+    dataTypeOID: string,
+}
+
+export interface QueryRunResponse {
+    fields: QueryField[],
+    rows: any[][],
+}
+
 // SETTINGS
 export enum Settings {
     MENU,
