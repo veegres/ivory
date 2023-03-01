@@ -3,24 +3,21 @@ package service
 import (
 	"crypto/md5"
 	"errors"
-	"github.com/google/uuid"
 	. "ivory/src/model"
 	"ivory/src/persistence"
 	"sync"
 )
 
 type SecretService struct {
-	key                [16]byte
-	ref                string
-	mutex              *sync.Mutex
-	secretRepository   *persistence.SecretRepository
-	passwordRepository *persistence.PasswordRepository
-	encryption         *Encryption
+	key              [16]byte
+	ref              string
+	mutex            *sync.Mutex
+	secretRepository *persistence.SecretRepository
+	encryption       *Encryption
 }
 
 func NewSecretService(
 	secretRepository *persistence.SecretRepository,
-	passwordRepository *persistence.PasswordRepository,
 	encryption *Encryption,
 ) *SecretService {
 	encryptedRef, err := secretRepository.GetEncryptedRef()
@@ -29,12 +26,11 @@ func NewSecretService(
 	}
 
 	return &SecretService{
-		key:                [16]byte{},
-		ref:                encryptedRef,
-		mutex:              &sync.Mutex{},
-		secretRepository:   secretRepository,
-		passwordRepository: passwordRepository,
-		encryption:         encryption,
+		key:              [16]byte{},
+		ref:              encryptedRef,
+		mutex:            &sync.Mutex{},
+		secretRepository: secretRepository,
+		encryption:       encryption,
 	}
 }
 
@@ -75,37 +71,25 @@ func (s *SecretService) Set(decryptedKey string, decryptedRef string) error {
 	return err
 }
 
-func (s *SecretService) Update(previousKey string, newKey string) error {
-	previousKeySha1 := md5.Sum([]byte(previousKey))
-	newKeySha1 := md5.Sum([]byte(newKey))
+func (s *SecretService) Update(prevSecret string, newSecret string) ([16]byte, [16]byte, error) {
+	previousKeySha1 := md5.Sum([]byte(prevSecret))
+	newKeySha1 := md5.Sum([]byte(newSecret))
 	s.mutex.Lock()
 
-	var err error
 	if s.IsSecretEmpty() {
-		err = errors.New("there is no secret")
-		return err
+		return [16]byte{}, [16]byte{}, errors.New("there is no secret")
 	}
 	if previousKeySha1 != s.key {
-		err = errors.New("the secret is not correct")
-		return err
+		return [16]byte{}, [16]byte{}, errors.New("the secret is not correct")
 	}
+
+	decryptedRef, err := s.secretRepository.GetDecryptedRef()
+	encryptedRef, err := s.encryption.Encrypt(decryptedRef, newKeySha1)
+	err = s.secretRepository.UpdateRefs(encryptedRef, decryptedRef)
 
 	s.key = newKeySha1
-	credentialMap, err := s.passwordRepository.List()
-	if err != nil {
-		return err
-	}
-	for id, credential := range credentialMap {
-		id, _ := uuid.Parse(id)
-		oldEncodedPass := credential.Password
-		decodedPass, _ := s.encryption.Decrypt(oldEncodedPass, previousKeySha1)
-		newEncodedPass, _ := s.encryption.Encrypt(decodedPass, newKeySha1)
-		credential.Password = newEncodedPass
-		_, _, err = s.passwordRepository.Update(id, credential)
-	}
-
 	s.mutex.Unlock()
-	return err
+	return previousKeySha1, newKeySha1, err
 }
 
 func (s *SecretService) Clean() error {

@@ -8,11 +8,18 @@ import (
 )
 
 type SecretRouter struct {
-	secretService *service.SecretService
+	secretService   *service.SecretService
+	passwordService *service.PasswordService
 }
 
-func NewSecretRouter(secretService *service.SecretService) *SecretRouter {
-	return &SecretRouter{secretService: secretService}
+func NewSecretRouter(
+	secretService *service.SecretService,
+	passwordService *service.PasswordService,
+) *SecretRouter {
+	return &SecretRouter{
+		secretService:   secretService,
+		passwordService: passwordService,
+	}
 }
 
 func (r *SecretRouter) GetStatus(context *gin.Context) {
@@ -46,7 +53,12 @@ func (r *SecretRouter) UpdateSecret(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
 		return
 	}
-	err := r.secretService.Update(secret.PreviousKey, secret.NewKey)
+	prevSha, newSha, err := r.secretService.Update(secret.PreviousKey, secret.NewKey)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err = r.passwordService.ReEncryptPasswords(prevSha, newSha)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

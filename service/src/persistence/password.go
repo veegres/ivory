@@ -16,17 +16,13 @@ func NewPasswordRepository(bucket *config.Bucket[Credential]) *PasswordRepositor
 	}
 }
 
-func (r *PasswordRepository) Create(credential Credential) (uuid.UUID, Credential, error) {
+func (r *PasswordRepository) Create(credential Credential) (uuid.UUID, error) {
 	key := uuid.New()
-	err := r.bucket.Update(key.String(), credential)
-	cred := Credential{Username: credential.Username, Password: "configured", Type: credential.Type}
-	return key, cred, err
+	return key, r.bucket.Update(key.String(), credential)
 }
 
-func (r *PasswordRepository) Update(key uuid.UUID, credential Credential) (uuid.UUID, Credential, error) {
-	err := r.bucket.Update(key.String(), credential)
-	cred := Credential{Username: credential.Username, Password: "configured", Type: credential.Type}
-	return key, cred, err
+func (r *PasswordRepository) Update(key uuid.UUID, credential Credential) (uuid.UUID, error) {
+	return key, r.bucket.Update(key.String(), credential)
 }
 
 func (r *PasswordRepository) Delete(key uuid.UUID) error {
@@ -37,28 +33,16 @@ func (r *PasswordRepository) DeleteAll() error {
 	return r.bucket.DeleteAll()
 }
 
-func (r *PasswordRepository) List() (map[string]Credential, error) {
-	credentialMap, err := r.bucket.GetMap(nil)
-	credentialHiddenMap := r.hidePasswords(credentialMap)
-	return credentialHiddenMap, err
+func (r *PasswordRepository) Map() (map[string]Credential, error) {
+	return r.bucket.GetMap(nil)
 }
 
-func (r *PasswordRepository) ListByType(credentialType CredentialType) (map[string]Credential, error) {
-	credentialMap, err := r.bucket.GetMap(func(credential Credential) bool {
+func (r *PasswordRepository) MapByType(credentialType CredentialType) (map[string]Credential, error) {
+	return r.bucket.GetMap(func(credential Credential) bool {
 		return credential.Type == credentialType
 	})
-	credentialHiddenMap := r.hidePasswords(credentialMap)
-	return credentialHiddenMap, err
 }
 
 func (r *PasswordRepository) Get(uuid uuid.UUID) (Credential, error) {
 	return r.bucket.Get(uuid.String())
-}
-
-func (r *PasswordRepository) hidePasswords(credentialMap map[string]Credential) map[string]Credential {
-	for key, credential := range credentialMap {
-		credential.Password = "configured"
-		credentialMap[key] = credential
-	}
-	return credentialMap
 }

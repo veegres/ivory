@@ -1,6 +1,6 @@
 package model
 
-type CredentialType int8
+type CredentialType int
 
 const (
 	POSTGRES CredentialType = iota

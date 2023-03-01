@@ -1,20 +1,35 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"ivory/src/constant"
 	. "ivory/src/model"
 	"ivory/src/persistence"
+	"strconv"
 )
 
 type QueryService struct {
-	queryRepository *persistence.QueryRepository
-	secretService   *SecretService
+	queryRepository   *persistence.QueryRepository
+	clusterRepository *persistence.ClusterRepository
+	passwordService   *PasswordService
+	secretService     *SecretService
 }
 
-func NewQueryService(queryRepository *persistence.QueryRepository, secretService *SecretService) *QueryService {
-	queryService := &QueryService{queryRepository: queryRepository, secretService: secretService}
+func NewQueryService(
+	queryRepository *persistence.QueryRepository,
+	clusterRepository *persistence.ClusterRepository,
+	passwordService *PasswordService,
+	secretService *SecretService,
+) *QueryService {
+	queryService := &QueryService{
+		queryRepository:   queryRepository,
+		clusterRepository: clusterRepository,
+		passwordService:   passwordService,
+		secretService:     secretService,
+	}
 	err := queryService.createDefaultQueries()
 	if err != nil {
 		panic("Cannot create default queries: " + err.Error())
@@ -28,6 +43,59 @@ func (s *QueryService) GetMap(queryType *QueryType) (map[string]Query, error) {
 	} else {
 		return s.queryRepository.MapByType(*queryType)
 	}
+}
+
+func (s *QueryService) Run(queryUuid uuid.UUID, clusterName string, db Database) ([]QueryField, [][]any, error) {
+	query, errQuery := s.queryRepository.Get(queryUuid)
+	if errQuery != nil {
+		return nil, nil, errQuery
+	}
+	cluster, errCluster := s.clusterRepository.Get(clusterName)
+	if errCluster != nil {
+		return nil, nil, errCluster
+	}
+	if cluster.Credentials.PostgresId == nil {
+		return nil, nil, errors.New("there is no password for this cluster")
+	}
+
+	cred, errCred := s.passwordService.GetDecrypted(*cluster.Credentials.PostgresId)
+	if errCred != nil {
+		return nil, nil, errCred
+	}
+
+	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port)
+	conn, errConn := pgx.Connect(context.Background(), connString)
+	if errConn != nil {
+		return nil, nil, errConn
+	}
+	defer conn.Close(context.Background())
+
+	res, errRes := conn.Query(context.Background(), query.Custom)
+	if errRes != nil {
+		return nil, nil, errRes
+	}
+	defer res.Close()
+
+	typeMap := conn.TypeMap()
+	fields := make([]QueryField, 0)
+	for _, field := range res.FieldDescriptions() {
+		dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
+		if !ok {
+			return nil, nil, errors.New("cannot parse data type for field: " + field.Name)
+		}
+		fields = append(fields, QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
+	}
+
+	rows := make([][]any, 0)
+	for res.Next() {
+		val, err := res.Values()
+		if err != nil {
+			return nil, nil, err
+		}
+		rows = append(rows, val)
+	}
+
+	return fields, rows, nil
 }
 
 func (s *QueryService) Create(creation QueryCreation, query QueryRequest) (*uuid.UUID, *Query, error) {

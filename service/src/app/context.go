@@ -47,8 +47,10 @@ func NewContext() *Context {
 
 	encryption := service.NewEncryption()
 	proxy := service.NewProxy(clusterRepo, passwordRepo, certRepo, certFiles)
-	secretService := service.NewSecretService(secretRepo, passwordRepo, encryption)
-	queryService := service.NewQueryService(queryRepo, secretService)
+
+	secretService := service.NewSecretService(secretRepo, encryption)
+	passwordService := service.NewPasswordService(passwordRepo, secretService, encryption)
+	queryService := service.NewQueryService(queryRepo, clusterRepo, passwordService, secretService)
 	bloatService := service.NewBloatService(compactTableRepo, passwordRepo, compactTableFiles, secretService, encryption)
 	patroniService := service.NewPatroniService(proxy)
 	eraseService := service.NewEraseService(passwordRepo, clusterRepo, certRepo, tagRepo, compactTableRepo, queryService, secretService)
@@ -60,8 +62,8 @@ func NewContext() *Context {
 		clusterRouter:  router.NewClusterRouter(clusterRepo, tagRepo),
 		bloatRouter:    router.NewBloatRouter(bloatService, compactTableRepo),
 		certRouter:     router.NewCertRouter(certRepo),
-		secretRouter:   router.NewSecretRouter(secretService),
-		passwordRouter: router.NewPasswordRouter(passwordRepo, secretService, encryption),
+		secretRouter:   router.NewSecretRouter(secretService, passwordService),
+		passwordRouter: router.NewPasswordRouter(passwordService),
 		tagRouter:      router.NewTagRouter(tagRepo),
 		instanceRouter: router.NewInstanceRouter(patroniService),
 		queryRouter:    router.NewQueryRouter(queryService),

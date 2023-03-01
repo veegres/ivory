@@ -110,6 +110,7 @@ func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	query.POST("", r.PostQuery)
 	query.PUT("/:uuid", r.PutQuery)
 	query.DELETE("/:uuid", r.DeleteQuery)
+	query.POST("/run", r.PostRunQuery)
 }
 
 func eraseRouter(g *gin.RouterGroup, r *router.EraseRouter) {
