@@ -36,9 +36,9 @@ export function QueryAdd(props: Props) {
     return (
         <Paper sx={SX.box} variant={"outlined"}>
             <Box sx={SX.head} onClick={() => setOpen(!open)}>
-                <Box>New</Box>
+                <Box>[new custom query]</Box>
                 <IconButton size={"small"}>
-                    <OpenIcon open={open} size={15}/>
+                    <OpenIcon open={open} size={22}/>
                 </IconButton>
             </Box>
             <QueryItemBody show={open}>
