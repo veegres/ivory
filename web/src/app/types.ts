@@ -7,7 +7,10 @@ export interface Response<TData, TError = {}> {
 }
 
 // INSTANCE
-export interface InstanceRequest extends ActiveInstance {
+export interface InstanceRequest {
+    cluster: string,
+    host: string,
+    port: number,
     body?: any,
 }
 
@@ -89,8 +92,8 @@ export interface ActiveCluster {
 
 export interface ActiveInstance {
     cluster: string,
-    host: string,
-    port: number,
+    sidecar: Sidecar,
+    database: Database,
 }
 
 export interface InstanceDetection {
