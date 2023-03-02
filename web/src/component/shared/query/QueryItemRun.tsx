@@ -2,15 +2,15 @@ import {Box, Skeleton, Table, TableCell, TableHead, TableRow, Tooltip} from "@mu
 import {QueryRunResponse, SxPropsMap} from "../../../app/types";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {TableBody} from "../../view/TableBody";
-import {useTheme} from "../../../provider/ThemeProvider";
 import scroll from "../../../style/scroll.module.css"
 
 const SX: SxPropsMap = {
-    table: {"tr:last-child td": {border: 0}, marginBottom: "5px"},
-    box: {overflow: "auto"},
-    cell: {maxWidth: "400px", whiteSpace: 'nowrap', overflow: "hidden", textOverflow: "ellipsis"},
-    type: {fontSize: "12px", fontFamily: "monospace"},
-    name: {fontWeight: "bold"},
+    table: {"tr:last-child td": {borderBottom: 0}, marginBottom: "5px"},
+    box: {overflow: "auto", maxHeight: "300px"},
+    cell: {maxWidth: "400px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
+    type: {fontSize: "12px", fontFamily: "monospace", color: "text.disabled"},
+    name: {color: "text.secondary"},
+    number: {width: "1%", whiteSpace: "nowrap", color: "text.secondary"},
 }
 
 type Props = {
@@ -21,15 +21,15 @@ type Props = {
 
 export function QueryItemRun(props: Props) {
     const {loading, data, error} = props
-    const {info} = useTheme()
 
     if (error) return <ErrorAlert error={error}/>
 
     return (
         <Box sx={SX.box} className={scroll.tiny}>
-            <Table size={"small"} sx={SX.table}>
+            <Table size={"small"} stickyHeader sx={SX.table}>
                 <TableHead>
                     <TableRow>
+                        <TableCell/>
                         {renderHead()}
                     </TableRow>
                 </TableHead>
@@ -46,9 +46,9 @@ export function QueryItemRun(props: Props) {
 
         return data.fields.map(field => (
             <TableCell key={field.name} sx={SX.cell}>
-                <Box component={"span"}>{field.name}</Box>
+                <Box sx={SX.name} component={"span"}>{field.name}</Box>
                 {" "}
-                <Box sx={{...SX.type, color: info?.palette.text.disabled}} component={"span"}>({field.dataType})</Box>
+                <Box sx={SX.type} component={"span"}>({field.dataType})</Box>
             </TableCell>
         ))
     }
@@ -58,10 +58,11 @@ export function QueryItemRun(props: Props) {
 
         return data.rows.map((rows, i) => (
             <TableRow key={i}>
+                <TableCell sx={SX.number} padding={"checkbox"}>{i+1}</TableCell>
                 {rows.map((row, j) => {
                     const parsedRow = parseRow(row)
                     return (
-                        <TableCell key={j} sx={{...SX.cell, color: info?.palette.text.secondary}}>
+                        <TableCell key={j} sx={SX.cell}>
                             <Tooltip title={parsedRow} placement={"top-start"}>
                                 <span>{parsedRow}</span>
                             </Tooltip>
