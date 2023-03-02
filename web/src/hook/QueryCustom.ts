@@ -2,6 +2,7 @@ import {QueryKey, useQueryClient} from "@tanstack/react-query";
 import {useSnackbar} from "notistack";
 import {getErrorMessage} from "../app/utils";
 
+// TODO think how we can optimise it and update react-query by updating state without refetch
 /**
  * Simplify handling `onSuccess` and `onError` requests for react-query client
  * providing common approach with request refetch and custom toast messages for
@@ -10,7 +11,6 @@ import {getErrorMessage} from "../app/utils";
  * @param queryKeys
  * @param onSuccess it will be fired after refetch
  */
-// TODO think how we can optimise it and update react-query by updating state without refetch
 export function useMutationOptions(queryKeys?: QueryKey[], onSuccess?: (data: any) => void) {
     const {enqueueSnackbar} = useSnackbar()
     const queryClient = useQueryClient();

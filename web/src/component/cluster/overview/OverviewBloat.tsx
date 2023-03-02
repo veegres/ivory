@@ -1,125 +1,88 @@
-import {Box, Button, Collapse, IconButton, TextField, Tooltip} from "@mui/material";
-import {useMutation, useQuery} from "@tanstack/react-query";
-import {bloatApi} from "../../../app/api";
+import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
+import {useQuery} from "@tanstack/react-query";
+import {bloatApi, queryApi} from "../../../app/api";
 import {useState} from "react";
-import {CompactTable, StylePropsMap, SxPropsMap, Target} from "../../../app/types";
-import {OverviewBloatJob} from "./OverviewBloatJob";
-import {Cached} from "@mui/icons-material";
+import {CompactTable, QueryType, SxPropsMap} from "../../../app/types";
 import {LinearProgressStateful} from "../../view/LinearProgressStateful";
-import {TransitionGroup} from "react-transition-group";
 import {TabProps} from "./Overview";
-import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import { ConsoleBlock } from "../../view/ConsoleBlock";
+import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
+import {OverviewBloatJob} from "./OverviewBloatJob";
+import {Query} from "../../shared/query/Query";
+import {Cached} from "@mui/icons-material";
 
 const SX: SxPropsMap = {
-    jobsLoader: {margin: "15px 0"},
-    jobsEmpty: {textAlign: "center"},
-    form: {display: "grid", flexGrow: 1, padding: "0 20px", gridTemplateColumns: "repeat(3, 1fr)", gridColumnGap: "30px", gridRowGap: "5px"},
-    buttons: {display: "flex", alignItems: "center", gap: 1}
+    loader: {margin: "15px 0"},
+    toggle: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1},
+    form: {display: "flex", padding: "0 15px", gap: 3},
 }
 
-const style: StylePropsMap = {
-    transition: {display: "flex", flexDirection: "column", gap: "10px"}
-}
-
-export function OverviewBloat({info}: TabProps) {
-    const { cluster, defaultInstance } = info
-    const [target, setTarget] = useState<Target>()
-    const [ratio, setRadio] = useState<number>()
+export function OverviewBloat(props: TabProps) {
+    const {cluster, defaultInstance} = props.info
+    const [tab, setTab] = useState<"queries" | "jobs">("jobs")
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
+    const query = useQuery(
+        ["query", "map", QueryType.BLOAT],
+        () => queryApi.map(QueryType.BLOAT),
+    )
     const initJobs = useQuery(
         ['instance/bloat/list', cluster.name],
         () => bloatApi.list(cluster.name),
-        { onSuccess: (initJobs) => setJobs(initJobs) }
+        {onSuccess: (initJobs) => setJobs(initJobs)},
     )
-    const { onError } = useMutationOptions()
-    const start = useMutation(bloatApi.start, {
-        onSuccess: (job) => setJobs([job, ...jobs]),
-        onError,
-    })
+    const loading = initJobs.isFetching || query.isFetching
 
     return (
         <Box>
-            {renderForm()}
-            <LinearProgressStateful sx={SX.jobsLoader} isFetching={initJobs.isFetching || start.isLoading} color={"inherit"} />
-            {renderJobs()}
+            <Box sx={SX.form}>
+                <OverviewBloatJobForm
+                    defaultInstance={defaultInstance}
+                    cluster={cluster}
+                    disabled={tab !== "jobs"}
+                    onSuccess={(job) => setJobs([job, ...jobs])}
+                />
+                <Divider orientation={"vertical"} flexItem/>
+                {renderToggle()}
+            </Box>
+            <LinearProgressStateful sx={SX.loader} isFetching={loading} color={"inherit"}/>
+            {renderBody()}
         </Box>
     )
 
-    function renderJobs() {
-        if (jobs.length === 0) return <ConsoleBlock sx={SX.jobsEmpty}>There is no jobs yet</ConsoleBlock>
-
-        return (
-            <TransitionGroup style={style.transition}>
-                {jobs.map((value) => (
-                    <Collapse key={value.uuid}>
-                        <OverviewBloatJob key={value.uuid} compactTable={value}/>
-                    </Collapse>
-                ))}
-            </TransitionGroup>
-        )
+    function renderBody() {
+        switch (tab) {
+            case "jobs":
+                return <OverviewBloatJob list={jobs}/>
+            case "queries":
+                return <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
+        }
     }
 
-    function renderForm() {
-        if (!defaultInstance.inCluster) return <ClusterNoInstanceError />
-        if (!defaultInstance.leader) return <ClusterNoLeaderError />
-        if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword />
-
+    function renderToggle() {
         return (
-            <Box sx={SX.form}>
-                <TextField
-                    size={"small"} label={"Database Name"} variant={"standard"}
-                    onChange={(e) => setTarget({...target, dbName: e.target.value})}
-                />
-                <TextField
-                    size={"small"} label="Schema" variant={"standard"}
-                    onChange={(e) => setTarget({...target, schema: e.target.value})}
-                />
-                <TextField
-                    size={"small"} label={"Table"} variant={"standard"}
-                    onChange={(e) => setTarget({...target, table: e.target.value})}
-                />
-                <TextField
-                    size={"small"} label={"Exclude Schema"} variant={"standard"}
-                    onChange={(e) => setTarget({...target, excludeSchema: e.target.value})}
-                />
-                <TextField
-                    size={"small"} label={"Exclude Table"} variant={"standard"}
-                    onChange={(e) => setTarget({...target, excludeTable: e.target.value})}
-                />
-                <Box sx={SX.buttons}>
-                    <TextField sx={{ flexGrow: 1 }}
-                        size={"small"} label={"Ratio"} type={"number"} variant={"standard"}
-                        onChange={(e) => setRadio(parseInt(e.target.value))}
-                    />
-                    <Box sx={SX.buttons}>
-                        <Button variant={"text"} disabled={start.isLoading} onClick={handleRun}>
-                            RUN
-                        </Button>
-                        <Tooltip title={"Refresh list of Jobs"} placement={"top"}>
-                            <Box component={"span"}>
-                                <IconButton onClick={() => initJobs.refetch()} disabled={initJobs.isFetching}>
-                                    <Cached />
-                                </IconButton>
-                            </Box>
-                        </Tooltip>
-                    </Box>
-                </Box>
+            <Box sx={SX.toggle}>
+                <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
+                    <ToggleButton value={"jobs"} onClick={() => setTab("jobs")}>Jobs</ToggleButton>
+                    <ToggleButton value={"queries"} onClick={() => setTab("queries")}>Queries</ToggleButton>
+                </ToggleButtonGroup>
+                <Tooltip title={`Refetch ${tab}`} placement={"top"} disableInteractive>
+                    <Button
+                        variant={"outlined"}
+                        color={"secondary"}
+                        fullWidth
+                        size={"small"}
+                        disabled={loading}
+                        onClick={handleRefresh}
+                    >
+                        <Cached/>
+                    </Button>
+                </Tooltip>
             </Box>
         )
     }
 
-    function handleRun() {
-        if (defaultInstance && cluster.credentials?.postgresId) {
-            const { database: { host, port }} = defaultInstance
-            start.mutate({
-                connection: { host, port, credId: cluster.credentials.postgresId },
-                target,
-                ratio,
-                cluster: cluster.name
-            })
-        }
+    function handleRefresh() {
+        if (tab === "jobs") initJobs.refetch().then()
+        else query.refetch().then()
     }
 }
