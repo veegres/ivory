@@ -14,6 +14,7 @@ const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
     toggle: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1},
     form: {display: "flex", padding: "0 15px", gap: 3},
+    refresh: {width: "100%"},
 }
 
 export function OverviewBloat(props: TabProps) {
@@ -67,16 +68,18 @@ export function OverviewBloat(props: TabProps) {
                     <ToggleButton value={"queries"} onClick={() => setTab("queries")}>Queries</ToggleButton>
                 </ToggleButtonGroup>
                 <Tooltip title={`Refetch ${tab}`} placement={"top"} disableInteractive>
-                    <Button
-                        variant={"outlined"}
-                        color={"secondary"}
-                        fullWidth
-                        size={"small"}
-                        disabled={loading}
-                        onClick={handleRefresh}
-                    >
-                        <Cached/>
-                    </Button>
+                    <Box sx={SX.refresh} component={"span"}>
+                        <Button
+                            variant={"outlined"}
+                            color={"secondary"}
+                            fullWidth
+                            size={"small"}
+                            disabled={loading}
+                            onClick={handleRefresh}
+                        >
+                            <Cached/>
+                        </Button>
+                    </Box>
                 </Tooltip>
             </Box>
         )
