@@ -1,4 +1,4 @@
-import {Database, Query, QueryCreation, SxPropsMap} from "../../../app/types";
+import {Database, Query, QueryCreation, QueryType, SxPropsMap} from "../../../app/types";
 import {Box, Paper} from "@mui/material";
 import {
     CancelIconButton,
@@ -35,10 +35,11 @@ type Props = {
     query: Query,
     cluster: string,
     db: Database,
+    type: QueryType,
 }
 
 export function QueryItem(props: Props) {
-    const {id, query, cluster, db} = props
+    const {id, query, cluster, db, type} = props
     const {info} = useTheme()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
@@ -49,7 +50,7 @@ export function QueryItem(props: Props) {
         {enabled: false, retry: false},
     )
 
-    const removeOptions = useMutationOptions([["query", "map", id]])
+    const removeOptions = useMutationOptions([["query", "map", type]])
     const remove = useMutation(queryApi.delete, removeOptions)
 
     return (
@@ -60,7 +61,9 @@ export function QueryItem(props: Props) {
                     <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
                 </Box>
                 <Box sx={SX.buttons}>
-                    {!open && query.creation === QueryCreation.Manual && <DeleteIconButton onClick={handleDelete}/>}
+                    {!open && query.creation === QueryCreation.Manual && (
+                        <DeleteIconButton loading={remove.isLoading} onClick={handleDelete}/>
+                    )}
                     {renderCancelButton()}
                     {!open && query.default !== query.custom && (
                         <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
