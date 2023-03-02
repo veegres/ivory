@@ -11,6 +11,7 @@ const SX: SxPropsMap = {
 }
 
 export function OverviewQueries(props: TabProps){
+    const {cluster, defaultInstance} = props.info
     const [tab, setTab] = useState(QueryType.STATISTIC)
 
     return (
@@ -27,7 +28,7 @@ export function OverviewQueries(props: TabProps){
                 </ToggleButton>
             </ToggleButtonGroup>
             <Box sx={SX.query}>
-                <Query type={tab} cluster={props.info.cluster.name} db={props.info.defaultInstance.database}/>
+                <Query type={tab} cluster={cluster.name} db={defaultInstance.database}/>
             </Box>
         </Box>
     )
