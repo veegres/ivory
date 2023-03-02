@@ -17,6 +17,7 @@ const SX: SxPropsMap = {
     buttons: {display: "flex", alignItems: "center", gap: 1},
     desc: {flexGrow: 1},
     editor: {borderRadius: "5px"},
+    name: {color: "text.disabled"},
 }
 
 type Props = {
@@ -24,19 +25,20 @@ type Props = {
 }
 
 export function QueryAdd(props: Props) {
+    const {type} = props
     const {info} = useTheme()
     const [name, setName] = useState("")
     const [description, setDesc] = useState("")
     const [query, setQuery] = useState("")
     const [open, setOpen] = useState(false)
 
-    const createOptions = useMutationOptions([["query", "map"]], handleSuccess)
+    const createOptions = useMutationOptions([["query", "map", type]], handleSuccess)
     const create = useMutation(queryApi.create, createOptions)
 
     return (
         <Paper sx={SX.box} variant={"outlined"}>
             <Box sx={SX.head} onClick={() => setOpen(!open)}>
-                <Box>[new custom query]</Box>
+                <Box sx={SX.name}>New Manual Query</Box>
                 <IconButton size={"small"}>
                     <OpenIcon open={open} size={22}/>
                 </IconButton>
@@ -70,7 +72,7 @@ export function QueryAdd(props: Props) {
     )
 
     function handleAdd() {
-        create.mutate({name, type: props.type, description, query})
+        create.mutate({name, type, description, query})
     }
 
     function handleSuccess() {
