@@ -13,13 +13,14 @@ import {Cached} from "@mui/icons-material";
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
     toggle: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1},
-    form: {display: "flex", padding: "0 15px", gap: 3},
+    option: {display: "flex", padding: "0 15px", gap: 3},
+    form: {flexGrow: 1},
     refresh: {width: "100%"},
 }
 
 export function OverviewBloat(props: TabProps) {
     const {cluster, defaultInstance} = props.info
-    const [tab, setTab] = useState<"queries" | "jobs">("jobs")
+    const [tab, setTab] = useState<"queries" | "jobs">("queries")
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
     const query = useQuery(
@@ -36,13 +37,15 @@ export function OverviewBloat(props: TabProps) {
 
     return (
         <Box>
-            <Box sx={SX.form}>
-                <OverviewBloatJobForm
-                    defaultInstance={defaultInstance}
-                    cluster={cluster}
-                    disabled={tab !== "jobs"}
-                    onSuccess={(job) => setJobs([job, ...jobs])}
-                />
+            <Box sx={SX.option}>
+                <Box sx={SX.form}>
+                    <OverviewBloatJobForm
+                        defaultInstance={defaultInstance}
+                        cluster={cluster}
+                        onClick={() => setTab("jobs")}
+                        onSuccess={(job) => setJobs([job, ...jobs])}
+                    />
+                </Box>
                 <Divider orientation={"vertical"} flexItem/>
                 {renderToggle()}
             </Box>
@@ -64,8 +67,8 @@ export function OverviewBloat(props: TabProps) {
         return (
             <Box sx={SX.toggle}>
                 <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
-                    <ToggleButton value={"jobs"} onClick={() => setTab("jobs")}>Jobs</ToggleButton>
                     <ToggleButton value={"queries"} onClick={() => setTab("queries")}>Queries</ToggleButton>
+                    <ToggleButton value={"jobs"} onClick={() => setTab("jobs")}>Jobs</ToggleButton>
                 </ToggleButtonGroup>
                 <Tooltip title={`Refetch ${tab}`} placement={"top"} disableInteractive>
                     <Box sx={SX.refresh} component={"span"}>

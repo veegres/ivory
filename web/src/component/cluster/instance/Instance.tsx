@@ -44,14 +44,14 @@ export function Instance() {
 
         return (
             <Box sx={SX.content}>
-                <Box sx={SX.query}>
-                    <Query type={QueryType.ACTIVITY} cluster={activeInstance.cluster} db={activeInstance.database}/>
-                </Box>
                 <Box sx={SX.info}>
                     <InstanceStatus role={instance?.role}/>
                     <Item name={"State"} value={instance?.state}/>
                     <Item name={"Sidecar"} value={`${activeInstance.sidecar.host}:${activeInstance.sidecar.port.toString()}`}/>
                     <Item name={"Database"} value={`${activeInstance.database.host}:${activeInstance.database.port.toString()}`}/>
+                </Box>
+                <Box sx={SX.query}>
+                    <Query type={QueryType.ACTIVITY} cluster={activeInstance.cluster} db={activeInstance.database}/>
                 </Box>
             </Box>
         )

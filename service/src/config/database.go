@@ -41,8 +41,6 @@ func NewBoltBucket[T any](db *bolt.DB, name string) *Bucket[T] {
 
 func (b *Bucket[T]) GetList(filter func(el T) bool) ([]T, error) {
 	result := make([]T, 0)
-
-	// TODO check if we need tx here, because we use b.bucket
 	err := b.db.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(b.name).Cursor()
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {

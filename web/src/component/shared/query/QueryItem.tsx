@@ -8,7 +8,7 @@ import {
     RestoreIconButton
 } from "../../view/IconButtons";
 import {useTheme} from "../../../provider/ThemeProvider";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {QueryItemInfo} from "./QueryItemInfo";
 import {QueryItemEdit} from "./QueryItemEdit";
 import {QueryItemRun} from "./QueryItemRun";
@@ -25,7 +25,7 @@ const SX: SxPropsMap = {
     name: {fontWeight: "bold"},
     creation: {fontSize: "12px", fontFamily: "monospace"},
     buttons: {display: "flex", alignItems: "center"},
-    type: {padding: "0 8px", cursor: "pointer"},
+    type: {padding: "0 8px", cursor: "pointer", color: "text.disabled"},
 }
 
 enum BodyType {INFO, EDIT, RESTORE, RUN}
@@ -53,6 +53,11 @@ export function QueryItem(props: Props) {
     const removeOptions = useMutationOptions([["query", "map", type]])
     const remove = useMutation(queryApi.delete, removeOptions)
 
+    useEffect(() => {
+        if (body !== BodyType.RUN) {
+            result.remove()
+        }
+    }, [body, result])
     return (
         <Paper sx={SX.box} variant={"outlined"}>
             <Box sx={SX.head}>
@@ -61,14 +66,7 @@ export function QueryItem(props: Props) {
                     <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
                 </Box>
                 <Box sx={SX.buttons}>
-                    {!open && query.creation === QueryCreation.Manual && (
-                        <DeleteIconButton loading={remove.isLoading} onClick={handleDelete}/>
-                    )}
-                    {renderCancelButton()}
-                    {!open && query.default !== query.custom && (
-                        <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
-                    )}
-                    {!open && <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>}
+                    {renderButtons()}
                     <PlayIconButton color={"success"} loading={result.isFetching} onClick={handleRun}/>
                 </Box>
             </Box>
@@ -82,25 +80,37 @@ export function QueryItem(props: Props) {
                 <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
             <QueryItemBody show={body === BodyType.RUN}>
-                <QueryItemRun data={result.data} error={result.error} loading={result.isLoading}/>
+                <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
             </QueryItemBody>
         </Paper>
     )
 
-    function renderCancelButton() {
-        if (!open) return
+    function renderButtons() {
+        if (open) return renderCancelButton(BodyType[body])
         return (
             <>
-                <Box sx={{...SX.type, color: info?.palette.text.disabled}} onClick={handleCancel}>
-                    {BodyType[body]}
-                </Box>
-                <CancelIconButton onClick={handleCancel}/>
+                {query.creation === QueryCreation.Manual && (
+                    <DeleteIconButton loading={remove.isLoading} onClick={handleDelete}/>
+                )}
+                {query.default !== query.custom && (
+                    <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
+                )}
+                <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>
+            </>
+        )
+    }
+
+    function renderCancelButton(type: string) {
+        return (
+            <>
+                <Box sx={SX.type} onClick={handleCancel}>{type}</Box>
+                <CancelIconButton disabled={result.isFetching} onClick={handleCancel}/>
             </>
         )
     }
 
     function handleCancel() {
-        setBody(undefined)
+        if (!result.isFetching) setBody(undefined)
     }
 
     function handleToggleBody(type: BodyType) {
@@ -108,8 +118,8 @@ export function QueryItem(props: Props) {
     }
 
     function handleRun() {
+        setBody(BodyType.RUN)
         result.refetch().then()
-        handleToggleBody(BodyType.RUN)()
     }
 
     function handleDelete() {
