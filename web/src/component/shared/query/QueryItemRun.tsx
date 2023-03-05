@@ -28,10 +28,7 @@ export function QueryItemRun(props: Props) {
         <Box sx={SX.box} className={scroll.tiny}>
             <Table size={"small"} stickyHeader sx={SX.table}>
                 <TableHead>
-                    <TableRow>
-                        <TableCell/>
-                        {renderHead()}
-                    </TableRow>
+                    {renderHead()}
                 </TableHead>
                 <TableBody isLoading={loading}>
                     {renderBody()}
@@ -41,16 +38,21 @@ export function QueryItemRun(props: Props) {
     )
 
     function renderHead() {
-        if (loading) return <TableCell><Skeleton width={'100%'}/></TableCell>
+        if (loading) return <TableRow><TableCell><Skeleton width={'100%'}/></TableCell></TableRow>
         if (!data) return
 
-        return data.fields.map(field => (
-            <TableCell key={field.name} sx={SX.cell}>
-                <Box sx={SX.name} component={"span"}>{field.name}</Box>
-                {" "}
-                <Box sx={SX.type} component={"span"}>({field.dataType})</Box>
-            </TableCell>
-        ))
+        return (
+            <TableRow>
+                <TableCell/>
+                {data.fields.map(field => (
+                    <TableCell key={field.name} sx={SX.cell}>
+                        <Box sx={SX.name} component={"span"}>{field.name}</Box>
+                        {" "}
+                        <Box sx={SX.type} component={"span"}>({field.dataType})</Box>
+                    </TableCell>
+                ))}
+            </TableRow>
+        )
     }
 
     function renderBody() {

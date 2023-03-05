@@ -7,7 +7,7 @@ import {useMutation} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
 
 const SX: SxPropsMap = {
-    form: {display: "grid", flexGrow: 1, gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
+    form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
     buttons: {display: "flex", alignItems: "center", gap: 1}
 }
 
@@ -15,12 +15,12 @@ const SX: SxPropsMap = {
 type Props = {
     defaultInstance: DefaultInstance,
     cluster: Cluster,
-    disabled: boolean,
+    onClick: () => void,
     onSuccess: (job: CompactTable) => void,
 }
 
 export function OverviewBloatJobForm(props: Props) {
-    const {defaultInstance, cluster, onSuccess, disabled} = props
+    const {defaultInstance, cluster, onSuccess, onClick} = props
     const [target, setTarget] = useState<Target>()
     const [ratio, setRadio] = useState<number>()
 
@@ -42,12 +42,11 @@ export function OverviewBloatJobForm(props: Props) {
             <Box sx={SX.buttons}>
                 <TextField
                     sx={{flexGrow: 1}} size={"small"} label={"Ratio"} type={"number"} variant={"standard"}
-                    disabled={disabled}
                     onChange={(e) => setRadio(parseInt(e.target.value))}
                 />
                 <Box sx={SX.buttons}>
-                    <Button variant={"text"} disabled={start.isLoading || disabled} onClick={handleRun}>
-                        RUN
+                    <Button variant={"text"} disabled={start.isLoading} onClick={handleRun}>
+                        Clean
                     </Button>
                 </Box>
             </Box>
@@ -61,7 +60,6 @@ export function OverviewBloatJobForm(props: Props) {
                 label={label}
                 variant={"standard"}
                 margin={"dense"}
-                disabled={disabled}
                 onChange={onChange}
             />
         )
@@ -70,6 +68,7 @@ export function OverviewBloatJobForm(props: Props) {
     function handleRun() {
         if (defaultInstance && cluster.credentials?.postgresId) {
             const {database: {host, port}} = defaultInstance
+            onClick()
             start.mutate({
                 connection: {host, port, credId: cluster.credentials.postgresId},
                 target,

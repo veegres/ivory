@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"os"
 )
@@ -26,7 +27,10 @@ func NewFilePersistence(name string, ext string) *FilePersistence {
 
 func (r *FilePersistence) Create(uuid uuid.UUID) string {
 	path := r.path + "/" + uuid.String() + r.ext
-	_, _ = os.Create(path)
+	_, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
 	return path
 }
 
@@ -43,7 +47,7 @@ func (r *FilePersistence) Delete(uuid uuid.UUID) error {
 }
 
 func (r *FilePersistence) DeleteAll() error {
-	err := os.RemoveAll(r.path + "/")
-	err = os.Mkdir(r.path, os.ModePerm)
-	return err
+	errRem := os.RemoveAll(r.path + "/")
+	errCreate := os.Mkdir(r.path, os.ModePerm)
+	return errors.Join(errRem, errCreate)
 }

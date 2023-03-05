@@ -25,6 +25,7 @@ export function Autocomplete(props: Props) {
             size={"small"}
             autoHighlight={true}
             options={options}
+            noOptionsText={"Add option in Ivory settings"}
             value={value}
             onChange={(_, v) => onUpdate(v)}
             inputValue={inputValue}

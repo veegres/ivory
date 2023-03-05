@@ -117,7 +117,7 @@ export function Overview() {
                         selected={cluster && settingsOpen}
                         onClick={() => setSettingsOpen(!settingsOpen)}
                     >
-                        <Tooltip title={"Cluster Settings"} placement={"top"}><Settings/></Tooltip>
+                        <Tooltip title={"Cluster Options"} placement={"top"}><Settings/></Tooltip>
                     </ToggleButton>
                     <ToggleButton
                         sx={SX.toggleButton}
