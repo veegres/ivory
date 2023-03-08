@@ -3,7 +3,6 @@ import {Skeleton, Stack} from "@mui/material";
 import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
-import {QueryAdd} from "./QueryAdd";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import React from "react";
 
@@ -22,22 +21,21 @@ export function Query(props: Props) {
 
     return (
         <Stack gap={1}>
-            {Object.entries(query.data ?? {}).map(([key, value]) => (
-                <QueryItem key={key} id={key} query={value} cluster={cluster} db={db} type={type}/>
+            {Object.entries(query.data ?? {}).map(([key, value], index) => (
+                <QueryItem key={key} add={index === 0} id={key} query={value} cluster={cluster} db={db} type={type}/>
             ))}
-            <QueryAdd type={type}/>
         </Stack>
     )
 
     function renderLoading() {
         return (
-            <>
-                <Skeleton width={"100%"} height={42} />
-                <Skeleton width={"100%"} height={42} />
-                <Skeleton width={"100%"} height={42} />
-                <Skeleton width={"100%"} height={42} />
-                <Skeleton width={"100%"} height={42} />
-            </>
+            <Stack>
+                <Skeleton width={"100%"} height={42}/>
+                <Skeleton width={"100%"} height={42}/>
+                <Skeleton width={"100%"} height={42}/>
+                <Skeleton width={"100%"} height={42}/>
+                <Skeleton width={"100%"} height={42}/>
+            </Stack>
         )
     }
 }
