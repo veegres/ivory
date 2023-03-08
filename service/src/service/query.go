@@ -63,6 +63,9 @@ func (s *QueryService) Run(queryUuid uuid.UUID, clusterName string, db Database)
 		return nil, nil, errCred
 	}
 
+	if db.Port == 0 || db.Host == "" || db.Host == "-" {
+		return nil, nil, errors.New("database host or port are not specified")
+	}
 	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port)
 	conn, errConn := pgx.Connect(context.Background(), connString)
 	if errConn != nil {
@@ -81,9 +84,10 @@ func (s *QueryService) Run(queryUuid uuid.UUID, clusterName string, db Database)
 	for _, field := range res.FieldDescriptions() {
 		dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
 		if !ok {
-			return nil, nil, errors.New("cannot parse data type for field: " + field.Name)
+			fields = append(fields, QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
+		} else {
+			fields = append(fields, QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
 		}
-		fields = append(fields, QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
 	}
 
 	rows := make([][]any, 0)
