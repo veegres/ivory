@@ -23,7 +23,7 @@ func NewPasswordService(
 		passwordRepository:  passwordRepository,
 		secretService:       secretService,
 		encryption:          encryption,
-		defaultPasswordWord: "configured",
+		defaultPasswordWord: "********",
 	}
 }
 

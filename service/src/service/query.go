@@ -186,24 +186,114 @@ func (s *QueryService) createDefaultQueries() error {
 		return nil
 	}
 
-	_, _, errRun := s.Create(System, s.runningQuery())
-	if errRun != nil {
-		return errRun
+	_, _, err := s.Create(System, s.runningQueries())
+	if err != nil {
+		return err
 	}
-	_, _, errCon := s.Create(System, s.connectionQuery())
-	if errCon != nil {
-		return errCon
+	_, _, err = s.Create(System, s.allQueries())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.allLocks())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.config())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.configDescription())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.allUsers())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.replication())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.databaseSize())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.tableSize())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.indexesCache())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.indexesUnused())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.deadTuples())
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (s *QueryService) runningQuery() QueryRequest {
-	n, t, d := "Running Queries", ACTIVITY, "This query will check currently running queries"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultRunningQuery}
+func (s *QueryService) deadTuples() QueryRequest {
+	n, t, d := "Numbers of dead tuples", BLOAT, "Shows number of dead tuples"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultNumberOfDeadTuples}
 }
 
-func (s *QueryService) connectionQuery() QueryRequest {
-	n, t, d := "All Connections", ACTIVITY, "This query will show list of all connections"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultConnectionQuery}
+func (s *QueryService) runningQueries() QueryRequest {
+	n, t, d := "Active Running Queries", ACTIVITY, "Shows running queries with duration information and his owner"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultActiveRunningQueries}
+}
+
+func (s *QueryService) allQueries() QueryRequest {
+	n, t, d := "All Queries By State", ACTIVITY, "Shows all queries by state and database"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultAllQueriesByState}
+}
+
+func (s *QueryService) allLocks() QueryRequest {
+	n, t, d := "All locks", ACTIVITY, "Shows all locks with lock duration, type, it's ids owner, etc"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultAllLocks}
+}
+
+func (s *QueryService) config() QueryRequest {
+	n, t, d := "Config", OTHER, "Shows postgres config elements with it's values and information about restart"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPostgresConfig}
+}
+
+func (s *QueryService) configDescription() QueryRequest {
+	n, t, d := "Config Description", OTHER, "Shows description of postgres config elements"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPostgresConfigDescription}
+}
+
+func (s *QueryService) allUsers() QueryRequest {
+	n, t, d := "Users", OTHER, "Shows all locks with lock duration, type, it's ids owner, etc"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPostgresUsers}
+}
+
+func (s *QueryService) replication() QueryRequest {
+	n, t, d := "Replication", REPLICATION, "Shows pure replication table"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPureReplication}
+}
+
+func (s *QueryService) databaseSize() QueryRequest {
+	n, t, d := "Database Size", STATISTIC, "Shows all database sizes"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultDatabaseSize}
+}
+
+func (s *QueryService) tableSize() QueryRequest {
+	n, t, d := "Table Size", STATISTIC, "Shows all table sizes, index size and total (index + table)"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultTableSize}
+}
+
+func (s *QueryService) indexesCache() QueryRequest {
+	n, t, d := "Indexes in cache", STATISTIC, "Shows ratio indexes in cache"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexInCache}
+}
+
+func (s *QueryService) indexesUnused() QueryRequest {
+	n, t, d := "Unused indexes", STATISTIC, "Shows unused indexes and their size"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexUnused}
 }
