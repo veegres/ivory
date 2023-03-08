@@ -8,7 +8,7 @@ import {
     RestoreIconButton
 } from "../../view/IconButtons";
 import {useTheme} from "../../../provider/ThemeProvider";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {QueryItemInfo} from "./QueryItemInfo";
 import {QueryItemEdit} from "./QueryItemEdit";
 import {QueryItemRun} from "./QueryItemRun";
@@ -53,11 +53,6 @@ export function QueryItem(props: Props) {
     const removeOptions = useMutationOptions([["query", "map", type]])
     const remove = useMutation(queryApi.delete, removeOptions)
 
-    useEffect(() => {
-        if (body !== BodyType.RUN) {
-            result.remove()
-        }
-    }, [body, result])
     return (
         <Paper sx={SX.box} variant={"outlined"}>
             <Box sx={SX.head}>
@@ -79,9 +74,11 @@ export function QueryItem(props: Props) {
             <QueryItemBody show={body === BodyType.RESTORE}>
                 <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
-            <QueryItemBody show={body === BodyType.RUN}>
-                <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
-            </QueryItemBody>
+            {body === BodyType.RUN && (
+                <QueryItemBody show={true}>
+                    <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
+                </QueryItemBody>
+            )}
         </Paper>
     )
 
