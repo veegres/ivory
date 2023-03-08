@@ -1,6 +1,7 @@
 import {Database, Query, QueryCreation, QueryType, SxPropsMap} from "../../../app/types";
 import {Box, Paper} from "@mui/material";
 import {
+    AddIconButton,
     CancelIconButton,
     DeleteIconButton,
     EditIconButton,
@@ -17,10 +18,13 @@ import {QueryItemBody} from "./QueryItemBody";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
+import {QueryItemAdd} from "./QueryItemAdd";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", fontSize: "15px"},
+    container: {display: "flex"},
+    item: {display: "flex", flexDirection: "column", flexGrow: 1, width: "100%", fontSize: "15px"},
     head: {display: "flex", padding: "5px 15px"},
+    add: {display: "flex", alignItems: "center", padding: "5px"},
     title: {flexGrow: 1, display: "flex", alignItems: "center", cursor: "pointer", gap: 1},
     name: {fontWeight: "bold"},
     creation: {fontSize: "12px", fontFamily: "monospace"},
@@ -28,7 +32,7 @@ const SX: SxPropsMap = {
     type: {padding: "0 8px", cursor: "pointer", color: "text.disabled"},
 }
 
-enum BodyType {INFO, EDIT, RESTORE, RUN}
+enum BodyType {INFO, EDIT, RESTORE, RUN, ADD}
 
 type Props = {
     id: string,
@@ -36,10 +40,11 @@ type Props = {
     cluster: string,
     db: Database,
     type: QueryType,
+    add: boolean,
 }
 
 export function QueryItem(props: Props) {
-    const {id, query, cluster, db, type} = props
+    const {id, query, cluster, db, type, add} = props
     const {info} = useTheme()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
@@ -54,32 +59,42 @@ export function QueryItem(props: Props) {
     const remove = useMutation(queryApi.delete, removeOptions)
 
     return (
-        <Paper sx={SX.box} variant={"outlined"}>
-            <Box sx={SX.head}>
-                <Box sx={SX.title} onClick={open ? handleCancel : handleToggleBody(BodyType.INFO)}>
-                    <Box sx={SX.name}>{query.name}</Box>
-                    <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
+        <Box sx={SX.container}>
+            <Paper sx={SX.item} variant={"outlined"}>
+                <Box sx={SX.head}>
+                    <Box sx={SX.title} onClick={open ? handleCancel : handleToggleBody(BodyType.INFO)}>
+                        <Box sx={SX.name}>{query.name}</Box>
+                        <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
+                    </Box>
+                    <Box sx={SX.buttons}>
+                        {renderButtons()}
+                        <PlayIconButton color={"success"} loading={result.isFetching} onClick={handleRun}/>
+                    </Box>
                 </Box>
-                <Box sx={SX.buttons}>
-                    {renderButtons()}
-                    <PlayIconButton color={"success"} loading={result.isFetching} onClick={handleRun}/>
-                </Box>
-            </Box>
-            <QueryItemBody show={body === BodyType.INFO}>
-                <QueryItemInfo query={query.custom} description={query.description}/>
-            </QueryItemBody>
-            <QueryItemBody show={body === BodyType.EDIT}>
-                <QueryItemEdit id={id} query={query.custom}/>
-            </QueryItemBody>
-            <QueryItemBody show={body === BodyType.RESTORE}>
-                <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
-            </QueryItemBody>
-            {body === BodyType.RUN && (
-                <QueryItemBody show={true}>
-                    <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
+                <QueryItemBody show={body === BodyType.INFO}>
+                    <QueryItemInfo query={query.custom} description={query.description}/>
                 </QueryItemBody>
+                <QueryItemBody show={body === BodyType.EDIT}>
+                    <QueryItemEdit id={id} query={query.custom}/>
+                </QueryItemBody>
+                <QueryItemBody show={body === BodyType.RESTORE}>
+                    <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
+                </QueryItemBody>
+                <QueryItemBody show={body === BodyType.ADD}>
+                    <QueryItemAdd type={type}/>
+                </QueryItemBody>
+                {body === BodyType.RUN && (
+                    <QueryItemBody show={true}>
+                        <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
+                    </QueryItemBody>
+                )}
+            </Paper>
+            {add && (
+                <Paper sx={SX.add} variant={"outlined"} onClick={handleAdd}>
+                    <AddIconButton onClick={() => void 0}/>
+                </Paper>
             )}
-        </Paper>
+        </Box>
     )
 
     function renderButtons() {
@@ -108,6 +123,11 @@ export function QueryItem(props: Props) {
 
     function handleCancel() {
         if (!result.isFetching) setBody(undefined)
+    }
+
+    function handleAdd() {
+        if (body === BodyType.ADD) setBody(undefined)
+        else setBody(BodyType.ADD)
     }
 
     function handleToggleBody(type: BodyType) {
