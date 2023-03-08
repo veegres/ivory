@@ -3,9 +3,10 @@ import {Query} from "../../shared/query/Query";
 import {QueryType, SxPropsMap} from "../../../app/types";
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {useState} from "react";
+import {ClusterNoPostgresPassword} from "./OverviewError";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1},
+    box: {display: "flex", flexDirection: "column", alignItems: "center", gap: 3},
     query: {width: "100%"},
     group: {padding: "0px 10%"},
 }
@@ -13,6 +14,8 @@ const SX: SxPropsMap = {
 export function OverviewQueries(props: TabProps){
     const {cluster, defaultInstance} = props.info
     const [tab, setTab] = useState(QueryType.STATISTIC)
+
+    if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
     return (
         <Box sx={SX.box}>
