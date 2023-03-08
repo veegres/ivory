@@ -86,7 +86,7 @@ export function QueryItemRun(props: Props) {
     }
 
     function getRowCount() {
-        if (!data) return 3
+        if (!data) return 2
         const len = data.rows.length
 
         if (len === 0) return 1
