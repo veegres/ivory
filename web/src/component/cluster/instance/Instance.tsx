@@ -11,9 +11,6 @@ import {InstanceStatus} from "./InstanceStatus";
 import {InstanceTable} from "./InstanceTable";
 
 const SX: SxPropsMap = {
-    instanceStatusBlock: {height: "120px", minWidth: "250px", borderRadius: "4px", color: "white", fontSize: "24px", fontWeight: 900},
-    item: {margin: "0px 5px"},
-    text: {whiteSpace: "pre-wrap"},
     content: {display: "flex", gap: 2},
     info: {display: "flex", flexDirection: "column", gap: 1},
     query: {flexGrow: 1, overflow: "auto"},

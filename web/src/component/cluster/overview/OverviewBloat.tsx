@@ -59,7 +59,9 @@ export function OverviewBloat(props: TabProps) {
             case "jobs":
                 return <OverviewBloatJob list={jobs}/>
             case "queries":
-                return <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
+                return cluster.credentials.postgresId && (
+                    <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
+                )
         }
     }
 
