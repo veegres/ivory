@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 	"ivory/src/config"
 	. "ivory/src/model"
-	"sort"
 	"strings"
 	"time"
 )
@@ -22,19 +21,19 @@ func NewCompactTableRepository(bucket *config.Bucket[CompactTableModel], file *c
 }
 
 func (r *CompactTableRepository) List() ([]CompactTableModel, error) {
-	return r.list(nil)
+	return r.bucket.GetList(nil, r.sortDescByCreatedAt)
 }
 
 func (r *CompactTableRepository) ListByStatus(status JobStatus) ([]CompactTableModel, error) {
-	return r.list(func(model CompactTableModel) bool {
+	return r.bucket.GetList(func(model CompactTableModel) bool {
 		return model.Status == status
-	})
+	}, r.sortDescByCreatedAt)
 }
 
 func (r *CompactTableRepository) ListByCluster(cluster string) ([]CompactTableModel, error) {
-	return r.list(func(model CompactTableModel) bool {
+	return r.bucket.GetList(func(model CompactTableModel) bool {
 		return model.Cluster == cluster
-	})
+	}, r.sortDescByCreatedAt)
 }
 
 func (r *CompactTableRepository) Get(uuid uuid.UUID) (CompactTableModel, error) {
@@ -80,14 +79,6 @@ func (r *CompactTableRepository) DeleteAll() error {
 	return err
 }
 
-func (r *CompactTableRepository) list(filter func(model CompactTableModel) bool) ([]CompactTableModel, error) {
-	modelList, err := r.bucket.GetList(filter)
-	r.sortDescByCreatedAt(modelList)
-	return modelList, err
-}
-
-func (r *CompactTableRepository) sortDescByCreatedAt(list []CompactTableModel) {
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].CreatedAt > list[j].CreatedAt
-	})
+func (r *CompactTableRepository) sortDescByCreatedAt(list []CompactTableModel, i, j int) bool {
+	return list[i].CreatedAt > list[j].CreatedAt
 }

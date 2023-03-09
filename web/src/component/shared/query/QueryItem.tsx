@@ -31,7 +31,6 @@ const SX: SxPropsMap = {
 enum BodyType {INFO, EDIT, RESTORE, RUN}
 
 type Props = {
-    id: string,
     query: Query,
     cluster: string,
     db: Database,
@@ -39,14 +38,14 @@ type Props = {
 }
 
 export function QueryItem(props: Props) {
-    const {id, query, cluster, db, type} = props
+    const {query, cluster, db, type} = props
     const {info} = useTheme()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
 
     const result = useQuery(
-        ["query", "run", id],
-        () => queryApi.run({queryUuid: id, clusterName: cluster, db}),
+        ["query", "run", query.id],
+        () => queryApi.run({queryUuid: query.id, clusterName: cluster, db}),
         {enabled: false, retry: false},
     )
 
@@ -69,10 +68,10 @@ export function QueryItem(props: Props) {
                 <QueryItemInfo query={query.custom} description={query.description}/>
             </QueryItemBody>
             <QueryItemBody show={body === BodyType.EDIT}>
-                <QueryItemEdit id={id} query={query.custom}/>
+                <QueryItemEdit id={query.id} query={query.custom}/>
             </QueryItemBody>
             <QueryItemBody show={body === BodyType.RESTORE}>
-                <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
+                <QueryItemRestore id={query.id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
             <QueryItemBody show={body === BodyType.RUN}>
                 <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
@@ -118,6 +117,6 @@ export function QueryItem(props: Props) {
     }
 
     function handleDelete() {
-        remove.mutate(id)
+        remove.mutate(query.id)
     }
 }

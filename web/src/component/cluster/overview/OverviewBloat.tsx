@@ -25,7 +25,7 @@ export function OverviewBloat(props: TabProps) {
 
     const query = useQuery(
         ["query", "map", QueryType.BLOAT],
-        () => queryApi.map(QueryType.BLOAT),
+        () => queryApi.list(QueryType.BLOAT),
         {enabled: false},
     )
     const initJobs = useQuery(

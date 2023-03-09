@@ -106,7 +106,7 @@ func instanceRouter(g *gin.RouterGroup, r *router.InstanceRouter) {
 
 func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	query := g.Group("/query")
-	query.GET("", r.GetQueryMap)
+	query.GET("", r.GetQueryList)
 	query.POST("", r.PostQuery)
 	query.PUT("/:uuid", r.PutQuery)
 	query.DELETE("/:uuid", r.DeleteQuery)
