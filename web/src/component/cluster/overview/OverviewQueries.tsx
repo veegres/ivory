@@ -10,7 +10,7 @@ import {Add, Close} from "@mui/icons-material";
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},
     filters: {display: "flex", flexDirection: "column", alignItems: "center", gap: 2},
-    query: {display: "flex", flexDirection: "column", width: "100%"},
+    query: {flexGrow: 1, overflow: "hidden"},
     group: {margin: "0px 5px"},
 }
 

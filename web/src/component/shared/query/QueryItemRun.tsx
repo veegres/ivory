@@ -30,7 +30,7 @@ export function QueryItemRun(props: Props) {
 
     return (
         <Box sx={SX.box} className={scroll.tiny}>
-            <Table size={"small"} stickyHeader sx={SX.table}>
+            <Table sx={SX.table} size={"small"} stickyHeader>
                 <TableHead>
                     {renderHead()}
                 </TableHead>

@@ -19,7 +19,7 @@ import {queryApi} from "../../../app/api";
 import {QueryItemRun} from "./QueryItemRun";
 
 const SX: SxPropsMap = {
-    item: {display: "flex", flexDirection: "column", flexGrow: 1, width: "100%", fontSize: "15px"},
+    item: {fontSize: "15px"},
     head: {display: "flex", padding: "5px 15px"},
     title: {flexGrow: 1, display: "flex", alignItems: "center", cursor: "pointer", gap: 1},
     name: {fontWeight: "bold"},
