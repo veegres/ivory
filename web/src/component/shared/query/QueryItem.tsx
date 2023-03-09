@@ -16,12 +16,11 @@ import {QueryItemBody} from "./QueryItemBody";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
+import {QueryItemRun} from "./QueryItemRun";
 
 const SX: SxPropsMap = {
-    container: {display: "flex"},
     item: {display: "flex", flexDirection: "column", flexGrow: 1, width: "100%", fontSize: "15px"},
     head: {display: "flex", padding: "5px 15px"},
-    add: {display: "flex", alignItems: "center", padding: "5px"},
     title: {flexGrow: 1, display: "flex", alignItems: "center", cursor: "pointer", gap: 1},
     name: {fontWeight: "bold"},
     creation: {fontSize: "12px", fontFamily: "monospace"},
@@ -75,6 +74,11 @@ export function QueryItem(props: Props) {
             <QueryItemBody show={body === BodyType.RESTORE}>
                 <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
+            {body === BodyType.RUN && (
+                <QueryItemBody show={true}>
+                    <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
+                </QueryItemBody>
+            )}
         </Paper>
     )
 
