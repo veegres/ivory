@@ -4,7 +4,7 @@ import {ActiveInstance, InstanceInfo, SxPropsMap} from "../../../app/types";
 
 const SX: SxPropsMap = {
     title: {color: "text.secondary", fontWeight: "bold"},
-    table: {td: {border: 0}},
+    table: {td: {border: 0}, fontSize: "18px"},
 }
 
 type Props = {

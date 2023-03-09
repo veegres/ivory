@@ -101,11 +101,11 @@ export function QueryItem(props: Props) {
         if (open) return renderCancelButton(BodyType[body])
         return (
             <>
-                {query.creation === QueryCreation.Manual && (
-                    <DeleteIconButton loading={remove.isLoading} onClick={handleDelete}/>
-                )}
                 {query.default !== query.custom && (
                     <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
+                )}
+                {query.creation === QueryCreation.Manual && (
+                    <DeleteIconButton loading={remove.isLoading} onClick={handleDelete}/>
                 )}
                 <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>
             </>
