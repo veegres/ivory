@@ -16,7 +16,7 @@ func NewClusterRepository(bucket *config.Bucket[ClusterModel]) *ClusterRepositor
 }
 
 func (r *ClusterRepository) List() ([]ClusterModel, error) {
-	return r.bucket.GetList(nil)
+	return r.bucket.GetList(nil, nil)
 }
 
 func (r *ClusterRepository) ListByName(clusters []string) ([]ClusterModel, error) {
@@ -26,7 +26,7 @@ func (r *ClusterRepository) ListByName(clusters []string) ([]ClusterModel, error
 	}
 	return r.bucket.GetList(func(cert ClusterModel) bool {
 		return clusterMap[cert.Name]
-	})
+	}, nil)
 }
 
 func (r *ClusterRepository) Get(key string) (ClusterModel, error) {

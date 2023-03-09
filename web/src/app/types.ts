@@ -243,6 +243,7 @@ export enum QueryCreation {
 }
 
 export interface Query {
+    id: string,
     name: string,
     type: QueryType,
     creation: QueryCreation,
@@ -256,10 +257,6 @@ export interface QueryRequest {
     type?: QueryType,
     description?: string,
     query: string,
-}
-
-export interface QueryMap {
-    [key: string]: Query,
 }
 
 export interface QueryRunRequest {

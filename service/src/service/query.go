@@ -37,11 +37,11 @@ func NewQueryService(
 	return queryService
 }
 
-func (s *QueryService) GetMap(queryType *QueryType) (map[string]Query, error) {
+func (s *QueryService) GetList(queryType *QueryType) ([]Query, error) {
 	if queryType == nil {
-		return s.queryRepository.Map()
+		return s.queryRepository.List()
 	} else {
-		return s.queryRepository.MapByType(*queryType)
+		return s.queryRepository.ListByType(*queryType)
 	}
 }
 
@@ -134,6 +134,7 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 		}
 
 		return s.queryRepository.Update(key, Query{
+			Id:          key,
 			Name:        currentQuery.Name,
 			Type:        currentQuery.Type,
 			Creation:    currentQuery.Creation,
@@ -157,6 +158,7 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 		}
 
 		return s.queryRepository.Update(key, Query{
+			Id:          key,
 			Name:        n,
 			Type:        t,
 			Creation:    currentQuery.Creation,

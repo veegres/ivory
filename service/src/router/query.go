@@ -44,25 +44,25 @@ func (r *QueryRouter) PostQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *QueryRouter) GetQueryMap(context *gin.Context) {
+func (r *QueryRouter) GetQueryList(context *gin.Context) {
 	queryTypeStr := context.Request.URL.Query().Get("type")
 
 	if queryTypeStr != "" {
 		number, _ := strconv.Atoi(queryTypeStr)
 		queryType := QueryType(number)
-		queryMap, err := r.queryService.GetMap(&queryType)
+		queryList, err := r.queryService.GetList(&queryType)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"response": queryMap})
+		context.JSON(http.StatusOK, gin.H{"response": queryList})
 	} else {
-		queryMap, err := r.queryService.GetMap(nil)
+		queryList, err := r.queryService.GetList(nil)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"response": queryMap})
+		context.JSON(http.StatusOK, gin.H{"response": queryList})
 	}
 }
 

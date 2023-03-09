@@ -22,6 +22,7 @@ const (
 )
 
 type Query struct {
+	Id          uuid.UUID     `json:"id"`
 	Name        string        `json:"name"`
 	Type        QueryType     `json:"type"`
 	Creation    QueryCreation `json:"creation"`

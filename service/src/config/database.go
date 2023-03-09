@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"os"
+	"sort"
 )
 
 func NewBoltDB(name string) *bolt.DB {
@@ -39,7 +40,7 @@ func NewBoltBucket[T any](db *bolt.DB, name string) *Bucket[T] {
 	}
 }
 
-func (b *Bucket[T]) GetList(filter func(el T) bool) ([]T, error) {
+func (b *Bucket[T]) GetList(f func(el T) bool, s func(list []T, i, j int) bool) ([]T, error) {
 	result := make([]T, 0)
 	err := b.db.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(b.name).Cursor()
@@ -50,12 +51,17 @@ func (b *Bucket[T]) GetList(filter func(el T) bool) ([]T, error) {
 			if err != nil {
 				return err
 			}
-			if filter == nil || filter(el) {
+			if f == nil || f(el) {
 				result = append(result, el)
 			}
 		}
 		return nil
 	})
+	if s != nil {
+		sort.Slice(result, func(i, j int) bool {
+			return s(result, i, j)
+		})
+	}
 	return result, err
 }
 
