@@ -50,6 +50,9 @@ func (s *QueryService) Run(queryUuid uuid.UUID, clusterName string, db Database)
 	if errQuery != nil {
 		return nil, nil, errQuery
 	}
+	if query.Custom == "" {
+		return nil, nil, errors.New("query is empty")
+	}
 	cluster, errCluster := s.clusterRepository.Get(clusterName)
 	if errCluster != nil {
 		return nil, nil, errCluster
