@@ -20,7 +20,7 @@ const SX: SxPropsMap = {
 
 export function OverviewBloat(props: TabProps) {
     const {cluster, defaultInstance} = props.info
-    const [tab, setTab] = useState<"queries" | "jobs">("queries")
+    const [tab, setTab] = useState<"queries" | "jobs">("jobs")
     const [jobs, setJobs] = useState<CompactTable[]>([])
 
     const query = useQuery(
@@ -59,9 +59,8 @@ export function OverviewBloat(props: TabProps) {
             case "jobs":
                 return <OverviewBloatJob list={jobs}/>
             case "queries":
-                return cluster.credentials.postgresId && (
-                    <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
-                )
+                return <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
+
         }
     }
 
@@ -69,8 +68,8 @@ export function OverviewBloat(props: TabProps) {
         return (
             <Box sx={SX.toggle}>
                 <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
-                    <ToggleButton value={"queries"} onClick={() => setTab("queries")}>Queries</ToggleButton>
                     <ToggleButton value={"jobs"} onClick={() => setTab("jobs")}>Jobs</ToggleButton>
+                    <ToggleButton value={"queries"} disabled={!cluster.credentials.postgresId} onClick={() => setTab("queries")}>Queries</ToggleButton>
                 </ToggleButtonGroup>
                 <Tooltip title={`Refetch ${tab}`} placement={"top"} disableInteractive>
                     <Box sx={SX.refresh} component={"span"}>
