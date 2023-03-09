@@ -1,10 +1,15 @@
-import {Database, QueryType} from "../../../app/types";
-import {Skeleton, Stack} from "@mui/material";
+import {Database, QueryType, StylePropsMap} from "../../../app/types";
+import {Box, Collapse, Skeleton} from "@mui/material";
 import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import React from "react";
+import {TransitionGroup} from "react-transition-group";
+
+const style: StylePropsMap = {
+    transition: {display: "flex", flexDirection: "column", gap: "8px"}
+}
 
 type Props = {
     type: QueryType,
@@ -20,22 +25,24 @@ export function Query(props: Props) {
     if (query.error) return <ErrorAlert error={query.error}/>
 
     return (
-        <Stack gap={1}>
-            {Object.entries(query.data ?? {}).map(([key, value], index) => (
-                <QueryItem key={key} id={key} query={value} cluster={cluster} db={db} type={type}/>
+        <TransitionGroup style={style.transition} appear={false}>
+            {Object.entries(query.data ?? {}).map(([key, value]) => (
+                <Collapse key={key}>
+                    <QueryItem id={key} query={value} cluster={cluster} db={db} type={type}/>
+                </Collapse>
             ))}
-        </Stack>
+        </TransitionGroup>
     )
 
     function renderLoading() {
         return (
-            <Stack>
+            <Box style={style.transition}>
                 <Skeleton width={"100%"} height={42}/>
                 <Skeleton width={"100%"} height={42}/>
                 <Skeleton width={"100%"} height={42}/>
                 <Skeleton width={"100%"} height={42}/>
                 <Skeleton width={"100%"} height={42}/>
-            </Stack>
+            </Box>
         )
     }
 }

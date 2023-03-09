@@ -1,17 +1,16 @@
 import {TabProps} from "./Overview";
 import {Query} from "../../shared/query/Query";
 import {QueryType, SxPropsMap} from "../../../app/types";
-import {Box, Collapse, Divider, Fab, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {Box, Collapse, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {useState} from "react";
 import {ClusterNoPostgresPassword} from "./OverviewError";
 import {QueryNew} from "../../shared/query/QueryNew";
-import {Add, Close} from "@mui/icons-material";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},
     filters: {display: "flex", flexDirection: "column", alignItems: "center", gap: 2},
     query: {flexGrow: 1, overflow: "hidden"},
-    group: {margin: "0px 5px"},
+    group: {margin: "0px 5px", width: "100%"},
 }
 
 export function OverviewQueries(props: TabProps){
@@ -24,6 +23,10 @@ export function OverviewQueries(props: TabProps){
     return (
         <Box sx={SX.box}>
             <Box sx={SX.filters}>
+                <ToggleButton sx={SX.group} size={"small"} color={"secondary"} value={""} selected={add} onClick={() => setAdd(!add)}>
+                    New
+                </ToggleButton>
+                <Divider flexItem/>
                 <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
                     <ToggleButton value={QueryType.STATISTIC} onClick={() => setTab(QueryType.STATISTIC)}>
                         STATISTIC
@@ -41,10 +44,6 @@ export function OverviewQueries(props: TabProps){
                         OTHER
                     </ToggleButton>
                 </ToggleButtonGroup>
-                <Divider flexItem/>
-                <Fab size={"small"} color={"secondary"} onClick={() => setAdd(!add)}>
-                    {!add ? <Add/> : <Close/>}
-                </Fab>
             </Box>
             <Box sx={SX.query}>
                 <Collapse in={add}><QueryNew type={tab}/></Collapse>

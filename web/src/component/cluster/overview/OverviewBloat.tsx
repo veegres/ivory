@@ -29,7 +29,7 @@ export function OverviewBloat(props: TabProps) {
         {enabled: false},
     )
     const initJobs = useQuery(
-        ['instance/bloat/list', cluster.name],
+        ["instance/bloat/list", cluster.name],
         () => bloatApi.list(cluster.name),
         {onSuccess: (initJobs) => setJobs(initJobs)},
     )
@@ -60,7 +60,6 @@ export function OverviewBloat(props: TabProps) {
                 return <OverviewBloatJob list={jobs}/>
             case "queries":
                 return <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
-
         }
     }
 

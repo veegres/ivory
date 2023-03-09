@@ -1,13 +1,8 @@
-import {ConsoleBlock} from "../../view/ConsoleBlock";
 import {TransitionGroup} from "react-transition-group";
 import {Collapse} from "@mui/material";
 import {OverviewBloatJobItem} from "./OverviewBloatJobItem";
-import {CompactTable, StylePropsMap, SxPropsMap} from "../../../app/types";
-
-const SX: SxPropsMap = {
-    jobsEmpty: {textAlign: "center"},
-}
-
+import {CompactTable, StylePropsMap} from "../../../app/types";
+import {InfoAlert} from "../../view/InfoAlert";
 
 const style: StylePropsMap = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}
@@ -19,10 +14,10 @@ type Props = {
 
 export function OverviewBloatJob(props: Props) {
     const {list} = props
-    if (list.length === 0) return <ConsoleBlock sx={SX.jobsEmpty}>There is no jobs yet</ConsoleBlock>
+    if (list.length === 0) return <InfoAlert text={"There is no jobs yet"}/>
 
     return (
-        <TransitionGroup style={style.transition}>
+        <TransitionGroup style={style.transition} appear={false}>
             {list.map((value) => (
                 <Collapse key={value.uuid}>
                     <OverviewBloatJobItem key={value.uuid} compactTable={value}/>
