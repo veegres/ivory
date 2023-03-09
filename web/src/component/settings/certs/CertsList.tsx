@@ -31,7 +31,7 @@ export function CertsList(props: CertTypeProps) {
 
         return (
             <MenuWrapperScroll>
-                <TransitionGroup>
+                <TransitionGroup appear={false}>
                     {list.map(([key, cert]) => (
                         <Collapse key={key}>
                             <CertsItem uuid={key} cert={cert}/>

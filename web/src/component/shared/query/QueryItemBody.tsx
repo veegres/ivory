@@ -1,4 +1,4 @@
-import {Box, Collapse, Divider} from "@mui/material";
+import {Box, Divider} from "@mui/material";
 import {ReactNode} from "react";
 import {SxPropsMap} from "../../../app/types";
 
@@ -13,12 +13,14 @@ type Props = {
 
 export function QueryItemBody(props: Props) {
     const {show, children} = props
+    if (!show) return null
+
     return (
-        <Collapse in={show}>
+        <Box>
             <Divider/>
             <Box sx={SX.body}>
                 {children}
             </Box>
-        </Collapse>
+        </Box>
     )
 }

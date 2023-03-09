@@ -29,7 +29,7 @@ export function CredentialsList() {
 
         return (
             <MenuWrapperScroll>
-                <TransitionGroup>
+                <TransitionGroup appear={false}>
                     {list.map(([key, credential]) => (
                         <Collapse key={key}>
                             <CredentialsItem uuid={key} credential={credential}/>

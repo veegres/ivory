@@ -1,4 +1,4 @@
-import {Box, CircularProgress, Collapse, Divider, Grid, IconButton, Tooltip} from "@mui/material";
+import {Box, CircularProgress, Divider, Grid, IconButton, Paper, Tooltip} from "@mui/material";
 import {cloneElement, ReactElement, useState} from "react";
 import {OpenIcon} from "../../view/OpenIcon";
 import {CompactTable, SxPropsMap} from "../../../app/types";
@@ -11,20 +11,20 @@ import scroll from "../../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../../view/DynamicRowVirtualizer";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useEventJob} from "../../../hook/EventJob";
-import {ConsoleBlock} from "../../view/ConsoleBlock";
 
 const SX: SxPropsMap = {
-    console: {fontSize: "13px", width: "100%", background: "#000", padding: "10px 20px", borderRadius: "5px", color: "#e0e0e0"},
-    row: {"&:hover": {color: "#7ec4ee"}},
-    emptyLine: {textAlign: "center"},
+    paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
+    console: {fontSize: "13px", width: "100%", padding: "8px 15px"},
+    row: {"&:hover": {color: "primary.main"}},
+    emptyLine: {textAlign: "center", textTransform: "uppercase"},
     header: {fontWeight: "bold", cursor: "pointer"},
     loader: {margin: "10px 0 5px"},
     divider: {margin: "5px 0"},
     logs: {colorScheme: "dark"},
-    button: {padding: "1px", color: '#f6f6f6'},
+    button: {padding: "1px"},
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
     separator: {marginLeft: "10px"},
-    credential: {color: "rgba(192,192,192,0.7)", fontWeight: 500}
+    credential: {color: "text.disabled", fontWeight: 500}
 }
 
 type Props = { compactTable: CompactTable }
@@ -40,7 +40,7 @@ export function OverviewBloatJobItem({compactTable}: Props) {
     const stopJob = useMutation(bloatApi.stop, stopOptions)
 
     return (
-        <ConsoleBlock>
+        <Paper sx={SX.paper} variant={"outlined"}>
             <Grid container sx={SX.header} onClick={() => setOpen(!open)}>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
                     <Grid item container gap={1}>
@@ -71,12 +71,19 @@ export function OverviewBloatJobItem({compactTable}: Props) {
                     </Grid>
                 </Grid>
             </Grid>
-            <Collapse in={open}>
-                <Divider sx={SX.divider} textAlign={"left"} light>LOGS</Divider>
+            {renderBody()}
+        </Paper>
+    )
+
+    function renderBody() {
+        if (!open) return
+        return (
+            <>
+                <Divider sx={SX.divider} textAlign={"left"}>LOGS</Divider>
                 {logs.length === 0 ? isFetching ? (
-                    <Box sx={SX.emptyLine}>{"< WAITING FOR LOGS >"}</Box>
+                    <Box sx={SX.emptyLine}>Waiting for logs</Box>
                 ) : (
-                    <Box sx={SX.emptyLine}>{"< NO LOGS >"}</Box>
+                    <Box sx={SX.emptyLine}>No logs</Box>
                 ) : (
                     <DynamicRowVirtualizer
                         sx={SX.logs}
@@ -87,10 +94,10 @@ export function OverviewBloatJobItem({compactTable}: Props) {
                         rows={logs}
                     />
                 )}
-                <LinearProgressStateful sx={SX.loader} isFetching={isFetching} color={"inherit"} line />
-            </Collapse>
-        </ConsoleBlock>
-    )
+                <LinearProgressStateful sx={SX.loader} isFetching={isFetching} color={"inherit"} line/>
+            </>
+        )
+    }
 
     function renderJobButton(title: string, icon: ReactElement, onClick: () => void, isLoading: boolean) {
         const fontSize = 18
@@ -101,9 +108,12 @@ export function OverviewBloatJobItem({compactTable}: Props) {
                         <IconButton
                             sx={SX.button}
                             size={"small"}
-                            onClick={(e) => {e.stopPropagation(); onClick()}}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onClick()
+                            }}
                         >
-                            {cloneElement(icon, {sx: { fontSize }})}
+                            {cloneElement(icon, {sx: {fontSize}})}
                         </IconButton>
                     )}
                 </Box>

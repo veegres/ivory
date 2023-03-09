@@ -7,7 +7,7 @@ import {mergeSxProps} from "../../app/utils";
 const SX: SxPropsMap = {
     wrapper: { display: "flex" },
     buttons: {position: "relative"},
-    button: {position: "absolute", right: "15px", background: "rgba(0,0,0,0.8)", boxShadow: "inset 0px 0px 20px 0px rgba(80,116,133,0.4)", zIndex: 1, minWidth: 0},
+    button: {position: "absolute", right: "15px", zIndex: 1, minWidth: 0},
     top: { top: "10px" },
     bottom: { bottom: "10px" },
 }

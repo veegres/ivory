@@ -74,11 +74,9 @@ export function QueryItem(props: Props) {
             <QueryItemBody show={body === BodyType.RESTORE}>
                 <QueryItemRestore id={id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
-            {body === BodyType.RUN && (
-                <QueryItemBody show={true}>
-                    <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
-                </QueryItemBody>
-            )}
+            <QueryItemBody show={body === BodyType.RUN}>
+                <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
+            </QueryItemBody>
         </Paper>
     )
 
