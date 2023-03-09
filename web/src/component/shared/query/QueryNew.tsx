@@ -1,4 +1,4 @@
-import {Box, TextField} from "@mui/material";
+import {Box, Paper, TextField} from "@mui/material";
 import {useState} from "react";
 import {QueryType, SxPropsMap} from "../../../app/types";
 import {QueryEditor} from "./QueryEditor";
@@ -9,7 +9,7 @@ import {queryApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
 
 const SX: SxPropsMap = {
-    body: {display: "flex", flexDirection: "column", gap: 1},
+    body: {display: "flex", flexDirection: "column", gap: 1, marginBottom: "8px", padding: "10px 15px"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
     desc: {flexGrow: 1},
     editor: {borderRadius: "5px"},
@@ -20,7 +20,7 @@ type Props = {
     type: QueryType,
 }
 
-export function QueryItemAdd(props: Props) {
+export function QueryNew(props: Props) {
     const {type} = props
     const {info} = useTheme()
     const [name, setName] = useState("")
@@ -31,7 +31,7 @@ export function QueryItemAdd(props: Props) {
     const create = useMutation(queryApi.create, createOptions)
 
     return (
-        <Box sx={SX.body}>
+        <Paper sx={SX.body} variant={"outlined"}>
             <Box sx={SX.buttons}>
                 <TextField
                     size={"small"}
@@ -53,7 +53,7 @@ export function QueryItemAdd(props: Props) {
             <Box sx={{...SX.editor, border: `2px solid ${info?.palette.divider}`}}>
                 <QueryEditor value={query} editable={true} onUpdate={setQuery}/>
             </Box>
-        </Box>
+        </Paper>
     )
 
     function handleAdd() {

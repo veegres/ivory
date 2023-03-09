@@ -22,7 +22,7 @@ export function Query(props: Props) {
     return (
         <Stack gap={1}>
             {Object.entries(query.data ?? {}).map(([key, value], index) => (
-                <QueryItem key={key} add={index === 0} id={key} query={value} cluster={cluster} db={db} type={type}/>
+                <QueryItem key={key} id={key} query={value} cluster={cluster} db={db} type={type}/>
             ))}
         </Stack>
     )
