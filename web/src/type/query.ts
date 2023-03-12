@@ -37,7 +37,7 @@ export interface QueryRunRequest {
 }
 
 export interface QueryKillRequest {
-    pid: string,
+    pid: number,
     clusterName: string,
     db: Database,
 }

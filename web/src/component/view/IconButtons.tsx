@@ -1,7 +1,7 @@
 import {cloneElement, ReactElement} from "react";
 import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material";
 import {
-    Add, ArrowBack, AutoFixHigh, Cached, Cancel, CheckCircle, Close, CopyAll, Delete, Edit, PlayArrow, Restore
+    Add, ArrowBack, AutoFixHigh, Block, Cached, Cancel, CheckCircle, Close, CopyAll, Delete, Edit, PlayArrow, Restore
 } from "@mui/icons-material";
 
 type Color = 'inherit' | 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
@@ -54,6 +54,11 @@ export function DeleteIconButton(props: Props) {
 export function CancelIconButton(props: Props) {
     const { disabled } = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<Cancel/>} tooltip={"Cancel"}/>
+}
+
+export function TerminateIconButton(props: Props) {
+    const { disabled } = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Block/>} tooltip={"Terminate"}/>
 }
 
 export function SaveIconButton(props: Props) {
