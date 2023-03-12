@@ -39,19 +39,21 @@ type Props = {
 }
 
 export function QueryItem(props: Props) {
-    const {query, cluster, db, type} = props
+    const {query, cluster: clusterName, db, type} = props
     const {info} = useTheme()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
 
     const result = useQuery(
         ["query", "run", query.id],
-        () => queryApi.run({queryUuid: query.id, clusterName: cluster, db}),
+        () => queryApi.run({queryUuid: query.id, clusterName, db}),
         {enabled: false, retry: false},
     )
 
     const removeOptions = useMutationOptions([["query", "map", type]])
     const remove = useMutation(queryApi.delete, removeOptions)
+    const cancel = useMutation(queryApi.cancel, {onSuccess: () => result.refetch()})
+    const terminate = useMutation(queryApi.terminate, {onSuccess: () => result.refetch()})
 
     return (
         <Paper sx={SX.item} variant={"outlined"}>
@@ -75,7 +77,13 @@ export function QueryItem(props: Props) {
                 <QueryItemRestore id={query.id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
             <QueryItemBody show={body === BodyType.RUN}>
-                <QueryItemRun data={result.data} error={result.error} loading={result.isFetching}/>
+                <QueryItemRun
+                    data={result.data}
+                    error={result.error}
+                    loading={result.isFetching || cancel.isLoading || terminate.isLoading}
+                    onCancel={(pid) => cancel.mutate({pid, clusterName, db})}
+                    onTerminate={(pid) => terminate.mutate({pid, clusterName, db})}
+                />
             </QueryItemBody>
         </Paper>
     )

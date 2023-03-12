@@ -52,6 +52,7 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, clusterName string, db Data
 	if errReq != nil {
 		return nil, nil, errReq
 	}
+	defer res.Close()
 
 	fields := make([]QueryField, 0)
 	for _, field := range res.FieldDescriptions() {
@@ -206,7 +207,6 @@ func (s *QueryService) sendRequest(clusterName string, db Database, query string
 	if errRes != nil {
 		return nil, nil, errRes
 	}
-	res.Close()
 	return res, conn.TypeMap(), nil
 }
 
