@@ -13,7 +13,10 @@ const SX: SxPropsMap = {
     cell: {maxWidth: "600px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
     type: {fontSize: "12px", fontFamily: "monospace", color: "text.disabled"},
     name: {color: "text.secondary"},
-    number: {width: "1%", whiteSpace: "nowrap", color: "text.secondary", position: "sticky", left: 0, bgcolor: "background.paper", zIndex: 2},
+    number: {
+        width: "1%", whiteSpace: "nowrap", color: "text.secondary", position: "sticky", left: 0,
+        bgcolor: "background.paper", zIndex: 2, textAlign: "center"
+    },
     no: {display: "flex", alignItems: "center", justifyContent: "center", textTransform: "uppercase", padding: "10px"},
     pid: {display: "flex", padding: "0 5px"},
 }
@@ -72,7 +75,7 @@ export function QueryItemRun(props: Props) {
 
         return data.rows.map((rows, i) => (
             <TableRow key={i}>
-                <TableCell sx={SX.number} padding={"checkbox"}>{i+1}</TableCell>
+                <TableCell sx={SX.number}>{i+1}</TableCell>
                 {rows.map((row, j) => {
                     const parsedRow = getParseRow(row)
                     return (
