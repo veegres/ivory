@@ -265,6 +265,12 @@ export interface QueryRunRequest {
     db: Database,
 }
 
+export interface QueryKillRequest {
+    pid: string,
+    clusterName: string,
+    db: Database,
+}
+
 
 export interface QueryField {
     name: string,
