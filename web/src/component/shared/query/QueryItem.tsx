@@ -1,4 +1,3 @@
-import {Database, Query, QueryCreation, QueryType, SxPropsMap} from "../../../app/types";
 import {Box, Paper} from "@mui/material";
 import {
     CancelIconButton,
@@ -17,6 +16,8 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 import {QueryItemRun} from "./QueryItemRun";
+import {Database, SxPropsMap} from "../../../type/common";
+import {Query, QueryCreation, QueryType} from "../../../type/query";
 
 const SX: SxPropsMap = {
     item: {fontSize: "15px"},

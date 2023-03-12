@@ -1,6 +1,6 @@
 import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../view/IconButtons";
 import {useEffect, useState} from "react";
-import {Credential} from "../../../app/types";
+import {Password} from "../../../type/password";
 import {useMutation} from "@tanstack/react-query";
 import {passwordApi} from "../../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
@@ -8,7 +8,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 
 type Props = {
     uuid: string,
-    credential: Credential,
+    credential: Password,
 }
 
 export function CredentialsItem(props: Props) {

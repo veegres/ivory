@@ -1,6 +1,6 @@
 import {Box, CircularProgress, SxProps, TableCell, Theme} from "@mui/material";
 import {cloneElement, ReactElement} from "react";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "right", alignItems: "center"},

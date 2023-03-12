@@ -1,10 +1,11 @@
 import {TabProps} from "./Overview";
 import {Query} from "../../shared/query/Query";
-import {QueryType, SxPropsMap} from "../../../app/types";
 import {Box, Collapse, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {useState} from "react";
 import {ClusterNoPostgresPassword} from "./OverviewError";
 import {QueryNew} from "../../shared/query/QueryNew";
+import {SxPropsMap} from "../../../type/common";
+import {QueryType} from "../../../type/query";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},

@@ -3,7 +3,7 @@ import {useQuery} from "@tanstack/react-query";
 import {tagApi} from "../../../app/api";
 import {useStore} from "../../../provider/StoreProvider";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     tags: {position: "relative", height: 0, top: "-35px"},

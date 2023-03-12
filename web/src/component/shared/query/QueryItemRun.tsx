@@ -1,8 +1,9 @@
 import {Box, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
-import {QueryRunResponse, SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {TableBody} from "../../view/TableBody";
 import scroll from "../../../style/scroll.module.css"
+import {QueryRunResponse} from "../../../type/query";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {borderBottom: 0}, marginBottom: "5px"},

@@ -1,7 +1,7 @@
 import {Box, ListItem} from "@mui/material";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {ReactNode} from "react";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     description: {fontSize: "10px"},

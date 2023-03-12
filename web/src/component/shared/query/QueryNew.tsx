@@ -1,12 +1,13 @@
 import {Box, Paper, TextField} from "@mui/material";
 import {useState} from "react";
-import {QueryType, SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
+import {QueryType} from "../../../type/query";
 
 const SX: SxPropsMap = {
     body: {display: "flex", flexDirection: "column", gap: 1, marginBottom: "8px", padding: "10px 15px"},

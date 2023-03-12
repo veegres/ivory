@@ -11,7 +11,6 @@ import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
 import {useQuery} from "@tanstack/react-query";
 import {InfoOutlined, Settings, Warning} from "@mui/icons-material";
-import {ClusterTabs, CredentialType, ActiveCluster, CertType, ClusterMap, SxPropsMap} from "../../../app/types";
 import {OverviewSettings} from "./OverviewSettings";
 import {InfoIcons} from "../../view/InfoIcons";
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
@@ -19,6 +18,10 @@ import {orange, purple} from "@mui/material/colors";
 import {InfoBox} from "../../view/InfoBox";
 import {InfoTitle} from "../../view/InfoTitle";
 import {OverviewQueries} from "./OverviewQueries";
+import {SxPropsMap} from "../../../type/common";
+import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../type/cluster";
+import { PasswordType } from "../../../type/password";
+import {CertType} from "../../../type/cert";
 
 const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -138,8 +141,8 @@ export function Overview() {
         const {cluster, defaultInstance, warning, detection} = activeCluster
 
         const infoItems = [
-            {...CredentialOptions[CredentialType.POSTGRES], active: !!cluster.credentials.postgresId},
-            {...CredentialOptions[CredentialType.PATRONI], active: !!cluster.credentials.patroniId},
+            {...CredentialOptions[PasswordType.POSTGRES], active: !!cluster.credentials.postgresId},
+            {...CredentialOptions[PasswordType.PATRONI], active: !!cluster.credentials.patroniId},
             {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
             {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
             {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}

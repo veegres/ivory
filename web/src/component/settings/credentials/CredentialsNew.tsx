@@ -2,12 +2,12 @@ import {CredentialsRow} from "./CredentialsRow";
 import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
 import {passwordApi} from "../../../app/api";
-import {Credential, CredentialType} from "../../../app/types";
+import {Password, PasswordType} from "../../../type/password";
 import {CancelIconButton, SaveIconButton} from "../../view/IconButtons";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 
 export function CredentialsNew() {
-    const initCredential: Credential = { username: "", password: "", type: CredentialType.POSTGRES }
+    const initCredential: Password = { username: "", password: "", type: PasswordType.POSTGRES }
     const [credential, setCredential] = useState(initCredential)
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)

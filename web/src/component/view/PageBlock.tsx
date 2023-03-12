@@ -1,6 +1,6 @@
 import {Box, Paper} from "@mui/material";
 import {ReactNode} from "react";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 
 const SX: SxPropsMap = {
     box: {display: "flex"},

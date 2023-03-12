@@ -2,7 +2,7 @@ import {FileUploadOutlined} from "@mui/icons-material";
 import {Box, ButtonBase, CircularProgress} from "@mui/material";
 import {ChangeEvent, DragEvent, useState} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 import {mergeSxProps} from "../../app/utils";
 
 const SX: SxPropsMap = {

@@ -1,5 +1,5 @@
 import {QueryEditor} from "./QueryEditor";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 import {Box} from "@mui/material";
 import {CopyIconButton, SaveIconButton} from "../../view/IconButtons";
 import {useMutation} from "@tanstack/react-query";

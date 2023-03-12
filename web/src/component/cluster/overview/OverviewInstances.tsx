@@ -9,7 +9,8 @@ import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
 import {Warning} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {ActiveInstance, SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
+import {ActiveInstance} from "../../../type/instance";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
@@ -23,8 +24,7 @@ const SX: SxPropsMap = {
 
 type AlertDialogState = { open: boolean, title: string, content: string, onAgree: () => void }
 const initAlertDialog = {
-    open: false, title: "", content: "", onAgree: () => {
-    }
+    open: false, title: "", content: "", onAgree: () => void 0
 }
 
 export function OverviewInstances({info}: TabProps) {

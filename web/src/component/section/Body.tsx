@@ -7,7 +7,7 @@ import {List as ClusterList} from "../cluster/list/List";
 import {Overview as ClusterOverview} from "../cluster/overview/Overview";
 import {Instance as ClusterInstance} from "../cluster/instance/Instance";
 import React from "react";
-import {AppInfo, SxPropsMap} from "../../app/types";
+import {AppInfo, SxPropsMap} from "../../type/common";
 import {UseQueryResult} from "@tanstack/react-query";
 
 const SX: SxPropsMap = {

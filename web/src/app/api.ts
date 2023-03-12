@@ -1,29 +1,13 @@
 import axios from "axios";
-import {
-    Cluster,
-    ClusterMap,
-    CompactTable,
-    CompactTableRequest,
-    Credential,
-    CredentialMap,
-    InstanceInfo,
-    Instance,
-    Response,
-    SecretSetRequest,
-    SecretStatus,
-    SecretUpdateRequest,
-    InstanceMap,
-    CredentialType,
-    AppInfo,
-    Cert,
-    CertMap,
-    InstanceRequest,
-    CertUploadRequest,
-    CertAddRequest,
-    CertType,
-    Query, QueryType, QueryRequest, QueryRunRequest, QueryRunResponse, QueryKillRequest
-} from "./types";
+import {Instance, InstanceInfo, InstanceMap, InstanceRequest} from "../type/instance";
 import {getDomain} from "./utils";
+import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
+import {Password, PasswordMap, PasswordType} from "../type/password";
+import {SecretSetRequest, SecretStatus, SecretUpdateRequest} from "../type/secret";
+import {Query, QueryKillRequest, QueryRequest, QueryRunRequest, QueryRunResponse, QueryType} from "../type/query";
+import {AppInfo, Response} from "../type/common";
+import {Bloat, BloatRequest} from "../type/bloat";
+import {Cluster, ClusterMap} from "../type/cluster";
 
 const api = axios.create({baseURL: '/api'})
 
@@ -91,17 +75,17 @@ export const tagApi = {
 
 export const bloatApi = {
     list: (name: string) => api
-        .get<Response<CompactTable[]>>(`/cli/bloat/cluster/${name}`)
+        .get<Response<Bloat[]>>(`/cli/bloat/cluster/${name}`)
         .then((response) => response.data.response),
     logs: (uuid: string) => api
         .get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"})
         .then(({data}) => data === "" ? [] : data.split("\n")),
 
-    start: (ctr: CompactTableRequest) => api
-        .post<Response<CompactTable>>(`/cli/bloat/job/start`, ctr)
+    start: (ctr: BloatRequest) => api
+        .post<Response<Bloat>>(`/cli/bloat/job/start`, ctr)
         .then((response) => response.data.response),
     stop: (uuid: string) => api
-        .post<Response<CompactTable>>(`/cli/bloat/job/${uuid}/stop`)
+        .post<Response<Bloat>>(`/cli/bloat/job/${uuid}/stop`)
         .then((response) => response.data.response),
     delete: (uuid: string) => api
         .delete(`/cli/bloat/job/${uuid}/delete`)
@@ -123,7 +107,7 @@ export const queryApi = {
     list: (type?: QueryType) => api
         .get<Response<Query[]>>(`/query`, {params: {type}})
         .then((response) => response.data.response),
-    update: ({id, query}: {id: string, query: QueryRequest}) => api
+    update: ({id, query}: { id: string, query: QueryRequest }) => api
         .put<Response<Query>>(`/query/${id}`, query)
         .then((response) => response.data.response),
     create: (query: QueryRequest) => api
@@ -159,14 +143,14 @@ export const secretApi = {
 }
 
 export const passwordApi = {
-    list: (type?: CredentialType) => api
-        .get<Response<CredentialMap>>(`/password`, {params: {type}})
+    list: (type?: PasswordType) => api
+        .get<Response<PasswordMap>>(`/password`, {params: {type}})
         .then((response) => response.data.response),
-    create: (credential: Credential) => api
-        .post<Response<{ key: string, credential: Credential }>>(`/password`, credential)
+    create: (credential: Password) => api
+        .post<Response<{ key: string, credential: Password }>>(`/password`, credential)
         .then((response) => response.data.response),
-    update: ({uuid, credential}: { uuid: string, credential: Credential }) => api
-        .patch<Response<Credential>>(`/password/${uuid}`, credential)
+    update: ({uuid, credential}: { uuid: string, credential: Password }) => api
+        .patch<Response<Password>>(`/password/${uuid}`, credential)
         .then((response) => response.data.response),
     delete: (uuid: string) => api
         .delete(`/password/${uuid}`)

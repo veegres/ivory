@@ -2,7 +2,7 @@ import {ReactNode} from "react";
 import {Box, SxProps, Theme} from "@mui/material";
 import scroll from "../../../style/scroll.module.css";
 import {mergeSxProps} from "../../../app/utils";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     box: {height: "100%", overflowY: "auto", padding: "0 5px"},

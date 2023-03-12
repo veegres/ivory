@@ -1,6 +1,6 @@
 import {Box, Tooltip} from "@mui/material";
 import {QueryInfo} from "./QueryInfo";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
 import {KeyboardDoubleArrowRight} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";

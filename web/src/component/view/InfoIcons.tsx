@@ -3,7 +3,7 @@ import {useTheme} from "../../provider/ThemeProvider";
 import {InfoBox} from "./InfoBox";
 import {InfoTitle} from "./InfoTitle";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 
 const SX: SxPropsMap = {
     box: { display: "flex", alignItems: "center", justifyContent: "center" },
