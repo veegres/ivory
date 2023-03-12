@@ -1,7 +1,7 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
 import {Box, Divider, IconButton} from "@mui/material";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 import {MenuItemBox} from "../menu/MenuItemBox";
 import {MenuItemText} from "../menu/MenuItemText";
 import {OpenInNew} from "@mui/icons-material";

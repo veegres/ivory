@@ -1,5 +1,5 @@
 import {Divider} from "@mui/material";
-import {Settings, SxPropsMap} from "../../../app/types";
+import {Settings, SxPropsMap} from "../../../type/common";
 import {MenuItemBox} from "./MenuItemBox";
 import {MenuItemText} from "./MenuItemText";
 import {MenuItemButton} from "./MenuItemButton";

@@ -3,7 +3,7 @@ import {useState} from "react";
 import {CertsTabPath} from "./CertsTabPath";
 import {CertsTabUpload} from "./CertsTabUpload";
 import {CertTypeProps} from "./Certs";
-import {FileUsageType, SxPropsMap} from "../../../app/types";
+import {FileUsageType, SxPropsMap} from "../../../type/common";
 import {FileUsageOptions} from "../../../app/utils";
 
 const SX: SxPropsMap = {

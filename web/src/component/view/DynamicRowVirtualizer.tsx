@@ -3,7 +3,7 @@ import {useVirtualizer} from "@tanstack/react-virtual";
 import {Box, SxProps} from "@mui/material";
 import {Theme} from "@mui/material/styles";
 import {AutoScrolling} from "./AutoScrolling";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 import {mergeSxProps} from "../../app/utils";
 
 const SX: SxPropsMap = {

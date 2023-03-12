@@ -1,5 +1,5 @@
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
 import {QueryInfo} from "./QueryInfo";
 

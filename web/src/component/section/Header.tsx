@@ -5,7 +5,7 @@ import {useTheme} from "../../provider/ThemeProvider";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {useStore} from "../../provider/StoreProvider";
 import select from "../../style/select.module.css";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 
 const SX: SxPropsMap = {
     title: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', cursor: "pointer"},

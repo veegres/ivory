@@ -2,13 +2,15 @@ import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@m
 import {useQuery} from "@tanstack/react-query";
 import {bloatApi, queryApi} from "../../../app/api";
 import {useState} from "react";
-import {CompactTable, QueryType, SxPropsMap} from "../../../app/types";
 import {LinearProgressStateful} from "../../view/LinearProgressStateful";
 import {TabProps} from "./Overview";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
 import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Query} from "../../shared/query/Query";
 import {Cached} from "@mui/icons-material";
+import {SxPropsMap} from "../../../type/common";
+import {Bloat} from "../../../type/bloat";
+import {QueryType} from "../../../type/query";
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
@@ -21,7 +23,7 @@ const SX: SxPropsMap = {
 export function OverviewBloat(props: TabProps) {
     const {cluster, defaultInstance} = props.info
     const [tab, setTab] = useState<"queries" | "jobs">("jobs")
-    const [jobs, setJobs] = useState<CompactTable[]>([])
+    const [jobs, setJobs] = useState<Bloat[]>([])
 
     const query = useQuery(
         ["query", "map", QueryType.BLOAT],

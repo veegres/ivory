@@ -2,13 +2,14 @@ import {Box} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../../view/ErrorAlert";
-import {QueryType, SxPropsMap} from "../../../app/types";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
 import {Query} from "../../shared/query/Query";
 import {InstanceStatus} from "./InstanceStatus";
 import {InstanceTable} from "./InstanceTable";
+import {SxPropsMap} from "../../../type/common";
+import {QueryType} from "../../../type/query";
 
 const SX: SxPropsMap = {
     content: {display: "flex", gap: 2},

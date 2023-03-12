@@ -1,8 +1,8 @@
-import {EventStream, JobStatus} from "../app/types";
 import {useEffect, useState} from "react";
 import {JobOptions} from "../app/utils";
 import {useQuery} from "@tanstack/react-query";
 import {bloatApi} from "../app/api";
+import {EventStream, JobStatus} from "../type/bloat";
 
 type EventJob = {
     isFetching: boolean;

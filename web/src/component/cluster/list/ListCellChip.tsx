@@ -1,10 +1,11 @@
 import {Box, Chip, Tooltip} from "@mui/material";
 import {RefreshIconButton} from "../../view/IconButtons";
-import {Cluster, InstanceDetection, SxPropsMap} from "../../../app/types";
 import {grey, orange, purple} from "@mui/material/colors";
 import {getDomain, InstanceColor} from "../../../app/utils";
 import {InfoTitle} from "../../view/InfoTitle";
 import {useStore} from "../../../provider/StoreProvider";
+import {Cluster, InstanceDetection} from "../../../type/cluster";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     chip: {width: "100%"},

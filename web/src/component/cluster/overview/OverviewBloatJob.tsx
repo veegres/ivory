@@ -1,15 +1,16 @@
 import {TransitionGroup} from "react-transition-group";
 import {Collapse} from "@mui/material";
 import {OverviewBloatJobItem} from "./OverviewBloatJobItem";
-import {CompactTable, StylePropsMap} from "../../../app/types";
 import {InfoAlert} from "../../view/InfoAlert";
+import {StylePropsMap} from "../../../type/common";
+import {Bloat} from "../../../type/bloat";
 
 const style: StylePropsMap = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}
 }
 
 type Props = {
-    list: CompactTable[],
+    list: Bloat[],
 }
 
 export function OverviewBloatJob(props: Props) {

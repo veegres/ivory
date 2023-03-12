@@ -6,7 +6,7 @@ import {ErrorAlert} from "../../view/ErrorAlert";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {DefaultInstance} from "../../../app/types";
+import {DefaultInstance} from "../../../type/instance";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";

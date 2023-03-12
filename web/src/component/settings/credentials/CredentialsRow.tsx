@@ -2,7 +2,8 @@ import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material";
 import {CredentialsInput} from "./CredentialsInput";
 import {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
 import {CredentialOptions} from "../../../app/utils";
-import {Credential, CredentialType, SxPropsMap} from "../../../app/types";
+import {Password, PasswordType} from "../../../type/password";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     row: {display: "flex", alignItems: "center", gap: "15px", margin: "5px 10px 0px"},
@@ -13,9 +14,9 @@ const SX: SxPropsMap = {
 type Props = {
     renderButtons: ReactElement,
     disabled: boolean,
-    credential: Credential,
+    credential: Password,
     error: boolean,
-    onChangeCredential: (value: Credential) => void
+    onChangeCredential: (value: Password) => void
     onEmpty: (value: boolean) => void
 }
 
@@ -87,14 +88,14 @@ export function CredentialsRow(props: Props) {
 
     function handleToggleType() {
         switch (type) {
-            case CredentialType.POSTGRES:
-                toggleType(CredentialType.PATRONI)
+            case PasswordType.POSTGRES:
+                toggleType(PasswordType.PATRONI)
                 break
-            case CredentialType.PATRONI:
-                toggleType(CredentialType.POSTGRES)
+            case PasswordType.PATRONI:
+                toggleType(PasswordType.POSTGRES)
                 break
             default:
-                toggleType(CredentialType.POSTGRES)
+                toggleType(PasswordType.POSTGRES)
         }
     }
 

@@ -1,6 +1,7 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {ActiveCluster, ActiveInstance, DetectionType, DefaultInstance} from "../app/types";
 import {useQueryClient} from "@tanstack/react-query";
+import {ActiveCluster, DetectionType} from "../type/cluster";
+import {ActiveInstance, DefaultInstance} from "../type/instance";
 
 // STORE
 interface StoreType {

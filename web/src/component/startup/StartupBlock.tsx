@@ -7,7 +7,7 @@ import {LinearProgressStateful} from "../view/LinearProgressStateful";
 import select from "../../style/select.module.css";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useStore} from "../../provider/StoreProvider";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 
 const SX: SxPropsMap = {
     box: { height: "100%", width: "30%", minWidth: "500px" },

@@ -1,6 +1,6 @@
 import {TableRow} from "@mui/material";
 import {useState} from "react";
-import {Cluster} from "../../../app/types";
+import {Cluster} from "../../../type/cluster";
 import {DynamicInputs} from "../../view/DynamicInputs";
 import {ListCellRead} from "./ListCellRead";
 import {ListCellUpdate} from "./ListCellUpdate";

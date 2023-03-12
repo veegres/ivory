@@ -1,15 +1,5 @@
 import {blue, green, indigo, orange, purple} from "@mui/material/colors";
 import {
-    ColorsMap,
-    CredentialType,
-    DefaultInstance,
-    JobStatus,
-    InstanceMap,
-    FileUsageType,
-    CertType,
-    EnumOptions, Sidecar, Settings
-} from "./types";
-import {
     FilePresentOutlined,
     HeartBroken, InfoTwoTone, Key,
     LockTwoTone,
@@ -22,6 +12,11 @@ import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
 import {darculaInit} from "@uiw/codemirror-theme-darcula";
 import {materialLightInit} from "@uiw/codemirror-theme-material";
+import {JobStatus} from "../type/bloat";
+import {PasswordType} from "../type/password";
+import {ColorsMap, EnumOptions, FileUsageType, Settings, Sidecar} from "../type/common";
+import {CertType} from "../type/cert";
+import {DefaultInstance, InstanceMap} from "../type/instance";
 
 export const InstanceColor: { [key: string]: string } = {
     master: green[500],
@@ -39,9 +34,9 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
     [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
 }
 
-export const CredentialOptions: { [key in CredentialType]: EnumOptions } = {
-    [CredentialType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage/>},
-    [CredentialType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken/>}
+export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
+    [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage/>},
+    [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken/>}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {

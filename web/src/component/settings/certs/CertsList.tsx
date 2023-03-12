@@ -2,7 +2,7 @@ import {Collapse} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {CertsItem} from "./CertsItem";
 import React from "react";
-import {Cert} from "../../../app/types";
+import {Cert} from "../../../type/cert";
 import {InfoAlert} from "../../view/InfoAlert";
 import {useQuery} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";

@@ -2,7 +2,7 @@ import {AutocompleteTags} from "../../view/AutocompleteTags";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, tagApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Cluster} from "../../../app/types";
+import {Cluster} from "../../../type/cluster";
 
 type Props = {
     cluster: Cluster

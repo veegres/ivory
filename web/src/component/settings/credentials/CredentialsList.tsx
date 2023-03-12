@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {passwordApi} from "../../../app/api";
 import {ErrorAlert} from "../../view/ErrorAlert";
-import {Credential} from "../../../app/types";
+import {Password} from "../../../type/password";
 import {InfoAlert} from "../../view/InfoAlert";
 import {Collapse} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
@@ -24,7 +24,7 @@ export function CredentialsList() {
     function renderList() {
         if (isError) return <ErrorAlert error={error}/>
 
-        const list = Object.entries<Credential>(credentials ?? {})
+        const list = Object.entries<Password>(credentials ?? {})
         if (list.length === 0) return <InfoAlert text={"There is no credentials yet"}/>
 
         return (

@@ -4,10 +4,11 @@ import {TableCellLoader} from "../../view/TableCellLoader";
 import {TableBody} from "../../view/TableBody";
 import {ListRowNew} from "./ListRowNew";
 import {ListRow} from "./ListRow";
-import {Cluster, SxPropsMap} from "../../../app/types";
 import {useState} from "react";
 import {InfoAlert} from "../../view/InfoAlert";
 import {AddIconButton, AutoIconButton} from "../../view/IconButtons";
+import {Cluster} from "../../../type/cluster";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},

@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {CertsNew} from "./CertsNew";
 import {CertsList} from "./CertsList";
-import {CertType} from "../../../app/types";
+import {CertType} from "../../../type/cert";
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {CertsTab, TABS} from "./CertsTab";
 

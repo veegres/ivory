@@ -4,7 +4,8 @@ import {certApi, clusterApi} from "../../../app/api";
 import {Autocomplete, Option} from "../../view/Autocomplete";
 import {CertOptions, shortUuid} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Certs, CertType, Cluster} from "../../../app/types";
+import {CertType} from "../../../type/cert";
+import {Certs, Cluster} from "../../../type/cluster";
 
 const keys = {
     [CertType.CLIENT_CA]: "clientCAId",

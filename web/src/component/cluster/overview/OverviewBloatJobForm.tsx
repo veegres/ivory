@@ -1,10 +1,13 @@
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
 import {Box, Button, TextField} from "@mui/material";
-import {Cluster, CompactTable, DefaultInstance, SxPropsMap, Target} from "../../../app/types";
 import {ChangeEvent, useState} from "react";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
+import {SxPropsMap} from "../../../type/common";
+import {DefaultInstance} from "../../../type/instance";
+import {Cluster} from "../../../type/cluster";
+import {Bloat, BloatTarget} from "../../../type/bloat";
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
@@ -16,12 +19,12 @@ type Props = {
     defaultInstance: DefaultInstance,
     cluster: Cluster,
     onClick: () => void,
-    onSuccess: (job: CompactTable) => void,
+    onSuccess: (job: Bloat) => void,
 }
 
 export function OverviewBloatJobForm(props: Props) {
     const {defaultInstance, cluster, onSuccess, onClick} = props
-    const [target, setTarget] = useState<Target>()
+    const [target, setTarget] = useState<BloatTarget>()
     const [ratio, setRadio] = useState<number>()
 
     const {onError} = useMutationOptions()

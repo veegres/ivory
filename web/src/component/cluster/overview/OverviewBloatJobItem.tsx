@@ -1,7 +1,6 @@
 import {Box, CircularProgress, Divider, Grid, IconButton, Paper, Tooltip} from "@mui/material";
 import {cloneElement, ReactElement, useState} from "react";
 import {OpenIcon} from "../../view/OpenIcon";
-import {CompactTable, SxPropsMap} from "../../../app/types";
 import {Clear, Stop} from "@mui/icons-material";
 import {useMutation} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
@@ -11,6 +10,8 @@ import scroll from "../../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../../view/DynamicRowVirtualizer";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useEventJob} from "../../../hook/EventJob";
+import {SxPropsMap} from "../../../type/common";
+import {Bloat} from "../../../type/bloat";
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
@@ -27,7 +28,7 @@ const SX: SxPropsMap = {
     credential: {color: "text.disabled", fontWeight: 500}
 }
 
-type Props = { compactTable: CompactTable }
+type Props = { compactTable: Bloat }
 
 export function OverviewBloatJobItem({compactTable}: Props) {
     const {uuid, status: initStatus, command, credentialId} = compactTable

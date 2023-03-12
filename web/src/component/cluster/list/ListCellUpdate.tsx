@@ -3,8 +3,8 @@ import {useMutation} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {Box} from "@mui/material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Sidecar, SxPropsMap} from "../../../app/types";
 import {getHostAndPort} from "../../../app/utils";
+import {Sidecar, SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},

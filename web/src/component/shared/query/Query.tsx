@@ -1,4 +1,4 @@
-import {Database, QueryType, StylePropsMap} from "../../../app/types";
+import {Database, StylePropsMap} from "../../../type/common";
 import {Box, Collapse, Skeleton} from "@mui/material";
 import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
@@ -6,6 +6,7 @@ import {queryApi} from "../../../app/api";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import React from "react";
 import {TransitionGroup} from "react-transition-group";
+import {QueryType} from "../../../type/query";
 
 const style: StylePropsMap = {
     transition: {display: "flex", flexDirection: "column", gap: "8px"}

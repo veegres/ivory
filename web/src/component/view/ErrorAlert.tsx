@@ -1,7 +1,7 @@
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material";
 import {useState} from "react";
 import {AxiosError} from "axios";
-import {StylePropsMap} from "../../app/types";
+import {StylePropsMap} from "../../type/common";
 import {OpenIcon} from "./OpenIcon";
 
 const style: StylePropsMap = {

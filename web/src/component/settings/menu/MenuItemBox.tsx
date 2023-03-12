@@ -1,7 +1,7 @@
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
 import {useTheme} from "../../../provider/ThemeProvider";
-import {SxPropsMap} from "../../../app/types";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     wrapper: {borderRadius: "8px"},

@@ -1,7 +1,7 @@
 import {Box, Tooltip} from "@mui/material";
 import {ReactElement, ReactNode} from "react";
 import {useTheme} from "../../provider/ThemeProvider";
-import {SxPropsMap} from "../../app/types";
+import {SxPropsMap} from "../../type/common";
 
 const SX: SxPropsMap = {
     box: { display: "flex", justifyContent: "center", alignItems: "center", height: "32px", fontSize: "0.8125rem", cursor: "pointer", minWidth: "30px" },
