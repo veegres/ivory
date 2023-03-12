@@ -44,6 +44,12 @@ type QueryRunRequest struct {
 	Db          Database  `json:"db"`
 }
 
+type QueryKillRequest struct {
+	Pid         int      `json:"pid"`
+	ClusterName string   `json:"clusterName"`
+	Db          Database `json:"db"`
+}
+
 type QueryField struct {
 	Name        string `json:"name"`
 	DataType    string `json:"dataType"`

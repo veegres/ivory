@@ -21,7 +21,7 @@ import {
     CertUploadRequest,
     CertAddRequest,
     CertType,
-    Query, QueryType, QueryRequest, QueryRunRequest, QueryRunResponse
+    Query, QueryType, QueryRequest, QueryRunRequest, QueryRunResponse, QueryKillRequest
 } from "./types";
 import {getDomain} from "./utils";
 
@@ -134,6 +134,12 @@ export const queryApi = {
         .then((response) => response.data.response),
     run: (req: QueryRunRequest) => api
         .post<Response<QueryRunResponse>>(`/query/run`, req)
+        .then((response) => response.data.response),
+    cancel: (req: QueryKillRequest) => api
+        .post<Response<QueryRunResponse>>(`/query/cancel`, req)
+        .then((response) => response.data.response),
+    terminate: (req: QueryKillRequest) => api
+        .post<Response<QueryRunResponse>>(`/query/terminate`, req)
         .then((response) => response.data.response),
 }
 

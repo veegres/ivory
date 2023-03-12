@@ -88,7 +88,7 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		return
 	}
 
-	fields, rows, err := r.queryService.Run(req.QueryUuid, req.ClusterName, req.Db)
+	fields, rows, err := r.queryService.RunQuery(req.QueryUuid, req.ClusterName, req.Db)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -98,4 +98,38 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		Fields: fields,
 		Rows:   rows,
 	}})
+}
+
+func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
+	var req QueryKillRequest
+	err := context.ShouldBindJSON(&req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	errQuery := r.queryService.CancelQuery(req.Pid, req.ClusterName, req.Db)
+	if errQuery != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": "query is canceled"})
+}
+
+func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
+	var req QueryKillRequest
+	err := context.ShouldBindJSON(&req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	errQuery := r.queryService.TerminateQuery(req.Pid, req.ClusterName, req.Db)
+	if errQuery != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": "query is terminated"})
 }

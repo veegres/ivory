@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/golang/glog"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"ivory/src/constant"
 	. "ivory/src/model"
 	"ivory/src/persistence"
@@ -37,15 +39,7 @@ func NewQueryService(
 	return queryService
 }
 
-func (s *QueryService) GetList(queryType *QueryType) ([]Query, error) {
-	if queryType == nil {
-		return s.queryRepository.List()
-	} else {
-		return s.queryRepository.ListByType(*queryType)
-	}
-}
-
-func (s *QueryService) Run(queryUuid uuid.UUID, clusterName string, db Database) ([]QueryField, [][]any, error) {
+func (s *QueryService) RunQuery(queryUuid uuid.UUID, clusterName string, db Database) ([]QueryField, [][]any, error) {
 	query, errQuery := s.queryRepository.Get(queryUuid)
 	if errQuery != nil {
 		return nil, nil, errQuery
@@ -53,36 +47,12 @@ func (s *QueryService) Run(queryUuid uuid.UUID, clusterName string, db Database)
 	if query.Custom == "" {
 		return nil, nil, errors.New("query is empty")
 	}
-	cluster, errCluster := s.clusterRepository.Get(clusterName)
-	if errCluster != nil {
-		return nil, nil, errCluster
-	}
-	if cluster.Credentials.PostgresId == nil {
-		return nil, nil, errors.New("there is no password for this cluster")
+
+	res, typeMap, errReq := s.sendRequest(clusterName, db, query.Custom)
+	if errReq != nil {
+		return nil, nil, errReq
 	}
 
-	cred, errCred := s.passwordService.GetDecrypted(*cluster.Credentials.PostgresId)
-	if errCred != nil {
-		return nil, nil, errCred
-	}
-
-	if db.Port == 0 || db.Host == "" || db.Host == "-" {
-		return nil, nil, errors.New("database host or port are not specified")
-	}
-	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port)
-	conn, errConn := pgx.Connect(context.Background(), connString)
-	if errConn != nil {
-		return nil, nil, errConn
-	}
-	defer conn.Close(context.Background())
-
-	res, errRes := conn.Query(context.Background(), query.Custom)
-	if errRes != nil {
-		return nil, nil, errRes
-	}
-	defer res.Close()
-
-	typeMap := conn.TypeMap()
 	fields := make([]QueryField, 0)
 	for _, field := range res.FieldDescriptions() {
 		dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
@@ -103,6 +73,24 @@ func (s *QueryService) Run(queryUuid uuid.UUID, clusterName string, db Database)
 	}
 
 	return fields, rows, nil
+}
+
+func (s *QueryService) CancelQuery(pid int, clusterName string, db Database) error {
+	_, _, err := s.sendRequest(clusterName, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
+	return err
+}
+
+func (s *QueryService) TerminateQuery(pid int, clusterName string, db Database) error {
+	_, _, err := s.sendRequest(clusterName, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
+	return err
+}
+
+func (s *QueryService) GetList(queryType *QueryType) ([]Query, error) {
+	if queryType == nil {
+		return s.queryRepository.List()
+	} else {
+		return s.queryRepository.ListByType(*queryType)
+	}
 }
 
 func (s *QueryService) Create(creation QueryCreation, query QueryRequest) (*uuid.UUID, *Query, error) {
@@ -188,6 +176,45 @@ func (s *QueryService) DeleteAll() error {
 	errDel := s.queryRepository.DeleteAll()
 	errDefQueries := s.createDefaultQueries()
 	return errors.Join(errDel, errDefQueries)
+}
+
+func (s *QueryService) sendRequest(clusterName string, db Database, query string) (pgx.Rows, *pgtype.Map, error) {
+	cluster, errCluster := s.clusterRepository.Get(clusterName)
+	if errCluster != nil {
+		return nil, nil, errCluster
+	}
+	if cluster.Credentials.PostgresId == nil {
+		return nil, nil, errors.New("there is no password for this cluster")
+	}
+
+	cred, errCred := s.passwordService.GetDecrypted(*cluster.Credentials.PostgresId)
+	if errCred != nil {
+		return nil, nil, errCred
+	}
+
+	if db.Port == 0 || db.Host == "" || db.Host == "-" {
+		return nil, nil, errors.New("database host or port are not specified")
+	}
+	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port)
+	conn, errConn := pgx.Connect(context.Background(), connString)
+	if errConn != nil {
+		return nil, nil, errConn
+	}
+	defer s.closeConnection(conn, context.Background())
+
+	res, errRes := conn.Query(context.Background(), query)
+	if errRes != nil {
+		return nil, nil, errRes
+	}
+	res.Close()
+	return res, conn.TypeMap(), nil
+}
+
+func (s *QueryService) closeConnection(conn *pgx.Conn, ctx context.Context) {
+	err := conn.Close(ctx)
+	if err != nil {
+		glog.Warning(err)
+	}
 }
 
 func (s *QueryService) createDefaultQueries() error {
