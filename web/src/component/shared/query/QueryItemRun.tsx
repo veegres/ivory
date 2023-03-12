@@ -33,10 +33,10 @@ export function QueryItemRun(props: Props) {
     const {loading, data, error, onTerminate, onCancel} = props
 
     if (error) return <ErrorAlert error={error}/>
-    if (!data || (!loading && (!data.fields.length || !data.rows.length))) {
+    if (!loading && (!data || !data.fields.length || !data.rows.length)) {
         return <Box sx={SX.no}>Response is empty</Box>
     }
-    const pidIndex = data.fields.findIndex(field => field.name === "pid")
+    const pidIndex = data?.fields.findIndex(field => field.name === "pid") ?? -1
 
     return (
         <Box sx={SX.box} className={scroll.tiny}>

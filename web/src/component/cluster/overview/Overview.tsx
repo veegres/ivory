@@ -69,6 +69,12 @@ const TABS: ClusterTabs = {
     3: {
         label: "Queries",
         body: (cluster: ActiveCluster) => <OverviewQueries info={cluster}/>,
+        info: <>
+            Here you can run some queries in your postgres to troubleshoot it. Some queries are provided by
+            the <i>system</i>, but you can always create your own. As well you're able to
+            edit <i>system</i> and <i>custom</i> queries. You can rollback your changes for queries
+            at anytime. Be aware that for <i>custom</i> queries the first one is considered as default.
+        </>
     },
 }
 
