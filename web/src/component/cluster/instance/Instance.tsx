@@ -1,32 +1,59 @@
-import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {Box, Link, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useQuery} from "@tanstack/react-query";
 import {ErrorAlert} from "../../view/ErrorAlert";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
-import {Query} from "../../shared/query/Query";
 import {InstanceInfoStatus} from "./InstanceInfoStatus";
 import {InstanceInfoTable} from "./InstanceInfoTable";
-import {SxPropsMap} from "../../../type/common";
-import {QueryType} from "../../../type/query";
+import {Database, SxPropsMap} from "../../../type/common";
 import {useState} from "react";
 import {Chart} from "../../shared/chart/Chart";
-import {ActiveInstance} from "../../../type/instance";
+import {InstanceTabs} from "../../../type/instance";
+import {InstanceMainQueries} from "./InstanceMainQueries";
+import {InstanceMainTitle} from "./InstanceMainTitle";
+import {ClusterNoPostgresPassword} from "../overview/OverviewError";
+import {Add} from "@mui/icons-material";
 
 const SX: SxPropsMap = {
-    content: {display: "flex", gap: 2},
+    content: {display: "flex", gap: 3},
     info: {display: "flex", flexDirection: "column", gap: 1},
-    main: {flexGrow: 1, overflow: "auto"},
+    main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 2},
+    toggle: {padding: "3px"},
 }
 
-enum MainBlock {QUERY, CHART}
+
+enum TabsType {QUERY, CHART}
+const Tabs: InstanceTabs = {
+    [TabsType.CHART]: {
+        label: "Simple Charts",
+        body: (cluster: string, db: Database) => <Chart cluster={cluster} db={db}/>,
+        info: <>
+            Here you can check some basic statistic about your database instance.
+            If you have some proposal what can be added here, please, suggest
+            it <Link href={"https://github.com/veegres/ivory/issues"} target={"_blank"}>here</Link>
+        </>
+    },
+    [TabsType.QUERY]: {
+        label: "Queries",
+        body: (cluster: string, db: Database, show?: boolean) => <InstanceMainQueries cluster={cluster} db={db} showNew={show!!}/>,
+        info: <>
+            Here you can run some queries in your postgres to troubleshoot it. Some queries are provided by
+            the <i>system</i>, but you can always create your own. As well you're able to
+            edit <i>system</i> and <i>custom</i> queries. You can rollback your changes for queries
+            at anytime. Be aware that for <i>custom</i> queries the first one is considered as default.
+        </>
+    }
+}
+
 
 export function Instance() {
-    const {store: {activeInstance}, isClusterOverviewOpen} = useStore()
-    const [main, setMain] = useState(MainBlock.CHART)
+    const {store: {activeInstance, activeCluster}, isClusterOverviewOpen} = useStore()
+    const [main, setMain] = useState(TabsType.CHART)
+    const [showAddQuery, setShowAddQuery] = useState(false)
 
-    const info = useQuery(
+    const instance = useQuery(
         ["instance/info", activeInstance?.sidecar.host, activeInstance?.sidecar.port],
         () => activeInstance ? instanceApi.info({cluster: activeInstance.cluster, ...activeInstance.sidecar}) : undefined,
         {enabled: !!activeInstance}
@@ -40,34 +67,48 @@ export function Instance() {
 
     function renderContent() {
         if (!activeInstance) return <InfoAlert text={"Please, select a instance to see the information!"}/>
-        if (info.isError) return <ErrorAlert error={info.error}/>
-        if (!info.data && !info.isLoading) return <ErrorAlert error={"There is no data"}/>
+        if (instance.isError) return <ErrorAlert error={instance.error}/>
+        if (!instance.data && !instance.isLoading) return <ErrorAlert error={"There is no data"}/>
+
+        const {label, info, body} = Tabs[main]
+        const {cluster, database} = activeInstance
+
+        const isPasswordExist = activeCluster?.cluster.credentials.postgresId
 
         return (
             <Box sx={SX.content}>
                 <Box sx={SX.info}>
-                    <InstanceInfoStatus loading={info.isLoading} role={info.data?.role}/>
+                    <InstanceInfoStatus loading={instance.isLoading} role={instance.data?.role}/>
                     <ToggleButtonGroup size={"small"} color={"secondary"} fullWidth value={main}>
-                        <ToggleButton value={MainBlock.CHART} onClick={() => setMain(MainBlock.CHART)}>Charts</ToggleButton>
-                        <ToggleButton value={MainBlock.QUERY} onClick={() => setMain(MainBlock.QUERY)}>Queries</ToggleButton>
+                        <ToggleButton value={TabsType.CHART} onClick={() => setMain(TabsType.CHART)}>Charts</ToggleButton>
+                        <ToggleButton value={TabsType.QUERY} onClick={() => setMain(TabsType.QUERY)}>Queries</ToggleButton>
                     </ToggleButtonGroup>
-                    <InstanceInfoTable loading={info.isLoading} instance={info.data} activeInstance={activeInstance}/>
+                    <InstanceInfoTable loading={instance.isLoading} instance={instance.data} activeInstance={activeInstance}/>
                 </Box>
                 <Box sx={SX.main}>
-                    {renderMainBlock(activeInstance)}
+                    <InstanceMainTitle label={label} info={info} renderAdditionalButtons={renderAdditionalButtons()}/>
+                    {!isPasswordExist && <ClusterNoPostgresPassword/>}
+                    {isPasswordExist && body(cluster, database, showAddQuery)}
                 </Box>
             </Box>
         )
     }
 
-    function renderMainBlock(instance: ActiveInstance) {
-        const {cluster, database} = instance
+    function renderAdditionalButtons() {
+        if (main !== TabsType.QUERY) return
 
-        switch (main) {
-            case MainBlock.CHART:
-                return <Chart cluster={cluster} db={database}/>
-            case MainBlock.QUERY:
-                return <Query type={QueryType.ACTIVITY} cluster={cluster} db={database}/>
-        }
+        return (
+            <ToggleButton
+                sx={SX.toggle}
+                value={"add"}
+                size={"small"}
+                selected={showAddQuery}
+                onClick={() => setShowAddQuery(!showAddQuery)}
+            >
+                <Tooltip title={"Add new custom query"} placement={"top"}>
+                    <Add/>
+                </Tooltip>
+            </ToggleButton>
+        )
     }
 }

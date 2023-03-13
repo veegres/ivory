@@ -17,7 +17,6 @@ import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../..
 import {orange, purple} from "@mui/material/colors";
 import {InfoBox} from "../../view/InfoBox";
 import {InfoTitle} from "../../view/InfoTitle";
-import {OverviewQueries} from "./OverviewQueries";
 import {SxPropsMap} from "../../../type/common";
 import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../type/cluster";
 import { PasswordType } from "../../../type/password";
@@ -64,16 +63,6 @@ const TABS: ClusterTabs = {
             helps to keep information about job and logs in one place by each cluster while you need it.
             Please be aware that you can run this tool only in master node and In target database contrib module
             pgstattuple should be installed via <i>create extension if not exists pgstattuple;</i>
-        </>
-    },
-    3: {
-        label: "Queries",
-        body: (cluster: ActiveCluster) => <OverviewQueries info={cluster}/>,
-        info: <>
-            Here you can run some queries in your postgres to troubleshoot it. Some queries are provided by
-            the <i>system</i>, but you can always create your own. As well you're able to
-            edit <i>system</i> and <i>custom</i> queries. You can rollback your changes for queries
-            at anytime. Be aware that for <i>custom</i> queries the first one is considered as default.
         </>
     },
 }
@@ -135,7 +124,7 @@ export function Overview() {
                         disabled={!tab?.info}
                         onClick={() => setInfoOpen(!infoOpen)}
                     >
-                        <Tooltip title={"Tab Information"} placement={"top"}><InfoOutlined/></Tooltip>
+                        <Tooltip title={"Tab Description"} placement={"top"}><InfoOutlined/></Tooltip>
                     </ToggleButton>
                 </ToggleButtonGroup>
             </Box>
