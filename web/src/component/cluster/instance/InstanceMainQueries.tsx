@@ -1,11 +1,9 @@
-import {TabProps} from "./Overview";
-import {Query} from "../../shared/query/Query";
-import {Box, Collapse, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {Database, SxPropsMap} from "../../../type/common";
 import {useState} from "react";
-import {ClusterNoPostgresPassword} from "./OverviewError";
-import {QueryNew} from "../../shared/query/QueryNew";
-import {SxPropsMap} from "../../../type/common";
 import {QueryType} from "../../../type/query";
+import {Box, Collapse, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {QueryNew} from "../../shared/query/QueryNew";
+import {Query} from "../../shared/query/Query";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},
@@ -14,26 +12,25 @@ const SX: SxPropsMap = {
     group: {margin: "0px 5px", width: "100%"},
 }
 
-export function OverviewQueries(props: TabProps){
-    const {cluster, defaultInstance} = props.info
-    const [add, setAdd] = useState(false)
-    const [tab, setTab] = useState(QueryType.STATISTIC)
+type Props = {
+    cluster: string,
+    db: Database,
+    showNew: boolean,
+}
 
-    if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
+export function InstanceMainQueries(props: Props){
+    const {cluster, db, showNew} = props
+    const [tab, setTab] = useState(QueryType.ACTIVITY)
 
     return (
         <Box sx={SX.box}>
             <Box sx={SX.filters}>
-                <ToggleButton sx={SX.group} size={"small"} color={"secondary"} value={""} selected={add} onClick={() => setAdd(!add)}>
-                    New
-                </ToggleButton>
-                <Divider flexItem/>
                 <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
-                    <ToggleButton value={QueryType.STATISTIC} onClick={() => setTab(QueryType.STATISTIC)}>
-                        STATISTIC
-                    </ToggleButton>
                     <ToggleButton value={QueryType.ACTIVITY} onClick={() => setTab(QueryType.ACTIVITY)}>
                         ACTIVITY
+                    </ToggleButton>
+                    <ToggleButton value={QueryType.STATISTIC} onClick={() => setTab(QueryType.STATISTIC)}>
+                        STATISTIC
                     </ToggleButton>
                     <ToggleButton value={QueryType.BLOAT} onClick={() => setTab(QueryType.BLOAT)}>
                         BLOAT
@@ -47,8 +44,8 @@ export function OverviewQueries(props: TabProps){
                 </ToggleButtonGroup>
             </Box>
             <Box sx={SX.query}>
-                <Collapse in={add}><QueryNew type={tab}/></Collapse>
-                <Query type={tab} cluster={cluster.name} db={defaultInstance.database}/>
+                <Collapse in={showNew}><QueryNew type={tab}/></Collapse>
+                <Query type={tab} cluster={cluster} db={db}/>
             </Box>
         </Box>
     )

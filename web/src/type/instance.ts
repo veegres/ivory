@@ -1,10 +1,20 @@
 import {Database, Sidecar} from "./common";
+import {ReactNode} from "react";
 
 export interface ActiveInstance {
     cluster: string,
     sidecar: Sidecar,
     database: Database,
 }
+
+export interface InstanceTabs {
+    [key: number]: {
+        label: string,
+        body: (cluster: string, db: Database, show?: boolean) => ReactNode,
+        info?: ReactNode,
+    }
+}
+
 
 export interface InstanceRequest {
     cluster: string,

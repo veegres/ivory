@@ -7,7 +7,7 @@ import React from "react";
 import {ChartItem, Color} from "./ChartItem";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", justifyContent: "center", height: "100%", gap: 3},
+    box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 3},
     row: {display: "flex", flexWrap: "wrap", justifyContent: "space-evenly", gap: 3},
 }
 

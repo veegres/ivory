@@ -1,4 +1,4 @@
-import {Alert, Box, Paper, TextField, ToggleButton} from "@mui/material";
+import {Alert, Box, Collapse, Paper, TextField, ToggleButton} from "@mui/material";
 import {useState} from "react";
 import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
@@ -55,13 +55,13 @@ export function QueryNew(props: Props) {
                     </ToggleButton>
                 </Box>
             </Box>
-            {alert && (
-                <Alert variant={"outlined"} severity={"info"} icon={false}>
+            <Collapse in={alert}>
+                <Alert severity={"info"} onClose={() => setAlert(false)}>
                     Fields <i>name</i> and <i>query</i> are required for a new query. If you want to have termination
                     and query cancellation buttons in the table you need to call postgres <i>process_id</i> as
                     a <i>pid</i>. Example: <i>SELECT pid FROM table;</i>
                 </Alert>
-            )}
+            </Collapse>
             <Box sx={SX.buttons}>
                 <TextField
                     size={"small"}
