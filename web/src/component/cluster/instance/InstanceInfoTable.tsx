@@ -11,10 +11,10 @@ const SX: SxPropsMap = {
 type Props = {
     loading: boolean,
     activeInstance: ActiveInstance,
-    instance: InstanceInfo,
+    instance?: InstanceInfo,
 }
 
-export function InstanceTable(props: Props) {
+export function InstanceInfoTable(props: Props) {
     const {loading, activeInstance, instance} = props
 
     return (
@@ -22,7 +22,7 @@ export function InstanceTable(props: Props) {
             <TableBody isLoading={loading} cellCount={2}>
                 <TableRow>
                     <TableCell sx={SX.title}>State</TableCell>
-                    <TableCell>{instance.state}</TableCell>
+                    <TableCell>{instance?.state ?? 'unknown'}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Sidecar</TableCell>

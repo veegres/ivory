@@ -50,6 +50,11 @@ type QueryKillRequest struct {
 	Db          Database `json:"db"`
 }
 
+type QueryChartRequest struct {
+	ClusterName string   `json:"clusterName"`
+	Db          Database `json:"db"`
+}
+
 type QueryField struct {
 	Name        string `json:"name"`
 	DataType    string `json:"dataType"`
@@ -59,4 +64,14 @@ type QueryField struct {
 type QueryRunResponse struct {
 	Fields []QueryField `json:"fields"`
 	Rows   [][]any      `json:"rows"`
+}
+
+type QueryChart struct {
+	DbCount         int64  `json:"dbCount"`
+	SchemaCount     int64  `json:"schemaCount"`
+	ConnectionCount int64  `json:"connectionCount"`
+	TotalSize       string `json:"totalSize"`
+	IndexSize       string `json:"indexSize"`
+	TableSize       string `json:"tableSize"`
+	Uptime          string `json:"uptime"`
 }

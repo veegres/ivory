@@ -20,9 +20,11 @@ const SX: SxPropsMap = {
     refresh: {width: "100%"},
 }
 
+enum ListBlock {JOB, QUERY}
+
 export function OverviewBloat(props: TabProps) {
     const {cluster, defaultInstance} = props.info
-    const [tab, setTab] = useState<"queries" | "jobs">("jobs")
+    const [tab, setTab] = useState(ListBlock.JOB)
     const [jobs, setJobs] = useState<Bloat[]>([])
 
     const query = useQuery(
@@ -44,7 +46,7 @@ export function OverviewBloat(props: TabProps) {
                     <OverviewBloatJobForm
                         defaultInstance={defaultInstance}
                         cluster={cluster}
-                        onClick={() => setTab("jobs")}
+                        onClick={() => setTab(ListBlock.JOB)}
                         onSuccess={(job) => setJobs([job, ...jobs])}
                     />
                 </Box>
@@ -58,9 +60,9 @@ export function OverviewBloat(props: TabProps) {
 
     function renderBody() {
         switch (tab) {
-            case "jobs":
+            case ListBlock.JOB:
                 return <OverviewBloatJob list={jobs}/>
-            case "queries":
+            case ListBlock.QUERY:
                 return <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
         }
     }
@@ -69,8 +71,19 @@ export function OverviewBloat(props: TabProps) {
         return (
             <Box sx={SX.toggle}>
                 <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
-                    <ToggleButton value={"jobs"} onClick={() => setTab("jobs")}>Jobs</ToggleButton>
-                    <ToggleButton value={"queries"} disabled={!cluster.credentials.postgresId} onClick={() => setTab("queries")}>Queries</ToggleButton>
+                    <ToggleButton
+                        value={ListBlock.JOB}
+                        onClick={() => setTab(ListBlock.JOB)}
+                    >
+                        Jobs
+                    </ToggleButton>
+                    <ToggleButton
+                        value={ListBlock.QUERY}
+                        disabled={!cluster.credentials.postgresId}
+                        onClick={() => setTab(ListBlock.QUERY)}
+                    >
+                        Queries
+                    </ToggleButton>
                 </ToggleButtonGroup>
                 <Tooltip title={`Refetch ${tab}`} placement={"top"} disableInteractive>
                     <Box sx={SX.refresh} component={"span"}>
@@ -91,7 +104,7 @@ export function OverviewBloat(props: TabProps) {
     }
 
     function handleRefresh() {
-        if (tab === "jobs") initJobs.refetch().then()
+        if (tab === ListBlock.JOB) initJobs.refetch().then()
         else query.refetch().then()
     }
 }

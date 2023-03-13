@@ -42,11 +42,26 @@ export interface QueryKillRequest {
     db: Database,
 }
 
+export interface QueryChartRequest {
+    clusterName: string,
+    db: Database,
+}
+
 
 export interface QueryField {
     name: string,
     dataType: string,
     dataTypeOID: string,
+}
+
+export interface QueryChart {
+    dbCount: number,
+    schemaCount: number,
+    connectionCount: number,
+    totalSize: string,
+    indexSize: string,
+    tableSize: string,
+    uptime: string,
 }
 
 export interface QueryRunResponse {

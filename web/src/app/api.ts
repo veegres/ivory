@@ -4,7 +4,15 @@ import {getDomain} from "./utils";
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
 import {Password, PasswordMap, PasswordType} from "../type/password";
 import {SecretSetRequest, SecretStatus, SecretUpdateRequest} from "../type/secret";
-import {Query, QueryKillRequest, QueryRequest, QueryRunRequest, QueryRunResponse, QueryType} from "../type/query";
+import {
+    Query, QueryChart,
+    QueryChartRequest,
+    QueryKillRequest,
+    QueryRequest,
+    QueryRunRequest,
+    QueryRunResponse,
+    QueryType
+} from "../type/query";
 import {AppInfo, Response} from "../type/common";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterMap} from "../type/cluster";
@@ -118,6 +126,9 @@ export const queryApi = {
         .then((response) => response.data.response),
     run: (req: QueryRunRequest) => api
         .post<Response<QueryRunResponse>>(`/query/run`, req)
+        .then((response) => response.data.response),
+    chart: (req: QueryChartRequest) => api
+        .post<Response<QueryChart>>(`/query/chart`, req)
         .then((response) => response.data.response),
     cancel: (req: QueryKillRequest) => api
         .post<Response<QueryRunResponse>>(`/query/cancel`, req)
