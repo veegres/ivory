@@ -88,16 +88,30 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		return
 	}
 
-	fields, rows, err := r.queryService.RunQuery(req.QueryUuid, req.ClusterName, req.Db)
+	res, err := r.queryService.RunQuery(req.QueryUuid, req.ClusterName, req.Db)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"response": QueryRunResponse{
-		Fields: fields,
-		Rows:   rows,
-	}})
+	context.JSON(http.StatusOK, gin.H{"response": res})
+}
+
+func (r *QueryRouter) PostChartQuery(context *gin.Context) {
+	var req QueryChartRequest
+	err := context.ShouldBindJSON(&req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := r.queryService.ChartQuery(req.ClusterName, req.Db)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
 func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
