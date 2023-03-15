@@ -67,11 +67,6 @@ type QueryRunResponse struct {
 }
 
 type QueryChart struct {
-	DbCount         int64  `json:"dbCount"`
-	SchemaCount     int64  `json:"schemaCount"`
-	ConnectionCount int64  `json:"connectionCount"`
-	TotalSize       string `json:"totalSize"`
-	IndexSize       string `json:"indexSize"`
-	TableSize       string `json:"tableSize"`
-	Uptime          string `json:"uptime"`
+	Name  string `json:"name"`
+	Value any    `json:"value"`
 }

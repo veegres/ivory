@@ -10,7 +10,7 @@ export interface ActiveInstance {
 export interface InstanceTabs {
     [key: number]: {
         label: string,
-        body: (cluster: string, db: Database, show?: boolean) => ReactNode,
+        body: (cluster: string, db: Database) => ReactNode,
         info?: ReactNode,
     }
 }

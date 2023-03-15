@@ -9,7 +9,7 @@ import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Query} from "../../shared/query/Query";
 import {Cached} from "@mui/icons-material";
 import {SxPropsMap} from "../../../type/common";
-import {Bloat} from "../../../type/bloat";
+import {Bloat, BloatTarget} from "../../../type/bloat";
 import {QueryType} from "../../../type/query";
 
 const SX: SxPropsMap = {
@@ -26,6 +26,7 @@ export function OverviewBloat(props: TabProps) {
     const {cluster, defaultInstance} = props.info
     const [tab, setTab] = useState(ListBlock.JOB)
     const [jobs, setJobs] = useState<Bloat[]>([])
+    const [target, setTarget] = useState<BloatTarget>()
 
     const query = useQuery(
         ["query", "map", QueryType.BLOAT],
@@ -38,6 +39,7 @@ export function OverviewBloat(props: TabProps) {
         {onSuccess: (initJobs) => setJobs(initJobs)},
     )
     const loading = initJobs.isFetching || query.isFetching
+    const db = {...defaultInstance.database, database: target?.dbName}
 
     return (
         <Box>
@@ -48,6 +50,8 @@ export function OverviewBloat(props: TabProps) {
                         cluster={cluster}
                         onClick={() => setTab(ListBlock.JOB)}
                         onSuccess={(job) => setJobs([job, ...jobs])}
+                        target={target}
+                        setTarget={setTarget}
                     />
                 </Box>
                 <Divider orientation={"vertical"} flexItem/>
@@ -63,7 +67,7 @@ export function OverviewBloat(props: TabProps) {
             case ListBlock.JOB:
                 return <OverviewBloatJob list={jobs}/>
             case ListBlock.QUERY:
-                return <Query type={QueryType.BLOAT} cluster={cluster.name} db={defaultInstance.database}/>
+                return <Query type={QueryType.BLOAT} cluster={cluster.name} db={db}/>
         }
     }
 
@@ -85,10 +89,9 @@ export function OverviewBloat(props: TabProps) {
                         Queries
                     </ToggleButton>
                 </ToggleButtonGroup>
-                <Tooltip title={`Refetch ${tab}`} placement={"top"} disableInteractive>
+                <Tooltip title={`Refetch ${ListBlock[tab]}`} placement={"top"} disableInteractive>
                     <Box sx={SX.refresh} component={"span"}>
                         <Button
-                            variant={"outlined"}
                             color={"secondary"}
                             fullWidth
                             size={"small"}

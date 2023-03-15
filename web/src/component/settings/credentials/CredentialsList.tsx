@@ -6,7 +6,6 @@ import {InfoAlert} from "../../view/InfoAlert";
 import {Collapse} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {CredentialsItem} from "./CredentialsItem";
-import React from "react";
 import {LinearProgressStateful} from "../../view/LinearProgressStateful";
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
 

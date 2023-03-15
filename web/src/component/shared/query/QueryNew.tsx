@@ -43,14 +43,10 @@ export function QueryNew(props: Props) {
             <Box sx={SX.title}>
                 <Box><b>NEW QUERY</b></Box>
                 <Box sx={SX.info}>
-                    <InfoBox tooltip={""}><Box sx={SX.type}>{QueryType[type]}</Box></InfoBox>
-                    <ToggleButton
-                        sx={SX.toggle}
-                        value={"info"}
-                        size={"small"}
-                        selected={alert}
-                        onClick={() => setAlert(!alert)}
-                    >
+                    <InfoBox tooltip={"Type"} withPadding>
+                        <Box sx={SX.type}>{QueryType[type]}</Box>
+                    </InfoBox>
+                    <ToggleButton sx={SX.toggle} value={"info"} size={"small"} selected={alert} onClick={() => setAlert(!alert)}>
                         <InfoOutlined/>
                     </ToggleButton>
                 </Box>
