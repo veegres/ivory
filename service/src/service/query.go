@@ -50,45 +50,57 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, clusterName string, db Data
 	return s.getFields(clusterName, db, query.Custom)
 }
 
-func (s *QueryService) ChartQuery(clusterName string, db Database) (*QueryChart, error) {
+func (s *QueryService) CommonChartQuery(clusterName string, db Database) (*[4]QueryChart, error) {
 	// TODO think about parallel this queries
 	dbCount, err := s.getOne(clusterName, db, "SELECT count(*) FROM pg_database;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get db count"), err)
 	}
-	schemaCount, _ := s.getOne(clusterName, db, "SELECT count(*) FROM pg_namespace;")
-	if err != nil {
-		return nil, errors.Join(errors.New("cannot get schema count"), err)
-	}
-	connectionCount, _ := s.getOne(clusterName, db, "select count(*) from pg_stat_activity;")
+	connectionCount, err := s.getOne(clusterName, db, "SELECT count(*) FROM pg_stat_activity;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get connection count"), err)
 	}
-	totalSize, _ := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	dbSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get total db size"), err)
 	}
-	indexSize, _ := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
-	if err != nil {
-		return nil, errors.Join(errors.New("cannot get indexes size"), err)
-	}
-	tableSize, _ := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
-	if err != nil {
-		return nil, errors.Join(errors.New("cannot get tables size"), err)
-	}
-	uptime, _ := s.getOne(clusterName, db, "SELECT (now() - pg_postmaster_start_time())::text;")
+	uptime, err := s.getOne(clusterName, db, "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get uptime"), err)
 	}
 
-	return &QueryChart{
-		DbCount:         dbCount.(int64),
-		SchemaCount:     schemaCount.(int64),
-		ConnectionCount: connectionCount.(int64),
-		TotalSize:       totalSize.(string),
-		IndexSize:       indexSize.(string),
-		TableSize:       tableSize.(string),
-		Uptime:          uptime.(string),
+	return &[4]QueryChart{
+		{Name: "Databases", Value: dbCount},
+		{Name: "Connections", Value: connectionCount},
+		{Name: "Database Size", Value: dbSize},
+		{Name: "Database Uptime", Value: uptime},
+	}, nil
+}
+
+func (s *QueryService) DatabaseChartQuery(clusterName string, db Database) (*[4]QueryChart, error) {
+	// TODO think about parallel this queries
+	schemaCount, err := s.getOne(clusterName, db, "SELECT count(*) FROM pg_namespace;")
+	if err != nil {
+		return nil, errors.Join(errors.New("cannot get schema count"), err)
+	}
+	totalSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	if err != nil {
+		return nil, errors.Join(errors.New("cannot get total db size"), err)
+	}
+	indexSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	if err != nil {
+		return nil, errors.Join(errors.New("cannot get indexes size"), err)
+	}
+	tableSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	if err != nil {
+		return nil, errors.Join(errors.New("cannot get tables size"), err)
+	}
+
+	return &[4]QueryChart{
+		{Name: "Schemas", Value: schemaCount},
+		{Name: "Tables Size", Value: tableSize},
+		{Name: "Indexes Size", Value: indexSize},
+		{Name: "Total Size", Value: totalSize},
 	}, nil
 }
 
@@ -276,10 +288,14 @@ func (s *QueryService) getConnection(clusterName string, db Database) (*pgx.Conn
 		return nil, errCred
 	}
 
+	dbName := "postgres"
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, errors.New("database host or port are not specified")
 	}
-	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port)
+	if db.Database != nil && *db.Database != "" {
+		dbName = *db.Database
+	}
+	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
 	return pgx.Connect(context.Background(), connString)
 }
 

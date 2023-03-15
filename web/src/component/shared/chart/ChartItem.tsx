@@ -1,5 +1,4 @@
-import {Box, Skeleton} from "@mui/material";
-import React from "react";
+import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {
     blue, blueGrey, brown, cyan, deepOrange, deepPurple, green, indigo, orange, pink, purple, red
@@ -36,7 +35,6 @@ const colors: {[key in Color]: string} = {
 }
 
 type Props = {
-    loading: boolean,
     label: string,
     value?: string | number,
     color?: Color,
@@ -44,11 +42,10 @@ type Props = {
 }
 
 export function ChartItem(props: Props) {
-    const {loading, value, label, color, width} = props
+    const {value, label, color, width} = props
     const w = width ? width : "200px", h = "100px"
 
-    if (loading) return <Skeleton width={w} height={h}/>
-    const bg = color ? colors[color] : colors[Math.floor(Math.random() * Object.keys(colors).length) as Color]
+    const bg = color !== undefined ? colors[color] : colors[Math.floor(Math.random() * Object.keys(colors).length) as Color]
 
     return (
         <Box sx={SX.box} minWidth={w} height={h} bgcolor={bg}>

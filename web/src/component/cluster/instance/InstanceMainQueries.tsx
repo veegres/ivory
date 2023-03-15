@@ -1,8 +1,7 @@
 import {Database, SxPropsMap} from "../../../type/common";
 import {useState} from "react";
 import {QueryType} from "../../../type/query";
-import {Box, Collapse, ToggleButton, ToggleButtonGroup} from "@mui/material";
-import {QueryNew} from "../../shared/query/QueryNew";
+import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {Query} from "../../shared/query/Query";
 
 const SX: SxPropsMap = {
@@ -15,11 +14,10 @@ const SX: SxPropsMap = {
 type Props = {
     cluster: string,
     db: Database,
-    showNew: boolean,
 }
 
 export function InstanceMainQueries(props: Props){
-    const {cluster, db, showNew} = props
+    const {cluster, db} = props
     const [tab, setTab] = useState(QueryType.ACTIVITY)
 
     return (
@@ -44,7 +42,6 @@ export function InstanceMainQueries(props: Props){
                 </ToggleButtonGroup>
             </Box>
             <Box sx={SX.query}>
-                <Collapse in={showNew}><QueryNew type={tab}/></Collapse>
                 <Query type={tab} cluster={cluster} db={db}/>
             </Box>
         </Box>

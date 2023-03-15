@@ -20,11 +20,12 @@ type Props = {
     cluster: Cluster,
     onClick: () => void,
     onSuccess: (job: Bloat) => void,
+    target?: BloatTarget,
+    setTarget: (target: BloatTarget) => void
 }
 
 export function OverviewBloatJobForm(props: Props) {
-    const {defaultInstance, cluster, onSuccess, onClick} = props
-    const [target, setTarget] = useState<BloatTarget>()
+    const {defaultInstance, cluster, target, onSuccess, onClick, setTarget} = props
     const [ratio, setRadio] = useState<number>()
 
     const {onError} = useMutationOptions()

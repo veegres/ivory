@@ -1,4 +1,3 @@
-import React from 'react';
 import {App} from './App';
 import * as ServiceWorker from './ServiceWorker';
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
@@ -9,6 +8,7 @@ import {CssBaseline} from "@mui/material";
 import {createRoot} from "react-dom/client";
 import {SnackbarProvider} from "notistack";
 import scroll from "./style/scroll.module.css"
+import {StrictMode} from "react";
 
 // always show scroll bar to avoid resizing
 document.body.classList.add(scroll.show)
@@ -17,7 +17,7 @@ document.body.classList.add(scroll.show)
 const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(
-    <React.StrictMode>
+    <StrictMode>
         <QueryClientProvider client={new QueryClient()}>
             <ThemeProvider>
                 <StoreProvider>
@@ -29,7 +29,7 @@ root.render(
             </ThemeProvider>
             <ReactQueryDevtools/>
         </QueryClientProvider>
-    </React.StrictMode>
+    </StrictMode>
 )
 
 // If you want your app to work offline and load faster, you can change

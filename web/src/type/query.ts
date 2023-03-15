@@ -55,13 +55,8 @@ export interface QueryField {
 }
 
 export interface QueryChart {
-    dbCount: number,
-    schemaCount: number,
-    connectionCount: number,
-    totalSize: string,
-    indexSize: string,
-    tableSize: string,
-    uptime: string,
+    name: string,
+    value: any,
 }
 
 export interface QueryRunResponse {
