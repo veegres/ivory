@@ -11,7 +11,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     role?: string,
-    loading: boolean,
+    loading?: boolean,
 }
 
 export function InstanceInfoStatus(props: Props) {

@@ -3,7 +3,7 @@ import {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, passwordApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Autocomplete, Option} from "../../view/Autocomplete";
+import {AutocompleteUuid, Option} from "../../view/AutocompleteUuid";
 import {PasswordType} from "../../../type/password";
 import {Cluster, Credentials} from "../../../type/cluster";
 
@@ -30,7 +30,7 @@ export function OverviewSettingsPassword(props: Props) {
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (
-        <Autocomplete
+        <AutocompleteUuid
             label={label}
             selected={{key: passId, short: shortUuid(passId)}}
             options={options}

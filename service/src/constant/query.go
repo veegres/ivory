@@ -1,5 +1,9 @@
 package constant
 
+const GetAllDatabases = `SELECT datname AS name FROM pg_database WHERE datistemplate = false AND datname LIKE $1 LIMIT 100;`
+const GetAllSchemas = `SELECT nspname AS NAME FROM pg_namespace WHERE nspname LIKE $1 LIMIT 100;`
+const GetAllTables = `SELECT relname AS name FROM pg_stat_all_tables WHERE schemaname = $1 AND relname LIKE $2 LIMIT 100;`
+
 const DefaultActiveRunningQueries = `SELECT
     pid,
     state,
@@ -35,7 +39,7 @@ const DefaultAllLocks = `SELECT
     client_addr AS ip,
     application_name AS application,
     SA.query
-FROM pg_catalog.pg_locks LOC
+FROM pg_locks LOC
     LEFT JOIN pg_catalog.pg_database db ON db.oid = LOC.database
     LEFT JOIN pg_stat_activity AS SA ON LOC.pid = SA.pid;`
 

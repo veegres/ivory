@@ -1,20 +1,12 @@
 import {Database, Sidecar} from "./common";
 import {ReactNode} from "react";
 
-export interface ActiveInstance {
-    cluster: string,
-    sidecar: Sidecar,
-    database: Database,
+export enum InstanceTabType {QUERY, CHART}
+export interface InstanceTab {
+    label: string,
+    body: (cluster: string, db: Database) => ReactNode,
+    info?: ReactNode,
 }
-
-export interface InstanceTabs {
-    [key: number]: {
-        label: string,
-        body: (cluster: string, db: Database) => ReactNode,
-        info?: ReactNode,
-    }
-}
-
 
 export interface InstanceRequest {
     cluster: string,
@@ -30,7 +22,7 @@ export interface InstanceInfo {
 }
 
 
-export interface Instance {
+export interface InstanceResponse {
     state: string,
     role: string,
     lag: number,
@@ -38,12 +30,12 @@ export interface Instance {
     sidecar: Sidecar,
 }
 
-export interface DefaultInstance extends Instance {
+export interface Instance extends InstanceResponse {
     leader: boolean,
     inCluster: boolean,
     inInstances: boolean,
 }
 
 export interface InstanceMap {
-    [instance: string]: DefaultInstance,
+    [instance: string]: Instance,
 }

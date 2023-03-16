@@ -30,23 +30,25 @@ export interface QueryRequest {
     query: string,
 }
 
-export interface QueryRunRequest {
+export interface QueryPostgresRequest {
+    clusterName: string,
+    db: Database,
+}
+
+export interface QueryRunRequest extends QueryPostgresRequest {
     queryUuid: string,
-    clusterName: string,
-    db: Database,
 }
 
-export interface QueryKillRequest {
+export interface QueryKillRequest extends QueryPostgresRequest {
     pid: number,
-    clusterName: string,
-    db: Database,
 }
 
-export interface QueryChartRequest {
-    clusterName: string,
-    db: Database,
-}
+export interface QueryChartRequest extends QueryPostgresRequest {}
 
+export interface QuerySearchRequest extends QueryPostgresRequest {
+    schema?: string,
+    name?: string,
+}
 
 export interface QueryField {
     name: string,

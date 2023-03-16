@@ -1,10 +1,10 @@
 import {ReactNode} from "react";
 import {ColorsMap, Sidecar} from "./common";
-import {DefaultInstance, InstanceMap} from "./instance";
+import {Instance, InstanceMap} from "./Instance";
 
 export interface ActiveCluster {
     cluster: Cluster,
-    defaultInstance: DefaultInstance,
+    defaultInstance: Instance,
     combinedInstanceMap: InstanceMap,
     warning: boolean,
     detection: DetectionType,
@@ -44,7 +44,7 @@ export interface ClusterTabs {
 export type DetectionType = "auto" | "manual"
 
 export interface InstanceDetection {
-    defaultInstance: DefaultInstance,
+    defaultInstance: Instance,
     combinedInstanceMap: InstanceMap,
     detection: DetectionType,
     warning: boolean,

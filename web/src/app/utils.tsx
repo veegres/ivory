@@ -16,7 +16,7 @@ import {JobStatus} from "../type/bloat";
 import {PasswordType} from "../type/password";
 import {ColorsMap, EnumOptions, FileUsageType, Settings, Sidecar} from "../type/common";
 import {CertType} from "../type/cert";
-import {DefaultInstance, InstanceMap} from "../type/instance";
+import {Instance, InstanceMap} from "../type/Instance";
 
 export const InstanceColor: { [key: string]: string } = {
     master: green[500],
@@ -71,7 +71,7 @@ export const createInstanceColors = (instances: InstanceMap) => {
     )
 }
 
-export const initialInstance = (sidecar?: Sidecar): DefaultInstance => {
+export const initialInstance = (sidecar?: Sidecar): Instance => {
     const defaultSidecar = sidecar ?? {host: "-", port: 8008}
     return ({
         state: "-",

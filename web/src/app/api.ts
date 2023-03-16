@@ -1,5 +1,5 @@
 import axios from "axios";
-import {Instance, InstanceInfo, InstanceMap, InstanceRequest} from "../type/instance";
+import {InstanceResponse, InstanceInfo, InstanceMap, InstanceRequest} from "../type/Instance";
 import {getDomain} from "./utils";
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
 import {Password, PasswordMap, PasswordType} from "../type/password";
@@ -10,7 +10,7 @@ import {
     QueryKillRequest,
     QueryRequest,
     QueryRunRequest,
-    QueryRunResponse,
+    QueryRunResponse, QuerySearchRequest,
     QueryType
 } from "../type/query";
 import {AppInfo, Response} from "../type/common";
@@ -30,7 +30,7 @@ export const instanceApi = {
         .get<Response<InstanceInfo>>(`/instance/info`, {params: request})
         .then((response) => response.data.response),
     overview: (request: InstanceRequest) => api
-        .get<Response<Instance[]>>(`/instance/overview`, {params: request})
+        .get<Response<InstanceResponse[]>>(`/instance/overview`, {params: request})
         .then<InstanceMap>((response) => response.data.response.reduce(
             (map, instance) => {
                 const leader = instance.role === "leader"
@@ -126,6 +126,15 @@ export const queryApi = {
         .then((response) => response.data.response),
     run: (req: QueryRunRequest) => api
         .post<Response<QueryRunResponse>>(`/query/run`, req)
+        .then((response) => response.data.response),
+    databases: (req: QuerySearchRequest) => api
+        .post<Response<string[]>>(`/query/databases`, req)
+        .then((response) => response.data.response),
+    schemas: (req: QuerySearchRequest) => api
+        .post<Response<string[]>>(`/query/schemas`, req)
+        .then((response) => response.data.response),
+    tables: (req: QuerySearchRequest) => api
+        .post<Response<string[]>>(`/query/tables`, req)
         .then((response) => response.data.response),
     chartCommon: (req: QueryChartRequest) => api
         .post<Response<QueryChart[]>>(`/query/chart/common`, req)

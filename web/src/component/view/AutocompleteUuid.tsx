@@ -15,7 +15,7 @@ type Props = {
     label: string,
 }
 
-export function Autocomplete(props: Props) {
+export function AutocompleteUuid(props: Props) {
     const { onUpdate, loading, label, selected } = props
     const [inputValue, setInputValue] = useState("")
     const {value, options, isOptionNotFound} = useMemo(handleMemoOptions, [selected, props.options])

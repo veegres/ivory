@@ -50,6 +50,18 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, clusterName string, db Data
 	return s.getFields(clusterName, db, query.Custom)
 }
 
+func (s *QueryService) DatabasesQuery(clusterName string, db Database, name string) ([]string, error) {
+	return s.getMany(clusterName, db, constant.GetAllDatabases, "%"+name+"%")
+}
+
+func (s *QueryService) SchemasQuery(clusterName string, db Database, name string) ([]string, error) {
+	return s.getMany(clusterName, db, constant.GetAllSchemas, "%"+name+"%")
+}
+
+func (s *QueryService) TablesQuery(clusterName string, db Database, schema string, name string) ([]string, error) {
+	return s.getMany(clusterName, db, constant.GetAllTables, schema, "%"+name+"%")
+}
+
 func (s *QueryService) CommonChartQuery(clusterName string, db Database) (*[4]QueryChart, error) {
 	// TODO think about parallel this queries
 	dbCount, err := s.getOne(clusterName, db, "SELECT count(*) FROM pg_database;")
@@ -207,6 +219,26 @@ func (s *QueryService) DeleteAll() error {
 	return errors.Join(errDel, errDefQueries)
 }
 
+func (s *QueryService) getMany(clusterName string, db Database, query string, args ...any) ([]string, error) {
+	rows, _, errReq := s.sendRequest(clusterName, db, query, args...)
+	if errReq != nil {
+		return nil, errReq
+	}
+	defer rows.Close()
+
+	values := make([]string, 0)
+	for rows.Next() {
+		var value string
+		err := rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, value)
+	}
+
+	return values, nil
+}
+
 func (s *QueryService) getOne(clusterName string, db Database, query string) (any, error) {
 	rows, _, errReq := s.sendRequest(clusterName, db, query)
 	if errReq != nil {
@@ -259,14 +291,20 @@ func (s *QueryService) getFields(clusterName string, db Database, query string) 
 	return res, nil
 }
 
-func (s *QueryService) sendRequest(clusterName string, db Database, query string) (pgx.Rows, *pgtype.Map, error) {
+func (s *QueryService) sendRequest(clusterName string, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, error) {
 	conn, errConn := s.getConnection(clusterName, db)
 	if errConn != nil {
 		return nil, nil, errConn
 	}
 	defer s.closeConnection(conn, context.Background())
 
-	res, errRes := conn.Query(context.Background(), query)
+	var res pgx.Rows
+	var errRes error
+	if args == nil {
+		res, errRes = conn.Query(context.Background(), query)
+	} else {
+		res, errRes = conn.Query(context.Background(), query, args...)
+	}
 	if errRes != nil {
 		return nil, nil, errRes
 	}

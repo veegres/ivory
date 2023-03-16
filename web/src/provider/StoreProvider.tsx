@@ -1,18 +1,19 @@
 import {createContext, ReactNode, useContext, useState} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 import {ActiveCluster, DetectionType} from "../type/cluster";
-import {ActiveInstance, DefaultInstance} from "../type/instance";
+import {Instance} from "../type/Instance";
+import {getDomain} from "../app/utils";
 
 // STORE
 interface StoreType {
     activeCluster?: ActiveCluster, activeClusterTab: number,
-    activeInstance?: ActiveInstance, activeInstanceTab: number,
+    activeInstance?: Instance,
     activeTags: string[],
     settings: boolean,
 }
 const initialStore: StoreType = {
     activeCluster: undefined, activeClusterTab: 0,
-    activeInstance: undefined, activeInstanceTab: 0,
+    activeInstance: undefined,
     activeTags: ["ALL"],
     settings: false,
 }
@@ -22,15 +23,14 @@ interface StoreContextType {
     store: StoreType
 
     setCluster: (cluster?: ActiveCluster) => void,
-    setClusterInstance: (instance: DefaultInstance) => void,
+    setClusterInstance: (instance: Instance) => void,
     setClusterDetection: (detection: DetectionType) => void
     setClusterTab: (tab: number) => void,
     isClusterActive: (name: string) => boolean
     isClusterOverviewOpen: () => boolean
 
-    setInstance: (instance?: ActiveInstance) => void,
-    setInstanceTab: (tab: number) => void,
-    isInstanceActive: (instance?: ActiveInstance) => boolean,
+    setInstance: (instance?: Instance) => void,
+    isInstanceActive: (key: string) => boolean,
 
     setTags: (tags: string[]) => void,
     toggleSettingsDialog: () => void,
@@ -48,8 +48,7 @@ const initialStoreContext: StoreContextType = {
     isClusterOverviewOpen: () => false,
 
     setInstance: () => void 0,
-    setInstanceTab: () => void 0,
-    isInstanceActive: () => false,
+    isInstanceActive: (key: string) => false,
 
     setTags: () => void 0,
     toggleSettingsDialog: () => void 0,
@@ -83,7 +82,7 @@ export function StoreProvider(props: { children: ReactNode }) {
             store: state,
 
             setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster})),
-            setClusterInstance: (instance: DefaultInstance) => {
+            setClusterInstance: (instance: Instance) => {
                 if (activeCluster) setState({...state, activeCluster: {...activeCluster, defaultInstance: instance, detection: "manual"}})
             },
             setClusterDetection: (detection: DetectionType) => {
@@ -93,9 +92,8 @@ export function StoreProvider(props: { children: ReactNode }) {
             isClusterActive: (name: string) => name === activeCluster?.cluster.name,
             isClusterOverviewOpen: () => !!activeCluster && state.activeClusterTab === 0,
 
-            setInstance: (instance?: ActiveInstance) => setState({...state, activeInstance: instance}),
-            setInstanceTab: (tab: number) => setState({...state, activeInstanceTab: tab}),
-            isInstanceActive: (instance?: ActiveInstance) => instance === activeInstance,
+            setInstance: (instance?: Instance) => setState({...state, activeInstance: instance}),
+            isInstanceActive: (key: string) => activeInstance ? getDomain(activeInstance.sidecar) === key : false,
 
             setTags: (tags: string[]) => setState({...state, activeTags: tags}),
             toggleSettingsDialog: () => setState({...state, settings: !state.settings}),
