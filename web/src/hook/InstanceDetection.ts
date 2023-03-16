@@ -5,7 +5,7 @@ import {combineInstances, createInstanceColors, getDomain, initialInstance, isSi
 import {useStore} from "../provider/StoreProvider";
 import {Cluster, DetectionType, InstanceDetection} from "../type/cluster";
 import {Sidecar} from "../type/common";
-import {InstanceMap} from "../type/instance";
+import {InstanceMap} from "../type/Instance";
 
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
     const {store: {activeCluster}, setCluster} = useStore()

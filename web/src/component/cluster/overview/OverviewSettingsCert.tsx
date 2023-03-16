@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {certApi, clusterApi} from "../../../app/api";
-import {Autocomplete, Option} from "../../view/Autocomplete";
+import {AutocompleteUuid, Option} from "../../view/AutocompleteUuid";
 import {CertOptions, shortUuid} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {CertType} from "../../../type/cert";
@@ -31,7 +31,7 @@ export function OverviewSettingsCert(props: Props) {
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (
-        <Autocomplete
+        <AutocompleteUuid
             label={label}
             selected={{key: certId, short: shortUuid(certId)}}
             options={options}

@@ -5,7 +5,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
 import {SxPropsMap} from "../../../type/common";
-import {DefaultInstance} from "../../../type/instance";
+import {Instance} from "../../../type/Instance";
 import {Cluster} from "../../../type/cluster";
 import {Bloat, BloatTarget} from "../../../type/bloat";
 
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
 
 
 type Props = {
-    defaultInstance: DefaultInstance,
+    defaultInstance: Instance,
     cluster: Cluster,
     onClick: () => void,
     onSuccess: (job: Bloat) => void,

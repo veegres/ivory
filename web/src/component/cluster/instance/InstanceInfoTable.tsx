@@ -1,7 +1,7 @@
 import {Table, TableCell, TableRow} from "@mui/material";
 import {TableBody} from "../../view/TableBody";
 import {SxPropsMap} from "../../../type/common";
-import {ActiveInstance, InstanceInfo} from "../../../type/instance";
+import {Instance} from "../../../type/Instance";
 
 const SX: SxPropsMap = {
     title: {color: "text.secondary", fontWeight: "bold"},
@@ -9,28 +9,26 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    loading: boolean,
-    activeInstance: ActiveInstance,
-    instance?: InstanceInfo,
+    instance: Instance,
 }
 
 export function InstanceInfoTable(props: Props) {
-    const {loading, activeInstance, instance} = props
+    const {instance} = props
 
     return (
         <Table size={"small"} sx={SX.table}>
-            <TableBody isLoading={loading} cellCount={2}>
+            <TableBody isLoading={false} cellCount={2}>
                 <TableRow>
                     <TableCell sx={SX.title}>State</TableCell>
-                    <TableCell>{instance?.state ?? 'unknown'}</TableCell>
+                    <TableCell>{instance.state}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Sidecar</TableCell>
-                    <TableCell>{activeInstance.sidecar.host}:{activeInstance.sidecar.port.toString()}</TableCell>
+                    <TableCell>{instance.sidecar.host}:{instance.sidecar.port.toString()}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>
-                    <TableCell>{activeInstance.database.host}:{activeInstance.database.port.toString()}</TableCell>
+                    <TableCell>{instance.database.host}:{instance.database.port.toString()}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>

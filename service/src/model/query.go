@@ -38,21 +38,39 @@ type QueryRequest struct {
 	Query       string     `json:"query"`
 }
 
+type QueryPostgresRequest struct {
+	ClusterName string   `json:"clusterName"`
+	Db          Database `json:"db"`
+}
+
 type QueryRunRequest struct {
-	QueryUuid   uuid.UUID `json:"queryUuid"`
-	ClusterName string    `json:"clusterName"`
-	Db          Database  `json:"db"`
+	QueryPostgresRequest
+	QueryUuid uuid.UUID `json:"queryUuid"`
 }
 
 type QueryKillRequest struct {
-	Pid         int      `json:"pid"`
-	ClusterName string   `json:"clusterName"`
-	Db          Database `json:"db"`
+	QueryPostgresRequest
+	Pid int `json:"pid"`
 }
 
 type QueryChartRequest struct {
-	ClusterName string   `json:"clusterName"`
-	Db          Database `json:"db"`
+	QueryPostgresRequest
+}
+
+type QueryDatabasesRequest struct {
+	QueryPostgresRequest
+	Name string `json:"name"`
+}
+
+type QuerySchemasRequest struct {
+	QueryPostgresRequest
+	Name string `json:"name"`
+}
+
+type QueryTablesRequest struct {
+	QueryPostgresRequest
+	Schema string `json:"schema"`
+	Name   string `json:"name"`
 }
 
 type QueryField struct {

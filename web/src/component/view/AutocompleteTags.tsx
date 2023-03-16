@@ -50,7 +50,7 @@ export function AutocompleteTags(props: Props) {
 
     function renderInput(params: AutocompleteRenderInputParams) {
         return (
-            <TextField{...params} label={"Tags"} placeholder={"Tags"}/>
+            <TextField {...params} label={"Tags"} placeholder={"Tags"}/>
         )
     }
 

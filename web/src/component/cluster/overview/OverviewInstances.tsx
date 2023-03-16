@@ -3,14 +3,14 @@ import {useIsFetching, useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
 import {useMemo, useState} from "react";
 import {TableCellLoader} from "../../view/TableCellLoader";
-import {getDomain, InstanceColor} from "../../../app/utils";
+import {InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/AlertDialog";
 import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
 import {Warning} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {SxPropsMap} from "../../../type/common";
-import {ActiveInstance} from "../../../type/instance";
+import {Instance} from "../../../type/Instance";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
@@ -30,7 +30,7 @@ const initAlertDialog = {
 export function OverviewInstances({info}: TabProps) {
     const {defaultInstance, cluster, combinedInstanceMap} = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
-    const {setInstance, store: {activeInstance}} = useStore()
+    const {setInstance, isInstanceActive} = useStore()
     const queryKey = useMemo(
         () => ["instance/overview", cluster.name, defaultInstance.sidecar.host, defaultInstance.sidecar.port],
         [defaultInstance.sidecar, cluster.name]
@@ -69,12 +69,11 @@ export function OverviewInstances({info}: TabProps) {
     function renderContent() {
         return Object.entries(combinedInstanceMap).map(([key, element]) => {
             const {role, sidecar, database, state, lag, inInstances, inCluster} = element
-            const isChecked = activeInstance ? getDomain(activeInstance.sidecar) === key : false
-            const instance = {cluster: cluster.name, sidecar: sidecar, database: database}
+            const checked = isInstanceActive(key)
 
             return (
-                <TableRow sx={SX.row} key={key} onClick={handleCheck(instance, isChecked)}>
-                    <TableCell sx={SX.cell}><Radio checked={isChecked} size={"small"}/></TableCell>
+                <TableRow sx={SX.row} key={key} onClick={handleCheck(element, checked)}>
+                    <TableCell sx={SX.cell}><Radio checked={checked} size={"small"}/></TableCell>
                     <TableCell sx={SX.cell} align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
                     <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
                     <TableCell sx={SX.cell} align={"center"}>
@@ -87,7 +86,7 @@ export function OverviewInstances({info}: TabProps) {
                     <TableCell sx={SX.cell} align={"center"}>{lag}</TableCell>
                     <TableCell sx={SX.cell} align={"right"} onClick={(e) => e.stopPropagation()}>
                         <Box display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                            {renderButton(instance, role)}
+                            {renderButton(element, role)}
                         </Box>
                     </TableCell>
                 </TableRow>
@@ -95,7 +94,7 @@ export function OverviewInstances({info}: TabProps) {
         })
     }
 
-    function renderButton(instance: ActiveInstance, type: string) {
+    function renderButton(instance: Instance, type: string) {
         switch (type) {
             case "replica":
                 return (
@@ -137,17 +136,17 @@ export function OverviewInstances({info}: TabProps) {
         )
     }
 
-    function handleCheck(instance: ActiveInstance, checked: boolean) {
+    function handleCheck(instance: Instance, checked: boolean) {
         return () => setInstance(checked ? undefined : instance)
     }
 
-    function handleSwitchover(instance: ActiveInstance) {
+    function handleSwitchover(instance: Instance) {
         setAlertDialog({
             open: true,
             title: `Switchover [${instance.sidecar.host}]`,
             content: "Are you sure that you want to do Switchover? It will change the leader of your cluster.",
             onAgree: () => switchover.mutate({
-                cluster: instance.cluster,
+                cluster: cluster.name,
                 host: instance.sidecar.host,
                 port: instance.sidecar.port,
                 body: {leader: instance.sidecar.host},
@@ -155,13 +154,13 @@ export function OverviewInstances({info}: TabProps) {
         })
     }
 
-    function handleReinit(instance: ActiveInstance) {
+    function handleReinit(instance: Instance) {
         setAlertDialog({
             open: true,
             title: `Reinitialization [${instance.sidecar.host}]`,
             content: "Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.",
             onAgree: () => reinit.mutate({
-                cluster: instance.cluster,
+                cluster: cluster.name,
                 host: instance.sidecar.host,
                 port: instance.sidecar.port,
             })

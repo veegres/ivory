@@ -6,7 +6,7 @@ import {ErrorAlert} from "../../view/ErrorAlert";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {DefaultInstance} from "../../../type/instance";
+import {Instance} from "../../../type/Instance";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
@@ -54,7 +54,7 @@ export function OverviewConfig({info}: TabProps) {
         </Grid>
     )
 
-    function renderUpdateButtons(instance: DefaultInstance, configState: string, isLoading: boolean, isEditable: boolean) {
+    function renderUpdateButtons(instance: Instance, configState: string, isLoading: boolean, isEditable: boolean) {
         if (!isEditable) return <EditIconButton placement={"left"} size={35} onClick={() => setIsEditable(true)}/>
 
         return (
@@ -75,7 +75,7 @@ export function OverviewConfig({info}: TabProps) {
         setConfigState(stringify(config))
     }
 
-    function handleUpdate(instance: DefaultInstance, config: string) {
+    function handleUpdate(instance: Instance, config: string) {
         if (configState) updateConfig.mutate({
             ...instance.sidecar,
             cluster: cluster.name,

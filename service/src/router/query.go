@@ -97,6 +97,57 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
+func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {
+	var req QueryDatabasesRequest
+	err := context.ShouldBindJSON(&req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := r.queryService.DatabasesQuery(req.ClusterName, req.Db, req.Name)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": res})
+}
+
+func (r *QueryRouter) PostSchemasQuery(context *gin.Context) {
+	var req QuerySchemasRequest
+	err := context.ShouldBindJSON(&req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := r.queryService.SchemasQuery(req.ClusterName, req.Db, req.Name)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": res})
+}
+
+func (r *QueryRouter) PostTablesQuery(context *gin.Context) {
+	var req QueryTablesRequest
+	err := context.ShouldBindJSON(&req)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	res, err := r.queryService.TablesQuery(req.ClusterName, req.Db, req.Schema, req.Name)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": res})
+}
+
 func (r *QueryRouter) PostCommonChartQuery(context *gin.Context) {
 	var req QueryChartRequest
 	err := context.ShouldBindJSON(&req)
