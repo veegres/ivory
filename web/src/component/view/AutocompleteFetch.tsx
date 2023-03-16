@@ -4,18 +4,22 @@ import {useState} from "react";
 import {useDebounce} from "../../hook/Debounce";
 
 type Props = {
+    keys: string[],
     onUpdate: (option: string | null) => void,
     onFetch: (value: string) => Promise<string[]>,
+    noOptionsText?: string,
     label?: string,
     placeholder?: string,
     variant?: "standard" | "filled" | "outlined";
+    margin?: 'dense' | 'normal' | 'none';
 }
 
 export function AutocompleteFetch(props: Props) {
-    const {label, placeholder, variant, onUpdate, onFetch} = props
+    const {label, placeholder, variant, margin} = props
+    const {noOptionsText, keys, onUpdate, onFetch} = props
     const [inputValue, setInputValue] = useState("")
     const debInputValue = useDebounce(inputValue)
-    const query = useQuery([label || placeholder, debInputValue], () => onFetch(debInputValue))
+    const query = useQuery([...keys, debInputValue], () => onFetch(debInputValue))
     const options = query.data ?? []
 
     return (
@@ -23,6 +27,7 @@ export function AutocompleteFetch(props: Props) {
             fullWidth
             renderInput={renderInput}
             inputValue={inputValue}
+            noOptionsText={noOptionsText}
             onInputChange={(_, v) => setInputValue(v)}
             options={options}
             loading={query.isLoading}
@@ -37,6 +42,7 @@ export function AutocompleteFetch(props: Props) {
                 size={"small"}
                 label={label}
                 variant={variant}
+                margin={margin}
                 placeholder={placeholder}
             />
         )

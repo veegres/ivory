@@ -9,6 +9,7 @@ import {useState} from "react";
 import {queryApi} from "../../../app/api";
 import {AutocompleteFetch} from "../../view/AutocompleteFetch";
 import {useStore} from "../../../provider/StoreProvider";
+import {getDomain} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1},
@@ -67,6 +68,7 @@ export function InstanceMain(props: Props) {
         return (
             <Box width={200}>
                 <AutocompleteFetch
+                    keys={["query", "databases", cluster, getDomain(database), database.database ?? ""]}
                     onFetch={(v) => queryApi.databases({clusterName: cluster, db: database, name: v})}
                     placeholder={"Specify Database"}
                     variant={"standard"}

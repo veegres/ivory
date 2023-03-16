@@ -1,13 +1,15 @@
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
 import {Box, Button, TextField} from "@mui/material";
-import {ChangeEvent, useState} from "react";
+import {useState} from "react";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {bloatApi} from "../../../app/api";
+import {bloatApi, queryApi} from "../../../app/api";
 import {SxPropsMap} from "../../../type/common";
 import {Instance} from "../../../type/Instance";
 import {Cluster} from "../../../type/cluster";
 import {Bloat, BloatTarget} from "../../../type/bloat";
+import {AutocompleteFetch} from "../../view/AutocompleteFetch";
+import {getDomain} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
@@ -35,13 +37,39 @@ export function OverviewBloatJobForm(props: Props) {
     if (!defaultInstance.leader) return <ClusterNoLeaderError/>
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
+    const req = {clusterName: cluster.name, db: {...defaultInstance.database, database: target?.dbName}}
     return (
         <Box sx={SX.form}>
-            {renderInput("Database Name", (e) => setTarget({...target, dbName: e.target.value}))}
-            {renderInput("Schema", (e) => setTarget({...target, schema: e.target.value}))}
-            {renderInput("Table", (e) => setTarget({...target, table: e.target.value}))}
-            {renderInput("Exclude Schema", (e) => setTarget({...target, excludeSchema: e.target.value}))}
-            {renderInput("Exclude Table", (e) => setTarget({...target, excludeTable: e.target.value}))}
+            {renderInput(
+                ["databases"],
+                "Database",
+                (v) => setTarget({...target, dbName: v}),
+                (v) => queryApi.databases({...req, name: v})
+            )}
+            {renderInput(
+                ["schemas"],
+                "Schema",
+                (v) => setTarget({...target, schema: v}),
+                (v) => queryApi.schemas({...req, name: v})
+            )}
+            {renderInput(
+                ["tables", target?.schema ?? ""],
+                "Table",
+                (v) => setTarget({...target, table: v}),
+                (v) => queryApi.tables({...req, schema: target?.schema, name: v})
+            )}
+            {renderInput(
+                ["schemas"],
+                "Exclude Schema",
+                (v) => setTarget({...target, excludeSchema: v}),
+                (v) => queryApi.schemas({...req, name: v})
+            )}
+            {renderInput(
+                ["tables", target?.excludeSchema ?? ""],
+                "Exclude Table",
+                (v) => setTarget({...target, excludeTable: v}),
+                (v) => queryApi.tables({...req, schema: target?.excludeSchema, name: v})
+            )}
             <Box sx={SX.buttons}>
                 <TextField
                     sx={{flexGrow: 1}} size={"small"} label={"Ratio"} type={"number"} variant={"standard"}
@@ -56,14 +84,15 @@ export function OverviewBloatJobForm(props: Props) {
         </Box>
     )
 
-    function renderInput(label: string, onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void) {
+    function renderInput(key: string[], label: string, onChange: (v: string) => void, onFetch: (value: string) => Promise<string[]>) {
+        const [type, schema] = key
+        const keys = ["query", type, req.clusterName, getDomain(req.db), req.db.database ?? ""]
         return (
-            <TextField
-                size={"small"}
-                label={label}
-                variant={"standard"}
-                margin={"dense"}
-                onChange={onChange}
+            <AutocompleteFetch
+                keys={schema ? [...keys, schema] : keys}
+                onFetch={onFetch} label={label} margin={"dense"} variant={"standard"}
+                noOptionsText={`Select previous value`}
+                onUpdate={(v) => onChange(v || "")}
             />
         )
     }
