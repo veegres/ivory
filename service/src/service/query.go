@@ -55,10 +55,16 @@ func (s *QueryService) DatabasesQuery(clusterName string, db Database, name stri
 }
 
 func (s *QueryService) SchemasQuery(clusterName string, db Database, name string) ([]string, error) {
+	if db.Database == nil || *db.Database == "" {
+		return []string{}, nil
+	}
 	return s.getMany(clusterName, db, constant.GetAllSchemas, "%"+name+"%")
 }
 
 func (s *QueryService) TablesQuery(clusterName string, db Database, schema string, name string) ([]string, error) {
+	if db.Database == nil || *db.Database == "" || schema == "" {
+		return []string{}, nil
+	}
 	return s.getMany(clusterName, db, constant.GetAllTables, schema, "%"+name+"%")
 }
 
