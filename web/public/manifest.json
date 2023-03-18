@@ -3,9 +3,9 @@
   "name": "Ivory",
   "icons": [
     {
-      "src": "postgres.png",
+      "src": "ivory.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "243x243"
     }
   ],
   "start_url": ".",
