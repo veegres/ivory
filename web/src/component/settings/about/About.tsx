@@ -23,7 +23,7 @@ export function About() {
     return (
         <MenuWrapper>
             <MenuWrapperScroll sx={SX.scroll}>
-                <Box sx={SX.image}><img src={"/postgres.png"} width={200} height={200} alt={"Ivory"}/></Box>
+                <Box sx={SX.image}><img src={"/ivory.png"} width={200} height={200} alt={"Ivory"}/></Box>
                 <Box sx={SX.text}>
                     Ivory is an open-source project which is designed to simplify and visualize work with
                     postgres clusters.
