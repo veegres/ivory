@@ -29,13 +29,7 @@ export function ChartCommon(props: Props) {
     return (
         <>
             {common.data?.map((chart, index) => (
-                <ChartItem
-                    key={index}
-                    label={chart.name}
-                    value={chart.value}
-                    color={Color.RED}
-                    width={"250px"}
-                />
+                <ChartItem key={index} label={chart.name} value={chart.value} color={Color.INDIGO}/>
             ))}
         </>
     )

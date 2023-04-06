@@ -3,7 +3,9 @@ import {Box, Divider} from "@mui/material";
 import {ReactNode} from "react";
 
 const SX: SxPropsMap = {
-    row: {display: "flex", flexWrap: "wrap", justifyContent: "space-evenly", gap: 3},
+    row: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 3},
+    item: {display: "flex", gap: 1},
+    label: {fontWeight: "bold", color: "text.secondary"},
 }
 
 type Props = {
@@ -16,7 +18,12 @@ export function ChartRow(props: Props) {
 
     return (
         <>
-            {label && (<Box><Divider>{label}</Divider></Box>)}
+            {label && (
+                <Box sx={SX.item}>
+                    <Box sx={SX.label}>Stats for database:</Box>
+                    <Box>{label}</Box>
+                </Box>
+            )}
             <Box sx={SX.row}>
                 {children}
             </Box>

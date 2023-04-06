@@ -7,7 +7,7 @@ import {DatabaseBlock} from "../../view/DatabaseBlock";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 2},
-    info: {display: "flex", justifyContent: "center"},
+    info: {display: "flex"},
 }
 
 type Props = {
@@ -20,11 +20,13 @@ export function Chart(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <Box sx={SX.info}><DatabaseBlock db={db}/></Box>
+            <Box sx={SX.info}>
+                <DatabaseBlock db={db}/>
+            </Box>
             <ChartRow>
                 <ChartCommon cluster={cluster} db={db}/>
             </ChartRow>
-            <ChartRow label={db.database && `Database Chart: ${db.database}`}>
+            <ChartRow label={db.database && `${db.database}`}>
                 <ChartDatabase cluster={cluster} db={db}/>
             </ChartRow>
         </Box>
