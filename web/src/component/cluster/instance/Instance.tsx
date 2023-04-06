@@ -1,4 +1,4 @@
-import {Box} from "@mui/material";
+import {Box, Divider} from "@mui/material";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
@@ -28,6 +28,7 @@ export function Instance() {
         return (
             <Box sx={SX.content}>
                 <InstanceInfo instance={activeInstance} tab={tab} onTab={setTab}/>
+                <Divider orientation={"vertical"} flexItem/>
                 <InstanceMain tab={tab} database={activeInstance.database}/>
             </Box>
         )
