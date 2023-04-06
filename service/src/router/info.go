@@ -20,6 +20,10 @@ func (r *InfoRouter) Info(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": gin.H{
 		"company": r.env.Company,
 		"auth":    r.env.Auth,
-		"secret":  r.secretService.Status(),
+		"version": gin.H{
+			"tag":    r.env.Tag,
+			"commit": r.env.Commit,
+		},
+		"secret": r.secretService.Status(),
 	}})
 }

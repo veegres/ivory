@@ -25,6 +25,7 @@ export interface Sidecar {
 
 export interface AppInfo {
     company: string,
+    version: { tag: string, commit: string }
     secret: SecretStatus,
 }
 
