@@ -6,7 +6,7 @@ import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
-    tags: {position: "relative", height: 0, top: "-35px"},
+    tags: {position: "relative", height: 0, top: "-37px"},
 }
 
 export function ListTags() {

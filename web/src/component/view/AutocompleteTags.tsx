@@ -35,7 +35,7 @@ export function AutocompleteTags(props: Props) {
             loading={loading}
             options={options}
             value={value}
-            noOptionsText={"Start typing to add a tag"}
+            noOptionsText={"start typing to add a tag"}
             // NOTE: we need to check is option undefined, because after search when you remove tag it returns
             // undefined, probably this is a bag in mui library
             getOptionLabel={(option) => option?.label ?? ""}
