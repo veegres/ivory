@@ -18,7 +18,7 @@ type Props = {
     cluster: Cluster,
 }
 
-export function OverviewSettingsCert(props: Props) {
+export function OptionsCert(props: Props) {
     const { type, cluster } = props
     const certKey = keys[type]
     const certId = cluster.certs[certKey as keyof Certs] ?? ""

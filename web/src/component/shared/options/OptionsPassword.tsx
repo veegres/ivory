@@ -17,7 +17,7 @@ type Props = {
     cluster: Cluster
 }
 
-export function OverviewSettingsPassword(props: Props) {
+export function OptionsPassword(props: Props) {
     const { type, cluster } = props
     const passKey = keys[type]
     const passId = cluster.credentials[passKey as keyof Credentials] ?? ""

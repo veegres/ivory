@@ -11,7 +11,7 @@ import {InfoAlert} from "../../view/InfoAlert";
 import {PageBlock} from "../../view/PageBlock";
 import {useQuery} from "@tanstack/react-query";
 import {InfoOutlined, Settings, Warning} from "@mui/icons-material";
-import {OverviewSettings} from "./OverviewSettings";
+import {OverviewOptions} from "./OverviewOptions";
 import {InfoIcons} from "../../view/InfoIcons";
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
 import {orange, purple} from "@mui/material/colors";
@@ -180,7 +180,7 @@ export function Overview() {
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    <OverviewSettings info={activeCluster}/>
+                    <OverviewOptions info={activeCluster}/>
                 </Box>
             </Collapse>
         )
