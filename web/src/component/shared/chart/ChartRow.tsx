@@ -1,5 +1,5 @@
 import {SxPropsMap} from "../../../type/common";
-import {Box, Divider} from "@mui/material";
+import {Box} from "@mui/material";
 import {ReactNode} from "react";
 
 const SX: SxPropsMap = {
@@ -20,7 +20,7 @@ export function ChartRow(props: Props) {
         <>
             {label && (
                 <Box sx={SX.item}>
-                    <Box sx={SX.label}>Stats for database:</Box>
+                    <Box sx={SX.label}>Specific stats:</Box>
                     <Box>{label}</Box>
                 </Box>
             )}
