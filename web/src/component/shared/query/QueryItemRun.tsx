@@ -39,7 +39,7 @@ export function QueryItemRun(props: Props) {
     const pidIndex = data?.fields.findIndex(field => field.name === "pid") ?? -1
 
     return (
-        <Box sx={SX.box} className={scroll.tiny}>
+        <Box sx={SX.box} className={scroll.small}>
             <Table sx={SX.table} size={"small"} stickyHeader>
                 <TableHead>
                     {renderHead()}

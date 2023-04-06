@@ -1,5 +1,5 @@
 import {TableRow} from "@mui/material";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Cluster} from "../../../type/cluster";
 import {DynamicInputs} from "../../view/DynamicInputs";
 import {ListCellRead} from "./ListCellRead";
@@ -18,12 +18,15 @@ type Props = {
 export function ListRow(props: Props) {
     const {cluster, editable, toggle} = props
     const {name, instances} = cluster
-    const [stateNodes, setStateNodes] = useState(getDomains(instances))
 
+    const ref = useRef<HTMLTableRowElement | null>(null)
+    const [stateNodes, setStateNodes] = useState(getDomains(instances))
     const instanceDetection = useInstanceDetection(cluster, instances)
 
+    useEffect(handleEffectScroll, [instanceDetection.active])
+
     return (
-        <TableRow>
+        <TableRow ref={ref}>
             <ListCell>
                 <ListCellChip cluster={cluster} instanceDetection={instanceDetection}/>
             </ListCell>
@@ -51,4 +54,8 @@ export function ListRow(props: Props) {
             </ListCell>
         </TableRow>
     )
+
+    function handleEffectScroll() {
+        if (instanceDetection.active) ref.current?.scrollIntoView({block: "nearest"})
+    }
 }

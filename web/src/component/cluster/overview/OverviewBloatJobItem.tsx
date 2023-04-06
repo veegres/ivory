@@ -89,7 +89,7 @@ export function OverviewBloatJobItem({compactTable}: Props) {
                     <DynamicRowVirtualizer
                         sx={SX.logs}
                         auto={status.active && open}
-                        className={scroll.tiny}
+                        className={scroll.small}
                         sxVirtualRow={SX.row}
                         height={350}
                         rows={logs}

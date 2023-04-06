@@ -9,6 +9,13 @@
 /* ----- TINY ----- */
 
 .tiny::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+}
+
+/* ----- SMALL ----- */
+
+.small::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }

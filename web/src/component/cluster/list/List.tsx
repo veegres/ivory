@@ -7,7 +7,7 @@ import {useStore} from "../../../provider/StoreProvider";
 import {ListTable} from "./ListTable";
 
 export function List() {
-    const {store: {activeTags}} = useStore()
+    const {store: {activeTags, activeCluster}} = useStore()
     const tags = activeTags[0] === "ALL" ? undefined : activeTags
     const query = useQuery(["cluster/list"], () => clusterApi.list(tags))
     const {data, isLoading, isFetching, error} = query
@@ -20,7 +20,13 @@ export function List() {
     return (
         <PageBlock withMarginTop={"40px"}>
             <ListTags/>
-            <ListTable rows={rows} error={error} isFetching={isFetching} isLoading={isLoading}/>
+            <ListTable
+                rows={rows}
+                error={error}
+                isFetching={isFetching}
+                isLoading={isLoading}
+                selected={!!activeCluster}
+            />
         </PageBlock>
     )
 }
