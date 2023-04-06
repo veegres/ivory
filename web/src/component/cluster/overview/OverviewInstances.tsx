@@ -143,8 +143,8 @@ export function OverviewInstances({info}: TabProps) {
     function handleSwitchover(instance: Instance) {
         setAlertDialog({
             open: true,
-            title: `Switchover [${instance.sidecar.host}]`,
-            content: "Are you sure that you want to do Switchover? It will change the leader of your cluster.",
+            title: `Make a switchover of ${instance.sidecar.host}?`,
+            content: "It will change the leader of your cluster that will cause some downtime.",
             onAgree: () => switchover.mutate({
                 cluster: cluster.name,
                 host: instance.sidecar.host,
@@ -157,8 +157,8 @@ export function OverviewInstances({info}: TabProps) {
     function handleReinit(instance: Instance) {
         setAlertDialog({
             open: true,
-            title: `Reinitialization [${instance.sidecar.host}]`,
-            content: "Are you sure that you want to do Reinit? It will erase all node data and will download it from scratch.",
+            title: `Make a reinitialization of ${instance.sidecar.host}?`,
+            content: "It will erase all node data and will download it from scratch.",
             onAgree: () => reinit.mutate({
                 cluster: cluster.name,
                 host: instance.sidecar.host,

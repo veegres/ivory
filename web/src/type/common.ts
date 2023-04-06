@@ -62,3 +62,10 @@ export enum Settings {
     SECRET,
     ABOUT,
 }
+
+export interface Links {
+    [key: string]: {
+        name: string,
+        link: string,
+    }
+}

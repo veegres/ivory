@@ -14,9 +14,17 @@ import {darculaInit} from "@uiw/codemirror-theme-darcula";
 import {materialLightInit} from "@uiw/codemirror-theme-material";
 import {JobStatus} from "../type/bloat";
 import {PasswordType} from "../type/password";
-import {ColorsMap, EnumOptions, FileUsageType, Settings, Sidecar} from "../type/common";
+import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar} from "../type/common";
 import {CertType} from "../type/cert";
 import {Instance, InstanceMap} from "../type/Instance";
+
+export const IvoryLinks: Links = {
+    git: {name: "Github", link: "https://github.com/veegres/ivory"},
+    repository: {name: "Docker Hub", link: "https://hub.docker.com/r/aelsergeev/ivory"},
+    issues: {name: "Contribution & Issues", link: "https://github.com/veegres/ivory/issues"},
+    release: {name: "Releases", link: "https://github.com/veegres/ivory/releases"},
+    sponsorship: {name: "Sponsorship", link: "https://patreon.com/anselvo"}
+}
 
 export const InstanceColor: { [key: string]: string } = {
     master: green[500],
