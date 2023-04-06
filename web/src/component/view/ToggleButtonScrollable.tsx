@@ -1,17 +1,17 @@
 import {SxPropsMap} from "../../type/common";
-import {useTheme} from "../../provider/ThemeProvider";
 import {useRef, useState} from "react";
 import {Box, TabScrollButton, ToggleButton} from "@mui/material";
+import {useWindowScrolled} from "../../hook/WindowScrolled";
 
 const ALL = "ALL"
 const SCROLL_OFFSET = 100
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", whiteSpace: "nowrap"},
-    arrow: {width: "30px", height: "35px"},
+    arrow: {width: "30px", height: "35px", borderRadius: "5px", margin: "0 3px"},
     group: {display: "flex", flexGrow: 1, padding: "0 5px", overflow: "hidden", scrollBehavior: "smooth", gap: 1},
     all: {display: "flex", alignItems: "center", marginRight: "5px"},
     count: {display: "flex", alignItems: "center", marginLeft: "5px"},
-    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1.1"},
+    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1.1", border: "1px solid", borderColor: "divider"},
 }
 
 type Props = {
@@ -21,9 +21,9 @@ type Props = {
 }
 
 export function ToggleButtonScrollable(props: Props) {
-    const { tags, onUpdate } = props
-    const { info } = useTheme()
+    const {tags, onUpdate} = props
     const scrollRef = useRef<Element>(null)
+    const [scrolled, elements] = useWindowScrolled(scrollRef.current, tags)
     const [selected, setSelected] = useState(new Set([ALL, ...(props.selected ?? [])]))
 
     const isAll = selected.has(ALL)
@@ -35,17 +35,19 @@ export function ToggleButtonScrollable(props: Props) {
                 sx={SX.arrow}
                 direction={"left"}
                 orientation={"horizontal"}
+                disabled={!scrolled}
                 onClick={() => handleScroll(-SCROLL_OFFSET)}
             />
             <Box sx={SX.all}>{renderButton(ALL, isAll, handleClickAll)}</Box>
             <Box ref={scrollRef} sx={SX.group}>
-                {tags.map(tag => renderButton(tag, selected.has(tag), handleClick))}
+                {elements.map(tag => renderButton(tag, selected.has(tag), handleClick))}
             </Box>
             <Box sx={SX.count}>{renderButton(count, !isAll)}</Box>
             <TabScrollButton
                 sx={SX.arrow}
                 direction={"right"}
                 orientation={"horizontal"}
+                disabled={!scrolled}
                 onClick={() => handleScroll(SCROLL_OFFSET)}
             />
         </Box>
@@ -54,7 +56,7 @@ export function ToggleButtonScrollable(props: Props) {
     function renderButton(tag: string, selected: boolean, onClick?: (value: string) => void) {
         return (
             <ToggleButton
-                sx={{...SX.element, border: `1px solid ${info?.palette.divider}`}}
+                sx={SX.element}
                 color={"secondary"}
                 size={"small"}
                 key={tag}

@@ -19,7 +19,7 @@ export function Footer(props: Props) {
         <Box sx={SX.box}>
             <Box sx={SX.links}>
                 {Object.values(IvoryLinks).map(({name, link}) => (
-                    <Link href={link} target={"_blank"} rel={"noopener"} underline={"hover"} color={"inherit"}>
+                    <Link key={name} href={link} target={"_blank"} rel={"noopener"} underline={"hover"} color={"inherit"}>
                         {name}
                     </Link>
                 ))}

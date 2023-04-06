@@ -24,7 +24,7 @@ export function About() {
                 </Box>
                 <MenuItemBox name={"Links"}>
                     {Object.values(IvoryLinks).map(({name, link}) => (
-                        <MenuItemText title={name} button={renderLink(link)}/>
+                        <MenuItemText key={name} title={name} button={renderLink(link)}/>
                     ))}
                 </MenuItemBox>
             </MenuWrapperScroll>

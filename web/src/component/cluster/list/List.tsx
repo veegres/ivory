@@ -18,7 +18,7 @@ export function List() {
     useEffect(() => { query.refetch().then() }, [tags])
 
     return (
-        <PageBlock withMarginTop={"35px"}>
+        <PageBlock withMarginTop={"40px"}>
             <ListTags/>
             <ListTable rows={rows} error={error} isFetching={isFetching} isLoading={isLoading}/>
         </PageBlock>
