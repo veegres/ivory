@@ -25,7 +25,7 @@ type Props = {
     detection: DetectionType
 }
 
-export function OverviewSettingsInstance(props: Props) {
+export function OverviewOptionsInstance(props: Props) {
     const {setClusterInstance, setClusterDetection} = useStore()
     const {instance, instances, detection} = props
     const [inputValue, setInputValue] = useState<string | undefined>(instance);

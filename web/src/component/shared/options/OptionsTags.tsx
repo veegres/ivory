@@ -8,7 +8,7 @@ type Props = {
     cluster: Cluster
 }
 
-export function OverviewSettingsTags(props: Props) {
+export function OptionsTags(props: Props) {
     const query = useQuery(["tag/list"], tagApi.list)
     const {data, isLoading} = query
     const tags = data ?? [];
