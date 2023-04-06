@@ -1,21 +1,28 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
+import {SxPropsMap} from "../../type/common";
 
-type Props = { open: boolean, title: string, content: string, onAgree: () => void, onClose: () => void }
+const SX: SxPropsMap = {
+    dialog: {minWidth: "1010px"},
+    content: {width: "500px"},
+}
+
+type Props = {
+    open: boolean,
+    title: string,
+    content: string,
+    onAgree: () => void,
+    onClose: () => void
+}
 
 export function AlertDialog(props: Props) {
     const {open, content, title, onAgree, onClose} = props
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-        >
-            <DialogTitle id="alert-dialog-title">
+        <Dialog sx={SX.dialog} open={open} onClose={onClose}>
+            <DialogTitle>
                 {title}
             </DialogTitle>
-            <DialogContent>
-                <DialogContentText id="alert-dialog-description">
+            <DialogContent sx={SX.content}>
+                <DialogContentText>
                     {content}
                 </DialogContentText>
             </DialogContent>

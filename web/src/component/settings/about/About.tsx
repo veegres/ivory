@@ -1,22 +1,16 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
-import {Box, Divider, IconButton} from "@mui/material";
+import {Box, IconButton} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {MenuItemBox} from "../menu/MenuItemBox";
 import {MenuItemText} from "../menu/MenuItemText";
 import {OpenInNew} from "@mui/icons-material";
+import {IvoryLinks} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0 15px", gap: 3},
     image: {display: "flex", justifyContent: "center"},
     text: {fontSize: 14},
-}
-
-const links = {
-    git: "https://github.com/veegres/ivory",
-    repository: "https://hub.docker.com/r/aelsergeev/ivory",
-    issues: "https://github.com/veegres/ivory/issues",
-    release: "https://github.com/veegres/ivory/releases",
 }
 
 export function About() {
@@ -29,13 +23,9 @@ export function About() {
                     postgres clusters.
                 </Box>
                 <MenuItemBox name={"Links"}>
-                    <MenuItemText title={"GitHub"} button={renderLink(links.git)}/>
-                    <Divider/>
-                    <MenuItemText title={"Docker Hub"} button={renderLink(links.repository)}/>
-                    <Divider/>
-                    <MenuItemText title={"Contribution & Issues"} button={renderLink(links.issues)}/>
-                    <Divider/>
-                    <MenuItemText title={"Releases"} button={renderLink(links.release)}/>
+                    {Object.values(IvoryLinks).map(({name, link}) => (
+                        <MenuItemText title={name} button={renderLink(link)}/>
+                    ))}
                 </MenuItemBox>
             </MenuWrapperScroll>
         </MenuWrapper>
