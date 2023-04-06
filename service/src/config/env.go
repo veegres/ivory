@@ -8,6 +8,8 @@ import (
 type Env struct {
 	Company  string
 	Auth     string
+	Tag      string
+	Commit   string
 	Username *string
 	Password *string
 }
@@ -21,6 +23,14 @@ func NewEnv() *Env {
 	auth := "none"
 	if val, ok := os.LookupEnv("IVORY_AUTHENTICATION"); ok {
 		auth = val
+	}
+	tag := "none"
+	if val, ok := os.LookupEnv("IVORY_VERSION_TAG"); ok {
+		tag = val
+	}
+	commit := "none"
+	if val, ok := os.LookupEnv("IVORY_VERSION_COMMIT"); ok {
+		commit = val
 	}
 	var user *string
 	if val, ok := os.LookupEnv("IVORY_BASIC_USER"); ok {
@@ -46,6 +56,8 @@ func NewEnv() *Env {
 	return &Env{
 		Company:  company,
 		Auth:     auth,
+		Tag:      tag,
+		Commit:   commit,
 		Username: user,
 		Password: password,
 	}

@@ -26,7 +26,7 @@ export function App() {
                     <Menu/>
                 </Box>
                 <Box>
-                    <Footer/>
+                    <Footer tag={info.data?.version.tag ?? "none"} commit={info.data?.version.commit ?? "none"}/>
                 </Box>
             </Box>
     );

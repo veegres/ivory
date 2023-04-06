@@ -20,8 +20,9 @@ import {Instance, InstanceMap} from "../type/Instance";
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
-    repository: {name: "Docker Hub", link: "https://hub.docker.com/r/aelsergeev/ivory"},
-    issues: {name: "Contribution & Issues", link: "https://github.com/veegres/ivory/issues"},
+    docs: {name: "Docs", link: "https://github.com/veegres/ivory/blob/master/README.md"},
+    repository: {name: "Repository", link: "https://hub.docker.com/r/aelsergeev/ivory"},
+    issues: {name: "Issues", link: "https://github.com/veegres/ivory/issues"},
     release: {name: "Releases", link: "https://github.com/veegres/ivory/releases"},
     sponsorship: {name: "Sponsorship", link: "https://patreon.com/anselvo"}
 }
