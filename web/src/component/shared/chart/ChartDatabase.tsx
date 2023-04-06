@@ -30,13 +30,7 @@ export function ChartDatabase(props: Props) {
     return (
         <>
             {database.data?.map((chart, index) => (
-                <ChartItem
-                    key={index}
-                    label={chart.name}
-                    value={chart.value}
-                    color={Color.DEEP_PURPLE}
-                    width={"200px"}
-                />
+                <ChartItem key={index} label={chart.name} value={chart.value} color={Color.DEEP_PURPLE}/>
             ))}
         </>
     )

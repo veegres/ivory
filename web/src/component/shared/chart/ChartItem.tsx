@@ -8,7 +8,7 @@ const SX: SxPropsMap = {
     box: {
         display: "flex", flexDirection: "column", justifyContent: "center",
         alignItems: "center", color: "common.white", borderRadius: "5px",
-        whiteSpace: "nowrap", padding: "20px 40px",
+        whiteSpace: "nowrap", padding: "20px 40px", flexGrow: 1,
     },
     label: {fontSize: "13px", textTransform: "uppercase"},
     value: {fontSize: "30px", fontWeight: "bold"},
@@ -18,7 +18,7 @@ export enum Color {
     RED, PINK, PURPLE, DEEP_PURPLE, INDIGO, BLUE, CYAN,
     GREEN, ORANGE, DEEP_ORANGE, BROWN, BLUE_GREY
 }
-const colorContrast = 500
+const colorContrast = 400
 const colors: {[key in Color]: string} = {
     [Color.RED]: red[colorContrast],
     [Color.PINK]: pink[colorContrast],
@@ -43,7 +43,7 @@ type Props = {
 
 export function ChartItem(props: Props) {
     const {value, label, color, width} = props
-    const w = width ? width : "200px", h = "100px"
+    const w = width ? width : "150px", h = "100px"
 
     const bg = color !== undefined ? colors[color] : colors[Math.floor(Math.random() * Object.keys(colors).length) as Color]
 
