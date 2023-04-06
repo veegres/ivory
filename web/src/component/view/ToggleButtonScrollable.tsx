@@ -1,6 +1,6 @@
 import {SxPropsMap} from "../../type/common";
 import {useRef, useState} from "react";
-import {Box, TabScrollButton, ToggleButton} from "@mui/material";
+import {Box, TabScrollButton, ToggleButton, Tooltip} from "@mui/material";
 import {useWindowScrolled} from "../../hook/WindowScrolled";
 
 const ALL = "ALL"
@@ -42,7 +42,11 @@ export function ToggleButtonScrollable(props: Props) {
             <Box ref={scrollRef} sx={SX.group}>
                 {elements.map(tag => renderButton(tag, selected.has(tag), handleClick))}
             </Box>
-            <Box sx={SX.count}>{renderButton(count, !isAll)}</Box>
+            <Box sx={SX.count}>
+                <Tooltip title={"Selected tags"} placement={"top"}>
+                    <span>{renderButton(count, !isAll)}</span>
+                </Tooltip>
+            </Box>
             <TabScrollButton
                 sx={SX.arrow}
                 direction={"right"}

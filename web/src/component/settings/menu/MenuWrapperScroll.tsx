@@ -16,7 +16,7 @@ type Props = {
 export function MenuWrapperScroll(props: Props) {
     const {sx, children} = props
     return (
-        <Box sx={mergeSxProps(SX.box, sx)} className={scroll.tiny}>
+        <Box sx={mergeSxProps(SX.box, sx)} className={scroll.small}>
             {children}
         </Box>
     )
