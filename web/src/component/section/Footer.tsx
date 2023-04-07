@@ -3,7 +3,7 @@ import {SxPropsMap} from "../../type/common";
 import {IvoryLinks, shortUuid} from "../../app/utils";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", fontFamily: "monospace", padding: "10px 20px", gap: 1},
+    box: {display: "flex", flexDirection: "column", fontFamily: "monospace", margin: "20px 20px 10px", gap: 1},
     links: {display: "flex", justifyContent: "center", gap: 3, fontSize: "12px"},
     version: {display: "flex", justifyContent: "center", color: "text.disabled", fontSize: "8px"},
 }

@@ -9,8 +9,8 @@ const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", whiteSpace: "nowrap"},
     arrow: {width: "30px", height: "35px", borderRadius: "5px", margin: "0 3px"},
     group: {display: "flex", flexGrow: 1, padding: "0 5px", overflow: "hidden", scrollBehavior: "smooth", gap: 1},
-    all: {display: "flex", alignItems: "center", marginRight: "5px"},
-    count: {display: "flex", alignItems: "center", marginLeft: "5px"},
+    all: {display: "flex", alignItems: "center", marginRight: "5px", lineHeight: "1.1"},
+    count: {display: "flex", alignItems: "center", marginLeft: "5px", lineHeight: "1.1"},
     element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1.1", border: "1px solid", borderColor: "divider"},
 }
 
@@ -43,7 +43,7 @@ export function ToggleButtonScrollable(props: Props) {
                 {elements.map(tag => renderButton(tag, selected.has(tag), handleClick))}
             </Box>
             <Box sx={SX.count}>
-                <Tooltip title={"Selected tags"} placement={"top"}>
+                <Tooltip title={"Selected"} placement={"top"}>
                     <span>{renderButton(count, !isAll)}</span>
                 </Tooltip>
             </Box>
