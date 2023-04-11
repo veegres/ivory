@@ -7,7 +7,7 @@ import {ErrorAlert} from "../../view/box/ErrorAlert";
 import {useState} from "react";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
-import {DatabaseBox} from "../../view/./box/DatabaseBox";
+import {DatabaseBox} from "../../view/box/DatabaseBox";
 import {QueryNew} from "./QueryNew";
 import {Add} from "@mui/icons-material";
 

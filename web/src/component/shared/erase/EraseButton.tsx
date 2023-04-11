@@ -4,7 +4,7 @@ import {infoApi} from "../../../app/api";
 import {useStore} from "../../../provider/StoreProvider";
 import {LoadingButton} from "@mui/lab";
 import {useState} from "react";
-import {AlertDialog} from "../../view/./dialog/AlertDialog";
+import {AlertDialog} from "../../view/dialog/AlertDialog";
 
 export function EraseButton() {
     const {clear} = useStore()

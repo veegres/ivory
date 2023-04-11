@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {certApi, clusterApi} from "../../../app/api";
-import {AutocompleteUuid, Option} from "../../view/././autocomplete/AutocompleteUuid";
+import {AutocompleteUuid, Option} from "../../view/autocomplete/AutocompleteUuid";
 import {CertOptions, shortUuid} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {CertType} from "../../../type/cert";

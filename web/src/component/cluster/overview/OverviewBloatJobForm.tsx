@@ -8,7 +8,7 @@ import {SxPropsMap} from "../../../type/common";
 import {Instance} from "../../../type/Instance";
 import {Cluster} from "../../../type/cluster";
 import {Bloat, BloatTarget} from "../../../type/bloat";
-import {AutocompleteFetch} from "../../view/././autocomplete/AutocompleteFetch";
+import {AutocompleteFetch} from "../../view/autocomplete/AutocompleteFetch";
 import {getDomain} from "../../../app/utils";
 
 const SX: SxPropsMap = {

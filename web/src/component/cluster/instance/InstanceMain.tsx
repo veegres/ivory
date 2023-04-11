@@ -7,7 +7,7 @@ import {Chart} from "../../shared/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";
 import {useState} from "react";
 import {queryApi} from "../../../app/api";
-import {AutocompleteFetch} from "../../view/././autocomplete/AutocompleteFetch";
+import {AutocompleteFetch} from "../../view/autocomplete/AutocompleteFetch";
 import {useStore} from "../../../provider/StoreProvider";
 import {getDomain} from "../../../app/utils";
 
