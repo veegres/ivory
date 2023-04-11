@@ -1,5 +1,5 @@
-import {PageBlock} from "../view/PageBlock";
-import {ErrorAlert} from "../view/ErrorAlert";
+import {PageBox} from "../view/box/PageBox";
+import {ErrorAlert} from "../view/box/ErrorAlert";
 import {Skeleton, Stack} from "@mui/material";
 import {StartupInitial} from "../startup/StartupInitial";
 import {StartupSecondary} from "../startup/StartupSecondary";
@@ -37,7 +37,7 @@ export function Body(props: Props) {
     function renderError(error: any) {
         return (
             <Stack sx={SX.stack}>
-                <PageBlock><ErrorAlert error={error}/></PageBlock>
+                <PageBox><ErrorAlert error={error}/></PageBox>
             </Stack>
         )
     }
@@ -54,9 +54,9 @@ export function Body(props: Props) {
 
     function renderSkeleton() {
         return (
-            <PageBlock>
+            <PageBox>
                 <Skeleton variant={"rectangular"} width={"100%"} height={200} />
-            </PageBlock>
+            </PageBox>
         )
     }
 }

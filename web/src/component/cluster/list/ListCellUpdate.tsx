@@ -1,4 +1,4 @@
-import {CancelIconButton, SaveIconButton} from "../../view/IconButtons";
+import {CancelIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {useMutation} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {Box} from "@mui/material";

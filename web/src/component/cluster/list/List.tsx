@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {useEffect, useMemo} from "react";
-import {PageBlock} from "../../view/PageBlock";
+import {PageBox} from "../../view/box/PageBox";
 import {ListTags} from "./ListTags";
 import {useStore} from "../../../provider/StoreProvider";
 import {ListTable} from "./ListTable";
@@ -18,7 +18,7 @@ export function List() {
     useEffect(() => { query.refetch().then() }, [tags])
 
     return (
-        <PageBlock withMarginTop={"40px"}>
+        <PageBox withMarginTop={"40px"}>
             <ListTags/>
             <ListTable
                 rows={rows}
@@ -27,6 +27,6 @@ export function List() {
                 isLoading={isLoading}
                 selected={!!activeCluster}
             />
-        </PageBlock>
+        </PageBox>
     )
 }

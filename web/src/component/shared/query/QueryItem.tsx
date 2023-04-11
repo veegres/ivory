@@ -5,7 +5,7 @@ import {
     EditIconButton,
     PlayIconButton,
     RestoreIconButton
-} from "../../view/IconButtons";
+} from "../../view/button/IconButtons";
 import {useTheme} from "../../../provider/ThemeProvider";
 import {useState} from "react";
 import {QueryItemInfo} from "./QueryItemInfo";

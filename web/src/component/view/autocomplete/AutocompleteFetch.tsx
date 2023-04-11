@@ -1,7 +1,7 @@
 import {Autocomplete, AutocompleteRenderInputParams, TextField} from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
 import {useState} from "react";
-import {useDebounce} from "../../hook/Debounce";
+import {useDebounce} from "../../../hook/Debounce";
 
 type Props = {
     keys: string[],

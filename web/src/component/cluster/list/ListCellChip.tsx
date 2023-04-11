@@ -1,8 +1,8 @@
 import {Box, Chip, Tooltip} from "@mui/material";
-import {RefreshIconButton} from "../../view/IconButtons";
+import {RefreshIconButton} from "../../view/button/IconButtons";
 import {grey, orange, purple} from "@mui/material/colors";
 import {getDomain, InstanceColor} from "../../../app/utils";
-import {InfoTitle} from "../../view/InfoTitle";
+import {InfoTitle} from "../../view/box/InfoTitle";
 import {useStore} from "../../../provider/StoreProvider";
 import {Cluster, InstanceDetection} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";

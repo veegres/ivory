@@ -3,7 +3,7 @@ import {useMemo} from "react";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, passwordApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {AutocompleteUuid, Option} from "../../view/AutocompleteUuid";
+import {AutocompleteUuid, Option} from "../../view/././autocomplete/AutocompleteUuid";
 import {PasswordType} from "../../../type/password";
 import {Cluster, Credentials} from "../../../type/cluster";
 

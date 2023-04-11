@@ -1,4 +1,4 @@
-import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../view/IconButtons";
+import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {useEffect, useState} from "react";
 import {Password} from "../../../type/password";
 import {useMutation} from "@tanstack/react-query";

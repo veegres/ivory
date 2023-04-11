@@ -2,7 +2,7 @@ import {Grid, Skeleton} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useTheme} from "../../../provider/ThemeProvider";
-import {ErrorAlert} from "../../view/ErrorAlert";
+import {ErrorAlert} from "../../view/box/ErrorAlert";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
@@ -11,7 +11,7 @@ import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {CodeThemes} from "../../../app/utils";
-import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../view/IconButtons";
+import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../view/button/IconButtons";
 
 export function OverviewConfig({info}: TabProps) {
     const theme = useTheme();

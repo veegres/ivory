@@ -3,11 +3,11 @@ import {Box, Collapse, Skeleton, ToggleButton, Tooltip} from "@mui/material";
 import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/ErrorAlert";
+import {ErrorAlert} from "../../view/box/ErrorAlert";
 import {useState} from "react";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
-import {DatabaseBlock} from "../../view/DatabaseBlock";
+import {DatabaseBox} from "../../view/./box/DatabaseBox";
 import {QueryNew} from "./QueryNew";
 import {Add} from "@mui/icons-material";
 
@@ -37,7 +37,7 @@ export function Query(props: Props) {
     return (
         <Box style={style.box}>
             <Box sx={SX.info}>
-                <DatabaseBlock db={db}/>
+                <DatabaseBox db={db}/>
                 <ToggleButton sx={SX.toggle} value={"add"} size={"small"} selected={show} onClick={() => setShow(!show)}>
                     <Tooltip title={"New Custom Query"} placement={"top"}>
                         <Add/>

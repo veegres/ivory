@@ -6,8 +6,8 @@ import {Settings, SxPropsMap} from "../../../type/common";
 import {SettingOptions} from "../../../app/utils";
 import {Credentials} from "../credentials/Credentials";
 import {Certs} from "../certs/Certs";
-import {InfoAlert} from "../../view/InfoAlert";
-import {BackIconButton, CloseIconButton} from "../../view/IconButtons";
+import {InfoAlert} from "../../view/box/InfoAlert";
+import {BackIconButton, CloseIconButton} from "../../view/button/IconButtons";
 import {About} from "../about/About";
 import {Secret} from "../secret/Secret";
 

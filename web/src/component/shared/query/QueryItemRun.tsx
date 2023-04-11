@@ -1,10 +1,10 @@
 import {Box, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
-import {ErrorAlert} from "../../view/ErrorAlert";
-import {TableBody} from "../../view/TableBody";
+import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {TableBody} from "../../view/table/TableBody";
 import scroll from "../../../style/scroll.module.css"
 import {QueryRunResponse} from "../../../type/query";
-import {CancelIconButton, TerminateIconButton} from "../../view/IconButtons";
+import {CancelIconButton, TerminateIconButton} from "../../view/button/IconButtons";
 
 const SX: SxPropsMap = {
     // we need this box margin and table padding to see table border when scroll appears

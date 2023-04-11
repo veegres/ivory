@@ -1,4 +1,4 @@
-import {Database, SxPropsMap} from "../../type/common";
+import {Database, SxPropsMap} from "../../../type/common";
 import {Box} from "@mui/material";
 
 const SX: SxPropsMap = {
@@ -12,7 +12,7 @@ type Props = {
     db: Database,
 }
 
-export function DatabaseBlock(props: Props) {
+export function DatabaseBox(props: Props) {
     const {db} = props
 
     return (

@@ -1,4 +1,4 @@
-import {UploadButton} from "../../view/UploadButton";
+import {UploadButton} from "../../view/button/UploadButton";
 import {useState} from "react";
 import {getErrorMessage} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";

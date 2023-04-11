@@ -1,5 +1,5 @@
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../type/common";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     row: { display: "flex", gap: 1, justifyContent: "space-between", margin: "3px 0" },

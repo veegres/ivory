@@ -1,6 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/ErrorAlert";
+import {ErrorAlert} from "../../view/box/ErrorAlert";
 import {ChartItem, Color} from "./ChartItem";
 import {Database, SxPropsMap} from "../../../type/common";
 import {ChartLoading} from "./ChartLoading";

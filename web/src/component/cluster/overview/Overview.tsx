@@ -7,16 +7,16 @@ import {
 import {useState} from "react";
 import {useStore} from "../../../provider/StoreProvider";
 import {OverviewBloat} from "./OverviewBloat";
-import {InfoAlert} from "../../view/InfoAlert";
-import {PageBlock} from "../../view/PageBlock";
+import {InfoAlert} from "../../view/box/InfoAlert";
+import {PageBox} from "../../view/box/PageBox";
 import {useQuery} from "@tanstack/react-query";
 import {InfoOutlined, Settings, Warning} from "@mui/icons-material";
 import {OverviewOptions} from "./OverviewOptions";
-import {InfoIcons} from "../../view/InfoIcons";
+import {InfoIcons} from "../../view/box/InfoIcons";
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
 import {orange, purple} from "@mui/material/colors";
-import {InfoBox} from "../../view/InfoBox";
-import {InfoTitle} from "../../view/InfoTitle";
+import {InfoBox} from "../../view/./box/InfoBox";
+import {InfoTitle} from "../../view/box/InfoTitle";
 import {SxPropsMap} from "../../../type/common";
 import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../type/cluster";
 import { PasswordType } from "../../../type/password";
@@ -80,7 +80,7 @@ export function Overview() {
     const tab = TABS[activeClusterTab]
 
     return (
-        <PageBlock withPadding visible={Object.keys(clusters.data ?? {}).length !== 0}>
+        <PageBox withPadding visible={Object.keys(clusters.data ?? {}).length !== 0}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
                     {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label}/>))}
@@ -92,7 +92,7 @@ export function Overview() {
                 <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
                 <Box sx={SX.rightMainBlock}>{renderSettingsBlock()}</Box>
             </Box>
-        </PageBlock>
+        </PageBox>
     )
 
     function renderMainBlock() {
