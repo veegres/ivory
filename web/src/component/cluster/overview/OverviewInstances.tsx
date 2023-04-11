@@ -4,7 +4,7 @@ import {instanceApi} from "../../../app/api";
 import {useMemo, useState} from "react";
 import {TableCellLoader} from "../../view/table/TableCellLoader";
 import {InstanceColor} from "../../../app/utils";
-import {AlertDialog} from "../../view/./dialog/AlertDialog";
+import {AlertDialog} from "../../view/dialog/AlertDialog";
 import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
 import {Warning} from "@mui/icons-material";

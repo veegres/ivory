@@ -3,7 +3,7 @@ import {Box} from "@mui/material";
 import {ChartRow} from "./ChartRow";
 import {ChartCommon} from "./ChartCommon";
 import {ChartDatabase} from "./ChartDatabase";
-import {DatabaseBox} from "../../view/./box/DatabaseBox";
+import {DatabaseBox} from "../../view/box/DatabaseBox";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 2},

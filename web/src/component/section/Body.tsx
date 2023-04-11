@@ -18,7 +18,7 @@ type Props = {
 }
 
 export function Body(props: Props) {
-    const { isError, isLoading, data, error } = props.info
+    const {isError, isLoading, data, error} = props.info
 
     if (isLoading) return renderLoading()
     if (isError) return renderError(error)

@@ -15,7 +15,7 @@ import {OverviewOptions} from "./OverviewOptions";
 import {InfoIcons} from "../../view/box/InfoIcons";
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
 import {orange, purple} from "@mui/material/colors";
-import {InfoBox} from "../../view/./box/InfoBox";
+import {InfoBox} from "../../view/box/InfoBox";
 import {InfoTitle} from "../../view/box/InfoTitle";
 import {SxPropsMap} from "../../../type/common";
 import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../type/cluster";
@@ -39,7 +39,7 @@ const SX: SxPropsMap = {
 
 const TABS: ClusterTabs = {
     0: {
-        label: "Instances",
+        label: "Overview",
         body: (cluster: ActiveCluster) => <OverviewInstances info={cluster}/>,
     },
     1: {
@@ -96,7 +96,7 @@ export function Overview() {
     )
 
     function renderMainBlock() {
-        if (!activeCluster) return <InfoAlert text={"Please, select a cluster to see the information!"}/>
+        if (!activeCluster) return <InfoAlert text={"Please, select a cluster to see the overview! (click on the name)"}/>
         if (!tab) return <InfoAlert text={"Coming soon — we're working on it!"}/>
         return tab.body(activeCluster)
     }

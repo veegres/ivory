@@ -9,7 +9,7 @@ import {queryApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
 import {QueryType} from "../../../type/query";
 import {InfoOutlined} from "@mui/icons-material";
-import {InfoBox} from "../../view/./box/InfoBox";
+import {InfoBox} from "../../view/box/InfoBox";
 
 const SX: SxPropsMap = {
     body: {display: "flex", flexDirection: "column", gap: 1, marginBottom: "8px", padding: "10px 15px"},
