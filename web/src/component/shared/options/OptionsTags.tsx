@@ -1,4 +1,4 @@
-import {AutocompleteTags} from "../../view/AutocompleteTags";
+import {AutocompleteTags} from "../../view/././autocomplete/AutocompleteTags";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {clusterApi, tagApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";

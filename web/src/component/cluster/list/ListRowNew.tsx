@@ -1,5 +1,5 @@
 import {FormControl, OutlinedInput, TableRow} from "@mui/material";
-import {DynamicInputs} from "../../view/DynamicInputs";
+import {DynamicInputs} from "../../view/./input/DynamicInputs";
 import {useState} from "react";
 import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";

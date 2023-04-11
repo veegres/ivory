@@ -1,4 +1,4 @@
-import {ToggleButtonScrollable} from "../../view/ToggleButtonScrollable";
+import {ToggleButtonScrollable} from "../../view/scrolling/ToggleButtonScrollable";
 import {useQuery} from "@tanstack/react-query";
 import {tagApi} from "../../../app/api";
 import {useStore} from "../../../provider/StoreProvider";

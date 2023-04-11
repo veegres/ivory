@@ -1,13 +1,13 @@
 import {Box, CircularProgress, Divider, Grid, IconButton, Paper, Tooltip} from "@mui/material";
 import {cloneElement, ReactElement, useState} from "react";
-import {OpenIcon} from "../../view/OpenIcon";
+import {OpenIcon} from "../../view/icon/OpenIcon";
 import {Clear, Stop} from "@mui/icons-material";
 import {useMutation} from "@tanstack/react-query";
 import {bloatApi} from "../../../app/api";
 import {shortUuid} from "../../../app/utils";
-import {LinearProgressStateful} from "../../view/LinearProgressStateful";
+import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 import scroll from "../../../style/scroll.module.css"
-import {DynamicRowVirtualizer} from "../../view/DynamicRowVirtualizer";
+import {DynamicRowVirtualizer} from "../../view/scrolling/DynamicRowVirtualizer";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useEventJob} from "../../../hook/EventJob";
 import {SxPropsMap} from "../../../type/common";

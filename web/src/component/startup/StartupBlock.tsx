@@ -3,7 +3,7 @@ import {ReactNode, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {infoApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";
-import {LinearProgressStateful} from "../view/LinearProgressStateful";
+import {LinearProgressStateful} from "../view/progress/LinearProgressStateful";
 import select from "../../style/select.module.css";
 import {SxPropsMap} from "../../type/common";
 

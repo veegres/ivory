@@ -1,12 +1,12 @@
 import {useQuery} from "@tanstack/react-query";
 import {passwordApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/ErrorAlert";
+import {ErrorAlert} from "../../view/box/ErrorAlert";
 import {Password} from "../../../type/password";
-import {InfoAlert} from "../../view/InfoAlert";
+import {InfoAlert} from "../../view/box/InfoAlert";
 import {Collapse} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {CredentialsItem} from "./CredentialsItem";
-import {LinearProgressStateful} from "../../view/LinearProgressStateful";
+import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
 
 export function CredentialsList() {

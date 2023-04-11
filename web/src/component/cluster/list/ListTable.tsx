@@ -1,12 +1,12 @@
-import {ErrorAlert} from "../../view/ErrorAlert";
+import {ErrorAlert} from "../../view/box/ErrorAlert";
 import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material";
-import {TableCellLoader} from "../../view/TableCellLoader";
-import {TableBody} from "../../view/TableBody";
+import {TableCellLoader} from "../../view/table/TableCellLoader";
+import {TableBody} from "../../view/table/TableBody";
 import {ListRowNew} from "./ListRowNew";
 import {ListRow} from "./ListRow";
 import {useState} from "react";
-import {InfoAlert} from "../../view/InfoAlert";
-import {AddIconButton, AutoIconButton} from "../../view/IconButtons";
+import {InfoAlert} from "../../view/box/InfoAlert";
+import {AddIconButton, AutoIconButton} from "../../view/button/IconButtons";
 import {Cluster} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";
 import scroll from "../../../style/scroll.module.css"

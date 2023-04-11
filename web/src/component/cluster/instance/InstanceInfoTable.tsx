@@ -1,5 +1,5 @@
 import {Table, TableCell, TableRow} from "@mui/material";
-import {TableBody} from "../../view/TableBody";
+import {TableBody} from "../../view/table/TableBody";
 import {SxPropsMap} from "../../../type/common";
 import {Instance} from "../../../type/Instance";
 

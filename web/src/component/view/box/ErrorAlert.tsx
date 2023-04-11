@@ -1,8 +1,8 @@
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material";
 import {useState} from "react";
 import {AxiosError} from "axios";
-import {StylePropsMap} from "../../type/common";
-import {OpenIcon} from "./OpenIcon";
+import {StylePropsMap} from "../../../type/common";
+import {OpenIcon} from "../icon/OpenIcon";
 
 const style: StylePropsMap = {
     jsonInput: {padding: '10px 0px', whiteSpace: 'pre-wrap'}

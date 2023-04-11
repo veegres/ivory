@@ -2,7 +2,7 @@ import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@m
 import {useQuery} from "@tanstack/react-query";
 import {bloatApi, queryApi} from "../../../app/api";
 import {useState} from "react";
-import {LinearProgressStateful} from "../../view/LinearProgressStateful";
+import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 import {TabProps} from "./Overview";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
 import {OverviewBloatJob} from "./OverviewBloatJob";

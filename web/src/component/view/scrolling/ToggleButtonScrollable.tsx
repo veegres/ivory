@@ -1,7 +1,7 @@
-import {SxPropsMap} from "../../type/common";
+import {SxPropsMap} from "../../../type/common";
 import {useRef, useState} from "react";
 import {Box, TabScrollButton, ToggleButton, Tooltip} from "@mui/material";
-import {useWindowScrolled} from "../../hook/WindowScrolled";
+import {useWindowScrolled} from "../../../hook/WindowScrolled";
 
 const ALL = "ALL"
 const SCROLL_OFFSET = 100

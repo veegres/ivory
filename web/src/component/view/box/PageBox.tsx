@@ -1,6 +1,6 @@
 import {Box, Paper} from "@mui/material";
 import {ReactNode} from "react";
-import {SxPropsMap} from "../../type/common";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     box: {display: "flex"},
@@ -16,7 +16,7 @@ type Props = {
     elevation?: number,
 }
 
-export function PageBlock(props: Props) {
+export function PageBox(props: Props) {
     const {withMarginTop, withMarginBottom} = props
     const elevation = props.elevation ?? 4
     const visible = props.visible ?? true

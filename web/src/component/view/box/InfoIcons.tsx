@@ -1,9 +1,9 @@
 import {cloneElement, ReactElement} from "react";
-import {useTheme} from "../../provider/ThemeProvider";
+import {useTheme} from "../../../provider/ThemeProvider";
+import {Box} from "@mui/material";
+import {SxPropsMap} from "../../../type/common";
 import {InfoBox} from "./InfoBox";
 import {InfoTitle} from "./InfoTitle";
-import {Box} from "@mui/material";
-import {SxPropsMap} from "../../type/common";
 
 const SX: SxPropsMap = {
     box: { display: "flex", alignItems: "center", justifyContent: "center" },

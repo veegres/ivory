@@ -1,7 +1,7 @@
 import {QueryEditor} from "./QueryEditor";
 import {SxPropsMap} from "../../../type/common";
 import {Box} from "@mui/material";
-import {CopyIconButton, SaveIconButton} from "../../view/IconButtons";
+import {CopyIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {useMutation} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 import {useState} from "react";

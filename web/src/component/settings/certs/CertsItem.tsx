@@ -1,6 +1,6 @@
 import {Box, Tooltip} from "@mui/material";
 import {useTheme} from "../../../provider/ThemeProvider";
-import {DeleteIconButton} from "../../view/IconButtons";
+import {DeleteIconButton} from "../../view/button/IconButtons";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";

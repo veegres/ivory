@@ -2,11 +2,11 @@ import {Collapse} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {CertsItem} from "./CertsItem";
 import {Cert} from "../../../type/cert";
-import {InfoAlert} from "../../view/InfoAlert";
+import {InfoAlert} from "../../view/box/InfoAlert";
 import {useQuery} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/ErrorAlert";
-import {LinearProgressStateful} from "../../view/LinearProgressStateful";
+import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 import {CertTypeProps} from "./Certs";
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
 

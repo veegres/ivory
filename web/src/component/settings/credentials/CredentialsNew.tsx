@@ -3,7 +3,7 @@ import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
 import {passwordApi} from "../../../app/api";
 import {Password, PasswordType} from "../../../type/password";
-import {CancelIconButton, SaveIconButton} from "../../view/IconButtons";
+import {CancelIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 
 export function CredentialsNew() {
