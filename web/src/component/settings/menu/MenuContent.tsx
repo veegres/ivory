@@ -3,7 +3,7 @@ import {MenuItemBox} from "./MenuItemBox";
 import {MenuItemText} from "./MenuItemText";
 import {MenuItemButton} from "./MenuItemButton";
 import {MenuThemeChanger} from "./MenuThemeChanger";
-import {MenuEraseButton} from "./MenuEraseButton";
+import {EraseButton} from "../../shared/erase/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
 import {MenuWrapperScroll} from "./MenuWrapperScroll";
 import {MenuRefetchChanger} from "./MenuRefetchChanger";
@@ -35,7 +35,7 @@ export function MenuContent(props: Props) {
                     <MenuItemText
                         title={"Erase all data"}
                         description={"Once you erase all data, there is no going back. Please be certain."}
-                        button={<MenuEraseButton/>}
+                        button={<EraseButton/>}
                     />
                 </MenuItemBox>
                 <MenuItemBox name={"About"}>

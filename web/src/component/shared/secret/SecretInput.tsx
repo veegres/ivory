@@ -1,17 +1,19 @@
+import {useState} from "react";
 import {FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
 import {InputProps as StandardInputProps} from "@mui/material/Input/Input";
-import {useState} from "react";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
 type Props = {
     label: string,
     hidden?: boolean,
-    onChange: StandardInputProps['onChange']
+    onChange: StandardInputProps['onChange'],
+    onEnterPress?: () => void,
 }
 
-export function StartupTextField(props: Props) {
-    const { label, onChange, hidden = false } = props
+export function SecretInput(props: Props) {
+    const {label, onChange, hidden = false, onEnterPress} = props
     const [showPassword, setShowPassword] = useState(false)
+
     return (
         <FormControl fullWidth required size={"small"} margin={"normal"}>
             <InputLabel>{label}</InputLabel>
@@ -21,6 +23,7 @@ export function StartupTextField(props: Props) {
                 label={label}
                 autoComplete={"off"}
                 onChange={onChange}
+                onKeyUp={(e) => handleKeyPress(e.key)}
             />
         </FormControl>
     )
@@ -35,5 +38,9 @@ export function StartupTextField(props: Props) {
                 </IconButton>
             </InputAdornment>
         )
+    }
+
+    function handleKeyPress(key: string) {
+        if (key === 'Enter' && onEnterPress) onEnterPress()
     }
 }

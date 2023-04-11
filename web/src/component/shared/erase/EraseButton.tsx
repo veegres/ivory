@@ -6,7 +6,7 @@ import {LoadingButton} from "@mui/lab";
 import {useState} from "react";
 import {AlertDialog} from "../../view/AlertDialog";
 
-export function MenuEraseButton() {
+export function EraseButton() {
     const {clear} = useStore()
     const [open, setOpen] = useState(false)
 

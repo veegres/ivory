@@ -1,14 +1,20 @@
 import {useState} from "react";
 import {StartupBlock} from "./StartupBlock";
-import {StartupTextField} from "./StartupTextField";
+import {SecretInput} from "../shared/secret/SecretInput";
 import {Typography} from "@mui/material";
+import {SecretButton} from "../shared/secret/SecretButton";
+import {useMutationOptions} from "../../hook/QueryCustom";
+import {useMutation} from "@tanstack/react-query";
+import {secretApi} from "../../app/api";
 
 export function StartupInitial() {
     const [key, setKey] = useState("")
     const [ref, setRef] = useState("")
+    const setReqOptions = useMutationOptions([["info"]])
+    const setReq = useMutation(secretApi.set, setReqOptions)
 
     return (
-        <StartupBlock keyWord={key} refWord={ref} clean={false} header={"Welcome"}>
+        <StartupBlock header={"Welcome"} renderFooter={<SecretButton keyWord={key} refWord={ref}/>}>
             <Typography variant={"caption"}>
                 This is <b>Ivory</b> — the tool that will help you manage your postgres clusters. Please, provide
                 some information to make your sensitive data safe while using Ivory.
@@ -26,8 +32,16 @@ export function StartupInitial() {
                     </li>
                 </ul>
             </Typography>
-            <StartupTextField label={"Reference word"} onChange={(e) => setRef(e.target.value)}/>
-            <StartupTextField label={"Secret word"} onChange={(e) => setKey(e.target.value)} hidden/>
+            <SecretInput
+                label={"Reference word"}
+                onChange={(e) => setRef(e.target.value)}
+            />
+            <SecretInput
+                label={"Secret word"}
+                onChange={(e) => setKey(e.target.value)}
+                onEnterPress={() => setReq.mutate({ref, key})}
+                hidden
+            />
         </StartupBlock>
     )
 }
