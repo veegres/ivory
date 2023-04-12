@@ -22,8 +22,9 @@ RUN chmod 777 /usr/local/bin/entrypoint.sh
 
 # set up pgcompacttable
 RUN curl --create-dir -o /opt/tools/pgcompacttable https://raw.githubusercontent.com/dataegret/pgcompacttable/master/bin/pgcompacttable
-RUN chmod +x /opt/tools/pgcompacttable
 RUN ln -s /opt/tools/pgcompacttable /usr/bin
+
+RUN chmod -R 777 /opt
 
 ARG IVORY_VERSION_TAG=none
 ARG IVORY_VERSION_COMMIT=none
