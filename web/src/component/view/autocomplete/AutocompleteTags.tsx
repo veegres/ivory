@@ -86,7 +86,7 @@ export function AutocompleteTags(props: Props) {
 
     function handleOnChange(o: SyntheticEvent<Element, Event>, v: Option[]) {
         const tags = v.map(v => v.label)
-        setTagMap({...tagMap, ...getTagMap(tags)})
+        setTagMap(t => ({...t, ...getTagMap(tags)}))
         onUpdate(tags)
     }
 }

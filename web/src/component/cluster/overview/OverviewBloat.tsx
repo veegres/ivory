@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
     toggle: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1},
     option: {display: "flex", padding: "0 15px", gap: 3},
-    form: {flexGrow: 1},
+    form: {flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center"},
     refresh: {width: "100%"},
 }
 
@@ -75,17 +75,10 @@ export function OverviewBloat(props: TabProps) {
         return (
             <Box sx={SX.toggle}>
                 <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
-                    <ToggleButton
-                        value={ListBlock.JOB}
-                        onClick={() => setTab(ListBlock.JOB)}
-                    >
+                    <ToggleButton value={ListBlock.JOB} onClick={() => setTab(ListBlock.JOB)}>
                         Jobs
                     </ToggleButton>
-                    <ToggleButton
-                        value={ListBlock.QUERY}
-                        disabled={!cluster.credentials.postgresId}
-                        onClick={() => setTab(ListBlock.QUERY)}
-                    >
+                    <ToggleButton value={ListBlock.QUERY} onClick={() => setTab(ListBlock.QUERY)}>
                         Queries
                     </ToggleButton>
                 </ToggleButtonGroup>

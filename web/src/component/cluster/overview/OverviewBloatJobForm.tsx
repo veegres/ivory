@@ -38,38 +38,43 @@ export function OverviewBloatJobForm(props: Props) {
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
     const req = {clusterName: cluster.name, db: {...defaultInstance.database, database: target?.dbName}}
+    const keys = [req.clusterName, getDomain(req.db), req.db.database ?? ""]
     return (
         <Box sx={SX.form}>
-            {renderInput(
-                ["databases"],
-                "Database",
-                (v) => setTarget({...target, dbName: v}),
-                (v) => queryApi.databases({...req, name: v})
-            )}
-            {renderInput(
-                ["schemas"],
-                "Schema",
-                (v) => setTarget({...target, schema: v}),
-                (v) => queryApi.schemas({...req, name: v})
-            )}
-            {renderInput(
-                ["tables", target?.schema ?? ""],
-                "Table",
-                (v) => setTarget({...target, table: v}),
-                (v) => queryApi.tables({...req, schema: target?.schema, name: v})
-            )}
-            {renderInput(
-                ["schemas"],
-                "Exclude Schema",
-                (v) => setTarget({...target, excludeSchema: v}),
-                (v) => queryApi.schemas({...req, name: v})
-            )}
-            {renderInput(
-                ["tables", target?.excludeSchema ?? ""],
-                "Exclude Table",
-                (v) => setTarget({...target, excludeTable: v}),
-                (v) => queryApi.tables({...req, schema: target?.excludeSchema, name: v})
-            )}
+            <AutocompleteFetch
+                margin={"dense"} variant={"standard"}
+                keys={["databases", ...keys]} label={"Database"}
+                onFetch={(v) => queryApi.databases({...req, name: v})}
+                onUpdate={(v) => setTarget({...target, dbName: v || ""})}
+            />
+            <AutocompleteFetch
+                margin={"dense"} variant={"standard"}
+                keys={["schemas", ...keys]} label={"Schema"}
+                disabled={!target?.dbName}
+                onFetch={(v) => queryApi.schemas({...req, name: v})}
+                onUpdate={(v) => setTarget({...target, schema: v || ""})}
+            />
+            <AutocompleteFetch
+                margin={"dense"} variant={"standard"}
+                keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
+                disabled={!target?.schema && !target?.excludeSchema}
+                onFetch={(v) => queryApi.tables({...req, schema: target?.schema, name: v})}
+                onUpdate={(v) => setTarget({...target, table: v || ""})}
+            />
+            <AutocompleteFetch
+                margin={"dense"} variant={"standard"}
+                keys={["schemas", ...keys]} label={"Exclude Schema"}
+                disabled={!target?.dbName}
+                onFetch={(v) => queryApi.schemas({...req, name: v})}
+                onUpdate={(v) => setTarget({...target, excludeSchema: v || ""})}
+            />
+            <AutocompleteFetch
+                margin={"dense"} variant={"standard"}
+                keys={["tables", ...keys, target?.schema ?? ""]} label={"Exclude Table"}
+                disabled={!target?.schema && !target?.excludeSchema}
+                onFetch={(v) => queryApi.tables({...req, schema: target?.excludeSchema, name: v})}
+                onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
+            />
             <Box sx={SX.buttons}>
                 <TextField
                     sx={{flexGrow: 1}} size={"small"} label={"Ratio"} type={"number"} variant={"standard"}
@@ -83,19 +88,6 @@ export function OverviewBloatJobForm(props: Props) {
             </Box>
         </Box>
     )
-
-    function renderInput(key: string[], label: string, onChange: (v: string) => void, onFetch: (value: string) => Promise<string[]>) {
-        const [type, schema] = key
-        const keys = ["query", type, req.clusterName, getDomain(req.db), req.db.database ?? ""]
-        return (
-            <AutocompleteFetch
-                keys={schema ? [...keys, schema] : keys}
-                onFetch={onFetch} label={label} margin={"dense"} variant={"standard"}
-                noOptionsText={`Select previous value`}
-                onUpdate={(v) => onChange(v || "")}
-            />
-        )
-    }
 
     function handleRun() {
         if (defaultInstance && cluster.credentials?.postgresId) {

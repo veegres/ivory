@@ -7,19 +7,26 @@ type Props = {
     keys: string[],
     onUpdate: (option: string | null) => void,
     onFetch: (value: string) => Promise<string[]>,
-    noOptionsText?: string,
+    disabled?: boolean,
     label?: string,
     placeholder?: string,
     variant?: "standard" | "filled" | "outlined";
     margin?: 'dense' | 'normal' | 'none';
+    padding?: string,
 }
 
 export function AutocompleteFetch(props: Props) {
     const {label, placeholder, variant, margin} = props
-    const {noOptionsText, keys, onUpdate, onFetch} = props
+    const {keys, onUpdate, onFetch, disabled = false, padding}= props
+
     const [inputValue, setInputValue] = useState("")
     const debInputValue = useDebounce(inputValue)
-    const query = useQuery([...keys, debInputValue], () => onFetch(debInputValue))
+
+    const query = useQuery(
+        [...keys, debInputValue],
+        () => onFetch(debInputValue),
+        {enabled: !disabled}
+    )
     const options = query.data ?? []
 
     return (
@@ -27,7 +34,7 @@ export function AutocompleteFetch(props: Props) {
             fullWidth
             renderInput={renderInput}
             inputValue={inputValue}
-            noOptionsText={noOptionsText}
+            disabled={disabled}
             onInputChange={(_, v) => setInputValue(v)}
             options={options}
             loading={query.isLoading}
@@ -36,9 +43,11 @@ export function AutocompleteFetch(props: Props) {
     )
 
     function renderInput(params: AutocompleteRenderInputParams) {
+        const inputProps = padding ? {...params.InputProps, style: {padding}} : params.InputProps
         return (
             <TextField
                 {...params}
+                InputProps={inputProps}
                 size={"small"}
                 label={label}
                 variant={variant}
