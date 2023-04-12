@@ -25,7 +25,7 @@ export function AutocompleteUuid(props: Props) {
             size={"small"}
             autoHighlight={true}
             options={options}
-            noOptionsText={"add option in the settings"}
+            noOptionsText={"add an option in the settings"}
             value={value}
             onChange={(_, v) => onUpdate(v)}
             inputValue={inputValue}
