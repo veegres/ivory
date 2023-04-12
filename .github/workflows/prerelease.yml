@@ -15,6 +15,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.20'
+          cache-dependency-path: service
       - name: Install & Build binary for service
         working-directory: service
         run: |
