@@ -34,8 +34,8 @@ func NewContext() *Context {
 	passwordBucket := config.NewBoltBucket[Credential](db, "Password")
 	queryBucket := config.NewBoltBucket[Query](db, "Query")
 
-	compactTableFiles := config.NewFilePersistence("pgcompacttable", ".log")
-	certFiles := config.NewFilePersistence("cert", ".crt")
+	compactTableFiles := config.NewFileGateway("pgcompacttable", ".log")
+	certFiles := config.NewFileGateway("cert", ".crt")
 
 	clusterRepo := persistence.NewClusterRepository(clusterBucket)
 	compactTableRepo := persistence.NewCompactTableRepository(compactTableBucket, compactTableFiles)
@@ -46,16 +46,17 @@ func NewContext() *Context {
 	queryRepo := persistence.NewQueryRepository(queryBucket)
 
 	encryption := service.NewEncryption()
-	proxy := service.NewProxy(clusterRepo, passwordRepo, certRepo, certFiles)
-
 	secretService := service.NewSecretService(secretRepo, encryption)
 	passwordService := service.NewPasswordService(passwordRepo, secretService, encryption)
-	queryService := service.NewQueryService(queryRepo, clusterRepo, passwordService, secretService)
+	sidecarGateway := service.NewSidecarGateway(clusterRepo, certRepo, passwordService)
+	postgresGateway := service.NewPostgresGateway(clusterRepo, passwordService)
+	queryService := service.NewQueryService(queryRepo, postgresGateway, secretService)
 	bloatService := service.NewBloatService(compactTableRepo, passwordRepo, compactTableFiles, secretService, encryption)
-	patroniService := service.NewPatroniService(proxy)
+	patroniService := service.NewPatroniService(sidecarGateway)
 	eraseService := service.NewEraseService(passwordRepo, clusterRepo, certRepo, tagRepo, compactTableRepo, queryService, secretService)
 
-	// TODO refactor: router shouldn't use repos, change to service usage
+	// TODO refactor: shouldn't router use repos? consider change to service usage (possible cycle dependencies problems)
+	// TODO repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
 	return &Context{
 		env:            env,
 		infoRouter:     router.NewInfoRouter(env, secretService),
@@ -66,7 +67,7 @@ func NewContext() *Context {
 		passwordRouter: router.NewPasswordRouter(passwordService),
 		tagRouter:      router.NewTagRouter(tagRepo),
 		instanceRouter: router.NewInstanceRouter(patroniService),
-		queryRouter:    router.NewQueryRouter(queryService),
+		queryRouter:    router.NewQueryRouter(queryService, postgresGateway),
 		eraseRouter:    router.NewEraseRouter(eraseService),
 	}
 }

@@ -20,7 +20,7 @@ type BloatService struct {
 	mutex              *sync.Mutex
 	bloatRepository    *persistence.CompactTableRepository
 	passwordRepository *persistence.PasswordRepository
-	bloatFile          *config.FilePersistence
+	bloatFile          *config.FileGateway
 	secretService      *SecretService
 	encryption         *Encryption
 }
@@ -34,7 +34,7 @@ type element struct {
 func NewBloatService(
 	bloatRepository *persistence.CompactTableRepository,
 	passwordRepository *persistence.PasswordRepository,
-	file *config.FilePersistence,
+	file *config.FileGateway,
 	secretService *SecretService,
 	encryption *Encryption,
 ) *BloatService {

@@ -6,12 +6,12 @@ import (
 	"os"
 )
 
-type FilePersistence struct {
+type FileGateway struct {
 	path string
 	ext  string
 }
 
-func NewFilePersistence(name string, ext string) *FilePersistence {
+func NewFileGateway(name string, ext string) *FileGateway {
 	path := "data/" + name
 
 	err := os.MkdirAll(path, os.ModePerm)
@@ -19,13 +19,13 @@ func NewFilePersistence(name string, ext string) *FilePersistence {
 		panic(err)
 	}
 
-	return &FilePersistence{
+	return &FileGateway{
 		path: path,
 		ext:  ext,
 	}
 }
 
-func (r *FilePersistence) Create(uuid uuid.UUID) string {
+func (r *FileGateway) Create(uuid uuid.UUID) string {
 	path := r.path + "/" + uuid.String() + r.ext
 	_, err := os.Create(path)
 	if err != nil {
@@ -34,19 +34,19 @@ func (r *FilePersistence) Create(uuid uuid.UUID) string {
 	return path
 }
 
-func (r *FilePersistence) Open(path string) (*os.File, error) {
+func (r *FileGateway) Open(path string) (*os.File, error) {
 	return os.OpenFile(path, os.O_RDWR, 0666)
 }
 
-func (r *FilePersistence) Read(path string) ([]byte, error) {
+func (r *FileGateway) Read(path string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
-func (r *FilePersistence) Delete(uuid uuid.UUID) error {
+func (r *FileGateway) Delete(uuid uuid.UUID) error {
 	return os.Remove(r.path + "/" + uuid.String() + r.ext)
 }
 
-func (r *FilePersistence) DeleteAll() error {
+func (r *FileGateway) DeleteAll() error {
 	errRem := os.RemoveAll(r.path + "/")
 	errCreate := os.Mkdir(r.path, os.ModePerm)
 	return errors.Join(errRem, errCreate)
