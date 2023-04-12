@@ -10,10 +10,10 @@ import (
 
 type CompactTableRepository struct {
 	bucket *config.Bucket[CompactTableModel]
-	file   *config.FilePersistence
+	file   *config.FileGateway
 }
 
-func NewCompactTableRepository(bucket *config.Bucket[CompactTableModel], file *config.FilePersistence) *CompactTableRepository {
+func NewCompactTableRepository(bucket *config.Bucket[CompactTableModel], file *config.FileGateway) *CompactTableRepository {
 	return &CompactTableRepository{
 		bucket: bucket,
 		file:   file,

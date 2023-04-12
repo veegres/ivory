@@ -1,36 +1,28 @@
 package service
 
 import (
-	"context"
 	"errors"
-	"github.com/golang/glog"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"ivory/src/constant"
 	. "ivory/src/model"
 	"ivory/src/persistence"
-	"strconv"
 )
 
 type QueryService struct {
-	queryRepository   *persistence.QueryRepository
-	clusterRepository *persistence.ClusterRepository
-	passwordService   *PasswordService
-	secretService     *SecretService
+	queryRepository *persistence.QueryRepository
+	postgresGateway *PostgresGateway
+	secretService   *SecretService
 }
 
 func NewQueryService(
 	queryRepository *persistence.QueryRepository,
-	clusterRepository *persistence.ClusterRepository,
-	passwordService *PasswordService,
+	postgresGateway *PostgresGateway,
 	secretService *SecretService,
 ) *QueryService {
 	queryService := &QueryService{
-		queryRepository:   queryRepository,
-		clusterRepository: clusterRepository,
-		passwordService:   passwordService,
-		secretService:     secretService,
+		postgresGateway: postgresGateway,
+		queryRepository: queryRepository,
+		secretService:   secretService,
 	}
 	err := queryService.createDefaultQueries()
 	if err != nil {
@@ -47,42 +39,42 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, clusterName string, db Data
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
-	return s.getFields(clusterName, db, query.Custom)
+	return s.postgresGateway.GetFields(clusterName, db, query.Custom)
 }
 
 func (s *QueryService) DatabasesQuery(clusterName string, db Database, name string) ([]string, error) {
-	return s.getMany(clusterName, db, constant.GetAllDatabases, "%"+name+"%")
+	return s.postgresGateway.GetMany(clusterName, db, constant.GetAllDatabases, "%"+name+"%")
 }
 
 func (s *QueryService) SchemasQuery(clusterName string, db Database, name string) ([]string, error) {
 	if db.Database == nil || *db.Database == "" {
 		return []string{}, nil
 	}
-	return s.getMany(clusterName, db, constant.GetAllSchemas, "%"+name+"%")
+	return s.postgresGateway.GetMany(clusterName, db, constant.GetAllSchemas, "%"+name+"%")
 }
 
 func (s *QueryService) TablesQuery(clusterName string, db Database, schema string, name string) ([]string, error) {
 	if db.Database == nil || *db.Database == "" || schema == "" {
 		return []string{}, nil
 	}
-	return s.getMany(clusterName, db, constant.GetAllTables, schema, "%"+name+"%")
+	return s.postgresGateway.GetMany(clusterName, db, constant.GetAllTables, schema, "%"+name+"%")
 }
 
 func (s *QueryService) CommonChartQuery(clusterName string, db Database) (*[4]QueryChart, error) {
 	// TODO think about parallel this queries
-	dbCount, err := s.getOne(clusterName, db, "SELECT count(*) FROM pg_database;")
+	dbCount, err := s.postgresGateway.GetOne(clusterName, db, "SELECT count(*) FROM pg_database;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get db count"), err)
 	}
-	connectionCount, err := s.getOne(clusterName, db, "SELECT count(*) FROM pg_stat_activity;")
+	connectionCount, err := s.postgresGateway.GetOne(clusterName, db, "SELECT count(*) FROM pg_stat_activity;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get connection count"), err)
 	}
-	dbSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;")
+	dbSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get total db size"), err)
 	}
-	uptime, err := s.getOne(clusterName, db, "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;")
+	uptime, err := s.postgresGateway.GetOne(clusterName, db, "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get uptime"), err)
 	}
@@ -97,19 +89,19 @@ func (s *QueryService) CommonChartQuery(clusterName string, db Database) (*[4]Qu
 
 func (s *QueryService) DatabaseChartQuery(clusterName string, db Database) (*[4]QueryChart, error) {
 	// TODO think about parallel this queries
-	schemaCount, err := s.getOne(clusterName, db, "SELECT count(*) FROM pg_namespace;")
+	schemaCount, err := s.postgresGateway.GetOne(clusterName, db, "SELECT count(*) FROM pg_namespace;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get schema count"), err)
 	}
-	totalSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	totalSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get total db size"), err)
 	}
-	indexSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	indexSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get indexes size"), err)
 	}
-	tableSize, err := s.getOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	tableSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get tables size"), err)
 	}
@@ -120,16 +112,6 @@ func (s *QueryService) DatabaseChartQuery(clusterName string, db Database) (*[4]
 		{Name: "Indexes Size", Value: indexSize},
 		{Name: "Total Size", Value: totalSize},
 	}, nil
-}
-
-func (s *QueryService) CancelQuery(pid int, clusterName string, db Database) error {
-	_, _, err := s.sendRequest(clusterName, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
-	return err
-}
-
-func (s *QueryService) TerminateQuery(pid int, clusterName string, db Database) error {
-	_, _, err := s.sendRequest(clusterName, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
-	return err
 }
 
 func (s *QueryService) GetList(queryType *QueryType) ([]Query, error) {
@@ -223,131 +205,6 @@ func (s *QueryService) DeleteAll() error {
 	errDel := s.queryRepository.DeleteAll()
 	errDefQueries := s.createDefaultQueries()
 	return errors.Join(errDel, errDefQueries)
-}
-
-func (s *QueryService) getMany(clusterName string, db Database, query string, args ...any) ([]string, error) {
-	rows, _, errReq := s.sendRequest(clusterName, db, query, args...)
-	if errReq != nil {
-		return nil, errReq
-	}
-	defer rows.Close()
-
-	values := make([]string, 0)
-	for rows.Next() {
-		var value string
-		err := rows.Scan(&value)
-		if err != nil {
-			return nil, err
-		}
-		values = append(values, value)
-	}
-
-	return values, nil
-}
-
-func (s *QueryService) getOne(clusterName string, db Database, query string) (any, error) {
-	rows, _, errReq := s.sendRequest(clusterName, db, query)
-	if errReq != nil {
-		return nil, errReq
-	}
-	defer rows.Close()
-
-	var value any
-	if rows.Next() {
-		values, err := rows.Values()
-		if err != nil {
-			return nil, err
-		}
-		value = values[0]
-	}
-
-	return value, nil
-}
-
-func (s *QueryService) getFields(clusterName string, db Database, query string) (*QueryRunResponse, error) {
-	rows, typeMap, errReq := s.sendRequest(clusterName, db, query)
-	if errReq != nil {
-		return nil, errReq
-	}
-	defer rows.Close()
-
-	fields := make([]QueryField, 0)
-	for _, field := range rows.FieldDescriptions() {
-		dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
-		if !ok {
-			fields = append(fields, QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
-		} else {
-			fields = append(fields, QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
-		}
-	}
-
-	rowList := make([][]any, 0)
-	for rows.Next() {
-		val, err := rows.Values()
-		if err != nil {
-			return nil, err
-		}
-		rowList = append(rowList, val)
-	}
-
-	res := &QueryRunResponse{
-		Fields: fields,
-		Rows:   rowList,
-	}
-	return res, nil
-}
-
-func (s *QueryService) sendRequest(clusterName string, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, error) {
-	conn, errConn := s.getConnection(clusterName, db)
-	if errConn != nil {
-		return nil, nil, errConn
-	}
-	defer s.closeConnection(conn, context.Background())
-
-	var res pgx.Rows
-	var errRes error
-	if args == nil {
-		res, errRes = conn.Query(context.Background(), query)
-	} else {
-		res, errRes = conn.Query(context.Background(), query, args...)
-	}
-	if errRes != nil {
-		return nil, nil, errRes
-	}
-	return res, conn.TypeMap(), nil
-}
-
-func (s *QueryService) getConnection(clusterName string, db Database) (*pgx.Conn, error) {
-	// TODO think about cache connections
-	cluster, errCluster := s.clusterRepository.Get(clusterName)
-	if errCluster != nil {
-		return nil, errCluster
-	}
-	if cluster.Credentials.PostgresId == nil {
-		return nil, errors.New("there is no password for this cluster")
-	}
-
-	cred, errCred := s.passwordService.GetDecrypted(*cluster.Credentials.PostgresId)
-	if errCred != nil {
-		return nil, errCred
-	}
-
-	dbName := "postgres"
-	if db.Port == 0 || db.Host == "" || db.Host == "-" {
-		return nil, errors.New("database host or port are not specified")
-	}
-	if db.Database != nil && *db.Database != "" {
-		dbName = *db.Database
-	}
-	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
-	return pgx.Connect(context.Background(), connString)
-}
-
-func (s *QueryService) closeConnection(conn *pgx.Conn, ctx context.Context) {
-	err := conn.Close(ctx)
-	if err != nil {
-		glog.Warning(err)
-	}
 }
 
 func (s *QueryService) createDefaultQueries() error {

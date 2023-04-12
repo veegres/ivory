@@ -12,10 +12,10 @@ import (
 
 type CertRepository struct {
 	bucket *config.Bucket[CertModel]
-	file   *config.FilePersistence
+	file   *config.FileGateway
 }
 
-func NewCertRepository(bucket *config.Bucket[CertModel], file *config.FilePersistence) *CertRepository {
+func NewCertRepository(bucket *config.Bucket[CertModel], file *config.FileGateway) *CertRepository {
 	return &CertRepository{
 		bucket: bucket,
 		file:   file,
@@ -24,6 +24,14 @@ func NewCertRepository(bucket *config.Bucket[CertModel], file *config.FilePersis
 
 func (r *CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
 	return r.bucket.Get(uuid.String())
+}
+
+func (r *CertRepository) Read(uuid uuid.UUID) ([]byte, error) {
+	info, err := r.Get(uuid)
+	if err != nil {
+		return nil, err
+	}
+	return r.file.Read(info.Path)
 }
 
 func (r *CertRepository) List() (map[string]CertModel, error) {

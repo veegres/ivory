@@ -8,7 +8,6 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"io"
-	"ivory/src/config"
 	. "ivory/src/model"
 	"ivory/src/persistence"
 	"net/http"
@@ -17,47 +16,47 @@ import (
 	"time"
 )
 
-type ProxyRequest[R any] struct {
-	proxy *Proxy
+type SidecarRequest[R any] struct {
+	sidecar *SidecarGateway
 }
 
-func NewProxyRequest[R any](proxy *Proxy) *ProxyRequest[R] {
-	return &ProxyRequest[R]{
-		proxy: proxy,
+func NewSidecarRequest[R any](sidecar *SidecarGateway) *SidecarRequest[R] {
+	return &SidecarRequest[R]{
+		sidecar: sidecar,
 	}
 }
 
-func (p *ProxyRequest[R]) Get(instance InstanceRequest, path string) (R, int, error) {
-	response, errRes := p.proxy.send(http.MethodGet, instance, path, 1+time.Second)
+func (p *SidecarRequest[R]) Get(instance InstanceRequest, path string) (R, int, error) {
+	response, errRes := p.sidecar.send(http.MethodGet, instance, path, 1+time.Second)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *ProxyRequest[R]) Post(instance InstanceRequest, path string) (R, int, error) {
-	response, errRes := p.proxy.send(http.MethodPost, instance, path, 0)
+func (p *SidecarRequest[R]) Post(instance InstanceRequest, path string) (R, int, error) {
+	response, errRes := p.sidecar.send(http.MethodPost, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *ProxyRequest[R]) Put(instance InstanceRequest, path string) (R, int, error) {
-	response, errRes := p.proxy.send(http.MethodPut, instance, path, 0)
+func (p *SidecarRequest[R]) Put(instance InstanceRequest, path string) (R, int, error) {
+	response, errRes := p.sidecar.send(http.MethodPut, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *ProxyRequest[R]) Patch(instance InstanceRequest, path string) (R, int, error) {
-	response, errRes := p.proxy.send(http.MethodPatch, instance, path, 0)
+func (p *SidecarRequest[R]) Patch(instance InstanceRequest, path string) (R, int, error) {
+	response, errRes := p.sidecar.send(http.MethodPatch, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *ProxyRequest[R]) Delete(instance InstanceRequest, path string) (R, int, error) {
-	response, errRes := p.proxy.send(http.MethodDelete, instance, path, 0)
+func (p *SidecarRequest[R]) Delete(instance InstanceRequest, path string) (R, int, error) {
+	response, errRes := p.sidecar.send(http.MethodDelete, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *ProxyRequest[R]) parseResponse(res *http.Response) (R, int, error) {
+func (p *SidecarRequest[R]) parseResponse(res *http.Response) (R, int, error) {
 	var err error
 	var body R
 	var status int
@@ -81,28 +80,25 @@ func (p *ProxyRequest[R]) parseResponse(res *http.Response) (R, int, error) {
 	return body, status, err
 }
 
-type Proxy struct {
-	clusterRepository  *persistence.ClusterRepository
-	passwordRepository *persistence.PasswordRepository
-	certRepository     *persistence.CertRepository
-	certFile           *config.FilePersistence
+type SidecarGateway struct {
+	clusterRepository *persistence.ClusterRepository
+	certRepository    *persistence.CertRepository
+	passwordService   *PasswordService
 }
 
-func NewProxy(
+func NewSidecarGateway(
 	clusterRepository *persistence.ClusterRepository,
-	passwordRepository *persistence.PasswordRepository,
 	certRepository *persistence.CertRepository,
-	certFile *config.FilePersistence,
-) *Proxy {
-	return &Proxy{
-		clusterRepository:  clusterRepository,
-		passwordRepository: passwordRepository,
-		certRepository:     certRepository,
-		certFile:           certFile,
+	passwordService *PasswordService,
+) *SidecarGateway {
+	return &SidecarGateway{
+		clusterRepository: clusterRepository,
+		passwordService:   passwordService,
+		certRepository:    certRepository,
 	}
 }
 
-func (p *Proxy) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
+func (p *SidecarGateway) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
 	clusterInfo, err := p.clusterRepository.Get(instance.Cluster)
 	client, protocol, err := p.getClient(clusterInfo.Certs, timeout)
 	domain := instance.Host + ":" + strconv.Itoa(instance.Port)
@@ -111,7 +107,7 @@ func (p *Proxy) send(method string, instance InstanceRequest, path string, timeo
 	return res, err
 }
 
-func (p *Proxy) getRequest(
+func (p *SidecarGateway) getRequest(
 	passwordId *uuid.UUID,
 	method string,
 	protocol string,
@@ -131,8 +127,7 @@ func (p *Proxy) getRequest(
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
 	if passwordId != nil {
-		// TODO password should be decoded
-		passInfo, errPass := p.passwordRepository.Get(*passwordId)
+		passInfo, errPass := p.passwordService.GetDecrypted(*passwordId)
 		err = errPass
 		req.SetBasicAuth(passInfo.Username, passInfo.Password)
 	}
@@ -140,7 +135,7 @@ func (p *Proxy) getRequest(
 	return req, err
 }
 
-func (p *Proxy) getClient(certs Certs, timeout time.Duration) (*http.Client, string, error) {
+func (p *SidecarGateway) getClient(certs Certs, timeout time.Duration) (*http.Client, string, error) {
 	// TODO error overloading doesn't work it should be changed to a lot of returns with errors
 	var err error
 	var rootCa *x509.CertPool
@@ -148,8 +143,7 @@ func (p *Proxy) getClient(certs Certs, timeout time.Duration) (*http.Client, str
 
 	// Setting Client CA
 	if certs.ClientCAId != nil {
-		clientCAInfo, errCert := p.certRepository.Get(*certs.ClientCAId)
-		clientCA, errCert := p.certFile.Read(clientCAInfo.Path)
+		clientCA, errCert := p.certRepository.Read(*certs.ClientCAId)
 		rootCa = x509.NewCertPool()
 		rootCa.AppendCertsFromPEM(clientCA)
 		protocol = "https"

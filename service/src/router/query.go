@@ -10,11 +10,18 @@ import (
 )
 
 type QueryRouter struct {
-	queryService *service.QueryService
+	queryService    *service.QueryService
+	postgresGateway *service.PostgresGateway
 }
 
-func NewQueryRouter(queryService *service.QueryService) *QueryRouter {
-	return &QueryRouter{queryService: queryService}
+func NewQueryRouter(
+	queryService *service.QueryService,
+	postgresGateway *service.PostgresGateway,
+) *QueryRouter {
+	return &QueryRouter{
+		queryService:    queryService,
+		postgresGateway: postgresGateway,
+	}
 }
 
 func (r *QueryRouter) PutQuery(context *gin.Context) {
@@ -190,7 +197,7 @@ func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
 		return
 	}
 
-	errQuery := r.queryService.CancelQuery(req.Pid, req.ClusterName, req.Db)
+	errQuery := r.postgresGateway.Cancel(req.Pid, req.ClusterName, req.Db)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return
@@ -207,7 +214,7 @@ func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
 		return
 	}
 
-	errQuery := r.queryService.TerminateQuery(req.Pid, req.ClusterName, req.Db)
+	errQuery := r.postgresGateway.Terminate(req.Pid, req.ClusterName, req.Db)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return
