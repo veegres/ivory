@@ -70,8 +70,9 @@ export function InstanceMain(props: Props) {
                 <AutocompleteFetch
                     keys={["query", "databases", cluster, getDomain(database), database.database ?? ""]}
                     onFetch={(v) => queryApi.databases({clusterName: cluster, db: database, name: v})}
-                    placeholder={" Database"}
-                    variant={"standard"}
+                    placeholder={"Database"}
+                    variant={"outlined"}
+                    padding={"3px"}
                     onUpdate={(v) => setDbName(v || "")}
                 />
             </Box>
