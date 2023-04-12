@@ -9,12 +9,14 @@ interface StoreType {
     activeCluster?: ActiveCluster, activeClusterTab: number,
     activeInstance?: Instance,
     activeTags: string[],
+    warnings: { [key: string]: boolean },
     settings: boolean,
 }
 const initialStore: StoreType = {
     activeCluster: undefined, activeClusterTab: 0,
     activeInstance: undefined,
     activeTags: ["ALL"],
+    warnings: {},
     settings: false,
 }
 
@@ -26,6 +28,7 @@ interface StoreContextType {
     setClusterInstance: (instance: Instance) => void,
     setClusterDetection: (detection: DetectionType) => void
     setClusterTab: (tab: number) => void,
+    setWarnings: (name: string, warning: boolean) => void,
     isClusterActive: (name: string) => boolean
     isClusterOverviewOpen: () => boolean
 
@@ -44,11 +47,12 @@ const initialStoreContext: StoreContextType = {
     setClusterInstance: () => void 0,
     setClusterDetection: () => void 0,
     setClusterTab: () => void 0,
+    setWarnings: () => void 0,
     isClusterActive: () => false,
     isClusterOverviewOpen: () => false,
 
     setInstance: () => void 0,
-    isInstanceActive: (key: string) => false,
+    isInstanceActive: () => false,
 
     setTags: () => void 0,
     toggleSettingsDialog: () => void 0,
@@ -76,32 +80,48 @@ export function StoreProvider(props: { children: ReactNode }) {
     )
 
     function getStoreContext(): StoreContextType {
-        const { activeCluster, activeInstance } = state
-
         return {
             store: state,
 
-            setCluster: (cluster?: ActiveCluster) => setState(state => ({...state, activeCluster: cluster})),
+            setCluster: (cluster?: ActiveCluster) => {
+                setState(s => ({...s, activeCluster: cluster}))
+            },
             setClusterInstance: (instance: Instance) => {
-                if (activeCluster) setState({...state, activeCluster: {...activeCluster, defaultInstance: instance, detection: "manual"}})
+                setState(s => {
+                    if (!s.activeCluster) return s
+                    return {...s, activeCluster: {...s.activeCluster, defaultInstance: instance, detection: "manual"}}
+                })
             },
             setClusterDetection: (detection: DetectionType) => {
-                if (activeCluster) setState({...state, activeCluster: {...activeCluster, detection}})
+                setState(s => {
+                    if (!s.activeCluster) return s
+                    return {...s, activeCluster: {...s.activeCluster, detection}}
+                })
             },
-            setClusterTab: (tab: number) => setState({...state, activeClusterTab: tab}),
-            isClusterActive: (name: string) => name === activeCluster?.cluster.name,
-            isClusterOverviewOpen: () => !!activeCluster && state.activeClusterTab === 0,
-
-            setInstance: (instance?: Instance) => setState({...state, activeInstance: instance}),
-            isInstanceActive: (key: string) => activeInstance ? getDomain(activeInstance.sidecar) === key : false,
-
-            setTags: (tags: string[]) => setState({...state, activeTags: tags}),
-            toggleSettingsDialog: () => setState({...state, settings: !state.settings}),
-
+            setClusterTab: (tab: number) => {
+                setState(s => ({...s, activeClusterTab: tab}))
+            },
+            setWarnings: (name: string, warning: boolean) => {
+                setState(s => ({...s, warnings: {...s.warnings, [name]: warning}}))
+            },
+            setInstance: (instance?: Instance) => {
+                setState(s => ({...s, activeInstance: instance}))
+            },
+            setTags: (tags: string[]) => {
+                setState(s => ({...s, activeTags: tags}))
+            },
+            toggleSettingsDialog: () => {
+                setState(s => ({...s, settings: !s.settings}))
+            },
             clear: () => {
                 queryClient.clear()
                 setState(initialStore)
-            }
+            },
+
+
+            isClusterActive: (name: string) => name === state.activeCluster?.cluster.name,
+            isClusterOverviewOpen: () => !!state.activeCluster && state.activeClusterTab === 0,
+            isInstanceActive: (key: string) => state.activeInstance ? getDomain(state.activeInstance.sidecar) === key : false,
         }
     }
 }

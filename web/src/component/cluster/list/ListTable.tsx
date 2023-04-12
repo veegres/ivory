@@ -51,8 +51,8 @@ export function ListTable(props: Props) {
                     </TableRow>
                 </TableHead>
                 <TableBody isLoading={isLoading} cellCount={3}>
-                    {renderRows()}
                     <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
+                    {renderRows()}
                     {renderEmpty()}
                 </TableBody>
             </Table>

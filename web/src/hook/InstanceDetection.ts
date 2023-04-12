@@ -8,7 +8,7 @@ import {Sidecar} from "../type/common";
 import {InstanceMap} from "../type/Instance";
 
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
-    const {store: {activeCluster}, setCluster} = useStore()
+    const {store: {activeCluster}, setCluster, setWarnings} = useStore()
     const isActive = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const defaultDetection = useRef<DetectionType>("auto")
@@ -35,6 +35,10 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     // which are always changing in this function, and it causes endless recursion
     // eslint-disable-next-line
     useEffect(handleRequestUpdate, [isActive, cluster, defaultInstance, combine])
+    // we don't want to add setWarnings because it doesn't change and can cause
+    // additional rerenders that we want to prevent
+    // eslint-disable-next-line
+    useEffect(handleWarningsUpdate, [cluster.name, combine.warning])
 
     return {
         defaultInstance,
@@ -116,6 +120,13 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
 
         return () => {
             if (isActive) setCluster(undefined)
+        }
+    }
+
+    function handleWarningsUpdate() {
+        setWarnings(cluster.name, combine.warning)
+        return () => {
+            if (combine.warning) setWarnings(cluster.name, false)
         }
     }
 

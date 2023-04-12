@@ -10,13 +10,14 @@ const SX: SxPropsMap = {
 }
 
 export function ListTags() {
-    const { setTags } = useStore()
+    const {setTags, store: {warnings}} = useStore()
     const query = useQuery(["tag/list"], tagApi.list)
-    const { data } = query
+    const {data} = query
+    const warningsCount = Object.values(warnings).filter(it => it).length
 
     return (
         <Box sx={SX.tags}>
-            <ToggleButtonScrollable tags={data ?? []} onUpdate={setTags}/>
+            <ToggleButtonScrollable tags={data ?? []} onUpdate={setTags} warnings={warningsCount}/>
         </Box>
     )
 }
