@@ -50,29 +50,29 @@ export function OverviewBloatJobForm(props: Props) {
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Schema"}
-                disabled={!target?.dbName}
+                disabled={!target?.dbName || !!target?.excludeSchema}
                 onFetch={(v) => queryApi.schemas({...req, name: v})}
                 onUpdate={(v) => setTarget({...target, schema: v || ""})}
             />
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
-                keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
-                disabled={!target?.schema && !target?.excludeSchema}
-                onFetch={(v) => queryApi.tables({...req, schema: target?.schema, name: v})}
-                onUpdate={(v) => setTarget({...target, table: v || ""})}
-            />
-            <AutocompleteFetch
-                margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Exclude Schema"}
-                disabled={!target?.dbName}
+                disabled={!target?.dbName || !!target?.schema}
                 onFetch={(v) => queryApi.schemas({...req, name: v})}
                 onUpdate={(v) => setTarget({...target, excludeSchema: v || ""})}
             />
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
-                keys={["tables", ...keys, target?.schema ?? ""]} label={"Exclude Table"}
-                disabled={!target?.schema && !target?.excludeSchema}
-                onFetch={(v) => queryApi.tables({...req, schema: target?.excludeSchema, name: v})}
+                keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
+                disabled={!target?.schema || !!target?.excludeTable}
+                onFetch={(v) => queryApi.tables({...req, schema: target?.schema, name: v})}
+                onUpdate={(v) => setTarget({...target, table: v || ""})}
+            />
+            <AutocompleteFetch
+                margin={"dense"} variant={"standard"}
+                keys={["tables", ...keys, target?.excludeSchema ?? ""]} label={"Exclude Table"}
+                disabled={!target?.schema || !!target?.table}
+                onFetch={(v) => queryApi.tables({...req, schema: target?.schema, name: v})}
                 onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
             />
             <Box sx={SX.buttons}>

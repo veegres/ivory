@@ -96,11 +96,11 @@ func (r *BloatRouter) StartJob(context *gin.Context) {
 			isDefaultTarget = false
 		}
 		if cli.Target.ExcludeSchema != "" {
-			sb = append(sb, "--excludeSchema", cli.Target.ExcludeSchema)
+			sb = append(sb, "--exclude-schema", cli.Target.ExcludeSchema)
 			isDefaultTarget = false
 		}
-		if cli.Target.ExcludeTable != "" {
-			sb = append(sb, "--excludeTable", cli.Target.ExcludeTable)
+		if cli.Target.ExcludeTable != "" && cli.Target.Schema != "" {
+			sb = append(sb, "--exclude-table", cli.Target.Schema+"."+cli.Target.ExcludeTable)
 			isDefaultTarget = false
 		}
 	}
