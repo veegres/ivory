@@ -1,5 +1,9 @@
 FROM ubuntu:22.04
 
+EXPOSE 80
+WORKDIR /opt
+VOLUME /opt/data
+
 RUN apt update
 RUN apt install -y curl htop
 RUN apt install -y nginx
@@ -21,7 +25,9 @@ RUN curl --create-dir -o /opt/tools/pgcompacttable https://raw.githubusercontent
 RUN chmod +x /opt/tools/pgcompacttable
 RUN ln -s /opt/tools/pgcompacttable /usr/bin
 
-EXPOSE 80
-WORKDIR /opt
-VOLUME /opt/data
+ARG IVORY_VERSION_TAG=none
+ARG IVORY_VERSION_COMMIT=none
+ENV IVORY_VERSION_TAG=$IVORY_VERSION_TAG
+ENV IVORY_VERSION_COMMIT=$IVORY_VERSION_COMMIT
+
 ENTRYPOINT ["entrypoint.sh"]

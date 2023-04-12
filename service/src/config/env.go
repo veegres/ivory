@@ -48,6 +48,8 @@ func NewEnv() *Env {
 	}
 
 	log.Println("IVORY ENV VARIABLES")
+	log.Println("IVORY_VERSION_TAG:", tag)
+	log.Println("IVORY_VERSION_COMMIT:", commit)
 	log.Println("IVORY_COMPANY_LABEL:", company)
 	log.Println("IVORY_AUTHENTICATION:", auth)
 	log.Println("IVORY_BASIC_USER:", user != nil)
