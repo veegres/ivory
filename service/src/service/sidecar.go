@@ -81,25 +81,25 @@ func (p *SidecarRequest[R]) parseResponse(res *http.Response) (R, int, error) {
 }
 
 type SidecarGateway struct {
-	clusterRepository *persistence.ClusterRepository
-	certRepository    *persistence.CertRepository
-	passwordService   *PasswordService
+	clusterService  *ClusterService
+	certRepository  *persistence.CertRepository
+	passwordService *PasswordService
 }
 
 func NewSidecarGateway(
-	clusterRepository *persistence.ClusterRepository,
+	clusterService *ClusterService,
 	certRepository *persistence.CertRepository,
 	passwordService *PasswordService,
 ) *SidecarGateway {
 	return &SidecarGateway{
-		clusterRepository: clusterRepository,
-		passwordService:   passwordService,
-		certRepository:    certRepository,
+		clusterService:  clusterService,
+		passwordService: passwordService,
+		certRepository:  certRepository,
 	}
 }
 
 func (p *SidecarGateway) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
-	clusterInfo, err := p.clusterRepository.Get(instance.Cluster)
+	clusterInfo, err := p.clusterService.Get(instance.Cluster)
 	client, protocol, err := p.getClient(clusterInfo.Certs, timeout)
 	domain := instance.Host + ":" + strconv.Itoa(instance.Port)
 	req, err := p.getRequest(clusterInfo.Credentials.PatroniId, method, protocol, domain, path, instance.Body)
