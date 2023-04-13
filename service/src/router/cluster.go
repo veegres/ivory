@@ -4,26 +4,30 @@ import (
 	"github.com/gin-gonic/gin"
 	. "ivory/src/model"
 	"ivory/src/persistence"
+	"ivory/src/service"
 	"net/http"
 )
 
 type ClusterRouter struct {
-	clusterRepository *persistence.ClusterRepository
-	tagRepository     *persistence.TagRepository
+	clusterService *service.ClusterService
+	tagRepository  *persistence.TagRepository
 }
 
 func NewClusterRouter(
-	clusterRepository *persistence.ClusterRepository,
+	clusterService *service.ClusterService,
 	tagRepository *persistence.TagRepository,
 ) *ClusterRouter {
-	return &ClusterRouter{clusterRepository: clusterRepository, tagRepository: tagRepository}
+	return &ClusterRouter{
+		clusterService: clusterService,
+		tagRepository:  tagRepository,
+	}
 }
 
 func (r *ClusterRouter) GetClusterList(context *gin.Context) {
 	tags := context.Request.URL.Query()["tags[]"]
 
 	if len(tags) == 0 {
-		list, err := r.clusterRepository.List()
+		list, err := r.clusterService.List()
 		if err != nil {
 			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -50,7 +54,7 @@ func (r *ClusterRouter) GetClusterList(context *gin.Context) {
 			listName = append(listName, k)
 		}
 
-		list, err := r.clusterRepository.ListByName(listName)
+		list, err := r.clusterService.ListByName(listName)
 		if err != nil {
 			context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -62,7 +66,7 @@ func (r *ClusterRouter) GetClusterList(context *gin.Context) {
 
 func (r *ClusterRouter) GetClusterByName(context *gin.Context) {
 	name := context.Param("name")
-	cluster, err := r.clusterRepository.Get(name)
+	cluster, err := r.clusterService.Get(name)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -98,7 +102,7 @@ func (r *ClusterRouter) PutClusterByName(context *gin.Context) {
 	cluster.Tags = tagList
 
 	// NOTE: update cluster
-	errCluster := r.clusterRepository.Update(cluster)
+	errCluster := r.clusterService.Update(cluster)
 	if errCluster != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errCluster.Error()})
 		return
@@ -114,7 +118,7 @@ func (r *ClusterRouter) DeleteClusterByName(context *gin.Context) {
 		context.JSON(http.StatusNotFound, gin.H{"error": errTag.Error()})
 		return
 	}
-	errCluster := r.clusterRepository.Delete(name)
+	errCluster := r.clusterService.Delete(name)
 	if errCluster != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errCluster.Error()})
 		return

@@ -8,7 +8,7 @@ import (
 type EraseService struct {
 	// TODO change everything to service
 	passwordRepository     *persistence.PasswordRepository
-	clusterRepository      *persistence.ClusterRepository
+	clusterService         *ClusterService
 	certRepository         *persistence.CertRepository
 	tagRepository          *persistence.TagRepository
 	compactTableRepository *persistence.CompactTableRepository
@@ -19,7 +19,7 @@ type EraseService struct {
 
 func NewEraseService(
 	passwordRepository *persistence.PasswordRepository,
-	clusterRepository *persistence.ClusterRepository,
+	clusterService *ClusterService,
 	certRepository *persistence.CertRepository,
 	tagRepository *persistence.TagRepository,
 	compactTableRepository *persistence.CompactTableRepository,
@@ -29,7 +29,7 @@ func NewEraseService(
 	return &EraseService{
 		passwordRepository:     passwordRepository,
 		compactTableRepository: compactTableRepository,
-		clusterRepository:      clusterRepository,
+		clusterService:         clusterService,
 		certRepository:         certRepository,
 		tagRepository:          tagRepository,
 		queryService:           queryService,
@@ -41,7 +41,7 @@ func (s *EraseService) Erase() error {
 	errSecret := s.secretService.Clean()
 	errPass := s.passwordRepository.DeleteAll()
 	errCert := s.certRepository.DeleteAll()
-	errCluster := s.clusterRepository.DeleteAll()
+	errCluster := s.clusterService.DeleteAll()
 	errComTable := s.compactTableRepository.DeleteAll()
 	errTag := s.tagRepository.DeleteAll()
 	errQuery := s.queryService.DeleteAll()

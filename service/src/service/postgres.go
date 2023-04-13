@@ -7,22 +7,21 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	. "ivory/src/model"
-	"ivory/src/persistence"
 	"strconv"
 )
 
 type PostgresGateway struct {
-	clusterRepository *persistence.ClusterRepository
-	passwordService   *PasswordService
+	clusterService  *ClusterService
+	passwordService *PasswordService
 }
 
 func NewPostgresGateway(
-	clusterRepository *persistence.ClusterRepository,
+	clusterService *ClusterService,
 	passwordService *PasswordService,
 ) *PostgresGateway {
 	return &PostgresGateway{
-		clusterRepository: clusterRepository,
-		passwordService:   passwordService,
+		clusterService:  clusterService,
+		passwordService: passwordService,
 	}
 }
 
@@ -130,7 +129,7 @@ func (s *PostgresGateway) sendRequest(clusterName string, db Database, query str
 
 func (s *PostgresGateway) getConnection(clusterName string, db Database) (*pgx.Conn, error) {
 	// TODO think about cache connections
-	cluster, errCluster := s.clusterRepository.Get(clusterName)
+	cluster, errCluster := s.clusterService.Get(clusterName)
 	if errCluster != nil {
 		return nil, errCluster
 	}
