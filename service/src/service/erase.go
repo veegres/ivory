@@ -7,14 +7,14 @@ import (
 
 type EraseService struct {
 	// TODO change everything to service
-	passwordService        *PasswordService
-	clusterService         *ClusterService
-	certRepository         *persistence.CertRepository
-	tagRepository          *persistence.TagRepository
-	compactTableRepository *persistence.BloatRepository
-	queryService           *QueryService
-	secretService          *SecretService
-	encryption             *EncryptionService
+	passwordService *PasswordService
+	clusterService  *ClusterService
+	certRepository  *persistence.CertRepository
+	tagRepository   *persistence.TagRepository
+	bloatService    *BloatService
+	queryService    *QueryService
+	secretService   *SecretService
+	encryption      *EncryptionService
 }
 
 func NewEraseService(
@@ -22,18 +22,18 @@ func NewEraseService(
 	clusterService *ClusterService,
 	certRepository *persistence.CertRepository,
 	tagRepository *persistence.TagRepository,
-	compactTableRepository *persistence.BloatRepository,
+	bloatService *BloatService,
 	queryService *QueryService,
 	secretService *SecretService,
 ) *EraseService {
 	return &EraseService{
-		passwordService:        passwordService,
-		compactTableRepository: compactTableRepository,
-		clusterService:         clusterService,
-		certRepository:         certRepository,
-		tagRepository:          tagRepository,
-		queryService:           queryService,
-		secretService:          secretService,
+		passwordService: passwordService,
+		bloatService:    bloatService,
+		clusterService:  clusterService,
+		certRepository:  certRepository,
+		tagRepository:   tagRepository,
+		queryService:    queryService,
+		secretService:   secretService,
 	}
 }
 
@@ -42,7 +42,7 @@ func (s *EraseService) Erase() error {
 	errPass := s.passwordService.DeleteAll()
 	errCert := s.certRepository.DeleteAll()
 	errCluster := s.clusterService.DeleteAll()
-	errComTable := s.compactTableRepository.DeleteAll()
+	errComTable := s.bloatService.DeleteAll()
 	errTag := s.tagRepository.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
 	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery)

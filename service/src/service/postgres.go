@@ -140,7 +140,7 @@ func (s *PostgresGateway) getConnection(credentialId uuid.UUID, db Database) (*p
 	}
 	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
 
-	// TODO think about cache connections
+	// TODO think about to cache connections
 	return pgx.Connect(context.Background(), connString)
 }
 
