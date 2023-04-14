@@ -11,12 +11,12 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: string,
+    credentialId?: string,
     db: Database,
 }
 
 export function Chart(props: Props) {
-    const {cluster, db} = props
+    const {credentialId, db} = props
 
     return (
         <Box sx={SX.box}>
@@ -24,10 +24,10 @@ export function Chart(props: Props) {
                 <DatabaseBox db={db}/>
             </Box>
             <ChartRow>
-                <ChartCommon cluster={cluster} db={db}/>
+                <ChartCommon credentialId={credentialId} db={db}/>
             </ChartRow>
             <ChartRow label={db.database && `${db.database}`}>
-                <ChartDatabase cluster={cluster} db={db}/>
+                <ChartDatabase credentialId={credentialId} db={db}/>
             </ChartRow>
         </Box>
     )

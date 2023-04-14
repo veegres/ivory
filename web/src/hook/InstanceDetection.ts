@@ -17,7 +17,11 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
 
     const query = useQuery(
         ["instance/overview", cluster.name],
-        () => instanceApi.overview({...defaultSidecar.current, cluster: cluster.name}),
+        () => instanceApi.overview({
+            ...defaultSidecar.current,
+            credentialId: cluster.credentials.patroniId,
+            certs: cluster.certs
+        }),
         {retry: false}
     )
     const {errorUpdateCount, refetch, remove, data, isFetching} = query
@@ -52,10 +56,11 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     }
 
     /**
-     * When we refetch we need to start from scratch, that is why we change
+     * When we refetch in `auto` detection we need to start from scratch, that is why we change
      * `defaultSidecar` value to the first one. After that we clean `useQuery`
      * state and start fetching from scratch with error count equal 0. That
-     * is why `handleEffectNextRequest` continue working.
+     * is why `handleEffectNextRequest` continue working. We don't send request additional
+     * request to the master node.
      */
     async function handleRefetch() {
         if (defaultDetection.current === "auto") {

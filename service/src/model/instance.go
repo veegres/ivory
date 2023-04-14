@@ -1,5 +1,7 @@
 package model
 
+import "github.com/google/uuid"
+
 // InstanceService TODO add common return types to cast interface to them and create mappers for each impl (patroni)
 type InstanceService interface {
 	Info(instance InstanceRequest) (InstanceInfo, int, error)
@@ -11,10 +13,11 @@ type InstanceService interface {
 }
 
 type InstanceRequest struct {
-	Cluster string `json:"cluster" form:"cluster"`
-	Host    string `json:"host" form:"host"`
-	Port    int    `json:"port" form:"port"`
-	Body    any    `json:"body" form:"body"`
+	Host         string     `json:"host" form:"host"`
+	Port         int        `json:"port" form:"port"`
+	CredentialId *uuid.UUID `json:"credentialId" form:"credentialId"`
+	Certs        Certs      `json:"certs" form:"certs"`
+	Body         any        `json:"body" form:"body"`
 }
 
 type Instance struct {

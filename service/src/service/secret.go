@@ -13,12 +13,12 @@ type SecretService struct {
 	ref              string
 	mutex            *sync.Mutex
 	secretRepository *persistence.SecretRepository
-	encryption       *Encryption
+	encryption       *EncryptionService
 }
 
 func NewSecretService(
 	secretRepository *persistence.SecretRepository,
-	encryption *Encryption,
+	encryption *EncryptionService,
 ) *SecretService {
 	encryptedRef, err := secretRepository.GetEncryptedRef()
 	if err != nil {

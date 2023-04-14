@@ -67,7 +67,7 @@ export function OverviewBloat(props: TabProps) {
             case ListBlock.JOB:
                 return <OverviewBloatJob list={jobs}/>
             case ListBlock.QUERY:
-                return <Query type={QueryType.BLOAT} cluster={cluster.name} db={db}/>
+                return <Query type={QueryType.BLOAT} credentialId={cluster.credentials.postgresId} db={db}/>
         }
     }
 

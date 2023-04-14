@@ -81,34 +81,30 @@ func (p *SidecarRequest[R]) parseResponse(res *http.Response) (R, int, error) {
 }
 
 type SidecarGateway struct {
-	clusterService  *ClusterService
-	certRepository  *persistence.CertRepository
 	passwordService *PasswordService
+	certRepository  *persistence.CertRepository
 }
 
 func NewSidecarGateway(
-	clusterService *ClusterService,
-	certRepository *persistence.CertRepository,
 	passwordService *PasswordService,
+	certRepository *persistence.CertRepository,
 ) *SidecarGateway {
 	return &SidecarGateway{
-		clusterService:  clusterService,
 		passwordService: passwordService,
 		certRepository:  certRepository,
 	}
 }
 
 func (p *SidecarGateway) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
-	clusterInfo, err := p.clusterService.Get(instance.Cluster)
-	client, protocol, err := p.getClient(clusterInfo.Certs, timeout)
+	client, protocol, err := p.getClient(instance.Certs, timeout)
 	domain := instance.Host + ":" + strconv.Itoa(instance.Port)
-	req, err := p.getRequest(clusterInfo.Credentials.PatroniId, method, protocol, domain, path, instance.Body)
+	req, err := p.getRequest(instance.CredentialId, method, protocol, domain, path, instance.Body)
 	res, err := client.Do(req)
 	return res, err
 }
 
 func (p *SidecarGateway) getRequest(
-	passwordId *uuid.UUID,
+	credentilId *uuid.UUID,
 	method string,
 	protocol string,
 	domain string,
@@ -126,8 +122,8 @@ func (p *SidecarGateway) getRequest(
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
-	if passwordId != nil {
-		passInfo, errPass := p.passwordService.GetDecrypted(*passwordId)
+	if credentilId != nil {
+		passInfo, errPass := p.passwordService.GetDecrypted(*credentilId)
 		err = errPass
 		req.SetBasicAuth(passInfo.Username, passInfo.Password)
 	}

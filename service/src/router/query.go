@@ -95,7 +95,7 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.RunQuery(req.QueryUuid, req.ClusterName, req.Db)
+	res, err := r.queryService.RunQuery(req.QueryUuid, req.CredentialId, req.Db)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -112,7 +112,7 @@ func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.DatabasesQuery(req.ClusterName, req.Db, req.Name)
+	res, err := r.queryService.DatabasesQuery(req.CredentialId, req.Db, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -129,7 +129,7 @@ func (r *QueryRouter) PostSchemasQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.SchemasQuery(req.ClusterName, req.Db, req.Name)
+	res, err := r.queryService.SchemasQuery(req.CredentialId, req.Db, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -146,7 +146,7 @@ func (r *QueryRouter) PostTablesQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.TablesQuery(req.ClusterName, req.Db, req.Schema, req.Name)
+	res, err := r.queryService.TablesQuery(req.CredentialId, req.Db, req.Schema, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -163,7 +163,7 @@ func (r *QueryRouter) PostCommonChartQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.CommonChartQuery(req.ClusterName, req.Db)
+	res, err := r.queryService.CommonChartQuery(req.CredentialId, req.Db)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -180,7 +180,7 @@ func (r *QueryRouter) PostDatabaseChartQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.DatabaseChartQuery(req.ClusterName, req.Db)
+	res, err := r.queryService.DatabaseChartQuery(req.CredentialId, req.Db)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -197,7 +197,7 @@ func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
 		return
 	}
 
-	errQuery := r.postgresGateway.Cancel(req.Pid, req.ClusterName, req.Db)
+	errQuery := r.postgresGateway.Cancel(req.Pid, req.CredentialId, req.Db)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return
@@ -214,7 +214,7 @@ func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
 		return
 	}
 
-	errQuery := r.postgresGateway.Terminate(req.Pid, req.ClusterName, req.Db)
+	errQuery := r.postgresGateway.Terminate(req.Pid, req.CredentialId, req.Db)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return

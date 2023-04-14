@@ -12,10 +12,10 @@ import (
 
 type BloatRouter struct {
 	bloatService *service.BloatService
-	repository   *persistence.CompactTableRepository
+	repository   *persistence.BloatRepository
 }
 
-func NewBloatRouter(bloatService *service.BloatService, repository *persistence.CompactTableRepository) *BloatRouter {
+func NewBloatRouter(bloatService *service.BloatService, repository *persistence.BloatRepository) *BloatRouter {
 	return &BloatRouter{bloatService: bloatService, repository: repository}
 }
 
@@ -70,7 +70,7 @@ func (r *BloatRouter) GetCompactTable(context *gin.Context) {
 }
 
 func (r *BloatRouter) StartJob(context *gin.Context) {
-	var cli CompactTableRequest
+	var cli BloatRequest
 	parseErr := context.ShouldBindJSON(&cli)
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})

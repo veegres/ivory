@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
 const Tabs: {[key in InstanceTabType]: InstanceTab} = {
     [InstanceTabType.CHART]: {
         label: "Charts",
-        body: (cluster: string, db: Database) => <Chart cluster={cluster} db={db}/>,
+        body: (id: string, db: Database) => <Chart credentialId={id} db={db}/>,
         info: <>
             Here you can check some basic charts about your overall database and each database separatly
             by specifing database name in the input near by.
@@ -28,7 +28,7 @@ const Tabs: {[key in InstanceTabType]: InstanceTab} = {
     },
     [InstanceTabType.QUERY]: {
         label: "Queries",
-        body: (cluster: string, db: Database) => <InstanceMainQueries cluster={cluster} db={db}/>,
+        body: (id: string, db: Database) => <InstanceMainQueries credentialId={id} db={db}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres. There are some default queries
             which are provided by the <i>system</i>. You can do such thing here as:
@@ -53,14 +53,13 @@ export function InstanceMain(props: Props) {
 
     if (!activeCluster) return null
 
-    const cluster = activeCluster?.cluster.name
     const password = activeCluster?.cluster.credentials.postgresId
     const {label, info, body} = Tabs[tab]
 
     return (
         <Box sx={SX.main}>
             <InstanceMainTitle label={label} info={info} renderActions={renderActions()}/>
-            {password ? body(cluster, {...database, database: dbName}) : <ClusterNoPostgresPassword/>}
+            {password ? body(password, {...database, database: dbName}) : <ClusterNoPostgresPassword/>}
         </Box>
     )
 
@@ -68,8 +67,8 @@ export function InstanceMain(props: Props) {
         return (
             <Box width={200}>
                 <AutocompleteFetch
-                    keys={["query", "databases", cluster, getDomain(database), database.database ?? ""]}
-                    onFetch={(v) => queryApi.databases({clusterName: cluster, db: database, name: v})}
+                    keys={["query", "databases", getDomain(database), database.database ?? ""]}
+                    onFetch={(v) => queryApi.databases({credentialId: password, db: database, name: v})}
                     placeholder={"Database"}
                     variant={"outlined"}
                     padding={"3px"}

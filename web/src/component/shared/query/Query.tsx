@@ -22,12 +22,12 @@ const style: StylePropsMap = {
 
 type Props = {
     type: QueryType,
-    cluster: string,
+    credentialId?: string,
     db: Database,
 }
 
 export function Query(props: Props) {
-    const {type, cluster, db} = props
+    const {type, credentialId, db} = props
     const [show, setShow] = useState(false)
     const query = useQuery(["query", "map", type], () => queryApi.list(type))
 
@@ -50,7 +50,7 @@ export function Query(props: Props) {
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((value) => (
                     <Collapse key={value.id}>
-                        <QueryItem query={value} cluster={cluster} db={db} type={type}/>
+                        <QueryItem query={value} credentialId={credentialId} db={db} type={type}/>
                     </Collapse>
                 ))}
             </TransitionGroup>
