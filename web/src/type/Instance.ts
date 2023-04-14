@@ -1,5 +1,6 @@
 import {Database, Sidecar} from "./common";
 import {ReactNode} from "react";
+import {Certs} from "./cluster";
 
 export enum InstanceTabType {QUERY, CHART}
 export interface InstanceTab {
@@ -9,7 +10,8 @@ export interface InstanceTab {
 }
 
 export interface InstanceRequest {
-    cluster: string,
+    credentialId?: string,
+    certs: Certs,
     host: string,
     port: number,
     body?: any,

@@ -31,7 +31,7 @@ func NewQueryService(
 	return queryService
 }
 
-func (s *QueryService) RunQuery(queryUuid uuid.UUID, clusterName string, db Database) (*QueryRunResponse, error) {
+func (s *QueryService) RunQuery(queryUuid uuid.UUID, credentialId uuid.UUID, db Database) (*QueryRunResponse, error) {
 	query, errQuery := s.queryRepository.Get(queryUuid)
 	if errQuery != nil {
 		return nil, errQuery
@@ -39,42 +39,42 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, clusterName string, db Data
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
-	return s.postgresGateway.GetFields(clusterName, db, query.Custom)
+	return s.postgresGateway.GetFields(credentialId, db, query.Custom)
 }
 
-func (s *QueryService) DatabasesQuery(clusterName string, db Database, name string) ([]string, error) {
-	return s.postgresGateway.GetMany(clusterName, db, constant.GetAllDatabases, "%"+name+"%")
+func (s *QueryService) DatabasesQuery(credentialId uuid.UUID, db Database, name string) ([]string, error) {
+	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllDatabases, "%"+name+"%")
 }
 
-func (s *QueryService) SchemasQuery(clusterName string, db Database, name string) ([]string, error) {
+func (s *QueryService) SchemasQuery(credentialId uuid.UUID, db Database, name string) ([]string, error) {
 	if db.Database == nil || *db.Database == "" {
 		return []string{}, nil
 	}
-	return s.postgresGateway.GetMany(clusterName, db, constant.GetAllSchemas, "%"+name+"%")
+	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllSchemas, "%"+name+"%")
 }
 
-func (s *QueryService) TablesQuery(clusterName string, db Database, schema string, name string) ([]string, error) {
+func (s *QueryService) TablesQuery(credentialId uuid.UUID, db Database, schema string, name string) ([]string, error) {
 	if db.Database == nil || *db.Database == "" || schema == "" {
 		return []string{}, nil
 	}
-	return s.postgresGateway.GetMany(clusterName, db, constant.GetAllTables, schema, "%"+name+"%")
+	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllTables, schema, "%"+name+"%")
 }
 
-func (s *QueryService) CommonChartQuery(clusterName string, db Database) (*[4]QueryChart, error) {
+func (s *QueryService) CommonChartQuery(credentialId uuid.UUID, db Database) (*[4]QueryChart, error) {
 	// TODO think about parallel this queries
-	dbCount, err := s.postgresGateway.GetOne(clusterName, db, "SELECT count(*) FROM pg_database;")
+	dbCount, err := s.postgresGateway.GetOne(credentialId, db, "SELECT count(*) FROM pg_database;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get db count"), err)
 	}
-	connectionCount, err := s.postgresGateway.GetOne(clusterName, db, "SELECT count(*) FROM pg_stat_activity;")
+	connectionCount, err := s.postgresGateway.GetOne(credentialId, db, "SELECT count(*) FROM pg_stat_activity;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get connection count"), err)
 	}
-	dbSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;")
+	dbSize, err := s.postgresGateway.GetOne(credentialId, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get total db size"), err)
 	}
-	uptime, err := s.postgresGateway.GetOne(clusterName, db, "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;")
+	uptime, err := s.postgresGateway.GetOne(credentialId, db, "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get uptime"), err)
 	}
@@ -87,21 +87,21 @@ func (s *QueryService) CommonChartQuery(clusterName string, db Database) (*[4]Qu
 	}, nil
 }
 
-func (s *QueryService) DatabaseChartQuery(clusterName string, db Database) (*[4]QueryChart, error) {
+func (s *QueryService) DatabaseChartQuery(credentialId uuid.UUID, db Database) (*[4]QueryChart, error) {
 	// TODO think about parallel this queries
-	schemaCount, err := s.postgresGateway.GetOne(clusterName, db, "SELECT count(*) FROM pg_namespace;")
+	schemaCount, err := s.postgresGateway.GetOne(credentialId, db, "SELECT count(*) FROM pg_namespace;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get schema count"), err)
 	}
-	totalSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	totalSize, err := s.postgresGateway.GetOne(credentialId, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get total db size"), err)
 	}
-	indexSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	indexSize, err := s.postgresGateway.GetOne(credentialId, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get indexes size"), err)
 	}
-	tableSize, err := s.postgresGateway.GetOne(clusterName, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
+	tableSize, err := s.postgresGateway.GetOne(credentialId, db, "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;")
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get tables size"), err)
 	}

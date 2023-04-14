@@ -12,12 +12,12 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: string,
+    credentialId?: string,
     db: Database,
 }
 
 export function InstanceMainQueries(props: Props){
-    const {cluster, db} = props
+    const {credentialId, db} = props
     const [tab, setTab] = useState(QueryType.ACTIVITY)
 
     return (
@@ -42,7 +42,7 @@ export function InstanceMainQueries(props: Props){
                 </ToggleButtonGroup>
             </Box>
             <Box sx={SX.query}>
-                <Query type={tab} cluster={cluster} db={db}/>
+                <Query type={tab} credentialId={credentialId} db={db}/>
             </Box>
         </Box>
     )

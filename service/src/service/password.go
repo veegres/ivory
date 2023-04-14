@@ -9,7 +9,7 @@ import (
 type PasswordService struct {
 	passwordRepository *persistence.PasswordRepository
 	secretService      *SecretService
-	encryption         *Encryption
+	encryption         *EncryptionService
 
 	defaultPasswordWord string
 }
@@ -17,7 +17,7 @@ type PasswordService struct {
 func NewPasswordService(
 	passwordRepository *persistence.PasswordRepository,
 	secretService *SecretService,
-	encryption *Encryption,
+	encryption *EncryptionService,
 ) *PasswordService {
 	return &PasswordService{
 		passwordRepository:  passwordRepository,

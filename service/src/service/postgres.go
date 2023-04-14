@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/golang/glog"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	. "ivory/src/model"
@@ -11,22 +12,19 @@ import (
 )
 
 type PostgresGateway struct {
-	clusterService  *ClusterService
 	passwordService *PasswordService
 }
 
 func NewPostgresGateway(
-	clusterService *ClusterService,
 	passwordService *PasswordService,
 ) *PostgresGateway {
 	return &PostgresGateway{
-		clusterService:  clusterService,
 		passwordService: passwordService,
 	}
 }
 
-func (s *PostgresGateway) GetMany(clusterName string, db Database, query string, args ...any) ([]string, error) {
-	rows, _, errReq := s.sendRequest(clusterName, db, query, args...)
+func (s *PostgresGateway) GetMany(credentialId uuid.UUID, db Database, query string, args ...any) ([]string, error) {
+	rows, _, errReq := s.sendRequest(credentialId, db, query, args...)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -45,8 +43,8 @@ func (s *PostgresGateway) GetMany(clusterName string, db Database, query string,
 	return values, nil
 }
 
-func (s *PostgresGateway) GetOne(clusterName string, db Database, query string) (any, error) {
-	rows, _, errReq := s.sendRequest(clusterName, db, query)
+func (s *PostgresGateway) GetOne(credentialId uuid.UUID, db Database, query string) (any, error) {
+	rows, _, errReq := s.sendRequest(credentialId, db, query)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -64,8 +62,8 @@ func (s *PostgresGateway) GetOne(clusterName string, db Database, query string) 
 	return value, nil
 }
 
-func (s *PostgresGateway) GetFields(clusterName string, db Database, query string) (*QueryRunResponse, error) {
-	rows, typeMap, errReq := s.sendRequest(clusterName, db, query)
+func (s *PostgresGateway) GetFields(credentialId uuid.UUID, db Database, query string) (*QueryRunResponse, error) {
+	rows, typeMap, errReq := s.sendRequest(credentialId, db, query)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -97,18 +95,18 @@ func (s *PostgresGateway) GetFields(clusterName string, db Database, query strin
 	return res, nil
 }
 
-func (s *PostgresGateway) Cancel(pid int, clusterName string, db Database) error {
-	_, _, err := s.sendRequest(clusterName, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
+func (s *PostgresGateway) Cancel(pid int, credentialId uuid.UUID, db Database) error {
+	_, _, err := s.sendRequest(credentialId, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
-func (s *PostgresGateway) Terminate(pid int, clusterName string, db Database) error {
-	_, _, err := s.sendRequest(clusterName, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
+func (s *PostgresGateway) Terminate(pid int, credentialId uuid.UUID, db Database) error {
+	_, _, err := s.sendRequest(credentialId, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
-func (s *PostgresGateway) sendRequest(clusterName string, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, error) {
-	conn, errConn := s.getConnection(clusterName, db)
+func (s *PostgresGateway) sendRequest(credentialId uuid.UUID, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, error) {
+	conn, errConn := s.getConnection(credentialId, db)
 	if errConn != nil {
 		return nil, nil, errConn
 	}
@@ -127,17 +125,8 @@ func (s *PostgresGateway) sendRequest(clusterName string, db Database, query str
 	return res, conn.TypeMap(), nil
 }
 
-func (s *PostgresGateway) getConnection(clusterName string, db Database) (*pgx.Conn, error) {
-	// TODO think about cache connections
-	cluster, errCluster := s.clusterService.Get(clusterName)
-	if errCluster != nil {
-		return nil, errCluster
-	}
-	if cluster.Credentials.PostgresId == nil {
-		return nil, errors.New("there is no password for this cluster")
-	}
-
-	cred, errCred := s.passwordService.GetDecrypted(*cluster.Credentials.PostgresId)
+func (s *PostgresGateway) getConnection(credentialId uuid.UUID, db Database) (*pgx.Conn, error) {
+	cred, errCred := s.passwordService.GetDecrypted(credentialId)
 	if errCred != nil {
 		return nil, errCred
 	}
@@ -150,6 +139,8 @@ func (s *PostgresGateway) getConnection(clusterName string, db Database) (*pgx.C
 		dbName = *db.Database
 	}
 	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
+
+	// TODO think about cache connections
 	return pgx.Connect(context.Background(), connString)
 }
 

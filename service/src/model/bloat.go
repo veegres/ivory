@@ -18,14 +18,14 @@ type Target struct {
 	ExcludeTable  string `json:"excludeTable"`
 }
 
-type CompactTableRequest struct {
+type BloatRequest struct {
 	Cluster    string       `json:"cluster"`
 	Connection DbConnection `json:"connection"`
 	Target     *Target      `json:"target"`
 	Ratio      int          `json:"ratio"`
 }
 
-type CompactTableModel struct {
+type BloatModel struct {
 	Uuid         uuid.UUID `json:"uuid"`
 	CredentialId uuid.UUID `json:"credentialId"`
 	Cluster      string    `json:"cluster"`

@@ -146,9 +146,9 @@ export function OverviewInstances({info}: TabProps) {
             title: `Make a switchover of ${instance.sidecar.host}?`,
             content: "It will change the leader of your cluster that will cause some downtime.",
             onAgree: () => switchover.mutate({
-                cluster: cluster.name,
-                host: instance.sidecar.host,
-                port: instance.sidecar.port,
+                ...instance.sidecar,
+                credentialId: cluster.credentials.patroniId,
+                certs: cluster.certs,
                 body: {leader: instance.sidecar.host},
             })
         })
@@ -160,9 +160,9 @@ export function OverviewInstances({info}: TabProps) {
             title: `Make a reinitialization of ${instance.sidecar.host}?`,
             content: "It will erase all node data and will download it from scratch.",
             onAgree: () => reinit.mutate({
-                cluster: cluster.name,
-                host: instance.sidecar.host,
-                port: instance.sidecar.port,
+                ...instance.sidecar,
+                credentialId: cluster.credentials.patroniId,
+                certs: cluster.certs,
             })
         })
     }

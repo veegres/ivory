@@ -31,7 +31,7 @@ export interface QueryRequest {
 }
 
 export interface QueryPostgresRequest {
-    clusterName: string,
+    credentialId?: string,
     db: Database,
 }
 

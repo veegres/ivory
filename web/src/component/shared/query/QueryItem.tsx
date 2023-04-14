@@ -33,20 +33,20 @@ enum BodyType {INFO, EDIT, RESTORE, RUN}
 
 type Props = {
     query: Query,
-    cluster: string,
+    credentialId?: string,
     db: Database,
     type: QueryType,
 }
 
 export function QueryItem(props: Props) {
-    const {query, cluster: clusterName, db, type} = props
+    const {query, credentialId, db, type} = props
     const {info} = useTheme()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
 
     const result = useQuery(
         ["query", "run", query.id],
-        () => queryApi.run({queryUuid: query.id, clusterName, db}),
+        () => queryApi.run({queryUuid: query.id, credentialId, db}),
         {enabled: false, retry: false},
     )
 
@@ -81,8 +81,8 @@ export function QueryItem(props: Props) {
                     data={result.data}
                     error={result.error}
                     loading={result.isFetching || cancel.isLoading || terminate.isLoading}
-                    onCancel={(pid) => cancel.mutate({pid, clusterName, db})}
-                    onTerminate={(pid) => terminate.mutate({pid, clusterName, db})}
+                    onCancel={(pid) => cancel.mutate({pid, credentialId, db})}
+                    onTerminate={(pid) => terminate.mutate({pid, credentialId, db})}
                 />
             </QueryItemBody>
         </Paper>

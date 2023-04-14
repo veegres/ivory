@@ -39,8 +39,8 @@ type QueryRequest struct {
 }
 
 type QueryPostgresRequest struct {
-	ClusterName string   `json:"clusterName"`
-	Db          Database `json:"db"`
+	CredentialId uuid.UUID `json:"credentialId"`
+	Db           Database  `json:"db"`
 }
 
 type QueryRunRequest struct {

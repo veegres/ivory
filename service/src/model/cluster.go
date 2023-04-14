@@ -10,6 +10,14 @@ type ClusterModel struct {
 	Tags        []string    `json:"tags"`
 }
 
+type ClusterAutoModel struct {
+	Name        string      `json:"name"`
+	Certs       Certs       `json:"certs"`
+	Credentials Credentials `json:"credentials"`
+	Instance    Sidecar     `json:"instance"`
+	Tags        []string    `json:"tags"`
+}
+
 type Certs struct {
 	ClientCAId   *uuid.UUID `json:"clientCAId"`
 	ClientKeyId  *uuid.UUID `json:"clientKeyId"`

@@ -11,16 +11,16 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: string,
+    credentialId?: string,
     db: Database,
 }
 
 export function ChartCommon(props: Props) {
-    const {cluster: clusterName, db} = props
+    const {db} = props
 
     const common = useQuery(
-        ["query", "chart", "common", clusterName, db.host, db.port],
-        () => queryApi.chartCommon({clusterName, db: {host: db.host, port: db.port}}),
+        ["query", "chart", "common", db.host, db.port],
+        () => queryApi.chartCommon(props),
         {retry: false})
 
     if (common.error) return <Box sx={SX.error}><ErrorAlert error={common.error}/></Box>

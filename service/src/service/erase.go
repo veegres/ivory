@@ -11,10 +11,10 @@ type EraseService struct {
 	clusterService         *ClusterService
 	certRepository         *persistence.CertRepository
 	tagRepository          *persistence.TagRepository
-	compactTableRepository *persistence.CompactTableRepository
+	compactTableRepository *persistence.BloatRepository
 	queryService           *QueryService
 	secretService          *SecretService
-	encryption             *Encryption
+	encryption             *EncryptionService
 }
 
 func NewEraseService(
@@ -22,7 +22,7 @@ func NewEraseService(
 	clusterService *ClusterService,
 	certRepository *persistence.CertRepository,
 	tagRepository *persistence.TagRepository,
-	compactTableRepository *persistence.CompactTableRepository,
+	compactTableRepository *persistence.BloatRepository,
 	queryService *QueryService,
 	secretService *SecretService,
 ) *EraseService {

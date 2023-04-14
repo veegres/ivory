@@ -6,7 +6,7 @@ import {ErrorAlert} from "../../view/box/ErrorAlert";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {Instance} from "../../../type/Instance";
+import {Instance, InstanceRequest} from "../../../type/Instance";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
@@ -18,13 +18,15 @@ export function OverviewConfig({info}: TabProps) {
     const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
+    const {sidecar} = defaultInstance
+    const requestBody: InstanceRequest = {...sidecar, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
 
     const {data: config, isLoading, isError, error} = useQuery(
-        ["instance/config", defaultInstance.sidecar.host],
-        () => instanceApi.config({...defaultInstance.sidecar, cluster: cluster.name}),
+        ["instance/config", sidecar.host, sidecar.port],
+        () => instanceApi.config(requestBody),
         {enabled: defaultInstance.inCluster}
     )
-    const updateOptions = useMutationOptions([["instance/config", defaultInstance.sidecar.host]], () => setIsEditable(false))
+    const updateOptions = useMutationOptions([["instance/config", sidecar.host, sidecar.port]], () => setIsEditable(false))
     const updateConfig = useMutation(instanceApi.updateConfig, updateOptions)
 
     useEffect(() => setConfigState(stringify(config)), [config])
@@ -60,7 +62,7 @@ export function OverviewConfig({info}: TabProps) {
         return (
             <>
                 <CancelIconButton placement={"left"} size={35} disabled={isLoading} onClick={handleCancel}/>
-                <SaveIconButton placement={"left"} size={35} loading={isLoading} onClick={() => handleUpdate(instance, configState)}/>
+                <SaveIconButton placement={"left"} size={35} loading={isLoading} onClick={() => handleUpdate(instance)}/>
             </>
         )
     }
@@ -75,12 +77,15 @@ export function OverviewConfig({info}: TabProps) {
         setConfigState(stringify(config))
     }
 
-    function handleUpdate(instance: Instance, config: string) {
-        if (configState) updateConfig.mutate({
-            ...instance.sidecar,
-            cluster: cluster.name,
-            body: JSON.parse(config)
-        })
+    function handleUpdate(instance: Instance) {
+        if (configState) {
+            const request: InstanceRequest = {
+                ...instance.sidecar,
+                credentialId: cluster.credentials.patroniId,
+                certs: cluster.certs
+            }
+            updateConfig.mutate(request)
+        }
     }
 
     function stringify(json?: any) {
