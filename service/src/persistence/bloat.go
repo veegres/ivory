@@ -14,7 +14,7 @@ type BloatRepository struct {
 	file   *config.FileGateway
 }
 
-func NewCompactTableRepository(bucket *config.Bucket[BloatModel], file *config.FileGateway) *BloatRepository {
+func NewBloatRepository(bucket *config.Bucket[BloatModel], file *config.FileGateway) *BloatRepository {
 	return &BloatRepository{
 		bucket: bucket,
 		file:   file,

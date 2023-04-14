@@ -102,11 +102,17 @@ func (w *BloatService) Delete(jobUuid uuid.UUID) error {
 	if element != nil && element.job.IsJobActive() {
 		return errors.New("job is active")
 	}
-	errDb := w.bloatRepository.Delete(jobUuid)
-	if errDb != nil {
-		return errDb
+	return w.bloatRepository.Delete(jobUuid)
+}
+
+func (w *BloatService) DeleteAll() error {
+	for _, e := range w.elements {
+		e.job.SetStatus(FAILED)
+		for s, _ := range e.job.subscribers {
+			e.job.Unsubscribe(s)
+		}
 	}
-	return nil
+	return w.bloatRepository.DeleteAll()
 }
 
 func (w *BloatService) Stop(jobUuid uuid.UUID) error {
