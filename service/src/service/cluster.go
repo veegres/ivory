@@ -1,31 +1,53 @@
 package service
 
 import (
-	"errors"
 	. "ivory/src/model"
 	"ivory/src/persistence"
 )
 
 type ClusterService struct {
 	clusterRepository *persistence.ClusterRepository
-	passwordService   *PasswordService
+	tagRepository     *persistence.TagRepository
 	instanceService   InstanceService
 }
 
 func NewClusterService(
 	clusterRepository *persistence.ClusterRepository,
-	passwordService *PasswordService,
+	tagRepository *persistence.TagRepository,
 	instanceService InstanceService,
 ) *ClusterService {
 	return &ClusterService{
 		clusterRepository: clusterRepository,
-		passwordService:   passwordService,
+		tagRepository:     tagRepository,
 		instanceService:   instanceService,
 	}
 }
 
 func (s *ClusterService) List() ([]ClusterModel, error) {
 	return s.clusterRepository.List()
+}
+
+func (s *ClusterService) ListByTag(tags []string) ([]ClusterModel, error) {
+	listMap := make(map[string]bool)
+	for _, tag := range tags {
+		clusters, err := s.tagRepository.Get(tag)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, c := range clusters {
+			if !listMap[c] {
+				listMap[c] = true
+			}
+		}
+	}
+
+	listName := make([]string, 0)
+	for k := range listMap {
+		listName = append(listName, k)
+	}
+
+	return s.ListByName(listName)
 }
 
 func (s *ClusterService) ListByName(clusters []string) ([]ClusterModel, error) {
@@ -36,45 +58,61 @@ func (s *ClusterService) Get(key string) (ClusterModel, error) {
 	return s.clusterRepository.Get(key)
 }
 
-func (s *ClusterService) GetPatroniCredential(name string) (*Credential, error) {
-	cluster, errCluster := s.Get(name)
-	if errCluster != nil {
-		return nil, errCluster
+func (s *ClusterService) Update(cluster ClusterModel) (*ClusterModel, error) {
+	// NOTE: remove duplicates
+	tagMap := make(map[string]bool)
+	for _, tag := range cluster.Tags {
+		tagMap[tag] = true
 	}
-	if cluster.Credentials.PatroniId == nil {
-		return nil, errors.New("there is no password for this cluster")
+	tagList := make([]string, 0)
+	for key := range tagMap {
+		tagList = append(tagList, key)
 	}
-	cred, errCred := s.passwordService.GetDecrypted(*cluster.Credentials.PatroniId)
-	if errCred != nil {
-		return nil, errCred
+
+	// NOTE: create tags in db with cluster name
+	err := s.tagRepository.UpdateCluster(cluster.Name, tagList)
+	if err != nil {
+		return nil, err
 	}
-	return cred, nil
+	cluster.Tags = tagList
+
+	errCluster := s.clusterRepository.Update(cluster)
+	return &cluster, errCluster
 }
 
-func (s *ClusterService) GetPostgresCredential(name string) (*Credential, error) {
-	cluster, errCluster := s.Get(name)
-	if errCluster != nil {
-		return nil, errCluster
+func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (*ClusterModel, error) {
+	request := InstanceRequest{
+		Host:         cluster.Instance.Host,
+		Port:         cluster.Instance.Port,
+		CredentialId: cluster.Credentials.PatroniId,
+		Certs:        cluster.Certs,
 	}
-	if cluster.Credentials.PostgresId == nil {
-		return nil, errors.New("there is no password for this cluster")
+	overview, _, err := s.instanceService.Overview(request)
+	if err != nil {
+		return nil, err
 	}
-	cred, errCred := s.passwordService.GetDecrypted(*cluster.Credentials.PostgresId)
-	if errCred != nil {
-		return nil, errCred
-	}
-	return cred, nil
-}
 
-func (s *ClusterService) Update(cluster ClusterModel) error {
-	return s.clusterRepository.Update(cluster)
-}
+	instances := make([]Sidecar, 0)
+	for _, instance := range overview {
+		instances = append(instances, instance.Sidecar)
+	}
 
-func (s *ClusterService) AddAuto(cluster ClusterAutoModel) ClusterModel {
-	return ClusterModel{}
+	model := ClusterModel{
+		Name:        cluster.Name,
+		Certs:       cluster.Certs,
+		Credentials: cluster.Credentials,
+		Tags:        cluster.Tags,
+		Instances:   instances,
+	}
+
+	return s.Update(model)
 }
 
 func (s *ClusterService) Delete(key string) error {
+	errTag := s.tagRepository.UpdateCluster(key, nil)
+	if errTag != nil {
+		return errTag
+	}
 	return s.clusterRepository.Delete(key)
 }
 
