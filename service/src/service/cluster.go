@@ -7,18 +7,18 @@ import (
 
 type ClusterService struct {
 	clusterRepository *persistence.ClusterRepository
-	tagRepository     *persistence.TagRepository
+	tagService        *TagService
 	instanceService   InstanceService
 }
 
 func NewClusterService(
 	clusterRepository *persistence.ClusterRepository,
-	tagRepository *persistence.TagRepository,
+	tagService *TagService,
 	instanceService InstanceService,
 ) *ClusterService {
 	return &ClusterService{
 		clusterRepository: clusterRepository,
-		tagRepository:     tagRepository,
+		tagService:        tagService,
 		instanceService:   instanceService,
 	}
 }
@@ -30,7 +30,7 @@ func (s *ClusterService) List() ([]ClusterModel, error) {
 func (s *ClusterService) ListByTag(tags []string) ([]ClusterModel, error) {
 	listMap := make(map[string]bool)
 	for _, tag := range tags {
-		clusters, err := s.tagRepository.Get(tag)
+		clusters, err := s.tagService.Get(tag)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func (s *ClusterService) Update(cluster ClusterModel) (*ClusterModel, error) {
 	}
 
 	// NOTE: create tags in db with cluster name
-	err := s.tagRepository.UpdateCluster(cluster.Name, tagList)
+	err := s.tagService.UpdateCluster(cluster.Name, tagList)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (*ClusterModel, er
 }
 
 func (s *ClusterService) Delete(key string) error {
-	errTag := s.tagRepository.UpdateCluster(key, nil)
+	errTag := s.tagService.UpdateCluster(key, nil)
 	if errTag != nil {
 		return errTag
 	}

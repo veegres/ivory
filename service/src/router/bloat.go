@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	. "ivory/src/model"
-	"ivory/src/persistence"
 	"ivory/src/service"
 	"net/http"
 	"strconv"
@@ -12,11 +11,10 @@ import (
 
 type BloatRouter struct {
 	bloatService *service.BloatService
-	repository   *persistence.BloatRepository
 }
 
-func NewBloatRouter(bloatService *service.BloatService, repository *persistence.BloatRepository) *BloatRouter {
-	return &BloatRouter{bloatService: bloatService, repository: repository}
+func NewBloatRouter(bloatService *service.BloatService) *BloatRouter {
+	return &BloatRouter{bloatService: bloatService}
 }
 
 func (r *BloatRouter) GetCompactTableLogs(context *gin.Context) {
@@ -26,7 +24,7 @@ func (r *BloatRouter) GetCompactTableLogs(context *gin.Context) {
 		return
 	}
 
-	model, errModel := r.repository.Get(jobUuid)
+	model, errModel := r.bloatService.Get(jobUuid)
 	if errModel != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errModel.Error()})
 		return
@@ -37,7 +35,7 @@ func (r *BloatRouter) GetCompactTableLogs(context *gin.Context) {
 }
 
 func (r *BloatRouter) GetCompactTableList(context *gin.Context) {
-	list, err := r.repository.List()
+	list, err := r.bloatService.List()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -47,7 +45,7 @@ func (r *BloatRouter) GetCompactTableList(context *gin.Context) {
 
 func (r *BloatRouter) GetCompactTableListByCluster(context *gin.Context) {
 	cluster := context.Param("name")
-	list, err := r.repository.ListByCluster(cluster)
+	list, err := r.bloatService.ListByCluster(cluster)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -61,7 +59,7 @@ func (r *BloatRouter) GetCompactTable(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	compactTable, err := r.repository.Get(jobUuid)
+	compactTable, err := r.bloatService.Get(jobUuid)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

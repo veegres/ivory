@@ -48,6 +48,22 @@ func NewBloatService(
 	return worker
 }
 
+func (w *BloatService) List() ([]BloatModel, error) {
+	return w.bloatRepository.List()
+}
+
+func (w *BloatService) ListByStatus(status JobStatus) ([]BloatModel, error) {
+	return w.bloatRepository.ListByStatus(status)
+}
+
+func (w *BloatService) ListByCluster(cluster string) ([]BloatModel, error) {
+	return w.bloatRepository.ListByCluster(cluster)
+}
+
+func (w *BloatService) Get(uuid uuid.UUID) (BloatModel, error) {
+	return w.bloatRepository.Get(uuid)
+}
+
 func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []string) (*BloatModel, error) {
 	compactTable, err := w.bloatRepository.Create(credentialId, cluster, args)
 	if err != nil {
@@ -73,7 +89,7 @@ func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
 
 	// stream logs from file
-	file, _ := w.bloatRepository.GetFile(model.LogsPath)
+	file, _ := w.bloatRepository.GetOpenFile(model.LogsPath)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		stream(Event{Type: LOG, Message: scanner.Text()})
@@ -108,7 +124,7 @@ func (w *BloatService) Delete(jobUuid uuid.UUID) error {
 func (w *BloatService) DeleteAll() error {
 	for _, e := range w.elements {
 		e.job.SetStatus(FAILED)
-		for s, _ := range e.job.subscribers {
+		for s := range e.job.subscribers {
 			e.job.Unsubscribe(s)
 		}
 	}
@@ -157,7 +173,7 @@ func (w *BloatService) runner() {
 			}
 			w.elements[jobUuid].job.SetCommand(cmd)
 
-			// Read and write logs from command
+			// ead and write logs from command
 			reader := bufio.NewReader(pipe)
 			line, _, errReadLine := reader.ReadLine()
 			for errReadLine == nil {
@@ -264,7 +280,7 @@ func (w *BloatService) closeEvents(job Job) {
 
 func (w *BloatService) addElement(model *BloatModel) {
 	w.mutex.Lock()
-	file, _ := w.bloatRepository.GetFile(model.LogsPath)
+	file, _ := w.bloatRepository.GetOpenFile(model.LogsPath)
 	w.elements[model.Uuid] = &element{job: *NewJob(), model: model, file: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid

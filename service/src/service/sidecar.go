@@ -139,7 +139,7 @@ func (p *SidecarGateway) getClient(certs Certs, timeout time.Duration) (*http.Cl
 
 	// Setting Client CA
 	if certs.ClientCAId != nil {
-		clientCA, errCert := p.certRepository.Read(*certs.ClientCAId)
+		clientCA, errCert := p.certRepository.GetFile(*certs.ClientCAId)
 		rootCa = x509.NewCertPool()
 		rootCa.AppendCertsFromPEM(clientCA)
 		protocol = "https"

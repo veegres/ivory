@@ -2,20 +2,20 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"ivory/src/persistence"
+	"ivory/src/service"
 	"net/http"
 )
 
 type TagRouter struct {
-	repository *persistence.TagRepository
+	tagService *service.TagService
 }
 
-func NewTagRouter(repository *persistence.TagRepository) *TagRouter {
-	return &TagRouter{repository: repository}
+func NewTagRouter(tagService *service.TagService) *TagRouter {
+	return &TagRouter{tagService: tagService}
 }
 
 func (r *TagRouter) GetTagList(context *gin.Context) {
-	list, err := r.repository.List()
+	list, err := r.tagService.List()
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

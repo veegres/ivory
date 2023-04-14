@@ -41,7 +41,7 @@ func (r *BloatRepository) Get(uuid uuid.UUID) (BloatModel, error) {
 	return r.bucket.Get(uuid.String())
 }
 
-func (r *BloatRepository) GetFile(path string) (*os.File, error) {
+func (r *BloatRepository) GetOpenFile(path string) (*os.File, error) {
 	return r.file.Open(path)
 }
 

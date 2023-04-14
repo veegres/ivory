@@ -2,15 +2,13 @@ package service
 
 import (
 	"errors"
-	"ivory/src/persistence"
 )
 
 type EraseService struct {
-	// TODO change everything to service
 	passwordService *PasswordService
 	clusterService  *ClusterService
-	certRepository  *persistence.CertRepository
-	tagRepository   *persistence.TagRepository
+	certService     *CertService
+	tagService      *TagService
 	bloatService    *BloatService
 	queryService    *QueryService
 	secretService   *SecretService
@@ -20,8 +18,8 @@ type EraseService struct {
 func NewEraseService(
 	passwordService *PasswordService,
 	clusterService *ClusterService,
-	certRepository *persistence.CertRepository,
-	tagRepository *persistence.TagRepository,
+	certService *CertService,
+	tagService *TagService,
 	bloatService *BloatService,
 	queryService *QueryService,
 	secretService *SecretService,
@@ -30,8 +28,8 @@ func NewEraseService(
 		passwordService: passwordService,
 		bloatService:    bloatService,
 		clusterService:  clusterService,
-		certRepository:  certRepository,
-		tagRepository:   tagRepository,
+		certService:     certService,
+		tagService:      tagService,
 		queryService:    queryService,
 		secretService:   secretService,
 	}
@@ -40,10 +38,10 @@ func NewEraseService(
 func (s *EraseService) Erase() error {
 	errSecret := s.secretService.Clean()
 	errPass := s.passwordService.DeleteAll()
-	errCert := s.certRepository.DeleteAll()
+	errCert := s.certService.DeleteAll()
 	errCluster := s.clusterService.DeleteAll()
 	errComTable := s.bloatService.DeleteAll()
-	errTag := s.tagRepository.DeleteAll()
+	errTag := s.tagService.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
 	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery)
 }

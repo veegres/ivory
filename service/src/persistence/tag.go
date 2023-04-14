@@ -26,49 +26,8 @@ func (t *TagRepository) GetMap() (map[string][]string, error) {
 	return t.bucket.GetMap(nil)
 }
 
-func (t *TagRepository) UpdateCluster(cluster string, tags []string) error {
-	tagMap, err := t.GetMap()
-	if err != nil {
-		return err
-	}
-
-	// NOTE: remove cluster from all tags
-	for k, v := range tagMap {
-		tmp := make([]string, 0)
-		for _, c := range v {
-			if c != cluster {
-				tmp = append(tmp, c)
-			}
-		}
-
-		if len(tmp) == 0 {
-			tagMap[k] = nil
-		} else {
-			tagMap[k] = tmp
-		}
-	}
-
-	// NOTE: add cluster to tags
-	for _, v := range tags {
-		tagMap[v] = append(tagMap[v], cluster)
-	}
-
-	// NOTE: update tags
-	for k, v := range tagMap {
-		if v != nil {
-			err := t.bucket.Update(k, v)
-			if err != nil {
-				return err
-			}
-		} else {
-			err := t.bucket.Delete(k)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
+func (t *TagRepository) Update(key string, value []string) error {
+	return t.bucket.Update(key, value)
 }
 
 func (t *TagRepository) Delete(tag string) error {
