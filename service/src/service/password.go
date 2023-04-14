@@ -80,13 +80,16 @@ func (s *PasswordService) Get(uuid uuid.UUID) (*Credential, error) {
 }
 
 func (s *PasswordService) GetDecrypted(uuid uuid.UUID) (*Credential, error) {
-	cred, err := s.passwordRepository.Get(uuid)
-	if err != nil {
-		return nil, err
+	cred, errCred := s.passwordRepository.Get(uuid)
+	if errCred != nil {
+		return nil, errCred
 	}
-	decryptedPassword, err := s.encryption.Decrypt(cred.Password, s.secretService.Get())
+	decryptedPassword, errDec := s.encryption.Decrypt(cred.Password, s.secretService.Get())
+	if errDec != nil {
+		return nil, errDec
+	}
 	cred.Password = decryptedPassword
-	return &cred, err
+	return &cred, nil
 }
 
 func (s *PasswordService) ReEncryptPasswords(oldSecret [16]byte, newSecret [16]byte) error {

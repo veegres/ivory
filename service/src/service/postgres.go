@@ -128,7 +128,7 @@ func (s *PostgresGateway) sendRequest(credentialId uuid.UUID, db Database, query
 func (s *PostgresGateway) getConnection(credentialId uuid.UUID, db Database) (*pgx.Conn, error) {
 	cred, errCred := s.passwordService.GetDecrypted(credentialId)
 	if errCred != nil {
-		return nil, errCred
+		return nil, errors.New("password problems, check if it is exists")
 	}
 
 	dbName := "postgres"
