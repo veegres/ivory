@@ -1,0 +1,76 @@
+package service
+
+import "ivory/src/persistence"
+
+type TagService struct {
+	tagRepository *persistence.TagRepository
+}
+
+func NewTagService(tagRepository *persistence.TagRepository) *TagService {
+	return &TagService{tagRepository: tagRepository}
+}
+
+func (s *TagService) Get(tag string) ([]string, error) {
+	return s.tagRepository.Get(tag)
+}
+
+func (s *TagService) GetMap() (map[string][]string, error) {
+	return s.tagRepository.GetMap()
+}
+
+func (s *TagService) List() ([]string, error) {
+	return s.tagRepository.List()
+}
+
+func (s *TagService) UpdateCluster(cluster string, tags []string) error {
+	tagMap, err := s.tagRepository.GetMap()
+	if err != nil {
+		return err
+	}
+
+	// NOTE: remove cluster from all tags
+	for k, v := range tagMap {
+		tmp := make([]string, 0)
+		for _, c := range v {
+			if c != cluster {
+				tmp = append(tmp, c)
+			}
+		}
+
+		if len(tmp) == 0 {
+			tagMap[k] = nil
+		} else {
+			tagMap[k] = tmp
+		}
+	}
+
+	// NOTE: add cluster to tags
+	for _, v := range tags {
+		tagMap[v] = append(tagMap[v], cluster)
+	}
+
+	// NOTE: update tags
+	for k, v := range tagMap {
+		if v != nil {
+			err := s.tagRepository.Update(k, v)
+			if err != nil {
+				return err
+			}
+		} else {
+			err := s.tagRepository.Delete(k)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *TagService) Delete(tag string) error {
+	return s.tagRepository.Delete(tag)
+}
+
+func (s *TagService) DeleteAll() error {
+	return s.tagRepository.DeleteAll()
+}

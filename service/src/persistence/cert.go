@@ -3,11 +3,8 @@ package persistence
 import (
 	"errors"
 	"github.com/google/uuid"
-	"golang.org/x/exp/slices"
 	"ivory/src/config"
 	. "ivory/src/model"
-	"path"
-	"strings"
 )
 
 type CertRepository struct {
@@ -26,7 +23,7 @@ func (r *CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
 	return r.bucket.Get(uuid.String())
 }
 
-func (r *CertRepository) Read(uuid uuid.UUID) ([]byte, error) {
+func (r *CertRepository) GetFile(uuid uuid.UUID) ([]byte, error) {
 	info, err := r.Get(uuid)
 	if err != nil {
 		return nil, err
@@ -44,28 +41,13 @@ func (r *CertRepository) ListByType(certType CertType) (map[string]CertModel, er
 	})
 }
 
-func (r *CertRepository) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*CertModel, error) {
-	formats := []string{".crt", ".key", ".chain"}
+func (r *CertRepository) Create(cert CertModel, pathStr string) (*CertModel, error) {
 	key := uuid.New()
-	cert := CertModel{FileUsageType: fileUsageType, Type: certType}
 
-	fileName := path.Base(pathStr)
-	if fileName == "" {
-		return nil, errors.New("file name cannot be empty")
-	}
-
-	fileFormat := path.Ext(pathStr)
-	idx := slices.IndexFunc(formats, func(s string) bool { return s == fileFormat })
-	if idx == -1 {
-		return nil, errors.New("file format is not correct, allowed formats: " + strings.Join(formats, ", "))
-	}
-
-	switch fileUsageType {
+	switch cert.FileUsageType {
 	case FileUsageType(UPLOAD):
-		cert.FileName = fileName
 		cert.Path = r.file.Create(key)
 	case FileUsageType(PATH):
-		cert.FileName = fileName
 		cert.Path = pathStr
 	default:
 		return nil, errors.New("unknown certificate type")

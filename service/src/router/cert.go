@@ -4,17 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	. "ivory/src/model"
-	"ivory/src/persistence"
+	"ivory/src/service"
 	"net/http"
 	"strconv"
 )
 
 type CertRouter struct {
-	repository *persistence.CertRepository
+	certService *service.CertService
 }
 
-func NewCertRouter(repository *persistence.CertRepository) *CertRouter {
-	return &CertRouter{repository: repository}
+func NewCertRouter(certService *service.CertService) *CertRouter {
+	return &CertRouter{certService: certService}
 }
 
 func (r *CertRouter) GetCertList(context *gin.Context) {
@@ -24,9 +24,9 @@ func (r *CertRouter) GetCertList(context *gin.Context) {
 	var list map[string]CertModel
 	if certType != "" {
 		number, _ := strconv.Atoi(certType)
-		list, err = r.repository.ListByType(CertType(number))
+		list, err = r.certService.ListByType(CertType(number))
 	} else {
-		list, err = r.repository.List()
+		list, err = r.certService.List()
 	}
 
 	if err != nil {
@@ -39,7 +39,7 @@ func (r *CertRouter) GetCertList(context *gin.Context) {
 
 func (r *CertRouter) DeleteCert(context *gin.Context) {
 	certUuid, err := uuid.Parse(context.Param("uuid"))
-	err = r.repository.Delete(certUuid)
+	err = r.certService.Delete(certUuid)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -55,7 +55,7 @@ func (r *CertRouter) PostUploadCert(context *gin.Context) {
 		return
 	}
 
-	cert, err := r.repository.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
+	cert, err := r.certService.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
 	err = context.SaveUploadedFile(file, cert.Path)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -73,7 +73,7 @@ func (r *CertRouter) PostAddCert(context *gin.Context) {
 		return
 	}
 
-	cert, err := r.repository.Create(certRequest.Path, certRequest.Type, FileUsageType(PATH))
+	cert, err := r.certService.Create(certRequest.Path, certRequest.Type, FileUsageType(PATH))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
