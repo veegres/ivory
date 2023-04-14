@@ -51,17 +51,17 @@ func NewContext() *Context {
 	sidecarGateway := service.NewSidecarGateway(passwordService, certRepo)
 	postgresGateway := service.NewPostgresGateway(passwordService)
 	patroniService := service.NewPatroniService(sidecarGateway)
-	clusterService := service.NewClusterService(clusterRepo, passwordService, patroniService)
+	clusterService := service.NewClusterService(clusterRepo, tagRepo, patroniService)
 	queryService := service.NewQueryService(queryRepo, postgresGateway, secretService)
 	bloatService := service.NewBloatService(compactTableRepo, passwordService)
-	eraseService := service.NewEraseService(passwordRepo, clusterService, certRepo, tagRepo, compactTableRepo, queryService, secretService)
+	eraseService := service.NewEraseService(passwordService, clusterService, certRepo, tagRepo, compactTableRepo, queryService, secretService)
 
 	// TODO refactor: shouldn't router use repos? consider change to service usage (possible cycle dependencies problems)
 	// TODO repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
 	return &Context{
 		env:            env,
 		infoRouter:     router.NewInfoRouter(env, secretService),
-		clusterRouter:  router.NewClusterRouter(clusterService, tagRepo),
+		clusterRouter:  router.NewClusterRouter(clusterService),
 		bloatRouter:    router.NewBloatRouter(bloatService, compactTableRepo),
 		certRouter:     router.NewCertRouter(certRepo),
 		secretRouter:   router.NewSecretRouter(secretService, passwordService),

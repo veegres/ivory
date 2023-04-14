@@ -7,7 +7,7 @@ import (
 
 type EraseService struct {
 	// TODO change everything to service
-	passwordRepository     *persistence.PasswordRepository
+	passwordService        *PasswordService
 	clusterService         *ClusterService
 	certRepository         *persistence.CertRepository
 	tagRepository          *persistence.TagRepository
@@ -18,7 +18,7 @@ type EraseService struct {
 }
 
 func NewEraseService(
-	passwordRepository *persistence.PasswordRepository,
+	passwordService *PasswordService,
 	clusterService *ClusterService,
 	certRepository *persistence.CertRepository,
 	tagRepository *persistence.TagRepository,
@@ -27,7 +27,7 @@ func NewEraseService(
 	secretService *SecretService,
 ) *EraseService {
 	return &EraseService{
-		passwordRepository:     passwordRepository,
+		passwordService:        passwordService,
 		compactTableRepository: compactTableRepository,
 		clusterService:         clusterService,
 		certRepository:         certRepository,
@@ -39,7 +39,7 @@ func NewEraseService(
 
 func (s *EraseService) Erase() error {
 	errSecret := s.secretService.Clean()
-	errPass := s.passwordRepository.DeleteAll()
+	errPass := s.passwordService.DeleteAll()
 	errCert := s.certRepository.DeleteAll()
 	errCluster := s.clusterService.DeleteAll()
 	errComTable := s.compactTableRepository.DeleteAll()
