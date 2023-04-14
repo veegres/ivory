@@ -53,13 +53,13 @@ export function InstanceMain(props: Props) {
 
     if (!activeCluster) return null
 
-    const password = activeCluster?.cluster.credentials.postgresId
+    const postgresId = activeCluster?.cluster.credentials.postgresId
     const {label, info, body} = Tabs[tab]
 
     return (
         <Box sx={SX.main}>
             <InstanceMainTitle label={label} info={info} renderActions={renderActions()}/>
-            {password ? body(password, {...database, database: dbName}) : <ClusterNoPostgresPassword/>}
+            {postgresId ? body(postgresId, {...database, database: dbName}) : <ClusterNoPostgresPassword/>}
         </Box>
     )
 
@@ -68,7 +68,7 @@ export function InstanceMain(props: Props) {
             <Box width={200}>
                 <AutocompleteFetch
                     keys={["query", "databases", getDomain(database), database.database ?? ""]}
-                    onFetch={(v) => queryApi.databases({credentialId: password, db: database, name: v})}
+                    onFetch={(v) => queryApi.databases({credentialId: postgresId, db: database, name: v})}
                     placeholder={"Database"}
                     variant={"outlined"}
                     padding={"3px"}

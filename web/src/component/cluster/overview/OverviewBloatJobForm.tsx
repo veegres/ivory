@@ -10,6 +10,7 @@ import {Cluster} from "../../../type/cluster";
 import {Bloat, BloatTarget} from "../../../type/bloat";
 import {AutocompleteFetch} from "../../view/autocomplete/AutocompleteFetch";
 import {getDomain} from "../../../app/utils";
+import {QueryPostgresRequest} from "../../../type/query";
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
@@ -37,8 +38,9 @@ export function OverviewBloatJobForm(props: Props) {
     if (!defaultInstance.leader) return <ClusterNoLeaderError/>
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
-    const req = {clusterName: cluster.name, db: {...defaultInstance.database, database: target?.dbName}}
-    const keys = [req.clusterName, getDomain(req.db), req.db.database ?? ""]
+    const postgresId = cluster.credentials.postgresId
+    const req: QueryPostgresRequest = {credentialId: postgresId, db: {...defaultInstance.database, database: target?.dbName}}
+    const keys = [getDomain(req.db), req.db.database ?? ""]
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
@@ -90,11 +92,11 @@ export function OverviewBloatJobForm(props: Props) {
     )
 
     function handleRun() {
-        if (defaultInstance && cluster.credentials?.postgresId) {
+        if (defaultInstance && postgresId) {
             const {database: {host, port}} = defaultInstance
             onClick()
             start.mutate({
-                connection: {host, port, credId: cluster.credentials.postgresId},
+                connection: {host, port, credId: postgresId},
                 target,
                 ratio,
                 cluster: cluster.name
