@@ -52,6 +52,7 @@ export interface EnumOptions {
     name: string,
     label: string,
     icon: ReactElement,
+    key: string,
     color?: string,
     badge?: string,
 }

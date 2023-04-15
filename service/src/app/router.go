@@ -51,6 +51,7 @@ func clusterRouter(g *gin.RouterGroup, r *router.ClusterRouter) {
 	cluster.GET("", r.GetClusterList)
 	cluster.GET("/:name", r.GetClusterByName)
 	cluster.PUT("", r.PutClusterByName)
+	cluster.POST("/auto", r.PostClusterAuto)
 	cluster.DELETE("/:name", r.DeleteClusterByName)
 }
 

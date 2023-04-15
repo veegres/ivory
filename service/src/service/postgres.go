@@ -11,19 +11,19 @@ import (
 	"strconv"
 )
 
-type PostgresGateway struct {
+type PostgresClient struct {
 	passwordService *PasswordService
 }
 
-func NewPostgresGateway(
+func NewPostgresClient(
 	passwordService *PasswordService,
-) *PostgresGateway {
-	return &PostgresGateway{
+) *PostgresClient {
+	return &PostgresClient{
 		passwordService: passwordService,
 	}
 }
 
-func (s *PostgresGateway) GetMany(credentialId uuid.UUID, db Database, query string, args ...any) ([]string, error) {
+func (s *PostgresClient) GetMany(credentialId uuid.UUID, db Database, query string, args ...any) ([]string, error) {
 	rows, _, errReq := s.sendRequest(credentialId, db, query, args...)
 	if errReq != nil {
 		return nil, errReq
@@ -43,7 +43,7 @@ func (s *PostgresGateway) GetMany(credentialId uuid.UUID, db Database, query str
 	return values, nil
 }
 
-func (s *PostgresGateway) GetOne(credentialId uuid.UUID, db Database, query string) (any, error) {
+func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query string) (any, error) {
 	rows, _, errReq := s.sendRequest(credentialId, db, query)
 	if errReq != nil {
 		return nil, errReq
@@ -62,7 +62,7 @@ func (s *PostgresGateway) GetOne(credentialId uuid.UUID, db Database, query stri
 	return value, nil
 }
 
-func (s *PostgresGateway) GetFields(credentialId uuid.UUID, db Database, query string) (*QueryRunResponse, error) {
+func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query string) (*QueryRunResponse, error) {
 	rows, typeMap, errReq := s.sendRequest(credentialId, db, query)
 	if errReq != nil {
 		return nil, errReq
@@ -95,17 +95,17 @@ func (s *PostgresGateway) GetFields(credentialId uuid.UUID, db Database, query s
 	return res, nil
 }
 
-func (s *PostgresGateway) Cancel(pid int, credentialId uuid.UUID, db Database) error {
+func (s *PostgresClient) Cancel(pid int, credentialId uuid.UUID, db Database) error {
 	_, _, err := s.sendRequest(credentialId, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
-func (s *PostgresGateway) Terminate(pid int, credentialId uuid.UUID, db Database) error {
+func (s *PostgresClient) Terminate(pid int, credentialId uuid.UUID, db Database) error {
 	_, _, err := s.sendRequest(credentialId, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
-func (s *PostgresGateway) sendRequest(credentialId uuid.UUID, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, error) {
+func (s *PostgresClient) sendRequest(credentialId uuid.UUID, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, error) {
 	conn, errConn := s.getConnection(credentialId, db)
 	if errConn != nil {
 		return nil, nil, errConn
@@ -125,7 +125,7 @@ func (s *PostgresGateway) sendRequest(credentialId uuid.UUID, db Database, query
 	return res, conn.TypeMap(), nil
 }
 
-func (s *PostgresGateway) getConnection(credentialId uuid.UUID, db Database) (*pgx.Conn, error) {
+func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pgx.Conn, error) {
 	cred, errCred := s.passwordService.GetDecrypted(credentialId)
 	if errCred != nil {
 		return nil, errors.New("password problems, check if it is exists")
@@ -144,7 +144,7 @@ func (s *PostgresGateway) getConnection(credentialId uuid.UUID, db Database) (*p
 	return pgx.Connect(context.Background(), connString)
 }
 
-func (s *PostgresGateway) closeConnection(conn *pgx.Conn, ctx context.Context) {
+func (s *PostgresClient) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	err := conn.Close(ctx)
 	if err != nil {
 		glog.Warning(err)

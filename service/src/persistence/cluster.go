@@ -37,6 +37,10 @@ func (r *ClusterRepository) Update(cluster ClusterModel) error {
 	return r.bucket.Update(cluster.Name, cluster)
 }
 
+func (r *ClusterRepository) Create(cluster ClusterModel) (ClusterModel, error) {
+	return r.bucket.Create(cluster.Name, cluster)
+}
+
 func (r *ClusterRepository) Delete(key string) error {
 	return r.bucket.Delete(key)
 }

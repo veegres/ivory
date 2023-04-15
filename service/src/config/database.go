@@ -114,7 +114,29 @@ func (b *Bucket[T]) Get(key string) (T, error) {
 	return value, err
 }
 
+func (b *Bucket[T]) Create(key string, value T) (T, error) {
+	if key == "" {
+		return value, errors.New("elements identificator cannot be empty")
+	}
+	err := b.db.Update(func(tx *bolt.Tx) error {
+		el := tx.Bucket(b.name).Get([]byte(key))
+		if el != nil {
+			return errors.New("such element already exists")
+		}
+		var buff bytes.Buffer
+		err := gob.NewEncoder(&buff).Encode(value)
+		if err != nil {
+			return err
+		}
+		return tx.Bucket(b.name).Put([]byte(key), buff.Bytes())
+	})
+	return value, err
+}
+
 func (b *Bucket[T]) Update(key string, value T) error {
+	if key == "" {
+		return errors.New("elements identificator cannot be empty")
+	}
 	return b.db.Update(func(tx *bolt.Tx) error {
 		var buff bytes.Buffer
 		err := gob.NewEncoder(&buff).Encode(value)

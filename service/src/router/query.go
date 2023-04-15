@@ -11,12 +11,12 @@ import (
 
 type QueryRouter struct {
 	queryService    *service.QueryService
-	postgresGateway *service.PostgresGateway
+	postgresGateway *service.PostgresClient
 }
 
 func NewQueryRouter(
 	queryService *service.QueryService,
-	postgresGateway *service.PostgresGateway,
+	postgresGateway *service.PostgresClient,
 ) *QueryRouter {
 	return &QueryRouter{
 		queryService:    queryService,

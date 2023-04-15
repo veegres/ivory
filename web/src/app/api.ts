@@ -15,7 +15,7 @@ import {
 } from "../type/query";
 import {AppInfo, Response} from "../type/common";
 import {Bloat, BloatRequest} from "../type/bloat";
-import {Cluster, ClusterMap} from "../type/cluster";
+import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
 const api = axios.create({baseURL: '/api'})
 
@@ -69,6 +69,9 @@ export const clusterApi = {
         )),
     update: (cluster: Cluster) => api
         .put<Response<Cluster>>(`/cluster`, cluster)
+        .then((response) => response.data.response),
+    createAuto: (cluster: ClusterAuto) => api
+        .post<Response<Cluster>>(`/cluster/auto`, cluster)
         .then((response) => response.data.response),
     delete: (name: string) => api
         .delete(`/cluster/${name}`)

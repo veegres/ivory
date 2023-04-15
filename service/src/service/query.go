@@ -10,14 +10,14 @@ import (
 
 type QueryService struct {
 	queryRepository *persistence.QueryRepository
-	postgresGateway *PostgresGateway
 	secretService   *SecretService
+	postgresGateway *PostgresClient
 }
 
 func NewQueryService(
 	queryRepository *persistence.QueryRepository,
-	postgresGateway *PostgresGateway,
 	secretService *SecretService,
+	postgresGateway *PostgresClient,
 ) *QueryService {
 	queryService := &QueryService{
 		postgresGateway: postgresGateway,

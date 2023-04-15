@@ -6,11 +6,12 @@ import {ListRowNew} from "./ListRowNew";
 import {ListRow} from "./ListRow";
 import {useState} from "react";
 import {InfoAlert} from "../../view/box/InfoAlert";
-import {AddIconButton, AutoIconButton} from "../../view/button/IconButtons";
+import {AddIconButton} from "../../view/button/IconButtons";
 import {Cluster} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";
 import scroll from "../../../style/scroll.module.css"
 import {useTheme} from "../../../provider/ThemeProvider";
+import {ListCreateAuto} from "./ListCreateAuto";
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
@@ -45,7 +46,7 @@ export function ListTable(props: Props) {
                         <TableCell sx={{bgcolor, ...SX.nameCell}}>Cluster Name</TableCell>
                         <TableCell sx={{bgcolor}}>Instances</TableCell>
                         <TableCellLoader sx={{bgcolor, ...SX.buttonCell}} isFetching={isFetching && !isLoading}>
-                            <AutoIconButton onClick={() => {}} disabled/>
+                            <ListCreateAuto />
                             <AddIconButton onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>
                     </TableRow>

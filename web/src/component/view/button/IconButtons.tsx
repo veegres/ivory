@@ -88,7 +88,7 @@ export function AddIconButton(props: Props) {
 
 export function AutoIconButton(props: Props) {
     const { disabled } = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoFixHigh/>} tooltip={"Auto Detection (coming soon)"}/>
+    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoFixHigh/>} tooltip={"Auto Creation"}/>
 }
 
 export function PlayIconButton(props: Props) {

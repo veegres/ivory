@@ -10,12 +10,20 @@ export interface ActiveCluster {
     detection: DetectionType,
 }
 
-export interface Cluster {
-    name: string,
+export interface ClusterOptions {
     certs: Certs,
     credentials: Credentials,
-    instances: Sidecar[],
     tags?: string[],
+}
+
+export interface Cluster extends ClusterOptions {
+    name: string,
+    instances: Sidecar[],
+}
+
+export interface ClusterAuto extends ClusterOptions {
+    name: string,
+    instance: Sidecar,
 }
 
 export interface Certs {

@@ -8,13 +8,13 @@ import (
 type ClusterService struct {
 	clusterRepository *persistence.ClusterRepository
 	tagService        *TagService
-	instanceService   InstanceService
+	instanceService   InstanceGateway
 }
 
 func NewClusterService(
 	clusterRepository *persistence.ClusterRepository,
 	tagService *TagService,
-	instanceService InstanceService,
+	instanceService InstanceGateway,
 ) *ClusterService {
 	return &ClusterService{
 		clusterRepository: clusterRepository,
@@ -59,28 +59,16 @@ func (s *ClusterService) Get(key string) (ClusterModel, error) {
 }
 
 func (s *ClusterService) Update(cluster ClusterModel) (*ClusterModel, error) {
-	// NOTE: remove duplicates
-	tagMap := make(map[string]bool)
-	for _, tag := range cluster.Tags {
-		tagMap[tag] = true
-	}
-	tagList := make([]string, 0)
-	for key := range tagMap {
-		tagList = append(tagList, key)
-	}
-
-	// NOTE: create tags in db with cluster name
-	err := s.tagService.UpdateCluster(cluster.Name, tagList)
+	tags, err := s.saveTags(cluster.Name, cluster.Tags)
 	if err != nil {
 		return nil, err
 	}
-	cluster.Tags = tagList
-
+	cluster.Tags = tags
 	errCluster := s.clusterRepository.Update(cluster)
 	return &cluster, errCluster
 }
 
-func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (*ClusterModel, error) {
+func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (ClusterModel, error) {
 	request := InstanceRequest{
 		Host:         cluster.Instance.Host,
 		Port:         cluster.Instance.Port,
@@ -89,7 +77,7 @@ func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (*ClusterModel, er
 	}
 	overview, _, err := s.instanceService.Overview(request)
 	if err != nil {
-		return nil, err
+		return ClusterModel{}, err
 	}
 
 	instances := make([]Sidecar, 0)
@@ -97,15 +85,23 @@ func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (*ClusterModel, er
 		instances = append(instances, instance.Sidecar)
 	}
 
+	tags, err := s.saveTags(cluster.Name, cluster.Tags)
+	if err != nil {
+		return ClusterModel{}, err
+	}
+	cluster.Tags = tags
+
 	model := ClusterModel{
-		Name:        cluster.Name,
-		Certs:       cluster.Certs,
-		Credentials: cluster.Credentials,
-		Tags:        cluster.Tags,
-		Instances:   instances,
+		Name:      cluster.Name,
+		Instances: instances,
+		ClusterOptions: ClusterOptions{
+			Certs:       cluster.Certs,
+			Credentials: cluster.Credentials,
+			Tags:        tags,
+		},
 	}
 
-	return s.Update(model)
+	return s.clusterRepository.Create(model)
 }
 
 func (s *ClusterService) Delete(key string) error {
@@ -118,4 +114,23 @@ func (s *ClusterService) Delete(key string) error {
 
 func (s *ClusterService) DeleteAll() error {
 	return s.clusterRepository.DeleteAll()
+}
+
+func (s *ClusterService) saveTags(name string, tags []string) ([]string, error) {
+	// NOTE: remove duplicates
+	tagMap := make(map[string]bool)
+	for _, tag := range tags {
+		tagMap[tag] = true
+	}
+	tagList := make([]string, 0)
+	for key := range tagMap {
+		tagList = append(tagList, key)
+	}
+
+	// NOTE: create tags in db with cluster name
+	err := s.tagService.UpdateCluster(name, tagList)
+	if err != nil {
+		return nil, err
+	}
+	return tagList, nil
 }

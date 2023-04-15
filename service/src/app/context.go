@@ -52,15 +52,15 @@ func NewContext() *Context {
 	encryptionService := service.NewEncryptionService()
 	secretService := service.NewSecretService(secretRepo, encryptionService)
 	passwordService := service.NewPasswordService(passwordRepo, secretService, encryptionService)
-
-	sidecarGateway := service.NewSidecarGateway(passwordService, certRepo)
-	postgresGateway := service.NewPostgresGateway(passwordService)
-
-	patroniService := service.NewPatroniService(sidecarGateway)
 	certService := service.NewCertService(certRepo)
+
+	postgresGateway := service.NewPostgresClient(passwordService)
+	sidecarClient := service.NewSidecarClient(passwordService, certService)
+	patroniGateway := service.NewPatroniGateway(sidecarClient)
+
 	tagService := service.NewTagService(tagRepo)
-	queryService := service.NewQueryService(queryRepo, postgresGateway, secretService)
-	clusterService := service.NewClusterService(clusterRepo, tagService, patroniService)
+	queryService := service.NewQueryService(queryRepo, secretService, postgresGateway)
+	clusterService := service.NewClusterService(clusterRepo, tagService, patroniGateway)
 	bloatService := service.NewBloatService(bloatRepository, passwordService)
 	eraseService := service.NewEraseService(
 		passwordService,
@@ -83,7 +83,7 @@ func NewContext() *Context {
 		secretRouter:   router.NewSecretRouter(secretService, passwordService),
 		passwordRouter: router.NewPasswordRouter(passwordService),
 		tagRouter:      router.NewTagRouter(tagService),
-		instanceRouter: router.NewInstanceRouter(patroniService),
+		instanceRouter: router.NewInstanceRouter(patroniGateway),
 		queryRouter:    router.NewQueryRouter(queryService, postgresGateway),
 		eraseRouter:    router.NewEraseRouter(eraseService),
 	}
