@@ -2,20 +2,22 @@ package model
 
 import "github.com/google/uuid"
 
-type ClusterModel struct {
-	Name        string      `json:"name"`
+type ClusterOptions struct {
 	Certs       Certs       `json:"certs"`
 	Credentials Credentials `json:"credentials"`
-	Instances   []Sidecar   `json:"instances"`
 	Tags        []string    `json:"tags"`
 }
 
+type ClusterModel struct {
+	ClusterOptions
+	Name      string    `json:"name"`
+	Instances []Sidecar `json:"instances"`
+}
+
 type ClusterAutoModel struct {
-	Name        string      `json:"name"`
-	Certs       Certs       `json:"certs"`
-	Credentials Credentials `json:"credentials"`
-	Instance    Sidecar     `json:"instance"`
-	Tags        []string    `json:"tags"`
+	ClusterOptions
+	Name     string  `json:"name"`
+	Instance Sidecar `json:"instance"`
 }
 
 type Certs struct {

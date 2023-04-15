@@ -1,31 +1,22 @@
 import {AutocompleteTags} from "../../view/autocomplete/AutocompleteTags";
-import {useMutation, useQuery} from "@tanstack/react-query";
-import {clusterApi, tagApi} from "../../../app/api";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {Cluster} from "../../../type/cluster";
+import {useQuery} from "@tanstack/react-query";
+import {tagApi} from "../../../app/api";
 
 type Props = {
-    cluster: Cluster
+    selected?: string[],
+    onUpdate: (tags: string[]) => void,
 }
 
 export function OptionsTags(props: Props) {
     const query = useQuery(["tag/list"], tagApi.list)
     const {data, isLoading} = query
     const tags = data ?? [];
-
-    const updateMutationOptions = useMutationOptions([["cluster/list"]], query.refetch)
-    const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
-
     return (
         <AutocompleteTags
             tags={tags}
-            selected={props.cluster.tags ?? []}
-            loading={isLoading || updateCluster.isLoading}
-            onUpdate={handleUpdate}
+            selected={props.selected ?? []}
+            loading={isLoading}
+            onUpdate={props.onUpdate}
         />
     )
-
-    function handleUpdate(tags: string[]) {
-        updateCluster.mutate({...props.cluster, tags})
-    }
 }

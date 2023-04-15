@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"io"
 	. "ivory/src/model"
-	"ivory/src/persistence"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -17,10 +16,10 @@ import (
 )
 
 type SidecarRequest[R any] struct {
-	sidecar *SidecarGateway
+	sidecar *SidecarClient
 }
 
-func NewSidecarRequest[R any](sidecar *SidecarGateway) *SidecarRequest[R] {
+func NewSidecarRequest[R any](sidecar *SidecarClient) *SidecarRequest[R] {
 	return &SidecarRequest[R]{
 		sidecar: sidecar,
 	}
@@ -80,30 +79,39 @@ func (p *SidecarRequest[R]) parseResponse(res *http.Response) (R, int, error) {
 	return body, status, err
 }
 
-type SidecarGateway struct {
+type SidecarClient struct {
 	passwordService *PasswordService
-	certRepository  *persistence.CertRepository
+	certService     *CertService
 }
 
-func NewSidecarGateway(
+func NewSidecarClient(
 	passwordService *PasswordService,
-	certRepository *persistence.CertRepository,
-) *SidecarGateway {
-	return &SidecarGateway{
+	certService *CertService,
+) *SidecarClient {
+	return &SidecarClient{
 		passwordService: passwordService,
-		certRepository:  certRepository,
+		certService:     certService,
 	}
 }
 
-func (p *SidecarGateway) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
-	client, protocol, err := p.getClient(instance.Certs, timeout)
+func (p *SidecarClient) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
+	if instance.Host == "" {
+		return nil, errors.New("host cannot be empty")
+	}
+	client, protocol, errClient := p.getClient(instance.Certs, timeout)
+	if errClient != nil {
+		return nil, errClient
+	}
 	domain := instance.Host + ":" + strconv.Itoa(instance.Port)
-	req, err := p.getRequest(instance.CredentialId, method, protocol, domain, path, instance.Body)
-	res, err := client.Do(req)
-	return res, err
+	req, errRequest := p.getRequest(instance.CredentialId, method, protocol, domain, path, instance.Body)
+	if errRequest != nil {
+		return nil, errRequest
+	}
+	res, errDo := client.Do(req)
+	return res, errDo
 }
 
-func (p *SidecarGateway) getRequest(
+func (p *SidecarClient) getRequest(
 	credentilId *uuid.UUID,
 	method string,
 	protocol string,
@@ -131,7 +139,7 @@ func (p *SidecarGateway) getRequest(
 	return req, err
 }
 
-func (p *SidecarGateway) getClient(certs Certs, timeout time.Duration) (*http.Client, string, error) {
+func (p *SidecarClient) getClient(certs Certs, timeout time.Duration) (*http.Client, string, error) {
 	// TODO error overloading doesn't work it should be changed to a lot of returns with errors
 	var err error
 	var rootCa *x509.CertPool
@@ -139,7 +147,7 @@ func (p *SidecarGateway) getClient(certs Certs, timeout time.Duration) (*http.Cl
 
 	// Setting Client CA
 	if certs.ClientCAId != nil {
-		clientCA, errCert := p.certRepository.GetFile(*certs.ClientCAId)
+		clientCA, errCert := p.certService.GetFile(*certs.ClientCAId)
 		rootCa = x509.NewCertPool()
 		rootCa.AppendCertsFromPEM(clientCA)
 		protocol = "https"
@@ -149,8 +157,8 @@ func (p *SidecarGateway) getClient(certs Certs, timeout time.Duration) (*http.Cl
 	// Setting Client Cert with Client Private Key
 	var certificates []tls.Certificate
 	if certs.ClientCertId != nil && certs.ClientKeyId != nil {
-		clientCertInfo, errCert := p.certRepository.Get(*certs.ClientCertId)
-		clientKeyInfo, errCert := p.certRepository.Get(*certs.ClientKeyId)
+		clientCertInfo, errCert := p.certService.Get(*certs.ClientCertId)
+		clientKeyInfo, errCert := p.certService.Get(*certs.ClientKeyId)
 
 		cert, errCert := tls.LoadX509KeyPair(clientCertInfo.Path, clientKeyInfo.Path)
 		certificates = append(certificates, cert)

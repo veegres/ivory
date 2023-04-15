@@ -7,10 +7,10 @@ import (
 )
 
 type InstanceRouter struct {
-	instanceService InstanceService
+	instanceService InstanceGateway
 }
 
-func NewInstanceRouter(instanceService InstanceService) *InstanceRouter {
+func NewInstanceRouter(instanceService InstanceGateway) *InstanceRouter {
 	return &InstanceRouter{instanceService: instanceService}
 }
 

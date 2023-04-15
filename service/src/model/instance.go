@@ -2,8 +2,8 @@ package model
 
 import "github.com/google/uuid"
 
-// InstanceService TODO add common return types to cast interface to them and create mappers for each impl (patroni)
-type InstanceService interface {
+// InstanceGateway TODO add common return types to cast interface to them and create mappers for each impl (patroni)
+type InstanceGateway interface {
 	Info(instance InstanceRequest) (InstanceInfo, int, error)
 	Overview(instance InstanceRequest) ([]Instance, int, error)
 	Config(instance InstanceRequest) (any, int, error)

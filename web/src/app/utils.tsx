@@ -44,27 +44,27 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
 }
 
 export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
-    [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage/>},
-    [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken/>}
+    [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage/>, key: "postgresId"},
+    [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken/>, key: "patroniId"}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {
-    [CertType.CLIENT_CA]: {name: "CLIENT_CA", label: "Client CA", color: purple[300], icon: <Shield/>, badge: "CA"},
-    [CertType.CLIENT_CERT]: {name: "CLIENT_CERT", label: "Client Cert", color: purple[300], icon: <Shield/>, badge: "C"},
-    [CertType.CLIENT_KEY]: {name: "CLIENT_KEY", label: "Client Key", color: purple[300], icon: <Shield/>, badge: "K"}
+    [CertType.CLIENT_CA]: {name: "CLIENT_CA", label: "Client CA", color: purple[300], icon: <Shield/>, badge: "CA", key: "clientCAId"},
+    [CertType.CLIENT_CERT]: {name: "CLIENT_CERT", label: "Client Cert", color: purple[300], icon: <Shield/>, badge: "C", key: "clientCertId"},
+    [CertType.CLIENT_KEY]: {name: "CLIENT_KEY", label: "Client Key", color: purple[300], icon: <Shield/>, badge: "K", key: "clientKeyId"}
 }
 
 export const FileUsageOptions: { [key in FileUsageType]: EnumOptions } = {
-    [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: indigo[300], icon: <UploadFileOutlined/>},
-    [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: indigo[300], icon: <FilePresentOutlined/>},
+    [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: indigo[300], icon: <UploadFileOutlined/>, key: "upload"},
+    [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: indigo[300], icon: <FilePresentOutlined/>, key: "path"},
 }
 
 export const SettingOptions: { [key in Settings]: EnumOptions } = {
-    [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen/>},
-    [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone/>},
-    [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>},
-    [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <Key/>},
-    [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>},
+    [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen/>, key: "menu"},
+    [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone/>, key: "password"},
+    [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>, key: "cert"},
+    [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <Key/>, key: "secret"},
+    [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>, key: "about"},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {
