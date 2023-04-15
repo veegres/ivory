@@ -32,9 +32,9 @@ export function ListCreateAuto() {
         <>
             <AutoIconButton onClick={() => setOpen(!open)}/>
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
-                <DialogTitle sx={SX.center}>Cluster Auto Creation</DialogTitle>
+                <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
                 <DialogContent sx={SX.content}>
-                    <InfoAlert text={`Provide just one instance and other will be detected automatically.`}/>
+                    <InfoAlert text={`Specify only one instance and the others will be detected automatically.`}/>
                     <TextField
                         size={"small"}
                         label={"Name"}
