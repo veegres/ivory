@@ -62,7 +62,7 @@ export function OverviewConfig({info}: TabProps) {
         return (
             <>
                 <CancelIconButton placement={"left"} size={35} disabled={isLoading} onClick={handleCancel}/>
-                <SaveIconButton placement={"left"} size={35} loading={isLoading} onClick={() => handleUpdate(instance)}/>
+                <SaveIconButton placement={"left"} size={35} loading={isLoading} onClick={() => handleUpdate(instance, configState)}/>
             </>
         )
     }
@@ -77,12 +77,13 @@ export function OverviewConfig({info}: TabProps) {
         setConfigState(stringify(config))
     }
 
-    function handleUpdate(instance: Instance) {
+    function handleUpdate(instance: Instance, config: string) {
         if (configState) {
             const request: InstanceRequest = {
                 ...instance.sidecar,
                 credentialId: cluster.credentials.patroniId,
-                certs: cluster.certs
+                certs: cluster.certs,
+                body: JSON.parse(config)
             }
             updateConfig.mutate(request)
         }
