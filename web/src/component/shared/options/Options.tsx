@@ -18,8 +18,10 @@ export function Options(props: Props) {
 
     return (
         <>
-            <OptionsPassword type={PasswordType.POSTGRES} selected={credentials.postgresId} onUpdate={handlePasswordUpdate}/>
-            <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId} onUpdate={handlePasswordUpdate}/>
+            <OptionsPassword type={PasswordType.POSTGRES} selected={credentials.postgresId}
+                             onUpdate={handlePasswordUpdate}/>
+            <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId}
+                             onUpdate={handlePasswordUpdate}/>
             <Divider variant={"middle"}/>
             <OptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/>
             <OptionsCert type={CertType.CLIENT_CERT} selected={certs.clientCertId} onUpdate={handleCertUpdate}/>
@@ -30,11 +32,11 @@ export function Options(props: Props) {
     )
 
     function handlePasswordUpdate(t: PasswordType, s?: string) {
-        onUpdate({...cluster, credentials: { [CredentialOptions[t].key]: s }})
+        onUpdate({...cluster, credentials: {...cluster.credentials, [CredentialOptions[t].key]: s}})
     }
 
     function handleCertUpdate(t: CertType, s?: string) {
-        onUpdate({...cluster, certs: { [CertOptions[t].key]: s }})
+        onUpdate({...cluster, certs: {...cluster.certs, [CertOptions[t].key]: s}})
     }
 
     function handleTagsUpdate(tags: string[]) {
