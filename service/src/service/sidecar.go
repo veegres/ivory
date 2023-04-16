@@ -25,58 +25,62 @@ func NewSidecarRequest[R any](sidecar *SidecarClient) *SidecarRequest[R] {
 	}
 }
 
-func (p *SidecarRequest[R]) Get(instance InstanceRequest, path string) (R, int, error) {
+func (p *SidecarRequest[R]) Get(instance InstanceRequest, path string) (*R, int, error) {
 	response, errRes := p.sidecar.send(http.MethodGet, instance, path, 1+time.Second)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *SidecarRequest[R]) Post(instance InstanceRequest, path string) (R, int, error) {
+func (p *SidecarRequest[R]) Post(instance InstanceRequest, path string) (*R, int, error) {
 	response, errRes := p.sidecar.send(http.MethodPost, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *SidecarRequest[R]) Put(instance InstanceRequest, path string) (R, int, error) {
+func (p *SidecarRequest[R]) Put(instance InstanceRequest, path string) (*R, int, error) {
 	response, errRes := p.sidecar.send(http.MethodPut, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *SidecarRequest[R]) Patch(instance InstanceRequest, path string) (R, int, error) {
+func (p *SidecarRequest[R]) Patch(instance InstanceRequest, path string) (*R, int, error) {
 	response, errRes := p.sidecar.send(http.MethodPatch, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *SidecarRequest[R]) Delete(instance InstanceRequest, path string) (R, int, error) {
+func (p *SidecarRequest[R]) Delete(instance InstanceRequest, path string) (*R, int, error) {
 	response, errRes := p.sidecar.send(http.MethodDelete, instance, path, 0)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)
 }
 
-func (p *SidecarRequest[R]) parseResponse(res *http.Response) (R, int, error) {
-	var err error
+func (p *SidecarRequest[R]) parseResponse(res *http.Response) (*R, int, error) {
 	var body R
-	var status int
-	if res != nil && err == nil {
-		contentType := res.Header.Get("Content-Type")
+	status := http.StatusBadGateway
+	if res != nil {
 		status = res.StatusCode
+		bytesBody, errRead := io.ReadAll(res.Body)
+		if errRead != nil {
+			return nil, status, errRead
+		}
 
-		switch contentType {
-		case "application/json":
-			errJson := json.NewDecoder(res.Body).Decode(&body)
-			err = errors.Join(err, errJson)
-		case "text/html":
-			text, errRead := io.ReadAll(res.Body)
-			reflect.ValueOf(&body).Elem().SetString(string(text))
-			err = errors.Join(err, errRead)
-		default:
-			errDef := errors.New("doesn't support such Content-Type in response")
-			err = errors.Join(err, errDef)
+		if res.StatusCode < 200 || res.StatusCode >= 300 {
+			errCode := errors.New(res.Status)
+			errParse := errors.New(string(bytesBody))
+			return nil, status, errors.Join(errCode, errParse)
+		}
+
+		errMar := json.Unmarshal(bytesBody, &body)
+		if errMar != nil {
+			if reflect.TypeOf(body) == reflect.TypeOf("") {
+				reflect.ValueOf(&body).Elem().SetString(string(bytesBody))
+			} else {
+				return nil, status, errMar
+			}
 		}
 	}
-	return body, status, err
+	return &body, status, nil
 }
 
 type SidecarClient struct {

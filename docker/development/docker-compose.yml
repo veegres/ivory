@@ -11,8 +11,8 @@ services:
     ports:
       - "8008:8008" # patroni general port
       - "8404:8404" # haproxy statistic
-      - "8001-8003:8001-8003" # patroni ports
-      - "5001-5003:5001-5003" # postgres ports
+      - "8001-8005:8001-8005" # patroni ports
+      - "5001-5005:5001-5005" # postgres ports
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
 
@@ -52,3 +52,27 @@ services:
       PATRONI_RESTAPI_LISTEN: "patroni3:8003"
       PATRONI_RAFT_SELF_ADDR: "patroni3:2223"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni2:2222'"
+
+  patroni-cert:
+    image: dev-patroni
+    container_name: dev-patroni-cert
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni-cert"
+      PATRONI_POSTGRESQL_LISTEN: "patroni-cert:5004"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni-cert:5004"
+      PATRONI_RESTAPI_LISTEN: "patroni-cert:8004"
+      PATRONI_RAFT_SELF_ADDR: "patroni-cert:2224"
+
+  patroni-pass:
+    image: dev-patroni
+    container_name: dev-patroni-pass
+    networks: [ dev-patroni ]
+    environment:
+      PATRONI_NAME: "patroni-pass"
+      PATRONI_POSTGRESQL_LISTEN: "patroni-pass:5005"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni-pass:5005"
+      PATRONI_RESTAPI_LISTEN: "patroni-pass:8005"
+      PATRONI_RAFT_SELF_ADDR: "patroni-pass:2225"
+      PATRONI_RESTAPI_USERNAME: "patroni"
+      PATRONI_RESTAPI_PASSWORD: "password"

@@ -20,6 +20,16 @@ type InstanceRequest struct {
 	Body         any        `json:"body" form:"body"`
 }
 
+// InstanceRequestTmp we need cause Context.ShouldBindQuery() cannot work correctly with UUID
+// https://github.com/gin-gonic/gin/issues/2423
+type InstanceRequestTmp struct {
+	Host         string  `json:"host" form:"host"`
+	Port         int     `json:"port" form:"port"`
+	CredentialId *string `json:"credentialId" form:"credentialId"`
+	Certs        Certs   `json:"certs" form:"certs"`
+	Body         any     `json:"body" form:"body"`
+}
+
 type Instance struct {
 	State    string   `json:"state"`
 	Role     string   `json:"role"`
