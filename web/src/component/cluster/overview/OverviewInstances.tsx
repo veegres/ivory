@@ -1,7 +1,7 @@
 import {Box, Button, Radio, Table, TableBody, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {useIsFetching, useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
-import {useMemo, useState} from "react";
+import {useState} from "react";
 import {TableCellLoader} from "../../view/table/TableCellLoader";
 import {InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/dialog/AlertDialog";
@@ -28,13 +28,10 @@ const initAlertDialog = {
 }
 
 export function OverviewInstances({info}: TabProps) {
-    const {defaultInstance, cluster, combinedInstanceMap} = info
+    const {cluster, combinedInstanceMap} = info
     const [alertDialog, setAlertDialog] = useState<AlertDialogState>(initAlertDialog)
     const {setInstance, isInstanceActive} = useStore()
-    const queryKey = useMemo(
-        () => ["instance/overview", cluster.name, defaultInstance.sidecar.host, defaultInstance.sidecar.port],
-        [defaultInstance.sidecar, cluster.name]
-    )
+    const queryKey = ["instance/overview", cluster.name]
     const instanceMapFetching = useIsFetching(queryKey)
     const options = useMutationOptions([queryKey])
     const switchover = useMutation(instanceApi.switchover, options)
