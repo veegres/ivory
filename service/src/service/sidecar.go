@@ -144,38 +144,48 @@ func (p *SidecarClient) getRequest(
 }
 
 func (p *SidecarClient) getClient(certs Certs, timeout time.Duration) (*http.Client, string, error) {
-	// TODO error overloading doesn't work it should be changed to a lot of returns with errors
-	var err error
 	var rootCa *x509.CertPool
 	protocol := "http"
 
 	// Setting Client CA
 	if certs.ClientCAId != nil {
-		clientCA, errCert := p.certService.GetFile(*certs.ClientCAId)
+		protocol = "https"
+		clientCA, errCa := p.certService.GetFile(*certs.ClientCAId)
+		if errCa != nil {
+			return nil, protocol, errCa
+		}
 		rootCa = x509.NewCertPool()
 		rootCa.AppendCertsFromPEM(clientCA)
-		protocol = "https"
-		err = errCert
 	}
 
 	// Setting Client Cert with Client Private Key
 	var certificates []tls.Certificate
 	if certs.ClientCertId != nil && certs.ClientKeyId != nil {
+		protocol = "https"
 		clientCertInfo, errCert := p.certService.Get(*certs.ClientCertId)
-		clientKeyInfo, errCert := p.certService.Get(*certs.ClientKeyId)
+		if errCert != nil {
+			return nil, protocol, errCert
+		}
+		clientKeyInfo, errKey := p.certService.Get(*certs.ClientKeyId)
+		if errKey != nil {
+			return nil, protocol, errKey
+		}
 
-		cert, errCert := tls.LoadX509KeyPair(clientCertInfo.Path, clientKeyInfo.Path)
+		cert, errX509 := tls.LoadX509KeyPair(clientCertInfo.Path, clientKeyInfo.Path)
+		if errX509 != nil {
+			return nil, protocol, errX509
+		}
 		certificates = append(certificates, cert)
-		err = errCert
+	}
+
+	// xor operation for `nil` check
+	if (certs.ClientCertId == nil || certs.ClientKeyId == nil) && certs.ClientCertId != certs.ClientKeyId {
+		return nil, protocol, errors.New("to be able to establish mutual tls connection you need to provide both client cert and client private key")
 	}
 
 	tlsConfig := &tls.Config{RootCAs: rootCa, Certificates: certificates}
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	client := &http.Client{Transport: transport, Timeout: timeout}
 
-	if certs.ClientCertId != nil || certs.ClientKeyId != nil {
-		return client, protocol, errors.New("to be able to establish mutual tls connection you need to provide both client cert and client private key")
-	}
-
-	return client, protocol, err
+	return client, protocol, nil
 }
