@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/golang/glog v1.1.0
 	github.com/google/uuid v1.3.0
-	github.com/jackc/pgx/v5 v5.3.0
+	github.com/jackc/pgx/v5 v5.3.1
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 )
 
@@ -23,7 +23,6 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
