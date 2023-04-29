@@ -1,8 +1,9 @@
-import {createContext, ReactNode, useContext, useState} from "react";
+import {createContext, ReactNode, useContext} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 import {ActiveCluster, DetectionType} from "../type/cluster";
 import {Instance} from "../type/Instance";
 import {getDomain} from "../app/utils";
+import {useLocalStorageState} from "../hook/LocalStorage";
 
 // STORE
 interface StoreType {
@@ -69,7 +70,7 @@ export function useStore() {
 }
 
 export function StoreProvider(props: { children: ReactNode }) {
-    const [state, setState] = useState(initialStore)
+    const [state, setState] = useLocalStorageState("store", initialStore)
     const queryClient = useQueryClient();
 
     const value = getStoreContext()

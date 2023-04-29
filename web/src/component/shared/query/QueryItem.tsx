@@ -6,7 +6,7 @@ import {
     PlayIconButton,
     RestoreIconButton
 } from "../../view/button/IconButtons";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {useState} from "react";
 import {QueryItemInfo} from "./QueryItemInfo";
 import {QueryItemEdit} from "./QueryItemEdit";
@@ -40,7 +40,7 @@ type Props = {
 
 export function QueryItem(props: Props) {
     const {query, credentialId, db, type} = props
-    const {info} = useTheme()
+    const {info} = useAppearance()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
 

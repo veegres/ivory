@@ -1,6 +1,6 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {CodeThemes} from "../../../app/utils";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {PostgreSQL, sql} from "@codemirror/lang-sql";
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 
 export function QueryEditor(props: Props) {
     const {value, editable, onUpdate} = props
-    const theme = useTheme();
+    const theme = useAppearance();
 
     return (
         <ReactCodeMirror
@@ -21,7 +21,7 @@ export function QueryEditor(props: Props) {
             minHeight={editable ? "80px" : "auto"}
             placeholder={"Query"}
             basicSetup={{lineNumbers: false, foldGutter: false, highlightActiveLine: false}}
-            theme={CodeThemes[theme.mode]}
+            theme={CodeThemes[theme.state.mode]}
             extensions={[sql({dialect: PostgreSQL})]}
             onChange={onUpdate}
         />

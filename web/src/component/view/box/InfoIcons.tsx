@@ -1,12 +1,12 @@
 import {cloneElement, ReactElement} from "react";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {InfoBox} from "./InfoBox";
 import {InfoTitle} from "./InfoTitle";
 
 const SX: SxPropsMap = {
-    box: { display: "flex", alignItems: "center", justifyContent: "center" },
+    box: {display: "flex", alignItems: "center", justifyContent: "center"},
     badge: {
         position: "absolute", color: "white", fontSize: "8px", fontWeight: "bold",
         minWidth: "12px", height: "12px", display: "flex", justifyContent: "center", alignItems: "center",
@@ -15,8 +15,8 @@ const SX: SxPropsMap = {
 }
 
 const colors = {
-    active: { dark: "rgba(19,88,131,0.95)", light: "rgba(29,132,197,0.95)" },
-    disabled: { dark: "rgba(66,38,38,0.95)", light: "rgba(140,78,78,0.95)" }
+    active: {dark: "rgba(19,88,131,0.95)", light: "rgba(29,132,197,0.95)"},
+    disabled: {dark: "rgba(66,38,38,0.95)", light: "rgba(140,78,78,0.95)"}
 }
 
 type Item = { icon: ReactElement, label: string, active: boolean, iconColor?: string, badge?: string }
@@ -25,8 +25,8 @@ type Props = {
 }
 
 export function InfoIcons(props: Props) {
-    const { info, mode } = useTheme()
-    const { items } = props
+    const {info, state: {mode}} = useAppearance()
+    const {items} = props
     const titleItems = items.map(item => ({
         ...item,
         value: item.active ? "Yes" : "No",
@@ -34,7 +34,7 @@ export function InfoIcons(props: Props) {
     }))
 
     return (
-        <InfoBox tooltip={<InfoTitle items={titleItems} />}>
+        <InfoBox tooltip={<InfoTitle items={titleItems}/>}>
             {items.map((item, index) => {
                 const defaultColor = item.iconColor ?? "default"
                 const color = item.active ? defaultColor : info?.palette.text.disabled!!

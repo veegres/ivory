@@ -1,7 +1,7 @@
 import {Grid, Skeleton} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
@@ -14,7 +14,7 @@ import {CodeThemes} from "../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../view/button/IconButtons";
 
 export function OverviewConfig({info}: TabProps) {
-    const theme = useTheme();
+    const theme = useAppearance();
     const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
@@ -44,7 +44,7 @@ export function OverviewConfig({info}: TabProps) {
                     editable={isEditable}
                     autoFocus={isEditable}
                     basicSetup={{highlightActiveLine: false, highlightActiveLineGutter: isEditable}}
-                    theme={CodeThemes[theme.mode]}
+                    theme={CodeThemes[theme.state.mode]}
                     extensions={[json()]}
                     onChange={(value) => setConfigState(value)}
                 />

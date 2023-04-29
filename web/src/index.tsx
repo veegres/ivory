@@ -1,8 +1,6 @@
 import {App} from './App';
 import * as ServiceWorker from './ServiceWorker';
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
-import {ThemeProvider} from "./provider/ThemeProvider";
+import {AppearanceProvider} from "./provider/AppearanceProvider";
 import {StoreProvider} from "./provider/StoreProvider";
 import {CssBaseline} from "@mui/material";
 import {createRoot} from "react-dom/client";
@@ -18,17 +16,14 @@ const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(
     <StrictMode>
-        <QueryClientProvider client={new QueryClient()}>
-            <ThemeProvider>
-                <StoreProvider>
-                    <SnackbarProvider maxSnack={3}>
-                        <CssBaseline enableColorScheme />
-                        <App/>
-                    </SnackbarProvider>
-                </StoreProvider>
-            </ThemeProvider>
-            <ReactQueryDevtools/>
-        </QueryClientProvider>
+        <AppearanceProvider>
+            <StoreProvider>
+                <SnackbarProvider maxSnack={3}>
+                    <CssBaseline enableColorScheme/>
+                    <App/>
+                </SnackbarProvider>
+            </StoreProvider>
+        </AppearanceProvider>
     </StrictMode>
 )
 

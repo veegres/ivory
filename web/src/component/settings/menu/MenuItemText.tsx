@@ -1,5 +1,5 @@
 import {Box, ListItem} from "@mui/material";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {ReactNode} from "react";
 import {SxPropsMap} from "../../../type/common";
 
@@ -17,7 +17,7 @@ type Props = {
 
 export function MenuItemText(props: Props) {
     const {title, description, button} = props
-    const { info } = useTheme()
+    const { info } = useAppearance()
     const color = info?.palette.text.secondary
 
     return (

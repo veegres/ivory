@@ -2,7 +2,7 @@ import {Alert, Box, Collapse, Paper, TextField, ToggleButton} from "@mui/materia
 import {useState} from "react";
 import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
@@ -29,7 +29,7 @@ type Props = {
 
 export function QueryNew(props: Props) {
     const {type} = props
-    const {info} = useTheme()
+    const {info} = useAppearance()
     const [alert, setAlert] = useState(false)
     const [name, setName] = useState("")
     const [description, setDesc] = useState("")
