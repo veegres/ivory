@@ -45,6 +45,9 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     name={stateName}
                     nodes={stateNodes}
+                    credentials={{}}
+                    certs={{}}
+                    tags={[]}
                     toggle={toggle}
                     onUpdate={clean}
                 />

@@ -5,21 +5,26 @@ import {Box} from "@mui/material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {getHostAndPort} from "../../../app/utils";
 import {Sidecar, SxPropsMap} from "../../../type/common";
+import {Certs, Credentials} from "../../../type/cluster";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},
 }
 
 type Props = {
-    name: string
-    nodes: string[]
-    toggle: () => void
-    onUpdate?: () => void
-    onClose?: () => void
+    name: string,
+    nodes: string[],
+    certs: Certs,
+    credentials: Credentials,
+    tags?: string[],
+    toggle: () => void,
+    onUpdate?: () => void,
+    onClose?: () => void,
 }
 
 export function ListCellUpdate(props: Props) {
-    const {toggle, onUpdate, onClose, name, nodes} = props
+    const {name, nodes, tags, credentials, certs} = props
+    const {toggle, onUpdate, onClose} = props
 
     const updateMutationOptions = useMutationOptions([["cluster/list"]], handleSuccess)
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
@@ -43,6 +48,6 @@ export function ListCellUpdate(props: Props) {
 
     function handleUpdate() {
         const instances: Sidecar[] = nodes.map(value => getHostAndPort(value))
-        updateCluster.mutate({name, instances, certs: {}, credentials: {}, tags: []})
+        updateCluster.mutate({name, instances, certs, credentials, tags})
     }
 }
