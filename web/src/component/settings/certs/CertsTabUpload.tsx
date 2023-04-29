@@ -4,9 +4,13 @@ import {getErrorMessage} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
-import {CertTypeProps} from "./Certs";
+import {CertType} from "../../../type/cert";
 
-export function CertsTabUpload(props: CertTypeProps) {
+type Props = {
+    type: CertType,
+}
+
+export function CertsTabUpload(props: Props) {
     const { type } = props
     const [progress, setProgress] = useState<ProgressEvent>()
 

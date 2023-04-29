@@ -3,10 +3,10 @@ import {useState} from "react";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
-import {CertTypeProps} from "./Certs";
 import {CheckCircle} from "@mui/icons-material";
 import {LoadingButton} from "@mui/lab";
 import {SxPropsMap} from "../../../type/common";
+import {CertType} from "../../../type/cert";
 
 const SX: SxPropsMap = {
     box: { display: "flex", flexDirection: "column", padding: "5px", justifyContent: "space-between", height: "100%", gap: "12px" },
@@ -16,7 +16,11 @@ const SX: SxPropsMap = {
     border: { borderRadius: "15px" },
 }
 
-export function CertsTabPath(props: CertTypeProps) {
+type Props = {
+    type: CertType,
+}
+
+export function CertsTabPath(props: Props) {
     const { type } = props
     const [path, setPath] = useState("")
 
