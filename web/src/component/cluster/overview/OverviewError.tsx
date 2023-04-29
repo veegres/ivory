@@ -1,13 +1,13 @@
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 
 export function ClusterNoInstanceError() {
-    return <ErrorAlert error={"Default instance is not in the cluster, probably something has happened, you have some problems in your set up or you've change it"} />
+    return <ErrorSmart error={"Default instance is not in the cluster, probably something has happened, you have some problems in your set up or you've change it"} />
 }
 
 export function ClusterNoLeaderError() {
-    return <ErrorAlert error={"Default instance is not a leader, probably something has happened or you've change it"}/>
+    return <ErrorSmart error={"Default instance is not a leader, probably something has happened or you've change it"}/>
 }
 
 export function ClusterNoPostgresPassword() {
-    return <ErrorAlert error={"You haven't set up postgres password for this cluster. Please, do it in the cluster settings bar"}/>
+    return <ErrorSmart error={"You haven't set up postgres password for this cluster. Please, do it in the cluster settings bar"}/>
 }

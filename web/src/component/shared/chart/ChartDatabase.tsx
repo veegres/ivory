@@ -1,6 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {ChartItem, Color} from "./ChartItem";
 import {Database, SxPropsMap} from "../../../type/common";
 import {ChartLoading} from "./ChartLoading";
@@ -24,7 +24,7 @@ export function ChartDatabase(props: Props) {
         {retry: false, enabled: !!db.database})
 
     if (!db.database) return null
-    if (database.error) return <Box sx={SX.error}><ErrorAlert error={database.error}/></Box>
+    if (database.error) return <Box sx={SX.error}><ErrorSmart error={database.error}/></Box>
     if (database.isLoading) return <ChartLoading count={3}/>
 
     return (

@@ -162,7 +162,8 @@ export const getErrorMessage = (error: any): string => {
     if (error instanceof AxiosError) {
         if (error.response) {
             if (error.response.data["error"] !== undefined) message = error.response.data["error"]
-            else message = error.response.data
+            else if (error.response.data) message = error.response.data
+            else message = `${error.response.status} ${error.response.statusText}`
         } else {
             if (error.message) message = error.message
             else message = "unknown"
