@@ -17,13 +17,14 @@ type Props = {
 
 export function ListRow(props: Props) {
     const {cluster, editable, toggle} = props
-    const {name, instances} = cluster
+    const {name, instances, credentials, certs, tags} = cluster
 
     const ref = useRef<HTMLTableRowElement | null>(null)
     const [stateNodes, setStateNodes] = useState(getDomains(instances))
     const instanceDetection = useInstanceDetection(cluster, instances)
 
     useEffect(handleEffectScroll, [instanceDetection.active])
+    useEffect(handleEffectInstancesUpdate, [instances])
 
     return (
         <TableRow ref={ref}>
@@ -46,6 +47,9 @@ export function ListRow(props: Props) {
                     <ListCellUpdate
                         name={name}
                         nodes={stateNodes}
+                        credentials={credentials}
+                        certs={certs}
+                        tags={tags}
                         toggle={toggle}
                         onUpdate={instanceDetection.refetch}
                         onClose={() => setStateNodes(getDomains(instances))}
@@ -57,5 +61,9 @@ export function ListRow(props: Props) {
 
     function handleEffectScroll() {
         if (instanceDetection.active) ref.current?.scrollIntoView({block: "nearest"})
+    }
+
+    function handleEffectInstancesUpdate() {
+        setStateNodes(getDomains(instances))
     }
 }
