@@ -5,8 +5,8 @@ import {MenuItemButton} from "./MenuItemButton";
 import {MenuThemeChanger} from "./MenuThemeChanger";
 import {EraseButton} from "../../shared/erase/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
-import {MenuWrapperScroll} from "./MenuWrapperScroll";
 import {MenuRefetchChanger} from "./MenuRefetchChanger";
+import {Box} from "@mui/material";
 
 const SX: SxPropsMap = {
     list: {display: "flex", flexDirection: "column", gap: 3},
@@ -21,7 +21,7 @@ export function MenuContent(props: Props) {
 
     return (
         <MenuWrapper>
-            <MenuWrapperScroll sx={SX.list}>
+            <Box sx={SX.list}>
                 <MenuItemBox name={"Appearance"}>
                     <MenuItemText title={"Theme"} button={<MenuThemeChanger/>}/>
                     <MenuItemText title={"Refetch on window focus (coming soon)"} button={<MenuRefetchChanger/>}/>
@@ -41,7 +41,7 @@ export function MenuContent(props: Props) {
                 <MenuItemBox name={"About"}>
                     <MenuItemButton item={Settings.ABOUT} onUpdate={onUpdate}/>
                 </MenuItemBox>
-            </MenuWrapperScroll>
+            </Box>
         </MenuWrapper>
     )
 }

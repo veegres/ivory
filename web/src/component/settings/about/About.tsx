@@ -1,5 +1,4 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
-import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
 import {Box, IconButton} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {MenuItemBox} from "../menu/MenuItemBox";
@@ -16,7 +15,7 @@ const SX: SxPropsMap = {
 export function About() {
     return (
         <MenuWrapper>
-            <MenuWrapperScroll sx={SX.scroll}>
+            <Box sx={SX.scroll}>
                 <Box sx={SX.image}><img src={"/ivory.png"} width={200} height={200} alt={"Ivory"}/></Box>
                 <Box sx={SX.text}>
                     Ivory is an open-source project which is designed to simplify and visualize work with
@@ -27,7 +26,7 @@ export function About() {
                         <MenuItemText key={name} title={name} button={renderLink(link)}/>
                     ))}
                 </MenuItemBox>
-            </MenuWrapperScroll>
+            </Box>
         </MenuWrapper>
     )
 

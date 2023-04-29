@@ -2,18 +2,22 @@ import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {useState} from "react";
 import {CertsTabPath} from "./CertsTabPath";
 import {CertsTabUpload} from "./CertsTabUpload";
-import {CertTypeProps} from "./Certs";
 import {FileUsageType, SxPropsMap} from "../../../type/common";
 import {FileUsageOptions} from "../../../app/utils";
+import {CertType} from "../../../type/cert";
 
 const SX: SxPropsMap = {
-    box: { display: "flex", height: "120px" },
-    group: { minHeight: "25px", padding: "5px" },
-    button: { flexGrow: 1, borderRadius: "15px" },
-    tab: { flexGrow: 1 }
+    box: {display: "flex", height: "130px"},
+    group: {padding: "5px"},
+    button: {flexGrow: 1, borderRadius: "15px"},
+    tab: {flexGrow: 1}
 }
 
-export function CertsNew(props: CertTypeProps) {
+type Props = {
+    type: CertType,
+}
+
+export function CertsNew(props: Props) {
     const [tab, setTab] = useState(FileUsageType.UPLOAD)
 
     const upload = FileUsageOptions[FileUsageType.UPLOAD]

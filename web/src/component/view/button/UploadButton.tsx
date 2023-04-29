@@ -8,6 +8,8 @@ import {mergeSxProps} from "../../../app/utils";
 const SX: SxPropsMap = {
     box: { padding: "5px", height: "100%" },
     upload: {
+        minHeight: "120px",
+        minWidth: "350px",
         width: "100%",
         height: "100%",
         display: "flex",
