@@ -1,6 +1,6 @@
 import {Box, Tooltip} from "@mui/material";
 import {ReactElement, ReactNode} from "react";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
@@ -19,7 +19,7 @@ type Props = {
 
 export function InfoBox(props: Props) {
     const {children, tooltip, withPadding, withRadius} = props
-    const {info} = useTheme()
+    const {info} = useAppearance()
     const padding = withPadding ? "3px 12px" : "3px 5px"
     const borderRadius = withRadius ? "15px" : "4px"
 

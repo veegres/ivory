@@ -1,6 +1,6 @@
 import {ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {DarkModeTwoTone, LightModeTwoTone} from "@mui/icons-material";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
@@ -8,14 +8,14 @@ const SX: SxPropsMap = {
 }
 
 export function MenuThemeChanger() {
-    const {mode, set} = useTheme()
+    const {state, setTheme} = useAppearance()
 
     return (
-        <ToggleButtonGroup size={"small"} value={mode}>
-            <ToggleButton sx={SX.button} value={"light"} onClick={() => set("light")}>
+        <ToggleButtonGroup size={"small"} value={state.mode}>
+            <ToggleButton sx={SX.button} value={"light"} onClick={() => setTheme("light")}>
                 <LightModeTwoTone/>
             </ToggleButton>
-            <ToggleButton sx={SX.button} value={"dark"} onClick={() => set("dark")}>
+            <ToggleButton sx={SX.button} value={"dark"} onClick={() => setTheme("dark")}>
                 <DarkModeTwoTone/>
             </ToggleButton>
         </ToggleButtonGroup>

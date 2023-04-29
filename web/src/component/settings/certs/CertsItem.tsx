@@ -1,5 +1,5 @@
 import {Box, Tooltip} from "@mui/material";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {DeleteIconButton} from "../../view/button/IconButtons";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
@@ -27,7 +27,7 @@ type Props = {
 
 export function CertsItem(props: Props) {
     const { cert, uuid } = props
-    const { info } = useTheme()
+    const { info } = useAppearance()
 
     const deleteOptions = useMutationOptions([["certs"]])
     const deleteCert = useMutation(certApi.delete, deleteOptions)

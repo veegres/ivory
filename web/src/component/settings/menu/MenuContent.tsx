@@ -24,7 +24,7 @@ export function MenuContent(props: Props) {
             <Box sx={SX.list}>
                 <MenuItemBox name={"Appearance"}>
                     <MenuItemText title={"Theme"} button={<MenuThemeChanger/>}/>
-                    <MenuItemText title={"Refetch on window focus (coming soon)"} button={<MenuRefetchChanger/>}/>
+                    <MenuItemText title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
                 </MenuItemBox>
                 <MenuItemBox name={"Privacy and security"}>
                     <MenuItemButton item={Settings.PASSWORD} onUpdate={onUpdate}/>

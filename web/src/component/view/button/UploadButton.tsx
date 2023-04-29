@@ -1,7 +1,7 @@
 import {FileUploadOutlined} from "@mui/icons-material";
 import {Box, ButtonBase, CircularProgress} from "@mui/material";
 import {ChangeEvent, DragEvent, useState} from "react";
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {SxPropsMap} from "../../../type/common";
 import {mergeSxProps} from "../../../app/utils";
 
@@ -42,7 +42,7 @@ type Props = {
 
 export function UploadButton(props: Props) {
     const { accept, maxSize, loading: { isLoading, loaded, total }, error } = props
-    const { info, mode } = useTheme()
+    const { info, state: {mode} } = useAppearance()
     const [active, setActive] = useState(false)
 
     return (

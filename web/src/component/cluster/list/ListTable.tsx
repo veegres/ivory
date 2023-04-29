@@ -10,7 +10,7 @@ import {AddIconButton} from "../../view/button/IconButtons";
 import {Cluster} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";
 import scroll from "../../../style/scroll.module.css"
-import {useTheme} from "../../../provider/ThemeProvider";
+import {useAppearance} from "../../../provider/AppearanceProvider";
 import {ListCreateAuto} from "./ListCreateAuto";
 
 const SX: SxPropsMap = {
@@ -29,7 +29,7 @@ type Props = {
 }
 
 export function ListTable(props: Props) {
-    const {mode} = useTheme()
+    const {state: {mode}} = useAppearance()
     const {rows, error, isFetching, isLoading, selected} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
