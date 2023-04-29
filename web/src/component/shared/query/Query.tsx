@@ -3,7 +3,7 @@ import {Box, Collapse, Skeleton, ToggleButton, Tooltip} from "@mui/material";
 import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useState} from "react";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
@@ -32,7 +32,7 @@ export function Query(props: Props) {
     const query = useQuery(["query", "map", type], () => queryApi.list(type))
 
     if (query.isLoading) return renderLoading()
-    if (query.error) return <ErrorAlert error={query.error}/>
+    if (query.error) return <ErrorSmart error={query.error}/>
 
     return (
         <Box style={style.box}>

@@ -5,7 +5,7 @@ import {Cert} from "../../../type/cert";
 import {InfoAlert} from "../../view/box/InfoAlert";
 import {useQuery} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 import {CertTypeProps} from "./Certs";
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll";
@@ -23,7 +23,7 @@ export function CertsList(props: CertTypeProps) {
     )
 
     function renderBody() {
-        if (isError) return <ErrorAlert error={error}/>
+        if (isError) return <ErrorSmart error={error}/>
 
         const list = Object.entries<Cert>(certs ?? {})
         if (list.length === 0) return <InfoAlert text={"There is no files yet"}/>

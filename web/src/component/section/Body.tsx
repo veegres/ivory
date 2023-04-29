@@ -1,5 +1,5 @@
 import {PageBox} from "../view/box/PageBox";
-import {ErrorAlert} from "../view/box/ErrorAlert";
+import {ErrorSmart} from "../view/box/ErrorSmart";
 import {Skeleton, Stack} from "@mui/material";
 import {StartupInitial} from "../startup/StartupInitial";
 import {StartupSecondary} from "../startup/StartupSecondary";
@@ -37,7 +37,7 @@ export function Body(props: Props) {
     function renderError(error: any) {
         return (
             <Stack sx={SX.stack}>
-                <PageBox><ErrorAlert error={error}/></PageBox>
+                <PageBox><ErrorSmart error={error}/></PageBox>
             </Stack>
         )
     }

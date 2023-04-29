@@ -1,6 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {ChartItem, Color} from "./ChartItem";
 import {Database, SxPropsMap} from "../../../type/common";
 import {ChartLoading} from "./ChartLoading";
@@ -23,7 +23,7 @@ export function ChartCommon(props: Props) {
         () => queryApi.chartCommon(props),
         {retry: false})
 
-    if (common.error) return <Box sx={SX.error}><ErrorAlert error={common.error}/></Box>
+    if (common.error) return <Box sx={SX.error}><ErrorSmart error={common.error}/></Box>
     if (common.isLoading) return <ChartLoading count={3}/>
 
     return (

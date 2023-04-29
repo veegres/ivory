@@ -1,6 +1,6 @@
 import {Box, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TableBody} from "../../view/table/TableBody";
 import scroll from "../../../style/scroll.module.css"
 import {QueryRunResponse} from "../../../type/query";
@@ -32,7 +32,7 @@ type Props = {
 export function QueryItemRun(props: Props) {
     const {loading, data, error, onTerminate, onCancel} = props
 
-    if (error) return <ErrorAlert error={error}/>
+    if (error) return <ErrorSmart error={error}/>
     if (!loading && (!data || !data.fields.length || !data.rows.length)) {
         return <Box sx={SX.no}>Response is empty</Box>
     }

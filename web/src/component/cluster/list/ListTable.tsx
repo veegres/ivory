@@ -1,4 +1,4 @@
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material";
 import {TableCellLoader} from "../../view/table/TableCellLoader";
 import {TableBody} from "../../view/table/TableBody";
@@ -34,7 +34,7 @@ export function ListTable(props: Props) {
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
 
-    if (error) return <ErrorAlert error={error}/>
+    if (error) return <ErrorSmart error={error}/>
     const header = {light: "#fff", dark: "#282828"}
     const bgcolor = header[mode] ?? "inherit"
 

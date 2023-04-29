@@ -2,7 +2,7 @@ import {Grid, Skeleton} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useTheme} from "../../../provider/ThemeProvider";
-import {ErrorAlert} from "../../view/box/ErrorAlert";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
@@ -32,7 +32,7 @@ export function OverviewConfig({info}: TabProps) {
     useEffect(() => setConfigState(stringify(config)), [config])
 
     if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
-    if (isError) return <ErrorAlert error={error}/>
+    if (isError) return <ErrorSmart error={error}/>
     if (isLoading) return <Skeleton variant={"rectangular"} height={300}/>
 
     const border = `1px solid ${isEditable && theme.info ? theme.info.palette.divider : "transparent"}`
