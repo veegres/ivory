@@ -10,8 +10,7 @@ import {
 } from "@mui/icons-material";
 import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
-import {darculaInit} from "@uiw/codemirror-theme-darcula";
-import {materialLightInit} from "@uiw/codemirror-theme-material";
+import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
 import {JobStatus} from "../type/bloat";
 import {PasswordType} from "../type/password";
 import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar} from "../type/common";
@@ -190,8 +189,7 @@ export const mergeSxProps = (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => {
 }
 
 // CodeMirror theme
-export const CodeOptions = {settings: {background: "transparent", gutterBackground: "transparent"}}
 export const CodeThemes = {
-    dark: darculaInit(CodeOptions),
-    light: materialLightInit(CodeOptions),
+    dark: materialDarkInit({settings: {background: "transparent", selection: "rgba(255,255,255,0.1)"}}),
+    light: materialLightInit({settings: {background: "transparent", selection: "rgba(0,0,0,0.1)"}}),
 }

@@ -1,4 +1,4 @@
-import {Grid, Skeleton} from "@mui/material";
+import {Box, Skeleton} from "@mui/material";
 import {instanceApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useAppearance} from "../../../provider/AppearanceProvider";
@@ -12,6 +12,13 @@ import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {CodeThemes} from "../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../view/button/IconButtons";
+import {SxPropsMap} from "../../../type/common";
+
+const SX: SxPropsMap = {
+    box: {display: "flex", flexWrap: "nowrap", gap: 1},
+    input: {flexGrow: 1, borderWidth: "1px", borderStyle: "solid", overflowX: "auto"},
+    buttons: {display: "flex", flexDirection: "column"},
+}
 
 export function OverviewConfig({info}: TabProps) {
     const theme = useAppearance();
@@ -35,10 +42,9 @@ export function OverviewConfig({info}: TabProps) {
     if (isError) return <ErrorSmart error={error}/>
     if (isLoading) return <Skeleton variant={"rectangular"} height={300}/>
 
-    const border = `1px solid ${isEditable && theme.info ? theme.info.palette.divider : "transparent"}`
     return (
-        <Grid container flexWrap={"nowrap"} gap={1}>
-            <Grid item flexGrow={1} sx={{border}}>
+        <Box sx={SX.box}>
+            <Box sx={SX.input} borderColor={isEditable ? "divider" : "transparent"}>
                 <ReactCodeMirror
                     value={configState}
                     editable={isEditable}
@@ -48,12 +54,12 @@ export function OverviewConfig({info}: TabProps) {
                     extensions={[json()]}
                     onChange={(value) => setConfigState(value)}
                 />
-            </Grid>
-            <Grid item xs={"auto"} display={"flex"} flexDirection={"column"}>
+            </Box>
+            <Box sx={SX.buttons}>
                 {renderUpdateButtons(defaultInstance, configState, updateConfig.isLoading, isEditable)}
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
-            </Grid>
-        </Grid>
+            </Box>
+        </Box>
     )
 
     function renderUpdateButtons(instance: Instance, configState: string, isLoading: boolean, isEditable: boolean) {
