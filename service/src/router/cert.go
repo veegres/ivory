@@ -48,17 +48,29 @@ func (r *CertRouter) DeleteCert(context *gin.Context) {
 }
 
 func (r *CertRouter) PostUploadCert(context *gin.Context) {
-	certType, err := strconv.Atoi(context.PostForm("type"))
-	file, err := context.FormFile("file")
+	certType, errParse := strconv.Atoi(context.PostForm("type"))
+	if errParse != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
+		return
+	}
+	file, errFile := context.FormFile("file")
+	if errFile != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errFile.Error()})
+		return
+	}
 	if file.Size > 1000000 {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "maximum size is 1MB"})
 		return
 	}
 
-	cert, err := r.certService.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
-	err = context.SaveUploadedFile(file, cert.Path)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	cert, errCreate := r.certService.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
+	if errCreate != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errCreate.Error()})
+		return
+	}
+	errSave := context.SaveUploadedFile(file, cert.Path)
+	if errSave != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errSave.Error()})
 		return
 	}
 

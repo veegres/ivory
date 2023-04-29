@@ -46,7 +46,13 @@ export function UploadButton(props: Props) {
     const [active, setActive] = useState(false)
 
     return (
-        <Box sx={SX.box} onDragEnter={handleDragEnter} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+        <Box
+            sx={SX.box}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
             {renderBody()}
         </Box>
     )
