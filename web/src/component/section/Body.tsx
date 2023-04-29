@@ -44,7 +44,7 @@ export function Body(props: Props) {
 
     function renderLoading() {
         return (
-            <Stack sx={SX.stack}>
+            <Stack sx={SX.stack} justifyContent={"space-evenly"}>
                 {renderSkeleton()}
                 {renderSkeleton()}
                 {renderSkeleton()}
@@ -55,7 +55,7 @@ export function Body(props: Props) {
     function renderSkeleton() {
         return (
             <PageBox>
-                <Skeleton variant={"rectangular"} width={"100%"} height={200} />
+                <Skeleton variant={"rectangular"} width={"100%"} height={"20vh"} />
             </PageBox>
         )
     }
