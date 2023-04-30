@@ -5,6 +5,7 @@ import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";
 import {SxPropsMap} from "../../../type/common";
 import {getSidecars} from "../../../app/utils";
+import {useStore} from "../../../provider/StoreProvider";
 
 const SX: SxPropsMap = {
     nodesCellInput: {height: '32px'},
@@ -17,6 +18,7 @@ type Props = {
 
 export function ListRowNew(props: Props) {
     const { show, close } = props
+    const {store: {activeTags}} = useStore()
     const [stateName, setStateName] = useState('');
     const [stateNodes, setStateNodes] = useState(['']);
 
@@ -48,7 +50,7 @@ export function ListRowNew(props: Props) {
                     instances={getSidecars(stateNodes)}
                     credentials={{}}
                     certs={{}}
-                    tags={[]}
+                    tags={activeTags}
                     toggle={toggle}
                     onUpdate={clean}
                 />
