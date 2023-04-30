@@ -140,9 +140,13 @@ export const getDomains = (sidecars: Sidecar[]) => {
     return sidecars.map(value => getDomain(value))
 }
 
-export const getHostAndPort = (domain: string) => {
+export const getSidecar = (domain: string): Sidecar => {
     const [host, port] = domain.split(":")
     return {host, port: port ? parseInt(port) : 8008}
+}
+
+export const getSidecars = (domains: string[]): Sidecar[] => {
+    return domains.map(value => getSidecar(value))
 }
 
 export const shortUuid = (uuid: string) => uuid.substring(0, 8)

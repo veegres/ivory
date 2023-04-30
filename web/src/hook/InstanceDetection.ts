@@ -168,7 +168,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
             }
         } else {
             const leader = Object.values(map).find(i => i.leader)
-            return leader ?? map[getDomain(defaultSidecar.current)]
+            return leader ?? map[getDomain(defaultSidecar.current)] ?? initialInstance(defaultSidecar.current)
         }
     }
 }

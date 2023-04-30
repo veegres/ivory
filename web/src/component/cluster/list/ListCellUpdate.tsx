@@ -3,7 +3,6 @@ import {useMutation} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {Box} from "@mui/material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
-import {getHostAndPort} from "../../../app/utils";
 import {Sidecar, SxPropsMap} from "../../../type/common";
 import {Certs, Credentials} from "../../../type/cluster";
 
@@ -13,7 +12,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     name: string,
-    nodes: string[],
+    instances: Sidecar[],
     certs: Certs,
     credentials: Credentials,
     tags?: string[],
@@ -23,7 +22,7 @@ type Props = {
 }
 
 export function ListCellUpdate(props: Props) {
-    const {name, nodes, tags, credentials, certs} = props
+    const {name, instances, tags, credentials, certs} = props
     const {toggle, onUpdate, onClose} = props
 
     const updateMutationOptions = useMutationOptions([["cluster/list"]], handleSuccess)
@@ -47,7 +46,6 @@ export function ListCellUpdate(props: Props) {
     }
 
     function handleUpdate() {
-        const instances: Sidecar[] = nodes.map(value => getHostAndPort(value))
         updateCluster.mutate({name, instances, certs, credentials, tags})
     }
 }
