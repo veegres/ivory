@@ -4,6 +4,7 @@ import {useState} from "react";
 import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";
 import {SxPropsMap} from "../../../type/common";
+import {getSidecars} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     nodesCellInput: {height: '32px'},
@@ -44,7 +45,7 @@ export function ListRowNew(props: Props) {
             <ListCell>
                 <ListCellUpdate
                     name={stateName}
-                    nodes={stateNodes}
+                    instances={getSidecars(stateNodes)}
                     credentials={{}}
                     certs={{}}
                     tags={[]}

@@ -5,7 +5,7 @@ import {DynamicInputs} from "../../view/input/DynamicInputs";
 import {ListCellRead} from "./ListCellRead";
 import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";
-import {getDomains} from "../../../app/utils";
+import {getDomains, getSidecars} from "../../../app/utils";
 import {ListCellChip} from "./ListCellChip";
 import {useInstanceDetection} from "../../../hook/InstanceDetection";
 
@@ -46,7 +46,7 @@ export function ListRow(props: Props) {
                 ) : (
                     <ListCellUpdate
                         name={name}
-                        nodes={stateNodes}
+                        instances={getSidecars(stateNodes)}
                         credentials={credentials}
                         certs={certs}
                         tags={tags}
