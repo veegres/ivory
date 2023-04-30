@@ -3,7 +3,7 @@ import {HTMLAttributes, useMemo, useState} from "react";
 
 const defaultName = "***"
 
-export type Option = {key: string, short: string, name: string}
+export type Option = { key: string, short: string, name: string }
 type Props = {
     selected: {
         key: string,
@@ -16,7 +16,7 @@ type Props = {
 }
 
 export function AutocompleteUuid(props: Props) {
-    const { onUpdate, loading, label, selected } = props
+    const {onUpdate, loading, label, selected} = props
     const [inputValue, setInputValue] = useState("")
     const {value, options, isOptionNotFound} = useMemo(handleMemoOptions, [selected, props.options])
 
@@ -70,10 +70,10 @@ export function AutocompleteUuid(props: Props) {
 
         // we put options that doesn't exist into the list to avoid problems with Autocomplete component
         if (isOptionNotFound) {
-            const notExistedOption = { ...selected, name: defaultName }
-            return { value: notExistedOption, options: [notExistedOption, ...props.options], isOptionNotFound }
+            const notExistedOption = {...selected, name: defaultName}
+            return {value: notExistedOption, options: [notExistedOption, ...props.options], isOptionNotFound}
         } else {
-            return { value: selectedOption, options: props.options, isOptionNotFound }
+            return {value: selectedOption, options: props.options, isOptionNotFound}
         }
     }
 }

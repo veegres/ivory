@@ -18,10 +18,8 @@ export function Options(props: Props) {
 
     return (
         <>
-            <OptionsPassword type={PasswordType.POSTGRES} selected={credentials.postgresId}
-                             onUpdate={handlePasswordUpdate}/>
-            <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId}
-                             onUpdate={handlePasswordUpdate}/>
+            <OptionsPassword type={PasswordType.POSTGRES} selected={credentials.postgresId} onUpdate={handlePasswordUpdate}/>
+            <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId} onUpdate={handlePasswordUpdate}/>
             <Divider variant={"middle"}/>
             <OptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/>
             <OptionsCert type={CertType.CLIENT_CERT} selected={certs.clientCertId} onUpdate={handleCertUpdate}/>
