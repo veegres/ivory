@@ -25,7 +25,7 @@ export function ListCellUpdate(props: Props) {
     const {name, instances, tags, credentials, certs} = props
     const {toggle, onUpdate, onClose} = props
 
-    const updateMutationOptions = useMutationOptions([["cluster/list"]], handleSuccess)
+    const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]], handleSuccess)
     const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
 
     return (
@@ -46,6 +46,7 @@ export function ListCellUpdate(props: Props) {
     }
 
     function handleUpdate() {
-        updateCluster.mutate({name, instances, certs, credentials, tags})
+        const tmp = tags?.filter(t => t !== "ALL")
+        updateCluster.mutate({name, instances, certs, credentials, tags: tmp})
     }
 }
