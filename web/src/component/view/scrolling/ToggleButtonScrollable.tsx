@@ -16,19 +16,20 @@ const SX: SxPropsMap = {
 
 type Props = {
     tags: string[],
-    selected?: string[],
+    selected: string[],
     warnings?: number,
     onUpdate: (tags: string[]) => void
 }
 
 export function ToggleButtonScrollable(props: Props) {
-    const {tags, warnings, onUpdate} = props
+    const {tags, selected, warnings, onUpdate} = props
     const scrollRef = useRef<Element>(null)
     const [scrolled, elements] = useWindowScrolled(scrollRef.current, tags)
-    const [selected, setSelected] = useState(new Set([ALL, ...(props.selected ?? [])]))
+    const tagsSet = new Set(tags)
+    const [selectedSet, setSelectedSet] = useState(new Set(selected))
 
-    const isAll = selected.has(ALL)
-    const count = isAll ? "0" : selected.size.toString()
+    const isAll = selectedSet.has(ALL)
+    const count = isAll ? "0" : selectedSet.size.toString()
 
     return (
         <Box sx={SX.box}>
@@ -39,13 +40,14 @@ export function ToggleButtonScrollable(props: Props) {
                 disabled={!scrolled}
                 onClick={() => handleScroll(-SCROLL_OFFSET)}
             />
-            <Box sx={SX.all}>{renderButton(ALL, isAll, handleClickAll)}</Box>
+            <Box sx={SX.all}>{renderSelectButton(ALL, isAll, handleClickAll)}</Box>
             <Box ref={scrollRef} sx={SX.group}>
-                {elements.map(tag => renderButton(tag, selected.has(tag), handleClick))}
+                {elements.map(tag => renderSelectButton(tag, selectedSet.has(tag), handleClick))}
+                {selected.map(tag => renderRemovedButton(tag, !tagsSet.has(tag), handleClick))}
             </Box>
             <Box sx={SX.info}>
                 <Tooltip title={"Tags Selected"} placement={"top"}>
-                    <span>{renderButton(count, !isAll)}</span>
+                    <span>{renderSelectButton(count, !isAll)}</span>
                 </Tooltip>
             </Box>
             <Box sx={SX.info}>
@@ -81,7 +83,7 @@ export function ToggleButtonScrollable(props: Props) {
         )
     }
 
-    function renderButton(tag: string, selected: boolean, onClick?: (value: string) => void) {
+    function renderSelectButton(tag: string, selected: boolean, onClick?: (value: string) => void) {
         return (
             <ToggleButton
                 sx={SX.element}
@@ -98,23 +100,41 @@ export function ToggleButtonScrollable(props: Props) {
         )
     }
 
+    function renderRemovedButton(tag: string, removed: boolean, onClick?: (value: string) => void) {
+        if (tag === ALL || !removed) return null
+        return (
+            <ToggleButton
+                sx={SX.element}
+                color={"error"}
+                size={"small"}
+                key={tag}
+                selected={removed}
+                disabled={!onClick}
+                value={tag}
+                onClick={() => onClick!!(tag)}
+            >
+                {tag}
+            </ToggleButton>
+        )
+    }
+
     function handleClick(value: string) {
-        const tmp = new Set(selected)
+        const tmp = new Set(selectedSet)
         if (tmp.has(value)) {
             tmp.delete(value)
             if (tmp.size === 0) tmp.add(ALL)
-            setSelected(tmp)
+            setSelectedSet(tmp)
         } else {
             tmp.delete(ALL)
             tmp.add(value)
-            setSelected(tmp)
+            setSelectedSet(tmp)
         }
         onUpdate([...tmp])
     }
 
     function handleClickAll() {
         const tmp = new Set([ALL])
-        setSelected(tmp)
+        setSelectedSet(tmp)
         onUpdate([...tmp])
     }
 

@@ -30,10 +30,8 @@ func (s *ClusterService) List() ([]ClusterModel, error) {
 func (s *ClusterService) ListByTag(tags []string) ([]ClusterModel, error) {
 	listMap := make(map[string]bool)
 	for _, tag := range tags {
-		clusters, err := s.tagService.Get(tag)
-		if err != nil {
-			return nil, err
-		}
+		// NOTE: we shouldn't check error here, we want to return empty array if there is no such tag
+		clusters, _ := s.tagService.Get(tag)
 
 		for _, c := range clusters {
 			if !listMap[c] {
