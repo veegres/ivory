@@ -28,8 +28,8 @@ func (r *SecretRouter) GetStatus(context *gin.Context) {
 
 func (r *SecretRouter) SetSecret(context *gin.Context) {
 	var body SecretSetRequest
-	err := context.ShouldBindJSON(&body)
-	if err != nil {
+	errBind := context.ShouldBindJSON(&body)
+	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "body isn't correct"})
 		return
 	}
@@ -38,7 +38,7 @@ func (r *SecretRouter) SetSecret(context *gin.Context) {
 		return
 	}
 
-	err = r.secretService.Set(body.Key, body.Ref)
+	err := r.secretService.Set(body.Key, body.Ref)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -48,9 +48,9 @@ func (r *SecretRouter) SetSecret(context *gin.Context) {
 
 func (r *SecretRouter) UpdateSecret(context *gin.Context) {
 	var secret SecretUpdateRequest
-	errParse := context.ShouldBindJSON(&secret)
-	if errParse != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
+	errBind := context.ShouldBindJSON(&secret)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 	prevSha, newSha, err := r.secretService.Update(secret.PreviousKey, secret.NewKey)

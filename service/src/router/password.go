@@ -20,9 +20,9 @@ func NewPasswordRouter(passwordService *service.PasswordService) *PasswordRouter
 func (r *PasswordRouter) GetCredentials(context *gin.Context) {
 	stringType := context.Request.URL.Query().Get("type")
 	if stringType != "" {
-		number, err := strconv.Atoi(stringType)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		number, errAtoi := strconv.Atoi(stringType)
+		if errAtoi != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errAtoi.Error()})
 			return
 		}
 		credType := CredentialType(number)
@@ -44,7 +44,11 @@ func (r *PasswordRouter) GetCredentials(context *gin.Context) {
 
 func (r *PasswordRouter) PostCredential(context *gin.Context) {
 	var credential Credential
-	err := context.ShouldBindJSON(&credential)
+	errBind := context.ShouldBindJSON(&credential)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
 
 	key, cred, err := r.passwordService.Create(credential)
 	if err != nil {
@@ -63,9 +67,9 @@ func (r *PasswordRouter) PatchCredential(context *gin.Context) {
 	}
 
 	var credential Credential
-	err := context.ShouldBindJSON(&credential)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	errBind := context.ShouldBindJSON(&credential)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 

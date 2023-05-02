@@ -73,9 +73,9 @@ func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (ClusterModel, err
 		CredentialId: cluster.Credentials.PatroniId,
 		Certs:        cluster.Certs,
 	}
-	overview, _, err := s.instanceService.Overview(request)
-	if err != nil {
-		return ClusterModel{}, err
+	overview, _, errOver := s.instanceService.Overview(request)
+	if errOver != nil {
+		return ClusterModel{}, errOver
 	}
 
 	instances := make([]Sidecar, 0)
@@ -83,9 +83,9 @@ func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (ClusterModel, err
 		instances = append(instances, instance.Sidecar)
 	}
 
-	tags, err := s.saveTags(cluster.Name, cluster.Tags)
-	if err != nil {
-		return ClusterModel{}, err
+	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
+	if errSave != nil {
+		return ClusterModel{}, errSave
 	}
 	cluster.Tags = tags
 
@@ -127,8 +127,6 @@ func (s *ClusterService) saveTags(name string, tags []string) ([]string, error) 
 
 	// NOTE: create tags in db with cluster name
 	err := s.tagService.UpdateCluster(name, tagList)
-	if err != nil {
-		return nil, err
-	}
-	return tagList, nil
+
+	return tagList, err
 }
