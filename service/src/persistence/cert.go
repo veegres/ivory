@@ -54,24 +54,22 @@ func (r *CertRepository) Create(cert CertModel, pathStr string) (*CertModel, err
 	}
 
 	err := r.bucket.Update(key.String(), cert)
-	if err != nil {
-		return nil, err
-	}
-	return &cert, nil
+	return &cert, err
 }
 
 func (r *CertRepository) Delete(certUuid uuid.UUID) error {
-	var err error
 	cert, err := r.Get(certUuid)
-	if cert.FileUsageType == FileUsageType(UPLOAD) {
-		err = r.file.Delete(certUuid)
+	if err != nil {
+		return err
 	}
-	err = r.bucket.Delete(certUuid.String())
-	return err
+	if cert.FileUsageType == FileUsageType(UPLOAD) {
+		return r.file.Delete(certUuid)
+	}
+	return r.bucket.Delete(certUuid.String())
 }
 
 func (r *CertRepository) DeleteAll() error {
-	err := r.file.DeleteAll()
-	err = r.bucket.DeleteAll()
-	return err
+	errFile := r.file.DeleteAll()
+	errBucket := r.bucket.DeleteAll()
+	return errors.Join(errFile, errBucket)
 }

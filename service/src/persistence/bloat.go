@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"ivory/src/config"
 	. "ivory/src/model"
@@ -59,10 +60,7 @@ func (r *BloatRepository) Create(credentialId uuid.UUID, cluster string, args []
 	}
 
 	err := r.bucket.Update(jobUuid.String(), compactTableModel)
-	if err != nil {
-		return nil, err
-	}
-	return &compactTableModel, nil
+	return &compactTableModel, err
 }
 
 func (r *BloatRepository) UpdateStatus(compactTable BloatModel, status JobStatus) error {
@@ -72,16 +70,15 @@ func (r *BloatRepository) UpdateStatus(compactTable BloatModel, status JobStatus
 }
 
 func (r *BloatRepository) Delete(uuid uuid.UUID) error {
-	var err error
-	err = r.file.Delete(uuid)
-	err = r.bucket.Delete(uuid.String())
-	return err
+	errFile := r.file.Delete(uuid)
+	errBucket := r.bucket.Delete(uuid.String())
+	return errors.Join(errFile, errBucket)
 }
 
 func (r *BloatRepository) DeleteAll() error {
-	err := r.file.DeleteAll()
-	err = r.bucket.DeleteAll()
-	return err
+	errFile := r.file.DeleteAll()
+	errBucket := r.bucket.DeleteAll()
+	return errors.Join(errFile, errBucket)
 }
 
 func (r *BloatRepository) sortDescByCreatedAt(list []BloatModel, i, j int) bool {

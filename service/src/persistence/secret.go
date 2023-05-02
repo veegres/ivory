@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"errors"
 	"ivory/src/config"
 )
 
@@ -33,10 +34,9 @@ func NewSecretRepository(bucket *config.Bucket[string]) *SecretRepository {
 }
 
 func (r *SecretRepository) UpdateRefs(encrypted string, decrypted string) error {
-	var err error
-	err = r.bucket.Update(r.encryptedRefKey, encrypted)
-	err = r.bucket.Update(r.decryptedRefKey, decrypted)
-	return err
+	errEnc := r.bucket.Update(r.encryptedRefKey, encrypted)
+	errDec := r.bucket.Update(r.decryptedRefKey, decrypted)
+	return errors.Join(errEnc, errDec)
 }
 
 func (r *SecretRepository) GetEncryptedRef() (string, error) {

@@ -17,9 +17,9 @@ func NewInstanceRouter(instanceService InstanceGateway) *InstanceRouter {
 
 func (r *InstanceRouter) GetInstanceInfo(context *gin.Context) {
 	var instance InstanceRequestTmp
-	err := context.ShouldBindQuery(&instance)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	errBind := context.ShouldBindQuery(&instance)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
@@ -45,9 +45,9 @@ func (r *InstanceRouter) GetInstanceInfo(context *gin.Context) {
 
 func (r *InstanceRouter) GetInstanceOverview(context *gin.Context) {
 	var instance InstanceRequestTmp
-	err := context.ShouldBindQuery(&instance)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	errBind := context.ShouldBindQuery(&instance)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
@@ -69,9 +69,9 @@ func (r *InstanceRouter) GetInstanceOverview(context *gin.Context) {
 
 func (r *InstanceRouter) GetInstanceConfig(context *gin.Context) {
 	var instance InstanceRequestTmp
-	err := context.ShouldBindQuery(&instance)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	errBind := context.ShouldBindQuery(&instance)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
@@ -93,9 +93,9 @@ func (r *InstanceRouter) GetInstanceConfig(context *gin.Context) {
 
 func (r *InstanceRouter) PatchInstanceConfig(context *gin.Context) {
 	var instance InstanceRequest
-	err := context.ShouldBindJSON(&instance)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	errBind := context.ShouldBindJSON(&instance)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
@@ -105,9 +105,9 @@ func (r *InstanceRouter) PatchInstanceConfig(context *gin.Context) {
 
 func (r *InstanceRouter) PostInstanceSwitchover(context *gin.Context) {
 	var instance InstanceRequest
-	err := context.ShouldBindJSON(&instance)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	errBind := context.ShouldBindJSON(&instance)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
@@ -117,9 +117,9 @@ func (r *InstanceRouter) PostInstanceSwitchover(context *gin.Context) {
 
 func (r *InstanceRouter) PostInstanceReinitialize(context *gin.Context) {
 	var instance InstanceRequest
-	err := context.ShouldBindJSON(&instance)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	errBind := context.ShouldBindJSON(&instance)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 

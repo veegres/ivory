@@ -28,29 +28,31 @@ func NewPasswordService(
 }
 
 func (s *PasswordService) Create(credential Credential) (*uuid.UUID, *Credential, error) {
-	encryptedPassword, err := s.encryption.Encrypt(credential.Password, s.secretService.Get())
-	if err != nil {
-		return nil, nil, err
+	encryptedPassword, errEnc := s.encryption.Encrypt(credential.Password, s.secretService.Get())
+	if errEnc != nil {
+		return nil, nil, errEnc
 	}
+
 	encryptedCred := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
-	key, err := s.passwordRepository.Create(encryptedCred)
+	key, errCreate := s.passwordRepository.Create(encryptedCred)
 
 	cred := encryptedCred
 	cred.Password = s.defaultPasswordWord
-	return &key, &cred, err
+	return &key, &cred, errCreate
 }
 
 func (s *PasswordService) Update(key uuid.UUID, credential Credential) (*uuid.UUID, *Credential, error) {
-	encryptedPassword, err := s.encryption.Encrypt(credential.Password, s.secretService.Get())
-	if err != nil {
-		return nil, nil, err
+	encryptedPassword, errEnc := s.encryption.Encrypt(credential.Password, s.secretService.Get())
+	if errEnc != nil {
+		return nil, nil, errEnc
 	}
+
 	encryptedCred := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
-	key, err = s.passwordRepository.Update(key, encryptedCred)
+	key, errUpdate := s.passwordRepository.Update(key, encryptedCred)
 
 	cred := encryptedCred
 	cred.Password = s.defaultPasswordWord
-	return &key, &cred, err
+	return &key, &cred, errUpdate
 }
 
 func (s *PasswordService) Delete(key uuid.UUID) error {
@@ -93,17 +95,29 @@ func (s *PasswordService) GetDecrypted(uuid uuid.UUID) (*Credential, error) {
 }
 
 func (s *PasswordService) ReEncryptPasswords(oldSecret [16]byte, newSecret [16]byte) error {
-	credentialMap, err := s.passwordRepository.Map()
-	if err != nil {
-		return err
+	credentialMap, errGet := s.passwordRepository.Map()
+	if errGet != nil {
+		return errGet
 	}
 	for id, credential := range credentialMap {
-		id, _ := uuid.Parse(id)
+		id, errParse := uuid.Parse(id)
+		if errParse != nil {
+			return errParse
+		}
 		oldEncryptedPass := credential.Password
-		decryptedPass, _ := s.encryption.Decrypt(oldEncryptedPass, oldSecret)
-		newEncryptedPass, _ := s.encryption.Encrypt(decryptedPass, newSecret)
+		decryptedPass, errDec := s.encryption.Decrypt(oldEncryptedPass, oldSecret)
+		if errDec != nil {
+			return errDec
+		}
+		newEncryptedPass, errEnc := s.encryption.Encrypt(decryptedPass, newSecret)
+		if errEnc != nil {
+			return errEnc
+		}
 		credential.Password = newEncryptedPass
-		_, err = s.passwordRepository.Update(id, credential)
+		_, errUpdate := s.passwordRepository.Update(id, credential)
+		if errUpdate != nil {
+			return errUpdate
+		}
 	}
 	return nil
 }

@@ -23,8 +23,12 @@ func (r *CertRouter) GetCertList(context *gin.Context) {
 	var err error
 	var list map[string]CertModel
 	if certType != "" {
-		number, _ := strconv.Atoi(certType)
-		list, err = r.certService.ListByType(CertType(number))
+		number, errAtoi := strconv.Atoi(certType)
+		if errAtoi != nil {
+			err = errAtoi
+		} else {
+			list, err = r.certService.ListByType(CertType(number))
+		}
 	} else {
 		list, err = r.certService.List()
 	}
@@ -38,8 +42,12 @@ func (r *CertRouter) GetCertList(context *gin.Context) {
 }
 
 func (r *CertRouter) DeleteCert(context *gin.Context) {
-	certUuid, err := uuid.Parse(context.Param("uuid"))
-	err = r.certService.Delete(certUuid)
+	certUuid, errParse := uuid.Parse(context.Param("uuid"))
+	if errParse != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})
+		return
+	}
+	err := r.certService.Delete(certUuid)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

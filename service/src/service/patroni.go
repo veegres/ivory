@@ -30,34 +30,34 @@ func (p *patroniInstanceService) Info(instance InstanceRequest) (InstanceInfo, i
 }
 
 func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance, int, error) {
-	var err error
 	var overview []Instance
 
 	response, status, err := NewSidecarRequest[PatroniCluster](p.client).Get(instance, "/cluster")
-	if err == nil {
-		for _, patroniInstance := range response.Members {
-			domainString := strings.Split(patroniInstance.ApiUrl, "/")[2]
-			domain := strings.Split(domainString, ":")
-			host := domain[0]
-			port, errCast := strconv.Atoi(domain[1])
-			if errCast != nil {
-				err = errCast
-				break
-			}
+	if err != nil {
+		return overview, status, err
+	}
 
-			var lag int
-			if ok := patroniInstance.Lag; ok == nil {
-				lag = -1
-			}
-
-			overview = append(overview, Instance{
-				State:    patroniInstance.State,
-				Role:     patroniInstance.Role,
-				Lag:      lag,
-				Database: Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-				Sidecar:  Sidecar{Host: host, Port: port},
-			})
+	for _, patroniInstance := range response.Members {
+		domainString := strings.Split(patroniInstance.ApiUrl, "/")[2]
+		domain := strings.Split(domainString, ":")
+		host := domain[0]
+		port, errCast := strconv.Atoi(domain[1])
+		if errCast != nil {
+			return nil, 0, errCast
 		}
+
+		var lag int
+		if ok := patroniInstance.Lag; ok == nil {
+			lag = -1
+		}
+
+		overview = append(overview, Instance{
+			State:    patroniInstance.State,
+			Role:     patroniInstance.Role,
+			Lag:      lag,
+			Database: Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
+			Sidecar:  Sidecar{Host: host, Port: port},
+		})
 	}
 
 	return overview, status, err
