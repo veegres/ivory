@@ -13,15 +13,17 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {CodeThemes} from "../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {SxPropsMap} from "../../../type/common";
+import {useSnackbar} from "notistack";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexWrap: "nowrap", gap: 1},
-    input: {flexGrow: 1, borderWidth: "1px", borderStyle: "solid", overflowX: "auto"},
+    box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%", maxHeight: "500px"},
+    input: {flexGrow: 1, borderWidth: "1px", borderStyle: "solid", overflowX: "auto", ">div": {height: "100%"}},
     buttons: {display: "flex", flexDirection: "column"},
 }
 
 export function OverviewConfig({info}: TabProps) {
     const theme = useAppearance();
+    const {enqueueSnackbar} = useSnackbar()
     const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
@@ -46,6 +48,8 @@ export function OverviewConfig({info}: TabProps) {
         <Box sx={SX.box}>
             <Box sx={SX.input} borderColor={isEditable ? "divider" : "transparent"}>
                 <ReactCodeMirror
+                    height={"100%"}
+                    width={"100%"}
                     value={configState}
                     editable={isEditable}
                     autoFocus={isEditable}
@@ -85,13 +89,17 @@ export function OverviewConfig({info}: TabProps) {
 
     function handleUpdate(instance: Instance, config: string) {
         if (configState) {
-            const request: InstanceRequest = {
-                ...instance.sidecar,
-                credentialId: cluster.credentials.patroniId,
-                certs: cluster.certs,
-                body: JSON.parse(config)
+            try {
+                const request: InstanceRequest = {
+                    ...instance.sidecar,
+                    credentialId: cluster.credentials.patroniId,
+                    certs: cluster.certs,
+                    body: JSON.parse(config)
+                }
+                updateConfig.mutate(request)
+            } catch (e: any) {
+                enqueueSnackbar(e?.message ?? "Unknown error", {variant: "error"})
             }
-            updateConfig.mutate(request)
         }
     }
 
