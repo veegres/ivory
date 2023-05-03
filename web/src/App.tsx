@@ -18,17 +18,17 @@ export function App() {
     const show = !info.isLoading && !info.isError && info.data.secret.key
 
     return (
-            <Box sx={SX.box}>
-                <Box>
-                    <Header company={info.data?.company ?? "VEEGRES"} show={show}/>
-                </Box>
-                <Box sx={SX.body}>
-                    <Body info={info}/>
-                    <Menu/>
-                </Box>
-                <Box>
-                    <Footer tag={info.data?.version.tag ?? "none"} commit={info.data?.version.commit ?? "none"}/>
-                </Box>
+        <Box sx={SX.box}>
+            <Box>
+                <Header company={info.data?.company ?? "VEEGRES"} show={show}/>
             </Box>
+            <Box sx={SX.body}>
+                <Body info={info}/>
+                <Menu/>
+            </Box>
+            <Box>
+                <Footer tag={info.data?.version.tag ?? "none"} commit={info.data?.version.commit ?? "none"}/>
+            </Box>
+        </Box>
     );
 }

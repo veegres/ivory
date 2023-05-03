@@ -194,6 +194,6 @@ export const mergeSxProps = (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => {
 
 // CodeMirror theme
 export const CodeThemes = {
-    dark: materialDarkInit({settings: {background: "transparent", selection: "rgba(255,255,255,0.1)"}}),
-    light: materialLightInit({settings: {background: "transparent", selection: "rgba(0,0,0,0.1)"}}),
+    dark: materialDarkInit({settings: {background: "transparent", gutterActiveForeground: "rgba(255,255,255,0.3)", selection: "rgba(255,255,255,0.1)"}}),
+    light: materialLightInit({settings: {background: "transparent", gutterActiveForeground: "rgba(0,0,0,0.3)", selection: "rgba(0,0,0,0.1)"}}),
 }
