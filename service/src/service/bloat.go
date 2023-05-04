@@ -22,7 +22,7 @@ type BloatService struct {
 }
 
 type element struct {
-	job   Job
+	job   *Job
 	model *BloatModel
 	file  *os.File
 }
@@ -89,28 +89,39 @@ func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
 
 	// stream logs from file
-	file, _ := w.bloatRepository.GetOpenFile(model.LogsPath)
+	file, errFile := w.bloatRepository.GetOpenFile(model.LogsPath)
+	if errFile != nil {
+		stream(Event{Type: SERVER, Message: errFile.Error()})
+	} else {
+		stream(Event{Type: SERVER, Message: "Streaming from file started"})
+	}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		stream(Event{Type: LOG, Message: scanner.Text()})
 	}
 	if errScanner := scanner.Err(); errScanner != nil {
-		stream(Event{Type: LOG, Message: errScanner.Error()})
+		stream(Event{Type: SERVER, Message: errScanner.Error()})
 	}
 	errFileClose := file.Close()
 	if errFileClose != nil {
-		stream(Event{Type: LOG, Message: errFileClose.Error()})
+		stream(Event{Type: SERVER, Message: errFileClose.Error()})
 	}
+	stream(Event{Type: SERVER, Message: "Streaming from file finished"})
 
 	// subscribe to stream and stream logs
 	if channel != nil {
+		stream(Event{Type: SERVER, Message: "Streaming from console started"})
 		for event := range channel {
 			stream(event)
 		}
-		job.Unsubscribe(channel)
-	}
+		stream(Event{Type: SERVER, Message: "Streaming from console finished"})
 
-	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
+		// NOTE: we should get status before unsubscription
+		stream(Event{Type: STATUS, Message: job.GetStatus().String()})
+		job.Unsubscribe(channel)
+	} else {
+		stream(Event{Type: STATUS, Message: job.GetStatus().String()})
+	}
 }
 
 func (w *BloatService) Delete(jobUuid uuid.UUID) error {
@@ -173,7 +184,7 @@ func (w *BloatService) runner() {
 			}
 			w.elements[jobUuid].job.SetCommand(cmd)
 
-			// ead and write logs from command
+			// read and write logs from command
 			reader := bufio.NewReader(pipe)
 			line, _, errReadLine := reader.ReadLine()
 			for errReadLine == nil {
@@ -183,12 +194,14 @@ func (w *BloatService) runner() {
 			}
 
 			// Wait when pipe will be closed
-			if errWait := cmd.Wait(); errWait != nil {
+			if errWait := cmd.Wait(); errWait != nil && element.job.IsJobActive() {
 				w.jobStatusHandler(element, FAILED, errors.New("pgcompacttable execution error: "+errWait.Error()))
 				return
 			}
 
-			w.jobStatusHandler(element, FINISHED, nil)
+			if element.job.IsJobActive() {
+				w.jobStatusHandler(element, FINISHED, nil)
+			}
 		}()
 	}
 }
@@ -266,13 +279,13 @@ func (w *BloatService) addLogElement(element *element, eventType EventType, mess
 	w.sendEvents(element.job, eventType, message)
 }
 
-func (w *BloatService) sendEvents(job Job, eventType EventType, message string) {
+func (w *BloatService) sendEvents(job *Job, eventType EventType, message string) {
 	for subscriber := range job.Subscribers() {
 		subscriber <- Event{Type: eventType, Message: message}
 	}
 }
 
-func (w *BloatService) closeEvents(job Job) {
+func (w *BloatService) closeEvents(job *Job) {
 	for subscriber := range job.Subscribers() {
 		close(subscriber)
 	}
@@ -281,7 +294,7 @@ func (w *BloatService) closeEvents(job Job) {
 func (w *BloatService) addElement(model *BloatModel) {
 	w.mutex.Lock()
 	file, _ := w.bloatRepository.GetOpenFile(model.LogsPath)
-	w.elements[model.Uuid] = &element{job: *NewJob(), model: model, file: file}
+	w.elements[model.Uuid] = &element{job: NewJob(), model: model, file: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid
 }

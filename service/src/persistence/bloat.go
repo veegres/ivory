@@ -70,9 +70,9 @@ func (r *BloatRepository) UpdateStatus(compactTable BloatModel, status JobStatus
 }
 
 func (r *BloatRepository) Delete(uuid uuid.UUID) error {
-	errFile := r.file.Delete(uuid)
-	errBucket := r.bucket.Delete(uuid.String())
-	return errors.Join(errFile, errBucket)
+	// NOTE: we shouldn't check error here, if there is no file we should try to remove info
+	_ = r.file.Delete(uuid)
+	return r.bucket.Delete(uuid.String())
 }
 
 func (r *BloatRepository) DeleteAll() error {

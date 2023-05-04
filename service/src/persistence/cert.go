@@ -63,7 +63,8 @@ func (r *CertRepository) Delete(certUuid uuid.UUID) error {
 		return err
 	}
 	if cert.FileUsageType == FileUsageType(UPLOAD) {
-		return r.file.Delete(certUuid)
+		// NOTE: we shouldn't check error here, if there is no file we should try to remove info
+		_ = r.file.Delete(certUuid)
 	}
 	return r.bucket.Delete(certUuid.String())
 }
