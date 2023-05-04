@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 }
 
 export function App() {
-    const info = useQuery(["info"], infoApi.get)
+    const info = useQuery(["info"], infoApi.get, {refetchOnWindowFocus: "always"})
     const show = !info.isLoading && !info.isError && info.data.secret.key
 
     return (
