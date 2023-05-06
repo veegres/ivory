@@ -1,5 +1,7 @@
 import {Database} from "./common";
 
+// COMMON (WEB AND SERVER)
+
 export enum QueryType {
     BLOAT,
     ACTIVITY,
@@ -45,9 +47,18 @@ export interface QueryKillRequest extends QueryPostgresRequest {
 
 export interface QueryChartRequest extends QueryPostgresRequest {}
 
-export interface QuerySearchRequest extends QueryPostgresRequest {
-    schema?: string,
-    name?: string,
+
+export interface QueryDatabasesRequest extends QueryPostgresRequest {
+    name: string,
+}
+
+export interface QuerySchemasRequest extends QueryPostgresRequest {
+    name: string,
+}
+
+export interface QueryTablesRequest extends QueryPostgresRequest {
+    schema: string,
+    name: string,
 }
 
 export interface QueryField {
@@ -65,3 +76,5 @@ export interface QueryRunResponse {
     fields: QueryField[],
     rows: any[][],
 }
+
+// SPECIFIC (WEB)

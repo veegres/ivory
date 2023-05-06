@@ -2,15 +2,7 @@ package model
 
 import "github.com/google/uuid"
 
-// InstanceGateway TODO add common return types to cast interface to them and create mappers for each impl (patroni)
-type InstanceGateway interface {
-	Info(instance InstanceRequest) (InstanceInfo, int, error)
-	Overview(instance InstanceRequest) ([]Instance, int, error)
-	Config(instance InstanceRequest) (any, int, error)
-	ConfigUpdate(instance InstanceRequest) (any, int, error)
-	Switchover(instance InstanceRequest) (any, int, error)
-	Reinitialize(instance InstanceRequest) (any, int, error)
-}
+// COMMON (WEB AND SERVER)
 
 type InstanceRequest struct {
 	Host         string     `json:"host" form:"host"`
@@ -18,16 +10,6 @@ type InstanceRequest struct {
 	CredentialId *uuid.UUID `json:"credentialId" form:"credentialId"`
 	Certs        Certs      `json:"certs" form:"certs"`
 	Body         any        `json:"body" form:"body"`
-}
-
-// InstanceRequestTmp we need cause Context.ShouldBindQuery() cannot work correctly with UUID
-// https://github.com/gin-gonic/gin/issues/2423
-type InstanceRequestTmp struct {
-	Host         string  `json:"host" form:"host"`
-	Port         int     `json:"port" form:"port"`
-	CredentialId *string `json:"credentialId" form:"credentialId"`
-	Certs        Certs   `json:"certs" form:"certs"`
-	Body         any     `json:"body" form:"body"`
 }
 
 type Instance struct {
@@ -38,19 +20,30 @@ type Instance struct {
 	Sidecar  Sidecar  `json:"sidecar"`
 }
 
-type Database struct {
-	Host     string  `json:"host"`
-	Port     int     `json:"port"`
-	Database *string `json:"database"`
-}
-
-type Sidecar struct {
-	Host string `json:"host"`
-	Port int    `json:"port"`
-}
-
 type InstanceInfo struct {
 	State   string  `json:"state"`
 	Role    string  `json:"role"`
 	Sidecar Sidecar `json:"sidecar"`
+}
+
+// SPECIFIC (SERVER)
+
+// InstanceGateway TODO add common return types to cast interface to them and create mappers for each impl (patroni)
+type InstanceGateway interface {
+	Info(instance InstanceRequest) (InstanceInfo, int, error)
+	Overview(instance InstanceRequest) ([]Instance, int, error)
+	Config(instance InstanceRequest) (any, int, error)
+	ConfigUpdate(instance InstanceRequest) (any, int, error)
+	Switchover(instance InstanceRequest) (any, int, error)
+	Reinitialize(instance InstanceRequest) (any, int, error)
+}
+
+// InstanceRequestTmp we need cause Context.ShouldBindQuery() cannot work correctly with UUID
+// https://github.com/gin-gonic/gin/issues/2423
+type InstanceRequestTmp struct {
+	Host         string  `json:"host" form:"host"`
+	Port         int     `json:"port" form:"port"`
+	CredentialId *string `json:"credentialId" form:"credentialId"`
+	Certs        Certs   `json:"certs" form:"certs"`
+	Body         any     `json:"body" form:"body"`
 }

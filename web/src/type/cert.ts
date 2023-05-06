@@ -1,5 +1,7 @@
 import {FileUsageType} from "./common";
 
+// COMMON (WEB AND SERVER)
+
 export interface Cert {
     fileName: string,
     fileUsageType: FileUsageType,
@@ -11,23 +13,23 @@ export interface CertMap {
     [uuid: string]: Cert,
 }
 
-
-
 export enum CertType {
     CLIENT_CA,
     CLIENT_CERT,
     CLIENT_KEY,
 }
 
+export interface CertAddRequest {
+    path: string,
+    type: CertType,
+}
+
+// SPECIFIC (WEB)
+
 export interface CertUploadRequest {
     file: File,
     type: CertType,
     setProgress?: (progressEvent: ProgressEvent) => void
-}
-
-export interface CertAddRequest {
-    path: string,
-    type: CertType,
 }
 
 export interface CertTabs {

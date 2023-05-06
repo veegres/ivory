@@ -25,7 +25,7 @@ func (r *PasswordRouter) GetCredentials(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": errAtoi.Error()})
 			return
 		}
-		credType := CredentialType(number)
+		credType := PasswordType(number)
 		credentials, err := r.passwordService.Map(&credType)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -43,7 +43,7 @@ func (r *PasswordRouter) GetCredentials(context *gin.Context) {
 }
 
 func (r *PasswordRouter) PostCredential(context *gin.Context) {
-	var credential Credential
+	var credential Password
 	errBind := context.ShouldBindJSON(&credential)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -66,7 +66,7 @@ func (r *PasswordRouter) PatchCredential(context *gin.Context) {
 		return
 	}
 
-	var credential Credential
+	var credential Password
 	errBind := context.ShouldBindJSON(&credential)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})

@@ -1,3 +1,5 @@
+// COMMON (WEB AND SERVER)
+
 export interface SecretStatus {
     key: boolean,
     ref: boolean,
@@ -12,3 +14,5 @@ export interface SecretUpdateRequest {
     previousKey: string,
     newKey: string,
 }
+
+// SPECIFIC (WEB)

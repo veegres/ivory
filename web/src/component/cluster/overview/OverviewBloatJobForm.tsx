@@ -5,7 +5,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {bloatApi, queryApi} from "../../../app/api";
 import {SxPropsMap} from "../../../type/common";
-import {Instance} from "../../../type/Instance";
+import {InstanceWeb} from "../../../type/Instance";
 import {Cluster} from "../../../type/cluster";
 import {Bloat, BloatTarget} from "../../../type/bloat";
 import {AutocompleteFetch} from "../../view/autocomplete/AutocompleteFetch";
@@ -19,7 +19,7 @@ const SX: SxPropsMap = {
 
 
 type Props = {
-    defaultInstance: Instance,
+    defaultInstance: InstanceWeb,
     cluster: Cluster,
     onClick: () => void,
     onSuccess: (job: Bloat) => void,
@@ -67,14 +67,14 @@ export function OverviewBloatJobForm(props: Props) {
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
                 disabled={!target?.schema || !!target?.excludeTable}
-                onFetch={(v) => queryApi.tables({...req, schema: target?.schema, name: v})}
+                onFetch={(v) => queryApi.tables({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, table: v || ""})}
             />
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.excludeSchema ?? ""]} label={"Exclude Table"}
                 disabled={!target?.schema || !!target?.table}
-                onFetch={(v) => queryApi.tables({...req, schema: target?.schema, name: v})}
+                onFetch={(v) => queryApi.tables({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
             />
             <Box sx={SX.buttons}>

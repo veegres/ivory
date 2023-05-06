@@ -153,8 +153,8 @@ func (r *BloatRouter) StreamJob(context *gin.Context) {
 	context.Writer.Header().Set("Content-Type", "text/event-stream")
 
 	// start and end stream
-	context.SSEvent(STREAM.String(), "start")
-	defer context.SSEvent(STREAM.String(), "end")
+	context.SSEvent(STREAM.String(), START.String())
+	defer context.SSEvent(STREAM.String(), END.String())
 	context.Writer.Flush()
 
 	// find stream job

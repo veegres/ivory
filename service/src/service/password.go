@@ -27,13 +27,13 @@ func NewPasswordService(
 	}
 }
 
-func (s *PasswordService) Create(credential Credential) (*uuid.UUID, *Credential, error) {
+func (s *PasswordService) Create(credential Password) (*uuid.UUID, *Password, error) {
 	encryptedPassword, errEnc := s.encryption.Encrypt(credential.Password, s.secretService.Get())
 	if errEnc != nil {
 		return nil, nil, errEnc
 	}
 
-	encryptedCred := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
+	encryptedCred := Password{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
 	key, errCreate := s.passwordRepository.Create(encryptedCred)
 
 	cred := encryptedCred
@@ -41,13 +41,13 @@ func (s *PasswordService) Create(credential Credential) (*uuid.UUID, *Credential
 	return &key, &cred, errCreate
 }
 
-func (s *PasswordService) Update(key uuid.UUID, credential Credential) (*uuid.UUID, *Credential, error) {
+func (s *PasswordService) Update(key uuid.UUID, credential Password) (*uuid.UUID, *Password, error) {
 	encryptedPassword, errEnc := s.encryption.Encrypt(credential.Password, s.secretService.Get())
 	if errEnc != nil {
 		return nil, nil, errEnc
 	}
 
-	encryptedCred := Credential{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
+	encryptedCred := Password{Username: credential.Username, Password: encryptedPassword, Type: credential.Type}
 	key, errUpdate := s.passwordRepository.Update(key, encryptedCred)
 
 	cred := encryptedCred
@@ -63,9 +63,9 @@ func (s *PasswordService) DeleteAll() error {
 	return s.passwordRepository.DeleteAll()
 }
 
-func (s *PasswordService) Map(credentialType *CredentialType) (map[string]Credential, error) {
+func (s *PasswordService) Map(credentialType *PasswordType) (PasswordMap, error) {
 	var err error
-	var credentialMap map[string]Credential
+	var credentialMap PasswordMap
 	if credentialType != nil {
 		credentialMap, err = s.passwordRepository.MapByType(*credentialType)
 	} else {
@@ -75,13 +75,13 @@ func (s *PasswordService) Map(credentialType *CredentialType) (map[string]Creden
 	return credentialHiddenMap, err
 }
 
-func (s *PasswordService) Get(uuid uuid.UUID) (*Credential, error) {
+func (s *PasswordService) Get(uuid uuid.UUID) (*Password, error) {
 	cred, err := s.passwordRepository.Get(uuid)
 	cred.Password = s.defaultPasswordWord
 	return &cred, err
 }
 
-func (s *PasswordService) GetDecrypted(uuid uuid.UUID) (*Credential, error) {
+func (s *PasswordService) GetDecrypted(uuid uuid.UUID) (*Password, error) {
 	cred, errCred := s.passwordRepository.Get(uuid)
 	if errCred != nil {
 		return nil, errCred
@@ -122,7 +122,7 @@ func (s *PasswordService) ReEncryptPasswords(oldSecret [16]byte, newSecret [16]b
 	return nil
 }
 
-func (s *PasswordService) hidePasswords(credentialMap map[string]Credential) map[string]Credential {
+func (s *PasswordService) hidePasswords(credentialMap PasswordMap) PasswordMap {
 	for key, credential := range credentialMap {
 		credential.Password = s.defaultPasswordWord
 		credentialMap[key] = credential

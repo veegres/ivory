@@ -18,7 +18,7 @@ func NewCertService(certRepository *persistence.CertRepository) *CertService {
 	return &CertService{certRepository: certRepository}
 }
 
-func (s *CertService) Get(uuid uuid.UUID) (CertModel, error) {
+func (s *CertService) Get(uuid uuid.UUID) (Cert, error) {
 	return s.certRepository.Get(uuid)
 }
 
@@ -26,15 +26,15 @@ func (s *CertService) GetFile(uuid uuid.UUID) ([]byte, error) {
 	return s.certRepository.GetFile(uuid)
 }
 
-func (s *CertService) List() (map[string]CertModel, error) {
+func (s *CertService) List() (CertMap, error) {
 	return s.certRepository.List()
 }
 
-func (s *CertService) ListByType(certType CertType) (map[string]CertModel, error) {
+func (s *CertService) ListByType(certType CertType) (CertMap, error) {
 	return s.certRepository.ListByType(certType)
 }
 
-func (s *CertService) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*CertModel, error) {
+func (s *CertService) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*Cert, error) {
 	formats := []string{".crt", ".key", ".chain"}
 
 	fileName := path.Base(pathStr)
@@ -48,7 +48,7 @@ func (s *CertService) Create(pathStr string, certType CertType, fileUsageType Fi
 		return nil, errors.New("file format is not correct, allowed formats: " + strings.Join(formats, ", "))
 	}
 
-	cert := CertModel{
+	cert := Cert{
 		FileUsageType: fileUsageType,
 		Type:          certType,
 		FileName:      fileName,

@@ -6,7 +6,7 @@ import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {Instance, InstanceRequest} from "../../../type/Instance";
+import {InstanceWeb, InstanceRequest} from "../../../type/Instance";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
@@ -66,7 +66,7 @@ export function OverviewConfig({info}: TabProps) {
         </Box>
     )
 
-    function renderUpdateButtons(instance: Instance, configState: string, isLoading: boolean, isEditable: boolean) {
+    function renderUpdateButtons(instance: InstanceWeb, configState: string, isLoading: boolean, isEditable: boolean) {
         if (!isEditable) return <EditIconButton placement={"left"} size={35} onClick={() => setIsEditable(true)}/>
 
         return (
@@ -87,7 +87,7 @@ export function OverviewConfig({info}: TabProps) {
         setConfigState(stringify(config))
     }
 
-    function handleUpdate(instance: Instance, config: string) {
+    function handleUpdate(instance: InstanceWeb, config: string) {
         if (configState) {
             try {
                 const request: InstanceRequest = {

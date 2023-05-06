@@ -1,5 +1,9 @@
 package model
 
+// COMMON (WEB AND SERVER)
+
+// SPECIFIC (SERVER)
+
 type PatroniCluster struct {
 	Members []PatroniInstance `json:"members"`
 }

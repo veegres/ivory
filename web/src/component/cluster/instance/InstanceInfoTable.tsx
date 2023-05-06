@@ -1,7 +1,7 @@
 import {Table, TableCell, TableRow} from "@mui/material";
 import {TableBody} from "../../view/table/TableBody";
 import {SxPropsMap} from "../../../type/common";
-import {Instance} from "../../../type/Instance";
+import {InstanceWeb} from "../../../type/Instance";
 
 const SX: SxPropsMap = {
     title: {color: "text.secondary", fontWeight: "bold"},
@@ -9,7 +9,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: Instance,
+    instance: InstanceWeb,
 }
 
 export function InstanceInfoTable(props: Props) {

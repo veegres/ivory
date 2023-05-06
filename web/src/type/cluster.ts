@@ -1,14 +1,8 @@
 import {ReactNode} from "react";
 import {ColorsMap, Sidecar} from "./common";
-import {Instance, InstanceMap} from "./Instance";
+import {InstanceWeb, InstanceMap} from "./Instance";
 
-export interface ActiveCluster {
-    cluster: Cluster,
-    defaultInstance: Instance,
-    combinedInstanceMap: InstanceMap,
-    warning: boolean,
-    detection: DetectionType,
-}
+// COMMON (WEB AND SERVER)
 
 export interface ClusterOptions {
     certs: Certs,
@@ -37,8 +31,19 @@ export interface Credentials {
     postgresId?: string,
 }
 
+// SPECIFIC (WEB)
+
+// TODO should we return map from backend?
 export interface ClusterMap {
     [name: string]: Cluster,
+}
+
+export interface ActiveCluster {
+    cluster: Cluster,
+    defaultInstance: InstanceWeb,
+    combinedInstanceMap: InstanceMap,
+    warning: boolean,
+    detection: DetectionType,
 }
 
 export interface ClusterTabs {
@@ -52,7 +57,7 @@ export interface ClusterTabs {
 export type DetectionType = "auto" | "manual"
 
 export interface InstanceDetection {
-    defaultInstance: Instance,
+    defaultInstance: InstanceWeb,
     combinedInstanceMap: InstanceMap,
     detection: DetectionType,
     warning: boolean,

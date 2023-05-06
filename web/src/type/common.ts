@@ -2,9 +2,12 @@ import {CSSProperties, ReactElement} from "react";
 import {SxProps, Theme} from "@mui/material";
 import {SecretStatus} from "./secret";
 
-export interface Response<TData, TError = {}> {
-    response: TData,
-    error: TError,
+// COMMON (WEB AND SERVER)
+
+export interface DbConnection {
+    host: string,
+    port: number,
+    credId: string,
 }
 
 export enum FileUsageType {
@@ -23,17 +26,20 @@ export interface Sidecar {
     port: number,
 }
 
+// SPECIFIC (WEB)
+
+// TODO make it similar in server side
+export interface Response<TData, TError = {}> {
+    response: TData,
+    error: TError,
+}
+
 export interface AppInfo {
     company: string,
     version: { tag: string, commit: string }
     secret: SecretStatus,
 }
 
-export interface Connection {
-    host: string,
-    port: number,
-    credId: string,
-}
 
 export interface StylePropsMap {
     [key: string]: CSSProperties,

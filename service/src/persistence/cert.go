@@ -8,18 +8,18 @@ import (
 )
 
 type CertRepository struct {
-	bucket *config.Bucket[CertModel]
+	bucket *config.Bucket[Cert]
 	file   *config.FileGateway
 }
 
-func NewCertRepository(bucket *config.Bucket[CertModel], file *config.FileGateway) *CertRepository {
+func NewCertRepository(bucket *config.Bucket[Cert], file *config.FileGateway) *CertRepository {
 	return &CertRepository{
 		bucket: bucket,
 		file:   file,
 	}
 }
 
-func (r *CertRepository) Get(uuid uuid.UUID) (CertModel, error) {
+func (r *CertRepository) Get(uuid uuid.UUID) (Cert, error) {
 	return r.bucket.Get(uuid.String())
 }
 
@@ -31,17 +31,17 @@ func (r *CertRepository) GetFile(uuid uuid.UUID) ([]byte, error) {
 	return r.file.Read(info.Path)
 }
 
-func (r *CertRepository) List() (map[string]CertModel, error) {
+func (r *CertRepository) List() (CertMap, error) {
 	return r.bucket.GetMap(nil)
 }
 
-func (r *CertRepository) ListByType(certType CertType) (map[string]CertModel, error) {
-	return r.bucket.GetMap(func(cert CertModel) bool {
+func (r *CertRepository) ListByType(certType CertType) (CertMap, error) {
+	return r.bucket.GetMap(func(cert Cert) bool {
 		return cert.Type == certType
 	})
 }
 
-func (r *CertRepository) Create(cert CertModel, pathStr string) (*CertModel, error) {
+func (r *CertRepository) Create(cert Cert, pathStr string) (*Cert, error) {
 	key := uuid.New()
 
 	switch cert.FileUsageType {

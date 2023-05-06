@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {JobOptions} from "../app/utils";
 import {useQuery} from "@tanstack/react-query";
 import {bloatApi} from "../app/api";
-import {EventStream, JobStatus} from "../type/bloat";
+import {EventStreamType, EventType, JobStatus} from "../type/job";
 
 type EventJob = {
     isFetching: boolean;
@@ -41,11 +41,12 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
             setEventSourceFetching(true)
             addLog("Logs streaming open: New connection was established")
         }
-        es.addEventListener("log", (e: MessageEvent<string>) => addLog(e.data))
-        es.addEventListener("server", (e: MessageEvent<string>) => addLog(e.data))
-        es.addEventListener("status", (e: MessageEvent<JobStatus>) => setStatus(JobOptions[e.data]))
-        es.addEventListener("stream", (e: MessageEvent<EventStream>) => {
-            if (e.data === EventStream.END) close()
+        es.addEventListener(EventType.LOG, (e: MessageEvent<string>) => addLog(e.data))
+        es.addEventListener(EventType.SERVER, (e: MessageEvent<string>) => addLog(e.data))
+        es.addEventListener(EventType.STATUS, (e: MessageEvent<JobStatus>) => setStatus(JobOptions[e.data]))
+        es.addEventListener(EventType.STREAM, (e: MessageEvent<EventStreamType>) => {
+            console.log(e.data);
+            if (e.data === EventStreamType.END) close()
         })
         es.onerror = () => {
             setEventSourceFetching(false);

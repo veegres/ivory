@@ -1,17 +1,6 @@
 package model
 
-type CredentialType int
-
-const (
-	POSTGRES CredentialType = iota
-	PATRONI
-)
-
-type Credential struct {
-	Username string         `json:"username"`
-	Password string         `json:"password"`
-	Type     CredentialType `json:"type"`
-}
+// COMMON (WEB AND SERVER)
 
 type SecretStatus struct {
 	Key bool `json:"key"`
@@ -27,3 +16,5 @@ type SecretUpdateRequest struct {
 	PreviousKey string `json:"previousKey"`
 	NewKey      string `json:"newKey"`
 }
+
+// SPECIFIC (SERVER)

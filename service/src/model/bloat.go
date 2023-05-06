@@ -4,13 +4,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type DbConnection struct {
-	Host   string    `json:"host"`
-	Port   int       `json:"port"`
-	CredId uuid.UUID `json:"credId"`
-}
+// COMMON (WEB AND SERVER)
 
-type Target struct {
+type BloatTarget struct {
 	DbName        string `json:"dbName"`
 	Schema        string `json:"schema"`
 	Table         string `json:"table"`
@@ -21,11 +17,11 @@ type Target struct {
 type BloatRequest struct {
 	Cluster    string       `json:"cluster"`
 	Connection DbConnection `json:"connection"`
-	Target     *Target      `json:"target"`
+	Target     *BloatTarget `json:"target"`
 	Ratio      int          `json:"ratio"`
 }
 
-type BloatModel struct {
+type Bloat struct {
 	Uuid         uuid.UUID `json:"uuid"`
 	CredentialId uuid.UUID `json:"credentialId"`
 	Cluster      string    `json:"cluster"`
@@ -35,3 +31,5 @@ type BloatModel struct {
 	LogsPath     string    `json:"logsPath"`
 	CreatedAt    int64     `json:"createdAt"`
 }
+
+// SPECIFIC (SERVER)
