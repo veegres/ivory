@@ -45,7 +45,6 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         es.addEventListener(EventType.SERVER, (e: MessageEvent<string>) => addLog(e.data))
         es.addEventListener(EventType.STATUS, (e: MessageEvent<JobStatus>) => setStatus(JobOptions[e.data]))
         es.addEventListener(EventType.STREAM, (e: MessageEvent<EventStreamType>) => {
-            console.log(e.data);
             if (e.data === EventStreamType.END) close()
         })
         es.onerror = () => {
