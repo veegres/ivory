@@ -11,11 +11,11 @@ import {
 import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
-import {JobStatus} from "../type/bloat";
 import {PasswordType} from "../type/password";
 import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar} from "../type/common";
 import {CertType} from "../type/cert";
-import {Instance, InstanceMap} from "../type/Instance";
+import {InstanceWeb, InstanceMap} from "../type/Instance";
+import {JobStatus} from "../type/job";
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
@@ -79,7 +79,7 @@ export const createInstanceColors = (instances: InstanceMap) => {
     )
 }
 
-export const initialInstance = (sidecar?: Sidecar): Instance => {
+export const initialInstance = (sidecar?: Sidecar): InstanceWeb => {
     const defaultSidecar = sidecar ?? {host: "-", port: 8008}
     return ({
         state: "-",

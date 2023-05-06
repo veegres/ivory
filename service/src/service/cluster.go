@@ -23,11 +23,11 @@ func NewClusterService(
 	}
 }
 
-func (s *ClusterService) List() ([]ClusterModel, error) {
+func (s *ClusterService) List() ([]Cluster, error) {
 	return s.clusterRepository.List()
 }
 
-func (s *ClusterService) ListByTag(tags []string) ([]ClusterModel, error) {
+func (s *ClusterService) ListByTag(tags []string) ([]Cluster, error) {
 	listMap := make(map[string]bool)
 	for _, tag := range tags {
 		// NOTE: we shouldn't check error here, we want to return empty array if there is no such tag
@@ -48,15 +48,15 @@ func (s *ClusterService) ListByTag(tags []string) ([]ClusterModel, error) {
 	return s.ListByName(listName)
 }
 
-func (s *ClusterService) ListByName(clusters []string) ([]ClusterModel, error) {
+func (s *ClusterService) ListByName(clusters []string) ([]Cluster, error) {
 	return s.clusterRepository.ListByName(clusters)
 }
 
-func (s *ClusterService) Get(key string) (ClusterModel, error) {
+func (s *ClusterService) Get(key string) (Cluster, error) {
 	return s.clusterRepository.Get(key)
 }
 
-func (s *ClusterService) Update(cluster ClusterModel) (*ClusterModel, error) {
+func (s *ClusterService) Update(cluster Cluster) (*Cluster, error) {
 	tags, err := s.saveTags(cluster.Name, cluster.Tags)
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (s *ClusterService) Update(cluster ClusterModel) (*ClusterModel, error) {
 	return &cluster, errCluster
 }
 
-func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (ClusterModel, error) {
+func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	request := InstanceRequest{
 		Host:         cluster.Instance.Host,
 		Port:         cluster.Instance.Port,
@@ -75,7 +75,7 @@ func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (ClusterModel, err
 	}
 	overview, _, errOver := s.instanceService.Overview(request)
 	if errOver != nil {
-		return ClusterModel{}, errOver
+		return Cluster{}, errOver
 	}
 
 	instances := make([]Sidecar, 0)
@@ -85,11 +85,11 @@ func (s *ClusterService) CreateAuto(cluster ClusterAutoModel) (ClusterModel, err
 
 	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
 	if errSave != nil {
-		return ClusterModel{}, errSave
+		return Cluster{}, errSave
 	}
 	cluster.Tags = tags
 
-	model := ClusterModel{
+	model := Cluster{
 		Name:      cluster.Name,
 		Instances: instances,
 		ClusterOptions: ClusterOptions{

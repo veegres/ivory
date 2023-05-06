@@ -2,6 +2,8 @@ package model
 
 import "strconv"
 
+// COMMON (WEB AND SERVER)
+
 type JobStatus int8
 
 const (
@@ -29,6 +31,19 @@ const (
 func (s EventType) String() string {
 	return []string{"server", "status", "log", "stream"}[s]
 }
+
+type EventStreamType int8
+
+const (
+	START EventStreamType = iota
+	END
+)
+
+func (s EventStreamType) String() string {
+	return []string{"start", "end"}[s]
+}
+
+// SPECIFIC (SERVER)
 
 type Event struct {
 	Type    EventType

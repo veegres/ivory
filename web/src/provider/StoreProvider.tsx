@@ -1,14 +1,14 @@
 import {createContext, ReactNode, useContext} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 import {ActiveCluster, DetectionType} from "../type/cluster";
-import {Instance} from "../type/Instance";
+import {InstanceWeb} from "../type/Instance";
 import {getDomain} from "../app/utils";
 import {useLocalStorageState} from "../hook/LocalStorage";
 
 // STORE
 interface StoreType {
     activeCluster?: ActiveCluster, activeClusterTab: number,
-    activeInstance?: Instance,
+    activeInstance?: InstanceWeb,
     activeTags: string[],
     warnings: { [key: string]: boolean },
     settings: boolean,
@@ -26,14 +26,14 @@ interface StoreContextType {
     store: StoreType
 
     setCluster: (cluster?: ActiveCluster) => void,
-    setClusterInstance: (instance: Instance) => void,
+    setClusterInstance: (instance: InstanceWeb) => void,
     setClusterDetection: (detection: DetectionType) => void
     setClusterTab: (tab: number) => void,
     setWarnings: (name: string, warning: boolean) => void,
     isClusterActive: (name: string) => boolean
     isClusterOverviewOpen: () => boolean
 
-    setInstance: (instance?: Instance) => void,
+    setInstance: (instance?: InstanceWeb) => void,
     isInstanceActive: (key: string) => boolean,
 
     setTags: (tags: string[]) => void,
@@ -87,7 +87,7 @@ export function StoreProvider(props: { children: ReactNode }) {
             setCluster: (cluster?: ActiveCluster) => {
                 setState(s => ({...s, activeCluster: cluster}))
             },
-            setClusterInstance: (instance: Instance) => {
+            setClusterInstance: (instance: InstanceWeb) => {
                 setState(s => {
                     if (!s.activeCluster) return s
                     return {...s, activeCluster: {...s.activeCluster, defaultInstance: instance, detection: "manual"}}
@@ -105,7 +105,7 @@ export function StoreProvider(props: { children: ReactNode }) {
             setWarnings: (name: string, warning: boolean) => {
                 setState(s => ({...s, warnings: {...s.warnings, [name]: warning}}))
             },
-            setInstance: (instance?: Instance) => {
+            setInstance: (instance?: InstanceWeb) => {
                 setState(s => ({...s, activeInstance: instance}))
             },
             setTags: (tags: string[]) => {

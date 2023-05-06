@@ -1,28 +1,27 @@
 package model
 
-type FileUsageType int8
+// COMMON (WEB AND SERVER)
 
-const (
-	UPLOAD CredentialType = iota
-	PATH
-)
-
-type CertType int8
-
-const (
-	CLIENT_CA CredentialType = iota
-	CLIENT_CERT
-	CLIENT_KEY
-)
-
-type CertModel struct {
+type Cert struct {
 	FileName      string        `json:"fileName"`
 	FileUsageType FileUsageType `json:"fileUsageType"`
 	Path          string        `json:"path"`
 	Type          CertType      `json:"type"`
 }
 
-type CertRequest struct {
+type CertMap map[string]Cert
+
+type CertType int8
+
+const (
+	CLIENT_CA PasswordType = iota
+	CLIENT_CERT
+	CLIENT_KEY
+)
+
+type CertAddRequest struct {
 	Path string   `json:"path"`
 	Type CertType `json:"type"`
 }
+
+// SPECIFIC (SERVER)

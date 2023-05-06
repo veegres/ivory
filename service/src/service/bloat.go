@@ -23,7 +23,7 @@ type BloatService struct {
 
 type element struct {
 	job   *Job
-	model *BloatModel
+	model *Bloat
 	file  *os.File
 }
 
@@ -48,23 +48,23 @@ func NewBloatService(
 	return worker
 }
 
-func (w *BloatService) List() ([]BloatModel, error) {
+func (w *BloatService) List() ([]Bloat, error) {
 	return w.bloatRepository.List()
 }
 
-func (w *BloatService) ListByStatus(status JobStatus) ([]BloatModel, error) {
+func (w *BloatService) ListByStatus(status JobStatus) ([]Bloat, error) {
 	return w.bloatRepository.ListByStatus(status)
 }
 
-func (w *BloatService) ListByCluster(cluster string) ([]BloatModel, error) {
+func (w *BloatService) ListByCluster(cluster string) ([]Bloat, error) {
 	return w.bloatRepository.ListByCluster(cluster)
 }
 
-func (w *BloatService) Get(uuid uuid.UUID) (BloatModel, error) {
+func (w *BloatService) Get(uuid uuid.UUID) (Bloat, error) {
 	return w.bloatRepository.Get(uuid)
 }
 
-func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []string) (*BloatModel, error) {
+func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []string) (*Bloat, error) {
 	compactTable, err := w.bloatRepository.Create(credentialId, cluster, args)
 	if err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ func (w *BloatService) runner() {
 			// Get password
 			credential, errCred := w.passwordService.GetDecrypted(model.CredentialId)
 			if errCred != nil {
-				w.jobStatusHandler(element, FAILED, errors.New("Credential error: "+errCred.Error()))
+				w.jobStatusHandler(element, FAILED, errors.New("Password error: "+errCred.Error()))
 				return
 			}
 			credentialArgs := []string{
@@ -291,7 +291,7 @@ func (w *BloatService) closeEvents(job *Job) {
 	}
 }
 
-func (w *BloatService) addElement(model *BloatModel) {
+func (w *BloatService) addElement(model *Bloat) {
 	w.mutex.Lock()
 	file, _ := w.bloatRepository.GetOpenFile(model.LogsPath)
 	w.elements[model.Uuid] = &element{job: NewJob(), model: model, file: file}

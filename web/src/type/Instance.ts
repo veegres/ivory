@@ -2,12 +2,7 @@ import {Database, Sidecar} from "./common";
 import {ReactNode} from "react";
 import {Certs} from "./cluster";
 
-export enum InstanceTabType {QUERY, CHART}
-export interface InstanceTab {
-    label: string,
-    body: (cluster: string, db: Database) => ReactNode,
-    info?: ReactNode,
-}
+// COMMON (WEB AND SERVER)
 
 export interface InstanceRequest {
     credentialId?: string,
@@ -17,14 +12,7 @@ export interface InstanceRequest {
     body?: any,
 }
 
-export interface InstanceInfo {
-    state: string,
-    role: string,
-    sidecar: Sidecar,
-}
-
-
-export interface InstanceResponse {
+export interface Instance {
     state: string,
     role: string,
     lag: number,
@@ -32,12 +20,28 @@ export interface InstanceResponse {
     sidecar: Sidecar,
 }
 
-export interface Instance extends InstanceResponse {
+export interface InstanceInfo {
+    state: string,
+    role: string,
+    sidecar: Sidecar,
+}
+
+// SPECIFIC (WEB)
+
+// TODO should we return map from the server?
+export interface InstanceMap {
+    [instance: string]: InstanceWeb,
+}
+
+export enum InstanceTabType {QUERY, CHART}
+export interface InstanceTab {
+    label: string,
+    body: (cluster: string, db: Database) => ReactNode,
+    info?: ReactNode,
+}
+
+export interface InstanceWeb extends Instance {
     leader: boolean,
     inCluster: boolean,
     inInstances: boolean,
-}
-
-export interface InstanceMap {
-    [instance: string]: Instance,
 }

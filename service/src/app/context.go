@@ -27,12 +27,12 @@ func NewContext() *Context {
 
 	// DB
 	db := config.NewBoltDB("ivory.db")
-	clusterBucket := config.NewBoltBucket[ClusterModel](db, "Cluster")
-	compactTableBucket := config.NewBoltBucket[BloatModel](db, "CompactTable")
-	certBucket := config.NewBoltBucket[CertModel](db, "Cert")
+	clusterBucket := config.NewBoltBucket[Cluster](db, "Cluster")
+	compactTableBucket := config.NewBoltBucket[Bloat](db, "CompactTable")
+	certBucket := config.NewBoltBucket[Cert](db, "Cert")
 	tagBucket := config.NewBoltBucket[[]string](db, "Tag")
 	secretBucket := config.NewBoltBucket[string](db, "Secret")
-	passwordBucket := config.NewBoltBucket[Credential](db, "Password")
+	passwordBucket := config.NewBoltBucket[Password](db, "Password")
 	queryBucket := config.NewBoltBucket[Query](db, "Query")
 
 	// FILES

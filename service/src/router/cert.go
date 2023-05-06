@@ -21,7 +21,7 @@ func (r *CertRouter) GetCertList(context *gin.Context) {
 	certType := context.Request.URL.Query().Get("type")
 
 	var err error
-	var list map[string]CertModel
+	var list CertMap
 	if certType != "" {
 		number, errAtoi := strconv.Atoi(certType)
 		if errAtoi != nil {
@@ -86,7 +86,7 @@ func (r *CertRouter) PostUploadCert(context *gin.Context) {
 }
 
 func (r *CertRouter) PostAddCert(context *gin.Context) {
-	var certRequest CertRequest
+	var certRequest CertAddRequest
 	parseErr := context.ShouldBindJSON(&certRequest)
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})

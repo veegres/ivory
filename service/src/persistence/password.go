@@ -7,21 +7,21 @@ import (
 )
 
 type PasswordRepository struct {
-	bucket *config.Bucket[Credential]
+	bucket *config.Bucket[Password]
 }
 
-func NewPasswordRepository(bucket *config.Bucket[Credential]) *PasswordRepository {
+func NewPasswordRepository(bucket *config.Bucket[Password]) *PasswordRepository {
 	return &PasswordRepository{
 		bucket: bucket,
 	}
 }
 
-func (r *PasswordRepository) Create(credential Credential) (uuid.UUID, error) {
+func (r *PasswordRepository) Create(credential Password) (uuid.UUID, error) {
 	key := uuid.New()
 	return key, r.bucket.Update(key.String(), credential)
 }
 
-func (r *PasswordRepository) Update(key uuid.UUID, credential Credential) (uuid.UUID, error) {
+func (r *PasswordRepository) Update(key uuid.UUID, credential Password) (uuid.UUID, error) {
 	return key, r.bucket.Update(key.String(), credential)
 }
 
@@ -33,16 +33,16 @@ func (r *PasswordRepository) DeleteAll() error {
 	return r.bucket.DeleteAll()
 }
 
-func (r *PasswordRepository) Map() (map[string]Credential, error) {
+func (r *PasswordRepository) Map() (PasswordMap, error) {
 	return r.bucket.GetMap(nil)
 }
 
-func (r *PasswordRepository) MapByType(credentialType CredentialType) (map[string]Credential, error) {
-	return r.bucket.GetMap(func(credential Credential) bool {
+func (r *PasswordRepository) MapByType(credentialType PasswordType) (PasswordMap, error) {
+	return r.bucket.GetMap(func(credential Password) bool {
 		return credential.Type == credentialType
 	})
 }
 
-func (r *PasswordRepository) Get(uuid uuid.UUID) (Credential, error) {
+func (r *PasswordRepository) Get(uuid uuid.UUID) (Password, error) {
 	return r.bucket.Get(uuid.String())
 }

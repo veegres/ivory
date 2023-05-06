@@ -6,38 +6,38 @@ import (
 )
 
 type ClusterRepository struct {
-	bucket *config.Bucket[ClusterModel]
+	bucket *config.Bucket[Cluster]
 }
 
-func NewClusterRepository(bucket *config.Bucket[ClusterModel]) *ClusterRepository {
+func NewClusterRepository(bucket *config.Bucket[Cluster]) *ClusterRepository {
 	return &ClusterRepository{
 		bucket: bucket,
 	}
 }
 
-func (r *ClusterRepository) List() ([]ClusterModel, error) {
+func (r *ClusterRepository) List() ([]Cluster, error) {
 	return r.bucket.GetList(nil, nil)
 }
 
-func (r *ClusterRepository) ListByName(clusters []string) ([]ClusterModel, error) {
+func (r *ClusterRepository) ListByName(clusters []string) ([]Cluster, error) {
 	clusterMap := make(map[string]bool)
 	for _, c := range clusters {
 		clusterMap[c] = true
 	}
-	return r.bucket.GetList(func(cert ClusterModel) bool {
+	return r.bucket.GetList(func(cert Cluster) bool {
 		return clusterMap[cert.Name]
 	}, nil)
 }
 
-func (r *ClusterRepository) Get(key string) (ClusterModel, error) {
+func (r *ClusterRepository) Get(key string) (Cluster, error) {
 	return r.bucket.Get(key)
 }
 
-func (r *ClusterRepository) Update(cluster ClusterModel) error {
+func (r *ClusterRepository) Update(cluster Cluster) error {
 	return r.bucket.Update(cluster.Name, cluster)
 }
 
-func (r *ClusterRepository) Create(cluster ClusterModel) (ClusterModel, error) {
+func (r *ClusterRepository) Create(cluster Cluster) (Cluster, error) {
 	return r.bucket.Create(cluster.Name, cluster)
 }
 

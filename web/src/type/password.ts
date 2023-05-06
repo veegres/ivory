@@ -1,3 +1,5 @@
+// COMMON (WEB AND SERVER)
+
 export interface Password {
     username: string,
     password: string,
@@ -12,3 +14,5 @@ export enum PasswordType {
 export interface PasswordMap {
     [uuid: string]: Password,
 }
+
+// SPECIFIC (WEB)

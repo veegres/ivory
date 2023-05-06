@@ -2,14 +2,14 @@ import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {InstanceInfoStatus} from "./InstanceInfoStatus";
 import {InstanceInfoTable} from "./InstanceInfoTable";
 import {SxPropsMap} from "../../../type/common";
-import {Instance, InstanceTabType} from "../../../type/Instance";
+import {InstanceWeb, InstanceTabType} from "../../../type/Instance";
 
 const SX: SxPropsMap = {
     info: {display: "flex", flexDirection: "column", gap: 2, margin: "5px 0"},
 }
 
 type Props = {
-    instance: Instance,
+    instance: InstanceWeb,
     tab: InstanceTabType,
     onTab: (tab: InstanceTabType) => void,
 }

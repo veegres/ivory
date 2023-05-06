@@ -4,6 +4,8 @@ import (
 	"github.com/google/uuid"
 )
 
+// COMMON (WEB AND SERVER)
+
 type QueryType int8
 
 const (
@@ -79,12 +81,14 @@ type QueryField struct {
 	DataTypeOID uint32 `json:"dataTypeOID"`
 }
 
+type QueryChart struct {
+	Name  string `json:"name"`
+	Value any    `json:"value"`
+}
+
 type QueryRunResponse struct {
 	Fields []QueryField `json:"fields"`
 	Rows   [][]any      `json:"rows"`
 }
 
-type QueryChart struct {
-	Name  string `json:"name"`
-	Value any    `json:"value"`
-}
+// SPECIFIC (SERVER)

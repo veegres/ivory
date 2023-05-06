@@ -10,7 +10,7 @@ import {TabProps} from "./Overview";
 import {Warning} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {SxPropsMap} from "../../../type/common";
-import {Instance} from "../../../type/Instance";
+import {InstanceWeb} from "../../../type/Instance";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
@@ -91,7 +91,7 @@ export function OverviewInstances({info}: TabProps) {
         })
     }
 
-    function renderButton(instance: Instance, type: string) {
+    function renderButton(instance: InstanceWeb, type: string) {
         switch (type) {
             case "replica":
                 return (
@@ -133,11 +133,11 @@ export function OverviewInstances({info}: TabProps) {
         )
     }
 
-    function handleCheck(instance: Instance, checked: boolean) {
+    function handleCheck(instance: InstanceWeb, checked: boolean) {
         return () => setInstance(checked ? undefined : instance)
     }
 
-    function handleSwitchover(instance: Instance) {
+    function handleSwitchover(instance: InstanceWeb) {
         setAlertDialog({
             open: true,
             title: `Make a switchover of ${instance.sidecar.host}?`,
@@ -151,7 +151,7 @@ export function OverviewInstances({info}: TabProps) {
         })
     }
 
-    function handleReinit(instance: Instance) {
+    function handleReinit(instance: InstanceWeb) {
         setAlertDialog({
             open: true,
             title: `Make a reinitialization of ${instance.sidecar.host}?`,

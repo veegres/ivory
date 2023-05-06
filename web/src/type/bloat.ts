@@ -1,4 +1,7 @@
-import {Connection} from "./common";
+import {DbConnection} from "./common";
+import {JobStatus} from "./job";
+
+// COMMON (WEB AND SERVER)
 
 export interface BloatTarget {
     dbName?: string,
@@ -10,7 +13,7 @@ export interface BloatTarget {
 
 export interface BloatRequest {
     cluster: string,
-    connection: Connection,
+    connection: DbConnection,
     target?: BloatTarget,
     ratio?: number,
 }
@@ -24,16 +27,4 @@ export interface Bloat {
     logsPath: string
 }
 
-export enum JobStatus {
-    PENDING,
-    RUNNING,
-    FINISHED,
-    FAILED,
-    STOPPED,
-    UNKNOWN,
-}
-
-export enum EventStream {
-    START = "start",
-    END = "end",
-}
+// SPECIFIC (WEB)
