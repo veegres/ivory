@@ -1,40 +1,27 @@
 import {OverviewInstances} from "./OverviewInstances";
 import {OverviewConfig} from "./OverviewConfig";
-import {
-    Alert, Box, Collapse, Divider, Link,
-    Tab, Tabs, ToggleButton, ToggleButtonGroup, Tooltip
-} from "@mui/material";
+import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material";
 import {useState} from "react";
 import {useStore} from "../../../provider/StoreProvider";
 import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../view/box/InfoAlert";
 import {PageBox} from "../../view/box/PageBox";
 import {useQuery} from "@tanstack/react-query";
-import {InfoOutlined, Settings, Warning} from "@mui/icons-material";
 import {OverviewOptions} from "./OverviewOptions";
-import {InfoIcons} from "../../view/box/InfoIcons";
-import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
-import {orange, purple} from "@mui/material/colors";
-import {InfoBox} from "../../view/box/InfoBox";
-import {InfoTitle} from "../../view/box/InfoTitle";
 import {SxPropsMap} from "../../../type/common";
 import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../type/cluster";
-import { PasswordType } from "../../../type/password";
-import {CertType} from "../../../type/cert";
+import {OverviewAction} from "./OverviewAction";
 
 const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
-    infoBox: {padding: '5px 0'},
-    rightBox: {display: "flex", alignItems: "center", gap: 1},
+    infoBox: {padding: "5px 0"},
     chip: {margin: "auto 0", borderRadius: "4px"},
     settingsBox: {height: "100%", display: "flex", flexDirection: "row"},
     mainBox: {display: "flex", flexDirection: "row"},
     leftMainBlock: {flexGrow: 1, overflowX: "auto"},
-    rightMainBlock: {},
     dividerVertical: {margin: "0 10px"},
     dividerHorizontal: {margin: "10px 0"},
     collapse: {height: "100%"},
-    toggleButton: {padding: "3px"}
 }
 
 const TABS: ClusterTabs = {
@@ -85,12 +72,12 @@ export function Overview() {
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
                     {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label}/>))}
                 </Tabs>
-                {renderActionBlock()}
+                {renderActions()}
             </Box>
             <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
             <Box sx={SX.mainBox}>
                 <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
-                <Box sx={SX.rightMainBlock}>{renderSettingsBlock()}</Box>
+                <Box>{renderSettingsBlock()}</Box>
             </Box>
         </PageBox>
     )
@@ -101,66 +88,16 @@ export function Overview() {
         return tab.body(activeCluster)
     }
 
-    function renderActionBlock() {
-        const cluster = activeCluster?.cluster
-
-        return (
-            <Box sx={SX.rightBox}>
-                {renderShortClusterInfo()}
-                <ToggleButtonGroup size={"small"}>
-                    <ToggleButton
-                        sx={SX.toggleButton}
-                        value={"settings"}
-                        disabled={!cluster}
-                        selected={cluster && settingsOpen}
-                        onClick={() => setSettingsOpen(!settingsOpen)}
-                    >
-                        <Tooltip title={"Cluster Options"} placement={"top"}><Settings/></Tooltip>
-                    </ToggleButton>
-                    <ToggleButton
-                        sx={SX.toggleButton}
-                        value={"info"}
-                        selected={!!tab?.info && infoOpen}
-                        disabled={!tab?.info}
-                        onClick={() => setInfoOpen(!infoOpen)}
-                    >
-                        <Tooltip title={"Tab Description"} placement={"top"}><InfoOutlined/></Tooltip>
-                    </ToggleButton>
-                </ToggleButtonGroup>
-            </Box>
-        )
-    }
-
-    function renderShortClusterInfo() {
-        if (!activeCluster) return null
-        const {cluster, defaultInstance, warning, detection} = activeCluster
-
-        const infoItems = [
-            {...CredentialOptions[PasswordType.POSTGRES], active: !!cluster.credentials.postgresId},
-            {...CredentialOptions[PasswordType.PATRONI], active: !!cluster.credentials.patroniId},
-            {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
-            {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
-            {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
-        ]
-        const warningItems = [
-            {icon: <Warning/>, label: "Warning", active: warning, iconColor: orange[500]}
-        ]
-        const roleTooltip = [
-            {label: "Detection", value: detection, bgColor: purple[400]},
-            {label: "Instance", value: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]}
-        ]
-
-        return (
-            <Box sx={SX.rightBox}>
-                <InfoIcons items={warningItems}/>
-                <InfoIcons items={infoItems}/>
-                <InfoBox tooltip={<InfoTitle items={roleTooltip}/>} withPadding>
-                    <Box sx={{color: InstanceColor[defaultInstance.role]}}>
-                        {defaultInstance.role.toUpperCase()}
-                    </Box>
-                </InfoBox>
-            </Box>
-        )
+    function renderActions() {
+        if (!activeCluster) return
+        return <OverviewAction
+            cluster={activeCluster}
+            selectInfo={infoOpen}
+            dissableInfo={!tab.info}
+            toggleInfo={() => setInfoOpen(!infoOpen)}
+            selectOptions={settingsOpen}
+            toggleOptions={() => setSettingsOpen(!settingsOpen)}
+        />
     }
 
     function renderInfoBlock() {
