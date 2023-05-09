@@ -51,7 +51,7 @@ export interface SxPropsMap {
 
 
 export interface ColorsMap {
-    [name: string]: 'success' | 'primary',
+    [name: string]: "success" | "primary" | "error" | "warning",
 }
 
 export interface EnumOptions {
