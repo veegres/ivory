@@ -1,4 +1,4 @@
-import {TableRow} from "@mui/material";
+import {Box, TableRow, Tooltip} from "@mui/material";
 import {useEffect, useRef, useState} from "react";
 import {Cluster} from "../../../type/cluster";
 import {DynamicInputs} from "../../view/input/DynamicInputs";
@@ -8,6 +8,13 @@ import {ListCell} from "./ListCell";
 import {getDomains, getSidecars} from "../../../app/utils";
 import {ListCellChip} from "./ListCellChip";
 import {useInstanceDetection} from "../../../hook/InstanceDetection";
+import {WarningAmberRounded} from "@mui/icons-material";
+import {SxPropsMap} from "../../../type/common";
+
+const SX: SxPropsMap = {
+    actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1},
+    warning: {padding: "3px 0"},
+}
 
 type Props = {
     cluster: Cluster,
@@ -41,20 +48,27 @@ export function ListRow(props: Props) {
                 />
             </ListCell>
             <ListCell>
-                {!editable ? (
-                    <ListCellRead name={name} toggle={toggle}/>
-                ) : (
-                    <ListCellUpdate
-                        name={name}
-                        instances={getSidecars(stateNodes)}
-                        credentials={credentials}
-                        certs={certs}
-                        tags={tags}
-                        toggle={toggle}
-                        onUpdate={instanceDetection.refetch}
-                        onClose={() => setStateNodes(getDomains(instances))}
-                    />
-                )}
+                <Box sx={SX.actions}>
+                    {instanceDetection.warning && (
+                        <Tooltip title={"Problems were detected, select the cluster to see it"} placement={"top"}>
+                            <WarningAmberRounded color={"warning"}/>
+                        </Tooltip>
+                    )}
+                    {!editable ? (
+                        <ListCellRead name={name} toggle={toggle}/>
+                    ) : (
+                        <ListCellUpdate
+                            name={name}
+                            instances={getSidecars(stateNodes)}
+                            credentials={credentials}
+                            certs={certs}
+                            tags={tags}
+                            toggle={toggle}
+                            onUpdate={instanceDetection.refetch}
+                            onClose={() => setStateNodes(getDomains(instances))}
+                        />
+                    )}
+                </Box>
             </ListCell>
         </TableRow>
     )

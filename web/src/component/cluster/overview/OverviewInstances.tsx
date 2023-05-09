@@ -7,7 +7,7 @@ import {InstanceColor} from "../../../app/utils";
 import {AlertDialog} from "../../view/dialog/AlertDialog";
 import {useStore} from "../../../provider/StoreProvider";
 import {TabProps} from "./Overview";
-import {Warning} from "@mui/icons-material";
+import {WarningAmberRounded} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {SxPropsMap} from "../../../type/common";
 import {InstanceWeb} from "../../../type/Instance";
@@ -16,10 +16,12 @@ const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
     row: {cursor: "pointer"},
     cell: {padding: "5px 10px", height: "50px"},
-    actionCell: {width: "58px"},
-    warningCell: {width: "40px"},
+    cellSmall: {padding: "5px 0", height: "50px"},
+    actionCell: {width: "1%"},
+    warningCell: {width: "1%"},
     roleCell: {width: "110px"},
     buttonCell: {width: "160px"},
+    warning: {display: "flex", justifyContent: "center"},
 }
 
 type AlertDialogState = { open: boolean, title: string, content: string, onAgree: () => void }
@@ -71,7 +73,7 @@ export function OverviewInstances({info}: TabProps) {
             return (
                 <TableRow sx={SX.row} key={key} onClick={handleCheck(element, checked)}>
                     <TableCell sx={SX.cell}><Radio checked={checked} size={"small"}/></TableCell>
-                    <TableCell sx={SX.cell} align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
+                    <TableCell sx={SX.cellSmall} align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
                     <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
                     <TableCell sx={SX.cell} align={"center"}>
                         {sidecar.host}:{sidecar.port === 0 ? "-" : sidecar.port}
@@ -125,9 +127,9 @@ export function OverviewInstances({info}: TabProps) {
         if (!inCluster && inInstances) title = "Instance is not in cluster!"
 
         return (
-            <Box display={"flex"}>
+            <Box sx={SX.warning}>
                 <Tooltip title={title} placement={"top"}>
-                    <Warning color={"warning"} fontSize={"small"}/>
+                    <WarningAmberRounded color={"warning"}/>
                 </Tooltip>
             </Box>
         )

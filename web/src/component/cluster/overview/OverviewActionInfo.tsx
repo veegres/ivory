@@ -1,7 +1,7 @@
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
 import {PasswordType} from "../../../type/password";
 import {CertType} from "../../../type/cert";
-import {Warning} from "@mui/icons-material";
+import {WarningAmberRounded} from "@mui/icons-material";
 import {orange, purple} from "@mui/material/colors";
 import {Box} from "@mui/material";
 import {InfoIcons} from "../../view/box/InfoIcons";
@@ -29,7 +29,7 @@ export function OverviewActionInfo(props: Props) {
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
     ]
     const warningItems = [
-        {icon: <Warning/>, label: "Warning", active: warning, iconColor: orange[500]}
+        {icon: <WarningAmberRounded/>, label: "Warning", active: warning, iconColor: orange[500]}
     ]
     const roleTooltip = [
         {label: "Detection", value: detection, bgColor: purple[400]},
