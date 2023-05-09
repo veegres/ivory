@@ -216,6 +216,10 @@ func (s *QueryService) createDefaultQueries() error {
 	if err != nil {
 		return err
 	}
+	_, _, err = s.Create(System, s.runningVacuums())
+	if err != nil {
+		return err
+	}
 	_, _, err = s.Create(System, s.allQueries())
 	if err != nil {
 		return err
@@ -236,7 +240,15 @@ func (s *QueryService) createDefaultQueries() error {
 	if err != nil {
 		return err
 	}
-	_, _, err = s.Create(System, s.replication())
+	_, _, err = s.Create(System, s.simpleReplication())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.prettyReplication())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.pureReplication())
 	if err != nil {
 		return err
 	}
@@ -256,7 +268,31 @@ func (s *QueryService) createDefaultQueries() error {
 	if err != nil {
 		return err
 	}
-	_, _, err = s.Create(System, s.deadTuples())
+	_, _, err = s.Create(System, s.simpleDeadTuples())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.pureDeadTuples())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.tableBloatApproximate())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.tableBloat())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.indexBloat())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.checkTableBloat())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.checkIndexBloat())
 	if err != nil {
 		return err
 	}
@@ -264,9 +300,37 @@ func (s *QueryService) createDefaultQueries() error {
 	return nil
 }
 
-func (s *QueryService) deadTuples() QueryRequest {
-	n, t, d := "Numbers of dead tuples", BLOAT, "Shows number of dead tuples"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultNumberOfDeadTuples}
+func (s *QueryService) simpleDeadTuples() QueryRequest {
+	n, t, d := "Simple numbers of dead tuples", BLOAT, "Shows 100 tables with most dead tuples"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultSimpleNumberOfDeadTuples}
+}
+
+func (s *QueryService) pureDeadTuples() QueryRequest {
+	n, t, d := "Pure numbers of dead tuples", BLOAT, "Shows 100 tables with most dead tuples with vacuum and analyze time"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPureNumberOfDeadTuples}
+}
+
+func (s *QueryService) tableBloat() QueryRequest {
+	n, t, d := "Table Bloat", BLOAT, "This query will read tables using pgstattuple extension and return top 20 bloated tables. WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultTableBloat}
+}
+func (s *QueryService) tableBloatApproximate() QueryRequest {
+	n, t, d := "Table Bloat Approximate", BLOAT, "This query will read tables using pgstattuple extension and return 20 bloated approximate results and doesn't read whole table (but reads toast tables). WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultTableBloatApproximate}
+}
+func (s *QueryService) indexBloat() QueryRequest {
+	n, t, d := "Index Bloat", BLOAT, "This query will read indexes with pgstattuple extension and return top 100 bloated indexes. WARNING: without index mask query will read all available indexes which could cause I/O spikes. Please enter mask for index name (check all indexes if nothing is specified)"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexBloat}
+}
+
+func (s *QueryService) checkTableBloat() QueryRequest {
+	n, t, d := "Check Specific Table Bloat (require table name)", BLOAT, "Shows one table bloat, you need to edit query and provide table name to see information about it"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultCheckTableBloat}
+}
+
+func (s *QueryService) checkIndexBloat() QueryRequest {
+	n, t, d := "Check Specific Index Bloat (require index name)", BLOAT, "Shows one index bloat, you need to edit query and provide index name to see information about it"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultCheckIndexBloat}
 }
 
 func (s *QueryService) runningQueries() QueryRequest {
@@ -274,6 +338,10 @@ func (s *QueryService) runningQueries() QueryRequest {
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultActiveRunningQueries}
 }
 
+func (s *QueryService) runningVacuums() QueryRequest {
+	n, t, d := "Active Vacuums in Progress", ACTIVITY, "Shows list of active vacuums and their progress"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultActiveVacuums}
+}
 func (s *QueryService) allQueries() QueryRequest {
 	n, t, d := "All Queries By State", ACTIVITY, "Shows all queries by state and database"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultAllQueriesByState}
@@ -295,13 +363,23 @@ func (s *QueryService) configDescription() QueryRequest {
 }
 
 func (s *QueryService) allUsers() QueryRequest {
-	n, t, d := "Users", OTHER, "Shows all locks with lock duration, type, it's ids owner, etc"
+	n, t, d := "Users", OTHER, "Shows all users"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPostgresUsers}
 }
 
-func (s *QueryService) replication() QueryRequest {
-	n, t, d := "Replication", REPLICATION, "Shows pure replication table"
+func (s *QueryService) pureReplication() QueryRequest {
+	n, t, d := "Pure Replication", REPLICATION, "Shows pure replication table"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPureReplication}
+}
+
+func (s *QueryService) simpleReplication() QueryRequest {
+	n, t, d := "Simple Replication", REPLICATION, "Shows simple replication table"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultSimpleReplication}
+}
+
+func (s *QueryService) prettyReplication() QueryRequest {
+	n, t, d := "Pretty Replication", REPLICATION, "Shows pretty replication table"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPrettyReplication}
 }
 
 func (s *QueryService) databaseSize() QueryRequest {

@@ -31,6 +31,7 @@ type Query struct {
 	Description string        `json:"description"`
 	Default     string        `json:"default"`
 	Custom      string        `json:"custom"`
+	CreatedAt   int64         `json:"createdAt"`
 }
 
 type QueryRequest struct {
