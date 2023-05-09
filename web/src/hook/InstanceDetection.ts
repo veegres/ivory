@@ -28,8 +28,8 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const instanceMap = useMemo(handleMemoInstanceMap, [data])
     previousData.current = instanceMap
 
-    const colors =  useMemo(handleMemoColors, [instanceMap])
     const combine = useMemo(handleMemoCombine, [instances, instanceMap])
+    const colors =  useMemo(handleMemoColors, [combine.combinedInstanceMap])
     const defaultInstance = handleDefaultInstance()
 
     useEffect(handleEffectNextRequest, [errorUpdateCount, instances, refetch])
@@ -144,7 +144,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     }
 
     function handleMemoColors() {
-        return createInstanceColors(instanceMap)
+        return createInstanceColors(combine.combinedInstanceMap)
     }
 
     function handleMemoCombine() {

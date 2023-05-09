@@ -69,10 +69,8 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
 export const createInstanceColors = (instances: InstanceMap) => {
     return Object.values(instances).reduce(
         (map, instance) => {
-            if (instance.inCluster) {
-                const domain = getDomain(instance.sidecar)
-                map[domain] = instance.leader ? "success" : "primary"
-            }
+            const domain = getDomain(instance.sidecar)
+            map[domain] = !instance.inCluster || !instance.inInstances ? "warning" : (instance.leader ? "success" : "primary")
             return map
         },
         {} as ColorsMap

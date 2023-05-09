@@ -89,7 +89,7 @@ export function Overview() {
     }
 
     function renderActions() {
-        if (!activeCluster) return
+        if (!activeCluster) return null
         return <OverviewAction
             cluster={activeCluster}
             selectInfo={infoOpen}
@@ -112,7 +112,6 @@ export function Overview() {
 
     function renderSettingsBlock() {
         if (!activeCluster) return null
-
         return (
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
