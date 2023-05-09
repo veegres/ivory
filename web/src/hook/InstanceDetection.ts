@@ -99,7 +99,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
             const newDetection = activeCluster.detection
             const isSidecarNotEqual = !isSidecarEqual(defaultSidecar.current, activeCluster.defaultInstance.sidecar)
 
-            if (newDetection === "manual" && isSidecarNotEqual) {
+            if (newDetection === "manual" && (isSidecarNotEqual || oldDetection === "auto")) {
                 defaultSidecar.current = activeCluster.defaultInstance.sidecar
                 defaultDetection.current = activeCluster.detection
                 remove()
