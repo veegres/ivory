@@ -2,7 +2,6 @@ import {Alert, Box, Collapse, Paper, TextField, ToggleButton} from "@mui/materia
 import {useState} from "react";
 import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
-import {useAppearance} from "../../../provider/AppearanceProvider";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
@@ -19,17 +18,17 @@ const SX: SxPropsMap = {
     toggle: {padding: "3px"},
     desc: {flexGrow: 1},
     type: {color: "secondary.main"},
-    editor: {borderRadius: "5px"},
+    editor: {borderRadius: "5px", border: "2px solid", borderColor: "divider", ":hover": {borderColor: "text.secondary"}},
     name: {color: "text.disabled"},
 }
 
 type Props = {
     type: QueryType,
+    onSave: () => void,
 }
 
 export function QueryNew(props: Props) {
-    const {type} = props
-    const {info} = useAppearance()
+    const {type, onSave} = props
     const [alert, setAlert] = useState(false)
     const [name, setName] = useState("")
     const [description, setDesc] = useState("")
@@ -81,7 +80,7 @@ export function QueryNew(props: Props) {
                     Add
                 </LoadingButton>
             </Box>
-            <Box sx={{...SX.editor, border: `2px solid ${info?.palette.divider}`}}>
+            <Box sx={SX.editor}>
                 <QueryEditor value={query} editable={true} onUpdate={setQuery}/>
             </Box>
         </Paper>
@@ -95,5 +94,6 @@ export function QueryNew(props: Props) {
         setName("")
         setDesc("")
         setQuery("")
+        onSave()
     }
 }
