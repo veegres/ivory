@@ -84,7 +84,7 @@ export function OverviewBloatJobForm(props: Props) {
                 />
                 <Box sx={SX.buttons}>
                     <Button variant={"text"} disabled={start.isLoading} onClick={handleRun}>
-                        Start
+                        Clean
                     </Button>
                 </Box>
             </Box>
