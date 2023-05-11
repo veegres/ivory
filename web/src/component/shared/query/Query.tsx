@@ -45,7 +45,7 @@ export function Query(props: Props) {
                 </ToggleButton>
             </Box>
             <Collapse in={show}>
-                <QueryNew type={type}/>
+                <QueryNew type={type} onSave={() => setShow(false)}/>
             </Collapse>
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((value) => (
