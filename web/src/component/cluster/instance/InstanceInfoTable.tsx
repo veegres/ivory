@@ -6,6 +6,7 @@ import {InstanceWeb} from "../../../type/Instance";
 const SX: SxPropsMap = {
     title: {color: "text.secondary", fontWeight: "bold"},
     table: {td: {border: 0}, fontSize: "18px"},
+    wrap: {wordBreak: "break-all"},
 }
 
 type Props = {
@@ -20,15 +21,15 @@ export function InstanceInfoTable(props: Props) {
             <TableBody isLoading={false} cellCount={2}>
                 <TableRow>
                     <TableCell sx={SX.title}>State</TableCell>
-                    <TableCell>{instance.state}</TableCell>
+                    <TableCell sx={SX.wrap}>{instance.state}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Sidecar</TableCell>
-                    <TableCell>{instance.sidecar.host}:{instance.sidecar.port.toString()}</TableCell>
+                    <TableCell sx={SX.wrap}>{instance.sidecar.host}:{instance.sidecar.port.toString()}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>
-                    <TableCell>{instance.database.host}:{instance.database.port.toString()}</TableCell>
+                    <TableCell sx={SX.wrap}>{instance.database.host}:{instance.database.port.toString()}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>
