@@ -24,7 +24,7 @@ export function ChartCommon(props: Props) {
         {retry: false})
 
     if (common.error) return <Box sx={SX.error}><ErrorSmart error={common.error}/></Box>
-    if (common.isLoading) return <ChartLoading count={3}/>
+    if (common.isLoading) return <ChartLoading count={4}/>
 
     return (
         <>

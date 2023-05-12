@@ -25,7 +25,7 @@ export function ChartDatabase(props: Props) {
 
     if (!db.database) return null
     if (database.error) return <Box sx={SX.error}><ErrorSmart error={database.error}/></Box>
-    if (database.isLoading) return <ChartLoading count={3}/>
+    if (database.isLoading) return <ChartLoading count={4}/>
 
     return (
         <>
