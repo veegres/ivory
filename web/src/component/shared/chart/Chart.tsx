@@ -11,7 +11,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    credentialId?: string,
+    credentialId: string,
     db: Database,
 }
 
