@@ -40,7 +40,7 @@ export function OverviewBloatJobForm(props: Props) {
 
     const postgresId = cluster.credentials.postgresId
     const req: QueryPostgresRequest = {credentialId: postgresId, db: {...defaultInstance.database, database: target?.dbName}}
-    const keys = [getDomain(req.db), req.db.database ?? ""]
+    const keys = [getDomain(req.db), req.db.database ?? "postgres"]
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch

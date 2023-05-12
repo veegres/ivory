@@ -64,10 +64,12 @@ export function InstanceMain(props: Props) {
     )
 
     function renderActions() {
+        if (!postgresId) return null
+
         return (
             <Box width={200}>
                 <AutocompleteFetch
-                    keys={["query", "databases", getDomain(database), database.database ?? ""]}
+                    keys={["query", "databases", getDomain(database), database.database ?? "postgres", postgresId]}
                     onFetch={(v) => queryApi.databases({credentialId: postgresId, db: database, name: v})}
                     placeholder={"Database"}
                     variant={"outlined"}

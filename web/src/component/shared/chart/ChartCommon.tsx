@@ -11,15 +11,15 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    credentialId?: string,
+    credentialId: string,
     db: Database,
 }
 
 export function ChartCommon(props: Props) {
-    const {db} = props
+    const {db, credentialId} = props
 
     const common = useQuery(
-        ["query", "chart", "common", db.host, db.port],
+        ["query", "chart", "common", db.host, db.port, credentialId],
         () => queryApi.chartCommon(props),
         {retry: false})
 
