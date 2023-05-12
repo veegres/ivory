@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../type/common";
 import {InstanceTabType, InstanceWeb} from "../../../type/Instance";
 
 const SX: SxPropsMap = {
-    info: {display: "flex", flexDirection: "column", gap: 2, margin: "5px 0", flex: "0 0 20%"},
+    info: {display: "flex", flexDirection: "column", gap: 2, margin: "5px 0", flex: "0 0 18%"},
 }
 
 type Props = {
