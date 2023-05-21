@@ -8,23 +8,31 @@ import {getErrorMessage} from "../app/utils";
  * providing common approach with request refetch and custom toast messages for
  * mutation requests
  *
- * @param queryKeys
+ * @param beforeKeys refetch QueryKeys before success
  * @param onSuccess it will be fired after refetch
+ * @param afterKeys refetch QueryKeys after success
  */
-export function useMutationOptions(queryKeys?: QueryKey[], onSuccess?: (data: any) => void) {
+export function useMutationOptions(beforeKeys?: QueryKey[], onSuccess?: (data: any) => void, afterKeys?: QueryKey[]) {
     const {enqueueSnackbar} = useSnackbar()
     const queryClient = useQueryClient();
 
     return {
         queryClient,
-        onSuccess: queryKeys && handleSuccess,
+        onSuccess: handleSuccess,
         onError: (error: any) => enqueueSnackbar(getErrorMessage(error), {variant: "error"}),
     }
 
     async function handleSuccess(data: any) {
-        for (const key of queryKeys!!) {
-            await queryClient.refetchQueries(key)
+        if (beforeKeys) {
+            for (const key of beforeKeys) {
+                await queryClient.refetchQueries(key)
+            }
         }
         if (onSuccess) onSuccess(data)
+        if (afterKeys) {
+            for (const key of afterKeys) {
+                await queryClient.refetchQueries(key)
+            }
+        }
     }
 }

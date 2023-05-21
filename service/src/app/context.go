@@ -9,7 +9,7 @@ import (
 )
 
 type Context struct {
-	env            *config.Env
+	authRouter     *router.AuthRouter
 	infoRouter     *router.InfoRouter
 	clusterRouter  *router.ClusterRouter
 	bloatRouter    *router.BloatRouter
@@ -62,6 +62,7 @@ func NewContext() *Context {
 	queryService := service.NewQueryService(queryRepo, secretService, postgresGateway)
 	clusterService := service.NewClusterService(clusterRepo, tagService, patroniGateway)
 	bloatService := service.NewBloatService(bloatRepository, passwordService)
+	authService := service.NewAuthService(secretService)
 	eraseService := service.NewEraseService(
 		passwordService,
 		clusterService,
@@ -75,8 +76,8 @@ func NewContext() *Context {
 	// TODO refactor: shouldn't router use repos? consider change to service usage (possible cycle dependencies problems)
 	// TODO repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
 	return &Context{
-		env:            env,
-		infoRouter:     router.NewInfoRouter(env, secretService),
+		infoRouter:     router.NewInfoRouter(env, secretService, authService),
+		authRouter:     router.NewAuthRouter(env, authService),
 		clusterRouter:  router.NewClusterRouter(clusterService),
 		bloatRouter:    router.NewBloatRouter(bloatService),
 		certRouter:     router.NewCertRouter(certService),

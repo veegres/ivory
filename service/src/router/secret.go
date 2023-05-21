@@ -22,6 +22,16 @@ func NewSecretRouter(
 	}
 }
 
+func (r *SecretRouter) Middleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		if r.secretService.IsSecretEmpty() {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "secret key is not specified"})
+			return
+		}
+		context.Next()
+	}
+}
+
 func (r *SecretRouter) GetStatus(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": r.secretService.Status()})
 }

@@ -7,20 +7,19 @@ import (
 )
 
 func NewRouter(di *Context) {
-	authHandler := func(context *gin.Context) {}
-	if di.env.Username != nil && di.env.Password != nil {
-		authHandler = gin.BasicAuth(gin.Accounts{*di.env.Username: *di.env.Password})
-	}
-
 	engine := gin.Default()
 	engine.UseH2C = true
 
 	unsafe := engine.Group("/api")
 	unsafe.GET("/ping", pong)
-	infoRouter(unsafe, di.infoRouter)
+	unsafe.GET("/info", di.infoRouter.Info)
+	unsafe.POST("/secret/set", di.secretRouter.SetSecret)
 
-	// TODO we shouldn't allow any request if there is no secret set think of creating mw
-	safe := unsafe.Group("/", authHandler)
+	secret := unsafe.Group("/", di.secretRouter.Middleware())
+	secret.POST("/login", di.authRouter.Login)
+	secret.POST("/logout", di.authRouter.Logout)
+
+	safe := secret.Group("/", di.authRouter.Middleware())
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
 	certRouter(safe, di.certRouter)
@@ -39,11 +38,6 @@ func NewRouter(di *Context) {
 
 func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
-}
-
-func infoRouter(g *gin.RouterGroup, r *router.InfoRouter) {
-	info := g.Group("/info")
-	info.GET("", r.Info)
 }
 
 func clusterRouter(g *gin.RouterGroup, r *router.ClusterRouter) {
@@ -78,7 +72,6 @@ func certRouter(g *gin.RouterGroup, r *router.CertRouter) {
 func secretRouter(g *gin.RouterGroup, r *router.SecretRouter) {
 	secret := g.Group("/secret")
 	secret.GET("", r.GetStatus)
-	secret.POST("/set", r.SetSecret)
 	secret.POST("/update", r.UpdateSecret)
 	secret.POST("/clean", r.CleanSecret)
 }

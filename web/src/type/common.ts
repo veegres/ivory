@@ -4,6 +4,11 @@ import {SecretStatus} from "./secret";
 
 // COMMON (WEB AND SERVER)
 
+export interface Login {
+    username: string,
+    password: string,
+}
+
 export interface DbConnection {
     host: string,
     port: number,
@@ -38,6 +43,7 @@ export interface AppInfo {
     company: string,
     version: { tag: string, commit: string }
     secret: SecretStatus,
+    auth: {authorized: boolean, error: string, type: "none" | "basic"},
 }
 
 

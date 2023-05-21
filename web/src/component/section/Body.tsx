@@ -8,6 +8,7 @@ import {Overview as ClusterOverview} from "../cluster/overview/Overview";
 import {Instance as ClusterInstance} from "../cluster/instance/Instance";
 import {AppInfo, SxPropsMap} from "../../type/common";
 import {UseQueryResult} from "@tanstack/react-query";
+import {StartupLogin} from "../startup/StartupLogin";
 
 const SX: SxPropsMap = {
     stack: {width: "100%", height: "100%", gap: 4}
@@ -25,6 +26,7 @@ export function Body(props: Props) {
     if (!data) return renderError("Something bad happened, we cannot get application initial information")
     if (!data.secret.ref) return <StartupInitial/>
     if (!data.secret.key) return <StartupSecondary/>
+    if (data.auth.type === "basic" && !data.auth.authorized) return <StartupLogin error={data.auth.error}/>
 
     return (
         <Stack sx={SX.stack}>
