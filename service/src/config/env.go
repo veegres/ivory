@@ -33,11 +33,11 @@ func NewEnv() *Env {
 		commit = val
 	}
 	var user *string
-	if val, ok := os.LookupEnv("IVORY_BASIC_USER"); ok {
+	if val, ok := os.LookupEnv("IVORY_BASIC_USER"); ok && auth == "basic" {
 		user = &val
 	}
 	var password *string
-	if val, ok := os.LookupEnv("IVORY_BASIC_PASSWORD"); ok {
+	if val, ok := os.LookupEnv("IVORY_BASIC_PASSWORD"); ok && auth == "basic" {
 		password = &val
 	}
 

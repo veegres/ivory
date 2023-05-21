@@ -5,19 +5,24 @@ import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../typ
 import {Password, PasswordMap, PasswordType} from "../type/password";
 import {SecretSetRequest, SecretStatus, SecretUpdateRequest} from "../type/secret";
 import {
-    Query, QueryChart,
-    QueryChartRequest, QueryDatabasesRequest,
+    Query,
+    QueryChart,
+    QueryChartRequest,
+    QueryDatabasesRequest,
     QueryKillRequest,
     QueryRequest,
     QueryRunRequest,
-    QueryRunResponse, QuerySchemasRequest, QueryTablesRequest,
+    QueryRunResponse,
+    QuerySchemasRequest,
+    QueryTablesRequest,
     QueryType
 } from "../type/query";
-import {AppInfo, Response} from "../type/common";
+import {AppInfo, Login, Response} from "../type/common";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
-const api = axios.create({baseURL: '/api'})
+
+export const api = axios.create({baseURL: '/api'})
 
 // TODO we should simplify usage of react-query hooks
 // Possible solutions:
@@ -111,6 +116,9 @@ export const infoApi = {
         .then((response) => response.data.response),
     erase: () => api
         .post<Response<string>>(`/erase`)
+        .then((response) => response.data.response),
+    login: (req: Login) => api
+        .post<Response<any>>(`/login`, req)
         .then((response) => response.data.response)
 }
 

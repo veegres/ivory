@@ -4,6 +4,11 @@ import "github.com/google/uuid"
 
 // COMMON (WEB AND SERVER)
 
+type Login struct {
+	Username string `form:"username" json:"username" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
+}
+
 type DbConnection struct {
 	Host   string    `json:"host"`
 	Port   int       `json:"port"`

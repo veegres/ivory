@@ -38,6 +38,10 @@ func (s *SecretService) Get() [16]byte {
 	return s.key
 }
 
+func (s *SecretService) GetByte() []byte {
+	return s.key[:]
+}
+
 func (s *SecretService) Set(decryptedKey string, decryptedRef string) error {
 	if decryptedRef == "" {
 		var err error
