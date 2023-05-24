@@ -27,7 +27,7 @@ export function StartupLogin(props: Props) {
     const login = useMutation(infoApi.login, loginOption)
 
     return (
-        <StartupBlock header={"Login"} renderFooter={renderButton()}>
+        <StartupBlock header={"Sign in"} renderFooter={renderButton()}>
             {error && <Alert sx={SX.alert} severity={"warning"} icon={false}>{error}</Alert>}
             <SecretInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
             <SecretInput
@@ -41,7 +41,7 @@ export function StartupLogin(props: Props) {
 
     function renderButton() {
         return (
-            <LoadingButton onClick={handleLogin} loading={login.isLoading}>Login</LoadingButton>
+            <LoadingButton onClick={handleLogin} loading={login.isLoading}>Sign in</LoadingButton>
         )
     }
 

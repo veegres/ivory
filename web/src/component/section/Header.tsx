@@ -1,9 +1,11 @@
 import {Box, IconButton, Tooltip} from "@mui/material";
-import {Settings} from "@mui/icons-material";
+import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {useStore} from "../../provider/StoreProvider";
 import {SxPropsMap} from "../../type/common";
+import {useAuth} from "../../provider/AuthProvider";
+import {useQueryClient} from "@tanstack/react-query";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},
@@ -22,7 +24,10 @@ type Props = {
 export function Header(props: Props) {
     const {company, show} = props
     const {toggleSettingsDialog} = useStore()
+    const {logout} = useAuth()
     const [animal, setAnimal] = useState("")
+
+    const queryClient = useQueryClient();
 
     return (
         <Box sx={SX.box} >
@@ -43,16 +48,28 @@ export function Header(props: Props) {
 
     function renderRightSide() {
         return (
-            <Tooltip title={"Settings"}>
-                <IconButton onClick={toggleSettingsDialog} color={"inherit"}>
-                    <Settings/>
-                </IconButton>
-            </Tooltip>
+            <>
+                <Tooltip title={"Settings"}>
+                    <IconButton onClick={toggleSettingsDialog} color={"inherit"}>
+                        <Settings/>
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title={"Sign out"}>
+                    <IconButton onClick={handleLogout} color={"inherit"}>
+                        <Logout/>
+                    </IconButton>
+                </Tooltip>
+            </>
         )
     }
 
     function handleAnimal() {
         if (animal) setAnimal("")
         else setAnimal(randomUnicodeAnimal())
+    }
+
+    function handleLogout() {
+        logout()
+        queryClient.refetchQueries(["info"])
     }
 }
