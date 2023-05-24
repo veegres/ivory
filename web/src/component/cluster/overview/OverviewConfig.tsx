@@ -6,7 +6,7 @@ import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {InstanceWeb, InstanceRequest} from "../../../type/Instance";
+import {InstanceRequest, InstanceWeb} from "../../../type/Instance";
 import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../hook/QueryCustom";
@@ -16,7 +16,7 @@ import {SxPropsMap} from "../../../type/common";
 import {useSnackbar} from "notistack";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%", maxHeight: "500px"},
+    box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
     input: {flexGrow: 1, borderWidth: "1px", borderStyle: "solid", overflowX: "auto", ">div": {height: "100%"}},
     buttons: {display: "flex", flexDirection: "column"},
 }
