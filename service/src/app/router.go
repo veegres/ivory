@@ -18,7 +18,6 @@ func NewRouter(di *Context) {
 
 	secret := unsafe.Group("/", di.secretRouter.Middleware())
 	secret.POST("/login", di.authRouter.Login)
-	secret.POST("/logout", di.authRouter.Logout)
 
 	safe := secret.Group("/", di.authRouter.Middleware())
 	clusterRouter(safe, di.clusterRouter)
