@@ -7,6 +7,7 @@ import {createRoot} from "react-dom/client";
 import {SnackbarProvider} from "notistack";
 import scroll from "./style/scroll.module.css"
 import {StrictMode} from "react";
+import {AuthProvider} from "./provider/AuthProvider";
 
 // always show scroll bar to avoid resizing
 document.body.classList.add(scroll.show)
@@ -17,12 +18,14 @@ const root = createRoot(container!);
 root.render(
     <StrictMode>
         <AppearanceProvider>
-            <StoreProvider>
-                <SnackbarProvider maxSnack={3}>
-                    <CssBaseline enableColorScheme/>
-                    <App/>
-                </SnackbarProvider>
-            </StoreProvider>
+            <AuthProvider>
+                <StoreProvider>
+                    <SnackbarProvider maxSnack={3}>
+                        <CssBaseline enableColorScheme/>
+                        <App/>
+                    </SnackbarProvider>
+                </StoreProvider>
+            </AuthProvider>
         </AppearanceProvider>
     </StrictMode>
 )
