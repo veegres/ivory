@@ -2,11 +2,12 @@ import {StartupBlock} from "./StartupBlock";
 import {Alert} from "@mui/material";
 import {SecretInput} from "../shared/secret/SecretInput";
 import {useMutation} from "@tanstack/react-query";
-import {api, infoApi} from "../../app/api";
+import {infoApi} from "../../app/api";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useState} from "react";
 import {SxPropsMap} from "../../type/common";
 import {LoadingButton} from "@mui/lab";
+import {useAuth} from "../../provider/AuthProvider";
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},
@@ -18,6 +19,7 @@ type Props = {
 
 export function StartupLogin(props: Props) {
     const {error} = props
+    const {setToken} = useAuth()
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
 
@@ -48,8 +50,6 @@ export function StartupLogin(props: Props) {
     }
 
     function handleSuccess(data: any) {
-        if (data && data.token) {
-            api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`
-        }
+        if (data && data.token) setToken(data.token)
     }
 }
