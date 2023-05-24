@@ -14,6 +14,7 @@ func NewRouter(di *Context) {
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.infoRouter.Info)
 	unsafe.POST("/secret/set", di.secretRouter.SetSecret)
+	unsafe.POST("/erase", di.eraseRouter.Erase)
 
 	secret := unsafe.Group("/", di.secretRouter.Middleware())
 	secret.POST("/login", di.authRouter.Login)
@@ -28,7 +29,6 @@ func NewRouter(di *Context) {
 	tagRouter(safe, di.tagRouter)
 	instanceRouter(safe, di.instanceRouter)
 	queryRouter(safe, di.queryRouter)
-	eraseRouter(safe, di.eraseRouter)
 
 	err := engine.Run()
 	if err != nil {
@@ -112,9 +112,4 @@ func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	query.POST("/chart/database", r.PostDatabaseChartQuery)
 	query.POST("/cancel", r.PostCancelQuery)
 	query.POST("/terminate", r.PostTerminateQuery)
-}
-
-func eraseRouter(g *gin.RouterGroup, r *router.EraseRouter) {
-	erase := g.Group("/erase")
-	erase.POST("", r.Erase)
 }

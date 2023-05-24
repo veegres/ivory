@@ -9,7 +9,6 @@ import {useMutation} from "@tanstack/react-query";
 import {secretApi} from "../../app/api";
 
 
-
 export function StartupSecondary() {
     const [key, setKey] = useState("")
     const setReqOptions = useMutationOptions([["info"]])
@@ -20,9 +19,9 @@ export function StartupSecondary() {
             <Typography variant={"caption"}>
                 Looks like Ivory was rebooted. Please, provide the <b>Secret word</b> to be able
                 to continue working with sensitive data.
-                You can clean the secret word and sensitive data by press <b>ERASE</b> button and
-                start working with Ivory from scratch by providing new secret word. Also it will help
-                if you suddenly forget the secret word.
+                You can start from scratch by cleaning the secret word and sensitive data, just
+                press <b>ERASE</b> button. You will need to provide new secret word. Also it can
+                help if you suddenly forget the secret word.
             </Typography>
             <SecretInput
                 label={"Secret word"}
