@@ -66,7 +66,3 @@ func (r *AuthRouter) Login(context *gin.Context) {
 		"expire": exp.String(),
 	}})
 }
-
-func (r *AuthRouter) Logout(context *gin.Context) {
-	context.Header("WWW-Authenticate", "JWT realm="+r.authService.GetIssuer())
-}
