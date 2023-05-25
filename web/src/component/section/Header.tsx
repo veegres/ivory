@@ -18,11 +18,12 @@ const SX: SxPropsMap = {
 
 type Props = {
     company: string,
+    auth: "none" | "basic",
     show: boolean,
 }
 
 export function Header(props: Props) {
-    const {company, show} = props
+    const {company, show, auth} = props
     const {toggleSettingsDialog} = useStore()
     const {logout} = useAuth()
     const [animal, setAnimal] = useState("")
@@ -54,11 +55,13 @@ export function Header(props: Props) {
                         <Settings/>
                     </IconButton>
                 </Tooltip>
-                <Tooltip title={"Sign out"}>
-                    <IconButton onClick={handleLogout} color={"inherit"}>
-                        <Logout/>
-                    </IconButton>
-                </Tooltip>
+                {auth === "basic" && (
+                    <Tooltip title={"Sign out"}>
+                        <IconButton onClick={handleLogout} color={"inherit"}>
+                            <Logout/>
+                        </IconButton>
+                    </Tooltip>
+                )}
             </>
         )
     }
@@ -70,6 +73,6 @@ export function Header(props: Props) {
 
     function handleLogout() {
         logout()
-        queryClient.refetchQueries(["info"])
+        queryClient.refetchQueries(["info"]).then()
     }
 }

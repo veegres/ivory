@@ -26,7 +26,7 @@ export function Body(props: Props) {
     if (!data) return renderError("Something bad happened, we cannot get application initial information")
     if (!data.secret.ref) return <StartupInitial/>
     if (!data.secret.key) return <StartupSecondary/>
-    if (data.auth.type === "basic" && !data.auth.authorized) return <StartupLogin error={data.auth.error}/>
+    if (!data.auth.authorized) return <StartupLogin type={data.auth.type} error={data.auth.error}/>
 
     return (
         <Stack sx={SX.stack}>

@@ -15,12 +15,12 @@ const SX: SxPropsMap = {
 
 export function App() {
     const info = useQuery(["info"], generalApi.info, {refetchOnWindowFocus: "always"})
-    const show = !info.isLoading && !info.isError && info.data.secret.key && !(info.data.auth.type === "basic" && !info.data.auth.authorized)
+    const show = !info.isLoading && !info.isError && info.data.secret.key && info.data.auth.authorized
 
     return (
         <Box sx={SX.box}>
             <Box>
-                <Header company={info.data?.company ?? "VEEGRES"} show={show}/>
+                <Header company={info.data?.company ?? "VEEGRES"} show={show} auth={info.data?.auth.type ?? "none"}/>
             </Box>
             <Box sx={SX.body}>
                 <Body info={info}/>
