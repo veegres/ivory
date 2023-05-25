@@ -76,7 +76,7 @@ func (p *SidecarRequest[R]) parseResponse(res *http.Response) (*R, int, error) {
 			if reflect.TypeOf(body) == reflect.TypeOf("") {
 				reflect.ValueOf(&body).Elem().SetString(string(bytesBody))
 			} else {
-				return nil, status, errMar
+				return nil, status, errors.Join(errMar, errors.New(string(bytesBody)))
 			}
 		}
 	}
@@ -116,7 +116,7 @@ func (p *SidecarClient) send(method string, instance InstanceRequest, path strin
 }
 
 func (p *SidecarClient) getRequest(
-	credentilId *uuid.UUID,
+	credentialId *uuid.UUID,
 	method string,
 	protocol string,
 	domain string,
@@ -134,8 +134,8 @@ func (p *SidecarClient) getRequest(
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
-	if credentilId != nil {
-		passInfo, errPass := p.passwordService.GetDecrypted(*credentilId)
+	if credentialId != nil {
+		passInfo, errPass := p.passwordService.GetDecrypted(*credentialId)
 		err = errPass
 		req.SetBasicAuth(passInfo.Username, passInfo.Password)
 	}
