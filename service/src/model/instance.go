@@ -15,7 +15,7 @@ type InstanceRequest struct {
 type Instance struct {
 	State    string   `json:"state"`
 	Role     string   `json:"role"`
-	Lag      int      `json:"lag"`
+	Lag      int64    `json:"lag"`
 	Database Database `json:"database"`
 	Sidecar  Sidecar  `json:"sidecar"`
 }

@@ -46,8 +46,10 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 			return nil, 0, errCast
 		}
 
-		var lag int
-		if ok := patroniInstance.Lag; ok == nil {
+		var lag int64
+		if num, errInt := strconv.ParseInt(string(patroniInstance.Lag), 10, 64); errInt == nil {
+			lag = num
+		} else {
 			lag = -1
 		}
 
