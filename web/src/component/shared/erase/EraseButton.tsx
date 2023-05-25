@@ -1,17 +1,22 @@
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {infoApi} from "../../../app/api";
 import {useStore} from "../../../provider/StoreProvider";
 import {LoadingButton} from "@mui/lab";
 import {useState} from "react";
 import {AlertDialog} from "../../view/dialog/AlertDialog";
+import {initialApi, safeApi} from "../../../app/api";
 
-export function EraseButton() {
+type Props = {
+    safe: boolean,
+}
+
+export function EraseButton(props: Props) {
     const {clear} = useStore()
     const [open, setOpen] = useState(false)
 
     const cleanOptions = useMutationOptions([["info"]], clear)
-    const clean = useMutation(infoApi.erase, cleanOptions)
+    const cleanInitial = useMutation(initialApi.erase, cleanOptions)
+    const cleanSafe = useMutation(safeApi.erase, cleanOptions)
 
     return (
         <>
@@ -20,7 +25,7 @@ export function EraseButton() {
                 color={"error"}
                 variant={"outlined"}
                 onClick={() => setOpen(true)}
-                loading={clean.isLoading}
+                loading={cleanSafe.isLoading || cleanInitial.isLoading}
             >
                 Erase
             </LoadingButton>
@@ -28,7 +33,7 @@ export function EraseButton() {
                 open={open}
                 title={"Erase all data?"}
                 content={`This action will remove all of your data (passwords, certs, logs, queries, etc).`}
-                onAgree={() => clean.mutate()}
+                onAgree={() => props.safe ? cleanSafe.mutate() : cleanInitial.mutate()}
                 onClose={() => setOpen(false)}
             />
         </>

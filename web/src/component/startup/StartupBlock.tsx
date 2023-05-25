@@ -1,7 +1,7 @@
 import {Box} from "@mui/material";
 import {ReactNode, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {infoApi} from "../../app/api";
+import {generalApi} from "../../app/api";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {LinearProgressStateful} from "../view/progress/LinearProgressStateful";
 import select from "../../style/select.module.css";
@@ -26,7 +26,7 @@ export function StartupBlock(props: Props) {
     const {children, header, renderFooter} = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 
-    const info = useQuery(["info"], infoApi.get);
+    const info = useQuery(["info"], generalApi.info);
 
     return (
         <Box sx={SX.box}>
