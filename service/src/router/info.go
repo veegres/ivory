@@ -45,14 +45,25 @@ func (r *InfoRouter) Info(context *gin.Context) {
 }
 
 func (r *InfoRouter) authInfo(header string) (bool, string) {
-	token, errHeader := r.authService.GetTokenFromHeader(header)
-	if errHeader != nil {
-		return false, errHeader.Error()
-	} else {
-		errValidate := r.authService.ValidateToken(token, *r.env.Username)
-		if errValidate != nil {
-			return false, errValidate.Error()
+	switch r.env.Auth {
+	case "none":
+		if header != "" {
+			return false, "authentication header should be empty"
 		}
+		return true, ""
+	case "basic":
+		token, errHeader := r.authService.GetTokenFromHeader(header)
+		if errHeader != nil {
+			return false, errHeader.Error()
+		} else {
+			errValidate := r.authService.ValidateToken(token, *r.env.Username)
+			if errValidate != nil {
+				return false, errValidate.Error()
+			}
+		}
+		return true, ""
+	default:
+		return false, "authentication type is not specified or incorrect"
 	}
-	return true, ""
+
 }
