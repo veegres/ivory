@@ -5,13 +5,13 @@ import {Typography} from "@mui/material";
 import {SecretButton} from "../shared/secret/SecretButton";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {secretApi} from "../../app/api";
+import {initialApi} from "../../app/api";
 
 export function StartupInitial() {
     const [key, setKey] = useState("")
     const [ref, setRef] = useState("")
     const setReqOptions = useMutationOptions([["info"]])
-    const setReq = useMutation(secretApi.set, setReqOptions)
+    const setReq = useMutation(initialApi.setSecret, setReqOptions)
 
     return (
         <StartupBlock header={"Welcome"} renderFooter={<SecretButton keyWord={key} refWord={ref}/>}>

@@ -13,17 +13,18 @@ func NewRouter(di *Context) {
 	unsafe := engine.Group("/api")
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.infoRouter.Info)
-	unsafe.POST("/secret/set", di.secretRouter.SetSecret)
-	unsafe.POST("/erase", di.eraseRouter.Erase)
 
-	secret := unsafe.Group("/", di.secretRouter.Middleware())
-	secret.POST("/login", di.authRouter.Login)
+	initial := unsafe.Group("/", di.secretRouter.EmptyMiddleware())
+	initialRouter(initial, di.secretRouter, di.eraseRouter)
 
-	safe := secret.Group("/", di.authRouter.Middleware())
+	login := unsafe.Group("/", di.secretRouter.ExistMiddleware())
+	login.POST("/login", di.authRouter.Login)
+
+	safe := login.Group("/", di.authRouter.Middleware())
+	safeRouter(safe, di.secretRouter, di.eraseRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
 	certRouter(safe, di.certRouter)
-	secretRouter(safe, di.secretRouter)
 	passwordRouter(safe, di.passwordRouter)
 	tagRouter(safe, di.tagRouter)
 	instanceRouter(safe, di.instanceRouter)
@@ -37,6 +38,20 @@ func NewRouter(di *Context) {
 
 func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
+}
+
+func initialRouter(g *gin.RouterGroup, rs *router.SecretRouter, re *router.EraseRouter) {
+	initial := g.Group("/initial")
+	initial.POST("/secret", rs.SetSecret)
+	initial.DELETE("/erase", re.Erase)
+}
+
+func safeRouter(g *gin.RouterGroup, rs *router.SecretRouter, re *router.EraseRouter) {
+	safe := g.Group("/safe")
+	safe.GET("/secret", rs.GetStatus)
+	safe.POST("/secret", rs.UpdateSecret)
+	safe.DELETE("/secret", rs.CleanSecret)
+	safe.DELETE("/erase", re.Erase)
 }
 
 func clusterRouter(g *gin.RouterGroup, r *router.ClusterRouter) {
@@ -68,12 +83,6 @@ func certRouter(g *gin.RouterGroup, r *router.CertRouter) {
 	cert.POST("/add", r.PostAddCert)
 }
 
-func secretRouter(g *gin.RouterGroup, r *router.SecretRouter) {
-	secret := g.Group("/secret")
-	secret.GET("", r.GetStatus)
-	secret.POST("/update", r.UpdateSecret)
-	secret.POST("/clean", r.CleanSecret)
-}
 func passwordRouter(g *gin.RouterGroup, r *router.PasswordRouter) {
 	password := g.Group("/password")
 	password.GET("", r.GetCredentials)

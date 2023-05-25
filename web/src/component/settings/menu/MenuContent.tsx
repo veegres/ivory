@@ -35,7 +35,7 @@ export function MenuContent(props: Props) {
                     <MenuItemText
                         title={"Erase all data"}
                         description={"Once you erase all data, there is no going back. Please be certain."}
-                        button={<EraseButton/>}
+                        button={<EraseButton safe={true}/>}
                     />
                 </MenuItemBox>
                 <MenuItemBox name={"About"}>

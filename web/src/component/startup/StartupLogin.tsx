@@ -2,7 +2,7 @@ import {StartupBlock} from "./StartupBlock";
 import {Alert} from "@mui/material";
 import {SecretInput} from "../shared/secret/SecretInput";
 import {useMutation} from "@tanstack/react-query";
-import {infoApi} from "../../app/api";
+import {generalApi} from "../../app/api";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useState} from "react";
 import {SxPropsMap} from "../../type/common";
@@ -24,7 +24,7 @@ export function StartupLogin(props: Props) {
     const [password, setPass] = useState("")
 
     const loginOption = useMutationOptions([], handleSuccess, [["info"]])
-    const login = useMutation(infoApi.login, loginOption)
+    const login = useMutation(generalApi.login, loginOption)
 
     return (
         <StartupBlock header={"Sign in"} renderFooter={renderButton()}>

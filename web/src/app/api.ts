@@ -30,6 +30,40 @@ export const api = axios.create({baseURL: '/api'})
 // - try to make args that can be used than directly in react-query hooks
 // - can be problems with same route as for DELETE / GET / POST
 
+
+export const generalApi = {
+    info: () => api
+        .get<Response<AppInfo>>(`/info`)
+        .then((response) => response.data.response),
+    login: (req: Login) => api
+        .post<Response<any>>(`/login`, req)
+        .then((response) => response.data.response)
+}
+
+export const initialApi = {
+    setSecret: (request: SecretSetRequest) => api
+        .post<Response<string>>(`/initial/secret`, request)
+        .then((response) => response.data.response),
+    erase: () => api
+        .delete<Response<string>>(`/initial/erase`)
+        .then((response) => response.data.response),
+}
+
+export const safeApi = {
+    getSecret: () => api
+        .get<Response<SecretStatus>>(`/safe/secret`)
+        .then((response) => response.data.response),
+    updateSecret: (request: SecretUpdateRequest) => api
+        .post<Response<string>>(`/safe/secret`, request)
+        .then((response) => response.data.response),
+    deleteSecret: () => api
+        .delete<Response<string>>(`/safe/secret`)
+        .then((response) => response.data.response),
+    erase: () => api
+        .delete<Response<string>>(`/safe/erase`)
+        .then((response) => response.data.response),
+}
+
 export const instanceApi = {
     info: (request: InstanceRequest) => api
         .get<Response<InstanceInfo>>(`/instance/info`, {params: request})
@@ -110,18 +144,6 @@ export const bloatApi = {
     stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
 }
 
-export const infoApi = {
-    get: () => api
-        .get<Response<AppInfo>>(`/info`)
-        .then((response) => response.data.response),
-    erase: () => api
-        .post<Response<string>>(`/erase`)
-        .then((response) => response.data.response),
-    login: (req: Login) => api
-        .post<Response<any>>(`/login`, req)
-        .then((response) => response.data.response)
-}
-
 export const queryApi = {
     list: (type?: QueryType) => api
         .get<Response<Query[]>>(`/query`, {params: {type}})
@@ -158,21 +180,6 @@ export const queryApi = {
         .then((response) => response.data.response),
     terminate: (req: QueryKillRequest) => api
         .post<Response<QueryRunResponse>>(`/query/terminate`, req)
-        .then((response) => response.data.response),
-}
-
-export const secretApi = {
-    get: () => api
-        .get<Response<SecretStatus>>(`/secret`)
-        .then((response) => response.data.response),
-    set: (request: SecretSetRequest) => api
-        .post<Response<string>>(`/secret/set`, request)
-        .then((response) => response.data.response),
-    update: (request: SecretUpdateRequest) => api
-        .post<Response<string>>(`/secret/update`, request)
-        .then((response) => response.data.response),
-    clean: () => api
-        .post<Response<string>>(`/secret/clean`)
         .then((response) => response.data.response),
 }
 
