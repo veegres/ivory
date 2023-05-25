@@ -1,5 +1,7 @@
 package model
 
+import "encoding/json"
+
 // COMMON (WEB AND SERVER)
 
 // SPECIFIC (SERVER)
@@ -9,14 +11,15 @@ type PatroniCluster struct {
 }
 
 type PatroniInstance struct {
-	Name     string `json:"name"`
-	State    string `json:"state"`
-	Role     string `json:"role"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	ApiUrl   string `json:"api_url"`
-	Lag      *int   `json:"lag"`
-	Timeline int    `json:"timeline"`
+	Name   string `json:"name"`
+	State  string `json:"state"`
+	Role   string `json:"role"`
+	Host   string `json:"host"`
+	Port   int    `json:"port"`
+	ApiUrl string `json:"api_url"`
+	// it can be int / nil / "unknown"
+	Lag      json.RawMessage `json:"lag"`
+	Timeline int             `json:"timeline"`
 }
 
 type PatroniInfo struct {
