@@ -1,5 +1,7 @@
-import {createContext, ReactNode, useContext} from "react";
+import {createContext, ReactNode, useContext, useEffect} from "react";
 import {api} from "../app/api";
+import {useLocalStorageState} from "../hook/LocalStorage";
+import {useQueryClient} from "@tanstack/react-query";
 
 const AuthContext = createContext({
     setToken: (v: string) => {},
@@ -11,19 +13,29 @@ export function useAuth() {
 }
 
 export function AuthProvider(props: { children: ReactNode }) {
-    const token = localStorage.getItem("token")
-    if (token) setToken(token)
+    const [token, setToken] = useLocalStorageState("token", "", true);
+    const queryClient = useQueryClient();
+
+    useEffect(handleEffectTokenUpdate, [token, queryClient])
+
     return (
-        <AuthContext.Provider value={{setToken, logout}}>{props.children}</AuthContext.Provider>
+        <AuthContext.Provider value={{setToken: setTokenEncrypt, logout}}>
+            {props.children}
+        </AuthContext.Provider>
     )
 
-    function setToken(v: string){
-        localStorage.setItem("token", v)
-        api.defaults.headers.common["Authorization"] = `Bearer ${v}`
+    function handleEffectTokenUpdate() {
+        console.log(window.atob(token))
+        if (token !== "") api.defaults.headers.common["Authorization"] = `Bearer ${window.atob(token)}`
+        else delete api.defaults.headers.common["Authorization"]
+        queryClient.refetchQueries(["info"]).then()
+    }
+
+    function setTokenEncrypt(v: string){
+        setToken(window.btoa(v))
     }
 
     function logout(){
-        localStorage.removeItem("token")
-        delete api.defaults.headers.common["Authorization"]
+        setToken("")
     }
 }
