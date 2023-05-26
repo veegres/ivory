@@ -61,46 +61,51 @@ export function OverviewInstancesRow(props: Props) {
 
     function renderButton(instance: InstanceWeb, type: string) {
         switch (type) {
-            case "replica":
-                return (
-                    <>
-                        <AlertDialog
-                            open={open === "reinit"}
-                            title={`Make a reinitialization of ${instance.sidecar.host}?`}
-                            content={"It will erase all node data and will download it from scratch."}
-                            onAgree={() => handleReinit(instance)}
-                            onClose={() => setOpen("none")}
-                        />
-                        <LoadingButton
-                            color={"primary"}
-                            loading={reinit.isLoading}
-                            disabled={switchover.isLoading}
-                            onClick={() => setOpen("reinit")}>
-                            Reinit
-                        </LoadingButton>
-                    </>
-                )
-            case "leader":
-                return (
-                    <>
-                        <AlertDialog
-                            open={open === "switch"}
-                            title={`Make a switchover of ${instance.sidecar.host}?`}
-                            content={"It will change the leader of your cluster that will cause some downtime."}
-                            onAgree={() => handleSwitchover(instance)}
-                            onClose={() => setOpen("none")}
-                        />
-                        <LoadingButton
-                            color={"secondary"}
-                            loading={switchover.isLoading}
-                            onClick={() => setOpen("switch")}>
-                            Switchover
-                        </LoadingButton>
-                    </>
-                )
-            default:
-                return null
+            case "replica": return renderReinit()
+            case "leader": return renderSwitch()
+            default: return null
         }
+    }
+
+    function renderReinit() {
+        return (
+            <>
+                <AlertDialog
+                    open={open === "reinit"}
+                    title={`Make a reinitialization of ${instance.sidecar.host}?`}
+                    content={"It will erase all node data and will download it from scratch."}
+                    onAgree={() => handleReinit(instance)}
+                    onClose={() => setOpen("none")}
+                />
+                <LoadingButton
+                    color={"primary"}
+                    loading={reinit.isLoading}
+                    disabled={switchover.isLoading}
+                    onClick={() => setOpen("reinit")}>
+                    Reinit
+                </LoadingButton>
+            </>
+        )
+    }
+
+    function renderSwitch() {
+        return (
+            <>
+                <AlertDialog
+                    open={open === "switch"}
+                    title={`Make a switchover of ${instance.sidecar.host}?`}
+                    content={"It will change the leader of your cluster that will cause some downtime."}
+                    onAgree={() => handleSwitchover(instance)}
+                    onClose={() => setOpen("none")}
+                />
+                <LoadingButton
+                    color={"secondary"}
+                    loading={switchover.isLoading}
+                    onClick={() => setOpen("switch")}>
+                    Switchover
+                </LoadingButton>
+            </>
+        )
     }
 
     function renderWarning(inCluster: boolean, inInstances: boolean) {
