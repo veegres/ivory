@@ -3,9 +3,13 @@ import {api} from "../app/api";
 import {useLocalStorageState} from "../hook/LocalStorage";
 import {useQueryClient} from "@tanstack/react-query";
 
-const AuthContext = createContext({
-    setToken: (v: string) => {},
-    logout: () => {},
+interface AuthContextType {
+    setToken: (v: string) => void,
+    logout: () => void,
+}
+const AuthContext = createContext<AuthContextType>({
+    setToken: () => void 0,
+    logout: () => void 0,
 })
 
 export function useAuth() {
