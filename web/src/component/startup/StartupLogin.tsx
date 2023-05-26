@@ -1,7 +1,7 @@
 import {StartupBlock} from "./StartupBlock";
 import {Alert, Button} from "@mui/material";
 import {SecretInput} from "../shared/secret/SecretInput";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import {generalApi} from "../../app/api";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useState} from "react";
@@ -24,7 +24,6 @@ export function StartupLogin(props: Props) {
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
 
-    const queryClient = useQueryClient();
     const loginOption = useMutationOptions([], handleSuccess)
     const login = useMutation(generalApi.login, loginOption)
 
@@ -54,14 +53,9 @@ export function StartupLogin(props: Props) {
 
     function renderLogin() {
         switch (type) {
-            case "none": return <Button onClick={handleLogout}>Sign out</Button>
+            case "none": return <Button onClick={logout}>Sign out</Button>
             case "basic": return <LoadingButton onClick={handleLogin} loading={login.isLoading}>Sign in</LoadingButton>
         }
-    }
-
-    function handleLogout() {
-        logout()
-        queryClient.refetchQueries(["info"]).then()
     }
 
     function handleLogin() {
@@ -70,6 +64,5 @@ export function StartupLogin(props: Props) {
 
     function handleSuccess(data: any) {
         if (data && data.token) setToken(data.token)
-        queryClient.refetchQueries(["info"]).then()
     }
 }

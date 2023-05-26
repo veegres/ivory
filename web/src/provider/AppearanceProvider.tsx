@@ -28,7 +28,7 @@ export function useAppearance() {
 }
 
 export function AppearanceProvider(props: { children: ReactNode }) {
-    const [state, setState] = useLocalStorageState("appearance", ThemeInitialState);
+    const [state, setState] = useLocalStorageState("appearance", ThemeInitialState, true);
     const muiTheme = createTheme({palette: {mode: state.mode}})
     useEffect(handleEffectClient, [state.refetchOnWindowsFocus])
     return (
