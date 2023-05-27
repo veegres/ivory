@@ -17,7 +17,7 @@ export function QueryItemInfo(props: Props) {
     const {query, description} = props
     return (
         <Box sx={SX.box}>
-            <QueryInfo>{description}</QueryInfo>
+            {description && <QueryInfo>{description}</QueryInfo>}
             <QueryInfo>
                 <QueryEditor value={query} editable={false}/>
             </QueryInfo>
