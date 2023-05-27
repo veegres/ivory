@@ -15,13 +15,13 @@ func NewRouter(di *Context) {
 	unsafe.GET("/info", di.infoRouter.Info)
 
 	initial := unsafe.Group("/", di.secretRouter.EmptyMiddleware())
-	initialRouter(initial, di.secretRouter, di.eraseRouter)
+	initialRouter(initial, di.secretRouter, di.generalRouter)
 
 	login := unsafe.Group("/", di.secretRouter.ExistMiddleware())
 	login.POST("/login", di.authRouter.Login)
 
 	safe := login.Group("/", di.authRouter.Middleware())
-	safeRouter(safe, di.secretRouter, di.eraseRouter)
+	safeRouter(safe, di.secretRouter, di.generalRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
 	certRouter(safe, di.certRouter)
@@ -40,18 +40,17 @@ func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
-func initialRouter(g *gin.RouterGroup, rs *router.SecretRouter, re *router.EraseRouter) {
+func initialRouter(g *gin.RouterGroup, rs *router.SecretRouter, rg *router.GeneralRouter) {
 	initial := g.Group("/initial")
 	initial.POST("/secret", rs.SetSecret)
-	initial.DELETE("/erase", re.Erase)
+	initial.DELETE("/erase", rg.Erase)
 }
 
-func safeRouter(g *gin.RouterGroup, rs *router.SecretRouter, re *router.EraseRouter) {
+func safeRouter(g *gin.RouterGroup, rs *router.SecretRouter, rg *router.GeneralRouter) {
 	safe := g.Group("/safe")
 	safe.GET("/secret", rs.GetStatus)
-	safe.POST("/secret", rs.UpdateSecret)
-	safe.DELETE("/secret", rs.CleanSecret)
-	safe.DELETE("/erase", re.Erase)
+	safe.POST("/secret", rg.ChangeSecret)
+	safe.DELETE("/erase", rg.Erase)
 }
 
 func clusterRouter(g *gin.RouterGroup, r *router.ClusterRouter) {

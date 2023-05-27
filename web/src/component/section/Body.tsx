@@ -9,6 +9,7 @@ import {Instance as ClusterInstance} from "../cluster/instance/Instance";
 import {AppInfo, SxPropsMap} from "../../type/common";
 import {UseQueryResult} from "@tanstack/react-query";
 import {StartupLogin} from "../startup/StartupLogin";
+import {Menu} from "../settings/menu/Menu";
 
 const SX: SxPropsMap = {
     stack: {width: "100%", height: "100%", gap: 4}
@@ -29,11 +30,14 @@ export function Body(props: Props) {
     if (!data.auth.authorized) return <StartupLogin type={data.auth.type} error={data.auth.error}/>
 
     return (
-        <Stack sx={SX.stack}>
-            <ClusterList/>
-            <ClusterOverview/>
-            <ClusterInstance/>
-        </Stack>
+        <>
+            <Menu/>
+            <Stack sx={SX.stack}>
+                <ClusterList/>
+                <ClusterOverview/>
+                <ClusterInstance/>
+            </Stack>
+        </>
     )
 
     function renderError(error: any) {
