@@ -161,6 +161,7 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 			Description: currentQuery.Description,
 			Default:     currentQuery.Default,
 			Custom:      query.Query,
+			CreatedAt:   currentQuery.CreatedAt,
 		})
 	} else {
 		n := currentQuery.Name
@@ -185,6 +186,7 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 			Description: d,
 			Default:     currentQuery.Default,
 			Custom:      query.Query,
+			CreatedAt:   currentQuery.CreatedAt,
 		})
 	}
 }
