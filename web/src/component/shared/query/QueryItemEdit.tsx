@@ -9,7 +9,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 1},
-    editor: {flexGrow: 1},
+    editor: {flexGrow: 1, overflowX: "auto", border: "1px solid", borderColor: "divider"},
     buttons: {display: "flex", flexDirection: "column", gap: 1}
 }
 
