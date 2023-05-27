@@ -14,7 +14,7 @@ import {LoadingButton} from "@mui/lab";
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
-    cell: {padding: "5px 10px", height: "50px"},
+    cell: {padding: "5px 10px", height: "50px", wordBreak: "break-all"},
     cellSmall: {padding: "5px 0", height: "50px"},
 }
 
