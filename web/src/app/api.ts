@@ -53,11 +53,8 @@ export const safeApi = {
     getSecret: () => api
         .get<Response<SecretStatus>>(`/safe/secret`)
         .then((response) => response.data.response),
-    updateSecret: (request: SecretUpdateRequest) => api
+    changeSecret: (request: SecretUpdateRequest) => api
         .post<Response<string>>(`/safe/secret`, request)
-        .then((response) => response.data.response),
-    deleteSecret: () => api
-        .delete<Response<string>>(`/safe/secret`)
         .then((response) => response.data.response),
     erase: () => api
         .delete<Response<string>>(`/safe/erase`)

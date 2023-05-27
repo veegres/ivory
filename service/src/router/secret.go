@@ -65,32 +65,3 @@ func (r *SecretRouter) SetSecret(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, gin.H{"response": "the secret was set"})
 }
-
-func (r *SecretRouter) UpdateSecret(context *gin.Context) {
-	var secret SecretUpdateRequest
-	errBind := context.ShouldBindJSON(&secret)
-	if errBind != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
-		return
-	}
-	prevSha, newSha, err := r.secretService.Update(secret.PreviousKey, secret.NewKey)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	err = r.passwordService.ReEncryptPasswords(prevSha, newSha)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	context.JSON(http.StatusOK, gin.H{"response": "the secret was set"})
-}
-
-func (r *SecretRouter) CleanSecret(context *gin.Context) {
-	err := r.secretService.Clean()
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	context.JSON(http.StatusOK, gin.H{"response": "the secret was cleaned"})
-}

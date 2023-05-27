@@ -19,7 +19,7 @@ type Context struct {
 	tagRouter      *router.TagRouter
 	instanceRouter *router.InstanceRouter
 	queryRouter    *router.QueryRouter
-	eraseRouter    *router.EraseRouter
+	generalRouter  *router.GeneralRouter
 }
 
 func NewContext() *Context {
@@ -63,7 +63,7 @@ func NewContext() *Context {
 	clusterService := service.NewClusterService(clusterRepo, tagService, patroniGateway)
 	bloatService := service.NewBloatService(bloatRepository, passwordService)
 	authService := service.NewAuthService(secretService)
-	eraseService := service.NewEraseService(
+	generalService := service.NewGeneralService(
 		passwordService,
 		clusterService,
 		certService,
@@ -86,6 +86,6 @@ func NewContext() *Context {
 		tagRouter:      router.NewTagRouter(tagService),
 		instanceRouter: router.NewInstanceRouter(patroniGateway),
 		queryRouter:    router.NewQueryRouter(queryService, postgresGateway),
-		eraseRouter:    router.NewEraseRouter(eraseService),
+		generalRouter:  router.NewGeneralRouter(generalService),
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-type EraseService struct {
+type GeneralService struct {
 	passwordService *PasswordService
 	clusterService  *ClusterService
 	certService     *CertService
@@ -15,7 +15,7 @@ type EraseService struct {
 	encryption      *EncryptionService
 }
 
-func NewEraseService(
+func NewGeneralService(
 	passwordService *PasswordService,
 	clusterService *ClusterService,
 	certService *CertService,
@@ -23,8 +23,8 @@ func NewEraseService(
 	bloatService *BloatService,
 	queryService *QueryService,
 	secretService *SecretService,
-) *EraseService {
-	return &EraseService{
+) *GeneralService {
+	return &GeneralService{
 		passwordService: passwordService,
 		bloatService:    bloatService,
 		clusterService:  clusterService,
@@ -35,7 +35,7 @@ func NewEraseService(
 	}
 }
 
-func (s *EraseService) Erase() error {
+func (s *GeneralService) Erase() error {
 	errSecret := s.secretService.Clean()
 	errPass := s.passwordService.DeleteAll()
 	errCert := s.certService.DeleteAll()
@@ -44,4 +44,16 @@ func (s *EraseService) Erase() error {
 	errTag := s.tagService.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
 	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery)
+}
+
+func (s *GeneralService) ChangeSecret(previousKey string, newKey string) error {
+	prevSha, newSha, err := s.secretService.Update(previousKey, newKey)
+	if err != nil {
+		return err
+	}
+	errEnc := s.passwordService.ReEncryptPasswords(prevSha, newSha)
+	if errEnc != nil {
+		return errEnc
+	}
+	return nil
 }

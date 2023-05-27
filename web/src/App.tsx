@@ -3,7 +3,6 @@ import {Header} from "./component/section/Header";
 import {Body} from "./component/section/Body";
 import {useQuery} from "@tanstack/react-query";
 import {generalApi} from "./app/api";
-import {Menu} from "./component/settings/menu/Menu";
 import {Footer} from "./component/section/Footer";
 import {SxPropsMap} from "./type/common";
 
@@ -24,7 +23,6 @@ export function App() {
             </Box>
             <Box sx={SX.body}>
                 <Body info={info}/>
-                <Menu/>
             </Box>
             <Box>
                 <Footer tag={info.data?.version.tag ?? "none"} commit={info.data?.version.commit ?? "none"}/>

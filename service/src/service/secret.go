@@ -76,15 +76,19 @@ func (s *SecretService) Set(decryptedKey string, decryptedRef string) error {
 }
 
 func (s *SecretService) Update(prevSecret string, newSecret string) ([16]byte, [16]byte, error) {
-	previousKeySha1 := md5.Sum([]byte(prevSecret))
-	newKeySha1 := md5.Sum([]byte(newSecret))
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
+	if prevSecret == newSecret {
+		return [16]byte{}, [16]byte{}, errors.New("the secrets are the same")
+	}
 	if s.IsSecretEmpty() {
 		return [16]byte{}, [16]byte{}, errors.New("there is no secret")
 	}
-	if previousKeySha1 != s.key {
+
+	previousKeyMd5 := md5.Sum([]byte(prevSecret))
+	newKeyMd5 := md5.Sum([]byte(newSecret))
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if previousKeyMd5 != s.key {
 		return [16]byte{}, [16]byte{}, errors.New("the secret is not correct")
 	}
 
@@ -92,7 +96,7 @@ func (s *SecretService) Update(prevSecret string, newSecret string) ([16]byte, [
 	if errDec != nil {
 		return [16]byte{}, [16]byte{}, errDec
 	}
-	encryptedRef, errEnc := s.encryption.Encrypt(decryptedRef, newKeySha1)
+	encryptedRef, errEnc := s.encryption.Encrypt(decryptedRef, newKeyMd5)
 	if errEnc != nil {
 		return [16]byte{}, [16]byte{}, errEnc
 	}
@@ -101,8 +105,8 @@ func (s *SecretService) Update(prevSecret string, newSecret string) ([16]byte, [
 		return [16]byte{}, [16]byte{}, errUpdate
 	}
 
-	s.key = newKeySha1
-	return previousKeySha1, newKeySha1, nil
+	s.key = newKeyMd5
+	return previousKeyMd5, newKeyMd5, nil
 }
 
 func (s *SecretService) Clean() error {
