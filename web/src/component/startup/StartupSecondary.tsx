@@ -1,9 +1,9 @@
 import {useState} from "react";
 import {StartupBlock} from "./StartupBlock";
-import {SecretInput} from "../shared/secret/SecretInput";
+import {KeyEnterInput} from "../view/input/KeyEnterInput";
 import {Typography} from "@mui/material";
 import {EraseButton} from "../shared/erase/EraseButton";
-import {SecretButton} from "../shared/secret/SecretButton";
+import {StartupSecretButton} from "./StartupSecretButton";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {initialApi} from "../../app/api";
@@ -23,7 +23,7 @@ export function StartupSecondary() {
                 press <b>ERASE</b> button. You will need to provide new secret word. Also it can
                 help if you suddenly forget the secret word.
             </Typography>
-            <SecretInput
+            <KeyEnterInput
                 label={"Secret word"}
                 onChange={(e) => setKey(e.target.value)}
                 onEnterPress={() => setReq.mutate({ref: "", key})}
@@ -36,7 +36,7 @@ export function StartupSecondary() {
         return (
             <>
                 <EraseButton safe={false}/>
-                <SecretButton keyWord={key} refWord={""}/>
+                <StartupSecretButton keyWord={key} refWord={""}/>
             </>
         )
     }

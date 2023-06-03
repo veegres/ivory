@@ -39,11 +39,21 @@ export interface Response<TData, TError = {}> {
     error: TError,
 }
 
+export enum AuthType {
+    NONE = "none",
+    BASIC = "basic",
+}
+
 export interface AppInfo {
     company: string,
     version: { tag: string, commit: string }
     secret: SecretStatus,
-    auth: {authorized: boolean, error: string, type: "none" | "basic"},
+    auth: { authorized: boolean, error: string, type: AuthType },
+}
+
+export interface Authentication {
+    type: AuthType,
+    body: any,
 }
 
 

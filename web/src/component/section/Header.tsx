@@ -3,7 +3,7 @@ import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {useStore} from "../../provider/StoreProvider";
-import {SxPropsMap} from "../../type/common";
+import {AuthType, SxPropsMap} from "../../type/common";
 import {useAuth} from "../../provider/AuthProvider";
 import {useQueryClient} from "@tanstack/react-query";
 
@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     company: string,
-    auth: "none" | "basic",
+    auth: AuthType,
     show: boolean,
 }
 
@@ -55,7 +55,7 @@ export function Header(props: Props) {
                         <Settings/>
                     </IconButton>
                 </Tooltip>
-                {auth === "basic" && (
+                {auth === AuthType.BASIC && (
                     <Tooltip title={"Sign out"}>
                         <IconButton onClick={handleLogout} color={"inherit"}>
                             <Logout/>

@@ -3,7 +3,7 @@ import {SxPropsMap} from "../../../type/common";
 import {mergeSxProps} from "../../../app/utils";
 
 const SX: SxPropsMap = {
-    box: { minHeight: "4px", margin: "5px 0", width: "100%" }
+    box: {minHeight: "4px", margin: "5px 0", width: "100%"}
 }
 
 type Props = {
@@ -15,13 +15,13 @@ type Props = {
 }
 
 export function LinearProgressStateful(props: Props) {
-    const { isFetching, sx, variant, color, line } = props
+    const {isFetching, sx, variant, color, line} = props
     return (
         <Box sx={mergeSxProps(SX.box, sx)}>
             {isFetching ? (
-                <LinearProgress variant={variant} color={color} />
+                <LinearProgress variant={variant} color={color}/>
             ) : !line ? null : (
-                <LinearProgress color={color} value={0} variant={"determinate"} />
+                <LinearProgress color={color} value={0} variant={"determinate"}/>
             )}
         </Box>
     )

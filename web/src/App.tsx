@@ -4,7 +4,7 @@ import {Body} from "./component/section/Body";
 import {useQuery} from "@tanstack/react-query";
 import {generalApi} from "./app/api";
 import {Footer} from "./component/section/Footer";
-import {SxPropsMap} from "./type/common";
+import {AuthType, SxPropsMap} from "./type/common";
 
 const SX: SxPropsMap = {
     // we need -8px for bottom scroll, right scroll is always shown that is why we don't need calc
@@ -19,7 +19,7 @@ export function App() {
     return (
         <Box sx={SX.box}>
             <Box>
-                <Header company={info.data?.company ?? "VEEGRES"} show={show} auth={info.data?.auth.type ?? "none"}/>
+                <Header company={info.data?.company ?? "VEEGRES"} show={show} auth={info.data?.auth.type ?? AuthType.NONE}/>
             </Box>
             <Box sx={SX.body}>
                 <Body info={info}/>

@@ -2,22 +2,29 @@ import {useState} from "react";
 import {FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
 import {InputProps as StandardInputProps} from "@mui/material/Input/Input";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {SxPropsMap} from "../../../type/common";
+
+const SX: SxPropsMap = {
+    margin: {margin: "0px"},
+}
 
 type Props = {
     label: string,
     hidden?: boolean,
+    value?: unknown,
     onChange: StandardInputProps['onChange'],
     onEnterPress?: () => void,
 }
 
-export function SecretInput(props: Props) {
-    const {label, onChange, hidden = false, onEnterPress} = props
+export function KeyEnterInput(props: Props) {
+    const {label, onChange, hidden = false, onEnterPress, value} = props
     const [showPassword, setShowPassword] = useState(false)
 
     return (
-        <FormControl fullWidth required size={"small"} margin={"normal"}>
+        <FormControl sx={SX.margin} fullWidth required size={"small"} margin={"normal"}>
             <InputLabel>{label}</InputLabel>
             <OutlinedInput
+                value={value}
                 type={hidden && !showPassword ? "password" : "text"}
                 endAdornment={renderAdornment()}
                 label={label}
