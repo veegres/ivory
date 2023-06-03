@@ -1,11 +1,11 @@
 import {StartupBlock} from "./StartupBlock";
 import {Alert, Button} from "@mui/material";
-import {SecretInput} from "../shared/secret/SecretInput";
+import {KeyEnterInput} from "../view/input/KeyEnterInput";
 import {useMutation} from "@tanstack/react-query";
 import {generalApi} from "../../app/api";
 import {useMutationOptions} from "../../hook/QueryCustom";
 import {useState} from "react";
-import {SxPropsMap} from "../../type/common";
+import {AuthType, SxPropsMap} from "../../type/common";
 import {LoadingButton} from "@mui/lab";
 import {useAuth} from "../../provider/AuthProvider";
 
@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    type: "none" | "basic",
+    type: AuthType,
     error: string,
 }
 
@@ -39,8 +39,8 @@ export function StartupLogin(props: Props) {
             case "none": return null
             case "basic": return (
                 <>
-                    <SecretInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
-                    <SecretInput
+                    <KeyEnterInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
+                    <KeyEnterInput
                         label={"password"}
                         hidden
                         onChange={(e) => setPass(e.target.value)}

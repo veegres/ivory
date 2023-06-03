@@ -1,6 +1,6 @@
-import {useMutationOptions} from "../../../hook/QueryCustom";
+import {useMutationOptions} from "../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {initialApi} from "../../../app/api";
+import {initialApi} from "../../app/api";
 import {LoadingButton} from "@mui/lab";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
     refWord: string,
 }
 
-export function SecretButton(props: Props) {
+export function StartupSecretButton(props: Props) {
     const {keyWord, refWord} = props
     const setReqOptions = useMutationOptions([["info"]])
     const setReq = useMutation(initialApi.setSecret, setReqOptions)

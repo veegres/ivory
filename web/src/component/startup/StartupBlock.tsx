@@ -10,10 +10,10 @@ import {SxPropsMap} from "../../type/common";
 const SX: SxPropsMap = {
     box: {
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        height: "100%", width: "30%", minWidth: "500px"
+        height: "100%", width: "30%", minWidth: "500px", gap: 1
     },
     header: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer"},
-    buttons: {display: "flex", gap: 4, margin: "8px 0"},
+    buttons: {display: "flex", gap: 4},
 }
 
 type Props = {

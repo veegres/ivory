@@ -1,5 +1,5 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
-import {SecretInput} from "../../shared/secret/SecretInput";
+import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
 import {Alert, Box} from "@mui/material";
 import {LoadingButton} from "@mui/lab";
@@ -38,12 +38,12 @@ export function Secret() {
                 </Box>
             </Alert>
             <Box sx={SX.form}>
-                <SecretInput
+                <KeyEnterInput
                     hidden
                     label={"Previous Secret"}
                     onChange={(e) => setPrevKey(e.target.value)}
                 />
-                <SecretInput
+                <KeyEnterInput
                     hidden
                     label={"New Secret"}
                     onChange={(e) => setNewKey(e.target.value)}

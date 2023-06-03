@@ -1,7 +1,7 @@
 import {PageBox} from "../view/box/PageBox";
 import {ErrorSmart} from "../view/box/ErrorSmart";
 import {Skeleton, Stack} from "@mui/material";
-import {StartupInitial} from "../startup/StartupInitial";
+import {StartupInitialSecret} from "../startup/StartupInitialSecret";
 import {StartupSecondary} from "../startup/StartupSecondary";
 import {List as ClusterList} from "../cluster/list/List";
 import {Overview as ClusterOverview} from "../cluster/overview/Overview";
@@ -10,6 +10,7 @@ import {AppInfo, SxPropsMap} from "../../type/common";
 import {UseQueryResult} from "@tanstack/react-query";
 import {StartupLogin} from "../startup/StartupLogin";
 import {Menu} from "../settings/menu/Menu";
+import {StartupInitialConfig} from "../startup/StartupInitialConfig";
 
 const SX: SxPropsMap = {
     stack: {width: "100%", height: "100%", gap: 4}
@@ -25,8 +26,9 @@ export function Body(props: Props) {
     if (isLoading) return renderLoading()
     if (isError) return renderError(error)
     if (!data) return renderError("Something bad happened, we cannot get application initial information")
-    if (!data.secret.ref) return <StartupInitial/>
+    if (!data.secret.ref) return <StartupInitialSecret/>
     if (!data.secret.key) return <StartupSecondary/>
+    if (data.company) return <StartupInitialConfig/>
     if (!data.auth.authorized) return <StartupLogin type={data.auth.type} error={data.auth.error}/>
 
     return (
