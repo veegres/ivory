@@ -2,7 +2,7 @@ import {InstanceMainTitle} from "./InstanceMainTitle";
 import {ClusterNoPostgresPassword} from "../overview/OverviewError";
 import {Box, Link} from "@mui/material";
 import {Database, SxPropsMap} from "../../../type/common";
-import {InstanceTab, InstanceTabType} from "../../../type/Instance";
+import {InstanceTab, InstanceTabType} from "../../../type/instance";
 import {Chart} from "../../shared/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";
 import {useState} from "react";

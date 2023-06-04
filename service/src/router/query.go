@@ -11,16 +11,34 @@ import (
 
 type QueryRouter struct {
 	queryService    *service.QueryService
+	generalService  *service.GeneralService
 	postgresGateway *service.PostgresClient
 }
 
 func NewQueryRouter(
 	queryService *service.QueryService,
+	generalService *service.GeneralService,
 	postgresGateway *service.PostgresClient,
 ) *QueryRouter {
 	return &QueryRouter{
 		queryService:    queryService,
+		generalService:  generalService,
 		postgresGateway: postgresGateway,
+	}
+}
+
+func (r *QueryRouter) ManualMiddleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		appConfig, errConfig := r.generalService.GetAppConfig()
+		if errConfig != nil {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": errConfig})
+			return
+		}
+		if !appConfig.Availability.ManualQuery {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "manual queries are restricted"})
+			return
+		}
+		context.Next()
 	}
 }
 

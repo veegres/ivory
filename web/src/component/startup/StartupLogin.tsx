@@ -36,8 +36,8 @@ export function StartupLogin(props: Props) {
 
     function renderBody() {
         switch (type) {
-            case "none": return null
-            case "basic": return (
+            case AuthType.NONE: return null
+            case AuthType.BASIC: return (
                 <>
                     <KeyEnterInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
                     <KeyEnterInput
@@ -53,8 +53,8 @@ export function StartupLogin(props: Props) {
 
     function renderLogin() {
         switch (type) {
-            case "none": return <Button onClick={logout}>Sign out</Button>
-            case "basic": return <LoadingButton onClick={handleLogin} loading={login.isLoading}>Sign in</LoadingButton>
+            case AuthType.NONE: return <Button onClick={logout}>Sign out</Button>
+            case AuthType.BASIC: return <LoadingButton onClick={handleLogin} loading={login.isLoading}>Sign in</LoadingButton>
         }
     }
 

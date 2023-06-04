@@ -19,7 +19,7 @@ export function StartupSecretButton(props: Props) {
             loading={setReq.isLoading}
             onClick={() => setReq.mutate({ref: refWord, key: keyWord})}
         >
-            Done
+            Set
         </LoadingButton>
     )
 }

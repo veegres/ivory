@@ -1,7 +1,7 @@
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material";
 import {InstanceColor} from "../../../app/utils";
 import {SxPropsMap} from "../../../type/common";
-import {InstanceWeb} from "../../../type/Instance";
+import {InstanceWeb} from "../../../type/instance";
 import {WarningAmberRounded} from "@mui/icons-material";
 import {useStore} from "../../../provider/StoreProvider";
 import {Cluster} from "../../../type/cluster";

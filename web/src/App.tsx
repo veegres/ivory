@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 
 export function App() {
     const info = useQuery(["info"], generalApi.info, {refetchOnWindowFocus: "always"})
-    const show = !info.isLoading && !info.isError && info.data.secret.key && info.data.auth.authorized
+    const show = !info.isLoading && !info.isError && info.data.secret.key && info.data.auth.authorised
 
     return (
         <Box sx={SX.box}>

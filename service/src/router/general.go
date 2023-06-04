@@ -39,3 +39,26 @@ func (r *GeneralRouter) ChangeSecret(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, gin.H{"response": "the secret was changed"})
 }
+
+func (r *GeneralRouter) GetAppInfo(context *gin.Context) {
+	authHeader := context.Request.Header.Get("Authorization")
+	info := r.service.GetAppInfo(authHeader)
+	context.JSON(http.StatusOK, gin.H{"response": info})
+}
+
+func (r *GeneralRouter) SetConfig(context *gin.Context) {
+	var config AppConfig
+	errBind := context.ShouldBindJSON(&config)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+
+	errConfig := r.service.SetConfig(config)
+	if errConfig != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errConfig.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": "config was successfully set up"})
+}

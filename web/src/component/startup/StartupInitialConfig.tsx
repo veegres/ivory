@@ -4,14 +4,18 @@ import {KeyEnterInput} from "../view/input/KeyEnterInput";
 import {StartupConfigAuth} from "./StartupConfigAuth";
 import {StartupConfigQuery} from "./StartupConfigQuery";
 import {useState} from "react";
-import {Authentication, AuthType} from "../../type/common";
+import {AuthConfig, AuthType} from "../../type/common";
+import {useMutationOptions} from "../../hook/QueryCustom";
+import {useMutation} from "@tanstack/react-query";
+import {generalApi} from "../../app/api";
 
 export function StartupInitialConfig() {
     const [company, setCompany] = useState("")
     const [query, setQuery] = useState(false)
-    const [auth, setAuth] = useState<Authentication>({type: AuthType.NONE, body: undefined})
+    const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE, body: undefined})
 
-    console.log(company, query, auth)
+    const configOptions = useMutationOptions([["info"]])
+    const config = useMutation(generalApi.setConfig, configOptions)
 
     return (
         <StartupBlock header={"Configuration"} renderFooter={renderFooter()}>
@@ -23,7 +27,17 @@ export function StartupInitialConfig() {
 
     function renderFooter() {
         return (
-            <LoadingButton>Finish</LoadingButton>
+            <LoadingButton variant={"contained"} loading={config.isLoading} onClick={handleClick}>
+                Set
+            </LoadingButton>
         )
+    }
+
+    function handleClick() {
+        config.mutate({
+            company,
+            auth,
+            availability: {manualQuery: query},
+        })
     }
 }

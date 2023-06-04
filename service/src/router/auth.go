@@ -2,31 +2,40 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"ivory/src/config"
 	. "ivory/src/model"
 	"ivory/src/service"
 	"net/http"
 )
 
 type AuthRouter struct {
-	env         *config.Env
-	authService *service.AuthService
+	authService    *service.AuthService
+	generalService *service.GeneralService
 }
 
-func NewAuthRouter(env *config.Env, authService *service.AuthService) *AuthRouter {
+func NewAuthRouter(
+	authService *service.AuthService,
+	generalService *service.GeneralService,
+) *AuthRouter {
 	return &AuthRouter{
-		env:         env,
-		authService: authService,
+		generalService: generalService,
+		authService:    authService,
 	}
 }
 
 func (r *AuthRouter) Middleware() gin.HandlerFunc {
-	switch r.env.Auth {
-	case "none":
+	appConfig, errConfig := r.generalService.GetAppConfig()
+	if errConfig != nil {
 		return func(context *gin.Context) {
 			context.Next()
 		}
-	case "basic":
+	}
+
+	switch appConfig.Auth.Type {
+	case NONE:
+		return func(context *gin.Context) {
+			context.Next()
+		}
+	case BASIC:
 		return func(context *gin.Context) {
 			authHeader := context.Request.Header.Get("Authorization")
 			token, errHeader := r.authService.GetTokenFromHeader(authHeader)
@@ -35,7 +44,7 @@ func (r *AuthRouter) Middleware() gin.HandlerFunc {
 				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errHeader.Error()})
 				return
 			}
-			errValidate := r.authService.ValidateToken(token, *r.env.Username)
+			errValidate := r.authService.ValidateToken(token, appConfig.Auth.Body["username"])
 			if errValidate != nil {
 				context.Header("WWW-Authenticate", "JWT realm="+r.authService.GetIssuer())
 				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errValidate.Error()})
@@ -60,7 +69,13 @@ func (r *AuthRouter) Login(context *gin.Context) {
 		return
 	}
 
-	if login.Username != *r.env.Username || login.Password != *r.env.Password {
+	appConfig, errConfig := r.generalService.GetAppConfig()
+	if errConfig != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errConfig.Error()})
+	}
+
+	// TODO consider moving this to AuthService
+	if login.Username != appConfig.Auth.Body["username"] || login.Password != appConfig.Auth.Body["password"] {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "credentials are not correct"})
 		return
 	}

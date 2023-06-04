@@ -10,7 +10,7 @@ import {
 import {useMemo, useState} from "react";
 import {useStore} from "../../../provider/StoreProvider";
 import {SxPropsMap} from "../../../type/common";
-import {InstanceMap} from "../../../type/Instance";
+import {InstanceMap} from "../../../type/instance";
 import {DetectionType} from "../../../type/cluster";
 
 const SX: SxPropsMap = {

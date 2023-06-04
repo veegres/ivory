@@ -1,7 +1,7 @@
 import {createContext, ReactNode, useContext} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 import {ActiveCluster, DetectionType} from "../type/cluster";
-import {InstanceWeb} from "../type/Instance";
+import {InstanceWeb} from "../type/instance";
 import {getDomain} from "../app/utils";
 import {useLocalStorageState} from "../hook/LocalStorage";
 
