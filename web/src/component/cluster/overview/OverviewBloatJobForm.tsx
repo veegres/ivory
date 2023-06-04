@@ -5,7 +5,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {bloatApi, queryApi} from "../../../app/api";
 import {SxPropsMap} from "../../../type/common";
-import {InstanceWeb} from "../../../type/Instance";
+import {InstanceWeb} from "../../../type/instance";
 import {Cluster} from "../../../type/cluster";
 import {Bloat, BloatTarget} from "../../../type/bloat";
 import {AutocompleteFetch} from "../../view/autocomplete/AutocompleteFetch";

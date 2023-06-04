@@ -1,5 +1,5 @@
 import axios from "axios";
-import {Instance, InstanceInfo, InstanceMap, InstanceRequest} from "../type/Instance";
+import {Instance, InstanceInfo, InstanceMap, InstanceRequest} from "../type/instance";
 import {getDomain} from "./utils";
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
 import {Password, PasswordMap, PasswordType} from "../type/password";
@@ -17,7 +17,7 @@ import {
     QueryTablesRequest,
     QueryType
 } from "../type/query";
-import {AppInfo, Login, Response} from "../type/common";
+import {AppConfig, AppInfo, Login, Response} from "../type/common";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
@@ -37,7 +37,10 @@ export const generalApi = {
         .then((response) => response.data.response),
     login: (req: Login) => api
         .post<Response<any>>(`/login`, req)
-        .then((response) => response.data.response)
+        .then((response) => response.data.response),
+    setConfig: (request: AppConfig) => api
+        .post<Response<string>>(`/initial/config`, request)
+        .then((response) => response.data.response),
 }
 
 export const initialApi = {

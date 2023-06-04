@@ -1,5 +1,5 @@
 import {AlertColor, Box, FormControlLabel, Radio, RadioGroup} from "@mui/material";
-import {Authentication, AuthType, SxPropsMap} from "../../type/common";
+import {AuthConfig, AuthType, SxPropsMap} from "../../type/common";
 import * as React from "react";
 import {StartupBlockConfig} from "./StartupBlockConfig";
 import {KeyEnterInput} from "../view/input/KeyEnterInput";
@@ -31,7 +31,7 @@ const Recommendation = {
     </>,
     [AuthType.BASIC]: <>
         This type of authentication is recommended for <b>teams</b> or <b>small
-        group of peoples</b>.
+        group of people</b>.
     </>
 }
 
@@ -41,8 +41,8 @@ const Severity: { [key in AuthType]: AlertColor } = {
 }
 
 type Props = {
-    onChange: (auth: Authentication) => void,
-    auth: Authentication,
+    onChange: (auth: AuthConfig) => void,
+    auth: AuthConfig,
 }
 
 export function StartupConfigAuth(props: Props) {
@@ -63,8 +63,8 @@ export function StartupConfigAuth(props: Props) {
     function renderAction() {
         return (
             <RadioGroup sx={SX.radio} row value={auth.type} onChange={handleAuthTypeChange}>
-                <FormControlLabel value={AuthType.NONE} control={<Radio size={"small"}/>} label={AuthType.NONE}/>
-                <FormControlLabel value={AuthType.BASIC} control={<Radio size={"small"}/>} label={AuthType.BASIC}/>
+                <FormControlLabel value={AuthType.NONE} control={<Radio size={"small"}/>} label={AuthType[AuthType.NONE].toLowerCase()}/>
+                <FormControlLabel value={AuthType.BASIC} control={<Radio size={"small"}/>} label={AuthType[AuthType.BASIC].toLowerCase()}/>
             </RadioGroup>
         )
     }
@@ -87,6 +87,7 @@ export function StartupConfigAuth(props: Props) {
     }
 
     function handleAuthTypeChange(e: React.ChangeEvent<HTMLInputElement>) {
-        onChange({type: e.target.value as AuthType, body: undefined})
+        const type = parseInt(e.target.value)
+        onChange({type: type as AuthType, body: undefined})
     }
 }

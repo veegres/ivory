@@ -4,6 +4,11 @@ import {SecretStatus} from "./secret";
 
 // COMMON (WEB AND SERVER)
 
+export interface Response<TData, TError = {}> {
+    response: TData,
+    error: TError,
+}
+
 export interface Login {
     username: string,
     password: string,
@@ -13,6 +18,46 @@ export interface DbConnection {
     host: string,
     port: number,
     credId: string,
+}
+
+export enum AuthType {
+    NONE,
+    BASIC,
+}
+
+export interface AppInfo {
+    company: string,
+    configured: boolean,
+    secret: SecretStatus,
+    availability: Availability,
+    version: Version,
+    auth: AuthInfo,
+}
+
+export interface AuthInfo {
+    authorised: boolean,
+    error: string,
+    type: AuthType,
+}
+
+export interface AppConfig {
+    company: string,
+    availability: Availability,
+    auth: AuthConfig,
+}
+
+export interface AuthConfig {
+    type: AuthType,
+    body: any,
+}
+
+export interface Availability {
+    manualQuery: boolean,
+}
+
+export interface Version {
+    tag: string,
+    commit: string,
 }
 
 export enum FileUsageType {
@@ -32,30 +77,6 @@ export interface Sidecar {
 }
 
 // SPECIFIC (WEB)
-
-// TODO make it similar in server side
-export interface Response<TData, TError = {}> {
-    response: TData,
-    error: TError,
-}
-
-export enum AuthType {
-    NONE = "none",
-    BASIC = "basic",
-}
-
-export interface AppInfo {
-    company: string,
-    version: { tag: string, commit: string }
-    secret: SecretStatus,
-    auth: { authorized: boolean, error: string, type: AuthType },
-}
-
-export interface Authentication {
-    type: AuthType,
-    body: any,
-}
-
 
 export interface StylePropsMap {
     [key: string]: CSSProperties,

@@ -55,7 +55,7 @@ func (r *BloatRepository) Create(credentialId uuid.UUID, cluster string, args []
 		Status:       PENDING,
 		Command:      "pgcompacttable " + strings.Join(args, " "),
 		CommandArgs:  args,
-		LogsPath:     r.file.Create(jobUuid),
+		LogsPath:     r.file.Create(jobUuid.String()),
 		CreatedAt:    time.Now().UnixNano(),
 	}
 
@@ -71,7 +71,7 @@ func (r *BloatRepository) UpdateStatus(compactTable Bloat, status JobStatus) err
 
 func (r *BloatRepository) Delete(uuid uuid.UUID) error {
 	// NOTE: we shouldn't check error here, if there is no file we should try to remove info
-	_ = r.file.Delete(uuid)
+	_ = r.file.Delete(uuid.String())
 	return r.bucket.Delete(uuid.String())
 }
 

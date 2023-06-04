@@ -46,7 +46,7 @@ func (r *CertRepository) Create(cert Cert, pathStr string) (*Cert, error) {
 
 	switch cert.FileUsageType {
 	case FileUsageType(UPLOAD):
-		cert.Path = r.file.Create(key)
+		cert.Path = r.file.Create(key.String())
 	case FileUsageType(PATH):
 		cert.Path = pathStr
 	default:
@@ -64,7 +64,7 @@ func (r *CertRepository) Delete(certUuid uuid.UUID) error {
 	}
 	if cert.FileUsageType == FileUsageType(UPLOAD) {
 		// NOTE: we shouldn't check error here, if there is no file we should try to remove info
-		_ = r.file.Delete(certUuid)
+		_ = r.file.Delete(certUuid.String())
 	}
 	return r.bucket.Delete(certUuid.String())
 }

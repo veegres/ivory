@@ -1,7 +1,7 @@
 import {Table, TableCell, TableRow} from "@mui/material";
 import {TableBody} from "../../view/table/TableBody";
 import {SxPropsMap} from "../../../type/common";
-import {InstanceWeb} from "../../../type/Instance";
+import {InstanceWeb} from "../../../type/instance";
 
 const SX: SxPropsMap = {
     title: {color: "text.secondary", fontWeight: "bold", verticalAlign: "top"},

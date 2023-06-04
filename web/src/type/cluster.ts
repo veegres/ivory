@@ -1,6 +1,6 @@
 import {ReactNode} from "react";
 import {ColorsMap, Sidecar} from "./common";
-import {InstanceWeb, InstanceMap} from "./Instance";
+import {InstanceMap, InstanceWeb} from "./instance";
 
 // COMMON (WEB AND SERVER)
 

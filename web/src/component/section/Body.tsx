@@ -28,8 +28,8 @@ export function Body(props: Props) {
     if (!data) return renderError("Something bad happened, we cannot get application initial information")
     if (!data.secret.ref) return <StartupInitialSecret/>
     if (!data.secret.key) return <StartupSecondary/>
-    if (data.company) return <StartupInitialConfig/>
-    if (!data.auth.authorized) return <StartupLogin type={data.auth.type} error={data.auth.error}/>
+    if (!data.configured) return <StartupInitialConfig/>
+    if (!data.auth.authorised) return <StartupLogin type={data.auth.type} error={data.auth.error}/>
 
     return (
         <>

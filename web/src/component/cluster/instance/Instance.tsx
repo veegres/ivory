@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../../type/common";
 import {useState} from "react";
 import {InstanceMain} from "./InstanceMain";
 import {InstanceInfo} from "./InstanceInfo";
-import {InstanceTabType} from "../../../type/Instance";
+import {InstanceTabType} from "../../../type/instance";
 
 const SX: SxPropsMap = {
     content: {display: "flex", gap: 3},

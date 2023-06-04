@@ -10,7 +10,6 @@ import (
 
 type Context struct {
 	authRouter     *router.AuthRouter
-	infoRouter     *router.InfoRouter
 	clusterRouter  *router.ClusterRouter
 	bloatRouter    *router.BloatRouter
 	certRouter     *router.CertRouter
@@ -38,6 +37,7 @@ func NewContext() *Context {
 	// FILES
 	compactTableFiles := config.NewFileGateway("pgcompacttable", ".log")
 	certFiles := config.NewFileGateway("cert", ".crt")
+	configFiles := config.NewFileGateway("config", ".json")
 
 	// REPOS
 	clusterRepo := persistence.NewClusterRepository(clusterBucket)
@@ -64,6 +64,9 @@ func NewContext() *Context {
 	bloatService := service.NewBloatService(bloatRepository, passwordService)
 	authService := service.NewAuthService(secretService)
 	generalService := service.NewGeneralService(
+		env,
+		configFiles,
+		authService,
 		passwordService,
 		clusterService,
 		certService,
@@ -76,8 +79,7 @@ func NewContext() *Context {
 	// TODO refactor: shouldn't router use repos? consider change to service usage (possible cycle dependencies problems)
 	// TODO repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
 	return &Context{
-		infoRouter:     router.NewInfoRouter(env, secretService, authService),
-		authRouter:     router.NewAuthRouter(env, authService),
+		authRouter:     router.NewAuthRouter(authService, generalService),
 		clusterRouter:  router.NewClusterRouter(clusterService),
 		bloatRouter:    router.NewBloatRouter(bloatService),
 		certRouter:     router.NewCertRouter(certService),
@@ -85,7 +87,7 @@ func NewContext() *Context {
 		passwordRouter: router.NewPasswordRouter(passwordService),
 		tagRouter:      router.NewTagRouter(tagService),
 		instanceRouter: router.NewInstanceRouter(patroniGateway),
-		queryRouter:    router.NewQueryRouter(queryService, postgresGateway),
+		queryRouter:    router.NewQueryRouter(queryService, generalService, postgresGateway),
 		generalRouter:  router.NewGeneralRouter(generalService),
 	}
 }

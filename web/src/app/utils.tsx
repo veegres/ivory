@@ -1,9 +1,12 @@
 import {blue, green, indigo, orange, purple} from "@mui/material/colors";
 import {
     FilePresentOutlined,
-    HeartBroken, InfoTwoTone, Key,
+    HeartBroken,
+    InfoTwoTone,
+    Key,
     LockTwoTone,
-    MenuOpen, SecurityTwoTone,
+    MenuOpen,
+    SecurityTwoTone,
     Shield,
     Storage,
     UploadFileOutlined
@@ -14,7 +17,7 @@ import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-materia
 import {PasswordType} from "../type/password";
 import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar} from "../type/common";
 import {CertType} from "../type/cert";
-import {InstanceWeb, InstanceMap} from "../type/Instance";
+import {InstanceMap, InstanceWeb} from "../type/instance";
 import {JobStatus} from "../type/job";
 
 export const IvoryLinks: Links = {

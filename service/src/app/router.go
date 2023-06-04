@@ -12,15 +12,15 @@ func NewRouter(di *Context) {
 
 	unsafe := engine.Group("/api")
 	unsafe.GET("/ping", pong)
-	unsafe.GET("/info", di.infoRouter.Info)
+	unsafe.GET("/info", di.generalRouter.GetAppInfo)
 
 	initial := unsafe.Group("/", di.secretRouter.EmptyMiddleware())
 	initialRouter(initial, di.secretRouter, di.generalRouter)
 
-	login := unsafe.Group("/", di.secretRouter.ExistMiddleware())
-	login.POST("/login", di.authRouter.Login)
+	general := unsafe.Group("/", di.secretRouter.ExistMiddleware())
+	generalRouter(general, di.authRouter, di.generalRouter)
 
-	safe := login.Group("/", di.authRouter.Middleware())
+	safe := general.Group("/", di.authRouter.Middleware())
 	safeRouter(safe, di.secretRouter, di.generalRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
@@ -38,6 +38,13 @@ func NewRouter(di *Context) {
 
 func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
+}
+
+func generalRouter(g *gin.RouterGroup, ra *router.AuthRouter, rg *router.GeneralRouter) {
+	g.POST("/login", ra.Login)
+
+	initial := g.Group("/initial")
+	initial.POST("/config", rg.SetConfig)
 }
 
 func initialRouter(g *gin.RouterGroup, rs *router.SecretRouter, rg *router.GeneralRouter) {
@@ -108,8 +115,6 @@ func instanceRouter(g *gin.RouterGroup, r *router.InstanceRouter) {
 func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	query := g.Group("/query")
 	query.GET("", r.GetQueryList)
-	query.POST("", r.PostQuery)
-	query.PUT("/:uuid", r.PutQuery)
 	query.DELETE("/:uuid", r.DeleteQuery)
 	query.POST("/run", r.PostRunQuery)
 	query.POST("/databases", r.PostDatabasesQuery)
@@ -119,4 +124,8 @@ func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	query.POST("/chart/database", r.PostDatabaseChartQuery)
 	query.POST("/cancel", r.PostCancelQuery)
 	query.POST("/terminate", r.PostTerminateQuery)
+
+	queryManual := query.Group("", r.ManualMiddleware())
+	queryManual.POST("", r.PostQuery)
+	queryManual.PUT("/:uuid", r.PutQuery)
 }
