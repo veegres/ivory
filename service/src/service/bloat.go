@@ -293,6 +293,7 @@ func (w *BloatService) closeEvents(job *Job) {
 
 func (w *BloatService) addElement(model *Bloat) {
 	w.mutex.Lock()
+	// NOTE: we can have potential problem here because file can be nil
 	file, _ := w.bloatRepository.GetOpenFile(model.Uuid)
 	w.elements[model.Uuid] = &element{job: NewJob(), model: model, file: file}
 	w.mutex.Unlock()
