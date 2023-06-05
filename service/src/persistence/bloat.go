@@ -48,6 +48,11 @@ func (r *BloatRepository) GetOpenFile(path string) (*os.File, error) {
 
 func (r *BloatRepository) Create(credentialId uuid.UUID, cluster string, args []string) (*Bloat, error) {
 	jobUuid := uuid.New()
+	logsPath, errCreate := r.file.Create(jobUuid.String())
+	if errCreate != nil {
+		return nil, errCreate
+	}
+
 	compactTableModel := Bloat{
 		Uuid:         jobUuid,
 		CredentialId: credentialId,
@@ -55,7 +60,7 @@ func (r *BloatRepository) Create(credentialId uuid.UUID, cluster string, args []
 		Status:       PENDING,
 		Command:      "pgcompacttable " + strings.Join(args, " "),
 		CommandArgs:  args,
-		LogsPath:     r.file.Create(jobUuid.String()),
+		LogsPath:     logsPath,
 		CreatedAt:    time.Now().UnixNano(),
 	}
 

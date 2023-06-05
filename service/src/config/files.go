@@ -24,18 +24,24 @@ func NewFileGateway(name string, ext string) *FileGateway {
 	}
 }
 
-// Create TODO we should handle error file creation not an a panic way
-func (r *FileGateway) Create(name string) string {
-	path := r.getPath(name)
-	_, err := os.Create(path)
+func (r *FileGateway) Create(name string) (string, error) {
+	path, err := r.getPath(name)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return path
+	_, errCreate := os.Create(path)
+	if errCreate != nil {
+		return "", errCreate
+	}
+	return path, nil
 }
 
 func (r *FileGateway) Exist(name string) bool {
-	if _, err := os.Stat(r.getPath(name)); err == nil {
+	path, errPath := r.getPath(name)
+	if errPath != nil {
+		return false
+	}
+	if _, err := os.Stat(path); err == nil {
 		return true
 	} else {
 		return false
@@ -53,7 +59,11 @@ func (r *FileGateway) Read(path string) ([]byte, error) {
 }
 
 func (r *FileGateway) Delete(name string) error {
-	return os.Remove(r.getPath(name))
+	path, err := r.getPath(name)
+	if err != nil {
+		return err
+	}
+	return os.Remove(path)
 }
 
 func (r *FileGateway) DeleteAll() error {
@@ -62,7 +72,9 @@ func (r *FileGateway) DeleteAll() error {
 	return errors.Join(errRem, errCreate)
 }
 
-// TODO throw error if name is empty
-func (r *FileGateway) getPath(name string) string {
-	return r.path + "/" + name + r.ext
+func (r *FileGateway) getPath(name string) (string, error) {
+	if name == "" {
+		return "", errors.New("file name cannot be empty")
+	}
+	return r.path + "/" + name + r.ext, nil
 }

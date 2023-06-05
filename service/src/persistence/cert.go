@@ -46,7 +46,11 @@ func (r *CertRepository) Create(cert Cert, pathStr string) (*Cert, error) {
 
 	switch cert.FileUsageType {
 	case FileUsageType(UPLOAD):
-		cert.Path = r.file.Create(key.String())
+		path, errCreate := r.file.Create(key.String())
+		if errCreate != nil {
+			return nil, errCreate
+		}
+		cert.Path = path
 	case FileUsageType(PATH):
 		cert.Path = pathStr
 	default:
