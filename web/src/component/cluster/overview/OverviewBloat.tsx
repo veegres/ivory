@@ -75,10 +75,10 @@ export function OverviewBloat(props: TabProps) {
         return (
             <Box sx={SX.toggle}>
                 <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
-                    <ToggleButton value={ListBlock.JOB} onClick={() => setTab(ListBlock.JOB)}>
+                    <ToggleButton value={ListBlock.JOB} onClick={handleJobTab}>
                         Jobs
                     </ToggleButton>
-                    <ToggleButton value={ListBlock.QUERY} onClick={() => setTab(ListBlock.QUERY)}>
+                    <ToggleButton value={ListBlock.QUERY} onClick={handleQueryTab}>
                         Queries
                     </ToggleButton>
                 </ToggleButtonGroup>
@@ -97,6 +97,16 @@ export function OverviewBloat(props: TabProps) {
                 </Tooltip>
             </Box>
         )
+    }
+
+    function handleJobTab() {
+        setTab(ListBlock.JOB)
+        initJobs.refetch().then()
+    }
+
+    function handleQueryTab() {
+        setTab(ListBlock.QUERY)
+        query.refetch().then()
     }
 
     function handleRefresh() {
