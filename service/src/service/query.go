@@ -298,6 +298,10 @@ func (s *QueryService) createDefaultQueries() error {
 	if err != nil {
 		return err
 	}
+	_, _, err = s.Create(System, s.indexesInvalid())
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -402,4 +406,9 @@ func (s *QueryService) indexesCache() QueryRequest {
 func (s *QueryService) indexesUnused() QueryRequest {
 	n, t, d := "Unused indexes", STATISTIC, "Shows unused indexes and their size"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexUnused}
+}
+
+func (s *QueryService) indexesInvalid() QueryRequest {
+	n, t, d := "Invalid indexes", STATISTIC, "Shows invalid indexes. It can happen when concurrent index creation failed. It means that postgres doesn't use this index. You need to reindex it concurrently."
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexInvalid}
 }

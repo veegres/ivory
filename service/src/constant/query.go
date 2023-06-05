@@ -240,3 +240,12 @@ WHERE s.idx_scan = 0
   AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint c WHERE c.conindid = s.indexrelid)
   AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_inherits AS inh WHERE inh.inhrelid = s.indexrelid)
 ORDER BY pg_relation_size(s.indexrelid) DESC;`
+
+const DefaultIndexInvalid = `SELECT 
+    oid, 
+    indrelid::regclass AS table,
+    relname AS index, 
+    indisvalid AS valid 
+FROM pg_class, pg_index 
+WHERE pg_index.indisvalid = false AND pg_index.indexrelid = pg_class.oid;
+`
