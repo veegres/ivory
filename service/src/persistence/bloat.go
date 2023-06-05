@@ -42,8 +42,8 @@ func (r *BloatRepository) Get(uuid uuid.UUID) (Bloat, error) {
 	return r.bucket.Get(uuid.String())
 }
 
-func (r *BloatRepository) GetOpenFile(path string) (*os.File, error) {
-	return r.file.Open(path)
+func (r *BloatRepository) GetOpenFile(uuid uuid.UUID) (*os.File, error) {
+	return r.file.Open(uuid.String())
 }
 
 func (r *BloatRepository) Create(credentialId uuid.UUID, cluster string, args []string) (*Bloat, error) {
