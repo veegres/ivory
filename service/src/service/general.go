@@ -137,22 +137,27 @@ func (s *GeneralService) GetAppConfig() (*AppConfig, error) {
 	return s.appConfig, nil
 }
 
-func (s *GeneralService) SetConfig(config AppConfig) error {
-	if config.Company == "" {
+func (s *GeneralService) SetConfig(newAppConfig AppConfig) error {
+	if newAppConfig.Company == "" {
 		return errors.New("company name cannot be empty")
 	}
 
-	if s.configFiles.Exist(s.appConfigFileName) {
+	// NOTE: we skip error checking here, because we need to know only if config is not set up yet
+	currentAppConfig, _ := s.GetAppConfig()
+	if currentAppConfig != nil {
 		return errors.New("config is already set up")
 	}
 
-	s.configFiles.Create(s.appConfigFileName)
-	file, errOpen := s.configFiles.Open("data/config/" + s.appConfigFileName + ".json")
+	path, errCreate := s.configFiles.Create(s.appConfigFileName)
+	if errCreate != nil {
+		return errCreate
+	}
+	file, errOpen := s.configFiles.Open(path)
 	if errOpen != nil {
 		return errOpen
 	}
 
-	jsonAuth, errMarshall := json.Marshal(config)
+	jsonAuth, errMarshall := json.Marshal(newAppConfig)
 	if errMarshall != nil {
 		return errMarshall
 	}
