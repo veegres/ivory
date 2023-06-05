@@ -122,7 +122,7 @@ func (s *GeneralService) GetAppConfig() (*AppConfig, error) {
 		return s.appConfig, nil
 	}
 
-	read, err := s.configFiles.Read("data/config/" + s.appConfigFileName + ".json")
+	read, err := s.configFiles.Read(s.appConfigFileName)
 	if err != nil {
 		return nil, err
 	}
@@ -148,11 +148,11 @@ func (s *GeneralService) SetConfig(newAppConfig AppConfig) error {
 		return errors.New("config is already set up")
 	}
 
-	path, errCreate := s.configFiles.Create(s.appConfigFileName)
+	_, errCreate := s.configFiles.Create(s.appConfigFileName)
 	if errCreate != nil {
 		return errCreate
 	}
-	file, errOpen := s.configFiles.Open(path)
+	file, errOpen := s.configFiles.Open(s.appConfigFileName)
 	if errOpen != nil {
 		return errOpen
 	}

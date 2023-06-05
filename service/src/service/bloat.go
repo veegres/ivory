@@ -89,7 +89,7 @@ func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
 
 	// stream logs from file
-	file, errFile := w.bloatRepository.GetOpenFile(model.LogsPath)
+	file, errFile := w.bloatRepository.GetOpenFile(model.Uuid)
 	if errFile != nil {
 		stream(Event{Type: SERVER, Message: errFile.Error()})
 	} else {
@@ -293,7 +293,7 @@ func (w *BloatService) closeEvents(job *Job) {
 
 func (w *BloatService) addElement(model *Bloat) {
 	w.mutex.Lock()
-	file, _ := w.bloatRepository.GetOpenFile(model.LogsPath)
+	file, _ := w.bloatRepository.GetOpenFile(model.Uuid)
 	w.elements[model.Uuid] = &element{job: NewJob(), model: model, file: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid

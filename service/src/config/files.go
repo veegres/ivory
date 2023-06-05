@@ -48,13 +48,19 @@ func (r *FileGateway) Exist(name string) bool {
 	}
 }
 
-// Open TODO change it to use name of the file
-func (r *FileGateway) Open(path string) (*os.File, error) {
+func (r *FileGateway) Open(name string) (*os.File, error) {
+	path, errPath := r.getPath(name)
+	if errPath != nil {
+		return nil, errPath
+	}
 	return os.OpenFile(path, os.O_RDWR, 0666)
 }
 
-// TODO change it to use name of the file
-func (r *FileGateway) Read(path string) ([]byte, error) {
+func (r *FileGateway) Read(name string) ([]byte, error) {
+	path, errPath := r.getPath(name)
+	if errPath != nil {
+		return nil, errPath
+	}
 	return os.ReadFile(path)
 }
 

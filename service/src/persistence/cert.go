@@ -24,11 +24,7 @@ func (r *CertRepository) Get(uuid uuid.UUID) (Cert, error) {
 }
 
 func (r *CertRepository) GetFile(uuid uuid.UUID) ([]byte, error) {
-	info, err := r.Get(uuid)
-	if err != nil {
-		return nil, err
-	}
-	return r.file.Read(info.Path)
+	return r.file.Read(uuid.String())
 }
 
 func (r *CertRepository) List() (CertMap, error) {
