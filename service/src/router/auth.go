@@ -23,20 +23,18 @@ func NewAuthRouter(
 }
 
 func (r *AuthRouter) Middleware() gin.HandlerFunc {
-	appConfig, errConfig := r.generalService.GetAppConfig()
-	if errConfig != nil {
-		return func(context *gin.Context) {
+	return func(context *gin.Context) {
+		appConfig, errConfig := r.generalService.GetAppConfig()
+		if errConfig != nil {
 			context.Next()
+			return
 		}
-	}
 
-	switch appConfig.Auth.Type {
-	case NONE:
-		return func(context *gin.Context) {
+		switch appConfig.Auth.Type {
+		case NONE:
 			context.Next()
-		}
-	case BASIC:
-		return func(context *gin.Context) {
+			return
+		case BASIC:
 			authHeader := context.Request.Header.Get("Authorization")
 			token, errHeader := r.authService.GetTokenFromHeader(authHeader)
 			if errHeader != nil {
@@ -51,14 +49,12 @@ func (r *AuthRouter) Middleware() gin.HandlerFunc {
 				return
 			}
 			context.Next()
-		}
-	default:
-		return func(context *gin.Context) {
+			return
+		default:
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "authentication type is not specified or incorrect"})
 			return
 		}
 	}
-
 }
 
 func (r *AuthRouter) Login(context *gin.Context) {
