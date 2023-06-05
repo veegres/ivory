@@ -36,10 +36,11 @@ type Props = {
     credentialId?: string,
     db: Database,
     type: QueryType,
+    editable: boolean,
 }
 
 export function QueryItem(props: Props) {
-    const {query, credentialId, db, type} = props
+    const {query, credentialId, db, type, editable} = props
     const {info} = useAppearance()
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
@@ -98,7 +99,9 @@ export function QueryItem(props: Props) {
                 {query.creation === QueryCreation.Manual && (
                     <DeleteIconButton loading={remove.isLoading} onClick={handleDelete}/>
                 )}
-                <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>
+                {editable && (
+                    <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>
+                )}
             </>
         )
     }

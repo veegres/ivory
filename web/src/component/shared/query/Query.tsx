@@ -2,7 +2,7 @@ import {Database, StylePropsMap, SxPropsMap} from "../../../type/common";
 import {Box, Collapse, Skeleton, ToggleButton, Tooltip} from "@mui/material";
 import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
-import {queryApi} from "../../../app/api";
+import {generalApi, queryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useState} from "react";
 import {TransitionGroup} from "react-transition-group";
@@ -30,19 +30,24 @@ export function Query(props: Props) {
     const {type, credentialId, db} = props
     const [show, setShow] = useState(false)
     const query = useQuery(["query", "map", type], () => queryApi.list(type))
+    const info = useQuery(["info"], () => generalApi.info())
 
     if (query.isLoading) return renderLoading()
     if (query.error) return <ErrorSmart error={query.error}/>
+
+    const isManual = info.data?.availability.manualQuery ?? false
 
     return (
         <Box style={style.box}>
             <Box sx={SX.info}>
                 <DatabaseBox db={db}/>
-                <ToggleButton sx={SX.toggle} value={"add"} size={"small"} selected={show} onClick={() => setShow(!show)}>
-                    <Tooltip title={"New Custom Query"} placement={"top"}>
-                        <Add/>
-                    </Tooltip>
-                </ToggleButton>
+                {isManual && (
+                    <ToggleButton sx={SX.toggle} value={"add"} size={"small"} selected={show} onClick={() => setShow(!show)}>
+                        <Tooltip title={"New Custom Query"} placement={"top"}>
+                            <Add/>
+                        </Tooltip>
+                    </ToggleButton>
+                )}
             </Box>
             <Collapse in={show}>
                 <QueryNew type={type} onSave={() => setShow(false)}/>
@@ -50,7 +55,7 @@ export function Query(props: Props) {
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((value) => (
                     <Collapse key={value.id}>
-                        <QueryItem query={value} credentialId={credentialId} db={db} type={type}/>
+                        <QueryItem query={value} credentialId={credentialId} db={db} type={type} editable={isManual}/>
                     </Collapse>
                 ))}
             </TransitionGroup>
