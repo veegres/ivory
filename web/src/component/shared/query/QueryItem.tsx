@@ -18,6 +18,7 @@ import {queryApi} from "../../../app/api";
 import {QueryItemRun} from "./QueryItemRun";
 import {Database, SxPropsMap} from "../../../type/common";
 import {Query, QueryCreation, QueryType} from "../../../type/query";
+import select from "../../../style/select.module.css";
 
 const SX: SxPropsMap = {
     item: {fontSize: "15px"},
@@ -58,7 +59,7 @@ export function QueryItem(props: Props) {
 
     return (
         <Paper sx={SX.item} variant={"outlined"}>
-            <Box sx={SX.head}>
+            <Box sx={SX.head} className={select.none}>
                 <Box sx={SX.title} onClick={open ? handleCancel : handleToggleBody(BodyType.INFO)}>
                     <Box sx={SX.name}>{query.name}</Box>
                     <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
