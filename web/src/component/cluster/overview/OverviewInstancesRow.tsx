@@ -36,7 +36,10 @@ export function OverviewInstancesRow(props: Props) {
     const switchover = useMutation(instanceApi.switchover, options)
     const reinit = useMutation(instanceApi.reinitialize, options)
 
-    useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])
+    // we ignore this line cause this effect uses setInstance
+    // which are always changing in this function, and it causes endless recursion
+    // eslint-disable-next-line
+    useEffect(handleEffectInstanceChanged, [checked, instance])
 
     return (
         <TableRow sx={SX.row} onClick={handleCheck(instance, checked)}>

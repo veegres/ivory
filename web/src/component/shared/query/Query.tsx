@@ -64,7 +64,7 @@ export function Query(props: Props) {
 
     function renderLoading() {
         return (
-            <Box style={style.transition}>
+            <Box>
                 <Skeleton width={"100%"} height={42}/>
                 <Skeleton width={"100%"} height={42}/>
                 <Skeleton width={"100%"} height={42}/>
