@@ -12,6 +12,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useEventJob} from "../../../hook/EventJob";
 import {SxPropsMap} from "../../../type/common";
 import {Bloat} from "../../../type/bloat";
+import select from "../../../style/select.module.css";
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
@@ -42,7 +43,7 @@ export function OverviewBloatJobItem({compactTable}: Props) {
 
     return (
         <Paper sx={SX.paper} variant={"outlined"}>
-            <Grid container sx={SX.header} onClick={() => setOpen(!open)}>
+            <Grid container sx={SX.header} onClick={() => setOpen(!open)} className={select.none}>
                 <Grid item container justifyContent={"space-between"} flexWrap={"nowrap"}>
                     <Grid item container gap={1}>
                         <Box>Command</Box>
