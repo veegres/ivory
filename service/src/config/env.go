@@ -1,8 +1,8 @@
 package config
 
 import (
+	"golang.org/x/exp/slog"
 	. "ivory/src/model"
-	"log"
 	"os"
 )
 
@@ -20,9 +20,9 @@ func NewEnv() *Env {
 		commit = val
 	}
 
-	log.Println("IVORY ENV VARIABLES")
-	log.Println("IVORY_VERSION_TAG:", tag)
-	log.Println("IVORY_VERSION_COMMIT:", commit)
+	slog.Info("IVORY ENV VARIABLES")
+	slog.Info("ENV", "IVORY_VERSION_TAG", tag)
+	slog.Info("ENV", "IVORY_VERSION_COMMIT", commit)
 
 	return &Env{
 		Version: Version{

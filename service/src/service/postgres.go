@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/golang/glog"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"golang.org/x/exp/slog"
 	. "ivory/src/model"
 	"strconv"
 )
@@ -147,6 +147,6 @@ func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pg
 func (s *PostgresClient) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	err := conn.Close(ctx)
 	if err != nil {
-		glog.Warning(err)
+		slog.Warn("postgres close connection", err)
 	}
 }

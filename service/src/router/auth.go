@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"golang.org/x/exp/slog"
 	. "ivory/src/model"
 	"ivory/src/service"
 	"net/http"
@@ -26,6 +27,15 @@ func (r *AuthRouter) Middleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		appConfig, errConfig := r.generalService.GetAppConfig()
 		if errConfig != nil {
+			context.Next()
+			return
+		}
+
+		// NOTE: Browser doesn't support headers in EventSource so there is no option to send Auth header.
+		// We consider it as safe because EventSource for now is used only in logs streaming where id is
+		// unique. This can work if change header to cookie usage.
+		if appConfig.Auth.Type != NONE && context.Request.Header.Get("Accept") == "text/event-stream" {
+			slog.Warn("unsafe request", "path", context.Request.URL.Path)
 			context.Next()
 			return
 		}
