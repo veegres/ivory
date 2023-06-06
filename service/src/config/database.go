@@ -5,17 +5,19 @@ import (
 	"encoding/gob"
 	"errors"
 	"github.com/boltdb/bolt"
-	"log"
 	"os"
 	"sort"
 )
 
 func NewBoltDB(name string) *bolt.DB {
 	path := "data/bolt"
-	err := os.MkdirAll(path, os.ModePerm)
-	db, err := bolt.Open(path+"/"+name, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
+	errMk := os.MkdirAll(path, os.ModePerm)
+	if errMk != nil {
+		panic(errMk)
+	}
+	db, errOpen := bolt.Open(path+"/"+name, 0600, nil)
+	if errOpen != nil {
+		panic(errOpen)
 	}
 	return db
 }
