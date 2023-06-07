@@ -168,7 +168,7 @@ func (s *GeneralService) SetAppConfig(newAppConfig AppConfig) error {
 		return errOpen
 	}
 
-	jsonAuth, errMarshall := json.Marshal(updatedAppConfig)
+	jsonAuth, errMarshall := json.MarshalIndent(updatedAppConfig, "", "  ")
 	if errMarshall != nil {
 		return errMarshall
 	}
