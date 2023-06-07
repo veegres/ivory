@@ -14,12 +14,13 @@ import {SxPropsMap} from "../../../type/common";
 const SX: SxPropsMap = {
     actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1},
     warning: {padding: "3px 0"},
+    removed: {color: "text.secondary", fontSize: "12px", textAlign: "center", marginTop: "5px"},
 }
 
 type Props = {
     cluster: Cluster,
     editable: boolean,
-    toggle: () => void,
+    toggle?: () => void,
 }
 
 export function ListRow(props: Props) {
@@ -46,6 +47,11 @@ export function ListRow(props: Props) {
                     placeholder={`Instance`}
                     onChange={n => setStateNodes(n)}
                 />
+                {!toggle && (
+                    <Box sx={SX.removed}>
+                        This cluster was removed, but it is still in your local storage, just uncheck it.
+                    </Box>
+                )}
             </ListCell>
             <ListCell>
                 <Box sx={SX.actions}>
@@ -54,24 +60,29 @@ export function ListRow(props: Props) {
                             <WarningAmberRounded color={"warning"}/>
                         </Tooltip>
                     )}
-                    {!editable ? (
-                        <ListCellRead name={name} toggle={toggle}/>
-                    ) : (
-                        <ListCellUpdate
-                            name={name}
-                            instances={getSidecars(stateNodes)}
-                            credentials={credentials}
-                            certs={certs}
-                            tags={tags}
-                            toggle={toggle}
-                            onUpdate={instanceDetection.refetch}
-                            onClose={() => setStateNodes(getDomains(instances))}
-                        />
-                    )}
+                    {renderButtons()}
                 </Box>
             </ListCell>
         </TableRow>
     )
+
+    function renderButtons() {
+        if (!toggle) return
+        return !editable ? (
+            <ListCellRead name={name} toggle={toggle}/>
+        ) : (
+            <ListCellUpdate
+                name={name}
+                instances={getSidecars(stateNodes)}
+                credentials={credentials}
+                certs={certs}
+                tags={tags}
+                toggle={toggle}
+                onUpdate={instanceDetection.refetch}
+                onClose={() => setStateNodes(getDomains(instances))}
+            />
+        )
+    }
 
     function handleEffectScroll() {
         if (instanceDetection.active) ref.current?.scrollIntoView({block: "nearest"})

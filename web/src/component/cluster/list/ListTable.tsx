@@ -4,14 +4,15 @@ import {TableCellLoader} from "../../view/table/TableCellLoader";
 import {TableBody} from "../../view/table/TableBody";
 import {ListRowNew} from "./ListRowNew";
 import {ListRow} from "./ListRow";
-import {useState} from "react";
+import {useMemo, useState} from "react";
 import {InfoAlert} from "../../view/box/InfoAlert";
 import {AddIconButton} from "../../view/button/IconButtons";
-import {Cluster} from "../../../type/cluster";
+import {ClusterMap} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";
 import scroll from "../../../style/scroll.module.css"
 import {useAppearance} from "../../../provider/AppearanceProvider";
 import {ListCreateAuto} from "./ListCreateAuto";
+import {useStore} from "../../../provider/StoreProvider";
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
@@ -21,25 +22,27 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    rows: [string, Cluster][],
+    map?: ClusterMap,
     isLoading: boolean,
     isFetching: boolean,
-    selected: boolean,
     error: any,
 }
 
 export function ListTable(props: Props) {
+    const {store: {activeCluster}} = useStore()
     const {state: {mode}} = useAppearance()
-    const {rows, error, isFetching, isLoading, selected} = props
+    const {map, error, isFetching, isLoading} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
+
+    const rows = useMemo(() => Object.entries(map ?? {}), [map])
 
     if (error) return <ErrorSmart error={error}/>
     const header = {light: "#fff", dark: "#282828"}
     const bgcolor = header[mode] ?? "inherit"
 
     return (
-        <Box sx={SX.box} className={scroll.tiny} maxHeight={selected ? "25vh" : "60vh"}>
+        <Box sx={SX.box} className={scroll.tiny} maxHeight={!!activeCluster ? "25vh" : "60vh"}>
             <Table size={"small"} sx={SX.table} stickyHeader>
                 <TableHead>
                     <TableRow>
@@ -53,12 +56,21 @@ export function ListTable(props: Props) {
                 </TableHead>
                 <TableBody isLoading={isLoading} cellCount={3}>
                     <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
+                    {renderRemovedRow()}
                     {renderRows()}
                     {renderEmpty()}
                 </TableBody>
             </Table>
         </Box>
     )
+
+    function renderRemovedRow() {
+        if (!activeCluster || !map) return
+        if (map[activeCluster.cluster.name] !== undefined) return
+        return (
+            <ListRow cluster={activeCluster.cluster} editable={false}/>
+        )
+    }
 
     function renderRows() {
         return rows.map(([name, cluster]) => {
@@ -77,7 +89,7 @@ export function ListTable(props: Props) {
     }
 
     function renderEmpty() {
-        if (isLoading || showNewElement || rows.length) return
+        if (isLoading || showNewElement || rows.length || activeCluster) return
 
         return (
             <TableRow>
