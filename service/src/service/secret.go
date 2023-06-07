@@ -43,11 +43,17 @@ func (s *SecretService) GetByte() []byte {
 }
 
 func (s *SecretService) Set(decryptedKey string, decryptedRef string) error {
+	if decryptedKey == "" {
+		return errors.New("secret word cannot be empty")
+	}
 	if decryptedRef == "" {
 		var err error
 		decryptedRef, err = s.secretRepository.GetDecryptedRef()
 		if err != nil {
 			return err
+		}
+		if decryptedRef == "" {
+			return errors.New("reference word cannot be empty")
 		}
 	}
 	encryptedKey := md5.Sum([]byte(decryptedKey))
