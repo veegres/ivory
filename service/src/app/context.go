@@ -62,7 +62,7 @@ func NewContext() *Context {
 	queryService := service.NewQueryService(queryRepo, secretService, postgresGateway)
 	clusterService := service.NewClusterService(clusterRepo, tagService, patroniGateway)
 	bloatService := service.NewBloatService(bloatRepository, passwordService)
-	authService := service.NewAuthService(secretService)
+	authService := service.NewAuthService(secretService, encryptionService)
 	generalService := service.NewGeneralService(
 		env,
 		configFiles,

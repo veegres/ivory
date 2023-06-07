@@ -101,7 +101,7 @@ func (s *GeneralService) GetAppInfo(authHeader string) *AppInfo {
 			},
 		}
 	}
-	authorised, authError := s.authInfo(authHeader, appConfig.Auth)
+	authorised, authError := s.authService.ValidateHeader(authHeader, appConfig.Auth)
 
 	return &AppInfo{
 		Company:      appConfig.Company,
@@ -124,7 +124,7 @@ func (s *GeneralService) GetAppConfig() (*AppConfig, error) {
 
 	read, err := s.configFiles.Read(s.appConfigFileName)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("config is not specified or it cannot be read from file")
 	}
 
 	var appConfig AppConfig
@@ -137,7 +137,7 @@ func (s *GeneralService) GetAppConfig() (*AppConfig, error) {
 	return s.appConfig, nil
 }
 
-func (s *GeneralService) SetConfig(newAppConfig AppConfig) error {
+func (s *GeneralService) SetAppConfig(newAppConfig AppConfig) error {
 	if newAppConfig.Company == "" {
 		return errors.New("company name cannot be empty")
 	}
@@ -146,6 +146,17 @@ func (s *GeneralService) SetConfig(newAppConfig AppConfig) error {
 	currentAppConfig, _ := s.GetAppConfig()
 	if currentAppConfig != nil {
 		return errors.New("config is already set up")
+	}
+
+	validatedAuthConfig, errAuthConfig := s.authService.ValidateAuthConfig(newAppConfig.Auth)
+	if errAuthConfig != nil {
+		return errAuthConfig
+	}
+
+	updatedAppConfig := AppConfig{
+		Company:      newAppConfig.Company,
+		Availability: newAppConfig.Availability,
+		Auth:         validatedAuthConfig,
 	}
 
 	_, errCreate := s.configFiles.Create(s.appConfigFileName)
@@ -157,7 +168,7 @@ func (s *GeneralService) SetConfig(newAppConfig AppConfig) error {
 		return errOpen
 	}
 
-	jsonAuth, errMarshall := json.Marshal(newAppConfig)
+	jsonAuth, errMarshall := json.Marshal(updatedAppConfig)
 	if errMarshall != nil {
 		return errMarshall
 	}
@@ -168,28 +179,4 @@ func (s *GeneralService) SetConfig(newAppConfig AppConfig) error {
 	}
 
 	return nil
-}
-
-// TODO this should be moved to AuthService
-func (s *GeneralService) authInfo(header string, authConfig AuthConfig) (bool, string) {
-	switch authConfig.Type {
-	case NONE:
-		if header != "" {
-			return false, "authentication header should be empty"
-		}
-		return true, ""
-	case BASIC:
-		token, errHeader := s.authService.GetTokenFromHeader(header)
-		if errHeader != nil {
-			return false, errHeader.Error()
-		} else {
-			errValidate := s.authService.ValidateToken(token, authConfig.Body["username"])
-			if errValidate != nil {
-				return false, errValidate.Error()
-			}
-		}
-		return true, ""
-	default:
-		return false, "authentication type is not specified or incorrect"
-	}
 }

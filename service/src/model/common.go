@@ -12,8 +12,8 @@ type Response struct {
 }
 
 type Login struct {
-	Username string `form:"username" json:"username"`
-	Password string `form:"password" json:"password"`
+	Username string `form:"username" json:"username,omitempty"`
+	Password string `form:"password" json:"password,omitempty"`
 }
 
 type DbConnection struct {

@@ -27,7 +27,7 @@ func (r *AuthRouter) Middleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		appConfig, errConfig := r.generalService.GetAppConfig()
 		if errConfig != nil {
-			context.Next()
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": errConfig.Error()})
 			return
 		}
 
@@ -40,30 +40,15 @@ func (r *AuthRouter) Middleware() gin.HandlerFunc {
 			return
 		}
 
-		switch appConfig.Auth.Type {
-		case NONE:
-			context.Next()
-			return
-		case BASIC:
-			authHeader := context.Request.Header.Get("Authorization")
-			token, errHeader := r.authService.GetTokenFromHeader(authHeader)
-			if errHeader != nil {
-				context.Header("WWW-Authenticate", "JWT realm="+r.authService.GetIssuer())
-				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errHeader.Error()})
-				return
-			}
-			errValidate := r.authService.ValidateToken(token, appConfig.Auth.Body["username"])
-			if errValidate != nil {
-				context.Header("WWW-Authenticate", "JWT realm="+r.authService.GetIssuer())
-				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errValidate.Error()})
-				return
-			}
-			context.Next()
-			return
-		default:
-			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "authentication type is not specified or incorrect"})
+		authHeader := context.Request.Header.Get("Authorization")
+		valid, errValid := r.authService.ValidateHeader(authHeader, appConfig.Auth)
+		if !valid {
+			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.GetIssuer())
+			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errValid})
 			return
 		}
+
+		context.Next()
 	}
 }
 
@@ -77,16 +62,10 @@ func (r *AuthRouter) Login(context *gin.Context) {
 
 	appConfig, errConfig := r.generalService.GetAppConfig()
 	if errConfig != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errConfig.Error()})
+		context.JSON(http.StatusForbidden, gin.H{"error": errConfig.Error()})
 	}
 
-	// TODO consider moving this to AuthService
-	if login.Username != appConfig.Auth.Body["username"] || login.Password != appConfig.Auth.Body["password"] {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "credentials are not correct"})
-		return
-	}
-
-	token, exp, err := r.authService.GenerateToken(login.Username)
+	token, exp, err := r.authService.Login(login, appConfig.Auth)
 	if err != nil {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return

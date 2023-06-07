@@ -44,7 +44,7 @@ func generalRouter(g *gin.RouterGroup, ra *router.AuthRouter, rg *router.General
 	g.POST("/login", ra.Login)
 
 	initial := g.Group("/initial")
-	initial.POST("/config", rg.SetConfig)
+	initial.POST("/config", rg.SetAppConfig)
 }
 
 func initialRouter(g *gin.RouterGroup, rs *router.SecretRouter, rg *router.GeneralRouter) {

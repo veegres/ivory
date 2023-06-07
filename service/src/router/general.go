@@ -46,7 +46,7 @@ func (r *GeneralRouter) GetAppInfo(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": info})
 }
 
-func (r *GeneralRouter) SetConfig(context *gin.Context) {
+func (r *GeneralRouter) SetAppConfig(context *gin.Context) {
 	var config AppConfig
 	errBind := context.ShouldBindJSON(&config)
 	if errBind != nil {
@@ -54,7 +54,7 @@ func (r *GeneralRouter) SetConfig(context *gin.Context) {
 		return
 	}
 
-	errConfig := r.service.SetConfig(config)
+	errConfig := r.service.SetAppConfig(config)
 	if errConfig != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errConfig.Error()})
 		return
