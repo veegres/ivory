@@ -53,10 +53,6 @@ func (r *SecretRouter) SetSecret(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "body isn't correct"})
 		return
 	}
-	if body.Key == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "please provide key"})
-		return
-	}
 
 	err := r.secretService.Set(body.Key, body.Ref)
 	if err != nil {
