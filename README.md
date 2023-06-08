@@ -1,4 +1,4 @@
-# Ivory (postgres/patroni cluster management tool)
+# Ivory (postgres / patroni cluster management tool)
 
 Ivory is an open-source project which is designed to simplify and visualize work with postgres clusters.
 Initially, this tool was developed to simplify the life of developers who, in their work, maintain postgres, but
@@ -12,7 +12,7 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 - Docker Hub `docker run -p 80:80 --restart always aelsergeev/ivory`
 - GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 
-## Ivory allows you to do such things as:
+### Ivory allows you to do such things as:
 - [keep all of your cluster in one place](doc/clusters.md)
 - [monitor cluster status, do reinit and switchover](doc/overview.md)
 - [edit cluster config](doc/config.md)
