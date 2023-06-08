@@ -75,7 +75,7 @@ func (s *AuthService) ValidateHeader(header string, authConfig AuthConfig) (bool
 	}
 }
 
-func (s *AuthService) ValidateAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
+func (s *AuthService) EncryptAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
 	switch authConfig.Type {
 	case NONE:
 		return authConfig, nil
@@ -87,6 +87,33 @@ func (s *AuthService) ValidateAuthConfig(authConfig AuthConfig) (AuthConfig, err
 		}
 
 		encryptedPassword, errEnc := s.encryption.Encrypt(pass, s.secretService.Get())
+		if errEnc != nil {
+			return authConfig, errEnc
+		}
+		authConfig.Body["password"] = encryptedPassword
+
+		return authConfig, nil
+	default:
+		return authConfig, errors.New("type is unknown")
+	}
+}
+
+func (s *AuthService) ReEncryptAuthConfig(authConfig AuthConfig, oldSecret [16]byte, newSecret [16]byte) (AuthConfig, error) {
+	switch authConfig.Type {
+	case NONE:
+		return authConfig, nil
+	case BASIC:
+		user := authConfig.Body["username"]
+		pass := authConfig.Body["password"]
+		if pass == "" || user == "" {
+			return authConfig, errors.New("username or password are not specified")
+		}
+
+		decryptedPassword, errDec := s.encryption.Decrypt(pass, oldSecret)
+		if errDec != nil {
+			return authConfig, errDec
+		}
+		encryptedPassword, errEnc := s.encryption.Encrypt(decryptedPassword, newSecret)
 		if errEnc != nil {
 			return authConfig, errEnc
 		}
