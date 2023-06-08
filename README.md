@@ -12,7 +12,16 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 - Docker Hub `docker run -p 80:80 --restart always aelsergeev/ivory`
 - GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 
-### Ivory allows you to do such things as:
+## Guide
+
+### Authentication
+Ivory can work with or without authentication. It can be configured in the initial start. Right now
+Ivory supports only _Basic_ authentication with general username and password (maybe in the future support
+will be added for such things like ldap / sso)
+Usually you don't want to use authentication when you work with Ivory locally, but it is recommended
+to use it if you put it globally.
+
+### Usage
 - [keep all of your cluster in one place](doc/clusters.md)
 - [monitor cluster status, do reinit and switchover](doc/overview.md)
 - [edit cluster config](doc/config.md)
@@ -22,8 +31,7 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 ![Demo](doc/images/demo.gif)
 
 
-
-## Contributing
+## Contribution
 
 If you're interested in contributing to the Ivory project:
 
