@@ -1,6 +1,11 @@
-# [☰](https://github.com/veegres/ivory/blob/master/README.md) Clusters
+# [☰](../README.md) Clusters
 
-In this block you can add / edit / remove your cluster information, see which node is a leader or replica.
-As well as you can click on your cluster and check additional information about cluster or do some actions with it.
+This is the main view of all clusters that you have added. 
+You can add cluster manually or by auto-detection (button on the left side near add/plus).
+As well, you can edit or remove your clusters. Here you have brief overview which instances in cluster is a leader or a replica. 
+If you want to operate or check more information about the cluster you need to check some of them by clicking on cluster name.
 
-![clusters](https://github.com/veegres/ivory/blob/master/doc/images/clusters.png)
+Above the main block you can see tags by checking them you will filter clusters by assigned tags. In the right said there is
+warning mark with number of problematic clusters.
+
+![clusters](images/clusters.png)

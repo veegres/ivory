@@ -7,8 +7,10 @@ currently being supported with security updates.
 
 | Version | Supported          |
 |---------|--------------------|
-| 1.0.x   | :white_check_mark: |
+| 1.0.x   | :x:                |
+| 1.1.x   | :x:                |
+| 1.2.x   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
-You can write @aelsergeev or report an issue on Github.
+You can write @anselvo or report an issue on GitHub.
