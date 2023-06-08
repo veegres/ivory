@@ -1,16 +1,16 @@
-import {PageBox} from "../view/box/PageBox";
+import {PageMainBox} from "../view/box/PageMainBox";
 import {ErrorSmart} from "../view/box/ErrorSmart";
 import {Skeleton, Stack} from "@mui/material";
-import {StartupInitialSecret} from "../startup/StartupInitialSecret";
-import {StartupSecondary} from "../startup/StartupSecondary";
+import {SecretInitial} from "../startup/secret/SecretInitial";
+import {SecretSecondary} from "../startup/secret/SecretSecondary";
 import {List as ClusterList} from "../cluster/list/List";
 import {Overview as ClusterOverview} from "../cluster/overview/Overview";
 import {Instance as ClusterInstance} from "../cluster/instance/Instance";
 import {AppInfo, SxPropsMap} from "../../type/common";
 import {UseQueryResult} from "@tanstack/react-query";
-import {StartupLogin} from "../startup/StartupLogin";
+import {Login} from "../startup/login/Login";
 import {Menu} from "../settings/menu/Menu";
-import {StartupInitialConfig} from "../startup/StartupInitialConfig";
+import {Config} from "../startup/config/Config";
 
 const SX: SxPropsMap = {
     stack: {width: "100%", height: "100%", gap: 4}
@@ -26,10 +26,10 @@ export function Body(props: Props) {
     if (isLoading) return renderLoading()
     if (isError) return renderError(error)
     if (!data) return renderError("Something bad happened, we cannot get application initial information")
-    if (!data.secret.ref) return <StartupInitialSecret/>
-    if (!data.secret.key) return <StartupSecondary/>
-    if (!data.configured) return <StartupInitialConfig/>
-    if (!data.auth.authorised) return <StartupLogin type={data.auth.type} error={data.auth.error}/>
+    if (!data.secret.ref) return <SecretInitial/>
+    if (!data.secret.key) return <SecretSecondary/>
+    if (!data.configured) return <Config/>
+    if (!data.auth.authorised) return <Login type={data.auth.type} error={data.auth.error}/>
 
     return (
         <>
@@ -45,7 +45,7 @@ export function Body(props: Props) {
     function renderError(error: any) {
         return (
             <Stack sx={SX.stack}>
-                <PageBox><ErrorSmart error={error}/></PageBox>
+                <PageMainBox><ErrorSmart error={error}/></PageMainBox>
             </Stack>
         )
     }
@@ -62,9 +62,9 @@ export function Body(props: Props) {
 
     function renderSkeleton() {
         return (
-            <PageBox>
+            <PageMainBox>
                 <Skeleton variant={"rectangular"} width={"100%"} height={"20vh"} />
-            </PageBox>
+            </PageMainBox>
         )
     }
 }

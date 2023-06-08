@@ -1,7 +1,7 @@
 import {Box, Divider} from "@mui/material";
 import {useStore} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/box/InfoAlert";
-import {PageBox} from "../../view/box/PageBox";
+import {PageMainBox} from "../../view/box/PageMainBox";
 import {SxPropsMap} from "../../../type/common";
 import {useState} from "react";
 import {InstanceMain} from "./InstanceMain";
@@ -17,9 +17,9 @@ export function Instance() {
     const [tab, setTab] = useState(InstanceTabType.CHART)
 
     return (
-        <PageBox withPadding visible={isClusterOverviewOpen()}>
+        <PageMainBox withPadding visible={isClusterOverviewOpen()}>
             {renderContent()}
-        </PageBox>
+        </PageMainBox>
     )
 
     function renderContent() {

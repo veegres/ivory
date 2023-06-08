@@ -1,11 +1,11 @@
 import {Box} from "@mui/material";
 import {ReactNode, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {generalApi} from "../../app/api";
-import {randomUnicodeAnimal} from "../../app/utils";
-import {LinearProgressStateful} from "../view/progress/LinearProgressStateful";
-import select from "../../style/select.module.css";
-import {SxPropsMap} from "../../type/common";
+import {generalApi} from "../../../app/api";
+import {randomUnicodeAnimal} from "../../../app/utils";
+import {LinearProgressStateful} from "../progress/LinearProgressStateful";
+import select from "../../../style/select.module.css";
+import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     box: {
@@ -22,7 +22,7 @@ type Props = {
     renderFooter: ReactNode,
 }
 
-export function StartupBlock(props: Props) {
+export function PageStartupBox(props: Props) {
     const {children, header, renderFooter} = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 

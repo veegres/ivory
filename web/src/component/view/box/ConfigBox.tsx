@@ -1,6 +1,6 @@
 import {ReactNode, useState} from "react";
 import {Alert, AlertColor, Box, Collapse, FormControl, FormLabel} from "@mui/material";
-import {SxPropsMap} from "../../type/common";
+import {SxPropsMap} from "../../../type/common";
 import {HelpOutline} from "@mui/icons-material";
 
 const SX: SxPropsMap = {
@@ -23,7 +23,7 @@ type Props = {
     severity?: AlertColor,
 }
 
-export function StartupBlockConfig(props: Props) {
+export function ConfigBox(props: Props) {
     const {description, label, showBody, renderBody, severity, recommendation, renderAction} = props
     const [open, setOpen] = useState(false)
     return (

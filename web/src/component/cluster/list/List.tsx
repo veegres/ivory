@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {clusterApi} from "../../../app/api";
 import {useEffect} from "react";
-import {PageBox} from "../../view/box/PageBox";
+import {PageMainBox} from "../../view/box/PageMainBox";
 import {ListTags} from "./ListTags";
 import {useStore} from "../../../provider/StoreProvider";
 import {ListTable} from "./ListTable";
@@ -17,9 +17,9 @@ export function List() {
     useEffect(() => { query.refetch().then() }, [tags])
 
     return (
-        <PageBox withMarginTop={"40px"}>
+        <PageMainBox withMarginTop={"40px"}>
             <ListTags/>
             <ListTable map={data} error={error} isFetching={isFetching} isLoading={isLoading}/>
-        </PageBox>
+        </PageMainBox>
     )
 }

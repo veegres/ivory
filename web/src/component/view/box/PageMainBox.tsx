@@ -16,7 +16,7 @@ type Props = {
     elevation?: number,
 }
 
-export function PageBox(props: Props) {
+export function PageMainBox(props: Props) {
     const {withMarginTop, withMarginBottom} = props
     const elevation = props.elevation ?? 4
     const visible = props.visible ?? true
