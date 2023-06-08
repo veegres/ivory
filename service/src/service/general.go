@@ -78,10 +78,30 @@ func (s *GeneralService) ChangeSecret(previousKey string, newKey string) error {
 	if err != nil {
 		return err
 	}
+
 	errEnc := s.passwordService.ReEncryptPasswords(prevSha, newSha)
 	if errEnc != nil {
 		return errEnc
 	}
+
+	appConfig, errAppConfig := s.GetAppConfig()
+	if errAppConfig != nil {
+		return errAppConfig
+	}
+	reEncryptAuthConfig, errAuthConfig := s.authService.ReEncryptAuthConfig(appConfig.Auth, prevSha, newSha)
+	if errAuthConfig != nil {
+		return errAuthConfig
+	}
+	updatedAppConfig := AppConfig{
+		Company:      appConfig.Company,
+		Availability: appConfig.Availability,
+		Auth:         reEncryptAuthConfig,
+	}
+	errUpdateAppConfig := s.UpdateAppConfig(updatedAppConfig)
+	if errUpdateAppConfig != nil {
+		return errUpdateAppConfig
+	}
+
 	return nil
 }
 
@@ -117,6 +137,29 @@ func (s *GeneralService) GetAppInfo(authHeader string) *AppInfo {
 	}
 }
 
+func (s *GeneralService) UpdateAppConfig(config AppConfig) error {
+	file, errOpen := s.configFiles.Open(s.appConfigFileName)
+	if errOpen != nil {
+		return errOpen
+	}
+
+	errTruncate := file.Truncate(0)
+	if errTruncate != nil {
+		return errTruncate
+	}
+
+	jsonAuth, errMarshall := json.MarshalIndent(config, "", "  ")
+	if errMarshall != nil {
+		return errMarshall
+	}
+
+	_, errWrite := file.Write(jsonAuth)
+	if errWrite != nil {
+		return errWrite
+	}
+	return nil
+}
+
 func (s *GeneralService) GetAppConfig() (*AppConfig, error) {
 	if s.appConfig != nil {
 		return s.appConfig, nil
@@ -148,7 +191,7 @@ func (s *GeneralService) SetAppConfig(newAppConfig AppConfig) error {
 		return errors.New("config is already set up")
 	}
 
-	validatedAuthConfig, errAuthConfig := s.authService.ValidateAuthConfig(newAppConfig.Auth)
+	encryptedAuthConfig, errAuthConfig := s.authService.EncryptAuthConfig(newAppConfig.Auth)
 	if errAuthConfig != nil {
 		return errAuthConfig
 	}
@@ -156,27 +199,13 @@ func (s *GeneralService) SetAppConfig(newAppConfig AppConfig) error {
 	updatedAppConfig := AppConfig{
 		Company:      newAppConfig.Company,
 		Availability: newAppConfig.Availability,
-		Auth:         validatedAuthConfig,
+		Auth:         encryptedAuthConfig,
 	}
 
 	_, errCreate := s.configFiles.Create(s.appConfigFileName)
 	if errCreate != nil {
 		return errCreate
 	}
-	file, errOpen := s.configFiles.Open(s.appConfigFileName)
-	if errOpen != nil {
-		return errOpen
-	}
 
-	jsonAuth, errMarshall := json.MarshalIndent(updatedAppConfig, "", "  ")
-	if errMarshall != nil {
-		return errMarshall
-	}
-
-	_, errWrite := file.Write(jsonAuth)
-	if errWrite != nil {
-		return errWrite
-	}
-
-	return nil
+	return s.UpdateAppConfig(updatedAppConfig)
 }
