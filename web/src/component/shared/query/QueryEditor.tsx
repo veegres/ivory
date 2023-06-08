@@ -11,7 +11,7 @@ type Props = {
 
 export function QueryEditor(props: Props) {
     const {value, editable, onUpdate} = props
-    const theme = useAppearance();
+    const appearance = useAppearance();
 
     return (
         <ReactCodeMirror
@@ -21,7 +21,7 @@ export function QueryEditor(props: Props) {
             minHeight={editable ? "80px" : "auto"}
             placeholder={"Query"}
             basicSetup={{lineNumbers: false, foldGutter: false, highlightActiveLine: false}}
-            theme={CodeThemes[theme.state.mode]}
+            theme={CodeThemes[appearance.theme]}
             extensions={[sql({dialect: PostgreSQL})]}
             onChange={onUpdate}
         />
