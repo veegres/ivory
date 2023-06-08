@@ -13,5 +13,5 @@ In the project directory, you can run:
 This app is build by:
 
 - [Bolt](https://github.com/boltdb/bolt) - Embedded key/value database
-- [Gin](https://create-react-app.dev/) - Web framework
+- [Gin](https://github.com/gin-gonic/gin) - Web framework
 
