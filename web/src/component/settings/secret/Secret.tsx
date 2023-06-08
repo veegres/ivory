@@ -9,10 +9,10 @@ import {safeApi} from "../../../app/api";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
-    alert: {margin: "0 10px"},
+    alert: {margin: "0px 10px"},
     text: {display: "flex", flexDirection: "column", gap: 1, textAlign: "center"},
-    form: {display: "flex", flexDirection: "column", gap: 1},
-    button: {marginTop: "15px"},
+    form: {display: "flex", flexDirection: "column", gap: 2, margin: "10px 0px"},
+    button: {marginTop: "5px"},
     bold: {fontWeight: "bold"},
 }
 
