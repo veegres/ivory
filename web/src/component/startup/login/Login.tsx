@@ -1,13 +1,13 @@
-import {StartupBlock} from "./StartupBlock";
+import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {Alert, Button} from "@mui/material";
-import {KeyEnterInput} from "../view/input/KeyEnterInput";
+import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useMutation} from "@tanstack/react-query";
-import {generalApi} from "../../app/api";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {generalApi} from "../../../app/api";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useState} from "react";
-import {AuthType, SxPropsMap} from "../../type/common";
+import {AuthType, SxPropsMap} from "../../../type/common";
 import {LoadingButton} from "@mui/lab";
-import {useAuth} from "../../provider/AuthProvider";
+import {useAuth} from "../../../provider/AuthProvider";
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},
@@ -18,7 +18,7 @@ type Props = {
     error: string,
 }
 
-export function StartupLogin(props: Props) {
+export function Login(props: Props) {
     const {type, error} = props
     const {setToken, logout} = useAuth()
     const [username, setUsername] = useState("")
@@ -28,10 +28,10 @@ export function StartupLogin(props: Props) {
     const login = useMutation(generalApi.login, loginOption)
 
     return (
-        <StartupBlock header={"Authentication"} renderFooter={renderLogin()}>
+        <PageStartupBox header={"Authentication"} renderFooter={renderLogin()}>
             {error && <Alert sx={SX.alert} severity={"warning"} icon={false}>{error}</Alert>}
             {renderBody()}
-        </StartupBlock>
+        </PageStartupBox>
     )
 
     function renderBody() {

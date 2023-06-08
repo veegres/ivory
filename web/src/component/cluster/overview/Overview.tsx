@@ -5,7 +5,7 @@ import {useState} from "react";
 import {useStore} from "../../../provider/StoreProvider";
 import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../view/box/InfoAlert";
-import {PageBox} from "../../view/box/PageBox";
+import {PageMainBox} from "../../view/box/PageMainBox";
 import {useQuery} from "@tanstack/react-query";
 import {OverviewOptions} from "./OverviewOptions";
 import {SxPropsMap} from "../../../type/common";
@@ -67,7 +67,7 @@ export function Overview() {
     const tab = TABS[activeClusterTab]
 
     return (
-        <PageBox withPadding visible={!!activeCluster || Object.keys(clusters.data ?? {}).length !== 0}>
+        <PageMainBox withPadding visible={!!activeCluster || Object.keys(clusters.data ?? {}).length !== 0}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
                     {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label}/>))}
@@ -79,7 +79,7 @@ export function Overview() {
                 <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
                 <Box>{renderSettingsBlock()}</Box>
             </Box>
-        </PageBox>
+        </PageMainBox>
     )
 
     function renderMainBlock() {

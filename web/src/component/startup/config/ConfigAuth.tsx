@@ -1,8 +1,8 @@
 import {AlertColor, Box, FormControlLabel, Radio, RadioGroup} from "@mui/material";
-import {AuthConfig, AuthType, SxPropsMap} from "../../type/common";
+import {AuthConfig, AuthType, SxPropsMap} from "../../../type/common";
 import * as React from "react";
-import {StartupBlockConfig} from "./StartupBlockConfig";
-import {KeyEnterInput} from "../view/input/KeyEnterInput";
+import {ConfigBox} from "../../view/box/ConfigBox";
+import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 
 const SX: SxPropsMap = {
     radio: {display: "flex", gap: 3},
@@ -45,11 +45,11 @@ type Props = {
     auth: AuthConfig,
 }
 
-export function StartupConfigAuth(props: Props) {
+export function ConfigAuth(props: Props) {
     const {onChange, auth} = props
 
     return (
-        <StartupBlockConfig
+        <ConfigBox
             label={"Authentication"}
             renderAction={renderAction()}
             renderBody={renderBasic()}

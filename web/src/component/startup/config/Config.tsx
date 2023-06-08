@@ -1,15 +1,15 @@
-import {StartupBlock} from "./StartupBlock";
+import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {LoadingButton} from "@mui/lab";
-import {KeyEnterInput} from "../view/input/KeyEnterInput";
-import {StartupConfigAuth} from "./StartupConfigAuth";
-import {StartupConfigQuery} from "./StartupConfigQuery";
+import {KeyEnterInput} from "../../view/input/KeyEnterInput";
+import {ConfigAuth} from "./ConfigAuth";
+import {ConfigQuery} from "./ConfigQuery";
 import {useState} from "react";
-import {AuthConfig, AuthType} from "../../type/common";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {AuthConfig, AuthType} from "../../../type/common";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {generalApi} from "../../app/api";
+import {generalApi} from "../../../app/api";
 
-export function StartupInitialConfig() {
+export function Config() {
     const [company, setCompany] = useState("")
     const [query, setQuery] = useState(false)
     const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE, body: undefined})
@@ -18,11 +18,11 @@ export function StartupInitialConfig() {
     const config = useMutation(generalApi.setConfig, configOptions)
 
     return (
-        <StartupBlock header={"Configuration"} renderFooter={renderFooter()}>
+        <PageStartupBox header={"Configuration"} renderFooter={renderFooter()}>
             <KeyEnterInput label={"Company"} onChange={(e) => setCompany(e.target.value)}/>
-            <StartupConfigQuery onChange={setQuery}/>
-            <StartupConfigAuth onChange={setAuth} auth={auth}/>
-        </StartupBlock>
+            <ConfigQuery onChange={setQuery}/>
+            <ConfigAuth onChange={setAuth} auth={auth}/>
+        </PageStartupBox>
     )
 
     function renderFooter() {

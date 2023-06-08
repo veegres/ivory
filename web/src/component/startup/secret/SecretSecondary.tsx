@@ -1,21 +1,21 @@
 import {useState} from "react";
-import {StartupBlock} from "./StartupBlock";
-import {KeyEnterInput} from "../view/input/KeyEnterInput";
+import {PageStartupBox} from "../../view/box/PageStartupBox";
+import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {Typography} from "@mui/material";
-import {EraseButton} from "../shared/erase/EraseButton";
-import {StartupSecretButton} from "./StartupSecretButton";
-import {useMutationOptions} from "../../hook/QueryCustom";
+import {EraseButton} from "../../shared/erase/EraseButton";
+import {SecretButton} from "./SecretButton";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {initialApi} from "../../app/api";
+import {initialApi} from "../../../app/api";
 
 
-export function StartupSecondary() {
+export function SecretSecondary() {
     const [key, setKey] = useState("")
     const setReqOptions = useMutationOptions([["info"]])
     const setReq = useMutation(initialApi.setSecret, setReqOptions)
 
     return (
-        <StartupBlock header={"Welcome Back"} renderFooter={renderButtons()}>
+        <PageStartupBox header={"Welcome Back"} renderFooter={renderButtons()}>
             <Typography variant={"caption"}>
                 Looks like Ivory was rebooted. Please, provide the <b>Secret word</b> to be able
                 to continue working with sensitive data.
@@ -29,14 +29,14 @@ export function StartupSecondary() {
                 onEnterPress={() => setReq.mutate({ref: "", key})}
                 hidden
             />
-        </StartupBlock>
+        </PageStartupBox>
     )
 
     function renderButtons() {
         return (
             <>
                 <EraseButton safe={false}/>
-                <StartupSecretButton keyWord={key} refWord={""}/>
+                <SecretButton keyWord={key} refWord={""}/>
             </>
         )
     }

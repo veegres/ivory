@@ -1,14 +1,14 @@
 import {Switch} from "@mui/material";
-import {StartupBlockConfig} from "./StartupBlockConfig";
+import {ConfigBox} from "../../view/box/ConfigBox";
 
 type Props = {
     onChange: (enable: boolean) => void,
 }
 
-export function StartupConfigQuery(props: Props) {
+export function ConfigQuery(props: Props) {
     const {onChange} = props
     return (
-        <StartupBlockConfig
+        <ConfigBox
             label={"Manual Queries"}
             description={<>
                 It will enable manual SQL query creation and system query editing that provided
