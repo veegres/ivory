@@ -1,23 +1,32 @@
 import {createContext, ReactNode, useContext, useEffect} from "react";
-import {createTheme, CssBaseline, Theme, ThemeProvider as MuiThemeProvider} from "@mui/material";
+import {createTheme, PaletteMode, Theme, ThemeProvider as MuiThemeProvider, useMediaQuery} from "@mui/material";
 import {useLocalStorageState} from "../hook/LocalStorage";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
 
-interface ThemeStateType {
-    mode: "dark" | "light",
+export enum Mode {
+    DARK = "dark",
+    LIGHT = "light",
+    SYSTEM = "system",
+}
+
+interface AppearanceStateType {
+    mode: Mode,
     refetchOnWindowsFocus: boolean,
 }
+
 interface ThemeContextType {
-    state: ThemeStateType
-    setTheme: (s: "dark" | "light") => void,
+    state: AppearanceStateType,
+    theme: "dark" | "light",
+    setTheme: (m: Mode) => void,
     toggleRefetchOnWindowsRefocus: () => void,
     info?: Theme,
 }
 
-const ThemeInitialState: ThemeStateType = { mode: "light", refetchOnWindowsFocus: false }
+const ThemeInitialState: AppearanceStateType = {mode: Mode.SYSTEM, refetchOnWindowsFocus: false}
 const ThemeContext = createContext<ThemeContextType>({
     state: ThemeInitialState,
+    theme: "light",
     toggleRefetchOnWindowsRefocus: () => void 0,
     setTheme: () => void 0,
 })
@@ -28,14 +37,18 @@ export function useAppearance() {
 }
 
 export function AppearanceProvider(props: { children: ReactNode }) {
-    const [state, setState] = useLocalStorageState("appearance", ThemeInitialState, true);
-    const muiTheme = createTheme({palette: {mode: state.mode}})
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+    const [state, setState] = useLocalStorageState("appearance", ThemeInitialState, true)
+
+    const theme = getTheme(state.mode)
+    const muiTheme = createTheme({palette: {mode: theme}})
+
     useEffect(handleEffectClient, [state.refetchOnWindowsFocus])
+
     return (
-        <ThemeContext.Provider value={{state, setTheme, toggleRefetchOnWindowsRefocus, info: muiTheme}}>
+        <ThemeContext.Provider value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, info: muiTheme}}>
             <QueryClientProvider client={client}>
                 <MuiThemeProvider theme={muiTheme}>
-                    <CssBaseline/>
                     {props.children}
                 </MuiThemeProvider>
                 <ReactQueryDevtools/>
@@ -43,8 +56,8 @@ export function AppearanceProvider(props: { children: ReactNode }) {
         </ThemeContext.Provider>
     );
 
-    function setTheme(m: "dark" | "light") {
-        return setState(prevState => ({...prevState, mode: m}))
+    function setTheme(mode: Mode) {
+        return setState(prevState => ({...prevState, mode}))
     }
 
     function toggleRefetchOnWindowsRefocus() {
@@ -53,5 +66,16 @@ export function AppearanceProvider(props: { children: ReactNode }) {
 
     function handleEffectClient() {
         client.setDefaultOptions({queries: {refetchOnWindowFocus: state.refetchOnWindowsFocus ? "always" : false}})
+    }
+
+    function getTheme(m: Mode): PaletteMode {
+        switch (m) {
+            case Mode.DARK:
+                return "dark"
+            case Mode.LIGHT:
+                return "light"
+            default:
+                return prefersDarkMode ? "dark" : "light"
+        }
     }
 }

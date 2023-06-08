@@ -25,12 +25,12 @@ type Props = {
 }
 
 export function InfoIcons(props: Props) {
-    const {info, state: {mode}} = useAppearance()
+    const {info, theme} = useAppearance()
     const {items} = props
     const titleItems = items.map(item => ({
         ...item,
         value: item.active ? "Yes" : "No",
-        bgColor: item.active ? info?.palette.success[mode] : info?.palette.error[mode]
+        bgColor: item.active ? info?.palette.success[theme] : info?.palette.error[theme]
     }))
 
     return (
@@ -38,7 +38,7 @@ export function InfoIcons(props: Props) {
             {items.map((item, index) => {
                 const defaultColor = item.iconColor ?? "default"
                 const color = item.active ? defaultColor : info?.palette.text.disabled!!
-                const background = item.active ? colors.active[mode] : colors.disabled[mode]
+                const background = item.active ? colors.active[theme] : colors.disabled[theme]
                 return (
                     <Box key={index} sx={SX.box}>
                         {item.badge && <Box sx={{...SX.badge, background}}>{item.badge}</Box>}

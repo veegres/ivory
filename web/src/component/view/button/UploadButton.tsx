@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../../type/common";
 import {mergeSxProps} from "../../../app/utils";
 
 const SX: SxPropsMap = {
-    box: { padding: "5px", height: "100%" },
+    box: {padding: "5px", height: "100%"},
     upload: {
         minHeight: "120px",
         minWidth: "350px",
@@ -32,17 +32,17 @@ type Props = {
     accept: string,
     maxSize: string,
     loading: {
-       isLoading: boolean,
-       loaded?: number,
-       total?: number,
+        isLoading: boolean,
+        loaded?: number,
+        total?: number,
     },
     error?: string,
     onUpload: (file: File) => void,
 }
 
 export function UploadButton(props: Props) {
-    const { accept, maxSize, loading: { isLoading, loaded, total }, error } = props
-    const { info, state: {mode} } = useAppearance()
+    const {accept, maxSize, loading: {isLoading, loaded, total}, error} = props
+    const {info, theme} = useAppearance()
     const [active, setActive] = useState(false)
 
     return (
@@ -64,15 +64,15 @@ export function UploadButton(props: Props) {
     }
 
     function renderButton() {
-        const shadow = `inset 0px 0px 50px 5px ${color[mode] ?? "none"}`
-        const errorColor = info?.palette.error[mode]
+        const shadow = `inset 0px 0px 50px 5px ${color[theme] ?? "none"}`
+        const errorColor = info?.palette.error[theme]
         return (
             <ButtonBase sx={{...SX.upload, boxShadow: shadow}} component={"label"}>
-                <input hidden accept={accept} multiple type={"file"} onChange={handleChange} />
-                <FileUploadOutlined fontSize={"large"} />
+                <input hidden accept={accept} multiple type={"file"} onChange={handleChange}/>
+                <FileUploadOutlined fontSize={"large"}/>
                 <Box>Drag a file here or click to upload a file</Box>
                 {maxSize && !error && <Box fontSize={"small"}>Maximum file size is {maxSize}</Box>}
-                {error && <Box sx={{ color: errorColor }} fontSize={"small"}>Error: {error}</Box>}
+                {error && <Box sx={{color: errorColor}} fontSize={"small"}>Error: {error}</Box>}
             </ButtonBase>
         )
     }
@@ -80,7 +80,7 @@ export function UploadButton(props: Props) {
     function renderDrop() {
         return (
             <Box sx={getBlueBoxSX()}>
-                <FileUploadOutlined fontSize={"large"} />
+                <FileUploadOutlined fontSize={"large"}/>
                 <Box>Drop a file here</Box>
             </Box>
         )
@@ -91,7 +91,7 @@ export function UploadButton(props: Props) {
         const variant = value ? "determinate" : "indeterminate"
         return (
             <Box sx={getBlueBoxSX()}>
-                <CircularProgress variant={variant} value={value} />
+                <CircularProgress variant={variant} value={value}/>
                 <Box fontSize={"small"}>Loading {value === 100 ? `is finished` : `in process ${value}%`}</Box>
             </Box>
         )
@@ -100,7 +100,7 @@ export function UploadButton(props: Props) {
     function getBlueBoxSX() {
         return mergeSxProps(SX.upload, {
             pointerEvents: "none",
-            boxShadow: `inset 0px 0px 50px 50px ${color[mode] ?? "none"}`
+            boxShadow: `inset 0px 0px 50px 50px ${color[theme] ?? "none"}`
         })
     }
 

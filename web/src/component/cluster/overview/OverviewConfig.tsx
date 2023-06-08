@@ -22,7 +22,7 @@ const SX: SxPropsMap = {
 }
 
 export function OverviewConfig({info}: TabProps) {
-    const theme = useAppearance();
+    const appearance = useAppearance();
     const {enqueueSnackbar} = useSnackbar()
     const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
@@ -54,7 +54,7 @@ export function OverviewConfig({info}: TabProps) {
                     editable={isEditable}
                     autoFocus={isEditable}
                     basicSetup={{highlightActiveLine: false, highlightActiveLineGutter: isEditable}}
-                    theme={CodeThemes[theme.state.mode]}
+                    theme={CodeThemes[appearance.theme]}
                     extensions={[json()]}
                     onChange={(value) => setConfigState(value)}
                 />

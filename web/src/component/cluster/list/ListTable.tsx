@@ -30,7 +30,7 @@ type Props = {
 
 export function ListTable(props: Props) {
     const {store: {activeCluster}} = useStore()
-    const {state: {mode}} = useAppearance()
+    const {theme} = useAppearance()
     const {map, error, isFetching, isLoading} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
@@ -39,7 +39,7 @@ export function ListTable(props: Props) {
 
     if (error) return <ErrorSmart error={error}/>
     const header = {light: "#fff", dark: "#282828"}
-    const bgcolor = header[mode] ?? "inherit"
+    const bgcolor = header[theme] ?? "inherit"
 
     return (
         <Box sx={SX.box} className={scroll.tiny} maxHeight={!!activeCluster ? "25vh" : "60vh"}>
