@@ -18,7 +18,7 @@ export function SecretInitial() {
             <Typography variant={"caption"}>
                 This is <b>Ivory</b> — the tool that will help you to manage and troubleshoot your postgres clusters.
                 Ivory needs some information to make your sensitive data safe.
-                <ul style={{ padding: "0 10px "}}>
+                <ul style={{paddingLeft: "20px"}}>
                     <li>
                         <b>Secret word</b> — this word will be used to encrypt and decrypt sensitive
                         data like passwords, tokens, etc. Please, don't spread this word among a lot of people

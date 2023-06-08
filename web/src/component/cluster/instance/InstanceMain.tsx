@@ -31,8 +31,9 @@ const Tabs: {[key in InstanceTabType]: InstanceTab} = {
         body: (id: string, db: Database) => <InstanceMainQueries credentialId={id} db={db}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres. There are some default queries
-            which are provided by the <i>system</i>. You can do such thing here as:
-            <ul>
+            which are provided by the <i>system</i>. If manual queries are enabled, you can do such
+            things as:
+            <ul style={{margin: "0"}}>
                 <li>create your own <i>custom</i> queries</li>
                 <li>edit <i>system</i> or <i>custom</i> queries</li>
                 <li>rollback these changes at anytime to default state (the first query that was saved)</li>
