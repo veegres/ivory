@@ -10,3 +10,7 @@ build:
 
 clean:
 	rm -r build
+
+update:
+	go get -u ./...
+	go mod tidy
