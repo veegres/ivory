@@ -5,7 +5,16 @@ Initially, this tool was developed to simplify the life of developers who, in th
 I hope it will help to manage and troubleshoot postgres clusters not only for developers, but for more
 experienced people with postgres.
 
+Ivory can be used as a local tool in your personal computer for your personal needs and as a standalone tool
+in some remote VM for group usage.
+
 ## Get started
+
+1. Start the docker container
+2. Go to http://localhost
+3. Do the initial configuration (Ivory will guide you)
+4. Add your first cluster (by providing name and instances)
+5. Start monitoring :) 
 
 You can simply start and run container from Docker Hub or GitHub Container repository
 
