@@ -5,6 +5,7 @@ import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {certApi} from "../../../app/api";
 import {CertType} from "../../../type/cert";
+import {AxiosProgressEvent} from "axios";
 
 type Props = {
     type: CertType,
@@ -12,7 +13,7 @@ type Props = {
 
 export function CertsTabUpload(props: Props) {
     const { type } = props
-    const [progress, setProgress] = useState<ProgressEvent>()
+    const [progress, setProgress] = useState<AxiosProgressEvent>()
 
     const uploadOptions = useMutationOptions([["certs"]])
     const upload = useMutation(certApi.upload, uploadOptions)

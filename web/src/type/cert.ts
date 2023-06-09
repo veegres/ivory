@@ -1,4 +1,5 @@
 import {FileUsageType} from "./common";
+import {AxiosProgressEvent} from "axios";
 
 // COMMON (WEB AND SERVER)
 
@@ -29,7 +30,7 @@ export interface CertAddRequest {
 export interface CertUploadRequest {
     file: File,
     type: CertType,
-    setProgress?: (progressEvent: ProgressEvent) => void
+    setProgress?: (progressEvent: AxiosProgressEvent) => void
 }
 
 export interface CertTabs {

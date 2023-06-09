@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, {AxiosProgressEvent, AxiosRequestConfig} from "axios";
 import {Instance, InstanceInfo, InstanceMap, InstanceRequest} from "../type/instance";
 import {getDomain} from "./utils";
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
@@ -207,9 +207,9 @@ export const certApi = {
         const formData = new FormData()
         formData.append("type", type.toString())
         formData.append("file", file)
-        const config = {
+        const config: AxiosRequestConfig = {
             headers: {"Content-Type": "multipart/form-data"},
-            onUploadProgress: (progressEvent: ProgressEvent) => {
+            onUploadProgress: (progressEvent: AxiosProgressEvent) => {
                 setProgress && setProgress(progressEvent)
             }
         }

@@ -20,7 +20,7 @@ export function QueryEditor(props: Props) {
             autoFocus={editable}
             minHeight={editable ? "80px" : "auto"}
             placeholder={"Query"}
-            basicSetup={{lineNumbers: false, foldGutter: false, highlightActiveLine: false}}
+            basicSetup={{lineNumbers: false, foldGutter: false, highlightActiveLine: false, highlightSelectionMatches: false}}
             theme={CodeThemes[appearance.theme]}
             extensions={[sql({dialect: PostgreSQL})]}
             onChange={onUpdate}
