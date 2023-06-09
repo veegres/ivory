@@ -53,7 +53,7 @@ export function OverviewConfig({info}: TabProps) {
                     value={configState}
                     editable={isEditable}
                     autoFocus={isEditable}
-                    basicSetup={{highlightActiveLine: false, highlightActiveLineGutter: isEditable}}
+                    basicSetup={{highlightActiveLine: false, highlightActiveLineGutter: isEditable, highlightSelectionMatches: false}}
                     theme={CodeThemes[appearance.theme]}
                     extensions={[json()]}
                     onChange={(value) => setConfigState(value)}
