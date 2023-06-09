@@ -14,6 +14,14 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 
 ## Guide
 
+### Data
+
+All Ivory data is located inside `/opt/data` package. Ivory has a docker volume, it means that you won't
+lose it if your container a going to be rebooted. But you need to consider mount this package to your 
+local disk if you want to save the data between different containers 
+`--mount type=bind,source=YOUR_LOCAL_PATH,target=/opt/data`, or you can mount volume of the 
+old container to the new one by docker flag `--volumes-from`
+
 ### Authentication
 Ivory can work with or without authentication. It can be configured in the initial start. Right now
 Ivory supports only _Basic_ authentication with general username and password (maybe in the future support
