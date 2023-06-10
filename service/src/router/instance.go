@@ -2,7 +2,6 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	. "ivory/src/model"
 	"net/http"
 )
@@ -16,26 +15,14 @@ func NewInstanceRouter(instanceService InstanceGateway) *InstanceRouter {
 }
 
 func (r *InstanceRouter) GetInstanceInfo(context *gin.Context) {
-	var instance InstanceRequestTmp
+	var instance InstanceQueryRequest
 	errBind := context.ShouldBindQuery(&instance)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
-	var cred *uuid.UUID
-	if instance.CredentialId != nil {
-		credTmp, _ := uuid.Parse(*instance.CredentialId)
-		cred = &credTmp
-	}
-	request := InstanceRequest{
-		Host:         instance.Host,
-		Port:         instance.Port,
-		CredentialId: cred,
-		Certs:        instance.Certs,
-		Body:         instance.Body,
-	}
-	body, status, err := r.instanceService.Info(request)
+	body, status, err := r.instanceService.Info(instance.Json)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -44,50 +31,26 @@ func (r *InstanceRouter) GetInstanceInfo(context *gin.Context) {
 }
 
 func (r *InstanceRouter) GetInstanceOverview(context *gin.Context) {
-	var instance InstanceRequestTmp
+	var instance InstanceQueryRequest
 	errBind := context.ShouldBindQuery(&instance)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
-	var cred *uuid.UUID
-	if instance.CredentialId != nil {
-		credTmp, _ := uuid.Parse(*instance.CredentialId)
-		cred = &credTmp
-	}
-	request := InstanceRequest{
-		Host:         instance.Host,
-		Port:         instance.Port,
-		CredentialId: cred,
-		Certs:        instance.Certs,
-		Body:         instance.Body,
-	}
-	body, status, err := r.instanceService.Overview(request)
+	body, status, err := r.instanceService.Overview(instance.Json)
 	r.handleResponse(context, body, status, err)
 }
 
 func (r *InstanceRouter) GetInstanceConfig(context *gin.Context) {
-	var instance InstanceRequestTmp
+	var instance InstanceQueryRequest
 	errBind := context.ShouldBindQuery(&instance)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
-	var cred *uuid.UUID
-	if instance.CredentialId != nil {
-		credTmp, _ := uuid.Parse(*instance.CredentialId)
-		cred = &credTmp
-	}
-	request := InstanceRequest{
-		Host:         instance.Host,
-		Port:         instance.Port,
-		CredentialId: cred,
-		Certs:        instance.Certs,
-		Body:         instance.Body,
-	}
-	body, status, err := r.instanceService.Config(request)
+	body, status, err := r.instanceService.Config(instance.Json)
 	r.handleResponse(context, body, status, err)
 }
 

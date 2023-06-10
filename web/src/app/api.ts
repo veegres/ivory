@@ -66,10 +66,10 @@ export const safeApi = {
 
 export const instanceApi = {
     info: (request: InstanceRequest) => api
-        .get<Response<InstanceInfo>>(`/instance/info`, {params: request})
+        .get<Response<InstanceInfo>>(`/instance/info`, {params: {json: JSON.stringify(request)}})
         .then((response) => response.data.response),
     overview: (request: InstanceRequest) => api
-        .get<Response<Instance[]>>(`/instance/overview`, {params: request})
+        .get<Response<Instance[]>>(`/instance/overview`, {params: {json: JSON.stringify(request)}})
         .then<InstanceMap>((response) => response.data.response.reduce(
             (map, instance) => {
                 const leader = instance.role === "leader"
@@ -80,7 +80,7 @@ export const instanceApi = {
             {} as InstanceMap
         )),
     config: (request: InstanceRequest) => api
-        .get(`/instance/config`, {params: request})
+        .get(`/instance/config`, {params: {json: JSON.stringify(request)}})
         .then((response) => response.data.response),
     updateConfig: (request: InstanceRequest) => api
         .patch(`/instance/config`, request)
