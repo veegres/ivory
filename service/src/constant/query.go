@@ -103,7 +103,7 @@ FROM (
     	LEFT JOIN pg_namespace n ON (n.oid = c.relnamespace)
     WHERE nspname NOT IN ('pg_catalog', 'information_schema')
       AND nspname !~ '^pg_toast' AND nspname !~ '^pg_temp' AND relkind IN ('r', 'm') AND (relpersistence = 'p' OR NOT pg_is_in_recovery())
-      -- AND relname ~ :'tablename'
+      -- AND relname ~ 'tablename'
 ) t
 ORDER BY (toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor) DESC 
 LIMIT 20;`
@@ -128,7 +128,7 @@ FROM (
         LEFT JOIN pg_namespace n ON (n.oid = c.relnamespace)
     WHERE nspname NOT IN ('pg_catalog', 'information_schema') 
       AND nspname !~ '^pg_toast' AND nspname !~ '^pg_temp' AND relkind IN ('r', 'm') AND (relpersistence = 'p' OR NOT pg_is_in_recovery())
-      -- AND relname ~ :'tablename'
+      -- AND relname ~ 'tablename'
 ) t
 ORDER BY (toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor) DESC
 LIMIT 20;`
@@ -160,7 +160,7 @@ FROM (
     JOIN pg_index i ON i.indexrelid = p.indexrelid
     WHERE pg_get_indexdef(p.indexrelid) LIKE '%USING btree%' AND i.indisvalid 
       AND (c.relpersistence = 'p' OR NOT pg_is_in_recovery()) 
-      -- AND indexrelname ~ :'indexname'
+      -- AND indexrelname ~ 'indexname'
 ) t
 ORDER BY free_space DESC
 LIMIT 100;`
