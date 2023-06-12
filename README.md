@@ -1,17 +1,16 @@
 # Ivory (postgres / patroni cluster management tool)
 
-Ivory is an open-source project which is designed to simplify and visualize work with postgres clusters.
-Initially, this tool was developed to simplify the life of developers who, in their work, maintain postgres, but
-I hope it will help to manage and troubleshoot postgres clusters not only for developers, but for more
-experienced people with postgres.
+Ivory is an open-source project designed to simplify and visualize work with Postgres clusters.
+Initially, this tool was developed to ease the life of developers who maintain Postgres.
+But I hope it will help manage and troubleshoot Postgres clusters for both developers and database administrators.
 
-Ivory can be used as a local tool in your personal computer for your personal needs and as a standalone tool
-in some remote VM for group usage.
+Ivory can be used as a local tool in your personal computer for your needs and as a standalone tool
+in a separete virtual machine for collaborative usage.
 
 ## Get started
 
 1. Start the docker container
-2. Go to http://localhost
+2. Go to http://localhost:80
 3. Do the initial configuration (Ivory will guide you)
 4. Add your first cluster (by providing name and instances)
 5. Start monitoring :) 
@@ -25,8 +24,8 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 
 ### Data
 
-All Ivory data is located inside `/opt/data` package. Ivory has a docker volume, it means that you won't
-lose it if your container a going to be rebooted. But you need to consider mount this package to your 
+All Ivory data is located inside `/opt/data` directory. Ivory has a docker volume, it means that you won't
+lose it if your container a going to be rebooted. But you need to consider mount this directory to your 
 local disk if you want to save the data between different containers 
 `--mount type=bind,source=YOUR_LOCAL_PATH,target=/opt/data`, or you can mount volume of the 
 old container to the new one by docker flag `--volumes-from`
