@@ -17,7 +17,7 @@ Initially, this tool was developed to ease the life of developers who maintain P
 But I hope it will help manage and troubleshoot Postgres clusters for both developers and database administrators.
 
 Ivory can be used as a local tool in your personal computer for your needs and as a standalone tool
-in a separete virtual machine for collaborative usage.
+in a separate virtual machine for collaborative usage.
 
 ## Get started
 1. Start the docker container
