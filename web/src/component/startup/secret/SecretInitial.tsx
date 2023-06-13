@@ -16,7 +16,7 @@ export function SecretInitial() {
     return (
         <PageStartupBox header={"Welcome"} renderFooter={<SecretButton keyWord={key} refWord={ref}/>}>
             <Typography variant={"caption"}>
-                This is <b>Ivory</b> — the tool that will help you to manage and troubleshoot your postgres clusters.
+                <b>This is Ivory</b> — the tool that will help you to manage and troubleshoot your postgres clusters.
                 Ivory needs some information to make your sensitive data safe.
                 <ul style={{paddingLeft: "20px"}}>
                     <li>
