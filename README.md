@@ -1,8 +1,8 @@
 # Ivory (postgres / patroni cluster management tool)
 
-<p align="center">
+<div style="text-align: center;">
   <img src="web/public/ivory.png" alt="logo" />
-</p>
+</div>
 
 Ivory is an open-source project designed to simplify and visualize work with Postgres clusters.
 Initially, this tool was developed to ease the life of developers who maintain Postgres.
