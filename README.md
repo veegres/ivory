@@ -1,6 +1,6 @@
 # Ivory (postgres / patroni cluster management tool)
 
-<div style="text-align: center;">
+<div style="text-align: center;" align="center">
   <img src="web/public/ivory.png" alt="logo" />
 </div>
 
