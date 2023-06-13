@@ -49,7 +49,7 @@ export function ListRow(props: Props) {
                 />
                 {!toggle && (
                     <Box sx={SX.removed}>
-                        This cluster was removed, but it is still in your local storage, just uncheck it.
+                        This cluster is not on that list, but it is still is checked, just uncheck it.
                     </Box>
                 )}
             </ListCell>

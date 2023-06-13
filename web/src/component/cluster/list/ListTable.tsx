@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
     table: {"tr:last-child td": {border: 0}, bgcolor: "inherit"},
     nameCell: {width: "220px"},
-    buttonCell: {width: "1%"},
+    buttonCell: {width: "130px"},
 }
 
 type Props = {
