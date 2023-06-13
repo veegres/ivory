@@ -26,14 +26,15 @@ export function Secret() {
         <MenuWrapper>
             <Alert sx={SX.alert} severity={"info"} variant={"outlined"} icon={false}>
                 <Box sx={SX.text}>
-                    <Box>You can change the secret word here</Box>
+                    <Box>You can change the secret word here!</Box>
                     <Box sx={SX.bold}>
                         It can help if your secret was compromised or if someone got access
                         to the Ivory and you want them to be logged out
                     </Box>
                     <Box>
-                        By changing the secret <b>Ivory</b> will reencrypt all of your password and
-                        all of login tokens will become invalid (it means that you are going to be logged out)
+                        By changing the secret <b>Ivory</b> will reencrypt all of your passwords and
+                        all of Ivory login tokens will become invalid (it means that you and all who
+                        have been logged in are going to be logged out)
                     </Box>
                 </Box>
             </Alert>

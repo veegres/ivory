@@ -9,7 +9,7 @@ import {IvoryLinks} from "../../../app/utils";
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0 15px", gap: 3},
     image: {display: "flex", justifyContent: "center"},
-    text: {fontSize: 14},
+    text: {fontSize: 14, textAlign: "justify"},
 }
 
 export function About() {
@@ -18,8 +18,10 @@ export function About() {
             <Box sx={SX.scroll}>
                 <Box sx={SX.image}><img src={"/ivory.png"} width={200} height={200} alt={"Ivory"}/></Box>
                 <Box sx={SX.text}>
-                    Ivory is an open-source project which is designed to simplify and visualize work with
-                    postgres clusters.
+                    Ivory is an open-source project designed to simplify and visualize work with Postgres
+                    clusters. Initially, this tool was developed to ease the life of developers who maintain
+                    Postgres. But I hope it will help manage and troubleshoot Postgres clusters for both
+                    developers and database administrators.
                 </Box>
                 <MenuItemBox name={"Links"}>
                     {Object.values(IvoryLinks).map(({name, link}) => (
