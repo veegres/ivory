@@ -1,11 +1,16 @@
 <div style="text-align: center;" align="center">
-  <img src="web/public/ivory.png" alt="logo" />
+<img src="web/public/ivory.png" alt="logo" />
 
 # Ivory
-## [postgres / patroni cluster management tool]
+### [postgres / patroni cluster management tool]
+
+<img src="https://img.shields.io/github/deployments/veegres/ivory/production" alt="stable version" />
+<img src="https://img.shields.io/docker/v/aelsergeev/ivory/latest?label=stable" alt="stable version" />
+<img src="https://img.shields.io/docker/v/aelsergeev/ivory?label=latest" alt="latest version" />
+<img src="https://img.shields.io/docker/pulls/aelsergeev/ivory" alt="docker pulls" />
 </div>
 
-
+<br>
 
 Ivory is an open-source project designed to simplify and visualize work with Postgres clusters.
 Initially, this tool was developed to ease the life of developers who maintain Postgres.
