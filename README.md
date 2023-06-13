@@ -4,7 +4,7 @@
 # Ivory
 ### [postgres / patroni cluster management tool]
 
-<img src="https://img.shields.io/github/deployments/veegres/ivory/production" alt="stable version" />
+<img src="https://img.shields.io/github/deployments/veegres/ivory/production" alt="deployment" />
 <img src="https://img.shields.io/docker/v/aelsergeev/ivory/latest?label=stable" alt="stable version" />
 <img src="https://img.shields.io/docker/v/aelsergeev/ivory?label=latest" alt="latest version" />
 <img src="https://img.shields.io/docker/pulls/aelsergeev/ivory" alt="docker pulls" />
