@@ -8,7 +8,6 @@ Ivory can be used as a local tool in your personal computer for your needs and a
 in a separete virtual machine for collaborative usage.
 
 ## Get started
-
 1. Start the docker container
 2. Go to http://localhost:80
 3. Do the initial configuration (Ivory will guide you)
@@ -23,9 +22,8 @@ You can simply start and run container from Docker Hub or GitHub Container repos
 ## Guide
 
 ### Data
-
 All Ivory data is located inside `/opt/data` directory. Ivory has a docker volume, it means that you won't
-lose it if your container a going to be rebooted. But you need to consider mount this directory to your 
+lose it if your container are going to be rebooted. But you need to consider mount this directory to your 
 local disk if you want to save the data between different containers 
 `--mount type=bind,source=YOUR_LOCAL_PATH,target=/opt/data`, or you can mount volume of the 
 old container to the new one by docker flag `--volumes-from`
@@ -45,7 +43,6 @@ to use it if you put it globally.
 - [troubleshoot particular instance](doc/instance.md)
 
 ![Demo](doc/images/demo.gif)
-
 
 ## Contribution
 
