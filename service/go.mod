@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.0
-	github.com/jackc/pgx/v5 v5.3.1
+	github.com/jackc/pgx/v5 v5.4.3
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 )
 
