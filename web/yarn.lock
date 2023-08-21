@@ -1199,10 +1199,10 @@
     "@lezer/highlight" "^1.0.0"
     "@lezer/lr" "^1.0.0"
 
-"@codemirror/language@6.7.0", "@codemirror/language@^6.0.0":
-  version "6.7.0"
-  resolved "https://registry.yarnpkg.com/@codemirror/language/-/language-6.7.0.tgz#9f1c8923e3234376a40f3392e4a0451e9b4adb8f"
-  integrity sha512-4SMwe6Fwn57klCUsVN0y4/h/iWT+XIXFEmop2lIHHuWO0ubjCrF3suqSZLyOQlznxkNnNbOOfKe5HQbQGCAmTg==
+"@codemirror/language@6.9.0", "@codemirror/language@^6.0.0":
+  version "6.9.0"
+  resolved "https://registry.yarnpkg.com/@codemirror/language/-/language-6.9.0.tgz#c471ce1fdb9b1577f312bb68ef54fb4b76f7a420"
+  integrity sha512-nFu311/0ne/qGuGCL3oKuktBgzVOaxCHZPZv1tLSZkNjPYxxvkjSbzno3MlErG2tgw1Yw1yF8BxMCegeMXqpiw==
   dependencies:
     "@codemirror/state" "^6.0.0"
     "@codemirror/view" "^6.0.0"
