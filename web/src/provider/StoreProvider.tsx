@@ -72,6 +72,9 @@ export function StoreProvider(props: { children: ReactNode }) {
 
     const getters = useMemo(getGetters, [state])
     const setters = useMemo(getSetters, [])
+
+    // we need two providers, because otherwise each team when you use only actions in some component
+    // it will rerenders as well, event if you don't use any state inside
     return (
         <StoreContext.Provider value={getters}>
             <StoreActionContext.Provider value={setters}>
