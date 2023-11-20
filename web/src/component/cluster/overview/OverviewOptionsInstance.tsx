@@ -8,7 +8,7 @@ import {
     Tooltip
 } from "@mui/material";
 import {useMemo, useState} from "react";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStoreAction} from "../../../provider/StoreProvider";
 import {SxPropsMap} from "../../../type/common";
 import {InstanceMap} from "../../../type/instance";
 import {DetectionType} from "../../../type/cluster";
@@ -26,7 +26,7 @@ type Props = {
 }
 
 export function OverviewOptionsInstance(props: Props) {
-    const {setClusterInstance, setClusterDetection} = useStore()
+    const {setClusterInstance, setClusterDetection} = useStoreAction()
     const {instance, instances, detection} = props
     const [inputValue, setInputValue] = useState<string | undefined>(instance);
 

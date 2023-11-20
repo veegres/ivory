@@ -3,7 +3,7 @@ import {RefreshIconButton} from "../../view/button/IconButtons";
 import {grey, orange, purple} from "@mui/material/colors";
 import {getDomain, InstanceColor} from "../../../app/utils";
 import {InfoTitle} from "../../view/box/InfoTitle";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStoreAction} from "../../../provider/StoreProvider";
 import {Cluster, InstanceDetection} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";
 
@@ -22,7 +22,7 @@ export function ListCellChip(props: Props) {
     const {defaultInstance, combinedInstanceMap, warning} = instanceDetection
     const {fetching, active, detection, refetch} = instanceDetection
 
-    const {setCluster, setInstance} = useStore()
+    const {setCluster, setInstance} = useStoreAction()
 
     return (
         <Box sx={SX.clusterName}>

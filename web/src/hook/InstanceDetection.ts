@@ -2,14 +2,15 @@ import {useQuery} from "@tanstack/react-query";
 import {instanceApi} from "../app/api";
 import {useEffect, useMemo, useRef} from "react";
 import {combineInstances, createInstanceColors, getDomain, initialInstance, isSidecarEqual} from "../app/utils";
-import {useStore} from "../provider/StoreProvider";
+import {useStore, useStoreAction} from "../provider/StoreProvider";
 import {Cluster, DetectionType, InstanceDetection} from "../type/cluster";
 import {Sidecar} from "../type/common";
 import {InstanceMap} from "../type/instance";
 
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
-    const {store: {activeCluster}, setCluster, setWarnings} = useStore()
-    const isActive = !!activeCluster && cluster.name === activeCluster.cluster.name
+    const {activeCluster} = useStore()
+    const {setCluster, setWarnings} = useStoreAction()
+    const isClusterActive = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const defaultDetection = useRef<DetectionType>("auto")
     const defaultSidecar = useRef(instances[0])
@@ -33,24 +34,18 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const defaultInstance = handleDefaultInstance()
 
     useEffect(handleEffectNextRequest, [errorUpdateCount, instances, refetch])
-    useEffect(handleEffectDetectionChange, [isActive, activeCluster, instances, refetch, remove])
+    useEffect(handleEffectDetectionChange, [isClusterActive, activeCluster, instances, refetch, remove])
 
-    // we ignore this line cause this effect uses activeCluster and setCluster
-    // which are always changing in this function, and it causes endless recursion
-    // eslint-disable-next-line
-    useEffect(handleRequestUpdate, [isActive, cluster, defaultInstance, combine])
-    // we don't want to add setWarnings because it doesn't change and can cause
-    // additional rerenders that we want to prevent
-    // eslint-disable-next-line
-    useEffect(handleWarningsUpdate, [cluster.name, combine.warning])
+    useEffect(handleRequestUpdate, [isClusterActive, activeCluster?.detection, cluster, defaultInstance, combine, setCluster])
+    useEffect(handleWarningsUpdate, [cluster.name, combine.warning, setWarnings])
 
     return {
         defaultInstance,
         combinedInstanceMap: combine.combinedInstanceMap,
         warning: combine.warning,
-        detection: isActive ? activeCluster.detection : defaultDetection.current,
+        detection: isClusterActive ? activeCluster.detection : defaultDetection.current,
         colors,
-        active: isActive,
+        active: isClusterActive,
         fetching: isFetching,
         refetch: handleRefetch,
     }
@@ -94,7 +89,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
      * - auto   - refresh from scratch if detection was before manual
      */
     function handleEffectDetectionChange() {
-        if (isActive) {
+        if (isClusterActive) {
             const oldDetection = defaultDetection.current
             const newDetection = activeCluster.detection
             const isSidecarNotEqual = !isSidecarEqual(defaultSidecar.current, activeCluster.defaultInstance.sidecar)
@@ -119,12 +114,13 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
      * Update store each time when request is happened
      */
     function handleRequestUpdate() {
-        if (isActive) {
-            setCluster({...activeCluster, cluster, defaultInstance, ...combine})
+        if (isClusterActive) {
+            const detection = activeCluster.detection
+            setCluster({detection, cluster, defaultInstance, ...combine})
         }
 
         return () => {
-            if (isActive) setCluster(undefined)
+            if (isClusterActive) setCluster(undefined)
         }
     }
 
@@ -160,7 +156,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
         const map = combine.combinedInstanceMap
 
         if (defaultDetection.current === "manual") {
-            if (isActive) {
+            if (isClusterActive) {
                 const sidecar = activeCluster.defaultInstance.sidecar
                 return map[getDomain(sidecar)] ?? initialInstance(sidecar)
             } else {

@@ -3,7 +3,7 @@ import {InstanceColor} from "../../../app/utils";
 import {SxPropsMap} from "../../../type/common";
 import {InstanceWeb} from "../../../type/instance";
 import {WarningAmberRounded} from "@mui/icons-material";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {Cluster} from "../../../type/cluster";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
@@ -28,7 +28,8 @@ export function OverviewInstancesRow(props: Props) {
     const {instance, domain, cluster} = props
     const {role, sidecar, database, state, lag, inInstances, inCluster} = instance
 
-    const {setInstance, isInstanceActive} = useStore()
+    const {isInstanceActive} = useStore()
+    const {setInstance} = useStoreAction()
     const checked = isInstanceActive(domain)
     const [open, setOpen] = useState<"none" | "reinit" | "switch">("none")
 
@@ -36,10 +37,7 @@ export function OverviewInstancesRow(props: Props) {
     const switchover = useMutation(instanceApi.switchover, options)
     const reinit = useMutation(instanceApi.reinitialize, options)
 
-    // we ignore this line cause this effect uses setInstance
-    // which are always changing in this function, and it causes endless recursion
-    // eslint-disable-next-line
-    useEffect(handleEffectInstanceChanged, [checked, instance])
+    useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])
 
     return (
         <TableRow sx={SX.row} onClick={handleCheck(instance, checked)}>

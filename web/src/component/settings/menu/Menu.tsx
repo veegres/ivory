@@ -1,5 +1,5 @@
 import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {useEffect, useState} from "react";
 import {MenuContent} from "./MenuContent";
 import {Settings, SxPropsMap} from "../../../type/common";
@@ -20,13 +20,14 @@ const SX: SxPropsMap = {
 
 export function Menu() {
     const [page, setPage] = useState(Settings.MENU)
-    const {store, toggleSettingsDialog} = useStore()
+    const {settings} = useStore()
+    const {toggleSettingsDialog} = useStoreAction()
     const options = SettingOptions[page]
 
-    useEffect(handleEffectSettingsClose, [store.settings])
+    useEffect(handleEffectSettingsClose, [settings])
 
     return (
-        <Dialog sx={SX.dialog} open={store.settings} onClose={toggleSettingsDialog}>
+        <Dialog sx={SX.dialog} open={settings} onClose={toggleSettingsDialog}>
             <DialogTitle sx={SX.title}>
                 {page === Settings.MENU ? (
                     <IconButton disableRipple>{options.icon}</IconButton>
@@ -60,6 +61,6 @@ export function Menu() {
     }
 
     function handleEffectSettingsClose() {
-        if (!store.settings) setPage(Settings.MENU)
+        if (!settings) setPage(Settings.MENU)
     }
 }

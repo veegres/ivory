@@ -1,6 +1,6 @@
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStoreAction} from "../../../provider/StoreProvider";
 import {LoadingButton} from "@mui/lab";
 import {useState} from "react";
 import {AlertDialog} from "../../view/dialog/AlertDialog";
@@ -11,7 +11,7 @@ type Props = {
 }
 
 export function EraseButton(props: Props) {
-    const {clear} = useStore()
+    const {clear} = useStoreAction()
     const [open, setOpen] = useState(false)
 
     const cleanOptions = useMutationOptions([["info"]], clear)
