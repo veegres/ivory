@@ -2,7 +2,7 @@ import {OverviewInstances} from "./OverviewInstances";
 import {OverviewConfig} from "./OverviewConfig";
 import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material";
 import {useState} from "react";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../view/box/InfoAlert";
 import {PageMainBox} from "../../view/box/PageMainBox";
@@ -59,8 +59,8 @@ export type TabProps = {
 }
 
 export function Overview() {
-    const {store, setClusterTab} = useStore()
-    const {activeCluster, activeClusterTab} = store
+    const {activeCluster, activeClusterTab} = useStore()
+    const {setClusterTab} = useStoreAction()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const clusters = useQuery<ClusterMap>(["cluster/list"])

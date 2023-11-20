@@ -2,7 +2,7 @@ import {Box, IconButton, Tooltip} from "@mui/material";
 import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../../app/utils";
-import {useStore} from "../../provider/StoreProvider";
+import {useStoreAction} from "../../provider/StoreProvider";
 import {AuthType, SxPropsMap} from "../../type/common";
 import {useAuth} from "../../provider/AuthProvider";
 import {useQueryClient} from "@tanstack/react-query";
@@ -24,7 +24,7 @@ type Props = {
 
 export function Header(props: Props) {
     const {company, show, auth} = props
-    const {toggleSettingsDialog} = useStore()
+    const {toggleSettingsDialog} = useStoreAction()
     const {logout} = useAuth()
     const [animal, setAnimal] = useState("")
 

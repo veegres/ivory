@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
 }
 
 export function Instance() {
-    const {store: {activeInstance}, isClusterOverviewOpen} = useStore()
+    const {activeInstance, isClusterOverviewOpen} = useStore()
     const [tab, setTab] = useState(InstanceTabType.CHART)
 
     return (

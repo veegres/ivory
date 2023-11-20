@@ -49,7 +49,7 @@ type Props = {
 
 export function InstanceMain(props: Props) {
     const {tab, database} = props
-    const {store: { activeCluster }} = useStore()
+    const {activeCluster} = useStore()
     const [dbName, setDbName] = useState("")
 
     if (!activeCluster) return null

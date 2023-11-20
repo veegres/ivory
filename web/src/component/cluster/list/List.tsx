@@ -7,7 +7,7 @@ import {useStore} from "../../../provider/StoreProvider";
 import {ListTable} from "./ListTable";
 
 export function List() {
-    const {store: {activeTags}} = useStore()
+    const {activeTags} = useStore()
     const tags = activeTags[0] === "ALL" ? undefined : activeTags
     const query = useQuery(["cluster/list"], () => clusterApi.list(tags))
     const {data, isLoading, isFetching, error} = query
