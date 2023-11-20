@@ -6,7 +6,7 @@ start:
 
 .PHONY: build
 build:
-	go build -o ../build/ivory -C src
+	go build -C src -o ../build/ivory
 
 clean:
 	rm -r build
