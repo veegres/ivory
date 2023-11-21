@@ -73,6 +73,6 @@ export function Header(props: Props) {
 
     function handleLogout() {
         logout()
-        queryClient.refetchQueries(["info"]).then()
+        queryClient.refetchQueries({queryKey: ["info"]}).then()
     }
 }

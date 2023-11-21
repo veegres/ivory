@@ -6,7 +6,7 @@ import {passwordApi} from "../../../app/api";
 import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 
 export function Credentials() {
-    const query = useQuery(["credentials"], () => passwordApi.list())
+    const query = useQuery({queryKey: ["credentials"], queryFn: () => passwordApi.list()})
     const {data, error, isFetching} = query
 
     return (

@@ -20,7 +20,7 @@ const SX: SxPropsMap = {
 
 export function OverviewInstances({info}: TabProps) {
     const {cluster, combinedInstanceMap} = info
-    const instanceMapFetching = useIsFetching(["instance/overview", cluster.name])
+    const instanceMapFetching = useIsFetching({queryKey: ["instance/overview", cluster.name]})
 
     return (
         <Table size={"small"} sx={SX.table}>

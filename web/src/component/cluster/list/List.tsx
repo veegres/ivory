@@ -9,8 +9,8 @@ import {ListTable} from "./ListTable";
 export function List() {
     const {activeTags} = useStore()
     const tags = activeTags[0] === "ALL" ? undefined : activeTags
-    const query = useQuery(["cluster/list"], () => clusterApi.list(tags))
-    const {data, isLoading, isFetching, error} = query
+    const query = useQuery({queryKey: ["cluster/list"], queryFn: () => clusterApi.list(tags)})
+    const {data, isPending, isFetching, error} = query
 
     // NOTE: we don't need to check update of `query` because it won't change
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -19,7 +19,7 @@ export function List() {
     return (
         <PageMainBox withMarginTop={"40px"}>
             <ListTags/>
-            <ListTable map={data} error={error} isFetching={isFetching} isLoading={isLoading}/>
+            <ListTable map={data} error={error} isFetching={isFetching} isLoading={isPending}/>
         </PageMainBox>
     )
 }

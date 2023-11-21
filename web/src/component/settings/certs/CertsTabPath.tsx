@@ -25,7 +25,7 @@ export function CertsTabPath(props: Props) {
     const [path, setPath] = useState("")
 
     const addOptions = useMutationOptions([["certs"]], () => setPath(""))
-    const add = useMutation(certApi.add, addOptions)
+    const add = useMutation({mutationFn: certApi.add, ...addOptions})
 
     return (
         <Box sx={SX.box}>
@@ -45,7 +45,7 @@ export function CertsTabPath(props: Props) {
                 <LoadingButton
                     sx={SX.border}
                     variant={"outlined"}
-                    loading={add.isLoading}
+                    loading={add.isPending}
                     onClick={() => add.mutate({ path, type })}
                     disabled={!path}
                     size={"large"}

@@ -18,13 +18,13 @@ export function ListCellRead(props: Props) {
     const {toggle, name} = props
 
     const deleteMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]])
-    const deleteCluster = useMutation(clusterApi.delete, deleteMutationOptions)
-    const {isLoading, isSuccess} = deleteCluster
+    const deleteCluster = useMutation({mutationFn: clusterApi.delete, ...deleteMutationOptions})
+    const {isPending, isSuccess} = deleteCluster
 
     return (
         <Box sx={SX.box}>
-            <EditIconButton disabled={isLoading || isSuccess} onClick={toggle}/>
-            <DeleteIconButton loading={isLoading} disabled={isSuccess} onClick={handleDelete}/>
+            <EditIconButton disabled={isPending || isSuccess} onClick={toggle}/>
+            <DeleteIconButton loading={isPending} disabled={isSuccess} onClick={handleDelete}/>
         </Box>
     )
 

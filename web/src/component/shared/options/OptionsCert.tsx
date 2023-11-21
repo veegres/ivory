@@ -16,7 +16,7 @@ export function OptionsCert(props: Props) {
     const certId = selected ?? ""
     const {label} = CertOptions[type]
 
-    const query = useQuery(["certs", type], () => certApi.list(type))
+    const query = useQuery({queryKey: ["certs", type], queryFn: () => certApi.list(type)})
     const options = useMemo(handleMemoOptions, [query.data])
 
     return (
@@ -24,7 +24,7 @@ export function OptionsCert(props: Props) {
             label={label}
             selected={{key: certId, short: shortUuid(certId)}}
             options={options}
-            loading={query.isLoading}
+            loading={query.isPending}
             onUpdate={handleUpdate}
         />
     )

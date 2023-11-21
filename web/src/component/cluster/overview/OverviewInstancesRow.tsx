@@ -34,8 +34,8 @@ export function OverviewInstancesRow(props: Props) {
     const [open, setOpen] = useState<"none" | "reinit" | "switch">("none")
 
     const options = useMutationOptions([["instance/overview", cluster.name]])
-    const switchover = useMutation(instanceApi.switchover, options)
-    const reinit = useMutation(instanceApi.reinitialize, options)
+    const switchover = useMutation({mutationFn: instanceApi.switchover, ...options})
+    const reinit = useMutation({mutationFn: instanceApi.reinitialize, ...options})
 
     useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])
 
@@ -80,8 +80,8 @@ export function OverviewInstancesRow(props: Props) {
                 />
                 <LoadingButton
                     color={"primary"}
-                    loading={reinit.isLoading}
-                    disabled={switchover.isLoading}
+                    loading={reinit.isPending}
+                    disabled={switchover.isPending}
                     onClick={() => setOpen("reinit")}>
                     Reinit
                 </LoadingButton>
@@ -101,7 +101,7 @@ export function OverviewInstancesRow(props: Props) {
                 />
                 <LoadingButton
                     color={"secondary"}
-                    loading={switchover.isLoading}
+                    loading={switchover.isPending}
                     onClick={() => setOpen("switch")}>
                     Switchover
                 </LoadingButton>

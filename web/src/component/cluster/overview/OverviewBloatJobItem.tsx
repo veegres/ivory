@@ -37,9 +37,9 @@ export function OverviewBloatJobItem({compactTable}: Props) {
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
     const deleteOptions = useMutationOptions([["instance/bloat/list"]])
-    const deleteJob = useMutation(bloatApi.delete, deleteOptions)
+    const deleteJob = useMutation({mutationFn: bloatApi.delete, ...deleteOptions})
     const stopOptions = useMutationOptions()
-    const stopJob = useMutation(bloatApi.stop, stopOptions)
+    const stopJob = useMutation({mutationFn: bloatApi.stop, ...stopOptions})
 
     return (
         <Paper sx={SX.paper} variant={"outlined"}>
@@ -54,8 +54,8 @@ export function OverviewBloatJobItem({compactTable}: Props) {
                     <Grid item container xs={"auto"} sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
                         {status.active ?
-                            renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isLoading) :
-                            renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isLoading)
+                            renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isPending) :
+                            renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isPending)
                         }
                     </Grid>
                 </Grid>

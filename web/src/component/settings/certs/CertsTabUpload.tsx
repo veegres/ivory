@@ -16,7 +16,7 @@ export function CertsTabUpload(props: Props) {
     const [progress, setProgress] = useState<AxiosProgressEvent>()
 
     const uploadOptions = useMutationOptions([["certs"]])
-    const upload = useMutation(certApi.upload, uploadOptions)
+    const upload = useMutation({mutationFn: certApi.upload, ...uploadOptions})
     const { loading, error: uploadError } = getUploadInfo()
 
     return (
@@ -36,7 +36,7 @@ export function CertsTabUpload(props: Props) {
     function getUploadInfo() {
         const error = upload.isError ? getErrorMessage(upload.error) : undefined
         const loading = {
-            isLoading: upload.isLoading,
+            isLoading: upload.isPending,
             loaded: progress?.loaded,
             total: progress?.total,
         }

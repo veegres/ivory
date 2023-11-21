@@ -29,10 +29,10 @@ type Props = {
 export function Query(props: Props) {
     const {type, credentialId, db} = props
     const [show, setShow] = useState(false)
-    const query = useQuery(["query", "map", type], () => queryApi.list(type))
-    const info = useQuery(["info"], () => generalApi.info())
+    const query = useQuery({queryKey: ["query", "map", type], queryFn: () => queryApi.list(type)})
+    const info = useQuery({queryKey: ["info"], queryFn: () => generalApi.info()})
 
-    if (query.isLoading) return renderLoading()
+    if (query.isPending) return renderLoading()
     if (query.error) return <ErrorSmart error={query.error}/>
 
     const isManual = info.data?.availability.manualQuery ?? false

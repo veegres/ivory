@@ -30,7 +30,7 @@ export function CertsItem(props: Props) {
     const { info } = useAppearance()
 
     const deleteOptions = useMutationOptions([["certs"]])
-    const deleteCert = useMutation(certApi.delete, deleteOptions)
+    const deleteCert = useMutation({mutationFn: certApi.delete, ...deleteOptions})
 
     const fileUsage = FileUsageOptions[cert.fileUsageType]
 
@@ -45,7 +45,7 @@ export function CertsItem(props: Props) {
             <Tooltip placement={"top-start"} title={cert.path}>
                 <Box sx={{...SX.path, color: info?.palette.text.disabled}} style={style.break}>{cert.path}</Box>
             </Tooltip>
-            <DeleteIconButton loading={deleteCert.isLoading} onClick={() => deleteCert.mutate(uuid)} />
+            <DeleteIconButton loading={deleteCert.isPending} onClick={() => deleteCert.mutate(uuid)} />
         </Box>
     )
 }

@@ -26,12 +26,12 @@ export function ListCellUpdate(props: Props) {
     const {toggle, onUpdate, onClose} = props
 
     const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]], handleSuccess)
-    const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
+    const updateCluster = useMutation({mutationFn: clusterApi.update, ...updateMutationOptions})
 
     return (
         <Box sx={SX.box}>
-            <CancelIconButton loading={false} disabled={updateCluster.isLoading} onClick={handleClose}/>
-            <SaveIconButton loading={updateCluster.isLoading} disabled={!name} onClick={handleUpdate}/>
+            <CancelIconButton loading={false} disabled={updateCluster.isPending} onClick={handleClose}/>
+            <SaveIconButton loading={updateCluster.isPending} disabled={!name} onClick={handleUpdate}/>
         </Box>
     )
 

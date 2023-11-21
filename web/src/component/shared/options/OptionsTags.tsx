@@ -8,14 +8,14 @@ type Props = {
 }
 
 export function OptionsTags(props: Props) {
-    const query = useQuery(["tag/list"], tagApi.list)
-    const {data, isLoading} = query
+    const query = useQuery({queryKey: ["tag/list"], queryFn: tagApi.list})
+    const {data, isPending} = query
     const tags = data ?? [];
     return (
         <AutocompleteTags
             tags={tags}
             selected={props.selected ?? []}
-            loading={isLoading}
+            loading={isPending}
             onUpdate={props.onUpdate}
         />
     )

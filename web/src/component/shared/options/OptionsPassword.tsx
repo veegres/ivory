@@ -16,7 +16,7 @@ export function OptionsPassword(props: Props) {
     const passId = selected ?? ""
     const {label} = CredentialOptions[type]
 
-    const query = useQuery(["credentials", type], () => passwordApi.list(type))
+    const query = useQuery({queryKey: ["credentials", type], queryFn: () => passwordApi.list(type)})
     const options = useMemo(handleMemoOptions, [query.data])
 
     return (
@@ -24,7 +24,7 @@ export function OptionsPassword(props: Props) {
             label={label}
             selected={{key: passId, short: shortUuid(passId)}}
             options={options}
-            loading={query.isLoading}
+            loading={query.isPending}
             onUpdate={handleUpdate}
         />
     )

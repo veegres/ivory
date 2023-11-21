@@ -11,7 +11,7 @@ export function SecretInitial() {
     const [key, setKey] = useState("")
     const [ref, setRef] = useState("")
     const setReqOptions = useMutationOptions([["info"]])
-    const setReq = useMutation(initialApi.setSecret, setReqOptions)
+    const setReq = useMutation({mutationFn: initialApi.setSecret, ...setReqOptions})
 
     return (
         <PageStartupBox header={"Welcome"} renderFooter={<SecretButton keyWord={key} refWord={ref}/>}>

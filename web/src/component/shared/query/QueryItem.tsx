@@ -46,16 +46,16 @@ export function QueryItem(props: Props) {
     const [body, setBody] = useState<BodyType>()
     const open = body !== undefined
 
-    const result = useQuery(
-        ["query", "run", query.id],
-        () => queryApi.run({queryUuid: query.id, credentialId, db}),
-        {enabled: false, retry: false},
-    )
+    const result = useQuery({
+        queryKey: ["query", "run", query.id],
+        queryFn: () => queryApi.run({queryUuid: query.id, credentialId, db}),
+        enabled: false, retry: false,
+    })
 
     const removeOptions = useMutationOptions([["query", "map", type]])
-    const remove = useMutation(queryApi.delete, removeOptions)
-    const cancel = useMutation(queryApi.cancel, {onSuccess: () => result.refetch()})
-    const terminate = useMutation(queryApi.terminate, {onSuccess: () => result.refetch()})
+    const remove = useMutation({mutationFn: queryApi.delete, ...removeOptions})
+    const cancel = useMutation({mutationFn: queryApi.cancel, onSuccess: () => result.refetch()})
+    const terminate = useMutation({mutationFn: queryApi.terminate, onSuccess: () => result.refetch()})
 
     return (
         <Paper sx={SX.item} variant={"outlined"}>
@@ -82,7 +82,7 @@ export function QueryItem(props: Props) {
                 <QueryItemRun
                     data={result.data}
                     error={result.error}
-                    loading={result.isFetching || cancel.isLoading || terminate.isLoading}
+                    loading={result.isFetching || cancel.isPending || terminate.isPending}
                     onCancel={(pid) => cancel.mutate({pid, credentialId, db})}
                     onTerminate={(pid) => terminate.mutate({pid, credentialId, db})}
                 />
@@ -98,7 +98,7 @@ export function QueryItem(props: Props) {
                     <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
                 )}
                 {query.creation === QueryCreation.Manual && (
-                    <DeleteIconButton loading={remove.isLoading} onClick={handleDelete}/>
+                    <DeleteIconButton loading={remove.isPending} onClick={handleDelete}/>
                 )}
                 {editable && (
                     <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>

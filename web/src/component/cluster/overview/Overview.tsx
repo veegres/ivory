@@ -63,7 +63,7 @@ export function Overview() {
     const {setClusterTab} = useStoreAction()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useQuery<ClusterMap>(["cluster/list"])
+    const clusters = useQuery<ClusterMap>({queryKey: ["cluster/list"]})
     const tab = TABS[activeClusterTab]
 
     return (
