@@ -72,7 +72,11 @@ export function StoreProvider(props: { children: ReactNode }) {
     const [state, setState] = useLocalStorageState("store", initialStore)
     const queryClient = useQueryClient()
 
+    // NOTE: if state will change then methods inside it will be changed as well
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const getters = useMemo(getGetters, [state])
+    // NOTE: we don't need to update setters at all
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const setters = useMemo(getSetters, [])
 
     // we need two providers, because otherwise each team when you use only actions in some component
