@@ -23,7 +23,7 @@ export function QueryItemEdit(props: Props) {
     const [newQuery, setNewQuery] = useState(query)
 
     const updateOptions = useMutationOptions([["query", "map"]])
-    const update = useMutation(queryApi.update, updateOptions)
+    const update = useMutation({mutationFn: queryApi.update, ...updateOptions})
 
     return (
         <Box sx={SX.box}>
@@ -31,7 +31,7 @@ export function QueryItemEdit(props: Props) {
                 <QueryEditor value={query} editable={true} onUpdate={setNewQuery}/>
             </Box>
             <Box sx={SX.buttons}>
-                <SaveIconButton loading={update.isLoading} placement={"left"} onClick={handleUpdate}/>
+                <SaveIconButton loading={update.isPending} placement={"left"} onClick={handleUpdate}/>
                 <CopyIconButton placement={"left"} onClick={handleCopy}/>
             </Box>
         </Box>

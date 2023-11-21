@@ -22,7 +22,7 @@ export function AuthProvider(props: { children: ReactNode }) {
 
     if (token) api.defaults.headers.common["Authorization"] = `Bearer ${window.atob(token)}`
     else delete api.defaults.headers.common["Authorization"]
-    queryClient.refetchQueries(["info"]).then()
+    queryClient.refetchQueries({queryKey: ["info"]}).then()
 
     return (
         <AuthContext.Provider value={{setToken: setTokenEncrypt, logout}}>

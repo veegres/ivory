@@ -35,7 +35,7 @@ export function QueryNew(props: Props) {
     const [query, setQuery] = useState("")
 
     const createOptions = useMutationOptions([["query", "map", type]], handleSuccess)
-    const create = useMutation(queryApi.create, createOptions)
+    const create = useMutation({mutationFn: queryApi.create, ...createOptions})
 
     return (
         <Paper sx={SX.body} variant={"outlined"}>
@@ -72,7 +72,7 @@ export function QueryNew(props: Props) {
                     onChange={(e) => setDesc(e.target.value)}
                 />
                 <LoadingButton
-                    loading={create.isLoading}
+                    loading={create.isPending}
                     variant={"outlined"}
                     onClick={handleAdd}
                     disabled={!name || !query}

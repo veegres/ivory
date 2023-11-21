@@ -15,8 +15,8 @@ export function EraseButton(props: Props) {
     const [open, setOpen] = useState(false)
 
     const cleanOptions = useMutationOptions([["info"]], clear)
-    const cleanInitial = useMutation(initialApi.erase, cleanOptions)
-    const cleanSafe = useMutation(safeApi.erase, cleanOptions)
+    const cleanInitial = useMutation({mutationFn: initialApi.erase, ...cleanOptions})
+    const cleanSafe = useMutation({mutationFn: safeApi.erase, ...cleanOptions})
 
     return (
         <>
@@ -25,7 +25,7 @@ export function EraseButton(props: Props) {
                 color={"error"}
                 variant={"outlined"}
                 onClick={() => setOpen(true)}
-                loading={cleanSafe.isLoading || cleanInitial.isLoading}
+                loading={cleanSafe.isPending || cleanInitial.isPending}
             >
                 Erase
             </LoadingButton>

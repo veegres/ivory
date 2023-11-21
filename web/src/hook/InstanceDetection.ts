@@ -1,4 +1,4 @@
-import {useQuery} from "@tanstack/react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {instanceApi} from "../app/api";
 import {useEffect, useMemo, useRef} from "react";
 import {combineInstances, createInstanceColors, getDomain, initialInstance, isSidecarEqual} from "../app/utils";
@@ -9,23 +9,25 @@ import {InstanceMap} from "../type/instance";
 
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
     const {activeCluster} = useStore()
-    const {setCluster, setWarnings} = useStoreAction()
+    const {setCluster, setClusterInfo, setWarnings} = useStoreAction()
     const isClusterActive = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const defaultDetection = useRef<DetectionType>("auto")
     const defaultSidecar = useRef(instances[0])
     const previousData = useRef<InstanceMap>({})
 
-    const query = useQuery(
-        ["instance/overview", cluster.name],
-        () => instanceApi.overview({
+    const queryKey = useMemo(() => ["instance/overview", cluster.name], [cluster.name])
+    const queryClient = useQueryClient();
+    const query = useQuery({
+        queryKey: ["instance/overview", cluster.name],
+        queryFn: () => instanceApi.overview({
             ...defaultSidecar.current,
             credentialId: cluster.credentials.patroniId,
             certs: cluster.certs
         }),
-        {retry: false}
-    )
-    const {errorUpdateCount, refetch, remove, data, isFetching} = query
+        retry: false,
+    })
+    const {errorUpdateCount, refetch, data, isFetching} = query
     const instanceMap = useMemo(handleMemoInstanceMap, [data])
     previousData.current = instanceMap
 
@@ -34,10 +36,10 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const defaultInstance = handleDefaultInstance()
 
     useEffect(handleEffectNextRequest, [errorUpdateCount, instances, refetch])
-    useEffect(handleEffectDetectionChange, [isClusterActive, activeCluster, instances, refetch, remove])
+    useEffect(handleEffectDetectionChange, [isClusterActive, activeCluster, instances, refetch, queryClient, queryKey])
 
-    useEffect(handleRequestUpdate, [isClusterActive, activeCluster?.detection, cluster, defaultInstance, combine, setCluster])
-    useEffect(handleWarningsUpdate, [cluster.name, combine.warning, setWarnings])
+    useEffect(handleEffectRequestUpdate, [isClusterActive, cluster, defaultInstance, combine, setCluster, setClusterInfo])
+    useEffect(handleEffectWarningsUpdate, [cluster.name, combine.warning, setWarnings])
 
     return {
         defaultInstance,
@@ -61,7 +63,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
         if (defaultDetection.current === "auto") {
             defaultSidecar.current = instances[0]
         }
-        remove()
+        queryClient.removeQueries({queryKey})
         await refetch()
     }
 
@@ -97,14 +99,14 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
             if (newDetection === "manual" && (isSidecarNotEqual || oldDetection === "auto")) {
                 defaultSidecar.current = activeCluster.defaultInstance.sidecar
                 defaultDetection.current = activeCluster.detection
-                remove()
+                queryClient.removeQueries({queryKey})
                 refetch().then()
             }
 
             if (newDetection === "auto" && oldDetection === "manual") {
                 defaultSidecar.current = instances[0]
                 defaultDetection.current = activeCluster.detection
-                remove()
+                queryClient.removeQueries({queryKey})
                 refetch().then()
             }
         }
@@ -113,9 +115,9 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     /**
      * Update store each time when request is happened
      */
-    function handleRequestUpdate() {
+    function handleEffectRequestUpdate() {
         if (isClusterActive) {
-            const detection = activeCluster.detection
+            const detection = defaultDetection.current
             setCluster({detection, cluster, defaultInstance, ...combine})
         }
 
@@ -124,7 +126,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
         }
     }
 
-    function handleWarningsUpdate() {
+    function handleEffectWarningsUpdate() {
         setWarnings(cluster.name, combine.warning)
         return () => {
             if (combine.warning) setWarnings(cluster.name, false)

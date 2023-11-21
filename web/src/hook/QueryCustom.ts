@@ -25,13 +25,13 @@ export function useMutationOptions(beforeKeys?: QueryKey[], onSuccess?: (data: a
     async function handleSuccess(data: any) {
         if (beforeKeys) {
             for (const key of beforeKeys) {
-                await queryClient.refetchQueries(key)
+                await queryClient.refetchQueries({queryKey: key})
             }
         }
         if (onSuccess) onSuccess(data)
         if (afterKeys) {
             for (const key of afterKeys) {
-                await queryClient.refetchQueries(key)
+                await queryClient.refetchQueries({queryKey: key})
             }
         }
     }

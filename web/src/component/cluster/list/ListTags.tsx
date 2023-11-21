@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
 export function ListTags() {
     const {warnings, activeTags} = useStore()
     const {setTags} = useStoreAction()
-    const query = useQuery(["tag/list"], tagApi.list)
+    const query = useQuery({queryKey: ["tag/list"], queryFn: tagApi.list})
     const {data} = query
     const warningsCount = Object.values(warnings).filter(it => it).length
 

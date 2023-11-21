@@ -32,7 +32,7 @@ export function OverviewBloatJobForm(props: Props) {
     const [ratio, setRadio] = useState<number>()
 
     const {onError} = useMutationOptions()
-    const start = useMutation(bloatApi.start, {onSuccess, onError})
+    const start = useMutation({mutationFn: bloatApi.start, onSuccess, onError})
 
     if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (!defaultInstance.leader) return <ClusterNoLeaderError/>
@@ -83,7 +83,7 @@ export function OverviewBloatJobForm(props: Props) {
                     onChange={(e) => setRadio(parseInt(e.target.value))}
                 />
                 <Box sx={SX.buttons}>
-                    <Button variant={"text"} disabled={start.isLoading} onClick={handleRun}>
+                    <Button variant={"text"} disabled={start.isPending} onClick={handleRun}>
                         Clean
                     </Button>
                 </Box>

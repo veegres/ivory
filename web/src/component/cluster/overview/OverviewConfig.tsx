@@ -30,19 +30,19 @@ export function OverviewConfig({info}: TabProps) {
     const {sidecar} = defaultInstance
     const requestBody: InstanceRequest = {...sidecar, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
 
-    const {data: config, isLoading, isError, error} = useQuery(
-        ["instance/config", sidecar.host, sidecar.port],
-        () => instanceApi.config(requestBody),
-        {enabled: defaultInstance.inCluster}
-    )
+    const {data: config, isPending, isError, error} = useQuery({
+        queryKey: ["instance/config", sidecar.host, sidecar.port],
+        queryFn: () => instanceApi.config(requestBody),
+        enabled: defaultInstance.inCluster,
+    })
     const updateOptions = useMutationOptions([["instance/config", sidecar.host, sidecar.port]], () => setIsEditable(false))
-    const updateConfig = useMutation(instanceApi.updateConfig, updateOptions)
+    const updateConfig = useMutation({mutationFn: instanceApi.updateConfig, ...updateOptions})
 
     useEffect(() => setConfigState(stringify(config)), [config])
 
     if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (isError) return <ErrorSmart error={error}/>
-    if (isLoading) return <Skeleton variant={"rectangular"} height={300}/>
+    if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
 
     return (
         <Box sx={SX.box}>
@@ -60,7 +60,7 @@ export function OverviewConfig({info}: TabProps) {
                 />
             </Box>
             <Box sx={SX.buttons}>
-                {renderUpdateButtons(defaultInstance, configState, updateConfig.isLoading, isEditable)}
+                {renderUpdateButtons(defaultInstance, configState, updateConfig.isPending, isEditable)}
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
             </Box>
         </Box>

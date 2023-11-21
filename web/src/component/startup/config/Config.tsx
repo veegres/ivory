@@ -15,7 +15,7 @@ export function Config() {
     const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE, body: undefined})
 
     const configOptions = useMutationOptions([["info"]])
-    const config = useMutation(generalApi.setConfig, configOptions)
+    const config = useMutation({mutationFn: generalApi.setConfig, ...configOptions})
 
     return (
         <PageStartupBox header={"Configuration"} renderFooter={renderFooter()}>
@@ -27,7 +27,7 @@ export function Config() {
 
     function renderFooter() {
         return (
-            <LoadingButton variant={"contained"} loading={config.isLoading} onClick={handleClick}>
+            <LoadingButton variant={"contained"} loading={config.isPending} onClick={handleClick}>
                 Set
             </LoadingButton>
         )

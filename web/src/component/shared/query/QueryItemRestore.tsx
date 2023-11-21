@@ -24,7 +24,7 @@ export function QueryItemRestore(props: Props) {
     const {id, def, custom} = props
 
     const updateOptions = useMutationOptions([["query", "map"]])
-    const update = useMutation(queryApi.update, updateOptions)
+    const update = useMutation({mutationFn: queryApi.update, ...updateOptions})
 
     return (
         <Box sx={SX.box}>
@@ -37,7 +37,7 @@ export function QueryItemRestore(props: Props) {
                     <span>
                         <LoadingButton
                             disabled={def === custom}
-                            loading={update.isLoading}
+                            loading={update.isPending}
                             size={"small"}
                             variant={"outlined"}
                             onClick={handleUpdate}

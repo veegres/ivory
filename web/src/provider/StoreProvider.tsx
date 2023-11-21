@@ -1,7 +1,7 @@
 import {createContext, ReactNode, useContext, useMemo} from "react";
 import {useQueryClient} from "@tanstack/react-query";
-import {ActiveCluster, DetectionType} from "../type/cluster";
-import {InstanceWeb} from "../type/instance";
+import {ActiveCluster, Cluster, DetectionType} from "../type/cluster";
+import {InstanceMap, InstanceWeb} from "../type/instance";
 import {getDomain} from "../app/utils";
 import {useLocalStorageState} from "../hook/LocalStorage";
 
@@ -32,6 +32,7 @@ const initialStore: StoreType = {
 // ACTIONS
 interface StoreActionType {
     setCluster: (cluster?: ActiveCluster) => void,
+    setClusterInfo: (cluster: Cluster, defaultInstance: InstanceWeb, combinedInstanceMap: InstanceMap, warning: boolean) => void,
     setClusterInstance: (instance: InstanceWeb) => void,
     setClusterDetection: (detection: DetectionType) => void
     setClusterTab: (tab: number) => void,
@@ -43,6 +44,7 @@ interface StoreActionType {
 }
 const initialStoreAction: StoreActionType = {
     setCluster: () => void 0,
+    setClusterInfo: () => void 0,
     setClusterInstance: () => void 0,
     setClusterDetection: () => void 0,
     setClusterTab: () => void 0,
@@ -92,15 +94,21 @@ export function StoreProvider(props: { children: ReactNode }) {
 
     function getSetters(): StoreActionType {
         return {
-            setCluster, setClusterInstance, setClusterDetection,
-            setClusterTab, setWarnings, setInstance, setTags,
-            toggleSettingsDialog, clear,
+            setCluster, setClusterInfo, setClusterInstance,
+            setClusterDetection, setClusterTab, setWarnings,
+            setInstance, setTags, toggleSettingsDialog, clear,
         }
     }
 
     // SETTERS
     function setCluster(cluster?: ActiveCluster) {
         setState(s => ({...s, activeCluster: cluster}))
+    }
+    function setClusterInfo(cluster: Cluster, defaultInstance: InstanceWeb, combinedInstanceMap: InstanceMap, warning: boolean) {
+        setState(s => {
+            if (!s.activeCluster) return s
+            return ({...s, activeCluster: {...s.activeCluster, cluster, defaultInstance, combinedInstanceMap, warning}})
+        })
     }
     function setClusterInstance(instance: InstanceWeb) {
         setState(s => {

@@ -11,12 +11,12 @@ type Props = {
 export function SecretButton(props: Props) {
     const {keyWord, refWord} = props
     const setReqOptions = useMutationOptions([["info"]])
-    const setReq = useMutation(initialApi.setSecret, setReqOptions)
+    const setReq = useMutation({mutationFn: initialApi.setSecret, ...setReqOptions})
 
     return (
         <LoadingButton
             variant={"contained"}
-            loading={setReq.isLoading}
+            loading={setReq.isPending}
             onClick={() => setReq.mutate({ref: refWord, key: keyWord})}
         >
             Set

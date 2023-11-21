@@ -22,11 +22,11 @@ export function AutocompleteFetch(props: Props) {
     const [inputValue, setInputValue] = useState("")
     const debInputValue = useDebounce(inputValue)
 
-    const query = useQuery(
-        [...keys, debInputValue],
-        () => onFetch(debInputValue),
-        {enabled: !disabled}
-    )
+    const query = useQuery({
+        queryKey: [...keys, debInputValue],
+        queryFn: () => onFetch(debInputValue),
+        enabled: !disabled
+    })
     const options = query.data ?? []
 
     return (
@@ -37,7 +37,7 @@ export function AutocompleteFetch(props: Props) {
             disabled={disabled}
             onInputChange={(_, v) => setInputValue(v)}
             options={options}
-            loading={query.isLoading}
+            loading={query.isPending}
             onChange={(_, v) => onUpdate(v)}
         />
     )

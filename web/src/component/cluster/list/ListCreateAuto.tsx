@@ -26,7 +26,7 @@ export function ListCreateAuto() {
     const [open, setOpen] = useState(false)
 
     const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]], handleSuccessUpdate)
-    const updateCluster = useMutation(clusterApi.createAuto, updateMutationOptions)
+    const updateCluster = useMutation({mutationFn: clusterApi.createAuto, ...updateMutationOptions})
 
     return (
         <>
@@ -66,7 +66,7 @@ export function ListCreateAuto() {
                 <DialogActions sx={SX.center}>
                     <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
                     <LoadingButton
-                        loading={updateCluster.isLoading}
+                        loading={updateCluster.isPending}
                         onClick={() => updateCluster.mutate(cluster)}
                     >
                         Save

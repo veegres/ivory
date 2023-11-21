@@ -27,9 +27,9 @@ export function CredentialsRow(props: Props) {
     const [type, toggleType] = useState(credential.type)
 
     const prevDisabledRef = useRef<boolean>()
-    useEffect(handlePropsEffect, [credential])
-    useEffect(handleDisableEffect, [disabled, credential])
-    useEffect(handleEmptyEffect, [username, password, onEmpty])
+    useEffect(handleEffectProps, [credential])
+    useEffect(handleEffectDisable, [disabled, credential])
+    useEffect(handleEffectEmpty, [username, password, onEmpty])
 
     return (
         <Box sx={SX.row}>
@@ -99,13 +99,13 @@ export function CredentialsRow(props: Props) {
         }
     }
 
-    function handlePropsEffect() {
+    function handleEffectProps() {
         setUsername(credential.username)
         setPassword(credential.password)
         toggleType(credential.type)
     }
 
-    function handleDisableEffect() {
+    function handleEffectDisable() {
         if (!prevDisabledRef.current && disabled) {
             setUsername(credential.username)
             setPassword(credential.password)
@@ -117,7 +117,7 @@ export function CredentialsRow(props: Props) {
         prevDisabledRef.current = disabled
     }
 
-    function handleEmptyEffect() {
+    function handleEffectEmpty() {
         if (!username) onEmpty(true)
         else if (!password) onEmpty(true)
         else onEmpty(false)

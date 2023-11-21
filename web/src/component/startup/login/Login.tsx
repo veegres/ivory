@@ -25,7 +25,7 @@ export function Login(props: Props) {
     const [password, setPass] = useState("")
 
     const loginOption = useMutationOptions([], handleSuccess)
-    const login = useMutation(generalApi.login, loginOption)
+    const login = useMutation({mutationFn: generalApi.login, ...loginOption})
 
     return (
         <PageStartupBox header={"Authentication"} renderFooter={renderLogin()}>
@@ -54,7 +54,7 @@ export function Login(props: Props) {
     function renderLogin() {
         switch (type) {
             case AuthType.NONE: return <Button onClick={logout}>Sign out</Button>
-            case AuthType.BASIC: return <LoadingButton onClick={handleLogin} loading={login.isLoading}>Sign in</LoadingButton>
+            case AuthType.BASIC: return <LoadingButton onClick={handleLogin} loading={login.isPending}>Sign in</LoadingButton>
         }
     }
 

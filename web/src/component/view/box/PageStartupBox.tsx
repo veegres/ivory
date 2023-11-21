@@ -26,7 +26,7 @@ export function PageStartupBox(props: Props) {
     const {children, header, renderFooter} = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 
-    const info = useQuery(["info"], generalApi.info);
+    const info = useQuery({ queryKey: ["info"], queryFn: generalApi.info });
 
     return (
         <Box sx={SX.box}>

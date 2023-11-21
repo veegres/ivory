@@ -20,7 +20,7 @@ export function Secret() {
     const [prevKey, setPrevKey] = useState("")
     const [newKey, setNewKey] = useState("")
     const changeReqOptions = useMutationOptions([["info"]])
-    const changeReq = useMutation(safeApi.changeSecret, changeReqOptions)
+    const changeReq = useMutation({mutationFn: safeApi.changeSecret, ...changeReqOptions})
 
     return (
         <MenuWrapper>
@@ -52,7 +52,7 @@ export function Secret() {
                 <LoadingButton
                     sx={SX.button}
                     variant={"contained"}
-                    loading={changeReq.isLoading}
+                    loading={changeReq.isPending}
                     onClick={() => changeReq.mutate({previousKey: prevKey, newKey})}
                 >
                     Change

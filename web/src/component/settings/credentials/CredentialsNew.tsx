@@ -13,7 +13,7 @@ export function CredentialsNew() {
     const [clean, setClean] = useState(false)
 
     const createOptions = useMutationOptions([["credentials"]], handleCancel)
-    const createCredentials = useMutation(passwordApi.create, createOptions)
+    const createCredentials = useMutation({mutationFn: passwordApi.create, ...createOptions})
 
     return (
         <CredentialsRow
@@ -29,8 +29,8 @@ export function CredentialsNew() {
     function renderButtons() {
         return (
             <>
-                <CancelIconButton size={36} onClick={handleCancel} disabled={!clean || createCredentials.isLoading}/>
-                <SaveIconButton size={36} loading={createCredentials.isLoading} onClick={handleCreate} disabled={empty}/>
+                <CancelIconButton size={36} onClick={handleCancel} disabled={!clean || createCredentials.isPending}/>
+                <SaveIconButton size={36} loading={createCredentials.isPending} onClick={handleCreate} disabled={empty}/>
             </>
         )
     }

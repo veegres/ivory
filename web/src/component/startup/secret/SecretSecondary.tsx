@@ -12,7 +12,7 @@ import {initialApi} from "../../../app/api";
 export function SecretSecondary() {
     const [key, setKey] = useState("")
     const setReqOptions = useMutationOptions([["info"]])
-    const setReq = useMutation(initialApi.setSecret, setReqOptions)
+    const setReq = useMutation({mutationFn: initialApi.setSecret, ...setReqOptions})
 
     return (
         <PageStartupBox header={"Welcome Back"} renderFooter={renderButtons()}>

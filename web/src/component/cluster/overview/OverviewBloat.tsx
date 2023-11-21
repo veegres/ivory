@@ -1,7 +1,7 @@
 import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
 import {bloatApi, queryApi} from "../../../app/api";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 import {TabProps} from "./Overview";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
@@ -28,18 +28,19 @@ export function OverviewBloat(props: TabProps) {
     const [jobs, setJobs] = useState<Bloat[]>([])
     const [target, setTarget] = useState<BloatTarget>()
 
-    const query = useQuery(
-        ["query", "map", QueryType.BLOAT],
-        () => queryApi.list(QueryType.BLOAT),
-        {enabled: false},
-    )
-    const initJobs = useQuery(
-        ["instance/bloat/list", cluster.name],
-        () => bloatApi.list(cluster.name),
-        {onSuccess: (initJobs) => setJobs(initJobs)},
-    )
+    const query = useQuery({
+        queryKey: ["query", "map", QueryType.BLOAT],
+        queryFn: () => queryApi.list(QueryType.BLOAT),
+        enabled: false
+    })
+    const initJobs = useQuery({
+        queryKey: ["instance/bloat/list", cluster.name],
+        queryFn: () => bloatApi.list(cluster.name),
+    })
     const loading = initJobs.isFetching || query.isFetching
     const db = {...defaultInstance.database, database: target?.dbName}
+
+    useEffect(() => { if (initJobs.data) setJobs(initJobs.data) }, [initJobs.data])
 
     return (
         <Box>

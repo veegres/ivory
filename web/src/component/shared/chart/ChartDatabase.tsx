@@ -18,14 +18,15 @@ type Props = {
 export function ChartDatabase(props: Props) {
     const {db, credentialId} = props
 
-    const database = useQuery(
-        ["query", "chart", "database", db.host, db.port, db.database, credentialId],
-        () => queryApi.chartDatabase(props),
-        {retry: false, enabled: !!db.database})
+    const database = useQuery({
+        queryKey: ["query", "chart", "database", db.host, db.port, db.database, credentialId],
+        queryFn: () => queryApi.chartDatabase(props),
+        retry: false, enabled: !!db.database,
+    })
 
     if (!db.database) return null
     if (database.error) return <Box sx={SX.error}><ErrorSmart error={database.error}/></Box>
-    if (database.isLoading) return <ChartLoading count={4}/>
+    if (database.isPending) return <ChartLoading count={4}/>
 
     return (
         <>

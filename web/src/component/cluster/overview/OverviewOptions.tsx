@@ -17,7 +17,7 @@ export function OverviewOptions({info}: TabProps) {
     const {combinedInstanceMap, defaultInstance, cluster, detection} = info
 
     const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]])
-    const updateCluster = useMutation(clusterApi.update, updateMutationOptions)
+    const updateCluster = useMutation({mutationFn: clusterApi.update, ...updateMutationOptions})
 
     return (
         <Stack sx={SX.settings}>

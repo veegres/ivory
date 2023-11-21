@@ -23,9 +23,9 @@ export function CredentialsItem(props: Props) {
     }, [credential])
 
     const deleteOptions = useMutationOptions([["credentials"]])
-    const deleteCredentials = useMutation(passwordApi.delete, deleteOptions)
+    const deleteCredentials = useMutation({mutationFn: passwordApi.delete, ...deleteOptions})
     const updateOptions = useMutationOptions([["credentials"]], () => setEdit(false))
-    const updateCredentials = useMutation(passwordApi.update, updateOptions)
+    const updateCredentials = useMutation({mutationFn: passwordApi.update, ...updateOptions})
 
     return (
         <CredentialsRow
@@ -41,8 +41,8 @@ export function CredentialsItem(props: Props) {
     function renderReadButtons() {
         return (
             <>
-                <EditIconButton size={36} onClick={() => setEdit(true)} disabled={deleteCredentials.isLoading}/>
-                <DeleteIconButton size={36} loading={deleteCredentials.isLoading} onClick={handleDelete}/>
+                <EditIconButton size={36} onClick={() => setEdit(true)} disabled={deleteCredentials.isPending}/>
+                <DeleteIconButton size={36} loading={deleteCredentials.isPending} onClick={handleDelete}/>
             </>
         )
     }
@@ -50,8 +50,8 @@ export function CredentialsItem(props: Props) {
     function renderWriteButtons() {
         return (
             <>
-                <CancelIconButton size={36} onClick={() => setEdit(false)} disabled={updateCredentials.isLoading}/>
-                <SaveIconButton size={36} loading={updateCredentials.isLoading} onClick={handleUpdate} disabled={empty}/>
+                <CancelIconButton size={36} onClick={() => setEdit(false)} disabled={updateCredentials.isPending}/>
+                <SaveIconButton size={36} loading={updateCredentials.isPending} onClick={handleUpdate} disabled={empty}/>
             </>
         )
     }

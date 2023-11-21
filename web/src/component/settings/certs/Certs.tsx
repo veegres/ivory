@@ -10,7 +10,7 @@ import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful
 export function Certs() {
     const [tab, setTab] = useState(0)
     const type = TABS[tab].type
-    const query = useQuery(["certs", type], () => certApi.list(type))
+    const query = useQuery({queryKey: ["certs", type], queryFn: () => certApi.list(type)})
     const {data, error, isFetching} = query
 
     return (

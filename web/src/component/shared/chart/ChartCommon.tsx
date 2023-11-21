@@ -18,13 +18,14 @@ type Props = {
 export function ChartCommon(props: Props) {
     const {db, credentialId} = props
 
-    const common = useQuery(
-        ["query", "chart", "common", db.host, db.port, credentialId],
-        () => queryApi.chartCommon(props),
-        {retry: false})
+    const common = useQuery({
+        queryKey: ["query", "chart", "common", db.host, db.port, credentialId],
+        queryFn: () => queryApi.chartCommon(props),
+        retry: false,
+    })
 
     if (common.error) return <Box sx={SX.error}><ErrorSmart error={common.error}/></Box>
-    if (common.isLoading) return <ChartLoading count={4}/>
+    if (common.isPending) return <ChartLoading count={4}/>
 
     return (
         <>
