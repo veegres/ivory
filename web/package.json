@@ -19,7 +19,7 @@
     "@codemirror/autocomplete": "6.11.0",
     "@codemirror/lang-json": "6.0.1",
     "@codemirror/lang-sql": "6.5.4",
-    "@codemirror/language": "6.9.2",
+    "@codemirror/language": "6.9.3",
     "@codemirror/lint": "6.4.2",
     "@codemirror/search": "6.5.4",
     "@codemirror/state": "6.3.1",
