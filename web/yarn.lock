@@ -1251,10 +1251,10 @@
     "@codemirror/view" "^6.0.0"
     "@lezer/highlight" "^1.0.0"
 
-"@codemirror/view@6.22.0", "@codemirror/view@^6.0.0", "@codemirror/view@^6.17.0":
-  version "6.22.0"
-  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.22.0.tgz#5a5214a04f149ecf54c4803b7fec9bdac56d0d74"
-  integrity sha512-6zLj4YIoIpfTGKrDMTbeZRpa8ih4EymMCKmddEDcJWrCdp/N1D46B38YEz4creTb4T177AVS9EyXkLeC/HL2jA==
+"@codemirror/view@6.22.1", "@codemirror/view@^6.0.0", "@codemirror/view@^6.17.0":
+  version "6.22.1"
+  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.22.1.tgz#4e556ebb91d0289ec4a6c7551b08da8dbe4dd5bb"
+  integrity sha512-38BRn1nPqZqiHbmWfI8zri23IbRVbmSpSmh1E/Ysvc+lIGGdBC17K8zlK7ZU6fhfy9x4De9Zyj5JQqScPq5DkA==
   dependencies:
     "@codemirror/state" "^6.1.4"
     style-mod "^4.1.0"
