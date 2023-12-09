@@ -23,22 +23,34 @@ const (
 	System               = "system"
 )
 
+type QueryVariety int8
+
+const (
+	DatabaseSensitive QueryVariety = iota
+	MasterOnly
+	ReplicaRecommended
+)
+
 type Query struct {
-	Id          uuid.UUID     `json:"id"`
-	Name        string        `json:"name"`
-	Type        QueryType     `json:"type"`
-	Creation    QueryCreation `json:"creation"`
-	Description string        `json:"description"`
-	Default     string        `json:"default"`
-	Custom      string        `json:"custom"`
-	CreatedAt   int64         `json:"createdAt"`
+	Id          uuid.UUID      `json:"id"`
+	Name        string         `json:"name"`
+	Type        QueryType      `json:"type"`
+	Creation    QueryCreation  `json:"creation"`
+	Varieties   []QueryVariety `json:"varieties"`
+	Params      []string       `json:"params"`
+	Description string         `json:"description"`
+	Default     string         `json:"default"`
+	Custom      string         `json:"custom"`
+	CreatedAt   int64          `json:"createdAt"`
 }
 
 type QueryRequest struct {
-	Name        *string    `json:"name"`
-	Type        *QueryType `json:"type"`
-	Description *string    `json:"description"`
-	Query       string     `json:"query"`
+	Name        *string        `json:"name"`
+	Type        *QueryType     `json:"type"`
+	Description *string        `json:"description"`
+	Query       string         `json:"query"`
+	Varieties   []QueryVariety `json:"varieties"`
+	Params      []string       `json:"params"`
 }
 
 type QueryPostgresRequest struct {
@@ -48,7 +60,8 @@ type QueryPostgresRequest struct {
 
 type QueryRunRequest struct {
 	QueryPostgresRequest
-	QueryUuid uuid.UUID `json:"queryUuid"`
+	QueryUuid   uuid.UUID `json:"queryUuid"`
+	QueryParams []any     `json:"queryParams"`
 }
 
 type QueryKillRequest struct {

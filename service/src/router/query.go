@@ -125,7 +125,7 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.RunQuery(req.QueryUuid, req.CredentialId, req.Db)
+	res, err := r.queryService.RunQuery(req.QueryUuid, req.QueryParams, req.CredentialId, req.Db)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
