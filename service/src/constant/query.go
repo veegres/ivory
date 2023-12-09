@@ -7,7 +7,9 @@ const GetAllTables = `SELECT relname AS name FROM pg_stat_all_tables WHERE schem
 const DefaultActiveRunningQueries = `SELECT
     pid,
     state,
-    (now() - pg_stat_activity.query_start)::text AS duration,
+    wait_event AS event,
+    (now() - pg_stat_activity.backend_start)::text AS transaction_duration,
+    (now() - pg_stat_activity.query_start)::text AS query_duration,
     query,
     usename AS username,
     application_name AS application,
@@ -19,10 +21,24 @@ WHERE now() - pg_stat_activity.query_start IS NOT NULL
   AND backend_type = 'client backend'
 ORDER BY now() - pg_stat_activity.query_start DESC;`
 
+const DefaultAllRunningQueries = `SELECT
+    pid,
+    state,
+    wait_event AS event,
+    (now() - pg_stat_activity.backend_start)::text AS transaction_duration,
+    (now() - pg_stat_activity.query_start)::text AS query_duration,
+    query,
+    usename AS username,
+    application_name AS application,
+    client_addr AS ip,
+    pg_blocking_pids(pid) AS blocked_by_process_id
+FROM pg_stat_activity
+ORDER BY now() - pg_stat_activity.query_start DESC;`
+
 const DefaultActiveVacuums = `SELECT 
     p.pid,
-    date_trunc('second',now() - a.xact_start)                                      AS duration,
-    coalesce(wait_event_type ||'.'|| wait_event, 'f')                              AS wait,
+    (now() - a.xact_start)::text                                                   AS duration,
+    coalesce(wait_event_type || '.' || wait_event, 'f')                            AS wait,
     CASE WHEN a.query ~ 'to prevent wraparound' THEN 'freeze' ELSE 'regular' END   AS mode,
     (SELECT datname FROM pg_database WHERE oid = p.datid)                          AS dat,
     p.relid::regclass                                                              AS tab,
@@ -31,8 +47,8 @@ const DefaultActiveVacuums = `SELECT
     round(pg_total_relation_size(relid)/1024.0/1024)                               AS ttl_mb,
     round((p.heap_blks_scanned * current_setting('block_size')::int)/1024.0/1024)  AS scan_mb,
     round((p.heap_blks_vacuumed * current_setting('block_size')::int)/1024.0/1024) AS vac_mb,
-    (100 * p.heap_blks_scanned / nullif(p.heap_blks_total,0))                      AS scan_pct,
-    (100 * p.heap_blks_vacuumed / nullif(p.heap_blks_total,0))                     AS vac_pct,
+    (100 * p.heap_blks_scanned / nullif(p.heap_blks_total, 0))                     AS scan_pct,
+    (100 * p.heap_blks_vacuumed / nullif(p.heap_blks_total, 0))                    AS vac_pct,
     p.index_vacuum_count                                                           AS ind_vac_cnt,
     round(p.num_dead_tuples * 100.0 / nullif(p.max_dead_tuples, 0),1)              AS dead_pct
 FROM pg_stat_progress_vacuum p 
@@ -44,30 +60,37 @@ const DefaultAllQueriesByState = `SELECT
     state,
     count(*) 
 FROM pg_stat_activity
-GROUP BY 1, 2 ORDER BY 1, 2;`
+GROUP BY db, state ORDER BY db, state;`
 
 const DefaultAllLocks = `SELECT
-    LOC.pid,
-    transactionid AS tid,
-    virtualtransaction AS vtid,
-    extract(epoch from (NOW() - state_change)) as locks_duration,
-    locktype,
-    mode,
-    relation::regclass,
-    SA.datname AS db,
-    usename AS username,
-    client_addr AS ip,
-    application_name AS application,
-    SA.query
-FROM pg_locks LOC
-    LEFT JOIN pg_catalog.pg_database db ON db.oid = LOC.database
-    LEFT JOIN pg_stat_activity AS SA ON LOC.pid = SA.pid;`
+    loc.pid,
+	loc.mode AS lock,
+    (now() - sa.state_change)::text as lock_duration,
+    loc.locktype AS lock_type,
+    sa.datname AS db,
+    sa.usename AS username,
+    sa.client_addr AS ip,
+    sa.application_name AS application,
+    sa.query AS query
+FROM pg_locks loc
+    LEFT JOIN pg_catalog.pg_database db ON db.oid = loc.database
+    LEFT JOIN pg_stat_activity sa ON loc.pid = sa.pid
+ORDER BY now() - sa.state_change DESC;`
 
-const DefaultSimpleNumberOfDeadTuples = `SELECT 
+const DefaultAllLocksByLock = `SELECT 
+    mode AS lock,
+    count(*) 
+FROM pg_locks
+GROUP BY lock ORDER BY lock;`
+
+const DefaultRatioOfDeadTuples = `SELECT
     schemaname || '.' || relname AS table_name,
-    n_dead_tup AS dead_tuples, 
-    n_live_tup AS live_tuples
+    n_dead_tup AS dead_tuples,
+    n_live_tup AS live_tuples,
+    (n_dead_tup + n_live_tup) AS total_tuples,
+    (n_dead_tup::numeric / (n_dead_tup + n_live_tup))::numeric(30,2) AS ratio
 FROM pg_stat_user_tables
+WHERE n_live_tup <> 0 OR n_dead_tup <> 0
 ORDER BY n_dead_tup DESC
 LIMIT 100;`
 
@@ -80,93 +103,99 @@ const DefaultPureNumberOfDeadTuples = `SELECT
     last_analyze, 
     last_autoanalyze
 FROM pg_stat_user_tables
-ORDER BY n_dead_tup DESC
+ORDER BY n_dead_tup, n_live_tup DESC
 LIMIT 100;`
 
 const DefaultTableBloat = `SELECT 
     table_name,
 	pg_size_pretty(relation_size + toast_relation_size) AS total_size,
 	pg_size_pretty(toast_relation_size) AS toast_size,
-	round(((relation_size - (relation_size - free_space)*100/fillfactor)*100/greatest(relation_size, 1))::numeric, 1) table_waste_percent,
-	pg_size_pretty((relation_size - (relation_size - free_space)*100/fillfactor)::bigint) table_waste,
-	round(((toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor)*100/greatest(relation_size + toast_relation_size, 1))::numeric, 1) total_waste_percent,
-	pg_size_pretty((toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor)::bigint) total_waste
+	round(((relation_size - (relation_size - free_space) * 100 / fillfactor) * 100 / greatest(relation_size, 1))::numeric, 1) AS table_waste_percent,
+	pg_size_pretty((relation_size - (relation_size - free_space) * 100 / fillfactor)::bigint) AS table_waste,
+	round(((toast_free_space + relation_size - (relation_size - free_space) * 100 / fillfactor) * 100 / greatest(relation_size + toast_relation_size, 1))::numeric, 1) AS total_waste_percent,
+	pg_size_pretty((toast_free_space + relation_size - (relation_size - free_space) * 100 / fillfactor)::bigint) AS total_waste
 FROM (
     SELECT
-		(CASE WHEN n.nspname = 'public' THEN format('%I', c.relname) ELSE format('%I.%I', n.nspname, c.relname) END) AS table_name,
+		n.nspname || '.' || c.relname AS table_name,
 		(SELECT free_space FROM pgstattuple(c.oid)) AS free_space,
 		pg_relation_size(c.oid) AS relation_size,
-		(CASE WHEN reltoastrelid = 0 THEN 0 ELSE (SELECT free_space FROM pgstattuple(c.reltoastrelid)) END) AS toast_free_space,
+		(CASE WHEN c.reltoastrelid = 0 THEN 0 ELSE (SELECT free_space FROM pgstattuple(c.reltoastrelid)) END) AS toast_free_space,
 		coalesce(pg_relation_size(c.reltoastrelid), 0) AS toast_relation_size,
-		coalesce((SELECT (regexp_matches(reloptions::text, E'.*fillfactor=(\\d+).*'))[1]),'100')::real AS fillfactor
+		coalesce((SELECT (regexp_matches(c.reloptions::text, E'.*fillfactor=(\\d+).*'))[1]),'100')::real AS fillfactor
     FROM pg_class c
     	LEFT JOIN pg_namespace n ON (n.oid = c.relnamespace)
-    WHERE nspname NOT IN ('pg_catalog', 'information_schema')
-      AND nspname !~ '^pg_toast' AND nspname !~ '^pg_temp' AND relkind IN ('r', 'm') AND (relpersistence = 'p' OR NOT pg_is_in_recovery())
-      -- AND relname ~ 'tablename'
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+      AND n.nspname !~ '^pg_toast' AND n.nspname !~ '^pg_temp' 
+      AND c.relkind IN ('r', 'm') AND (c.relpersistence = 'p' OR NOT pg_is_in_recovery())
+      AND n.nspname ~ $1 -- schema name
+      AND c.relname ~ $2 -- table name
 ) t
-ORDER BY (toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor) DESC 
+ORDER BY (toast_free_space + relation_size - (relation_size - free_space) * 100 / fillfactor) DESC 
 LIMIT 20;`
 
 const DefaultTableBloatApproximate = `SELECT 
     table_name,
 	pg_size_pretty(relation_size + toast_relation_size) AS total_size,
 	pg_size_pretty(toast_relation_size) AS toast_size,
-	round(((relation_size - (relation_size - free_space)*100/fillfactor)*100/greatest(relation_size, 1))::numeric, 1) table_waste_percent,
-	pg_size_pretty((relation_size - (relation_size - free_space)*100/fillfactor)::bigint) table_waste,
-	round(((toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor)*100/greatest(relation_size + toast_relation_size, 1))::numeric, 1) total_waste_percent,
-	pg_size_pretty((toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor)::bigint) total_waste
+	round(((relation_size - (relation_size - free_space) * 100 / fillfactor) * 100 / greatest(relation_size, 1))::numeric, 1) AS table_waste_percent,
+	pg_size_pretty((relation_size - (relation_size - free_space) * 100 / fillfactor)::bigint) AS table_waste,
+	round(((toast_free_space + relation_size - (relation_size - free_space) * 100 / fillfactor) * 100 / greatest(relation_size + toast_relation_size, 1))::numeric, 1) AS total_waste_percent,
+	pg_size_pretty((toast_free_space + relation_size - (relation_size - free_space) * 100 / fillfactor)::bigint) AS total_waste
 FROM (
     SELECT
-		(CASE WHEN n.nspname = 'public' THEN format('%I', c.relname) ELSE format('%I.%I', n.nspname, c.relname) END) AS table_name,
+		n.nspname || '.' || c.relname AS table_name,
 		(SELECT approx_free_space FROM pgstattuple_approx(c.oid)) AS free_space,
 		pg_relation_size(c.oid) AS relation_size,
-		(CASE WHEN reltoastrelid = 0 THEN 0 ELSE (SELECT free_space FROM pgstattuple(c.reltoastrelid)) END) AS toast_free_space,
+		(CASE WHEN c.reltoastrelid = 0 THEN 0 ELSE (SELECT free_space FROM pgstattuple(c.reltoastrelid)) END) AS toast_free_space,
 		coalesce(pg_relation_size(c.reltoastrelid), 0) AS toast_relation_size,
-		coalesce((SELECT (regexp_matches(reloptions::text, E'.*fillfactor=(\\d+).*'))[1]),'100')::real AS fillfactor
+		coalesce((SELECT (regexp_matches(c.reloptions::text, E'.*fillfactor=(\\d+).*'))[1]),'100')::real AS fillfactor
     FROM pg_class c
         LEFT JOIN pg_namespace n ON (n.oid = c.relnamespace)
-    WHERE nspname NOT IN ('pg_catalog', 'information_schema') 
-      AND nspname !~ '^pg_toast' AND nspname !~ '^pg_temp' AND relkind IN ('r', 'm') AND (relpersistence = 'p' OR NOT pg_is_in_recovery())
-      -- AND relname ~ 'tablename'
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema') 
+      AND n.nspname !~ '^pg_toast' AND n.nspname !~ '^pg_temp' 
+      AND c.relkind IN ('r', 'm') 
+      AND (c.relpersistence = 'p' OR NOT pg_is_in_recovery())
+      AND n.nspname ~ $1 -- schema name
+      AND c.relname ~ $2 -- table name
 ) t
-ORDER BY (toast_free_space + relation_size - (relation_size - free_space)*100/fillfactor) DESC
+ORDER BY (toast_free_space + relation_size - (relation_size - free_space) * 100 / fillfactor) DESC
 LIMIT 20;`
 
-const DefaultIndexBloat = `WITH indexes AS (
-    SELECT * from pg_stat_user_indexes
-)
+const DefaultIndexBloat = `WITH indexes AS (SELECT * from pg_stat_user_indexes)
 SELECT 
 	table_name,
 	pg_size_pretty(table_size) AS table_size,
 	index_name,
 	pg_size_pretty(index_size) AS index_size,
-	idx_scan as index_scans,
+	index_scans,
 	round((free_space*100/index_size)::numeric, 1) AS waste_percent,
 	pg_size_pretty(free_space) AS waste
 FROM (
     SELECT 
-		(CASE WHEN schemaname = 'public' THEN format('%I', p.relname) ELSE format('%I.%I', schemaname, p.relname) END) AS table_name,
-		indexrelname AS index_name,
+		p.schemaname || '.' || c.relname AS table_name,
+		p.indexrelname AS index_name,
 		(SELECT (
 			CASE WHEN avg_leaf_density = 'NaN' THEN 0
 			ELSE greatest(ceil(index_size * (1 - avg_leaf_density / (coalesce((SELECT (regexp_matches(reloptions::text, E'.*fillfactor=(\\d+).*'))[1]),'90')::real)))::bigint, 0) END
 		) FROM pgstatindex(p.indexrelid::regclass::text)) AS free_space,
 		pg_relation_size(p.indexrelid) AS index_size,
 		pg_relation_size(p.relid) AS table_size,
-		idx_scan
+		p.idx_scan AS index_scans
     FROM indexes p
-    JOIN pg_class c ON p.indexrelid = c.oid
-    JOIN pg_index i ON i.indexrelid = p.indexrelid
-    WHERE pg_get_indexdef(p.indexrelid) LIKE '%USING btree%' AND i.indisvalid 
-      AND (c.relpersistence = 'p' OR NOT pg_is_in_recovery()) 
-      -- AND indexrelname ~ 'indexname'
+		JOIN pg_class c ON p.indexrelid = c.oid
+		JOIN pg_index i ON i.indexrelid = p.indexrelid
+    WHERE pg_get_indexdef(p.indexrelid) LIKE '%USING btree%' 
+	  AND i.indisvalid 
+	  AND (c.relpersistence = 'p' OR NOT pg_is_in_recovery())
+	  AND p.indexrelname ~ $1 -- index name
+	  AND p.schemaname ~ $2   -- schema name
+      AND c.relname ~ $3      -- table name
 ) t
 ORDER BY free_space DESC
 LIMIT 100;`
 
-const DefaultCheckTableBloat = ` SELECT * FROM pgstattuple('TABLE_NAME')`
-const DefaultCheckIndexBloat = ` SELECT * FROM pgstatindex('INDEX_NAME')`
+const DefaultCheckTableBloat = `SELECT * FROM pgstattuple($1)`
+const DefaultCheckIndexBloat = `SELECT * FROM pgstatindex($1)`
 
 const DefaultPostgresConfig = `SELECT 
     name, context, vartype, source,
@@ -192,17 +221,17 @@ FROM pg_stat_replication;`
 const DefaultPrettyReplication = `SELECT 
     application_name  AS name,
     client_addr       AS ip,
-    usename           AS user, 
+    usename           AS username, 
     state,
-    sync_state AS mode, 
+    sync_state        AS mode, 
     backend_xmin,
     (pg_wal_lsn_diff(CASE WHEN pg_is_in_recovery() THEN pg_last_wal_replay_lsn() ELSE pg_current_wal_lsn() END,sent_lsn)/1024.0/1024)::numeric(10,1) AS pending_mb,
     (pg_wal_lsn_diff(sent_lsn,write_lsn)/1024.0/1024)::numeric(10,1)                                                                                 AS write_mb,
     (pg_wal_lsn_diff(write_lsn,flush_lsn)/1024.0/1024)::numeric(10,1)                                                                                AS flush_mb,
     (pg_wal_lsn_diff(flush_lsn,replay_lsn)/1024.0/1024)::numeric(10,1)                                                                               AS replay_mb,
     ((pg_wal_lsn_diff(CASE WHEN pg_is_in_recovery() THEN sent_lsn ELSE pg_current_wal_lsn() END,replay_lsn))::bigint/1024.0/1024)::numeric(10,1)     AS total_mb,
-    replay_lag::interval(0) replay_lag
-  FROM pg_stat_replication;`
+    replay_lag::interval(0) AS replay_lag
+FROM pg_stat_replication;`
 
 const DefaultPureReplication = `SELECT * FROM pg_stat_replication;`
 
@@ -213,18 +242,19 @@ FROM pg_database
 ORDER BY pg_database_size(datname) DESC;`
 
 const DefaultTableSize = `SELECT
-   UT.schemaname as schema,
-   SUT.relname as table_name,
-   pg_size_pretty(pg_total_relation_size(SUT.relid) - pg_indexes_size(SUT.relid)) as table_size,
-   pg_size_pretty(pg_indexes_size(SUT.relid)) As index_size,
-   pg_size_pretty(pg_total_relation_size(SUT.relid)) As total_size
-FROM pg_catalog.pg_statio_user_tables AS SUT JOIN pg_stat_user_tables AS UT ON SUT.relid = UT.relid
-ORDER BY pg_total_relation_size(SUT.relid) DESC;`
+	u.schemaname as schema_name,
+	s.relname as table_name,
+	pg_size_pretty(pg_total_relation_size(s.relid) - pg_indexes_size(s.relid)) as table_size,
+	pg_size_pretty(pg_indexes_size(s.relid)) As index_size,
+	pg_size_pretty(pg_total_relation_size(s.relid)) As total_size
+FROM pg_catalog.pg_statio_user_tables AS s 
+    JOIN pg_stat_user_tables AS u ON s.relid = u.relid
+ORDER BY pg_total_relation_size(s.relid) DESC;`
 
 const DefaultIndexInCache = `SELECT 
-    sum(idx_blks_read) as idx_read, 
-    sum(idx_blks_hit)  as idx_hit, 
-    (sum(idx_blks_hit) - sum(idx_blks_read)) / sum(idx_blks_hit) as ratio
+    sum(idx_blks_read) AS idx_read, 
+    sum(idx_blks_hit)  AS idx_hit, 
+    (sum(idx_blks_hit) - sum(idx_blks_read)) / sum(idx_blks_hit) AS ratio
 FROM pg_statio_user_indexes;`
 
 const DefaultIndexUnused = `SELECT 
@@ -238,14 +268,14 @@ WHERE s.idx_scan = 0
   AND 0 <> ALL (i.indkey) 
   AND NOT i.indisunique  
   AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint c WHERE c.conindid = s.indexrelid)
-  AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_inherits AS inh WHERE inh.inhrelid = s.indexrelid)
+  AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_inherits inh WHERE inh.inhrelid = s.indexrelid)
 ORDER BY pg_relation_size(s.indexrelid) DESC;`
 
 const DefaultIndexInvalid = `SELECT 
     oid, 
-    indrelid::regclass AS table,
+    indrelid::regclass AS table_name,
     relname AS index, 
     indisvalid AS valid 
 FROM pg_class, pg_index 
-WHERE pg_index.indisvalid = false AND pg_index.indexrelid = pg_class.oid;
-`
+WHERE pg_index.indisvalid = false 
+  AND pg_index.indexrelid = pg_class.oid;`

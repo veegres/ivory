@@ -31,7 +31,7 @@ func NewQueryService(
 	return queryService
 }
 
-func (s *QueryService) RunQuery(queryUuid uuid.UUID, credentialId uuid.UUID, db Database) (*QueryRunResponse, error) {
+func (s *QueryService) RunQuery(queryUuid uuid.UUID, queryParams []any, credentialId uuid.UUID, db Database) (*QueryRunResponse, error) {
 	query, errQuery := s.queryRepository.Get(queryUuid)
 	if errQuery != nil {
 		return nil, errQuery
@@ -39,7 +39,11 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, credentialId uuid.UUID, db 
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
-	return s.postgresGateway.GetFields(credentialId, db, query.Custom)
+	if queryParams == nil {
+		return s.postgresGateway.GetFields(credentialId, db, query.Custom)
+	} else {
+		return s.postgresGateway.GetFields(credentialId, db, query.Custom, queryParams)
+	}
 }
 
 func (s *QueryService) DatabasesQuery(credentialId uuid.UUID, db Database, name string) ([]string, error) {
@@ -134,6 +138,8 @@ func (s *QueryService) Create(creation QueryCreation, query QueryRequest) (*uuid
 		Description: *query.Description,
 		Default:     query.Query,
 		Custom:      query.Query,
+		Params:      query.Params,
+		Varieties:   query.Varieties,
 	})
 }
 
@@ -218,15 +224,23 @@ func (s *QueryService) createDefaultQueries() error {
 	if err != nil {
 		return err
 	}
-	_, _, err = s.Create(System, s.runningVacuums())
-	if err != nil {
-		return err
-	}
 	_, _, err = s.Create(System, s.allQueries())
 	if err != nil {
 		return err
 	}
+	_, _, err = s.Create(System, s.runningVacuums())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.allQueriesByState())
+	if err != nil {
+		return err
+	}
 	_, _, err = s.Create(System, s.allLocks())
+	if err != nil {
+		return err
+	}
+	_, _, err = s.Create(System, s.allLocksByType())
 	if err != nil {
 		return err
 	}
@@ -307,49 +321,59 @@ func (s *QueryService) createDefaultQueries() error {
 }
 
 func (s *QueryService) simpleDeadTuples() QueryRequest {
-	n, t, d := "Simple numbers of dead tuples", BLOAT, "Shows 100 tables with most dead tuples"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultSimpleNumberOfDeadTuples}
+	n, t, d := "Ratio of dead and live tuples", BLOAT, "Shows 100 tables with biggest number of dead tuples and ratio of dead tuples divided by total numbers of tuples"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultRatioOfDeadTuples}
 }
 
 func (s *QueryService) pureDeadTuples() QueryRequest {
-	n, t, d := "Pure numbers of dead tuples", BLOAT, "Shows 100 tables with most dead tuples with vacuum and analyze time"
+	n, t, d := "Dead tuples and live tuples with last vacuum and analyze Time", BLOAT, "Shows 100 tables with biggest number of dead tuples and their last vacuum and analyze time"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPureNumberOfDeadTuples}
 }
 
 func (s *QueryService) tableBloat() QueryRequest {
-	n, t, d := "Table Bloat", BLOAT, "This query will read tables using pgstattuple extension and return top 20 bloated tables. WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultTableBloat}
+	n, t, d := "Table bloat", BLOAT, "This query will read tables using pgstattuple extension and return top 20 bloated tables. WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
+	p, v := []string{"schema", "table"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Params: p, Varieties: v, Query: constant.DefaultTableBloat}
 }
 func (s *QueryService) tableBloatApproximate() QueryRequest {
-	n, t, d := "Table Bloat Approximate", BLOAT, "This query will read tables using pgstattuple extension and return 20 bloated approximate results and doesn't read whole table (but reads toast tables). WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultTableBloatApproximate}
+	n, t, d := "Table bloat approximate", BLOAT, "This query will read tables using pgstattuple extension and return 20 bloated approximate results and doesn't read whole table (but reads toast tables). WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
+	p, v := []string{"schema", "table"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Params: p, Varieties: v, Query: constant.DefaultTableBloatApproximate}
 }
 func (s *QueryService) indexBloat() QueryRequest {
-	n, t, d := "Index Bloat", BLOAT, "This query will read indexes with pgstattuple extension and return top 100 bloated indexes. WARNING: without index mask query will read all available indexes which could cause I/O spikes. Please enter mask for index name (check all indexes if nothing is specified)"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexBloat}
+	n, t, d := "Index bloat", BLOAT, "This query will read indexes with pgstattuple extension and return top 100 bloated indexes. WARNING: without index mask query will read all available indexes which could cause I/O spikes. Please enter mask for index name (check all indexes if nothing is specified)"
+	p, v := []string{"index", "schema", "table"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Params: p, Varieties: v, Query: constant.DefaultIndexBloat}
 }
 
 func (s *QueryService) checkTableBloat() QueryRequest {
-	n, t, d := "Check Specific Table Bloat (require table name)", BLOAT, "Shows one table bloat, you need to edit query and provide table name to see information about it"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultCheckTableBloat}
+	n, t, d := "Check specific table bloat", BLOAT, "Shows one table bloat, you need to edit query and provide table name to see information about it"
+	p, v := []string{"schema.table"}, []QueryVariety{DatabaseSensitive}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Params: p, Varieties: v, Query: constant.DefaultCheckTableBloat}
 }
 
 func (s *QueryService) checkIndexBloat() QueryRequest {
-	n, t, d := "Check Specific Index Bloat (require index name)", BLOAT, "Shows one index bloat, you need to edit query and provide index name to see information about it"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultCheckIndexBloat}
+	n, t, d := "Check specific index bloat", BLOAT, "Shows one index bloat, you need to edit query and provide index name to see information about it"
+	p, v := []string{"schema.index"}, []QueryVariety{DatabaseSensitive}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Params: p, Varieties: v, Query: constant.DefaultCheckIndexBloat}
 }
 
 func (s *QueryService) runningQueries() QueryRequest {
-	n, t, d := "Active Running Queries", ACTIVITY, "Shows running queries with duration information and his owner"
+	n, t, d := "Active running queries", ACTIVITY, "Shows running queries. It can be useful if you want to check your queries that is long."
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultActiveRunningQueries}
 }
 
+func (s *QueryService) allQueries() QueryRequest {
+	n, t, d := "All running queries", ACTIVITY, "Shows all queries. Just can help clarify what is going on postgres side."
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultAllRunningQueries}
+}
+
 func (s *QueryService) runningVacuums() QueryRequest {
-	n, t, d := "Active Vacuums in Progress", ACTIVITY, "Shows list of active vacuums and their progress"
+	n, t, d := "Active vacuums in progress", ACTIVITY, "Shows list of active vacuums and their progress"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultActiveVacuums}
 }
-func (s *QueryService) allQueries() QueryRequest {
-	n, t, d := "All Queries By State", ACTIVITY, "Shows all queries by state and database"
+func (s *QueryService) allQueriesByState() QueryRequest {
+	n, t, d := "Number of queries by state and database", ACTIVITY, "Shows all queries by state and database"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultAllQueriesByState}
 }
 
@@ -358,13 +382,18 @@ func (s *QueryService) allLocks() QueryRequest {
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultAllLocks}
 }
 
+func (s *QueryService) allLocksByType() QueryRequest {
+	n, t, d := "Number of locks by lock type", ACTIVITY, "Shows all locks by lock type"
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultAllLocksByLock}
+}
+
 func (s *QueryService) config() QueryRequest {
 	n, t, d := "Config", OTHER, "Shows postgres config elements with it's values and information about restart"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPostgresConfig}
 }
 
 func (s *QueryService) configDescription() QueryRequest {
-	n, t, d := "Config Description", OTHER, "Shows description of postgres config elements"
+	n, t, d := "Config description", OTHER, "Shows description of postgres config elements"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPostgresConfigDescription}
 }
 
@@ -374,38 +403,44 @@ func (s *QueryService) allUsers() QueryRequest {
 }
 
 func (s *QueryService) pureReplication() QueryRequest {
-	n, t, d := "Pure Replication", REPLICATION, "Shows pure replication table"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPureReplication}
+	n, t, d := "Pure replication", REPLICATION, "Shows pure replication table"
+	v := []QueryVariety{MasterOnly}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Varieties: v, Query: constant.DefaultPureReplication}
 }
 
 func (s *QueryService) simpleReplication() QueryRequest {
-	n, t, d := "Simple Replication", REPLICATION, "Shows simple replication table"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultSimpleReplication}
+	n, t, d := "Simple replication", REPLICATION, "Shows simple replication table only with lsn info"
+	v := []QueryVariety{MasterOnly}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Varieties: v, Query: constant.DefaultSimpleReplication}
 }
 
 func (s *QueryService) prettyReplication() QueryRequest {
-	n, t, d := "Pretty Replication", REPLICATION, "Shows pretty replication table"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultPrettyReplication}
+	n, t, d := "Pretty replication", REPLICATION, "Shows pretty replication table with data in mb"
+	v := []QueryVariety{MasterOnly}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Varieties: v, Query: constant.DefaultPrettyReplication}
 }
 
 func (s *QueryService) databaseSize() QueryRequest {
-	n, t, d := "Database Size", STATISTIC, "Shows all database sizes"
+	n, t, d := "Database size", STATISTIC, "Shows all database sizes"
 	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultDatabaseSize}
 }
 
 func (s *QueryService) tableSize() QueryRequest {
-	n, t, d := "Table Size", STATISTIC, "Shows all table sizes, index size and total (index + table)"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultTableSize}
+	n, t, d := "Table size", STATISTIC, "Shows all table sizes, index size and total (index + table)"
+	v := []QueryVariety{DatabaseSensitive}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Varieties: v, Query: constant.DefaultTableSize}
 }
 
 func (s *QueryService) indexesCache() QueryRequest {
 	n, t, d := "Indexes in cache", STATISTIC, "Shows ratio indexes in cache"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexInCache}
+	v := []QueryVariety{DatabaseSensitive}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Varieties: v, Query: constant.DefaultIndexInCache}
 }
 
 func (s *QueryService) indexesUnused() QueryRequest {
 	n, t, d := "Unused indexes", STATISTIC, "Shows unused indexes and their size"
-	return QueryRequest{Name: &n, Type: &t, Description: &d, Query: constant.DefaultIndexUnused}
+	v := []QueryVariety{DatabaseSensitive}
+	return QueryRequest{Name: &n, Type: &t, Description: &d, Varieties: v, Query: constant.DefaultIndexUnused}
 }
 
 func (s *QueryService) indexesInvalid() QueryRequest {
