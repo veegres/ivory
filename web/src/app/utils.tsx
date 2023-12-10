@@ -19,6 +19,7 @@ import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar} from ".
 import {CertType} from "../type/cert";
 import {InstanceMap, InstanceWeb} from "../type/instance";
 import {JobStatus} from "../type/job";
+import {QueryVariety} from "../type/query";
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
@@ -67,6 +68,12 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>, key: "cert"},
     [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <Key/>, key: "secret"},
     [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>, key: "about"},
+}
+
+export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
+    [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: "error.dark"},
+    [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: "success.dark"},
+    [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: "info.dark"},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {

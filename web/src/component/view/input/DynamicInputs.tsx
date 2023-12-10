@@ -4,6 +4,7 @@ import {ColorsMap, SxPropsMap} from "../../../type/common";
 const SX: SxPropsMap = {
     chip: {width: '100%'},
     input: {height: '32px'},
+    box: {display: "grid", gridTemplateColumns: "repeat(auto-fill, 175px)", gap: 1},
 }
 
 type Props = {
@@ -14,10 +15,11 @@ type Props = {
     onChange: (values: string[]) => void,
 }
 
-export function DynamicInputs({ inputs, editable, placeholder, onChange, colors} : Props) {
+export function DynamicInputs(props: Props) {
+    const {inputs, editable, placeholder, onChange, colors} = props
     const colorsMap = colors ?? {}
     return (
-        <Box display={"grid"} gridTemplateColumns={"repeat(auto-fill, 175px)"} gap={1}>
+        <Box sx={SX.box}>
             {editable ? renderInputs() : renderChips()}
         </Box>
     )
@@ -35,7 +37,7 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
                         size={"small"}
                         value={input}
                         onChange={(event) => handleChange(index, event.target.value)}
-                   />
+                    />
                 </FormControl>
             )
         })
@@ -50,7 +52,7 @@ export function DynamicInputs({ inputs, editable, placeholder, onChange, colors}
                 label={input ? input : `Instance ${index}`}
                 disabled={!input}
                 variant={"outlined"}
-           />
+            />
         ))
     }
 

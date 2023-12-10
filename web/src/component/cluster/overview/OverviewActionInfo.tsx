@@ -32,8 +32,8 @@ export function OverviewActionInfo(props: Props) {
         {icon: <WarningAmberRounded/>, label: "Warning", active: warning, iconColor: orange[500]}
     ]
     const roleTooltip = [
-        {label: "Detection", value: detection, bgColor: purple[400]},
-        {label: "Instance", value: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]}
+        {title: "Detection", label: detection, bgColor: purple[400]},
+        {title: "Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]}
     ]
 
     return (

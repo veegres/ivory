@@ -26,7 +26,7 @@ export function DatabaseBox(props: Props) {
             <Box sx={SX.item}>
                 <Box sx={SX.label}>Database:</Box>
                 <Box>{db.database ? db.database : "postgres"}</Box>
-                {!db.database  && (<Box sx={SX.default}>(default)</Box>)}
+                {!db.database && (<Box sx={SX.default}>(default)</Box>)}
             </Box>
         </Box>
     )

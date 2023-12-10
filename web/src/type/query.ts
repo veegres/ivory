@@ -15,14 +15,23 @@ export enum QueryCreation {
     System = "system",
 }
 
+export enum QueryVariety {
+    DatabaseSensitive,
+    MasterOnly,
+    ReplicaRecommended,
+}
+
 export interface Query {
     id: string,
     name: string,
     type: QueryType,
     creation: QueryCreation,
+    varieties?: QueryVariety[],
+    params?: string[],
     description: string,
     default: string,
     custom: string,
+    createAt: number,
 }
 
 export interface QueryRequest {
@@ -30,6 +39,8 @@ export interface QueryRequest {
     type?: QueryType,
     description?: string,
     query: string,
+    varieties?: QueryVariety[],
+    params?: string[],
 }
 
 export interface QueryPostgresRequest {
@@ -39,6 +50,7 @@ export interface QueryPostgresRequest {
 
 export interface QueryRunRequest extends QueryPostgresRequest {
     queryUuid: string,
+    queryParams?: string[],
 }
 
 export interface QueryKillRequest extends QueryPostgresRequest {
