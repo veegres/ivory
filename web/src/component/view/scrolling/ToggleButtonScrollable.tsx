@@ -93,7 +93,7 @@ export function ToggleButtonScrollable(props: Props) {
                 selected={selected}
                 disabled={!onClick}
                 value={tag}
-                onClick={() => onClick!!(tag)}
+                onClick={() => onClick?.(tag)}
             >
                 {tag}
             </ToggleButton>
@@ -111,7 +111,7 @@ export function ToggleButtonScrollable(props: Props) {
                 selected={removed}
                 disabled={!onClick}
                 value={tag}
-                onClick={() => onClick!!(tag)}
+                onClick={() => onClick?.(tag)}
             >
                 {tag}
             </ToggleButton>

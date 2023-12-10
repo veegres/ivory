@@ -54,13 +54,13 @@ export function OverviewInstancesRow(props: Props) {
             <TableCell sx={SX.cell} align={"center"}>{lag}</TableCell>
             <TableCell sx={SX.cell} align={"right"} onClick={(e) => e.stopPropagation()}>
                 <Box display={"flex"} justifyContent={"flex-end"} alignItems={"center"}>
-                    {renderButton(instance, role)}
+                    {renderButton(role)}
                 </Box>
             </TableCell>
         </TableRow>
     )
 
-    function renderButton(instance: InstanceWeb, type: string) {
+    function renderButton(type: string) {
         switch (type) {
             case "replica": return renderReinit()
             case "leader": return renderSwitch()

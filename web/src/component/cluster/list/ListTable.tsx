@@ -42,7 +42,7 @@ export function ListTable(props: Props) {
     const bgcolor = header[theme] ?? "inherit"
 
     return (
-        <Box sx={SX.box} className={scroll.tiny} maxHeight={!!activeCluster ? "25vh" : "60vh"}>
+        <Box sx={SX.box} className={scroll.tiny} maxHeight={activeCluster ? "25vh" : "60vh"}>
             <Table size={"small"} sx={SX.table} stickyHeader>
                 <TableHead>
                     <TableRow>

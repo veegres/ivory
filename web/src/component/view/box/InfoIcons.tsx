@@ -37,7 +37,7 @@ export function InfoIcons(props: Props) {
         <InfoBox tooltip={<InfoTitle items={titleItems}/>}>
             {items.map((item, index) => {
                 const defaultColor = item.iconColor ?? "default"
-                const color = item.active ? defaultColor : info?.palette.text.disabled!!
+                const color = item.active ? defaultColor : info?.palette.text.disabled
                 const background = item.active ? colors.active[theme] : colors.disabled[theme]
                 return (
                     <Box key={index} sx={SX.box}>

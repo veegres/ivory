@@ -2,19 +2,19 @@
   "name": "ivory",
   "version": "1.0.0",
   "private": true,
-  "engines" : {
-    "npm" : ">=9.0.0",
-    "node" : ">=18.0.0"
+  "engines": {
+    "npm": ">=9.0.0",
+    "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test"
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview",
+    "lint": "eslint --max-warnings 0 src",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage --watch=false"
   },
   "dependencies": {
-    "@babel/core": "7.23.5",
-    "@babel/plugin-syntax-flow": "7.23.3",
-    "@babel/plugin-transform-react-jsx": "7.23.4",
     "@babel/runtime": "7.23.5",
     "@codemirror/autocomplete": "6.11.1",
     "@codemirror/lang-json": "6.0.1",
@@ -53,12 +53,18 @@
     "@types/react": "18.2.43",
     "@types/react-dom": "18.2.17",
     "@types/react-router-dom": "5.3.3",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
     "@typescript-eslint/typescript-estree": "6.13.1",
-    "react-scripts": "5.0.1",
-    "typescript": "5.3.3"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "@vitejs/plugin-react-swc": "3.5.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-react": "7.33.2",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-react-refresh": "0.4.4",
+    "typescript": "5.3.3",
+    "vite": "5.0.7",
+    "vite-plugin-svgr": "4.2.0",
+    "vite-tsconfig-paths": "4.2.2"
   },
   "browserslist": {
     "production": [
@@ -71,6 +77,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "proxy": "http://localhost:8080"
+  }
 }
