@@ -4,7 +4,7 @@ import {SecretStatus} from "./secret";
 
 // COMMON (WEB AND SERVER)
 
-export interface Response<TData, TError = {}> {
+export interface Response<TData, TError = object> {
     response: TData,
     error: TError,
 }
