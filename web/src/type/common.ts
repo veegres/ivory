@@ -92,10 +92,10 @@ export interface ColorsMap {
 }
 
 export interface EnumOptions {
-    name: string,
     label: string,
-    icon: ReactElement,
     key: string,
+    name?: string,
+    icon?: ReactElement,
     color?: string,
     badge?: string,
 }

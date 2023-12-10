@@ -3,7 +3,9 @@ import {
     CancelIconButton,
     DeleteIconButton,
     EditIconButton,
+    InfoIconButton,
     PlayIconButton,
+    QueryParamsIconButton,
     RestoreIconButton
 } from "../../view/button/IconButtons";
 import {useAppearance} from "../../../provider/AppearanceProvider";
@@ -19,18 +21,20 @@ import {QueryItemRun} from "./QueryItemRun";
 import {Database, SxPropsMap} from "../../../type/common";
 import {Query, QueryCreation, QueryType} from "../../../type/query";
 import select from "../../../style/select.module.css";
+import {FixedInputs} from "../../view/input/FixedInputs";
 
 const SX: SxPropsMap = {
     item: {fontSize: "15px"},
     head: {display: "flex", padding: "5px 15px"},
-    title: {flexGrow: 1, display: "flex", alignItems: "center", cursor: "pointer", gap: 1},
+    title: {flexGrow: 1, display: "flex", alignItems: "center", gap: 1},
     name: {fontWeight: "bold"},
     creation: {fontSize: "12px", fontFamily: "monospace"},
     buttons: {display: "flex", alignItems: "center"},
-    type: {padding: "0 8px", cursor: "pointer", color: "text.disabled"},
+    type: {padding: "0 3px", cursor: "pointer", color: "text.disabled"},
 }
 
-enum BodyType {INFO, EDIT, RESTORE, RUN}
+enum ViewToggleType {INFO, EDIT, RESTORE, }
+enum ViewCheckType {RUN, PARAMS}
 
 type Props = {
     query: Query,
@@ -43,12 +47,18 @@ type Props = {
 export function QueryItem(props: Props) {
     const {query, credentialId, db, type, editable} = props
     const {info} = useAppearance()
-    const [body, setBody] = useState<BodyType>()
-    const open = body !== undefined
+    const [toggleView, setToggleView] = useState<ViewToggleType>()
+    const [checkView, setCheckView] = useState<{[key in ViewCheckType]: boolean}>({[ViewCheckType.RUN]: false, [ViewCheckType.PARAMS]: false})
+    const [params, setParams] = useState(query.params?.map(() => ''))
+    const [currentDb, setCurrentDb] = useState(db)
+    const open = toggleView !== undefined
 
     const result = useQuery({
         queryKey: ["query", "run", query.id],
-        queryFn: () => queryApi.run({queryUuid: query.id, credentialId, db}),
+        queryFn: () => {
+            setCurrentDb(db)
+            return queryApi.run({queryUuid: query.id, credentialId, db, queryParams: params})
+        },
         enabled: false, retry: false,
     })
 
@@ -60,29 +70,36 @@ export function QueryItem(props: Props) {
     return (
         <Paper sx={SX.item} variant={"outlined"}>
             <Box sx={SX.head} className={select.none}>
-                <Box sx={SX.title} onClick={open ? handleCancel : handleToggleBody(BodyType.INFO)}>
+                <Box sx={SX.title} onClick={handleCloseAll}>
                     <Box sx={SX.name}>{query.name}</Box>
                     <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
                 </Box>
                 <Box sx={SX.buttons}>
-                    {renderButtons()}
-                    <PlayIconButton color={"success"} loading={result.isFetching} onClick={handleRun}/>
+                    {renderToggleButtons()}
+                    {renderQueryParamsButton()}
+                    {renderRunButton()}
                 </Box>
             </Box>
-            <QueryItemBody show={body === BodyType.INFO}>
-                <QueryItemInfo query={query.custom} description={query.description}/>
+            <QueryItemBody show={checkView[ViewCheckType.PARAMS]}>
+                <FixedInputs inputs={params ?? []} placeholders={query.params ?? []} onChange={v => setParams(v)}/>
             </QueryItemBody>
-            <QueryItemBody show={body === BodyType.EDIT}>
+            <QueryItemBody show={toggleView === ViewToggleType.INFO}>
+                <QueryItemInfo query={query.custom} description={query.description} varieties={query.varieties}/>
+            </QueryItemBody>
+            <QueryItemBody show={toggleView === ViewToggleType.EDIT}>
                 <QueryItemEdit id={query.id} query={query.custom}/>
             </QueryItemBody>
-            <QueryItemBody show={body === BodyType.RESTORE}>
+            <QueryItemBody show={toggleView === ViewToggleType.RESTORE}>
                 <QueryItemRestore id={query.id} def={query.default} custom={query.custom}/>
             </QueryItemBody>
-            <QueryItemBody show={body === BodyType.RUN}>
+            <QueryItemBody show={checkView[ViewCheckType.RUN]}>
                 <QueryItemRun
                     data={result.data}
                     error={result.error}
+                    varieties={query.varieties}
+                    db={currentDb}
                     loading={result.isFetching || cancel.isPending || terminate.isPending}
+                    onRefresh={() => result.refetch().then()}
                     onCancel={(pid) => cancel.mutate({pid, credentialId, db})}
                     onTerminate={(pid) => terminate.mutate({pid, credentialId, db})}
                 />
@@ -90,43 +107,69 @@ export function QueryItem(props: Props) {
         </Paper>
     )
 
-    function renderButtons() {
-        if (open) return renderCancelButton(BodyType[body])
+    function renderToggleButtons() {
+        if (open) return renderCancelButton(ViewToggleType[toggleView])
         return (
             <>
+                <InfoIconButton onClick={handleToggleBody(ViewToggleType.INFO)}/>
                 {query.default !== query.custom && (
-                    <RestoreIconButton onClick={handleToggleBody(BodyType.RESTORE)}/>
+                    <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
+                )}
+                {editable && (
+                    <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
                 )}
                 {query.creation === QueryCreation.Manual && (
                     <DeleteIconButton loading={remove.isPending} onClick={handleDelete}/>
                 )}
-                {editable && (
-                    <EditIconButton onClick={handleToggleBody(BodyType.EDIT)}/>
-                )}
             </>
+        )
+    }
+
+    function renderQueryParamsButton() {
+        const disabled = !query.params || query.params.length == 0
+        return !checkView[ViewCheckType.PARAMS] ? (
+            <QueryParamsIconButton color={"secondary"} disabled={disabled} onClick={() => handleCheckView(ViewCheckType.PARAMS)}/>
+        ) : (
+            <CancelIconButton color={"secondary"} tooltip={"Close Query Params"} onClick={() => handleCheckView(ViewCheckType.PARAMS)}/>
+        )
+    }
+
+    function renderRunButton() {
+        return !checkView[ViewCheckType.RUN] ? (
+            <PlayIconButton color={"success"} loading={result.isFetching} onClick={handleRun}/>
+        ) : (
+            <CancelIconButton color={"success"} tooltip={"Close"} onClick={() => handleCheckView(ViewCheckType.RUN)}/>
         )
     }
 
     function renderCancelButton(type: string) {
         return (
             <>
-                <Box sx={SX.type} onClick={handleCancel}>{type}</Box>
-                <CancelIconButton disabled={result.isFetching} onClick={handleCancel}/>
+                <Box sx={SX.type} onClick={handleToggleBody(undefined)}>{type}</Box>
+                <CancelIconButton tooltip={"Close Query Body"} onClick={handleToggleBody(undefined)}/>
             </>
         )
     }
 
-    function handleCancel() {
-        if (!result.isFetching) setBody(undefined)
+    function handleCloseAll() {
+        setToggleView(undefined)
+        setCheckView({
+            [ViewCheckType.PARAMS]: false,
+            [ViewCheckType.RUN]: false,
+        })
     }
 
-    function handleToggleBody(type: BodyType) {
-        return () => setBody(type)
+    function handleToggleBody(type?: ViewToggleType) {
+        return () => setToggleView(type)
     }
 
     function handleRun() {
-        setBody(BodyType.RUN)
+        if (!checkView[ViewCheckType.RUN]) handleCheckView(ViewCheckType.RUN)
         result.refetch().then()
+    }
+
+    function handleCheckView(type: ViewCheckType) {
+        setCheckView({...checkView, [type]: !checkView[type]})
     }
 
     function handleDelete() {

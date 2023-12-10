@@ -40,9 +40,9 @@ export function ListCellChip(props: Props) {
 
     function renderChipTooltip() {
         const items = [
-            {label: "Detection", value: detection, bgColor: purple[400]},
-            {label: "Instance", value: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]},
-            {label: "Warning", value: warning ? "Yes" : "No", bgColor: warning ? orange[500] : grey[500]}
+            {title: "Detection", label: detection, bgColor: purple[400]},
+            {title: "Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]},
+            {title: "Warning", label: String(warning), bgColor: warning ? orange[500] : grey[500]}
         ]
 
         return <InfoTitle items={items}/>

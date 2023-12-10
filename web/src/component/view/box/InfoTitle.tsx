@@ -1,34 +1,24 @@
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
+import {InfoColorBox} from "./InfoColorBox";
 
 const SX: SxPropsMap = {
-    row: { display: "flex", gap: 1, justifyContent: "space-between", margin: "3px 0" },
-    name: { fontWeight: "bold" },
-    value: { borderRadius: "3px", padding: "0 3px" }
+    box: {display: "flex", gap: 1, justifyContent: "space-between", margin: "3px 0"},
 }
 
-type Item = { label: string, value: string, bgColor?: string }
+type Item = { label: string, title?: string, bgColor?: string }
 type Props = {
-    items: Item[]
+    items: Item[],
 }
 
 export function InfoTitle(props: Props) {
-    const { items } = props
+    const {items} = props
 
     return (
-        <Box>
-            {items.map((item, index) => renderItem(item, index))}
+        <Box sx={SX.box}>
+            {items.map(({label, title, bgColor}, index) => (
+                <InfoColorBox key={index} label={label} title={title} bgColor={bgColor}/>
+            ))}
         </Box>
     )
-
-    function renderItem(item: Item, index: number) {
-        const { bgColor, label, value } = item
-
-        return (
-            <Box key={index} sx={SX.row}>
-                <Box sx={SX.name}>{label}:</Box>
-                <Box sx={SX.value} bgcolor={bgColor}>{value}</Box>
-            </Box>
-        )
-    }
 }

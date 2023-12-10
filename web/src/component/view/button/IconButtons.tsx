@@ -12,6 +12,8 @@ import {
     CopyAll,
     Delete,
     Edit,
+    ImportContacts,
+    ManageSearch,
     PlayArrow,
     Restore
 } from "@mui/icons-material";
@@ -55,6 +57,7 @@ type Props = {
     disabled?: boolean,
     color?: Color,
     placement?: Placement,
+    tooltip?: string,
 }
 
 export function EditIconButton(props: Props) {
@@ -68,8 +71,8 @@ export function DeleteIconButton(props: Props) {
 }
 
 export function CancelIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Cancel/>} tooltip={"Cancel"}/>
+    const {disabled, tooltip} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Cancel/>} tooltip={tooltip ?? "Cancel"}/>
 }
 
 export function TerminateIconButton(props: Props) {
@@ -109,7 +112,12 @@ export function AutoIconButton(props: Props) {
 
 export function PlayIconButton(props: Props) {
     const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<PlayArrow/>} tooltip={"Run"}/>
+    return <IconButton {...props} disabled={disabled ?? false} icon={<PlayArrow/>} tooltip={"RUN"}/>
+}
+
+export function QueryParamsIconButton(props: Props) {
+    const {disabled} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<ManageSearch/>} tooltip={"Query Params"}/>
 }
 
 export function RestoreIconButton(props: Props) {
@@ -121,4 +129,10 @@ export function CopyIconButton(props: Props) {
     const {disabled} = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<CopyAll/>} tooltip={"Copy"}/>
 }
+
+export function InfoIconButton(props: Props) {
+    const {disabled} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<ImportContacts/>} tooltip={"Info"}/>
+}
+
 
