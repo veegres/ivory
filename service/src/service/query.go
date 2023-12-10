@@ -42,7 +42,7 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, queryParams []any, credenti
 	if queryParams == nil {
 		return s.postgresGateway.GetFields(credentialId, db, query.Custom)
 	} else {
-		return s.postgresGateway.GetFields(credentialId, db, query.Custom, queryParams)
+		return s.postgresGateway.GetFields(credentialId, db, query.Custom, queryParams...)
 	}
 }
 
