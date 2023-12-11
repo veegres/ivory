@@ -7,7 +7,6 @@ import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useState} from "react";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
-import {DatabaseBox} from "../../view/box/DatabaseBox";
 import {QueryNew} from "./QueryNew";
 import {Add} from "@mui/icons-material";
 
@@ -39,26 +38,23 @@ export function Query(props: Props) {
 
     return (
         <Box style={style.box}>
-            <Box sx={SX.info}>
-                <DatabaseBox db={db}/>
-                {isManual && (
-                    <ToggleButton sx={SX.toggle} value={"add"} size={"small"} selected={show} onClick={() => setShow(!show)}>
-                        <Tooltip title={"New Custom Query"} placement={"top"}>
-                            <Add/>
-                        </Tooltip>
-                    </ToggleButton>
-                )}
-            </Box>
-            <Collapse in={show}>
-                <QueryNew type={type} onSave={() => setShow(false)}/>
-            </Collapse>
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((value) => (
                     <Collapse key={value.id}>
-                        <QueryItem query={value} credentialId={credentialId} db={db} type={type} editable={isManual}/>
+                        <QueryItem key={value.id} query={value} credentialId={credentialId} db={db} type={type} editable={isManual}/>
                     </Collapse>
                 ))}
             </TransitionGroup>
+            {isManual && (
+                <ToggleButton sx={SX.toggle} value={"add"} size={"small"} selected={show} onClick={() => setShow(!show)}>
+                    <Tooltip title={"New Custom Query"} placement={"top"}>
+                        <Add/>
+                    </Tooltip>
+                </ToggleButton>
+            )}
+            <Collapse in={show}>
+                <QueryNew type={type} onSave={() => setShow(false)}/>
+            </Collapse>
         </Box>
     )
 

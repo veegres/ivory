@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
     body: {overflow: "auto", maxHeight: "300px"},
     table: {"tr td, th": {border: "1px solid", borderColor: "divider"}, padding: "0px 5px 5px 0px"},
     cell: {maxWidth: "600px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
-    type: {fontSize: "12px", fontFamily: "monospace", color: "text.disabled"},
+    type: {fontFamily: "monospace", color: "text.disabled"},
     name: {color: "text.secondary"},
     number: {
         width: "1%", whiteSpace: "nowrap", color: "text.secondary", position: "sticky", left: 0,
@@ -27,6 +27,7 @@ const SX: SxPropsMap = {
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2},
     label: {color: "text.secondary", padding: "0 5px", cursor: "pointer", fontSize: "13.5px"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
+    headTitle: {display: "flex", gap: 1},
 }
 
 type Props = {
@@ -100,13 +101,22 @@ export function QueryItemRun(props: Props) {
                 <TableCell sx={{...SX.number, zIndex: 3}}/>
                 {data.fields.map(field => (
                     <TableCell key={field.name} sx={SX.cell}>
-                        <Box sx={SX.name} component={"span"}>{field.name}</Box>
-                        {" "}
-                        <Box sx={SX.type} component={"span"}>({field.dataType})</Box>
+                        <Tooltip title={renderHeadTitle(field.name, field.dataType)} placement={"top-start"}>
+                            <Box sx={SX.name}>{field.name}</Box>
+                        </Tooltip>
                     </TableCell>
                 ))}
                 {pidIndex !== -1 && <TableCell/>}
             </TableRow>
+        )
+    }
+
+    function renderHeadTitle(name: string, type: string) {
+        return (
+            <Box sx={SX.headTitle}>
+                <Box>{name}</Box>
+                <Box sx={SX.type}>({type})</Box>
+            </Box>
         )
     }
 
@@ -121,7 +131,7 @@ export function QueryItemRun(props: Props) {
                     return (
                         <TableCell key={j} sx={SX.cell}>
                             <Tooltip title={parsedRow} placement={"top-start"}>
-                                <span>{parsedRow}</span>
+                                <Box>{parsedRow}</Box>
                             </Tooltip>
                         </TableCell>
                     )

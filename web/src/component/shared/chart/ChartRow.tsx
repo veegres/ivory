@@ -1,11 +1,10 @@
 import {SxPropsMap} from "../../../type/common";
-import {Box} from "@mui/material";
+import {Box, Chip, Divider} from "@mui/material";
 import {ReactNode} from "react";
 
 const SX: SxPropsMap = {
     row: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 3},
-    item: {display: "flex", gap: 1},
-    label: {fontWeight: "bold", color: "text.secondary"},
+    label: {textTransform: "uppercase"},
 }
 
 type Props = {
@@ -18,12 +17,7 @@ export function ChartRow(props: Props) {
 
     return (
         <>
-            {label && (
-                <Box sx={SX.item}>
-                    <Box sx={SX.label}>Specific stats:</Box>
-                    <Box>{label}</Box>
-                </Box>
-            )}
+            {label && <Divider sx={SX.label} textAlign={"left"}><Chip label={label}/></Divider>}
             <Box sx={SX.row}>
                 {children}
             </Box>
