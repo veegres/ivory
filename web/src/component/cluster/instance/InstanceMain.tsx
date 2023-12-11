@@ -20,8 +20,8 @@ const Tabs: {[key in InstanceTabType]: InstanceTab} = {
         label: "Charts",
         body: (id: string, db: Database) => <Chart credentialId={id} db={db}/>,
         info: <>
-            Here you can check some basic charts about your overall database and each database separatly
-            by specifing database name in the input near by.
+            Here you can check some basic charts about your overall database and each database separately
+            by specifying database name in the input near by.
             If you have some proposal what can be added here, please, suggest
             it <Link href={"https://github.com/veegres/ivory/issues"} target={"_blank"}>here</Link>
         </>
@@ -59,7 +59,7 @@ export function InstanceMain(props: Props) {
 
     return (
         <Box sx={SX.main}>
-            <InstanceMainTitle label={label} info={info} renderActions={renderActions()}/>
+            <InstanceMainTitle label={label} info={info} db={database} renderActions={renderActions()}/>
             {postgresId ? body(postgresId, {...database, database: dbName}) : <ClusterNoPostgresPassword/>}
         </Box>
     )
