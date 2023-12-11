@@ -33,7 +33,7 @@
     "@mui/material": "5.14.18",
     "@tanstack/react-query": "5.8.4",
     "@tanstack/react-query-devtools": "5.8.4",
-    "@tanstack/react-virtual": "3.0.0-beta.54",
+    "@tanstack/react-virtual": "3.0.1",
     "@uiw/codemirror-theme-material": "4.21.21",
     "@uiw/react-codemirror": "4.21.21",
     "autoprefixer": "10.4.16",
