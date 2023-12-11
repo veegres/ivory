@@ -1,19 +1,12 @@
-import {Database, StylePropsMap, SxPropsMap} from "../../../type/common";
-import {Box, Collapse, Skeleton, ToggleButton, Tooltip} from "@mui/material";
+import {Database, StylePropsMap} from "../../../type/common";
+import {Box, Collapse, Skeleton} from "@mui/material";
 import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
 import {generalApi, queryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
-import {useState} from "react";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
 import {QueryNew} from "./QueryNew";
-import {Add} from "@mui/icons-material";
-
-const SX: SxPropsMap = {
-    info: {display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 5px"},
-    toggle: {padding: "0px"},
-}
 
 const style: StylePropsMap = {
     box: {display: "flex", flexDirection: "column", gap: "8px"},
@@ -27,7 +20,6 @@ type Props = {
 
 export function Query(props: Props) {
     const {type, credentialId, db} = props
-    const [show, setShow] = useState(false)
     const query = useQuery({queryKey: ["query", "map", type], queryFn: () => queryApi.list(type)})
     const info = useQuery({queryKey: ["info"], queryFn: () => generalApi.info()})
 
@@ -45,16 +37,7 @@ export function Query(props: Props) {
                     </Collapse>
                 ))}
             </TransitionGroup>
-            {isManual && (
-                <ToggleButton sx={SX.toggle} value={"add"} size={"small"} selected={show} onClick={() => setShow(!show)}>
-                    <Tooltip title={"New Custom Query"} placement={"top"}>
-                        <Add/>
-                    </Tooltip>
-                </ToggleButton>
-            )}
-            <Collapse in={show}>
-                <QueryNew type={type} onSave={() => setShow(false)}/>
-            </Collapse>
+            {isManual && <QueryNew type={type}/>}
         </Box>
     )
 

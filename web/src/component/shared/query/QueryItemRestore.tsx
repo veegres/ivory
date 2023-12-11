@@ -1,5 +1,5 @@
 import {Box, Tooltip} from "@mui/material";
-import {QueryInfo} from "./QueryInfo";
+import {QueryDescription} from "./QueryDescription";
 import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
 import {KeyboardDoubleArrowRight} from "@mui/icons-material";
@@ -31,7 +31,7 @@ export function QueryItemRestore(props: Props) {
             <Box sx={SX.bold}>Default:</Box>
             <Box></Box>
             <Box sx={SX.bold}>Current:</Box>
-            <QueryInfo><QueryEditor value={def} editable={false}/></QueryInfo>
+            <QueryDescription><QueryEditor value={def} editable={false}/></QueryDescription>
             <Box sx={SX.button}>
                 <Tooltip title={"Restore"} placement={"top"} disableInteractive>
                     <span>
@@ -47,7 +47,7 @@ export function QueryItemRestore(props: Props) {
                     </span>
                 </Tooltip>
             </Box>
-            <QueryInfo><QueryEditor value={custom} editable={false}/></QueryInfo>
+            <QueryDescription><QueryEditor value={custom} editable={false}/></QueryDescription>
         </Box>
     )
 

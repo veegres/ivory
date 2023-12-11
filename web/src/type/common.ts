@@ -95,7 +95,7 @@ export interface EnumOptions {
     label: string,
     key: string,
     name?: string,
-    icon?: ReactElement,
+    icon: ReactElement,
     color?: string,
     badge?: string,
 }

@@ -28,7 +28,7 @@ export function QueryItemEdit(props: Props) {
     return (
         <Box sx={SX.box}>
             <Box sx={SX.editor}>
-                <QueryEditor value={query} editable={true} onUpdate={setNewQuery}/>
+                <QueryEditor value={query} editable={true} autoFocus={true} onUpdate={setNewQuery}/>
             </Box>
             <Box sx={SX.buttons}>
                 <SaveIconButton loading={update.isPending} placement={"left"} onClick={handleUpdate}/>

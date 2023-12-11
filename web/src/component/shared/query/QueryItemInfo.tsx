@@ -1,7 +1,7 @@
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
-import {QueryInfo} from "./QueryInfo";
+import {QueryDescription} from "./QueryDescription";
 import {QueryVariety} from "../../../type/query";
 import {QueryVarietyOptions} from "../../../app/utils";
 import {InfoColorBox} from "../../view/box/InfoColorBox";
@@ -23,7 +23,7 @@ export function QueryItemInfo(props: Props) {
     return (
         <Box sx={SX.box}>
             {varieties && (
-                <QueryInfo>
+                <QueryDescription>
                     <Box sx={SX.varieties}>
                         {varieties.map(v => {
                             const {label, color} = QueryVarietyOptions[v]
@@ -32,12 +32,12 @@ export function QueryItemInfo(props: Props) {
                             )
                         })}
                     </Box>
-                </QueryInfo>
+                </QueryDescription>
             )}
-            {description && <QueryInfo>{description}</QueryInfo>}
-            <QueryInfo>
+            {description && <QueryDescription>{description}</QueryDescription>}
+            <QueryDescription>
                 <QueryEditor value={query} editable={false}/>
-            </QueryInfo>
+            </QueryDescription>
         </Box>
     )
 }

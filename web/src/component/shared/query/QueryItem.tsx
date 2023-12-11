@@ -1,4 +1,4 @@
-import {Box, Paper} from "@mui/material";
+import {Box} from "@mui/material";
 import {
     CancelIconButton,
     DeleteIconButton,
@@ -20,16 +20,13 @@ import {queryApi} from "../../../app/api";
 import {QueryItemRun} from "./QueryItemRun";
 import {Database, SxPropsMap} from "../../../type/common";
 import {Query, QueryCreation, QueryType} from "../../../type/query";
-import select from "../../../style/select.module.css";
 import {FixedInputs} from "../../view/input/FixedInputs";
+import {QueryItemHead} from "./QueryItemHead";
+import {QueryItemPaper} from "./QueryItemPaper";
 
 const SX: SxPropsMap = {
-    item: {fontSize: "15px"},
-    head: {display: "flex", padding: "5px 15px"},
-    title: {flexGrow: 1, display: "flex", alignItems: "center", gap: 1},
     name: {fontWeight: "bold"},
     creation: {fontSize: "12px", fontFamily: "monospace"},
-    buttons: {display: "flex", alignItems: "center"},
     type: {padding: "0 3px", cursor: "pointer", color: "text.disabled"},
 }
 
@@ -68,18 +65,8 @@ export function QueryItem(props: Props) {
     const terminate = useMutation({mutationFn: queryApi.terminate, onSuccess: () => result.refetch()})
 
     return (
-        <Paper sx={SX.item} variant={"outlined"}>
-            <Box sx={SX.head} className={select.none}>
-                <Box sx={SX.title} onClick={handleCloseAll}>
-                    <Box sx={SX.name}>{query.name}</Box>
-                    <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
-                </Box>
-                <Box sx={SX.buttons}>
-                    {renderToggleButtons()}
-                    {renderQueryParamsButton()}
-                    {renderRunButton()}
-                </Box>
-            </Box>
+        <QueryItemPaper>
+            <QueryItemHead renderTitle={renderTitle()} renderButtons={renderTitleButtons()} onClick={handleCloseAll}/>
             <QueryItemBody show={checkView[ViewCheckType.PARAMS]}>
                 <FixedInputs inputs={params ?? []} placeholders={query.params ?? []} onChange={v => setParams(v)}/>
             </QueryItemBody>
@@ -104,8 +91,27 @@ export function QueryItem(props: Props) {
                     onTerminate={(pid) => terminate.mutate({pid, credentialId, db})}
                 />
             </QueryItemBody>
-        </Paper>
+        </QueryItemPaper>
     )
+
+    function renderTitle() {
+        return (
+            <>
+                <Box sx={SX.name}>{query.name}</Box>
+                <Box sx={{...SX.creation, color: info?.palette.text.disabled}}>({query.creation})</Box>
+            </>
+        )
+    }
+
+    function renderTitleButtons() {
+        return (
+            <>
+                {renderToggleButtons()}
+                {renderQueryParamsButton()}
+                {renderRunButton()}
+            </>
+        )
+    }
 
     function renderToggleButtons() {
         if (open) return renderCancelButton(ViewToggleType[toggleView])

@@ -1,77 +1,103 @@
-import {Alert, Box, Collapse, Paper, TextField, ToggleButton} from "@mui/material";
-import {useState} from "react";
+import {Alert, Box, InputBase, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {useEffect, useState} from "react";
 import {SxPropsMap} from "../../../type/common";
 import {QueryEditor} from "./QueryEditor";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
-import {QueryType} from "../../../type/query";
+import {QueryType, QueryVariety} from "../../../type/query";
 import {InfoOutlined} from "@mui/icons-material";
 import {InfoBox} from "../../view/box/InfoBox";
+import {QueryDescription} from "./QueryDescription";
+import {QueryItemPaper} from "./QueryItemPaper";
+import {QueryItemHead} from "./QueryItemHead";
+import {QueryItemBody} from "./QueryItemBody";
+import {QueryVarietyOptions} from "../../../app/utils";
 
 const SX: SxPropsMap = {
-    body: {display: "flex", flexDirection: "column", gap: 1, marginBottom: "8px", padding: "10px 15px"},
-    buttons: {display: "flex", alignItems: "center", gap: 1},
-    title: {display: "flex", alignItems: "center", justifyContent: "space-between"},
-    info: {display: "flex", gap: 1},
+    box: {display: "flex", flexDirection: "column", gap: 1},
     toggle: {padding: "3px"},
-    desc: {flexGrow: 1},
     type: {color: "secondary.main"},
-    editor: {borderRadius: "5px", border: "2px solid", borderColor: "divider", ":hover": {borderColor: "text.secondary"}},
-    name: {color: "text.disabled"},
+    input: {fontSize: "inherit", padding: "0"},
 }
 
 type Props = {
     type: QueryType,
-    onSave: () => void,
 }
 
 export function QueryNew(props: Props) {
-    const {type, onSave} = props
+    const {type} = props
+    const [body, setBody] = useState(false)
     const [alert, setAlert] = useState(false)
     const [name, setName] = useState("")
     const [description, setDesc] = useState("")
     const [query, setQuery] = useState("")
+    const [varieties, setVarietis] = useState<QueryVariety[]>([])
 
     const createOptions = useMutationOptions([["query", "map", type]], handleSuccess)
     const create = useMutation({mutationFn: queryApi.create, ...createOptions})
 
+    useEffect(handleEffectClose, [name, setBody]);
+
     return (
-        <Paper sx={SX.body} variant={"outlined"}>
-            <Box sx={SX.title}>
-                <Box><b>NEW QUERY</b></Box>
-                <Box sx={SX.info}>
-                    <InfoBox tooltip={"Type"} withPadding>
-                        <Box sx={SX.type}>{QueryType[type]}</Box>
-                    </InfoBox>
-                    <ToggleButton sx={SX.toggle} value={"info"} size={"small"} selected={alert} onClick={() => setAlert(!alert)}>
-                        <InfoOutlined/>
-                    </ToggleButton>
-                </Box>
-            </Box>
-            <Collapse in={alert}>
+        <QueryItemPaper>
+            <QueryItemHead renderTitle={renderTitle()} renderButtons={renderTitleButtons()}/>
+            <QueryItemBody show={alert}>
                 <Alert severity={"info"} onClose={() => setAlert(false)}>
                     Fields <i>name</i> and <i>query</i> are required for a new query. If you want to have termination
                     and query cancellation buttons in the table you need to call postgres <i>process_id</i> as
                     a <i>pid</i>. Example: <i>SELECT pid FROM table;</i>
                 </Alert>
-            </Collapse>
-            <Box sx={SX.buttons}>
-                <TextField
-                    size={"small"}
-                    value={name}
-                    placeholder={"Name"}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <TextField
-                    sx={SX.desc}
-                    value={description}
-                    size={"small"}
-                    placeholder={"Description"}
-                    onChange={(e) => setDesc(e.target.value)}
-                />
+            </QueryItemBody>
+            <QueryItemBody show={body}>
+                <Box sx={SX.box}>
+                    <QueryDescription>
+                        <ToggleButtonGroup size={"small"} fullWidth value={varieties} onChange={(_e, v) => setVarietis(v)}>
+                            {Object.entries(QueryVarietyOptions).map(([v, o]) => (
+                                <ToggleButton key={v} sx={{padding: "0"}} value={v}>{o.label}</ToggleButton>
+                            ))}
+                        </ToggleButtonGroup>
+                    </QueryDescription>
+                    <QueryDescription editable>
+                        <InputBase
+                            sx={SX.input}
+                            fullWidth
+                            multiline
+                            placeholder={"Description"}
+                            value={description}
+                            onChange={(e) => setDesc(e.target.value)}
+                        />
+                    </QueryDescription>
+                    <QueryDescription editable>
+                        <QueryEditor value={query} editable={true} autoFocus={false} onUpdate={setQuery}/>
+                    </QueryDescription>
+                </Box>
+            </QueryItemBody>
+        </QueryItemPaper>
+    )
+
+    function renderTitle() {
+        return (
+            <InputBase
+                sx={SX.input}
+                fullWidth
+                required
+                placeholder={"Type query name"}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+            />
+        )
+    }
+
+    function renderTitleButtons() {
+        return (
+            <>
+                <InfoBox tooltip={"Type"} withPadding>
+                    <Box sx={SX.type}>{QueryType[type]}</Box>
+                </InfoBox>
                 <LoadingButton
+                    size={"small"}
                     loading={create.isPending}
                     variant={"outlined"}
                     onClick={handleAdd}
@@ -79,12 +105,19 @@ export function QueryNew(props: Props) {
                 >
                     Add
                 </LoadingButton>
-            </Box>
-            <Box sx={SX.editor}>
-                <QueryEditor value={query} editable={true} onUpdate={setQuery}/>
-            </Box>
-        </Paper>
-    )
+                <ToggleButton
+                    sx={SX.toggle} value={"info"} size={"small"} selected={alert}
+                    onClick={() => setAlert(!alert)}>
+                    <InfoOutlined/>
+                </ToggleButton>
+            </>
+        )
+    }
+
+    function handleEffectClose() {
+        if (name === "") setBody(false)
+        else setBody(true)
+    }
 
     function handleAdd() {
         create.mutate({name, type, description, query})
@@ -94,6 +127,5 @@ export function QueryNew(props: Props) {
         setName("")
         setDesc("")
         setQuery("")
-        onSave()
     }
 }
