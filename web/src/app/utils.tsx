@@ -71,9 +71,9 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
 }
 
 export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
-    [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900]},
-    [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900]},
-    [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900]},
+    [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900], icon: <></>},
+    [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900], icon: <></>},
+    [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {

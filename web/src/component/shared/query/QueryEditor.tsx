@@ -6,19 +6,20 @@ import {PostgreSQL, sql} from "@codemirror/lang-sql";
 type Props = {
     value: string,
     editable: boolean,
+    autoFocus?: boolean,
     onUpdate?: (value: string) => void,
 }
 
 export function QueryEditor(props: Props) {
-    const {value, editable, onUpdate} = props
+    const {value, editable, autoFocus, onUpdate} = props
     const appearance = useAppearance();
 
     return (
         <ReactCodeMirror
             value={value}
             editable={editable}
-            autoFocus={editable}
-            minHeight={editable ? "80px" : "auto"}
+            autoFocus={autoFocus}
+            minHeight={"auto"}
             placeholder={"Query"}
             basicSetup={{lineNumbers: false, foldGutter: false, highlightActiveLine: false, highlightSelectionMatches: false}}
             theme={CodeThemes[appearance.theme]}
