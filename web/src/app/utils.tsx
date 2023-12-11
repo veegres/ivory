@@ -1,4 +1,4 @@
-import {blue, green, indigo, orange, purple} from "@mui/material/colors";
+import {blue, green, indigo, orange, purple, red} from "@mui/material/colors";
 import {
     FilePresentOutlined,
     HeartBroken,
@@ -71,9 +71,9 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
 }
 
 export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
-    [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: "error.dark"},
-    [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: "success.dark"},
-    [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: "info.dark"},
+    [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900]},
+    [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900]},
+    [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900]},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {
