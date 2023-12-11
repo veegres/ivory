@@ -9,7 +9,7 @@ import {InfoColorBox} from "../../view/box/InfoColorBox";
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     paper: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px"},
-    varieties: {display: "grid", gridAutoColumns: "minmax(0, 1fr)", gridAutoFlow: "column", gap: 3},
+    varieties: {display: "grid", gridAutoColumns: "minmax(0, 1fr)", gridAutoFlow: "column", gap: 2},
 }
 
 type Props = {
@@ -28,7 +28,7 @@ export function QueryItemInfo(props: Props) {
                         {varieties.map(v => {
                             const {label, color} = QueryVarietyOptions[v]
                             return (
-                                <InfoColorBox key={v} label={label} bgColor={color}/>
+                                <InfoColorBox key={v} label={label} bgColor={color} opacity={0.8}/>
                             )
                         })}
                     </Box>

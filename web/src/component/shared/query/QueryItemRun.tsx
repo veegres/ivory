@@ -63,7 +63,7 @@ export function QueryItemRun(props: Props) {
                     {varieties && varieties.map(v => {
                         const {badge, label, color} = QueryVarietyOptions[v]
                         return (
-                            <InfoColorBox key={v} label={badge ?? "UNKNOWN"} title={label} bgColor={color}/>
+                            <InfoColorBox key={v} label={badge ?? "UNKNOWN"} title={label} bgColor={color} opacity={0.8}/>
                         )
                     })}
                     <RefreshIconButton color={"success"} disabled={loading} onClick={onRefresh}/>
