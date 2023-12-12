@@ -1,12 +1,13 @@
 import {Box, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
-import {Database, SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/common";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TableBody} from "../../view/table/TableBody";
 import scroll from "../../../style/scroll.module.css"
-import {QueryRunResponse, QueryVariety} from "../../../type/query";
+import {QueryRunRequest, QueryVariety} from "../../../type/query";
 import {CancelIconButton, RefreshIconButton, TerminateIconButton} from "../../view/button/IconButtons";
-import {InfoColorBox} from "../../view/box/InfoColorBox";
-import {QueryVarietyOptions} from "../../../app/utils";
+import {useMutation, useQuery} from "@tanstack/react-query";
+import {queryApi} from "../../../app/api";
+import {QueryVarieties} from "./QueryVarieties";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -31,20 +32,25 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    loading: boolean,
     varieties?: QueryVariety[],
-    db: Database,
-    data?: QueryRunResponse,
-    onRefresh: () => void,
-    onTerminate: (pid: number) => void,
-    onCancel: (pid: number) => void,
-    error: unknown,
+    request: QueryRunRequest,
 }
 
-export function QueryItemRun(props: Props) {
-    const {loading, data, error, db, varieties} = props
-    const {onTerminate, onCancel, onRefresh} = props
-    const pidIndex = data?.fields.findIndex(field => field.name === "pid") ?? -1
+export function QueryBodyRun(props: Props) {
+    const {varieties, request} = props
+    const {credentialId, db} = request
+
+    const result = useQuery({
+        queryKey: ["query", "run", request.queryUuid],
+        queryFn: () => queryApi.run(request),
+        enabled: true, retry: false,
+    })
+
+    const cancel = useMutation({mutationFn: queryApi.cancel, onSuccess: () => result.refetch})
+    const terminate = useMutation({mutationFn: queryApi.terminate, onSuccess: () => result.refetch})
+
+    const {data, error, isFetching} = result
+    const pidIndex = result.data?.fields.findIndex(field => field.name === "pid") ?? -1
 
     return (
         <Box sx={SX.box}>
@@ -57,16 +63,15 @@ export function QueryItemRun(props: Props) {
         return (
             <Box sx={SX.info}>
                 <Tooltip title={"SENT TO"} placement={"right"} arrow={true}>
-                    <Box sx={SX.label}>[ postgres://{db.host}:{db.port}/{db.database ? db.database : "postgres"} ]</Box>
+                    <Box sx={SX.label}>[ {isFetching ? "request is loading" : data?.url ?? "unknown"} ]</Box>
                 </Tooltip>
                 <Box sx={SX.buttons}>
-                    {varieties && varieties.map(v => {
-                        const {badge, label, color} = QueryVarietyOptions[v]
-                        return (
-                            <InfoColorBox key={v} label={badge ?? "UNKNOWN"} title={label} bgColor={color} opacity={0.8}/>
-                        )
-                    })}
-                    <RefreshIconButton color={"success"} disabled={loading} onClick={onRefresh}/>
+                    {varieties && <QueryVarieties varieties={varieties}/>}
+                    <RefreshIconButton
+                        color={"success"}
+                        disabled={isFetching || cancel.isPending || terminate.isPending}
+                        onClick={result.refetch}
+                    />
                 </Box>
             </Box>
         )
@@ -74,7 +79,7 @@ export function QueryItemRun(props: Props) {
 
     function renderTable() {
         if (error) return <ErrorSmart error={error}/>
-        if (!loading && (!data || !data.fields.length || !data.rows.length)) {
+        if (!isFetching && (!data || !data.fields.length || !data.rows.length)) {
             return <Box sx={SX.no}>Response is empty</Box>
         }
 
@@ -84,7 +89,7 @@ export function QueryItemRun(props: Props) {
                     <TableHead>
                         {renderHead()}
                     </TableHead>
-                    <TableBody isLoading={loading} rowCount={getRowCount()}>
+                    <TableBody isLoading={isFetching} rowCount={getRowCount()}>
                         {renderBody()}
                     </TableBody>
                 </Table>
@@ -93,7 +98,7 @@ export function QueryItemRun(props: Props) {
     }
 
     function renderHead() {
-        if (loading) return
+        if (isFetching) return
         if (!data) return
 
         return (
@@ -138,8 +143,8 @@ export function QueryItemRun(props: Props) {
                 })}
                 {pidIndex !== -1 && (
                     <TableCell sx={SX.pid}>
-                        <CancelIconButton onClick={() => onCancel(rows[pidIndex])}/>
-                        <TerminateIconButton onClick={() => onTerminate(rows[pidIndex])} color={"error"}/>
+                        <CancelIconButton onClick={() => cancel.mutate({pid: rows[pidIndex], credentialId, db})}/>
+                        <TerminateIconButton onClick={() => terminate.mutate({pid: rows[pidIndex], credentialId, db})} color={"error"}/>
                     </TableCell>
                 )}
             </TableRow>

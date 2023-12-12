@@ -10,7 +10,7 @@ type Props = {
     onUpdate?: (value: string) => void,
 }
 
-export function QueryEditor(props: Props) {
+export function QueryBoxCodeEditor(props: Props) {
     const {value, editable, autoFocus, onUpdate} = props
     const appearance = useAppearance();
 

@@ -13,6 +13,7 @@ import {
     Delete,
     Edit,
     ImportContacts,
+    Info,
     ManageSearch,
     PlayArrow,
     Restore
@@ -130,9 +131,14 @@ export function CopyIconButton(props: Props) {
     return <IconButton {...props} disabled={disabled ?? false} icon={<CopyAll/>} tooltip={"Copy"}/>
 }
 
+export function QueryViewIconButton(props: Props) {
+    const {disabled} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<ImportContacts/>} tooltip={"Query View"}/>
+}
+
 export function InfoIconButton(props: Props) {
     const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<ImportContacts/>} tooltip={"Info"}/>
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Info/>} tooltip={"Info"}/>
 }
 
 

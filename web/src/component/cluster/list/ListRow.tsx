@@ -44,8 +44,9 @@ export function ListRow(props: Props) {
                     inputs={stateNodes}
                     colors={instanceDetection.colors}
                     editable={editable}
-                    placeholder={`Instance`}
+                    placeholder={`Instance `}
                     onChange={n => setStateNodes(n)}
+                    variant={"outlined"}
                 />
                 {!toggle && (
                     <Box sx={SX.removed}>

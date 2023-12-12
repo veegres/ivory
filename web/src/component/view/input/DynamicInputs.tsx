@@ -1,10 +1,12 @@
-import {Box, Chip, FormControl, OutlinedInput} from "@mui/material";
+import {Box, Chip, FormControl, OutlinedInput, SxProps, Theme} from "@mui/material";
 import {ColorsMap, SxPropsMap} from "../../../type/common";
+import {mergeSxProps} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     chip: {width: '100%'},
     input: {height: '32px'},
     box: {display: "grid", gridTemplateColumns: "repeat(auto-fill, 175px)", gap: 1},
+    label: {display: "flex", gap: 1},
 }
 
 type Props = {
@@ -13,10 +15,11 @@ type Props = {
     placeholder: string,
     editable: boolean,
     onChange: (values: string[]) => void,
+    InputProps?: SxProps<Theme>,
 }
 
 export function DynamicInputs(props: Props) {
-    const {inputs, editable, placeholder, onChange, colors} = props
+    const {inputs, editable, placeholder, onChange, colors, InputProps} = props
     const colorsMap = colors ?? {}
     return (
         <Box sx={SX.box}>
@@ -31,9 +34,9 @@ export function DynamicInputs(props: Props) {
             return (
                 <FormControl key={index} color={color} focused={!!color}>
                     <OutlinedInput
-                        sx={SX.input}
+                        sx={mergeSxProps(SX.input, InputProps)}
                         type={"string"}
-                        placeholder={`${placeholder} ${index}`}
+                        placeholder={`${placeholder}${index+1}`}
                         size={"small"}
                         value={input}
                         onChange={(event) => handleChange(index, event.target.value)}

@@ -11,7 +11,7 @@ type Props = {
     show: boolean,
 }
 
-export function QueryItemBody(props: Props) {
+export function QueryBody(props: Props) {
     const {show, children} = props
     if (!show) return null
 
