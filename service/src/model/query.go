@@ -103,6 +103,7 @@ type QueryChart struct {
 type QueryRunResponse struct {
 	Fields []QueryField `json:"fields"`
 	Rows   [][]any      `json:"rows"`
+	Url    string       `json:"url"`
 }
 
 // SPECIFIC (SERVER)

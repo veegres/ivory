@@ -24,7 +24,7 @@ func NewPostgresClient(
 }
 
 func (s *PostgresClient) GetMany(credentialId uuid.UUID, db Database, query string, args ...any) ([]string, error) {
-	rows, _, errReq := s.sendRequest(credentialId, db, query, args...)
+	rows, _, _, errReq := s.sendRequest(credentialId, db, query, args...)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -44,7 +44,7 @@ func (s *PostgresClient) GetMany(credentialId uuid.UUID, db Database, query stri
 }
 
 func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query string) (any, error) {
-	rows, _, errReq := s.sendRequest(credentialId, db, query)
+	rows, _, _, errReq := s.sendRequest(credentialId, db, query)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -63,7 +63,7 @@ func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query strin
 }
 
 func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query string, args ...any) (*QueryRunResponse, error) {
-	rows, typeMap, errReq := s.sendRequest(credentialId, db, query, args...)
+	rows, typeMap, url, errReq := s.sendRequest(credentialId, db, query, args...)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -91,24 +91,25 @@ func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query st
 	res := &QueryRunResponse{
 		Fields: fields,
 		Rows:   rowList,
+		Url:    url,
 	}
 	return res, nil
 }
 
 func (s *PostgresClient) Cancel(pid int, credentialId uuid.UUID, db Database) error {
-	_, _, err := s.sendRequest(credentialId, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
+	_, _, _, err := s.sendRequest(credentialId, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
 func (s *PostgresClient) Terminate(pid int, credentialId uuid.UUID, db Database) error {
-	_, _, err := s.sendRequest(credentialId, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
+	_, _, _, err := s.sendRequest(credentialId, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
-func (s *PostgresClient) sendRequest(credentialId uuid.UUID, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, error) {
-	conn, errConn := s.getConnection(credentialId, db)
+func (s *PostgresClient) sendRequest(credentialId uuid.UUID, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, string, error) {
+	conn, connUrl, errConn := s.getConnection(credentialId, db)
 	if errConn != nil {
-		return nil, nil, errConn
+		return nil, nil, connUrl, errConn
 	}
 	defer s.closeConnection(conn, context.Background())
 
@@ -120,28 +121,34 @@ func (s *PostgresClient) sendRequest(credentialId uuid.UUID, db Database, query 
 		res, errRes = conn.Query(context.Background(), query, args...)
 	}
 	if errRes != nil {
-		return nil, nil, errRes
+		return nil, nil, connUrl, errRes
 	}
-	return res, conn.TypeMap(), nil
+	return res, conn.TypeMap(), connUrl, nil
 }
 
-func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pgx.Conn, error) {
+func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pgx.Conn, string, error) {
 	cred, errCred := s.passwordService.GetDecrypted(credentialId)
 	if errCred != nil {
-		return nil, errors.New("password problems, check if it is exists")
+		return nil, "unknown", errors.New("password problems, check if it is exists")
 	}
 
 	dbName := "postgres"
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
-		return nil, errors.New("database host or port are not specified")
+		return nil, "unknown", errors.New("database host or port are not specified")
 	}
 	if db.Database != nil && *db.Database != "" {
 		dbName = *db.Database
 	}
-	connString := "postgres://" + cred.Username + ":" + cred.Password + "@" + db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
+
+	connProtocol := "postgres://"
+	connCredentials := cred.Username + ":" + cred.Password + "@"
+	connHost := db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
+	connUrl := connProtocol + connHost
+	connString := connProtocol + connCredentials + connHost
 
 	// TODO think about to cache connections
-	return pgx.Connect(context.Background(), connString)
+	conn, err := pgx.Connect(context.Background(), connString)
+	return conn, connUrl, err
 }
 
 func (s *PostgresClient) closeConnection(conn *pgx.Conn, ctx context.Context) {
