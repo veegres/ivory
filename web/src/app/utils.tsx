@@ -197,7 +197,7 @@ export const getErrorMessage = (error: any): string => {
  * @param sx2
  */
 export const mergeSxProps = (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => {
-    return [sx1, ...(Array.isArray(sx2) ? sx2 : [sx2])]
+    return [...(Array.isArray(sx1) ? sx1 : [sx1]), ...(Array.isArray(sx2) ? sx2 : [sx2])]
 }
 
 // CodeMirror theme

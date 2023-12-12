@@ -6,7 +6,7 @@ import {generalApi, queryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
-import {QueryNew} from "./QueryNew";
+import {QueryItemNew} from "./QueryItemNew";
 
 const style: StylePropsMap = {
     box: {display: "flex", flexDirection: "column", gap: "8px"},
@@ -33,11 +33,17 @@ export function Query(props: Props) {
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((value) => (
                     <Collapse key={value.id}>
-                        <QueryItem key={value.id} query={value} credentialId={credentialId} db={db} type={type} editable={isManual}/>
+                        <QueryItem
+                            key={value.id}
+                            query={value}
+                            credentialId={credentialId}
+                            db={db} type={type}
+                            editable={isManual}
+                        />
                     </Collapse>
                 ))}
             </TransitionGroup>
-            {isManual && <QueryNew type={type}/>}
+            {isManual && <QueryItemNew type={type}/>}
         </Box>
     )
 

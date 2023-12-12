@@ -10,7 +10,7 @@ type Props = {
     children: ReactNode,
 }
 
-export function QueryItemPaper(props: Props) {
+export function QueryBoxPaper(props: Props) {
     const {children} = props
     return (
         <Paper sx={SX.item} variant={"outlined"}>

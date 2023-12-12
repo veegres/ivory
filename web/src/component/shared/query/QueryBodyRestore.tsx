@@ -1,12 +1,13 @@
 import {Box, Tooltip} from "@mui/material";
-import {QueryDescription} from "./QueryDescription";
+import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {SxPropsMap} from "../../../type/common";
-import {QueryEditor} from "./QueryEditor";
+import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {KeyboardDoubleArrowRight} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
+import {Query} from "../../../type/query";
 
 const SX: SxPropsMap = {
     box: {display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)", rowGap: 1, columnGap: 2},
@@ -15,13 +16,11 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    id: string,
-    def: string,
-    custom: string,
+    query: Query,
 }
 
-export function QueryItemRestore(props: Props) {
-    const {id, def, custom} = props
+export function QueryBodyRestore(props: Props) {
+    const {query} = props
 
     const updateOptions = useMutationOptions([["query", "map"]])
     const update = useMutation({mutationFn: queryApi.update, ...updateOptions})
@@ -31,12 +30,12 @@ export function QueryItemRestore(props: Props) {
             <Box sx={SX.bold}>Default:</Box>
             <Box></Box>
             <Box sx={SX.bold}>Current:</Box>
-            <QueryDescription><QueryEditor value={def} editable={false}/></QueryDescription>
+            <QueryBoxWrapper><QueryBoxCodeEditor value={query.default} editable={false}/></QueryBoxWrapper>
             <Box sx={SX.button}>
                 <Tooltip title={"Restore"} placement={"top"} disableInteractive>
                     <span>
                         <LoadingButton
-                            disabled={def === custom}
+                            disabled={query.default === query.custom}
                             loading={update.isPending}
                             size={"small"}
                             variant={"outlined"}
@@ -47,11 +46,11 @@ export function QueryItemRestore(props: Props) {
                     </span>
                 </Tooltip>
             </Box>
-            <QueryDescription><QueryEditor value={custom} editable={false}/></QueryDescription>
+            <QueryBoxWrapper><QueryBoxCodeEditor value={query.custom} editable={false}/></QueryBoxWrapper>
         </Box>
     )
 
     function handleUpdate() {
-        update.mutate({id, query: {query: def}})
+        update.mutate({id: query.id, query: {...query, query: query.default}})
     }
 }

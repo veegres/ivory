@@ -35,10 +35,10 @@ export interface Query {
 }
 
 export interface QueryRequest {
-    name?: string,
-    type?: QueryType,
-    description?: string,
+    type: QueryType,
     query: string,
+    name: string,
+    description?: string,
     varieties?: QueryVariety[],
     params?: string[],
 }
@@ -87,6 +87,7 @@ export interface QueryChart {
 export interface QueryRunResponse {
     fields: QueryField[],
     rows: any[][],
+    url: string,
 }
 
 // SPECIFIC (WEB)
