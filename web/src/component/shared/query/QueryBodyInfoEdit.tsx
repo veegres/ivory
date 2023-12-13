@@ -38,7 +38,7 @@ export function QueryBodyInfoEdit(props: Props) {
                 fullWidth
                 multiline
                 placeholder={"Description"}
-                value={query.description}
+                value={query.description ?? ""}
                 onChange={(e) => onChange({...query, description: e.target.value})}
             />
         )

@@ -25,11 +25,17 @@ export function QueryBodyInfoView(props: Props) {
             type={type}
             editable={false}
             renderVarieties={renderVarieties()}
-            renderDescription={description}
+            renderDescription={renderDescription()}
             renderParams={renderParams()}
             renderQuery={renderQuery()}
         />
     )
+
+    function renderDescription() {
+        if (!description) return renderNoElement("DESCRIPTION")
+
+        return description
+    }
 
     function renderVarieties() {
         if (!varieties) return renderNoElement("ELEMENTS")
