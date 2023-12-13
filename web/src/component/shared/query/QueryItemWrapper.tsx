@@ -50,9 +50,12 @@ export function QueryItemWrapper(props: Props) {
             <QueryHead renderTitle={renderTitle} renderButtons={renderTitleButtons()}/>
             <QueryBody show={checkView[ViewCheckType.EDIT_INFO]}>
                 <Alert severity={"info"}>
-                    Fields <i>name</i> and <i>query</i> are required for a new query. If you want to have termination
-                    and query cancellation buttons in the table you need to call postgres <i>process_id</i> as
-                    a <i>pid</i>. Example: <i>SELECT pid FROM table;</i>
+                    The fields <i>name</i> and <i>query</i> are required. To enable termination and query
+                    cancellation buttons in the table you need to call postgres <i>process_id</i> as <i>pid</i> (buttons
+                    will always appear if you have this field). Example: <i>SELECT pid FROM table;</i> It is
+                    also possible to specify prepare statement fields to make query template more flexible in usage.
+                    You need to provide params names in a block with params and use <i>$1</i>, <i>$2</i>, etc to
+                    define param fields in the query.
                 </Alert>
             </QueryBody>
             {children}
