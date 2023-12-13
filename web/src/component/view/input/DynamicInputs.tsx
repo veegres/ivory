@@ -39,7 +39,7 @@ export function DynamicInputs(props: Props) {
                         placeholder={`${placeholder}${index+1}`}
                         size={"small"}
                         value={input}
-                        onChange={(event) => handleChange(index, event.target.value)}
+                        onChange={(event) => handleChange(nodesWithEmptyElement, index, event.target.value)}
                     />
                 </FormControl>
             )
@@ -52,15 +52,15 @@ export function DynamicInputs(props: Props) {
                 key={index}
                 sx={SX.chip}
                 color={colorsMap[input.toLowerCase()]}
-                label={input ? input : `Instance ${index}`}
+                label={input}
                 disabled={!input}
                 variant={"outlined"}
             />
         ))
     }
 
-    function handleChange(index: number, value: string) {
-        inputs[index] = value
-        onChange(inputs.filter(node => !!node))
+    function handleChange(array: string[], index: number, value: string) {
+        array[index] = value
+        onChange(array.filter(node => !!node))
     }
 }
