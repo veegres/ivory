@@ -9,10 +9,10 @@ import {
     QueryChart,
     QueryChartRequest,
     QueryDatabasesRequest,
+    QueryFields,
     QueryKillRequest,
     QueryRequest,
     QueryRunRequest,
-    QueryRunResponse,
     QuerySchemasRequest,
     QueryTablesRequest,
     QueryType
@@ -158,7 +158,7 @@ export const queryApi = {
         .delete(`/query/${uuid}`)
         .then((response) => response.data.response),
     run: (req: QueryRunRequest) => api
-        .post<Response<QueryRunResponse>>(`/query/run`, req)
+        .post<Response<QueryFields>>(`/query/run`, req)
         .then((response) => response.data.response),
     databases: (req: QueryDatabasesRequest) => api
         .post<Response<string[]>>(`/query/databases`, req)
@@ -176,10 +176,10 @@ export const queryApi = {
         .post<Response<QueryChart[]>>(`/query/chart/database`, req)
         .then((response) => response.data.response),
     cancel: (req: QueryKillRequest) => api
-        .post<Response<QueryRunResponse>>(`/query/cancel`, req)
+        .post<Response<QueryFields>>(`/query/cancel`, req)
         .then((response) => response.data.response),
     terminate: (req: QueryKillRequest) => api
-        .post<Response<QueryRunResponse>>(`/query/terminate`, req)
+        .post<Response<QueryFields>>(`/query/terminate`, req)
         .then((response) => response.data.response),
 }
 

@@ -25,7 +25,6 @@ export function QueryItemNew(props: Props) {
 
     return (
         <QueryItemWrapper
-            queryUuid={"SHOULD BE ADDED IN BACKEND"}
             params={queryCreate.params}
             varieties={queryCreate.varieties}
             credentialId={credentialId}

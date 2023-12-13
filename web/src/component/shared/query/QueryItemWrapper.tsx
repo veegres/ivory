@@ -21,7 +21,7 @@ const initialViewCheckMap: ViewCheckMap = {
 }
 
 type Props = {
-    queryUuid: string,
+    queryUuid?: string,
     varieties?: QueryVariety[],
     params?: string[],
     credentialId: string,
@@ -61,7 +61,7 @@ export function QueryItemWrapper(props: Props) {
             </QueryBody>
             <QueryBody show={checkView[ViewCheckType.RUN]}>
                 <QueryBodyRun
-                    request={{queryUuid, credentialId, db, queryParams: paramsValues}}
+                    request={{queryUuid, query: editRequest.query, credentialId, db, queryParams: paramsValues}}
                     varieties={varieties}
                 />
             </QueryBody>
@@ -85,7 +85,7 @@ export function QueryItemWrapper(props: Props) {
         return (
             <>
                 {edit === "create" && <QueryButtonCreate query={editRequest} onSuccess={onEditSuccess}/>}
-                {edit === "update" && <QueryButtonUpdate id={queryUuid} query={editRequest} onSuccess={onEditSuccess}/>}
+                {edit === "update" && queryUuid && <QueryButtonUpdate id={queryUuid} query={editRequest} onSuccess={onEditSuccess}/>}
                 {!checkView[ViewCheckType.EDIT_INFO] ? (
                     <InfoIconButton color={"primary"} onClick={handleCheckView(ViewCheckType.EDIT_INFO)}/>
                 ) : (

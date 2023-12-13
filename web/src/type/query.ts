@@ -28,7 +28,7 @@ export interface Query {
     creation: QueryCreation,
     varieties?: QueryVariety[],
     params?: string[],
-    description: string,
+    description?: string,
     default: string,
     custom: string,
     createAt: number,
@@ -49,7 +49,8 @@ export interface QueryPostgresRequest {
 }
 
 export interface QueryRunRequest extends QueryPostgresRequest {
-    queryUuid: string,
+    queryUuid?: string,
+    query?: string,
     queryParams?: string[],
 }
 
@@ -84,7 +85,7 @@ export interface QueryChart {
     value: any,
 }
 
-export interface QueryRunResponse {
+export interface QueryFields {
     fields: QueryField[],
     rows: any[][],
     url: string,
