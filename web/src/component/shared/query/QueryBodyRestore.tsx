@@ -17,12 +17,13 @@ const SX: SxPropsMap = {
 
 type Props = {
     query: Query,
+    onSuccess: () => void,
 }
 
 export function QueryBodyRestore(props: Props) {
-    const {query} = props
+    const {query, onSuccess} = props
 
-    const updateOptions = useMutationOptions([["query", "map"]])
+    const updateOptions = useMutationOptions([["query", "map", query.type]], onSuccess)
     const update = useMutation({mutationFn: queryApi.update, ...updateOptions})
 
     return (

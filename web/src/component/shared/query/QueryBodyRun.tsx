@@ -41,8 +41,8 @@ export function QueryBodyRun(props: Props) {
     const {credentialId, db} = request
 
     const result = useQuery({
-        queryKey: ["query", "run", request.queryUuid],
-        queryFn: () => queryApi.run(request),
+        queryKey: ["query", "run", request.queryUuid ?? "standalone"],
+        queryFn: () => queryApi.run(request.queryUuid ? {...request, query: undefined} : request),
         enabled: true, retry: false,
     })
 

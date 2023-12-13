@@ -29,7 +29,7 @@ export function FixedInputs(props: Props) {
                         placeholder={placeholders[index]}
                         size={"small"}
                         value={input}
-                        onChange={(event) => handleChange(index, event.target.value)}
+                        onChange={(event) => handleChange(inputs, index, event.target.value)}
                     />
                 </FormControl>
             ))}
@@ -44,9 +44,8 @@ export function FixedInputs(props: Props) {
         onChange(inputs)
     }
 
-    function handleChange(index: number, value: string) {
-        const tmp = [...inputs]
-        tmp[index] = value
-        setInputs(tmp)
+    function handleChange(array: string[], index: number, value: string) {
+        array[index] = value
+        onChange(array.filter(node => !!node))
     }
 }

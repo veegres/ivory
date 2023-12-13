@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
     type: {padding: "0 3px", cursor: "pointer", color: "text.disabled"},
 }
 
-enum ViewToggleType {INFO, EDIT, RESTORE}
+enum ViewToggleType {VIEW, EDIT, RESTORE}
 
 type Props = {
     query: Query,
@@ -43,15 +43,16 @@ export function QueryItemView(props: Props) {
             renderTitle={renderTitle()}
             edit={toggleView === ViewToggleType.EDIT ? "update" : undefined}
             editRequest={queryUpdate}
+            onEditSuccess={handleToggleBody(ViewToggleType.VIEW)}
         >
-            <QueryBody show={toggleView === ViewToggleType.INFO}>
+            <QueryBody show={toggleView === ViewToggleType.VIEW}>
                 <QueryBodyInfoView query={query}/>
             </QueryBody>
             <QueryBody show={toggleView === ViewToggleType.EDIT}>
                 <QueryBodyInfoEdit query={queryUpdate} onChange={setUpdateQuery}/>
             </QueryBody>
             <QueryBody show={toggleView === ViewToggleType.RESTORE}>
-                <QueryBodyRestore query={query}/>
+                <QueryBodyRestore query={query} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
             </QueryBody>
         </QueryItemWrapper>
     )
@@ -69,7 +70,7 @@ export function QueryItemView(props: Props) {
         if (toggleView !== undefined) return renderCancelButton(ViewToggleType[toggleView])
         return (
             <>
-                <QueryViewIconButton onClick={handleToggleBody(ViewToggleType.INFO)}/>
+                <QueryViewIconButton onClick={handleToggleBody(ViewToggleType.VIEW)}/>
                 {query.default !== query.custom && (
                     <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
                 )}
@@ -87,12 +88,17 @@ export function QueryItemView(props: Props) {
         return (
             <>
                 <Box sx={SX.type} onClick={handleToggleBody(undefined)}>{type}</Box>
-                <CancelIconButton tooltip={`Close ${type}`} onClick={handleToggleBody(undefined)}/>
+                <CancelIconButton tooltip={`Close ${type}`} onClick={handleClose}/>
             </>
         )
     }
 
     function handleToggleBody(type?: ViewToggleType) {
         return () => setToggleView(type)
+    }
+
+    function handleClose() {
+        setUpdateQuery(initQueryUpdate)
+        handleToggleBody(undefined)()
     }
 }
