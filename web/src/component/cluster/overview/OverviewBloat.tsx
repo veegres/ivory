@@ -31,7 +31,7 @@ export function OverviewBloat(props: TabProps) {
     const query = useQuery({
         queryKey: ["query", "map", QueryType.BLOAT],
         queryFn: () => queryApi.list(QueryType.BLOAT),
-        enabled: false
+        enabled: false,
     })
     const initJobs = useQuery({
         queryKey: ["instance/bloat/list", cluster.name],
@@ -68,7 +68,9 @@ export function OverviewBloat(props: TabProps) {
             case ListBlock.JOB:
                 return <OverviewBloatJob list={jobs}/>
             case ListBlock.QUERY:
-                return <Query type={QueryType.BLOAT} credentialId={cluster.credentials.postgresId} db={db}/>
+                return cluster.credentials.postgresId && (
+                    <Query type={QueryType.BLOAT} credentialId={cluster.credentials.postgresId} db={db}/>
+                )
         }
     }
 
@@ -79,7 +81,7 @@ export function OverviewBloat(props: TabProps) {
                     <ToggleButton value={ListBlock.JOB} onClick={handleJobTab}>
                         Jobs
                     </ToggleButton>
-                    <ToggleButton value={ListBlock.QUERY} onClick={handleQueryTab}>
+                    <ToggleButton value={ListBlock.QUERY} onClick={handleQueryTab} disabled={!cluster.credentials.postgresId}>
                         Queries
                     </ToggleButton>
                 </ToggleButtonGroup>

@@ -1,12 +1,12 @@
 import {Database, StylePropsMap} from "../../../type/common";
 import {Box, Collapse, Skeleton} from "@mui/material";
-import {QueryItem} from "./QueryItem";
 import {useQuery} from "@tanstack/react-query";
 import {generalApi, queryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
 import {QueryItemNew} from "./QueryItemNew";
+import {QueryItemView} from "./QueryItemView";
 
 const style: StylePropsMap = {
     box: {display: "flex", flexDirection: "column", gap: "8px"},
@@ -14,7 +14,7 @@ const style: StylePropsMap = {
 
 type Props = {
     type: QueryType,
-    credentialId?: string,
+    credentialId: string,
     db: Database,
 }
 
@@ -31,19 +31,19 @@ export function Query(props: Props) {
     return (
         <Box style={style.box}>
             <TransitionGroup style={style.box} appear={false}>
-                {(query.data ?? []).map((value) => (
-                    <Collapse key={value.id}>
-                        <QueryItem
-                            key={value.id}
-                            query={value}
+                {(query.data ?? []).map((q) => (
+                    <Collapse key={q.id}>
+                        <QueryItemView
+                            key={q.id}
+                            query={q}
                             credentialId={credentialId}
-                            db={db} type={type}
-                            editable={isManual}
+                            db={db} type={q.type}
+                            manual={isManual}
                         />
                     </Collapse>
                 ))}
             </TransitionGroup>
-            {isManual && <QueryItemNew type={type}/>}
+            {isManual && <QueryItemNew type={type} credentialId={credentialId} db={db}/>}
         </Box>
     )
 
