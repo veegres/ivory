@@ -125,7 +125,24 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.RunQuery(req.QueryUuid, req.QueryParams, req.CredentialId, req.Db)
+	if req.QueryUuid != nil && req.Query != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Only one parameter allowed either `queryUuid` or `query`"})
+		return
+	}
+	if req.QueryUuid == nil && req.Query == nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "At least `queryUuid` or `query` are required"})
+		return
+	}
+
+	var res *QueryFields
+	var err error
+	if req.QueryUuid != nil {
+		res, err = r.queryService.RunTemplateQuery(*req.QueryUuid, req.QueryParams, req.CredentialId, req.Db)
+	}
+	if req.Query != nil {
+		res, err = r.queryService.RunQuery(*req.Query, req.QueryParams, req.CredentialId, req.Db)
+	}
+
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

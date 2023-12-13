@@ -62,7 +62,7 @@ func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query strin
 	return value, nil
 }
 
-func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query string, args ...any) (*QueryRunResponse, error) {
+func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query string, args ...any) (*QueryFields, error) {
 	rows, typeMap, url, errReq := s.sendRequest(credentialId, db, query, args...)
 	if errReq != nil {
 		return nil, errReq
@@ -88,7 +88,7 @@ func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query st
 		rowList = append(rowList, val)
 	}
 
-	res := &QueryRunResponse{
+	res := &QueryFields{
 		Fields: fields,
 		Rows:   rowList,
 		Url:    url,
