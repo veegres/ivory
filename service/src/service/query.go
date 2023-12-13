@@ -31,7 +31,7 @@ func NewQueryService(
 	return queryService
 }
 
-func (s *QueryService) RunQuery(queryUuid uuid.UUID, queryParams []any, credentialId uuid.UUID, db Database) (*QueryRunResponse, error) {
+func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, credentialId uuid.UUID, db Database) (*QueryFields, error) {
 	query, errQuery := s.queryRepository.Get(queryUuid)
 	if errQuery != nil {
 		return nil, errQuery
@@ -39,10 +39,14 @@ func (s *QueryService) RunQuery(queryUuid uuid.UUID, queryParams []any, credenti
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
+	return s.RunQuery(query.Custom, queryParams, credentialId, db)
+}
+
+func (s *QueryService) RunQuery(query string, queryParams []any, credentialId uuid.UUID, db Database) (*QueryFields, error) {
 	if queryParams == nil {
-		return s.postgresGateway.GetFields(credentialId, db, query.Custom)
+		return s.postgresGateway.GetFields(credentialId, db, query)
 	} else {
-		return s.postgresGateway.GetFields(credentialId, db, query.Custom, queryParams...)
+		return s.postgresGateway.GetFields(credentialId, db, query, queryParams...)
 	}
 }
 
@@ -127,7 +131,7 @@ func (s *QueryService) GetList(queryType *QueryType) ([]Query, error) {
 }
 
 func (s *QueryService) Create(creation QueryCreation, query QueryRequest) (*uuid.UUID, *Query, error) {
-	if query.Name == nil || query.Type == nil || query.Description == nil {
+	if query.Name == nil || query.Type == nil || query.Query == "" {
 		return nil, nil, errors.New("all fields have to be filled")
 	}
 
@@ -135,7 +139,7 @@ func (s *QueryService) Create(creation QueryCreation, query QueryRequest) (*uuid
 		Name:        *query.Name,
 		Type:        *query.Type,
 		Creation:    creation,
-		Description: *query.Description,
+		Description: query.Description,
 		Default:     query.Query,
 		Custom:      query.Query,
 		Params:      query.Params,
@@ -167,6 +171,8 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 			Description: currentQuery.Description,
 			Default:     currentQuery.Default,
 			Custom:      query.Query,
+			Varieties:   query.Varieties,
+			Params:      query.Params,
 			CreatedAt:   currentQuery.CreatedAt,
 		})
 	} else {
@@ -181,7 +187,7 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 			t = *query.Type
 		}
 		if query.Description != nil {
-			d = *query.Description
+			d = query.Description
 		}
 
 		return s.queryRepository.Update(key, Query{
@@ -192,6 +198,8 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 			Description: d,
 			Default:     currentQuery.Default,
 			Custom:      query.Query,
+			Varieties:   query.Varieties,
+			Params:      query.Params,
 			CreatedAt:   currentQuery.CreatedAt,
 		})
 	}

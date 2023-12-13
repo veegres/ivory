@@ -38,7 +38,7 @@ type Query struct {
 	Creation    QueryCreation  `json:"creation"`
 	Varieties   []QueryVariety `json:"varieties"`
 	Params      []string       `json:"params"`
-	Description string         `json:"description"`
+	Description *string        `json:"description"`
 	Default     string         `json:"default"`
 	Custom      string         `json:"custom"`
 	CreatedAt   int64          `json:"createdAt"`
@@ -60,8 +60,9 @@ type QueryPostgresRequest struct {
 
 type QueryRunRequest struct {
 	QueryPostgresRequest
-	QueryUuid   uuid.UUID `json:"queryUuid"`
-	QueryParams []any     `json:"queryParams"`
+	QueryUuid   *uuid.UUID `json:"queryUuid"`
+	Query       *string    `json:"query"`
+	QueryParams []any      `json:"queryParams"`
 }
 
 type QueryKillRequest struct {
@@ -100,7 +101,7 @@ type QueryChart struct {
 	Value any    `json:"value"`
 }
 
-type QueryRunResponse struct {
+type QueryFields struct {
 	Fields []QueryField `json:"fields"`
 	Rows   [][]any      `json:"rows"`
 	Url    string       `json:"url"`
