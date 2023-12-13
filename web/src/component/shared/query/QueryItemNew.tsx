@@ -1,13 +1,12 @@
 import {Alert, InputBase} from "@mui/material";
 import {useEffect, useState} from "react";
-import {SxPropsMap} from "../../../type/common";
+import {Database, SxPropsMap} from "../../../type/common";
 import {QueryRequest, QueryType} from "../../../type/query";
-import {QueryBoxPaper} from "./QueryBoxPaper";
-import {QueryHead} from "./QueryHead";
 import {QueryBody} from "./QueryBody";
 import {CancelIconButton, InfoIconButton} from "../../view/button/IconButtons";
 import {QueryButtonCreate} from "./QueryButtonCreate";
 import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
+import {QueryItemWrapper} from "./QueryItemWrapper";
 
 const SX: SxPropsMap = {
     input: {fontSize: "inherit", padding: "0"},
@@ -15,19 +14,29 @@ const SX: SxPropsMap = {
 
 type Props = {
     type: QueryType,
+    credentialId: string,
+    db: Database,
 }
 
 export function QueryItemNew(props: Props) {
-    const {type} = props
+    const {type, credentialId, db} = props
     const [body, setBody] = useState(false)
     const [info, setInfo] = useState(false)
-    const [query, setQuery] = useState<QueryRequest>({name: "", query: "", type})
+    const [queryCreate, setQueryCreate] = useState<QueryRequest>({name: "", query: "", type})
 
-    useEffect(handleEffectClose, [query.name, setBody]);
+    useEffect(handleEffectClose, [queryCreate.name, setBody]);
 
     return (
-        <QueryBoxPaper>
-            <QueryHead renderTitle={renderTitle()} renderButtons={renderTitleButtons()}/>
+        <QueryItemWrapper
+            queryUuid={"SHOULD BE ADDED IN BACKEND"}
+            params={queryCreate.params}
+            varieties={queryCreate.varieties}
+            credentialId={credentialId}
+            db={db}
+            type={type}
+            renderTitle={renderTitle()}
+            renderButtons={renderTitleButtons()}
+        >
             <QueryBody show={info}>
                 <Alert severity={"info"}>
                     Fields <i>name</i> and <i>query</i> are required for a new query. If you want to have termination
@@ -36,9 +45,9 @@ export function QueryItemNew(props: Props) {
                 </Alert>
             </QueryBody>
             <QueryBody show={body}>
-                <QueryBodyInfoEdit query={query} onChange={setQuery}/>
+                <QueryBodyInfoEdit query={queryCreate} onChange={setQueryCreate}/>
             </QueryBody>
-        </QueryBoxPaper>
+        </QueryItemWrapper>
     )
 
 
@@ -50,8 +59,8 @@ export function QueryItemNew(props: Props) {
                 fullWidth
                 required
                 placeholder={"Type query name"}
-                value={query.name}
-                onChange={(e) => setQuery({...query, name: e.target.value})}
+                value={queryCreate.name}
+                onChange={(e) => setQueryCreate({...queryCreate, name: e.target.value})}
             />
         )
     }
@@ -64,17 +73,17 @@ export function QueryItemNew(props: Props) {
                 ) : (
                     <CancelIconButton color={"primary"} onClick={() => setInfo(false)}/>
                 )}
-                <QueryButtonCreate query={query} onSuccess={handleSuccess}/>
+                <QueryButtonCreate query={queryCreate} onSuccess={handleSuccess}/>
             </>
         )
     }
 
     function handleEffectClose() {
-        if (query.name === "") setBody(false)
+        if (queryCreate.name === "") setBody(false)
         else setBody(true)
     }
 
     function handleSuccess() {
-        setQuery({name: "", query: "", type})
+        setQueryCreate({name: "", query: "", type})
     }
 }
