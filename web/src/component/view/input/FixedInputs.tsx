@@ -1,5 +1,6 @@
 import {Box, FormControl, OutlinedInput} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
+import {useEffect, useState} from "react";
 
 const SX: SxPropsMap = {
     input: {height: '32px'},
@@ -7,17 +8,16 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    inputs: string[],
     placeholders: string[],
     onChange: (values: string[]) => void,
 }
 
 export function FixedInputs(props: Props) {
-    const {inputs, placeholders, onChange} = props
+    const {placeholders, onChange} = props
+    const [inputs, setInputs] = useState(placeholders.map(() => ''))
 
-    if (inputs.length != placeholders.length) {
-        throw Error("input length should be equal to placeholder length")
-    }
+    useEffect(handleEffectPlaceholders, [placeholders]);
+    useEffect(handleEffectInputs, [inputs, onChange]);
 
     return (
         <Box sx={SX.box}>
@@ -36,8 +36,17 @@ export function FixedInputs(props: Props) {
         </Box>
     )
 
+    function handleEffectPlaceholders() {
+        setInputs(placeholders.map(() => ''))
+    }
+
+    function handleEffectInputs() {
+        onChange(inputs)
+    }
+
     function handleChange(index: number, value: string) {
-        inputs[index] = value
-        onChange([...inputs])
+        const tmp = [...inputs]
+        tmp[index] = value
+        setInputs(tmp)
     }
 }
