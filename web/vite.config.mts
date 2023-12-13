@@ -1,5 +1,6 @@
 import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import {createHash} from "node:crypto";
 
 // https://vitejs.dev/config/
 // Note that Vite only performs transpilation on .ts files and does NOT perform type checking.
@@ -8,7 +9,19 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
     plugins: [react()],
     build: {
-        outDir: 'build'
+        outDir: 'build',
+        sourcemap: true,
+    },
+    css: {
+        modules: {
+            localsConvention: "camelCase",
+            generateScopedName: (name, filename, css) => {
+                // disable scoped names for codemirror classes
+                if (name.indexOf("cm") !== -1) return name
+                const hash = createHash("shake256", {outputLength: 3}).update(name).digest("hex")
+                return `css-${name}-${hash}`
+            },
+        },
     },
     server: {
         open: true,

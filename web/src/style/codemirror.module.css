@@ -1,0 +1,11 @@
+.simple {
+    .cm-editor.cm-focused {
+        outline: none;
+    }
+    .cm-line {
+        padding: 0;
+    }
+    .cm-content {
+        padding: 0;
+    }
+}
