@@ -23,13 +23,20 @@ export function Query(props: Props) {
     const query = useQuery({queryKey: ["query", "map", type], queryFn: () => queryApi.list(type)})
     const info = useQuery({queryKey: ["info"], queryFn: () => generalApi.info()})
 
-    if (query.isPending) return renderLoading()
-    if (query.error) return <ErrorSmart error={query.error}/>
-
     const isManual = info.data?.availability.manualQuery ?? false
 
     return (
         <Box style={style.box}>
+            {isManual && <QueryItemNew type={type} credentialId={credentialId} db={db}/>}
+            {renderList()}
+        </Box>
+    )
+
+    function renderList() {
+        if (query.isPending) return renderLoading()
+        if (query.error) return <ErrorSmart error={query.error}/>
+
+        return (
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((q) => (
                     <Collapse key={q.id}>
@@ -37,15 +44,14 @@ export function Query(props: Props) {
                             key={q.id}
                             query={q}
                             credentialId={credentialId}
-                            db={db} type={q.type}
+                            db={db}
                             manual={isManual}
                         />
                     </Collapse>
                 ))}
             </TransitionGroup>
-            {isManual && <QueryItemNew type={type} credentialId={credentialId} db={db}/>}
-        </Box>
-    )
+        )
+    }
 
     function renderLoading() {
         return (

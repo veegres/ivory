@@ -3,7 +3,7 @@ import {ReactNode, useState} from "react";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyRun} from "./QueryBodyRun";
 import {Database} from "../../../type/common";
-import {QueryRequest, QueryType, QueryVariety} from "../../../type/query";
+import {QueryRequest, QueryVariety} from "../../../type/query";
 import {QueryHead} from "./QueryHead";
 import {QueryBoxPaper} from "./QueryBoxPaper";
 import {FixedInputs} from "../../view/input/FixedInputs";
@@ -26,7 +26,6 @@ type Props = {
     params?: string[],
     credentialId: string,
     db: Database,
-    type: QueryType,
     children: ReactNode,
     renderButtons?: ReactNode,
     renderTitle: ReactNode,
