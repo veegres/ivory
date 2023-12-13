@@ -108,7 +108,7 @@ export function QueryItemWrapper(props: Props) {
 
     function renderRunButton() {
         return !checkView[ViewCheckType.RUN] ? (
-            <PlayIconButton color={"success"} onClick={handleCheckView(ViewCheckType.RUN)}/>
+            <PlayIconButton color={"success"} disabled={!editRequest.query && !queryUuid} onClick={handleCheckView(ViewCheckType.RUN)}/>
         ) : (
             <CancelIconButton color={"success"} tooltip={"Close"} onClick={handleCheckView(ViewCheckType.RUN)}/>
         )
