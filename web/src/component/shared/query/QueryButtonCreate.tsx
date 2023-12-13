@@ -19,7 +19,7 @@ export function QueryButtonCreate(props: Props) {
         <SaveIconButton
             loading={create.isPending}
             disabled={!name || !query}
-            color={"success"}
+            color={"primary"}
             onClick={handleClick}
         />
     )

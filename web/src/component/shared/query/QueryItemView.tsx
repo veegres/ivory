@@ -5,7 +5,7 @@ import {QueryBody} from "./QueryBody";
 import {QueryBodyInfoView} from "./QueryBodyInfoView";
 import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
 import {QueryBodyRestore} from "./QueryBodyRestore";
-import {useMemo, useState} from "react";
+import {useState} from "react";
 import {CancelIconButton, EditIconButton, QueryViewIconButton, RestoreIconButton} from "../../view/button/IconButtons";
 import {QueryButtonDelete} from "./QueryButtonDelete";
 import {Box} from "@mui/material";
@@ -29,7 +29,7 @@ type Props = {
 export function QueryItemView(props: Props) {
     const {query, credentialId, db, type, manual} = props
     const [toggleView, setToggleView] = useState<ViewToggleType>()
-    const initQueryUpdate: QueryRequest = useMemo(() => ({...query, query: query.custom}), [query])
+    const initQueryUpdate: QueryRequest = {...query, query: query.custom}
     const [queryUpdate, setUpdateQuery] = useState(initQueryUpdate)
 
     return (
@@ -41,6 +41,8 @@ export function QueryItemView(props: Props) {
             credentialId={credentialId}
             renderButtons={renderToggleButtons()}
             renderTitle={renderTitle()}
+            edit={toggleView === ViewToggleType.EDIT ? "update" : undefined}
+            editRequest={queryUpdate}
         >
             <QueryBody show={toggleView === ViewToggleType.INFO}>
                 <QueryBodyInfoView query={query}/>
@@ -85,7 +87,7 @@ export function QueryItemView(props: Props) {
         return (
             <>
                 <Box sx={SX.type} onClick={handleToggleBody(undefined)}>{type}</Box>
-                <CancelIconButton tooltip={"Close Query Body"} onClick={handleToggleBody(undefined)}/>
+                <CancelIconButton tooltip={`Close ${type}`} onClick={handleToggleBody(undefined)}/>
             </>
         )
     }

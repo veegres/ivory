@@ -1,16 +1,25 @@
-import {CancelIconButton, PlayIconButton, QueryParamsIconButton,} from "../../view/button/IconButtons";
+import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton,} from "../../view/button/IconButtons";
 import {ReactNode, useState} from "react";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyRun} from "./QueryBodyRun";
 import {Database} from "../../../type/common";
-import {QueryType, QueryVariety} from "../../../type/query";
+import {QueryRequest, QueryType, QueryVariety} from "../../../type/query";
 import {QueryHead} from "./QueryHead";
 import {QueryBoxPaper} from "./QueryBoxPaper";
 import {FixedInputs} from "../../view/input/FixedInputs";
+import {Alert} from "@mui/material";
+import {QueryButtonCreate} from "./QueryButtonCreate";
+import {QueryButtonUpdate} from "./QueryButtonUpdate";
 
-enum ViewCheckType {RUN, PARAMS}
+enum ViewCheckType {RUN, PARAMS, EDIT_INFO}
 
 type ViewCheckMap = {[key in ViewCheckType]: boolean}
+const initialViewCheckMap: ViewCheckMap = {
+    [ViewCheckType.RUN]: false,
+    [ViewCheckType.PARAMS]: false,
+    [ViewCheckType.EDIT_INFO]: false,
+}
+
 type Props = {
     queryUuid: string,
     varieties?: QueryVariety[],
@@ -19,21 +28,33 @@ type Props = {
     db: Database,
     type: QueryType,
     children: ReactNode,
-    renderButtons: ReactNode,
+    renderButtons?: ReactNode,
     renderTitle: ReactNode,
+
+    edit?: "create" | "update",
+    editRequest: QueryRequest,
+    onEditSuccess?: () => void,
 }
 
 export function QueryItemWrapper(props: Props) {
     const {queryUuid, params, varieties} = props
+    const {edit, editRequest, onEditSuccess} = props
     const {credentialId, db} = props
     const {children, renderButtons, renderTitle} = props
-    const [checkView, setCheckView] = useState<ViewCheckMap>({[ViewCheckType.RUN]: false, [ViewCheckType.PARAMS]: false})
+    const [checkView, setCheckView] = useState(initialViewCheckMap)
     const [paramsValues, setParamsValues] = useState<string[]>()
 
     const isNoParams = !params || params.length == 0
     return (
         <QueryBoxPaper>
             <QueryHead renderTitle={renderTitle} renderButtons={renderTitleButtons()}/>
+            <QueryBody show={checkView[ViewCheckType.EDIT_INFO]}>
+                <Alert severity={"info"}>
+                    Fields <i>name</i> and <i>query</i> are required for a new query. If you want to have termination
+                    and query cancellation buttons in the table you need to call postgres <i>process_id</i> as
+                    a <i>pid</i>. Example: <i>SELECT pid FROM table;</i>
+                </Alert>
+            </QueryBody>
             {children}
             <QueryBody show={!isNoParams && checkView[ViewCheckType.PARAMS]}>
                 <FixedInputs placeholders={params ?? []} onChange={setParamsValues}/>
@@ -51,8 +72,25 @@ export function QueryItemWrapper(props: Props) {
         return (
             <>
                 {renderButtons}
+                {renderEditButtons()}
                 {renderQueryParamsButton()}
                 {renderRunButton()}
+            </>
+        )
+    }
+
+    function renderEditButtons() {
+        if (edit === undefined) return
+
+        return (
+            <>
+                {edit === "create" && <QueryButtonCreate query={editRequest} onSuccess={onEditSuccess}/>}
+                {edit === "update" && <QueryButtonUpdate id={queryUuid} query={editRequest} onSuccess={onEditSuccess}/>}
+                {!checkView[ViewCheckType.EDIT_INFO] ? (
+                    <InfoIconButton color={"primary"} onClick={handleCheckView(ViewCheckType.EDIT_INFO)}/>
+                ) : (
+                    <CancelIconButton color={"primary"} onClick={handleCheckView(ViewCheckType.EDIT_INFO)}/>
+                )}
             </>
         )
     }
