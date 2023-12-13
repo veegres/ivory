@@ -1,4 +1,4 @@
-import {Query, QueryCreation, QueryRequest, QueryType} from "../../../type/query";
+import {Query, QueryCreation, QueryRequest} from "../../../type/query";
 import {Database, SxPropsMap} from "../../../type/common";
 import {QueryItemWrapper} from "./QueryItemWrapper";
 import {QueryBody} from "./QueryBody";
@@ -22,12 +22,11 @@ type Props = {
     query: Query,
     credentialId: string,
     db: Database,
-    type: QueryType,
     manual: boolean,
 }
 
 export function QueryItemView(props: Props) {
-    const {query, credentialId, db, type, manual} = props
+    const {query, credentialId, db, manual} = props
     const [toggleView, setToggleView] = useState<ViewToggleType>()
     const initQueryUpdate: QueryRequest = {...query, query: query.custom}
     const [queryUpdate, setUpdateQuery] = useState(initQueryUpdate)
@@ -37,7 +36,7 @@ export function QueryItemView(props: Props) {
             queryUuid={query.id}
             varieties={query.varieties}
             params={query.params}
-            db={db} type={type}
+            db={db}
             credentialId={credentialId}
             renderButtons={renderToggleButtons()}
             renderTitle={renderTitle()}
