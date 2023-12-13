@@ -21,12 +21,12 @@ export function QueryButtonUpdate(props: Props) {
         <SaveIconButton
             loading={update.isPending}
             disabled={!name || !query}
-            color={"success"}
+            color={"primary"}
             onClick={handleClick}
         />
     )
 
     function handleClick() {
-        update.mutate({id, query: props.query,})
+        update.mutate({id, query: props.query})
     }
 }
