@@ -4,10 +4,10 @@ import {SxPropsMap} from "../../../type/common";
 import {mergeSxProps} from "../../../app/utils";
 
 const SX: SxPropsMap = {
-    box: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px", minHeight: "54px"},
-    edit: {border: 1, borderColor: "divider"},
-    hover: {":hover": {borderColor: "text.secondary"}},
-    focus: {borderColor: "primary.main"},
+    box: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px", minHeight: "52px"},
+    edit: {outline: 1, outlineColor: "divider"},
+    hover: {":hover": {outlineColor: "text.secondary"}},
+    focus: {outlineColor: "primary.main"},
 }
 
 

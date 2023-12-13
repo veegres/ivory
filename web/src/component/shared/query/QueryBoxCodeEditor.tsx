@@ -2,6 +2,7 @@ import ReactCodeMirror from "@uiw/react-codemirror";
 import {CodeThemes} from "../../../app/utils";
 import {useAppearance} from "../../../provider/AppearanceProvider";
 import {PostgreSQL, sql} from "@codemirror/lang-sql";
+import code from "../../../style/codemirror.module.css";
 
 type Props = {
     value: string,
@@ -16,6 +17,7 @@ export function QueryBoxCodeEditor(props: Props) {
 
     return (
         <ReactCodeMirror
+            className={code.simple}
             value={value}
             editable={editable}
             autoFocus={autoFocus}
