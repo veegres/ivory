@@ -3,6 +3,7 @@ import {useState} from "react";
 import {QueryType} from "../../../type/query";
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {Query} from "../../shared/query/Query";
+import {QueryConsole} from "../../shared/query/QueryConsole";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},
@@ -23,6 +24,17 @@ export function InstanceMainQueries(props: Props){
     return (
         <Box sx={SX.box}>
             <Box sx={SX.filters}>
+                <ToggleButton
+                    sx={SX.group}
+                    size={"small"}
+                    color={"secondary"}
+                    value={QueryType.CONSOLE}
+                    selected={tab === QueryType.CONSOLE}
+                    onClick={() => setTab(QueryType.CONSOLE)}
+                >
+                    CONSOLE
+                </ToggleButton>
+
                 <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
                     <ToggleButton value={QueryType.ACTIVITY} onClick={() => setTab(QueryType.ACTIVITY)}>
                         ACTIVITY
@@ -42,7 +54,11 @@ export function InstanceMainQueries(props: Props){
                 </ToggleButtonGroup>
             </Box>
             <Box sx={SX.query}>
-                <Query type={tab} credentialId={credentialId} db={db}/>
+                {tab === QueryType.CONSOLE ? (
+                    <QueryConsole credentialId={credentialId} db={db}/>
+                ) : (
+                    <Query type={tab} credentialId={credentialId} db={db}/>
+                )}
             </Box>
         </Box>
     )
