@@ -5,6 +5,7 @@ import {QueryRequest, QueryType} from "../../../type/query";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
 import {QueryItemWrapper} from "./QueryItemWrapper";
+import {CancelIconButton} from "../../view/button/IconButtons";
 
 const SX: SxPropsMap = {
     input: {fontSize: "inherit", padding: "0"},
@@ -22,7 +23,7 @@ export function QueryItemNew(props: Props) {
     const [queryCreate, setQueryCreate] = useState<QueryRequest>({name: "", query: "", type})
 
     useEffect(handleEffectClose, [queryCreate.name, setBody]);
-    useEffect(handleEffectType, [type, setQueryCreate]);
+    useEffect(handleEffectType, [type, setQueryCreate, queryCreate]);
 
     return (
         <QueryItemWrapper
@@ -31,6 +32,7 @@ export function QueryItemNew(props: Props) {
             credentialId={credentialId}
             db={db}
             renderTitle={renderTitle()}
+            renderButtons={renderButtons()}
             edit={"create"}
             editRequest={queryCreate}
             onEditSuccess={handleSuccess}
@@ -51,6 +53,14 @@ export function QueryItemNew(props: Props) {
                 value={queryCreate.name}
                 onChange={(e) => setQueryCreate({...queryCreate, name: e.target.value})}
             />
+        )
+    }
+
+    function renderButtons() {
+        if (queryCreate.name === "") return
+
+        return (
+            <CancelIconButton onClick={handleSuccess}/>
         )
     }
 
