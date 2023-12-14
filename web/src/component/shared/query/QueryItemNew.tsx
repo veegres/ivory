@@ -23,7 +23,6 @@ export function QueryItemNew(props: Props) {
     const [queryCreate, setQueryCreate] = useState<QueryRequest>({name: "", query: "", type})
 
     useEffect(handleEffectClose, [queryCreate.name, setBody]);
-    useEffect(handleEffectType, [type, setQueryCreate, queryCreate]);
 
     return (
         <QueryItemWrapper
@@ -38,7 +37,7 @@ export function QueryItemNew(props: Props) {
             onEditSuccess={handleSuccess}
         >
             <QueryBody show={body}>
-                <QueryBodyInfoEdit query={queryCreate} onChange={setQueryCreate}/>
+                <QueryBodyInfoEdit query={{...queryCreate, type}} onChange={setQueryCreate}/>
             </QueryBody>
         </QueryItemWrapper>
     )
@@ -67,10 +66,6 @@ export function QueryItemNew(props: Props) {
     function handleEffectClose() {
         if (queryCreate.name === "") setBody(false)
         else setBody(true)
-    }
-
-    function handleEffectType() {
-        setQueryCreate({...queryCreate, type})
     }
 
     function handleSuccess() {

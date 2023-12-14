@@ -5,7 +5,10 @@ import {ReactNode} from "react";
 
 const SX: SxPropsMap = {
     head: {display: "flex", padding: "5px 15px"},
-    title: {flexGrow: 1, display: "flex", alignItems: "center", gap: 1},
+    title: {
+        flexGrow: 1, display: "flex", alignItems: "center", gap: 1,
+        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+    },
     buttons: {display: "flex", alignItems: "center"},
 }
 

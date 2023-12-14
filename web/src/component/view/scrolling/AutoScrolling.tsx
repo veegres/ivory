@@ -5,11 +5,11 @@ import {SxPropsMap} from "../../../type/common";
 import {mergeSxProps} from "../../../app/utils";
 
 const SX: SxPropsMap = {
-    wrapper: { display: "flex" },
+    wrapper: {display: "flex"},
     buttons: {position: "relative"},
     button: {position: "absolute", right: "15px", zIndex: 1, minWidth: 0},
-    top: { top: "10px" },
-    bottom: { bottom: "10px" },
+    top: {top: "10px"},
+    bottom: {bottom: "10px"},
 }
 
 type Props = {

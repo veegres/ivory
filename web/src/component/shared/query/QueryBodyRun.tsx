@@ -12,13 +12,13 @@ import {QueryVarieties} from "./QueryVarieties";
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     body: {overflow: "auto", maxHeight: "300px"},
-    table: {"tr td, th": {border: "1px solid", borderColor: "divider"}, padding: "0px 5px 5px 0px"},
+    table: {"tr td, th": {border: "1px solid", borderColor: "divider", bgcolor: "background.paper"}, padding: "0px 5px 5px 0px"},
     cell: {maxWidth: "600px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
     type: {fontFamily: "monospace", color: "text.disabled"},
     name: {color: "text.secondary"},
     number: {
-        width: "1%", whiteSpace: "nowrap", color: "text.secondary", position: "sticky", left: 0,
-        bgcolor: "background.paper", zIndex: 2, textAlign: "center",
+        width: "1%", whiteSpace: "nowrap", color: "text.secondary",
+        position: "sticky", left: 0, zIndex: 2, textAlign: "center",
     },
     no: {
         display: "flex", alignItems: "center", justifyContent: "center", textTransform: "uppercase",

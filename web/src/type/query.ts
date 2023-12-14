@@ -8,6 +8,8 @@ export enum QueryType {
     REPLICATION,
     STATISTIC,
     OTHER,
+
+    CONSOLE,
 }
 
 export enum QueryCreation {
