@@ -42,7 +42,7 @@ export function DynamicRowVirtualizer(props: Props) {
         <AutoScrolling auto={auto} length={rows.length} scroll={virtualizer.scrollToIndex}>
             <Box ref={parentRef} sx={mergeSxProps(sx, SX.container)} className={className} style={{height: `${height}px`}}>
                 <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
-                    <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0].start}px)`}}>
+                    <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0]?.start ?? 0}px)`}}>
                         {items.map((virtualRow) => (
                             <Box
                                 ref={virtualizer.measureElement}

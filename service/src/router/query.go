@@ -129,7 +129,7 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Only one parameter allowed either `queryUuid` or `query`"})
 		return
 	}
-	if req.QueryUuid == nil && req.Query == nil {
+	if (req.QueryUuid == nil || req.QueryUuid.String() == "") && (req.Query == nil || *req.Query == "") {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "At least `queryUuid` or `query` are required"})
 		return
 	}
