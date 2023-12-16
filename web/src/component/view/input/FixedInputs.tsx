@@ -14,10 +14,12 @@ type Props = {
 
 export function FixedInputs(props: Props) {
     const {placeholders, onChange} = props
-    const [inputs, setInputs] = useState(placeholders.map(() => ''))
+    const [inputs, setInputs] = useState(placeholders.map(() => ""))
 
     useEffect(handleEffectPlaceholders, [placeholders]);
     useEffect(handleEffectInputs, [inputs, onChange]);
+
+    console.log(inputs)
 
     return (
         <Box sx={SX.box}>
@@ -29,7 +31,7 @@ export function FixedInputs(props: Props) {
                         placeholder={placeholders[index]}
                         size={"small"}
                         value={input}
-                        onChange={(event) => handleChange(inputs, index, event.target.value)}
+                        onChange={(event) => handleChange(index, event.target.value)}
                     />
                 </FormControl>
             ))}
@@ -37,15 +39,16 @@ export function FixedInputs(props: Props) {
     )
 
     function handleEffectPlaceholders() {
-        setInputs(placeholders.map(() => ''))
+        setInputs(placeholders.map(() => ""))
     }
 
     function handleEffectInputs() {
         onChange(inputs)
     }
 
-    function handleChange(array: string[], index: number, value: string) {
-        array[index] = value
-        onChange(array.filter(node => !!node))
+    function handleChange(index: number, value: string) {
+        const tmp= [...inputs]
+        tmp[index] = value
+        setInputs(tmp)
     }
 }

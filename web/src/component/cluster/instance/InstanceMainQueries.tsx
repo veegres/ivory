@@ -19,7 +19,7 @@ type Props = {
 
 export function InstanceMainQueries(props: Props){
     const {credentialId, db} = props
-    const [tab, setTab] = useState(QueryType.ACTIVITY)
+    const [tab, setTab] = useState(QueryType.CONSOLE)
 
     return (
         <Box sx={SX.box}>
