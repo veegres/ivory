@@ -13,11 +13,12 @@ type Props = {
     variant?: "standard" | "filled" | "outlined";
     margin?: 'dense' | 'normal' | 'none';
     padding?: string,
+    value?: string,
 }
 
 export function AutocompleteFetch(props: Props) {
     const {label, placeholder, variant, margin} = props
-    const {keys, onUpdate, onFetch, disabled = false, padding}= props
+    const {keys, onUpdate, onFetch, disabled = false, padding, value}= props
 
     const [inputValue, setInputValue] = useState("")
     const debInputValue = useDebounce(inputValue)
@@ -33,6 +34,7 @@ export function AutocompleteFetch(props: Props) {
         <Autocomplete
             fullWidth
             renderInput={renderInput}
+            value={value || null}
             inputValue={inputValue}
             disabled={disabled}
             onInputChange={(_, v) => setInputValue(v)}

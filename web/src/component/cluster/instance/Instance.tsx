@@ -1,20 +1,18 @@
 import {Box, Divider} from "@mui/material";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {InfoAlert} from "../../view/box/InfoAlert";
 import {PageMainBox} from "../../view/box/PageMainBox";
 import {SxPropsMap} from "../../../type/common";
-import {useState} from "react";
 import {InstanceMain} from "./InstanceMain";
 import {InstanceInfo} from "./InstanceInfo";
-import {InstanceTabType} from "../../../type/instance";
 
 const SX: SxPropsMap = {
     content: {display: "flex", gap: 3},
 }
 
 export function Instance() {
-    const {activeInstance, isClusterOverviewOpen} = useStore()
-    const [tab, setTab] = useState(InstanceTabType.CHART)
+    const {activeInstance, isClusterOverviewOpen, instance} = useStore()
+    const {setInstanceBody} = useStoreAction()
 
     return (
         <PageMainBox withPadding visible={isClusterOverviewOpen()}>
@@ -27,9 +25,9 @@ export function Instance() {
 
         return (
             <Box sx={SX.content}>
-                <InstanceInfo instance={activeInstance} tab={tab} onTab={setTab}/>
+                <InstanceInfo instance={activeInstance} tab={instance.body} onTab={setInstanceBody}/>
                 <Divider orientation={"vertical"} flexItem/>
-                <InstanceMain tab={tab} database={activeInstance.database}/>
+                <InstanceMain tab={instance.body} database={activeInstance.database}/>
             </Box>
         )
     }
