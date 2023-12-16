@@ -42,7 +42,6 @@ export function ListRowNew(props: Props) {
                     editable={true}
                     placeholder={`Instance `}
                     onChange={n => setStateNodes(n)}
-                    variant={"outlined"}
                 />
             </ListCell>
             <ListCell>

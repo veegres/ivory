@@ -46,7 +46,6 @@ export function ListRow(props: Props) {
                     editable={editable}
                     placeholder={`Instance `}
                     onChange={n => setStateNodes(n)}
-                    variant={"outlined"}
                 />
                 {!toggle && (
                     <Box sx={SX.removed}>
