@@ -4,7 +4,7 @@
     }
     .cm-line {
         /* we need 1px here because for some reason cursor disappears */
-        padding: 0 0 0 1px;
+        padding: 1px 0 0 1px;
     }
     .cm-content {
         padding: 0;

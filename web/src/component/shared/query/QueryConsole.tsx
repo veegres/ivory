@@ -11,7 +11,7 @@ import {useDebounceFunction} from "../../../hook/Debounce";
 
 const SX: SxPropsMap = {
     query: {position: "relative", display: "flex", flexDirection: "column", padding: "2px 2px 15px 2px", fontSize: "13px"},
-    run: {position: "absolute", right: "10px", top: "4px", zIndex: 1, minWidth: 0},
+    run: {position: "absolute", right: "10px", top: "4.5px", zIndex: 1, minWidth: 0},
 
 }
 
