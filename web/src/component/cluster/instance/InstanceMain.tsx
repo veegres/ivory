@@ -5,10 +5,9 @@ import {Database, SxPropsMap} from "../../../type/common";
 import {InstanceTab, InstanceTabType} from "../../../type/instance";
 import {Chart} from "../../shared/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";
-import {useState} from "react";
 import {queryApi} from "../../../app/api";
 import {AutocompleteFetch} from "../../view/autocomplete/AutocompleteFetch";
-import {useStore} from "../../../provider/StoreProvider";
+import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {getDomain} from "../../../app/utils";
 
 const SX: SxPropsMap = {
@@ -49,18 +48,20 @@ type Props = {
 
 export function InstanceMain(props: Props) {
     const {tab, database} = props
-    const {activeCluster} = useStore()
-    const [dbName, setDbName] = useState("")
+    const {activeCluster, instance: {dbName}} = useStore()
+    const {setDbName} = useStoreAction()
 
     if (!activeCluster) return null
 
     const postgresId = activeCluster?.cluster.credentials.postgresId
     const {label, info, body} = Tabs[tab]
 
+    const db = {...database, database: dbName}
+
     return (
         <Box sx={SX.main}>
-            <InstanceMainTitle label={label} info={info} db={database} renderActions={renderActions()}/>
-            {postgresId ? body(postgresId, {...database, database: dbName}) : <ClusterNoPostgresPassword/>}
+            <InstanceMainTitle label={label} info={info} db={db} renderActions={renderActions()}/>
+            {postgresId ? body(postgresId, db) : <ClusterNoPostgresPassword/>}
         </Box>
     )
 
@@ -70,6 +71,7 @@ export function InstanceMain(props: Props) {
         return (
             <Box width={200}>
                 <AutocompleteFetch
+                    value={dbName}
                     keys={["query", "databases", getDomain(database), database.database ?? "postgres", postgresId]}
                     onFetch={(v) => queryApi.databases({credentialId: postgresId, db: database, name: v})}
                     placeholder={"Database"}

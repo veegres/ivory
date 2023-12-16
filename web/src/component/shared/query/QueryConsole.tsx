@@ -6,6 +6,8 @@ import {Database, SxPropsMap} from "../../../type/common";
 import {CancelIconButton, PlayIconButton} from "../../view/button/IconButtons";
 import {Box} from "@mui/material";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";
+import {useStore, useStoreAction} from "../../../provider/StoreProvider";
+import {useDebounceFunction} from "../../../hook/Debounce";
 
 const SX: SxPropsMap = {
     query: {position: "relative", display: "flex", flexDirection: "column", padding: "2px 2px 15px 2px", fontSize: "13px"},
@@ -20,8 +22,12 @@ type Props = {
 
 export function QueryConsole(props: Props) {
     const {credentialId, db} = props
+    const {instance: {queryConsole}} = useStore()
+    const {setConsoleQuery} = useStoreAction()
     const [run, setRun] = useState(false)
-    const [query, setQuery] = useState("")
+    const [query, setQuery] = useState(queryConsole)
+
+    useDebounceFunction(query, setConsoleQuery)
 
     return (
         <Box>

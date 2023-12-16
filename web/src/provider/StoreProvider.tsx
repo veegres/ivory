@@ -1,9 +1,10 @@
 import {createContext, ReactNode, useContext, useMemo} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 import {ActiveCluster, Cluster, DetectionType} from "../type/cluster";
-import {InstanceMap, InstanceWeb} from "../type/instance";
+import {InstanceMap, InstanceTabType, InstanceWeb} from "../type/instance";
 import {getDomain} from "../app/utils";
 import {useLocalStorageState} from "../hook/LocalStorage";
+import {QueryType} from "../type/query";
 
 // STORE
 interface StoreType {
@@ -12,6 +13,12 @@ interface StoreType {
     activeTags: string[],
     warnings: { [key: string]: boolean },
     settings: boolean,
+    instance: {
+        body: InstanceTabType,
+        queryTab: QueryType,
+        queryConsole: string,
+        dbName: string,
+    },
 
     isClusterActive: (name: string) => boolean
     isClusterOverviewOpen: () => boolean
@@ -23,6 +30,12 @@ const initialStore: StoreType = {
     activeTags: ["ALL"],
     warnings: {},
     settings: false,
+    instance: {
+        body: InstanceTabType.CHART,
+        queryTab: QueryType.CONSOLE,
+        queryConsole: "",
+        dbName: "",
+    },
 
     isClusterActive: () => false,
     isClusterOverviewOpen: () => false,
@@ -41,6 +54,10 @@ interface StoreActionType {
     setTags: (tags: string[]) => void,
     toggleSettingsDialog: () => void,
     clear: () => void,
+    setConsoleQuery: (q: string) => void,
+    setInstanceBody: (t: InstanceTabType) => void,
+    setQueryTab: (t: QueryType) => void,
+    setDbName: (n: string) => void,
 }
 const initialStoreAction: StoreActionType = {
     setCluster: () => void 0,
@@ -53,6 +70,10 @@ const initialStoreAction: StoreActionType = {
     setTags: () => void 0,
     toggleSettingsDialog: () => void 0,
     clear: () => void 0,
+    setConsoleQuery: () => void 0,
+    setInstanceBody: () => void 0,
+    setQueryTab: () => void 0,
+    setDbName: () => void 0,
 }
 
 
@@ -101,6 +122,8 @@ export function StoreProvider(props: { children: ReactNode }) {
             setCluster, setClusterInfo, setClusterInstance,
             setClusterDetection, setClusterTab, setWarnings,
             setInstance, setTags, toggleSettingsDialog, clear,
+            setConsoleQuery, setInstanceBody, setQueryTab,
+            setDbName,
         }
     }
 
@@ -144,6 +167,18 @@ export function StoreProvider(props: { children: ReactNode }) {
     function clear() {
         queryClient.clear()
         setState(initialStore)
+    }
+    function setConsoleQuery(q: string) {
+        setState(s => ({...s, instance: {...s.instance, queryConsole: q}}))
+    }
+    function setInstanceBody(t: InstanceTabType) {
+        setState(s => ({...s, instance: {...s.instance, body: t}}))
+    }
+    function setQueryTab(t: QueryType) {
+        setState(s => ({...s, instance: {...s.instance, queryTab: t}}))
+    }
+    function setDbName(n: string) {
+        setState(s => ({...s, instance: {...s.instance, dbName: n}}))
     }
 
     // GETTERS
