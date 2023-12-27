@@ -153,14 +153,14 @@ func (s *QueryService) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Q
 		return nil, nil, err
 	}
 	if currentQuery.Creation == System {
-		if query.Name != nil {
-			return nil, nil, errors.New("name change is not allowed for creation type system")
+		if *query.Name != currentQuery.Name {
+			return nil, nil, errors.New("name change is not allowed for system queries")
 		}
-		if query.Type != nil {
-			return nil, nil, errors.New("type change is not allowed for creation type system")
+		if *query.Type != currentQuery.Type {
+			return nil, nil, errors.New("type change is not allowed for system queries")
 		}
-		if query.Description != nil {
-			return nil, nil, errors.New("description change is not allowed for creation type system")
+		if *query.Description != *currentQuery.Description {
+			return nil, nil, errors.New("description change is not allowed for system queries")
 		}
 
 		return s.queryRepository.Update(key, Query{

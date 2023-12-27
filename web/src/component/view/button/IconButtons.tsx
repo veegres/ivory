@@ -8,14 +8,16 @@ import {
     Cached,
     Cancel,
     CheckCircle,
+    ClearAll,
     Close,
     CopyAll,
     Delete,
     Edit,
-    ImportContacts,
+    History,
     Info,
     ManageSearch,
     PlayArrow,
+    Receipt,
     Restore
 } from "@mui/icons-material";
 
@@ -133,12 +135,22 @@ export function CopyIconButton(props: Props) {
 
 export function QueryViewIconButton(props: Props) {
     const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<ImportContacts/>} tooltip={"Query View"}/>
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Receipt/>} tooltip={"Query View"}/>
+}
+
+export function HistoryIconButton(props: Props) {
+    const {disabled} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<History/>} tooltip={"History"}/>
 }
 
 export function InfoIconButton(props: Props) {
     const {disabled} = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<Info/>} tooltip={"Info"}/>
+}
+
+export function ClearAllIconButton(props: Props) {
+    const {disabled} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<ClearAll/>} tooltip={"Clear All"}/>
 }
 
 

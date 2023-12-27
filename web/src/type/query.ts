@@ -79,7 +79,7 @@ export interface QueryTablesRequest extends QueryPostgresRequest {
 export interface QueryField {
     name: string,
     dataType: string,
-    dataTypeOID: string,
+    dataTypeOID: number,
 }
 
 export interface QueryChart {
@@ -91,6 +91,8 @@ export interface QueryFields {
     fields: QueryField[],
     rows: any[][],
     url: string,
+    startTime: number,
+    endTime: number,
 }
 
 // SPECIFIC (WEB)

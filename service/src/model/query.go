@@ -102,9 +102,11 @@ type QueryChart struct {
 }
 
 type QueryFields struct {
-	Fields []QueryField `json:"fields"`
-	Rows   [][]any      `json:"rows"`
-	Url    string       `json:"url"`
+	Fields    []QueryField `json:"fields"`
+	Rows      [][]any      `json:"rows"`
+	StartTime int64        `json:"startTime"`
+	EndTime   int64        `json:"endTime"`
+	Url       string       `json:"url"`
 }
 
 // SPECIFIC (SERVER)

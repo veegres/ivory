@@ -16,10 +16,9 @@ export function FixedInputs(props: Props) {
     const {placeholders, onChange} = props
     const [inputs, setInputs] = useState(placeholders.map(() => ""))
 
-    useEffect(handleEffectPlaceholders, [placeholders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(handleEffectPlaceholders, [JSON.stringify(placeholders)]);
     useEffect(handleEffectInputs, [inputs, onChange]);
-
-    console.log(inputs)
 
     return (
         <Box sx={SX.box}>
