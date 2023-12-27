@@ -9,6 +9,7 @@ import (
 	"golang.org/x/exp/slog"
 	. "ivory/src/model"
 	"strconv"
+	"time"
 )
 
 type PostgresClient struct {
@@ -63,6 +64,7 @@ func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query strin
 }
 
 func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query string, args ...any) (*QueryFields, error) {
+	startTime := time.Now().UnixMilli()
 	rows, typeMap, url, errReq := s.sendRequest(credentialId, db, query, args...)
 	if errReq != nil {
 		return nil, errReq
@@ -88,10 +90,13 @@ func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query st
 		rowList = append(rowList, val)
 	}
 
+	endTime := time.Now().UnixMilli()
 	res := &QueryFields{
-		Fields: fields,
-		Rows:   rowList,
-		Url:    url,
+		Fields:    fields,
+		Rows:      rowList,
+		Url:       url,
+		StartTime: startTime,
+		EndTime:   endTime,
 	}
 	return res, nil
 }

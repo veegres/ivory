@@ -176,10 +176,10 @@ export const queryApi = {
         .post<Response<QueryChart[]>>(`/query/chart/database`, req)
         .then((response) => response.data.response),
     cancel: (req: QueryKillRequest) => api
-        .post<Response<QueryFields>>(`/query/cancel`, req)
+        .post<Response<string>>(`/query/cancel`, req)
         .then((response) => response.data.response),
     terminate: (req: QueryKillRequest) => api
-        .post<Response<QueryFields>>(`/query/terminate`, req)
+        .post<Response<string>>(`/query/terminate`, req)
         .then((response) => response.data.response),
 }
 
@@ -202,7 +202,7 @@ export const certApi = {
     list: (type?: CertType) => api
         .get<Response<CertMap>>(`/cert`, {params: {type}})
         .then((response => response.data.response)),
-    upload: (request: CertUploadRequest) => {
+    upload: async (request: CertUploadRequest) => {
         const {file, type, setProgress} = request
         const formData = new FormData()
         formData.append("type", type.toString())
@@ -213,9 +213,9 @@ export const certApi = {
                 setProgress && setProgress(progressEvent)
             }
         }
-        return api
-            .post<Response<Cert>>(`/cert/upload`, formData, config)
-            .then((response) => response.data.response)
+        const response = await api
+            .post<Response<Cert>>(`/cert/upload`, formData, config);
+        return response.data.response;
     },
     add: (request: CertAddRequest) => api
         .post<Response<Cert>>(`/cert/add`, request)

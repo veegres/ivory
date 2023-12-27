@@ -6,17 +6,24 @@ import {QueryBodyInfoView} from "./QueryBodyInfoView";
 import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
 import {QueryBodyRestore} from "./QueryBodyRestore";
 import {useState} from "react";
-import {CancelIconButton, EditIconButton, QueryViewIconButton, RestoreIconButton} from "../../view/button/IconButtons";
+import {
+    CancelIconButton,
+    EditIconButton,
+    HistoryIconButton,
+    QueryViewIconButton,
+    RestoreIconButton
+} from "../../view/button/IconButtons";
 import {QueryButtonDelete} from "./QueryButtonDelete";
 import {Box} from "@mui/material";
+import {QueryBodyHistory} from "./QueryBodyHistory";
 
 const SX: SxPropsMap = {
     name: {fontWeight: "bold"},
-    creation: {fontSize: "12px", fontFamily: "monospace"},
+    creation: {fontSize: "12px", fontFamily: "monospace",  color: "text.disabled"},
     type: {padding: "0 3px", cursor: "pointer", color: "text.disabled"},
 }
 
-enum ViewToggleType {VIEW, EDIT, RESTORE}
+enum ViewToggleType {VIEW, EDIT, RESTORE, HISTORY}
 
 type Props = {
     query: Query,
@@ -53,6 +60,9 @@ export function QueryItemView(props: Props) {
             <QueryBody show={toggleView === ViewToggleType.RESTORE}>
                 <QueryBodyRestore query={query} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
             </QueryBody>
+            <QueryBody show={toggleView === ViewToggleType.HISTORY}>
+                <QueryBodyHistory queryId={"dasdasd"}/>
+            </QueryBody>
         </QueryItemWrapper>
     )
 
@@ -60,7 +70,7 @@ export function QueryItemView(props: Props) {
         return (
             <>
                 <Box sx={SX.name}>{query.name}</Box>
-                <Box sx={{...SX.creation, color: "text.disabled"}}>({query.creation})</Box>
+                <Box sx={SX.creation}>({query.creation})</Box>
             </>
         )
     }
@@ -70,6 +80,7 @@ export function QueryItemView(props: Props) {
         return (
             <>
                 <QueryViewIconButton onClick={handleToggleBody(ViewToggleType.VIEW)}/>
+                <HistoryIconButton onClick={handleToggleBody(ViewToggleType.HISTORY)}/>
                 {query.default !== query.custom && (
                     <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
                 )}

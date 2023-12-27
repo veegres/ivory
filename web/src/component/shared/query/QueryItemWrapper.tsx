@@ -41,7 +41,7 @@ export function QueryItemWrapper(props: Props) {
     const {credentialId, db} = props
     const {children, renderButtons, renderTitle} = props
     const [checkView, setCheckView] = useState(initialViewCheckMap)
-    const [paramsValues, setParamsValues] = useState<string[]>()
+    const [paramsValues, setParamsValues] = useState<string[]>([])
 
     const isNoParams = !params || params.length == 0
     return (
@@ -58,7 +58,7 @@ export function QueryItemWrapper(props: Props) {
                 </Alert>
             </QueryBody>
             {children}
-            <QueryBody show={!isNoParams && checkView[ViewCheckType.PARAMS]}>
+            <QueryBody show={!isNoParams && checkView[ViewCheckType.PARAMS]} render={true}>
                 <FixedInputs placeholders={params ?? []} onChange={setParamsValues}/>
             </QueryBody>
             <QueryBody show={checkView[ViewCheckType.RUN]}>
