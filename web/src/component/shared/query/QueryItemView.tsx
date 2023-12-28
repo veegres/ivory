@@ -16,6 +16,7 @@ import {
 import {QueryButtonDelete} from "./QueryButtonDelete";
 import {Box} from "@mui/material";
 import {QueryBodyHistory} from "./QueryBodyHistory";
+import {QueryButtonUpdate} from "./QueryButtonUpdate";
 
 const SX: SxPropsMap = {
     name: {fontWeight: "bold"},
@@ -46,10 +47,10 @@ export function QueryItemView(props: Props) {
             db={db}
             credentialId={credentialId}
             renderButtons={renderToggleButtons()}
+            showButtons={toggleView !== undefined}
+            showInfo={toggleView === ViewToggleType.EDIT}
             renderTitle={renderTitle()}
-            edit={toggleView === ViewToggleType.EDIT ? "update" : undefined}
-            editRequest={queryUpdate}
-            onEditSuccess={handleToggleBody(ViewToggleType.VIEW)}
+            query={queryUpdate.query}
         >
             <QueryBody show={toggleView === ViewToggleType.VIEW}>
                 <QueryBodyInfoView query={query}/>
@@ -99,6 +100,9 @@ export function QueryItemView(props: Props) {
             <>
                 <Box sx={SX.type} onClick={handleToggleBody(undefined)}>{type}</Box>
                 <CancelIconButton tooltip={`Close ${type}`} onClick={handleClose}/>
+                {toggleView === ViewToggleType.EDIT && (
+                    <QueryButtonUpdate id={query.id} query={queryUpdate} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
+                )}
             </>
         )
     }

@@ -6,6 +6,7 @@ import {QueryBody} from "./QueryBody";
 import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
 import {QueryItemWrapper} from "./QueryItemWrapper";
 import {CancelIconButton} from "../../view/button/IconButtons";
+import {QueryButtonCreate} from "./QueryButtonCreate";
 
 const SX: SxPropsMap = {
     input: {fontSize: "inherit", padding: "0"},
@@ -32,9 +33,9 @@ export function QueryItemNew(props: Props) {
             db={db}
             renderTitle={renderTitle()}
             renderButtons={renderButtons()}
-            edit={"create"}
-            editRequest={queryCreate}
-            onEditSuccess={handleSuccess}
+            showButtons={queryCreate.name !== ""}
+            showInfo={true}
+            query={queryCreate.query}
         >
             <QueryBody show={body}>
                 <QueryBodyInfoEdit query={{...queryCreate, type}} onChange={setQueryCreate}/>
@@ -56,10 +57,11 @@ export function QueryItemNew(props: Props) {
     }
 
     function renderButtons() {
-        if (queryCreate.name === "") return
-
         return (
-            <CancelIconButton onClick={handleSuccess}/>
+            <>
+                {queryCreate.name !== "" && <CancelIconButton onClick={handleSuccess}/>}
+                <QueryButtonCreate query={queryCreate} onSuccess={handleSuccess}/>
+            </>
         )
     }
 
