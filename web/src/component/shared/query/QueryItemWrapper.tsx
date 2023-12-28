@@ -3,13 +3,11 @@ import {ReactNode, useState} from "react";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyRun} from "./QueryBodyRun";
 import {Database} from "../../../type/common";
-import {QueryRequest, QueryVariety} from "../../../type/query";
+import {QueryVariety} from "../../../type/query";
 import {QueryHead} from "./QueryHead";
 import {QueryBoxPaper} from "./QueryBoxPaper";
 import {FixedInputs} from "../../view/input/FixedInputs";
 import {Alert} from "@mui/material";
-import {QueryButtonCreate} from "./QueryButtonCreate";
-import {QueryButtonUpdate} from "./QueryButtonUpdate";
 
 enum ViewCheckType {RUN, PARAMS, EDIT_INFO}
 
@@ -27,26 +25,31 @@ type Props = {
     credentialId: string,
     db: Database,
     children: ReactNode,
-    renderButtons?: ReactNode,
+    renderButtons: ReactNode,
+    showButtons: boolean,
+    showInfo: boolean,
     renderTitle: ReactNode,
-
-    edit?: "create" | "update",
-    editRequest: QueryRequest,
-    onEditSuccess?: () => void,
+    query: string,
 }
 
 export function QueryItemWrapper(props: Props) {
-    const {queryUuid, params, varieties} = props
-    const {edit, editRequest, onEditSuccess} = props
-    const {credentialId, db} = props
+    const {queryUuid, params, varieties, query} = props
+    const {credentialId, db, showInfo, showButtons} = props
     const {children, renderButtons, renderTitle} = props
+
+    const [showMouse, setShowMouse] = useState(false)
     const [checkView, setCheckView] = useState(initialViewCheckMap)
     const [paramsValues, setParamsValues] = useState<string[]>([])
 
     const isNoParams = !params || params.length == 0
     return (
         <QueryBoxPaper>
-            <QueryHead renderTitle={renderTitle} renderButtons={renderTitleButtons()}/>
+            <QueryHead
+                renderTitle={renderTitle}
+                renderButtons={renderTitleButtons()}
+                onMouseOver={() => setShowMouse(true)}
+                onMouseOut={() => setShowMouse(false)}
+            />
             <QueryBody show={checkView[ViewCheckType.EDIT_INFO]}>
                 <Alert severity={"info"}>
                     The fields <i>name</i> and <i>query</i> are required. To enable termination and query
@@ -63,7 +66,7 @@ export function QueryItemWrapper(props: Props) {
             </QueryBody>
             <QueryBody show={checkView[ViewCheckType.RUN]}>
                 <QueryBodyRun
-                    request={{queryUuid, query: editRequest.query, credentialId, db, queryParams: paramsValues}}
+                    request={{queryUuid, query, credentialId, db, queryParams: paramsValues}}
                     varieties={varieties}
                 />
             </QueryBody>
@@ -71,10 +74,11 @@ export function QueryItemWrapper(props: Props) {
     )
 
     function renderTitleButtons() {
+        const show = showButtons || showMouse
         return (
             <>
-                {renderButtons}
-                {renderEditButtons()}
+                {show && renderButtons}
+                {show && renderEditButtons()}
                 {renderQueryParamsButton()}
                 {renderRunButton()}
             </>
@@ -82,18 +86,12 @@ export function QueryItemWrapper(props: Props) {
     }
 
     function renderEditButtons() {
-        if (edit === undefined) return
+        if (!showInfo) return
 
-        return (
-            <>
-                {edit === "create" && <QueryButtonCreate query={editRequest} onSuccess={onEditSuccess}/>}
-                {edit === "update" && queryUuid && <QueryButtonUpdate id={queryUuid} query={editRequest} onSuccess={onEditSuccess}/>}
-                {!checkView[ViewCheckType.EDIT_INFO] ? (
-                    <InfoIconButton color={"primary"} onClick={handleCheckView(ViewCheckType.EDIT_INFO)}/>
-                ) : (
-                    <CancelIconButton color={"primary"} onClick={handleCheckView(ViewCheckType.EDIT_INFO)}/>
-                )}
-            </>
+        return !checkView[ViewCheckType.EDIT_INFO] ? (
+            <InfoIconButton color={"primary"} onClick={handleCheckView(ViewCheckType.EDIT_INFO)}/>
+        ) : (
+            <CancelIconButton color={"primary"} onClick={handleCheckView(ViewCheckType.EDIT_INFO)}/>
         )
     }
 
@@ -107,7 +105,7 @@ export function QueryItemWrapper(props: Props) {
 
     function renderRunButton() {
         return !checkView[ViewCheckType.RUN] ? (
-            <PlayIconButton color={"success"} disabled={!editRequest.query && !queryUuid} onClick={handleCheckView(ViewCheckType.RUN)}/>
+            <PlayIconButton color={"success"} disabled={!query && !queryUuid} onClick={handleCheckView(ViewCheckType.RUN)}/>
         ) : (
             <CancelIconButton color={"success"} tooltip={"Close"} onClick={handleCheckView(ViewCheckType.RUN)}/>
         )

@@ -17,12 +17,14 @@ type Props = {
     renderTitle: ReactNode,
     renderButtons: ReactNode,
     onClick?: () => void,
+    onMouseOver?: () => void,
+    onMouseOut?: () => void,
 }
 
 export function QueryHead(props: Props) {
-    const {renderButtons, renderTitle, onClick} = props
+    const {renderButtons, renderTitle, onClick, onMouseOver, onMouseOut} = props
     return (
-        <Box sx={SX.head} className={select.none}>
+        <Box sx={SX.head} className={select.none} onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
             <Box sx={SX.title} onClick={onClick}>
                 {renderTitle}
             </Box>
