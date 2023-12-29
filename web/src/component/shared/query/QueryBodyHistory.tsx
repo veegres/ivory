@@ -1,13 +1,15 @@
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {QueryBodyHistoryItem} from "./QueryBodyHistoryItem";
-import {ClearAllIconButton} from "../../view/button/IconButtons";
+import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
+import {ErrorSmart} from "../../view/box/ErrorSmart";
+import {useMutationOptions} from "../../../hook/QueryCustom";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
-    header: {display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 15px"},
+    header: {display: "flex", justifyContent: "space-between", alignItems: "center"},
     no: {
         display: "flex", alignItems: "center", justifyContent: "center", textTransform: "uppercase",
         padding: "8px 16px", border: "1px solid", borderColor: "divider", lineHeight: "1.54",
@@ -27,16 +29,19 @@ export function QueryBodyHistory(props: Props) {
         enabled: true, retry: false, refetchOnWindowFocus: false,
     })
 
-    const clear = useMutation({
-        mutationFn: () => queryApi.deleteHistory(queryId),
-        onSuccess: () => result.refetch(),
-    })
+    const clearOptions = useMutationOptions([["query", "history", queryId]])
+    const clear = useMutation({mutationFn: () => queryApi.deleteHistory(queryId), ...clearOptions})
+
+    if (result.error) return <ErrorSmart error={result.error}/>
 
     return (
         <Box sx={SX.box}>
             <Box sx={SX.header}>
                 <Box>Previous Responses</Box>
-                <ClearAllIconButton onClick={clear.mutate} color={"error"} disabled={!result.data?.length}/>
+                <Box>
+                    <ClearAllIconButton onClick={clear.mutate} loading={clear.isPending} disabled={!result.data?.length}/>
+                    <RefreshIconButton onClick={result.refetch} loading={result.isFetching}/>
+                </Box>
             </Box>
             <Box>
                 {renderBody()}

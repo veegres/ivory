@@ -7,9 +7,12 @@ import {KeyboardArrowDown} from "@mui/icons-material";
 
 const SX: SxPropsMap = {
     box: {borderBottom: 1, borderColor: "divider", "&::before": {display: "none"}, "&:last-child": {borderBottom: 0}},
-    summary: {minHeight: "auto", padding: "2px 10px", "& .MuiAccordionSummary-content": {margin: "5px 0", gap: 1, alignItems: "center"}},
+    summary: {
+        minHeight: "auto", padding: "2px 10px", gap: 2,
+        "& .MuiAccordionSummary-content": {margin: "5px 0", gap: 1, alignItems: "center"}
+    },
     details: {padding: "0 5px 5px"},
-    duration: {fontSize: "10px", fontFamily: "monospace",  color: "text.disabled"},
+    info: {display: "flex", justifyContent: "space-between", fontSize: "12px", color: "text.secondary", gap: 1},
 }
 
 type Props = {
@@ -19,6 +22,7 @@ type Props = {
 export function QueryBodyHistoryItem(props: Props) {
     const {query} = props
     const [open, setOpen] = useState(false)
+    const [show, setShow] = useState(false)
 
     const columns = query.fields.map(field => (
         {name: field.name, description: field.dataType}
@@ -33,10 +37,17 @@ export function QueryBodyHistoryItem(props: Props) {
             TransitionProps={{unmountOnExit: true}}
             onChange={() => setOpen(!open)}
             disableGutters={true}
+            onMouseOut={() => setShow(false)}
+            onMouseOver={() => setShow(true)}
         >
             <AccordionSummary sx={SX.summary} expandIcon={<KeyboardArrowDown sx={{fontSize: "20px"}}/>}>
                 <Box>{endDate.toLocaleString()}</Box>
-                <Box sx={SX.duration}>({durationSec}s)</Box>
+                {(open || show) && (
+                    <Box sx={SX.info}>
+                        <Box>[ {query.url} ]</Box>
+                        <Box>[ {durationSec}s ]</Box>
+                    </Box>
+                )}
             </AccordionSummary>
             <AccordionDetails sx={SX.details}>
                 <SimpleStickyTable rows={query.rows} columns={columns}/>

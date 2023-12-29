@@ -15,7 +15,7 @@ const SX: SxPropsMap = {
         padding: "8px 16px", border: "1px solid", borderColor: "divider", lineHeight: "1.54",
     },
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2},
-    label: {color: "text.secondary", padding: "0 5px", cursor: "pointer", fontSize: "13.5px"},
+    label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
     pid: {display: "flex"},
     cell: {padding: "0 1px"},
