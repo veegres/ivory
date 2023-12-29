@@ -22,9 +22,9 @@ type BloatService struct {
 }
 
 type element struct {
-	job   *Job
-	model *Bloat
-	file  *os.File
+	job    *Job
+	model  *Bloat
+	writer *os.File
 }
 
 func NewBloatService(
@@ -89,20 +89,21 @@ func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
 
 	// stream logs from file
-	file, errFile := w.bloatRepository.GetOpenFile(model.Uuid)
+	// NOTE: we need to open file one more time, because writer has cursor at the end
+	reader, errFile := w.bloatRepository.GetOpenFile(model.Uuid)
 	if errFile != nil {
 		stream(Event{Type: SERVER, Message: errFile.Error()})
 	} else {
 		stream(Event{Type: SERVER, Message: "Streaming from file started"})
 	}
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		stream(Event{Type: LOG, Message: scanner.Text()})
 	}
 	if errScanner := scanner.Err(); errScanner != nil {
 		stream(Event{Type: SERVER, Message: errScanner.Error()})
 	}
-	errFileClose := file.Close()
+	errFileClose := reader.Close()
 	if errFileClose != nil {
 		stream(Event{Type: SERVER, Message: errFileClose.Error()})
 	}
@@ -157,6 +158,7 @@ func (w *BloatService) runner() {
 		model := w.elements[id].model
 		jobUuid := model.Uuid
 		go func() {
+			defer func() { _ = element.writer.Close() }()
 			w.jobStatusHandler(element, RUNNING, nil)
 
 			// Get password
@@ -271,7 +273,7 @@ func (w *BloatService) jobStatusHandler(element *element, status JobStatus, err 
 }
 
 func (w *BloatService) addLogElement(element *element, eventType EventType, message string) {
-	_, errFileWrite := element.file.WriteString(message + "\n")
+	_, errFileWrite := element.writer.WriteString(message + "\n")
 	if errFileWrite != nil {
 		w.sendEvents(element.job, SERVER, errFileWrite.Error())
 		return
@@ -295,7 +297,7 @@ func (w *BloatService) addElement(model *Bloat) {
 	w.mutex.Lock()
 	// NOTE: we can have potential problem here because file can be nil
 	file, _ := w.bloatRepository.GetOpenFile(model.Uuid)
-	w.elements[model.Uuid] = &element{job: NewJob(), model: model, file: file}
+	w.elements[model.Uuid] = &element{job: NewJob(), model: model, writer: file}
 	w.mutex.Unlock()
 	w.start <- model.Uuid
 }
