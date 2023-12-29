@@ -155,7 +155,7 @@ export const queryApi = {
         .post<Response<Query>>(`/query`, query)
         .then((response) => response.data.response),
     delete: (uuid: string) => api
-        .delete(`/query/${uuid}`)
+        .delete<Response<string>>(`/query/${uuid}`)
         .then((response) => response.data.response),
     run: (req: QueryRunRequest) => api
         .post<Response<QueryFields>>(`/query/run`, req)
@@ -180,6 +180,12 @@ export const queryApi = {
         .then((response) => response.data.response),
     terminate: (req: QueryKillRequest) => api
         .post<Response<string>>(`/query/terminate`, req)
+        .then((response) => response.data.response),
+    getHistory: (uuid: string) => api
+        .get<Response<QueryFields[]>>(`/query/history/${uuid}`)
+        .then((response) => response.data.response),
+    deleteHistory: (uuid: string) => api
+        .delete<Response<string>>(`/query/history/${uuid}`)
         .then((response) => response.data.response),
 }
 

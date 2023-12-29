@@ -38,6 +38,7 @@ func NewContext() *Context {
 	compactTableFiles := config.NewFileGateway("pgcompacttable", ".log")
 	certFiles := config.NewFileGateway("cert", ".crt")
 	configFiles := config.NewFileGateway("config", ".json")
+	queryHistoryFiles := config.NewFileGateway("query", ".jsonl")
 
 	// REPOS
 	clusterRepo := persistence.NewClusterRepository(clusterBucket)
@@ -46,7 +47,7 @@ func NewContext() *Context {
 	tagRepo := persistence.NewTagRepository(tagBucket)
 	secretRepo := persistence.NewSecretRepository(secretBucket)
 	passwordRepo := persistence.NewPasswordRepository(passwordBucket)
-	queryRepo := persistence.NewQueryRepository(queryBucket)
+	queryRepo := persistence.NewQueryRepository(queryBucket, queryHistoryFiles)
 
 	// SERVICES
 	encryptionService := service.NewEncryptionService()

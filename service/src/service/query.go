@@ -31,6 +31,14 @@ func NewQueryService(
 	return queryService
 }
 
+func (s *QueryService) GetHistory(queryUuid uuid.UUID) ([]QueryFields, error) {
+	return s.queryRepository.GetHistory(queryUuid)
+}
+
+func (s *QueryService) DeleteHistory(queryUuid uuid.UUID) error {
+	return s.queryRepository.DeleteHistory(queryUuid)
+}
+
 func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, credentialId uuid.UUID, db Database) (*QueryFields, error) {
 	query, errQuery := s.queryRepository.Get(queryUuid)
 	if errQuery != nil {
@@ -39,7 +47,14 @@ func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, 
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
-	return s.RunQuery(query.Custom, queryParams, credentialId, db)
+	response, errRun := s.RunQuery(query.Custom, queryParams, credentialId, db)
+	if errRun == nil {
+		errAddHistory := s.queryRepository.AddHistory(queryUuid, response)
+		if errAddHistory != nil {
+			return nil, errAddHistory
+		}
+	}
+	return response, errRun
 }
 
 func (s *QueryService) RunQuery(query string, queryParams []any, credentialId uuid.UUID, db Database) (*QueryFields, error) {
