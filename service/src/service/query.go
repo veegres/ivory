@@ -48,7 +48,7 @@ func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, 
 		return nil, errors.New("query is empty")
 	}
 	response, errRun := s.RunQuery(query.Custom, queryParams, credentialId, db)
-	if errRun == nil {
+	if errRun == nil && len(response.Rows) > 0 {
 		errAddHistory := s.queryRepository.AddHistory(queryUuid, response)
 		if errAddHistory != nil {
 			return nil, errAddHistory
