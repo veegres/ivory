@@ -62,7 +62,7 @@ export function QueryItemView(props: Props) {
                 <QueryBodyRestore query={query} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
             </QueryBody>
             <QueryBody show={toggleView === ViewToggleType.HISTORY}>
-                <QueryBodyHistory queryId={"dasdasd"}/>
+                <QueryBodyHistory queryId={query.id}/>
             </QueryBody>
         </QueryItemWrapper>
     )

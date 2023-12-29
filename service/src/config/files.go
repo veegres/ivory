@@ -53,7 +53,7 @@ func (r *FileGateway) Open(name string) (*os.File, error) {
 	if errPath != nil {
 		return nil, errPath
 	}
-	return os.OpenFile(path, os.O_RDWR, 0666)
+	return os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0666)
 }
 
 func (r *FileGateway) Read(name string) ([]byte, error) {

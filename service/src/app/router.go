@@ -128,4 +128,8 @@ func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	queryManual := query.Group("", r.ManualMiddleware())
 	queryManual.POST("", r.PostQuery)
 	queryManual.PUT("/:uuid", r.PutQuery)
+
+	history := query.Group("/history")
+	history.GET("/:uuid", r.GetQueryHistory)
+	history.DELETE("/:uuid", r.DeleteQueryHistory)
 }

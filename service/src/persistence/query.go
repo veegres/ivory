@@ -1,6 +1,9 @@
 package persistence
 
 import (
+	"bufio"
+	"encoding/json"
+	"errors"
 	"github.com/google/uuid"
 	"ivory/src/config"
 	. "ivory/src/model"
@@ -8,13 +11,79 @@ import (
 )
 
 type QueryRepository struct {
-	bucket *config.Bucket[Query]
+	bucket            *config.Bucket[Query]
+	queryHistoryFiles *config.FileGateway
 }
 
-func NewQueryRepository(bucket *config.Bucket[Query]) *QueryRepository {
+func NewQueryRepository(
+	bucket *config.Bucket[Query],
+	queryHistoryFiles *config.FileGateway,
+) *QueryRepository {
 	return &QueryRepository{
-		bucket: bucket,
+		bucket:            bucket,
+		queryHistoryFiles: queryHistoryFiles,
 	}
+}
+
+func (r *QueryRepository) GetHistory(uuid uuid.UUID) ([]QueryFields, error) {
+	file, err := r.queryHistoryFiles.Open(uuid.String())
+	if err != nil {
+		return []QueryFields{}, nil
+	}
+
+	var elements []QueryFields
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		bytes := scanner.Bytes()
+		if len(bytes) != 0 {
+			var obj QueryFields
+			errUnmarshal := json.Unmarshal(scanner.Bytes(), &obj)
+			if errUnmarshal == nil {
+				elements = append(elements, obj)
+			}
+		}
+	}
+
+	if errScanner := scanner.Err(); errScanner != nil {
+		return nil, errScanner
+	}
+
+	return elements, nil
+}
+
+func (r *QueryRepository) DeleteHistory(uuid uuid.UUID) error {
+	return r.queryHistoryFiles.Delete(uuid.String())
+}
+
+func (r *QueryRepository) AddHistory(uuid uuid.UUID, element any) error {
+	if !r.queryHistoryFiles.Exist(uuid.String()) {
+		_, errCreate := r.queryHistoryFiles.Create(uuid.String())
+		if errCreate != nil {
+			return errCreate
+		}
+	}
+
+	file, err := r.queryHistoryFiles.Open(uuid.String())
+	defer func() { _ = file.Close() }()
+	if err != nil {
+		return err
+	}
+
+	jsonByte, errMarshall := json.Marshal(element)
+	if errMarshall != nil {
+		return errMarshall
+	}
+
+	_, errWrite := file.Write(jsonByte)
+	if errWrite != nil {
+		return errWrite
+	}
+	_, errEnter := file.WriteString("\n")
+	if errEnter != nil {
+		return errEnter
+	}
+
+	return nil
 }
 
 func (r *QueryRepository) Get(uuid uuid.UUID) (Query, error) {
@@ -45,11 +114,15 @@ func (r *QueryRepository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query
 }
 
 func (r *QueryRepository) Delete(key uuid.UUID) error {
-	return r.bucket.Delete(key.String())
+	errFile := r.queryHistoryFiles.Delete(key.String())
+	errBucket := r.bucket.Delete(key.String())
+	return errors.Join(errFile, errBucket)
 }
 
 func (r *QueryRepository) DeleteAll() error {
-	return r.bucket.DeleteAll()
+	errFile := r.queryHistoryFiles.DeleteAll()
+	errBucket := r.bucket.DeleteAll()
+	return errors.Join(errFile, errBucket)
 }
 
 func (r *QueryRepository) sortAscByCreatedAt(list []Query, i, j int) bool {
