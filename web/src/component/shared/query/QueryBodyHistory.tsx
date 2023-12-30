@@ -32,14 +32,12 @@ export function QueryBodyHistory(props: Props) {
     const clearOptions = useMutationOptions([["query", "history", queryId]])
     const clear = useMutation({mutationFn: () => queryApi.deleteHistory(queryId), ...clearOptions})
 
-    if (result.error) return <ErrorSmart error={result.error}/>
-
     return (
         <Box sx={SX.box}>
             <Box sx={SX.header}>
                 <Box>Previous Responses</Box>
                 <Box>
-                    <ClearAllIconButton onClick={clear.mutate} loading={clear.isPending} disabled={!result.data?.length}/>
+                    <ClearAllIconButton onClick={clear.mutate} loading={clear.isPending} disabled={result.data && !result.data.length}/>
                     <RefreshIconButton onClick={result.refetch} loading={result.isFetching}/>
                 </Box>
             </Box>
@@ -51,9 +49,8 @@ export function QueryBodyHistory(props: Props) {
 
 
     function renderBody() {
-        if (!result.data?.length) {
-            return <Box sx={SX.no}>Query doesn't have history yet</Box>
-        }
+        if (result.error) return <ErrorSmart error={result.error}/>
+        if (!result.data?.length) return <Box sx={SX.no}>Query doesn't have history yet</Box>
 
         return result.data.map((query, index) => (
             <QueryBodyHistoryItem key={index} query={query} />
