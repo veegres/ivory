@@ -1,7 +1,7 @@
 import select from "../../../style/select.module.css";
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
-import {ReactNode} from "react";
+import {ReactNode, useState} from "react";
 
 const SX: SxPropsMap = {
     head: {display: "flex", padding: "5px 15px"},
@@ -15,20 +15,27 @@ const SX: SxPropsMap = {
 
 type Props = {
     renderTitle: ReactNode,
+    showAllButtons: boolean,
+    renderHiddenButtons: ReactNode,
     renderButtons: ReactNode,
-    onClick?: () => void,
-    onMouseOver?: () => void,
-    onMouseOut?: () => void,
 }
 
 export function QueryHead(props: Props) {
-    const {renderButtons, renderTitle, onClick, onMouseOver, onMouseOut} = props
+    const {renderButtons, renderTitle, renderHiddenButtons, showAllButtons} = props
+    const [showMouse, setShowMouse] = useState(false)
+
     return (
-        <Box sx={SX.head} className={select.none} onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
-            <Box sx={SX.title} onClick={onClick}>
+        <Box
+            sx={SX.head}
+            className={select.none}
+            onMouseEnter={() => setShowMouse(true)}
+            onMouseLeave={() => setShowMouse(false)}
+        >
+            <Box sx={SX.title}>
                 {renderTitle}
             </Box>
             <Box sx={SX.buttons}>
+                {(showMouse || showAllButtons) && renderHiddenButtons}
                 {renderButtons}
             </Box>
         </Box>

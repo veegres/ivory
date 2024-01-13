@@ -1,5 +1,5 @@
 import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton,} from "../../view/button/IconButtons";
-import {ReactNode, useState} from "react";
+import {ReactNode, useMemo, useState} from "react";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyRun} from "./QueryBodyRun";
 import {Database} from "../../../type/common";
@@ -37,18 +37,17 @@ export function QueryItemWrapper(props: Props) {
     const {credentialId, db, showInfo, showButtons} = props
     const {children, renderButtons, renderTitle} = props
 
-    const [showMouse, setShowMouse] = useState(false)
     const [checkView, setCheckView] = useState(initialViewCheckMap)
     const [paramsValues, setParamsValues] = useState<string[]>([])
+    const queryRunRequest = useMemo( () => ({queryUuid, query, credentialId, db, queryParams: paramsValues}), [credentialId, db, paramsValues, query, queryUuid])
 
-    const isNoParams = !params || params.length == 0
     return (
         <QueryBoxPaper>
             <QueryHead
                 renderTitle={renderTitle}
+                showAllButtons={showButtons}
+                renderHiddenButtons={renderHiddeTitleButtons()}
                 renderButtons={renderTitleButtons()}
-                onMouseOver={() => setShowMouse(true)}
-                onMouseOut={() => setShowMouse(false)}
             />
             <QueryBody show={checkView[ViewCheckType.EDIT_INFO]}>
                 <Alert severity={"info"}>
@@ -61,26 +60,29 @@ export function QueryItemWrapper(props: Props) {
                 </Alert>
             </QueryBody>
             {children}
-            <QueryBody show={!isNoParams && checkView[ViewCheckType.PARAMS]} render={true}>
+            <QueryBody show={checkView[ViewCheckType.PARAMS]}>
                 <FixedInputs placeholders={params ?? []} onChange={setParamsValues}/>
             </QueryBody>
             <QueryBody show={checkView[ViewCheckType.RUN]}>
-                <QueryBodyRun
-                    request={{queryUuid, query, credentialId, db, queryParams: paramsValues}}
-                    varieties={varieties}
-                />
+                <QueryBodyRun request={queryRunRequest} varieties={varieties}/>
             </QueryBody>
         </QueryBoxPaper>
     )
 
     function renderTitleButtons() {
-        const show = showButtons || showMouse
         return (
             <>
-                {show && renderButtons}
-                {show && renderEditButtons()}
                 {renderQueryParamsButton()}
                 {renderRunButton()}
+            </>
+        )
+    }
+
+    function renderHiddeTitleButtons() {
+        return (
+            <>
+                {renderButtons}
+                {renderEditButtons()}
             </>
         )
     }
@@ -96,6 +98,8 @@ export function QueryItemWrapper(props: Props) {
     }
 
     function renderQueryParamsButton() {
+        const isNoParams = !params || params.length == 0
+
         return !checkView[ViewCheckType.PARAMS] ? (
             <QueryParamsIconButton color={"secondary"} disabled={isNoParams} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
         ) : (
