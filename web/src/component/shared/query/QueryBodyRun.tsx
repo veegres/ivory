@@ -7,6 +7,7 @@ import {useMutation, useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
 import {QueryVarieties} from "./QueryVarieties";
 import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
+import {useCallback, useMemo} from "react";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -41,7 +42,10 @@ export function QueryBodyRun(props: Props) {
     const cancel = useMutation({mutationFn: queryApi.cancel, onSuccess})
     const terminate = useMutation({mutationFn: queryApi.terminate, onSuccess})
 
-    const pidIndex = result.data?.fields.findIndex(field => field.name === "pid") ?? -1
+    const pidIndex = useMemo(handleMemoPidIndex, [data])
+    const renderRowButtons = useCallback(handleCallbackRenderRowButtons, [cancel, credentialId, db, pidIndex, terminate])
+    const renderHeaderCell = useCallback(handleCallbackRenderHeaderCell, [pidIndex])
+    const columns = useMemo(handleMemoColumns, [data])
 
     return (
         <Box sx={SX.box}>
@@ -79,22 +83,32 @@ export function QueryBodyRun(props: Props) {
             return <Box sx={SX.no}>Response is empty</Box>
         }
 
-        const columns = data?.fields.map(field => (
-            {name: field.name, description: field.dataType}
-        ))
-
         return (
             <SimpleStickyTable
                 rows={data?.rows ?? []}
-                columns={columns ?? []}
+                columns={columns}
                 fetching={isFetching}
-                renderHeaderCell={() => pidIndex !== -1 && <TableCell/>}
+                renderHeaderCell={renderHeaderCell}
                 renderRowCell={renderRowButtons}
             />
         )
     }
 
-    function renderRowButtons(row: any[]) {
+    function handleMemoPidIndex() {
+        if (!data) return -1
+        return data.fields.findIndex(field => field.name === "pid")
+    }
+
+    function handleMemoColumns() {
+        if (!data) return []
+        return data.fields.map(field => ({name: field.name, description: field.dataType}))
+    }
+
+    function handleCallbackRenderHeaderCell() {
+        return pidIndex !== -1 && <TableCell/>
+    }
+
+    function handleCallbackRenderRowButtons(row: any[]) {
         return pidIndex !== -1 && (
             <TableCell sx={SX.cell}>
                 <Box sx={SX.pid}>

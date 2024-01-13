@@ -9,17 +9,16 @@ const SX: SxPropsMap = {
 type Props = {
     children: ReactNode,
     show: boolean,
-    render?: boolean,
 }
 
 export function QueryBody(props: Props) {
-    const {show, children, render = false} = props
-    if (!show && !render) return null
+    const {show, children} = props
+    if (!show) return null
 
     return (
         <Box>
             <Divider/>
-            <Box sx={SX.body} display={!show && render ? "none" : "default"}>
+            <Box sx={SX.body}>
                 {children}
             </Box>
         </Box>
