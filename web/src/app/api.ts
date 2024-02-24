@@ -181,11 +181,11 @@ export const queryApi = {
     terminate: (req: QueryKillRequest) => api
         .post<Response<string>>(`/query/terminate`, req)
         .then((response) => response.data.response),
-    getHistory: (uuid: string) => api
-        .get<Response<QueryFields[]>>(`/query/history/${uuid}`)
+    getLog: (uuid: string) => api
+        .get<Response<QueryFields[]>>(`/query/log/${uuid}`)
         .then((response) => response.data.response),
-    deleteHistory: (uuid: string) => api
-        .delete<Response<string>>(`/query/history/${uuid}`)
+    deleteLog: (uuid: string) => api
+        .delete<Response<string>>(`/query/log/${uuid}`)
         .then((response) => response.data.response),
 }
 

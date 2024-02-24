@@ -1,6 +1,6 @@
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
-import {QueryBodyHistoryItem} from "./QueryBodyHistoryItem";
+import {QueryBodyLogItem} from "./QueryBodyLogItem";
 import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {queryApi} from "../../../app/api";
@@ -20,17 +20,17 @@ type Props = {
     queryId: string,
 }
 
-export function QueryBodyHistory(props: Props) {
+export function QueryBodyLog(props: Props) {
     const {queryId} = props
 
     const result = useQuery({
-        queryKey: ["query", "history", queryId],
-        queryFn: () => queryApi.getHistory(queryId),
+        queryKey: ["query", "log", queryId],
+        queryFn: () => queryApi.getLog(queryId),
         enabled: true, retry: false, refetchOnWindowFocus: false,
     })
 
-    const clearOptions = useMutationOptions([["query", "history", queryId]])
-    const clear = useMutation({mutationFn: () => queryApi.deleteHistory(queryId), ...clearOptions})
+    const clearOptions = useMutationOptions([["query", "log", queryId]])
+    const clear = useMutation({mutationFn: () => queryApi.deleteLog(queryId), ...clearOptions})
 
     return (
         <Box sx={SX.box}>
@@ -50,10 +50,10 @@ export function QueryBodyHistory(props: Props) {
 
     function renderBody() {
         if (result.error) return <ErrorSmart error={result.error}/>
-        if (!result.data?.length) return <Box sx={SX.no}>Query doesn't have history yet</Box>
+        if (!result.data?.length) return <Box sx={SX.no}>Query log is empty</Box>
 
         return result.data.map((query, index) => (
-            <QueryBodyHistoryItem key={index} index={index} query={query} />
+            <QueryBodyLogItem key={index} index={index} query={query} />
         ))
     }
 }

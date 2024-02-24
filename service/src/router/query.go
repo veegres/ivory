@@ -151,13 +151,13 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) GetQueryHistory(context *gin.Context) {
+func (r *QueryRouter) GetQueryLog(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	response, err := r.queryService.GetHistory(queryUuid)
+	response, err := r.queryService.GetLog(queryUuid)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -165,18 +165,18 @@ func (r *QueryRouter) GetQueryHistory(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *QueryRouter) DeleteQueryHistory(context *gin.Context) {
+func (r *QueryRouter) DeleteQueryLog(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	err := r.queryService.DeleteHistory(queryUuid)
+	err := r.queryService.DeleteLog(queryUuid)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": "query history was deleted"})
+	context.JSON(http.StatusOK, gin.H{"response": "query log was deleted"})
 }
 
 func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {

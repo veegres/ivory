@@ -31,12 +31,12 @@ func NewQueryService(
 	return queryService
 }
 
-func (s *QueryService) GetHistory(queryUuid uuid.UUID) ([]QueryFields, error) {
-	return s.queryRepository.GetHistory(queryUuid)
+func (s *QueryService) GetLog(queryUuid uuid.UUID) ([]QueryFields, error) {
+	return s.queryRepository.GetLog(queryUuid)
 }
 
-func (s *QueryService) DeleteHistory(queryUuid uuid.UUID) error {
-	return s.queryRepository.DeleteHistory(queryUuid)
+func (s *QueryService) DeleteLog(queryUuid uuid.UUID) error {
+	return s.queryRepository.DeleteLog(queryUuid)
 }
 
 func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, credentialId uuid.UUID, db Database) (*QueryFields, error) {
@@ -50,7 +50,7 @@ func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, 
 	response, errRun := s.RunQuery(query.Custom, queryParams, credentialId, db)
 	if errRun == nil && len(response.Rows) > 0 {
 		// NOTE: we don't want fail request if there is some problem with writing to the file
-		_ = s.queryRepository.AddHistory(queryUuid, response)
+		_ = s.queryRepository.AddLog(queryUuid, response)
 	}
 	return response, errRun
 }
