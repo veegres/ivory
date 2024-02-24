@@ -49,7 +49,7 @@ export function QueryItemWrapper(props: Props) {
                 renderHiddenButtons={renderHiddeTitleButtons()}
                 renderButtons={renderTitleButtons()}
             />
-            <QueryBody show={checkView[ViewCheckType.EDIT_INFO]}>
+            <QueryBody show={showInfo && checkView[ViewCheckType.EDIT_INFO]}>
                 <Alert severity={"info"}>
                     The fields <i>name</i> and <i>query</i> are required. To enable termination and query
                     cancellation buttons in the table you need to call postgres <i>process_id</i> as <i>pid</i> (buttons
