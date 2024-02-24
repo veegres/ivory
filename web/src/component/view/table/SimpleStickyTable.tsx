@@ -2,7 +2,7 @@ import scroll from "../../../style/scroll.module.css";
 import {Box, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {TableBody} from "./TableBody";
 import {SxPropsMap} from "../../../type/common";
-import {ReactNode} from "react";
+import {memo, ReactNode} from "react";
 
 const SX: SxPropsMap = {
     body: {overflow: "auto", maxHeight: "315px"},
@@ -32,7 +32,9 @@ type Props = {
     renderRowCell?: (row: any[]) => ReactNode,
 }
 
-export function SimpleStickyTable(props: Props) {
+export const SimpleStickyTable = memo(SimpleStickyTableMemo)
+
+export function SimpleStickyTableMemo(props: Props) {
     const {columns, rows, fetching = false, renderHeaderCell, renderRowCell} = props
 
     return (
