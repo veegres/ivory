@@ -42,8 +42,12 @@ export function QueryBodyRun(props: Props) {
     const cancel = useMutation({mutationFn: queryApi.cancel, onSuccess})
     const terminate = useMutation({mutationFn: queryApi.terminate, onSuccess})
 
+    // NOTE: we need this only to fix linter when passing to callback function
+    const cancelMutate = cancel.mutate
+    const terminateMutate = terminate.mutate
+
     const pidIndex = useMemo(handleMemoPidIndex, [data])
-    const renderRowButtons = useCallback(handleCallbackRenderRowButtons, [cancel, credentialId, db, pidIndex, terminate])
+    const renderRowButtons = useCallback(handleCallbackRenderRowButtons, [cancelMutate, terminateMutate, credentialId, db, pidIndex])
     const renderHeaderCell = useCallback(handleCallbackRenderHeaderCell, [pidIndex])
     const columns = useMemo(handleMemoColumns, [data])
 
@@ -114,11 +118,11 @@ export function QueryBodyRun(props: Props) {
                 <Box sx={SX.pid}>
                     <CancelIconButton
                         size={25}
-                        onClick={() => cancel.mutate({pid: row[pidIndex], credentialId, db})}
+                        onClick={() => cancelMutate({pid: row[pidIndex], credentialId, db})}
                     />
                     <TerminateIconButton
                         size={25}
-                        onClick={() => terminate.mutate({pid: row[pidIndex], credentialId, db})}
+                        onClick={() => terminateMutate({pid: row[pidIndex], credentialId, db})}
                         color={"error"}
                     />
                 </Box>
