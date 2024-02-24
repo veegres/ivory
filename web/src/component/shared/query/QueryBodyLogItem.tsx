@@ -21,7 +21,7 @@ type Props = {
     query: QueryFields,
 }
 
-export function QueryBodyHistoryItem(props: Props) {
+export function QueryBodyLogItem(props: Props) {
     const {query, index} = props
     const [open, setOpen] = useState(false)
     const [show, setShow] = useState(false)

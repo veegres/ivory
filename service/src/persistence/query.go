@@ -13,26 +13,26 @@ import (
 )
 
 type QueryRepository struct {
-	bucket             *config.Bucket[Query]
-	queryHistoryFiles  *config.FileGateway
-	maxBufferCapacity  int
-	maxHistoryElements int
+	bucket            *config.Bucket[Query]
+	queryLogFiles     *config.FileGateway
+	maxBufferCapacity int
+	maxLogElements    int
 }
 
 func NewQueryRepository(
 	bucket *config.Bucket[Query],
-	queryHistoryFiles *config.FileGateway,
+	queryLogFiles *config.FileGateway,
 ) *QueryRepository {
 	return &QueryRepository{
-		bucket:             bucket,
-		queryHistoryFiles:  queryHistoryFiles,
-		maxBufferCapacity:  1024 * 1024,
-		maxHistoryElements: 10,
+		bucket:            bucket,
+		queryLogFiles:     queryLogFiles,
+		maxBufferCapacity: 1024 * 1024,
+		maxLogElements:    10,
 	}
 }
 
-func (r *QueryRepository) GetHistory(uuid uuid.UUID) ([]QueryFields, error) {
-	file, err := r.queryHistoryFiles.Open(uuid.String())
+func (r *QueryRepository) GetLog(uuid uuid.UUID) ([]QueryFields, error) {
+	file, err := r.queryLogFiles.Open(uuid.String())
 	if err != nil {
 		return []QueryFields{}, nil
 	}
@@ -59,20 +59,20 @@ func (r *QueryRepository) GetHistory(uuid uuid.UUID) ([]QueryFields, error) {
 	return elements, nil
 }
 
-func (r *QueryRepository) DeleteHistory(uuid uuid.UUID) error {
-	return r.queryHistoryFiles.Delete(uuid.String())
+func (r *QueryRepository) DeleteLog(uuid uuid.UUID) error {
+	return r.queryLogFiles.Delete(uuid.String())
 }
 
-func (r *QueryRepository) AddHistory(uuid uuid.UUID, element any) error {
-	if !r.queryHistoryFiles.Exist(uuid.String()) {
-		_, errCreate := r.queryHistoryFiles.Create(uuid.String())
+func (r *QueryRepository) AddLog(uuid uuid.UUID, element any) error {
+	if !r.queryLogFiles.Exist(uuid.String()) {
+		_, errCreate := r.queryLogFiles.Create(uuid.String())
 		if errCreate != nil {
 			return errCreate
 		}
 	}
 
 	// open file
-	file, err := r.queryHistoryFiles.Open(uuid.String())
+	file, err := r.queryLogFiles.Open(uuid.String())
 	defer func() { _ = file.Close() }()
 	if err != nil {
 		return err
@@ -97,12 +97,12 @@ func (r *QueryRepository) AddHistory(uuid uuid.UUID, element any) error {
 		return err
 	}
 
-	// removing old rows to fit max history elements
+	// removing old rows to fit max log elements
 	buf := bytes.NewBuffer([]byte{})
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(scanBuf, r.maxBufferCapacity)
 	for scanner.Scan() {
-		if lines < r.maxHistoryElements {
+		if lines < r.maxLogElements {
 			buf.Write(scanner.Bytes())
 			buf.WriteString("\n")
 		} else {
@@ -162,13 +162,17 @@ func (r *QueryRepository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query
 }
 
 func (r *QueryRepository) Delete(key uuid.UUID) error {
-	errFile := r.queryHistoryFiles.Delete(key.String())
-	errBucket := r.bucket.Delete(key.String())
+	keyString := key.String()
+	var errFile error
+	if r.queryLogFiles.Exist(keyString) {
+		errFile = r.queryLogFiles.Delete(keyString)
+	}
+	errBucket := r.bucket.Delete(keyString)
 	return errors.Join(errFile, errBucket)
 }
 
 func (r *QueryRepository) DeleteAll() error {
-	errFile := r.queryHistoryFiles.DeleteAll()
+	errFile := r.queryLogFiles.DeleteAll()
 	errBucket := r.bucket.DeleteAll()
 	return errors.Join(errFile, errBucket)
 }

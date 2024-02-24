@@ -9,13 +9,13 @@ import {useState} from "react";
 import {
     CancelIconButton,
     EditIconButton,
-    HistoryIconButton,
+    LogIconButton,
     QueryViewIconButton,
     RestoreIconButton
 } from "../../view/button/IconButtons";
 import {QueryButtonDelete} from "./QueryButtonDelete";
 import {Box} from "@mui/material";
-import {QueryBodyHistory} from "./QueryBodyHistory";
+import {QueryBodyLog} from "./QueryBodyLog";
 import {QueryButtonUpdate} from "./QueryButtonUpdate";
 
 const SX: SxPropsMap = {
@@ -24,7 +24,7 @@ const SX: SxPropsMap = {
     type: {padding: "0 3px", cursor: "pointer", color: "text.disabled"},
 }
 
-enum ViewToggleType {VIEW, EDIT, RESTORE, HISTORY}
+enum ViewToggleType {VIEW, EDIT, RESTORE, LOG}
 
 type Props = {
     query: Query,
@@ -61,8 +61,8 @@ export function QueryItemView(props: Props) {
             <QueryBody show={toggleView === ViewToggleType.RESTORE}>
                 <QueryBodyRestore query={query} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
             </QueryBody>
-            <QueryBody show={toggleView === ViewToggleType.HISTORY}>
-                <QueryBodyHistory queryId={query.id}/>
+            <QueryBody show={toggleView === ViewToggleType.LOG}>
+                <QueryBodyLog queryId={query.id}/>
             </QueryBody>
         </QueryItemWrapper>
     )
@@ -81,7 +81,7 @@ export function QueryItemView(props: Props) {
         return (
             <>
                 <QueryViewIconButton onClick={handleToggleBody(ViewToggleType.VIEW)}/>
-                <HistoryIconButton onClick={handleToggleBody(ViewToggleType.HISTORY)}/>
+                <LogIconButton onClick={handleToggleBody(ViewToggleType.LOG)}/>
                 {query.default !== query.custom && (
                     <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
                 )}
@@ -98,7 +98,7 @@ export function QueryItemView(props: Props) {
     function renderCancelButton(type: string) {
         return (
             <>
-                <Box sx={SX.type} onClick={handleToggleBody(undefined)}>{type}</Box>
+                <Box sx={SX.type} onClick={handleClose}>{type}</Box>
                 <CancelIconButton tooltip={`Close ${type}`} onClick={handleClose}/>
                 {toggleView === ViewToggleType.EDIT && (
                     <QueryButtonUpdate id={query.id} query={queryUpdate} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>

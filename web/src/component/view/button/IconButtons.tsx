@@ -13,9 +13,9 @@ import {
     CopyAll,
     Delete,
     Edit,
-    History,
     Info,
     ManageSearch,
+    PendingActions,
     PlayArrow,
     Receipt,
     Restore
@@ -138,9 +138,9 @@ export function QueryViewIconButton(props: Props) {
     return <IconButton {...props} disabled={disabled ?? false} icon={<Receipt/>} tooltip={"Query View"}/>
 }
 
-export function HistoryIconButton(props: Props) {
+export function LogIconButton(props: Props) {
     const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<History/>} tooltip={"History"}/>
+    return <IconButton {...props} disabled={disabled ?? false} icon={<PendingActions/>} tooltip={"Log"}/>
 }
 
 export function InfoIconButton(props: Props) {
