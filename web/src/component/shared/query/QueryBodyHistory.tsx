@@ -53,7 +53,7 @@ export function QueryBodyHistory(props: Props) {
         if (!result.data?.length) return <Box sx={SX.no}>Query doesn't have history yet</Box>
 
         return result.data.map((query, index) => (
-            <QueryBodyHistoryItem key={index} query={query} />
+            <QueryBodyHistoryItem key={index} index={index} query={query} />
         ))
     }
 }
