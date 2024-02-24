@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strings"
 )
 
 type FileGateway struct {
@@ -81,6 +82,9 @@ func (r *FileGateway) DeleteAll() error {
 func (r *FileGateway) getPath(name string) (string, error) {
 	if name == "" {
 		return "", errors.New("file name cannot be empty")
+	}
+	if strings.ContainsAny(name, "./") {
+		return "", errors.New("file name contains invalid characters '/', '.'")
 	}
 	return r.path + "/" + name + r.ext, nil
 }
