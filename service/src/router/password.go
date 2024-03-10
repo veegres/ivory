@@ -90,7 +90,7 @@ func (r *PasswordRouter) DeleteCredential(context *gin.Context) {
 	}
 	deleteErr := r.passwordService.Delete(credUuid)
 	if deleteErr != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": deleteErr.Error()})
 		return
 	}
 }
