@@ -22,7 +22,7 @@ export function Chart(props: Props) {
             <ChartRow>
                 <ChartCommon credentialId={credentialId} db={db}/>
             </ChartRow>
-            <ChartRow label={db.database && `${db.database}`}>
+            <ChartRow label={db.name && `${db.name}`}>
                 <ChartDatabase credentialId={credentialId} db={db}/>
             </ChartRow>
         </Box>

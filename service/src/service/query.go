@@ -68,14 +68,14 @@ func (s *QueryService) DatabasesQuery(credentialId uuid.UUID, db Database, name 
 }
 
 func (s *QueryService) SchemasQuery(credentialId uuid.UUID, db Database, name string) ([]string, error) {
-	if db.Database == nil || *db.Database == "" {
+	if db.Name == nil || *db.Name == "" {
 		return []string{}, nil
 	}
 	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllSchemas, "%"+name+"%")
 }
 
 func (s *QueryService) TablesQuery(credentialId uuid.UUID, db Database, schema string, name string) ([]string, error) {
-	if db.Database == nil || *db.Database == "" || schema == "" {
+	if db.Name == nil || *db.Name == "" || schema == "" {
 		return []string{}, nil
 	}
 	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllTables, schema, "%"+name+"%")

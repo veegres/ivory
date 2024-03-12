@@ -68,7 +68,7 @@ export enum FileUsageType {
 export interface Database {
     host: string,
     port: number,
-    database?: string,
+    name?: string,
 }
 
 export interface Sidecar {

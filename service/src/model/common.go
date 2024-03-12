@@ -72,9 +72,9 @@ const (
 )
 
 type Database struct {
-	Host     string  `json:"host"`
-	Port     int     `json:"port"`
-	Database *string `json:"database"`
+	Host string  `json:"host"`
+	Port int     `json:"port"`
+	Name *string `json:"name"`
 }
 
 type Sidecar struct {

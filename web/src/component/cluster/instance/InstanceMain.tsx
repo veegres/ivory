@@ -56,7 +56,7 @@ export function InstanceMain(props: Props) {
     const postgresId = activeCluster?.cluster.credentials.postgresId
     const {label, info, body} = Tabs[tab]
 
-    const db = {...database, database: dbName}
+    const db = {...database, name: dbName}
 
     return (
         <Box sx={SX.main}>
@@ -72,7 +72,7 @@ export function InstanceMain(props: Props) {
             <Box width={200}>
                 <AutocompleteFetch
                     value={dbName}
-                    keys={["query", "databases", getDomain(database), database.database ?? "postgres", postgresId]}
+                    keys={["query", "databases", getDomain(database), database.name ?? "postgres", postgresId]}
                     onFetch={(v) => queryApi.databases({credentialId: postgresId, db: database, name: v})}
                     placeholder={"Database"}
                     variant={"outlined"}
