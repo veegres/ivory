@@ -21,15 +21,12 @@ in a separate virtual machine for collaborative usage.
 
 ## Get started
 1. Start the docker container
+   - Docker Hub `docker run -p 80:80 --restart always aelsergeev/ivory`
+   - GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 2. Go to http://localhost:80
 3. Do the initial configuration (Ivory will guide you)
 4. Add your first cluster (by providing name and instances)
-5. Start monitoring :) 
-
-You can simply start and run container from Docker Hub or GitHub Container repository
-
-- Docker Hub `docker run -p 80:80 --restart always aelsergeev/ivory`
-- GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
+5. Start monitoring :)
 
 ## Guide
 
