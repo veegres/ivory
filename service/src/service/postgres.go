@@ -141,8 +141,8 @@ func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pg
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, "unknown", errors.New("database host or port are not specified")
 	}
-	if db.Database != nil && *db.Database != "" {
-		dbName = *db.Database
+	if db.Name != nil && *db.Name != "" {
+		dbName = *db.Name
 	}
 
 	connProtocol := "postgres://"
@@ -151,7 +151,7 @@ func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pg
 	connUrl := connProtocol + connHost
 	connString := connProtocol + connCredentials + connHost
 
-	// TODO think about to cache connections
+	// TODO think about to cache connections, check if we have cache provided by lib
 	conn, err := pgx.Connect(context.Background(), connString)
 	return conn, connUrl, err
 }
