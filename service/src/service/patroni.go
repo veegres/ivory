@@ -20,7 +20,7 @@ func (p *patroniInstanceService) Info(instance InstanceRequest) (InstanceInfo, i
 	response, status, err := NewSidecarRequest[PatroniInfo](p.client).Get(instance, "/patroni")
 	if err == nil {
 		info = InstanceInfo{
-			Sidecar: Sidecar{Host: instance.Host, Port: instance.Port},
+			Sidecar: instance.Sidecar,
 			Role:    response.Role,
 			State:   response.State,
 		}
@@ -54,11 +54,12 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 		}
 
 		overview = append(overview, Instance{
-			State:    patroniInstance.State,
-			Role:     patroniInstance.Role,
-			Lag:      lag,
-			Database: Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-			Sidecar:  Sidecar{Host: host, Port: port},
+			State:          patroniInstance.State,
+			Role:           patroniInstance.Role,
+			Lag:            lag,
+			PendingRestart: patroniInstance.PendingRestart,
+			Database:       Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
+			Sidecar:        Sidecar{Host: host, Port: port},
 		})
 	}
 
@@ -79,4 +80,20 @@ func (p *patroniInstanceService) Switchover(instance InstanceRequest) (any, int,
 
 func (p *patroniInstanceService) Reinitialize(instance InstanceRequest) (any, int, error) {
 	return NewSidecarRequest[string](p.client).Post(instance, "/reinitialize")
+}
+
+func (p *patroniInstanceService) Restart(instance InstanceRequest) (any, int, error) {
+	return NewSidecarRequest[string](p.client).Post(instance, "/restart")
+}
+
+func (p *patroniInstanceService) DeleteRestart(instance InstanceRequest) (any, int, error) {
+	return NewSidecarRequest[string](p.client).Delete(instance, "/restart")
+}
+
+func (p *patroniInstanceService) Reload(instance InstanceRequest) (any, int, error) {
+	return NewSidecarRequest[string](p.client).Post(instance, "/reload")
+}
+
+func (p *patroniInstanceService) Failover(instance InstanceRequest) (any, int, error) {
+	return NewSidecarRequest[string](p.client).Post(instance, "/failover")
 }

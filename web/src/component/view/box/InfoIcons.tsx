@@ -6,7 +6,7 @@ import {InfoBox} from "./InfoBox";
 import {InfoTitle} from "./InfoTitle";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", alignItems: "center", justifyContent: "center"},
+    box: {position: "relative", display: "flex", alignItems: "center", justifyContent: "center"},
     badge: {
         position: "absolute", color: "white", fontSize: "8px", fontWeight: "bold",
         minWidth: "12px", height: "12px", display: "flex", justifyContent: "center", alignItems: "center",

@@ -5,17 +5,18 @@ import {Certs} from "./cluster";
 // COMMON (WEB AND SERVER)
 
 export interface InstanceRequest {
+    sidecar: Sidecar,
     credentialId?: string,
     certs: Certs,
-    host: string,
-    port: number,
     body?: any,
 }
 
+export type Role = "leader" | "replica" | "unknown";
 export interface Instance {
     state: string,
-    role: string,
+    role: Role,
     lag: number,
+    pendingRestart: boolean,
     database: Database,
     sidecar: Sidecar,
 }

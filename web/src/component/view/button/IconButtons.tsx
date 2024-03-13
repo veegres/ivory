@@ -44,7 +44,8 @@ export function IconButton(props: ButtonProps) {
                 <MuiIconButton
                     sx={{height: `${size}px`, width: `${size}px`}}
                     color={color}
-                    disabled={loading || disabled} onClick={onClick}
+                    disabled={loading || disabled}
+                    onClick={onClick}
                 >
                     {loading ? <CircularProgress size={fontSize - 2}/> : cloneElement(icon, {sx: {fontSize}})}
                 </MuiIconButton>
@@ -152,5 +153,3 @@ export function ClearAllIconButton(props: Props) {
     const {disabled} = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<ClearAll/>} tooltip={"Clear All"}/>
 }
-
-

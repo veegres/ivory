@@ -17,7 +17,7 @@ import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-materia
 import {PasswordType} from "../type/password";
 import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar} from "../type/common";
 import {CertType} from "../type/cert";
-import {InstanceMap, InstanceWeb} from "../type/instance";
+import {InstanceMap, InstanceWeb, Role} from "../type/instance";
 import {JobStatus} from "../type/job";
 import {QueryVariety} from "../type/query";
 
@@ -30,8 +30,7 @@ export const IvoryLinks: Links = {
     sponsorship: {name: "Sponsorship", link: "https://patreon.com/anselvo"}
 }
 
-export const InstanceColor: { [key: string]: string } = {
-    master: green[500],
+export const InstanceColor: { [key in Role]: string } = {
     leader: green[500],
     replica: blue[500],
     unknown: orange[500],
@@ -93,6 +92,7 @@ export const initialInstance = (sidecar?: Sidecar): InstanceWeb => {
         state: "-",
         role: "unknown",
         lag: -1,
+        pendingRestart: false,
         sidecar: defaultSidecar,
         database: {host: "-", port: 0},
         leader: false,

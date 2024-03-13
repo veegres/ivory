@@ -110,6 +110,10 @@ func instanceRouter(g *gin.RouterGroup, r *router.InstanceRouter) {
 	instance.PATCH("/config", r.PatchInstanceConfig)
 	instance.POST("/switchover", r.PostInstanceSwitchover)
 	instance.POST("/reinitialize", r.PostInstanceReinitialize)
+	instance.POST("/restart", r.PostInstanceRestart)
+	instance.DELETE("/restart", r.DeleteInstanceRestart)
+	instance.POST("/reload", r.PostInstanceReload)
+	instance.POST("/failover", r.PostInstanceFailover)
 }
 
 func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {

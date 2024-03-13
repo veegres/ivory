@@ -28,7 +28,7 @@ export function OverviewConfig({info}: TabProps) {
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
     const {sidecar} = defaultInstance
-    const requestBody: InstanceRequest = {...sidecar, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
+    const requestBody: InstanceRequest = {sidecar, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
 
     const {data: config, isPending, isError, error} = useQuery({
         queryKey: ["instance/config", sidecar.host, sidecar.port],
@@ -91,7 +91,7 @@ export function OverviewConfig({info}: TabProps) {
         if (configState) {
             try {
                 const request: InstanceRequest = {
-                    ...instance.sidecar,
+                    sidecar: instance.sidecar,
                     credentialId: cluster.credentials.patroniId,
                     certs: cluster.certs,
                     body: JSON.parse(config)
