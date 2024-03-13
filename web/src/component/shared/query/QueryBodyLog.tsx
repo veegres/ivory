@@ -14,6 +14,8 @@ const SX: SxPropsMap = {
         display: "flex", alignItems: "center", justifyContent: "center", textTransform: "uppercase",
         padding: "8px 16px", border: "1px solid", borderColor: "divider", lineHeight: "1.54",
     },
+    label: {color: "text.secondary", fontSize: "13.5px"},
+    info: {display: "flex", alignItems: "center", gap: 1}
 }
 
 type Props = {
@@ -36,7 +38,8 @@ export function QueryBodyLog(props: Props) {
         <Box sx={SX.box}>
             <Box sx={SX.header}>
                 <Box>Previous Responses</Box>
-                <Box>
+                <Box sx={SX.info}>
+                    <Box sx={SX.label}>[ {result.data?.length ?? 0} of 10 ]</Box>
                     <ClearAllIconButton onClick={clear.mutate} loading={clear.isPending} disabled={result.data && !result.data.length}/>
                     <RefreshIconButton onClick={result.refetch} loading={result.isFetching}/>
                 </Box>
