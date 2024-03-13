@@ -21,7 +21,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const query = useQuery({
         queryKey: ["instance/overview", cluster.name],
         queryFn: () => instanceApi.overview({
-            ...defaultSidecar.current,
+            sidecar: defaultSidecar.current,
             credentialId: cluster.credentials.patroniId,
             certs: cluster.certs
         }),

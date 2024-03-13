@@ -1,6 +1,7 @@
 import {Grid, Skeleton} from "@mui/material";
 import {InstanceColor} from "../../../app/utils";
 import {SxPropsMap} from "../../../type/common";
+import {Role} from "../../../type/instance";
 
 const SX: SxPropsMap = {
     instanceStatusBlock: {
@@ -10,7 +11,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    role?: string,
+    role?: Role,
     loading?: boolean,
 }
 

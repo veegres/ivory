@@ -78,8 +78,8 @@ type Database struct {
 }
 
 type Sidecar struct {
-	Host string `json:"host"`
-	Port int    `json:"port"`
+	Host string `json:"host" form:"host"`
+	Port int    `json:"port" form:"port"`
 }
 
 // SPECIFIC (SERVER)

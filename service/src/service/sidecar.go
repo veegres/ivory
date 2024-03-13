@@ -99,14 +99,14 @@ func NewSidecarClient(
 }
 
 func (p *SidecarClient) send(method string, instance InstanceRequest, path string, timeout time.Duration) (*http.Response, error) {
-	if instance.Host == "" {
+	if instance.Sidecar.Host == "" {
 		return nil, errors.New("host cannot be empty")
 	}
 	client, protocol, errClient := p.getClient(instance.Certs, timeout)
 	if errClient != nil {
 		return nil, errClient
 	}
-	domain := instance.Host + ":" + strconv.Itoa(instance.Port)
+	domain := instance.Sidecar.Host + ":" + strconv.Itoa(instance.Sidecar.Port)
 	req, errRequest := p.getRequest(instance.CredentialId, method, protocol, domain, path, instance.Body)
 	if errRequest != nil {
 		return nil, errRequest

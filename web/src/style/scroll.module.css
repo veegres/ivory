@@ -2,8 +2,13 @@
 
 /* ----- SHOW ----- */
 
+.hidden {
+    overflow: hidden;
+}
+
 .show {
-    overflow-y: scroll;
+    overflow: auto;
+    scrollbar-gutter: stable;
 }
 
 /* ----- TINY ----- */

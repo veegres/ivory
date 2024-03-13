@@ -1,5 +1,5 @@
 import axios, {AxiosProgressEvent, AxiosRequestConfig} from "axios";
-import {Instance, InstanceInfo, InstanceMap, InstanceRequest} from "../type/instance";
+import {Instance, InstanceMap, InstanceRequest} from "../type/instance";
 import {getDomain} from "./utils";
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
 import {Password, PasswordMap, PasswordType} from "../type/password";
@@ -20,7 +20,6 @@ import {
 import {AppConfig, AppInfo, Login, Response} from "../type/common";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
-
 
 export const api = axios.create({baseURL: '/api'})
 
@@ -65,11 +64,8 @@ export const safeApi = {
 }
 
 export const instanceApi = {
-    info: (request: InstanceRequest) => api
-        .get<Response<InstanceInfo>>(`/instance/info`, {params: {json: JSON.stringify(request)}})
-        .then((response) => response.data.response),
     overview: (request: InstanceRequest) => api
-        .get<Response<Instance[]>>(`/instance/overview`, {params: {json: JSON.stringify(request)}})
+        .get<Response<Instance[]>>(`/instance/overview`, {params: {request: JSON.stringify(request)}})
         .then<InstanceMap>((response) => response.data.response.reduce(
             (map, instance) => {
                 const leader = instance.role === "leader"
@@ -80,7 +76,7 @@ export const instanceApi = {
             {} as InstanceMap
         )),
     config: (request: InstanceRequest) => api
-        .get(`/instance/config`, {params: {json: JSON.stringify(request)}})
+        .get(`/instance/config`, {params: {request: JSON.stringify(request)}})
         .then((response) => response.data.response),
     updateConfig: (request: InstanceRequest) => api
         .patch(`/instance/config`, request)
@@ -90,7 +86,16 @@ export const instanceApi = {
         .then((response) => response.data.response),
     reinitialize: (request: InstanceRequest) => api
         .post(`/instance/reinitialize`, request)
-        .then((response) => response.data.response)
+        .then((response) => response.data.response),
+    restart: (request: InstanceRequest) => api
+        .post(`/instance/restart`, request)
+        .then((response) => response.data.response),
+    reload: (request: InstanceRequest) => api
+        .post(`/instance/reload`, request)
+        .then((response) => response.data.response),
+    failover: (request: InstanceRequest) => api
+        .post(`/instance/failover`, request)
+        .then((response) => response.data.response),
 }
 
 export const clusterApi = {
@@ -114,7 +119,7 @@ export const clusterApi = {
         .then((response) => response.data.response),
     delete: (name: string) => api
         .delete(`/cluster/${name}`)
-        .then((response) => response.data.response)
+        .then((response) => response.data.response),
 }
 
 export const tagApi = {
@@ -141,7 +146,7 @@ export const bloatApi = {
         .delete(`/cli/bloat/job/${uuid}/delete`)
         .then((response) => response.data.response),
 
-    stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
+    stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`),
 }
 
 export const queryApi = {
@@ -201,7 +206,7 @@ export const passwordApi = {
         .then((response) => response.data.response),
     delete: (uuid: string) => api
         .delete(`/password/${uuid}`)
-        .then((response) => response.data.response)
+        .then((response) => response.data.response),
 }
 
 export const certApi = {
@@ -228,5 +233,5 @@ export const certApi = {
         .then((response) => response.data.response),
     delete: (uuid: string) => api
         .delete(`/cert/${uuid}`)
-        .then((response) => response.data.response)
+        .then((response) => response.data.response),
 }

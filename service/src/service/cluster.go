@@ -68,8 +68,7 @@ func (s *ClusterService) Update(cluster Cluster) (*Cluster, error) {
 
 func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	request := InstanceRequest{
-		Host:         cluster.Instance.Host,
-		Port:         cluster.Instance.Port,
+		Sidecar:      cluster.Instance,
 		CredentialId: cluster.Credentials.PatroniId,
 		Certs:        cluster.Certs,
 	}

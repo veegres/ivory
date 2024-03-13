@@ -9,7 +9,8 @@ import scroll from "./style/scroll.module.css"
 import {StrictMode} from "react";
 import {AuthProvider} from "./provider/AuthProvider";
 
-// always show scroll bar to avoid resizing
+// reserve place for scroll to avoid resizing
+document.documentElement.classList.add(scroll.hidden)
 document.body.classList.add(scroll.show)
 
 // render react app

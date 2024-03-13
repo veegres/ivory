@@ -11,12 +11,13 @@ type PatroniCluster struct {
 }
 
 type PatroniInstance struct {
-	Name   string `json:"name"`
-	State  string `json:"state"`
-	Role   string `json:"role"`
-	Host   string `json:"host"`
-	Port   int    `json:"port"`
-	ApiUrl string `json:"api_url"`
+	Name           string `json:"name"`
+	State          string `json:"state"`
+	Role           string `json:"role"`
+	Host           string `json:"host"`
+	Port           int    `json:"port"`
+	ApiUrl         string `json:"api_url"`
+	PendingRestart bool   `json:"pending_restart"`
 	// it can be int / nil / "unknown"
 	Lag      json.RawMessage `json:"lag"`
 	Timeline int             `json:"timeline"`

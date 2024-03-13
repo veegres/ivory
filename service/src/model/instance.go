@@ -5,23 +5,19 @@ import "github.com/google/uuid"
 // COMMON (WEB AND SERVER)
 
 type InstanceRequest struct {
-	Host         string     `json:"host" form:"host"`
-	Port         int        `json:"port" form:"port"`
+	Sidecar      Sidecar    `json:"sidecar" form:"sidecar"`
 	CredentialId *uuid.UUID `json:"credentialId" form:"credentialId"`
 	Certs        Certs      `json:"certs" form:"certs"`
 	Body         any        `json:"body" form:"body"`
 }
 
-type InstanceQueryRequest struct {
-	Json InstanceRequest `json:"json" form:"json"`
-}
-
 type Instance struct {
-	State    string   `json:"state"`
-	Role     string   `json:"role"`
-	Lag      int64    `json:"lag"`
-	Database Database `json:"database"`
-	Sidecar  Sidecar  `json:"sidecar"`
+	State          string   `json:"state"`
+	Role           string   `json:"role"`
+	Lag            int64    `json:"lag"`
+	PendingRestart bool     `json:"pendingRestart"`
+	Database       Database `json:"database"`
+	Sidecar        Sidecar  `json:"sidecar"`
 }
 
 type InstanceInfo struct {
@@ -40,4 +36,8 @@ type InstanceGateway interface {
 	ConfigUpdate(instance InstanceRequest) (any, int, error)
 	Switchover(instance InstanceRequest) (any, int, error)
 	Reinitialize(instance InstanceRequest) (any, int, error)
+	Restart(instance InstanceRequest) (any, int, error)
+	DeleteRestart(instance InstanceRequest) (any, int, error)
+	Reload(instance InstanceRequest) (any, int, error)
+	Failover(instance InstanceRequest) (any, int, error)
 }

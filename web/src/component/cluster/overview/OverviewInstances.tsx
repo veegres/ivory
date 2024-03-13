@@ -6,14 +6,7 @@ import {SxPropsMap} from "../../../type/common";
 import {OverviewInstancesRow} from "./OverviewInstancesRow";
 
 const SX: SxPropsMap = {
-    table: {"tr:last-child td": {border: 0}},
-    row: {cursor: "pointer"},
-    cell: {padding: "5px 10px", height: "50px"},
-    cellSmall: {padding: "5px 0", height: "50px"},
-    smallCell: {width: "1%"},
-    bigCell: {width: "10%"},
-    generalCell: {width: "25%"},
-    roleCell: {width: "110px"},
+    table: {"tr:last-child td": {border: 0}, tableLayout: "fixed"},
     buttonCell: {width: "160px"},
     warning: {display: "flex", justifyContent: "center"},
 }
@@ -26,13 +19,13 @@ export function OverviewInstances({info}: TabProps) {
         <Table size={"small"} sx={SX.table}>
             <TableHead>
                 <TableRow>
-                    <TableCell sx={SX.smallCell}/>
-                    <TableCell sx={SX.smallCell}/>
-                    <TableCell sx={SX.roleCell}>Role</TableCell>
-                    <TableCell sx={SX.generalCell} align={"center"}>Patroni</TableCell>
-                    <TableCell sx={SX.generalCell} align={"center"}>Postgres</TableCell>
-                    <TableCell sx={SX.bigCell} align={"center"}>State</TableCell>
-                    <TableCell sx={SX.bigCell} align={"center"}>Lag</TableCell>
+                    <TableCell width={"58px"}/>
+                    <TableCell width={"24px"}/>
+                    <TableCell width={"110px"}>Role</TableCell>
+                    <TableCell width={"160px"} align={"center"}>Sidecar</TableCell>
+                    <TableCell width={"160px"} align={"center"}>Postgres</TableCell>
+                    <TableCell width={"100px"} align={"center"}>State</TableCell>
+                    <TableCell>Data</TableCell>
                     <TableCellLoader sx={SX.buttonCell} isFetching={instanceMapFetching > 0}/>
                 </TableRow>
             </TableHead>
