@@ -20,24 +20,17 @@ type Instance struct {
 	Sidecar        Sidecar  `json:"sidecar"`
 }
 
-type InstanceInfo struct {
-	State   string  `json:"state"`
-	Role    string  `json:"role"`
-	Sidecar Sidecar `json:"sidecar"`
-}
-
 // SPECIFIC (SERVER)
 
-// InstanceGateway TODO add common return types to cast interface to them and create mappers for each impl (patroni)
 type InstanceGateway interface {
-	Info(instance InstanceRequest) (InstanceInfo, int, error)
 	Overview(instance InstanceRequest) ([]Instance, int, error)
 	Config(instance InstanceRequest) (any, int, error)
 	ConfigUpdate(instance InstanceRequest) (any, int, error)
-	Switchover(instance InstanceRequest) (any, int, error)
-	Reinitialize(instance InstanceRequest) (any, int, error)
-	Restart(instance InstanceRequest) (any, int, error)
-	DeleteRestart(instance InstanceRequest) (any, int, error)
-	Reload(instance InstanceRequest) (any, int, error)
-	Failover(instance InstanceRequest) (any, int, error)
+	Switchover(instance InstanceRequest) (*string, int, error)
+	DeleteSwitchover(instance InstanceRequest) (*string, int, error)
+	Reinitialize(instance InstanceRequest) (*string, int, error)
+	Restart(instance InstanceRequest) (*string, int, error)
+	DeleteRestart(instance InstanceRequest) (*string, int, error)
+	Reload(instance InstanceRequest) (*string, int, error)
+	Failover(instance InstanceRequest) (*string, int, error)
 }
