@@ -76,25 +76,31 @@ export const instanceApi = {
             {} as InstanceMap
         )),
     config: (request: InstanceRequest) => api
-        .get(`/instance/config`, {params: {request: JSON.stringify(request)}})
+        .get<Response<any>>(`/instance/config`, {params: {request: JSON.stringify(request)}})
         .then((response) => response.data.response),
     updateConfig: (request: InstanceRequest) => api
-        .patch(`/instance/config`, request)
+        .patch<Response<any>>(`/instance/config`, request)
         .then((response) => response.data.response),
     switchover: (request: InstanceRequest) => api
-        .post(`/instance/switchover`, request)
+        .post<Response<string>>(`/instance/switchover`, request)
+        .then((response) => response.data.response),
+    deleteSwitchover: (request: InstanceRequest) => api
+        .delete<Response<string>>(`/instance/switchover`, {params: {request: JSON.stringify(request)}})
         .then((response) => response.data.response),
     reinitialize: (request: InstanceRequest) => api
-        .post(`/instance/reinitialize`, request)
+        .post<Response<string>>(`/instance/reinitialize`, request)
         .then((response) => response.data.response),
     restart: (request: InstanceRequest) => api
-        .post(`/instance/restart`, request)
+        .post<Response<string>>(`/instance/restart`, request)
+        .then((response) => response.data.response),
+    deleteRestart: (request: InstanceRequest) => api
+        .delete<Response<string>>(`/instance/restart`, {params: {request: JSON.stringify(request)}})
         .then((response) => response.data.response),
     reload: (request: InstanceRequest) => api
-        .post(`/instance/reload`, request)
+        .post<Response<string>>(`/instance/reload`, request)
         .then((response) => response.data.response),
     failover: (request: InstanceRequest) => api
-        .post(`/instance/failover`, request)
+        .post<Response<string>>(`/instance/failover`, request)
         .then((response) => response.data.response),
 }
 

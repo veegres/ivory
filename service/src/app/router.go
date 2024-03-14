@@ -104,11 +104,11 @@ func tagRouter(g *gin.RouterGroup, r *router.TagRouter) {
 
 func instanceRouter(g *gin.RouterGroup, r *router.InstanceRouter) {
 	instance := g.Group("/instance")
-	instance.GET("/info", r.GetInstanceInfo)
 	instance.GET("/overview", r.GetInstanceOverview)
 	instance.GET("/config", r.GetInstanceConfig)
 	instance.PATCH("/config", r.PatchInstanceConfig)
 	instance.POST("/switchover", r.PostInstanceSwitchover)
+	instance.DELETE("/switchover", r.DeleteInstanceSwitchover)
 	instance.POST("/reinitialize", r.PostInstanceReinitialize)
 	instance.POST("/restart", r.PostInstanceRestart)
 	instance.DELETE("/restart", r.DeleteInstanceRestart)

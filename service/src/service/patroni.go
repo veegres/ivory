@@ -2,6 +2,7 @@ package service
 
 import (
 	. "ivory/src/model"
+	"net/http"
 	"strconv"
 	"strings"
 )
@@ -12,21 +13,6 @@ type patroniInstanceService struct {
 
 func NewPatroniGateway(client *SidecarClient) InstanceGateway {
 	return &patroniInstanceService{client: client}
-}
-
-func (p *patroniInstanceService) Info(instance InstanceRequest) (InstanceInfo, int, error) {
-	var info InstanceInfo
-
-	response, status, err := NewSidecarRequest[PatroniInfo](p.client).Get(instance, "/patroni")
-	if err == nil {
-		info = InstanceInfo{
-			Sidecar: instance.Sidecar,
-			Role:    response.Role,
-			State:   response.State,
-		}
-	}
-
-	return info, status, err
 }
 
 func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance, int, error) {
@@ -43,7 +29,7 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 		host := domain[0]
 		port, errCast := strconv.Atoi(domain[1])
 		if errCast != nil {
-			return nil, 0, errCast
+			return nil, http.StatusBadRequest, errCast
 		}
 
 		var lag int64
@@ -74,26 +60,30 @@ func (p *patroniInstanceService) ConfigUpdate(instance InstanceRequest) (any, in
 	return NewSidecarRequest[any](p.client).Patch(instance, "/config")
 }
 
-func (p *patroniInstanceService) Switchover(instance InstanceRequest) (any, int, error) {
+func (p *patroniInstanceService) Switchover(instance InstanceRequest) (*string, int, error) {
 	return NewSidecarRequest[string](p.client).Post(instance, "/switchover")
 }
 
-func (p *patroniInstanceService) Reinitialize(instance InstanceRequest) (any, int, error) {
+func (p *patroniInstanceService) DeleteSwitchover(instance InstanceRequest) (*string, int, error) {
+	return NewSidecarRequest[string](p.client).Delete(instance, "/switchover")
+}
+
+func (p *patroniInstanceService) Reinitialize(instance InstanceRequest) (*string, int, error) {
 	return NewSidecarRequest[string](p.client).Post(instance, "/reinitialize")
 }
 
-func (p *patroniInstanceService) Restart(instance InstanceRequest) (any, int, error) {
+func (p *patroniInstanceService) Restart(instance InstanceRequest) (*string, int, error) {
 	return NewSidecarRequest[string](p.client).Post(instance, "/restart")
 }
 
-func (p *patroniInstanceService) DeleteRestart(instance InstanceRequest) (any, int, error) {
+func (p *patroniInstanceService) DeleteRestart(instance InstanceRequest) (*string, int, error) {
 	return NewSidecarRequest[string](p.client).Delete(instance, "/restart")
 }
 
-func (p *patroniInstanceService) Reload(instance InstanceRequest) (any, int, error) {
+func (p *patroniInstanceService) Reload(instance InstanceRequest) (*string, int, error) {
 	return NewSidecarRequest[string](p.client).Post(instance, "/reload")
 }
 
-func (p *patroniInstanceService) Failover(instance InstanceRequest) (any, int, error) {
+func (p *patroniInstanceService) Failover(instance InstanceRequest) (*string, int, error) {
 	return NewSidecarRequest[string](p.client).Post(instance, "/failover")
 }

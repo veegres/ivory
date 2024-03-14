@@ -15,10 +15,6 @@ func NewInstanceRouter(instanceService InstanceGateway) *InstanceRouter {
 	return &InstanceRouter{instanceService: instanceService}
 }
 
-func (r *InstanceRouter) GetInstanceInfo(context *gin.Context) {
-	handleParamRequest(context, r.instanceService.Info)
-}
-
 func (r *InstanceRouter) GetInstanceOverview(context *gin.Context) {
 	handleParamRequest(context, r.instanceService.Overview)
 }
@@ -35,6 +31,10 @@ func (r *InstanceRouter) PostInstanceSwitchover(context *gin.Context) {
 	handleBodyRequest(context, r.instanceService.Switchover)
 }
 
+func (r *InstanceRouter) DeleteInstanceSwitchover(context *gin.Context) {
+	handleParamRequest(context, r.instanceService.DeleteSwitchover)
+}
+
 func (r *InstanceRouter) PostInstanceReinitialize(context *gin.Context) {
 	handleBodyRequest(context, r.instanceService.Reinitialize)
 }
@@ -44,7 +44,7 @@ func (r *InstanceRouter) PostInstanceRestart(context *gin.Context) {
 }
 
 func (r *InstanceRouter) DeleteInstanceRestart(context *gin.Context) {
-	handleBodyRequest(context, r.instanceService.DeleteRestart)
+	handleParamRequest(context, r.instanceService.DeleteRestart)
 }
 
 func (r *InstanceRouter) PostInstanceReload(context *gin.Context) {

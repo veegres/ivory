@@ -21,12 +21,6 @@ export interface Instance {
     sidecar: Sidecar,
 }
 
-export interface InstanceInfo {
-    state: string,
-    role: string,
-    sidecar: Sidecar,
-}
-
 // SPECIFIC (WEB)
 
 // TODO should we return map from the server?
