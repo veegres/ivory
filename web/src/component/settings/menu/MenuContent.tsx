@@ -3,7 +3,7 @@ import {MenuItemBox} from "./MenuItemBox";
 import {MenuItemText} from "./MenuItemText";
 import {MenuItemButton} from "./MenuItemButton";
 import {MenuThemeChanger} from "./MenuThemeChanger";
-import {EraseButton} from "../../shared/erase/EraseButton";
+import {EraseButton} from "../../shared/actions/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
 import {MenuRefetchChanger} from "./MenuRefetchChanger";
 import {Box} from "@mui/material";

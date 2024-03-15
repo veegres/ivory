@@ -8,6 +8,8 @@ import {SnackbarProvider} from "notistack";
 import scroll from "./style/scroll.module.css"
 import {StrictMode} from "react";
 import {AuthProvider} from "./provider/AuthProvider";
+import {LocalizationProvider} from "@mui/x-date-pickers";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 
 // reserve place for scroll to avoid resizing
 document.documentElement.classList.add(scroll.hidden)
@@ -18,16 +20,18 @@ const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(
     <StrictMode>
-        <AppearanceProvider>
-            <AuthProvider>
-                <StoreProvider>
-                    <SnackbarProvider maxSnack={3}>
-                        <CssBaseline enableColorScheme/>
-                        <App/>
-                    </SnackbarProvider>
-                </StoreProvider>
-            </AuthProvider>
-        </AppearanceProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <AppearanceProvider>
+                <AuthProvider>
+                    <StoreProvider>
+                        <SnackbarProvider maxSnack={3}>
+                            <CssBaseline enableColorScheme/>
+                            <App/>
+                        </SnackbarProvider>
+                    </StoreProvider>
+                </AuthProvider>
+            </AppearanceProvider>
+        </LocalizationProvider>
     </StrictMode>
 )
 

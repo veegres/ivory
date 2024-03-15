@@ -17,6 +17,9 @@ export function OverviewInstances({info}: TabProps) {
     const key = {queryKey: ["instance/overview", cluster.name]}
     const queryClient = useQueryClient();
     const instanceMapFetching = useIsFetching(key)
+    const candidates = Object.values(combinedInstanceMap)
+        .filter(sidecar => sidecar.role === "replica")
+        .map(instance => instance.sidecar)
 
     return (
         <Table size={"small"} sx={SX.table}>
@@ -36,7 +39,7 @@ export function OverviewInstances({info}: TabProps) {
             </TableHead>
             <TableBody>
                 {Object.entries(combinedInstanceMap).map(([key, element]) => (
-                    <OverviewInstancesRow key={key} domain={key} instance={element} cluster={cluster}/>
+                    <OverviewInstancesRow key={key} domain={key} instance={element} cluster={cluster} candidates={candidates}/>
                 ))}
             </TableBody>
         </Table>

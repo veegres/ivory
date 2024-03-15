@@ -1,21 +1,23 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
+import {ReactNode} from "react";
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
-    content: {width: "500px"},
+    content: {width: "500px", display: "flex", gap: 2, flexDirection: "column"},
 }
 
 type Props = {
     open: boolean,
     title: string,
-    content: string,
+    description: string,
+    children?: ReactNode,
     onAgree: () => void,
     onClose: () => void
 }
 
 export function AlertDialog(props: Props) {
-    const {open, content, title, onAgree, onClose} = props
+    const {open, children, description, title, onAgree, onClose} = props
     return (
         <Dialog sx={SX.dialog} open={open} onClose={onClose}>
             <DialogTitle>
@@ -23,8 +25,9 @@ export function AlertDialog(props: Props) {
             </DialogTitle>
             <DialogContent sx={SX.content}>
                 <DialogContentText>
-                    {content}
+                    {description}
                 </DialogContentText>
+                {children}
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>No, please, No...</Button>

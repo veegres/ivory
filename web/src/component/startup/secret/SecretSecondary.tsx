@@ -2,7 +2,7 @@ import {useState} from "react";
 import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {Typography} from "@mui/material";
-import {EraseButton} from "../../shared/erase/EraseButton";
+import {EraseButton} from "../../shared/actions/EraseButton";
 import {SecretButton} from "./SecretButton";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
