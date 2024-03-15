@@ -19,6 +19,18 @@ export interface Instance {
     pendingRestart: boolean,
     database: Database,
     sidecar: Sidecar,
+    scheduledSwitchover?: InstanceScheduledSwitchover,
+    scheduledRestart?: InstanceScheduledRestart,
+}
+
+export interface InstanceScheduledSwitchover {
+    at: string,
+    to: string,
+}
+
+export interface InstanceScheduledRestart {
+    at: string,
+    pendingRestart: boolean,
 }
 
 // SPECIFIC (WEB)
