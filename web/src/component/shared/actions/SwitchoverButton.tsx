@@ -16,8 +16,9 @@ type Props = {
 
 export function SwitchoverButton(props: Props) {
     const {request, candidates, cluster} = props
+
     const [candidate, setCandidates] = useState("")
-    const [schedule, setSchedule] = useState<string | null>(null)
+    const [schedule, setSchedule] = useState<string>()
 
     const options = useMutationOptions([["instance/overview", cluster]])
     const switchover = useMutation({mutationFn: instanceApi.switchover, ...options})
@@ -26,12 +27,12 @@ export function SwitchoverButton(props: Props) {
 
     return (
         <AlertButton
+            color={"secondary"}
             label={"Switchover"}
             title={`Make a switchover of ${request.sidecar.host}?`}
             description={"It will change the leader of your cluster that will cause some downtime."}
             loading={switchover.isPending}
-            onClick={() => switchover.mutate({...request, body})}
-            color={"secondary"}
+            onClick={handleClick}
         >
             {renderCandidates()}
             <DateTimeField
@@ -40,7 +41,7 @@ export function SwitchoverButton(props: Props) {
                 disablePast={true}
                 format={"YYYY-MM-DD HH:mm"}
                 value={schedule}
-                onChange={(e) => setSchedule(e)}
+                onChange={(v) => setSchedule(v ?? undefined)}
             />
         </AlertButton>
     )
@@ -63,5 +64,11 @@ export function SwitchoverButton(props: Props) {
                 </Select>
             </FormControl>
         )
+    }
+
+    function handleClick() {
+        switchover.mutate({...request, body})
+        setSchedule(undefined)
+        setCandidates("")
     }
 }

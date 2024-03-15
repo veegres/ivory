@@ -3,6 +3,14 @@ import {InstanceRequest} from "../../../type/instance";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
+import {DateTimeField} from "@mui/x-date-pickers";
+import {useState} from "react";
+import {FormControlLabel, Switch} from "@mui/material";
+import {SxPropsMap} from "../../../type/common";
+
+const SX: SxPropsMap = {
+    pending: {margin: "0px"},
+}
 
 type Props = {
     request: InstanceRequest,
@@ -12,8 +20,13 @@ type Props = {
 export function RestartButton(props: Props) {
     const {request, cluster} = props
 
+    const [schedule, setSchedule] = useState<string>()
+    const [pending, setPending] = useState(false)
+
     const options = useMutationOptions([["instance/overview", cluster]])
     const restart = useMutation({mutationFn: instanceApi.restart, ...options})
+
+    const body = {schedule, restart_pending: pending}
 
     return (
         <AlertButton
@@ -23,7 +36,29 @@ export function RestartButton(props: Props) {
             title={`Make a restart of ${request.sidecar.host}?`}
             description={"It will restart postgres, that will cause some downtime."}
             loading={restart.isPending}
-            onClick={() => restart.mutate(request)}
-        />
+            onClick={handleClick}
+        >
+            <DateTimeField
+                label={"Schedule"}
+                size={"small"}
+                disablePast={true}
+                format={"YYYY-MM-DD HH:mm"}
+                value={schedule}
+                onChange={(v) => setSchedule(v ?? undefined)}
+            />
+            <FormControlLabel
+                sx={SX.pending}
+                disabled={!schedule}
+                labelPlacement={"start"}
+                control={<Switch checked={pending} onClick={() => setPending(!pending)}/>}
+                label={<>Restart pending <em>(will restart Postgres only when restart is pending, requires schedule time)</em></>}
+            />
+        </AlertButton>
     )
+
+    function handleClick() {
+        restart.mutate({...request, body})
+        setSchedule(undefined)
+        setPending(false)
+    }
 }
