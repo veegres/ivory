@@ -14,8 +14,7 @@ import {MenuButton} from "../../view/button/MenuButton";
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
-    cell: {padding: "5px 10px", height: "50px", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
-    cellSmall: {padding: "5px 0", height: "50px"},
+    nowrap: {whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
     buttons: {display: "flex", justifyContent: "flex-end", alignItems: "center"},
     data: {display: "flex", gap: 1, alignItems: "center"},
 }
@@ -51,20 +50,14 @@ export function OverviewInstancesRow(props: Props) {
 
     return (
         <TableRow sx={SX.row} onClick={handleCheck(instance, checked)}>
-            <TableCell sx={SX.cell}><Radio checked={checked} size={"small"}/></TableCell>
-            <TableCell sx={SX.cellSmall} align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
+            <TableCell><Radio checked={checked} size={"small"}/></TableCell>
+            <TableCell align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
             <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
-            <TableCell sx={SX.cell} align={"center"}>
-                {sidecar.host}:{sidecar.port === 0 ? "-" : sidecar.port}
-            </TableCell>
-            <TableCell sx={SX.cell} align={"center"}>
-                {database.host}:{database.port === 0 ? "-" : database.port}
-            </TableCell>
-            <TableCell sx={SX.cell} align={"center"}>{state}</TableCell>
-            <TableCell sx={SX.cell}>
-                {renderData()}
-            </TableCell>
-            <TableCell sx={SX.cell} align={"right"} onClick={(e) => e.stopPropagation()}>
+            <TableCell sx={SX.nowrap} align={"center"}>{sidecar.host}:{sidecar.port === 0 ? "-" : sidecar.port}</TableCell>
+            <TableCell sx={SX.nowrap} align={"center"}>{database.host}:{database.port === 0 ? "-" : database.port}</TableCell>
+            <TableCell sx={SX.nowrap} align={"center"}>{state}</TableCell>
+            <TableCell>{renderData()}</TableCell>
+            <TableCell align={"right"} onClick={(e) => e.stopPropagation()}>
                 <Box sx={SX.buttons}>
                     {renderButtonByRole()}
                     {renderButtons()}
@@ -160,7 +153,7 @@ export function OverviewInstancesRow(props: Props) {
         if (!inCluster && inInstances) title = "Instance is not in cluster!"
 
         return (
-            <Box sx={SX.warning}>
+            <Box sx={SX.data}>
                 <Tooltip title={title} placement={"top"}>
                     <WarningAmberRounded color={"warning"}/>
                 </Tooltip>
