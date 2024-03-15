@@ -21,8 +21,8 @@ export function ReloadButton(props: Props) {
             size={"small"}
             label={"Reload"}
             title={`Make a reload of ${request.sidecar.host}?`}
-            description={`It will reload postgres config, it doesn't have any downtime. It won't help with pending 
-            restart, because some parameters change required postgres restart.`}
+            description={`It will reload postgres config, it doesn't have any downtime. It won't help if pending 
+            restart is true, some parameters require postgres restart.`}
             loading={reload.isPending}
             onClick={() => reload.mutate(request)}
         />

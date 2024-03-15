@@ -5,11 +5,12 @@ import {useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
 import {DateTimeField} from "@mui/x-date-pickers";
 import {useState} from "react";
-import {FormControlLabel, Switch} from "@mui/material";
+import {Box, FormControlLabel, Switch} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     pending: {margin: "0px"},
+    description: {color: "text.disabled", fontSize: "12px"},
 }
 
 type Props = {
@@ -43,7 +44,7 @@ export function RestartButton(props: Props) {
                 size={"small"}
                 disablePast={true}
                 format={"YYYY-MM-DD HH:mm"}
-                value={schedule}
+                value={schedule ?? null}
                 onChange={(v) => setSchedule(v ?? undefined)}
             />
             <FormControlLabel
@@ -51,10 +52,21 @@ export function RestartButton(props: Props) {
                 disabled={!schedule}
                 labelPlacement={"start"}
                 control={<Switch checked={pending} onClick={() => setPending(!pending)}/>}
-                label={<>Restart pending <em>(will restart Postgres only when restart is pending, requires schedule time)</em></>}
+                label={renderLabel()}
             />
         </AlertButton>
     )
+
+    function renderLabel() {
+        return (
+            <Box>
+                <Box>Restart pending</Box>
+                <Box sx={SX.description}>
+                    will restart Postgres only when restart is pending, requires schedule time
+                </Box>
+            </Box>
+        )
+    }
 
     function handleClick() {
         restart.mutate({...request, body})

@@ -40,7 +40,7 @@ export function SwitchoverButton(props: Props) {
                 size={"small"}
                 disablePast={true}
                 format={"YYYY-MM-DD HH:mm"}
-                value={schedule}
+                value={schedule ?? null}
                 onChange={(v) => setSchedule(v ?? undefined)}
             />
         </AlertButton>
