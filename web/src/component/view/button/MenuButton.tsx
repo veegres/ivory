@@ -1,9 +1,11 @@
 import {ReactNode, useRef, useState} from "react";
-import {Box, IconButton, Paper, Popper} from "@mui/material";
+import {Box, Collapse, IconButton, Paper} from "@mui/material";
 import {MoreVert} from "@mui/icons-material";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
+    box: {position: "relative"},
+    collapse: {position: "absolute", top: "50%", transform: "translate(calc(-100% + -2px), -50%)"},
     paper: {display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px"},
 }
 
@@ -16,15 +18,14 @@ export function MenuButton(props: Props) {
     const {children, size} = props
     const [open, setOpen] = useState(false)
     const ref = useRef(null)
-    const preventOverFlow = {name: 'preventOverflow', options: {mainAxis: false}}
 
     return (
-        <Box>
-            <Popper anchorEl={ref.current} open={open} placement={"left"} modifiers={[preventOverFlow]}>
+        <Box sx={SX.box}>
+            <Collapse sx={SX.collapse} in={open} orientation={"horizontal"}>
                 <Paper sx={SX.paper} variant={"outlined"}>
                     {children}
                 </Paper>
-            </Popper>
+            </Collapse>
             <IconButton ref={ref} size={size} onClick={() => setOpen(!open)}>
                 <MoreVert/>
             </IconButton>
