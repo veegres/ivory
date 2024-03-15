@@ -187,6 +187,16 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
+const formatterSizePretty = Intl.NumberFormat("en", {
+    notation: "compact",
+    style: "unit",
+    unit: "byte",
+    unitDisplay: "narrow",
+})
+export const sizePretty = (size: number) => {
+    return formatterSizePretty.format(size)
+}
+
 /**
  * This function is needed to fix typescript issues when
  * `sx` can be an array and `SxProps` can be an array type

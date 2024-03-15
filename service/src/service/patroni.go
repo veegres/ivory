@@ -49,9 +49,14 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 
 		var scheduledSwitchover *InstanceScheduledSwitchover
 		if response.ScheduledSwitchover != nil && response.ScheduledSwitchover.From == host {
+			to := response.ScheduledSwitchover.To
+			if to == "" {
+				to = "(random selection)"
+			}
+
 			scheduledSwitchover = &InstanceScheduledSwitchover{
 				At: response.ScheduledSwitchover.At,
-				To: response.ScheduledSwitchover.To,
+				To: to,
 			}
 		}
 
