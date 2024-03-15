@@ -9,7 +9,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     isFetching: boolean,
-    children?: ReactElement[],
+    children?: ReactElement | ReactElement[],
     sx?: SxProps<Theme>,
     size?: number,
 }
@@ -20,8 +20,13 @@ export function TableCellLoader(props: Props) {
         <TableCell sx={sx}>
             <Box sx={SX.box}>
                 {isFetching && <Box sx={SX.progress}><CircularProgress size={size - 15}/></Box>}
-                {children && children.map((el, key) => cloneElement(el, {key, size}))}
+                {children && renderChildren(children)}
             </Box>
         </TableCell>
     )
+
+    function renderChildren(children: ReactElement | ReactElement[]) {
+        if (Array.isArray(children)) return children.map((el, key) => cloneElement(el, {key, size}))
+        else return cloneElement(children, {size})
+    }
 }
