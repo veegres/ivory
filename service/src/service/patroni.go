@@ -39,13 +39,31 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 			lag = -1
 		}
 
+		var scheduledRestart *InstanceScheduledRestart
+		if patroniInstance.ScheduledRestart != nil {
+			scheduledRestart = &InstanceScheduledRestart{
+				PendingRestart: patroniInstance.ScheduledRestart.RestartPending,
+				At:             patroniInstance.ScheduledRestart.Schedule,
+			}
+		}
+
+		var scheduledSwitchover *InstanceScheduledSwitchover
+		if response.ScheduledSwitchover != nil && response.ScheduledSwitchover.From == host {
+			scheduledSwitchover = &InstanceScheduledSwitchover{
+				At: response.ScheduledSwitchover.At,
+				To: response.ScheduledSwitchover.To,
+			}
+		}
+
 		overview = append(overview, Instance{
-			State:          patroniInstance.State,
-			Role:           patroniInstance.Role,
-			Lag:            lag,
-			PendingRestart: patroniInstance.PendingRestart,
-			Database:       Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-			Sidecar:        Sidecar{Host: host, Port: port},
+			State:               patroniInstance.State,
+			Role:                patroniInstance.Role,
+			Lag:                 lag,
+			PendingRestart:      patroniInstance.PendingRestart,
+			Database:            Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
+			Sidecar:             Sidecar{Host: host, Port: port},
+			ScheduledRestart:    scheduledRestart,
+			ScheduledSwitchover: scheduledSwitchover,
 		})
 	}
 

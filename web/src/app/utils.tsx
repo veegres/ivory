@@ -97,7 +97,7 @@ export const initialInstance = (sidecar?: Sidecar): InstanceWeb => {
         database: {host: "-", port: 0},
         leader: false,
         inInstances: true,
-        inCluster: false
+        inCluster: false,
     });
 }
 

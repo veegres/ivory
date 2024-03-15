@@ -12,12 +12,24 @@ type InstanceRequest struct {
 }
 
 type Instance struct {
-	State          string   `json:"state"`
-	Role           string   `json:"role"`
-	Lag            int64    `json:"lag"`
-	PendingRestart bool     `json:"pendingRestart"`
-	Database       Database `json:"database"`
-	Sidecar        Sidecar  `json:"sidecar"`
+	State               string                       `json:"state"`
+	Role                string                       `json:"role"`
+	Lag                 int64                        `json:"lag"`
+	PendingRestart      bool                         `json:"pendingRestart"`
+	Database            Database                     `json:"database"`
+	Sidecar             Sidecar                      `json:"sidecar"`
+	ScheduledSwitchover *InstanceScheduledSwitchover `json:"scheduledSwitchover,omitempty"`
+	ScheduledRestart    *InstanceScheduledRestart    `json:"scheduledRestart,omitempty"`
+}
+
+type InstanceScheduledSwitchover struct {
+	At string `json:"at"`
+	To string `json:"to"`
+}
+
+type InstanceScheduledRestart struct {
+	At             string `json:"at"`
+	PendingRestart bool   `json:"pendingRestart"`
 }
 
 // SPECIFIC (SERVER)

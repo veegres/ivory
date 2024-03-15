@@ -17,7 +17,7 @@ const SX: SxPropsMap = {
     row: {cursor: "pointer"},
     nowrap: {whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
     buttons: {display: "flex", justifyContent: "flex-end", alignItems: "center"},
-    data: {display: "flex", gap: 1, alignItems: "center"},
+    data: {},
 }
 
 type Props = {
@@ -29,7 +29,7 @@ type Props = {
 
 export function OverviewInstancesRow(props: Props) {
     const {instance, domain, cluster, candidates} = props
-    const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster} = instance
+    const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover} = instance
 
     const {isInstanceActive} = useStore()
     const {setInstance} = useStoreAction()
@@ -65,7 +65,9 @@ export function OverviewInstancesRow(props: Props) {
         return (
             <Box sx={SX.data}>
                 {lag !== -1 && (<Box>Lag: {lag}</Box>)}
-                {pendingRestart !== undefined && (<Box>Restart: {`${pendingRestart}`}</Box>)}
+                {pendingRestart !== undefined && (<Box>Restart: {String(pendingRestart)}</Box>)}
+                {scheduledRestart !== undefined && (<Box>Scheduled Restart (at: {scheduledRestart.at} / pending: {String(scheduledRestart.pendingRestart)})</Box>)}
+                {scheduledSwitchover !== undefined && (<Box>Scheduled Switchover (at: {scheduledSwitchover.at} / to: {scheduledSwitchover.to})</Box>)}
             </Box>
         )
     }
