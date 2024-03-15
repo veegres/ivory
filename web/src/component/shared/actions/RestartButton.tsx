@@ -27,7 +27,7 @@ export function RestartButton(props: Props) {
     const options = useMutationOptions([["instance/overview", cluster]])
     const restart = useMutation({mutationFn: instanceApi.restart, ...options})
 
-    const body = {schedule, restart_pending: pending}
+    const body = {schedule, restart_pending: pending || undefined}
 
     return (
         <AlertButton

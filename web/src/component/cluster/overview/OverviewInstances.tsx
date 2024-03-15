@@ -28,9 +28,9 @@ export function OverviewInstances({info}: TabProps) {
                     <TableCell width={"44px"}/>
                     <TableCell width={"40px"}/>
                     <TableCell width={"110px"}>Role</TableCell>
-                    <TableCell width={"160px"} align={"center"}>Sidecar</TableCell>
-                    <TableCell width={"160px"} align={"center"}>Postgres</TableCell>
-                    <TableCell width={"100px"} align={"center"}>State</TableCell>
+                    <TableCell width={"160px"}>Sidecar</TableCell>
+                    <TableCell width={"160px"}>Postgres</TableCell>
+                    <TableCell width={"100px"}>State</TableCell>
                     <TableCell>Data</TableCell>
                     <TableCellLoader sx={SX.buttonCell} isFetching={instanceMapFetching > 0}>
                         <RefreshIconButton onClick={() => queryClient.refetchQueries(key)}/>
