@@ -2,7 +2,7 @@ import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../type/instance";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {instanceApi} from "../../../app/api";
+import {InstanceApi} from "../../../app/api";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
@@ -23,7 +23,7 @@ export function ReinitButton(props: Props) {
     const [force, setForce] = useState(false)
 
     const options = useMutationOptions([["instance/overview", cluster]])
-    const reinit = useMutation({mutationFn: instanceApi.reinitialize, ...options})
+    const reinit = useMutation({mutationFn: InstanceApi.reinitialize, ...options})
 
     const body = {force}
 

@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {JobOptions} from "../app/utils";
 import {useQuery} from "@tanstack/react-query";
-import {bloatApi} from "../app/api";
+import {BloatApi} from "../app/api";
 import {EventStreamType, EventType, JobStatus} from "../type/job";
 
 type EventJob = {
@@ -17,7 +17,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
 
     const {isFetching, data} = useQuery({
         queryKey: ["instance/bloat/logs", uuid],
-        queryFn: () => bloatApi.logs(uuid),
+        queryFn: () => BloatApi.logs(uuid),
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
         enabled: !status.active && isOpen
@@ -28,7 +28,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         setStatus(JobOptions[initStatus])
         if (!JobOptions[initStatus].active) return
 
-        const es = bloatApi.stream(uuid)
+        const es = BloatApi.stream(uuid)
         const close = () => {
             es.close();
             setEventSourceFetching(false)

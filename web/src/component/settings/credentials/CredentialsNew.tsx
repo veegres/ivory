@@ -1,7 +1,7 @@
 import {CredentialsRow} from "./CredentialsRow";
 import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
-import {passwordApi} from "../../../app/api";
+import {PasswordApi} from "../../../app/api";
 import {Password, PasswordType} from "../../../type/password";
 import {CancelIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {useMutationOptions} from "../../../hook/QueryCustom";
@@ -13,7 +13,7 @@ export function CredentialsNew() {
     const [clean, setClean] = useState(false)
 
     const createOptions = useMutationOptions([["credentials"]], handleCancel)
-    const createCredentials = useMutation({mutationFn: passwordApi.create, ...createOptions})
+    const createCredentials = useMutation({mutationFn: PasswordApi.create, ...createOptions})
 
     return (
         <CredentialsRow

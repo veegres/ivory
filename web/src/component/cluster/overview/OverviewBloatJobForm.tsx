@@ -3,7 +3,7 @@ import {Box, Button, TextField} from "@mui/material";
 import {useState} from "react";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {bloatApi, queryApi} from "../../../app/api";
+import {BloatApi, QueryApi} from "../../../app/api";
 import {SxPropsMap} from "../../../type/common";
 import {InstanceWeb} from "../../../type/instance";
 import {Cluster} from "../../../type/cluster";
@@ -32,7 +32,7 @@ export function OverviewBloatJobForm(props: Props) {
     const [ratio, setRadio] = useState<number>()
 
     const {onError} = useMutationOptions()
-    const start = useMutation({mutationFn: bloatApi.start, onSuccess, onError})
+    const start = useMutation({mutationFn: BloatApi.start, onSuccess, onError})
 
     if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (!defaultInstance.leader) return <ClusterNoLeaderError/>
@@ -46,35 +46,35 @@ export function OverviewBloatJobForm(props: Props) {
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
                 keys={["databases", ...keys]} label={"Database"}
-                onFetch={(v) => queryApi.databases({...req, name: v})}
+                onFetch={(v) => QueryApi.databases({...req, name: v})}
                 onUpdate={(v) => setTarget({...target, dbName: v || ""})}
             />
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Schema"}
                 disabled={!target?.dbName || !!target?.excludeSchema}
-                onFetch={(v) => queryApi.schemas({...req, name: v})}
+                onFetch={(v) => QueryApi.schemas({...req, name: v})}
                 onUpdate={(v) => setTarget({...target, schema: v || ""})}
             />
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Exclude Schema"}
                 disabled={!target?.dbName || !!target?.schema}
-                onFetch={(v) => queryApi.schemas({...req, name: v})}
+                onFetch={(v) => QueryApi.schemas({...req, name: v})}
                 onUpdate={(v) => setTarget({...target, excludeSchema: v || ""})}
             />
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
                 disabled={!target?.schema || !!target?.excludeTable}
-                onFetch={(v) => queryApi.tables({...req, schema: target?.schema ?? "", name: v})}
+                onFetch={(v) => QueryApi.tables({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, table: v || ""})}
             />
             <AutocompleteFetch
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.excludeSchema ?? ""]} label={"Exclude Table"}
                 disabled={!target?.schema || !!target?.table}
-                onFetch={(v) => queryApi.tables({...req, schema: target?.schema ?? "", name: v})}
+                onFetch={(v) => QueryApi.tables({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
             />
             <Box sx={SX.buttons}>

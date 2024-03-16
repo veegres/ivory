@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../../type/common";
 import {Options} from "../../shared/options/Options";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {clusterApi} from "../../../app/api";
+import {ClusterApi} from "../../../app/api";
 import {ClusterOptions} from "../../../type/cluster";
 
 const SX: SxPropsMap = {
@@ -17,7 +17,7 @@ export function OverviewOptions({info}: TabProps) {
     const {combinedInstanceMap, defaultInstance, cluster, detection} = info
 
     const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]])
-    const updateCluster = useMutation({mutationFn: clusterApi.update, ...updateMutationOptions})
+    const updateCluster = useMutation({mutationFn: ClusterApi.update, ...updateMutationOptions})
 
     return (
         <Stack sx={SX.settings}>

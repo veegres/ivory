@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query";
-import {queryApi} from "../../../app/api";
+import {QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {ChartItem, Color} from "./ChartItem";
 import {Database, SxPropsMap} from "../../../type/common";
@@ -20,7 +20,7 @@ export function ChartDatabase(props: Props) {
 
     const database = useQuery({
         queryKey: ["query", "chart", "database", db.host, db.port, db.name, credentialId],
-        queryFn: () => queryApi.chartDatabase(props),
+        queryFn: () => QueryApi.chartDatabase(props),
         retry: false, enabled: !!db.name,
     })
 

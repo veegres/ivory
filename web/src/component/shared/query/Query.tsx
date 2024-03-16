@@ -1,7 +1,7 @@
 import {Database, StylePropsMap} from "../../../type/common";
 import {Box, Collapse, Skeleton} from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
-import {generalApi, queryApi} from "../../../app/api";
+import {GeneralApi, QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
@@ -20,8 +20,8 @@ type Props = {
 
 export function Query(props: Props) {
     const {type, credentialId, db} = props
-    const query = useQuery({queryKey: ["query", "map", type], queryFn: () => queryApi.list(type)})
-    const info = useQuery({queryKey: ["info"], queryFn: () => generalApi.info()})
+    const query = useQuery({queryKey: ["query", "map", type], queryFn: () => QueryApi.list(type)})
+    const info = useQuery({queryKey: ["info"], queryFn: () => GeneralApi.info()})
 
     const isManual = info.data?.availability.manualQuery ?? false
 

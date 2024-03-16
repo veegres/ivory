@@ -6,13 +6,13 @@ import {EraseButton} from "../../shared/actions/EraseButton";
 import {SecretButton} from "./SecretButton";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {initialApi} from "../../../app/api";
+import {InitialApi} from "../../../app/api";
 
 
 export function SecretSecondary() {
     const [key, setKey] = useState("")
     const setReqOptions = useMutationOptions([["info"]])
-    const setReq = useMutation({mutationFn: initialApi.setSecret, ...setReqOptions})
+    const setReq = useMutation({mutationFn: InitialApi.setSecret, ...setReqOptions})
 
     return (
         <PageStartupBox header={"Welcome Back"} renderFooter={renderButtons()}>

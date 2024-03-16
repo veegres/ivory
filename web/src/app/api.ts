@@ -30,7 +30,7 @@ export const api = axios.create({baseURL: '/api'})
 // - can be problems with same route as for DELETE / GET / POST
 
 
-export const generalApi = {
+export const GeneralApi = {
     info: () => api
         .get<Response<AppInfo>>(`/info`)
         .then((response) => response.data.response),
@@ -42,7 +42,7 @@ export const generalApi = {
         .then((response) => response.data.response),
 }
 
-export const initialApi = {
+export const InitialApi = {
     setSecret: (request: SecretSetRequest) => api
         .post<Response<string>>(`/initial/secret`, request)
         .then((response) => response.data.response),
@@ -51,7 +51,7 @@ export const initialApi = {
         .then((response) => response.data.response),
 }
 
-export const safeApi = {
+export const SafeApi = {
     getSecret: () => api
         .get<Response<SecretStatus>>(`/safe/secret`)
         .then((response) => response.data.response),
@@ -63,7 +63,7 @@ export const safeApi = {
         .then((response) => response.data.response),
 }
 
-export const instanceApi = {
+export const InstanceApi = {
     overview: (request: InstanceRequest) => api
         .get<Response<Instance[]>>(`/instance/overview`, {params: {request: JSON.stringify(request)}})
         .then<InstanceMap>((response) => response.data.response.reduce(
@@ -104,7 +104,7 @@ export const instanceApi = {
         .then((response) => response.data.response),
 }
 
-export const clusterApi = {
+export const ClusterApi = {
     get: (name: string) => api
         .get<Response<Cluster>>(`/cluster/${name}`)
         .then((response) => response.data.response),
@@ -128,13 +128,13 @@ export const clusterApi = {
         .then((response) => response.data.response),
 }
 
-export const tagApi = {
+export const TagApi = {
     list: () => api
         .get<Response<string[]>>(`/tag`)
         .then((response) => response.data.response),
 }
 
-export const bloatApi = {
+export const BloatApi = {
     list: (name: string) => api
         .get<Response<Bloat[]>>(`/cli/bloat/cluster/${name}`)
         .then((response) => response.data.response),
@@ -155,7 +155,7 @@ export const bloatApi = {
     stream: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`),
 }
 
-export const queryApi = {
+export const QueryApi = {
     list: (type?: QueryType) => api
         .get<Response<Query[]>>(`/query`, {params: {type}})
         .then((response) => response.data.response),
@@ -200,7 +200,7 @@ export const queryApi = {
         .then((response) => response.data.response),
 }
 
-export const passwordApi = {
+export const PasswordApi = {
     list: (type?: PasswordType) => api
         .get<Response<PasswordMap>>(`/password`, {params: {type}})
         .then((response) => response.data.response),
@@ -215,7 +215,7 @@ export const passwordApi = {
         .then((response) => response.data.response),
 }
 
-export const certApi = {
+export const CertApi = {
     list: (type?: CertType) => api
         .get<Response<CertMap>>(`/cert`, {params: {type}})
         .then((response => response.data.response)),

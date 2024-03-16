@@ -2,7 +2,7 @@ import {Box} from "@mui/material";
 import {Header} from "./component/section/Header";
 import {Body} from "./component/section/Body";
 import {useQuery} from "@tanstack/react-query";
-import {generalApi} from "./app/api";
+import {GeneralApi} from "./app/api";
 import {Footer} from "./component/section/Footer";
 import {AuthType, SxPropsMap} from "./type/common";
 
@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
 }
 
 export function App() {
-    const info = useQuery({queryKey: ["info"], queryFn: generalApi.info, refetchOnWindowFocus: "always"})
+    const info = useQuery({queryKey: ["info"], queryFn: GeneralApi.info, refetchOnWindowFocus: "always"})
     const show = !info.isPending && !!info.data && info.data.secret.key && info.data.auth.authorised
 
     return (

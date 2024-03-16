@@ -4,13 +4,13 @@ import {CertsList} from "./CertsList";
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {CertsTab, TABS} from "./CertsTab";
 import {useQuery} from "@tanstack/react-query";
-import {certApi} from "../../../app/api";
+import {CertApi} from "../../../app/api";
 import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 
 export function Certs() {
     const [tab, setTab] = useState(0)
     const type = TABS[tab].type
-    const query = useQuery({queryKey: ["certs", type], queryFn: () => certApi.list(type)})
+    const query = useQuery({queryKey: ["certs", type], queryFn: () => CertApi.list(type)})
     const {data, error, isFetching} = query
 
     return (

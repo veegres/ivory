@@ -1,6 +1,6 @@
 import {CancelIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {useMutation} from "@tanstack/react-query";
-import {clusterApi} from "../../../app/api";
+import {ClusterApi} from "../../../app/api";
 import {Box} from "@mui/material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {Sidecar, SxPropsMap} from "../../../type/common";
@@ -26,7 +26,7 @@ export function ListCellUpdate(props: Props) {
     const {toggle, onUpdate, onClose} = props
 
     const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]], handleSuccess)
-    const updateCluster = useMutation({mutationFn: clusterApi.update, ...updateMutationOptions})
+    const updateCluster = useMutation({mutationFn: ClusterApi.update, ...updateMutationOptions})
 
     return (
         <Box sx={SX.box}>

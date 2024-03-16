@@ -1,7 +1,7 @@
 import {Box} from "@mui/material";
 import {ReactNode, useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {generalApi} from "../../../app/api";
+import {GeneralApi} from "../../../app/api";
 import {randomUnicodeAnimal} from "../../../app/utils";
 import {LinearProgressStateful} from "../progress/LinearProgressStateful";
 import select from "../../../style/select.module.css";
@@ -26,7 +26,7 @@ export function PageStartupBox(props: Props) {
     const {children, header, renderFooter} = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 
-    const info = useQuery({queryKey: ["info"], queryFn: generalApi.info});
+    const info = useQuery({queryKey: ["info"], queryFn: GeneralApi.info});
 
     return (
         <Box sx={SX.box}>

@@ -3,7 +3,7 @@ import {useState} from "react";
 import {getErrorMessage} from "../../../app/utils";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {certApi} from "../../../app/api";
+import {CertApi} from "../../../app/api";
 import {CertType} from "../../../type/cert";
 import {AxiosProgressEvent} from "axios";
 
@@ -16,7 +16,7 @@ export function CertsTabUpload(props: Props) {
     const [progress, setProgress] = useState<AxiosProgressEvent>()
 
     const uploadOptions = useMutationOptions([["certs"]])
-    const upload = useMutation({mutationFn: certApi.upload, ...uploadOptions})
+    const upload = useMutation({mutationFn: CertApi.upload, ...uploadOptions})
     const { loading, error: uploadError } = getUploadInfo()
 
     return (

@@ -1,5 +1,5 @@
 import {Box, Skeleton} from "@mui/material";
-import {instanceApi} from "../../../app/api";
+import {InstanceApi} from "../../../app/api";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {useAppearance} from "../../../provider/AppearanceProvider";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
@@ -32,11 +32,11 @@ export function OverviewConfig({info}: TabProps) {
 
     const {data: config, isPending, isError, error} = useQuery({
         queryKey: ["instance/config", sidecar.host, sidecar.port],
-        queryFn: () => instanceApi.config(requestBody),
+        queryFn: () => InstanceApi.config(requestBody),
         enabled: defaultInstance.inCluster,
     })
     const updateOptions = useMutationOptions([["instance/config", sidecar.host, sidecar.port]], () => setIsEditable(false))
-    const updateConfig = useMutation({mutationFn: instanceApi.updateConfig, ...updateOptions})
+    const updateConfig = useMutation({mutationFn: InstanceApi.updateConfig, ...updateOptions})
 
     useEffect(() => setConfigState(stringify(config)), [config])
 

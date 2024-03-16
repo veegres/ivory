@@ -1,6 +1,6 @@
 import {useMemo} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {certApi} from "../../../app/api";
+import {CertApi} from "../../../app/api";
 import {AutocompleteUuid, Option} from "../../view/autocomplete/AutocompleteUuid";
 import {CertOptions, shortUuid} from "../../../app/utils";
 import {CertType} from "../../../type/cert";
@@ -16,7 +16,7 @@ export function OptionsCert(props: Props) {
     const certId = selected ?? ""
     const {label} = CertOptions[type]
 
-    const query = useQuery({queryKey: ["certs", type], queryFn: () => certApi.list(type)})
+    const query = useQuery({queryKey: ["certs", type], queryFn: () => CertApi.list(type)})
     const options = useMemo(handleMemoOptions, [query.data])
 
     return (

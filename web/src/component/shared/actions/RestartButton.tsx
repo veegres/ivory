@@ -2,7 +2,7 @@ import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../type/instance";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {instanceApi} from "../../../app/api";
+import {InstanceApi} from "../../../app/api";
 import {DateTimeField} from "@mui/x-date-pickers";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
@@ -26,7 +26,7 @@ export function RestartButton(props: Props) {
     const [pending, setPending] = useState(false)
 
     const options = useMutationOptions([["instance/overview", cluster]])
-    const restart = useMutation({mutationFn: instanceApi.restart, ...options})
+    const restart = useMutation({mutationFn: InstanceApi.restart, ...options})
 
     const body = {schedule, restart_pending: pending || undefined}
 

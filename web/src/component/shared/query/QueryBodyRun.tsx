@@ -4,7 +4,7 @@ import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {QueryRunRequest, QueryVariety} from "../../../type/query";
 import {CancelIconButton, RefreshIconButton, TerminateIconButton} from "../../view/button/IconButtons";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {queryApi} from "../../../app/api";
+import {QueryApi} from "../../../app/api";
 import {QueryVarieties} from "./QueryVarieties";
 import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
 import {useCallback, useMemo} from "react";
@@ -33,14 +33,14 @@ export function QueryBodyRun(props: Props) {
 
     const result = useQuery({
         queryKey: ["query", "run", request.queryUuid ?? "standalone"],
-        queryFn: () => queryApi.run(request.queryUuid ? {...request, query: undefined} : request),
+        queryFn: () => QueryApi.run(request.queryUuid ? {...request, query: undefined} : request),
         enabled: true, retry: false, refetchOnWindowFocus: false,
     })
     const {data, error, isFetching} = result
 
     const onSuccess = () => result.refetch()
-    const cancel = useMutation({mutationFn: queryApi.cancel, onSuccess})
-    const terminate = useMutation({mutationFn: queryApi.terminate, onSuccess})
+    const cancel = useMutation({mutationFn: QueryApi.cancel, onSuccess})
+    const terminate = useMutation({mutationFn: QueryApi.terminate, onSuccess})
 
     // NOTE: we need this only to fix linter when passing to callback function
     const cancelMutate = cancel.mutate

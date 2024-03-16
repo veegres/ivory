@@ -1,5 +1,5 @@
 import {useQuery} from "@tanstack/react-query";
-import {queryApi} from "../../../app/api";
+import {QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {ChartItem, Color} from "./ChartItem";
 import {Database, SxPropsMap} from "../../../type/common";
@@ -20,7 +20,7 @@ export function ChartCommon(props: Props) {
 
     const common = useQuery({
         queryKey: ["query", "chart", "common", db.host, db.port, credentialId],
-        queryFn: () => queryApi.chartCommon(props),
+        queryFn: () => QueryApi.chartCommon(props),
         retry: false,
     })
 

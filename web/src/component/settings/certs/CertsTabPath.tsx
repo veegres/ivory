@@ -2,7 +2,7 @@ import {Alert, Box, TextField} from "@mui/material";
 import {useState} from "react";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {certApi} from "../../../app/api";
+import {CertApi} from "../../../app/api";
 import {CheckCircle} from "@mui/icons-material";
 import {LoadingButton} from "@mui/lab";
 import {SxPropsMap} from "../../../type/common";
@@ -25,7 +25,7 @@ export function CertsTabPath(props: Props) {
     const [path, setPath] = useState("")
 
     const addOptions = useMutationOptions([["certs"]], () => setPath(""))
-    const add = useMutation({mutationFn: certApi.add, ...addOptions})
+    const add = useMutation({mutationFn: CertApi.add, ...addOptions})
 
     return (
         <Box sx={SX.box}>
