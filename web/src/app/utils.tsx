@@ -20,6 +20,7 @@ import {CertType} from "../type/cert";
 import {InstanceMap, InstanceWeb, Role} from "../type/instance";
 import {JobStatus} from "../type/job";
 import {QueryVariety} from "../type/query";
+import dayjs from "dayjs";
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
@@ -187,31 +188,31 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
-const formatterSizePretty = Intl.NumberFormat("en", {
-    notation: "compact",
-    style: "unit",
-    unit: "byte",
-    unitDisplay: "narrow",
-})
-export const sizePretty = (size: number) => {
-    return formatterSizePretty.format(size)
-}
-
-/**
- * This function is needed to fix typescript issues when
- * `sx` can be an array and `SxProps` can be an array type
- *
- * https://github.com/mui/material-ui/issues/29900
- *
- * @param sx1
- * @param sx2
- */
-export const mergeSxProps = (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => {
-    return [...(Array.isArray(sx1) ? sx1 : [sx1]), ...(Array.isArray(sx2) ? sx2 : [sx2])]
-}
-
 // CodeMirror theme
 export const CodeThemes = {
     dark: materialDarkInit({settings: {background: "transparent", gutterActiveForeground: "rgba(255,255,255,0.3)", selection: "rgba(255,255,255,0.1)"}}),
     light: materialLightInit({settings: {background: "transparent", gutterActiveForeground: "rgba(0,0,0,0.3)", selection: "rgba(0,0,0,0.1)"}}),
+}
+
+export const SxPropsFormatter = {
+    /**
+     * This function is needed to fix typescript issues when
+     * `sx` can be an array and `SxProps` can be an array type
+     *
+     * https://github.com/mui/material-ui/issues/29900
+     *
+     * @param sx1
+     * @param sx2
+     */
+    merge: (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => [...(Array.isArray(sx1) ? sx1 : [sx1]), ...(Array.isArray(sx2) ? sx2 : [sx2])]
+}
+
+export const DateTimeFormatter = {
+    format: "YYYY-MM-DD HH:mm",
+    utc: (value: string) => dayjs.utc(value).local().format(DateTimeFormatter.format)
+}
+
+export const SizeFormatter = {
+    format: Intl.NumberFormat("en", {notation: "compact", style: "unit", unit: "byte", unitDisplay: "narrow"}),
+    pretty: (size: number) => SizeFormatter.format.format(size)
 }

@@ -7,6 +7,7 @@ import {InstanceRequest} from "../../../type/instance";
 import {useMutation} from "@tanstack/react-query";
 import {instanceApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
+import {DateTimeFormatter} from "../../../app/utils";
 
 type Props = {
     request: InstanceRequest,
@@ -30,7 +31,7 @@ export function SwitchoverButton(props: Props) {
             color={"secondary"}
             label={"Switchover"}
             title={`Make a switchover of ${request.sidecar.host}?`}
-            description={"It will change the leader of your cluster that will cause some downtime."}
+            description={"It will change the leader of your cluster that will cause some downtime. Provide local time for schedule."}
             loading={switchover.isPending}
             onClick={handleClick}
         >
@@ -39,7 +40,7 @@ export function SwitchoverButton(props: Props) {
                 label={"Schedule"}
                 size={"small"}
                 disablePast={true}
-                format={"YYYY-MM-DD HH:mm"}
+                format={DateTimeFormatter.format}
                 value={schedule ?? null}
                 onChange={(v) => setSchedule(v ?? undefined)}
             />

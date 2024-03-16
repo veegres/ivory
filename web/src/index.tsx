@@ -10,10 +10,15 @@ import {StrictMode} from "react";
 import {AuthProvider} from "./provider/AuthProvider";
 import {LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import utc from "dayjs/plugin/utc";
+import dayjs from "dayjs";
 
 // reserve place for scroll to avoid resizing
 document.documentElement.classList.add(scroll.hidden)
 document.body.classList.add(scroll.show)
+
+// extend dayjs with UTC plugin
+dayjs.extend(utc)
 
 // render react app
 const container = document.getElementById("root");

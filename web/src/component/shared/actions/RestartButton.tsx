@@ -7,6 +7,7 @@ import {DateTimeField} from "@mui/x-date-pickers";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
+import {DateTimeFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     pending: {margin: "0px"},
@@ -35,7 +36,7 @@ export function RestartButton(props: Props) {
             size={"small"}
             label={"Restart"}
             title={`Make a restart of ${request.sidecar.host}?`}
-            description={"It will restart postgres, that will cause some downtime."}
+            description={"It will restart postgres, that will cause some downtime. Provide local time for schedule."}
             loading={restart.isPending}
             onClick={handleClick}
         >
@@ -43,7 +44,7 @@ export function RestartButton(props: Props) {
                 label={"Schedule"}
                 size={"small"}
                 disablePast={true}
-                format={"YYYY-MM-DD HH:mm"}
+                format={DateTimeFormatter.format}
                 value={schedule ?? null}
                 onChange={(v) => setSchedule(v ?? undefined)}
             />

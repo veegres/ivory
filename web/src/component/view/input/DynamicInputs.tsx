@@ -1,6 +1,6 @@
 import {Box, Chip, FormControl, OutlinedInput, SxProps, Theme} from "@mui/material";
 import {ColorsMap, SxPropsMap} from "../../../type/common";
-import {mergeSxProps} from "../../../app/utils";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     chip: {width: '100%'},
@@ -34,7 +34,7 @@ export function DynamicInputs(props: Props) {
             return (
                 <FormControl key={index} color={color} focused={!!color}>
                     <OutlinedInput
-                        sx={mergeSxProps(SX.input, InputProps)}
+                        sx={SxPropsFormatter.merge(SX.input, InputProps)}
                         type={"string"}
                         placeholder={`${placeholder}${index+1}`}
                         size={"small"}

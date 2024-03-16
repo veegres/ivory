@@ -1,7 +1,7 @@
 import {ReactNode, useState} from "react";
 import {Box, SxProps, Theme} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
-import {mergeSxProps} from "../../../app/utils";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     box: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px", minHeight: "40px"},
@@ -21,10 +21,10 @@ export function QueryBoxWrapper(props: Props) {
     const {children, editable, sx} = props
     const [focus, setFocus] = useState(false)
 
-    const editSx = !editable ? {} : !focus ? mergeSxProps(SX.edit, SX.hover) : mergeSxProps(SX.edit, SX.focus)
-    const commonSx = mergeSxProps(SX.box, editSx)
+    const editSx = !editable ? {} : !focus ? SxPropsFormatter.merge(SX.edit, SX.hover) : SxPropsFormatter.merge(SX.edit, SX.focus)
+    const commonSx = SxPropsFormatter.merge(SX.box, editSx)
     return (
-        <Box sx={mergeSxProps(commonSx, sx)} onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}>
+        <Box sx={SxPropsFormatter.merge(commonSx, sx)} onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}>
             {children}
         </Box>
     )

@@ -3,7 +3,7 @@ import {Box, ButtonBase, CircularProgress} from "@mui/material";
 import {ChangeEvent, DragEvent, useState} from "react";
 import {useAppearance} from "../../../provider/AppearanceProvider";
 import {SxPropsMap} from "../../../type/common";
-import {mergeSxProps} from "../../../app/utils";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     box: {padding: "5px", height: "100%"},
@@ -98,7 +98,7 @@ export function UploadButton(props: Props) {
     }
 
     function getBlueBoxSX() {
-        return mergeSxProps(SX.upload, {
+        return SxPropsFormatter.merge(SX.upload, {
             pointerEvents: "none",
             boxShadow: `inset 0px 0px 50px 50px ${color[theme] ?? "none"}`
         })
