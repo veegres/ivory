@@ -1,8 +1,8 @@
 import {Box, Chip, Tooltip} from "@mui/material";
 import {RefreshIconButton} from "../../view/button/IconButtons";
-import {grey, orange, purple} from "@mui/material/colors";
+import {purple} from "@mui/material/colors";
 import {getDomain, InstanceColor} from "../../../app/utils";
-import {InfoTitle} from "../../view/box/InfoTitle";
+import {InfoColorBoxList} from "../../view/box/InfoColorBoxList";
 import {useStoreAction} from "../../../provider/StoreProvider";
 import {Cluster, InstanceDetection} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";
@@ -42,10 +42,9 @@ export function ListCellChip(props: Props) {
         const items = [
             {title: "Detection", label: detection, bgColor: purple[400]},
             {title: "Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]},
-            {title: "Warning", label: String(warning), bgColor: warning ? orange[500] : grey[500]}
         ]
 
-        return <InfoTitle items={items}/>
+        return <InfoColorBoxList items={items}/>
     }
 
     function handleClick() {

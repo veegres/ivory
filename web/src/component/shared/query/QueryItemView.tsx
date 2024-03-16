@@ -101,7 +101,7 @@ export function QueryItemView(props: Props) {
                 <Box sx={SX.type} onClick={handleClose}>{type}</Box>
                 <CancelIconButton tooltip={`Close ${type}`} onClick={handleClose}/>
                 {toggleView === ViewToggleType.EDIT && (
-                    <QueryButtonUpdate id={query.id} query={queryUpdate}/>
+                    <QueryButtonUpdate id={query.id} query={queryUpdate} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
                 )}
             </>
         )

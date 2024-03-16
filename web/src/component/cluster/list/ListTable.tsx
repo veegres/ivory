@@ -16,7 +16,7 @@ import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
-    table: {"tr:last-child td": {border: 0}},
+    table: {"tr:last-child td": {border: 0}, "tr td, th": {padding: "5px 10px"}},
     nameCell: {width: "220px"},
     buttonCell: {width: "130px"},
 }
