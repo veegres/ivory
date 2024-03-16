@@ -2,7 +2,7 @@ import {Box, Button} from "@mui/material";
 import {ReactElement, ReactNode, useEffect, useState} from "react";
 import {ArrowDownward, ArrowUpward, Pause, PlayArrow} from "@mui/icons-material";
 import {SxPropsMap} from "../../../type/common";
-import {mergeSxProps} from "../../../app/utils";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     wrapper: {display: "flex"},
@@ -51,7 +51,7 @@ export function AutoScrolling(props: Props) {
 
     function renderButton(alignment: "bottom" | "top", icon: ReactElement, onClick: () => void) {
         return (
-            <Button sx={mergeSxProps(SX.button, SX[alignment])} size={"small"} onClick={onClick}>
+            <Button sx={SxPropsFormatter.merge(SX.button, SX[alignment])} size={"small"} onClick={onClick}>
                 {icon}
             </Button>
         )

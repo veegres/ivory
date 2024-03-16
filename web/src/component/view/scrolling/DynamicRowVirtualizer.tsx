@@ -4,7 +4,7 @@ import {Box, SxProps} from "@mui/material";
 import {Theme} from "@mui/material/styles";
 import {AutoScrolling} from "./AutoScrolling";
 import {SxPropsMap} from "../../../type/common";
-import {mergeSxProps} from "../../../app/utils";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     container: {width: "100%", overflow: "auto", contain: "strict"},
@@ -40,7 +40,7 @@ export function DynamicRowVirtualizer(props: Props) {
     const items = virtualizer.getVirtualItems()
     return (
         <AutoScrolling auto={auto} length={rows.length} scroll={virtualizer.scrollToIndex}>
-            <Box ref={parentRef} sx={mergeSxProps(sx, SX.container)} className={className} style={{height: `${height}px`}}>
+            <Box ref={parentRef} sx={SxPropsFormatter.merge(sx, SX.container)} className={className} style={{height: `${height}px`}}>
                 <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
                     <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0]?.start ?? 0}px)`}}>
                         {items.map((virtualRow) => (

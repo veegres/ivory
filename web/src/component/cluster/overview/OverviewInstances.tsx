@@ -31,7 +31,7 @@ export function OverviewInstances({info}: TabProps) {
                     <TableCell width={"160px"}>Sidecar</TableCell>
                     <TableCell width={"160px"}>Postgres</TableCell>
                     <TableCell width={"100px"}>State</TableCell>
-                    <TableCell>Data</TableCell>
+                    <TableCell/>
                     <TableCellLoader sx={SX.buttonCell} isFetching={instanceMapFetching > 0}>
                         <RefreshIconButton onClick={() => queryClient.refetchQueries(key)}/>
                     </TableCellLoader>

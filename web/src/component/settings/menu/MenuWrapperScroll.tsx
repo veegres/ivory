@@ -1,7 +1,7 @@
 import {ReactNode} from "react";
 import {Box, SxProps, Theme} from "@mui/material";
 import scroll from "../../../style/scroll.module.css";
-import {mergeSxProps} from "../../../app/utils";
+import {SxPropsFormatter} from "../../../app/utils";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
@@ -16,7 +16,7 @@ type Props = {
 export function MenuWrapperScroll(props: Props) {
     const {sx, children} = props
     return (
-        <Box sx={mergeSxProps(SX.box, sx)} className={scroll.small}>
+        <Box sx={SxPropsFormatter.merge(SX.box, sx)} className={scroll.small}>
             {children}
         </Box>
     )
