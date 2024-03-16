@@ -13,15 +13,16 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 
-// reserve place for scroll to avoid resizing
-document.body.classList.add(scroll.show)
-
 // extend dayjs with UTC plugin
 dayjs.extend(utc)
 
+// reserve place for scroll to avoid resizing
+document.body.classList.add(scroll.hidden)
+document.getElementById("root")!.classList.add(scroll.show)
+
 // render react app
-const container = document.getElementById("root");
-const root = createRoot(container!);
+const container = document.getElementById("root")
+const root = createRoot(container!)
 root.render(
     <StrictMode>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
