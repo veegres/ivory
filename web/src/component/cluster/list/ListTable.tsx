@@ -10,15 +10,16 @@ import {AddIconButton} from "../../view/button/IconButtons";
 import {ClusterMap} from "../../../type/cluster";
 import {SxPropsMap} from "../../../type/common";
 import scroll from "../../../style/scroll.module.css"
-import {useAppearance} from "../../../provider/AppearanceProvider";
 import {ListCreateAuto} from "./ListCreateAuto";
 import {useStore} from "../../../provider/StoreProvider";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
-    table: {"tr:last-child td": {border: 0}, bgcolor: "inherit"},
+    table: {"tr:last-child td": {border: 0}},
     nameCell: {width: "220px"},
     buttonCell: {width: "130px"},
+    bg: {backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))"}
 }
 
 type Props = {
@@ -30,7 +31,6 @@ type Props = {
 
 export function ListTable(props: Props) {
     const {activeCluster} = useStore()
-    const {theme} = useAppearance()
     const {map, error, isFetching, isLoading} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
@@ -38,17 +38,15 @@ export function ListTable(props: Props) {
     const rows = useMemo(() => Object.entries(map ?? {}), [map])
 
     if (error) return <ErrorSmart error={error}/>
-    const header = {light: "#fff", dark: "#282828"}
-    const bgcolor = header[theme] ?? "inherit"
 
     return (
         <Box sx={SX.box} className={scroll.tiny} maxHeight={activeCluster ? "25vh" : "60vh"}>
             <Table size={"small"} sx={SX.table} stickyHeader>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={{bgcolor, ...SX.nameCell}}>Cluster Name</TableCell>
-                        <TableCell sx={{bgcolor}}>Instances</TableCell>
-                        <TableCellLoader sx={{bgcolor, ...SX.buttonCell}} isFetching={isFetching && !isLoading}>
+                        <TableCell sx={SxPropsFormatter.merge(SX.bg, SX.nameCell)}>Cluster Name</TableCell>
+                        <TableCell sx={SX.bg}>Instances</TableCell>
+                        <TableCellLoader sx={SxPropsFormatter.merge(SX.bg, SX.buttonCell)} isFetching={isFetching && !isLoading}>
                             <ListCreateAuto />
                             <AddIconButton onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>

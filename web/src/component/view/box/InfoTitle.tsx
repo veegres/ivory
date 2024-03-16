@@ -17,7 +17,7 @@ export function InfoTitle(props: Props) {
     return (
         <Box sx={SX.box}>
             {items.map(({label, title, bgColor}, index) => (
-                <InfoColorBox key={index} label={label} title={title} bgColor={bgColor}/>
+                <InfoColorBox key={index} label={label} title={title} bgColor={bgColor} opacity={0.9}/>
             ))}
         </Box>
     )

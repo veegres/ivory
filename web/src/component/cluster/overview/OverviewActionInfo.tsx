@@ -39,12 +39,12 @@ export function OverviewActionInfo(props: Props) {
     return (
         <Box sx={SX.box}>
             <InfoIcons items={warningItems}/>
-            <InfoIcons items={infoItems}/>
             <InfoBox tooltip={<InfoTitle items={roleTooltip}/>} withPadding>
                 <Box sx={{color: InstanceColor[defaultInstance.role]}}>
                     {defaultInstance.role.toUpperCase()}
                 </Box>
             </InfoBox>
+            <InfoIcons items={infoItems}/>
         </Box>
     )
 }

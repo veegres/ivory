@@ -19,7 +19,7 @@ export function InfoColorBox(props: Props) {
     const {title, label, bgColor, color, opacity} = props
     return (
         <Tooltip title={title} placement={"top"} disableInteractive={!!title}>
-            <Box sx={{...SX.label, opacity}} bgcolor={bgColor ?? "grey"} color={color ?? grey[50]}>
+            <Box sx={{...SX.label, opacity}} bgcolor={bgColor ?? grey[800]} color={color ?? grey[50]}>
                 {label}
             </Box>
         </Tooltip>
