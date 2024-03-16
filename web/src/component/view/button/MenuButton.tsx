@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../../type/common";
 const SX: SxPropsMap = {
     box: {position: "relative"},
     collapse: {position: "absolute", top: "50%", transform: "translate(calc(-100% + -2px), -50%)"},
-    paper: {display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px"},
+    paper: {display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px", boxShadow: "none", border: 1, borderColor: "divider"},
 }
 
 type Props = {
@@ -22,7 +22,7 @@ export function MenuButton(props: Props) {
     return (
         <Box sx={SX.box}>
             <Collapse sx={SX.collapse} in={open} orientation={"horizontal"}>
-                <Paper sx={SX.paper} variant={"outlined"}>
+                <Paper sx={SX.paper}>
                     {children}
                 </Paper>
             </Collapse>
