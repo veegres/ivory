@@ -38,7 +38,7 @@ export function QueryItemWrapper(props: Props) {
     const {children, renderButtons, renderTitle} = props
 
     const [checkView, setCheckView] = useState(initialViewCheckMap)
-    const [paramsValues, setParamsValues] = useState<string[]>([])
+    const [paramsValues, setParamsValues] = useState<string[]>(params?.map(() => "") ?? [])
     const queryRunRequest = useMemo( () => ({queryUuid, query, credentialId, db, queryParams: paramsValues}), [credentialId, db, paramsValues, query, queryUuid])
 
     return (
@@ -60,8 +60,8 @@ export function QueryItemWrapper(props: Props) {
                 </Alert>
             </QueryBody>
             {children}
-            <QueryBody show={checkView[ViewCheckType.PARAMS]}>
-                <FixedInputs placeholders={params ?? []} onChange={setParamsValues}/>
+            <QueryBody show={checkView[ViewCheckType.PARAMS]} unmountOnExit={false}>
+                <FixedInputs placeholders={params ?? []} values={paramsValues} onChange={setParamsValues}/>
             </QueryBody>
             <QueryBody show={checkView[ViewCheckType.RUN]}>
                 <QueryBodyRun request={queryRunRequest} varieties={varieties}/>
@@ -98,10 +98,8 @@ export function QueryItemWrapper(props: Props) {
     }
 
     function renderQueryParamsButton() {
-        const isNoParams = !params || params.length == 0
-
         return !checkView[ViewCheckType.PARAMS] ? (
-            <QueryParamsIconButton color={"secondary"} disabled={isNoParams} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
+            <QueryParamsIconButton color={"secondary"} disabled={!params || params.length == 0} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
         ) : (
             <CancelIconButton color={"secondary"} tooltip={"Close Query Params"} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
         )

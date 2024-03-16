@@ -9,7 +9,7 @@ const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     paper: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px"},
     varieties: {display: "grid", gridAutoColumns: "minmax(0, 1fr)", gridAutoFlow: "column", gap: 2},
-    params: {display: "flex", gap: 1},
+    params: {display: "flex", gap: 1, flexWrap: "wrap"},
     no: {display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "text.secondary"},
 }
 

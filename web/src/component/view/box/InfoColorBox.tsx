@@ -4,7 +4,7 @@ import {grey} from "@mui/material/colors";
 import {ReactNode} from "react";
 
 const SX: SxPropsMap = {
-    label: {borderRadius: 1, padding: "0 10px", textAlign: "center", cursor: "pointer", lineHeight: "1.55", textWrap: "nowrap"},
+    label: {display: "flex", alignItems: "center", borderRadius: 1, padding: "2px 10px 0", cursor: "pointer", minHeight: "15px", textWrap: "nowrap"},
 }
 
 type Props = {
