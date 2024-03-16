@@ -21,7 +21,7 @@ export function Instance() {
     )
 
     function renderContent() {
-        if (!activeInstance) return <InfoAlert text={"Please, select a instance to see the information!"}/>
+        if (!activeInstance) return <InfoAlert text={"Please, select an instance to see the information!"}/>
 
         return (
             <Box sx={SX.content}>

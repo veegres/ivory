@@ -21,7 +21,7 @@ export function QueryBoxWrapper(props: Props) {
     const {children, editable, sx} = props
     const [focus, setFocus] = useState(false)
 
-    const editSx = !editable ? {} : !focus ? SxPropsFormatter.merge(SX.edit, SX.hover) : SxPropsFormatter.merge(SX.edit, SX.focus)
+    const editSx = !editable ? [] : !focus ? [SX.edit, SX.hover] : [SX.edit, SX.focus]
     const commonSx = SxPropsFormatter.merge(SX.box, editSx)
     return (
         <Box sx={SxPropsFormatter.merge(commonSx, sx)} onFocus={() => setFocus(true)} onBlur={() => setFocus(false)}>

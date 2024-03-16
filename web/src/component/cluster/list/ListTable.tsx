@@ -19,7 +19,6 @@ const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
     nameCell: {width: "220px"},
     buttonCell: {width: "130px"},
-    bg: {backgroundImage: SxPropsFormatter.style.pepper.backgroundImage}
 }
 
 type Props = {
@@ -44,9 +43,9 @@ export function ListTable(props: Props) {
             <Table size={"small"} sx={SX.table} stickyHeader>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={SxPropsFormatter.merge(SX.bg, SX.nameCell)}>Cluster Name</TableCell>
-                        <TableCell sx={SX.bg}>Instances</TableCell>
-                        <TableCellLoader sx={SxPropsFormatter.merge(SX.bg, SX.buttonCell)} isFetching={isFetching && !isLoading}>
+                        <TableCell sx={[SxPropsFormatter.style.paper, SX.nameCell]}>Cluster Name</TableCell>
+                        <TableCell sx={SxPropsFormatter.style.paper}>Instances</TableCell>
+                        <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={isFetching && !isLoading}>
                             <ListCreateAuto />
                             <AddIconButton onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>

@@ -1,10 +1,9 @@
 import {Box, ListItem} from "@mui/material";
-import {useAppearance} from "../../../provider/AppearanceProvider";
 import {ReactNode} from "react";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
-    description: {fontSize: "10px"},
+    description: {fontSize: "10px", color: "text.secondary"},
     list: {display: "flex", justifyContent: "space-between", gap: 1, padding: "5px 16px"},
     body: {display: "flex", flexDirection: "column", margin: "7px 0px"},
 }
@@ -17,14 +16,12 @@ type Props = {
 
 export function MenuItemText(props: Props) {
     const {title, description, button} = props
-    const { info } = useAppearance()
-    const color = info?.palette.text.secondary
 
     return (
         <ListItem sx={SX.list}>
             <Box sx={SX.body}>
                 <Box>{title}</Box>
-                <Box sx={{...SX.description, color}}>{description}</Box>
+                <Box sx={SX.description}>{description}</Box>
             </Box>
             {button}
         </ListItem>

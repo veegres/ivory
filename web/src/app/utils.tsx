@@ -15,7 +15,7 @@ import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
 import {PasswordType} from "../type/password";
-import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar} from "../type/common";
+import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar, SxPropsMap} from "../type/common";
 import {CertType} from "../type/cert";
 import {InstanceMap, InstanceWeb, Role} from "../type/instance";
 import {JobStatus} from "../type/job";
@@ -206,8 +206,10 @@ export const SxPropsFormatter = {
      */
     merge: (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => [...(Array.isArray(sx1) ? sx1 : [sx1]), ...(Array.isArray(sx2) ? sx2 : [sx2])],
     style: {
-        pepper: {backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))"}
-    }
+        paper: {backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))"},
+        bgImageError: (theme) => ({backgroundImage: `linear-gradient(${theme.palette.error.dark}12, ${theme.palette.error.dark}12)`}),
+        bgImageSelected: (theme) => ({backgroundImage: `linear-gradient(${theme.palette.action.hover}, ${theme.palette.action.hover})`}),
+    } as SxPropsMap
 }
 
 export const DateTimeFormatter = {

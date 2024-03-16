@@ -1,6 +1,7 @@
 import {CSSProperties, ReactElement} from "react";
-import {SxProps, Theme} from "@mui/material";
+import {Theme} from "@mui/material";
 import {SecretStatus} from "./secret";
+import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx";
 
 // COMMON (WEB AND SERVER)
 
@@ -83,7 +84,8 @@ export interface StylePropsMap {
 }
 
 export interface SxPropsMap {
-    [key: string]: SxProps<Theme>,
+    // NOTE: we don't need usage of array here that is why it is not use SxProps<Theme> interface
+    [key: string]: SystemStyleObject<Theme> | ((theme: Theme) => SystemStyleObject<Theme>),
 }
 
 

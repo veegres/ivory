@@ -1,5 +1,5 @@
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material";
-import {DateTimeFormatter, InstanceColor, SizeFormatter} from "../../../app/utils";
+import {DateTimeFormatter, InstanceColor, SizeFormatter, SxPropsFormatter} from "../../../app/utils";
 import {Sidecar, SxPropsMap} from "../../../type/common";
 import {InstanceRequest, InstanceWeb} from "../../../type/instance";
 import {WarningAmberRounded} from "@mui/icons-material";
@@ -46,7 +46,7 @@ export function OverviewInstancesRow(props: Props) {
     useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])
 
     return (
-        <TableRow sx={SX.row} onClick={handleCheck(instance, checked)}>
+        <TableRow sx={[SX.row, checked && SxPropsFormatter.style.bgImageSelected]} onClick={handleCheck(instance, checked)}>
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
             <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
