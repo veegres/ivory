@@ -5,14 +5,14 @@ import {DynamicInputs} from "../../view/input/DynamicInputs";
 import {ListCellRead} from "./ListCellRead";
 import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";
-import {getDomains, getSidecars} from "../../../app/utils";
+import {getDomains, getSidecars, SxPropsFormatter} from "../../../app/utils";
 import {ListCellChip} from "./ListCellChip";
 import {useInstanceDetection} from "../../../hook/InstanceDetection";
-import {WarningAmberRounded} from "@mui/icons-material";
+import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
-    actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1},
+    actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, minHeight: "32px"},
     warning: {padding: "3px 0"},
     removed: {color: "text.secondary", fontSize: "12px", textAlign: "center", marginTop: "5px"},
 }
@@ -35,7 +35,7 @@ export function ListRow(props: Props) {
     useEffect(handleEffectInstancesUpdate, [instances])
 
     return (
-        <TableRow ref={ref}>
+        <TableRow sx={[instanceDetection.active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]} ref={ref}>
             <ListCell>
                 <ListCellChip cluster={cluster} instanceDetection={instanceDetection}/>
             </ListCell>
@@ -47,17 +47,17 @@ export function ListRow(props: Props) {
                     placeholder={`Instance `}
                     onChange={n => setStateNodes(n)}
                 />
-                {!toggle && (
-                    <Box sx={SX.removed}>
-                        This cluster is not on that list, but it is still is checked, just uncheck it.
-                    </Box>
-                )}
             </ListCell>
             <ListCell>
                 <Box sx={SX.actions}>
                     {instanceDetection.warning && (
                         <Tooltip title={"Problems were detected, select the cluster to see it"} placement={"top"}>
                             <WarningAmberRounded color={"warning"}/>
+                        </Tooltip>
+                    )}
+                    {!toggle && (
+                        <Tooltip title={"This cluster is not in this list. It is selected that is why you see it, just uncheck it"} placement={"top"}>
+                            <ErrorOutlineRounded color={"error"}/>
                         </Tooltip>
                     )}
                     {renderButtons()}
