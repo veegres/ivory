@@ -19,7 +19,7 @@ const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}},
     nameCell: {width: "220px"},
     buttonCell: {width: "130px"},
-    bg: {backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))"}
+    bg: {backgroundImage: SxPropsFormatter.style.pepper.backgroundImage}
 }
 
 type Props = {
