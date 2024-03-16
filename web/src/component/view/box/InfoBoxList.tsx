@@ -2,7 +2,7 @@ import {cloneElement, ReactElement} from "react";
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {InfoBox} from "./InfoBox";
-import {InfoTitle} from "./InfoTitle";
+import {InfoColorBoxList} from "./InfoColorBoxList";
 import {green, grey} from "@mui/material/colors";
 
 const SX: SxPropsMap = {
@@ -19,7 +19,7 @@ type Props = {
     items: Item[]
 }
 
-export function InfoIcons(props: Props) {
+export function InfoBoxList(props: Props) {
     const {items} = props
     const titleItems = items.map(item => ({
         label: item.label,
@@ -27,7 +27,7 @@ export function InfoIcons(props: Props) {
     }))
 
     return (
-        <InfoBox tooltip={<InfoTitle items={titleItems}/>}>
+        <InfoBox tooltip={<InfoColorBoxList items={titleItems}/>}>
             {items.map((item, index) => {
                 const defaultColor = item.iconColor ?? "default"
                 const color = item.active ? defaultColor : "text.disabled"

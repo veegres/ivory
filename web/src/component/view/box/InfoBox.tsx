@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../type/common";
 const SX: SxPropsMap = {
     box: {
         display: "flex", justifyContent: "center", alignItems: "center", height: "32px",
-        fontSize: "0.8125rem", cursor: "pointer", minWidth: "30px",
+        fontSize: "0.8125rem", cursor: "pointer", minWidth: "30px", border: 1, borderColor: "divider"
     },
     tooltip: {
         [`& .${tooltipClasses.tooltip}`]: {
@@ -28,7 +28,7 @@ export function InfoBox(props: Props) {
 
     return (
         <Tooltip PopperProps={{sx: SX.tooltip}} title={tooltip} placement={"top"} arrow>
-            <Box sx={{...SX.box, padding, borderRadius, border: 1, borderColor: "divider"}}>
+            <Box sx={{...SX.box, padding, borderRadius}}>
                 {children}
             </Box>
         </Tooltip>

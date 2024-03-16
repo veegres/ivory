@@ -32,7 +32,7 @@ export const IvoryLinks: Links = {
 }
 
 export const InstanceColor: { [key in Role]: string } = {
-    leader: green[500],
+    leader: green[600],
     replica: blue[500],
     unknown: orange[500],
 }
@@ -47,8 +47,8 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
 }
 
 export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
-    [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", color: blue[300], icon: <Storage/>, key: "postgresId"},
-    [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", color: green[300], icon: <HeartBroken/>, key: "patroniId"}
+    [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", icon: <Storage/>, key: "postgresId"},
+    [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", icon: <HeartBroken/>, key: "patroniId"}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {

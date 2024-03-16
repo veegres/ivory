@@ -16,7 +16,7 @@ export function QueryBody(props: Props) {
     const {show, children, unmountOnExit = true} = props
 
     return (
-        <Collapse in={show} unmountOnExit={unmountOnExit}>
+        <Collapse in={show} unmountOnExit={unmountOnExit} timeout={100}>
             <Divider/>
             <Box sx={SX.body}>
                 {children}

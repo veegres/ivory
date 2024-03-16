@@ -11,7 +11,7 @@ type Props = {
     items: Item[],
 }
 
-export function InfoTitle(props: Props) {
+export function InfoColorBoxList(props: Props) {
     const {items} = props
 
     return (
