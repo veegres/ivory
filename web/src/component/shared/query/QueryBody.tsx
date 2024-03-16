@@ -1,4 +1,4 @@
-import {Box, Divider} from "@mui/material";
+import {Box, Collapse, Divider} from "@mui/material";
 import {ReactNode} from "react";
 import {SxPropsMap} from "../../../type/common";
 
@@ -9,18 +9,18 @@ const SX: SxPropsMap = {
 type Props = {
     children: ReactNode,
     show: boolean,
+    unmountOnExit?: boolean,
 }
 
 export function QueryBody(props: Props) {
-    const {show, children} = props
-    if (!show) return null
+    const {show, children, unmountOnExit = true} = props
 
     return (
-        <Box>
+        <Collapse in={show} unmountOnExit={unmountOnExit}>
             <Divider/>
             <Box sx={SX.body}>
                 {children}
             </Box>
-        </Box>
+        </Collapse>
     )
 }

@@ -1,6 +1,6 @@
 import {Box, FormControl, OutlinedInput} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 
 const SX: SxPropsMap = {
     input: {height: '32px'},
@@ -9,20 +9,19 @@ const SX: SxPropsMap = {
 
 type Props = {
     placeholders: string[],
+    values: string[],
     onChange: (values: string[]) => void,
 }
 
 export function FixedInputs(props: Props) {
-    const {placeholders, onChange} = props
-    const [inputs, setInputs] = useState(placeholders.map(() => ""))
+    const {placeholders, values, onChange} = props
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(handleEffectPlaceholders, [JSON.stringify(placeholders)]);
-    useEffect(handleEffectInputs, [inputs, onChange]);
 
     return (
         <Box sx={SX.box}>
-            {inputs.map((input, index) => (
+            {values.map((input, index) => (
                 <FormControl key={index}>
                     <OutlinedInput
                         sx={SX.input}
@@ -38,16 +37,12 @@ export function FixedInputs(props: Props) {
     )
 
     function handleEffectPlaceholders() {
-        setInputs(placeholders.map(() => ""))
-    }
-
-    function handleEffectInputs() {
-        onChange(inputs)
+        onChange(placeholders.map(() => ""))
     }
 
     function handleChange(index: number, value: string) {
-        const tmp= [...inputs]
+        const tmp= [...values]
         tmp[index] = value
-        setInputs(tmp)
+        onChange(tmp)
     }
 }
