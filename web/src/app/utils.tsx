@@ -1,4 +1,4 @@
-import {blue, green, indigo, orange, purple, red} from "@mui/material/colors";
+import {blue, green, indigo, orange, red} from "@mui/material/colors";
 import {
     FilePresentOutlined,
     HeartBroken,
@@ -38,12 +38,12 @@ export const InstanceColor: { [key in Role]: string } = {
 }
 
 export const JobOptions: { [key in JobStatus]: { name: string, color: string, active: boolean } } = {
-    [JobStatus.PENDING]: {name: "PENDING", color: "#a9a9a9", active: true},
-    [JobStatus.UNKNOWN]: {name: "UNKNOWN", color: "#5b3b00", active: false},
+    [JobStatus.PENDING]: {name: "PENDING", color: "rgb(169,169,169)", active: true},
+    [JobStatus.UNKNOWN]: {name: "UNKNOWN", color: "rgb(91,59,0)", active: false},
     [JobStatus.RUNNING]: {name: "RUNNING", color: "rgba(255,166,0,0.9)", active: true},
     [JobStatus.FINISHED]: {name: "FINISHED", color: "rgba(0,185,25,0.9)", active: false},
     [JobStatus.FAILED]: {name: "FAILED", color: "rgba(210,0,0,0.9)", active: false},
-    [JobStatus.STOPPED]: {name: "STOPPED", color: "#b9b9b9", active: false},
+    [JobStatus.STOPPED]: {name: "STOPPED", color: "rgb(185,185,185)", active: false},
 }
 
 export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
@@ -52,9 +52,9 @@ export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {
-    [CertType.CLIENT_CA]: {name: "CLIENT_CA", label: "Client CA", color: purple[300], icon: <Shield/>, badge: "CA", key: "clientCAId"},
-    [CertType.CLIENT_CERT]: {name: "CLIENT_CERT", label: "Client Cert", color: purple[300], icon: <Shield/>, badge: "C", key: "clientCertId"},
-    [CertType.CLIENT_KEY]: {name: "CLIENT_KEY", label: "Client Key", color: purple[300], icon: <Shield/>, badge: "K", key: "clientKeyId"}
+    [CertType.CLIENT_CA]: {name: "CLIENT_CA", label: "Client CA", icon: <Shield/>, badge: "CA", key: "clientCAId"},
+    [CertType.CLIENT_CERT]: {name: "CLIENT_CERT", label: "Client Cert", icon: <Shield/>, badge: "C", key: "clientCertId"},
+    [CertType.CLIENT_KEY]: {name: "CLIENT_KEY", label: "Client Key", icon: <Shield/>, badge: "K", key: "clientKeyId"}
 }
 
 export const FileUsageOptions: { [key in FileUsageType]: EnumOptions } = {

@@ -13,7 +13,7 @@ import {RestartButton} from "../../shared/actions/RestartButton";
 import {ReloadButton} from "../../shared/actions/ReloadButton";
 import {ReinitButton} from "../../shared/actions/ReinitButton";
 import {InfoColorBox} from "../../view/box/InfoColorBox";
-import {green, pink, red} from "@mui/material/colors";
+import {green, grey, pink, red} from "@mui/material/colors";
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
@@ -67,8 +67,8 @@ export function OverviewInstancesRow(props: Props) {
         if (role === "unknown") return null
         return (
             <Box sx={SX.data}>
-                <InfoColorBox label={"Restart"} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} bgColor={pendingRestart ? green[600] : "grey"} opacity={0.9}/>
-                {role === "replica" && <InfoColorBox label={"Lag"} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} bgColor={lag > 100 ? red[500] : "grey"} opacity={0.9}/>}
+                <InfoColorBox label={"Restart"} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} bgColor={pendingRestart ? green[600] : grey[600]} opacity={0.9}/>
+                {role === "replica" && <InfoColorBox label={"Lag"} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} bgColor={lag > 100 ? red[500] : grey[600]} opacity={0.9}/>}
                 {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} bgColor={pink[900]} opacity={0.9}/>}
                 {scheduledSwitchover && <InfoColorBox label={"Scheduled Switchover"} title={renderScheduledSwitchoverTitle()} bgColor={pink[900]} opacity={0.9}/>}
             </Box>
@@ -93,7 +93,7 @@ export function OverviewInstancesRow(props: Props) {
         if (scheduledRestart === undefined) return null
         return (
             <Box>
-                {renderSimpleTitle("restart", String(scheduledRestart.pendingRestart))}
+                {renderSimpleTitle("pending restart", String(scheduledRestart.pendingRestart))}
                 {renderSimpleTitle("at", DateTimeFormatter.utc(scheduledRestart.at))}
             </Box>
         )
