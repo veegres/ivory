@@ -5,7 +5,7 @@ import {Database, SxPropsMap} from "../../../type/common";
 import {InstanceTab, InstanceTabType} from "../../../type/instance";
 import {Chart} from "../../shared/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";
-import {queryApi} from "../../../app/api";
+import {QueryApi} from "../../../app/api";
 import {AutocompleteFetch} from "../../view/autocomplete/AutocompleteFetch";
 import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {getDomain} from "../../../app/utils";
@@ -73,7 +73,7 @@ export function InstanceMain(props: Props) {
                 <AutocompleteFetch
                     value={dbName}
                     keys={["query", "databases", getDomain(database), database.name ?? "postgres", postgresId]}
-                    onFetch={(v) => queryApi.databases({credentialId: postgresId, db: database, name: v})}
+                    onFetch={(v) => QueryApi.databases({credentialId: postgresId, db: database, name: v})}
                     placeholder={"Database"}
                     variant={"outlined"}
                     padding={"3px"}

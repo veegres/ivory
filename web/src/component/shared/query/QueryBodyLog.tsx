@@ -3,7 +3,7 @@ import {SxPropsMap} from "../../../type/common";
 import {QueryBodyLogItem} from "./QueryBodyLogItem";
 import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons";
 import {useMutation, useQuery} from "@tanstack/react-query";
-import {queryApi} from "../../../app/api";
+import {QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 
@@ -27,12 +27,12 @@ export function QueryBodyLog(props: Props) {
 
     const result = useQuery({
         queryKey: ["query", "log", queryId],
-        queryFn: () => queryApi.getLog(queryId),
+        queryFn: () => QueryApi.getLog(queryId),
         enabled: true, retry: false, refetchOnWindowFocus: false,
     })
 
     const clearOptions = useMutationOptions([["query", "log", queryId]])
-    const clear = useMutation({mutationFn: () => queryApi.deleteLog(queryId), ...clearOptions})
+    const clear = useMutation({mutationFn: () => QueryApi.deleteLog(queryId), ...clearOptions})
 
     return (
         <Box sx={SX.box}>

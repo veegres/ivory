@@ -5,7 +5,7 @@ import {useState} from "react";
 import {Sidecar} from "../../../type/common";
 import {InstanceRequest} from "../../../type/instance";
 import {useMutation} from "@tanstack/react-query";
-import {instanceApi} from "../../../app/api";
+import {InstanceApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {DateTimeFormatter} from "../../../app/utils";
 
@@ -22,7 +22,7 @@ export function SwitchoverButton(props: Props) {
     const [schedule, setSchedule] = useState<string>()
 
     const options = useMutationOptions([["instance/overview", cluster]])
-    const switchover = useMutation({mutationFn: instanceApi.switchover, ...options})
+    const switchover = useMutation({mutationFn: InstanceApi.switchover, ...options})
 
     const body = {leader: request.sidecar.host, candidate, scheduled_at: schedule}
 

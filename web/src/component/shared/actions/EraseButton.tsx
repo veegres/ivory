@@ -1,7 +1,7 @@
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {useStoreAction} from "../../../provider/StoreProvider";
-import {initialApi, safeApi} from "../../../app/api";
+import {InitialApi, SafeApi} from "../../../app/api";
 import {AlertButton} from "../../view/button/AlertButton";
 
 type Props = {
@@ -12,8 +12,8 @@ export function EraseButton(props: Props) {
     const {clear} = useStoreAction()
 
     const cleanOptions = useMutationOptions([["info"]], clear)
-    const cleanInitial = useMutation({mutationFn: initialApi.erase, ...cleanOptions})
-    const cleanSafe = useMutation({mutationFn: safeApi.erase, ...cleanOptions})
+    const cleanInitial = useMutation({mutationFn: InitialApi.erase, ...cleanOptions})
+    const cleanSafe = useMutation({mutationFn: SafeApi.erase, ...cleanOptions})
 
     return (
         <AlertButton

@@ -3,7 +3,7 @@ import {cloneElement, ReactElement, useState} from "react";
 import {OpenIcon} from "../../view/icon/OpenIcon";
 import {Clear, Stop} from "@mui/icons-material";
 import {useMutation} from "@tanstack/react-query";
-import {bloatApi} from "../../../app/api";
+import {BloatApi} from "../../../app/api";
 import {shortUuid} from "../../../app/utils";
 import {LinearProgressStateful} from "../../view/progress/LinearProgressStateful";
 import scroll from "../../../style/scroll.module.css"
@@ -37,9 +37,9 @@ export function OverviewBloatJobItem({compactTable}: Props) {
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
     const deleteOptions = useMutationOptions([["instance/bloat/list"]])
-    const deleteJob = useMutation({mutationFn: bloatApi.delete, ...deleteOptions})
+    const deleteJob = useMutation({mutationFn: BloatApi.delete, ...deleteOptions})
     const stopOptions = useMutationOptions()
-    const stopJob = useMutation({mutationFn: bloatApi.stop, ...stopOptions})
+    const stopJob = useMutation({mutationFn: BloatApi.stop, ...stopOptions})
 
     return (
         <Paper sx={SX.paper} variant={"outlined"}>

@@ -1,6 +1,6 @@
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {queryApi} from "../../../app/api";
+import {QueryApi} from "../../../app/api";
 import {SaveIconButton} from "../../view/button/IconButtons";
 import {QueryRequest} from "../../../type/query";
 
@@ -15,7 +15,7 @@ export function QueryButtonUpdate(props: Props) {
     const {query, name, type} = props.query
 
     const updateOptions = useMutationOptions([["query", "map", type]], onSuccess)
-    const update = useMutation({mutationFn: queryApi.update, ...updateOptions})
+    const update = useMutation({mutationFn: QueryApi.update, ...updateOptions})
 
     return (
         <SaveIconButton

@@ -1,5 +1,5 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {instanceApi} from "../app/api";
+import {InstanceApi} from "../app/api";
 import {useEffect, useMemo, useRef} from "react";
 import {combineInstances, createInstanceColors, getDomain, initialInstance, isSidecarEqual} from "../app/utils";
 import {useStore, useStoreAction} from "../provider/StoreProvider";
@@ -20,7 +20,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const queryClient = useQueryClient();
     const query = useQuery({
         queryKey: ["instance/overview", cluster.name],
-        queryFn: () => instanceApi.overview({
+        queryFn: () => InstanceApi.overview({
             sidecar: defaultSidecar.current,
             credentialId: cluster.credentials.patroniId,
             certs: cluster.certs

@@ -7,7 +7,7 @@ import {useState} from "react";
 import {AuthConfig, AuthType} from "../../../type/common";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {generalApi} from "../../../app/api";
+import {GeneralApi} from "../../../app/api";
 
 export function Config() {
     const [company, setCompany] = useState("")
@@ -15,7 +15,7 @@ export function Config() {
     const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE, body: undefined})
 
     const configOptions = useMutationOptions([["info"]])
-    const config = useMutation({mutationFn: generalApi.setConfig, ...configOptions})
+    const config = useMutation({mutationFn: GeneralApi.setConfig, ...configOptions})
 
     return (
         <PageStartupBox header={"Configuration"} renderFooter={renderFooter()}>

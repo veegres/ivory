@@ -1,7 +1,7 @@
 import {CredentialOptions, shortUuid} from "../../../app/utils";
 import {useMemo} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {passwordApi} from "../../../app/api";
+import {PasswordApi} from "../../../app/api";
 import {AutocompleteUuid, Option} from "../../view/autocomplete/AutocompleteUuid";
 import {PasswordType} from "../../../type/password";
 
@@ -16,7 +16,7 @@ export function OptionsPassword(props: Props) {
     const passId = selected ?? ""
     const {label} = CredentialOptions[type]
 
-    const query = useQuery({queryKey: ["credentials", type], queryFn: () => passwordApi.list(type)})
+    const query = useQuery({queryKey: ["credentials", type], queryFn: () => PasswordApi.list(type)})
     const options = useMemo(handleMemoOptions, [query.data])
 
     return (

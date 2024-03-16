@@ -2,7 +2,7 @@ import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../type/instance";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {instanceApi} from "../../../app/api";
+import {InstanceApi} from "../../../app/api";
 
 type Props = {
     request: InstanceRequest,
@@ -14,7 +14,7 @@ export function FailoverButton(props: Props) {
     const {request, cluster, disabled} = props
 
     const options = useMutationOptions([["instance/overview", cluster]])
-    const failover = useMutation({mutationFn: instanceApi.failover, ...options})
+    const failover = useMutation({mutationFn: InstanceApi.failover, ...options})
 
     const body = {candidate: request.sidecar.host}
 

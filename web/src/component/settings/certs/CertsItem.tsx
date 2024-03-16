@@ -2,7 +2,7 @@ import {Box, Tooltip} from "@mui/material";
 import {useAppearance} from "../../../provider/AppearanceProvider";
 import {DeleteIconButton} from "../../view/button/IconButtons";
 import {useMutation} from "@tanstack/react-query";
-import {certApi} from "../../../app/api";
+import {CertApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {FileUsageOptions} from "../../../app/utils";
 import {StylePropsMap, SxPropsMap} from "../../../type/common";
@@ -30,7 +30,7 @@ export function CertsItem(props: Props) {
     const { info } = useAppearance()
 
     const deleteOptions = useMutationOptions([["certs"]])
-    const deleteCert = useMutation({mutationFn: certApi.delete, ...deleteOptions})
+    const deleteCert = useMutation({mutationFn: CertApi.delete, ...deleteOptions})
 
     const fileUsage = FileUsageOptions[cert.fileUsageType]
 

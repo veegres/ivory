@@ -7,7 +7,7 @@ import {InfoAlert} from "../../view/box/InfoAlert";
 import {ClusterAuto} from "../../../type/cluster";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {clusterApi} from "../../../app/api";
+import {ClusterApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
 
 const SX: SxPropsMap = {
@@ -26,7 +26,7 @@ export function ListCreateAuto() {
     const [open, setOpen] = useState(false)
 
     const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]], handleSuccessUpdate)
-    const updateCluster = useMutation({mutationFn: clusterApi.createAuto, ...updateMutationOptions})
+    const updateCluster = useMutation({mutationFn: ClusterApi.createAuto, ...updateMutationOptions})
 
     return (
         <>

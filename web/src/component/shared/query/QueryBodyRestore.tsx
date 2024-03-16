@@ -5,7 +5,7 @@ import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {KeyboardDoubleArrowRight} from "@mui/icons-material";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
-import {queryApi} from "../../../app/api";
+import {QueryApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
 import {Query} from "../../../type/query";
 
@@ -24,7 +24,7 @@ export function QueryBodyRestore(props: Props) {
     const {query, onSuccess} = props
 
     const updateOptions = useMutationOptions([["query", "map", query.type]], onSuccess)
-    const update = useMutation({mutationFn: queryApi.update, ...updateOptions})
+    const update = useMutation({mutationFn: QueryApi.update, ...updateOptions})
 
     return (
         <Box sx={SX.box}>
