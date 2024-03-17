@@ -1,4 +1,4 @@
-import {Box, ListItem} from "@mui/material";
+import {Box, ListItem as MuiListItem} from "@mui/material";
 import {ReactNode} from "react";
 import {SxPropsMap} from "../../../type/common";
 
@@ -14,16 +14,16 @@ type Props = {
     button?: ReactNode,
 }
 
-export function MenuItemText(props: Props) {
+export function ListItem(props: Props) {
     const {title, description, button} = props
 
     return (
-        <ListItem sx={SX.list}>
+        <MuiListItem sx={SX.list}>
             <Box sx={SX.body}>
                 <Box>{title}</Box>
                 <Box sx={SX.description}>{description}</Box>
             </Box>
             {button}
-        </ListItem>
+        </MuiListItem>
     )
 }

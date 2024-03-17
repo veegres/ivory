@@ -14,6 +14,7 @@ import {ReloadButton} from "../../shared/actions/ReloadButton";
 import {ReinitButton} from "../../shared/actions/ReinitButton";
 import {InfoColorBox} from "../../view/box/InfoColorBox";
 import {green, grey, pink, red} from "@mui/material/colors";
+import {ScheduleButton} from "../../shared/actions/ScheduleButton";
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
@@ -103,6 +104,7 @@ export function OverviewInstancesRow(props: Props) {
         if (role === "unknown") return null
         return (
             <MenuButton size={"small"}>
+                <ScheduleButton request={request} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
                 <FailoverButton request={request} cluster={cluster.name} disabled={instance.leader}/>
                 <RestartButton request={request} cluster={cluster.name}/>
                 <ReloadButton request={request} cluster={cluster.name}/>

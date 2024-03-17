@@ -1,7 +1,7 @@
-import {SettingOptions} from "../../../app/utils";
 import {ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import {NavigateNext} from "@mui/icons-material";
-import {Settings, SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/common";
+import {ReactElement} from "react";
 
 const SX: SxPropsMap = {
     button: {borderRadius: "2px", padding: "12px 16px"},
@@ -9,16 +9,16 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    item: Settings,
-    onUpdate: (item: Settings) => void,
+    label: string,
+    icon: ReactElement,
+    onClick: () => void,
 }
 
-export function MenuItemButton(props: Props) {
-    const { item, onUpdate } = props
-    const {icon, label} = SettingOptions[item]
+export function ListButton(props: Props) {
+    const {label, icon, onClick} = props
     return (
         <ListItem disablePadding>
-            <ListItemButton sx={SX.button} onClick={() => onUpdate(item)}>
+            <ListItemButton sx={SX.button} onClick={onClick}>
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText sx={SX.label}>{label}</ListItemText>
                 <NavigateNext/>

@@ -29,7 +29,7 @@ export function ReinitButton(props: Props) {
 
     return (
         <AlertButton
-            color={"primary"}
+            color={"info"}
             label={"Reinit"}
             title={`Make a reinit of ${request.sidecar.host}?`}
             description={"It will erase all node data and will download it from scratch."}
