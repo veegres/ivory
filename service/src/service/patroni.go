@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	. "ivory/src/model"
 	"net/http"
 	"strconv"
@@ -21,6 +22,13 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 	response, status, err := NewSidecarRequest[PatroniCluster](p.client).Get(instance, "/cluster")
 	if err != nil {
 		return overview, status, err
+	}
+
+	var sidecarStatus SidecarStatus
+	if response.Pause == false {
+		sidecarStatus = Active
+	} else {
+		sidecarStatus = Paused
 	}
 
 	for _, patroniInstance := range response.Members {
@@ -66,7 +74,7 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 			Lag:                 lag,
 			PendingRestart:      patroniInstance.PendingRestart,
 			Database:            Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-			Sidecar:             Sidecar{Host: host, Port: port},
+			Sidecar:             Sidecar{Host: host, Port: port, Status: &sidecarStatus},
 			ScheduledRestart:    scheduledRestart,
 			ScheduledSwitchover: scheduledSwitchover,
 		})
@@ -109,4 +117,20 @@ func (p *patroniInstanceService) Reload(instance InstanceRequest) (*string, int,
 
 func (p *patroniInstanceService) Failover(instance InstanceRequest) (*string, int, error) {
 	return NewSidecarRequest[string](p.client).Post(instance, "/failover")
+}
+
+func (p *patroniInstanceService) Activate(instance InstanceRequest) (*string, int, error) {
+	if instance.Body != nil {
+		return nil, http.StatusBadRequest, errors.New("body should be empty")
+	}
+	instance.Body = ConfigPause{Pause: false}
+	return NewSidecarRequest[string](p.client).Patch(instance, "/config")
+}
+
+func (p *patroniInstanceService) Pause(instance InstanceRequest) (*string, int, error) {
+	if instance.Body != nil {
+		return nil, http.StatusBadRequest, errors.New("body should be empty")
+	}
+	instance.Body = ConfigPause{Pause: true}
+	return NewSidecarRequest[string](p.client).Patch(instance, "/config")
 }

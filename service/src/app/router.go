@@ -114,6 +114,8 @@ func instanceRouter(g *gin.RouterGroup, r *router.InstanceRouter) {
 	instance.DELETE("/restart", r.DeleteInstanceRestart)
 	instance.POST("/reload", r.PostInstanceReload)
 	instance.POST("/failover", r.PostInstanceFailover)
+	instance.POST("/activate", r.PostInstanceActivate)
+	instance.POST("/pause", r.PostInstancePause)
 }
 
 func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {

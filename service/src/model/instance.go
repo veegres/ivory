@@ -45,4 +45,6 @@ type InstanceGateway interface {
 	DeleteRestart(instance InstanceRequest) (*string, int, error)
 	Reload(instance InstanceRequest) (*string, int, error)
 	Failover(instance InstanceRequest) (*string, int, error)
+	Activate(instance InstanceRequest) (*string, int, error)
+	Pause(instance InstanceRequest) (*string, int, error)
 }

@@ -2,7 +2,7 @@
 
 Bloat tab can help you to check your postgres bloat and run bloat cleaning. Bloat cleaning can
 be executed only on the leader instance, Ivory detects leader automatically and sets it as default. 
-Cleaning and queries will be run on default instance. You can change default instance in overview settings 
+Cleaning and queries will be run on the main instance. You can change main instance in overview settings 
 (top-right corner).
 
 Bloat cleaning is provided by [pgcompacttable](https://github.com/dataegret/pgcompacttable) tool.

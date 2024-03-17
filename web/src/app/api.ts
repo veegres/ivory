@@ -102,6 +102,12 @@ export const InstanceApi = {
     failover: (request: InstanceRequest) => api
         .post<Response<string>>(`/instance/failover`, request)
         .then((response) => response.data.response),
+    activate: (request: InstanceRequest) => api
+        .post<Response<string>>(`/instance/activate`, request)
+        .then((response) => response.data.response),
+    pause: (request: InstanceRequest) => api
+        .post<Response<string>>(`/instance/pause`, request)
+        .then((response) => response.data.response),
 }
 
 export const ClusterApi = {
