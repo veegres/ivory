@@ -13,7 +13,7 @@ type Props = {
     label: ReactNode,
     title: string,
     description: string,
-    onClick: () => void,
+    onClick?: () => void,
     loading?: boolean,
     disabled?: boolean,
     size?: "small" | "medium" | "large",

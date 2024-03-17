@@ -6,14 +6,11 @@ import {useMutation, useQuery} from "@tanstack/react-query";
 import {QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {useMutationOptions} from "../../../hook/QueryCustom";
+import {NoBox} from "../../view/box/NoBox";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     header: {display: "flex", justifyContent: "space-between", alignItems: "center"},
-    no: {
-        display: "flex", alignItems: "center", justifyContent: "center", textTransform: "uppercase",
-        padding: "8px 16px", border: "1px solid", borderColor: "divider", lineHeight: "1.54",
-    },
     label: {color: "text.secondary", fontSize: "13.5px"},
     info: {display: "flex", alignItems: "center", gap: 1}
 }
@@ -53,7 +50,7 @@ export function QueryBodyLog(props: Props) {
 
     function renderBody() {
         if (result.error) return <ErrorSmart error={result.error}/>
-        if (!result.data?.length) return <Box sx={SX.no}>Query log is empty</Box>
+        if (!result.data?.length) return <NoBox text={"Query log is empty"}/>
 
         return result.data.map((query, index) => (
             <QueryBodyLogItem key={index} index={index} query={query} />

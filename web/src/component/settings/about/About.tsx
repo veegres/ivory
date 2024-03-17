@@ -1,10 +1,10 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {Box, IconButton} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
-import {MenuItemBox} from "../menu/MenuItemBox";
-import {MenuItemText} from "../menu/MenuItemText";
 import {OpenInNew} from "@mui/icons-material";
 import {IvoryLinks} from "../../../app/utils";
+import {List} from "../../view/box/List";
+import {ListItem} from "../../view/box/ListItem";
 
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0 15px", gap: 3},
@@ -23,11 +23,11 @@ export function About() {
                     Postgres. But I hope it will help manage and troubleshoot Postgres clusters for both
                     developers and database administrators.
                 </Box>
-                <MenuItemBox name={"Links"}>
+                <List name={"Links"}>
                     {Object.values(IvoryLinks).map(({name, link}) => (
-                        <MenuItemText key={name} title={name} button={renderLink(link)}/>
+                        <ListItem key={name} title={name} button={renderLink(link)}/>
                     ))}
-                </MenuItemBox>
+                </List>
             </Box>
         </MenuWrapper>
     )

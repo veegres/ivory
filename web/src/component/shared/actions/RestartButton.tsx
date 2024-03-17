@@ -32,7 +32,6 @@ export function RestartButton(props: Props) {
 
     return (
         <AlertButton
-            color={"info"}
             size={"small"}
             label={"Restart"}
             title={`Make a restart of ${request.sidecar.host}?`}

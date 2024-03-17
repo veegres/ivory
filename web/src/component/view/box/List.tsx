@@ -11,16 +11,16 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    name: string,
+    name?: string,
     children: ReactNode,
 }
 
-export function MenuItemBox(props: Props) {
+export function List(props: Props) {
     const { name, children } = props
 
     return (
         <Box sx={SX.container}>
-            <Box>{name}</Box>
+            {name && <Box>{name}</Box>}
             <Box sx={SX.wrapper}>{children}</Box>
         </Box>
     )

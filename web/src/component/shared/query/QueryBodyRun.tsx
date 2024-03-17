@@ -8,13 +8,10 @@ import {QueryApi} from "../../../app/api";
 import {QueryVarieties} from "./QueryVarieties";
 import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
 import {useCallback, useMemo} from "react";
+import {NoBox} from "../../view/box/NoBox";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
-    no: {
-        display: "flex", alignItems: "center", justifyContent: "center", textTransform: "uppercase",
-        padding: "8px 16px", border: "1px solid", borderColor: "divider", lineHeight: "1.54",
-    },
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2},
     label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
@@ -84,7 +81,7 @@ export function QueryBodyRun(props: Props) {
     function renderTable() {
         if (error) return <ErrorSmart error={error}/>
         if (!isFetching && (!data || !data.fields.length || !data.rows.length)) {
-            return <Box sx={SX.no}>Response is empty</Box>
+            return <NoBox text={"Response is empty"}/>
         }
 
         return (

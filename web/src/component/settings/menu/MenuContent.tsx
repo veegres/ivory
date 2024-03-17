@@ -1,12 +1,13 @@
 import {Settings, SxPropsMap} from "../../../type/common";
-import {MenuItemBox} from "./MenuItemBox";
-import {MenuItemText} from "./MenuItemText";
-import {MenuItemButton} from "./MenuItemButton";
 import {MenuThemeChanger} from "./MenuThemeChanger";
 import {EraseButton} from "../../shared/actions/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
 import {MenuRefetchChanger} from "./MenuRefetchChanger";
 import {Box} from "@mui/material";
+import {List} from "../../view/box/List";
+import {ListItem} from "../../view/box/ListItem";
+import {ListButton} from "../../view/box/ListButton";
+import {SettingOptions} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     list: {display: "flex", flexDirection: "column", gap: 3},
@@ -22,26 +23,33 @@ export function MenuContent(props: Props) {
     return (
         <MenuWrapper>
             <Box sx={SX.list}>
-                <MenuItemBox name={"Appearance"}>
-                    <MenuItemText title={"Theme"} button={<MenuThemeChanger/>}/>
-                    <MenuItemText title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
-                </MenuItemBox>
-                <MenuItemBox name={"Privacy and security"}>
-                    <MenuItemButton item={Settings.PASSWORD} onUpdate={onUpdate}/>
-                    <MenuItemButton item={Settings.CERTIFICATE} onUpdate={onUpdate}/>
-                    <MenuItemButton item={Settings.SECRET} onUpdate={onUpdate}/>
-                </MenuItemBox>
-                <MenuItemBox name={"Danger Zone"}>
-                    <MenuItemText
+                <List name={"Appearance"}>
+                    <ListItem title={"Theme"} button={<MenuThemeChanger/>}/>
+                    <ListItem title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
+                </List>
+                <List name={"Privacy and security"}>
+                    {renderButton(Settings.PASSWORD)}
+                    {renderButton(Settings.CERTIFICATE)}
+                    {renderButton(Settings.SECRET)}
+                </List>
+                <List name={"Danger Zone"}>
+                    <ListItem
                         title={"Erase all data"}
                         description={"Once you erase all data, there is no going back. Please be certain."}
                         button={<EraseButton safe={true}/>}
                     />
-                </MenuItemBox>
-                <MenuItemBox name={"About"}>
-                    <MenuItemButton item={Settings.ABOUT} onUpdate={onUpdate}/>
-                </MenuItemBox>
+                </List>
+                <List name={"About"}>
+                    {renderButton(Settings.ABOUT)}
+                </List>
             </Box>
         </MenuWrapper>
     )
+
+    function renderButton(setting: Settings) {
+        const {icon, label} = SettingOptions[setting]
+        return (
+            <ListButton label={label} icon={icon} onClick={() => onUpdate(setting)}/>
+        )
+    }
 }

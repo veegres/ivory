@@ -17,7 +17,6 @@ export function ReloadButton(props: Props) {
 
     return (
         <AlertButton
-            color={"info"}
             size={"small"}
             label={"Reload"}
             title={`Make a reload of ${request.sidecar.host}?`}

@@ -12,7 +12,7 @@ type Props = {
     title: string,
     description: string,
     children?: ReactNode,
-    onAgree: () => void,
+    onAgree?: () => void,
     onClose: () => void
 }
 
@@ -30,14 +30,14 @@ export function AlertDialog(props: Props) {
                 {children}
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>No, please, No...</Button>
-                <Button onClick={handleAgree} autoFocus>Yes, move on!</Button>
+                <Button onClick={onClose}>{onAgree ? "No, please, No..." : "Close"}</Button>
+                {onAgree && <Button onClick={handleAgree} autoFocus>Yes, move on!</Button>}
             </DialogActions>
         </Dialog>
     )
 
     function handleAgree() {
-        onAgree()
+        onAgree && onAgree()
         onClose()
     }
 }
