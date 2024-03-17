@@ -44,7 +44,7 @@ export function OverviewOptionsInstance(props: Props) {
                 inputValue={inputValue}
                 isOptionEqualToValue={(option, value) => option === value}
                 onInputChange={(_, value) => setInputValue(value)}
-                renderInput={(params) => <TextField {...params} label={"Default Instance"}/>}
+                renderInput={(params) => <TextField {...params} label={"Main Instance"}/>}
             />
             <ToggleButtonGroup size={"small"}>
                 <Tooltip title={"AUTO"} placement={"top"}>

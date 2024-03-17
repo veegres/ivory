@@ -55,6 +55,14 @@ func (r *InstanceRouter) PostInstanceFailover(context *gin.Context) {
 	handleBodyRequest(context, r.instanceService.Failover)
 }
 
+func (r *InstanceRouter) PostInstanceActivate(context *gin.Context) {
+	handleBodyRequest(context, r.instanceService.Activate)
+}
+
+func (r *InstanceRouter) PostInstancePause(context *gin.Context) {
+	handleBodyRequest(context, r.instanceService.Pause)
+}
+
 func handleParamRequest[T any](context *gin.Context, action func(instance InstanceRequest) (T, int, error)) {
 	query := context.Query("request")
 	var instance InstanceRequest

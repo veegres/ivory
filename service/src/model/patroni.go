@@ -37,3 +37,7 @@ type PatroniScheduledSwitchover struct {
 	From string `json:"from"`
 	To   string `json:"to"`
 }
+
+type ConfigPause struct {
+	Pause bool `json:"pause"`
+}

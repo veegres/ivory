@@ -93,7 +93,7 @@ export function Overview() {
         return <OverviewAction
             cluster={activeCluster}
             selectInfo={infoOpen}
-            dissableInfo={!tab.info}
+            disableInfo={!tab.info}
             toggleInfo={() => setInfoOpen(!infoOpen)}
             selectOptions={settingsOpen}
             toggleOptions={() => setSettingsOpen(!settingsOpen)}

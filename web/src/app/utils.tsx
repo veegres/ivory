@@ -6,6 +6,8 @@ import {
     Key,
     LockTwoTone,
     MenuOpen,
+    Pause,
+    PlayArrow,
     SecurityTwoTone,
     Shield,
     Storage,
@@ -15,7 +17,16 @@ import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
 import {PasswordType} from "../type/password";
-import {ColorsMap, EnumOptions, FileUsageType, Links, Settings, Sidecar, SxPropsMap} from "../type/common";
+import {
+    ColorsMap,
+    EnumOptions,
+    FileUsageType,
+    Links,
+    Settings,
+    Sidecar,
+    SidecarStatus,
+    SxPropsMap
+} from "../type/common";
 import {CertType} from "../type/cert";
 import {InstanceMap, InstanceWeb, Role} from "../type/instance";
 import {JobStatus} from "../type/job";
@@ -49,6 +60,11 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
 export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
     [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", icon: <Storage/>, key: "postgresId"},
     [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", icon: <HeartBroken/>, key: "patroniId"}
+}
+
+export const SidecarStatusOptions: { [key in SidecarStatus]: EnumOptions } = {
+    [SidecarStatus.Active]: {label: "ACTIVE", icon: <Pause/>, color: green[600], key: "active"},
+    [SidecarStatus.Paused]: {label: "PAUSED", icon: <PlayArrow/>, color: orange[500], key: "paused"}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {

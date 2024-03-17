@@ -14,8 +14,8 @@ You can change set up by clicking on the settings button and change there some c
 options like postgres password, patroni password, tags and certificates to connect to 
 patroni if patroni configured with certificate usage.
 
-Default instance is a specific instance to which Ivory sends request. Automatically
-it is always try to choose master as a default instance. If you want you can always change it
+Main instance is a specific instance to which Ivory sends request. Automatically
+it is always try to choose master as a main instance. If you want you can always change it
 here.
 
 ![options](images/cluster_options.png)

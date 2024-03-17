@@ -38,13 +38,14 @@ export function ListCellChip(props: Props) {
         </Box>
     )
 
+    // TODO we have same component in Overview page probably we should combine them
     function renderChipTooltip() {
         const items = [
             {title: "Detection", label: detection, bgColor: purple[400]},
             {title: "Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]},
         ]
 
-        return <InfoColorBoxList items={items}/>
+        return <InfoColorBoxList items={items} label={"Cluster Detection"}/>
     }
 
     function handleClick() {

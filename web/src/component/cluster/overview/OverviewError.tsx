@@ -1,11 +1,11 @@
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 
 export function ClusterNoInstanceError() {
-    return <ErrorSmart error={"Default instance is not in the cluster, probably something has happened, you have some problems in your set up or you've change it"} />
+    return <ErrorSmart error={"Main instance is not in the cluster, probably something has happened, you have some problems in your set up or you've change it"} />
 }
 
 export function ClusterNoLeaderError() {
-    return <ErrorSmart error={"Default instance is not a leader, probably something has happened or you've change it"}/>
+    return <ErrorSmart error={"Main instance is not a leader, probably something has happened or you've change it"}/>
 }
 
 export function ClusterNoPostgresPassword() {

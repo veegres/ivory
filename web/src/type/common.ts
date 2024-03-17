@@ -72,9 +72,14 @@ export interface Database {
     name?: string,
 }
 
+export enum SidecarStatus {
+    Active = "ACTIVE",
+    Paused = "PAUSED",
+}
 export interface Sidecar {
     host: string,
     port: number,
+    status?: SidecarStatus,
 }
 
 // SPECIFIC (WEB)

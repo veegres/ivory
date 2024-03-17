@@ -1,9 +1,8 @@
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../app/utils";
 import {PasswordType} from "../../../type/password";
 import {CertType} from "../../../type/cert";
-import {Pause} from "@mui/icons-material";
 import {purple} from "@mui/material/colors";
-import {Box, ToggleButton, Tooltip} from "@mui/material";
+import {Box} from "@mui/material";
 import {InfoBoxList} from "../../view/box/InfoBoxList";
 import {InfoBox} from "../../view/box/InfoBox";
 import {InfoColorBoxList} from "../../view/box/InfoColorBoxList";
@@ -12,7 +11,6 @@ import {SxPropsMap} from "../../../type/common";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},
-    pause: {padding: "3px"},
 }
 
 type Props = {
@@ -32,20 +30,17 @@ export function OverviewActionInfo(props: Props) {
 
     const detectionItems = [
         {title: "Detection", label: detection, bgColor: purple[400]},
-        {title: "Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]}
+        {title: "Main Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]}
     ]
 
     return (
         <Box sx={SX.box}>
-            <Tooltip title={"Patroni is Active"} placement={"top"}>
-                <ToggleButton sx={SX.pause} size={"small"} value={"pause"}><Pause/></ToggleButton>
-            </Tooltip>
-            <InfoBox tooltip={<InfoColorBoxList items={detectionItems}/>} withPadding>
+            <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>} withPadding>
                 <Box sx={{color: InstanceColor[defaultInstance.role]}}>
                     {getDomain(defaultInstance.sidecar).toUpperCase()}
                 </Box>
             </InfoBox>
-            <InfoBoxList items={infoItems}/>
+            <InfoBoxList items={infoItems} label={"Configured Cluster Options"}/>
         </Box>
     )
 }

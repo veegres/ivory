@@ -77,9 +77,17 @@ type Database struct {
 	Name *string `json:"name"`
 }
 
+type SidecarStatus string
+
+const (
+	Paused SidecarStatus = "PAUSED"
+	Active               = "ACTIVE"
+)
+
 type Sidecar struct {
-	Host string `json:"host" form:"host"`
-	Port int    `json:"port" form:"port"`
+	Host   string         `json:"host" form:"host"`
+	Port   int            `json:"port" form:"port"`
+	Status *SidecarStatus `json:"status,omitempty" form:"status"`
 }
 
 // SPECIFIC (SERVER)
