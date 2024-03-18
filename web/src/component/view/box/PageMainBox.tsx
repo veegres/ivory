@@ -27,7 +27,7 @@ export function PageMainBox(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <Paper elevation={elevation} sx={{ ...SX.paper, padding, margin}}>
+            <Paper elevation={elevation} sx={{...SX.paper, padding, margin}}>
                 {props.children}
             </Paper>
         </Box>

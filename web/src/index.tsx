@@ -12,6 +12,8 @@ import {LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
+import {ErrorBoundary} from "react-error-boundary";
+import {PageErrorBox} from "./component/view/box/PageErrorBox";
 
 // extend dayjs with UTC plugin
 dayjs.extend(utc)
@@ -25,18 +27,20 @@ const container = document.getElementById("root")
 const root = createRoot(container!)
 root.render(
     <StrictMode>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <AppearanceProvider>
-                <AuthProvider>
-                    <StoreProvider>
-                        <SnackbarProvider maxSnack={3}>
-                            <CssBaseline enableColorScheme/>
-                            <App/>
-                        </SnackbarProvider>
-                    </StoreProvider>
-                </AuthProvider>
-            </AppearanceProvider>
-        </LocalizationProvider>
+        <AppearanceProvider>
+            <ErrorBoundary fallbackRender={(e) => (<PageErrorBox error={e.error}/>)}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <AuthProvider>
+                        <StoreProvider>
+                            <SnackbarProvider maxSnack={3}>
+                                <CssBaseline enableColorScheme/>
+                                <App/>
+                            </SnackbarProvider>
+                        </StoreProvider>
+                    </AuthProvider>
+                </LocalizationProvider>
+            </ErrorBoundary>
+        </AppearanceProvider>
     </StrictMode>
 )
 
