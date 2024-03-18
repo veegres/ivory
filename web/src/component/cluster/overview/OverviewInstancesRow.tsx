@@ -46,13 +46,24 @@ export function OverviewInstancesRow(props: Props) {
 
     useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])
 
+    const sidecarName = `${sidecar.host}:${sidecar.port === 0 ? "-" : sidecar.port}`
+    const databaseName = `${database.host}:${database.port === 0 ? "-" : database.port}`
+
     return (
         <TableRow sx={[SX.row, checked && SxPropsFormatter.style.bgImageSelected]} onClick={handleCheck(instance, checked)}>
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
             <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
-            <TableCell sx={SX.nowrap}>{sidecar.host}:{sidecar.port === 0 ? "-" : sidecar.port}</TableCell>
-            <TableCell sx={SX.nowrap}>{database.host}:{database.port === 0 ? "-" : database.port}</TableCell>
+            <TableCell sx={SX.nowrap}>
+                <Tooltip title={sidecarName} placement={"top-start"}>
+                    <Box>{sidecarName}</Box>
+                </Tooltip>
+            </TableCell>
+            <TableCell sx={SX.nowrap}>
+                <Tooltip title={databaseName} placement={"top-start"}>
+                    <Box>{databaseName}</Box>
+                </Tooltip>
+            </TableCell>
             <TableCell sx={SX.nowrap}>{state}</TableCell>
             <TableCell>{renderData()}</TableCell>
             <TableCell align={"right"} onClick={(e) => e.stopPropagation()}>
