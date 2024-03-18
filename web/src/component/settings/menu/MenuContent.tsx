@@ -8,6 +8,7 @@ import {List} from "../../view/box/List";
 import {ListItem} from "../../view/box/ListItem";
 import {ListButton} from "../../view/box/ListButton";
 import {SettingOptions} from "../../../app/utils";
+import {ClearCacheButton} from "../../shared/actions/ClearCacheButton";
 
 const SX: SxPropsMap = {
     list: {display: "flex", flexDirection: "column", gap: 3},
@@ -33,6 +34,12 @@ export function MenuContent(props: Props) {
                     {renderButton(Settings.SECRET)}
                 </List>
                 <List name={"Danger Zone"}>
+                    <ListItem
+                        title={"Clear cache"}
+                        description={`It will clear your local cache. Sometimes it can be helpful, when after 
+                        updates or some changes you see that something is wrong (counts, selection, etc).`}
+                        button={<ClearCacheButton />}
+                    />
                     <ListItem
                         title={"Erase all data"}
                         description={"Once you erase all data, there is no going back. Please be certain."}
