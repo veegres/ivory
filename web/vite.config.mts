@@ -15,7 +15,7 @@ export default defineConfig({
     css: {
         modules: {
             localsConvention: "camelCase",
-            generateScopedName: (name, filename, css) => {
+            generateScopedName: (name: string) => {
                 // disable scoped names for codemirror classes
                 if (name.indexOf("cm") !== -1) return name
                 const hash = createHash("shake256", {outputLength: 3}).update(name).digest("hex")

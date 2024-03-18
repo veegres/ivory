@@ -1,30 +1,31 @@
-import {useState} from "react";
+import {ReactNode, useState} from "react";
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material";
 import {OpenIcon} from "../icon/OpenIcon";
 import {StylePropsMap} from "../../../type/common";
 
 const style: StylePropsMap = {
-    jsonInput: {padding: '10px 0px', whiteSpace: 'pre-wrap'}
+    stacktrace: {padding: "10px 0px", whiteSpace: "pre-wrap"}
 }
 
 type Props = {
     message: string,
     type: AlertColor,
     title?: string,
-    json?: string
+    stacktrace?: ReactNode,
 }
 
 export function Error(props: Props) {
-    const {message, type, json, title} = props
+    const {message, type, stacktrace, title} = props
     const [isOpen, setIsOpen] = useState(false)
-    const isJson = !!json
+    const isStacktrace = !!stacktrace
+
     return (
-        <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={isJson} open={isOpen}/>}>
+        <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={isStacktrace} open={isOpen}/>}>
             <AlertTitle>{title ?? type.toString().toUpperCase()}</AlertTitle>
             <Box>Message: {message}</Box>
-            <Collapse in={isJson && isOpen}>
-                <InputLabel style={style.jsonInput}>
-                    {JSON.stringify(json, null, 4)}
+            <Collapse in={isStacktrace && isOpen}>
+                <InputLabel style={style.stacktrace}>
+                    {stacktrace}
                 </InputLabel>
             </Collapse>
         </Alert>
