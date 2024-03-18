@@ -28,8 +28,8 @@ export function OverviewInstances({info}: TabProps) {
                     <TableCell width={"44px"}/>
                     <TableCell width={"40px"}/>
                     <TableCell width={"110px"}>Role</TableCell>
-                    <TableCell width={"160px"}>Sidecar</TableCell>
-                    <TableCell width={"160px"}>Postgres</TableCell>
+                    <TableCell width={"15%"}>Sidecar</TableCell>
+                    <TableCell width={"15%"}>Postgres</TableCell>
                     <TableCell width={"100px"}>State</TableCell>
                     <TableCell/>
                     <TableCellLoader sx={SX.buttonCell} isFetching={instanceMapFetching > 0}>

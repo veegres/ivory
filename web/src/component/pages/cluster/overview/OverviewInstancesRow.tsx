@@ -56,12 +56,12 @@ export function OverviewInstancesRow(props: Props) {
             <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>
                 <Tooltip title={sidecarName} placement={"top-start"}>
-                    <Box>{sidecarName}</Box>
+                    <Box sx={SX.nowrap}>{sidecarName}</Box>
                 </Tooltip>
             </TableCell>
             <TableCell sx={SX.nowrap}>
                 <Tooltip title={databaseName} placement={"top-start"}>
-                    <Box>{databaseName}</Box>
+                    <Box sx={SX.nowrap}>{databaseName}</Box>
                 </Tooltip>
             </TableCell>
             <TableCell sx={SX.nowrap}>{state}</TableCell>
