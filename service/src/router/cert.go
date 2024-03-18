@@ -23,9 +23,9 @@ func (r *CertRouter) GetCertList(context *gin.Context) {
 	var err error
 	var list CertMap
 	if certType != "" {
-		number, errAtoi := strconv.Atoi(certType)
-		if errAtoi != nil {
-			err = errAtoi
+		number, errParse := strconv.ParseInt(certType, 10, 8)
+		if errParse != nil {
+			err = errParse
 		} else {
 			list, err = r.certService.ListByType(CertType(number))
 		}
@@ -56,7 +56,7 @@ func (r *CertRouter) DeleteCert(context *gin.Context) {
 }
 
 func (r *CertRouter) PostUploadCert(context *gin.Context) {
-	certType, errParse := strconv.Atoi(context.PostForm("type"))
+	certType, errParse := strconv.ParseInt(context.PostForm("type"), 10, 8)
 	if errParse != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
 		return

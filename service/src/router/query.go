@@ -81,9 +81,9 @@ func (r *QueryRouter) GetQueryList(context *gin.Context) {
 	queryTypeStr := context.Request.URL.Query().Get("type")
 
 	if queryTypeStr != "" {
-		number, errAtoi := strconv.Atoi(queryTypeStr)
-		if errAtoi != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": errAtoi.Error()})
+		number, errParse := strconv.ParseInt(queryTypeStr, 10, 8)
+		if errParse != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
 			return
 		}
 		queryType := QueryType(number)
