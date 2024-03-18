@@ -1223,6 +1223,11 @@
   resolved "https://registry.npmjs.org/@typescript-eslint/types/-/types-7.2.0.tgz"
   integrity sha512-XFtUHPI/abFhm4cbCDc5Ykc8npOKBSJePY3a3s+lwumt7XWJuzP5cZcfZ610MIPHjQjNsOLlYK8ASPaNG8UiyA==
 
+"@typescript-eslint/types@7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/types/-/types-7.3.0.tgz#a8bdd65f1b2a92ebc87d6f73a3015863b147fde4"
+  integrity sha512-oYCBkD0xVxzmZZmYiIWVewyy/q/ugq7PPm4pHhE1IgcT062i96G0Ww3gd8BvUYpk2yvg95q00Hj2CHRLjAuZBA==
+
 "@typescript-eslint/typescript-estree@7.2.0":
   version "7.2.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-7.2.0.tgz"
@@ -1230,6 +1235,20 @@
   dependencies:
     "@typescript-eslint/types" "7.2.0"
     "@typescript-eslint/visitor-keys" "7.2.0"
+    debug "^4.3.4"
+    globby "^11.1.0"
+    is-glob "^4.0.3"
+    minimatch "9.0.3"
+    semver "^7.5.4"
+    ts-api-utils "^1.0.1"
+
+"@typescript-eslint/typescript-estree@7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/typescript-estree/-/typescript-estree-7.3.0.tgz#e16a4def7db3386b5ef3502daec27b89afbdf9c0"
+  integrity sha512-UF85+bInQZ3olhI/zxv0c2b2SMuymn3t6/lkRkSB239HHxFmPSlmcggOKAjYzqRCdtqhPDftpsV1LlDH66AXrA==
+  dependencies:
+    "@typescript-eslint/types" "7.3.0"
+    "@typescript-eslint/visitor-keys" "7.3.0"
     debug "^4.3.4"
     globby "^11.1.0"
     is-glob "^4.0.3"
@@ -1256,6 +1275,14 @@
   integrity sha512-c6EIQRHhcpl6+tO8EMR+kjkkV+ugUNXOmeASA1rlzkd8EPIriavpWoiEz1HR/VLhbVIdhqnV6E7JZm00cBDx2A==
   dependencies:
     "@typescript-eslint/types" "7.2.0"
+    eslint-visitor-keys "^3.4.1"
+
+"@typescript-eslint/visitor-keys@7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@typescript-eslint/visitor-keys/-/visitor-keys-7.3.0.tgz#a313b8436575d971ad570353831c0b088721bd64"
+  integrity sha512-Gz8Su+QjOI5qP8UQ74VqKaTt/BLy23IhCCHLbYxhmNzHCGFHrvfgq4hISZvuqQ690ubkD0746qLcWC647nScuQ==
+  dependencies:
+    "@typescript-eslint/types" "7.3.0"
     eslint-visitor-keys "^3.4.1"
 
 "@uiw/codemirror-extensions-basic-setup@4.21.24":
@@ -3049,9 +3076,9 @@ react-dom@18.2.0:
     loose-envify "^1.1.0"
     scheduler "^0.23.0"
 
-react-error-boundary@^4.0.13:
+react-error-boundary@4.0.13:
   version "4.0.13"
-  resolved "https://registry.npmjs.org/react-error-boundary/-/react-error-boundary-4.0.13.tgz"
+  resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-4.0.13.tgz#80386b7b27b1131c5fbb7368b8c0d983354c7947"
   integrity sha512-b6PwbdSv8XeOSYvjt8LpgpKrZ0yGdtZokYwkwV2wlcZbxgopHX/hgPl5VgpnoVOWd868n1hktM8Qm4b+02MiLQ==
   dependencies:
     "@babel/runtime" "^7.12.5"
