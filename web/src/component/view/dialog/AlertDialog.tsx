@@ -5,6 +5,7 @@ import {ReactNode} from "react";
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {width: "500px", display: "flex", gap: 2, flexDirection: "column"},
+    title: {width: "500px", wordBreak: "break-all"},
 }
 
 type Props = {
@@ -20,7 +21,7 @@ export function AlertDialog(props: Props) {
     const {open, children, description, title, onAgree, onClose} = props
     return (
         <Dialog sx={SX.dialog} open={open} onClose={onClose}>
-            <DialogTitle>
+            <DialogTitle sx={SX.title}>
                 {title}
             </DialogTitle>
             <DialogContent sx={SX.content}>
