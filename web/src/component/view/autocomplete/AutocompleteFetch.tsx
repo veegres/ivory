@@ -13,12 +13,13 @@ type Props = {
     variant?: "standard" | "filled" | "outlined";
     margin?: 'dense' | 'normal' | 'none';
     padding?: string,
-    value?: string,
+    // NOTE: if you provide value it should be `null` for empty field
+    value?: string | null,
 }
 
 export function AutocompleteFetch(props: Props) {
     const {label, placeholder, variant, margin} = props
-    const {keys, onUpdate, onFetch, disabled = false, padding, value}= props
+    const {keys, onUpdate, onFetch, disabled = false, padding, value} = props
 
     const [inputValue, setInputValue] = useState("")
     const debInputValue = useDebounce(inputValue)
@@ -34,7 +35,7 @@ export function AutocompleteFetch(props: Props) {
         <Autocomplete
             fullWidth
             renderInput={renderInput}
-            value={value || null}
+            value={value}
             inputValue={inputValue}
             disabled={disabled}
             onInputChange={(_, v) => setInputValue(v)}
