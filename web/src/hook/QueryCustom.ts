@@ -3,7 +3,7 @@ import {useSnackbar} from "notistack";
 import {getErrorMessage} from "../app/utils";
 
 // TODO think how we can optimise it and update react-query by updating state without refetch
-// TODO you can check how bloat jobs list works, maybe we can make something similar for all list requests
+//      you can check how bloat jobs list works, maybe we can make something similar for all list requests
 /**
  * Simplify handling `onSuccess` and `onError` requests for react-query client
  * providing common approach with request refetch and custom toast messages for

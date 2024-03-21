@@ -81,6 +81,8 @@ const initialStoreAction: StoreActionType = {
 const StoreContext = createContext(initialStore)
 const StoreActionContext = createContext(initialStoreAction)
 
+// TODO this should be changed to accept function `useStore(state => state.activeCluster)`
+//      to prevent rerender for everyone who is subscribed/calling to the store
 export function useStore() {
     return useContext(StoreContext)
 }
