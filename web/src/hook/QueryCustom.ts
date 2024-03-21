@@ -2,8 +2,9 @@ import {QueryKey, useQueryClient} from "@tanstack/react-query";
 import {useSnackbar} from "notistack";
 import {getErrorMessage} from "../app/utils";
 
-// TODO think how we can optimise it and update react-query by updating state without refetch
+// TODO #1 think how we can optimise it and update react-query by updating state without refetch
 //      you can check how bloat jobs list works, maybe we can make something similar for all list requests
+// TODO #2 think if we should move all error handling to axios interceptor in AuthProvider
 /**
  * Simplify handling `onSuccess` and `onError` requests for react-query client
  * providing common approach with request refetch and custom toast messages for
