@@ -21,7 +21,7 @@ export function AuthProvider(props: { children: ReactNode }) {
     const queryClient = useQueryClient();
     const [token, setToken] = useLocalStorageState("token", "", true);
 
-    useEffect(handleEffectTokenChange, [queryClient, token]);
+    handleTokenChange()
     useEffect(handleEffectAxiosInterceptor, [queryClient])
 
     return (
@@ -38,7 +38,9 @@ export function AuthProvider(props: { children: ReactNode }) {
         setToken("")
     }
 
-    function handleEffectTokenChange() {
+    // NOTE: we cannot use effect here, because it will render after initial render, and it will
+    // cause in initial load info load twice
+    function handleTokenChange() {
         if (token) api.defaults.headers.common["Authorization"] = `Bearer ${window.atob(token)}`
         else delete api.defaults.headers.common["Authorization"]
         queryClient.refetchQueries({queryKey: ["info"]}).then()
