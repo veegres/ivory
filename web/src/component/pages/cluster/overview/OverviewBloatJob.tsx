@@ -10,18 +10,19 @@ const style: StylePropsMap = {
 }
 
 type Props = {
+    cluster: string,
     list: Bloat[],
 }
 
 export function OverviewBloatJob(props: Props) {
-    const {list} = props
+    const {list, cluster} = props
     if (list.length === 0) return <InfoAlert text={"There is no jobs yet"}/>
 
     return (
         <TransitionGroup style={style.transition} appear={false}>
             {list.map((value) => (
                 <Collapse key={value.uuid}>
-                    <OverviewBloatJobItem key={value.uuid} compactTable={value}/>
+                    <OverviewBloatJobItem key={value.uuid} item={value} cluster={cluster}/>
                 </Collapse>
             ))}
         </TransitionGroup>

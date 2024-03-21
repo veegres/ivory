@@ -1,7 +1,7 @@
 import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
 import {BloatApi, QueryApi} from "../../../../app/api";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
 import {TabProps} from "./Overview";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
@@ -9,7 +9,7 @@ import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Query} from "../../../shared/query/Query";
 import {Cached} from "@mui/icons-material";
 import {SxPropsMap} from "../../../../type/common";
-import {Bloat, BloatTarget} from "../../../../type/bloat";
+import {BloatTarget} from "../../../../type/bloat";
 import {QueryType} from "../../../../type/query";
 
 const SX: SxPropsMap = {
@@ -25,22 +25,21 @@ enum ListBlock {JOB, QUERY}
 export function OverviewBloat(props: TabProps) {
     const {cluster, defaultInstance} = props.info
     const [tab, setTab] = useState(ListBlock.JOB)
-    const [jobs, setJobs] = useState<Bloat[]>([])
     const [target, setTarget] = useState<BloatTarget>()
 
     const query = useQuery({
         queryKey: ["query", "map", QueryType.BLOAT],
         queryFn: () => QueryApi.list(QueryType.BLOAT),
-        enabled: false,
+        enabled: tab === ListBlock.QUERY,
     })
-    const initJobs = useQuery({
-        queryKey: ["instance/bloat/list", cluster.name],
+    const jobs = useQuery({
+        initialData: [],
+        queryKey: ["instance", "bloat", "list", cluster.name],
         queryFn: () => BloatApi.list(cluster.name),
+        enabled: tab === ListBlock.JOB,
     })
-    const loading = initJobs.isFetching || query.isFetching
+    const loading = jobs.isFetching || query.isFetching
     const db = {...defaultInstance.database, database: target?.dbName}
-
-    useEffect(() => { if (initJobs.data) setJobs(initJobs.data) }, [initJobs.data])
 
     return (
         <Box>
@@ -50,7 +49,6 @@ export function OverviewBloat(props: TabProps) {
                         defaultInstance={defaultInstance}
                         cluster={cluster}
                         onClick={() => setTab(ListBlock.JOB)}
-                        onSuccess={(job) => setJobs([job, ...jobs])}
                         target={target}
                         setTarget={setTarget}
                     />
@@ -66,7 +64,7 @@ export function OverviewBloat(props: TabProps) {
     function renderBody() {
         switch (tab) {
             case ListBlock.JOB:
-                return <OverviewBloatJob list={jobs}/>
+                return <OverviewBloatJob list={jobs.data} cluster={cluster.name}/>
             case ListBlock.QUERY:
                 return cluster.credentials.postgresId && (
                     <Query type={QueryType.BLOAT} credentialId={cluster.credentials.postgresId} db={db}/>
@@ -104,7 +102,7 @@ export function OverviewBloat(props: TabProps) {
 
     function handleJobTab() {
         setTab(ListBlock.JOB)
-        initJobs.refetch().then()
+        jobs.refetch().then()
     }
 
     function handleQueryTab() {
@@ -113,7 +111,7 @@ export function OverviewBloat(props: TabProps) {
     }
 
     function handleRefresh() {
-        if (tab === ListBlock.JOB) initJobs.refetch().then()
+        if (tab === ListBlock.JOB) jobs.refetch().then()
         else query.refetch().then()
     }
 }
