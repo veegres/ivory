@@ -14,6 +14,7 @@ type AuthService struct {
 
 	signingAlgorithm *jwt.SigningMethodHMAC
 	issuer           string
+	expiration       time.Duration
 }
 
 func NewAuthService(
@@ -25,6 +26,7 @@ func NewAuthService(
 		encryption:       encryption,
 		signingAlgorithm: jwt.SigningMethodHS256,
 		issuer:           "ivory",
+		expiration:       time.Hour,
 	}
 }
 
@@ -127,7 +129,7 @@ func (s *AuthService) ReEncryptAuthConfig(authConfig AuthConfig, oldSecret [16]b
 
 func (s *AuthService) generateToken(username string) (string, *time.Time, error) {
 	now := time.Now()
-	exp := now.Add(time.Hour)
+	exp := now.Add(s.expiration)
 	t := jwt.NewWithClaims(
 		s.signingAlgorithm,
 		jwt.MapClaims{
