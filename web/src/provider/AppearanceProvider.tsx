@@ -1,7 +1,7 @@
 import {createContext, ReactNode, useContext, useEffect} from "react";
 import {createTheme, PaletteMode, Theme, ThemeProvider as MuiThemeProvider, useMediaQuery} from "@mui/material";
 import {useLocalStorageState} from "../hook/LocalStorage";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {focusManager, QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
 
 export enum Mode {
@@ -31,6 +31,16 @@ const ThemeContext = createContext<ThemeContextType>({
     setTheme: () => void 0,
 })
 const client = new QueryClient()
+focusManager.setEventListener(handleFocus => {
+    if (typeof window !== "undefined" && window.addEventListener) {
+        window.addEventListener("focus", () => handleFocus(), false)
+        window.addEventListener("visibilitychange", () => handleFocus(), false)
+        return () => {
+            window.removeEventListener("focus", () => handleFocus())
+            window.removeEventListener("visibilitychange", () => handleFocus())
+        }
+    }
+})
 
 export function useAppearance() {
     return useContext(ThemeContext)
