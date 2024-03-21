@@ -17,7 +17,7 @@ interface StoreType {
         body: InstanceTabType,
         queryTab: QueryType,
         queryConsole: string,
-        dbName: string,
+        dbName?: string,
     },
 
     isClusterActive: (name: string) => boolean
@@ -34,7 +34,7 @@ const initialStore: StoreType = {
         body: InstanceTabType.CHART,
         queryTab: QueryType.CONSOLE,
         queryConsole: "",
-        dbName: "",
+        dbName: undefined,
     },
 
     isClusterActive: () => false,
@@ -57,7 +57,7 @@ interface StoreActionType {
     setConsoleQuery: (q: string) => void,
     setInstanceBody: (t: InstanceTabType) => void,
     setQueryTab: (t: QueryType) => void,
-    setDbName: (n: string) => void,
+    setDbName: (n?: string) => void,
 }
 const initialStoreAction: StoreActionType = {
     setCluster: () => void 0,
@@ -177,7 +177,7 @@ export function StoreProvider(props: { children: ReactNode }) {
     function setQueryTab(t: QueryType) {
         setState(s => ({...s, instance: {...s.instance, queryTab: t}}))
     }
-    function setDbName(n: string) {
+    function setDbName(n?: string) {
         setState(s => ({...s, instance: {...s.instance, dbName: n}}))
     }
 
