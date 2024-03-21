@@ -29,15 +29,28 @@ const SX: SxPropsMap = {
     credential: {color: "text.disabled", fontWeight: 500}
 }
 
-type Props = { compactTable: Bloat }
+type Props = {
+    cluster: string,
+    item: Bloat,
+}
 
-export function OverviewBloatJobItem({compactTable}: Props) {
-    const {uuid, status: initStatus, command, credentialId} = compactTable
+export function OverviewBloatJobItem(props: Props) {
+    const {item, cluster} = props
+    const {uuid, status: initStatus, command, credentialId} = item
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
-    const deleteOptions = useMutationOptions([["instance/bloat/list"]])
-    const deleteJob = useMutation({mutationFn: BloatApi.delete, ...deleteOptions})
+    const deleteOptions = useMutationOptions()
+    const deleteJob = useMutation({
+        mutationFn: BloatApi.delete,
+        ...deleteOptions,
+        onSuccess: () => {
+            deleteOptions.queryClient.setQueryData<Bloat[]>(
+                ["instance", "bloat", "list", cluster],
+                (jobs) => jobs?.filter(v => v.uuid !== uuid)
+            )
+        }
+    })
     const stopOptions = useMutationOptions()
     const stopJob = useMutation({mutationFn: BloatApi.stop, ...stopOptions})
 

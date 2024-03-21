@@ -22,17 +22,25 @@ type Props = {
     defaultInstance: InstanceWeb,
     cluster: Cluster,
     onClick: () => void,
-    onSuccess: (job: Bloat) => void,
     target?: BloatTarget,
     setTarget: (target: BloatTarget) => void
 }
 
 export function OverviewBloatJobForm(props: Props) {
-    const {defaultInstance, cluster, target, onSuccess, onClick, setTarget} = props
+    const {defaultInstance, cluster, target, onClick, setTarget} = props
     const [ratio, setRadio] = useState<number>()
 
-    const {onError} = useMutationOptions()
-    const start = useMutation({mutationFn: BloatApi.start, onSuccess, onError})
+    const {queryClient, onError} = useMutationOptions()
+    const start = useMutation({
+        mutationFn: BloatApi.start,
+        onSuccess: (job) => {
+            queryClient.setQueryData<Bloat[]>(
+                ["instance", "bloat", "list", cluster.name],
+                (jobs) => [job, ...(jobs ?? [])]
+            )
+        },
+        onError
+    })
 
     if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (!defaultInstance.leader) return <ClusterNoLeaderError/>
