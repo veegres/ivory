@@ -78,7 +78,7 @@ func NewContext() *Context {
 	)
 
 	// TODO refactor: shouldn't router use repos? consider change to service usage (possible cycle dependencies problems)
-	// TODO repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
+	//      repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
 	return &Context{
 		authRouter:     router.NewAuthRouter(authService, generalService),
 		clusterRouter:  router.NewClusterRouter(clusterService),
