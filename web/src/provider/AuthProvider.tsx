@@ -1,7 +1,8 @@
-import {createContext, ReactNode, useContext} from "react";
+import {createContext, ReactNode, useContext, useEffect} from "react";
 import {api} from "../app/api";
 import {useLocalStorageState} from "../hook/LocalStorage";
 import {useQueryClient} from "@tanstack/react-query";
+import {AxiosError} from "axios";
 
 interface AuthContextType {
     setToken: (v: string) => void,
@@ -17,12 +18,11 @@ export function useAuth() {
 }
 
 export function AuthProvider(props: { children: ReactNode }) {
-    const [token, setToken] = useLocalStorageState("token", "", true);
     const queryClient = useQueryClient();
+    const [token, setToken] = useLocalStorageState("token", "", true);
 
-    if (token) api.defaults.headers.common["Authorization"] = `Bearer ${window.atob(token)}`
-    else delete api.defaults.headers.common["Authorization"]
-    queryClient.refetchQueries({queryKey: ["info"]}).then()
+    useEffect(handleEffectTokenChange, [queryClient, token]);
+    useEffect(handleEffectAxiosInterceptor, [queryClient])
 
     return (
         <AuthContext.Provider value={{setToken: setTokenEncrypt, logout}}>
@@ -36,5 +36,24 @@ export function AuthProvider(props: { children: ReactNode }) {
 
     function logout(){
         setToken("")
+    }
+
+    function handleEffectTokenChange() {
+        if (token) api.defaults.headers.common["Authorization"] = `Bearer ${window.atob(token)}`
+        else delete api.defaults.headers.common["Authorization"]
+        queryClient.refetchQueries({queryKey: ["info"]}).then()
+    }
+
+    // NOTE: with React.StrictMode we will have two of them because it makes rerender twice
+    // only for development env
+    function handleEffectAxiosInterceptor() {
+        const id = api.interceptors.response.use(
+            (response) => response,
+            (error: AxiosError) => {
+                if (error.response?.status === 401) queryClient.refetchQueries({queryKey: ["info"]}).then()
+                return Promise.reject(error)
+            },
+        )
+        return () => api.interceptors.response.eject(id)
     }
 }
