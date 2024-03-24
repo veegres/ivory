@@ -86,7 +86,10 @@ func (s *QueryService) TablesQuery(credentialId uuid.UUID, db Database, schema s
 }
 
 func (s *QueryService) ChartQuery(credentialId uuid.UUID, db Database, chartType QueryChartType) (*QueryChart, error) {
-	request := s.chartMap[chartType]
+	request, ok := s.chartMap[chartType]
+	if !ok {
+		return nil, errors.New("chart " + string(chartType) + " is not supported")
+	}
 	response, err := s.postgresGateway.GetOne(credentialId, db, request.Query)
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get "+request.Name), err)
