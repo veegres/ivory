@@ -1,5 +1,5 @@
 import {InstanceMainTitle} from "./InstanceMainTitle";
-import {ClusterNoPostgresPassword} from "../overview/OverviewError";
+import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewError";
 import {Box, Link} from "@mui/material";
 import {Database, SxPropsMap} from "../../../../type/common";
 import {InstanceTab, InstanceTabType} from "../../../../type/instance";
@@ -61,9 +61,16 @@ export function InstanceMain(props: Props) {
     return (
         <Box sx={SX.main}>
             <InstanceMainTitle label={label} info={info} db={db} renderActions={renderActions()}/>
-            {postgresId ? body(postgresId, db) : <ClusterNoPostgresPassword/>}
+            {renderBody()}
         </Box>
     )
+
+    function renderBody() {
+        if (!postgresId) return <ClusterNoPostgresPassword/>
+        if (database.host === "-") return <NoDatabaseError/>
+
+        return body(postgresId, db)
+    }
 
     function renderActions() {
         if (!postgresId) return null
