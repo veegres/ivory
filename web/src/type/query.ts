@@ -60,7 +60,9 @@ export interface QueryKillRequest extends QueryPostgresRequest {
     pid: number,
 }
 
-export interface QueryChartRequest extends QueryPostgresRequest {}
+export interface QueryChartRequest extends QueryPostgresRequest {
+    type: QueryChartType,
+}
 
 
 export interface QueryDatabasesRequest extends QueryPostgresRequest {
@@ -80,6 +82,17 @@ export interface QueryField {
     name: string,
     dataType: string,
     dataTypeOID: number,
+}
+
+export enum QueryChartType {
+    Databases = "Databases",
+    Connections = "Connections",
+    DatabaseSize = "DatabaseSize",
+    DatabaseUptime = "DatabaseUptime",
+    Schemas = "Schemas",
+    TablesSize = "TablesSize",
+    IndexesSize = "IndexesSize",
+    TotalSize = "TotalSize",
 }
 
 export interface QueryChart {

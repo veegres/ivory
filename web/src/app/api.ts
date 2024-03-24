@@ -186,11 +186,8 @@ export const QueryApi = {
     tables: (req: QueryTablesRequest) => api
         .post<Response<string[]>>(`/query/tables`, req)
         .then((response) => response.data.response),
-    chartCommon: (req: QueryChartRequest) => api
-        .post<Response<QueryChart[]>>(`/query/chart/common`, req)
-        .then((response) => response.data.response),
-    chartDatabase: (req: QueryChartRequest) => api
-        .post<Response<QueryChart[]>>(`/query/chart/database`, req)
+    chart: (req: QueryChartRequest) => api
+        .post<Response<QueryChart>>(`/query/chart`, req)
         .then((response) => response.data.response),
     cancel: (req: QueryKillRequest) => api
         .post<Response<string>>(`/query/cancel`, req)

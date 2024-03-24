@@ -230,7 +230,7 @@ func (r *QueryRouter) PostTablesQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) PostCommonChartQuery(context *gin.Context) {
+func (r *QueryRouter) PostChartQuery(context *gin.Context) {
 	var req QueryChartRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -238,24 +238,7 @@ func (r *QueryRouter) PostCommonChartQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.CommonChartQuery(req.CredentialId, req.Db)
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	context.JSON(http.StatusOK, gin.H{"response": res})
-}
-
-func (r *QueryRouter) PostDatabaseChartQuery(context *gin.Context) {
-	var req QueryChartRequest
-	errBind := context.ShouldBindJSON(&req)
-	if errBind != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
-		return
-	}
-
-	res, err := r.queryService.DatabaseChartQuery(req.CredentialId, req.Db)
+	res, err := r.queryService.ChartQuery(req.CredentialId, req.Db, req.Type)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

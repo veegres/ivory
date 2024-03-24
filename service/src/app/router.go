@@ -126,8 +126,7 @@ func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	query.POST("/databases", r.PostDatabasesQuery)
 	query.POST("/schemas", r.PostSchemasQuery)
 	query.POST("/tables", r.PostTablesQuery)
-	query.POST("/chart/common", r.PostCommonChartQuery)
-	query.POST("/chart/database", r.PostDatabaseChartQuery)
+	query.POST("/chart", r.PostChartQuery)
 	query.POST("/cancel", r.PostCancelQuery)
 	query.POST("/terminate", r.PostTerminateQuery)
 

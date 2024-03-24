@@ -45,7 +45,7 @@ type Query struct {
 }
 
 type QueryRequest struct {
-	Name        *string        `json:"name"`
+	Name        string         `json:"name"`
 	Type        *QueryType     `json:"type"`
 	Description *string        `json:"description"`
 	Query       string         `json:"query"`
@@ -72,6 +72,7 @@ type QueryKillRequest struct {
 
 type QueryChartRequest struct {
 	QueryPostgresRequest
+	Type QueryChartType `json:"type"`
 }
 
 type QueryDatabasesRequest struct {
@@ -95,6 +96,19 @@ type QueryField struct {
 	DataType    string `json:"dataType"`
 	DataTypeOID uint32 `json:"dataTypeOID"`
 }
+
+type QueryChartType string
+
+const (
+	Databases      QueryChartType = "Databases"
+	Connections                   = "Connections"
+	DatabaseSize                  = "DatabaseSize"
+	DatabaseUptime                = "DatabaseUptime"
+	Schemas                       = "Schemas"
+	TablesSize                    = "TablesSize"
+	IndexesSize                   = "IndexesSize"
+	TotalSize                     = "TotalSize"
+)
 
 type QueryChart struct {
 	Name  string `json:"name"`

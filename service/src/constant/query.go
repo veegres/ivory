@@ -1,5 +1,7 @@
 package constant
 
+import . "ivory/src/model"
+
 const GetAllDatabases = `SELECT datname AS name FROM pg_database WHERE datistemplate = false AND datname LIKE $1 LIMIT 100;`
 const GetAllSchemas = `SELECT nspname AS NAME FROM pg_namespace WHERE nspname LIKE $1 LIMIT 100;`
 const GetAllTables = `SELECT relname AS name FROM pg_stat_all_tables WHERE schemaname = $1 AND relname LIKE $2 LIMIT 100;`
@@ -279,3 +281,16 @@ const DefaultIndexInvalid = `SELECT
 FROM pg_class, pg_index 
 WHERE pg_index.indisvalid = false 
   AND pg_index.indexrelid = pg_class.oid;`
+
+func CreateChartsMap() map[QueryChartType]QueryRequest {
+	return map[QueryChartType]QueryRequest{
+		Databases:      {Name: "Databases", Query: "SELECT count(*) FROM pg_database;"},
+		Connections:    {Name: "Connections", Query: "SELECT count(*) FROM pg_stat_activity;"},
+		DatabaseSize:   {Name: "Database Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;"},
+		DatabaseUptime: {Name: "Database Uptime", Query: "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;"},
+		Schemas:        {Name: "Schemas", Query: "SELECT count(*) FROM pg_namespace;"},
+		TablesSize:     {Name: "Tables Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+		IndexesSize:    {Name: "Indexes Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+		TotalSize:      {Name: "Total Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+	}
+}
