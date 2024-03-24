@@ -3,35 +3,32 @@ import {QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {ChartItem, Color} from "./ChartItem";
 import {Database, SxPropsMap} from "../../../type/common";
-import {ChartLoading} from "./ChartLoading";
-import {Box} from "@mui/material";
+import {Box, Skeleton} from "@mui/material";
+import {QueryChartType} from "../../../type/query";
 
 const SX: SxPropsMap = {
     error: {flexGrow: 1},
 }
 
 type Props = {
+    type: QueryChartType,
     credentialId: string,
     db: Database,
 }
 
 export function ChartCommon(props: Props) {
-    const {db, credentialId} = props
+    const {db, credentialId, type} = props
 
-    const common = useQuery({
-        queryKey: ["query", "chart", "common", db.host, db.port, credentialId],
-        queryFn: () => QueryApi.chartCommon(props),
+    const chart = useQuery({
+        queryKey: ["query", "chart", type, db.host, db.port, credentialId],
+        queryFn: () => QueryApi.chart(props),
         retry: false,
     })
 
-    if (common.error) return <Box sx={SX.error}><ErrorSmart error={common.error}/></Box>
-    if (common.isPending) return <ChartLoading count={4}/>
+    if (chart.error) return <Box sx={SX.error}><ErrorSmart error={chart.error}/></Box>
+    if (chart.isPending) return <Skeleton width={200} height={150}/>
 
     return (
-        <>
-            {common.data?.map((chart, index) => (
-                <ChartItem key={index} label={chart.name} value={chart.value} color={Color.INDIGO}/>
-            ))}
-        </>
+        <ChartItem label={chart.data.name} value={chart.data.value} color={Color.INDIGO}/>
     )
 }
