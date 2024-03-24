@@ -11,3 +11,7 @@ export function ClusterNoLeaderError() {
 export function ClusterNoPostgresPassword() {
     return <ErrorSmart error={"You haven't set up postgres password for this cluster. Please, do it in the cluster settings bar"}/>
 }
+
+export function NoDatabaseError() {
+    return <ErrorSmart error={"Database is not specified"}/>
+}
