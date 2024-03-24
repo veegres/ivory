@@ -238,7 +238,7 @@ func (r *QueryRouter) PostChartQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.ChartQuery(req.CredentialId, req.Db, req.Type)
+	res, err := r.queryService.ChartQuery(req.CredentialId, req.Db, *req.Type)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

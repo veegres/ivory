@@ -1,4 +1,4 @@
-import {Box} from "@mui/material";
+import {Box, Skeleton} from "@mui/material";
 import {SxPropsMap} from "../../../type/common";
 import {
     blue, blueGrey, brown, cyan, deepOrange, deepPurple, green, indigo, orange, pink, purple, red
@@ -9,6 +9,7 @@ const SX: SxPropsMap = {
         display: "flex", flexDirection: "column", justifyContent: "center",
         alignItems: "center", color: "common.white", borderRadius: "5px",
         whiteSpace: "nowrap", padding: "20px 40px", flexGrow: 1,
+        minWidth: "150px", height: "100px",
     },
     label: {fontSize: "13px", textTransform: "uppercase"},
     value: {fontSize: "30px", fontWeight: "bold"},
@@ -35,22 +36,23 @@ const colors: {[key in Color]: string} = {
 }
 
 type Props = {
-    label: string,
+    loading: boolean,
+    label?: string,
     value?: string | number,
     color?: Color,
-    width?: string,
 }
 
 export function ChartItem(props: Props) {
-    const {value, label, color, width} = props
-    const w = width ? width : "150px", h = "100px"
+    const {value, label, color, loading} = props
+
+    if (loading) return <Skeleton sx={SX.box}/>
 
     const bg = color !== undefined ? colors[color] : colors[Math.floor(Math.random() * Object.keys(colors).length) as Color]
 
     return (
-        <Box sx={SX.box} minWidth={w} height={h} bgcolor={bg}>
+        <Box sx={SX.box} bgcolor={value ? bg : colors[Color.RED]}>
             <Box sx={SX.label}>{label}</Box>
-            <Box sx={SX.value}>{value ?? "unknown"}</Box>
+            <Box sx={SX.value}>{value ?? "ERROR"}</Box>
         </Box>
     )
 }

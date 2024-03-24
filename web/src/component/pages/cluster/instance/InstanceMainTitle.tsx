@@ -7,7 +7,7 @@ import {DatabaseBox} from "../../../view/box/DatabaseBox";
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},
     title: {display: "flex", justifyContent: "space-between", alignItems: "center", columnGap: 3, flexWrap: "wrap", alignContent: "stretch"},
-    label: {fontWeight: "bold", fontSize: "30px"},
+    label: {fontWeight: "bold", fontSize: "30px", width: "125px"},
     toggle: {padding: "3px"},
     buttons: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, height: "45px"},
     info: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 3},

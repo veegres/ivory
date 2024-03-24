@@ -72,7 +72,7 @@ type QueryKillRequest struct {
 
 type QueryChartRequest struct {
 	QueryPostgresRequest
-	Type QueryChartType `json:"type"`
+	Type *QueryChartType `json:"type"`
 }
 
 type QueryDatabasesRequest struct {

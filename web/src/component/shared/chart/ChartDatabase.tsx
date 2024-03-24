@@ -1,15 +1,8 @@
 import {useQuery} from "@tanstack/react-query";
 import {QueryApi} from "../../../app/api";
-import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {ChartItem, Color} from "./ChartItem";
-import {Database, SxPropsMap} from "../../../type/common";
-import {ChartLoading} from "./ChartLoading";
-import {Box} from "@mui/material";
+import {Database} from "../../../type/common";
 import {QueryChartType} from "../../../type/query";
-
-const SX: SxPropsMap = {
-    error: {flexGrow: 1},
-}
 
 type Props = {
     type: QueryChartType,
@@ -27,10 +20,13 @@ export function ChartDatabase(props: Props) {
     })
 
     if (!db.name) return null
-    if (chart.error) return <Box sx={SX.error}><ErrorSmart error={chart.error}/></Box>
-    if (chart.isPending) return <ChartLoading count={4}/>
 
     return (
-        <ChartItem label={chart.data.name} value={chart.data.value} color={Color.DEEP_PURPLE}/>
+        <ChartItem
+            label={chart.data?.name ?? type}
+            value={chart.data?.value}
+            loading={chart.isPending}
+            color={Color.DEEP_PURPLE}
+        />
     )
 }
