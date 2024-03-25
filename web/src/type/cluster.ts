@@ -49,7 +49,7 @@ export interface ActiveCluster {
 export interface ClusterTabs {
     [key: number]: {
         label: string,
-        body: (cluster: ActiveCluster) => ReactNode,
+        body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => ReactNode,
         info?: ReactNode,
     }
 }

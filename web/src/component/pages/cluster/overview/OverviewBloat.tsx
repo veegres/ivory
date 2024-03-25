@@ -3,7 +3,6 @@ import {useQuery} from "@tanstack/react-query";
 import {BloatApi, QueryApi} from "../../../../app/api";
 import {useState} from "react";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
-import {TabProps} from "./Overview";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
 import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Query} from "../../../shared/query/Query";
@@ -11,6 +10,7 @@ import {Cached} from "@mui/icons-material";
 import {SxPropsMap} from "../../../../type/common";
 import {BloatTarget} from "../../../../type/bloat";
 import {QueryType} from "../../../../type/query";
+import {ActiveCluster} from "../../../../type/cluster";
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
@@ -22,7 +22,11 @@ const SX: SxPropsMap = {
 
 enum ListBlock {JOB, QUERY}
 
-export function OverviewBloat(props: TabProps) {
+type Props = {
+    info: ActiveCluster
+}
+
+export function OverviewBloat(props: Props) {
     const {cluster, defaultInstance} = props.info
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()

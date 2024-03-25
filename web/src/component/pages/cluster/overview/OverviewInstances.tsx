@@ -1,10 +1,12 @@
 import {Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import {useIsFetching, useQueryClient} from "@tanstack/react-query";
 import {TableCellLoader} from "../../../view/table/TableCellLoader";
-import {TabProps} from "./Overview";
 import {SxPropsMap} from "../../../../type/common";
 import {OverviewInstancesRow} from "./OverviewInstancesRow";
 import {RefreshIconButton} from "../../../view/button/IconButtons";
+import {ActiveCluster} from "../../../../type/cluster";
+import {InstanceWeb} from "../../../../type/instance";
+import {getDomain} from "../../../../app/utils";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}, "tr th, td": {padding: "2px 5px"}, tableLayout: "fixed"},
@@ -12,7 +14,13 @@ const SX: SxPropsMap = {
     warning: {display: "flex", justifyContent: "center"},
 }
 
-export function OverviewInstances({info}: TabProps) {
+type Props = {
+    info: ActiveCluster,
+    activeInstance?: InstanceWeb,
+}
+
+export function OverviewInstances(props: Props) {
+    const {activeInstance, info} = props
     const {cluster, combinedInstanceMap} = info
     const key = {queryKey: ["instance/overview", cluster.name]}
     const queryClient = useQueryClient();
@@ -38,10 +46,20 @@ export function OverviewInstances({info}: TabProps) {
                 </TableRow>
             </TableHead>
             <TableBody>
+                {renderCheckedInstance()}
                 {Object.entries(combinedInstanceMap).map(([key, element]) => (
                     <OverviewInstancesRow key={key} domain={key} instance={element} cluster={cluster} candidates={candidates}/>
                 ))}
             </TableBody>
         </Table>
     )
+
+    function renderCheckedInstance() {
+        if (!activeInstance) return
+        const domain = getDomain(activeInstance.sidecar)
+        if (combinedInstanceMap[domain]) return
+        return (
+            <OverviewInstancesRow domain={domain} instance={activeInstance} cluster={cluster} candidates={candidates} error={true}/>
+        )
+    }
 }
