@@ -2,7 +2,7 @@ import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material";
 import {DateTimeFormatter, InstanceColor, SizeFormatter, SxPropsFormatter} from "../../../../app/utils";
 import {Sidecar, SxPropsMap} from "../../../../type/common";
 import {InstanceRequest, InstanceWeb} from "../../../../type/instance";
-import {WarningAmberRounded} from "@mui/icons-material";
+import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {Cluster} from "../../../../type/cluster";
 import {useEffect} from "react";
@@ -28,10 +28,11 @@ type Props = {
     instance: InstanceWeb,
     cluster: Cluster,
     candidates: Sidecar[],
+    error?: boolean,
 }
 
 export function OverviewInstancesRow(props: Props) {
-    const {instance, domain, cluster, candidates} = props
+    const {instance, domain, cluster, candidates, error = false} = props
     const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover} = instance
 
     const {isInstanceActive} = useStore()
@@ -50,7 +51,10 @@ export function OverviewInstancesRow(props: Props) {
     const databaseName = `${database.host}:${database.port === 0 ? "-" : database.port}`
 
     return (
-        <TableRow sx={[SX.row, checked && SxPropsFormatter.style.bgImageSelected]} onClick={handleCheck(instance, checked)}>
+        <TableRow
+            sx={[SX.row, checked && SxPropsFormatter.style.bgImageSelected, error && SxPropsFormatter.style.bgImageError]}
+            onClick={handleCheck(instance, checked)}
+        >
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
             <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
@@ -67,13 +71,25 @@ export function OverviewInstancesRow(props: Props) {
             <TableCell sx={SX.nowrap}>{state}</TableCell>
             <TableCell>{renderData()}</TableCell>
             <TableCell align={"right"} onClick={(e) => e.stopPropagation()}>
-                <Box sx={SX.buttons}>
-                    {renderRoleButtons()}
-                    {renderMenuButtons()}
-                </Box>
+                <Box sx={SX.buttons}>{renderButtons()}</Box>
             </TableCell>
         </TableRow>
     )
+
+    function renderButtons() {
+        if (error) return (
+            <Tooltip title={"This instance is not in this cluster anymore. It was before that is why you see it. Just uncheck it."} placement={"top"}>
+                <ErrorOutlineRounded color={"error"}/>
+            </Tooltip>
+        )
+
+        return (
+            <>
+                {renderRoleButtons()}
+                {renderMenuButtons()}
+            </>
+        )
+    }
 
     function renderData() {
         if (role === "unknown") return null

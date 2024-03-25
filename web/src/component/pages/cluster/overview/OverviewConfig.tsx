@@ -7,13 +7,13 @@ import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {InstanceRequest, InstanceWeb} from "../../../../type/instance";
-import {TabProps} from "./Overview";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {CodeThemes} from "../../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
 import {SxPropsMap} from "../../../../type/common";
 import {useSnackbar} from "notistack";
+import {ActiveCluster} from "../../../../type/cluster";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
@@ -21,7 +21,12 @@ const SX: SxPropsMap = {
     buttons: {display: "flex", flexDirection: "column"},
 }
 
-export function OverviewConfig({info}: TabProps) {
+type Props = {
+    info: ActiveCluster
+}
+
+export function OverviewConfig(props: Props) {
+    const {info} = props
     const appearance = useAppearance();
     const {enqueueSnackbar} = useSnackbar()
     const {defaultInstance, cluster} = info

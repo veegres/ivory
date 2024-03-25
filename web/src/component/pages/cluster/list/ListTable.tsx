@@ -75,12 +75,7 @@ export function ListTable(props: Props) {
             const toggle = () => setEditNode(editable ? "" : name)
 
             return (
-                <ListRow
-                    key={name}
-                    cluster={cluster}
-                    editable={editable}
-                    toggle={toggle}
-                />
+                <ListRow key={name} cluster={cluster} editable={editable} toggle={toggle}/>
             )
         })
     }

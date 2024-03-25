@@ -11,6 +11,7 @@ import {OverviewOptions} from "./OverviewOptions";
 import {SxPropsMap} from "../../../../type/common";
 import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../../type/cluster";
 import {OverviewAction} from "./OverviewAction";
+import {InstanceWeb} from "../../../../type/instance";
 
 const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -27,7 +28,7 @@ const SX: SxPropsMap = {
 const TABS: ClusterTabs = {
     0: {
         label: "Overview",
-        body: (cluster: ActiveCluster) => <OverviewInstances info={cluster}/>,
+        body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => <OverviewInstances info={cluster} activeInstance={activeInstance}/>,
     },
     1: {
         label: "Config",
@@ -54,12 +55,8 @@ const TABS: ClusterTabs = {
     },
 }
 
-export type TabProps = {
-    info: ActiveCluster
-}
-
 export function Overview() {
-    const {activeCluster, activeClusterTab} = useStore()
+    const {activeCluster, activeClusterTab, activeInstance} = useStore()
     const {setClusterTab} = useStoreAction()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
@@ -85,7 +82,7 @@ export function Overview() {
     function renderMainBlock() {
         if (!activeCluster) return <InfoAlert text={"Please, select a cluster to see the overview! (click on the name)"}/>
         if (!tab) return <InfoAlert text={"Coming soon — we're working on it!"}/>
-        return tab.body(activeCluster)
+        return tab.body(activeCluster, activeInstance)
     }
 
     function renderActions() {

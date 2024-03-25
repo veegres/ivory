@@ -56,7 +56,7 @@ export function ListRow(props: Props) {
                         </Tooltip>
                     )}
                     {!toggle && (
-                        <Tooltip title={"This cluster is not in this list. It is selected that is why you see it, just uncheck it"} placement={"top"}>
+                        <Tooltip title={"This cluster is not in this list. It was selected that is why you see it. Just uncheck it."} placement={"top"}>
                             <ErrorOutlineRounded color={"error"}/>
                         </Tooltip>
                     )}
