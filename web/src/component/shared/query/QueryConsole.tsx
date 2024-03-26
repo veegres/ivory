@@ -4,7 +4,7 @@ import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {useState} from "react";
 import {Database, SxPropsMap} from "../../../type/common";
 import {CancelIconButton, PlayIconButton} from "../../view/button/IconButtons";
-import {Box} from "@mui/material";
+import {Box, Paper} from "@mui/material";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {useDebounceFunction} from "../../../hook/Debounce";
@@ -48,9 +48,11 @@ export function QueryConsole(props: Props) {
                     )}
                 </Box>
             </Box>
-            <QueryBody show={run}>
-                <QueryBodyRun request={{query, credentialId, db}}/>
-            </QueryBody>
+            <Paper>
+                <QueryBody show={run}>
+                    <QueryBodyRun request={{query, credentialId, db}}/>
+                </QueryBody>
+            </Paper>
         </Box>
     )
 }
