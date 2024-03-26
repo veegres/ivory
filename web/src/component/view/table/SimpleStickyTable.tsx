@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
         "tr td, th": {
             borderRight: 1, borderColor: "divider", bgcolor: "background.paper", fontSize: "12px",
             maxWidth: "600px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-            "&:first-of-type": {borderLeft: 1, borderColor: "divider"},
+            "&:nth-of-type(2), &:nth-of-type(1)": {borderLeft: 1, borderColor: "divider"},
         },
     },
     description: {fontFamily: "monospace", color: "text.secondary"},
