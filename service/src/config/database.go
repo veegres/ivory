@@ -118,7 +118,7 @@ func (b *Bucket[T]) Get(key string) (T, error) {
 
 func (b *Bucket[T]) Create(key string, value T) (T, error) {
 	if key == "" {
-		return value, errors.New("elements identificator cannot be empty")
+		return value, errors.New("elements identifier cannot be empty")
 	}
 	err := b.db.Update(func(tx *bolt.Tx) error {
 		el := tx.Bucket(b.name).Get([]byte(key))
@@ -137,7 +137,7 @@ func (b *Bucket[T]) Create(key string, value T) (T, error) {
 
 func (b *Bucket[T]) Update(key string, value T) error {
 	if key == "" {
-		return errors.New("elements identificator cannot be empty")
+		return errors.New("elements identifier cannot be empty")
 	}
 	return b.db.Update(func(tx *bolt.Tx) error {
 		var buff bytes.Buffer
