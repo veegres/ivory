@@ -1,7 +1,7 @@
 import {ReactNode, useState} from "react";
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material";
 import {OpenIcon} from "../icon/OpenIcon";
-import {StylePropsMap} from "../../../type/common";
+import {StylePropsMap} from "../../../type/general";
 
 const style: StylePropsMap = {
     stacktrace: {padding: "10px 0px", whiteSpace: "pre-wrap"}

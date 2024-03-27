@@ -8,7 +8,7 @@ import {useMemo, useState} from "react";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {AddIconButton} from "../../../view/button/IconButtons";
 import {ClusterMap} from "../../../../type/cluster";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import scroll from "../../../../style/scroll.module.css"
 import {ListCreateAuto} from "./ListCreateAuto";
 import {useStore} from "../../../../provider/StoreProvider";

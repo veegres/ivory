@@ -1,4 +1,4 @@
-import {Database} from "./common";
+import {Database} from "./general";
 
 // COMMON (WEB AND SERVER)
 

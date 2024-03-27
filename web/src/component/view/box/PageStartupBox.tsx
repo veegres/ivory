@@ -5,7 +5,7 @@ import {GeneralApi} from "../../../app/api";
 import {randomUnicodeAnimal} from "../../../app/utils";
 import {LinearProgressStateful} from "../progress/LinearProgressStateful";
 import select from "../../../style/select.module.css";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     box: {

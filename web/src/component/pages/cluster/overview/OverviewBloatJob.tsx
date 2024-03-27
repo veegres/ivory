@@ -2,7 +2,7 @@ import {TransitionGroup} from "react-transition-group";
 import {Collapse} from "@mui/material";
 import {OverviewBloatJobItem} from "./OverviewBloatJobItem";
 import {InfoAlert} from "../../../view/box/InfoAlert";
-import {StylePropsMap} from "../../../../type/common";
+import {StylePropsMap} from "../../../../type/general";
 import {Bloat} from "../../../../type/bloat";
 
 const style: StylePropsMap = {

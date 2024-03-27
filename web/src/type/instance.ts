@@ -1,4 +1,4 @@
-import {Database, Sidecar} from "./common";
+import {Database, Sidecar} from "./general";
 import {ReactNode} from "react";
 import {Certs} from "./cluster";
 

@@ -1,5 +1,5 @@
 import {Box, CircularProgress, ToggleButton, Tooltip} from "@mui/material";
-import {SidecarStatus, SxPropsMap} from "../../../../type/common";
+import {SidecarStatus, SxPropsMap} from "../../../../type/general";
 import {SidecarStatusOptions} from "../../../../app/utils";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
 import {useMutation, UseMutationResult} from "@tanstack/react-query";

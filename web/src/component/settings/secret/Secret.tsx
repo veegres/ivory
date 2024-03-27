@@ -6,7 +6,7 @@ import {LoadingButton} from "@mui/lab";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {SafeApi} from "../../../app/api";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     alert: {margin: "0px 10px"},

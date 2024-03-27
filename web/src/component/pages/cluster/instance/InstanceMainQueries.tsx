@@ -1,4 +1,4 @@
-import {Database, SxPropsMap} from "../../../../type/common";
+import {Database, SxPropsMap} from "../../../../type/general";
 import {QueryType} from "../../../../type/query";
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {Query} from "../../../shared/query/Query";

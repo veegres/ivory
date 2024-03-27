@@ -1,7 +1,7 @@
 import {ReactNode, useRef, useState} from "react";
 import {Box, Collapse, IconButton, Paper} from "@mui/material";
 import {MoreVert} from "@mui/icons-material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     box: {position: "relative"},

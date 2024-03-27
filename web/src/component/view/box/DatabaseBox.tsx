@@ -1,4 +1,4 @@
-import {Database, SxPropsMap} from "../../../type/common";
+import {Database, SxPropsMap} from "../../../type/general";
 import {Box} from "@mui/material";
 
 const SX: SxPropsMap = {

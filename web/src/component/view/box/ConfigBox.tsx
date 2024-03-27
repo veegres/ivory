@@ -1,6 +1,6 @@
 import {ReactNode, useState} from "react";
 import {Alert, AlertColor, Box, Collapse, FormControl, FormLabel} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {HelpOutline} from "@mui/icons-material";
 
 const SX: SxPropsMap = {

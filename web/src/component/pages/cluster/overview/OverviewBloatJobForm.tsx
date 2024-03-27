@@ -4,7 +4,7 @@ import {useState} from "react";
 import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {BloatApi, QueryApi} from "../../../../app/api";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {InstanceWeb} from "../../../../type/instance";
 import {Cluster} from "../../../../type/cluster";
 import {Bloat, BloatTarget} from "../../../../type/bloat";

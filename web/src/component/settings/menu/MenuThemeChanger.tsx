@@ -1,7 +1,7 @@
 import {ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {BrightnessMediumTwoTone, DarkModeTwoTone, LightModeTwoTone} from "@mui/icons-material";
 import {Mode, useAppearance} from "../../../provider/AppearanceProvider";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     button: {padding: "3px 8px"},

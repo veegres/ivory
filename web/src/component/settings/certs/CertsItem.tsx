@@ -4,7 +4,7 @@ import {useMutation} from "@tanstack/react-query";
 import {CertApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {FileUsageOptions} from "../../../app/utils";
-import {StylePropsMap, SxPropsMap} from "../../../type/common";
+import {StylePropsMap, SxPropsMap} from "../../../type/general";
 import {Cert} from "../../../type/cert";
 
 const SX: SxPropsMap = {

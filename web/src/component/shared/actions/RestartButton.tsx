@@ -6,7 +6,7 @@ import {InstanceApi} from "../../../app/api";
 import {DateTimeField} from "@mui/x-date-pickers";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {DateTimeFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {

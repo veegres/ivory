@@ -2,7 +2,7 @@ import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {OverviewActionInfo} from "./OverviewActionInfo";
 import {InfoOutlined, Settings} from "@mui/icons-material";
 import {ActiveCluster} from "../../../../type/cluster";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {OverviewActionStatus} from "./OverviewActionStatus";
 import {InstanceRequest} from "../../../../type/instance";
 

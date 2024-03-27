@@ -2,7 +2,7 @@ import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {useState} from "react";
 import {CertsTabPath} from "./CertsTabPath";
 import {CertsTabUpload} from "./CertsTabUpload";
-import {FileUsageType, SxPropsMap} from "../../../type/common";
+import {FileUsageType, SxPropsMap} from "../../../type/general";
 import {FileUsageOptions} from "../../../app/utils";
 import {CertType} from "../../../type/cert";
 

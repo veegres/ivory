@@ -1,7 +1,7 @@
 import {Divider, Stack} from "@mui/material";
 import {OverviewOptionsInstance} from "./OverviewOptionsInstance";
 import {getDomain} from "../../../../app/utils";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {Options} from "../../../shared/options/Options";
 import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";

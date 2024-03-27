@@ -1,7 +1,7 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {InstanceInfoStatus} from "./InstanceInfoStatus";
 import {InstanceInfoTable} from "./InstanceInfoTable";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {InstanceTabType, InstanceWeb} from "../../../../type/instance";
 
 const SX: SxPropsMap = {

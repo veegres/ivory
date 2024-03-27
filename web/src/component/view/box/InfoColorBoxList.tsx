@@ -1,5 +1,5 @@
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {InfoColorBox} from "./InfoColorBox";
 
 const SX: SxPropsMap = {

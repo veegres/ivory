@@ -7,7 +7,7 @@ import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
 import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Query} from "../../../shared/query/Query";
 import {Cached} from "@mui/icons-material";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {BloatTarget} from "../../../../type/bloat";
 import {QueryType} from "../../../../type/query";
 import {ActiveCluster} from "../../../../type/cluster";

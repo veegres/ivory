@@ -1,4 +1,4 @@
-import {Database, StylePropsMap} from "../../../type/common";
+import {Database, StylePropsMap} from "../../../type/general";
 import {Box, Collapse, Skeleton} from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
 import {GeneralApi, QueryApi} from "../../../app/api";

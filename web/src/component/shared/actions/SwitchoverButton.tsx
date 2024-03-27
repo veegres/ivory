@@ -2,7 +2,7 @@ import {AlertButton} from "../../view/button/AlertButton";
 import {DateTimeField} from "@mui/x-date-pickers";
 import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 import {useState} from "react";
-import {Sidecar} from "../../../type/common";
+import {Sidecar} from "../../../type/general";
 import {InstanceRequest} from "../../../type/instance";
 import {useMutation} from "@tanstack/react-query";
 import {InstanceApi} from "../../../app/api";

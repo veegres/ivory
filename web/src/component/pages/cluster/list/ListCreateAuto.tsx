@@ -2,7 +2,7 @@ import {AutoIconButton} from "../../../view/button/IconButtons";
 import {useState} from "react";
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, TextField} from "@mui/material";
 import {Options} from "../../../shared/options/Options";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {ClusterAuto} from "../../../../type/cluster";
 import {useMutationOptions} from "../../../../hook/QueryCustom";

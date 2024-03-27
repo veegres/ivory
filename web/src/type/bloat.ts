@@ -1,4 +1,4 @@
-import {DbConnection} from "./common";
+import {DbConnection} from "./general";
 import {JobStatus} from "./job";
 
 // COMMON (WEB AND SERVER)

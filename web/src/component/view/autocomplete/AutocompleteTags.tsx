@@ -1,6 +1,6 @@
 import {HTMLAttributes, SyntheticEvent, useEffect, useMemo, useState} from "react";
 import {Autocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     option: {width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},

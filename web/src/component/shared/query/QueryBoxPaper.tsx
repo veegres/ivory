@@ -1,5 +1,5 @@
 import {ReactNode} from "react";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {Paper} from "@mui/material";
 
 const SX: SxPropsMap = {

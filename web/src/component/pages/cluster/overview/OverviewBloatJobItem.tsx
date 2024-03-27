@@ -10,7 +10,7 @@ import scroll from "../../../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../../../view/scrolling/DynamicRowVirtualizer";
 import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {useEventJob} from "../../../../hook/EventJob";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {Bloat} from "../../../../type/bloat";
 import select from "../../../../style/select.module.css";
 

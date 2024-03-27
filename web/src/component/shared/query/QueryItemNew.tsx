@@ -1,6 +1,6 @@
 import {InputBase} from "@mui/material";
 import {useEffect, useState} from "react";
-import {Database, SxPropsMap} from "../../../type/common";
+import {Database, SxPropsMap} from "../../../type/general";
 import {QueryRequest, QueryType} from "../../../type/query";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";

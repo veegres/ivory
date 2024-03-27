@@ -1,7 +1,7 @@
 import {QueryVarietyOptions} from "../../../app/utils";
 import {InfoColorBox} from "../../view/box/InfoColorBox";
 import {QueryVariety} from "../../../type/query";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {Box} from "@mui/material";
 
 const SX: SxPropsMap = {

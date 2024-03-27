@@ -2,7 +2,7 @@ import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {LoadingButton} from "@mui/lab";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
-import {AuthConfig, AuthType} from "../../../type/common";
+import {AuthConfig, AuthType} from "../../../type/general";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useMutation} from "@tanstack/react-query";
 import {GeneralApi} from "../../../app/api";
