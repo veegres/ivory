@@ -22,9 +22,9 @@ export function CredentialsItem(props: Props) {
         setCredential(credential)
     }, [credential])
 
-    const deleteOptions = useMutationOptions([["credentials"]])
+    const deleteOptions = useMutationOptions([["password"]])
     const deleteCredentials = useMutation({mutationFn: PasswordApi.delete, ...deleteOptions})
-    const updateOptions = useMutationOptions([["credentials"]], () => setEdit(false))
+    const updateOptions = useMutationOptions([["password"]], () => setEdit(false))
     const updateCredentials = useMutation({mutationFn: PasswordApi.update, ...updateOptions})
 
     return (

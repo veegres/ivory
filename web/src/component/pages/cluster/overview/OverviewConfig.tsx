@@ -1,6 +1,6 @@
 import {Box, Skeleton} from "@mui/material";
 import {InstanceApi} from "../../../../app/api";
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import {useAppearance} from "../../../../provider/AppearanceProvider";
 import {ErrorSmart} from "../../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
@@ -14,6 +14,7 @@ import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "
 import {SxPropsMap} from "../../../../type/general";
 import {useSnackbar} from "notistack";
 import {ActiveCluster} from "../../../../type/cluster";
+import {useRouterInstanceConfig} from "../../../../router/instance";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
@@ -35,12 +36,8 @@ export function OverviewConfig(props: Props) {
     const {sidecar} = defaultInstance
     const requestBody: InstanceRequest = {sidecar, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
 
-    const {data: config, isPending, isError, error} = useQuery({
-        queryKey: ["instance/config", sidecar.host, sidecar.port],
-        queryFn: () => InstanceApi.config(requestBody),
-        enabled: defaultInstance.inCluster,
-    })
-    const updateOptions = useMutationOptions([["instance/config", sidecar.host, sidecar.port]], () => setIsEditable(false))
+    const {data: config, isPending, isError, error} = useRouterInstanceConfig(requestBody, defaultInstance.inCluster)
+    const updateOptions = useMutationOptions([["instance", "config", sidecar.host, sidecar.port]], () => setIsEditable(false))
     const updateConfig = useMutation({mutationFn: InstanceApi.updateConfig, ...updateOptions})
 
     useEffect(() => setConfigState(stringify(config)), [config])

@@ -21,7 +21,7 @@ export function SwitchoverButton(props: Props) {
     const [candidate, setCandidates] = useState("")
     const [schedule, setSchedule] = useState<string>()
 
-    const options = useMutationOptions([["instance/overview", cluster]])
+    const options = useMutationOptions([["instance", "overview", cluster]])
     const switchover = useMutation({mutationFn: InstanceApi.switchover, ...options})
 
     const body = {leader: request.sidecar.host, candidate, scheduled_at: schedule}

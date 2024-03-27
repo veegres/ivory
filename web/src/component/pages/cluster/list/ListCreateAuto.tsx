@@ -25,7 +25,7 @@ export function ListCreateAuto() {
     const [cluster, setCluster] = useState(InitialClusterAuto)
     const [open, setOpen] = useState(false)
 
-    const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]], handleSuccessUpdate)
+    const updateMutationOptions = useMutationOptions([["cluster", "list"], ["tag", "list"]], handleSuccessUpdate)
     const updateCluster = useMutation({mutationFn: ClusterApi.createAuto, ...updateMutationOptions})
 
     return (

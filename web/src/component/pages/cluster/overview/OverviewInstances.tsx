@@ -22,7 +22,7 @@ type Props = {
 export function OverviewInstances(props: Props) {
     const {activeInstance, info} = props
     const {cluster, combinedInstanceMap} = info
-    const key = {queryKey: ["instance/overview", cluster.name]}
+    const key = {queryKey: ["instance", "overview", cluster.name]}
     const queryClient = useQueryClient();
     const instanceMapFetching = useIsFetching(key)
     const candidates = Object.values(combinedInstanceMap)

@@ -1,8 +1,7 @@
-import {useQuery} from "@tanstack/react-query";
-import {QueryApi} from "../../../app/api";
 import {ChartItem, Color} from "./ChartItem";
 import {Database} from "../../../type/general";
 import {QueryChartType} from "../../../type/query";
+import {useRouterQueryChart} from "../../../router/query";
 
 type Props = {
     type: QueryChartType,
@@ -11,13 +10,9 @@ type Props = {
 }
 
 export function ChartDatabase(props: Props) {
-    const {db, credentialId, type} = props
+    const {db, type} = props
 
-    const chart = useQuery({
-        queryKey: ["query", "chart", type, db.host, db.port, db.name, credentialId],
-        queryFn: () => QueryApi.chart(props),
-        retry: false, enabled: !!db.name,
-    })
+    const chart = useRouterQueryChart(props, !!db.name)
 
     if (!db.name) return null
 

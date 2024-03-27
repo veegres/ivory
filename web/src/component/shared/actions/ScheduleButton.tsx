@@ -19,7 +19,7 @@ type Props = {
 export function ScheduleButton(props: Props) {
     const {request, cluster, switchover, restart} = props
 
-    const options = useMutationOptions([["instance/overview", cluster]])
+    const options = useMutationOptions([["instance", "overview", cluster]])
     const deleteRestart = useMutation({mutationFn: InstanceApi.deleteRestart, ...options})
     const deleteSwitchover = useMutation({mutationFn: InstanceApi.deleteSwitchover, ...options})
 

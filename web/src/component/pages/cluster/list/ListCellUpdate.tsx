@@ -25,7 +25,7 @@ export function ListCellUpdate(props: Props) {
     const {name, instances, tags, credentials, certs} = props
     const {toggle, onUpdate, onClose} = props
 
-    const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]], handleSuccess)
+    const updateMutationOptions = useMutationOptions([["cluster", "list"], ["tag", "list"]], handleSuccess)
     const updateCluster = useMutation({mutationFn: ClusterApi.update, ...updateMutationOptions})
 
     return (

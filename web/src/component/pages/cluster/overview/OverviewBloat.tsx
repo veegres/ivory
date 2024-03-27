@@ -1,6 +1,4 @@
 import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
-import {useQuery} from "@tanstack/react-query";
-import {BloatApi, QueryApi} from "../../../../app/api";
 import {useState} from "react";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
@@ -11,6 +9,8 @@ import {SxPropsMap} from "../../../../type/general";
 import {BloatTarget} from "../../../../type/bloat";
 import {QueryType} from "../../../../type/query";
 import {ActiveCluster} from "../../../../type/cluster";
+import {useRouterQueryMap} from "../../../../router/query";
+import {useRouterBloatList} from "../../../../router/bloat";
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
@@ -31,17 +31,8 @@ export function OverviewBloat(props: Props) {
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()
 
-    const query = useQuery({
-        queryKey: ["query", "map", QueryType.BLOAT],
-        queryFn: () => QueryApi.list(QueryType.BLOAT),
-        enabled: tab === ListBlock.QUERY,
-    })
-    const jobs = useQuery({
-        initialData: [],
-        queryKey: ["instance", "bloat", "list", cluster.name],
-        queryFn: () => BloatApi.list(cluster.name),
-        enabled: tab === ListBlock.JOB,
-    })
+    const query = useRouterQueryMap(QueryType.BLOAT, tab === ListBlock.QUERY)
+    const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
     const db = {...defaultInstance.database, database: target?.dbName}
 
