@@ -1,11 +1,11 @@
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {InstanceApi} from "../app/api";
+import {useQueryClient} from "@tanstack/react-query";
 import {useEffect, useMemo, useRef} from "react";
 import {combineInstances, createInstanceColors, getDomain, initialInstance, isSidecarEqual} from "../app/utils";
 import {useStore, useStoreAction} from "../provider/StoreProvider";
 import {Cluster, DetectionType, InstanceDetection} from "../type/cluster";
 import {Sidecar} from "../type/general";
 import {InstanceMap} from "../type/instance";
+import {useRouterInstanceOverview} from "../router/instance";
 
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
     const {activeCluster} = useStore()
@@ -16,17 +16,10 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const defaultSidecar = useRef(instances[0])
     const previousData = useRef<InstanceMap>({})
 
-    const queryKey = useMemo(() => ["instance/overview", cluster.name], [cluster.name])
+    const queryKey = useMemo(() => ["instance", "overview", cluster.name], [cluster.name])
+    const request = {sidecar: defaultSidecar.current, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
     const queryClient = useQueryClient();
-    const query = useQuery({
-        queryKey: ["instance/overview", cluster.name],
-        queryFn: () => InstanceApi.overview({
-            sidecar: defaultSidecar.current,
-            credentialId: cluster.credentials.patroniId,
-            certs: cluster.certs
-        }),
-        retry: false,
-    })
+    const query = useRouterInstanceOverview(cluster.name, request)
     const {errorUpdateCount, refetch, data, isFetching} = query
     const instanceMap = useMemo(handleMemoInstanceMap, [data])
     previousData.current = instanceMap

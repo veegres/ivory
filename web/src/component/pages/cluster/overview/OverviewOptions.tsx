@@ -20,7 +20,7 @@ export function OverviewOptions(props: Props) {
     const {info} = props
     const {combinedInstanceMap, defaultInstance, cluster, detection} = info
 
-    const updateMutationOptions = useMutationOptions([["cluster/list"], ["tag/list"]])
+    const updateMutationOptions = useMutationOptions([["cluster", "list"], ["tag", "list"]])
     const updateCluster = useMutation({mutationFn: ClusterApi.update, ...updateMutationOptions})
 
     return (

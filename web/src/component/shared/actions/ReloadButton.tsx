@@ -12,7 +12,7 @@ type Props = {
 export function ReloadButton(props: Props) {
     const {request, cluster} = props
 
-    const options = useMutationOptions([["instance/overview", cluster]])
+    const options = useMutationOptions([["instance", "overview", cluster]])
     const reload = useMutation({mutationFn: InstanceApi.reload, ...options})
 
     return (

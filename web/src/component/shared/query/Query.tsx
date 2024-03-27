@@ -1,12 +1,12 @@
 import {Database, StylePropsMap} from "../../../type/general";
 import {Box, Collapse, Skeleton} from "@mui/material";
-import {useQuery} from "@tanstack/react-query";
-import {GeneralApi, QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TransitionGroup} from "react-transition-group";
 import {QueryType} from "../../../type/query";
 import {QueryItemNew} from "./QueryItemNew";
 import {QueryItemView} from "./QueryItemView";
+import {useRouterInfo} from "../../../router/general";
+import {useRouterQueryMap} from "../../../router/query";
 
 const style: StylePropsMap = {
     box: {display: "flex", flexDirection: "column", gap: "8px"},
@@ -20,8 +20,8 @@ type Props = {
 
 export function Query(props: Props) {
     const {type, credentialId, db} = props
-    const query = useQuery({queryKey: ["query", "map", type], queryFn: () => QueryApi.list(type)})
-    const info = useQuery({queryKey: ["info"], queryFn: () => GeneralApi.info()})
+    const query = useRouterQueryMap(type)
+    const info = useRouterInfo()
 
     const isManual = info.data?.availability.manualQuery ?? false
 

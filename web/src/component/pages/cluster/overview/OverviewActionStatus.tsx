@@ -20,7 +20,7 @@ type Props = {
 export function OverviewActionStatus(props: Props) {
     const {status, cluster, instance} = props
 
-    const mutOptions = useMutationOptions([["instance/overview", cluster]])
+    const mutOptions = useMutationOptions([["instance", "overview", cluster]])
     const activate = useMutation({mutationFn: InstanceApi.activate, ...mutOptions})
     const pause = useMutation({mutationFn: InstanceApi.pause, ...mutOptions})
 

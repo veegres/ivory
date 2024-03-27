@@ -13,7 +13,7 @@ type Props = {
 export function FailoverButton(props: Props) {
     const {request, cluster, disabled} = props
 
-    const options = useMutationOptions([["instance/overview", cluster]])
+    const options = useMutationOptions([["instance", "overview", cluster]])
     const failover = useMutation({mutationFn: InstanceApi.failover, ...options})
 
     const body = {candidate: request.sidecar.host}

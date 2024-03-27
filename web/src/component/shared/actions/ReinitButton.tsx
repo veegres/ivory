@@ -22,7 +22,7 @@ export function ReinitButton(props: Props) {
 
     const [force, setForce] = useState(false)
 
-    const options = useMutationOptions([["instance/overview", cluster]])
+    const options = useMutationOptions([["instance", "overview", cluster]])
     const reinit = useMutation({mutationFn: InstanceApi.reinitialize, ...options})
 
     const body = {force}

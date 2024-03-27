@@ -1,6 +1,5 @@
 import {AutocompleteTags} from "../../view/autocomplete/AutocompleteTags";
-import {useQuery} from "@tanstack/react-query";
-import {TagApi} from "../../../app/api";
+import {useRouterTagList} from "../../../router/tag";
 
 type Props = {
     selected?: string[],
@@ -8,7 +7,7 @@ type Props = {
 }
 
 export function OptionsTags(props: Props) {
-    const query = useQuery({queryKey: ["tag/list"], queryFn: TagApi.list})
+    const query = useRouterTagList()
     const {data, isPending} = query
     const tags = data ?? [];
     return (

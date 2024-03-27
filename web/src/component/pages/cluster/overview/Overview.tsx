@@ -6,12 +6,12 @@ import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {PageMainBox} from "../../../view/box/PageMainBox";
-import {useQuery} from "@tanstack/react-query";
 import {OverviewOptions} from "./OverviewOptions";
 import {SxPropsMap} from "../../../../type/general";
-import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../../type/cluster";
+import {ActiveCluster, ClusterTabs} from "../../../../type/cluster";
 import {OverviewAction} from "./OverviewAction";
 import {InstanceWeb} from "../../../../type/instance";
+import {useRouterClusterList} from "../../../../router/cluster";
 
 const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -60,7 +60,7 @@ export function Overview() {
     const {setClusterTab} = useStoreAction()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useQuery<ClusterMap>({queryKey: ["cluster/list"]})
+    const clusters = useRouterClusterList()
     const tab = TABS[activeClusterTab]
 
     return (

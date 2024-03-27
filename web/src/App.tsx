@@ -1,10 +1,9 @@
 import {Box} from "@mui/material";
 import {Header} from "./component/section/Header";
 import {Body} from "./component/section/Body";
-import {useQuery} from "@tanstack/react-query";
-import {GeneralApi} from "./app/api";
 import {Footer} from "./component/section/Footer";
 import {AuthType, SxPropsMap} from "./type/general";
+import {useRouterInfo} from "./router/general";
 
 const SX: SxPropsMap = {
     // we need -8px for bottom scroll, right scroll is always shown that is why we don't need calc
@@ -13,7 +12,7 @@ const SX: SxPropsMap = {
 }
 
 export function App() {
-    const info = useQuery({queryKey: ["info"], queryFn: GeneralApi.info, refetchOnWindowFocus: "always"})
+    const info = useRouterInfo()
     const show = !info.isPending && !!info.data && info.data.secret.key && info.data.auth.authorised
 
     return (

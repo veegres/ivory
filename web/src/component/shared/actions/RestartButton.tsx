@@ -25,7 +25,7 @@ export function RestartButton(props: Props) {
     const [schedule, setSchedule] = useState<string>()
     const [pending, setPending] = useState(false)
 
-    const options = useMutationOptions([["instance/overview", cluster]])
+    const options = useMutationOptions([["instance", "overview", cluster]])
     const restart = useMutation({mutationFn: InstanceApi.restart, ...options})
 
     const body = {schedule, restart_pending: pending || undefined}
