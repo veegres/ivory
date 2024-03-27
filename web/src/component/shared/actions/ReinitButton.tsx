@@ -5,7 +5,7 @@ import {useMutation} from "@tanstack/react-query";
 import {InstanceApi} from "../../../app/api";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     force: {margin: "0px"},

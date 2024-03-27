@@ -2,7 +2,7 @@ import {Box, Divider} from "@mui/material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {PageMainBox} from "../../../view/box/PageMainBox";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {InstanceMain} from "./InstanceMain";
 import {InstanceInfo} from "./InstanceInfo";
 

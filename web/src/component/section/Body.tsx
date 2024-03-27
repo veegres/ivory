@@ -2,7 +2,7 @@ import {PageMainBox} from "../view/box/PageMainBox";
 import {Skeleton, Stack} from "@mui/material";
 import {SecretBodyInitial} from "../pages/secret/SecretBodyInitial";
 import {SecretBodySecondary} from "../pages/secret/SecretBodySecondary";
-import {AppInfo, SxPropsMap} from "../../type/common";
+import {AppInfo, SxPropsMap} from "../../type/general";
 import {UseQueryResult} from "@tanstack/react-query";
 import {LoginBody} from "../pages/login/LoginBody";
 import {ConfigBody} from "../pages/config/ConfigBody";

@@ -26,7 +26,7 @@ import {
     Sidecar,
     SidecarStatus,
     SxPropsMap
-} from "../type/common";
+} from "../type/general";
 import {CertType} from "../type/cert";
 import {InstanceMap, InstanceWeb, Role} from "../type/instance";
 import {JobStatus} from "../type/job";

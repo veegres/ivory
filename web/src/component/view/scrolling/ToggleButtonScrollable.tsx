@@ -1,4 +1,4 @@
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {useRef, useState} from "react";
 import {Box, TabScrollButton, ToggleButton, Tooltip} from "@mui/material";
 import {useWindowScrolled} from "../../../hook/WindowScrolled";

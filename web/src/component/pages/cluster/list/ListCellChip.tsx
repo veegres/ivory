@@ -5,7 +5,7 @@ import {getDomain, InstanceColor} from "../../../../app/utils";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
 import {useStoreAction} from "../../../../provider/StoreProvider";
 import {Cluster, InstanceDetection} from "../../../../type/cluster";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 
 const SX: SxPropsMap = {
     chip: {width: "100%"},

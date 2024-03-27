@@ -1,6 +1,6 @@
 import {ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import {NavigateNext} from "@mui/icons-material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {ReactElement} from "react";
 
 const SX: SxPropsMap = {

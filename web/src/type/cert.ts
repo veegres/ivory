@@ -1,4 +1,4 @@
-import {FileUsageType} from "./common";
+import {FileUsageType} from "./general";
 import {AxiosProgressEvent} from "axios";
 
 // COMMON (WEB AND SERVER)

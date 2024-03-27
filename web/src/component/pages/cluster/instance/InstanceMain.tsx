@@ -1,7 +1,7 @@
 import {InstanceMainTitle} from "./InstanceMainTitle";
 import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewError";
 import {Box, Link} from "@mui/material";
-import {Database, SxPropsMap} from "../../../../type/common";
+import {Database, SxPropsMap} from "../../../../type/general";
 import {InstanceTab, InstanceTabType} from "../../../../type/instance";
 import {Chart} from "../../../shared/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";

@@ -1,6 +1,6 @@
 import {cloneElement, ReactElement} from "react";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {InfoBox} from "./InfoBox";
 import {InfoColorBoxList} from "./InfoColorBoxList";
 import {green, grey} from "@mui/material/colors";

@@ -2,7 +2,7 @@ import {QueryBody} from "./QueryBody";
 import {QueryBodyRun} from "./QueryBodyRun";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {useState} from "react";
-import {Database, SxPropsMap} from "../../../type/common";
+import {Database, SxPropsMap} from "../../../type/general";
 import {CancelIconButton, PlayIconButton} from "../../view/button/IconButtons";
 import {Box, Paper} from "@mui/material";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";

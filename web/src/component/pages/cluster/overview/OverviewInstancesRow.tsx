@@ -1,6 +1,6 @@
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material";
 import {DateTimeFormatter, InstanceColor, SizeFormatter, SxPropsFormatter} from "../../../../app/utils";
-import {Sidecar, SxPropsMap} from "../../../../type/common";
+import {Sidecar, SxPropsMap} from "../../../../type/general";
 import {InstanceRequest, InstanceWeb} from "../../../../type/instance";
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";

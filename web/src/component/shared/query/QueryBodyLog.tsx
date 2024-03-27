@@ -1,5 +1,5 @@
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {QueryBodyLogItem} from "./QueryBodyLogItem";
 import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons";
 import {useMutation, useQuery} from "@tanstack/react-query";

@@ -17,7 +17,7 @@ import {
     QueryTablesRequest,
     QueryType
 } from "../type/query";
-import {AppConfig, AppInfo, Login, Response} from "../type/common";
+import {AppConfig, AppInfo, Login, Response} from "../type/general";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
@@ -26,7 +26,7 @@ export const api = axios.create({baseURL: '/api'})
 // TODO we should simplify usage of react-query hooks
 //  Possible solutions:
 //  - provide queryKey with request in same object
-//  - try to make args that can be used than directly in react-query hooks
+//  - try to make args that can be used then directly in react-query hooks
 //  - can be problems with same route as for DELETE / GET / POST
 
 

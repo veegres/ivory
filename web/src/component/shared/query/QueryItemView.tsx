@@ -1,5 +1,5 @@
 import {Query, QueryCreation, QueryRequest} from "../../../type/query";
-import {Database, SxPropsMap} from "../../../type/common";
+import {Database, SxPropsMap} from "../../../type/general";
 import {QueryItemWrapper} from "./QueryItemWrapper";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyInfoView} from "./QueryBodyInfoView";

@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {QueryApi} from "../../../app/api";
 import {ChartItem, Color} from "./ChartItem";
-import {Database} from "../../../type/common";
+import {Database} from "../../../type/general";
 import {QueryChartType} from "../../../type/query";
 
 type Props = {

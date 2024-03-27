@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import {useMemo, useState} from "react";
 import {useStoreAction} from "../../../../provider/StoreProvider";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {InstanceMap} from "../../../../type/instance";
 import {DetectionType} from "../../../../type/cluster";
 

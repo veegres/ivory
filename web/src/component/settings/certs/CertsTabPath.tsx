@@ -5,7 +5,7 @@ import {useMutation} from "@tanstack/react-query";
 import {CertApi} from "../../../app/api";
 import {CheckCircle} from "@mui/icons-material";
 import {LoadingButton} from "@mui/lab";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {CertType} from "../../../type/cert";
 
 const SX: SxPropsMap = {

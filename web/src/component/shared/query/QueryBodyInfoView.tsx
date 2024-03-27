@@ -1,4 +1,4 @@
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {Query} from "../../../type/query";
 import {QueryBoxInfo} from "./QueryBoxInfo";

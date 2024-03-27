@@ -1,5 +1,5 @@
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {InputBase, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {QueryBoxInfo} from "./QueryBoxInfo";
 import {DynamicInputs} from "../../view/input/DynamicInputs";

@@ -1,7 +1,7 @@
 import {Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import {useIsFetching, useQueryClient} from "@tanstack/react-query";
 import {TableCellLoader} from "../../../view/table/TableCellLoader";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {OverviewInstancesRow} from "./OverviewInstancesRow";
 import {RefreshIconButton} from "../../../view/button/IconButtons";
 import {ActiveCluster} from "../../../../type/cluster";

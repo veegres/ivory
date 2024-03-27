@@ -1,6 +1,6 @@
 import {ReactNode, useState} from "react";
 import {Box, SxProps, Theme} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {

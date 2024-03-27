@@ -4,7 +4,7 @@ import {useEffect, useMemo, useRef} from "react";
 import {combineInstances, createInstanceColors, getDomain, initialInstance, isSidecarEqual} from "../app/utils";
 import {useStore, useStoreAction} from "../provider/StoreProvider";
 import {Cluster, DetectionType, InstanceDetection} from "../type/cluster";
-import {Sidecar} from "../type/common";
+import {Sidecar} from "../type/general";
 import {InstanceMap} from "../type/instance";
 
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {

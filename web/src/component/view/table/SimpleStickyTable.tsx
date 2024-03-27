@@ -1,7 +1,7 @@
 import scroll from "../../../style/scroll.module.css";
 import {Box, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
 import {TableBody} from "./TableBody";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {memo, ReactNode} from "react";
 
 const SX: SxPropsMap = {

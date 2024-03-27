@@ -1,6 +1,6 @@
 import {Table, TableCell, TableRow} from "@mui/material";
 import {TableBody} from "../../../view/table/TableBody";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {InstanceWeb} from "../../../../type/instance";
 
 const SX: SxPropsMap = {

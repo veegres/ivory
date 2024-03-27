@@ -1,5 +1,5 @@
 import {Box, Link} from "@mui/material";
-import {SxPropsMap} from "../../type/common";
+import {SxPropsMap} from "../../type/general";
 import {IvoryLinks, shortUuid} from "../../app/utils";
 
 const SX: SxPropsMap = {

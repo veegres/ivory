@@ -3,7 +3,7 @@ import {CredentialsInput} from "./CredentialsInput";
 import {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
 import {CredentialOptions} from "../../../app/utils";
 import {Password, PasswordType} from "../../../type/password";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     row: {display: "flex", alignItems: "center", gap: "15px", margin: "5px 10px 0px"},

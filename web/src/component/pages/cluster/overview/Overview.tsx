@@ -8,7 +8,7 @@ import {InfoAlert} from "../../../view/box/InfoAlert";
 import {PageMainBox} from "../../../view/box/PageMainBox";
 import {useQuery} from "@tanstack/react-query";
 import {OverviewOptions} from "./OverviewOptions";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {ActiveCluster, ClusterMap, ClusterTabs} from "../../../../type/cluster";
 import {OverviewAction} from "./OverviewAction";
 import {InstanceWeb} from "../../../../type/instance";

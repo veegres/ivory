@@ -11,7 +11,7 @@ import {ClusterNoInstanceError} from "./OverviewError";
 import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {CodeThemes} from "../../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
-import {SxPropsMap} from "../../../../type/common";
+import {SxPropsMap} from "../../../../type/general";
 import {useSnackbar} from "notistack";
 import {ActiveCluster} from "../../../../type/cluster";
 

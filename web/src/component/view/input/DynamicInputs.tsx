@@ -1,5 +1,5 @@
 import {Box, Chip, FormControl, OutlinedInput, SxProps, Theme} from "@mui/material";
-import {ColorsMap, SxPropsMap} from "../../../type/common";
+import {ColorsMap, SxPropsMap} from "../../../type/general";
 import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {

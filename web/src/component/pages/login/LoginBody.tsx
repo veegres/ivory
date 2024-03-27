@@ -5,7 +5,7 @@ import {useMutation} from "@tanstack/react-query";
 import {GeneralApi} from "../../../app/api";
 import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useState} from "react";
-import {AuthType, SxPropsMap} from "../../../type/common";
+import {AuthType, SxPropsMap} from "../../../type/general";
 import {LoadingButton} from "@mui/lab";
 import {useAuth} from "../../../provider/AuthProvider";
 

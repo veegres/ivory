@@ -3,7 +3,7 @@ import {useMutation} from "@tanstack/react-query";
 import {ClusterApi} from "../../../../app/api";
 import {Box} from "@mui/material";
 import {useMutationOptions} from "../../../../hook/QueryCustom";
-import {Sidecar, SxPropsMap} from "../../../../type/common";
+import {Sidecar, SxPropsMap} from "../../../../type/general";
 import {Certs, Credentials} from "../../../../type/cluster";
 
 const SX: SxPropsMap = {

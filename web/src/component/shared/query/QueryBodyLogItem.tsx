@@ -1,6 +1,6 @@
 import {Accordion, AccordionDetails, AccordionSummary, Box} from "@mui/material";
 import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {QueryFields} from "../../../type/query";
 import {useMemo, useState} from "react";
 import {KeyboardArrowDown} from "@mui/icons-material";

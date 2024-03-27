@@ -1,6 +1,6 @@
 import {FormControl, FormHelperText, InputLabel, OutlinedInput} from "@mui/material";
 import {useEffect, useState} from "react";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     input: { height: "36px" },

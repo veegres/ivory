@@ -3,7 +3,7 @@ import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../../app/utils";
 import {useStoreAction} from "../../provider/StoreProvider";
-import {AuthType, SxPropsMap} from "../../type/common";
+import {AuthType, SxPropsMap} from "../../type/general";
 import {useAuth} from "../../provider/AuthProvider";
 import {useQueryClient} from "@tanstack/react-query";
 

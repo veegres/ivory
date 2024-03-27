@@ -1,5 +1,5 @@
 import {Box, TableCell, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../type/common";
+import {SxPropsMap} from "../../../type/general";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {QueryRunRequest, QueryVariety} from "../../../type/query";
 import {CancelIconButton, RefreshIconButton, TerminateIconButton} from "../../view/button/IconButtons";
