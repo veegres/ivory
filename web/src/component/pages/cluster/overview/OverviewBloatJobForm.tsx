@@ -52,26 +52,30 @@ export function OverviewBloatJobForm(props: Props) {
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
+                value={target?.dbName || null}
                 margin={"dense"} variant={"standard"}
                 keys={["databases", ...keys]} label={"Database"}
                 onFetch={(v) => QueryApi.databases({...req, name: v})}
-                onUpdate={(v) => setTarget({...target, dbName: v || ""})}
+                onUpdate={(v) => setTarget({dbName: v || ""})}
             />
             <AutocompleteFetch
+                value={target?.schema || null}
                 margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Schema"}
                 disabled={!target?.dbName || !!target?.excludeSchema}
                 onFetch={(v) => QueryApi.schemas({...req, name: v})}
-                onUpdate={(v) => setTarget({...target, schema: v || ""})}
+                onUpdate={(v) => setTarget({dbName: target?.dbName, schema: v || ""})}
             />
             <AutocompleteFetch
+                value={target?.excludeSchema || null}
                 margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Exclude Schema"}
                 disabled={!target?.dbName || !!target?.schema}
                 onFetch={(v) => QueryApi.schemas({...req, name: v})}
-                onUpdate={(v) => setTarget({...target, excludeSchema: v || ""})}
+                onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || ""})}
             />
             <AutocompleteFetch
+                value={target?.table || null}
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
                 disabled={!target?.schema || !!target?.excludeTable}
@@ -79,6 +83,7 @@ export function OverviewBloatJobForm(props: Props) {
                 onUpdate={(v) => setTarget({...target, table: v || ""})}
             />
             <AutocompleteFetch
+                value={target?.excludeTable || null}
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.excludeSchema ?? ""]} label={"Exclude Table"}
                 disabled={!target?.schema || !!target?.table}
