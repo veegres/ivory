@@ -4,10 +4,8 @@ import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 import {useState} from "react";
 import {Sidecar} from "../../../type/general";
 import {InstanceRequest} from "../../../type/instance";
-import {useMutation} from "@tanstack/react-query";
-import {InstanceApi} from "../../../app/api";
-import {useMutationOptions} from "../../../hook/QueryCustom";
 import {DateTimeFormatter} from "../../../app/utils";
+import {useRouterInstanceSwitchover} from "../../../router/instance";
 
 type Props = {
     request: InstanceRequest,
@@ -20,10 +18,7 @@ export function SwitchoverButton(props: Props) {
 
     const [candidate, setCandidates] = useState("")
     const [schedule, setSchedule] = useState<string>()
-
-    const options = useMutationOptions([["instance", "overview", cluster]])
-    const switchover = useMutation({mutationFn: InstanceApi.switchover, ...options})
-
+    const switchover = useRouterInstanceSwitchover(cluster)
     const body = {leader: request.sidecar.host, candidate, scheduled_at: schedule}
 
     return (

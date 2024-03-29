@@ -2,17 +2,15 @@ import {Box, CircularProgress, Divider, Grid, IconButton, Paper, Tooltip} from "
 import {cloneElement, ReactElement, useState} from "react";
 import {OpenIcon} from "../../../view/icon/OpenIcon";
 import {Clear, Stop} from "@mui/icons-material";
-import {useMutation} from "@tanstack/react-query";
-import {BloatApi} from "../../../../app/api";
 import {shortUuid} from "../../../../app/utils";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
 import scroll from "../../../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../../../view/scrolling/DynamicRowVirtualizer";
-import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {useEventJob} from "../../../../hook/EventJob";
 import {SxPropsMap} from "../../../../type/general";
 import {Bloat} from "../../../../type/bloat";
 import select from "../../../../style/select.module.css";
+import {useRouterBloatDelete, useRouterBloatStop} from "../../../../router/bloat";
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
@@ -40,19 +38,8 @@ export function OverviewBloatJobItem(props: Props) {
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
 
-    const deleteOptions = useMutationOptions()
-    const deleteJob = useMutation({
-        mutationFn: BloatApi.delete,
-        ...deleteOptions,
-        onSuccess: () => {
-            deleteOptions.queryClient.setQueryData<Bloat[]>(
-                ["instance", "bloat", "list", cluster],
-                (jobs) => jobs?.filter(v => v.uuid !== uuid)
-            )
-        }
-    })
-    const stopOptions = useMutationOptions()
-    const stopJob = useMutation({mutationFn: BloatApi.stop, ...stopOptions})
+    const deleteJob = useRouterBloatDelete(uuid, cluster)
+    const stopJob = useRouterBloatStop()
 
     return (
         <Paper sx={SX.paper} variant={"outlined"}>

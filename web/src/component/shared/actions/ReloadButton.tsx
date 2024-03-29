@@ -1,8 +1,6 @@
 import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../type/instance";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {InstanceApi} from "../../../app/api";
+import {useRouterInstanceReload} from "../../../router/instance";
 
 type Props = {
     request: InstanceRequest,
@@ -12,8 +10,7 @@ type Props = {
 export function ReloadButton(props: Props) {
     const {request, cluster} = props
 
-    const options = useMutationOptions([["instance", "overview", cluster]])
-    const reload = useMutation({mutationFn: InstanceApi.reload, ...options})
+    const reload = useRouterInstanceReload(cluster)
 
     return (
         <AlertButton

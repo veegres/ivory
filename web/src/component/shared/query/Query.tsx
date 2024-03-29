@@ -6,7 +6,7 @@ import {QueryType} from "../../../type/query";
 import {QueryItemNew} from "./QueryItemNew";
 import {QueryItemView} from "./QueryItemView";
 import {useRouterInfo} from "../../../router/general";
-import {useRouterQueryMap} from "../../../router/query";
+import {useRouterQueryList} from "../../../router/query";
 
 const style: StylePropsMap = {
     box: {display: "flex", flexDirection: "column", gap: "8px"},
@@ -20,7 +20,7 @@ type Props = {
 
 export function Query(props: Props) {
     const {type, credentialId, db} = props
-    const query = useRouterQueryMap(type)
+    const query = useRouterQueryList(type)
     const info = useRouterInfo()
 
     const isManual = info.data?.availability.manualQuery ?? false

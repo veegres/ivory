@@ -2,10 +2,9 @@ import {Box, CircularProgress, ToggleButton, Tooltip} from "@mui/material";
 import {SidecarStatus, SxPropsMap} from "../../../../type/general";
 import {SidecarStatusOptions} from "../../../../app/utils";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
-import {useMutation, UseMutationResult} from "@tanstack/react-query";
-import {InstanceApi} from "../../../../app/api";
-import {useMutationOptions} from "../../../../hook/QueryCustom";
+import {UseMutationResult} from "@tanstack/react-query";
 import {InstanceRequest} from "../../../../type/instance";
+import {useRouterInstanceActivate, useRouterInstancePause} from "../../../../router/instance";
 
 const SX: SxPropsMap = {
     button: {padding: "3px", height: "32px", width: "32px"},
@@ -20,9 +19,8 @@ type Props = {
 export function OverviewActionStatus(props: Props) {
     const {status, cluster, instance} = props
 
-    const mutOptions = useMutationOptions([["instance", "overview", cluster]])
-    const activate = useMutation({mutationFn: InstanceApi.activate, ...mutOptions})
-    const pause = useMutation({mutationFn: InstanceApi.pause, ...mutOptions})
+    const activate = useRouterInstanceActivate(cluster)
+    const pause = useRouterInstancePause(cluster)
 
     const options = SidecarStatusOptions[status]
     const item = {label: options.label, bgColor: options.color}

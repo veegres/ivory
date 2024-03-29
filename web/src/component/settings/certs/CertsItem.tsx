@@ -1,11 +1,9 @@
 import {Box, Tooltip} from "@mui/material";
 import {DeleteIconButton} from "../../view/button/IconButtons";
-import {useMutation} from "@tanstack/react-query";
-import {CertApi} from "../../../app/api";
-import {useMutationOptions} from "../../../hook/QueryCustom";
 import {FileUsageOptions} from "../../../app/utils";
 import {StylePropsMap, SxPropsMap} from "../../../type/general";
 import {Cert} from "../../../type/cert";
+import {useRouterCertDelete} from "../../../router/cert";
 
 const SX: SxPropsMap = {
     item: {display: "flex", alignItems: "center", padding: "5px 10px", margin: "5px 10px", borderRadius: "5px", gap: 2, border: 1, borderColor: "divider"},
@@ -25,10 +23,7 @@ type Props = {
 
 export function CertsItem(props: Props) {
     const {cert, uuid} = props
-
-    const deleteOptions = useMutationOptions([["certs"]])
-    const deleteCert = useMutation({mutationFn: CertApi.delete, ...deleteOptions})
-
+    const deleteCert = useRouterCertDelete()
     const fileUsage = FileUsageOptions[cert.fileUsageType]
 
     return (

@@ -3,10 +3,8 @@ import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
 import {Alert, Box} from "@mui/material";
 import {LoadingButton} from "@mui/lab";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {SafeApi} from "../../../app/api";
 import {SxPropsMap} from "../../../type/general";
+import {useRouterSecretChange} from "../../../router/general";
 
 const SX: SxPropsMap = {
     alert: {margin: "0px 10px"},
@@ -19,8 +17,7 @@ const SX: SxPropsMap = {
 export function Secret() {
     const [prevKey, setPrevKey] = useState("")
     const [newKey, setNewKey] = useState("")
-    const changeReqOptions = useMutationOptions([["info"]])
-    const changeReq = useMutation({mutationFn: SafeApi.changeSecret, ...changeReqOptions})
+    const changeReq = useRouterSecretChange()
 
     return (
         <MenuWrapper>

@@ -3,13 +3,11 @@ import {SxPropsMap} from "../../../type/general";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {QueryRunRequest, QueryVariety} from "../../../type/query";
 import {CancelIconButton, RefreshIconButton, TerminateIconButton} from "../../view/button/IconButtons";
-import {useMutation} from "@tanstack/react-query";
-import {QueryApi} from "../../../app/api";
 import {QueryVarieties} from "./QueryVarieties";
 import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
 import {useCallback, useMemo} from "react";
 import {NoBox} from "../../view/box/NoBox";
-import {useRouterQueryRun} from "../../../router/query";
+import {useRouterQueryCancel, useRouterQueryRun, useRouterQueryTerminate} from "../../../router/query";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -32,9 +30,8 @@ export function QueryBodyRun(props: Props) {
     const result = useRouterQueryRun(request)
     const {data, error, isFetching} = result
 
-    const onSuccess = () => result.refetch()
-    const cancel = useMutation({mutationFn: QueryApi.cancel, onSuccess})
-    const terminate = useMutation({mutationFn: QueryApi.terminate, onSuccess})
+    const cancel = useRouterQueryCancel(request.queryUuid)
+    const terminate = useRouterQueryTerminate(request.queryUuid)
 
     // NOTE: we need this only to fix linter when passing to callback function
     const cancelMutate = cancel.mutate

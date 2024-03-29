@@ -1,6 +1,4 @@
 import {Box, Skeleton} from "@mui/material";
-import {InstanceApi} from "../../../../app/api";
-import {useMutation} from "@tanstack/react-query";
 import {useAppearance} from "../../../../provider/AppearanceProvider";
 import {ErrorSmart} from "../../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
@@ -8,13 +6,12 @@ import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
 import {InstanceRequest, InstanceWeb} from "../../../../type/instance";
 import {ClusterNoInstanceError} from "./OverviewError";
-import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {CodeThemes} from "../../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
 import {SxPropsMap} from "../../../../type/general";
 import {useSnackbar} from "notistack";
 import {ActiveCluster} from "../../../../type/cluster";
-import {useRouterInstanceConfig} from "../../../../router/instance";
+import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../router/instance";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
@@ -37,8 +34,7 @@ export function OverviewConfig(props: Props) {
     const requestBody: InstanceRequest = {sidecar, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
 
     const {data: config, isPending, isError, error} = useRouterInstanceConfig(requestBody, defaultInstance.inCluster)
-    const updateOptions = useMutationOptions([["instance", "config", sidecar.host, sidecar.port]], () => setIsEditable(false))
-    const updateConfig = useMutation({mutationFn: InstanceApi.updateConfig, ...updateOptions})
+    const updateConfig = useRouterInstanceConfigUpdate(sidecar, () => setIsEditable(false))
 
     useEffect(() => setConfigState(stringify(config)), [config])
 

@@ -1,8 +1,6 @@
 import {QueryRequest} from "../../../type/query";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {QueryApi} from "../../../app/api";
 import {SaveIconButton} from "../../view/button/IconButtons";
+import {useRouterQueryCreate} from "../../../router/query";
 
 type Props = {
     query: QueryRequest,
@@ -12,8 +10,7 @@ type Props = {
 export function QueryButtonCreate(props: Props) {
     const {query, name, type} = props.query
 
-    const createOptions = useMutationOptions([["query", "map", type]], props.onSuccess)
-    const create = useMutation({mutationFn: QueryApi.create, ...createOptions})
+    const create = useRouterQueryCreate(type, props.onSuccess)
 
     return (
         <SaveIconButton

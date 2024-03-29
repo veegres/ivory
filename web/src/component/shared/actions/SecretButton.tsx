@@ -1,7 +1,5 @@
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {InitialApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
+import {useRouterSecretSet} from "../../../router/secret";
 
 type Props = {
     keyWord: string,
@@ -10,14 +8,13 @@ type Props = {
 
 export function SecretButton(props: Props) {
     const {keyWord, refWord} = props
-    const setReqOptions = useMutationOptions([["info"]])
-    const setReq = useMutation({mutationFn: InitialApi.setSecret, ...setReqOptions})
+    const secret = useRouterSecretSet()
 
     return (
         <LoadingButton
             variant={"contained"}
-            loading={setReq.isPending}
-            onClick={() => setReq.mutate({ref: refWord, key: keyWord})}
+            loading={secret.isPending}
+            onClick={() => secret.mutate({ref: refWord, key: keyWord})}
         >
             Set
         </LoadingButton>

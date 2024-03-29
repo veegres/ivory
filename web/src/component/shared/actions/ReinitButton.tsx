@@ -1,11 +1,9 @@
 import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../type/instance";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {InstanceApi} from "../../../app/api";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
+import {useRouterInstanceReinit} from "../../../router/instance";
 
 const SX: SxPropsMap = {
     force: {margin: "0px"},
@@ -19,11 +17,8 @@ type Props = {
 
 export function ReinitButton(props: Props) {
     const {request, cluster} = props
-
     const [force, setForce] = useState(false)
-
-    const options = useMutationOptions([["instance", "overview", cluster]])
-    const reinit = useMutation({mutationFn: InstanceApi.reinitialize, ...options})
+    const reinit = useRouterInstanceReinit(cluster)
 
     const body = {force}
 

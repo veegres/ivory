@@ -1,22 +1,20 @@
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
 import {Box, Button, TextField} from "@mui/material";
 import {useState} from "react";
-import {useMutationOptions} from "../../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {BloatApi, QueryApi} from "../../../../app/api";
+import {QueryApi} from "../../../../app/api";
 import {SxPropsMap} from "../../../../type/general";
 import {InstanceWeb} from "../../../../type/instance";
 import {Cluster} from "../../../../type/cluster";
-import {Bloat, BloatTarget} from "../../../../type/bloat";
+import {BloatTarget} from "../../../../type/bloat";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
 import {getDomain} from "../../../../app/utils";
 import {QueryPostgresRequest} from "../../../../type/query";
+import {useRouterBloatStart} from "../../../../router/bloat";
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
     buttons: {display: "flex", alignItems: "center", gap: 1}
 }
-
 
 type Props = {
     defaultInstance: InstanceWeb,
@@ -30,17 +28,7 @@ export function OverviewBloatJobForm(props: Props) {
     const {defaultInstance, cluster, target, onClick, setTarget} = props
     const [ratio, setRadio] = useState<number>()
 
-    const {queryClient, onError} = useMutationOptions()
-    const start = useMutation({
-        mutationFn: BloatApi.start,
-        onSuccess: (job) => {
-            queryClient.setQueryData<Bloat[]>(
-                ["instance", "bloat", "list", cluster.name],
-                (jobs) => [job, ...(jobs ?? [])]
-            )
-        },
-        onError
-    })
+    const start = useRouterBloatStart(cluster.name)
 
     if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (!defaultInstance.leader) return <ClusterNoLeaderError/>
