@@ -12,7 +12,7 @@ type Props = {
 export function CertsTabUpload(props: Props) {
     const {type} = props
     const [progress, setProgress] = useState<AxiosProgressEvent>()
-    const upload = useRouterCertUpload()
+    const upload = useRouterCertUpload(type)
     const {loading, error: uploadError} = getUploadInfo()
 
     return (

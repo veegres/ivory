@@ -7,11 +7,14 @@ import {CertType} from "../../../type/cert";
 import {useRouterCertAdd} from "../../../router/cert";
 
 const SX: SxPropsMap = {
-    box: { display: "flex", flexDirection: "column", padding: "5px", justifyContent: "space-between", height: "100%", gap: "12px" },
-    form: { display: "flex", alignItems: "center", gap: 1 },
-    textField: { flexGrow: 1 },
-    alert: { padding: "0 14px", borderRadius: "15px" },
-    border: { borderRadius: "15px" },
+    box: {
+        display: "flex", flexDirection: "column", padding: "5px",
+        justifyContent: "space-between", height: "100%", gap: "12px",
+    },
+    form: {display: "flex", alignItems: "center", gap: 1},
+    textField: {flexGrow: 1},
+    alert: {padding: "0 14px", borderRadius: "15px"},
+    border: {borderRadius: "15px"},
 }
 
 type Props = {
@@ -19,9 +22,9 @@ type Props = {
 }
 
 export function CertsTabPath(props: Props) {
-    const { type } = props
+    const {type} = props
     const [path, setPath] = useState("")
-    const add = useRouterCertAdd(() => setPath(""))
+    const add = useRouterCertAdd(type, () => setPath(""))
 
     return (
         <Box sx={SX.box}>
@@ -42,7 +45,7 @@ export function CertsTabPath(props: Props) {
                     sx={SX.border}
                     variant={"outlined"}
                     loading={add.isPending}
-                    onClick={() => add.mutate({ path, type })}
+                    onClick={() => add.mutate({path, type})}
                     disabled={!path}
                     size={"large"}
                 >

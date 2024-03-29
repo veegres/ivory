@@ -6,6 +6,7 @@ import {useStoreAction} from "../../provider/StoreProvider";
 import {AuthType, SxPropsMap} from "../../type/general";
 import {useAuth} from "../../provider/AuthProvider";
 import {useQueryClient} from "@tanstack/react-query";
+import {GeneralApi} from "../../app/api";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},
@@ -73,6 +74,6 @@ export function Header(props: Props) {
 
     function handleLogout() {
         logout()
-        queryClient.refetchQueries({queryKey: ["info"]}).then()
+        queryClient.refetchQueries({queryKey: GeneralApi.info.key()}).then()
     }
 }

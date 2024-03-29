@@ -7,6 +7,7 @@ import {RefreshIconButton} from "../../../view/button/IconButtons";
 import {ActiveCluster} from "../../../../type/cluster";
 import {InstanceWeb} from "../../../../type/instance";
 import {getDomain} from "../../../../app/utils";
+import {InstanceApi} from "../../../../app/api";
 
 const SX: SxPropsMap = {
     table: {"tr:last-child td": {border: 0}, "tr th, td": {padding: "2px 5px"}, tableLayout: "fixed"},
@@ -22,7 +23,7 @@ type Props = {
 export function OverviewInstances(props: Props) {
     const {activeInstance, info} = props
     const {cluster, combinedInstanceMap} = info
-    const key = {queryKey: ["instance", "overview", cluster.name]}
+    const key = {queryKey: InstanceApi.overview.key(cluster.name)}
     const queryClient = useQueryClient();
     const instanceMapFetching = useIsFetching(key)
     const candidates = Object.values(combinedInstanceMap)

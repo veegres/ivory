@@ -23,7 +23,7 @@ type Props = {
 
 export function CertsItem(props: Props) {
     const {cert, uuid} = props
-    const deleteCert = useRouterCertDelete()
+    const deleteCert = useRouterCertDelete(cert.type)
     const fileUsage = FileUsageOptions[cert.fileUsageType]
 
     return (
