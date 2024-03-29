@@ -1,8 +1,8 @@
 import {createContext, ReactNode, useContext, useEffect} from "react";
-import {api} from "../app/api";
+import {api, GeneralApi} from "../app/api";
 import {useLocalStorageState} from "../hook/LocalStorage";
 import {useQueryClient} from "@tanstack/react-query";
-import {AxiosError} from "axios";
+import {AxiosError, HttpStatusCode} from "axios";
 
 interface AuthContextType {
     setToken: (v: string) => void,
@@ -43,7 +43,7 @@ export function AuthProvider(props: { children: ReactNode }) {
     function handleTokenChange() {
         if (token) api.defaults.headers.common["Authorization"] = `Bearer ${window.atob(token)}`
         else delete api.defaults.headers.common["Authorization"]
-        queryClient.refetchQueries({queryKey: ["info"]}).then()
+        queryClient.refetchQueries({queryKey: GeneralApi.info.key()}).then()
     }
 
     // NOTE: with React.StrictMode we will have two of them because it makes rerender twice
@@ -52,8 +52,8 @@ export function AuthProvider(props: { children: ReactNode }) {
         const id = api.interceptors.response.use(
             (response) => response,
             (error: AxiosError) => {
-                if (error.response?.status === 401 || error.response?.status === 403) {
-                    queryClient.refetchQueries({queryKey: ["info"]}).then()
+                if (error.response?.status === HttpStatusCode.Unauthorized || error.response?.status === HttpStatusCode.Forbidden) {
+                    queryClient.refetchQueries({queryKey: GeneralApi.info.key()}).then()
                 }
                 return Promise.reject(error)
             },

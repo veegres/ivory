@@ -3,7 +3,7 @@ import {Instance, InstanceMap, InstanceRequest} from "../type/instance";
 import {getDomain} from "./utils";
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
 import {Password, PasswordMap, PasswordType} from "../type/password";
-import {SecretSetRequest, SecretStatus, SecretUpdateRequest} from "../type/secret";
+import {SecretSetRequest, SecretUpdateRequest} from "../type/secret";
 import {
     Query,
     QueryChart,
@@ -17,23 +17,19 @@ import {
     QueryTablesRequest,
     QueryType
 } from "../type/query";
-import {AppConfig, AppInfo, Login, Response} from "../type/general";
+import {AppConfig, AppInfo, Login, Response, Sidecar} from "../type/general";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
 export const api = axios.create({baseURL: '/api'})
 
-// TODO we should simplify usage of react-query hooks
-//  Possible solutions:
-//  - provide queryKey with request in same object
-//  - try to make args that can be used then directly in react-query hooks
-//  - can be problems with same route as for DELETE / GET / POST
-
 
 export const GeneralApi = {
-    info: () => api
-        .get<Response<AppInfo>>(`/info`)
-        .then((response) => response.data.response),
+    info: {
+        key: () => ["info"],
+        fn: () => api.get<Response<AppInfo>>(`/info`)
+            .then((response) => response.data.response),
+    },
     login: (req: Login) => api
         .post<Response<any>>(`/login`, req)
         .then((response) => response.data.response),
@@ -52,9 +48,6 @@ export const InitialApi = {
 }
 
 export const SafeApi = {
-    getSecret: () => api
-        .get<Response<SecretStatus>>(`/safe/secret`)
-        .then((response) => response.data.response),
     changeSecret: (request: SecretUpdateRequest) => api
         .post<Response<string>>(`/safe/secret`, request)
         .then((response) => response.data.response),
@@ -64,20 +57,26 @@ export const SafeApi = {
 }
 
 export const InstanceApi = {
-    overview: (request: InstanceRequest) => api
-        .get<Response<Instance[]>>(`/instance/overview`, {params: {request: JSON.stringify(request)}})
-        .then<InstanceMap>((response) => response.data.response.reduce(
-            (map, instance) => {
-                const leader = instance.role === "leader"
-                const domain = getDomain(instance.sidecar)
-                map[domain] = {...instance, leader, inCluster: true, inInstances: false}
-                return map
-            },
-            {} as InstanceMap
-        )),
-    config: (request: InstanceRequest) => api
-        .get<Response<any>>(`/instance/config`, {params: {request: JSON.stringify(request)}})
-        .then((response) => response.data.response),
+    overview: {
+        key: (cluster: string) => ["instance", "overview", cluster],
+        fn: (request: InstanceRequest) => api
+            .get<Response<Instance[]>>(`/instance/overview`, {params: {request: JSON.stringify(request)}})
+            .then<InstanceMap>((response) => response.data.response.reduce(
+                (map, instance) => {
+                    const leader = instance.role === "leader"
+                    const domain = getDomain(instance.sidecar)
+                    map[domain] = {...instance, leader, inCluster: true, inInstances: false}
+                    return map
+                },
+                {} as InstanceMap
+            )),
+    },
+    config: {
+        key: (sidecar: Sidecar) => ["instance", "config", sidecar.host, sidecar.port],
+        fn: (request: InstanceRequest) => api
+            .get<Response<any>>(`/instance/config`, {params: {request: JSON.stringify(request)}})
+            .then((response) => response.data.response),
+    },
     updateConfig: (request: InstanceRequest) => api
         .patch<Response<any>>(`/instance/config`, request)
         .then((response) => response.data.response),
@@ -111,18 +110,18 @@ export const InstanceApi = {
 }
 
 export const ClusterApi = {
-    get: (name: string) => api
-        .get<Response<Cluster>>(`/cluster/${name}`)
-        .then((response) => response.data.response),
-    list: (tags?: string[]) => api
-        .get<Response<Cluster[]>>(`/cluster`, {params: {tags}})
-        .then((response) => response.data.response.reduce(
-            (map, cluster) => {
-                map[cluster.name] = cluster
-                return map
-            },
-            {} as ClusterMap
-        )),
+    list: {
+        key: () => ["cluster", "list"],
+        fn: (tags?: string[]) => api
+            .get<Response<Cluster[]>>(`/cluster`, {params: {tags}})
+            .then((response) => response.data.response.reduce(
+                (map, cluster) => {
+                    map[cluster.name] = cluster
+                    return map
+                },
+                {} as ClusterMap
+            )),
+    },
     update: (cluster: Cluster) => api
         .put<Response<Cluster>>(`/cluster`, cluster)
         .then((response) => response.data.response),
@@ -135,18 +134,27 @@ export const ClusterApi = {
 }
 
 export const TagApi = {
-    list: () => api
-        .get<Response<string[]>>(`/tag`)
-        .then((response) => response.data.response),
+    list: {
+        key: () => ["tag", "list"],
+        fn: () => api
+            .get<Response<string[]>>(`/tag`)
+            .then((response) => response.data.response),
+    },
 }
 
 export const BloatApi = {
-    list: (name: string) => api
-        .get<Response<Bloat[]>>(`/cli/bloat/cluster/${name}`)
-        .then((response) => response.data.response),
-    logs: (uuid: string) => api
-        .get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"})
-        .then(({data}) => data === "" ? [] : data.split("\n")),
+    list: {
+        key: (cluster: string) => ["instance", "bloat", "list", cluster],
+        fn: (cluster: string) => api
+            .get<Response<Bloat[]>>(`/cli/bloat/cluster/${cluster}`)
+            .then((response) => response.data.response),
+    },
+    logs: {
+        key: (uuid: string) => ["instance", "bloat", "logs", uuid],
+        fn: (uuid: string) => api
+            .get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"})
+            .then(({data}) => data === "" ? [] : data.split("\n")),
+    },
 
     start: (ctr: BloatRequest) => api
         .post<Response<Bloat>>(`/cli/bloat/job/start`, ctr)
@@ -162,9 +170,12 @@ export const BloatApi = {
 }
 
 export const QueryApi = {
-    list: (type?: QueryType) => api
-        .get<Response<Query[]>>(`/query`, {params: {type}})
-        .then((response) => response.data.response),
+    list: {
+        key: (type?: QueryType) => ["query", "list", type],
+        fn: (type?: QueryType) => api
+            .get<Response<Query[]>>(`/query`, {params: {type}})
+            .then((response) => response.data.response),
+    },
     update: ({id, query}: { id: string, query: QueryRequest }) => api
         .put<Response<Query>>(`/query/${id}`, query)
         .then((response) => response.data.response),
@@ -174,9 +185,12 @@ export const QueryApi = {
     delete: (uuid: string) => api
         .delete<Response<string>>(`/query/${uuid}`)
         .then((response) => response.data.response),
-    run: (req: QueryRunRequest) => api
-        .post<Response<QueryFields>>(`/query/run`, req)
-        .then((response) => response.data.response),
+    run: {
+        key: (uuid?: string) => ["query", "run", uuid ?? "standalone"],
+        fn: (req: QueryRunRequest) => api
+            .post<Response<QueryFields>>(`/query/run`, req)
+            .then((response) => response.data.response),
+    },
     databases: (req: QueryDatabasesRequest) => api
         .post<Response<string[]>>(`/query/databases`, req)
         .then((response) => response.data.response),
@@ -186,27 +200,37 @@ export const QueryApi = {
     tables: (req: QueryTablesRequest) => api
         .post<Response<string[]>>(`/query/tables`, req)
         .then((response) => response.data.response),
-    chart: (req: QueryChartRequest) => api
-        .post<Response<QueryChart>>(`/query/chart`, req)
-        .then((response) => response.data.response),
+    chart: {
+        key: (req: QueryChartRequest) => ["query", "chart", req.type, req.db.host, req.db.port, req.db.name, req.credentialId],
+        fn: (req: QueryChartRequest) => api
+            .post<Response<QueryChart>>(`/query/chart`, req)
+            .then((response) => response.data.response),
+    },
     cancel: (req: QueryKillRequest) => api
         .post<Response<string>>(`/query/cancel`, req)
         .then((response) => response.data.response),
     terminate: (req: QueryKillRequest) => api
         .post<Response<string>>(`/query/terminate`, req)
         .then((response) => response.data.response),
-    getLog: (uuid: string) => api
-        .get<Response<QueryFields[]>>(`/query/log/${uuid}`)
-        .then((response) => response.data.response),
+
+    getLog: {
+        key: (uuid: string) => ["query", "log", uuid],
+        fn: (uuid: string) => api
+            .get<Response<QueryFields[]>>(`/query/log/${uuid}`)
+            .then((response) => response.data.response),
+    },
     deleteLog: (uuid: string) => api
         .delete<Response<string>>(`/query/log/${uuid}`)
         .then((response) => response.data.response),
 }
 
 export const PasswordApi = {
-    list: (type?: PasswordType) => api
-        .get<Response<PasswordMap>>(`/password`, {params: {type}})
-        .then((response) => response.data.response),
+    list: {
+        key: (type?: PasswordType) => ["password", type],
+        fn: (type?: PasswordType) => api
+            .get<Response<PasswordMap>>(`/password`, {params: {type}})
+            .then((response) => response.data.response),
+    },
     create: (credential: Password) => api
         .post<Response<{ key: string, credential: Password }>>(`/password`, credential)
         .then((response) => response.data.response),
@@ -219,9 +243,12 @@ export const PasswordApi = {
 }
 
 export const CertApi = {
-    list: (type?: CertType) => api
-        .get<Response<CertMap>>(`/cert`, {params: {type}})
-        .then((response => response.data.response)),
+    list: {
+        key: (type?: CertType) => ["certs", type],
+        fn: (type?: CertType) => api
+            .get<Response<CertMap>>(`/cert`, {params: {type}})
+            .then((response => response.data.response)),
+    },
     upload: async (request: CertUploadRequest) => {
         const {file, type, setProgress} = request
         const formData = new FormData()

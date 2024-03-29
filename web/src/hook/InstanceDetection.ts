@@ -6,6 +6,7 @@ import {Cluster, DetectionType, InstanceDetection} from "../type/cluster";
 import {Sidecar} from "../type/general";
 import {InstanceMap} from "../type/instance";
 import {useRouterInstanceOverview} from "../router/instance";
+import {InstanceApi} from "../app/api";
 
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
     const {activeCluster} = useStore()
@@ -16,7 +17,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const defaultSidecar = useRef(instances[0])
     const previousData = useRef<InstanceMap>({})
 
-    const queryKey = useMemo(() => ["instance", "overview", cluster.name], [cluster.name])
+    const queryKey = useMemo(() => InstanceApi.overview.key(cluster.name), [cluster.name])
     const request = {sidecar: defaultSidecar.current, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
     const queryClient = useQueryClient();
     const query = useRouterInstanceOverview(cluster.name, request)

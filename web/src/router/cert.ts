@@ -5,22 +5,22 @@ import {useMutationOptions} from "../hook/QueryCustom";
 
 export function useRouterCertList(type: CertType) {
     return useQuery({
-        queryKey: ["certs", type],
-        queryFn: () => CertApi.list(type)
+        queryKey: CertApi.list.key(type),
+        queryFn: () => CertApi.list.fn(type)
     })
 }
 
-export function useRouterCertDelete() {
-    const options = useMutationOptions([["certs"]])
+export function useRouterCertDelete(type: CertType) {
+    const options = useMutationOptions([CertApi.list.key(type)])
     return useMutation({mutationFn: CertApi.delete, ...options})
 }
 
-export function useRouterCertUpload() {
-    const options = useMutationOptions([["certs"]])
+export function useRouterCertUpload(type: CertType) {
+    const options = useMutationOptions([CertApi.list.key(type)])
     return useMutation({mutationFn: CertApi.upload, ...options})
 }
 
-export function useRouterCertAdd(onSuccess?: () => void) {
-    const options = useMutationOptions([["certs"]], onSuccess)
+export function useRouterCertAdd(type: CertType, onSuccess?: () => void) {
+    const options = useMutationOptions([CertApi.list.key(type)], onSuccess)
     return useMutation({mutationFn: CertApi.add, ...options})
 }

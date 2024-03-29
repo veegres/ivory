@@ -5,8 +5,8 @@ import {Bloat} from "../type/bloat";
 
 export function useRouterBloatLogs(uuid: string, enabled: boolean) {
     return useQuery({
-        queryKey: ["instance", "bloat", "logs", uuid],
-        queryFn: () => BloatApi.logs(uuid),
+        queryKey: BloatApi.logs.key(uuid),
+        queryFn: () => BloatApi.logs.fn(uuid),
         refetchOnReconnect: false,
         refetchOnWindowFocus: false,
         enabled,
@@ -16,8 +16,8 @@ export function useRouterBloatLogs(uuid: string, enabled: boolean) {
 export function useRouterBloatList(cluster: string, enabled: boolean) {
     return useQuery({
         initialData: [],
-        queryKey: ["instance", "bloat", "list", cluster],
-        queryFn: () => BloatApi.list(cluster),
+        queryKey: BloatApi.list.key(cluster),
+        queryFn: () => BloatApi.list.fn(cluster),
         enabled,
     })
 }
@@ -29,7 +29,7 @@ export function useRouterBloatStart(cluster: string) {
         ...options,
         onSuccess: (job) => {
             options.queryClient.setQueryData<Bloat[]>(
-                ["instance", "bloat", "list", cluster],
+                BloatApi.list.key(cluster),
                 (jobs) => [job, ...(jobs ?? [])]
             )
         },
@@ -43,7 +43,7 @@ export function useRouterBloatDelete(uuid: string, cluster: string) {
         ...options,
         onSuccess: () => {
             options.queryClient.setQueryData<Bloat[]>(
-                ["instance", "bloat", "list", cluster],
+                BloatApi.list.key(cluster),
                 (jobs) => jobs?.filter(v => v.uuid !== uuid)
             )
         }
