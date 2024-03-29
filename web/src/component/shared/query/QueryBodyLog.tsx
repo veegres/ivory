@@ -2,12 +2,9 @@ import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
 import {QueryBodyLogItem} from "./QueryBodyLogItem";
 import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons";
-import {useMutation} from "@tanstack/react-query";
-import {QueryApi} from "../../../app/api";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
-import {useMutationOptions} from "../../../hook/QueryCustom";
 import {NoBox} from "../../view/box/NoBox";
-import {useRouterQueryLog} from "../../../router/query";
+import {useRouterQueryLog, useRouterQueryLogDelete} from "../../../router/query";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -22,11 +19,8 @@ type Props = {
 
 export function QueryBodyLog(props: Props) {
     const {queryId} = props
-
     const result = useRouterQueryLog(queryId)
-
-    const clearOptions = useMutationOptions([["query", "log", queryId]])
-    const clear = useMutation({mutationFn: () => QueryApi.deleteLog(queryId), ...clearOptions})
+    const clear = useRouterQueryLogDelete(queryId)
 
     return (
         <Box sx={SX.box}>

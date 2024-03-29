@@ -1,10 +1,8 @@
 import {CancelIconButton, SaveIconButton} from "../../../view/button/IconButtons";
-import {useMutation} from "@tanstack/react-query";
-import {ClusterApi} from "../../../../app/api";
 import {Box} from "@mui/material";
-import {useMutationOptions} from "../../../../hook/QueryCustom";
 import {Sidecar, SxPropsMap} from "../../../../type/general";
 import {Certs, Credentials} from "../../../../type/cluster";
+import {useRouterClusterUpdate} from "../../../../router/cluster";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},
@@ -25,8 +23,7 @@ export function ListCellUpdate(props: Props) {
     const {name, instances, tags, credentials, certs} = props
     const {toggle, onUpdate, onClose} = props
 
-    const updateMutationOptions = useMutationOptions([["cluster", "list"], ["tag", "list"]], handleSuccess)
-    const updateCluster = useMutation({mutationFn: ClusterApi.update, ...updateMutationOptions})
+    const updateCluster = useRouterClusterUpdate(handleSuccess)
 
     return (
         <Box sx={SX.box}>

@@ -5,10 +5,8 @@ import {Options} from "../../../shared/options/Options";
 import {SxPropsMap} from "../../../../type/general";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {ClusterAuto} from "../../../../type/cluster";
-import {useMutationOptions} from "../../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {ClusterApi} from "../../../../app/api";
 import {LoadingButton} from "@mui/lab";
+import {useRouterClusterCreateAuto} from "../../../../router/cluster";
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
@@ -24,9 +22,7 @@ const InitialClusterAuto: ClusterAuto = {
 export function ListCreateAuto() {
     const [cluster, setCluster] = useState(InitialClusterAuto)
     const [open, setOpen] = useState(false)
-
-    const updateMutationOptions = useMutationOptions([["cluster", "list"], ["tag", "list"]], handleSuccessUpdate)
-    const updateCluster = useMutation({mutationFn: ClusterApi.createAuto, ...updateMutationOptions})
+    const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
     return (
         <>

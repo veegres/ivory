@@ -2,16 +2,13 @@ import {useState} from "react";
 import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {Typography} from "@mui/material";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {InitialApi} from "../../../app/api";
 import {SecretButton} from "../../shared/actions/SecretButton";
+import {useRouterSecretSet} from "../../../router/secret";
 
 export function SecretBodyInitial() {
     const [key, setKey] = useState("")
     const [ref, setRef] = useState("")
-    const setReqOptions = useMutationOptions([["info"]])
-    const setReq = useMutation({mutationFn: InitialApi.setSecret, ...setReqOptions})
+    const secret = useRouterSecretSet()
 
     return (
         <PageStartupBox header={"Welcome"} renderFooter={<SecretButton keyWord={key} refWord={ref}/>}>
@@ -39,7 +36,7 @@ export function SecretBodyInitial() {
             <KeyEnterInput
                 label={"Secret word"}
                 onChange={(e) => setKey(e.target.value)}
-                onEnterPress={() => setReq.mutate({ref, key})}
+                onEnterPress={() => secret.mutate({ref, key})}
                 hidden
             />
         </PageStartupBox>

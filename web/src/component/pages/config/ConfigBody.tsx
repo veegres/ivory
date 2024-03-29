@@ -3,19 +3,15 @@ import {LoadingButton} from "@mui/lab";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
 import {AuthConfig, AuthType} from "../../../type/general";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {GeneralApi} from "../../../app/api";
 import {ConfigQuery} from "./query/ConfigQuery";
 import {ConfigAuth} from "./auth/ConfigAuth";
+import {useRouterConfigSet} from "../../../router/general";
 
 export function ConfigBody() {
     const [company, setCompany] = useState("")
     const [query, setQuery] = useState(false)
     const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE, body: undefined})
-
-    const configOptions = useMutationOptions([["info"]])
-    const config = useMutation({mutationFn: GeneralApi.setConfig, ...configOptions})
+    const config = useRouterConfigSet()
 
     return (
         <PageStartupBox header={"Configuration"} renderFooter={renderFooter()}>

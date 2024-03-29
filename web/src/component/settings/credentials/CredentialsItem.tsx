@@ -1,10 +1,8 @@
 import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../view/button/IconButtons";
 import {useEffect, useState} from "react";
 import {Password} from "../../../type/password";
-import {useMutation} from "@tanstack/react-query";
-import {PasswordApi} from "../../../app/api";
 import {CredentialsRow} from "./CredentialsRow";
-import {useMutationOptions} from "../../../hook/QueryCustom";
+import {useRouterPasswordDelete, useRouterPasswordUpdate} from "../../../router/password";
 
 type Props = {
     uuid: string,
@@ -17,15 +15,10 @@ export function CredentialsItem(props: Props) {
     const [empty, setEmpty] = useState(false)
     const [credential, setCredential] = useState(props.credential)
 
+    const deleteCredentials = useRouterPasswordDelete()
+    const updateCredentials = useRouterPasswordUpdate(() => setEdit(false))
 
-    useEffect(() => {
-        setCredential(credential)
-    }, [credential])
-
-    const deleteOptions = useMutationOptions([["password"]])
-    const deleteCredentials = useMutation({mutationFn: PasswordApi.delete, ...deleteOptions})
-    const updateOptions = useMutationOptions([["password"]], () => setEdit(false))
-    const updateCredentials = useMutation({mutationFn: PasswordApi.update, ...updateOptions})
+    useEffect(() => {setCredential(credential)}, [credential])
 
     return (
         <CredentialsRow

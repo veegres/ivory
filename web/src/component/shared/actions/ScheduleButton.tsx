@@ -1,13 +1,11 @@
 import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest, InstanceScheduledRestart, InstanceScheduledSwitchover} from "../../../type/instance";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {InstanceApi} from "../../../app/api";
 import {DateTimeFormatter} from "../../../app/utils";
 import {LoadingButton} from "@mui/lab";
 import {NoBox} from "../../view/box/NoBox";
 import {List} from "../../view/box/List";
 import {ListItem} from "../../view/box/ListItem";
+import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../router/instance";
 
 type Props = {
     request: InstanceRequest,
@@ -19,9 +17,8 @@ type Props = {
 export function ScheduleButton(props: Props) {
     const {request, cluster, switchover, restart} = props
 
-    const options = useMutationOptions([["instance", "overview", cluster]])
-    const deleteRestart = useMutation({mutationFn: InstanceApi.deleteRestart, ...options})
-    const deleteSwitchover = useMutation({mutationFn: InstanceApi.deleteSwitchover, ...options})
+    const deleteRestart = useRouterInstanceRestartDelete(cluster)
+    const deleteSwitchover = useRouterInstanceSwitchoverDelete(cluster)
 
     return (
         <AlertButton

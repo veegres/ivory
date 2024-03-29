@@ -3,11 +3,9 @@ import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {SxPropsMap} from "../../../type/general";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {KeyboardDoubleArrowRight} from "@mui/icons-material";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {QueryApi} from "../../../app/api";
 import {LoadingButton} from "@mui/lab";
 import {Query} from "../../../type/query";
+import {useRouterQueryUpdate} from "../../../router/query";
 
 const SX: SxPropsMap = {
     box: {display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)", rowGap: 1, columnGap: 2},
@@ -23,8 +21,7 @@ type Props = {
 export function QueryBodyRestore(props: Props) {
     const {query, onSuccess} = props
 
-    const updateOptions = useMutationOptions([["query", "map", query.type]], onSuccess)
-    const update = useMutation({mutationFn: QueryApi.update, ...updateOptions})
+    const update = useRouterQueryUpdate(query.type, onSuccess)
 
     return (
         <Box sx={SX.box}>

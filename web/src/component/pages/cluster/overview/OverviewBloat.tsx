@@ -9,7 +9,7 @@ import {SxPropsMap} from "../../../../type/general";
 import {BloatTarget} from "../../../../type/bloat";
 import {QueryType} from "../../../../type/query";
 import {ActiveCluster} from "../../../../type/cluster";
-import {useRouterQueryMap} from "../../../../router/query";
+import {useRouterQueryList} from "../../../../router/query";
 import {useRouterBloatList} from "../../../../router/bloat";
 
 const SX: SxPropsMap = {
@@ -31,7 +31,7 @@ export function OverviewBloat(props: Props) {
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()
 
-    const query = useRouterQueryMap(QueryType.BLOAT, tab === ListBlock.QUERY)
+    const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
     const db = {...defaultInstance.database, database: target?.dbName}

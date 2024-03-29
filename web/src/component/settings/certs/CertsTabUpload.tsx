@@ -1,23 +1,19 @@
 import {UploadButton} from "../../view/button/UploadButton";
 import {useState} from "react";
 import {getErrorMessage} from "../../../app/utils";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {CertApi} from "../../../app/api";
 import {CertType} from "../../../type/cert";
 import {AxiosProgressEvent} from "axios";
+import {useRouterCertUpload} from "../../../router/cert";
 
 type Props = {
     type: CertType,
 }
 
 export function CertsTabUpload(props: Props) {
-    const { type } = props
+    const {type} = props
     const [progress, setProgress] = useState<AxiosProgressEvent>()
-
-    const uploadOptions = useMutationOptions([["certs"]])
-    const upload = useMutation({mutationFn: CertApi.upload, ...uploadOptions})
-    const { loading, error: uploadError } = getUploadInfo()
+    const upload = useRouterCertUpload()
+    const {loading, error: uploadError} = getUploadInfo()
 
     return (
         <UploadButton
@@ -40,6 +36,6 @@ export function CertsTabUpload(props: Props) {
             loaded: progress?.loaded,
             total: progress?.total,
         }
-        return { loading, error }
+        return {loading, error}
     }
 }

@@ -1,13 +1,11 @@
 import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {Alert, Button} from "@mui/material";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
-import {useMutation} from "@tanstack/react-query";
-import {GeneralApi} from "../../../app/api";
-import {useMutationOptions} from "../../../hook/QueryCustom";
 import {useState} from "react";
 import {AuthType, SxPropsMap} from "../../../type/general";
 import {LoadingButton} from "@mui/lab";
 import {useAuth} from "../../../provider/AuthProvider";
+import {useRouterLogin} from "../../../router/auth";
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},
@@ -24,8 +22,7 @@ export function LoginBody(props: Props) {
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
 
-    const loginOption = useMutationOptions([], handleSuccess)
-    const login = useMutation({mutationFn: GeneralApi.login, ...loginOption})
+    const login = useRouterLogin(handleSuccess)
 
     return (
         <PageStartupBox header={"Authentication"} renderFooter={renderLogin()}>

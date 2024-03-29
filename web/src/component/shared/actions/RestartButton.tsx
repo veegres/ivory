@@ -1,13 +1,11 @@
 import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../type/instance";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {InstanceApi} from "../../../app/api";
 import {DateTimeField} from "@mui/x-date-pickers";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
 import {DateTimeFormatter} from "../../../app/utils";
+import {useRouterInstanceRestart} from "../../../router/instance";
 
 const SX: SxPropsMap = {
     pending: {margin: "0px"},
@@ -25,8 +23,7 @@ export function RestartButton(props: Props) {
     const [schedule, setSchedule] = useState<string>()
     const [pending, setPending] = useState(false)
 
-    const options = useMutationOptions([["instance", "overview", cluster]])
-    const restart = useMutation({mutationFn: InstanceApi.restart, ...options})
+    const restart = useRouterInstanceRestart(cluster)
 
     const body = {schedule, restart_pending: pending || undefined}
 

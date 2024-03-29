@@ -1,19 +1,15 @@
 import {CredentialsRow} from "./CredentialsRow";
 import {useState} from "react";
-import {useMutation} from "@tanstack/react-query";
-import {PasswordApi} from "../../../app/api";
 import {Password, PasswordType} from "../../../type/password";
 import {CancelIconButton, SaveIconButton} from "../../view/button/IconButtons";
-import {useMutationOptions} from "../../../hook/QueryCustom";
+import {useRouterPasswordCreate} from "../../../router/password";
 
 export function CredentialsNew() {
     const initCredential: Password = { username: "", password: "", type: PasswordType.POSTGRES }
     const [credential, setCredential] = useState(initCredential)
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)
-
-    const createOptions = useMutationOptions([["password"]], handleCancel)
-    const createCredentials = useMutation({mutationFn: PasswordApi.create, ...createOptions})
+    const createCredentials = useRouterPasswordCreate(handleCancel)
 
     return (
         <CredentialsRow

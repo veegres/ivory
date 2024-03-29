@@ -1,8 +1,6 @@
 import {QueryType} from "../../../type/query";
-import {useMutationOptions} from "../../../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
-import {QueryApi} from "../../../app/api";
 import {DeleteIconButton} from "../../view/button/IconButtons";
+import {useRouterQueryDelete} from "../../../router/query";
 
 type Props = {
     id: string
@@ -13,8 +11,7 @@ type Props = {
 export function QueryButtonDelete(props: Props) {
     const {id, type, onSuccess} = props
 
-    const removeOptions = useMutationOptions([["query", "map", type]], onSuccess)
-    const remove = useMutation({mutationFn: QueryApi.delete, ...removeOptions})
+    const remove = useRouterQueryDelete(type, onSuccess)
 
     return (
         <DeleteIconButton loading={remove.isPending} onClick={handleClick}/>
