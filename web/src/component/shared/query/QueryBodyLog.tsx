@@ -28,7 +28,7 @@ export function QueryBodyLog(props: Props) {
                 <Box>Previous Responses</Box>
                 <Box sx={SX.info}>
                     <Box sx={SX.label}>[ {result.data?.length ?? 0} of 10 ]</Box>
-                    <ClearAllIconButton onClick={clear.mutate} loading={clear.isPending} disabled={result.data && !result.data.length}/>
+                    <ClearAllIconButton onClick={() => clear.mutate(queryId)} loading={clear.isPending} disabled={result.data && !result.data.length}/>
                     <RefreshIconButton onClick={result.refetch} loading={result.isFetching}/>
                 </Box>
             </Box>

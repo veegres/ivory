@@ -1,6 +1,6 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import {GeneralApi, InitialApi, SafeApi} from "../app/api";
-import {useMutationOptions} from "../hook/QueryCustom";
+import {useMutationAdapter} from "../hook/QueryCustom";
 
 export function useRouterInfo() {
     return useQuery({
@@ -11,21 +11,31 @@ export function useRouterInfo() {
 }
 
 export function useRouterSecretChange() {
-    const options = useMutationOptions([GeneralApi.info.key()])
-    return useMutation({mutationFn: SafeApi.changeSecret, ...options})
+    return useMutationAdapter({
+        mutationFn: SafeApi.changeSecret,
+        successKeys: [GeneralApi.info.key()],
+    })
 }
 
 export function useRouterEraseInitial(onSuccess: () => void) {
-    const options = useMutationOptions([GeneralApi.info.key()], onSuccess)
-    return useMutation({mutationFn: InitialApi.erase, ...options})
+    return useMutationAdapter({
+        mutationFn: InitialApi.erase,
+        successKeys: [GeneralApi.info.key()],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterEraseSafe(onSuccess: () => void) {
-    const options = useMutationOptions([GeneralApi.info.key()], onSuccess)
-    return useMutation({mutationFn: SafeApi.erase, ...options})
+    return useMutationAdapter({
+        mutationFn: SafeApi.erase,
+        successKeys: [GeneralApi.info.key()],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterConfigSet() {
-    const options = useMutationOptions([GeneralApi.info.key()])
-    return useMutation({mutationFn: GeneralApi.setConfig, ...options})
+    return useMutationAdapter({
+        mutationFn: GeneralApi.setConfig,
+        successKeys: [GeneralApi.info.key()],
+    })
 }

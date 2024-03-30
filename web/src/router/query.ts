@@ -1,7 +1,7 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import {QueryApi} from "../app/api";
 import {QueryChartRequest, QueryRunRequest, QueryType} from "../type/query";
-import {useMutationOptions} from "../hook/QueryCustom";
+import {useMutationAdapter} from "../hook/QueryCustom";
 
 export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
     return useQuery({
@@ -12,18 +12,27 @@ export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
 }
 
 export function useRouterQueryUpdate(type: QueryType, onSuccess?: () => void) {
-    const options = useMutationOptions([QueryApi.list.key(type)], onSuccess)
-    return useMutation({mutationFn: QueryApi.update, ...options})
+    return useMutationAdapter({
+        mutationFn: QueryApi.update,
+        successKeys: [QueryApi.list.key(type)],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterQueryDelete(type: QueryType, onSuccess?: () => void) {
-    const options = useMutationOptions([QueryApi.list.key(type)], onSuccess)
-    return useMutation({mutationFn: QueryApi.delete, ...options})
+    return useMutationAdapter({
+        mutationFn: QueryApi.delete,
+        successKeys: [QueryApi.list.key(type)],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
-    const options = useMutationOptions([QueryApi.list.key(type)], onSuccess)
-    return useMutation({mutationFn: QueryApi.create, ...options})
+    return useMutationAdapter({
+        mutationFn: QueryApi.create,
+        successKeys: [QueryApi.list.key(type)],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterQueryRun(request: QueryRunRequest) {
@@ -35,13 +44,17 @@ export function useRouterQueryRun(request: QueryRunRequest) {
 }
 
 export function useRouterQueryCancel(uuid?: string) {
-    const options = useMutationOptions([QueryApi.run.key(uuid)])
-    return useMutation({mutationFn: QueryApi.cancel, ...options})
+    return useMutationAdapter({
+        mutationFn: QueryApi.cancel,
+        successKeys: [QueryApi.run.key(uuid)],
+    })
 }
 
 export function useRouterQueryTerminate(uuid?: string) {
-    const options = useMutationOptions([QueryApi.run.key(uuid)])
-    return useMutation({mutationFn: QueryApi.terminate, ...options})
+    return useMutationAdapter({
+        mutationFn: QueryApi.terminate,
+        successKeys: [QueryApi.run.key(uuid)],
+    })
 }
 
 export function useRouterQueryLog(uuid: string) {
@@ -53,8 +66,10 @@ export function useRouterQueryLog(uuid: string) {
 }
 
 export function useRouterQueryLogDelete(uuid: string) {
-    const options = useMutationOptions([QueryApi.getLog.key(uuid)])
-    return useMutation({mutationFn: () => QueryApi.deleteLog(uuid), ...options})
+    return useMutationAdapter({
+        mutationFn: QueryApi.deleteLog,
+        successKeys: [QueryApi.getLog.key(uuid)],
+    })
 }
 
 export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = true) {

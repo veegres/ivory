@@ -4,6 +4,6 @@ import {TagApi} from "../app/api";
 export function useRouterTagList() {
     return useQuery({
         queryKey: TagApi.list.key(),
-        queryFn: () => TagApi.list.fn()
+        queryFn: () => TagApi.list.fn(),
     })
 }

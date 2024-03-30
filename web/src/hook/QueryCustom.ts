@@ -1,40 +1,53 @@
-import {QueryKey, useQueryClient} from "@tanstack/react-query";
+import {
+    MutationOptions,
+    QueryClient,
+    QueryKey,
+    useMutation,
+    useQueryClient
+} from "@tanstack/react-query";
 import {useSnackbar} from "notistack";
 import {getErrorMessage} from "../app/utils";
 
-// TODO #1 think how we can optimise it and update react-query by updating state without refetch
-//      you can check how bloat jobs list works, maybe we can make something similar for all list requests
-// TODO #2 think if we should move all error handling to axios interceptor in AuthProvider
-/**
- * Simplify handling `onSuccess` and `onError` requests for react-query client
- * providing common approach with request refetch and custom toast messages for
- * mutation requests
- *
- * @param beforeKeys refetch QueryKeys before success
- * @param onSuccess it will be fired after refetch
- * @param afterKeys refetch QueryKeys after success
- */
-export function useMutationOptions(beforeKeys?: QueryKey[], onSuccess?: (data: any) => void, afterKeys?: QueryKey[]) {
-    const {enqueueSnackbar} = useSnackbar()
-    const queryClient = useQueryClient();
+interface MutationAdapterOptions<TData, TError, TVariables, TContext>
+    extends Omit<MutationOptions<TData, TError, TVariables, TContext>, "onSuccess"> {
+    successKeys?: QueryKey[],
+    onSuccess?: (client: QueryClient, data: TData) => void,
+}
 
-    return {
-        queryClient,
+/**
+ * Simplify handling `onSuccess` and `onError` requests for useMutation hook,
+ * providing common approach with request refetch and custom toast messages for
+ * mutation error
+ *
+ * @param options accept mutation options
+ * @param options.successKeys provide your useQuery keys to refetch info on success
+ * @param options.onSuccess is a callback for success function request
+ */
+export function useMutationAdapter<TData, TError, TVariables, TContext>(
+    options: MutationAdapterOptions<TData, TError, TVariables, TContext>
+) {
+    const {mutationFn, successKeys, onSuccess} = options
+    const queryClient = useQueryClient();
+    const {enqueueSnackbar} = useSnackbar()
+
+    return useMutation({
+        mutationFn: mutationFn,
         onSuccess: handleSuccess,
-        onError: (error: any) => enqueueSnackbar(getErrorMessage(error), {variant: "error"}),
-    }
+        onError: handleError,
+    })
 
     async function handleSuccess(data: any) {
-        if (beforeKeys) {
-            for (const key of beforeKeys) {
+        if (successKeys) {
+            for (const key of successKeys) {
                 await queryClient.refetchQueries({queryKey: key})
             }
         }
-        if (onSuccess) onSuccess(data)
-        if (afterKeys) {
-            for (const key of afterKeys) {
-                await queryClient.refetchQueries({queryKey: key})
-            }
+        if (onSuccess) {
+            onSuccess(queryClient, data)
         }
+    }
+
+    async function handleError(error: any) {
+        enqueueSnackbar(getErrorMessage(error), {variant: "error"})
     }
 }
