@@ -1,8 +1,9 @@
-import {useMutationOptions} from "../hook/QueryCustom";
-import {useMutation} from "@tanstack/react-query";
+import {useMutationAdapter} from "../hook/QueryCustom";
 import {GeneralApi, InitialApi} from "../app/api";
 
 export function useRouterSecretSet() {
-    const options = useMutationOptions([GeneralApi.info.key()])
-    return useMutation({mutationFn: InitialApi.setSecret, ...options})
+    return useMutationAdapter({
+        mutationFn: InitialApi.setSecret,
+        successKeys: [GeneralApi.info.key()],
+    })
 }

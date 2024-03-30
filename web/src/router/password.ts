@@ -1,7 +1,7 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import {PasswordApi} from "../app/api";
 import {PasswordType} from "../type/password";
-import {useMutationOptions} from "../hook/QueryCustom";
+import {useMutationAdapter} from "../hook/QueryCustom";
 
 export function useRouterPassword(type?: PasswordType) {
     return useQuery({
@@ -11,16 +11,24 @@ export function useRouterPassword(type?: PasswordType) {
 }
 
 export function useRouterPasswordDelete() {
-    const options = useMutationOptions([PasswordApi.list.key()])
-    return useMutation({mutationFn: PasswordApi.delete, ...options})
+    return useMutationAdapter({
+        mutationFn: PasswordApi.delete,
+        successKeys: [PasswordApi.list.key()],
+    })
 }
 
 export function useRouterPasswordUpdate(onSuccess?: () => void) {
-    const options = useMutationOptions([PasswordApi.list.key()], onSuccess)
-    return useMutation({mutationFn: PasswordApi.update, ...options})
+    return useMutationAdapter({
+        mutationFn: PasswordApi.update,
+        successKeys: [PasswordApi.list.key()],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterPasswordCreate(onSuccess?: () => void) {
-    const options = useMutationOptions([PasswordApi.list.key()], onSuccess)
-    return useMutation({mutationFn: PasswordApi.create, ...options})
+    return useMutationAdapter({
+        mutationFn: PasswordApi.create,
+        successKeys: [PasswordApi.list.key()],
+        onSuccess: onSuccess,
+    })
 }

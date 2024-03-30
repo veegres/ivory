@@ -1,7 +1,7 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import {CertApi} from "../app/api";
 import {CertType} from "../type/cert";
-import {useMutationOptions} from "../hook/QueryCustom";
+import {useMutationAdapter} from "../hook/QueryCustom";
 
 export function useRouterCertList(type: CertType) {
     return useQuery({
@@ -11,16 +11,23 @@ export function useRouterCertList(type: CertType) {
 }
 
 export function useRouterCertDelete(type: CertType) {
-    const options = useMutationOptions([CertApi.list.key(type)])
-    return useMutation({mutationFn: CertApi.delete, ...options})
+    return useMutationAdapter({
+        mutationFn: CertApi.delete,
+        successKeys: [CertApi.list.key(type)]
+    })
 }
 
 export function useRouterCertUpload(type: CertType) {
-    const options = useMutationOptions([CertApi.list.key(type)])
-    return useMutation({mutationFn: CertApi.upload, ...options})
+    return useMutationAdapter({
+        mutationFn: CertApi.upload,
+        successKeys: [CertApi.list.key(type)]
+    })
 }
 
 export function useRouterCertAdd(type: CertType, onSuccess?: () => void) {
-    const options = useMutationOptions([CertApi.list.key(type)], onSuccess)
-    return useMutation({mutationFn: CertApi.add, ...options})
+    return useMutationAdapter({
+        mutationFn: CertApi.add,
+        successKeys: [CertApi.list.key(type)],
+        onSuccess: onSuccess,
+    })
 }

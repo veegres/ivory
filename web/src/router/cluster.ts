@@ -1,6 +1,6 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import {ClusterApi, TagApi} from "../app/api";
-import {useMutationOptions} from "../hook/QueryCustom";
+import {useMutationAdapter} from "../hook/QueryCustom";
 
 export function useRouterClusterList(tags?: string[]) {
     return useQuery({
@@ -10,16 +10,24 @@ export function useRouterClusterList(tags?: string[]) {
 }
 
 export function useRouterClusterDelete() {
-    const options = useMutationOptions([ClusterApi.list.key(), TagApi.list.key()])
-    return useMutation({mutationFn: ClusterApi.delete, ...options})
+    return useMutationAdapter({
+        mutationFn: ClusterApi.delete,
+        successKeys: [ClusterApi.list.key(), TagApi.list.key()]
+    })
 }
 
 export function useRouterClusterUpdate(onSuccess?: () => void) {
-    const options = useMutationOptions([ClusterApi.list.key(), TagApi.list.key()], onSuccess)
-    return useMutation({mutationFn: ClusterApi.update, ...options})
+    return useMutationAdapter({
+        mutationFn: ClusterApi.update,
+        successKeys: [ClusterApi.list.key(), TagApi.list.key()],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterClusterCreateAuto(onSuccess?: () => void) {
-    const options = useMutationOptions([ClusterApi.list.key(), TagApi.list.key()], onSuccess)
-    return useMutation({mutationFn: ClusterApi.createAuto, ...options})
+    return useMutationAdapter({
+        mutationFn: ClusterApi.createAuto,
+        successKeys: [ClusterApi.list.key(), TagApi.list.key()],
+        onSuccess: onSuccess,
+    })
 }

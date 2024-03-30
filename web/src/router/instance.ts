@@ -1,7 +1,7 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query";
 import {InstanceApi} from "../app/api";
 import {InstanceRequest} from "../type/instance";
-import {useMutationOptions} from "../hook/QueryCustom";
+import {useMutationAdapter} from "../hook/QueryCustom";
 import {Sidecar} from "../type/general";
 
 export function useRouterInstanceOverview(cluster: string, request: InstanceRequest) {
@@ -21,51 +21,72 @@ export function useRouterInstanceConfig(request: InstanceRequest, enabled: boole
 }
 
 export function useRouterInstanceConfigUpdate(sidecar: Sidecar, onSuccess: () => void) {
-    const options = useMutationOptions([InstanceApi.config.key(sidecar)], onSuccess)
-    return useMutation({mutationFn: InstanceApi.updateConfig, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.updateConfig,
+        successKeys: [InstanceApi.config.key(sidecar)],
+        onSuccess: onSuccess,
+    })
 }
 
 export function useRouterInstanceSwitchoverDelete(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.deleteSwitchover, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.deleteSwitchover,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstanceRestartDelete(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.deleteRestart, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.deleteRestart,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstanceRestart(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.restart, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.restart,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstanceReload(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.reload, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.reload,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstanceReinit(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.reinitialize, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.reinitialize,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstanceSwitchover(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.switchover, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.switchover,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstanceFailover(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.failover, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.failover,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstanceActivate(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.activate, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.activate,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
 
 export function useRouterInstancePause(cluster: string) {
-    const options = useMutationOptions([InstanceApi.overview.key(cluster)])
-    return useMutation({mutationFn: InstanceApi.pause, ...options})
+    return useMutationAdapter({
+        mutationFn: InstanceApi.pause,
+        successKeys: [InstanceApi.overview.key(cluster)]
+    })
 }
