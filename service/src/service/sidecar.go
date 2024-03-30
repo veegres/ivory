@@ -57,7 +57,7 @@ func (p *SidecarRequest[R]) Delete(instance InstanceRequest, path string) (*R, i
 
 func (p *SidecarRequest[R]) parseResponse(res *http.Response) (*R, int, error) {
 	var body R
-	status := http.StatusBadGateway
+	status := http.StatusBadRequest
 	if res != nil {
 		status = res.StatusCode
 		bytesBody, errRead := io.ReadAll(res.Body)
