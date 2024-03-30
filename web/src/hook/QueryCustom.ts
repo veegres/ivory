@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import {useSnackbar} from "notistack";
 import {getErrorMessage} from "../app/utils";
+import {AxiosError} from "axios";
 
 interface MutationAdapterOptions<TData, TError, TVariables, TContext>
     extends Omit<MutationOptions<TData, TError, TVariables, TContext>, "onSuccess"> {
@@ -23,7 +24,7 @@ interface MutationAdapterOptions<TData, TError, TVariables, TContext>
  * @param options.successKeys provide your useQuery keys to refetch info on success
  * @param options.onSuccess is a callback for success function request
  */
-export function useMutationAdapter<TData, TError, TVariables, TContext>(
+export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariables = void, TContext = unknown>(
     options: MutationAdapterOptions<TData, TError, TVariables, TContext>
 ) {
     const {mutationFn, successKeys, onSuccess} = options
