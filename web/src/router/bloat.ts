@@ -24,7 +24,7 @@ export function useRouterBloatList(cluster: string, enabled: boolean) {
 
 export function useRouterBloatStart(cluster: string) {
     return useMutationAdapter({
-        mutationFn: BloatApi.start,
+        mutationFn: BloatApi.start.fn,
         onSuccess: (client, job) => {
             client.setQueryData<Bloat[]>(
                 BloatApi.list.key(cluster),
@@ -36,7 +36,7 @@ export function useRouterBloatStart(cluster: string) {
 
 export function useRouterBloatDelete(uuid: string, cluster: string) {
     return useMutationAdapter({
-        mutationFn: BloatApi.delete,
+        mutationFn: BloatApi.delete.fn,
         onSuccess: (client) => {
             client.setQueryData<Bloat[]>(
                 BloatApi.list.key(cluster),
@@ -47,5 +47,5 @@ export function useRouterBloatDelete(uuid: string, cluster: string) {
 }
 
 export function useRouterBloatStop() {
-    return useMutationAdapter({mutationFn: BloatApi.stop})
+    return useMutationAdapter({mutationFn: BloatApi.stop.fn})
 }

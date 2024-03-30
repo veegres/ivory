@@ -22,7 +22,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         setStatus(JobOptions[initStatus])
         if (!JobOptions[initStatus].active) return
 
-        const es = BloatApi.stream(uuid)
+        const es = BloatApi.stream.fn(uuid)
         const close = () => {
             es.close();
             setEventSourceFetching(false)

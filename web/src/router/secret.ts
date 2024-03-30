@@ -3,7 +3,7 @@ import {GeneralApi, InitialApi} from "../app/api";
 
 export function useRouterSecretSet() {
     return useMutationAdapter({
-        mutationFn: InitialApi.setSecret,
+        mutationFn: InitialApi.setSecret.fn,
         successKeys: [GeneralApi.info.key()],
     })
 }

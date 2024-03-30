@@ -3,7 +3,7 @@ import {GeneralApi} from "../app/api";
 
 export function useRouterLogin(onSuccess: (data: any) => void) {
     return useMutationAdapter({
-        mutationFn: GeneralApi.login,
+        mutationFn: GeneralApi.login.fn,
         successKeys: [GeneralApi.info.key()],
         onSuccess: (_, data) => onSuccess(data),
     })

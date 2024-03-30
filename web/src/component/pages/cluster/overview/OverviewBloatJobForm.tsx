@@ -43,7 +43,7 @@ export function OverviewBloatJobForm(props: Props) {
                 value={target?.dbName || null}
                 margin={"dense"} variant={"standard"}
                 keys={["databases", ...keys]} label={"Database"}
-                onFetch={(v) => QueryApi.databases({...req, name: v})}
+                onFetch={(v) => QueryApi.databases.fn({...req, name: v})}
                 onUpdate={(v) => setTarget({dbName: v || ""})}
             />
             <AutocompleteFetch
@@ -51,7 +51,7 @@ export function OverviewBloatJobForm(props: Props) {
                 margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Schema"}
                 disabled={!target?.dbName || !!target?.excludeSchema}
-                onFetch={(v) => QueryApi.schemas({...req, name: v})}
+                onFetch={(v) => QueryApi.schemas.fn({...req, name: v})}
                 onUpdate={(v) => setTarget({dbName: target?.dbName, schema: v || ""})}
             />
             <AutocompleteFetch
@@ -59,7 +59,7 @@ export function OverviewBloatJobForm(props: Props) {
                 margin={"dense"} variant={"standard"}
                 keys={["schemas", ...keys]} label={"Exclude Schema"}
                 disabled={!target?.dbName || !!target?.schema}
-                onFetch={(v) => QueryApi.schemas({...req, name: v})}
+                onFetch={(v) => QueryApi.schemas.fn({...req, name: v})}
                 onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || ""})}
             />
             <AutocompleteFetch
@@ -67,7 +67,7 @@ export function OverviewBloatJobForm(props: Props) {
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
                 disabled={!target?.schema || !!target?.excludeTable}
-                onFetch={(v) => QueryApi.tables({...req, schema: target?.schema ?? "", name: v})}
+                onFetch={(v) => QueryApi.tables.fn({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, table: v || ""})}
             />
             <AutocompleteFetch
@@ -75,7 +75,7 @@ export function OverviewBloatJobForm(props: Props) {
                 margin={"dense"} variant={"standard"}
                 keys={["tables", ...keys, target?.excludeSchema ?? ""]} label={"Exclude Table"}
                 disabled={!target?.schema || !!target?.table}
-                onFetch={(v) => QueryApi.tables({...req, schema: target?.schema ?? "", name: v})}
+                onFetch={(v) => QueryApi.tables.fn({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
             />
             <Box sx={SX.buttons}>
