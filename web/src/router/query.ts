@@ -13,7 +13,7 @@ export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
 
 export function useRouterQueryUpdate(type: QueryType, onSuccess?: () => void) {
     return useMutationAdapter({
-        mutationFn: QueryApi.update,
+        mutationFn: QueryApi.update.fn,
         successKeys: [QueryApi.list.key(type)],
         onSuccess: onSuccess,
     })
@@ -21,7 +21,7 @@ export function useRouterQueryUpdate(type: QueryType, onSuccess?: () => void) {
 
 export function useRouterQueryDelete(type: QueryType, onSuccess?: () => void) {
     return useMutationAdapter({
-        mutationFn: QueryApi.delete,
+        mutationFn: QueryApi.delete.fn,
         successKeys: [QueryApi.list.key(type)],
         onSuccess: onSuccess,
     })
@@ -29,7 +29,7 @@ export function useRouterQueryDelete(type: QueryType, onSuccess?: () => void) {
 
 export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
     return useMutationAdapter({
-        mutationFn: QueryApi.create,
+        mutationFn: QueryApi.create.fn,
         successKeys: [QueryApi.list.key(type)],
         onSuccess: onSuccess,
     })
@@ -45,14 +45,14 @@ export function useRouterQueryRun(request: QueryRunRequest) {
 
 export function useRouterQueryCancel(uuid?: string) {
     return useMutationAdapter({
-        mutationFn: QueryApi.cancel,
+        mutationFn: QueryApi.cancel.fn,
         successKeys: [QueryApi.run.key(uuid)],
     })
 }
 
 export function useRouterQueryTerminate(uuid?: string) {
     return useMutationAdapter({
-        mutationFn: QueryApi.terminate,
+        mutationFn: QueryApi.terminate.fn,
         successKeys: [QueryApi.run.key(uuid)],
     })
 }
@@ -67,7 +67,7 @@ export function useRouterQueryLog(uuid: string) {
 
 export function useRouterQueryLogDelete(uuid: string) {
     return useMutationAdapter({
-        mutationFn: QueryApi.deleteLog,
+        mutationFn: QueryApi.deleteLog.fn,
         successKeys: [QueryApi.getLog.key(uuid)],
     })
 }

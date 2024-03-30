@@ -12,21 +12,21 @@ export function useRouterCertList(type: CertType) {
 
 export function useRouterCertDelete(type: CertType) {
     return useMutationAdapter({
-        mutationFn: CertApi.delete,
+        mutationFn: CertApi.delete.fn,
         successKeys: [CertApi.list.key(type)]
     })
 }
 
 export function useRouterCertUpload(type: CertType) {
     return useMutationAdapter({
-        mutationFn: CertApi.upload,
+        mutationFn: CertApi.upload.fn,
         successKeys: [CertApi.list.key(type)]
     })
 }
 
 export function useRouterCertAdd(type: CertType, onSuccess?: () => void) {
     return useMutationAdapter({
-        mutationFn: CertApi.add,
+        mutationFn: CertApi.add.fn,
         successKeys: [CertApi.list.key(type)],
         onSuccess: onSuccess,
     })

@@ -80,7 +80,7 @@ export function InstanceMain(props: Props) {
                 <AutocompleteFetch
                     value={dbName || null}
                     keys={["query", "databases", getDomain(database), database.name ?? "postgres", postgresId]}
-                    onFetch={(v) => QueryApi.databases({credentialId: postgresId, db: database, name: v})}
+                    onFetch={(v) => QueryApi.databases.fn({credentialId: postgresId, db: database, name: v})}
                     placeholder={"Database"}
                     variant={"outlined"}
                     padding={"3px"}

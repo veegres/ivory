@@ -11,14 +11,14 @@ export function useRouterClusterList(tags?: string[]) {
 
 export function useRouterClusterDelete() {
     return useMutationAdapter({
-        mutationFn: ClusterApi.delete,
+        mutationFn: ClusterApi.delete.fn,
         successKeys: [ClusterApi.list.key(), TagApi.list.key()]
     })
 }
 
 export function useRouterClusterUpdate(onSuccess?: () => void) {
     return useMutationAdapter({
-        mutationFn: ClusterApi.update,
+        mutationFn: ClusterApi.update.fn,
         successKeys: [ClusterApi.list.key(), TagApi.list.key()],
         onSuccess: onSuccess,
     })
@@ -26,7 +26,7 @@ export function useRouterClusterUpdate(onSuccess?: () => void) {
 
 export function useRouterClusterCreateAuto(onSuccess?: () => void) {
     return useMutationAdapter({
-        mutationFn: ClusterApi.createAuto,
+        mutationFn: ClusterApi.createAuto.fn,
         successKeys: [ClusterApi.list.key(), TagApi.list.key()],
         onSuccess: onSuccess,
     })
