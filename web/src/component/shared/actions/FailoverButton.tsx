@@ -23,7 +23,7 @@ export function FailoverButton(props: Props) {
             title={`Make a failover of ${request.sidecar.host}?`}
             description={`It will failover to current instance of postgres, that will cause some downtime 
             and potential data loss. Usually it is recommended to use switchover, but if you don't have a
-            leader you won't be able to do switchover and here failover can help.`}
+            leader you won't be able to do switchover and here failover can be useful.`}
             disabled={disabled}
             loading={failover.isPending}
             onClick={() => failover.mutate({...request, body})}

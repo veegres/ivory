@@ -2,7 +2,7 @@ import {Database, SxPropsMap} from "../../../type/general";
 import {Box} from "@mui/material";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", gap: 2},
+    box: {display: "flex", columnGap: 2, justifyContent: "space-evenly", flexWrap: "wrap"},
     item: {display: "flex", gap: 1},
     label: {fontWeight: "bold", color: "text.secondary"},
     default: {color: "text.disabled"},

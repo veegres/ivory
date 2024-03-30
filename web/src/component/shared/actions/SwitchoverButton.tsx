@@ -26,7 +26,9 @@ export function SwitchoverButton(props: Props) {
             color={"secondary"}
             label={"Switchover"}
             title={`Make a switchover of ${request.sidecar.host}?`}
-            description={"It will change the leader of your cluster that will cause some downtime. Provide local time for schedule."}
+            description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
+             candidate, the candidate will be chosen randomly. Schedule time should be provided in your local time, it
+             is going to be transformed to UTC and executed in UTC.`}
             loading={switchover.isPending}
             onClick={handleClick}
         >
