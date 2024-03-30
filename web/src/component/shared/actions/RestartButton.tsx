@@ -59,7 +59,7 @@ export function RestartButton(props: Props) {
             <Box>
                 <Box>Restart pending</Box>
                 <Box sx={SX.description}>
-                    will restart Postgres only when restart is pending, requires schedule time
+                    Will restart Postgres only when restart is pending, requires schedule time is set.
                 </Box>
             </Box>
         )

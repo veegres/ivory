@@ -45,7 +45,7 @@ export function ReinitButton(props: Props) {
             <Box>
                 <Box>Force</Box>
                 <Box sx={SX.description}>
-                    in order to overcome fail if Patroni is in a loop trying to recover (restart) a failed Postgres
+                    In order to overcome fail if Patroni is in a loop trying to recover (restart) a failed Postgres.
                 </Box>
             </Box>
         )
