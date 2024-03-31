@@ -65,7 +65,7 @@ export function QueryBodyRun(props: Props) {
                     <RefreshIconButton
                         color={"success"}
                         disabled={isFetching || cancel.isPending || terminate.isPending}
-                        onClick={result.refetch}
+                        onClick={() => result.refetch()}
                     />
                 </Box>
             </Box>

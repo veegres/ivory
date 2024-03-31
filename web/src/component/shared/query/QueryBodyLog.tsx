@@ -29,7 +29,7 @@ export function QueryBodyLog(props: Props) {
                 <Box sx={SX.info}>
                     <Box sx={SX.label}>[ {result.data?.length ?? 0} of 10 ]</Box>
                     <ClearAllIconButton onClick={() => clear.mutate(queryId)} loading={clear.isPending} disabled={result.data && !result.data.length}/>
-                    <RefreshIconButton onClick={result.refetch} loading={result.isFetching}/>
+                    <RefreshIconButton onClick={() => result.refetch()} loading={result.isFetching}/>
                 </Box>
             </Box>
             <Box>
