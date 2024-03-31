@@ -8,18 +8,19 @@ import {InstanceMap} from "../type/instance";
 import {useRouterInstanceOverview} from "../router/instance";
 import {InstanceApi} from "../app/api";
 
+// TODO #414 get rid of this complicated and problematic component with a lot of renders
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
     const {activeCluster} = useStore()
     const {setCluster, setClusterInfo, setWarnings} = useStoreAction()
     const isClusterActive = !!activeCluster && cluster.name === activeCluster.cluster.name
 
+    const queryClient = useQueryClient()
     const defaultDetection = useRef<DetectionType>("auto")
     const defaultSidecar = useRef(instances[0])
     const previousData = useRef<InstanceMap>({})
 
     const queryKey = useMemo(() => InstanceApi.overview.key(cluster.name), [cluster.name])
-    const request = {sidecar: defaultSidecar.current, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
-    const queryClient = useQueryClient();
+    const request = () => ({sidecar: defaultSidecar.current, credentialId: cluster.credentials.patroniId, certs: cluster.certs})
     const query = useRouterInstanceOverview(cluster.name, request)
     const {errorUpdateCount, refetch, data, isFetching} = query
     const instanceMap = useMemo(handleMemoInstanceMap, [data])

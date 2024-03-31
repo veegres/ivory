@@ -4,10 +4,13 @@ import {InstanceRequest} from "../type/instance";
 import {useMutationAdapter} from "../hook/QueryCustom";
 import {Sidecar} from "../type/general";
 
-export function useRouterInstanceOverview(cluster: string, request: InstanceRequest) {
+// TODO #414 it is accept request as a function right now, because otherwise it gets incorrect state.
+//  It is considered as a hack to previous solution, idea is to get rid of InstanceDetection on
+//  the frontend, because it is to complicated and generates a lot of renders with useQuery()
+export function useRouterInstanceOverview(cluster: string, request: () => InstanceRequest) {
     return useQuery({
         queryKey: InstanceApi.overview.key(cluster),
-        queryFn: () => InstanceApi.overview.fn(request),
+        queryFn: () => InstanceApi.overview.fn(request()),
         retry: false,
     })
 }
