@@ -1,5 +1,5 @@
 import {Box, Chip, Tooltip} from "@mui/material";
-import {RefreshIconButton} from "../../../view/button/IconButtons";
+import {AutoRefreshIconButton, RefreshIconButton} from "../../../view/button/IconButtons";
 import {purple} from "@mui/material/colors";
 import {getDomain, InstanceColor} from "../../../../app/utils";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
@@ -34,7 +34,11 @@ export function ListCellChip(props: Props) {
                     onClick={handleClick}
                 />
             </Tooltip>
-            <RefreshIconButton loading={fetching} onClick={refetch}/>
+            {instanceDetection.detection === "auto" ? (
+                <AutoRefreshIconButton loading={fetching}  onClick={refetch}/>
+            ) : (
+                <RefreshIconButton loading={fetching} onClick={refetch}/>
+            )}
         </Box>
     )
 
