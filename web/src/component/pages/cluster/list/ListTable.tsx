@@ -47,7 +47,7 @@ export function ListTable(props: Props) {
                         <TableCell sx={SxPropsFormatter.style.paper}>Instances</TableCell>
                         <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={isFetching && !isLoading}>
                             <ListCreateAuto />
-                            <AddIconButton onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
+                            <AddIconButton tooltip={"Add Cluster Manually"} onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>

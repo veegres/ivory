@@ -22,8 +22,9 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const queryKey = useMemo(() => InstanceApi.overview.key(cluster.name), [cluster.name])
     const request = () => ({sidecar: defaultSidecar.current, credentialId: cluster.credentials.patroniId, certs: cluster.certs})
     const query = useRouterInstanceOverview(cluster.name, request)
-    const {errorUpdateCount, refetch, data, isFetching} = query
-    const instanceMap = useMemo(handleMemoInstanceMap, [data])
+    const {errorUpdateCount, refetch, data, isFetching, error} = query
+
+    const instanceMap = useMemo(handleMemoInstanceMap, [data, error])
     previousData.current = instanceMap
 
     const combine = useMemo(handleMemoCombine, [instances, instanceMap])
@@ -129,11 +130,9 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     }
 
     function handleMemoInstanceMap() {
-        if (!data && defaultDetection.current === "auto") {
-            return previousData.current
-        } else {
-            return data ?? {}
-        }
+        if (error) return {}
+        if (!data && defaultDetection.current === "auto") return previousData.current
+        return data ?? {}
     }
 
     function handleMemoColors() {

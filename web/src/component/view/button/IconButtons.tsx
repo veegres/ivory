@@ -3,7 +3,7 @@ import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/
 import {
     Add,
     ArrowBack,
-    AutoFixHigh,
+    AutoFixHigh, AutoMode,
     Block,
     Cached,
     Cancel,
@@ -94,6 +94,11 @@ export function RefreshIconButton(props: Props) {
     return <IconButton {...props} disabled={disabled ?? false} icon={<Cached/>} tooltip={"Refresh"}/>
 }
 
+export function AutoRefreshIconButton(props: Props) {
+    const {disabled} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoMode/>} tooltip={"Auto Detection"}/>
+}
+
 export function BackIconButton(props: Props) {
     const {disabled} = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<ArrowBack/>} tooltip={"Back"}/>
@@ -105,13 +110,13 @@ export function CloseIconButton(props: Props) {
 }
 
 export function AddIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Add/>} tooltip={"Add"}/>
+    const {disabled, tooltip} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<Add/>} tooltip={tooltip ?? "Add"}/>
 }
 
 export function AutoIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoFixHigh/>} tooltip={"Auto"}/>
+    const {disabled, tooltip} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoFixHigh/>} tooltip={tooltip ?? "Auto"}/>
 }
 
 export function PlayIconButton(props: Props) {

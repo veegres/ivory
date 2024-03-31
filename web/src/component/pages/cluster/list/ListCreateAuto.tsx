@@ -26,7 +26,7 @@ export function ListCreateAuto() {
 
     return (
         <>
-            <AutoIconButton onClick={() => setOpen(!open)}/>
+            <AutoIconButton tooltip={"Add Cluster Automatically"} onClick={() => setOpen(!open)}/>
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
                 <DialogContent sx={SX.content}>
