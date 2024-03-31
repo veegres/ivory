@@ -9,9 +9,9 @@ import {ClusterNoInstanceError} from "./OverviewError";
 import {CodeThemes} from "../../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
 import {SxPropsMap} from "../../../../type/general";
-import {useSnackbar} from "notistack";
 import {ActiveCluster} from "../../../../type/cluster";
 import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../router/instance";
+import {useSnackbar} from "../../../../provider/SnackbarProvider";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
@@ -26,7 +26,7 @@ type Props = {
 export function OverviewConfig(props: Props) {
     const {info} = props
     const appearance = useAppearance();
-    const {enqueueSnackbar} = useSnackbar()
+    const snackbar = useSnackbar()
     const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
@@ -77,7 +77,9 @@ export function OverviewConfig(props: Props) {
 
     function handleCopyAll() {
         const currentConfig = configState ? configState : stringify(config)
-        return navigator.clipboard.writeText(currentConfig)
+        navigator.clipboard.writeText(currentConfig).then(() => {
+            snackbar("Config copied to clipboard!", "info")
+        })
     }
 
     function handleCancel() {
@@ -87,17 +89,12 @@ export function OverviewConfig(props: Props) {
 
     function handleUpdate(instance: InstanceWeb, config: string) {
         if (configState) {
-            try {
-                const request: InstanceRequest = {
-                    sidecar: instance.sidecar,
-                    credentialId: cluster.credentials.patroniId,
-                    certs: cluster.certs,
-                    body: JSON.parse(config)
-                }
-                updateConfig.mutate(request)
-            } catch (e: any) {
-                enqueueSnackbar(e?.message ?? "Unknown error", {variant: "error"})
-            }
+            updateConfig.mutate({
+                sidecar: instance.sidecar,
+                credentialId: cluster.credentials.patroniId,
+                certs: cluster.certs,
+                body: JSON.parse(config)
+            })
         }
     }
 

@@ -1,4 +1,4 @@
-import {cloneElement, ReactElement} from "react";
+import {cloneElement, ReactElement, SyntheticEvent} from "react";
 import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material";
 import {
     Add,
@@ -26,7 +26,6 @@ type Placement = "bottom-end" | 'bottom-start' | 'bottom' | 'left-end' | 'left-s
 
 type ButtonProps = Props & {
     icon: ReactElement,
-    onClick: () => void,
     tooltip: string,
     color?: Color,
     placement?: Placement,
@@ -56,7 +55,7 @@ export function IconButton(props: ButtonProps) {
 
 type Props = {
     loading?: boolean,
-    onClick: () => void,
+    onClick: (event: Event | SyntheticEvent, reason?: string) => void,
     size?: number,
     disabled?: boolean,
     color?: Color,
