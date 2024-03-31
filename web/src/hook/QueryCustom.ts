@@ -5,9 +5,9 @@ import {
     useMutation,
     useQueryClient
 } from "@tanstack/react-query";
-import {useSnackbar} from "notistack";
 import {getErrorMessage} from "../app/utils";
 import {AxiosError} from "axios";
+import {useSnackbar} from "../provider/SnackbarProvider";
 
 interface MutationAdapterOptions<TData, TError, TVariables, TContext>
     extends Omit<MutationOptions<TData, TError, TVariables, TContext>, "onSuccess"> {
@@ -29,7 +29,7 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
 ) {
     const {mutationFn, successKeys, onSuccess} = options
     const queryClient = useQueryClient();
-    const {enqueueSnackbar} = useSnackbar()
+    const snackbar = useSnackbar()
 
     return useMutation({
         mutationFn: mutationFn,
@@ -38,6 +38,7 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
     })
 
     async function handleSuccess(data: any) {
+        snackbar("Action was done successfully", "success")
         if (successKeys) {
             for (const key of successKeys) {
                 await queryClient.refetchQueries({queryKey: key})
@@ -49,6 +50,6 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
     }
 
     async function handleError(error: any) {
-        enqueueSnackbar(getErrorMessage(error), {variant: "error"})
+        snackbar(getErrorMessage(error), "error")
     }
 }

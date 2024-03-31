@@ -4,7 +4,6 @@ import {AppearanceProvider} from "./provider/AppearanceProvider";
 import {StoreProvider} from "./provider/StoreProvider";
 import {CssBaseline} from "@mui/material";
 import {createRoot} from "react-dom/client";
-import {SnackbarProvider} from "notistack";
 import scroll from "./style/scroll.module.css"
 import {StrictMode} from "react";
 import {AuthProvider} from "./provider/AuthProvider";
@@ -14,6 +13,7 @@ import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import {ErrorBoundary} from "react-error-boundary";
 import {PageErrorBox} from "./component/view/box/PageErrorBox";
+import {SnackbarProvide} from "./provider/SnackbarProvider";
 
 // extend dayjs with UTC plugin
 dayjs.extend(utc)
@@ -32,10 +32,10 @@ root.render(
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <AuthProvider>
                         <StoreProvider>
-                            <SnackbarProvider maxSnack={3}>
+                            <SnackbarProvide>
                                 <CssBaseline enableColorScheme/>
                                 <App/>
-                            </SnackbarProvider>
+                            </SnackbarProvide>
                         </StoreProvider>
                     </AuthProvider>
                 </LocalizationProvider>
