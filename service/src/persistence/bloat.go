@@ -43,12 +43,12 @@ func (r *BloatRepository) Get(uuid uuid.UUID) (Bloat, error) {
 }
 
 func (r *BloatRepository) GetOpenFile(uuid uuid.UUID) (*os.File, error) {
-	return r.file.Open(uuid.String())
+	return r.file.OpenByName(uuid.String())
 }
 
 func (r *BloatRepository) Create(credentialId uuid.UUID, cluster string, args []string) (*Bloat, error) {
 	jobUuid := uuid.New()
-	logsPath, errCreate := r.file.Create(jobUuid.String())
+	logsPath, errCreate := r.file.CreateByName(jobUuid.String())
 	if errCreate != nil {
 		return nil, errCreate
 	}
@@ -76,7 +76,7 @@ func (r *BloatRepository) UpdateStatus(compactTable Bloat, status JobStatus) err
 
 func (r *BloatRepository) Delete(uuid uuid.UUID) error {
 	// NOTE: we shouldn't check error here, if there is no file we should try to remove info
-	_ = r.file.Delete(uuid.String())
+	_ = r.file.DeleteByName(uuid.String())
 	return r.bucket.Delete(uuid.String())
 }
 

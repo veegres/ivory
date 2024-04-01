@@ -71,7 +71,7 @@ func (r *CertRouter) PostUploadCert(context *gin.Context) {
 		return
 	}
 
-	cert, errCreate := r.certService.Create(file.Filename, CertType(certType), FileUsageType(UPLOAD))
+	cert, errCreate := r.certService.Create(file.Filename, CertType(certType), UPLOAD)
 	if errCreate != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errCreate.Error()})
 		return
@@ -93,7 +93,7 @@ func (r *CertRouter) PostAddCert(context *gin.Context) {
 		return
 	}
 
-	cert, err := r.certService.Create(certRequest.Path, certRequest.Type, FileUsageType(PATH))
+	cert, err := r.certService.Create(certRequest.Path, certRequest.Type, PATH)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

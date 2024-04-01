@@ -67,7 +67,7 @@ type Version struct {
 type FileUsageType int8
 
 const (
-	UPLOAD PasswordType = iota
+	UPLOAD FileUsageType = iota
 	PATH
 )
 

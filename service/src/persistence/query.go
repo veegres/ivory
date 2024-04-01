@@ -32,7 +32,7 @@ func NewQueryRepository(
 }
 
 func (r *QueryRepository) GetLog(uuid uuid.UUID) ([]QueryFields, error) {
-	file, err := r.queryLogFiles.Open(uuid.String())
+	file, err := r.queryLogFiles.OpenByName(uuid.String())
 	if err != nil {
 		return []QueryFields{}, nil
 	}
@@ -60,19 +60,19 @@ func (r *QueryRepository) GetLog(uuid uuid.UUID) ([]QueryFields, error) {
 }
 
 func (r *QueryRepository) DeleteLog(uuid uuid.UUID) error {
-	return r.queryLogFiles.Delete(uuid.String())
+	return r.queryLogFiles.DeleteByName(uuid.String())
 }
 
 func (r *QueryRepository) AddLog(uuid uuid.UUID, element any) error {
-	if !r.queryLogFiles.Exist(uuid.String()) {
-		_, errCreate := r.queryLogFiles.Create(uuid.String())
+	if !r.queryLogFiles.ExistByName(uuid.String()) {
+		_, errCreate := r.queryLogFiles.CreateByName(uuid.String())
 		if errCreate != nil {
 			return errCreate
 		}
 	}
 
 	// open file
-	file, err := r.queryLogFiles.Open(uuid.String())
+	file, err := r.queryLogFiles.OpenByName(uuid.String())
 	defer func() { _ = file.Close() }()
 	if err != nil {
 		return err
@@ -164,8 +164,8 @@ func (r *QueryRepository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query
 func (r *QueryRepository) Delete(key uuid.UUID) error {
 	keyString := key.String()
 	var errFile error
-	if r.queryLogFiles.Exist(keyString) {
-		errFile = r.queryLogFiles.Delete(keyString)
+	if r.queryLogFiles.ExistByName(keyString) {
+		errFile = r.queryLogFiles.DeleteByName(keyString)
 	}
 	errBucket := r.bucket.Delete(keyString)
 	return errors.Join(errFile, errBucket)

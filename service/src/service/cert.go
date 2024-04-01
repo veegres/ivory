@@ -12,18 +12,19 @@ import (
 
 type CertService struct {
 	certRepository *persistence.CertRepository
+	formats        []string
 }
 
 func NewCertService(certRepository *persistence.CertRepository) *CertService {
-	return &CertService{certRepository: certRepository}
+	return &CertService{
+		certRepository: certRepository,
+
+		formats: []string{".crt", ".key", ".chain"},
+	}
 }
 
 func (s *CertService) Get(uuid uuid.UUID) (Cert, error) {
 	return s.certRepository.Get(uuid)
-}
-
-func (s *CertService) GetFile(uuid uuid.UUID) ([]byte, error) {
-	return s.certRepository.GetFile(uuid)
 }
 
 func (s *CertService) List() (CertMap, error) {
@@ -35,17 +36,15 @@ func (s *CertService) ListByType(certType CertType) (CertMap, error) {
 }
 
 func (s *CertService) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*Cert, error) {
-	formats := []string{".crt", ".key", ".chain"}
-
 	fileName := path.Base(pathStr)
 	if fileName == "" {
 		return nil, errors.New("file name cannot be empty")
 	}
 
 	fileFormat := path.Ext(pathStr)
-	idx := slices.IndexFunc(formats, func(s string) bool { return s == fileFormat })
+	idx := slices.IndexFunc(s.formats, func(s string) bool { return s == fileFormat })
 	if idx == -1 {
-		return nil, errors.New("file format is not correct, allowed formats: " + strings.Join(formats, ", "))
+		return nil, errors.New("file format is not correct, allowed formats: " + strings.Join(s.formats, ", "))
 	}
 
 	cert := Cert{
