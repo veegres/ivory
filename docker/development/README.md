@@ -40,7 +40,7 @@ Now you can use pgcompacttable from your console, Ivory will use it as well
 
 These certificates are only needed for testing purposes, please, don't use them
 in real VMs, you can follow instruction and generate them. Certificates were generated
-for 24855, probably it should be enough not to change them :)
+for 24855 days (End date 4 May 2091), probably it should be enough not to change them :)
 
 ### Generate Certificates
 
@@ -48,7 +48,7 @@ First go to the certs package `cd certs`
 
 - Certificate Authority
   - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out ca/ca.key`
-  - Certificate `openssl req -new -x509 -sha256 -key ca/ca.key -subj "/O=Ivory" -out ca/ca.crt`
+  - Certificate `openssl req -new -x509 -sha256 -key ca/ca.key -subj "/O=Ivory" -out ca/ca.crt -days 24855`
 - Server
   - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out server/patroni-cert.key`
   - Signing Request `openssl req -new -sha256 -key server/patroni-cert.key -subj "/CN=patroni-cert/O=Ivory" -addext "subjectAltName=DNS:patroni-cert" -out server/patroni-cert.csr`
