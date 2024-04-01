@@ -289,8 +289,8 @@ func CreateChartsMap() map[QueryChartType]QueryRequest {
 		DatabaseSize:   {Name: "Database Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;"},
 		DatabaseUptime: {Name: "Database Uptime", Query: "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;"},
 		Schemas:        {Name: "Schemas", Query: "SELECT count(*) FROM pg_namespace;"},
-		TablesSize:     {Name: "Tables Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+		TablesSize:     {Name: "Tables Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
 		IndexesSize:    {Name: "Indexes Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
-		TotalSize:      {Name: "Total Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+		TotalSize:      {Name: "Total Size", Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
 	}
 }
