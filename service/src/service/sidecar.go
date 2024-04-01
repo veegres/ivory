@@ -10,6 +10,7 @@ import (
 	"io"
 	. "ivory/src/model"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -150,7 +151,11 @@ func (p *SidecarClient) getClient(certs Certs, timeout time.Duration) (*http.Cli
 	// Setting Client CA
 	if certs.ClientCAId != nil {
 		protocol = "https"
-		clientCA, errCa := p.certService.GetFile(*certs.ClientCAId)
+		clientCAInfo, errCert := p.certService.Get(*certs.ClientCAId)
+		if errCert != nil {
+			return nil, protocol, errCert
+		}
+		clientCA, errCa := os.ReadFile(clientCAInfo.Path)
 		if errCa != nil {
 			return nil, protocol, errCa
 		}

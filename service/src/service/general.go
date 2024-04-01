@@ -138,7 +138,7 @@ func (s *GeneralService) GetAppInfo(authHeader string) *AppInfo {
 }
 
 func (s *GeneralService) UpdateAppConfig(config AppConfig) error {
-	file, errOpen := s.configFiles.Open(s.appConfigFileName)
+	file, errOpen := s.configFiles.OpenByName(s.appConfigFileName)
 	if errOpen != nil {
 		return errOpen
 	}
@@ -165,7 +165,7 @@ func (s *GeneralService) GetAppConfig() (*AppConfig, error) {
 		return s.appConfig, nil
 	}
 
-	read, err := s.configFiles.Read(s.appConfigFileName)
+	read, err := s.configFiles.ReadByName(s.appConfigFileName)
 	if err != nil {
 		return nil, errors.New("config is not specified or it cannot be read from file")
 	}
@@ -202,7 +202,7 @@ func (s *GeneralService) SetAppConfig(newAppConfig AppConfig) error {
 		Auth:         encryptedAuthConfig,
 	}
 
-	_, errCreate := s.configFiles.Create(s.appConfigFileName)
+	_, errCreate := s.configFiles.CreateByName(s.appConfigFileName)
 	if errCreate != nil {
 		return errCreate
 	}

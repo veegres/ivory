@@ -25,7 +25,7 @@ func NewFileGateway(name string, ext string) *FileGateway {
 	}
 }
 
-func (r *FileGateway) Create(name string) (string, error) {
+func (r *FileGateway) CreateByName(name string) (string, error) {
 	path, err := r.getPath(name)
 	if err != nil {
 		return "", err
@@ -37,7 +37,7 @@ func (r *FileGateway) Create(name string) (string, error) {
 	return path, nil
 }
 
-func (r *FileGateway) Exist(name string) bool {
+func (r *FileGateway) ExistByName(name string) bool {
 	path, errPath := r.getPath(name)
 	if errPath != nil {
 		return false
@@ -49,7 +49,7 @@ func (r *FileGateway) Exist(name string) bool {
 	}
 }
 
-func (r *FileGateway) Open(name string) (*os.File, error) {
+func (r *FileGateway) OpenByName(name string) (*os.File, error) {
 	path, errPath := r.getPath(name)
 	if errPath != nil {
 		return nil, errPath
@@ -57,7 +57,7 @@ func (r *FileGateway) Open(name string) (*os.File, error) {
 	return os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0666)
 }
 
-func (r *FileGateway) Read(name string) ([]byte, error) {
+func (r *FileGateway) ReadByName(name string) ([]byte, error) {
 	path, errPath := r.getPath(name)
 	if errPath != nil {
 		return nil, errPath
@@ -65,12 +65,20 @@ func (r *FileGateway) Read(name string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
-func (r *FileGateway) Delete(name string) error {
+func (r *FileGateway) DeleteByName(name string) error {
 	path, err := r.getPath(name)
 	if err != nil {
 		return err
 	}
 	return os.Remove(path)
+}
+
+func (r *FileGateway) ExistByPath(path string) bool {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (r *FileGateway) DeleteAll() error {
