@@ -13,6 +13,7 @@ export function useRouterPassword(type?: PasswordType) {
 export function useRouterPasswordDelete() {
     return useMutationAdapter({
         mutationFn: PasswordApi.delete.fn,
+        mutationKey: PasswordApi.delete.key(),
         successKeys: [PasswordApi.list.key()],
     })
 }
@@ -20,6 +21,7 @@ export function useRouterPasswordDelete() {
 export function useRouterPasswordUpdate(onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: PasswordApi.update.fn,
+        mutationKey: PasswordApi.update.key(),
         successKeys: [PasswordApi.list.key()],
         onSuccess: onSuccess,
     })
@@ -28,6 +30,7 @@ export function useRouterPasswordUpdate(onSuccess?: () => void) {
 export function useRouterPasswordCreate(onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: PasswordApi.create.fn,
+        mutationKey: PasswordApi.create.key(),
         successKeys: [PasswordApi.list.key()],
         onSuccess: onSuccess,
     })

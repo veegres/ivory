@@ -17,7 +17,7 @@ import {
     QueryTablesRequest,
     QueryType
 } from "../type/query";
-import {AppConfig, AppInfo, Login, Response, Sidecar} from "../type/general";
+import {AppConfig, AppInfo, Database, Login, Response, Sidecar} from "../type/general";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
@@ -31,10 +31,12 @@ export const GeneralApi = {
             .then((response) => response.data.response),
     },
     login: {
+        key: () => ["login"],
         fn: (req: Login) => api.post<Response<any>>(`/login`, req)
             .then((response) => response.data.response),
     },
     setConfig: {
+        key: () => ["config", "set"],
         fn: (request: AppConfig) => api.post<Response<string>>(`/initial/config`, request)
             .then((response) => response.data.response),
     }
@@ -42,10 +44,12 @@ export const GeneralApi = {
 
 export const InitialApi = {
     setSecret: {
+        key: () => ["secret", "set"],
         fn: (request: SecretSetRequest) => api.post<Response<string>>(`/initial/secret`, request)
             .then((response) => response.data.response),
     },
     erase: {
+        key: () => ["erase"],
         fn: () => api.delete<Response<string>>(`/initial/erase`)
             .then((response) => response.data.response),
     },
@@ -53,10 +57,12 @@ export const InitialApi = {
 
 export const SafeApi = {
     changeSecret: {
+        key: () => ["secret", "change"],
         fn: (request: SecretUpdateRequest) => api.post<Response<string>>(`/safe/secret`, request)
             .then((response) => response.data.response),
     },
     erase: {
+        key: () => ["erase"],
         fn: () => api.delete<Response<string>>(`/safe/erase`)
             .then((response) => response.data.response),
     },
@@ -82,42 +88,52 @@ export const InstanceApi = {
             .then((response) => response.data.response),
     },
     updateConfig: {
+        key: () => ["instance", "config", "update"],
         fn: (request: InstanceRequest) => api.patch<Response<any>>(`/instance/config`, request)
             .then((response) => response.data.response),
     },
     switchover: {
+        key: () => ["instance", "switchover"],
         fn: (request: InstanceRequest) => api.post<Response<string>>(`/instance/switchover`, request)
             .then((response) => response.data.response),
     },
     deleteSwitchover: {
+        key: () => ["instance", "switchover", "delete"],
         fn: (request: InstanceRequest) => api.delete<Response<string>>(`/instance/switchover`, {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
     reinitialize: {
+        key: () => ["instance", "reinitialize"],
         fn: (request: InstanceRequest) => api.post<Response<string>>(`/instance/reinitialize`, request)
             .then((response) => response.data.response),
     },
     restart: {
+        key: () => ["instance", "restart"],
         fn: (request: InstanceRequest) => api.post<Response<string>>(`/instance/restart`, request)
             .then((response) => response.data.response),
     },
     deleteRestart: {
+        key: () => ["instance", "restart", "delete"],
         fn: (request: InstanceRequest) => api.delete<Response<string>>(`/instance/restart`, {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
     reload: {
+        key: () => ["instance", "reload"],
         fn: (request: InstanceRequest) => api.post<Response<string>>(`/instance/reload`, request)
             .then((response) => response.data.response),
     },
     failover: {
+        key: () => ["instance", "failover"],
         fn: (request: InstanceRequest) => api.post<Response<string>>(`/instance/failover`, request)
             .then((response) => response.data.response),
     },
     activate: {
+        key: () => ["instance", "activate"],
         fn: (request: InstanceRequest) => api.post<Response<string>>(`/instance/activate`, request)
             .then((response) => response.data.response),
     },
     pause: {
+        key: () => ["instance", "pause"],
         fn: (request: InstanceRequest) => api.post<Response<string>>(`/instance/pause`, request)
             .then((response) => response.data.response),
     },
@@ -136,14 +152,17 @@ export const ClusterApi = {
             )),
     },
     update: {
+        key: () => ["cluster", "update"],
         fn: (cluster: Cluster) => api.put<Response<Cluster>>(`/cluster`, cluster)
             .then((response) => response.data.response),
     },
     createAuto: {
+        key: () => ["cluster", "auto", "creation"],
         fn: (cluster: ClusterAuto) => api.post<Response<Cluster>>(`/cluster/auto`, cluster)
             .then((response) => response.data.response),
     },
     delete: {
+        key: () => ["cluster", "delete"],
         fn: (name: string) => api.delete(`/cluster/${name}`)
             .then((response) => response.data.response),
     },
@@ -170,19 +189,25 @@ export const BloatApi = {
     },
 
     start: {
+        key: () => ["instance", "bloat", "job", "start"],
         fn: (ctr: BloatRequest) => api.post<Response<Bloat>>(`/cli/bloat/job/start`, ctr)
             .then((response) => response.data.response),
     },
     stop: {
+        key: () => ["instance", "bloat", "job", "stop"],
         fn: (uuid: string) => api.post<Response<Bloat>>(`/cli/bloat/job/${uuid}/stop`)
             .then((response) => response.data.response),
     },
     delete: {
+        key: () => ["instance", "bloat", "job", "delete"],
         fn: (uuid: string) => api.delete(`/cli/bloat/job/${uuid}/delete`)
             .then((response) => response.data.response),
     },
 
-    stream: { fn: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`) },
+    stream: {
+        key: () => ["instance", "bloat", "job", "stream"],
+        fn: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
+    },
 }
 
 export const QueryApi = {
@@ -192,14 +217,17 @@ export const QueryApi = {
             .then((response) => response.data.response),
     },
     update: {
+        key: () => ["query", "update"],
         fn: ({id, query}: { id: string, query: QueryRequest }) => api.put<Response<Query>>(`/query/${id}`, query)
             .then((response) => response.data.response),
     },
     create: {
+        key: () => ["query", "create"],
         fn: (query: QueryRequest) => api.post<Response<Query>>(`/query`, query)
             .then((response) => response.data.response),
     },
     delete: {
+        key: () => ["query", "delete"],
         fn: (uuid: string) => api.delete<Response<string>>(`/query/${uuid}`)
             .then((response) => response.data.response),
     },
@@ -209,14 +237,17 @@ export const QueryApi = {
             .then((response) => response.data.response),
     },
     databases: {
+        key: (db: Database) => ["query", "databases", getDomain(db)],
         fn: (req: QueryDatabasesRequest) => api.post<Response<string[]>>(`/query/databases`, req)
             .then((response) => response.data.response),
     },
     schemas: {
+        key: (db: Database) => ["query", "schemas", getDomain(db), db.name ?? "postgres"],
         fn: (req: QuerySchemasRequest) => api.post<Response<string[]>>(`/query/schemas`, req)
             .then((response) => response.data.response),
     },
     tables: {
+        key: (db: Database, schema?: string) => ["query", "tables", getDomain(db), db.name ?? "postgres", schema ?? "-"],
         fn: (req: QueryTablesRequest) => api.post<Response<string[]>>(`/query/tables`, req)
             .then((response) => response.data.response),
     },
@@ -226,10 +257,12 @@ export const QueryApi = {
             .then((response) => response.data.response),
     },
     cancel: {
+        key: () => ["query", "cancel"],
         fn: (req: QueryKillRequest) => api.post<Response<string>>(`/query/cancel`, req)
             .then((response) => response.data.response),
     },
     terminate: {
+        key: () => ["query", "terminate"],
         fn: (req: QueryKillRequest) => api.post<Response<string>>(`/query/terminate`, req)
             .then((response) => response.data.response),
     },
@@ -240,6 +273,7 @@ export const QueryApi = {
             .then((response) => response.data.response),
     },
     deleteLog: {
+        key: () => ["query", "log", "delete"],
         fn: (uuid: string) => api.delete<Response<string>>(`/query/log/${uuid}`)
             .then((response) => response.data.response),
     },
@@ -252,14 +286,17 @@ export const PasswordApi = {
             .then((response) => response.data.response),
     },
     create: {
+        key: () => ["password", "create"],
         fn: (credential: Password) => api.post<Response<{ key: string, credential: Password }>>(`/password`, credential)
             .then((response) => response.data.response),
     },
     update: {
+        key: () => ["password", "update"],
         fn: ({uuid, credential}: { uuid: string, credential: Password }) => api.patch<Response<Password>>(`/password/${uuid}`, credential)
             .then((response) => response.data.response),
     },
     delete: {
+        key: () => ["password", "delete"],
         fn: (uuid: string) => api.delete(`/password/${uuid}`)
             .then((response) => response.data.response),
     },
@@ -267,11 +304,12 @@ export const PasswordApi = {
 
 export const CertApi = {
     list: {
-        key: (type?: CertType) => ["certs", type],
+        key: (type?: CertType) => ["cert", "list", type],
         fn: (type?: CertType) => api.get<Response<CertMap>>(`/cert`, {params: {type}})
             .then((response => response.data.response)),
     },
     upload: {
+        key: () => ["cert", "upload"],
         fn: async (request: CertUploadRequest) => {
             const {file, type, setProgress} = request
             const formData = new FormData()
@@ -288,10 +326,12 @@ export const CertApi = {
         },
     },
     add: {
+        key: () => ["cert", "add"],
         fn: (request: CertAddRequest) => api.post<Response<Cert>>(`/cert/add`, request)
             .then((response) => response.data.response),
     },
     delete: {
+        key: () => ["cert", "delete"],
         fn: (uuid: string) => api.delete(`/cert/${uuid}`)
             .then((response) => response.data.response),
     },

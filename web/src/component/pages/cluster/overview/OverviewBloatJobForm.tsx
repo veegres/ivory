@@ -7,7 +7,6 @@ import {InstanceWeb} from "../../../../type/instance";
 import {Cluster} from "../../../../type/cluster";
 import {BloatTarget} from "../../../../type/bloat";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
-import {getDomain} from "../../../../app/utils";
 import {QueryPostgresRequest} from "../../../../type/query";
 import {useRouterBloatStart} from "../../../../router/bloat";
 
@@ -36,47 +35,51 @@ export function OverviewBloatJobForm(props: Props) {
 
     const postgresId = cluster.credentials.postgresId
     const req: QueryPostgresRequest = {credentialId: postgresId, db: {...defaultInstance.database, name: target?.dbName}}
-    const keys = [getDomain(req.db), req.db.name ?? "postgres"]
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
                 value={target?.dbName || null}
                 margin={"dense"} variant={"standard"}
-                keys={["databases", ...keys]} label={"Database"}
+                label={"Database"}
+                keys={QueryApi.databases.key(req.db)}
                 onFetch={(v) => QueryApi.databases.fn({...req, name: v})}
                 onUpdate={(v) => setTarget({dbName: v || ""})}
             />
             <AutocompleteFetch
                 value={target?.schema || null}
                 margin={"dense"} variant={"standard"}
-                keys={["schemas", ...keys]} label={"Schema"}
-                disabled={!target?.dbName || !!target?.excludeSchema}
+                label={"Schema"}
+                keys={QueryApi.schemas.key(req.db)}
                 onFetch={(v) => QueryApi.schemas.fn({...req, name: v})}
                 onUpdate={(v) => setTarget({dbName: target?.dbName, schema: v || ""})}
+                disabled={!target?.dbName || !!target?.excludeSchema}
             />
             <AutocompleteFetch
                 value={target?.excludeSchema || null}
                 margin={"dense"} variant={"standard"}
-                keys={["schemas", ...keys]} label={"Exclude Schema"}
-                disabled={!target?.dbName || !!target?.schema}
+                label={"Exclude Schema"}
+                keys={QueryApi.schemas.key(req.db)}
                 onFetch={(v) => QueryApi.schemas.fn({...req, name: v})}
                 onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || ""})}
+                disabled={!target?.dbName || !!target?.schema}
             />
             <AutocompleteFetch
                 value={target?.table || null}
                 margin={"dense"} variant={"standard"}
-                keys={["tables", ...keys, target?.schema ?? ""]} label={"Table"}
-                disabled={!target?.schema || !!target?.excludeTable}
+                label={"Table"}
+                keys={QueryApi.tables.key(req.db, target?.schema)}
                 onFetch={(v) => QueryApi.tables.fn({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, table: v || ""})}
+                disabled={!target?.schema || !!target?.excludeTable}
             />
             <AutocompleteFetch
                 value={target?.excludeTable || null}
                 margin={"dense"} variant={"standard"}
-                keys={["tables", ...keys, target?.excludeSchema ?? ""]} label={"Exclude Table"}
-                disabled={!target?.schema || !!target?.table}
+                label={"Exclude Table"}
+                keys={QueryApi.tables.key(req.db, target?.excludeSchema)}
                 onFetch={(v) => QueryApi.tables.fn({...req, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
+                disabled={!target?.schema || !!target?.table}
             />
             <Box sx={SX.buttons}>
                 <TextField

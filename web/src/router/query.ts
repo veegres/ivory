@@ -14,6 +14,7 @@ export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
 export function useRouterQueryUpdate(type: QueryType, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.update.fn,
+        mutationKey: QueryApi.update.key(),
         successKeys: [QueryApi.list.key(type)],
         onSuccess: onSuccess,
     })
@@ -22,6 +23,7 @@ export function useRouterQueryUpdate(type: QueryType, onSuccess?: () => void) {
 export function useRouterQueryDelete(type: QueryType, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.delete.fn,
+        mutationKey: QueryApi.delete.key(),
         successKeys: [QueryApi.list.key(type)],
         onSuccess: onSuccess,
     })
@@ -30,6 +32,7 @@ export function useRouterQueryDelete(type: QueryType, onSuccess?: () => void) {
 export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.create.fn,
+        mutationKey: QueryApi.create.key(),
         successKeys: [QueryApi.list.key(type)],
         onSuccess: onSuccess,
     })
@@ -46,6 +49,7 @@ export function useRouterQueryRun(request: QueryRunRequest) {
 export function useRouterQueryCancel(uuid?: string) {
     return useMutationAdapter({
         mutationFn: QueryApi.cancel.fn,
+        mutationKey: QueryApi.cancel.key(),
         successKeys: [QueryApi.run.key(uuid)],
     })
 }
@@ -53,6 +57,7 @@ export function useRouterQueryCancel(uuid?: string) {
 export function useRouterQueryTerminate(uuid?: string) {
     return useMutationAdapter({
         mutationFn: QueryApi.terminate.fn,
+        mutationKey: QueryApi.terminate.key(),
         successKeys: [QueryApi.run.key(uuid)],
     })
 }
@@ -68,6 +73,7 @@ export function useRouterQueryLog(uuid: string) {
 export function useRouterQueryLogDelete(uuid: string) {
     return useMutationAdapter({
         mutationFn: QueryApi.deleteLog.fn,
+        mutationKey: QueryApi.deleteLog.key(),
         successKeys: [QueryApi.getLog.key(uuid)],
     })
 }
