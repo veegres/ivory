@@ -93,6 +93,12 @@ export interface SxPropsMap {
     [key: string]: SystemStyleObject<Theme> | ((theme: Theme) => SystemStyleObject<Theme>),
 }
 
+export interface ApiMap {
+    [key: string]: {
+        key: (attr?: any) => any[],
+        fn: (attr?: any) => Promise<any>,
+    }
+}
 
 export interface ColorsMap {
     [name: string]: "success" | "primary" | "error" | "warning",

@@ -17,14 +17,13 @@ import {
     QueryTablesRequest,
     QueryType
 } from "../type/query";
-import {AppConfig, AppInfo, Database, Login, Response, Sidecar} from "../type/general";
+import {ApiMap, AppConfig, AppInfo, Database, Login, Response, Sidecar} from "../type/general";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
 export const api = axios.create({baseURL: '/api'})
 
-
-export const GeneralApi = {
+export const GeneralApi: ApiMap = {
     info: {
         key: () => ["info"],
         fn: () => api.get<Response<AppInfo>>(`/info`)
@@ -42,7 +41,7 @@ export const GeneralApi = {
     }
 }
 
-export const InitialApi = {
+export const InitialApi: ApiMap = {
     setSecret: {
         key: () => ["secret", "set"],
         fn: (request: SecretSetRequest) => api.post<Response<string>>(`/initial/secret`, request)
@@ -68,7 +67,7 @@ export const SafeApi = {
     },
 }
 
-export const InstanceApi = {
+export const InstanceApi: ApiMap = {
     overview: {
         key: (cluster: string) => ["instance", "overview", cluster],
         fn: (request: InstanceRequest) => api.get<Response<Instance[]>>(`/instance/overview`, {params: {request: JSON.stringify(request)}})
@@ -139,7 +138,7 @@ export const InstanceApi = {
     },
 }
 
-export const ClusterApi = {
+export const ClusterApi: ApiMap = {
     list: {
         key: () => ["cluster", "list"],
         fn: (tags?: string[]) => api.get<Response<Cluster[]>>(`/cluster`, {params: {tags}})
@@ -168,7 +167,7 @@ export const ClusterApi = {
     },
 }
 
-export const TagApi = {
+export const TagApi: ApiMap = {
     list: {
         key: () => ["tag", "list"],
         fn: () => api.get<Response<string[]>>(`/tag`)
@@ -210,7 +209,7 @@ export const BloatApi = {
     },
 }
 
-export const QueryApi = {
+export const QueryApi: ApiMap = {
     list: {
         key: (type?: QueryType) => ["query", "list", type],
         fn: (type?: QueryType) => api.get<Response<Query[]>>(`/query`, {params: {type}})
@@ -302,7 +301,7 @@ export const PasswordApi = {
     },
 }
 
-export const CertApi = {
+export const CertApi: ApiMap = {
     list: {
         key: (type?: CertType) => ["cert", "list", type],
         fn: (type?: CertType) => api.get<Response<CertMap>>(`/cert`, {params: {type}})
