@@ -27,26 +27,25 @@ interface MutationAdapterOptions<TData, TError, TVariables, TContext>
 export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariables = void, TContext = unknown>(
     options: MutationAdapterOptions<TData, TError, TVariables, TContext>
 ) {
-    const {mutationFn, successKeys, onSuccess} = options
+    const {successKeys, mutationKey, onSuccess} = options
+
     const queryClient = useQueryClient();
     const snackbar = useSnackbar()
 
     return useMutation({
-        mutationFn: mutationFn,
+        ...options,
         onSuccess: handleSuccess,
         onError: handleError,
     })
 
     async function handleSuccess(data: any) {
-        snackbar("Action was done successfully", "success")
+        if (mutationKey) snackbar(`${mutationKey.join(" ")} was done successfully`, "success")
         if (successKeys) {
             for (const key of successKeys) {
                 await queryClient.refetchQueries({queryKey: key})
             }
         }
-        if (onSuccess) {
-            onSuccess(queryClient, data)
-        }
+        if (onSuccess) onSuccess(queryClient, data)
     }
 
     async function handleError(error: any) {

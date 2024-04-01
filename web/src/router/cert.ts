@@ -13,6 +13,7 @@ export function useRouterCertList(type: CertType) {
 export function useRouterCertDelete(type: CertType) {
     return useMutationAdapter({
         mutationFn: CertApi.delete.fn,
+        mutationKey: CertApi.delete.key(),
         successKeys: [CertApi.list.key(type)]
     })
 }
@@ -20,6 +21,7 @@ export function useRouterCertDelete(type: CertType) {
 export function useRouterCertUpload(type: CertType) {
     return useMutationAdapter({
         mutationFn: CertApi.upload.fn,
+        mutationKey: CertApi.upload.key(),
         successKeys: [CertApi.list.key(type)]
     })
 }
@@ -27,6 +29,7 @@ export function useRouterCertUpload(type: CertType) {
 export function useRouterCertAdd(type: CertType, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: CertApi.add.fn,
+        mutationKey: CertApi.add.key(),
         successKeys: [CertApi.list.key(type)],
         onSuccess: onSuccess,
     })

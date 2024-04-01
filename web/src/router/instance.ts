@@ -26,6 +26,7 @@ export function useRouterInstanceConfig(request: InstanceRequest, enabled: boole
 export function useRouterInstanceConfigUpdate(sidecar: Sidecar, onSuccess: () => void) {
     return useMutationAdapter({
         mutationFn: InstanceApi.updateConfig.fn,
+        mutationKey: InstanceApi.updateConfig.key(),
         successKeys: [InstanceApi.config.key(sidecar)],
         onSuccess: onSuccess,
     })
@@ -34,6 +35,7 @@ export function useRouterInstanceConfigUpdate(sidecar: Sidecar, onSuccess: () =>
 export function useRouterInstanceSwitchoverDelete(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.deleteSwitchover.fn,
+        mutationKey: InstanceApi.deleteSwitchover.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -41,6 +43,7 @@ export function useRouterInstanceSwitchoverDelete(cluster: string) {
 export function useRouterInstanceRestartDelete(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.deleteRestart.fn,
+        mutationKey: InstanceApi.deleteRestart.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -48,6 +51,7 @@ export function useRouterInstanceRestartDelete(cluster: string) {
 export function useRouterInstanceRestart(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.restart.fn,
+        mutationKey: InstanceApi.restart.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -55,6 +59,7 @@ export function useRouterInstanceRestart(cluster: string) {
 export function useRouterInstanceReload(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.reload.fn,
+        mutationKey: InstanceApi.reload.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -62,6 +67,7 @@ export function useRouterInstanceReload(cluster: string) {
 export function useRouterInstanceReinit(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.reinitialize.fn,
+        mutationKey: InstanceApi.reinitialize.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -69,6 +75,7 @@ export function useRouterInstanceReinit(cluster: string) {
 export function useRouterInstanceSwitchover(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.switchover.fn,
+        mutationKey: InstanceApi.switchover.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -76,6 +83,7 @@ export function useRouterInstanceSwitchover(cluster: string) {
 export function useRouterInstanceFailover(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.failover.fn,
+        mutationKey: InstanceApi.failover.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -83,6 +91,7 @@ export function useRouterInstanceFailover(cluster: string) {
 export function useRouterInstanceActivate(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.activate.fn,
+        mutationKey: InstanceApi.activate.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
@@ -90,6 +99,7 @@ export function useRouterInstanceActivate(cluster: string) {
 export function useRouterInstancePause(cluster: string) {
     return useMutationAdapter({
         mutationFn: InstanceApi.pause.fn,
+        mutationKey: InstanceApi.pause.key(),
         successKeys: [InstanceApi.overview.key(cluster)]
     })
 }
