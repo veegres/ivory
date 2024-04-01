@@ -10,9 +10,9 @@ type Props = {
 }
 
 export function ChartCommon(props: Props) {
-    const {type} = props
-
-    const chart = useRouterQueryChart(props)
+    const {type, credentialId, db} = props
+    const req = {type, credentialId, db: {...db, name: "postgres"}}
+    const chart = useRouterQueryChart(req)
 
     return (
         <ChartItem
