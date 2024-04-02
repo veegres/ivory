@@ -41,6 +41,10 @@ func (s *PostgresClient) GetMany(credentialId uuid.UUID, db Database, query stri
 		values = append(values, value)
 	}
 
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
 	return values, nil
 }
 
@@ -58,6 +62,10 @@ func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query strin
 			return nil, err
 		}
 		value = values[0]
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 
 	return value, nil
@@ -88,6 +96,10 @@ func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query st
 			return nil, err
 		}
 		rowList = append(rowList, val)
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 
 	endTime := time.Now().UnixMilli()
@@ -137,10 +149,11 @@ func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pg
 		return nil, "unknown", errors.New("password problems, check if it is exists")
 	}
 
-	dbName := "postgres"
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, "unknown", errors.New("database host or port are not specified")
 	}
+
+	dbName := "postgres"
 	if db.Name != nil && *db.Name != "" {
 		dbName = *db.Name
 	}
