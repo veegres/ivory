@@ -16,7 +16,7 @@ export function Certs() {
         <MenuWrapper>
             <CertsTab tab={tab} setTab={setTab}/>
             <CertsNew type={type}/>
-            <LinearProgressStateful color={"inherit"} isFetching={isFetching} line/>
+            <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
             <CertsList certs={data} error={error}/>
         </MenuWrapper>
     )

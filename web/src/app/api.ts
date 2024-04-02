@@ -7,7 +7,7 @@ import {SecretSetRequest, SecretUpdateRequest} from "../type/secret";
 import {
     Query,
     QueryChart,
-    QueryChartRequest,
+    QueryChartRequest, QueryConnection,
     QueryDatabasesRequest,
     QueryFields,
     QueryKillRequest,
@@ -17,13 +17,13 @@ import {
     QueryTablesRequest,
     QueryType
 } from "../type/query";
-import {ApiMap, AppConfig, AppInfo, Database, Login, Response, Sidecar} from "../type/general";
+import {AppConfig, AppInfo, Login, Response, Sidecar} from "../type/general";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
 export const api = axios.create({baseURL: '/api'})
 
-export const GeneralApi: ApiMap = {
+export const GeneralApi = {
     info: {
         key: () => ["info"],
         fn: () => api.get<Response<AppInfo>>(`/info`)
@@ -41,7 +41,7 @@ export const GeneralApi: ApiMap = {
     }
 }
 
-export const InitialApi: ApiMap = {
+export const InitialApi = {
     setSecret: {
         key: () => ["secret", "set"],
         fn: (request: SecretSetRequest) => api.post<Response<string>>(`/initial/secret`, request)
@@ -67,7 +67,7 @@ export const SafeApi = {
     },
 }
 
-export const InstanceApi: ApiMap = {
+export const InstanceApi = {
     overview: {
         key: (cluster: string) => ["instance", "overview", cluster],
         fn: (request: InstanceRequest) => api.get<Response<Instance[]>>(`/instance/overview`, {params: {request: JSON.stringify(request)}})
@@ -138,7 +138,7 @@ export const InstanceApi: ApiMap = {
     },
 }
 
-export const ClusterApi: ApiMap = {
+export const ClusterApi = {
     list: {
         key: () => ["cluster", "list"],
         fn: (tags?: string[]) => api.get<Response<Cluster[]>>(`/cluster`, {params: {tags}})
@@ -167,7 +167,7 @@ export const ClusterApi: ApiMap = {
     },
 }
 
-export const TagApi: ApiMap = {
+export const TagApi = {
     list: {
         key: () => ["tag", "list"],
         fn: () => api.get<Response<string[]>>(`/tag`)
@@ -209,7 +209,7 @@ export const BloatApi = {
     },
 }
 
-export const QueryApi: ApiMap = {
+export const QueryApi = {
     list: {
         key: (type?: QueryType) => ["query", "list", type],
         fn: (type?: QueryType) => api.get<Response<Query[]>>(`/query`, {params: {type}})
@@ -236,22 +236,22 @@ export const QueryApi: ApiMap = {
             .then((response) => response.data.response),
     },
     databases: {
-        key: (db: Database) => ["query", "databases", getDomain(db)],
+        key: (con: QueryConnection) => ["query", "databases", con],
         fn: (req: QueryDatabasesRequest) => api.post<Response<string[]>>(`/query/databases`, req)
             .then((response) => response.data.response),
     },
     schemas: {
-        key: (db: Database) => ["query", "schemas", getDomain(db), db.name ?? "postgres"],
+        key: (con: QueryConnection) => ["query", "schemas", con],
         fn: (req: QuerySchemasRequest) => api.post<Response<string[]>>(`/query/schemas`, req)
             .then((response) => response.data.response),
     },
     tables: {
-        key: (db: Database, schema?: string) => ["query", "tables", getDomain(db), db.name ?? "postgres", schema ?? "-"],
+        key: (con: QueryConnection, schema?: string) => ["query", "tables", con, schema ?? "-"],
         fn: (req: QueryTablesRequest) => api.post<Response<string[]>>(`/query/tables`, req)
             .then((response) => response.data.response),
     },
     chart: {
-        key: (req: QueryChartRequest) => ["query", "chart", req.type, req.db.host, req.db.port, req.db.name, req.credentialId],
+        key: (req: QueryChartRequest) => ["query", "chart", req.type, req.connection],
         fn: (req: QueryChartRequest) => api.post<Response<QueryChart>>(`/query/chart`, req)
             .then((response) => response.data.response),
     },
@@ -301,7 +301,7 @@ export const PasswordApi = {
     },
 }
 
-export const CertApi: ApiMap = {
+export const CertApi = {
     list: {
         key: (type?: CertType) => ["cert", "list", type],
         fn: (type?: CertType) => api.get<Response<CertMap>>(`/cert`, {params: {type}})

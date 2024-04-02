@@ -7,8 +7,8 @@ import {InstanceWeb} from "../../../../type/instance";
 import {Cluster} from "../../../../type/cluster";
 import {BloatTarget} from "../../../../type/bloat";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
-import {QueryPostgresRequest} from "../../../../type/query";
 import {useRouterBloatStart} from "../../../../router/bloat";
+import {getQueryConnection} from "../../../../app/utils";
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
@@ -33,24 +33,24 @@ export function OverviewBloatJobForm(props: Props) {
     if (!defaultInstance.leader) return <ClusterNoLeaderError/>
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
-    const postgresId = cluster.credentials.postgresId
-    const req: QueryPostgresRequest = {credentialId: postgresId, db: {...defaultInstance.database, name: target?.dbName}}
+    const db = {...defaultInstance.database, name: target?.dbName}
+    const connection = getQueryConnection(cluster, db)
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
                 value={target?.dbName || null}
                 margin={"dense"} variant={"standard"}
                 label={"Database"}
-                keys={QueryApi.databases.key(req.db)}
-                onFetch={(v) => QueryApi.databases.fn({...req, name: v})}
+                keys={QueryApi.databases.key(connection)}
+                onFetch={(v) => QueryApi.databases.fn({connection, name: v})}
                 onUpdate={(v) => setTarget({dbName: v || ""})}
             />
             <AutocompleteFetch
                 value={target?.schema || null}
                 margin={"dense"} variant={"standard"}
                 label={"Schema"}
-                keys={QueryApi.schemas.key(req.db)}
-                onFetch={(v) => QueryApi.schemas.fn({...req, name: v})}
+                keys={QueryApi.schemas.key(connection)}
+                onFetch={(v) => QueryApi.schemas.fn({connection, name: v})}
                 onUpdate={(v) => setTarget({dbName: target?.dbName, schema: v || ""})}
                 disabled={!target?.dbName || !!target?.excludeSchema}
             />
@@ -58,8 +58,8 @@ export function OverviewBloatJobForm(props: Props) {
                 value={target?.excludeSchema || null}
                 margin={"dense"} variant={"standard"}
                 label={"Exclude Schema"}
-                keys={QueryApi.schemas.key(req.db)}
-                onFetch={(v) => QueryApi.schemas.fn({...req, name: v})}
+                keys={QueryApi.schemas.key(connection)}
+                onFetch={(v) => QueryApi.schemas.fn({connection, name: v})}
                 onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || ""})}
                 disabled={!target?.dbName || !!target?.schema}
             />
@@ -67,8 +67,8 @@ export function OverviewBloatJobForm(props: Props) {
                 value={target?.table || null}
                 margin={"dense"} variant={"standard"}
                 label={"Table"}
-                keys={QueryApi.tables.key(req.db, target?.schema)}
-                onFetch={(v) => QueryApi.tables.fn({...req, schema: target?.schema ?? "", name: v})}
+                keys={QueryApi.tables.key(connection, target?.schema)}
+                onFetch={(v) => QueryApi.tables.fn({connection, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, table: v || ""})}
                 disabled={!target?.schema || !!target?.excludeTable}
             />
@@ -76,8 +76,8 @@ export function OverviewBloatJobForm(props: Props) {
                 value={target?.excludeTable || null}
                 margin={"dense"} variant={"standard"}
                 label={"Exclude Table"}
-                keys={QueryApi.tables.key(req.db, target?.excludeSchema)}
-                onFetch={(v) => QueryApi.tables.fn({...req, schema: target?.schema ?? "", name: v})}
+                keys={QueryApi.tables.key(connection, target?.excludeSchema)}
+                onFetch={(v) => QueryApi.tables.fn({connection, schema: target?.schema ?? "", name: v})}
                 onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
                 disabled={!target?.schema || !!target?.table}
             />
@@ -96,11 +96,12 @@ export function OverviewBloatJobForm(props: Props) {
     )
 
     function handleRun() {
-        if (defaultInstance && postgresId) {
+        const credentialId = cluster.credentials.postgresId
+        if (defaultInstance && credentialId) {
             const {database: {host, port}} = defaultInstance
             onClick()
             start.mutate({
-                connection: {host, port, credId: postgresId},
+                connection: {host, port, credentialId},
                 target,
                 ratio,
                 cluster: cluster.name

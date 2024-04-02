@@ -2,8 +2,7 @@ import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton,
 import {ReactNode, useMemo, useState} from "react";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyRun} from "./QueryBodyRun";
-import {Database} from "../../../type/general";
-import {QueryVariety} from "../../../type/query";
+import {QueryConnection, QueryVariety} from "../../../type/query";
 import {QueryHead} from "./QueryHead";
 import {QueryBoxPaper} from "./QueryBoxPaper";
 import {FixedInputs} from "../../view/input/FixedInputs";
@@ -19,11 +18,10 @@ const initialViewCheckMap: ViewCheckMap = {
 }
 
 type Props = {
+    connection: QueryConnection,
     queryUuid?: string,
     varieties?: QueryVariety[],
     params?: string[],
-    credentialId: string,
-    db: Database,
     children: ReactNode,
     renderButtons: ReactNode,
     showButtons: boolean,
@@ -34,12 +32,12 @@ type Props = {
 
 export function QueryItemWrapper(props: Props) {
     const {queryUuid, params, varieties, query} = props
-    const {credentialId, db, showInfo, showButtons} = props
+    const {connection, showInfo, showButtons} = props
     const {children, renderButtons, renderTitle} = props
 
     const [checkView, setCheckView] = useState(initialViewCheckMap)
     const [paramsValues, setParamsValues] = useState<string[]>(params?.map(() => "") ?? [])
-    const queryRunRequest = useMemo( () => ({queryUuid, query, credentialId, db, queryParams: paramsValues}), [credentialId, db, paramsValues, query, queryUuid])
+    const queryRunRequest = useMemo( () => ({queryUuid, query, connection, queryParams: paramsValues}), [connection, paramsValues, query, queryUuid])
 
     return (
         <QueryBoxPaper>

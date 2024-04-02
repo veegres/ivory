@@ -17,9 +17,9 @@ type Login struct {
 }
 
 type DbConnection struct {
-	Host   string    `json:"host"`
-	Port   int       `json:"port"`
-	CredId uuid.UUID `json:"credId"`
+	Host         string    `json:"host"`
+	Port         int       `json:"port"`
+	CredentialId uuid.UUID `json:"credentialId"`
 }
 
 type AuthType int8

@@ -110,7 +110,7 @@ func (r *BloatRouter) StartJob(context *gin.Context) {
 	}
 	sb = append(sb, "--verbose")
 
-	model, errStart := r.bloatService.Start(cli.Connection.CredId, cli.Cluster, sb)
+	model, errStart := r.bloatService.Start(cli.Connection.CredentialId, cli.Cluster, sb)
 	if errStart != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errStart.Error()})
 		return

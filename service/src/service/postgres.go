@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/exp/slog"
@@ -14,18 +13,21 @@ import (
 
 type PostgresClient struct {
 	passwordService *PasswordService
+	certService     *CertService
 }
 
 func NewPostgresClient(
 	passwordService *PasswordService,
+	certService *CertService,
 ) *PostgresClient {
 	return &PostgresClient{
 		passwordService: passwordService,
+		certService:     certService,
 	}
 }
 
-func (s *PostgresClient) GetMany(credentialId uuid.UUID, db Database, query string, args ...any) ([]string, error) {
-	rows, _, _, errReq := s.sendRequest(credentialId, db, query, args...)
+func (s *PostgresClient) GetMany(connection QueryConnection, query string, args ...any) ([]string, error) {
+	rows, _, _, errReq := s.sendRequest(connection, query, args...)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -48,8 +50,8 @@ func (s *PostgresClient) GetMany(credentialId uuid.UUID, db Database, query stri
 	return values, nil
 }
 
-func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query string) (any, error) {
-	rows, _, _, errReq := s.sendRequest(credentialId, db, query)
+func (s *PostgresClient) GetOne(connection QueryConnection, query string) (any, error) {
+	rows, _, _, errReq := s.sendRequest(connection, query)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -71,9 +73,9 @@ func (s *PostgresClient) GetOne(credentialId uuid.UUID, db Database, query strin
 	return value, nil
 }
 
-func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query string, args ...any) (*QueryFields, error) {
+func (s *PostgresClient) GetFields(connection QueryConnection, query string, args ...any) (*QueryFields, error) {
 	startTime := time.Now().UnixMilli()
-	rows, typeMap, url, errReq := s.sendRequest(credentialId, db, query, args...)
+	rows, typeMap, url, errReq := s.sendRequest(connection, query, args...)
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -113,18 +115,18 @@ func (s *PostgresClient) GetFields(credentialId uuid.UUID, db Database, query st
 	return res, nil
 }
 
-func (s *PostgresClient) Cancel(pid int, credentialId uuid.UUID, db Database) error {
-	_, _, _, err := s.sendRequest(credentialId, db, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
+func (s *PostgresClient) Cancel(connection QueryConnection, pid int) error {
+	_, _, _, err := s.sendRequest(connection, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
-func (s *PostgresClient) Terminate(pid int, credentialId uuid.UUID, db Database) error {
-	_, _, _, err := s.sendRequest(credentialId, db, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
+func (s *PostgresClient) Terminate(connection QueryConnection, pid int) error {
+	_, _, _, err := s.sendRequest(connection, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
 	return err
 }
 
-func (s *PostgresClient) sendRequest(credentialId uuid.UUID, db Database, query string, args ...any) (pgx.Rows, *pgtype.Map, string, error) {
-	conn, connUrl, errConn := s.getConnection(credentialId, db)
+func (s *PostgresClient) sendRequest(connection QueryConnection, query string, args ...any) (pgx.Rows, *pgtype.Map, string, error) {
+	conn, connUrl, errConn := s.getConnection(connection)
 	if errConn != nil {
 		return nil, nil, connUrl, errConn
 	}
@@ -143,12 +145,8 @@ func (s *PostgresClient) sendRequest(credentialId uuid.UUID, db Database, query 
 	return res, conn.TypeMap(), connUrl, nil
 }
 
-func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pgx.Conn, string, error) {
-	cred, errCred := s.passwordService.GetDecrypted(credentialId)
-	if errCred != nil {
-		return nil, "unknown", errors.New("password problems, check if it is exists")
-	}
-
+func (s *PostgresClient) getConnection(connection QueryConnection) (*pgx.Conn, string, error) {
+	db := connection.Db
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, "unknown", errors.New("database host or port are not specified")
 	}
@@ -158,14 +156,31 @@ func (s *PostgresClient) getConnection(credentialId uuid.UUID, db Database) (*pg
 		dbName = *db.Name
 	}
 
+	cred, errCred := s.passwordService.GetDecrypted(*connection.CredentialId)
+	if errCred != nil {
+		return nil, "unknown", errors.New("password problems, check if it is exists")
+	}
+
 	connProtocol := "postgres://"
 	connCredentials := cred.Username + ":" + cred.Password + "@"
 	connHost := db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
 	connUrl := connProtocol + connHost
 	connString := connProtocol + connCredentials + connHost
 
-	// TODO think about to cache connections, check if we have cache provided by lib
-	conn, err := pgx.Connect(context.Background(), connString)
+	config, errConfig := pgx.ParseConfig(connString)
+	if errConfig != nil {
+		return nil, connUrl, errConfig
+	}
+
+	if connection.Certs != nil {
+		tlsConfig, errTls := s.certService.GetTLSConfig(*connection.Certs)
+		if errTls != nil {
+			return nil, connUrl, errTls
+		}
+		config.TLSConfig = tlsConfig
+	}
+
+	conn, err := pgx.ConnectConfig(context.Background(), config)
 	return conn, connUrl, err
 }
 

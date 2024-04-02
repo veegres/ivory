@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
 }
 
 const InitialClusterAuto: ClusterAuto = {
-    name: "", certs: {}, credentials: {}, tags: [], instance: {host: "", port: 8008},
+    name: "", tls: {sidecar: false, database: false}, certs: {}, credentials: {}, tags: [], instance: {host: "", port: 8008},
 }
 
 export function ListCreateAuto() {

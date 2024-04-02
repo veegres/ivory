@@ -1,8 +1,8 @@
-import {Database, StylePropsMap} from "../../../type/general";
+import {StylePropsMap} from "../../../type/general";
 import {Box, Collapse, Skeleton} from "@mui/material";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TransitionGroup} from "react-transition-group";
-import {QueryType} from "../../../type/query";
+import {QueryConnection, QueryType} from "../../../type/query";
 import {QueryItemNew} from "./QueryItemNew";
 import {QueryItemView} from "./QueryItemView";
 import {useRouterInfo} from "../../../router/general";
@@ -14,12 +14,11 @@ const style: StylePropsMap = {
 
 type Props = {
     type: QueryType,
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
 }
 
 export function Query(props: Props) {
-    const {type, credentialId, db} = props
+    const {type, connection} = props
     const query = useRouterQueryList(type)
     const info = useRouterInfo()
 
@@ -27,7 +26,7 @@ export function Query(props: Props) {
 
     return (
         <Box style={style.box}>
-            {isManual && <QueryItemNew type={type} credentialId={credentialId} db={db}/>}
+            {isManual && <QueryItemNew type={type} connection={connection}/>}
             {renderList()}
         </Box>
     )
@@ -40,13 +39,7 @@ export function Query(props: Props) {
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((q) => (
                     <Collapse key={q.id}>
-                        <QueryItemView
-                            key={q.id}
-                            query={q}
-                            credentialId={credentialId}
-                            db={db}
-                            manual={isManual}
-                        />
+                        <QueryItemView key={q.id} connection={connection} query={q} manual={isManual}/>
                     </Collapse>
                 ))}
             </TransitionGroup>

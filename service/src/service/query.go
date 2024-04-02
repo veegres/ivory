@@ -43,7 +43,7 @@ func (s *QueryService) DeleteLog(queryUuid uuid.UUID) error {
 	return s.queryRepository.DeleteLog(queryUuid)
 }
 
-func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, credentialId uuid.UUID, db Database) (*QueryFields, error) {
+func (s *QueryService) RunTemplateQuery(connection QueryConnection, queryUuid uuid.UUID, queryParams []any) (*QueryFields, error) {
 	query, errQuery := s.queryRepository.Get(queryUuid)
 	if errQuery != nil {
 		return nil, errQuery
@@ -51,7 +51,7 @@ func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, 
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
-	response, errRun := s.RunQuery(query.Custom, queryParams, credentialId, db)
+	response, errRun := s.RunQuery(connection, query.Custom, queryParams)
 	if errRun == nil && len(response.Rows) > 0 {
 		// NOTE: we don't want fail request if there is some problem with writing to the file
 		_ = s.queryRepository.AddLog(queryUuid, response)
@@ -59,38 +59,40 @@ func (s *QueryService) RunTemplateQuery(queryUuid uuid.UUID, queryParams []any, 
 	return response, errRun
 }
 
-func (s *QueryService) RunQuery(query string, queryParams []any, credentialId uuid.UUID, db Database) (*QueryFields, error) {
+func (s *QueryService) RunQuery(connection QueryConnection, query string, queryParams []any) (*QueryFields, error) {
 	if queryParams == nil {
-		return s.postgresGateway.GetFields(credentialId, db, query)
+		return s.postgresGateway.GetFields(connection, query)
 	} else {
-		return s.postgresGateway.GetFields(credentialId, db, query, queryParams...)
+		return s.postgresGateway.GetFields(connection, query, queryParams...)
 	}
 }
 
-func (s *QueryService) DatabasesQuery(credentialId uuid.UUID, db Database, name string) ([]string, error) {
-	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllDatabases, "%"+name+"%")
+func (s *QueryService) DatabasesQuery(connection QueryConnection, name string) ([]string, error) {
+	return s.postgresGateway.GetMany(connection, constant.GetAllDatabases, "%"+name+"%")
 }
 
-func (s *QueryService) SchemasQuery(credentialId uuid.UUID, db Database, name string) ([]string, error) {
+func (s *QueryService) SchemasQuery(connection QueryConnection, name string) ([]string, error) {
+	db := connection.Db
 	if db.Name == nil || *db.Name == "" {
 		return []string{}, nil
 	}
-	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllSchemas, "%"+name+"%")
+	return s.postgresGateway.GetMany(connection, constant.GetAllSchemas, "%"+name+"%")
 }
 
-func (s *QueryService) TablesQuery(credentialId uuid.UUID, db Database, schema string, name string) ([]string, error) {
+func (s *QueryService) TablesQuery(connection QueryConnection, schema string, name string) ([]string, error) {
+	db := connection.Db
 	if db.Name == nil || *db.Name == "" || schema == "" {
 		return []string{}, nil
 	}
-	return s.postgresGateway.GetMany(credentialId, db, constant.GetAllTables, schema, "%"+name+"%")
+	return s.postgresGateway.GetMany(connection, constant.GetAllTables, schema, "%"+name+"%")
 }
 
-func (s *QueryService) ChartQuery(credentialId uuid.UUID, db Database, chartType QueryChartType) (*QueryChart, error) {
+func (s *QueryService) ChartQuery(connection QueryConnection, chartType QueryChartType) (*QueryChart, error) {
 	request, ok := s.chartMap[chartType]
 	if !ok {
 		return nil, errors.New("chart " + string(chartType) + " is not supported")
 	}
-	response, err := s.postgresGateway.GetOne(credentialId, db, request.Query)
+	response, err := s.postgresGateway.GetOne(connection, request.Query)
 	if err != nil {
 		return nil, errors.Join(errors.New("cannot get "+request.Name), err)
 	}

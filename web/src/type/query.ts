@@ -1,4 +1,5 @@
 import {Database} from "./general";
+import {Certs} from "./cluster";
 
 // COMMON (WEB AND SERVER)
 
@@ -8,7 +9,6 @@ export enum QueryType {
     REPLICATION,
     STATISTIC,
     OTHER,
-
     CONSOLE,
 }
 
@@ -45,35 +45,42 @@ export interface QueryRequest {
     params?: string[],
 }
 
-export interface QueryPostgresRequest {
-    credentialId?: string,
+export interface QueryConnection {
     db: Database,
+    certs?: Certs,
+    credentialId?: string,
 }
 
-export interface QueryRunRequest extends QueryPostgresRequest {
+export interface QueryRunRequest {
+    connection: QueryConnection,
     queryUuid?: string,
     query?: string,
     queryParams?: string[],
 }
 
-export interface QueryKillRequest extends QueryPostgresRequest {
+export interface QueryKillRequest {
+    connection: QueryConnection,
     pid: number,
 }
 
-export interface QueryChartRequest extends QueryPostgresRequest {
+export interface QueryChartRequest {
+    connection: QueryConnection,
     type: QueryChartType,
 }
 
 
-export interface QueryDatabasesRequest extends QueryPostgresRequest {
+export interface QueryDatabasesRequest {
+    connection: QueryConnection,
     name: string,
 }
 
-export interface QuerySchemasRequest extends QueryPostgresRequest {
+export interface QuerySchemasRequest {
+    connection: QueryConnection,
     name: string,
 }
 
-export interface QueryTablesRequest extends QueryPostgresRequest {
+export interface QueryTablesRequest {
+    connection: QueryConnection,
     schema: string,
     name: string,
 }

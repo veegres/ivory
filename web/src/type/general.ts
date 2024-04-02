@@ -18,7 +18,7 @@ export interface Login {
 export interface DbConnection {
     host: string,
     port: number,
-    credId: string,
+    credentialId: string,
 }
 
 export enum AuthType {
@@ -91,13 +91,6 @@ export interface StylePropsMap {
 export interface SxPropsMap {
     // NOTE: we don't need usage of array here that is why it is not use SxProps<Theme> interface
     [key: string]: SystemStyleObject<Theme> | ((theme: Theme) => SystemStyleObject<Theme>),
-}
-
-export interface ApiMap {
-    [key: string]: {
-        key: (attr?: any) => any[],
-        fn: (attr?: any) => Promise<any>,
-    }
 }
 
 export interface ColorsMap {

@@ -28,6 +28,7 @@ type Props = {
 
 export function OverviewBloat(props: Props) {
     const {cluster, defaultInstance} = props.info
+    const {credentials, certs} = cluster
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()
 
@@ -51,7 +52,7 @@ export function OverviewBloat(props: Props) {
                 <Divider orientation={"vertical"} flexItem/>
                 {renderToggle()}
             </Box>
-            <LinearProgressStateful sx={SX.loader} isFetching={loading} color={"inherit"}/>
+            <LinearProgressStateful sx={SX.loader} loading={loading} color={"inherit"}/>
             {renderBody()}
         </Box>
     )
@@ -62,7 +63,7 @@ export function OverviewBloat(props: Props) {
                 return <OverviewBloatJob list={jobs.data} cluster={cluster.name}/>
             case ListBlock.QUERY:
                 return cluster.credentials.postgresId && (
-                    <Query type={QueryType.BLOAT} credentialId={cluster.credentials.postgresId} db={db}/>
+                    <Query type={QueryType.BLOAT} connection={{db, certs, credentialId: credentials.postgresId}}/>
                 )
         }
     }

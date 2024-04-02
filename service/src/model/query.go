@@ -53,42 +53,43 @@ type QueryRequest struct {
 	Params      []string       `json:"params"`
 }
 
-type QueryPostgresRequest struct {
-	CredentialId uuid.UUID `json:"credentialId"`
-	Db           Database  `json:"db"`
+type QueryConnection struct {
+	Db           Database   `json:"db"`
+	Certs        *Certs     `json:"certs"`
+	CredentialId *uuid.UUID `json:"credentialId"`
 }
 
 type QueryRunRequest struct {
-	QueryPostgresRequest
-	QueryUuid   *uuid.UUID `json:"queryUuid"`
-	Query       *string    `json:"query"`
-	QueryParams []any      `json:"queryParams"`
+	Connection  QueryConnection `json:"connection"`
+	QueryUuid   *uuid.UUID      `json:"queryUuid"`
+	Query       *string         `json:"query"`
+	QueryParams []any           `json:"queryParams"`
 }
 
 type QueryKillRequest struct {
-	QueryPostgresRequest
-	Pid int `json:"pid"`
+	Connection QueryConnection `json:"connection"`
+	Pid        int             `json:"pid"`
 }
 
 type QueryChartRequest struct {
-	QueryPostgresRequest
-	Type *QueryChartType `json:"type"`
+	Connection QueryConnection `json:"connection"`
+	Type       *QueryChartType `json:"type"`
 }
 
 type QueryDatabasesRequest struct {
-	QueryPostgresRequest
-	Name string `json:"name"`
+	Connection QueryConnection `json:"connection"`
+	Name       string          `json:"name"`
 }
 
 type QuerySchemasRequest struct {
-	QueryPostgresRequest
-	Name string `json:"name"`
+	Connection QueryConnection `json:"connection"`
+	Name       string          `json:"name"`
 }
 
 type QueryTablesRequest struct {
-	QueryPostgresRequest
-	Schema string `json:"schema"`
-	Name   string `json:"name"`
+	Connection QueryConnection `json:"connection"`
+	Schema     string          `json:"schema"`
+	Name       string          `json:"name"`
 }
 
 type QueryField struct {

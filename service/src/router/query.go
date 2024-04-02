@@ -137,10 +137,10 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 	var res *QueryFields
 	var err error
 	if req.QueryUuid != nil {
-		res, err = r.queryService.RunTemplateQuery(*req.QueryUuid, req.QueryParams, req.CredentialId, req.Db)
+		res, err = r.queryService.RunTemplateQuery(req.Connection, *req.QueryUuid, req.QueryParams)
 	}
 	if req.Query != nil {
-		res, err = r.queryService.RunQuery(*req.Query, req.QueryParams, req.CredentialId, req.Db)
+		res, err = r.queryService.RunQuery(req.Connection, *req.Query, req.QueryParams)
 	}
 
 	if err != nil {
@@ -187,7 +187,7 @@ func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.DatabasesQuery(req.CredentialId, req.Db, req.Name)
+	res, err := r.queryService.DatabasesQuery(req.Connection, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -204,7 +204,7 @@ func (r *QueryRouter) PostSchemasQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.SchemasQuery(req.CredentialId, req.Db, req.Name)
+	res, err := r.queryService.SchemasQuery(req.Connection, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -221,7 +221,7 @@ func (r *QueryRouter) PostTablesQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.TablesQuery(req.CredentialId, req.Db, req.Schema, req.Name)
+	res, err := r.queryService.TablesQuery(req.Connection, req.Schema, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -238,7 +238,7 @@ func (r *QueryRouter) PostChartQuery(context *gin.Context) {
 		return
 	}
 
-	res, err := r.queryService.ChartQuery(req.CredentialId, req.Db, *req.Type)
+	res, err := r.queryService.ChartQuery(req.Connection, *req.Type)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -255,7 +255,7 @@ func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
 		return
 	}
 
-	errQuery := r.postgresGateway.Cancel(req.Pid, req.CredentialId, req.Db)
+	errQuery := r.postgresGateway.Cancel(req.Connection, req.Pid)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return
@@ -272,7 +272,7 @@ func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
 		return
 	}
 
-	errQuery := r.postgresGateway.Terminate(req.Pid, req.CredentialId, req.Db)
+	errQuery := r.postgresGateway.Terminate(req.Connection, req.Pid)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return

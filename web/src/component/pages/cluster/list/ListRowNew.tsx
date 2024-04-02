@@ -17,7 +17,7 @@ type Props = {
 }
 
 export function ListRowNew(props: Props) {
-    const { show, close } = props
+    const {show, close} = props
     const {activeTags} = useStore()
     const [stateName, setStateName] = useState('');
     const [stateNodes, setStateNodes] = useState(['']);
@@ -46,11 +46,14 @@ export function ListRowNew(props: Props) {
             </ListCell>
             <ListCell>
                 <ListCellUpdate
-                    name={stateName}
-                    instances={getSidecars(stateNodes)}
-                    credentials={{}}
-                    certs={{}}
-                    tags={activeTags}
+                    cluster={{
+                        name: stateName,
+                        instances: getSidecars(stateNodes),
+                        tags: activeTags.filter(t => t !== "ALL"),
+                        certs: {},
+                        credentials: {},
+                        tls: {sidecar: false, database: false}
+                    }}
                     toggle={toggle}
                     onUpdate={clean}
                 />

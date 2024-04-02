@@ -4,9 +4,8 @@ import {ErrorSmart} from "../../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {InstanceRequest, InstanceWeb} from "../../../../type/instance";
 import {ClusterNoInstanceError} from "./OverviewError";
-import {CodeThemes} from "../../../../app/utils";
+import {CodeThemes, getSidecarConnection} from "../../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
 import {SxPropsMap} from "../../../../type/general";
 import {ActiveCluster} from "../../../../type/cluster";
@@ -31,12 +30,14 @@ export function OverviewConfig(props: Props) {
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
     const {sidecar} = defaultInstance
-    const requestBody: InstanceRequest = {sidecar, credentialId: cluster.credentials.patroniId, certs: cluster.certs}
+    const connection = getSidecarConnection(cluster, sidecar)
 
-    const {data: config, isPending, isError, error} = useRouterInstanceConfig(requestBody, defaultInstance.inCluster)
+    const config = useRouterInstanceConfig(connection, defaultInstance.inCluster)
     const updateConfig = useRouterInstanceConfigUpdate(sidecar, () => setIsEditable(false))
 
-    useEffect(() => setConfigState(stringify(config)), [config])
+    const {data, isPending, isError, error} = config
+
+    useEffect(() => setConfigState(stringify(data)), [data])
 
     if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (isError) return <ErrorSmart error={error}/>
@@ -58,25 +59,25 @@ export function OverviewConfig(props: Props) {
                 />
             </Box>
             <Box sx={SX.buttons}>
-                {renderUpdateButtons(defaultInstance, configState, updateConfig.isPending, isEditable)}
+                {renderUpdateButtons()}
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
             </Box>
         </Box>
     )
 
-    function renderUpdateButtons(instance: InstanceWeb, configState: string, isLoading: boolean, isEditable: boolean) {
+    function renderUpdateButtons() {
         if (!isEditable) return <EditIconButton placement={"left"} size={35} onClick={() => setIsEditable(true)}/>
 
         return (
             <>
-                <CancelIconButton placement={"left"} size={35} disabled={isLoading} onClick={handleCancel}/>
-                <SaveIconButton placement={"left"} size={35} loading={isLoading} onClick={() => handleUpdate(instance, configState)}/>
+                <CancelIconButton placement={"left"} size={35} disabled={updateConfig.isPending} onClick={handleCancel}/>
+                <SaveIconButton placement={"left"} size={35} loading={updateConfig.isPending} onClick={handleUpdate}/>
             </>
         )
     }
 
     function handleCopyAll() {
-        const currentConfig = configState ? configState : stringify(config)
+        const currentConfig = configState ? configState : stringify(data)
         navigator.clipboard.writeText(currentConfig).then(() => {
             snackbar("Config copied to clipboard!", "info")
         })
@@ -84,17 +85,12 @@ export function OverviewConfig(props: Props) {
 
     function handleCancel() {
         setIsEditable(false)
-        setConfigState(stringify(config))
+        setConfigState(stringify(data))
     }
 
-    function handleUpdate(instance: InstanceWeb, config: string) {
+    function handleUpdate() {
         if (configState) {
-            updateConfig.mutate({
-                sidecar: instance.sidecar,
-                credentialId: cluster.credentials.patroniId,
-                certs: cluster.certs,
-                body: JSON.parse(config)
-            })
+            updateConfig.mutate({...connection, body: JSON.parse(configState)})
         }
     }
 

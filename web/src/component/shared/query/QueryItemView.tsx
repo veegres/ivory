@@ -1,5 +1,5 @@
-import {Query, QueryCreation, QueryRequest} from "../../../type/query";
-import {Database, SxPropsMap} from "../../../type/general";
+import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../type/query";
+import {SxPropsMap} from "../../../type/general";
 import {QueryItemWrapper} from "./QueryItemWrapper";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyInfoView} from "./QueryBodyInfoView";
@@ -28,24 +28,22 @@ enum ViewToggleType {VIEW, EDIT, RESTORE, LOG}
 
 type Props = {
     query: Query,
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
     manual: boolean,
 }
 
 export function QueryItemView(props: Props) {
-    const {query, credentialId, db, manual} = props
+    const {query, connection, manual} = props
     const [toggleView, setToggleView] = useState<ViewToggleType>()
     const initQueryUpdate: QueryRequest = {...query, query: query.custom}
     const [queryUpdate, setUpdateQuery] = useState(initQueryUpdate)
 
     return (
         <QueryItemWrapper
+            connection={connection}
             queryUuid={query.id}
             varieties={query.varieties}
             params={query.params}
-            db={db}
-            credentialId={credentialId}
             renderButtons={renderToggleButtons()}
             showButtons={toggleView !== undefined}
             showInfo={toggleView === ViewToggleType.EDIT}

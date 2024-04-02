@@ -11,7 +11,7 @@ export function Credentials() {
     return (
         <MenuWrapper>
             <CredentialsNew/>
-            <LinearProgressStateful color={"inherit"} isFetching={isFetching} line/>
+            <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
             <CredentialsList credentials={data} error={error}/>
         </MenuWrapper>
     )

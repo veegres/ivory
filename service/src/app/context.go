@@ -55,12 +55,12 @@ func NewContext() *Context {
 	passwordService := service.NewPasswordService(passwordRepo, secretService, encryptionService)
 	certService := service.NewCertService(certRepo)
 
-	postgresGateway := service.NewPostgresClient(passwordService)
+	postgresClient := service.NewPostgresClient(passwordService, certService)
 	sidecarClient := service.NewSidecarClient(passwordService, certService)
 	patroniGateway := service.NewPatroniGateway(sidecarClient)
 
 	tagService := service.NewTagService(tagRepo)
-	queryService := service.NewQueryService(queryRepo, secretService, postgresGateway)
+	queryService := service.NewQueryService(queryRepo, secretService, postgresClient)
 	clusterService := service.NewClusterService(clusterRepo, tagService, patroniGateway)
 	bloatService := service.NewBloatService(bloatRepository, passwordService)
 	authService := service.NewAuthService(secretService, encryptionService)
@@ -88,7 +88,7 @@ func NewContext() *Context {
 		passwordRouter: router.NewPasswordRouter(passwordService),
 		tagRouter:      router.NewTagRouter(tagService),
 		instanceRouter: router.NewInstanceRouter(patroniGateway),
-		queryRouter:    router.NewQueryRouter(queryService, generalService, postgresGateway),
+		queryRouter:    router.NewQueryRouter(queryService, generalService, postgresClient),
 		generalRouter:  router.NewGeneralRouter(generalService),
 	}
 }

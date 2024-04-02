@@ -7,7 +7,7 @@ import "github.com/google/uuid"
 type InstanceRequest struct {
 	Sidecar      Sidecar    `json:"sidecar" form:"sidecar"`
 	CredentialId *uuid.UUID `json:"credentialId" form:"credentialId"`
-	Certs        Certs      `json:"certs" form:"certs"`
+	Certs        *Certs     `json:"certs" form:"certs"`
 	Body         any        `json:"body" form:"body"`
 }
 

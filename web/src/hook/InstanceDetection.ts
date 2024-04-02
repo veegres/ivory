@@ -1,6 +1,13 @@
 import {useQueryClient} from "@tanstack/react-query";
 import {useEffect, useMemo, useRef} from "react";
-import {combineInstances, createInstanceColors, getDomain, initialInstance, isSidecarEqual} from "../app/utils";
+import {
+    combineInstances,
+    createInstanceColors,
+    getDomain,
+    getSidecarConnection,
+    initialInstance,
+    isSidecarEqual
+} from "../app/utils";
 import {useStore, useStoreAction} from "../provider/StoreProvider";
 import {Cluster, DetectionType, InstanceDetection} from "../type/cluster";
 import {Sidecar} from "../type/general";
@@ -20,7 +27,7 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     const previousData = useRef<InstanceMap>({})
 
     const queryKey = useMemo(() => InstanceApi.overview.key(cluster.name), [cluster.name])
-    const request = () => ({sidecar: defaultSidecar.current, credentialId: cluster.credentials.patroniId, certs: cluster.certs})
+    const request = () => getSidecarConnection(cluster, defaultSidecar.current)
     const query = useRouterInstanceOverview(cluster.name, request)
     const {errorUpdateCount, refetch, data, isFetching, error} = query
 

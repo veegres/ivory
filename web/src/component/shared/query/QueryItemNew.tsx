@@ -1,7 +1,7 @@
 import {InputBase} from "@mui/material";
 import {useEffect, useState} from "react";
-import {Database, SxPropsMap} from "../../../type/general";
-import {QueryRequest, QueryType} from "../../../type/query";
+import {SxPropsMap} from "../../../type/general";
+import {QueryConnection, QueryRequest, QueryType} from "../../../type/query";
 import {QueryBody} from "./QueryBody";
 import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
 import {QueryItemWrapper} from "./QueryItemWrapper";
@@ -14,12 +14,11 @@ const SX: SxPropsMap = {
 
 type Props = {
     type: QueryType,
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
 }
 
 export function QueryItemNew(props: Props) {
-    const {type, credentialId, db} = props
+    const {type, connection} = props
     const [body, setBody] = useState(false)
     const [queryCreate, setQueryCreate] = useState<QueryRequest>({name: "", query: "", type})
 
@@ -27,10 +26,9 @@ export function QueryItemNew(props: Props) {
 
     return (
         <QueryItemWrapper
+            connection={connection}
             params={queryCreate.params}
             varieties={queryCreate.varieties}
-            credentialId={credentialId}
-            db={db}
             renderTitle={renderTitle()}
             renderButtons={renderButtons()}
             showButtons={queryCreate.name !== ""}

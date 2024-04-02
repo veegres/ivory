@@ -1,13 +1,14 @@
 import {Database, Sidecar} from "./general";
 import {ReactNode} from "react";
 import {Certs} from "./cluster";
+import {QueryConnection} from "./query";
 
 // COMMON (WEB AND SERVER)
 
 export interface InstanceRequest {
     sidecar: Sidecar,
     credentialId?: string,
-    certs: Certs,
+    certs?: Certs,
     body?: any,
 }
 
@@ -43,7 +44,7 @@ export interface InstanceMap {
 export enum InstanceTabType {QUERY, CHART}
 export interface InstanceTab {
     label: string,
-    body: (cluster: string, db: Database) => ReactNode,
+    body: (connection: QueryConnection) => ReactNode,
     info?: ReactNode,
 }
 

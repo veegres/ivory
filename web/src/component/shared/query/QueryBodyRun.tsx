@@ -25,7 +25,7 @@ type Props = {
 
 export function QueryBodyRun(props: Props) {
     const {varieties, request} = props
-    const {credentialId, db} = request
+    const {connection} = request
 
     const result = useRouterQueryRun(request)
     const {data, error, isFetching} = result
@@ -38,7 +38,7 @@ export function QueryBodyRun(props: Props) {
     const terminateMutate = terminate.mutate
 
     const pidIndex = useMemo(handleMemoPidIndex, [data])
-    const renderRowButtons = useCallback(handleCallbackRenderRowButtons, [cancelMutate, terminateMutate, credentialId, db, pidIndex])
+    const renderRowButtons = useCallback(handleCallbackRenderRowButtons, [cancelMutate, terminateMutate, connection, pidIndex])
     const renderHeaderCell = useCallback(handleCallbackRenderHeaderCell, [pidIndex])
     const columns = useMemo(handleMemoColumns, [data])
 
@@ -109,11 +109,11 @@ export function QueryBodyRun(props: Props) {
                 <Box sx={SX.pid}>
                     <CancelIconButton
                         size={25}
-                        onClick={() => cancelMutate({pid: row[pidIndex], credentialId, db})}
+                        onClick={() => cancelMutate({connection, pid: row[pidIndex]})}
                     />
                     <TerminateIconButton
                         size={25}
-                        onClick={() => terminateMutate({pid: row[pidIndex], credentialId, db})}
+                        onClick={() => terminateMutate({connection, pid: row[pidIndex]})}
                         color={"error"}
                     />
                 </Box>

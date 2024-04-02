@@ -1,16 +1,14 @@
 import {ChartItem, Color} from "./ChartItem";
-import {Database} from "../../../type/general";
-import {QueryChartType} from "../../../type/query";
+import {QueryChartType, QueryConnection} from "../../../type/query";
 import {useRouterQueryChart} from "../../../router/query";
 
 type Props = {
     type: QueryChartType,
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
 }
 
 export function ChartDatabase(props: Props) {
-    const {db, type} = props
+    const {connection: {db}, type} = props
 
     const chart = useRouterQueryChart(props, !!db.name)
 

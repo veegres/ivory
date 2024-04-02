@@ -96,7 +96,7 @@ export function OverviewBloatJobItem(props: Props) {
                         rows={logs}
                     />
                 )}
-                <LinearProgressStateful sx={SX.loader} isFetching={isFetching} color={"inherit"} line/>
+                <LinearProgressStateful sx={SX.loader} loading={isFetching} color={"inherit"} line/>
             </>
         )
     }

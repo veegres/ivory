@@ -2,15 +2,12 @@ package service
 
 import (
 	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
 	"io"
 	. "ivory/src/model"
 	"net/http"
-	"os"
 	"reflect"
 	"strconv"
 	"time"
@@ -144,53 +141,19 @@ func (p *SidecarClient) getRequest(
 	return req, err
 }
 
-func (p *SidecarClient) getClient(certs Certs, timeout time.Duration) (*http.Client, string, error) {
-	var rootCa *x509.CertPool
+func (p *SidecarClient) getClient(certs *Certs, timeout time.Duration) (*http.Client, string, error) {
 	protocol := "http"
+	transport := &http.Transport{}
 
-	// Setting Client CA
-	if certs.ClientCAId != nil {
+	if certs != nil {
 		protocol = "https"
-		clientCAInfo, errCert := p.certService.Get(*certs.ClientCAId)
-		if errCert != nil {
-			return nil, protocol, errCert
+		tlsConfig, errTls := p.certService.GetTLSConfig(*certs)
+		if errTls != nil {
+			return nil, protocol, errTls
 		}
-		clientCA, errCa := os.ReadFile(clientCAInfo.Path)
-		if errCa != nil {
-			return nil, protocol, errCa
-		}
-		rootCa = x509.NewCertPool()
-		rootCa.AppendCertsFromPEM(clientCA)
+		transport.TLSClientConfig = tlsConfig
 	}
 
-	// Setting Client Cert with Client Private Key
-	var certificates []tls.Certificate
-	if certs.ClientCertId != nil && certs.ClientKeyId != nil {
-		protocol = "https"
-		clientCertInfo, errCert := p.certService.Get(*certs.ClientCertId)
-		if errCert != nil {
-			return nil, protocol, errCert
-		}
-		clientKeyInfo, errKey := p.certService.Get(*certs.ClientKeyId)
-		if errKey != nil {
-			return nil, protocol, errKey
-		}
-
-		cert, errX509 := tls.LoadX509KeyPair(clientCertInfo.Path, clientKeyInfo.Path)
-		if errX509 != nil {
-			return nil, protocol, errX509
-		}
-		certificates = append(certificates, cert)
-	}
-
-	// xor operation for `nil` check
-	if (certs.ClientCertId == nil || certs.ClientKeyId == nil) && certs.ClientCertId != certs.ClientKeyId {
-		return nil, protocol, errors.New("to be able to establish mutual tls connection you need to provide both client cert and client private key")
-	}
-
-	tlsConfig := &tls.Config{RootCAs: rootCa, Certificates: certificates}
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	client := &http.Client{Transport: transport, Timeout: timeout}
-
 	return client, protocol, nil
 }
