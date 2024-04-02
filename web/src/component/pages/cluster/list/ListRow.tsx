@@ -25,7 +25,7 @@ type Props = {
 
 export function ListRow(props: Props) {
     const {cluster, editable, toggle} = props
-    const {name, instances, credentials, certs, tags} = cluster
+    const {name, instances} = cluster
 
     const ref = useRef<HTMLTableRowElement | null>(null)
     const [stateNodes, setStateNodes] = useState(getDomains(instances))
@@ -72,11 +72,7 @@ export function ListRow(props: Props) {
             <ListCellRead name={name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                name={name}
-                instances={getSidecars(stateNodes)}
-                credentials={credentials}
-                certs={certs}
-                tags={tags}
+                cluster={{...cluster, instances: getSidecars(stateNodes)}}
                 toggle={toggle}
                 onUpdate={instanceDetection.refetch}
                 onClose={() => setStateNodes(getDomains(instances))}

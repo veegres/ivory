@@ -1,11 +1,14 @@
 package service
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/exp/slices"
 	. "ivory/src/model"
 	"ivory/src/persistence"
+	"os"
 	"path"
 	"strings"
 )
@@ -25,6 +28,50 @@ func NewCertService(certRepository *persistence.CertRepository) *CertService {
 
 func (s *CertService) Get(uuid uuid.UUID) (Cert, error) {
 	return s.certRepository.Get(uuid)
+}
+
+func (s *CertService) GetTLSConfig(certs Certs) (*tls.Config, error) {
+	var rootCa *x509.CertPool
+
+	// Setting Client CA
+	if certs.ClientCAId != nil {
+		clientCAInfo, errCert := s.Get(*certs.ClientCAId)
+		if errCert != nil {
+			return nil, errCert
+		}
+		clientCA, errCa := os.ReadFile(clientCAInfo.Path)
+		if errCa != nil {
+			return nil, errCa
+		}
+		rootCa = x509.NewCertPool()
+		rootCa.AppendCertsFromPEM(clientCA)
+	}
+
+	// Setting Client Cert with Client Private Key
+	var certificates []tls.Certificate
+	if certs.ClientCertId != nil && certs.ClientKeyId != nil {
+		clientCertInfo, errCert := s.Get(*certs.ClientCertId)
+		if errCert != nil {
+			return nil, errCert
+		}
+		clientKeyInfo, errKey := s.Get(*certs.ClientKeyId)
+		if errKey != nil {
+			return nil, errKey
+		}
+
+		cert, errX509 := tls.LoadX509KeyPair(clientCertInfo.Path, clientKeyInfo.Path)
+		if errX509 != nil {
+			return nil, errX509
+		}
+		certificates = append(certificates, cert)
+	}
+
+	// xor operation for `nil` check
+	if (certs.ClientCertId == nil || certs.ClientKeyId == nil) && certs.ClientCertId != certs.ClientKeyId {
+		return nil, errors.New("to be able to establish mutual tls connection you need to provide both client cert and client private key")
+	}
+
+	return &tls.Config{RootCAs: rootCa, Certificates: certificates}, nil
 }
 
 func (s *CertService) List() (CertMap, error) {

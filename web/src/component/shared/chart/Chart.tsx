@@ -1,9 +1,9 @@
-import {Database, SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../type/general";
 import {Box} from "@mui/material";
 import {ChartRow} from "./ChartRow";
 import {ChartCommon} from "./ChartCommon";
 import {ChartDatabase} from "./ChartDatabase";
-import {QueryChartType} from "../../../type/query";
+import {QueryChartType, QueryConnection} from "../../../type/query";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 2},
@@ -16,23 +16,22 @@ const Charts = {
 }
 
 type Props = {
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
 }
 
 export function Chart(props: Props) {
-    const {credentialId, db} = props
+    const {connection: {db}} = props
 
     return (
         <Box sx={SX.box}>
             <ChartRow>
                 {Charts.common.map(t => (
-                    <ChartCommon key={t} type={t} credentialId={credentialId} db={db}/>
+                    <ChartCommon key={t} type={t} connection={props.connection}/>
                 ))}
             </ChartRow>
             <ChartRow label={db.name && `${db.name}`}>
                 {Charts.database.map(t => (
-                    <ChartDatabase key={t} type={t} credentialId={credentialId} db={db}/>
+                    <ChartDatabase key={t} type={t} connection={props.connection}/>
                 ))}
             </ChartRow>
         </Box>

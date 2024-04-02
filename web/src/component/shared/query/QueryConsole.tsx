@@ -2,12 +2,13 @@ import {QueryBody} from "./QueryBody";
 import {QueryBodyRun} from "./QueryBodyRun";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {useState} from "react";
-import {Database, SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../type/general";
 import {CancelIconButton, PlayIconButton} from "../../view/button/IconButtons";
 import {Box, Paper} from "@mui/material";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {useDebounceFunction} from "../../../hook/Debounce";
+import {QueryConnection} from "../../../type/query";
 
 const SX: SxPropsMap = {
     query: {position: "relative", display: "flex", flexDirection: "column", padding: "2px 2px 15px 2px", fontSize: "13px"},
@@ -16,12 +17,11 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
 }
 
 export function QueryConsole(props: Props) {
-    const {credentialId, db} = props
+    const {connection} = props
     const {instance: {queryConsole}} = useStore()
     const {setConsoleQuery} = useStoreAction()
     const [run, setRun] = useState(false)
@@ -50,7 +50,7 @@ export function QueryConsole(props: Props) {
             </Box>
             <Paper>
                 <QueryBody show={run}>
-                    <QueryBodyRun request={{query, credentialId, db}}/>
+                    <QueryBodyRun request={{connection, query}}/>
                 </QueryBody>
             </Paper>
         </Box>

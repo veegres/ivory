@@ -1,17 +1,15 @@
 import {ChartItem, Color} from "./ChartItem";
-import {Database} from "../../../type/general";
-import {QueryChartType} from "../../../type/query";
+import {QueryChartType, QueryConnection} from "../../../type/query";
 import {useRouterQueryChart} from "../../../router/query";
 
 type Props = {
     type: QueryChartType,
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
 }
 
 export function ChartCommon(props: Props) {
-    const {type, credentialId, db} = props
-    const req = {type, credentialId, db: {...db, name: "postgres"}}
+    const {type, connection} = props
+    const req = {type, connection: {...connection, db: {...connection.db, name: "postgres"}}}
     const chart = useRouterQueryChart(req)
 
     return (

@@ -1,7 +1,13 @@
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material";
-import {DateTimeFormatter, InstanceColor, SizeFormatter, SxPropsFormatter} from "../../../../app/utils";
+import {
+    DateTimeFormatter,
+    getSidecarConnection,
+    InstanceColor,
+    SizeFormatter,
+    SxPropsFormatter
+} from "../../../../app/utils";
 import {Sidecar, SxPropsMap} from "../../../../type/general";
-import {InstanceRequest, InstanceWeb} from "../../../../type/instance";
+import {InstanceWeb} from "../../../../type/instance";
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {Cluster} from "../../../../type/cluster";
@@ -38,12 +44,7 @@ export function OverviewInstancesRow(props: Props) {
     const {isInstanceActive} = useStore()
     const {setInstance} = useStoreAction()
     const checked = isInstanceActive(domain)
-
-    const request: InstanceRequest = {
-        sidecar: instance.sidecar,
-        credentialId: cluster.credentials.patroniId,
-        certs: cluster.certs,
-    }
+    const request = getSidecarConnection(cluster, sidecar)
 
     useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])
 

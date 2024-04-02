@@ -8,7 +8,8 @@ import {InstanceMainQueries} from "./InstanceMainQueries";
 import {QueryApi} from "../../../../app/api";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
-import {getDomain} from "../../../../app/utils";
+import {getQueryConnection} from "../../../../app/utils";
+import {QueryConnection} from "../../../../type/query";
 
 const SX: SxPropsMap = {
     main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1},
@@ -17,7 +18,7 @@ const SX: SxPropsMap = {
 const Tabs: {[key in InstanceTabType]: InstanceTab} = {
     [InstanceTabType.CHART]: {
         label: "Charts",
-        body: (id: string, db: Database) => <Chart credentialId={id} db={db}/>,
+        body: (connection: QueryConnection) => <Chart connection={connection}/>,
         info: <>
             Here you can check some basic charts about your overall database and each database separately
             by specifying database name in the input near by.
@@ -27,7 +28,7 @@ const Tabs: {[key in InstanceTabType]: InstanceTab} = {
     },
     [InstanceTabType.QUERY]: {
         label: "Queries",
-        body: (id: string, db: Database) => <InstanceMainQueries credentialId={id} db={db}/>,
+        body: (connection: QueryConnection) => <InstanceMainQueries connection={connection}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres. There are some default queries
             which are provided by the <i>system</i>. If manual queries are enabled, you can do such
@@ -52,11 +53,12 @@ export function InstanceMain(props: Props) {
     const {setDbName} = useStoreAction()
 
     if (!activeCluster) return null
-
-    const postgresId = activeCluster?.cluster.credentials.postgresId
+    const {cluster} = activeCluster
     const {label, info, body} = Tabs[tab]
 
+    const credentialId = cluster.credentials.postgresId
     const db = {...database, name: dbName}
+    const connection = getQueryConnection(cluster, db)
 
     return (
         <Box sx={SX.main}>
@@ -66,21 +68,20 @@ export function InstanceMain(props: Props) {
     )
 
     function renderBody() {
-        if (!postgresId) return <ClusterNoPostgresPassword/>
+        if (!credentialId) return <ClusterNoPostgresPassword/>
         if (database.host === "-") return <NoDatabaseError/>
-
-        return body(postgresId, db)
+        return body(connection)
     }
 
     function renderActions() {
-        if (!postgresId) return null
+        if (!credentialId) return null
 
         return (
             <Box width={200}>
                 <AutocompleteFetch
                     value={dbName || null}
-                    keys={["query", "databases", getDomain(database), database.name ?? "postgres", postgresId]}
-                    onFetch={(v) => QueryApi.databases.fn({credentialId: postgresId, db: database, name: v})}
+                    keys={QueryApi.databases.key(connection)}
+                    onFetch={(v) => QueryApi.databases.fn({connection, name: v})}
                     placeholder={"Database"}
                     variant={"outlined"}
                     padding={"3px"}

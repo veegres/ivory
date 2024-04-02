@@ -70,7 +70,7 @@ func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	request := InstanceRequest{
 		Sidecar:      cluster.Instance,
 		CredentialId: cluster.Credentials.PatroniId,
-		Certs:        cluster.Certs,
+		Certs:        &cluster.Certs,
 	}
 	overview, _, errOver := s.instanceService.Overview(request)
 	if errOver != nil {
@@ -92,6 +92,7 @@ func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 		Name:      cluster.Name,
 		Instances: instances,
 		ClusterOptions: ClusterOptions{
+			Tls:         cluster.Tls,
 			Certs:       cluster.Certs,
 			Credentials: cluster.Credentials,
 			Tags:        tags,

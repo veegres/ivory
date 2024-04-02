@@ -1,5 +1,5 @@
-import {Database, SxPropsMap} from "../../../../type/general";
-import {QueryType} from "../../../../type/query";
+import {SxPropsMap} from "../../../../type/general";
+import {QueryConnection, QueryType} from "../../../../type/query";
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {Query} from "../../../shared/query/Query";
 import {QueryConsole} from "../../../shared/query/QueryConsole";
@@ -13,12 +13,11 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    credentialId: string,
-    db: Database,
+    connection: QueryConnection,
 }
 
 export function InstanceMainQueries(props: Props){
-    const {credentialId, db} = props
+    const {connection} = props
     const {instance: {queryTab}} = useStore()
     const {setQueryTab} = useStoreAction()
 
@@ -56,9 +55,9 @@ export function InstanceMainQueries(props: Props){
             </Box>
             <Box sx={SX.query}>
                 {queryTab === QueryType.CONSOLE ? (
-                    <QueryConsole credentialId={credentialId} db={db}/>
+                    <QueryConsole connection={connection}/>
                 ) : (
-                    <Query type={queryTab} credentialId={credentialId} db={db}/>
+                    <Query type={queryTab} connection={connection}/>
                 )}
             </Box>
         </Box>

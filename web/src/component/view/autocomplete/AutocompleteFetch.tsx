@@ -4,7 +4,7 @@ import {useState} from "react";
 import {useDebounce} from "../../../hook/Debounce";
 
 type Props = {
-    keys: string[],
+    keys: any[],
     onUpdate: (option: string | null) => void,
     onFetch: (value: string) => Promise<string[]>,
     disabled?: boolean,

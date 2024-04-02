@@ -5,6 +5,7 @@ import "github.com/google/uuid"
 // COMMON (WEB AND SERVER)
 
 type ClusterOptions struct {
+	Tls         ClusterTls  `json:"tls"`
 	Certs       Certs       `json:"certs"`
 	Credentials Credentials `json:"credentials"`
 	Tags        []string    `json:"tags"`
@@ -20,6 +21,11 @@ type ClusterAuto struct {
 	ClusterOptions
 	Name     string  `json:"name"`
 	Instance Sidecar `json:"instance"`
+}
+
+type ClusterTls struct {
+	Sidecar  bool `json:"sidecar"`
+	Database bool `json:"database"`
 }
 
 type Certs struct {

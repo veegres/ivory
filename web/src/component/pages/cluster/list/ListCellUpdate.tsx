@@ -1,26 +1,22 @@
 import {CancelIconButton, SaveIconButton} from "../../../view/button/IconButtons";
 import {Box} from "@mui/material";
-import {Sidecar, SxPropsMap} from "../../../../type/general";
-import {Certs, Credentials} from "../../../../type/cluster";
+import {SxPropsMap} from "../../../../type/general";
 import {useRouterClusterUpdate} from "../../../../router/cluster";
+import {Cluster} from "../../../../type/cluster";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},
 }
 
 type Props = {
-    name: string,
-    instances: Sidecar[],
-    certs: Certs,
-    credentials: Credentials,
-    tags?: string[],
+    cluster: Cluster,
     toggle: () => void,
     onUpdate?: () => void,
     onClose?: () => void,
 }
 
 export function ListCellUpdate(props: Props) {
-    const {name, instances, tags, credentials, certs} = props
+    const {cluster} = props
     const {toggle, onUpdate, onClose} = props
 
     const updateCluster = useRouterClusterUpdate(handleSuccess)
@@ -28,7 +24,7 @@ export function ListCellUpdate(props: Props) {
     return (
         <Box sx={SX.box}>
             <CancelIconButton loading={false} disabled={updateCluster.isPending} onClick={handleClose}/>
-            <SaveIconButton loading={updateCluster.isPending} disabled={!name} onClick={handleUpdate}/>
+            <SaveIconButton loading={updateCluster.isPending} disabled={!cluster.name} onClick={handleUpdate}/>
         </Box>
     )
 
@@ -43,7 +39,6 @@ export function ListCellUpdate(props: Props) {
     }
 
     function handleUpdate() {
-        const tmp = tags?.filter(t => t !== "ALL")
-        updateCluster.mutate({name, instances, certs, credentials, tags: tmp})
+        updateCluster.mutate(cluster)
     }
 }

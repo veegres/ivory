@@ -5,6 +5,7 @@ import {InstanceMap, InstanceWeb} from "./instance";
 // COMMON (WEB AND SERVER)
 
 export interface ClusterOptions {
+    tls: ClusterTls,
     certs: Certs,
     credentials: Credentials,
     tags?: string[],
@@ -18,6 +19,11 @@ export interface Cluster extends ClusterOptions {
 export interface ClusterAuto extends ClusterOptions {
     name: string,
     instance: Sidecar,
+}
+
+export interface ClusterTls {
+    sidecar: boolean,
+    database: boolean,
 }
 
 export interface Certs {

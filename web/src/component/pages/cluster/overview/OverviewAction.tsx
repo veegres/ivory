@@ -4,7 +4,7 @@ import {InfoOutlined, Settings} from "@mui/icons-material";
 import {ActiveCluster} from "../../../../type/cluster";
 import {SxPropsMap} from "../../../../type/general";
 import {OverviewActionStatus} from "./OverviewActionStatus";
-import {InstanceRequest} from "../../../../type/instance";
+import {getSidecarConnection} from "../../../../app/utils";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},
@@ -22,12 +22,12 @@ type Props = {
 
 export function OverviewAction(props: Props) {
     const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo} = props
-    const {certs, credentials, name} = cluster.cluster
+    const {name} = cluster.cluster
     const {sidecar} = cluster.defaultInstance
-    const instance: InstanceRequest = {sidecar, certs, credentialId: credentials.patroniId}
+    const request = getSidecarConnection(cluster.cluster, sidecar)
     return (
         <Box sx={SX.box}>
-            {sidecar.status && <OverviewActionStatus status={sidecar.status} cluster={name} instance={instance}/>}
+            {sidecar.status && <OverviewActionStatus status={sidecar.status} cluster={name} request={request}/>}
             <OverviewActionInfo cluster={cluster}/>
             <ToggleButtonGroup size={"small"}>
                 <ToggleButton

@@ -33,7 +33,7 @@ export function PageStartupBox(props: Props) {
                 {header} {animal}
             </Box>
             {children}
-            <LinearProgressStateful isFetching={info.isFetching} line color={"inherit"}/>
+            <LinearProgressStateful loading={info.isFetching} line color={"inherit"}/>
             <Box sx={SX.buttons}>
                 {renderFooter}
             </Box>

@@ -18,7 +18,7 @@ import {SxProps, Theme} from "@mui/material";
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
 import {PasswordType} from "../type/password";
 import {
-    ColorsMap,
+    ColorsMap, Database,
     EnumOptions,
     FileUsageType,
     Links,
@@ -28,10 +28,11 @@ import {
     SxPropsMap
 } from "../type/general";
 import {CertType} from "../type/cert";
-import {InstanceMap, InstanceWeb, Role} from "../type/instance";
+import {InstanceMap, InstanceRequest, InstanceWeb, Role} from "../type/instance";
 import {JobStatus} from "../type/job";
-import {QueryVariety} from "../type/query";
+import {QueryConnection, QueryVariety} from "../type/query";
 import dayjs from "dayjs";
+import {Cluster} from "../type/cluster";
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
@@ -163,6 +164,18 @@ export const getDomain = ({host, port}: Sidecar) => {
 
 export const getDomains = (sidecars: Sidecar[]) => {
     return sidecars.map(value => getDomain(value))
+}
+
+export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
+    const credentialId = cluster.credentials.postgresId
+    const certs = cluster.tls.database ? cluster.certs : undefined
+    return {db, certs, credentialId}
+}
+
+export function getSidecarConnection(cluster: Cluster, sidecar: Sidecar): InstanceRequest {
+    const credentialId = cluster.credentials.patroniId
+    const certs = cluster.tls.sidecar ? cluster.certs : undefined
+    return {sidecar, certs, credentialId}
 }
 
 export const getSidecar = (domain: string): Sidecar => {
