@@ -9,6 +9,10 @@ CREATE TABLE users (
     lastName varchar (25)
 );
 
+INSERT INTO users(id, firstname, lastname)
+SELECT id, id::text, id::text
+FROM generate_series(1,1000) id;
+
 CREATE TABLE films (
     code        char(5) CONSTRAINT films_code PRIMARY KEY,
     title       varchar(40) NOT NULL,
@@ -17,4 +21,8 @@ CREATE TABLE films (
     kind        varchar(10),
     len         interval hour to minute
 );
+
+INSERT INTO films(code, title, did)
+SELECT id::text, id::text, id
+FROM generate_series(1,10000) id;
 "
