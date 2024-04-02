@@ -39,7 +39,7 @@ export function AutocompleteTags(props: Props) {
             // NOTE: we need to check is option undefined, because after search when you remove tag it returns
             // undefined, probably this is a bag in mui library
             getOptionLabel={(option) => option?.label ?? ""}
-            onInputChange={(_, v) => setInputValue(v)}
+            onInputChange={(_, v) => setInputValue(v.toLowerCase())}
             onChange={handleOnChange}
             isOptionEqualToValue={(o, v) => o.label === v.label}
             filterSelectedOptions

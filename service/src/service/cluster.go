@@ -52,8 +52,8 @@ func (s *ClusterService) ListByName(clusters []string) ([]Cluster, error) {
 	return s.clusterRepository.ListByName(clusters)
 }
 
-func (s *ClusterService) Get(key string) (Cluster, error) {
-	return s.clusterRepository.Get(key)
+func (s *ClusterService) Get(cluster string) (Cluster, error) {
+	return s.clusterRepository.Get(cluster)
 }
 
 func (s *ClusterService) Update(cluster Cluster) (*Cluster, error) {
@@ -101,12 +101,12 @@ func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	return s.clusterRepository.Create(model)
 }
 
-func (s *ClusterService) Delete(key string) error {
-	errTag := s.tagService.UpdateCluster(key, nil)
+func (s *ClusterService) Delete(cluster string) error {
+	_, errTag := s.tagService.UpdateCluster(cluster, nil)
 	if errTag != nil {
 		return errTag
 	}
-	return s.clusterRepository.Delete(key)
+	return s.clusterRepository.Delete(cluster)
 }
 
 func (s *ClusterService) DeleteAll() error {
@@ -125,7 +125,5 @@ func (s *ClusterService) saveTags(name string, tags []string) ([]string, error) 
 	}
 
 	// NOTE: create tags in db with cluster name
-	err := s.tagService.UpdateCluster(name, tagList)
-
-	return tagList, err
+	return s.tagService.UpdateCluster(name, tagList)
 }

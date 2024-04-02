@@ -1,6 +1,9 @@
 package service
 
-import "ivory/src/persistence"
+import (
+	"ivory/src/persistence"
+	"strings"
+)
 
 type TagService struct {
 	tagRepository *persistence.TagRepository
@@ -22,10 +25,15 @@ func (s *TagService) List() ([]string, error) {
 	return s.tagRepository.List()
 }
 
-func (s *TagService) UpdateCluster(cluster string, tags []string) error {
+func (s *TagService) UpdateCluster(cluster string, tags []string) ([]string, error) {
+	var tagsLower []string
+	for _, tag := range tags {
+		tagsLower = append(tagsLower, strings.ToLower(tag))
+	}
+
 	tagMap, err := s.tagRepository.GetMap()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// NOTE: remove cluster from all tags
@@ -45,7 +53,7 @@ func (s *TagService) UpdateCluster(cluster string, tags []string) error {
 	}
 
 	// NOTE: add cluster to tags
-	for _, v := range tags {
+	for _, v := range tagsLower {
 		tagMap[v] = append(tagMap[v], cluster)
 	}
 
@@ -54,21 +62,22 @@ func (s *TagService) UpdateCluster(cluster string, tags []string) error {
 		if v != nil {
 			err := s.tagRepository.Update(k, v)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		} else {
 			err := s.tagRepository.Delete(k)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
 
-	return nil
+	return tagsLower, nil
 }
 
 func (s *TagService) Delete(tag string) error {
-	return s.tagRepository.Delete(tag)
+	tagLower := strings.ToLower(tag)
+	return s.tagRepository.Delete(tagLower)
 }
 
 func (s *TagService) DeleteAll() error {
