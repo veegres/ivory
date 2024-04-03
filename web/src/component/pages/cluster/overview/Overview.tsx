@@ -60,7 +60,7 @@ export function Overview() {
     const {setClusterTab} = useStoreAction()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useRouterClusterList()
+    const clusters = useRouterClusterList(undefined, true)
     const tab = TABS[activeClusterTab]
 
     return (
