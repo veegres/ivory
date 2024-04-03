@@ -2,11 +2,13 @@ import {useQuery} from "@tanstack/react-query";
 import {ClusterApi, TagApi} from "../app/api";
 import {useMutationAdapter} from "../hook/QueryCustom";
 
-export function useRouterClusterList(tags?: string[]) {
+export function useRouterClusterList(tags?: string[], subscribe: boolean = false) {
     return useQuery({
         queryKey: ClusterApi.list.key(),
-        queryFn: () => ClusterApi.list.fn(tags)}
-    )
+        // NOTE: we need subscribe here, because we don't want to pass tags in Overview component
+        // it will require to get tags from there to keep same behaviour. We want just subscribe by key.
+        queryFn: subscribe ? undefined : () => ClusterApi.list.fn(tags),
+    })
 }
 
 export function useRouterClusterDelete() {
