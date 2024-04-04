@@ -25,6 +25,9 @@ export function QueryBoxInfo(props: Props) {
     const {type, editable} = props
     return (
         <Box sx={SX.box}>
+            <QueryBoxWrapper editable={editable}>
+                {props.renderDescription}
+            </QueryBoxWrapper>
             <Box sx={SX.options}>
                 <QueryBoxWrapper sx={SX.params} editable={editable}>
                     {props.renderParams}
@@ -38,9 +41,6 @@ export function QueryBoxInfo(props: Props) {
                     </InfoBox>
                 </QueryBoxWrapper>
             </Box>
-            <QueryBoxWrapper editable={editable}>
-                {props.renderDescription}
-            </QueryBoxWrapper>
             <QueryBoxWrapper editable={editable}>
                 {props.renderQuery}
             </QueryBoxWrapper>

@@ -38,7 +38,7 @@ export function QueryBodyInfoView(props: Props) {
     }
 
     function renderVarieties() {
-        if (!varieties) return renderNoElement("ELEMENTS")
+        if (!varieties) return renderNoElement("LABELS")
 
         return (
             <QueryVarieties varieties={varieties}/>
