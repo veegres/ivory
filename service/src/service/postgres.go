@@ -169,17 +169,22 @@ func (s *PostgresClient) getConnection(connection QueryConnection) (*pgx.Conn, s
 	connUrl := connProtocol + connHost
 	connString := connProtocol + connCredentials + connHost
 
+	if connection.Certs != nil {
+		// NOTE: verify-ca was chosen, because it potentially can protect from machine-in-the-middle attack if
+		// it has right CA policy. More info can be found here https://www.postgresql.org/docs/16/libpq-ssl.html#LIBPQ-SSL-PROTECTION
+		connString += "?sslmode=verify-ca"
+	}
+
 	config, errConfig := pgx.ParseConfig(connString)
 	if errConfig != nil {
 		return nil, connUrl, errConfig
 	}
 
 	if connection.Certs != nil {
-		tlsConfig, errTls := s.certService.GetTLSConfig(*connection.Certs)
+		errTls := s.certService.SetTLSConfig(config.TLSConfig, *connection.Certs)
 		if errTls != nil {
 			return nil, connUrl, errTls
 		}
-		config.TLSConfig = tlsConfig
 	}
 
 	conn, err := pgx.ConnectConfig(context.Background(), config)

@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
@@ -143,15 +144,15 @@ func (p *SidecarClient) getRequest(
 
 func (p *SidecarClient) getClient(certs *Certs, timeout time.Duration) (*http.Client, string, error) {
 	protocol := "http"
-	transport := &http.Transport{}
+	config := &tls.Config{}
+	transport := &http.Transport{TLSClientConfig: config}
 
 	if certs != nil {
 		protocol = "https"
-		tlsConfig, errTls := p.certService.GetTLSConfig(*certs)
+		errTls := p.certService.SetTLSConfig(config, *certs)
 		if errTls != nil {
 			return nil, protocol, errTls
 		}
-		transport.TLSClientConfig = tlsConfig
 	}
 
 	client := &http.Client{Transport: transport, Timeout: timeout}
