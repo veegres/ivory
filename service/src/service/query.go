@@ -60,15 +60,11 @@ func (s *QueryService) RunTemplateQuery(connection QueryConnection, queryUuid uu
 }
 
 func (s *QueryService) RunQuery(connection QueryConnection, query string, queryParams []any) (*QueryFields, error) {
-	if queryParams == nil {
-		return s.postgresGateway.GetFields(connection, query)
-	} else {
-		return s.postgresGateway.GetFields(connection, query, queryParams...)
-	}
+	return s.postgresGateway.GetFields(connection, query, queryParams)
 }
 
 func (s *QueryService) DatabasesQuery(connection QueryConnection, name string) ([]string, error) {
-	return s.postgresGateway.GetMany(connection, constant.GetAllDatabases, "%"+name+"%")
+	return s.postgresGateway.GetMany(connection, constant.GetAllDatabases, []any{"%" + name + "%"})
 }
 
 func (s *QueryService) SchemasQuery(connection QueryConnection, name string) ([]string, error) {
@@ -76,7 +72,7 @@ func (s *QueryService) SchemasQuery(connection QueryConnection, name string) ([]
 	if db.Name == nil || *db.Name == "" {
 		return []string{}, nil
 	}
-	return s.postgresGateway.GetMany(connection, constant.GetAllSchemas, "%"+name+"%")
+	return s.postgresGateway.GetMany(connection, constant.GetAllSchemas, []any{"%" + name + "%"})
 }
 
 func (s *QueryService) TablesQuery(connection QueryConnection, schema string, name string) ([]string, error) {
@@ -84,7 +80,7 @@ func (s *QueryService) TablesQuery(connection QueryConnection, schema string, na
 	if db.Name == nil || *db.Name == "" || schema == "" {
 		return []string{}, nil
 	}
-	return s.postgresGateway.GetMany(connection, constant.GetAllTables, schema, "%"+name+"%")
+	return s.postgresGateway.GetMany(connection, constant.GetAllTables, []any{schema, "%" + name + "%"})
 }
 
 func (s *QueryService) ChartQuery(connection QueryConnection, chartType QueryChartType) (*QueryChart, error) {
