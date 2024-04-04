@@ -30,10 +30,10 @@ func (s *CertService) Get(uuid uuid.UUID) (Cert, error) {
 	return s.certRepository.Get(uuid)
 }
 
-func (s *CertService) GetTLSConfig(certs Certs) (*tls.Config, error) {
+// GetTLSConfigRootCA Setting Client CA
+func (s *CertService) GetTLSConfigRootCA(certs Certs) (*x509.CertPool, error) {
 	var rootCa *x509.CertPool
 
-	// Setting Client CA
 	if certs.ClientCAId != nil {
 		clientCAInfo, errCert := s.Get(*certs.ClientCAId)
 		if errCert != nil {
@@ -47,7 +47,11 @@ func (s *CertService) GetTLSConfig(certs Certs) (*tls.Config, error) {
 		rootCa.AppendCertsFromPEM(clientCA)
 	}
 
-	// Setting Client Cert with Client Private Key
+	return rootCa, nil
+}
+
+// GetTLSConfigCertificates Setting Client Cert with Client Private Key
+func (s *CertService) GetTLSConfigCertificates(certs Certs) ([]tls.Certificate, error) {
 	var certificates []tls.Certificate
 	if certs.ClientCertId != nil && certs.ClientKeyId != nil {
 		clientCertInfo, errCert := s.Get(*certs.ClientCertId)
@@ -66,12 +70,27 @@ func (s *CertService) GetTLSConfig(certs Certs) (*tls.Config, error) {
 		certificates = append(certificates, cert)
 	}
 
-	// xor operation for `nil` check
+	// NOTE: xor operation for `nil` check
 	if (certs.ClientCertId == nil || certs.ClientKeyId == nil) && certs.ClientCertId != certs.ClientKeyId {
 		return nil, errors.New("to be able to establish mutual tls connection you need to provide both client cert and client private key")
 	}
 
-	return &tls.Config{RootCAs: rootCa, Certificates: certificates}, nil
+	return certificates, nil
+}
+
+func (s *CertService) SetTLSConfig(config *tls.Config, certs Certs) error {
+	rootCA, errRoot := s.GetTLSConfigRootCA(certs)
+	if errRoot != nil {
+		return errRoot
+	}
+	config.RootCAs = rootCA
+
+	certsConfig, errCert := s.GetTLSConfigCertificates(certs)
+	if errCert != nil {
+		return errCert
+	}
+	config.Certificates = certsConfig
+	return nil
 }
 
 func (s *CertService) List() (CertMap, error) {
