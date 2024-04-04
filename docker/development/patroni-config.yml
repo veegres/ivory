@@ -54,9 +54,9 @@ bootstrap:
       #      use_slots: true
       parameters:
         ssl: on
-        ssl_ca_file: /opt/certs/postgres/ca.crt
-        ssl_cert_file: /opt/certs/postgres/postgres-cert.crt
-        ssl_key_file: /opt/certs/postgres/postgres-cert.key
+        ssl_ca_file: /opt/certs/ca/ca.crt
+        ssl_cert_file: /opt/certs/server/server.crt
+        ssl_key_file: /opt/certs/server/server.key
   #        wal_level: hot_standby
   #        hot_standby: "on"
   #        max_connections: 100
