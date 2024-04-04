@@ -53,6 +53,10 @@ bootstrap:
       use_pg_rewind: true
       #      use_slots: true
       parameters:
+        ssl: on
+        ssl_ca_file: /opt/certs/postgres/ca.crt
+        ssl_cert_file: /opt/certs/postgres/postgres-cert.crt
+        ssl_key_file: /opt/certs/postgres/postgres-cert.key
   #        wal_level: hot_standby
   #        hot_standby: "on"
   #        max_connections: 100
@@ -79,20 +83,25 @@ bootstrap:
     # For kerberos gss based connectivity (discard @.*$)
     #- host replication replicator 127.0.0.1/32 gss include_realm=0
     #- host all all 0.0.0.0/0 gss include_realm=0
-    - host replication replicator 0.0.0.0/0 md5
-    - host all all 0.0.0.0/0 md5
-    #- hostssl all all 0.0.0.0/0 md5
+    - hostssl replication replicator 0.0.0.0/0 md5
+    - hostssl all trust 0.0.0.0/0 trust
+    - hostssl all superuser 0.0.0.0/0 md5
+    - hostssl all rewind 0.0.0.0/0 md5
+    - hostssl all admin 0.0.0.0/0 md5
+    - hostssl all sslca 0.0.0.0/0 md5 clientcert=verify-ca
+    - hostssl all sslfull 0.0.0.0/0 md5 clientcert=verify-full
+
 
   # Additional script to be launched after initial cluster creation (will be passed the connection URL as parameter)
   post_init: /opt/patroni-initdb.sh
 
   # Some additional users which needs to be created after initializing new cluster
   users:
-    admin:
-      password: admin
-      options:
-        - createrole
-        - createdb
+  #  admin:
+  #    password: admin
+  #    options:
+  #      - createrole
+  #      - createdb
 
 postgresql:
   listen: 127.0.0.1:5432
@@ -106,7 +115,7 @@ postgresql:
       username: replicator
       password: password
     superuser:
-      username: postgres
+      username: superuser
       password: password
     rewind: # Has no effect on postgres 10 and lower
       username: rewind
