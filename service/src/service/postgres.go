@@ -26,82 +26,72 @@ func NewPostgresClient(
 	}
 }
 
-func (s *PostgresClient) GetMany(connection QueryConnection, query string, args ...any) ([]string, error) {
-	rows, _, _, errReq := s.sendRequest(connection, query, args...)
+func (s *PostgresClient) GetMany(connection QueryConnection, query string, queryParams []any) ([]string, error) {
+	values := make([]string, 0)
+	errReq := s.sendRequest(connection, query, queryParams, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
+		for rows.Next() {
+			var value string
+			err := rows.Scan(&value)
+			if err != nil {
+				return err
+			}
+			values = append(values, value)
+		}
+		return nil
+	})
 	if errReq != nil {
 		return nil, errReq
 	}
-	defer rows.Close()
-
-	values := make([]string, 0)
-	for rows.Next() {
-		var value string
-		err := rows.Scan(&value)
-		if err != nil {
-			return nil, err
-		}
-		values = append(values, value)
-	}
-
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-
 	return values, nil
 }
 
 func (s *PostgresClient) GetOne(connection QueryConnection, query string) (any, error) {
-	rows, _, _, errReq := s.sendRequest(connection, query)
+	var value any
+	errReq := s.sendRequest(connection, query, nil, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
+		if rows.Next() {
+			values, err := rows.Values()
+			if err != nil {
+				return err
+			}
+			value = values[0]
+		}
+		return nil
+	})
 	if errReq != nil {
 		return nil, errReq
 	}
-	defer rows.Close()
-
-	var value any
-	if rows.Next() {
-		values, err := rows.Values()
-		if err != nil {
-			return nil, err
-		}
-		value = values[0]
-	}
-
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-
 	return value, nil
 }
 
-func (s *PostgresClient) GetFields(connection QueryConnection, query string, args ...any) (*QueryFields, error) {
+func (s *PostgresClient) GetFields(connection QueryConnection, query string, queryParams []any) (*QueryFields, error) {
 	startTime := time.Now().UnixMilli()
-	rows, typeMap, url, errReq := s.sendRequest(connection, query, args...)
-	if errReq != nil {
-		return nil, errReq
-	}
-	defer rows.Close()
 
 	fields := make([]QueryField, 0)
-	for _, field := range rows.FieldDescriptions() {
-		dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
-		if !ok {
-			fields = append(fields, QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
-		} else {
-			fields = append(fields, QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
-		}
-	}
-
 	rowList := make([][]any, 0)
-	for rows.Next() {
-		val, err := rows.Values()
-		if err != nil {
-			return nil, err
-		}
-		rowList = append(rowList, val)
-	}
+	url := "-"
 
-	if rows.Err() != nil {
-		return nil, rows.Err()
+	errReq := s.sendRequest(connection, query, queryParams, func(rows pgx.Rows, typeMap *pgtype.Map, connUrl string) error {
+		url = connUrl
+		for _, field := range rows.FieldDescriptions() {
+			dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
+			if !ok {
+				fields = append(fields, QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
+			} else {
+				fields = append(fields, QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
+			}
+		}
+		for rows.Next() {
+			val, err := rows.Values()
+			if err != nil {
+				return err
+			}
+			rowList = append(rowList, val)
+		}
+		return nil
+	})
+
+	if errReq != nil {
+		return nil, errReq
 	}
 
 	endTime := time.Now().UnixMilli()
@@ -116,33 +106,45 @@ func (s *PostgresClient) GetFields(connection QueryConnection, query string, arg
 }
 
 func (s *PostgresClient) Cancel(connection QueryConnection, pid int) error {
-	_, _, _, err := s.sendRequest(connection, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")")
-	return err
+	return s.sendRequest(connection, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
 func (s *PostgresClient) Terminate(connection QueryConnection, pid int) error {
-	_, _, _, err := s.sendRequest(connection, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")")
-	return err
+	return s.sendRequest(connection, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
-func (s *PostgresClient) sendRequest(connection QueryConnection, query string, args ...any) (pgx.Rows, *pgtype.Map, string, error) {
+type fn func(pgx.Rows, *pgtype.Map, string) error
+
+func (s *PostgresClient) sendRequest(connection QueryConnection, query string, queryParams []any, parse fn) error {
 	conn, connUrl, errConn := s.getConnection(connection)
 	if errConn != nil {
-		return nil, nil, connUrl, errConn
+		return errConn
 	}
 	defer s.closeConnection(conn, context.Background())
 
-	var res pgx.Rows
-	var errRes error
-	if args == nil {
-		res, errRes = conn.Query(context.Background(), query)
+	var rows pgx.Rows
+	var err error
+	if queryParams == nil {
+		rows, err = conn.Query(context.Background(), query)
 	} else {
-		res, errRes = conn.Query(context.Background(), query, args...)
+		rows, err = conn.Query(context.Background(), query, queryParams...)
 	}
-	if errRes != nil {
-		return nil, nil, connUrl, errRes
+	if err != nil {
+		return err
 	}
-	return res, conn.TypeMap(), connUrl, nil
+
+	defer rows.Close()
+	if parse != nil {
+		errParse := parse(rows, conn.TypeMap(), connUrl)
+		if errParse != nil {
+			return errParse
+		}
+	}
+	if rows.Err() != nil {
+		return rows.Err()
+	}
+
+	return nil
 }
 
 func (s *PostgresClient) getConnection(connection QueryConnection) (*pgx.Conn, string, error) {
