@@ -1,6 +1,8 @@
 ## Docker environment for local development
 
-This Dockerfile and docker-compose will run for you patroni cluster with 3 instances.
+This Dockerfile and docker-compose will run for you patroni cluster with 3 cluster. One of them is usual with 3
+instances, others are needed only for specific test purposes and have specific configuration (like certs or pass).
+All postgres instances are configured with ssl by default, and there are different users for test purposes.
 
 ## Run
 
@@ -60,9 +62,9 @@ Now you can use pgcompacttable from your console, Ivory will use it as well
 
 ## Certificates
 
-These certificates are only needed for testing purposes, please, don't use them
-in real VMs, you can follow instruction and generate them. Certificates were generated
-for 24855 days (End date 4 May 2091), probably it should be enough not to change them :)
+These certificates are only needed for testing purposes, please, don't use them in real VMs, you can
+follow instruction and generate them. Certificates were generated for 24855 days (End day is 4 May 2091),
+probably it should be enough not to keep them for some time :)
 
 ### Generate Certificates
 
@@ -71,14 +73,14 @@ First go to the certs package `cd certs`
 - Certificate Authority
   - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out ca/ca.key`
   - Certificate `openssl req -new -x509 -sha256 -key ca/ca.key -subj "/O=Ivory" -out ca/ca.crt -days 24855`
-- Server
-  - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out server/server-cert.key`
-  - Signing Request `openssl req -new -sha256 -key server/server-cert.key -subj "/CN=server-cert/O=Ivory" -addext "subjectAltName=DNS:server-cert" -out server/server-cert.csr`
-  - Certificate `openssl x509 -req -in server/server-cert.csr -CA ca/ca.crt -CAkey ca/ca.key -CAcreateserial -extfile <(printf "subjectAltName=DNS:server-cert") -out server/server-cert.crt -days 24855 -sha256`
 - Client
   - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out client/client.key`
   - Signing Request `openssl req -new -sha256 -key client/client.key -subj "/CN=development/O=Ivory" -out client/client.csr`
   - Certificate `openssl x509 -req -in client/client.csr -CA ca/ca.crt -CAkey ca/ca.key -CAcreateserial -out client/client.crt -days 24855 -sha256`
+- Server
+  - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out server/server-cert.key`
+  - Signing Request `openssl req -new -sha256 -key server/server-cert.key -subj "/CN=server-cert/O=Ivory" -addext "subjectAltName=DNS:server-cert" -out server/server-cert.csr`
+  - Certificate `openssl x509 -req -in server/server-cert.csr -CA ca/ca.crt -CAkey ca/ca.key -CAcreateserial -extfile <(printf "subjectAltName=DNS:server-cert") -out server/server-cert.crt -days 24855 -sha256`
 
 ### Check Certificates
 
@@ -88,14 +90,10 @@ First go to the certs package `cd certs`
   - Verify `openssl verify -CAfile ca/ca.crt client/client.crt`
   - CSR `openssl req -noout -text -in client/client.csr`
   - CRT `openssl x509 -noout -text -in client/client.crt`
-- Postgres
-  - Verify `openssl verify -CAfile ca/ca.crt postgres/postgres-cert.crt`
-  - CSR `openssl req -noout -text -in postgres/postgres-cert.csr`
-  - CRT `openssl x509 -noout -text -in postgres/postgres-cert.crt`
-- Sidecar
-  - Verify `openssl verify -CAfile ca/ca.crt sidecar/patroni-cert.crt`
-  - CSR `openssl req -noout -text -in sidecar/patroni-cert.csr`
-  - CRT `openssl x509 -noout -text -in sidecar/patroni-cert.crt`
+- Server
+  - Verify `openssl verify -CAfile ca/ca.crt server/server.crt`
+  - CSR `openssl req -noout -text -in server/server.csr`
+  - CRT `openssl x509 -noout -text -in server/server.crt`
 
 
 ### Package structure
@@ -103,18 +101,14 @@ First go to the certs package `cd certs`
 ```
 certs
 ├── ca
-│   ├── ca.key            -- Certificate Authority (CA) Private Key
-│   └── ca.crt            -- Certificate Authority (CA) Certificate
-├── postgres
-│   ├── postgres-cert.key -- Postgres Certificate Private Key
-│   ├── postgres-cert.scr -- Postgres Certificate Signing Request
-│   └── postgres-cert.crt -- Postgres Certificate
-├── sidecar
-│   ├── [SIDECAR_NAME].key -- Sidecar Certificate Private Key
-│   ├── [SIDECAR_NAME].scr -- Sidecar Certificate Signing Request
-│   └── [SIDECAR_NAME].crt -- Sidecar Certificate
-└── client
-    ├── client.key        -- Client Certificate Private Key
-    ├── client.scr        -- Client Certificate Signing Request
-    └── client.crt        -- Client Certificate
+│   ├── ca.key     -- Certificate Authority (CA) Private Key
+│   └── ca.crt     -- Certificate Authority (CA) Certificate
+├── client            (used in ivory ui)
+│   ├── client.key -- Client Certificate Private Key
+│   ├── client.scr -- Client Certificate Signing Request
+│   └── client.crt -- Client Certificate
+└── server            (used in any server postgres, patroni, etc)
+    ├── server.key -- Server Certificate Private Key
+    ├── server.scr -- Server Certificate Signing Request
+    └── server.crt -- Server Certificate
 ```
