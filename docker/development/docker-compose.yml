@@ -61,8 +61,8 @@ services:
       PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni-cert:5004"
       PATRONI_RESTAPI_LISTEN: "patroni-cert:8004"
       PATRONI_RAFT_SELF_ADDR: "patroni-cert:2224"
-      PATRONI_RESTAPI_CERTFILE: "/opt/certs/server/patroni-cert.crt"
-      PATRONI_RESTAPI_KEYFILE: "/opt/certs/server/patroni-cert.key"
+      PATRONI_RESTAPI_CERTFILE: "/opt/certs/sidecar/patroni-cert.crt"
+      PATRONI_RESTAPI_KEYFILE: "/opt/certs/sidecar/patroni-cert.key"
       PATRONI_RESTAPI_CAFILE: "/opt/certs/ca/ca.crt"
       PATRONI_RESTAPI_VERIFY_CLIENT: "required"
 
@@ -77,4 +77,4 @@ services:
       PATRONI_RESTAPI_LISTEN: "patroni-pass:8005"
       PATRONI_RAFT_SELF_ADDR: "patroni-pass:2225"
       PATRONI_RESTAPI_USERNAME: "patroni"
-      PATRONI_RESTAPI_PASSWORD: "password"
+      PATRONI_RESTAPI_PASSWORD: "patroni"

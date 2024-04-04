@@ -3,6 +3,11 @@
 psql -d "$1" -c "
 CREATE EXTENSION pgstattuple;
 
+CREATE ROLE trust WITH LOGIN SUPERUSER;
+CREATE ROLE admin WITH LOGIN SUPERUSER PASSWORD 'admin';
+CREATE ROLE sslca WITH LOGIN SUPERUSER PASSWORD 'sslca';
+CREATE ROLE sslfull WITH LOGIN SUPERUSER PASSWORD 'sslfull';
+
 CREATE TABLE users (
     id int CONSTRAINT users_id PRIMARY KEY,
     firstName varchar (25),

@@ -11,9 +11,9 @@ This Dockerfile and docker-compose will run for you patroni cluster with 3 insta
 
 ## Connection
 
-- **Patroni Rest API:** `localhost:[8001-8005]` (example http://patroni1:8008)
-- **Postgres Ports:** `localhost:[5001-5005]` (example `psql --host=localhost --port=5003 --username=postgres`, `password=password`)
-- **HAProxy Statistics:** `localhost:8408`
+- **Patroni Rest API:** `localhost:[8001-8005]` (example http://patroni1:8003)
+- **Postgres Ports:** `localhost:[5001-5005]` (example `psql --host=localhost --port=5003 --dbname=postgres --username=admin`, `password=admin`)
+- **HAProxy Statistics:** `localhost:8404` (example http://localhost:8404)
 - **Additional Patroni API** `patroni[1-3,-cert,-pass]:8008` you can add them to your hosts
   (`/etc/hosts`) these lines to the file
   ``` 
@@ -23,10 +23,32 @@ This Dockerfile and docker-compose will run for you patroni cluster with 3 insta
   127.0.0.1 patroni-cert
   127.0.0.1 patroni-pass
   ```
-### Requirements
+  
+### Clusters
+
+- `patroni[1-3]:[8001-8003]` - cluster is needed for general test
 - `patroni-cert:8004` - cluster is needed to check patroni certificates and required client certificates
 - `patroni-pass:8005` - cluster is needed to check patroni password and required password for unsafe requests
 
+### Users
+
+#### Database
+- `superuser` - used by patroni
+- `replicator` - used by patroni for replication set up
+- `rewind` - used by patroni for rewind set up
+- `trust` - custom user, it doesn't have any password for connection
+- `admin`  -custom user, it has general password `admin:admin`
+- `sslca` - custom user, it requires `verify-ca` connection and has password `sslca:sslca`
+- `sslfull` - custom user, it requires `verify-full` connection and has password `sslfull:sslfull`
+
+#### Patroni
+- `patroni` - it is used to connect to cluster `patroni-pass:8005` with password `patroni:patroni
+
+### Data
+
+In each cluster there is initial data set with tables
+- `users` - it has 1000 rows
+- `films` - it has 10000 rows
 
 ## pgcompacttable
 
@@ -50,9 +72,9 @@ First go to the certs package `cd certs`
   - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out ca/ca.key`
   - Certificate `openssl req -new -x509 -sha256 -key ca/ca.key -subj "/O=Ivory" -out ca/ca.crt -days 24855`
 - Server
-  - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out server/patroni-cert.key`
-  - Signing Request `openssl req -new -sha256 -key server/patroni-cert.key -subj "/CN=patroni-cert/O=Ivory" -addext "subjectAltName=DNS:patroni-cert" -out server/patroni-cert.csr`
-  - Certificate `openssl x509 -req -in server/patroni-cert.csr -CA ca/ca.crt -CAkey ca/ca.key -CAcreateserial -extfile <(printf "subjectAltName=DNS:patroni-cert") -out server/patroni-cert.crt -days 24855 -sha256`
+  - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out server/server-cert.key`
+  - Signing Request `openssl req -new -sha256 -key server/server-cert.key -subj "/CN=server-cert/O=Ivory" -addext "subjectAltName=DNS:server-cert" -out server/server-cert.csr`
+  - Certificate `openssl x509 -req -in server/server-cert.csr -CA ca/ca.crt -CAkey ca/ca.key -CAcreateserial -extfile <(printf "subjectAltName=DNS:server-cert") -out server/server-cert.crt -days 24855 -sha256`
 - Client
   - Private Key `openssl ecparam -name prime256v1 -genkey -noout -out client/client.key`
   - Signing Request `openssl req -new -sha256 -key client/client.key -subj "/CN=development/O=Ivory" -out client/client.csr`
@@ -62,14 +84,19 @@ First go to the certs package `cd certs`
 
 - Certificate Authority
   - CRT `openssl x509 -noout -text -in ca/ca.crt`
-- Server
-  - Verify `openssl verify -CAfile ca/ca.crt server/patroni-cert.crt`
-  - CSR `openssl req -noout -text -in server/patroni-cert.csr`
-  - CRT `openssl x509 -noout -text -in server/patroni-cert.crt`
 - Client
   - Verify `openssl verify -CAfile ca/ca.crt client/client.crt`
   - CSR `openssl req -noout -text -in client/client.csr`
   - CRT `openssl x509 -noout -text -in client/client.crt`
+- Postgres
+  - Verify `openssl verify -CAfile ca/ca.crt postgres/postgres-cert.crt`
+  - CSR `openssl req -noout -text -in postgres/postgres-cert.csr`
+  - CRT `openssl x509 -noout -text -in postgres/postgres-cert.crt`
+- Sidecar
+  - Verify `openssl verify -CAfile ca/ca.crt sidecar/patroni-cert.crt`
+  - CSR `openssl req -noout -text -in sidecar/patroni-cert.csr`
+  - CRT `openssl x509 -noout -text -in sidecar/patroni-cert.crt`
+
 
 ### Package structure
 
@@ -78,10 +105,14 @@ certs
 ├── ca
 │   ├── ca.key            -- Certificate Authority (CA) Private Key
 │   └── ca.crt            -- Certificate Authority (CA) Certificate
-├── server
-│   ├── [SERVER_NAME].key -- Server Certificate Private Key
-│   ├── [SERVER_NAME].scr -- Server Certificate Signing Request
-│   └── [SERVER_NAME].crt -- Server Certificate
+├── postgres
+│   ├── postgres-cert.key -- Postgres Certificate Private Key
+│   ├── postgres-cert.scr -- Postgres Certificate Signing Request
+│   └── postgres-cert.crt -- Postgres Certificate
+├── sidecar
+│   ├── [SIDECAR_NAME].key -- Sidecar Certificate Private Key
+│   ├── [SIDECAR_NAME].scr -- Sidecar Certificate Signing Request
+│   └── [SIDECAR_NAME].crt -- Sidecar Certificate
 └── client
     ├── client.key        -- Client Certificate Private Key
     ├── client.scr        -- Client Certificate Signing Request
