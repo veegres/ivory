@@ -8,7 +8,7 @@ import {useRouterClusterUpdate} from "../../../../router/cluster";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
 
 const SX: SxPropsMap = {
-    settings: {width: "250px", gap: "12px", padding: "8px 0"}
+    settings: {width: "250px", gap: "12px", padding: "8px 0"},
 }
 
 type Props = {

@@ -3,7 +3,7 @@ import {SxPropsMap} from "../../../type/general";
 import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
-    box: {minHeight: "4px", margin: "5px 0", width: "100%"}
+    box: {minHeight: "4px", margin: "5px 0", width: "100%"},
 }
 
 type Props = {
