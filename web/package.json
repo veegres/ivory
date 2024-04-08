@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@types/codemirror": "5.60.15",
-    "@types/node": "20.11.28",
+    "@types/node": "20.12.5",
     "@types/react": "18.2.74",
     "@types/react-dom": "18.2.22",
     "@types/react-router-dom": "5.3.3",
