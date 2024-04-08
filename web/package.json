@@ -64,7 +64,7 @@
     "eslint-plugin-react": "7.34.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.6",
-    "typescript": "5.4.2",
+    "typescript": "5.4.4",
     "vite": "5.1.7",
     "vite-plugin-svgr": "4.2.0",
     "vite-tsconfig-paths": "4.3.2"
