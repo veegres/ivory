@@ -9,7 +9,7 @@ type Props = {
 
 export function ErrorSmart({error, type}: Props) {
     if (typeof error === "string") return <Error type={type ?? "warning"} message={error}/>
-    if (!(error instanceof AxiosError)) return <Error type={type ?? "warning"} message={String(error)}/>
+    if (!(error instanceof AxiosError)) return <Error type={type ?? "warning"} message={String(error)} clear={true}/>
     if (!error.response) return <Error type={"error"} message={"ErrorAlert is not detected"}/>
 
     const {status, statusText, config} = error.response
