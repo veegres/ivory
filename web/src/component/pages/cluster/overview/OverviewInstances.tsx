@@ -43,7 +43,7 @@ export function OverviewInstances(props: Props) {
                         <TableCell width={"110px"}>Role</TableCell>
                         <TableCell width={"15%"}>Sidecar</TableCell>
                         <TableCell width={"15%"}>Postgres</TableCell>
-                        <TableCell width={"100px"}>State</TableCell>
+                        <TableCell width={"150px"}>State</TableCell>
                         <TableCell/>
                         <TableCellLoader sx={SX.buttonCell} isFetching={instanceMapFetching > 0}>
                             <RefreshIconButton onClick={() => queryClient.refetchQueries(key)} disabled={instanceMapFetching > 0}/>

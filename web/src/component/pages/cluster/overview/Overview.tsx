@@ -29,28 +29,38 @@ const TABS: ClusterTabs = {
     0: {
         label: "Overview",
         body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => <OverviewInstances info={cluster} activeInstance={activeInstance}/>,
+        info: <>
+            The Overview tab offers visibility into the current status of your cluster. From here, you can
+            utilize essential features to manage your cluster, including switchover, reinit, restart, reload,
+            failover, and more. The leader node is automatically detected by sending requests to each instance
+            until a successful connection is established. You have the flexibility to change the main instance
+            to which Ivory sends requests by accessing the settings in the top right corner.
+        </>
     },
     1: {
         label: "Config",
         body: (cluster: ActiveCluster) => <OverviewConfig info={cluster}/>,
         info: <>
-            You can change your postgres configurations here (it will be applied on all cluster nodes).
-            It doesn't rewrite all your config, it call patches the existing configuration. If you want to
-            remove (reset) some setting just patch it with <i>null</i>. Be aware that some of the parameters
-            requires a restart of postgres. More information how it works you can find in
-            patroni <Link href={"https://patroni.readthedocs.io/en/latest/SETTINGS.html"} target={"_blank"}>site</Link>.
+            You can adjust your PostgreSQL configurations here, and any changes made will be applied to
+            all cluster instances. Instead of rewriting the entire configuration, it applies a patch
+            update. If you wish to remove a specific setting, simply set it to <b>null</b>. Keep in mind that
+            modifying certain parameters may necessitate restarting PostgreSQL. For further details on how
+            this process functions, refer to
+            the <Link href={"https://patroni.readthedocs.io/en/latest/rest_api.html#config-endpoint"} target={"_blank"}>documentation</Link>.
         </>
     },
     2: {
         label: "Bloat",
         body: (cluster: ActiveCluster) => <OverviewBloat info={cluster}/>,
         info: <>
-            You can reduce size of bloated tables and indexes without heavy locks here. It base on the
-            tool <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link>.
-            It is installed beside Ivory and will be used by Ivory. Ivory provides visualisation,
-            helps to keep information about job and logs in one place by each cluster while you need it.
-            Please be aware that you can run this tool only in master node and In target database contrib module
-            pgstattuple should be installed via <i>create extension if not exists pgstattuple;</i>
+            Here, you can efficiently decrease the size of bloated tables and indexes without imposing
+            heavy locks. This functionality is powered by
+            the <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link>
+            tool, which is seamlessly integrated with Ivory for streamlined usage. Ivory simplifies visualization
+            and centralizes information about jobs and logs within each cluster, ensuring convenient access when
+            needed. It's important to note that this tool can only be executed on the master node, and
+            in the target database, the contrib module pgstattuple must be installed using the command
+            "<b>CREATE EXTENSION IF NOT EXISTS pgstattuple;</b>".
         </>
     },
 }
