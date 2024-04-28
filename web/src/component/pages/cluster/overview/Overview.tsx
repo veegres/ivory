@@ -74,7 +74,7 @@ export function Overview() {
     const tab = TABS[activeClusterTab]
 
     return (
-        <PageMainBox withPadding visible={!!activeCluster || Object.keys(clusters.data ?? {}).length !== 0}>
+        <PageMainBox withPadding visible={!!activeCluster || Object.keys(clusters.data ?? {}).length !== 0 || clusters.error !== null}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
                     {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label}/>))}

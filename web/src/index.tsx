@@ -28,18 +28,18 @@ const root = createRoot(container!)
 root.render(
     <StrictMode>
         <AppearanceProvider>
-            <ErrorBoundary fallbackRender={(e) => (<PageErrorBox error={e.error}/>)}>
+            <CssBaseline enableColorScheme/>
+            <StoreProvider>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <AuthProvider>
-                        <StoreProvider>
-                            <SnackbarProvide>
-                                <CssBaseline enableColorScheme/>
+                        <SnackbarProvide>
+                            <ErrorBoundary fallbackRender={(e) => (<App><PageErrorBox error={e.error}/></App>)}>
                                 <App/>
-                            </SnackbarProvide>
-                        </StoreProvider>
+                            </ErrorBoundary>
+                        </SnackbarProvide>
                     </AuthProvider>
                 </LocalizationProvider>
-            </ErrorBoundary>
+            </StoreProvider>
         </AppearanceProvider>
     </StrictMode>
 )

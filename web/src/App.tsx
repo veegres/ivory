@@ -4,6 +4,7 @@ import {Body} from "./component/section/Body";
 import {Footer} from "./component/section/Footer";
 import {AuthType, SxPropsMap} from "./type/general";
 import {useRouterInfo} from "./router/general";
+import {ReactNode} from "react";
 
 const SX: SxPropsMap = {
     // we need -8px for bottom scroll, right scroll is always shown that is why we don't need calc
@@ -11,17 +12,21 @@ const SX: SxPropsMap = {
     body: {display: "flex", alignItems: "center", justifyContent: "center", flexGrow: 1},
 }
 
-export function App() {
+type Props = {
+    children?: ReactNode,
+}
+
+export function App(props: Props) {
     const info = useRouterInfo()
     const show = !info.isPending && !!info.data && info.data.secret.key && info.data.auth.authorised
 
     return (
         <Box sx={SX.box}>
             <Box>
-                <Header company={info.data?.company ?? "VEEGRES"} show={show} auth={info.data?.auth.type ?? AuthType.NONE}/>
+                <Header company={info.data?.company ?? "VEEGRES"} show={!props.children && show} auth={info.data?.auth.type ?? AuthType.NONE}/>
             </Box>
             <Box sx={SX.body}>
-                <Body info={info}/>
+                {props.children ? props.children : <Body info={info}/>}
             </Box>
             <Box>
                 <Footer tag={info.data?.version.tag ?? "none"} commit={info.data?.version.commit ?? "none"}/>
