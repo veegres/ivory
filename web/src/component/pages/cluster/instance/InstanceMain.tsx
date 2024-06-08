@@ -30,7 +30,8 @@ const Tabs: {[key in InstanceTabType]: InstanceTab} = {
         label: "Queries",
         body: (connection: QueryConnection) => <InstanceMainQueries connection={connection}/>,
         info: <>
-            Here you can run some queries to troubleshoot your postgres. There are some default queries
+            Here you can run some queries to troubleshoot your postgres (<b>always use LIMIT in queries
+            to reduce number of rows, it will help to render and execute query faster</b>). There are some default queries
             which are provided by the <i>system</i>. If manual queries are enabled, you can do such
             things as:
             <ul style={{margin: "0"}}>
