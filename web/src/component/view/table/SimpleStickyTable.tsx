@@ -1,8 +1,9 @@
 import scroll from "../../../style/scroll.module.css";
-import {Box, Table, TableCell, TableHead, TableRow, Tooltip} from "@mui/material";
+import {Box, Table, TableCell, TableHead, TableRow, ToggleButton, Tooltip} from "@mui/material";
 import {TableBody} from "./TableBody";
 import {SxPropsMap} from "../../../type/general";
-import {memo, ReactNode} from "react";
+import {memo, ReactNode, useState} from "react";
+import {WrapText} from "@mui/icons-material";
 
 const SX: SxPropsMap = {
     body: {overflow: "auto", maxHeight: "315px"},
@@ -11,11 +12,13 @@ const SX: SxPropsMap = {
         "th": {color: "text.disabled", lineHeight: "1.7"},
         "tr:first-of-type td, th": {borderTop: 1, borderColor: "divider"},
         "tr td, th": {
-            borderRight: 1, borderColor: "divider", bgcolor: "background.paper", fontSize: "12px",
-            maxWidth: "600px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            borderRight: 1, borderColor: "divider", bgcolor: "background.paper", fontSize: "12px", maxWidth: "300px",
             "&:nth-of-type(2), &:nth-of-type(1)": {borderLeft: 1, borderColor: "divider"},
         },
     },
+    preWrap: {whiteSpace: "pre", overflow: "hidden", textOverflow: "ellipsis"},
+    noWrap: {whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
+    toggle: {border: 0, padding: "5px", width: "100%"},
     description: {fontFamily: "monospace", color: "text.secondary"},
     number: {
         width: "1%", whiteSpace: "nowrap", color: "text.disabled",
@@ -36,6 +39,8 @@ export const SimpleStickyTable = memo(SimpleStickyTableMemo)
 
 export function SimpleStickyTableMemo(props: Props) {
     const {columns, rows, fetching = false, renderHeaderCell, renderRowCell} = props
+    const [toggle, setToggle] = useState<boolean | undefined>(undefined)
+    const wrap = toggle ?? columns.length === 1
 
     return (
         <Box sx={SX.body} className={scroll.small}>
@@ -56,7 +61,11 @@ export function SimpleStickyTableMemo(props: Props) {
 
         return (
             <TableRow>
-                <TableCell sx={{...SX.number, zIndex: 3}}/>
+                <TableCell sx={{...SX.number, zIndex: 3, padding: "3px"}} onClick={() => setToggle(!toggle)}>
+                    <ToggleButton sx={SX.toggle} value={"wrap"} selected={wrap}>
+                        <Tooltip title={"wrap"} placement={"top"}><WrapText sx={{fontSize: "15px"}}/></Tooltip>
+                    </ToggleButton>
+                </TableCell>
                 {columns.map(column => (
                     <TableCell key={column.name}>
                         <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"}>
@@ -85,12 +94,12 @@ export function SimpleStickyTableMemo(props: Props) {
             return (
                 <TableRow key={i}>
                     <TableCell sx={SX.number}>{i + 1}</TableCell>
-                    {row.map((row, j) => {
-                        const parsedRow = getParseRow(row)
+                    {row.map((column, j) => {
+                        const parseColumn = getParseColumn(column)
                         return (
                             <TableCell key={j}>
-                                <Tooltip title={parsedRow} placement={"top"}>
-                                    <Box>{parsedRow}</Box>
+                                <Tooltip title={parseColumn} placement={"top"}>
+                                    <Box sx={wrap ? SX.preWrap : SX.noWrap}>{parseColumn}</Box>
                                 </Tooltip>
                             </TableCell>
                         )
@@ -101,10 +110,10 @@ export function SimpleStickyTableMemo(props: Props) {
         })
     }
 
-    function getParseRow(row: any): string {
-        if (typeof row === 'object') return JSON.stringify(row)
-        else if (typeof row === "boolean") return Boolean(row).toString()
-        else return row
+    function getParseColumn(column: any): string {
+        if (typeof column === 'object') return JSON.stringify(column)
+        else if (typeof column === "boolean") return Boolean(column).toString()
+        else return column
     }
 
     function getRowCount() {

@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2},
     label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
-    pid: {display: "flex"},
+    pid: {display: "flex", color: "text.secondary", padding: "0 3px"},
     cell: {padding: "0 1px"},
 }
 
@@ -108,6 +108,7 @@ export function QueryBodyRun(props: Props) {
             <TableCell sx={SX.cell}>
                 <Box sx={SX.pid}>
                     <CancelIconButton
+                        color={"inherit"}
                         size={25}
                         onClick={() => cancelMutate({connection, pid: row[pidIndex]})}
                     />
