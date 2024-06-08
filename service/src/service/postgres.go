@@ -176,6 +176,9 @@ func (s *PostgresClient) getConnection(connection QueryConnection) (*pgx.Conn, s
 	}
 
 	config, errConfig := pgx.ParseConfig(connString)
+	config.RuntimeParams = map[string]string{
+		"application_name": "Ivory",
+	}
 	if errConfig != nil {
 		return nil, connUrl, errConfig
 	}
