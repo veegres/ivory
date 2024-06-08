@@ -34,7 +34,7 @@ export function QueryBodyLogItem(props: Props) {
         <Accordion
             sx={SX.box}
             expanded={open}
-            TransitionProps={{unmountOnExit: true}}
+            slotProps={{transition: {unmountOnExit: true}}}
             onChange={() => setOpen(!open)}
             disableGutters={true}
             onMouseOut={() => setShow(false)}
