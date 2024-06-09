@@ -5,11 +5,11 @@ import {Database, SxPropsMap} from "../../../../type/general";
 import {InstanceTab, InstanceTabType} from "../../../../type/instance";
 import {Chart} from "../../../shared/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";
-import {QueryApi} from "../../../../app/api";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {getQueryConnection} from "../../../../app/utils";
 import {QueryConnection} from "../../../../type/query";
+import {useRouterQueryDatabase} from "../../../../router/query";
 
 const SX: SxPropsMap = {
     main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1},
@@ -81,8 +81,8 @@ export function InstanceMain(props: Props) {
             <Box width={200}>
                 <AutocompleteFetch
                     value={dbName || null}
-                    keys={QueryApi.databases.key(connection)}
-                    onFetch={(v) => QueryApi.databases.fn({connection, name: v})}
+                    connection={connection}
+                    useFetch={useRouterQueryDatabase}
                     placeholder={"Database"}
                     variant={"outlined"}
                     padding={"3px"}

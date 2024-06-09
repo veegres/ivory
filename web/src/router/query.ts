@@ -1,6 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {QueryApi} from "../app/api";
-import {QueryChartRequest, QueryRunRequest, QueryType} from "../type/query";
+import {QueryChartRequest, QueryConnection, QueryRunRequest, QueryType} from "../type/query";
 import {useMutationAdapter} from "../hook/QueryCustom";
 
 export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
@@ -41,8 +41,40 @@ export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
 export function useRouterQueryRun(request: QueryRunRequest) {
     return useQuery({
         queryKey: QueryApi.run.key(request.queryUuid),
-        queryFn: () => QueryApi.run.fn(request.queryUuid ? {...request, query: undefined} : request),
+        queryFn: ({ signal }) => QueryApi.run.fn(request.queryUuid ? {...request, query: undefined} : request, signal),
         enabled: true, retry: false, refetchOnWindowFocus: false,
+    })
+}
+
+export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = true) {
+    return useQuery({
+        queryKey: QueryApi.chart.key(request),
+        queryFn: ({ signal }) => QueryApi.chart.fn(request, signal),
+        retry: false, enabled,
+    })
+}
+
+export function useRouterQueryDatabase(connection: QueryConnection, params: any, enabled: boolean = true) {
+    return useQuery({
+        queryKey: [...QueryApi.databases.key(connection), params.name],
+        queryFn: () => QueryApi.databases.fn({connection, ...params}),
+        retry: false, enabled, refetchOnWindowFocus: false,
+    })
+}
+
+export function useRouterQuerySchemas(connection: QueryConnection, params: any, enabled: boolean = true) {
+    return useQuery({
+        queryKey: [...QueryApi.schemas.key(connection), params.name],
+        queryFn: () => QueryApi.schemas.fn({connection, ...params}),
+        retry: false, enabled, refetchOnWindowFocus: false,
+    })
+}
+
+export function useRouterQueryTables(connection: QueryConnection, params: any, enabled: boolean = true) {
+    return useQuery({
+        queryKey: [...QueryApi.tables.key(connection), params.name],
+        queryFn: () => QueryApi.tables.fn({connection, ...params}),
+        retry: false, enabled, refetchOnWindowFocus: false,
     })
 }
 
@@ -75,13 +107,5 @@ export function useRouterQueryLogDelete(uuid: string) {
         mutationFn: QueryApi.deleteLog.fn,
         mutationKey: QueryApi.deleteLog.key(),
         successKeys: [QueryApi.getLog.key(uuid)],
-    })
-}
-
-export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = true) {
-    return useQuery({
-        queryKey: QueryApi.chart.key(request),
-        queryFn: () => QueryApi.chart.fn(request),
-        retry: false, enabled,
     })
 }

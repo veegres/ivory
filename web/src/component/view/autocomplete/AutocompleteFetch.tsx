@@ -1,34 +1,31 @@
 import {Autocomplete, AutocompleteRenderInputParams, TextField} from "@mui/material";
-import {useQuery} from "@tanstack/react-query";
+import {UseQueryResult} from "@tanstack/react-query";
 import {useState} from "react";
 import {useDebounce} from "../../../hook/Debounce";
+import {QueryConnection} from "../../../type/query";
 
 type Props = {
-    keys: any[],
     onUpdate: (option: string | null) => void,
-    onFetch: (value: string) => Promise<string[]>,
     disabled?: boolean,
     label?: string,
     placeholder?: string,
-    variant?: "standard" | "filled" | "outlined";
-    margin?: 'dense' | 'normal' | 'none';
+    variant?: "standard" | "filled" | "outlined",
+    margin?: 'dense' | 'normal' | 'none',
     padding?: string,
-    // NOTE: if you provide value it should be `null` for empty field
     value?: string | null,
+    connection: QueryConnection,
+    params?: any,
+    useFetch: (connection: QueryConnection, params: any, enabled?: boolean) => UseQueryResult<string[], Error>
 }
 
 export function AutocompleteFetch(props: Props) {
-    const {label, placeholder, variant, margin} = props
-    const {keys, onUpdate, onFetch, disabled = false, padding, value} = props
+    const {label, placeholder, variant, margin, padding} = props
+    const {onUpdate, useFetch, disabled = false, value, connection, params} = props
 
     const [inputValue, setInputValue] = useState("")
     const debInputValue = useDebounce(inputValue)
 
-    const query = useQuery({
-        queryKey: [...keys, debInputValue],
-        queryFn: () => onFetch(debInputValue),
-        enabled: !disabled
-    })
+    const query = useFetch(connection, {name: debInputValue, ...params}, !disabled)
     const options = query.data ?? []
 
     return (
