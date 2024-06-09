@@ -7,7 +7,8 @@ import {ClearCacheButton} from "../../shared/actions/ClearCacheButton";
 const SX: SxPropsMap = {
     collapse: {display: "flex", flexDirection: "column", gap: 2, marginTop: "20px"},
     label: {fontWeight: "bold"},
-    message: {display: "flex", gap: 2, justifyContent: "space-between"},
+    message: {display: "flex", gap: 2, justifyContent: "space-between", alignItems: "center"},
+    alert: {"& .MuiAlert-message": {flexGrow: 1}},
 }
 
 const style: StylePropsMap = {
@@ -31,7 +32,7 @@ export function Error(props: Props) {
     const isStacktrace = !!stacktrace
 
     return (
-        <Alert severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={isStacktrace} open={isOpen}/>}>
+        <Alert sx={SX.alert} severity={type} onClick={() => setIsOpen(!isOpen)} action={<OpenIcon show={isStacktrace} open={isOpen}/>}>
             <AlertTitle>{title ?? type.toString().toUpperCase()}</AlertTitle>
             <Box sx={SX.message}>
                 <Box>
