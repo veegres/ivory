@@ -8,11 +8,13 @@ import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
 import {useCallback, useMemo} from "react";
 import {NoBox} from "../../view/box/NoBox";
 import {useRouterQueryCancel, useRouterQueryRun, useRouterQueryTerminate} from "../../../router/query";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2},
-    label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px"},
+    label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px", whiteSpace: "nowrap"},
+    word: {whiteSpace: "wrap", wordBreak: "break-all"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
     pid: {display: "flex", color: "text.secondary", padding: "0 3px"},
     cell: {padding: "0 1px"},
@@ -53,7 +55,9 @@ export function QueryBodyRun(props: Props) {
         return (
             <Box sx={SX.info}>
                 <Tooltip title={"SENT TO"} placement={"right"} arrow={true}>
-                    <Box sx={SX.label}>[ {isFetching ? "request is loading" : data?.url ?? "unknown"} ]</Box>
+                    <Box sx={SxPropsFormatter.merge(SX.label, SX.word)}>
+                        [ {isFetching ? "request is loading" : data?.url ?? "unknown"} ]
+                    </Box>
                 </Tooltip>
                 <Box sx={SX.buttons}>
                     {!isFetching && data && (
