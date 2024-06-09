@@ -38,7 +38,7 @@ type Props = {
 export const SimpleStickyTable = memo(SimpleStickyTableMemo)
 
 export function SimpleStickyTableMemo(props: Props) {
-    const {columns, rows, fetching = false, renderHeaderCell, renderRowCell} = props
+    const {columns, rows, fetching = true, renderHeaderCell, renderRowCell} = props
     const [toggle, setToggle] = useState<boolean | undefined>(undefined)
     const wrap = toggle ?? columns.length === 1
 
@@ -48,7 +48,7 @@ export function SimpleStickyTableMemo(props: Props) {
                 <TableHead>
                     {renderHead()}
                 </TableHead>
-                <TableBody isLoading={fetching} rowCount={getRowCount()}>
+                <TableBody isLoading={fetching} rowCount={getRowCount()} height={21}>
                     {renderBody()}
                 </TableBody>
             </Table>
@@ -63,7 +63,7 @@ export function SimpleStickyTableMemo(props: Props) {
             <TableRow>
                 <TableCell sx={{...SX.number, zIndex: 3, padding: "3px"}} onClick={() => setToggle(!toggle)}>
                     <ToggleButton sx={SX.toggle} value={"wrap"} selected={wrap}>
-                        <Tooltip title={"wrap"} placement={"top"}><WrapText sx={{fontSize: "15px"}}/></Tooltip>
+                        <Tooltip title={"Wrap text in the table"} placement={"top"}><WrapText sx={{fontSize: "15px"}}/></Tooltip>
                     </ToggleButton>
                 </TableCell>
                 {columns.map(column => (
