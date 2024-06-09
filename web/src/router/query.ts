@@ -41,16 +41,18 @@ export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
 export function useRouterQueryRun(request: QueryRunRequest) {
     return useQuery({
         queryKey: QueryApi.run.key(request.queryUuid),
+        // NOTE: with Strict React mode this hook calls twice because of `signal`
         queryFn: ({ signal }) => QueryApi.run.fn(request.queryUuid ? {...request, query: undefined} : request, signal),
-        enabled: true, retry: false, refetchOnWindowFocus: false,
+        retry: false, refetchOnWindowFocus: false,
     })
 }
 
 export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = true) {
     return useQuery({
         queryKey: QueryApi.chart.key(request),
+        // NOTE: with Strict React mode this hook calls twice because of `signal`
         queryFn: ({ signal }) => QueryApi.chart.fn(request, signal),
-        retry: false, enabled,
+        retry: false, enabled, refetchOnWindowFocus: false,
     })
 }
 
