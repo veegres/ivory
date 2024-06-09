@@ -55,7 +55,7 @@ func NewContext() *Context {
 	passwordService := service.NewPasswordService(passwordRepo, secretService, encryptionService)
 	certService := service.NewCertService(certRepo)
 
-	postgresClient := service.NewPostgresClient(passwordService, certService)
+	postgresClient := service.NewPostgresClient(env, passwordService, certService)
 	sidecarClient := service.NewSidecarClient(passwordService, certService)
 	patroniGateway := service.NewPatroniGateway(sidecarClient)
 

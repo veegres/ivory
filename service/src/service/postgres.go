@@ -6,21 +6,26 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/exp/slog"
+	"ivory/src/config"
 	. "ivory/src/model"
 	"strconv"
 	"time"
 )
 
 type PostgresClient struct {
+	appName         string
 	passwordService *PasswordService
 	certService     *CertService
 }
 
 func NewPostgresClient(
+	env *config.Env,
 	passwordService *PasswordService,
 	certService *CertService,
 ) *PostgresClient {
+	appName := "Ivory " + env.Version.Tag + " (" + env.Version.Commit + ")"
 	return &PostgresClient{
+		appName:         appName,
 		passwordService: passwordService,
 		certService:     certService,
 	}
@@ -175,22 +180,22 @@ func (s *PostgresClient) getConnection(connection QueryConnection) (*pgx.Conn, s
 		connString += "?sslmode=verify-ca"
 	}
 
-	config, errConfig := pgx.ParseConfig(connString)
-	config.RuntimeParams = map[string]string{
-		"application_name": "Ivory",
+	conConfig, errConfig := pgx.ParseConfig(connString)
+	conConfig.RuntimeParams = map[string]string{
+		"application_name": s.appName,
 	}
 	if errConfig != nil {
 		return nil, connUrl, errConfig
 	}
 
 	if connection.Certs != nil {
-		errTls := s.certService.SetTLSConfig(config.TLSConfig, *connection.Certs)
+		errTls := s.certService.SetTLSConfig(conConfig.TLSConfig, *connection.Certs)
 		if errTls != nil {
 			return nil, connUrl, errTls
 		}
 	}
 
-	conn, err := pgx.ConnectConfig(context.Background(), config)
+	conn, err := pgx.ConnectConfig(context.Background(), conConfig)
 	return conn, connUrl, err
 }
 
