@@ -1,7 +1,6 @@
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
 import {Box, Button, TextField} from "@mui/material";
 import {useState} from "react";
-import {QueryApi} from "../../../../app/api";
 import {SxPropsMap} from "../../../../type/general";
 import {InstanceWeb} from "../../../../type/instance";
 import {Cluster} from "../../../../type/cluster";
@@ -9,6 +8,7 @@ import {BloatTarget} from "../../../../type/bloat";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
 import {useRouterBloatStart} from "../../../../router/bloat";
 import {getQueryConnection} from "../../../../app/utils";
+import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../router/query";
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
@@ -41,44 +41,46 @@ export function OverviewBloatJobForm(props: Props) {
                 value={target?.dbName || null}
                 margin={"dense"} variant={"standard"}
                 label={"Database"}
-                keys={QueryApi.databases.key(connection)}
-                onFetch={(v) => QueryApi.databases.fn({connection, name: v})}
-                onUpdate={(v) => setTarget({dbName: v || ""})}
+                connection={connection}
+                useFetch={useRouterQueryDatabase}
+                onUpdate={(v) => setTarget({dbName: v || undefined})}
             />
             <AutocompleteFetch
                 value={target?.schema || null}
                 margin={"dense"} variant={"standard"}
                 label={"Schema"}
-                keys={QueryApi.schemas.key(connection)}
-                onFetch={(v) => QueryApi.schemas.fn({connection, name: v})}
-                onUpdate={(v) => setTarget({dbName: target?.dbName, schema: v || ""})}
+                connection={connection}
+                useFetch={useRouterQuerySchemas}
+                onUpdate={(v) => setTarget({dbName: target?.dbName, schema: v || undefined})}
                 disabled={!target?.dbName || !!target?.excludeSchema}
             />
             <AutocompleteFetch
                 value={target?.excludeSchema || null}
                 margin={"dense"} variant={"standard"}
                 label={"Exclude Schema"}
-                keys={QueryApi.schemas.key(connection)}
-                onFetch={(v) => QueryApi.schemas.fn({connection, name: v})}
-                onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || ""})}
+                connection={connection}
+                useFetch={useRouterQuerySchemas}
+                onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || undefined})}
                 disabled={!target?.dbName || !!target?.schema}
             />
             <AutocompleteFetch
                 value={target?.table || null}
                 margin={"dense"} variant={"standard"}
                 label={"Table"}
-                keys={QueryApi.tables.key(connection, target?.schema)}
-                onFetch={(v) => QueryApi.tables.fn({connection, schema: target?.schema ?? "", name: v})}
-                onUpdate={(v) => setTarget({...target, table: v || ""})}
+                connection={connection}
+                params={{schema: target?.schema ?? ""}}
+                useFetch={useRouterQueryTables}
+                onUpdate={(v) => setTarget({...target, table: v || undefined})}
                 disabled={!target?.schema || !!target?.excludeTable}
             />
             <AutocompleteFetch
                 value={target?.excludeTable || null}
                 margin={"dense"} variant={"standard"}
                 label={"Exclude Table"}
-                keys={QueryApi.tables.key(connection, target?.excludeSchema)}
-                onFetch={(v) => QueryApi.tables.fn({connection, schema: target?.schema ?? "", name: v})}
-                onUpdate={(v) => setTarget({...target, excludeTable: v || ""})}
+                connection={connection}
+                params={{schema: target?.schema ?? ""}}
+                useFetch={useRouterQueryTables}
+                onUpdate={(v) => setTarget({...target, excludeTable: v || undefined})}
                 disabled={!target?.schema || !!target?.table}
             />
             <Box sx={SX.buttons}>
