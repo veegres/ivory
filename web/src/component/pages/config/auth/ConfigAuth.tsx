@@ -1,5 +1,5 @@
+import {ChangeEvent} from "react";
 import {AlertColor, Box, FormControlLabel, Radio, RadioGroup} from "@mui/material";
-import * as React from "react";
 import {AuthConfig, AuthType, SxPropsMap} from "../../../../type/general";
 import {ConfigBox} from "../../../view/box/ConfigBox";
 import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
@@ -75,21 +75,20 @@ export function ConfigAuth(props: Props) {
         return (
             <Box sx={SX.basic}>
                 <KeyEnterInput label={"Username"} value={auth.body?.username ?? ""} onChange={handleUsernameChange}/>
-                <KeyEnterInput label={"Password"} value={auth.body?.password ?? ""} onChange={handlePasswordChange}
-                               hidden/>
+                <KeyEnterInput label={"Password"} value={auth.body?.password ?? ""} onChange={handlePasswordChange} hidden />
             </Box>
         )
     }
 
-    function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    function handleUsernameChange(e: ChangeEvent<HTMLInputElement>) {
         onChange({...auth, body: {...auth.body, username: e.target.value}})
     }
 
-    function handlePasswordChange(e: React.ChangeEvent<HTMLInputElement>) {
+    function handlePasswordChange(e: ChangeEvent<HTMLInputElement>) {
         onChange({...auth, body: {...auth.body, password: e.target.value}})
     }
 
-    function handleAuthTypeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    function handleAuthTypeChange(e: ChangeEvent<HTMLInputElement>) {
         const type = parseInt(e.target.value)
         onChange({type: type as AuthType, body: undefined})
     }
