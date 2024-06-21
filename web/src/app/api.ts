@@ -1,4 +1,4 @@
-import axios, {AxiosProgressEvent, AxiosRequestConfig, GenericAbortSignal} from "axios";
+import axios, {AxiosProgressEvent, AxiosRequestConfig} from "axios";
 import {Instance, InstanceMap, InstanceRequest} from "../type/instance";
 import {getDomain} from "./utils";
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "../type/cert";
@@ -232,7 +232,7 @@ export const QueryApi = {
     },
     run: {
         key: (uuid?: string) => ["query", "run", uuid ?? "standalone"],
-        fn: (req: QueryRunRequest, signal?: GenericAbortSignal) => api.post<Response<QueryFields>>(`/query/run`, req, { signal })
+        fn: (req: QueryRunRequest) => api.post<Response<QueryFields>>(`/query/run`, req)
             .then((response) => response.data.response),
     },
     databases: {
@@ -252,7 +252,7 @@ export const QueryApi = {
     },
     chart: {
         key: (req: QueryChartRequest) => ["query", "chart", req.type, req.connection],
-        fn: (req: QueryChartRequest, signal?: GenericAbortSignal) => api.post<Response<QueryChart>>(`/query/chart`, req, { signal })
+        fn: (req: QueryChartRequest) => api.post<Response<QueryChart>>(`/query/chart`, req)
             .then((response) => response.data.response),
     },
     cancel: {
