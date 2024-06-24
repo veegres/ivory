@@ -63,6 +63,7 @@ func (r *AuthRouter) Login(context *gin.Context) {
 	appConfig, errConfig := r.generalService.GetAppConfig()
 	if errConfig != nil {
 		context.JSON(http.StatusForbidden, gin.H{"error": errConfig.Error()})
+		return
 	}
 
 	token, exp, err := r.authService.Login(login, appConfig.Auth)
