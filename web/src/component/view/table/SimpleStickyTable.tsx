@@ -28,7 +28,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    columns: {name: string, description?: string}[],
+    columns: { name: string, description?: string }[],
     rows: any[][],
     fetching?: boolean,
     renderHeaderCell?: () => ReactNode,
@@ -63,7 +63,9 @@ export function SimpleStickyTableMemo(props: Props) {
             <TableRow>
                 <TableCell sx={{...SX.number, zIndex: 3, padding: "3px"}} onClick={() => setToggle(!toggle)}>
                     <ToggleButton sx={SX.toggle} value={"wrap"} selected={wrap}>
-                        <Tooltip title={"Wrap text in the table"} placement={"top"}><WrapText sx={{fontSize: "15px"}}/></Tooltip>
+                        <Tooltip title={"Wrap text in the table"} placement={"top"}>
+                            <WrapText sx={{fontSize: "15px"}}/>
+                        </Tooltip>
                     </ToggleButton>
                 </TableCell>
                 {columns.map(column => (

@@ -6,7 +6,7 @@ import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 
 const SX: SxPropsMap = {
     radio: {display: "flex", gap: 3},
-    basic: {display: "flex", gap: 1}
+    basic: {display: "flex", gap: 1},
 }
 
 const Description = {
@@ -63,10 +63,16 @@ export function ConfigAuth(props: Props) {
     function renderAction() {
         return (
             <RadioGroup sx={SX.radio} row value={auth.type} onChange={handleAuthTypeChange}>
-                <FormControlLabel value={AuthType.NONE} control={<Radio size={"small"}/>}
-                                  label={AuthType[AuthType.NONE].toLowerCase()}/>
-                <FormControlLabel value={AuthType.BASIC} control={<Radio size={"small"}/>}
-                                  label={AuthType[AuthType.BASIC].toLowerCase()}/>
+                <FormControlLabel
+                    value={AuthType.NONE}
+                    control={<Radio size={"small"}/>}
+                    label={AuthType[AuthType.NONE].toLowerCase()}
+                />
+                <FormControlLabel
+                    value={AuthType.BASIC}
+                    control={<Radio size={"small"}/>}
+                    label={AuthType[AuthType.BASIC].toLowerCase()}
+                />
             </RadioGroup>
         )
     }
