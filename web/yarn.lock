@@ -201,10 +201,10 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@codemirror/autocomplete@6.15.0", "@codemirror/autocomplete@^6.0.0":
-  version "6.15.0"
-  resolved "https://registry.npmjs.org/@codemirror/autocomplete/-/autocomplete-6.15.0.tgz"
-  integrity sha512-G2Zm0mXznxz97JhaaOdoEG2cVupn4JjPaS4AcNvZzhOsnnG9YVN68VzfoUw6dYTsIxT6a/cmoFEN47KAWhXaOg==
+"@codemirror/autocomplete@6.16.3", "@codemirror/autocomplete@^6.0.0":
+  version "6.16.3"
+  resolved "https://registry.yarnpkg.com/@codemirror/autocomplete/-/autocomplete-6.16.3.tgz#04d5a4e4e44ccae1ba525d47db53a5479bf46338"
+  integrity sha512-Vl/tIeRVVUCRDuOG48lttBasNQu8usGgXQawBXI7WJAiUDSFOfzflmEsZFZo48mAvAaa4FZ/4/yLLxFtdJaKYA==
   dependencies:
     "@codemirror/language" "^6.0.0"
     "@codemirror/state" "^6.0.0"
