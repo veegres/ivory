@@ -169,18 +169,18 @@ func (s *PostgresClient) getConnection(connection QueryConnection) (*pgx.Conn, s
 	}
 
 	connProtocol := "postgres://"
-	connCredentials := cred.Username + ":" + cred.Password + "@"
 	connHost := db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
 	connUrl := connProtocol + connHost
-	connString := connProtocol + connCredentials + connHost
 
 	if connection.Certs != nil {
 		// NOTE: verify-ca was chosen, because it potentially can protect from machine-in-the-middle attack if
 		// it has right CA policy. More info can be found here https://www.postgresql.org/docs/16/libpq-ssl.html#LIBPQ-SSL-PROTECTION
-		connString += "?sslmode=verify-ca"
+		connUrl += "?sslmode=verify-ca"
 	}
 
-	conConfig, errConfig := pgx.ParseConfig(connString)
+	conConfig, errConfig := pgx.ParseConfig(connUrl)
+	conConfig.User = cred.Username
+	conConfig.Password = cred.Password
 	conConfig.RuntimeParams = map[string]string{
 		"application_name": s.appName,
 	}
