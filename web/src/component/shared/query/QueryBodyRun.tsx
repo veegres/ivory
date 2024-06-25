@@ -29,9 +29,7 @@ export function QueryBodyRun(props: Props) {
     const {varieties, request} = props
     const {connection} = request
 
-    const result = useRouterQueryRun(request)
-    const {data, error, isFetching} = result
-
+    const {data, error, isLoading, isFetching, refetch}  = useRouterQueryRun(request)
     const cancel = useRouterQueryCancel(request.queryUuid)
     const terminate = useRouterQueryTerminate(request.queryUuid)
 
@@ -68,8 +66,9 @@ export function QueryBodyRun(props: Props) {
                     {varieties && <QueryVarieties varieties={varieties}/>}
                     <RefreshIconButton
                         color={"success"}
-                        disabled={isFetching || cancel.isPending || terminate.isPending}
-                        onClick={() => result.refetch()}
+                        loading={isFetching}
+                        disabled={cancel.isPending || terminate.isPending}
+                        onClick={() => refetch()}
                     />
                 </Box>
             </Box>
@@ -82,11 +81,13 @@ export function QueryBodyRun(props: Props) {
             return <NoBox text={"Response is empty"}/>
         }
 
+        const rows = data?.rows ?? []
+
         return (
             <SimpleStickyTable
-                rows={data?.rows ?? []}
+                rows={rows}
                 columns={columns}
-                fetching={isFetching}
+                fetching={isLoading || (isFetching && !rows.length)}
                 renderHeaderCell={renderHeaderCell}
                 renderRowCell={renderRowButtons}
             />
