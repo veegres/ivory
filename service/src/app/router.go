@@ -10,7 +10,7 @@ func NewRouter(di *Context) {
 	engine := gin.Default()
 	engine.UseH2C = true
 
-	unsafe := engine.Group("/api")
+	unsafe := engine.Group("/api", gin.Recovery())
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.generalRouter.GetAppInfo)
 
