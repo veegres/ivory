@@ -1,7 +1,7 @@
 import {OverviewInstances} from "./OverviewInstances";
 import {OverviewConfig} from "./OverviewConfig";
 import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material";
-import {useState} from "react";
+import {useMemo, useState} from "react";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../../view/box/InfoAlert";
@@ -73,8 +73,10 @@ export function Overview() {
     const clusters = useRouterClusterList(undefined, true)
     const tab = TABS[activeClusterTab]
 
+    const visible = useMemo(handleMemoVisibility, [activeCluster, clusters.data, clusters.error])
+
     return (
-        <PageMainBox withPadding visible={!!activeCluster || Object.keys(clusters.data ?? {}).length !== 0 || clusters.error !== null}>
+        <PageMainBox withPadding visible={visible}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
                     {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label}/>))}
@@ -127,5 +129,9 @@ export function Overview() {
                 </Box>
             </Collapse>
         )
+    }
+
+    function handleMemoVisibility() {
+        return !!activeCluster || Object.keys(clusters.data ?? {}).length !== 0 || clusters.error !== null
     }
 }
