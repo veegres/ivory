@@ -103,12 +103,12 @@ type QueryChartType string
 const (
 	Databases      QueryChartType = "Databases"
 	Connections                   = "Connections"
-	DatabaseSize                  = "DatabaseSize"
-	DatabaseUptime                = "DatabaseUptime"
+	DatabaseSize                  = "Database Size"
+	DatabaseUptime                = "Database Uptime"
 	Schemas                       = "Schemas"
-	TablesSize                    = "TablesSize"
-	IndexesSize                   = "IndexesSize"
-	TotalSize                     = "TotalSize"
+	TablesSize                    = "Tables Size"
+	IndexesSize                   = "Indexes Size"
+	TotalSize                     = "Total Size"
 )
 
 type QueryChart struct {

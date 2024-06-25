@@ -1,6 +1,7 @@
 import {ChartItem, Color} from "./ChartItem";
 import {QueryChartType, QueryConnection} from "../../../type/query";
 import {useRouterQueryChart} from "../../../router/query";
+import {AxiosError} from "axios";
 
 type Props = {
     type: QueryChartType,
@@ -16,8 +17,10 @@ export function ChartCommon(props: Props) {
         <ChartItem
             label={chart.data?.name ?? type}
             value={chart.data?.value}
-            loading={chart.isPending}
+            loading={chart.isFetching}
             color={Color.INDIGO}
+            error={chart.error as AxiosError}
+            onClick={() => chart.refetch()}
         />
     )
 }

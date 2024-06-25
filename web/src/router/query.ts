@@ -46,7 +46,7 @@ export function useRouterQueryRun(request: QueryRunRequest) {
     })
 }
 
-export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = true) {
+export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = false) {
     return useQuery({
         queryKey: QueryApi.chart.key(request),
         queryFn: () => QueryApi.chart.fn(request),
