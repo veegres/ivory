@@ -94,12 +94,12 @@ export interface QueryField {
 export enum QueryChartType {
     Databases = "Databases",
     Connections = "Connections",
-    DatabaseSize = "DatabaseSize",
-    DatabaseUptime = "DatabaseUptime",
+    DatabaseSize = "Database Size",
+    DatabaseUptime = "Database Uptime",
     Schemas = "Schemas",
-    TablesSize = "TablesSize",
-    IndexesSize = "IndexesSize",
-    TotalSize = "TotalSize",
+    TablesSize = "Tables Size",
+    IndexesSize = "Indexes Size",
+    TotalSize = "Total Size",
 }
 
 export interface QueryChart {
