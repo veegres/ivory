@@ -25,7 +25,7 @@ to update.
 | 1.1.0 | 1.1.5 | :heavy_check_mark:       |
 | 1.1.5 | 1.2.0 | :heavy_multiplication_x: |
 | 1.2.0 | 1.3.0 | :heavy_multiplication_x: |
-| 1.3.0 | x.x.x | -                        |
+| 1.3.0 | 1.3.x | :heavy_check_mark:       |
 
 ## Reporting a Vulnerability
 

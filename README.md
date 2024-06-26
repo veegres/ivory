@@ -41,8 +41,8 @@ in a separate virtual machine for collaborative usage, and helps you:
 Unfortunately, Ivory doesn't guaranty backward compatability between minor and major releases, path releases
 are questionable, but usually they contain only bug fixes and some small improvements. You can always check
 in the security page backward compatibility between versions. Hence, we recommend to install it from scratch
-for minor and major releases. There is some plans to introduce import/export to simplify this process. How
-to migrate data between containers with different version? You can find below.
+for minor and major releases. There is some plans to introduce import/export to simplify this process. To save
+your data between containers you can follow instructions that are provided bellow.
 
 ### How Ivory stores the data?
 All Ivory data is located inside `/opt/data` directory. Ivory has a docker volume, it means that you won't
@@ -54,9 +54,8 @@ old container to the new one by docker flag `--volumes-from`
 ### How to use authentication?
 Ivory can work with or without authentication. It will ask you to configure it in the initial start. Right now
 Ivory supports only _Basic_ authentication with general username and password (maybe in the future support
-will be added for such things like ldap / sso)
-Usually you don't want to use authentication when you work with Ivory locally, but it is recommended
-to use it if you use it in some VMs.
+will be added for such things like ldap / sso). Usually you don't want to use authentication when you work 
+with Ivory locally, but it is recommended to use it if you use it in some VMs.
 
 ## Contribution
 
