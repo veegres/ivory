@@ -1,11 +1,11 @@
 import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../type/instance";
-import {DateTimeField} from "@mui/x-date-pickers";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
-import {DateTimeFormatter} from "../../../app/utils";
 import {useRouterInstanceRestart} from "../../../router/instance";
+import {Dayjs} from "dayjs";
+import {ScheduleInput} from "../../view/input/ScheduleInput";
 
 const SX: SxPropsMap = {
     pending: {margin: "0px"},
@@ -20,7 +20,7 @@ type Props = {
 export function RestartButton(props: Props) {
     const {request, cluster} = props
 
-    const [schedule, setSchedule] = useState<string>()
+    const [schedule, setSchedule] = useState<Dayjs>()
     const [pending, setPending] = useState(false)
 
     const restart = useRouterInstanceRestart(cluster)
@@ -32,18 +32,11 @@ export function RestartButton(props: Props) {
             size={"small"}
             label={"Restart"}
             title={`Make a restart of ${request.sidecar.host}?`}
-            description={"It will restart postgres, that will cause some downtime. Provide local time for schedule."}
+            description={"It will restart postgres, that will cause some downtime."}
             loading={restart.isPending}
             onClick={handleClick}
         >
-            <DateTimeField
-                label={"Schedule"}
-                size={"small"}
-                disablePast={true}
-                format={DateTimeFormatter.format}
-                value={schedule ?? null}
-                onChange={(v) => setSchedule(v ?? undefined)}
-            />
+            <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
             <FormControlLabel
                 sx={SX.pending}
                 disabled={!schedule}

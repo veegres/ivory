@@ -243,7 +243,8 @@ export const SxPropsFormatter = {
 
 export const DateTimeFormatter = {
     format: "YYYY-MM-DD HH:mm",
-    utc: (value: string) => dayjs.utc(value).local().format(DateTimeFormatter.format)
+    formatWithTimezone: "YYYY-MM-DD HH:mm Z",
+    utc: (value: string) => dayjs.utc(value).local().format(DateTimeFormatter.formatWithTimezone)
 }
 
 export const SizeFormatter = {
