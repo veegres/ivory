@@ -13,13 +13,13 @@ const SX: SxPropsMap = {
         display: "flex", flexDirection: "column", justifyContent: "center",
         alignItems: "center", color: "common.white", borderRadius: "5px",
         whiteSpace: "nowrap", flexGrow: 1, minWidth: "150px", height: "100px",
-        cursor: "pointer", gap: 1, padding: "0px 15px"
+        cursor: "pointer", padding: "0px 15px"
     },
     label: {
         display: "flex", fontSize: "13px", textTransform: "uppercase", gap: 1,
-        justifyContent: "space-around", width: "100%", alignItems: "center",
+        justifyContent: "center", width: "100%", alignItems: "center",
     },
-    value: {height: "50px"},
+    value: {display: "flex", height: "50px", justifyContent: "center", alignItems: "center"},
     text: {fontSize: "30px", fontWeight: "bold"},
 }
 
@@ -64,19 +64,17 @@ export function ChartItem(props: Props) {
                 <Box>{renderIcon()}</Box>
             </Box>
             <Box sx={SX.value}>
-                {!loading ? renderValue() : (
-                    <CircularProgress/>
-                )}
+                {!loading ? renderValue() : <CircularProgress size={30}/>}
             </Box>
         </Box>
     )
 
     function renderIcon() {
-        if (value || error) return <RefreshIconButton onClick={onClick} size={23} />
+        if (value || error) return <RefreshIconButton onClick={onClick} disabled={loading} size={25} />
 
         return (
             <IconButton
-                size={23}
+                size={25}
                 icon={<InfoOutlined />}
                 tooltip={"These charts can create some load on the database!"}
                 placement={"top"}
