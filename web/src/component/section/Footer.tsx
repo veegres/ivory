@@ -24,7 +24,7 @@ export function Footer(props: Props) {
                     </Link>
                 ))}
             </Box>
-            <Box sx={SX.version}>{`Ivory: ${tag} (${shortUuid(commit)})`}</Box>
+            <Box sx={SX.version}>{`Ivory: ${tag} (${commit})`}</Box>
         </Box>
     )
 }
