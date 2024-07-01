@@ -3,6 +3,7 @@ package config
 import (
 	"golang.org/x/exp/slog"
 	. "ivory/src/model"
+	"fmt"
 	"os"
 )
 
@@ -27,7 +28,7 @@ func NewEnv() *Env {
 	return &Env{
 		Version: Version{
 			Tag:    tag,
-			Commit: commit[0:7],
+			Commit: fmt.Sprintf("%.7s", commit),
 		},
 	}
 }
