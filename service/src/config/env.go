@@ -27,7 +27,7 @@ func NewEnv() *Env {
 	return &Env{
 		Version: Version{
 			Tag:    tag,
-			Commit: commit,
+			Commit: commit[0:7],
 		},
 	}
 }
