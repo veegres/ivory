@@ -29,7 +29,7 @@ export function App(props: Props) {
                 {props.children ? props.children : <Body info={info}/>}
             </Box>
             <Box>
-                <Footer tag={info.data?.version.tag ?? "none"} commit={info.data?.version.commit ?? "none"}/>
+                <Footer label={info.data?.version.label ?? "none"} tag={info.data?.version.tag ?? "master"}/>
             </Box>
         </Box>
     );

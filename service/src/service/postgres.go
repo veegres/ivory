@@ -23,9 +23,8 @@ func NewPostgresClient(
 	passwordService *PasswordService,
 	certService *CertService,
 ) *PostgresClient {
-	appName := "Ivory " + env.Version.Tag + " (" + env.Version.Commit + ")"
 	return &PostgresClient{
-		appName:         appName,
+		appName:         env.Version.Label,
 		passwordService: passwordService,
 		certService:     certService,
 	}
