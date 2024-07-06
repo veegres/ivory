@@ -40,6 +40,7 @@ export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
 
 export function useRouterQueryRun(request: QueryRunRequest) {
     return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: QueryApi.run.key(request.queryUuid),
         queryFn: () => QueryApi.run.fn(request.queryUuid ? {...request, query: undefined} : request),
         retry: false, refetchOnWindowFocus: false, structuralSharing: false,
@@ -56,6 +57,7 @@ export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean
 
 export function useRouterQueryDatabase(connection: QueryConnection, params: any, enabled: boolean = true) {
     return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.databases.key(connection), params.name],
         queryFn: () => QueryApi.databases.fn({connection, ...params}),
         retry: false, enabled, refetchOnWindowFocus: false,
@@ -64,6 +66,7 @@ export function useRouterQueryDatabase(connection: QueryConnection, params: any,
 
 export function useRouterQuerySchemas(connection: QueryConnection, params: any, enabled: boolean = true) {
     return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.schemas.key(connection), params.name],
         queryFn: () => QueryApi.schemas.fn({connection, ...params}),
         retry: false, enabled, refetchOnWindowFocus: false,
@@ -72,6 +75,7 @@ export function useRouterQuerySchemas(connection: QueryConnection, params: any, 
 
 export function useRouterQueryTables(connection: QueryConnection, params: any, enabled: boolean = true) {
     return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.tables.key(connection), params.name],
         queryFn: () => QueryApi.tables.fn({connection, ...params}),
         retry: false, enabled, refetchOnWindowFocus: false,
