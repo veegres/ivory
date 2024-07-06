@@ -2,12 +2,13 @@ import {useQuery} from "@tanstack/react-query";
 import {ClusterApi, TagApi} from "../app/api";
 import {useMutationAdapter} from "../hook/QueryCustom";
 
-export function useRouterClusterList(tags?: string[], subscribe: boolean = false) {
+export function useRouterClusterList(tags: string[]) {
+    const tagsFn = tags[0] === "ALL" ? undefined : tags
+    // NOTE: this query is updated by custom logic with useEffect, without using queryKey change
+    // we cannot add `enable: false`, because mutation hooks then couldn't update it by using QueryClient
     return useQuery({
         queryKey: ClusterApi.list.key(),
-        // NOTE: we need subscribe here, because we don't want to pass tags in Overview component
-        // it will require to get tags from there to keep same behaviour. We want just subscribe by key.
-        queryFn: subscribe ? undefined : () => ClusterApi.list.fn(tags),
+        queryFn: () => ClusterApi.list.fn(tagsFn),
     })
 }
 

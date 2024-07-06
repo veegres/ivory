@@ -42,7 +42,7 @@ export function useRouterQueryRun(request: QueryRunRequest) {
     return useQuery({
         queryKey: QueryApi.run.key(request.queryUuid),
         queryFn: () => QueryApi.run.fn(request.queryUuid ? {...request, query: undefined} : request),
-        retry: false, refetchOnWindowFocus: false,
+        retry: false, refetchOnWindowFocus: false, structuralSharing: false,
     })
 }
 
