@@ -66,14 +66,14 @@ const TABS: ClusterTabs = {
 }
 
 export function Overview() {
-    const {activeCluster, activeClusterTab, activeInstance} = useStore()
+    const {activeCluster, activeClusterTab, activeInstance, activeTags} = useStore()
     const {setClusterTab} = useStoreAction()
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useRouterClusterList(undefined, true)
+    const clusters = useRouterClusterList(activeTags)
     const tab = TABS[activeClusterTab]
 
-    const visible = useMemo(handleMemoVisibility, [activeCluster, clusters.data, clusters.error])
+    const visible = useMemo(handleMemoVisibility, [clusters.data, clusters.error])
 
     return (
         <PageMainBox withPadding visible={visible}>
@@ -132,6 +132,6 @@ export function Overview() {
     }
 
     function handleMemoVisibility() {
-        return !!activeCluster || Object.keys(clusters.data ?? {}).length !== 0 || clusters.error !== null
+        return Object.keys(clusters.data ?? {}).length !== 0 || clusters.error !== null
     }
 }
