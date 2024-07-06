@@ -7,6 +7,7 @@ export function useRouterClusterList(tags: string[]) {
     // NOTE: this query is updated by custom logic with useEffect, without using queryKey change
     // we cannot add `enable: false`, because mutation hooks then couldn't update it by using QueryClient
     return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ClusterApi.list.key(),
         queryFn: () => ClusterApi.list.fn(tagsFn),
     })
