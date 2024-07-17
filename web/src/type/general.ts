@@ -59,6 +59,7 @@ export interface Availability {
 export interface Version {
     tag: string,
     commit: string,
+    label: string,
 }
 
 export enum FileUsageType {

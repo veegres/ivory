@@ -9,12 +9,12 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
+    label: string,
     tag: string,
-    commit: string,
 }
 
 export function Footer(props: Props) {
-    const {tag, commit} = props
+    const {label, tag} = props
     return (
         <Box sx={SX.box}>
             <Box sx={SX.links}>
@@ -24,7 +24,11 @@ export function Footer(props: Props) {
                     </Link>
                 ))}
             </Box>
-            <Box sx={SX.version}>{`Ivory: ${tag} (${commit})`}</Box>
+            <Box sx={SX.version}>
+                <Link href={`https://github.com/veegres/ivory/tree/${tag}`} target={"_blank"} rel={"noopener"} underline={"none"} color={"inherit"}>
+                    {label}
+                </Link>
+            </Box>
         </Box>
     )
 }

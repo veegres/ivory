@@ -1,9 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"golang.org/x/exp/slog"
 	. "ivory/src/model"
-	"fmt"
 	"os"
 )
 
@@ -12,11 +12,11 @@ type Env struct {
 }
 
 func NewEnv() *Env {
-	tag := "none"
+	tag := "v0.0.0"
 	if val, ok := os.LookupEnv("IVORY_VERSION_TAG"); ok {
 		tag = val
 	}
-	commit := "none"
+	commit := "000000000000"
 	if val, ok := os.LookupEnv("IVORY_VERSION_COMMIT"); ok {
 		commit = val
 	}
@@ -28,7 +28,8 @@ func NewEnv() *Env {
 	return &Env{
 		Version: Version{
 			Tag:    tag,
-			Commit: fmt.Sprintf("%.7s", commit),
+			Commit: commit,
+			Label:  "Ivory " + tag + " (" + fmt.Sprintf("%.7s", commit) + ")",
 		},
 	}
 }

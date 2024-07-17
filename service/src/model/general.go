@@ -62,6 +62,7 @@ type Availability struct {
 type Version struct {
 	Tag    string `json:"tag"`
 	Commit string `json:"commit"`
+	Label  string `json:"label"`
 }
 
 type FileUsageType int8

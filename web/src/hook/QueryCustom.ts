@@ -42,7 +42,8 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
         if (mutationKey) snackbar(`${mutationKey.join(" ")} was done successfully`, "success")
         if (successKeys) {
             for (const key of successKeys) {
-                await queryClient.refetchQueries({queryKey: key})
+                // NOTE: this doesn't refetch disabled queries
+                await queryClient.refetchQueries({queryKey: key, exact: true})
             }
         }
         if (onSuccess) onSuccess(queryClient, data)

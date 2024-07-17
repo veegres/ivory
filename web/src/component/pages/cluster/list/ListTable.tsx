@@ -23,14 +23,14 @@ const SX: SxPropsMap = {
 
 type Props = {
     map?: ClusterMap,
-    isLoading: boolean,
-    isFetching: boolean,
+    pending: boolean,
+    fetching: boolean,
     error: any,
 }
 
 export function ListTable(props: Props) {
     const {activeCluster} = useStore()
-    const {map, error, isFetching, isLoading} = props
+    const {map, error, fetching, pending} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
 
@@ -45,13 +45,13 @@ export function ListTable(props: Props) {
                     <TableRow>
                         <TableCell sx={[SxPropsFormatter.style.paper, SX.nameCell]}>Cluster Name</TableCell>
                         <TableCell sx={SxPropsFormatter.style.paper}>Instances</TableCell>
-                        <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={isFetching && !isLoading}>
+                        <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={fetching && !pending}>
                             <ListCreateAuto />
                             <AddIconButton tooltip={"Add Cluster Manually"} onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>
-                <TableBody isLoading={isLoading} cellCount={3} height={32}>
+                <TableBody isLoading={pending} cellCount={3} height={32}>
                     <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
                     {renderRemovedRow()}
                     {renderRows()}
@@ -81,7 +81,7 @@ export function ListTable(props: Props) {
     }
 
     function renderEmpty() {
-        if (isLoading || showNewElement || rows.length || activeCluster) return
+        if (pending || showNewElement || rows.length || activeCluster) return
 
         return (
             <TableRow>

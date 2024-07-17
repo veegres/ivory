@@ -9,10 +9,9 @@ type Props = {
 export function OptionsTags(props: Props) {
     const query = useRouterTagList()
     const {data, isPending} = query
-    const tags = data ?? [];
     return (
         <AutocompleteTags
-            tags={tags}
+            tags={data ?? []}
             selected={props.selected ?? []}
             loading={isPending}
             onUpdate={props.onUpdate}

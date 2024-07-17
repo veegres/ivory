@@ -17,6 +17,7 @@ export function useRouterInstanceOverview(cluster: string, request: () => Instan
 
 export function useRouterInstanceConfig(request: InstanceRequest, enabled: boolean) {
     return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: InstanceApi.config.key(request.sidecar),
         queryFn: () => InstanceApi.config.fn(request),
         enabled,

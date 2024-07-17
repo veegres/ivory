@@ -1,24 +1,23 @@
-import {useEffect} from "react";
 import {PageMainBox} from "../../../view/box/PageMainBox";
 import {ListTags} from "./ListTags";
 import {useStore} from "../../../../provider/StoreProvider";
 import {ListTable} from "./ListTable";
 import {useRouterClusterList} from "../../../../router/cluster";
+import {useEffect} from "react";
 
 export function List() {
     const {activeTags} = useStore()
-    const tags = activeTags[0] === "ALL" ? undefined : activeTags
-    const query = useRouterClusterList(tags)
+    const query = useRouterClusterList(activeTags)
     const {data, isPending, isFetching, error} = query
 
-    // NOTE: we don't need to check update of `query` because it won't change
+    // NOTE: we don't use queryKey to update it, because it will create separate request and cause new fetching
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => { query.refetch().then() }, [tags])
+    useEffect(() => { query.refetch().then() }, [activeTags])
 
     return (
         <PageMainBox withMarginTop={"40px"}>
             <ListTags/>
-            <ListTable map={data} error={error} isFetching={isFetching} isLoading={isPending}/>
+            <ListTable map={data} error={error} fetching={isFetching} pending={isPending}/>
         </PageMainBox>
     )
 }
