@@ -22,7 +22,7 @@ export function TableBody(props: Props) {
     function renderLoading() {
         const cells = []
         for (let i = 0; i < cellCountLocal; i++) {
-            cells.push(<TableCell key={i}><Skeleton height={height} width={'100%'}/></TableCell>)
+            cells.push(<TableCell key={i}><Skeleton height={height} width={"100%"}/></TableCell>)
         }
         const rows = []
         for (let i = 0; i < rowCountLocal; i++) {

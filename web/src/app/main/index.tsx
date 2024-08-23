@@ -1,19 +1,19 @@
-import {App} from './App';
-import * as ServiceWorker from './ServiceWorker';
-import {AppearanceProvider} from "./provider/AppearanceProvider";
-import {StoreProvider} from "./provider/StoreProvider";
-import {CssBaseline} from "@mui/material";
-import {createRoot} from "react-dom/client";
-import scroll from "./style/scroll.module.css"
-import {StrictMode} from "react";
-import {AuthProvider} from "./provider/AuthProvider";
-import {LocalizationProvider} from "@mui/x-date-pickers";
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
+import * as ServiceWorker from "../../ServiceWorker";
+import {App} from './App';
+import {CssBaseline} from "@mui/material";
+import {createRoot} from "react-dom/client";
+import {StrictMode} from "react";
+import {LocalizationProvider} from "@mui/x-date-pickers";
+import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {ErrorBoundary} from "react-error-boundary";
-import {PageErrorBox} from "./component/view/box/PageErrorBox";
-import {SnackbarProvide} from "./provider/SnackbarProvider";
+import {AppearanceProvider} from "../../provider/AppearanceProvider";
+import {StoreProvider} from "../../provider/StoreProvider";
+import {AuthProvider} from "../../provider/AuthProvider";
+import {SnackbarProvide} from "../../provider/SnackbarProvider";
+import {PageErrorBox} from "../../component/view/box/PageErrorBox";
+import scroll from "../../style/scroll.module.css"
 
 // extend dayjs with UTC plugin
 dayjs.extend(utc)
@@ -34,7 +34,7 @@ root.render(
                     <AuthProvider>
                         <SnackbarProvide>
                             <ErrorBoundary fallbackRender={(e) => (<App><PageErrorBox error={e.error}/></App>)}>
-                                <App/>
+                                <App />
                             </ErrorBoundary>
                         </SnackbarProvide>
                     </AuthProvider>

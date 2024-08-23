@@ -67,7 +67,7 @@ func (r *CertRouter) PostUploadCert(context *gin.Context) {
 		return
 	}
 	if file.Size > 1000000 {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "maximum size is 1MB"})
+		context.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "maximum size is 1MB"})
 		return
 	}
 
