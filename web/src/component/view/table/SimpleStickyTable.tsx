@@ -1,82 +1,150 @@
 import scroll from "../../../style/scroll.module.css";
-import {Box, Table, TableCell, TableHead, TableRow, ToggleButton, Tooltip} from "@mui/material";
-import {TableBody} from "./TableBody";
+import {Box, CircularProgress, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
-import {memo, ReactNode, useState} from "react";
-import {WrapText} from "@mui/icons-material";
+import {Fragment, ReactNode, useRef} from "react";
+import {useVirtualizer} from "@tanstack/react-virtual";
+import {NoBox} from "../box/NoBox";
 
 const SX: SxPropsMap = {
-    body: {overflow: "auto", maxHeight: "315px"},
-    table: {
-        padding: "0px 3px 3px 0px",
-        "th": {color: "text.disabled", lineHeight: "1.7"},
-        "tr:first-of-type td, th": {borderTop: 1, borderColor: "divider"},
-        "tr td, th": {
-            borderRight: 1, borderColor: "divider", bgcolor: "background.paper", fontSize: "12px", maxWidth: "300px",
-            "&:nth-of-type(2), &:nth-of-type(1)": {borderLeft: 1, borderColor: "divider"},
-        },
+    box: {position: "relative"},
+    body: {overflow: "auto", width: "100%", height: "100%", padding: "0px 4px 4px 0px", fontSize: "12px"},
+    loader: {
+        position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        width: "inherit", height: "inherit", zIndex: 4, bgcolor: "rgba(31,44,126,0.05)",
     },
-    preWrap: {whiteSpace: "pre", overflow: "hidden", textOverflow: "ellipsis"},
+    cell: {
+        position: "absolute", top: 0, left: 0,
+        borderBottom: 1, borderRight: 1, borderColor: "divider",
+        display: "flex", alignItems: "center", padding: "0px 10px",
+    },
+    cellFixed: {
+        position: "absolute", top: 0, left: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        whiteSpace: "nowrap", color: "text.disabled",
+        bgcolor: "background.paper", borderColor: "divider",
+    },
     noWrap: {whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
-    toggle: {border: 0, padding: "5px", width: "100%"},
-    description: {fontFamily: "monospace", color: "text.secondary"},
-    number: {
-        width: "1%", whiteSpace: "nowrap", color: "text.disabled",
-        position: "sticky", left: 0, zIndex: 2, textAlign: "center",
-    },
-    headTitle: {display: "flex", gap: 1},
+    headTitle: {display: "flex", fontFamily: "monospace"},
 }
 
 type Props = {
     columns: { name: string, description?: string }[],
     rows: any[][],
+    width?: string,
+    height?: string,
     fetching?: boolean,
     renderHeaderCell?: () => ReactNode,
     renderRowCell?: (row: any[]) => ReactNode,
 }
 
-export const SimpleStickyTable = memo(SimpleStickyTableMemo)
+export function SimpleStickyTable(props: Props) {
+    const {columns, rows, renderHeaderCell, renderRowCell} = props
+    const {fetching = false, width = "100%", height = "391px"} = props
+    const parentRef = useRef(null)
 
-export function SimpleStickyTableMemo(props: Props) {
-    const {columns, rows, fetching = true, renderHeaderCell, renderRowCell} = props
-    const [toggle, setToggle] = useState<boolean | undefined>(undefined)
-    const wrap = toggle ?? columns.length === 1
+    const rowHeight = 32
+    const rowHeightPx = `${rowHeight}px`
+    const rowVirtualizer = useVirtualizer({
+        count: rows.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => rowHeight,
+        scrollPaddingStart: rowHeight,
+        overscan: 3,
+    })
+
+    const columnWidthId = 50
+    const columnWidth = 100
+    const columnWidthPx = `${columnWidthId}px`
+    const columnVirtualizer = useVirtualizer({
+        horizontal: true,
+        count: columns.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => columnWidth,
+        scrollPaddingStart: columnWidthId,
+        overscan: 3,
+    })
+
+    const bodyWidthPx = `${columnVirtualizer.getTotalSize()}px`
+    const bodyHeightPx = `${rowVirtualizer.getTotalSize()}px`
 
     return (
-        <Box sx={SX.body} className={scroll.small}>
-            <Table sx={SX.table} size={"small"} stickyHeader>
-                <TableHead>
-                    {renderHead()}
-                </TableHead>
-                <TableBody isLoading={fetching} rowCount={getRowCount()} height={21}>
-                    {renderBody()}
-                </TableBody>
-            </Table>
+        <Box sx={SX.box} width={width} height={height}>
+            {renderLoader()}
+            {columns.length === 0 ? renderEmpty() : renderTable()}
         </Box>
     )
 
+    function renderLoader() {
+        if (!fetching) return
+        return (
+            <Box sx={SX.loader}>
+                <CircularProgress />
+            </Box>
+        )
+    }
+
+    function renderEmpty() {
+        return (
+            <Box sx={{padding: "10px"}}>
+                <NoBox text={"NO DATA"}/>
+            </Box>
+        )
+    }
+
+    function renderTable() {
+        return (
+            <Box
+                ref={parentRef}
+                sx={SX.body}
+                display={"grid"}
+                gridTemplateColumns={`${columnWidthPx} ${bodyWidthPx}`}
+                gridTemplateRows={`${rowHeightPx} ${bodyHeightPx}`}
+                className={scroll.small}
+            >
+                <Box position={"sticky"} zIndex={3} top={0} left={0}>
+                    {renderCorner()}
+                </Box>
+                <Box position={"sticky"} zIndex={2} top={0}>
+                    {renderHead()}
+                </Box>
+                <Box position={"sticky"} zIndex={2} left={0}>
+                    {renderIndex()}
+                </Box>
+                <Box position={"relative"}>
+                    {renderBody()}
+                </Box>
+            </Box>
+        )
+    }
+
+    function renderCorner() {
+        return (
+            <Box sx={SX.cellFixed} border={1} borderBottom={2} borderRight={2} style={{width: columnWidthPx, height: rowHeightPx}}/>
+        )
+    }
+
     function renderHead() {
-        if (fetching) return
         if (!columns) return
 
+        const width = `${columnWidth}px`
+        const height = `${rowHeight}px`
+
         return (
-            <TableRow>
-                <TableCell sx={{...SX.number, zIndex: 3, padding: "3px"}} onClick={() => setToggle(!toggle)}>
-                    <ToggleButton sx={SX.toggle} value={"wrap"} selected={wrap}>
-                        <Tooltip title={"Wrap text in the table"} placement={"top"}>
-                            <WrapText sx={{fontSize: "15px"}}/>
-                        </Tooltip>
-                    </ToggleButton>
-                </TableCell>
-                {columns.map(column => (
-                    <TableCell key={column.name}>
-                        <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"}>
-                            <Box>{column.name}</Box>
-                        </Tooltip>
-                    </TableCell>
-                ))}
+            <Fragment>
+                {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
+                    const column = columns[virtualColumn.index]
+                    const transform = `translateX(${virtualColumn.start}px)`
+                    return (
+                        <Box key={virtualColumn.key} sx={SX.cellFixed} borderRight={1} borderTop={1} borderBottom={2} style={{width, height, transform}}>
+                            <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"} arrow={true}>
+                                <Box>{column.name}</Box>
+                            </Tooltip>
+                        </Box>
+                    )}
+                )}
                 {renderHeaderCell && renderHeaderCell()}
-            </TableRow>
+            </Fragment>
         )
     }
 
@@ -84,30 +152,48 @@ export function SimpleStickyTableMemo(props: Props) {
         return (
             <Box sx={SX.headTitle}>
                 <Box>{name}</Box>
-                {description && <Box sx={SX.description}>({description})</Box>}
+                {description && <Box>({description})</Box>}
             </Box>
         )
+    }
+
+    function renderIndex() {
+        const width = `${columnWidthId}px`
+        const height = `${rowHeight}px`
+
+        return rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const transform = `translateY(${virtualRow.start}px)`
+            return (
+                <Box key={virtualRow.key} sx={SX.cellFixed} borderLeft={1} borderBottom={1} borderRight={2} style={{width, height, transform}}>
+                    {virtualRow.index + 1}
+                </Box>
+            )
+        })
     }
 
     function renderBody() {
         if (!columns) return
 
-        return rows.map((row, i) => {
+        return rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const row = rows[virtualRow.index]
+
             return (
-                <TableRow key={i}>
-                    <TableCell sx={SX.number}>{i + 1}</TableCell>
-                    {row.map((column, j) => {
+                <Fragment key={virtualRow.key}>
+                    {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
+                        const column = row[virtualColumn.index]
                         const parseColumn = getParseColumn(column)
+
+                        const height = `${virtualRow.size}px`
+                        const width = `${virtualColumn.size}px`
+                        const transform = `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
                         return (
-                            <TableCell key={j}>
-                                <Tooltip title={parseColumn} placement={"top"}>
-                                    <Box sx={wrap ? SX.preWrap : SX.noWrap}>{parseColumn}</Box>
-                                </Tooltip>
-                            </TableCell>
+                            <Box key={virtualColumn.key} sx={SX.cell} style={{width, height, transform}}>
+                                <Box sx={SX.noWrap}>{parseColumn}</Box>
+                            </Box>
                         )
                     })}
                     {renderRowCell && renderRowCell(row)}
-                </TableRow>
+                </Fragment>
             )
         })
     }
@@ -116,14 +202,5 @@ export function SimpleStickyTableMemo(props: Props) {
         if (typeof column === 'object') return JSON.stringify(column)
         else if (typeof column === "boolean") return Boolean(column).toString()
         else return column
-    }
-
-    function getRowCount() {
-        if (!rows) return 2
-        const len = rows.length
-
-        if (len === 0) return 1
-        else if (len > 9) return 9
-        else return rows.length + 1
     }
 }

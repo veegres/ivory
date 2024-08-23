@@ -29,7 +29,7 @@ export function QueryBodyRun(props: Props) {
     const {varieties, request} = props
     const {connection} = request
 
-    const {data, error, isLoading, isFetching, refetch}  = useRouterQueryRun(request)
+    const {data, error, isFetching, refetch}  = useRouterQueryRun(request)
     const cancel = useRouterQueryCancel(request.queryUuid)
     const terminate = useRouterQueryTerminate(request.queryUuid)
 
@@ -87,7 +87,7 @@ export function QueryBodyRun(props: Props) {
             <SimpleStickyTable
                 rows={rows}
                 columns={columns}
-                fetching={isLoading || (isFetching && !rows.length)}
+                fetching={isFetching}
                 renderHeaderCell={renderHeaderCell}
                 renderRowCell={renderRowButtons}
             />

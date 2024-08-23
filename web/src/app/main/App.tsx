@@ -1,10 +1,10 @@
 import {Box} from "@mui/material";
-import {Header} from "./component/section/Header";
-import {Body} from "./component/section/Body";
-import {Footer} from "./component/section/Footer";
-import {AuthType, SxPropsMap} from "./type/general";
-import {useRouterInfo} from "./router/general";
 import {ReactNode} from "react";
+import {Header} from "../../component/section/Header";
+import {Footer} from "../../component/section/Footer";
+import {Body} from "../../component/section/Body";
+import {AuthType, SxPropsMap} from "../../type/general";
+import {useRouterInfo} from "../../router/general";
 
 const SX: SxPropsMap = {
     // we need -8px for bottom scroll, right scroll is always shown that is why we don't need calc
