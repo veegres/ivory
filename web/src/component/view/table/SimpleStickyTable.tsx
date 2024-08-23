@@ -14,18 +14,18 @@ const SX: SxPropsMap = {
         width: "inherit", height: "inherit", zIndex: 4, bgcolor: "rgba(31,44,126,0.05)",
     },
     cell: {
-        position: "absolute", top: 0, left: 0,
-        borderBottom: 1, borderRight: 1, borderColor: "divider",
-        display: "flex", alignItems: "center", padding: "0px 10px",
+        position: "absolute", top: 0, left: 0, padding: "0px 10px",
+        display: "flex", alignItems: "center",
+        borderBottom: 1, borderRight: 1,  bgcolor: "background.paper", borderColor: "divider",
     },
     cellFixed: {
-        position: "absolute", top: 0, left: 0,
+        position: "absolute", top: 0, left: 0, padding: "0px 10px",
         display: "flex", alignItems: "center", justifyContent: "center",
-        whiteSpace: "nowrap", color: "text.disabled",
-        bgcolor: "background.paper", borderColor: "divider",
+        color: "text.disabled", bgcolor: "background.paper", borderColor: "divider",
     },
-    noWrap: {whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
-    headTitle: {display: "flex", fontFamily: "monospace"},
+    noWrap: {whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
+    preWrap: {whiteSpace: "pre-wrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
+    headTitle: {display: "flex", fontFamily: "monospace", gap: "4px"},
 }
 
 type Props = {
@@ -34,14 +34,13 @@ type Props = {
     width?: string,
     height?: string,
     fetching?: boolean,
-    renderHeaderCell?: () => ReactNode,
     renderRowCell?: (row: any[]) => ReactNode,
 }
 
 export function SimpleStickyTable(props: Props) {
-    const {columns, rows, renderHeaderCell, renderRowCell} = props
+    const {columns, rows, renderRowCell} = props
     const {fetching = false, width = "100%", height = "391px"} = props
-    const parentRef = useRef(null)
+    const parentRef = useRef<Element>(null)
 
     const rowHeight = 32
     const rowHeightPx = `${rowHeight}px`
@@ -53,16 +52,20 @@ export function SimpleStickyTable(props: Props) {
         overscan: 3,
     })
 
+    const columnCount = renderRowCell !== undefined ? columns.length + 1 : columns.length
     const columnWidthId = 50
-    const columnWidth = 100
+    // NOTE: calculate the cell width, the component should be rendered from scratch to change the size,
+    //  this is how useVirtualizer work (-1 is needed to always choose 100 if width is unknown; -4 is the padding)
+    const columnWidth = Math.max((Math.round((parentRef.current?.clientWidth ?? -1) - columnWidthId - 4) / columnCount), 100)
     const columnWidthPx = `${columnWidthId}px`
     const columnVirtualizer = useVirtualizer({
         horizontal: true,
-        count: columns.length,
+        count: columnCount,
         getScrollElement: () => parentRef.current,
         estimateSize: () => columnWidth,
         scrollPaddingStart: columnWidthId,
         overscan: 3,
+        enabled: parentRef.current !== null,
     })
 
     const bodyWidthPx = `${columnVirtualizer.getTotalSize()}px`
@@ -126,25 +129,19 @@ export function SimpleStickyTable(props: Props) {
 
     function renderHead() {
         if (!columns) return
-
-        const width = `${columnWidth}px`
         const height = `${rowHeight}px`
 
-        return (
-            <Fragment>
-                {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
-                    const column = columns[virtualColumn.index]
-                    const transform = `translateX(${virtualColumn.start}px)`
-                    return (
-                        <Box key={virtualColumn.key} sx={SX.cellFixed} borderRight={1} borderTop={1} borderBottom={2} style={{width, height, transform}}>
-                            <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"} arrow={true}>
-                                <Box>{column.name}</Box>
-                            </Tooltip>
-                        </Box>
-                    )}
-                )}
-                {renderHeaderCell && renderHeaderCell()}
-            </Fragment>
+        return columnVirtualizer.getVirtualItems().map((virtualColumn) => {
+            const column = columns.length <= virtualColumn.index ? {name: "", description: ""} : columns[virtualColumn.index]
+            const transform = `translateX(${virtualColumn.start}px)`
+            const width = `${virtualColumn.size}px`
+            return (
+                <Box key={virtualColumn.key} sx={SX.cellFixed} borderRight={1} borderTop={1} borderBottom={2} style={{width, height, transform}}>
+                    <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"} arrow={true}>
+                        <Box sx={SX.noWrap}>{column.name}</Box>
+                    </Tooltip>
+                </Box>
+            )}
         )
     }
 
@@ -173,34 +170,34 @@ export function SimpleStickyTable(props: Props) {
 
     function renderBody() {
         if (!columns) return
+        const wrap = columnCount === 1 ? SX.preWrap : SX.noWrap
 
         return rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const row = rows[virtualRow.index]
-
             return (
                 <Fragment key={virtualRow.key}>
                     {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
-                        const column = row[virtualColumn.index]
-                        const parseColumn = getParseColumn(column)
+                        const parseColumn = getParseColumn(row, virtualColumn.index)
 
                         const height = `${virtualRow.size}px`
                         const width = `${virtualColumn.size}px`
                         const transform = `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
                         return (
                             <Box key={virtualColumn.key} sx={SX.cell} style={{width, height, transform}}>
-                                <Box sx={SX.noWrap}>{parseColumn}</Box>
+                                <Box sx={wrap}>{parseColumn(row)}</Box>
                             </Box>
                         )
                     })}
-                    {renderRowCell && renderRowCell(row)}
                 </Fragment>
             )
         })
     }
 
-    function getParseColumn(column: any): string {
-        if (typeof column === 'object') return JSON.stringify(column)
-        else if (typeof column === "boolean") return Boolean(column).toString()
-        else return column
+    function getParseColumn(row: any[], index: number): ((row: any[]) => ReactNode) {
+        if (columns.length <= index) return renderRowCell ?? (() => undefined)
+        const column = row[index]
+        if (typeof column === 'object') return () => JSON.stringify(column)
+        else if (typeof column === "boolean") return () => Boolean(column).toString()
+        else return () => column
     }
 }
