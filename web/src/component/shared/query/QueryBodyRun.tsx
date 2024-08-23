@@ -1,4 +1,4 @@
-import {Box, TableCell, Tooltip} from "@mui/material";
+import {Box, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {QueryRunRequest, QueryVariety} from "../../../type/query";
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
     label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px", whiteSpace: "nowrap"},
     word: {whiteSpace: "wrap", wordBreak: "break-all"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
-    pid: {display: "flex", color: "text.secondary", padding: "0 3px"},
+    pid: {display: "flex", justifyContent: "space-evenly", color: "text.secondary", padding: "0 3px"},
     cell: {padding: "0 1px"},
 }
 
@@ -39,7 +39,6 @@ export function QueryBodyRun(props: Props) {
 
     const pidIndex = useMemo(handleMemoPidIndex, [data])
     const renderRowButtons = useCallback(handleCallbackRenderRowButtons, [cancelMutate, terminateMutate, connection, pidIndex])
-    const renderHeaderCell = useCallback(handleCallbackRenderHeaderCell, [pidIndex])
     const columns = useMemo(handleMemoColumns, [data])
 
     return (
@@ -88,8 +87,7 @@ export function QueryBodyRun(props: Props) {
                 rows={rows}
                 columns={columns}
                 fetching={isFetching}
-                renderHeaderCell={renderHeaderCell}
-                renderRowCell={renderRowButtons}
+                renderRowCell={pidIndex === -1 ? undefined : renderRowButtons}
             />
         )
     }
@@ -104,26 +102,20 @@ export function QueryBodyRun(props: Props) {
         return data.fields.map(field => ({name: field.name, description: field.dataType}))
     }
 
-    function handleCallbackRenderHeaderCell() {
-        return pidIndex !== -1 && <TableCell/>
-    }
-
     function handleCallbackRenderRowButtons(row: any[]) {
-        return pidIndex !== -1 && (
-            <TableCell sx={SX.cell}>
-                <Box sx={SX.pid}>
-                    <CancelIconButton
-                        color={"inherit"}
-                        size={25}
-                        onClick={() => cancelMutate({connection, pid: row[pidIndex]})}
-                    />
-                    <TerminateIconButton
-                        size={25}
-                        onClick={() => terminateMutate({connection, pid: row[pidIndex]})}
-                        color={"error"}
-                    />
-                </Box>
-            </TableCell>
+        return (
+            <Box sx={SX.pid}>
+                <CancelIconButton
+                    color={"inherit"}
+                    size={25}
+                    onClick={() => cancelMutate({connection, pid: row[pidIndex]})}
+                />
+                <TerminateIconButton
+                    size={25}
+                    onClick={() => terminateMutate({connection, pid: row[pidIndex]})}
+                    color={"error"}
+                />
+            </Box>
         )
     }
 }
