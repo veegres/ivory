@@ -1,5 +1,5 @@
 import {Accordion, AccordionDetails, AccordionSummary, Box} from "@mui/material";
-import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
+import {VirtualizedTable} from "../../view/table/VirtualizedTable";
 import {SxPropsMap} from "../../../type/general";
 import {QueryFields} from "../../../type/query";
 import {useMemo, useState} from "react";
@@ -51,7 +51,7 @@ export function QueryBodyLogItem(props: Props) {
                 )}
             </AccordionSummary>
             <AccordionDetails sx={SX.details}>
-                <SimpleStickyTable rows={query.rows} columns={columns}/>
+                <VirtualizedTable rows={query.rows} columns={columns}/>
             </AccordionDetails>
         </Accordion>
     )

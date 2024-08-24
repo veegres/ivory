@@ -4,7 +4,7 @@ import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {QueryRunRequest, QueryVariety} from "../../../type/query";
 import {CancelIconButton, RefreshIconButton, TerminateIconButton} from "../../view/button/IconButtons";
 import {QueryVarieties} from "./QueryVarieties";
-import {SimpleStickyTable} from "../../view/table/SimpleStickyTable";
+import {VirtualizedTable} from "../../view/table/VirtualizedTable";
 import {useCallback, useMemo} from "react";
 import {NoBox} from "../../view/box/NoBox";
 import {useRouterQueryCancel, useRouterQueryRun, useRouterQueryTerminate} from "../../../router/query";
@@ -83,7 +83,7 @@ export function QueryBodyRun(props: Props) {
         const rows = data?.rows ?? []
 
         return (
-            <SimpleStickyTable
+            <VirtualizedTable
                 rows={rows}
                 columns={columns}
                 fetching={isFetching}
