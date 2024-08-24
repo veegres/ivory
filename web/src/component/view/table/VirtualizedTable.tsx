@@ -1,17 +1,17 @@
 import scroll from "../../../style/scroll.module.css";
 import {Box, CircularProgress, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
-import {Fragment, ReactNode, useRef} from "react";
+import React, {Fragment, ReactNode, useCallback, useEffect, useRef, useState} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import {NoBox} from "../box/NoBox";
 
 const SX: SxPropsMap = {
     box: {position: "relative"},
-    body: {overflow: "auto", width: "100%", height: "100%", padding: "0px 4px 4px 0px", fontSize: "12px"},
+    body: {overflow: "auto", width: "100%", height: "100%", fontSize: "12px"},
     loader: {
-        position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+        position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 5,
         display: "flex", alignItems: "center", justifyContent: "center",
-        width: "inherit", height: "inherit", zIndex: 4, bgcolor: "rgba(31,44,126,0.05)",
+        width: "inherit", height: "inherit", bgcolor: "rgba(31,44,126,0.05)",
     },
     cell: {
         position: "absolute", top: 0, left: 0, padding: "0px 10px",
@@ -22,6 +22,12 @@ const SX: SxPropsMap = {
         position: "absolute", top: 0, left: 0, padding: "0px 10px",
         display: "flex", alignItems: "center", justifyContent: "center",
         color: "text.disabled", bgcolor: "background.paper", borderColor: "divider",
+    },
+    columnSeparator: {
+        position: "absolute", top: 0, left: 0, zIndex: 4,
+        cursor: "col-resize", touchAction: "none",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        "&:hover:after": {content: `""`, width: "30%", height: "60%", bgcolor: "gray"},
     },
     noWrap: {whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
     preWrap: {whiteSpace: "pre-wrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
@@ -37,10 +43,11 @@ type Props = {
     renderRowCell?: (row: any[]) => ReactNode,
 }
 
-export function SimpleStickyTable(props: Props) {
+export function VirtualizedTable(props: Props) {
     const {columns, rows, renderRowCell} = props
     const {fetching = false, width = "100%", height = "391px"} = props
     const parentRef = useRef<Element>(null)
+    const [columnDrag, setColumnDrag] = useState({index: -1, size: 0, ps: 0})
 
     const rowHeight = 32
     const rowHeightPx = `${rowHeight}px`
@@ -52,11 +59,12 @@ export function SimpleStickyTable(props: Props) {
         overscan: 3,
     })
 
+    const scrollOffset = 6
     const columnCount = renderRowCell !== undefined ? columns.length + 1 : columns.length
     const columnWidthId = 50
     // NOTE: calculate the cell width, the component should be rendered from scratch to change the size,
-    //  this is how useVirtualizer work (-1 is needed to always choose 100 if width is unknown; -4 is the padding)
-    const columnWidth = Math.max((Math.round((parentRef.current?.clientWidth ?? -1) - columnWidthId - 4) / columnCount), 100)
+    //  this is how useVirtualizer work (-1 is needed to always choose 100 if width is unknown)
+    const columnWidth = Math.max((Math.round((parentRef.current?.clientWidth ?? -1) - columnWidthId - scrollOffset) / columnCount), 100)
     const columnWidthPx = `${columnWidthId}px`
     const columnVirtualizer = useVirtualizer({
         horizontal: true,
@@ -67,6 +75,10 @@ export function SimpleStickyTable(props: Props) {
         overscan: 3,
         enabled: parentRef.current !== null,
     })
+
+    const callbackMouseMove = useCallback(handleMouseMove, [columnDrag.index, columnDrag.ps, columnDrag.size, columnVirtualizer])
+    const callbackMouseUp = useCallback(handleMouseUp, [])
+    useEffect(handleEffectDragging, [callbackMouseMove, callbackMouseUp]);
 
     const bodyWidthPx = `${columnVirtualizer.getTotalSize()}px`
     const bodyHeightPx = `${rowVirtualizer.getTotalSize()}px`
@@ -100,6 +112,7 @@ export function SimpleStickyTable(props: Props) {
             <Box
                 ref={parentRef}
                 sx={SX.body}
+                padding={`0px ${scrollOffset}px ${scrollOffset}px 0px`}
                 display={"grid"}
                 gridTemplateColumns={`${columnWidthPx} ${bodyWidthPx}`}
                 gridTemplateRows={`${rowHeightPx} ${bodyHeightPx}`}
@@ -129,18 +142,30 @@ export function SimpleStickyTable(props: Props) {
 
     function renderHead() {
         if (!columns) return
-        const height = `${rowHeight}px`
+        const heightPx = `${rowHeight}px`
+        const dragWidth = scrollOffset * 2
+        const dragWidthPx = `${dragWidth}px`
+        const dragOffset = scrollOffset + 1
 
         return columnVirtualizer.getVirtualItems().map((virtualColumn) => {
             const column = columns.length <= virtualColumn.index ? {name: "", description: ""} : columns[virtualColumn.index]
-            const transform = `translateX(${virtualColumn.start}px)`
             const width = `${virtualColumn.size}px`
+            const transform = `translateX(${virtualColumn.start}px)`
+            const dragTransform = `translateX(${virtualColumn.start + virtualColumn.size - dragOffset}px)`
             return (
-                <Box key={virtualColumn.key} sx={SX.cellFixed} borderRight={1} borderTop={1} borderBottom={2} style={{width, height, transform}}>
-                    <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"} arrow={true}>
-                        <Box sx={SX.noWrap}>{column.name}</Box>
-                    </Tooltip>
-                </Box>
+                <Fragment key={virtualColumn.key}>
+                    <Box sx={SX.cellFixed} borderRight={1} borderTop={1} borderBottom={2} style={{width, height: heightPx, transform}}>
+                        <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"} arrow={true}>
+                            <Box sx={SX.noWrap}>{column.name}</Box>
+                        </Tooltip>
+                    </Box>
+                    <Box
+                        sx={SX.columnSeparator}
+                        style={{height: heightPx, width: dragWidthPx, transform: dragTransform}}
+                        onMouseDown={(e) => handleMouseDown(e, virtualColumn.index, virtualColumn.size)}
+                    />
+                </Fragment>
+
             )}
         )
     }
@@ -178,7 +203,6 @@ export function SimpleStickyTable(props: Props) {
                 <Fragment key={virtualRow.key}>
                     {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
                         const parseColumn = getParseColumn(row, virtualColumn.index)
-
                         const height = `${virtualRow.size}px`
                         const width = `${virtualColumn.size}px`
                         const transform = `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
@@ -199,5 +223,35 @@ export function SimpleStickyTable(props: Props) {
         if (typeof column === 'object') return () => JSON.stringify(column)
         else if (typeof column === "boolean") return () => Boolean(column).toString()
         else return () => column
+    }
+
+    function handleEffectDragging() {
+        document.addEventListener("mousemove", callbackMouseMove)
+        document.addEventListener("mouseup", callbackMouseUp)
+
+        return () => {
+            document.removeEventListener("mousemove", callbackMouseMove)
+            document.addEventListener("mouseup", callbackMouseUp)
+        }
+    }
+
+    function handleMouseMove(e: MouseEvent) {
+        if (columnDrag.index != -1) {
+            const offset = e.pageX - columnDrag.ps
+            const width = columnDrag.size + offset
+            if (width > 50) columnVirtualizer.resizeItem(columnDrag.index, width)
+        }
+    }
+
+    function handleMouseUp() {
+        document.body.style.removeProperty("cursor")
+        setColumnDrag({index: -1, size: 0, ps: 0})
+    }
+
+    function handleMouseDown(e: React.MouseEvent, index: number, size: number) {
+        e.preventDefault()
+        e.stopPropagation()
+        document.body.style.cursor = "col-resize"
+        setColumnDrag({index, size, ps: e.pageX})
     }
 }
