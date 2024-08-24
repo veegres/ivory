@@ -30,7 +30,7 @@ const SX: SxPropsMap = {
         "&:hover:after": {content: `""`, width: "30%", height: "60%", bgcolor: "gray"},
     },
     noWrap: {whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
-    preWrap: {whiteSpace: "pre-wrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
+    preWrap: {whiteSpace: "pre-wrap", textWrap: "nowrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
     headTitle: {display: "flex", fontFamily: "monospace", gap: "4px"},
     empty: {padding: "10px"},
 }
