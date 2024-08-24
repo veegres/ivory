@@ -32,6 +32,7 @@ const SX: SxPropsMap = {
     noWrap: {whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
     preWrap: {whiteSpace: "pre-wrap", overflow: "hidden", textOverflow: "ellipsis", width: "100%"},
     headTitle: {display: "flex", fontFamily: "monospace", gap: "4px"},
+    empty: {padding: "10px"},
 }
 
 type Props = {
@@ -86,7 +87,7 @@ export function VirtualizedTable(props: Props) {
     return (
         <Box sx={SX.box} width={width} height={height}>
             {renderLoader()}
-            {columns.length === 0 ? renderEmpty() : renderTable()}
+            {columns.length ? renderTable() : renderEmpty()}
         </Box>
     )
 
@@ -100,8 +101,9 @@ export function VirtualizedTable(props: Props) {
     }
 
     function renderEmpty() {
+        if (fetching) return
         return (
-            <Box sx={{padding: "10px"}}>
+            <Box sx={SX.empty}>
                 <NoBox text={"NO DATA"}/>
             </Box>
         )

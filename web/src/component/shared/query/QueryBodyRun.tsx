@@ -6,9 +6,8 @@ import {CancelIconButton, RefreshIconButton, TerminateIconButton} from "../../vi
 import {QueryVarieties} from "./QueryVarieties";
 import {VirtualizedTable} from "../../view/table/VirtualizedTable";
 import {useCallback, useMemo} from "react";
-import {NoBox} from "../../view/box/NoBox";
 import {useRouterQueryCancel, useRouterQueryRun, useRouterQueryTerminate} from "../../../router/query";
-import {SxPropsFormatter} from "../../../app/utils";
+import {getPostgresUrl, SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -53,7 +52,7 @@ export function QueryBodyRun(props: Props) {
             <Box sx={SX.info}>
                 <Tooltip title={"SENT TO"} placement={"right"} arrow={true}>
                     <Box sx={SxPropsFormatter.merge(SX.label, SX.word)}>
-                        [ {isFetching ? "request is loading" : data?.url ?? "unknown"} ]
+                        [ {getPostgresUrl(connection)} ]
                     </Box>
                 </Tooltip>
                 <Box sx={SX.buttons}>
@@ -76,10 +75,6 @@ export function QueryBodyRun(props: Props) {
 
     function renderTable() {
         if (error) return <ErrorSmart error={error}/>
-        if (!isFetching && (!data || !data.fields.length || !data.rows.length)) {
-            return <NoBox text={"Response is empty"}/>
-        }
-
         const rows = data?.rows ?? []
 
         return (

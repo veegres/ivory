@@ -217,6 +217,10 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
+export const getPostgresUrl = (con: QueryConnection) => {
+    return `postgres://${con.db.host}:${con.db.port}/${con.db.name ?? "postgres"}`
+}
+
 // CodeMirror theme
 export const CodeThemes = {
     dark: materialDarkInit({settings: {background: "transparent", gutterActiveForeground: "rgba(255,255,255,0.3)", selection: "rgba(255,255,255,0.1)"}}),
