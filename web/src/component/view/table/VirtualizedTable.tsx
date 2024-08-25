@@ -1,7 +1,7 @@
 import scroll from "../../../style/scroll.module.css";
 import {Box, CircularProgress, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
-import {Fragment, ReactNode, useRef} from "react";
+import {Fragment, ReactNode, useMemo, useState} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import {NoBox} from "../box/NoBox";
 import {useDragger} from "../../../hook/Dragger";
@@ -55,39 +55,41 @@ type Props = {
 export function VirtualizedTable(props: Props) {
     const {columns, rows, renderRowCell} = props
     const {fetching = false, width = "100%", height = "391px"} = props
-    const parentRef = useRef<Element>(null)
+    const [ref, setRef] = useState<Element | null>(null);
 
     const actionColumn = renderRowCell !== undefined
     const columnCount = actionColumn ? columns.length + 1 : columns.length
-    const scrollOffset = 6
+    const scrollSize = 6
 
     const cellWidthSticky = 50
     const cellHeightSticky = 32
     const cellWidthStickyPx = `${cellWidthSticky}px`
     const cellHeightStickyPx = `${cellHeightSticky}px`
 
+    const cellWidth = 100
+    const cellHeight = 29
     // NOTE: calculate the cell width, the component should be rendered from scratch to change the size,
     //  this is how useVirtualizer work (-1 is needed to always choose 100 if width is unknown)
-    const cellWidth = Math.max((Math.round((parentRef.current?.clientWidth ?? -1) - cellWidthSticky - scrollOffset) / columnCount), 100)
-    const cellHeight = 29
+    const cellCalcWidth = useMemo(() => Math.max(Math.floor(((ref?.clientWidth ?? -1) - cellWidthSticky - (scrollSize * 2)) / columnCount), cellWidth), [columnCount, ref])
 
     const rowVirtualizer = useVirtualizer({
         count: rows.length,
-        getScrollElement: () => parentRef.current,
+        getScrollElement: () => ref,
         estimateSize: () => cellHeight,
         scrollPaddingStart: cellHeightSticky,
         overscan: 3,
+        enabled: ref !== null,
     })
     const columnVirtualizer = useVirtualizer({
         horizontal: true,
         count: columnCount,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => cellWidth,
+        getScrollElement: () => ref,
+        estimateSize: () => cellCalcWidth,
         scrollPaddingStart: cellWidthSticky,
         overscan: 3,
         // NOTE: this helps to use cellWidth, because in first render when we don't have ref, it
         //  renders incorrect size
-        enabled: parentRef.current !== null,
+        enabled: ref !== null,
     })
     const columnDragger = useDragger(columnVirtualizer.resizeItem)
 
@@ -122,9 +124,9 @@ export function VirtualizedTable(props: Props) {
     function renderTable() {
         return (
             <Box
-                ref={parentRef}
+                ref={setRef}
                 sx={SX.body}
-                padding={`0px ${scrollOffset}px ${scrollOffset}px 0px`}
+                padding={`0px ${scrollSize}px ${scrollSize}px 0px`}
                 display={"grid"}
                 gridTemplateColumns={`${cellWidthStickyPx} ${bodyWidthPx}`}
                 gridTemplateRows={`${cellHeightStickyPx} ${bodyHeightPx}`}
@@ -154,11 +156,11 @@ export function VirtualizedTable(props: Props) {
     }
 
     function renderHead() {
-        const dragWidth = scrollOffset * 2
+        const dragWidth = scrollSize * 2
         const dragWidthPx = `${dragWidth}px`
-        const dragOffset = scrollOffset + 1
+        const dragOffset = scrollSize + 1
         const columnsWithAction = actionColumn ? [...columns, {name: "", description: ""}] : columns
-        // TODO in initial render with empty body it doesn't display head
+
         return columnVirtualizer.getVirtualItems().map((virtualColumn) => {
             const column = columnsWithAction[virtualColumn.index]
             const width = `${virtualColumn.size}px`
