@@ -98,6 +98,7 @@ export function QueryBodyRun(props: Props) {
     }
 
     function handleCallbackRenderRowButtons(row: any[]) {
+        // TODO buttons trigger cell hover
         return (
             <Box sx={SX.pid}>
                 <CancelIconButton
