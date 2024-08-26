@@ -125,3 +125,8 @@ type QueryFields struct {
 }
 
 // SPECIFIC (SERVER)
+
+type QueryContext struct {
+	Connection QueryConnection
+	Token      string
+}
