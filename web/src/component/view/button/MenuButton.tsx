@@ -1,4 +1,4 @@
-import {ReactNode, useRef, useState} from "react";
+import {ReactNode, useState} from "react";
 import {Box, Collapse, IconButton, Paper} from "@mui/material";
 import {MoreVert} from "@mui/icons-material";
 import {SxPropsMap} from "../../../type/general";
@@ -17,7 +17,6 @@ type Props = {
 export function MenuButton(props: Props) {
     const {children, size} = props
     const [open, setOpen] = useState(false)
-    const ref = useRef(null)
 
     return (
         <Box sx={SX.box}>
@@ -26,7 +25,7 @@ export function MenuButton(props: Props) {
                     {children}
                 </Paper>
             </Collapse>
-            <IconButton ref={ref} size={size} onClick={() => setOpen(!open)}>
+            <IconButton size={size} onClick={() => setOpen(!open)}>
                 <MoreVert/>
             </IconButton>
         </Box>

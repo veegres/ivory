@@ -5,6 +5,7 @@ import {Fragment, ReactNode, useMemo, useState} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import {NoBox} from "../box/NoBox";
 import {useDragger} from "../../../hook/Dragger";
+import {MenuButton} from "../button/MenuButton";
 
 const SX: SxPropsMap = {
     box: {position: "relative"},
@@ -57,8 +58,7 @@ export function VirtualizedTable(props: Props) {
     const {fetching = false, width = "100%", height = "391px"} = props
     const [ref, setRef] = useState<Element | null>(null);
 
-    const actionColumn = renderRowCell !== undefined
-    const columnCount = actionColumn ? columns.length + 1 : columns.length
+    const columnCount = columns.length
     const scrollSize = 6
 
     const cellWidthSticky = 50
@@ -128,15 +128,18 @@ export function VirtualizedTable(props: Props) {
                 sx={SX.body}
                 padding={`0px ${scrollSize}px ${scrollSize}px 0px`}
                 display={"grid"}
-                gridTemplateColumns={`${cellWidthStickyPx} ${bodyWidthPx}`}
+                gridTemplateColumns={`${cellWidthStickyPx} ${bodyWidthPx} auto`}
                 gridTemplateRows={`${cellHeightStickyPx} ${bodyHeightPx}`}
                 className={scroll.small}
             >
                 <Box position={"sticky"} zIndex={3} top={0} left={0}>
-                    {renderCorner()}
+                    {renderCorner(1, 2)}
                 </Box>
                 <Box position={"sticky"} zIndex={2} top={0}>
                     {renderHead()}
+                </Box>
+                <Box position={"relative"} zIndex={3}>
+                    {renderRowCell && renderCorner(2, 1)}
                 </Box>
                 <Box position={"sticky"} zIndex={2} left={0}>
                     {renderIndex()}
@@ -144,13 +147,16 @@ export function VirtualizedTable(props: Props) {
                 <Box position={"relative"}>
                     {renderBody()}
                 </Box>
+                <Box position={"relative"} zIndex={3}>
+                    {renderActions()}
+                </Box>
             </Box>
         )
     }
 
-    function renderCorner() {
+    function renderCorner(left: number, right: number) {
         return (
-            <Box sx={SX.cellFixed} border={1} borderBottom={2} borderRight={2}
+            <Box sx={SX.cellFixed} borderTop={1} borderBottom={2} borderLeft={left} borderRight={right}
                  style={{width: cellWidthStickyPx, height: cellHeightStickyPx}}/>
         )
     }
@@ -159,10 +165,9 @@ export function VirtualizedTable(props: Props) {
         const dragWidth = scrollSize * 2
         const dragWidthPx = `${dragWidth}px`
         const dragOffset = scrollSize + 1
-        const columnsWithAction = actionColumn ? [...columns, {name: "", description: ""}] : columns
 
         return columnVirtualizer.getVirtualItems().map((virtualColumn) => {
-            const column = columnsWithAction[virtualColumn.index]
+            const column = columns[virtualColumn.index]
             const width = `${virtualColumn.size}px`
             const transform = `translateX(${virtualColumn.start}px)`
             const dragTransform = `translateX(${virtualColumn.start + virtualColumn.size - dragOffset}px)`
@@ -208,6 +213,23 @@ export function VirtualizedTable(props: Props) {
         })
     }
 
+    function renderActions() {
+        if (!renderRowCell) return
+        const width = `${cellWidthSticky}px`
+        const height = `${cellHeight}px`
+
+        return rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const row = rows[virtualRow.index]
+            const transform = `translateY(${virtualRow.start}px)`
+            return (
+                <Box key={virtualRow.key} sx={SX.cellFixed} borderLeft={2} borderBottom={1} borderRight={1}
+                     style={{width, height, transform}}>
+                    <MenuButton size={"small"}>{renderRowCell(row)}</MenuButton>
+                </Box>
+            )
+        })
+    }
+
     function renderBody() {
         if (!columns) return
         const wrap = columnCount === 1 ? SX.preWrap : SX.noWrap
@@ -216,13 +238,17 @@ export function VirtualizedTable(props: Props) {
             return (
                 <Fragment key={virtualRow.key}>
                     {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
-                        const parseColumn = getParseColumn(row, virtualColumn.index)
+                        const value = getParsedCell(row[virtualColumn.index])
                         const height = `${virtualRow.size}px`
                         const width = `${virtualColumn.size}px`
                         const transform = `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
-                        const value = parseColumn(row)
                         return (
-                            <Box key={virtualColumn.key} sx={SX.cell} className={scroll.tiny} style={{minWidth: width, minHeight: height, width, height, transform}}>
+                            <Box
+                                key={virtualColumn.key}
+                                sx={SX.cell}
+                                className={scroll.tiny}
+                                style={{minWidth: width, minHeight: height, width, height, transform}}
+                            >
                                 <Box sx={wrap}>{value}</Box>
                             </Box>
                         )
@@ -232,11 +258,9 @@ export function VirtualizedTable(props: Props) {
         })
     }
 
-    function getParseColumn(row: any[], index: number): ((row: any[]) => ReactNode) {
-        if (columns.length <= index) return renderRowCell ?? (() => undefined)
-        const column = row[index]
-        if (typeof column === 'object') return () => JSON.stringify(column)
-        else if (typeof column === "boolean") return () => Boolean(column).toString()
-        else return () => column
+    function getParsedCell(cell: any): ReactNode {
+        if (typeof cell === 'object') return JSON.stringify(cell)
+        else if (typeof cell === "boolean") return Boolean(cell).toString()
+        else return cell
     }
 }
