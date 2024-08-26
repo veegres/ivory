@@ -5,6 +5,16 @@ import . "ivory/src/model"
 const GetAllDatabases = `SELECT datname AS name FROM pg_database WHERE datistemplate = false AND datname LIKE $1 LIMIT 100;`
 const GetAllSchemas = `SELECT nspname AS NAME FROM pg_namespace WHERE nspname LIKE $1 LIMIT 100;`
 const GetAllTables = `SELECT relname AS name FROM pg_stat_all_tables WHERE schemaname = $1 AND relname LIKE $2 LIMIT 100;`
+const GetAllRunningQueriesByApplicationName = `SELECT
+    pid,
+    (now() - pg_stat_activity.query_start)::text AS query_duration,
+    query
+FROM pg_stat_activity
+WHERE now() - pg_stat_activity.query_start IS NOT NULL
+  AND state <> 'idle'
+  AND backend_type = 'client backend'
+  AND application_name = $1
+ORDER BY now() - pg_stat_activity.query_start DESC;`
 
 const DefaultActiveRunningQueries = `SELECT
     pid,

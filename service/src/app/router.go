@@ -123,6 +123,7 @@ func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
 	query.GET("", r.GetQueryList)
 	query.DELETE("/:uuid", r.DeleteQuery)
 	query.POST("/run", r.PostRunQuery)
+	query.POST("/activity", r.PostAllRunningQueriesByApplicationName)
 	query.POST("/databases", r.PostDatabasesQuery)
 	query.POST("/schemas", r.PostSchemasQuery)
 	query.POST("/tables", r.PostTablesQuery)
