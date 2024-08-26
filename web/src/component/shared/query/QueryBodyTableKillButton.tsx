@@ -5,7 +5,7 @@ import {QueryConnection} from "../../../type/query";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-evenly", color: "text.secondary", padding: "0 3px"},
-    actionButton: {padding: "0px 4px", fontSize: "10px"},
+    actionButton: {padding: "2px 4px", fontSize: "10px"},
 }
 
 type Props = {

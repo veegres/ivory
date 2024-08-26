@@ -38,7 +38,7 @@ const SX: SxPropsMap = {
         position: "absolute", top: 0, left: 0, zIndex: 4,
         cursor: "col-resize", touchAction: "none",
         display: "flex", alignItems: "center", justifyContent: "center",
-        "&:hover:after": {content: `""`, width: "30%", height: "60%", bgcolor: "gray"},
+        "&:hover:after": {content: `""`, width: "20%", height: "60%", bgcolor: "secondary.light", borderRadius: "10px"},
     },
     headTitle: {display: "flex", fontFamily: "monospace", gap: "4px"},
     empty: {padding: "10px"},
@@ -63,7 +63,7 @@ export function VirtualizedTable(props: Props) {
     const scrollSize = 6
 
     const cellWidthStickyIndex = showIndexColumn ? 50 : 0
-    const cellWidthStickyAction = renderRowActions ? 35 : 0
+    const cellWidthStickyAction = renderRowActions ? 38 : 0
     const cellHeightStickyHead = 32
 
     // NOTE: we need to multiply by 2 because we have padding between table and scroll and sometimes
@@ -142,16 +142,16 @@ export function VirtualizedTable(props: Props) {
                 gridTemplateRows={`${cellHeightStickyHeadPx} ${bodyHeightPx}`}
                 className={scroll.small}
             >
-                <Box position={"sticky"} zIndex={3} top={0} left={0}>
+                <Box position={"sticky"} zIndex={4} top={0} left={0}>
                     {showIndexColumn && renderCorner(cellWidthStickyIndexPx)}
                 </Box>
-                <Box position={"sticky"} zIndex={2} top={0}>
+                <Box position={"sticky"} zIndex={3} top={0}>
                     {renderHead()}
                 </Box>
-                <Box position={"relative"} zIndex={3}>
+                <Box position={"sticky"} zIndex={2} top={0}>
                     {renderRowActions && renderCorner(cellWidthStickyActionPx)}
                 </Box>
-                <Box position={"sticky"} zIndex={2} left={0}>
+                <Box position={"sticky"} zIndex={3} left={0}>
                     {renderIndex()}
                 </Box>
                 <Box position={"relative"}>
@@ -173,13 +173,12 @@ export function VirtualizedTable(props: Props) {
     function renderHead() {
         const dragWidth = scrollSize * 2
         const dragWidthPx = `${dragWidth}px`
-        const dragOffset = scrollSize + 1
 
         return columnVirtualizer.getVirtualItems().map((virtualColumn) => {
             const column = columns[virtualColumn.index]
             const width = `${virtualColumn.size}px`
             const transform = `translateX(${virtualColumn.start}px)`
-            const dragTransform = `translateX(${virtualColumn.start + virtualColumn.size - dragOffset}px)`
+            const dragTransform = `translateX(${virtualColumn.end - scrollSize}px)`
             return (
                 <Fragment key={virtualColumn.key}>
                     <Box sx={SX.cellFixed} style={{width, height: cellHeightStickyHeadPx, transform}}>
@@ -231,7 +230,6 @@ export function VirtualizedTable(props: Props) {
                 <Fragment key={virtualRow.key}>
                     {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
                         const value = getParsedCell(row[virtualColumn.index])
-                        console.log("row", virtualColumn.size)
                         const height = `${virtualRow.size}px`
                         const width = `${virtualColumn.size}px`
                         const transform = `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
