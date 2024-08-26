@@ -17,7 +17,7 @@ const SX: SxPropsMap = {
     },
     cell: {
         position: "absolute", top: 0, left: 0, zIndex: 0, padding: "5px 10px",
-        bgcolor: "background.paper", borderBottom: 1, borderRight: 1, borderColor: "divider",
+        bgcolor: "background.paper", border: 1, borderColor: "divider",
         "&:hover": {
             overflow: "auto", zIndex: 1,
             width: "auto!important", height: "auto!important",
@@ -32,7 +32,7 @@ const SX: SxPropsMap = {
     cellFixed: {
         position: "absolute", top: 0, left: 0, padding: "5px 10px",
         display: "flex", alignItems: "center", justifyContent: "center",
-        color: "text.disabled", bgcolor: "background.paper", borderColor: "divider",
+        color: "text.disabled", bgcolor: "background.paper", border: 1, borderColor: "divider",
     },
     columnSeparator: {
         position: "absolute", top: 0, left: 0, zIndex: 4,
@@ -56,7 +56,7 @@ type Props = {
 
 export function VirtualizedTable(props: Props) {
     const {columns, rows, renderRowActions, showIndexColumn = true} = props
-    const {loading = false, width, height = 300} = props
+    const {loading = false, width, height = 306} = props
     const [ref, setRef] = useState<Element | null>(null);
 
     const columnSize = columns.length
@@ -66,12 +66,14 @@ export function VirtualizedTable(props: Props) {
     const cellWidthStickyAction = renderRowActions ? 35 : 0
     const cellHeightStickyHead = 32
 
-    const cellOffset = cellWidthStickyIndex + cellWidthStickyAction + scrollSize
+    // NOTE: we need to multiply by 2 because we have padding between table and scroll and sometimes
+    //  scroll can be presented or not, so it is safer to always multiple
+    const cellOffset = cellWidthStickyIndex + cellWidthStickyAction + (scrollSize * 2)
     const cellWidth = useMemo(() => width ? (width - cellOffset) / columnSize : 100, [cellOffset, columnSize, width])
-    const cellHeight = 29
+    const cellHeight = 30
     // NOTE: calculate the cell width, the component should be rendered from scratch to change the size,
     //  this is how useVirtualizer work (-1 is needed to always choose 100 if width is unknown)
-    const cellCalcWidth = useMemo(() => Math.max(Math.floor(((ref?.clientWidth ?? -1) - cellOffset) / columnSize), cellWidth), [cellOffset, cellWidth, columnSize, ref?.clientWidth])
+    const cellCalcWidth = useMemo(() => Math.max((((ref?.clientWidth ?? -1) - cellOffset) / columnSize), cellWidth), [cellOffset, cellWidth, columnSize, ref?.clientWidth])
 
     const rowVirtualizer = useVirtualizer({
         count: rows.length,
@@ -141,13 +143,13 @@ export function VirtualizedTable(props: Props) {
                 className={scroll.small}
             >
                 <Box position={"sticky"} zIndex={3} top={0} left={0}>
-                    {showIndexColumn && renderCorner(cellWidthStickyIndexPx, 1, 2)}
+                    {showIndexColumn && renderCorner(cellWidthStickyIndexPx)}
                 </Box>
                 <Box position={"sticky"} zIndex={2} top={0}>
                     {renderHead()}
                 </Box>
                 <Box position={"relative"} zIndex={3}>
-                    {renderRowActions && renderCorner(cellWidthStickyActionPx, 2, 1)}
+                    {renderRowActions && renderCorner(cellWidthStickyActionPx)}
                 </Box>
                 <Box position={"sticky"} zIndex={2} left={0}>
                     {renderIndex()}
@@ -162,10 +164,9 @@ export function VirtualizedTable(props: Props) {
         )
     }
 
-    function renderCorner(width: string, left: number, right: number) {
+    function renderCorner(width: string) {
         return (
-            <Box sx={SX.cellFixed} borderTop={1} borderBottom={2} borderLeft={left} borderRight={right}
-                 style={{width, height: cellHeightStickyHeadPx}}/>
+            <Box sx={SX.cellFixed} style={{width, height: cellHeightStickyHeadPx}}/>
         )
     }
 
@@ -181,8 +182,7 @@ export function VirtualizedTable(props: Props) {
             const dragTransform = `translateX(${virtualColumn.start + virtualColumn.size - dragOffset}px)`
             return (
                 <Fragment key={virtualColumn.key}>
-                    <Box sx={SX.cellFixed} borderRight={1} borderTop={1} borderBottom={2}
-                         style={{width, height: cellHeightStickyHeadPx, transform}}>
+                    <Box sx={SX.cellFixed} style={{width, height: cellHeightStickyHeadPx, transform}}>
                         <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"}>
                             <Box sx={SX.noWrap}>{column.name}</Box>
                         </Tooltip>
@@ -197,22 +197,12 @@ export function VirtualizedTable(props: Props) {
         })
     }
 
-    function renderHeadTitle(name: string, description?: string) {
-        return (
-            <Box sx={SX.headTitle}>
-                <Box>{name}</Box>
-                {description && <Box>({description})</Box>}
-            </Box>
-        )
-    }
-
     function renderIndex() {
         if (!showIndexColumn) return
         return rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const transform = `translateY(${virtualRow.start}px)`
             return (
-                <Box key={virtualRow.key} sx={SX.cellFixed} borderLeft={1} borderBottom={1} borderRight={2}
-                     style={{width: cellWidthStickyIndexPx, height: cellHeightPx, transform}}>
+                <Box key={virtualRow.key} sx={SX.cellFixed} style={{width: cellWidthStickyIndexPx, height: cellHeightPx, transform}}>
                     {virtualRow.index + 1}
                 </Box>
             )
@@ -225,8 +215,7 @@ export function VirtualizedTable(props: Props) {
             const row = rows[virtualRow.index]
             const transform = `translateY(${virtualRow.start}px)`
             return (
-                <Box key={virtualRow.key} sx={SX.cellFixed} borderLeft={2} borderBottom={1} borderRight={1}
-                     style={{width: cellWidthStickyActionPx, height: cellHeightPx, transform}}>
+                <Box key={virtualRow.key} sx={SX.cellFixed} style={{width: cellWidthStickyActionPx, height: cellHeightPx, transform}}>
                     <MenuButton size={"small"}>{renderRowActions(row)}</MenuButton>
                 </Box>
             )
@@ -242,6 +231,7 @@ export function VirtualizedTable(props: Props) {
                 <Fragment key={virtualRow.key}>
                     {columnVirtualizer.getVirtualItems().map((virtualColumn) => {
                         const value = getParsedCell(row[virtualColumn.index])
+                        console.log("row", virtualColumn.size)
                         const height = `${virtualRow.size}px`
                         const width = `${virtualColumn.size}px`
                         const transform = `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`
@@ -259,6 +249,15 @@ export function VirtualizedTable(props: Props) {
                 </Fragment>
             )
         })
+    }
+
+    function renderHeadTitle(name: string, description?: string) {
+        return (
+            <Box sx={SX.headTitle}>
+                <Box>{name}</Box>
+                {description && <Box>({description})</Box>}
+            </Box>
+        )
     }
 
     function getParsedCell(cell: any): ReactNode {
