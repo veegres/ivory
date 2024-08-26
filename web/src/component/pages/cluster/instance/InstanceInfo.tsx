@@ -3,19 +3,22 @@ import {InstanceInfoStatus} from "./InstanceInfoStatus";
 import {InstanceInfoTable} from "./InstanceInfoTable";
 import {SxPropsMap} from "../../../../type/general";
 import {InstanceTabType, InstanceWeb} from "../../../../type/instance";
+import {QueryActivity} from "../../../shared/query/QueryActivity";
+import {QueryConnection} from "../../../../type/query";
 
 const SX: SxPropsMap = {
-    info: {display: "flex", flexDirection: "column", gap: 2, margin: "5px 0", flex: "0 0 18%"},
+    info: {display: "flex", flexDirection: "column", gap: 2, margin: "5px 0"},
 }
 
 type Props = {
     instance: InstanceWeb,
     tab: InstanceTabType,
     onTab: (tab: InstanceTabType) => void,
+    connection: QueryConnection,
 }
 
 export function InstanceInfo(props: Props) {
-    const {instance, tab, onTab} = props
+    const {instance, tab, onTab, connection} = props
 
     return (
         <Box sx={SX.info}>
@@ -25,6 +28,7 @@ export function InstanceInfo(props: Props) {
             </ToggleButtonGroup>
             <InstanceInfoStatus role={instance.role}/>
             <InstanceInfoTable instance={instance}/>
+            <QueryActivity connection={connection}/>
         </Box>
     )
 }
