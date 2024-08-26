@@ -1,8 +1,8 @@
-import {Box, Tooltip} from "@mui/material";
+import {Box, Button, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {QueryRunRequest, QueryVariety} from "../../../type/query";
-import {CancelIconButton, RefreshIconButton, TerminateIconButton} from "../../view/button/IconButtons";
+import {RefreshIconButton} from "../../view/button/IconButtons";
 import {QueryVarieties} from "./QueryVarieties";
 import {VirtualizedTable} from "../../view/table/VirtualizedTable";
 import {useCallback, useMemo} from "react";
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
     word: {whiteSpace: "wrap", wordBreak: "break-all"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
     pid: {display: "flex", justifyContent: "space-evenly", color: "text.secondary", padding: "0 3px"},
-    cell: {padding: "0 1px"},
+    actionButton: {padding: "0px 4px", fontSize: "10px"},
 }
 
 type Props = {
@@ -98,19 +98,25 @@ export function QueryBodyRun(props: Props) {
     }
 
     function handleCallbackRenderRowButtons(row: any[]) {
-        // TODO buttons trigger cell hover
         return (
             <Box sx={SX.pid}>
-                <CancelIconButton
-                    color={"inherit"}
-                    size={25}
-                    onClick={() => cancelMutate({connection, pid: row[pidIndex]})}
-                />
-                <TerminateIconButton
-                    size={25}
-                    onClick={() => terminateMutate({connection, pid: row[pidIndex]})}
+                <Button
+                    sx={SX.actionButton}
+                    size={"small"}
+                    variant={"text"}
                     color={"error"}
-                />
+                    onClick={() => terminateMutate({connection, pid: row[pidIndex]})}
+                >
+                    Terminate
+                </Button>
+                <Button
+                    sx={SX.actionButton}
+                    size={"small"}
+                    variant={"text"}
+                    onClick={() => cancelMutate({connection, pid: row[pidIndex]})}
+                >
+                    Cancel
+                </Button>
             </Box>
         )
     }
