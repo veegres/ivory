@@ -180,6 +180,24 @@ func (r *QueryRouter) DeleteQueryLog(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query log was deleted"})
 }
 
+func (r *QueryRouter) PostAllRunningQueriesByApplicationName(context *gin.Context) {
+	var req QueryConnection
+	errBind := context.ShouldBindJSON(&req)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+
+	queryContext := r.getQueryContext(context, req)
+	res, err := r.queryService.GetAllRunningQueriesByApplicationName(queryContext)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": res})
+}
+
 func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {
 	var req QueryDatabasesRequest
 	errBind := context.ShouldBindJSON(&req)

@@ -183,7 +183,7 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 	conConfig.User = cred.Username
 	conConfig.Password = cred.Password
 	conConfig.RuntimeParams = map[string]string{
-		"application_name": s.getApplicationName(ctx.Token),
+		"application_name": s.GetApplicationName(ctx.Token),
 	}
 	if errConfig != nil {
 		return nil, connUrl, errConfig
@@ -207,7 +207,7 @@ func (s *PostgresClient) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	}
 }
 
-func (s *PostgresClient) getApplicationName(token string) string {
+func (s *PostgresClient) GetApplicationName(token string) string {
 	return s.appName + " [" + s.getTokenSignature(token) + "]"
 }
 

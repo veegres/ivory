@@ -63,6 +63,10 @@ func (s *QueryService) RunQuery(ctx QueryContext, query string, queryParams []an
 	return s.postgresGateway.GetFields(ctx, query, queryParams)
 }
 
+func (s *QueryService) GetAllRunningQueriesByApplicationName(ctx QueryContext) (*QueryFields, error) {
+	return s.postgresGateway.GetFields(ctx, constant.GetAllRunningQueriesByApplicationName, []any{s.postgresGateway.GetApplicationName(ctx.Token)})
+}
+
 func (s *QueryService) DatabasesQuery(ctx QueryContext, name string) ([]string, error) {
 	return s.postgresGateway.GetMany(ctx, constant.GetAllDatabases, []any{"%" + name + "%"})
 }
