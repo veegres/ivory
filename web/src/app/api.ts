@@ -235,6 +235,11 @@ export const QueryApi = {
         fn: (req: QueryRunRequest) => api.post<Response<QueryFields>>(`/query/run`, req)
             .then((response) => response.data.response),
     },
+    activity: {
+        key: (con: QueryConnection) => ["query", "activity", con],
+        fn: (req: QueryConnection) => api.post<Response<QueryFields>>(`/query/activity`, req)
+            .then((response) => response.data.response),
+    },
     databases: {
         key: (con: QueryConnection) => ["query", "databases", con],
         fn: (req: QueryDatabasesRequest) => api.post<Response<string[]>>(`/query/databases`, req)

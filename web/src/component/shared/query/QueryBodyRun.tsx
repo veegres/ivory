@@ -1,13 +1,11 @@
-import {Box, Button, Tooltip} from "@mui/material";
+import {Box, Tooltip} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
-import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {QueryRunRequest, QueryVariety} from "../../../type/query";
 import {RefreshIconButton} from "../../view/button/IconButtons";
 import {QueryVarieties} from "./QueryVarieties";
-import {VirtualizedTable} from "../../view/table/VirtualizedTable";
-import {useCallback, useMemo} from "react";
-import {useRouterQueryCancel, useRouterQueryRun, useRouterQueryTerminate} from "../../../router/query";
+import {useRouterQueryRun} from "../../../router/query";
 import {getPostgresUrl, SxPropsFormatter} from "../../../app/utils";
+import {QueryBodyTable} from "./QueryBodyTable";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -15,8 +13,6 @@ const SX: SxPropsMap = {
     label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px", whiteSpace: "nowrap"},
     word: {whiteSpace: "wrap", wordBreak: "break-all"},
     buttons: {display: "flex", alignItems: "center", gap: 1},
-    pid: {display: "flex", justifyContent: "space-evenly", color: "text.secondary", padding: "0 3px"},
-    actionButton: {padding: "0px 4px", fontSize: "10px"},
 }
 
 type Props = {
@@ -26,24 +22,20 @@ type Props = {
 
 export function QueryBodyRun(props: Props) {
     const {varieties, request} = props
-    const {connection} = request
+    const {connection, queryUuid} = request
 
     const {data, error, isFetching, refetch}  = useRouterQueryRun(request)
-    const cancel = useRouterQueryCancel(request.queryUuid)
-    const terminate = useRouterQueryTerminate(request.queryUuid)
-
-    // NOTE: we need this only to fix linter when passing to callback function
-    const cancelMutate = cancel.mutate
-    const terminateMutate = terminate.mutate
-
-    const pidIndex = useMemo(handleMemoPidIndex, [data])
-    const renderRowButtons = useCallback(handleCallbackRenderRowButtons, [cancelMutate, terminateMutate, connection, pidIndex])
-    const columns = useMemo(handleMemoColumns, [data])
 
     return (
         <Box sx={SX.box}>
             {renderInfo()}
-            {renderTable()}
+            <QueryBodyTable
+                connection={connection}
+                data={data}
+                error={error}
+                queryUuid={queryUuid}
+                loading={isFetching}
+            />
         </Box>
     )
 
@@ -62,61 +54,8 @@ export function QueryBodyRun(props: Props) {
                         </Tooltip>
                     )}
                     {varieties && <QueryVarieties varieties={varieties}/>}
-                    <RefreshIconButton
-                        color={"success"}
-                        loading={isFetching}
-                        disabled={cancel.isPending || terminate.isPending}
-                        onClick={() => refetch()}
-                    />
+                    <RefreshIconButton color={"success"} loading={isFetching} onClick={() => refetch()}/>
                 </Box>
-            </Box>
-        )
-    }
-
-    function renderTable() {
-        if (error) return <ErrorSmart error={error}/>
-        const rows = data?.rows ?? []
-
-        return (
-            <VirtualizedTable
-                rows={rows}
-                columns={columns}
-                fetching={isFetching}
-                renderRowCell={pidIndex === -1 ? undefined : renderRowButtons}
-            />
-        )
-    }
-
-    function handleMemoPidIndex() {
-        if (!data) return -1
-        return data.fields.findIndex(field => field.name === "pid")
-    }
-
-    function handleMemoColumns() {
-        if (!data) return []
-        return data.fields.map(field => ({name: field.name, description: field.dataType}))
-    }
-
-    function handleCallbackRenderRowButtons(row: any[]) {
-        return (
-            <Box sx={SX.pid}>
-                <Button
-                    sx={SX.actionButton}
-                    size={"small"}
-                    variant={"text"}
-                    color={"error"}
-                    onClick={() => terminateMutate({connection, pid: row[pidIndex]})}
-                >
-                    Terminate
-                </Button>
-                <Button
-                    sx={SX.actionButton}
-                    size={"small"}
-                    variant={"text"}
-                    onClick={() => cancelMutate({connection, pid: row[pidIndex]})}
-                >
-                    Cancel
-                </Button>
             </Box>
         )
     }

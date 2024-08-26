@@ -4,7 +4,7 @@ import {SxPropsMap} from "../../../../type/general";
 import {InstanceWeb} from "../../../../type/instance";
 
 const SX: SxPropsMap = {
-    title: {color: "text.secondary", fontWeight: "bold", verticalAlign: "top"},
+    title: {color: "text.disabled", fontWeight: "bold", verticalAlign: "top"},
     table: {td: {border: 0}, fontSize: "18px"},
     wrap: {wordBreak: "break-all"},
 }

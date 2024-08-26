@@ -47,6 +47,14 @@ export function useRouterQueryRun(request: QueryRunRequest) {
     })
 }
 
+export function useRouterActivity(connection: QueryConnection) {
+    return useQuery({
+        queryKey: QueryApi.activity.key(connection),
+        queryFn: () => QueryApi.activity.fn(connection),
+        retry: false, refetchOnWindowFocus: true, refetchInterval: 5000,
+    })
+}
+
 export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = false) {
     return useQuery({
         queryKey: QueryApi.chart.key(request),
