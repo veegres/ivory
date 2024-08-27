@@ -17,7 +17,7 @@ type Props = {
     onChange: (query: QueryRequest) => void,
 }
 
-export function QueryBodyInfoEdit(props: Props) {
+export function QueryInfoEdit(props: Props) {
     const {query, onChange} = props
 
     return (

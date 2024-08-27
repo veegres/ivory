@@ -1,5 +1,5 @@
-import {QueryBody} from "./QueryBody";
-import {QueryBodyRun} from "./QueryBodyRun";
+import {QueryBoxBody} from "./QueryBoxBody";
+import {QueryRun} from "./QueryRun";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {useState} from "react";
 import {SxPropsMap} from "../../../type/general";
@@ -49,9 +49,9 @@ export function QueryConsole(props: Props) {
                 </Box>
             </Box>
             <Paper>
-                <QueryBody show={run}>
-                    <QueryBodyRun request={{connection, query}}/>
-                </QueryBody>
+                <QueryBoxBody show={run}>
+                    <QueryRun request={{connection, query}}/>
+                </QueryBoxBody>
             </Paper>
         </Box>
     )

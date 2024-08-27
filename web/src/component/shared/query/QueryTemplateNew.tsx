@@ -2,9 +2,9 @@ import {InputBase} from "@mui/material";
 import {useEffect, useState} from "react";
 import {SxPropsMap} from "../../../type/general";
 import {QueryConnection, QueryRequest, QueryType} from "../../../type/query";
-import {QueryBody} from "./QueryBody";
-import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
-import {QueryItemWrapper} from "./QueryItemWrapper";
+import {QueryBoxBody} from "./QueryBoxBody";
+import {QueryInfoEdit} from "./QueryInfoEdit";
+import {QueryTemplateWrapper} from "./QueryTemplateWrapper";
 import {CancelIconButton} from "../../view/button/IconButtons";
 import {QueryButtonCreate} from "./QueryButtonCreate";
 
@@ -17,7 +17,7 @@ type Props = {
     connection: QueryConnection,
 }
 
-export function QueryItemNew(props: Props) {
+export function QueryTemplateNew(props: Props) {
     const {type, connection} = props
     const [body, setBody] = useState(false)
     const [queryCreate, setQueryCreate] = useState<QueryRequest>({name: "", query: "", type})
@@ -25,7 +25,7 @@ export function QueryItemNew(props: Props) {
     useEffect(handleEffectClose, [queryCreate.name, setBody]);
 
     return (
-        <QueryItemWrapper
+        <QueryTemplateWrapper
             connection={connection}
             params={queryCreate.params}
             varieties={queryCreate.varieties}
@@ -35,10 +35,10 @@ export function QueryItemNew(props: Props) {
             showInfo={true}
             query={queryCreate.query}
         >
-            <QueryBody show={body}>
-                <QueryBodyInfoEdit query={{...queryCreate, type}} onChange={setQueryCreate}/>
-            </QueryBody>
-        </QueryItemWrapper>
+            <QueryBoxBody show={body}>
+                <QueryInfoEdit query={{...queryCreate, type}} onChange={setQueryCreate}/>
+            </QueryBoxBody>
+        </QueryTemplateWrapper>
     )
 
     function renderTitle() {

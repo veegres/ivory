@@ -17,7 +17,7 @@ type Props = {
     query: Query,
 }
 
-export function QueryBodyInfoView(props: Props) {
+export function QueryInfoView(props: Props) {
     const {type, params, description, varieties, custom} = props.query
 
     return (

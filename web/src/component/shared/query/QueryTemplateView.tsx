@@ -1,10 +1,10 @@
 import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../type/query";
 import {SxPropsMap} from "../../../type/general";
-import {QueryItemWrapper} from "./QueryItemWrapper";
-import {QueryBody} from "./QueryBody";
-import {QueryBodyInfoView} from "./QueryBodyInfoView";
-import {QueryBodyInfoEdit} from "./QueryBodyInfoEdit";
-import {QueryBodyRestore} from "./QueryBodyRestore";
+import {QueryTemplateWrapper} from "./QueryTemplateWrapper";
+import {QueryBoxBody} from "./QueryBoxBody";
+import {QueryInfoView} from "./QueryInfoView";
+import {QueryInfoEdit} from "./QueryInfoEdit";
+import {QueryRestore} from "./QueryRestore";
 import {useState} from "react";
 import {
     CancelIconButton,
@@ -15,7 +15,7 @@ import {
 } from "../../view/button/IconButtons";
 import {QueryButtonDelete} from "./QueryButtonDelete";
 import {Box} from "@mui/material";
-import {QueryBodyLog} from "./QueryBodyLog";
+import {QueryLog} from "./QueryLog";
 import {QueryButtonUpdate} from "./QueryButtonUpdate";
 
 const SX: SxPropsMap = {
@@ -32,14 +32,14 @@ type Props = {
     manual: boolean,
 }
 
-export function QueryItemView(props: Props) {
+export function QueryTemplateView(props: Props) {
     const {query, connection, manual} = props
     const [toggleView, setToggleView] = useState<ViewToggleType>()
     const initQueryUpdate: QueryRequest = {...query, query: query.custom}
     const [queryUpdate, setUpdateQuery] = useState(initQueryUpdate)
 
     return (
-        <QueryItemWrapper
+        <QueryTemplateWrapper
             connection={connection}
             queryUuid={query.id}
             varieties={query.varieties}
@@ -50,19 +50,19 @@ export function QueryItemView(props: Props) {
             renderTitle={renderTitle()}
             query={query.custom}
         >
-            <QueryBody show={toggleView === ViewToggleType.VIEW}>
-                <QueryBodyInfoView query={query}/>
-            </QueryBody>
-            <QueryBody show={toggleView === ViewToggleType.EDIT}>
-                <QueryBodyInfoEdit query={queryUpdate} onChange={setUpdateQuery}/>
-            </QueryBody>
-            <QueryBody show={toggleView === ViewToggleType.RESTORE}>
-                <QueryBodyRestore query={query} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
-            </QueryBody>
-            <QueryBody show={toggleView === ViewToggleType.LOG}>
-                <QueryBodyLog queryId={query.id}/>
-            </QueryBody>
-        </QueryItemWrapper>
+            <QueryBoxBody show={toggleView === ViewToggleType.VIEW}>
+                <QueryInfoView query={query}/>
+            </QueryBoxBody>
+            <QueryBoxBody show={toggleView === ViewToggleType.EDIT}>
+                <QueryInfoEdit query={queryUpdate} onChange={setUpdateQuery}/>
+            </QueryBoxBody>
+            <QueryBoxBody show={toggleView === ViewToggleType.RESTORE}>
+                <QueryRestore query={query} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
+            </QueryBoxBody>
+            <QueryBoxBody show={toggleView === ViewToggleType.LOG}>
+                <QueryLog queryId={query.id}/>
+            </QueryBoxBody>
+        </QueryTemplateWrapper>
     )
 
     function renderTitle() {

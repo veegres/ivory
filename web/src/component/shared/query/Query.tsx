@@ -3,8 +3,8 @@ import {Box, Collapse, Skeleton} from "@mui/material";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TransitionGroup} from "react-transition-group";
 import {QueryConnection, QueryType} from "../../../type/query";
-import {QueryItemNew} from "./QueryItemNew";
-import {QueryItemView} from "./QueryItemView";
+import {QueryTemplateNew} from "./QueryTemplateNew";
+import {QueryTemplateView} from "./QueryTemplateView";
 import {useRouterInfo} from "../../../router/general";
 import {useRouterQueryList} from "../../../router/query";
 
@@ -26,7 +26,7 @@ export function Query(props: Props) {
 
     return (
         <Box style={style.box}>
-            {isManual && <QueryItemNew type={type} connection={connection}/>}
+            {isManual && <QueryTemplateNew type={type} connection={connection}/>}
             {renderList()}
         </Box>
     )
@@ -39,7 +39,7 @@ export function Query(props: Props) {
             <TransitionGroup style={style.box} appear={false}>
                 {(query.data ?? []).map((q) => (
                     <Collapse key={q.id}>
-                        <QueryItemView key={q.id} connection={connection} query={q} manual={isManual}/>
+                        <QueryTemplateView key={q.id} connection={connection} query={q} manual={isManual}/>
                     </Collapse>
                 ))}
             </TransitionGroup>

@@ -18,7 +18,7 @@ type Props = {
     onSuccess: () => void,
 }
 
-export function QueryBodyRestore(props: Props) {
+export function QueryRestore(props: Props) {
     const {query, onSuccess} = props
 
     const update = useRouterQueryUpdate(query.type, onSuccess)
