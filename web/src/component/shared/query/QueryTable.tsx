@@ -6,7 +6,7 @@ import {QueryTableActions} from "./QueryTableActions";
 
 type Props = {
     connection: QueryConnection,
-    queryUuid?: string,
+    queryKey: string,
     data?: QueryFields,
     error?: Error | null,
     loading?: boolean,
@@ -16,7 +16,7 @@ type Props = {
 }
 
 export function QueryTable(props: Props) {
-    const {data, error, loading, connection, queryUuid, showIndexColumn, height, width} = props
+    const {data, error, loading, connection, queryKey, showIndexColumn, height, width} = props
 
     const pidIndex = useMemo(handleMemoPidIndex, [data])
     const columns = useMemo(handleMemoColumns, [data])
@@ -37,7 +37,7 @@ export function QueryTable(props: Props) {
     )
 
     function renderActions(row: any[]) {
-        return <QueryTableActions connection={connection} queryUuid={queryUuid} pid={row[pidIndex]}/>
+        return <QueryTableActions connection={connection} queryKey={queryKey} pid={row[pidIndex]}/>
     }
 
     function handleMemoPidIndex() {

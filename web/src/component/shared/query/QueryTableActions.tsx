@@ -10,15 +10,14 @@ const SX: SxPropsMap = {
 
 type Props = {
     connection: QueryConnection,
-    queryUuid?: string,
+    queryKey: string,
     pid: number,
 }
 
 export function QueryTableActions(props: Props) {
-    const {connection, queryUuid, pid} = props
-    // TODO fix rerender we not always have Uuid, check (console and activity)
-    const terminate = useRouterQueryTerminate(queryUuid)
-    const cancel = useRouterQueryCancel(queryUuid)
+    const {connection, queryKey, pid} = props
+    const terminate = useRouterQueryTerminate(queryKey)
+    const cancel = useRouterQueryCancel(queryKey)
 
     return (
         <Box sx={SX.box}>
