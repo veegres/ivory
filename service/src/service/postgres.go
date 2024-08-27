@@ -9,6 +9,7 @@ import (
 	"golang.org/x/exp/slog"
 	"ivory/src/config"
 	. "ivory/src/model"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -128,12 +129,17 @@ func (s *PostgresClient) sendRequest(ctx QueryContext, query string, queryParams
 	}
 	defer s.closeConnection(conn, context.Background())
 
+	// TODO add custom limit and options to avoid query changes at all in case of bugs
+	clearedQuery := s.clearQuery(query)
+	parsed := s.parseQuery(clearedQuery)
+	limitedQuery := s.addLimitToQuery(clearedQuery, parsed, "500")
+
 	var rows pgx.Rows
 	var err error
 	if queryParams == nil {
-		rows, err = conn.Query(context.Background(), query)
+		rows, err = conn.Query(context.Background(), limitedQuery)
 	} else {
-		rows, err = conn.Query(context.Background(), query, queryParams...)
+		rows, err = conn.Query(context.Background(), limitedQuery, queryParams...)
 	}
 	if err != nil {
 		return err
@@ -151,6 +157,61 @@ func (s *PostgresClient) sendRequest(ctx QueryContext, query string, queryParams
 	}
 
 	return nil
+}
+
+func (s *PostgresClient) addLimitToQuery(query string, queryParsed QueryParsed, limit string) string {
+	if queryParsed.LIMIT == 0 && queryParsed.SELECT > 0 && queryParsed.FROM > 0 && queryParsed.EXPLAIN == 0 &&
+		queryParsed.DELETE == 0 && queryParsed.UPDATE == 0 && queryParsed.INSERT == 0 {
+		replace := " LIMIT " + limit + ";"
+		if queryParsed.Semicolon {
+			// NOTE: removing all spaces and semicolon at the end
+			regex := regexp.MustCompile("\\s*;\\s*$")
+			return regex.ReplaceAllString(query, replace)
+		} else {
+			return query + replace
+		}
+	}
+	return query
+}
+
+func (s *PostgresClient) clearQuery(query string) string {
+	// NOTE: removing all comments from the query with spaces and enters or end of string
+	regex := regexp.MustCompile("\\s*--.*\\n*")
+	return regex.ReplaceAllString(query, "")
+}
+
+func (s *PostgresClient) parseQuery(query string) QueryParsed {
+	lowerQuery := strings.ToLower(query)
+	words := strings.Fields(lowerQuery)
+	parsed := QueryParsed{LIMIT: 0, UPDATE: 0, SELECT: 0, INSERT: 0, DELETE: 0, Semicolon: false}
+	for i, word := range words {
+		// NOTE: we need this check to avoid params rename confusion
+		if i-1 > 0 && words[i-1] == "as" {
+			continue
+		}
+
+		switch word {
+		case "limit":
+			parsed.LIMIT += 1
+		case "update":
+			parsed.UPDATE += 1
+		case "insert":
+			parsed.INSERT += 1
+		case "delete":
+			parsed.DELETE += 1
+		case "select":
+			parsed.SELECT += 1
+		case "from":
+			parsed.FROM += 1
+		case "explain":
+			parsed.EXPLAIN += 1
+		}
+	}
+	lastWord := words[len(words)-1]
+	if lastWord[len(lastWord)-1:] == ";" {
+		parsed.Semicolon = true
+	}
+	return parsed
 }
 
 func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, error) {
