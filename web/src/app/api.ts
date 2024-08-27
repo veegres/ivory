@@ -231,12 +231,12 @@ export const QueryApi = {
             .then((response) => response.data.response),
     },
     run: {
-        key: (uuid?: string) => ["query", "run", uuid ?? "standalone"],
+        key: (type: string) => ["query", "run", type],
         fn: (req: QueryRunRequest) => api.post<Response<QueryFields>>(`/query/run`, req)
             .then((response) => response.data.response),
     },
     activity: {
-        key: (con: QueryConnection) => ["query", "activity", con],
+        key: () => QueryApi.run.key("activity"),
         fn: (req: QueryConnection) => api.post<Response<QueryFields>>(`/query/activity`, req)
             .then((response) => response.data.response),
     },

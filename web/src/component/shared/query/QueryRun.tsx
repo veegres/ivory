@@ -33,7 +33,7 @@ export function QueryRun(props: Props) {
                 connection={connection}
                 data={data}
                 error={error}
-                queryUuid={queryUuid}
+                queryKey={queryUuid ?? "console"}
                 loading={isFetching}
             />
         </Box>

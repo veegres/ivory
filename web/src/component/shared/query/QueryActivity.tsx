@@ -24,6 +24,7 @@ export function QueryActivity(props: Props) {
             </Box>
             <QueryTable
                 connection={connection}
+                queryKey={"activity"}
                 height={200}
                 width={320}
                 data={data}

@@ -41,7 +41,7 @@ export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
 export function useRouterQueryRun(request: QueryRunRequest) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: QueryApi.run.key(request.queryUuid),
+        queryKey: QueryApi.run.key(request.queryUuid ?? "console"),
         queryFn: () => QueryApi.run.fn(request.queryUuid ? {...request, query: undefined} : request),
         retry: false, refetchOnWindowFocus: false, structuralSharing: false,
     })
@@ -49,7 +49,8 @@ export function useRouterQueryRun(request: QueryRunRequest) {
 
 export function useRouterActivity(connection: QueryConnection) {
     return useQuery({
-        queryKey: QueryApi.activity.key(connection),
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: QueryApi.activity.key(),
         queryFn: () => QueryApi.activity.fn(connection),
         retry: false, refetchOnWindowFocus: true, refetchInterval: 5000,
     })
@@ -90,19 +91,19 @@ export function useRouterQueryTables(connection: QueryConnection, params: any, e
     })
 }
 
-export function useRouterQueryCancel(uuid?: string) {
+export function useRouterQueryCancel(queryKey: string) {
     return useMutationAdapter({
         mutationFn: QueryApi.cancel.fn,
         mutationKey: QueryApi.cancel.key(),
-        successKeys: [QueryApi.run.key(uuid)],
+        successKeys: [QueryApi.run.key(queryKey)],
     })
 }
 
-export function useRouterQueryTerminate(uuid?: string) {
+export function useRouterQueryTerminate(queryKey: string) {
     return useMutationAdapter({
         mutationFn: QueryApi.terminate.fn,
         mutationKey: QueryApi.terminate.key(),
-        successKeys: [QueryApi.run.key(uuid)],
+        successKeys: [QueryApi.run.key(queryKey)],
     })
 }
 
