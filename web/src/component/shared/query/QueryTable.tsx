@@ -2,7 +2,7 @@ import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {VirtualizedTable} from "../../view/table/VirtualizedTable";
 import {QueryConnection, QueryFields} from "../../../type/query";
 import {useMemo} from "react";
-import {QueryBodyTableKillButton} from "./QueryBodyTableKillButton";
+import {QueryTableActions} from "./QueryTableActions";
 
 type Props = {
     connection: QueryConnection,
@@ -15,7 +15,7 @@ type Props = {
     showIndexColumn?: boolean,
 }
 
-export function QueryBodyTable(props: Props) {
+export function QueryTable(props: Props) {
     const {data, error, loading, connection, queryUuid, showIndexColumn, height, width} = props
 
     const pidIndex = useMemo(handleMemoPidIndex, [data])
@@ -37,7 +37,7 @@ export function QueryBodyTable(props: Props) {
     )
 
     function renderActions(row: any[]) {
-        return <QueryBodyTableKillButton connection={connection} queryUuid={queryUuid} pid={row[pidIndex]}/>
+        return <QueryTableActions connection={connection} queryUuid={queryUuid} pid={row[pidIndex]}/>
     }
 
     function handleMemoPidIndex() {

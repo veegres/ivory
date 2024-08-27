@@ -1,6 +1,6 @@
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
-import {QueryBodyLogItem} from "./QueryBodyLogItem";
+import {QueryLogItem} from "./QueryLogItem";
 import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {NoBox} from "../../view/box/NoBox";
@@ -17,7 +17,7 @@ type Props = {
     queryId: string,
 }
 
-export function QueryBodyLog(props: Props) {
+export function QueryLog(props: Props) {
     const {queryId} = props
     const result = useRouterQueryLog(queryId)
     const clear = useRouterQueryLogDelete(queryId)
@@ -44,7 +44,7 @@ export function QueryBodyLog(props: Props) {
         if (!result.data?.length) return <NoBox text={"Query log is empty"}/>
 
         return result.data.map((query, index) => (
-            <QueryBodyLogItem key={index} index={index} query={query} />
+            <QueryLogItem key={index} index={index} query={query} />
         ))
     }
 }

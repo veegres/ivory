@@ -1,6 +1,6 @@
 import {QueryConnection} from "../../../type/query";
 import {useRouterActivity} from "../../../router/query";
-import {QueryBodyTable} from "./QueryBodyTable";
+import {QueryTable} from "./QueryTable";
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
 
@@ -22,7 +22,7 @@ export function QueryActivity(props: Props) {
                 <Box>User Active Queries</Box>
                 <Box sx={SX.help}>[ hold shift for horizontal scrolling ]</Box>
             </Box>
-            <QueryBodyTable
+            <QueryTable
                 connection={connection}
                 height={200}
                 width={320}

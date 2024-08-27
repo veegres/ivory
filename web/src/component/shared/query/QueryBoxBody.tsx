@@ -12,7 +12,7 @@ type Props = {
     unmountOnExit?: boolean,
 }
 
-export function QueryBody(props: Props) {
+export function QueryBoxBody(props: Props) {
     const {show, children, unmountOnExit = true} = props
 
     return (

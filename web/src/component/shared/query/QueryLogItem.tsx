@@ -21,7 +21,7 @@ type Props = {
     query: QueryFields,
 }
 
-export function QueryBodyLogItem(props: Props) {
+export function QueryLogItem(props: Props) {
     const {query, index} = props
     const [open, setOpen] = useState(false)
     const [show, setShow] = useState(false)

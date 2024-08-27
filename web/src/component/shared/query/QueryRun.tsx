@@ -5,7 +5,7 @@ import {RefreshIconButton} from "../../view/button/IconButtons";
 import {QueryVarieties} from "./QueryVarieties";
 import {useRouterQueryRun} from "../../../router/query";
 import {getPostgresUrl, SxPropsFormatter} from "../../../app/utils";
-import {QueryBodyTable} from "./QueryBodyTable";
+import {QueryTable} from "./QueryTable";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -20,7 +20,7 @@ type Props = {
     request: QueryRunRequest,
 }
 
-export function QueryBodyRun(props: Props) {
+export function QueryRun(props: Props) {
     const {varieties, request} = props
     const {connection, queryUuid} = request
 
@@ -29,7 +29,7 @@ export function QueryBodyRun(props: Props) {
     return (
         <Box sx={SX.box}>
             {renderInfo()}
-            <QueryBodyTable
+            <QueryTable
                 connection={connection}
                 data={data}
                 error={error}

@@ -20,7 +20,7 @@ type Props = {
     renderButtons: ReactNode,
 }
 
-export function QueryHead(props: Props) {
+export function QueryTemplateHead(props: Props) {
     const {renderButtons, renderTitle, renderHiddenButtons, showAllButtons} = props
     const [showMouse, setShowMouse] = useState(false)
 

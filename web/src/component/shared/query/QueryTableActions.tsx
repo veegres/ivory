@@ -14,7 +14,7 @@ type Props = {
     pid: number,
 }
 
-export function QueryBodyTableKillButton(props: Props) {
+export function QueryTableActions(props: Props) {
     const {connection, queryUuid, pid} = props
     // TODO fix rerender we not always have Uuid, check (console and activity)
     const terminate = useRouterQueryTerminate(queryUuid)

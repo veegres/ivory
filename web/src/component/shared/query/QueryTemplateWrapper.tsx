@@ -1,9 +1,9 @@
 import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton,} from "../../view/button/IconButtons";
 import {ReactNode, useMemo, useState} from "react";
-import {QueryBody} from "./QueryBody";
-import {QueryBodyRun} from "./QueryBodyRun";
+import {QueryBoxBody} from "./QueryBoxBody";
+import {QueryRun} from "./QueryRun";
 import {QueryConnection, QueryVariety} from "../../../type/query";
-import {QueryHead} from "./QueryHead";
+import {QueryTemplateHead} from "./QueryTemplateHead";
 import {QueryBoxPaper} from "./QueryBoxPaper";
 import {FixedInputs} from "../../view/input/FixedInputs";
 import {Alert} from "@mui/material";
@@ -30,7 +30,7 @@ type Props = {
     query: string,
 }
 
-export function QueryItemWrapper(props: Props) {
+export function QueryTemplateWrapper(props: Props) {
     const {queryUuid, params, varieties, query} = props
     const {connection, showInfo, showButtons} = props
     const {children, renderButtons, renderTitle} = props
@@ -41,13 +41,13 @@ export function QueryItemWrapper(props: Props) {
 
     return (
         <QueryBoxPaper>
-            <QueryHead
+            <QueryTemplateHead
                 renderTitle={renderTitle}
                 showAllButtons={showButtons}
                 renderHiddenButtons={renderHiddeTitleButtons()}
                 renderButtons={renderTitleButtons()}
             />
-            <QueryBody show={showInfo && checkView[ViewCheckType.EDIT_INFO]}>
+            <QueryBoxBody show={showInfo && checkView[ViewCheckType.EDIT_INFO]}>
                 <Alert severity={"info"}>
                     The fields <i>name</i> and <i>query</i> are required. To enable termination and query
                     cancellation buttons in the table you need to call postgres <i>process_id</i> as <i>pid</i> (buttons
@@ -56,14 +56,14 @@ export function QueryItemWrapper(props: Props) {
                     You need to provide params names in a block with params and use <i>$1</i>, <i>$2</i>, etc to
                     define param fields in the query.
                 </Alert>
-            </QueryBody>
+            </QueryBoxBody>
             {children}
-            <QueryBody show={checkView[ViewCheckType.PARAMS]} unmountOnExit={false}>
+            <QueryBoxBody show={checkView[ViewCheckType.PARAMS]} unmountOnExit={false}>
                 <FixedInputs placeholders={params ?? []} values={paramsValues} onChange={setParamsValues}/>
-            </QueryBody>
-            <QueryBody show={checkView[ViewCheckType.RUN]}>
-                <QueryBodyRun request={queryRunRequest} varieties={varieties}/>
-            </QueryBody>
+            </QueryBoxBody>
+            <QueryBoxBody show={checkView[ViewCheckType.RUN]}>
+                <QueryRun request={queryRunRequest} varieties={varieties}/>
+            </QueryBoxBody>
         </QueryBoxPaper>
     )
 
