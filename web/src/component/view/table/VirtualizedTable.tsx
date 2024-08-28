@@ -69,11 +69,14 @@ export function VirtualizedTable(props: Props) {
     // NOTE: we need to multiply by 2 because we have padding between table and scroll and sometimes
     //  scroll can be presented or not, so it is safer to always multiple
     const cellOffset = cellWidthStickyIndex + cellWidthStickyAction + (scrollSize * 2)
-    const cellWidth = useMemo(() => width ? (width - cellOffset) / columnSize : 100, [cellOffset, columnSize, width])
+    const cellDefaultWidth = 100
+    const cellMinWidth = 50
     const cellHeight = 30
     // NOTE: calculate the cell width, the component should be rendered from scratch to change the size,
-    //  this is how useVirtualizer work (-1 is needed to always choose 100 if width is unknown)
-    const cellCalcWidth = useMemo(() => Math.max((((ref?.clientWidth ?? -1) - cellOffset) / columnSize), cellWidth), [cellOffset, cellWidth, columnSize, ref?.clientWidth])
+    //  this is how useVirtualizer work. Nuances:
+    //  - we need -1 is needed to always choose 100 if width is unknown
+    //  - if someone provided column value we want to make column smaller that is why cellMinWidth is used
+    const cellCalcWidth = useMemo(() => Math.max((((ref?.clientWidth ?? -1) - cellOffset) / columnSize), width ? cellMinWidth : cellDefaultWidth), [cellOffset, columnSize, ref?.clientWidth, width])
 
     const rowVirtualizer = useVirtualizer({
         count: rows.length,
@@ -91,11 +94,11 @@ export function VirtualizedTable(props: Props) {
         scrollPaddingStart: cellWidthStickyIndex,
         scrollPaddingEnd: cellWidthStickyAction,
         overscan: 3,
-        // NOTE: this helps to use cellWidth, because in first render when we don't have ref, it
+        // NOTE: this helps to use cellDefaultWidth, because in first render when we don't have ref, it
         //  renders incorrect size
         enabled: ref !== null,
     })
-    const columnDragger = useDragger(columnVirtualizer.resizeItem)
+    const columnDragger = useDragger(cellMinWidth, columnVirtualizer.resizeItem)
 
     const boxWidthPx = width ? `${width}px` : "100%"
     const boxHeightPx = `${height}px`
