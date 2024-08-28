@@ -4,6 +4,7 @@ import {SxPropsMap} from "../../../type/general";
 import {QueryFields} from "../../../type/query";
 import {useMemo, useState} from "react";
 import {KeyboardArrowDown} from "@mui/icons-material";
+import {QueryResponseInfo} from "./QueryResponseInfo";
 
 const SX: SxPropsMap = {
     box: {borderBottom: 1, borderColor: "divider", "&::before": {display: "none"}, "&:last-child": {borderBottom: 0}},
@@ -12,7 +13,6 @@ const SX: SxPropsMap = {
         "& .MuiAccordionSummary-content": {margin: "5px 0", gap: 1, alignItems: "center"}
     },
     details: {padding: "0 5px 5px"},
-    info: {display: "flex", justifyContent: "space-between", fontSize: "12px", color: "text.secondary", gap: 1},
     number: {color: "text.secondary", width: "20px", textAlign: "center"},
 }
 
@@ -23,13 +23,13 @@ type Props = {
 
 export function QueryLogItem(props: Props) {
     const {query, index} = props
+    const {fields, options, endTime, startTime} = query
     const [open, setOpen] = useState(false)
     const [show, setShow] = useState(false)
 
-    const columns = useMemo(handleMemoColumns, [query.fields])
+    const columns = useMemo(handleMemoColumns, [fields])
 
-    const endDate = new Date(query.endTime)
-    const durationSec = (query.endTime - query.startTime) / 1000
+    const endDate = new Date(endTime)
     return (
         <Accordion
             sx={SX.box}
@@ -42,12 +42,10 @@ export function QueryLogItem(props: Props) {
         >
             <AccordionSummary sx={SX.summary} expandIcon={<KeyboardArrowDown sx={{fontSize: "20px"}}/>}>
                 <Box sx={SX.number}>{index+1}</Box>
-                <Box>{endDate.toLocaleString()}</Box>
-                {(open || show) && (
-                    <Box sx={SX.info}>
-                        <Box>[ {query.url} ]</Box>
-                        <Box>[ {durationSec}s ]</Box>
-                    </Box>
+                {!open && !show ? (
+                    <Box>{endDate.toLocaleString()}</Box>
+                ) : (
+                    <QueryResponseInfo url={query.url} time={{start: startTime, end: endTime}} options={options}/>
                 )}
             </AccordionSummary>
             <AccordionDetails sx={SX.details}>
@@ -57,6 +55,6 @@ export function QueryLogItem(props: Props) {
     )
 
     function handleMemoColumns() {
-        return query.fields.map(field => ({name: field.name, description: field.dataType}))
+        return fields.map(field => ({name: field.name, description: field.dataType}))
     }
 }

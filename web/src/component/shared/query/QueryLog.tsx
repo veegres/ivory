@@ -43,7 +43,7 @@ export function QueryLog(props: Props) {
         if (result.error) return <ErrorSmart error={result.error}/>
         if (!result.data?.length) return <NoBox text={"Query log is empty"}/>
 
-        return result.data.map((query, index) => (
+        return result.data.toReversed().map((query, index) => (
             <QueryLogItem key={index} index={index} query={query} />
         ))
     }

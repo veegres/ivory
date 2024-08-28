@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../type/general";
 import {Box} from "@mui/material";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", alignItems: "center", gap: 1},
+    box: {display: "flex", alignItems: "center", gap: 1, padding: "0px 5px"},
 }
 
 type Props = {
