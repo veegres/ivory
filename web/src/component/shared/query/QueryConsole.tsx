@@ -50,7 +50,7 @@ export function QueryConsole(props: Props) {
             </Box>
             <Paper>
                 <QueryBoxBody show={run}>
-                    <QueryRun request={{connection, query}}/>
+                    <QueryRun connection={connection} query={query}/>
                 </QueryBoxBody>
             </Paper>
         </Box>

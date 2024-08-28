@@ -131,7 +131,7 @@ export function OverviewInstancesRow(props: Props) {
     function renderMenuButtons() {
         if (role === "unknown") return null
         return (
-            <MenuButton size={"small"}>
+            <MenuButton>
                 <ScheduleButton request={request} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
                 <FailoverButton request={request} cluster={cluster.name} disabled={instance.leader}/>
                 <RestartButton request={request} cluster={cluster.name}/>

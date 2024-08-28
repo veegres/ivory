@@ -59,11 +59,17 @@ type QueryConnection struct {
 	CredentialId *uuid.UUID `json:"credentialId"`
 }
 
+type QueryOptions struct {
+	Params []any   `json:"params"`
+	Limit  *string `json:"limit"`
+	Trim   *bool   `json:"trim"`
+}
+
 type QueryRunRequest struct {
-	Connection  QueryConnection `json:"connection"`
-	QueryUuid   *uuid.UUID      `json:"queryUuid"`
-	Query       *string         `json:"query"`
-	QueryParams []any           `json:"queryParams"`
+	Connection   QueryConnection `json:"connection"`
+	QueryUuid    *uuid.UUID      `json:"queryUuid"`
+	Query        *string         `json:"query"`
+	QueryOptions *QueryOptions   `json:"queryOptions"`
 }
 
 type QueryKillRequest struct {
@@ -117,11 +123,12 @@ type QueryChart struct {
 }
 
 type QueryFields struct {
-	Fields    []QueryField `json:"fields"`
-	Rows      [][]any      `json:"rows"`
-	StartTime int64        `json:"startTime"`
-	EndTime   int64        `json:"endTime"`
-	Url       string       `json:"url"`
+	Fields    []QueryField  `json:"fields"`
+	Rows      [][]any       `json:"rows"`
+	StartTime int64         `json:"startTime"`
+	EndTime   int64         `json:"endTime"`
+	Url       string        `json:"url"`
+	Options   *QueryOptions `json:"options"`
 }
 
 // SPECIFIC (SERVER)

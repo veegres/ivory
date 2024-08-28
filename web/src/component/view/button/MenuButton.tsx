@@ -1,7 +1,7 @@
 import {ReactNode, useState} from "react";
-import {Box, Collapse, IconButton, Paper} from "@mui/material";
-import {MoreVert} from "@mui/icons-material";
+import {Box, Collapse, Paper} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
+import {MoreIconButton} from "./IconButtons";
 
 const SX: SxPropsMap = {
     box: {position: "relative"},
@@ -11,7 +11,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     children: ReactNode,
-    size?: "small" | "medium" | "large",
+    size?: number,
 }
 
 export function MenuButton(props: Props) {
@@ -25,9 +25,7 @@ export function MenuButton(props: Props) {
                     {children}
                 </Paper>
             </Collapse>
-            <IconButton size={size} onClick={() => setOpen(!open)}>
-                <MoreVert/>
-            </IconButton>
+            <MoreIconButton size={size} onClick={() => setOpen(!open)}/>
         </Box>
     )
 

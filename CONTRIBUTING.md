@@ -15,7 +15,7 @@ Here are some important resources:
 
 ## Testing
 
-We don't have tests yet, so you need to test everything manually and good practice, before creating PR to make regrassion testing of all functionality. It is not requriered, but if you not sure or you change some critical part, it is better to spend some time doing this.
+We don't have tests yet, so you need to test everything manually and good practice, before creating PR to make regression testing of all functionality. It is not required, but if you not sure or you change some critical part, it is better to spend some time doing this.
 
 ## Submitting changes
 
@@ -40,7 +40,7 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
     - `Props` types should be created as `type` above the component
     - You should avoid creation of types inside the functions
     - All components should be written as function (you can create nested functions inside component if you want to separate logic and simplify code
-      readability, but please try to avoid outer variables, especially if this variable can be prop)
+      readability, but please try to avoid outer variables, especially if this variable can be used as a prop)
 
 - **GO**
     - in progress 
