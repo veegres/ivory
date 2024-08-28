@@ -1,5 +1,5 @@
 import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton,} from "../../view/button/IconButtons";
-import {ReactNode, useMemo, useState} from "react";
+import {ReactNode, useState} from "react";
 import {QueryBoxBody} from "./QueryBoxBody";
 import {QueryRun} from "./QueryRun";
 import {QueryConnection, QueryVariety} from "../../../type/query";
@@ -10,7 +10,7 @@ import {Alert} from "@mui/material";
 
 enum ViewCheckType {RUN, PARAMS, EDIT_INFO}
 
-type ViewCheckMap = {[key in ViewCheckType]: boolean}
+type ViewCheckMap = { [key in ViewCheckType]: boolean }
 const initialViewCheckMap: ViewCheckMap = {
     [ViewCheckType.RUN]: false,
     [ViewCheckType.PARAMS]: false,
@@ -37,7 +37,6 @@ export function QueryTemplateWrapper(props: Props) {
 
     const [checkView, setCheckView] = useState(initialViewCheckMap)
     const [paramsValues, setParamsValues] = useState<string[]>(params?.map(() => "") ?? [])
-    const queryRunRequest = useMemo( () => ({queryUuid, query, connection, queryParams: paramsValues}), [connection, paramsValues, query, queryUuid])
 
     return (
         <QueryBoxPaper>
@@ -62,7 +61,13 @@ export function QueryTemplateWrapper(props: Props) {
                 <FixedInputs placeholders={params ?? []} values={paramsValues} onChange={setParamsValues}/>
             </QueryBoxBody>
             <QueryBoxBody show={checkView[ViewCheckType.RUN]}>
-                <QueryRun request={queryRunRequest} varieties={varieties}/>
+                <QueryRun
+                    connection={connection}
+                    queryUuid={queryUuid}
+                    query={query}
+                    params={paramsValues}
+                    varieties={varieties}
+                />
             </QueryBoxBody>
         </QueryBoxPaper>
     )
@@ -97,15 +102,18 @@ export function QueryTemplateWrapper(props: Props) {
 
     function renderQueryParamsButton() {
         return !checkView[ViewCheckType.PARAMS] ? (
-            <QueryParamsIconButton color={"secondary"} disabled={!params || params.length == 0} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
+            <QueryParamsIconButton color={"secondary"} disabled={!params || params.length == 0}
+                                   onClick={handleCheckView(ViewCheckType.PARAMS)}/>
         ) : (
-            <CancelIconButton color={"secondary"} tooltip={"Close Query Params"} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
+            <CancelIconButton color={"secondary"} tooltip={"Close Query Params"}
+                              onClick={handleCheckView(ViewCheckType.PARAMS)}/>
         )
     }
 
     function renderRunButton() {
         return !checkView[ViewCheckType.RUN] ? (
-            <PlayIconButton color={"success"} disabled={!query && !queryUuid} onClick={handleCheckView(ViewCheckType.RUN)}/>
+            <PlayIconButton color={"success"} disabled={!query && !queryUuid}
+                            onClick={handleCheckView(ViewCheckType.RUN)}/>
         ) : (
             <CancelIconButton color={"success"} tooltip={"Close"} onClick={handleCheckView(ViewCheckType.RUN)}/>
         )

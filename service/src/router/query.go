@@ -138,10 +138,10 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 	var err error
 	queryContext := r.getQueryContext(context, req.Connection)
 	if req.QueryUuid != nil {
-		res, err = r.queryService.RunTemplateQuery(queryContext, *req.QueryUuid, req.QueryParams)
+		res, err = r.queryService.RunTemplateQuery(queryContext, *req.QueryUuid, req.QueryOptions)
 	}
 	if req.Query != nil {
-		res, err = r.queryService.RunQuery(queryContext, *req.Query, req.QueryParams)
+		res, err = r.queryService.RunQuery(queryContext, *req.Query, req.QueryOptions)
 	}
 
 	if err != nil {

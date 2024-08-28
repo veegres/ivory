@@ -51,11 +51,17 @@ export interface QueryConnection {
     credentialId?: string,
 }
 
+export interface QueryOptions {
+    params?: string[],
+    trim?: boolean,
+    limit?: string,
+}
+
 export interface QueryRunRequest {
     connection: QueryConnection,
     queryUuid?: string,
     query?: string,
-    queryParams?: string[],
+    queryOptions?: QueryOptions,
 }
 
 export interface QueryKillRequest {
@@ -113,6 +119,7 @@ export interface QueryFields {
     url: string,
     startTime: number,
     endTime: number,
+    options?: QueryOptions,
 }
 
 // SPECIFIC (WEB)

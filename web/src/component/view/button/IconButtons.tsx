@@ -3,8 +3,8 @@ import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/
 import {
     Add,
     ArrowBack,
-    AutoFixHigh, AutoMode,
-    Block,
+    AutoFixHigh,
+    AutoMode,
     Cached,
     Cancel,
     CheckCircle,
@@ -14,7 +14,7 @@ import {
     Delete,
     Edit,
     Info,
-    ManageSearch,
+    ManageSearch, MoreVert,
     PendingActions,
     PlayArrow,
     Receipt,
@@ -76,11 +76,6 @@ export function DeleteIconButton(props: Props) {
 export function CancelIconButton(props: Props) {
     const {disabled, tooltip} = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<Cancel/>} tooltip={tooltip ?? "Cancel"}/>
-}
-
-export function TerminateIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Block/>} tooltip={"Terminate"}/>
 }
 
 export function SaveIconButton(props: Props) {
@@ -156,4 +151,9 @@ export function InfoIconButton(props: Props) {
 export function ClearAllIconButton(props: Props) {
     const {disabled} = props
     return <IconButton {...props} disabled={disabled ?? false} icon={<ClearAll/>} tooltip={"Clear All"}/>
+}
+
+export function MoreIconButton(props: Props) {
+    const {disabled} = props
+    return <IconButton {...props} disabled={disabled ?? false} icon={<MoreVert/>} tooltip={"More"}/>
 }

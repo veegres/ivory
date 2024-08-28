@@ -70,14 +70,26 @@ func (s *PostgresClient) GetOne(ctx QueryContext, query string) (any, error) {
 	return value, nil
 }
 
-func (s *PostgresClient) GetFields(ctx QueryContext, query string, queryParams []any) (*QueryFields, error) {
+func (s *PostgresClient) GetFields(ctx QueryContext, query string, options *QueryOptions) (*QueryFields, error) {
 	startTime := time.Now().UnixMilli()
 
 	fields := make([]QueryField, 0)
 	rowList := make([][]any, 0)
 	url := "-"
 
-	errReq := s.sendRequest(ctx, query, queryParams, func(rows pgx.Rows, typeMap *pgtype.Map, connUrl string) error {
+	opt := QueryOptions{}
+	if options != nil {
+		opt.Limit = options.Limit
+		opt.Trim = options.Trim
+		opt.Params = options.Params
+	}
+
+	normalizedQuery, errNormQuery := s.normalizeQuery(query, opt.Trim, opt.Limit)
+	if errNormQuery != nil {
+		return nil, errNormQuery
+	}
+
+	errReq := s.sendRequest(ctx, normalizedQuery, opt.Params, func(rows pgx.Rows, typeMap *pgtype.Map, connUrl string) error {
 		url = connUrl
 		for _, field := range rows.FieldDescriptions() {
 			dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
@@ -96,7 +108,6 @@ func (s *PostgresClient) GetFields(ctx QueryContext, query string, queryParams [
 		}
 		return nil
 	})
-
 	if errReq != nil {
 		return nil, errReq
 	}
@@ -108,6 +119,7 @@ func (s *PostgresClient) GetFields(ctx QueryContext, query string, queryParams [
 		Url:       url,
 		StartTime: startTime,
 		EndTime:   endTime,
+		Options:   options,
 	}
 	return res, nil
 }
@@ -129,17 +141,12 @@ func (s *PostgresClient) sendRequest(ctx QueryContext, query string, queryParams
 	}
 	defer s.closeConnection(conn, context.Background())
 
-	// TODO add custom limit and options to avoid query changes at all in case of bugs
-	clearedQuery := s.clearQuery(query)
-	parsed := s.parseQuery(clearedQuery)
-	limitedQuery := s.addLimitToQuery(clearedQuery, parsed, "500")
-
 	var rows pgx.Rows
 	var err error
 	if queryParams == nil {
-		rows, err = conn.Query(context.Background(), limitedQuery)
+		rows, err = conn.Query(context.Background(), query)
 	} else {
-		rows, err = conn.Query(context.Background(), limitedQuery, queryParams...)
+		rows, err = conn.Query(context.Background(), query, queryParams...)
 	}
 	if err != nil {
 		return err
@@ -159,6 +166,22 @@ func (s *PostgresClient) sendRequest(ctx QueryContext, query string, queryParams
 	return nil
 }
 
+func (s *PostgresClient) normalizeQuery(query string, trim *bool, limit *string) (string, error) {
+	if trim == nil || *trim == false {
+		if limit != nil {
+			return "", errors.New("cannot limit query without trimming it")
+		} else {
+			return query, nil
+		}
+	}
+	trimmedQuery := s.trimQuery(query)
+	if limit == nil {
+		return trimmedQuery, nil
+	}
+	parsed := s.parseQuery(trimmedQuery)
+	return s.addLimitToQuery(trimmedQuery, parsed, *limit), nil
+}
+
 func (s *PostgresClient) addLimitToQuery(query string, queryParsed QueryParsed, limit string) string {
 	if queryParsed.LIMIT == 0 && queryParsed.SELECT > 0 && queryParsed.FROM > 0 && queryParsed.EXPLAIN == 0 &&
 		queryParsed.DELETE == 0 && queryParsed.UPDATE == 0 && queryParsed.INSERT == 0 {
@@ -174,7 +197,7 @@ func (s *PostgresClient) addLimitToQuery(query string, queryParsed QueryParsed, 
 	return query
 }
 
-func (s *PostgresClient) clearQuery(query string) string {
+func (s *PostgresClient) trimQuery(query string) string {
 	// NOTE: removing all comments from the query with spaces and enters or end of string
 	regex := regexp.MustCompile("\\s*--.*\\n*")
 	return regex.ReplaceAllString(query, "")

@@ -43,28 +43,29 @@ func (s *QueryService) DeleteLog(queryUuid uuid.UUID) error {
 	return s.queryRepository.DeleteLog(queryUuid)
 }
 
-func (s *QueryService) RunTemplateQuery(ctx QueryContext, queryUuid uuid.UUID, queryParams []any) (*QueryFields, error) {
-	query, errQuery := s.queryRepository.Get(queryUuid)
+func (s *QueryService) RunTemplateQuery(ctx QueryContext, uuid uuid.UUID, options *QueryOptions) (*QueryFields, error) {
+	query, errQuery := s.queryRepository.Get(uuid)
 	if errQuery != nil {
 		return nil, errQuery
 	}
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
-	response, errRun := s.RunQuery(ctx, query.Custom, queryParams)
+	response, errRun := s.RunQuery(ctx, query.Custom, options)
 	if errRun == nil && len(response.Rows) > 0 {
 		// NOTE: we don't want fail request if there is some problem with writing to the file
-		_ = s.queryRepository.AddLog(queryUuid, response)
+		_ = s.queryRepository.AddLog(uuid, response)
 	}
 	return response, errRun
 }
 
-func (s *QueryService) RunQuery(ctx QueryContext, query string, queryParams []any) (*QueryFields, error) {
-	return s.postgresGateway.GetFields(ctx, query, queryParams)
+func (s *QueryService) RunQuery(ctx QueryContext, query string, options *QueryOptions) (*QueryFields, error) {
+	return s.postgresGateway.GetFields(ctx, query, options)
 }
 
 func (s *QueryService) GetAllRunningQueriesByApplicationName(ctx QueryContext) (*QueryFields, error) {
-	return s.postgresGateway.GetFields(ctx, constant.GetAllRunningQueriesByApplicationName, []any{s.postgresGateway.GetApplicationName(ctx.Token)})
+	options := &QueryOptions{Params: []any{s.postgresGateway.GetApplicationName(ctx.Token)}}
+	return s.postgresGateway.GetFields(ctx, constant.GetAllRunningQueriesByApplicationName, options)
 }
 
 func (s *QueryService) DatabasesQuery(ctx QueryContext, name string) ([]string, error) {

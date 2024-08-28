@@ -3,8 +3,8 @@ import {ColorsMap, SxPropsMap} from "../../../type/general";
 import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
-    chip: {width: '100%'},
-    input: {height: '32px'},
+    chip: {width: "100%"},
+    input: {height: "32px"},
     box: {display: "grid", gridTemplateColumns: "repeat(auto-fill, 175px)", gap: 1},
     label: {display: "flex", gap: 1},
 }

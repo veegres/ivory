@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
-    input: { height: "36px" },
+    input: {height: "36px"},
 }
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
 }
 
 export function CredentialsInput(props: Props) {
-    const { label, type, value, disabled, onChange, error: initError = false } = props
+    const {label, type, value, disabled, onChange, error: initError = false} = props
     const [error, setError] = useState(false)
 
     useEffect(() => { if (!initError) setError(false) }, [initError])

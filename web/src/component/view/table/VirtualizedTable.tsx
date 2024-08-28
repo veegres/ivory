@@ -215,7 +215,7 @@ export function VirtualizedTable(props: Props) {
             const transform = `translateY(${virtualRow.start}px)`
             return (
                 <Box key={virtualRow.key} sx={SX.cellFixed} style={{width: cellWidthStickyActionPx, height: cellHeightPx, transform}}>
-                    <MenuButton size={"small"}>{renderRowActions(row)}</MenuButton>
+                    <MenuButton>{renderRowActions(row)}</MenuButton>
                 </Box>
             )
         })
