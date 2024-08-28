@@ -66,7 +66,7 @@ export function QueryRun(props: Props) {
                     {varieties && <QueryVarieties varieties={varieties}/>}
                     <RefreshIconButton color={"success"} loading={isFetching} onClick={() => refetch()}/>
                     <MenuButton>
-                        <Tooltip title={"Trim and Clean Comments"} placement={"top"}>
+                        <Tooltip title={"Trim and Remove Comments"} placement={"top"}>
                             <Checkbox
                                 sx={SX.checkbox}
                                 size={"small"}
@@ -89,14 +89,16 @@ export function QueryRun(props: Props) {
                                 disabled={!trim}
                             />
                         </Tooltip>
-                        <OutlinedInput
-                            sx={SX.limit}
-                            size={"small"}
-                            value={limit}
-                            placeholder={"no limit"}
-                            onChange={(e) => setLimit(e.target.value)}
-                            disabled={!trim || !limit}
-                        />
+                        <Tooltip title={"Limit Number"} placement={"top"}>
+                            <OutlinedInput
+                                sx={SX.limit}
+                                size={"small"}
+                                value={limit}
+                                placeholder={"no limit"}
+                                onChange={(e) => setLimit(e.target.value)}
+                                disabled={!trim || !limit}
+                            />
+                        </Tooltip>
                     </MenuButton>
                 </Box>
             </Box>
