@@ -15,7 +15,8 @@ const SX: SxPropsMap = {
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2},
     label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px", whiteSpace: "nowrap"},
     word: {whiteSpace: "wrap", wordBreak: "break-all"},
-    buttons: {display: "flex", alignItems: "center", gap: 1},
+    infoRight: {display: "flex", alignItems: "center", gap: 1},
+    buttons: {display: "flex", alignItems: "center"},
     limit: {height: "26px", width: "90px", fontSize: "14px"},
     checkbox: {height: "26px", width: "26px"},
 }
@@ -60,47 +61,52 @@ export function QueryRun(props: Props) {
                         [ {getPostgresUrl(connection)} ]
                     </Box>
                 </Tooltip>
-                <Box sx={SX.buttons}>
+                <Box sx={SX.infoRight}>
                     {varieties && <QueryVarieties varieties={varieties}/>}
-                    {!isFetching && data && (
-                        <Tooltip title={"DURATION"} placement={"left"} arrow={true}>
+                    {!isFetching && data && (<>
+                        <Tooltip title={"LIMIT"} placement={"top"}>
+                            <Box sx={SX.label}>[ {data.options?.limit ?? "NO LIMIT"} ]</Box>
+                        </Tooltip>
+                        <Tooltip title={"DURATION"} placement={"top"}>
                             <Box sx={SX.label}>[ {(data.endTime - data.startTime) / 1000}s ]</Box>
                         </Tooltip>
-                    )}
-                    <RefreshIconButton color={"success"} loading={isFetching} onClick={() => refetch()}/>
-                    <MenuButton>
-                        <Tooltip title={"Trim and Clean Query"} placement={"top"}>
-                            <Checkbox
-                                sx={SX.checkbox}
+                    </>)}
+                    <Box sx={SX.buttons}>
+                        <RefreshIconButton color={"success"} loading={isFetching} onClick={() => refetch()}/>
+                        <MenuButton>
+                            <Tooltip title={"Trim and Clean Comments"} placement={"top"}>
+                                <Checkbox
+                                    sx={SX.checkbox}
+                                    size={"small"}
+                                    color="secondary"
+                                    icon={<WashOutlined/>}
+                                    checkedIcon={<Wash/>}
+                                    onClick={handleTrimClick}
+                                    checked={trim}
+                                />
+                            </Tooltip>
+                            <Tooltip title={"Safe request with LIMIT"} placement={"top"}>
+                                <Checkbox
+                                    sx={SX.checkbox}
+                                    size={"small"}
+                                    color="secondary"
+                                    icon={<HealthAndSafety/>}
+                                    checkedIcon={<HealthAndSafety/>}
+                                    onClick={handleLimitClick}
+                                    checked={!!limit}
+                                    disabled={!trim}
+                                />
+                            </Tooltip>
+                            <OutlinedInput
+                                sx={SX.limit}
                                 size={"small"}
-                                color="secondary"
-                                icon={<WashOutlined/>}
-                                checkedIcon={<Wash/>}
-                                onClick={handleTrimClick}
-                                checked={trim}
+                                value={limit}
+                                placeholder={"no limit"}
+                                onChange={(e) => setLimit(e.target.value)}
+                                disabled={!trim || !limit}
                             />
-                        </Tooltip>
-                        <Tooltip title={"Safe request with LIMIT"} placement={"top"}>
-                            <Checkbox
-                                sx={SX.checkbox}
-                                size={"small"}
-                                color="secondary"
-                                icon={<HealthAndSafety/>}
-                                checkedIcon={<HealthAndSafety/>}
-                                onClick={handleLimitClick}
-                                checked={!!limit}
-                                disabled={!trim}
-                            />
-                        </Tooltip>
-                        <OutlinedInput
-                            sx={SX.limit}
-                            size={"small"}
-                            value={limit}
-                            placeholder={"no limit"}
-                            onChange={(e) => setLimit(e.target.value)}
-                            disabled={!trim || !limit}
-                        />
-                    </MenuButton>
+                        </MenuButton>
+                    </Box>
                 </Box>
             </Box>
         )
