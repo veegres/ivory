@@ -155,5 +155,5 @@ export function ClearAllIconButton(props: Props) {
 
 export function MoreIconButton(props: Props) {
     const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<MoreVert/>} tooltip={"More"}/>
+    return <IconButton {...props} disabled={disabled ?? false} icon={<MoreVert/>} tooltip={""}/>
 }
