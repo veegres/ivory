@@ -5,7 +5,7 @@ import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1, width: "332px"},
+    box: {display: "flex", flexDirection: "column", gap: 1, width: "320px", minHeight: "250px"},
     label: {textAlign: "center", fontSize: "15px", fontWeight: "bold", color: "text.secondary"},
     help: {fontSize: "9px", fontWeight: "normal", color: "text.disabled"},
 }
@@ -16,7 +16,7 @@ type Props = {
 
 export function QueryActivity(props: Props) {
     const {connection} = props
-    const {data, error} = useRouterActivity(connection)
+    const {data} = useRouterActivity(connection)
     return (
         <Box sx={SX.box}>
             <Box sx={SX.label}>
@@ -29,7 +29,6 @@ export function QueryActivity(props: Props) {
                 height={200}
                 width={320}
                 data={data}
-                error={error}
                 showIndexColumn={false}
             />
         </Box>
