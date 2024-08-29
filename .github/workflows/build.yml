@@ -43,9 +43,9 @@ jobs:
       working-directory: web
       run: |
         node -v
-        yarn version
-        yarn install
-        yarn run build
+        npm -v
+        npm install
+        npm run build
 
 #     - name: Test
 #       run: yarn test
