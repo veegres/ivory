@@ -1,18 +1,15 @@
-import {ReactNode, useState} from "react";
+import React, {ReactNode, useState} from "react";
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material";
 import {OpenIcon} from "../icon/OpenIcon";
-import {StylePropsMap, SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../type/general";
 import {ClearCacheButton} from "../../shared/actions/ClearCacheButton";
 
 const SX: SxPropsMap = {
     collapse: {display: "flex", flexDirection: "column", gap: 2, marginTop: "20px"},
     label: {fontWeight: "bold"},
     message: {display: "flex", gap: 2, justifyContent: "space-between", alignItems: "center"},
-    alert: {"& .MuiAlert-message": {flexGrow: 1}},
-}
-
-const style: StylePropsMap = {
-    input: {whiteSpace: "pre-wrap"},
+    alert: {"& .MuiAlert-message": {flexGrow: 1}, width: "inherit"},
+    input: {whiteSpace: "pre-wrap", wordWrap: "break-word"},
 }
 
 type Props = {
@@ -47,7 +44,7 @@ export function Error(props: Props) {
                 {clear && <ClearCacheButton/>}
             </Box>
             <Collapse in={isStacktrace && isOpen}>
-                <Box sx={SX.collapse}>
+                <Box sx={SX.collapse} onClick={handleDisable}>
                     {renderInfoBox("URL", url)}
                     {renderInfoBox("Request Params", params)}
                     {renderInfoBox("Request Body", data)}
@@ -61,10 +58,15 @@ export function Error(props: Props) {
         return (
             <Box>
                 <Box sx={SX.label}>{name}</Box>
-                <InputLabel style={style.input}>
+                <InputLabel sx={SX.input}>
                     {JSON.stringify(value, null, 4) ?? "-"}
                 </InputLabel>
             </Box>
         )
+    }
+
+    function handleDisable(e: React.MouseEvent) {
+        e.preventDefault()
+        e.stopPropagation()
     }
 }

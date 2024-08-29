@@ -251,6 +251,9 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 		dbName = *db.Name
 	}
 
+	if ctx.Connection.CredentialId == nil {
+		return nil, "unknown", errors.New("password is not set")
+	}
 	cred, errCred := s.passwordService.GetDecrypted(*ctx.Connection.CredentialId)
 	if errCred != nil {
 		return nil, "unknown", errors.New("password problems, check if it is exists")
