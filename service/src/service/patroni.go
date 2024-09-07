@@ -74,7 +74,7 @@ func (p *patroniInstanceService) Overview(instance InstanceRequest) ([]Instance,
 			Lag:                 lag,
 			PendingRestart:      patroniInstance.PendingRestart,
 			Database:            Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-			Sidecar:             Sidecar{Host: host, Port: port, Status: &sidecarStatus},
+			Sidecar:             Sidecar{Host: host, Port: port, Name: &patroniInstance.Name, Status: &sidecarStatus},
 			ScheduledRestart:    scheduledRestart,
 			ScheduledSwitchover: scheduledSwitchover,
 		})

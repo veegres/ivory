@@ -19,7 +19,8 @@ export function SwitchoverButton(props: Props) {
     const [candidate, setCandidates] = useState("")
     const [schedule, setSchedule] = useState<Dayjs>()
     const switchover = useRouterInstanceSwitchover(cluster)
-    const body = {leader: request.sidecar.host, candidate, scheduled_at: schedule}
+    // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name
+    const body = {leader: request.sidecar.name, candidate, scheduled_at: schedule}
 
     return (
         <AlertButton
@@ -46,10 +47,11 @@ export function SwitchoverButton(props: Props) {
                     value={candidate}
                     onChange={(e) => setCandidates(e.target.value)}
                     fullWidth={true}
+                    variant={"outlined"}
                 >
                     <MenuItem value={""}><em>none (will be chosen randomly)</em></MenuItem>
                     {candidates.map(sidecar => (
-                        <MenuItem key={sidecar.host} value={sidecar.host}>{sidecar.host}</MenuItem>
+                        <MenuItem key={sidecar.host} value={sidecar.name}>{sidecar.host}</MenuItem>
                     ))}
                 </Select>
             </FormControl>

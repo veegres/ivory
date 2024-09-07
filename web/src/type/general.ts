@@ -80,6 +80,7 @@ export enum SidecarStatus {
 export interface Sidecar {
     host: string,
     port: number,
+    name?: string,
     status?: SidecarStatus,
 }
 
