@@ -12,8 +12,8 @@ export function FailoverButton(props: Props) {
     const {request, cluster, disabled} = props
 
     const failover = useRouterInstanceFailover(cluster)
-
-    const body = {candidate: request.sidecar.host}
+    // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name
+    const body = {candidate: request.sidecar.name}
 
     return (
         <AlertButton

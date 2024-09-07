@@ -88,6 +88,7 @@ const (
 type Sidecar struct {
 	Host   string         `json:"host" form:"host"`
 	Port   int            `json:"port" form:"port"`
+	Name   *string        `json:"name" form:"name"`
 	Status *SidecarStatus `json:"status,omitempty" form:"status"`
 }
 
