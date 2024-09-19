@@ -8,6 +8,7 @@ RUN apt update
 RUN apt install -y curl htop
 RUN apt install -y nginx
 RUN apt install -y libdbi-perl libdbd-pg-perl
+RUN apt install -y gettext
 
 # move build files to container
 COPY service/build /opt/service
