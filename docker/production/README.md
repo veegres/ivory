@@ -16,3 +16,10 @@ Dockerfile is located in root path, because of docker restrictions
 
 In production, it will work only with full domains name like _google.com_, just _google_ won't work cause container
 doesn't know anything about your local machine network
+
+### Environment variables
+
+- `IVORY_URL_PATH` - can be set by user, `default: /`
+- `IVORY_STATIC_FILES_PATH` - set in entrypoint.sh file
+- `IVORY_VERSION_TAG` - should be set by build system
+- `IVORY_VERSION_COMMIT` - should be set by build system
