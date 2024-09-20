@@ -57,6 +57,11 @@ Ivory supports only _Basic_ authentication with general username and password (m
 will be added for such things like ldap / sso). Usually you don't want to use authentication when you work 
 with Ivory locally, but it is recommended to use it if you use it in some VMs.
 
+### How to run Ivory under a sub path?
+Ivory provides special environment variable `IVORY_URL_PATH` for it. The slash at the beginning is required `/ivory`. 
+It can be useful when you want to run Ivory behind reverse proxy under a sub path. 
+Example: `docker run -p 80:80 -e IVORY_URL_PATH=/ivory --restart always ghcr.io/veegres/ivory`
+
 ## Contribution
 
 If you're interested in contributing to the Ivory project, consider these options:
