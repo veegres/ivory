@@ -1,8 +1,10 @@
 package app
 
 import (
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"ivory/src/router"
+	"log/slog"
 	"net/http"
 )
 
@@ -10,7 +12,23 @@ func NewRouter(di *Context) {
 	engine := gin.Default()
 	engine.UseH2C = true
 
-	unsafe := engine.Group("/api", gin.Recovery())
+	// NOTE: Serving ivory static files to web
+	if di.env.Config.StaticFilesPath != "" {
+		slog.Info("Ivory serves static files from '" + di.env.Config.StaticFilesPath + "' under sub path '" + di.env.Config.UrlPath + "'")
+		engine.Use(static.Serve(di.env.Config.UrlPath, static.LocalFile(di.env.Config.StaticFilesPath, true)))
+		engine.NoRoute(func(context *gin.Context) {
+			// NOTE: if files wasn't found and NoRoute come here we need throw 404 and prevent endless redirect
+			if context.Request.URL.Path != di.env.Config.UrlPath {
+				context.Redirect(http.StatusMovedPermanently, di.env.Config.UrlPath)
+			}
+		})
+	}
+
+	// NOTE: Setup default sub path for reverse proxies, default "/"
+	slog.Info("Ivory serves backend api '/api' under sub path '" + di.env.Config.UrlPath + "'")
+	path := engine.Group(di.env.Config.UrlPath)
+
+	unsafe := path.Group("/api", gin.Recovery())
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.generalRouter.GetAppInfo)
 

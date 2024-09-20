@@ -6,15 +6,11 @@ VOLUME /opt/data
 
 RUN apt update
 RUN apt install -y curl htop
-RUN apt install -y nginx
 RUN apt install -y libdbi-perl libdbd-pg-perl
 
 # move build files to container
 COPY service/build /opt/service
 COPY web/build /opt/web
-
-# move nginx settings to container
-COPY docker/production/nginx.conf /etc/nginx/nginx.conf
 
 # move docker entry file to container
 COPY docker/production/entrypoint.sh /usr/local/bin/
@@ -26,9 +22,13 @@ RUN ln -s /opt/tools/pgcompacttable /usr/bin
 
 RUN chmod -R 777 /opt
 
+ARG IVORY_URL_PATH=""
+ENV IVORY_URL_PATH=$IVORY_URL_PATH
+
 ARG IVORY_VERSION_TAG=none
-ARG IVORY_VERSION_COMMIT=none
 ENV IVORY_VERSION_TAG=$IVORY_VERSION_TAG
+
+ARG IVORY_VERSION_COMMIT=none
 ENV IVORY_VERSION_COMMIT=$IVORY_VERSION_COMMIT
 
 ENTRYPOINT ["entrypoint.sh"]

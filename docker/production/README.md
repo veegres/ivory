@@ -14,5 +14,5 @@ while you do not connect this container to network of the environment. You can d
 
 Dockerfile is located in root path, because of docker restrictions
 
-In production, it will work only with full domains name like _google.com_, just _google_ won't work cause container doesn't know anything about your local
-machine network
+In production, it will work only with full domains name like _google.com_, just _google_ won't work cause container
+doesn't know anything about your local machine network

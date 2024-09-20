@@ -93,3 +93,8 @@ type Sidecar struct {
 }
 
 // SPECIFIC (SERVER)
+
+type Config struct {
+	UrlPath         string
+	StaticFilesPath string
+}

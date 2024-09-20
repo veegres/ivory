@@ -9,6 +9,7 @@ import (
 )
 
 type Context struct {
+	env            *config.Env
 	authRouter     *router.AuthRouter
 	clusterRouter  *router.ClusterRouter
 	bloatRouter    *router.BloatRouter
@@ -80,6 +81,7 @@ func NewContext() *Context {
 	// TODO refactor: shouldn't router use repos? consider change to service usage (possible cycle dependencies problems)
 	//      repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
 	return &Context{
+		env:            env,
 		authRouter:     router.NewAuthRouter(authService, generalService),
 		clusterRouter:  router.NewClusterRouter(clusterService),
 		bloatRouter:    router.NewBloatRouter(bloatService),

@@ -21,7 +21,7 @@ import {AppConfig, AppInfo, Login, Response, Sidecar} from "../type/general";
 import {Bloat, BloatRequest} from "../type/bloat";
 import {Cluster, ClusterAuto, ClusterMap} from "../type/cluster";
 
-export const api = axios.create({baseURL: '/api'})
+export const api = axios.create({baseURL: "./api"})
 
 export const GeneralApi = {
     info: {
