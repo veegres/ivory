@@ -3,14 +3,12 @@
 # print service info
 grep PRETTY_NAME /etc/os-release
 pgcompacttable --version
-nginx -v
 
 # run go service
 export GIN_MODE=release
+export PORT=80
+export IVORY_STATIC_FILES_PATH="/opt/web"
 /opt/service/ivory &
-
-# run nginx server
-/usr/sbin/nginx &
 
 # wait for any process to exit
 wait -n
