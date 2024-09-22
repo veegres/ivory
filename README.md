@@ -64,10 +64,10 @@ as `/ivory`. Example: `docker run -p 80:80 -env IVORY_URL_PATH=/ivory --restart 
 
 ### How to run Ivory under TLS?
 You need to specify two environment variables `IVORY_CERT_FILE_PATH` and `IVORY_CERT_KEY_FILE_PATH`. Because it is
-docker you need to mount these files first and then provide these variables with paths. Recommended path inside 
-container is `/opt/certs`. Note that Ivory changes port to 443 when you have provided both paths. 
+docker you need to mount these files first and then provide these variables with paths. Recommended path inside
+container is `/opt/certs`. Note that Ivory changes port to 443 when you have provided both paths.
 Example: `docker run -p 443:443 --mount type=bind,source=/etc/ssl/certs,target=/opt/certs
---env IVORY_CERT_FILE_PATH=/opt/certs/YOUR_CERT_NAME.crt --env IVORY_CERT_KEY_FILE_PATH=/opt/certs/YOUR_KEY_NAME.key 
+--env IVORY_CERT_FILE_PATH=/opt/certs/YOUR_CERT_NAME.crt --env IVORY_CERT_KEY_FILE_PATH=/opt/certs/YOUR_KEY_NAME.key
 --restart always aelsergeev/ivory`
 
 ## Contribution
