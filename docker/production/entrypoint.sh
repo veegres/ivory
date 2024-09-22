@@ -6,7 +6,6 @@ pgcompacttable --version
 
 # run go service
 export GIN_MODE=release
-export PORT=80
 export IVORY_STATIC_FILES_PATH="/opt/web"
 /opt/service/ivory &
 

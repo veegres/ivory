@@ -95,6 +95,9 @@ type Sidecar struct {
 // SPECIFIC (SERVER)
 
 type Config struct {
+	UrlAddress      string
 	UrlPath         string
 	StaticFilesPath string
+	CertFilePath    string
+	CertKeyFilePath string
 }

@@ -48,9 +48,18 @@ func NewRouter(di *Context) {
 	instanceRouter(safe, di.instanceRouter)
 	queryRouter(safe, di.queryRouter)
 
-	err := engine.Run()
-	if err != nil {
-		panic(err)
+	if di.env.Config.CertKeyFilePath != "" && di.env.Config.CertFilePath != "" {
+		slog.Info("Ivory serves https connection under address " + di.env.Config.UrlAddress)
+		err := engine.RunTLS(di.env.Config.UrlAddress, di.env.Config.CertFilePath, di.env.Config.CertKeyFilePath)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		slog.Info("Ivory serves http connection under address " + di.env.Config.UrlAddress)
+		err := engine.Run(di.env.Config.UrlAddress)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

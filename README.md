@@ -60,7 +60,15 @@ with Ivory locally, but it is recommended to use it if you use it in some VMs.
 ### How to run Ivory under a sub path?
 Ivory offers a special environment variable, `IVORY_URL_PATH`, designed for use when running the service behind 
 a reverse proxy under a sub-path. It’s important to note that the path must start with a leading slash, such 
-as `/ivory`. Example: `docker run -p 80:80 -e IVORY_URL_PATH=/ivory --restart always ghcr.io/veegres/ivory`
+as `/ivory`. Example: `docker run -p 80:80 -env IVORY_URL_PATH=/ivory --restart always aelsergeev/ivory`
+
+### How to run Ivory under TLS?
+You need to specify two environment variables `IVORY_CERT_FILE_PATH` and `IVORY_CERT_KEY_FILE_PATH`. Because it is
+docker you need to mount these files first and then provide these variables with paths. Recommended path inside 
+container is `/opt/certs`. Note that Ivory changes port to 443 when you have provided both paths. 
+Example: `docker run -p 443:443 --mount type=bind,source=/etc/ssl/certs,target=/opt/certs
+--env IVORY_CERT_FILE_PATH=/opt/certs/YOUR_CERT_NAME.crt --env IVORY_CERT_KEY_FILE_PATH=/opt/certs/YOUR_KEY_NAME.key 
+--restart always aelsergeev/ivory`
 
 ## Contribution
 

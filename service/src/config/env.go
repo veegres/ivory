@@ -14,15 +14,41 @@ type Env struct {
 }
 
 func NewEnv() *Env {
+	ginMode := "debug"
+	if val, ok := os.LookupEnv("GIN_MODE"); ok {
+		ginMode = val
+	}
+
+	certFilePath := ""
+	if val, ok := os.LookupEnv("IVORY_CERT_FILE_PATH"); ok {
+		certFilePath = val
+	}
+	certKeyFilePath := ""
+	if val, ok := os.LookupEnv("IVORY_CERT_KEY_FILE_PATH"); ok {
+		certKeyFilePath = val
+	}
+
+	urlAddress := ":8080"
+	if val, ok := os.LookupEnv("IVORY_URL_ADDRESS"); ok {
+		urlAddress = val
+	} else if ginMode == "release" {
+		if certFilePath != "" && certKeyFilePath != "" {
+			urlAddress = ":443"
+		} else {
+			urlAddress = ":80"
+		}
+	}
 	urlPath := "/"
 	if val, ok := os.LookupEnv("IVORY_URL_PATH"); ok {
 		urlPath = parseUrlPath(val)
 	}
+
 	staticFilesPath := ""
 	if val, ok := os.LookupEnv("IVORY_STATIC_FILES_PATH"); ok {
 		staticFilesPath = val
 		updateBaseUrlTag(staticFilesPath, urlPath)
 	}
+
 	tag := "v0.0.0"
 	if val, ok := os.LookupEnv("IVORY_VERSION_TAG"); ok {
 		tag = val
@@ -34,16 +60,23 @@ func NewEnv() *Env {
 
 	println()
 	slog.Info("IVORY ENV VARIABLES:")
+	slog.Info("ENV", "GIN_MODE", ginMode)
+	slog.Info("ENV", "IVORY_URL_ADDRESS", urlAddress)
 	slog.Info("ENV", "IVORY_URL_PATH", urlPath)
 	slog.Info("ENV", "IVORY_STATIC_FILES_PATH", staticFilesPath)
+	slog.Info("ENV", "IVORY_CERT_FILE_PATH", certFilePath)
+	slog.Info("ENV", "IVORY_CERT_KEY_FILE_PATH", certKeyFilePath)
 	slog.Info("ENV", "IVORY_VERSION_TAG", tag)
 	slog.Info("ENV", "IVORY_VERSION_COMMIT", commit)
 	println()
 
 	return &Env{
 		Config: Config{
+			UrlAddress:      urlAddress,
 			UrlPath:         urlPath,
 			StaticFilesPath: staticFilesPath,
+			CertFilePath:    certFilePath,
+			CertKeyFilePath: certKeyFilePath,
 		},
 		Version: Version{
 			Tag:    tag,
