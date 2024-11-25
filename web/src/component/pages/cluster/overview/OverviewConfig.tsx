@@ -1,5 +1,5 @@
 import {Box, Skeleton} from "@mui/material";
-import {useAppearance} from "../../../../provider/AppearanceProvider";
+import {useSettings} from "../../../../provider/SettingsProvider";
 import {ErrorSmart} from "../../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
@@ -24,7 +24,7 @@ type Props = {
 
 export function OverviewConfig(props: Props) {
     const {info} = props
-    const appearance = useAppearance();
+    const settings = useSettings();
     const snackbar = useSnackbar()
     const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
@@ -53,7 +53,7 @@ export function OverviewConfig(props: Props) {
                     editable={isEditable}
                     autoFocus={isEditable}
                     basicSetup={{highlightActiveLine: false, highlightActiveLineGutter: isEditable, highlightSelectionMatches: false}}
-                    theme={CodeThemes[appearance.theme]}
+                    theme={CodeThemes[settings.theme]}
                     extensions={[json()]}
                     onChange={(value) => setConfigState(value)}
                 />

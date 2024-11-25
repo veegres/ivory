@@ -1,8 +1,8 @@
 import {Switch} from "@mui/material";
-import {useAppearance} from "../../../provider/AppearanceProvider";
+import {useSettings} from "../../../provider/SettingsProvider";
 
 export function MenuRefetchChanger() {
-    const {state, toggleRefetchOnWindowsRefocus} = useAppearance()
+    const {state, toggleRefetchOnWindowsRefocus} = useSettings()
 
     return (
         <Switch checked={state.refetchOnWindowsFocus} onClick={toggleRefetchOnWindowsRefocus}/>

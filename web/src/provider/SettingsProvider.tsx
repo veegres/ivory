@@ -42,11 +42,11 @@ focusManager.setEventListener(handleFocus => {
     }
 })
 
-export function useAppearance() {
+export function useSettings() {
     return useContext(ThemeContext)
 }
 
-export function AppearanceProvider(props: { children: ReactNode }) {
+export function SettingsProvider(props: { children: ReactNode }) {
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
     const [state, setState] = useLocalStorageState("appearance", ThemeInitialState, true)
 
