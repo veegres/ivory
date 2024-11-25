@@ -7,7 +7,7 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import {App} from "./App";
-import {AppearanceProvider} from "../../provider/AppearanceProvider";
+import {SettingsProvider} from "../../provider/SettingsProvider";
 
 // extend dayjs with UTC plugin
 dayjs.extend(utc)
@@ -21,11 +21,11 @@ const container = document.getElementById("root")
 const root = createRoot(container!)
 root.render(
     <StrictMode>
-        <AppearanceProvider>
+        <SettingsProvider>
             <CssBaseline enableColorScheme/>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <App />
+                <App />
             </LocalizationProvider>
-        </AppearanceProvider>
+        </SettingsProvider>
     </StrictMode>
 )

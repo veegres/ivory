@@ -8,7 +8,7 @@ import {StrictMode} from "react";
 import {LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {ErrorBoundary} from "react-error-boundary";
-import {AppearanceProvider} from "../../provider/AppearanceProvider";
+import {SettingsProvider} from "../../provider/SettingsProvider";
 import {StoreProvider} from "../../provider/StoreProvider";
 import {AuthProvider} from "../../provider/AuthProvider";
 import {SnackbarProvide} from "../../provider/SnackbarProvider";
@@ -27,7 +27,7 @@ const container = document.getElementById("root")
 const root = createRoot(container!)
 root.render(
     <StrictMode>
-        <AppearanceProvider>
+        <SettingsProvider>
             <CssBaseline enableColorScheme/>
             <StoreProvider>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -40,7 +40,7 @@ root.render(
                     </AuthProvider>
                 </LocalizationProvider>
             </StoreProvider>
-        </AppearanceProvider>
+        </SettingsProvider>
     </StrictMode>
 )
 

@@ -1,6 +1,6 @@
 import {ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {BrightnessMediumTwoTone, DarkModeTwoTone, LightModeTwoTone} from "@mui/icons-material";
-import {Mode, useAppearance} from "../../../provider/AppearanceProvider";
+import {Mode, useSettings} from "../../../provider/SettingsProvider";
 import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
@@ -8,7 +8,7 @@ const SX: SxPropsMap = {
 }
 
 export function MenuThemeChanger() {
-    const {state, setTheme} = useAppearance()
+    const {state, setTheme} = useSettings()
 
     return (
         <ToggleButtonGroup size={"small"} value={state.mode}>
