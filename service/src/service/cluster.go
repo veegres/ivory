@@ -67,10 +67,15 @@ func (s *ClusterService) Update(cluster Cluster) (*Cluster, error) {
 }
 
 func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
+	var requestTls *Certs
+	if cluster.Tls.Sidecar {
+		// NOTE: we want to rewrite `nil` only if tls is enabled
+		requestTls = &cluster.Certs
+	}
 	request := InstanceRequest{
 		Sidecar:      cluster.Instance,
 		CredentialId: cluster.Credentials.PatroniId,
-		Certs:        &cluster.Certs,
+		Certs:        requestTls,
 	}
 	overview, _, errOver := s.instanceService.Overview(request)
 	if errOver != nil {
