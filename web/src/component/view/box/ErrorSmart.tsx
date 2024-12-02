@@ -15,7 +15,10 @@ export function ErrorSmart({error, type}: Props) {
     const {status, statusText, config} = error.response
     const {data, params, url} = config
     const title = `Error code: ${status ?? 'Unknown Code'} (${statusText ?? 'Unknown Error Name'})`
-    if (status >= 400 && status < 500) return <Error type={"warning"} message={error.response.data.error} title={title} stacktrace={error.stack} data={data} params={params} url={url}/>
+    if (status >= 400 && status < 500) {
+        const message = error.response.data.error ?? error.response.data
+        return <Error type={"warning"} message={message} title={title} stacktrace={error.stack} data={data} params={params} url={url}/>
+    }
     if (status >= 500) return <Error type={"error"} message={error.message} title={title} stacktrace={error.stack} data={data} params={params} url={url}/>
 
     return <Error type={"error"} message={error.message} title={title}/>
