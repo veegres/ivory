@@ -39,7 +39,7 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
     })
 
     async function handleSuccess(data: any) {
-        if (mutationKey) snackbar(`${mutationKey.join(" ")} was done successfully`, "success")
+        if (mutationKey) snackbar(`${mutationKey.join(" ").toUpperCase()} - DONE`, "success")
         if (successKeys) {
             for (const key of successKeys) {
                 // NOTE: this doesn't refetch disabled queries
@@ -50,6 +50,7 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
     }
 
     async function handleError(error: any) {
-        snackbar(getErrorMessage(error), "error")
+        if (mutationKey) snackbar(`${mutationKey.join(" ").toUpperCase()} - ERROR, ${getErrorMessage(error)}`, "success")
+        else snackbar(getErrorMessage(error), "error")
     }
 }
