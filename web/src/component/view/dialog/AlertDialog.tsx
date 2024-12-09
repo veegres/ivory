@@ -11,7 +11,7 @@ const SX: SxPropsMap = {
 type Props = {
     open: boolean,
     title: string,
-    description: string,
+    description: ReactNode | string,
     children?: ReactNode,
     onAgree?: () => void,
     onClose: () => void

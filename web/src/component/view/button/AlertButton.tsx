@@ -1,4 +1,4 @@
-import {Box} from "@mui/material";
+import {Box, Tooltip} from "@mui/material";
 import {AlertDialog} from "../dialog/AlertDialog";
 import {LoadingButton} from "@mui/lab";
 import {ReactNode, useState} from "react";
@@ -12,8 +12,9 @@ type Props = {
     children?: ReactNode,
     label: ReactNode,
     title: string,
-    description: string,
+    description: ReactNode | string,
     onClick?: () => void,
+    tooltip?: string,
     loading?: boolean,
     disabled?: boolean,
     size?: "small" | "medium" | "large",
@@ -23,7 +24,7 @@ type Props = {
 
 export function AlertButton(props: Props) {
     const {children, title, description, label, variant, onClick} = props
-    const {loading, disabled, size, color} = props
+    const {loading, disabled, size, color, tooltip} = props
     const [open, setOpen] = useState(false)
 
     return (
@@ -37,17 +38,21 @@ export function AlertButton(props: Props) {
             >
                 {children}
             </AlertDialog>
-            <LoadingButton
-                sx={SX.button}
-                size={size}
-                color={color}
-                variant={variant}
-                disabled={disabled}
-                loading={loading}
-                onClick={() => setOpen(true)}
-            >
-                {label}
-            </LoadingButton>
+            <Tooltip title={tooltip} placement={"top"} arrow={true}>
+                <Box component={"span"}>
+                    <LoadingButton
+                        sx={SX.button}
+                        size={size}
+                        color={color}
+                        variant={variant}
+                        disabled={disabled}
+                        loading={loading}
+                        onClick={() => setOpen(true)}
+                    >
+                        {label}
+                    </LoadingButton>
+                </Box>
+            </Tooltip>
         </Box>
     )
 }

@@ -1,14 +1,14 @@
-import {Box, CircularProgress, ToggleButton, Tooltip} from "@mui/material";
+import {Box} from "@mui/material";
 import {EnumOptions, SidecarStatus, SxPropsMap} from "../../../../type/general";
 import {SidecarStatusOptions} from "../../../../app/utils";
 import {UseMutationResult} from "@tanstack/react-query";
 import {InstanceRequest} from "../../../../type/instance";
 import {useRouterInstanceActivate, useRouterInstancePause} from "../../../../router/instance";
-import {InfoBox} from "../../../view/box/InfoBox";
+import {InfoBox, Padding} from "../../../view/box/InfoBox";
+import {AlertButton} from "../../../view/button/AlertButton";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},
-    button: {padding: "3px", height: "32px", width: "32px"},
 }
 
 type Props = {
@@ -34,25 +34,23 @@ export function OverviewActionStatus(props: Props) {
     }
 
     return (
-            <Box sx={SX.box}>
-                <InfoBox tooltip={"Sidecar Status"} withPadding withRadius>
-                    <Box sx={{color: options.color}}>
-                        {options.name ?? "UNKNOWN"}
-                    </Box>
-                </InfoBox>
-                <Tooltip title={`${actionButton[status].label} Sidecar`} placement={"top"} arrow={true}>
-                    <Box component={"span"}>
-                        <ToggleButton
-                            sx={SX.button}
-                            size={"small"}
-                            value={options.label}
-                            onClick={() => {action[status].mutate(request)}}
-                            disabled={action[status].isPending}
-                        >
-                            {action[status].isPending ? <CircularProgress size={18} color={"inherit"}/> : options.icon}
-                        </ToggleButton>
-                    </Box>
-                </Tooltip>
-            </Box>
+        <Box sx={SX.box}>
+            <InfoBox padding={Padding.No}>
+                <AlertButton
+                    size={"small"}
+                    color={"inherit"}
+                    tooltip={actionButton[status].label}
+                    label={options.icon}
+                    loading={action[status].isPending}
+                    title={`Are you sure that you want to ${actionButton[status].label}`}
+                    description={<>This action either active or pause patroni. More info can be
+                    found <a href="https://patroni.readthedocs.io/en/latest/pause.html">here</a>.</>}
+                    onClick={() => {action[status].mutate(request)}}
+                />
+            </InfoBox>
+            <InfoBox tooltip={"Sidecar Status"}>
+                <Box sx={{color: options.color}}>{options.name}</Box>
+            </InfoBox>
+        </Box>
     )
 }

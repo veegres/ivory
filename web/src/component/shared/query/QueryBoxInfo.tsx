@@ -3,7 +3,7 @@ import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
 import {QueryType} from "../../../type/query";
-import {InfoBox} from "../../view/box/InfoBox";
+import {InfoBox, Padding} from "../../view/box/InfoBox";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -36,7 +36,7 @@ export function QueryBoxInfo(props: Props) {
                     {props.renderVarieties}
                 </QueryBoxWrapper>
                 <QueryBoxWrapper editable={editable}>
-                    <InfoBox tooltip={"Type"} withPadding>
+                    <InfoBox tooltip={"Type"} padding={Padding.Small}>
                         <Box sx={SX.type}>{QueryType[type]}</Box>
                     </InfoBox>
                 </QueryBoxWrapper>
