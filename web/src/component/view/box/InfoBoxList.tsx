@@ -1,7 +1,7 @@
 import {cloneElement, ReactElement} from "react";
 import {Box} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
-import {InfoBox} from "./InfoBox";
+import {InfoBox, Padding} from "./InfoBox";
 import {InfoColorBoxList} from "./InfoColorBoxList";
 import {green, grey} from "@mui/material/colors";
 
@@ -28,7 +28,7 @@ export function InfoBoxList(props: Props) {
     }))
 
     return (
-        <InfoBox tooltip={<InfoColorBoxList items={titleItems} label={label}/>}>
+        <InfoBox tooltip={<InfoColorBoxList items={titleItems} label={label}/>} padding={Padding.Small}>
             {items.map((item, index) => {
                 const defaultColor = item.iconColor ?? "default"
                 const color = item.active ? defaultColor : "text.disabled"

@@ -35,7 +35,7 @@ export function OverviewActionInfo(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>} withPadding>
+            <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>}>
                 <Box sx={{color: InstanceColor[defaultInstance.role]}}>
                     {getDomain(defaultInstance.sidecar).toUpperCase()}
                 </Box>

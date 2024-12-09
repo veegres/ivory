@@ -14,16 +14,20 @@ const SX: SxPropsMap = {
     }
 }
 
+export enum Padding {
+    No, Normal, Small,
+}
+
 type Props = {
-    tooltip: ReactElement | string,
+    tooltip?: ReactElement | string,
     children: ReactNode,
-    withPadding?: boolean,
+    padding?: Padding,
     withRadius?: boolean,
 }
 
 export function InfoBox(props: Props) {
-    const {children, tooltip, withPadding, withRadius} = props
-    const padding = withPadding ? "3px 12px" : "3px 5px"
+    const {children, tooltip, padding: p, withRadius} = props
+    const padding = p === Padding.No ? "3px 0px" : p === Padding.Small ? "3px 5px" : "3px 12px"
     const borderRadius = withRadius ? "15px" : "4px"
 
     return (
