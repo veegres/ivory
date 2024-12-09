@@ -64,8 +64,8 @@ export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
 }
 
 export const SidecarStatusOptions: { [key in SidecarStatus]: EnumOptions } = {
-    [SidecarStatus.Active]: {label: "ACTIVE", icon: <Pause/>, color: green[600], key: "active"},
-    [SidecarStatus.Paused]: {label: "PAUSED", icon: <PlayArrow/>, color: orange[500], key: "paused"}
+    [SidecarStatus.Active]: {name: "ACTIVE", label: "Activate", icon: <Pause/>, color: green[600], key: "active"},
+    [SidecarStatus.Paused]: {name: "PAUSED", label: "Pause", icon: <PlayArrow/>, color: orange[500], key: "paused"}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {
