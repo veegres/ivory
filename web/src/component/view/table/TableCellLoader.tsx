@@ -7,9 +7,10 @@ const SX: SxPropsMap = {
     progress: {display: "flex", justifyContent: "center", alignItems: "center", padding: "0 5px"},
 }
 
+type Children = ReactElement<{size?: number}> | ReactElement<{size?: number}>[]
 type Props = {
     isFetching: boolean,
-    children?: ReactElement | ReactElement[],
+    children?: Children,
     sx?: SxProps<Theme>,
     size?: number,
 }
@@ -25,7 +26,7 @@ export function TableCellLoader(props: Props) {
         </TableCell>
     )
 
-    function renderChildren(children: ReactElement | ReactElement[]) {
+    function renderChildren(children: Children) {
         if (Array.isArray(children)) return children.map((el, key) => cloneElement(el, {key, size}))
         else return cloneElement(children, {size})
     }

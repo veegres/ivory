@@ -4,6 +4,7 @@ import {SxPropsMap} from "../../../type/general";
 import {InfoBox, Padding} from "./InfoBox";
 import {InfoColorBoxList} from "./InfoColorBoxList";
 import {green, grey} from "@mui/material/colors";
+import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
 
 const SX: SxPropsMap = {
     box: {position: "relative", display: "flex", alignItems: "center", justifyContent: "center"},
@@ -14,7 +15,7 @@ const SX: SxPropsMap = {
     }
 }
 
-type Item = { icon: ReactElement, label: string, active: boolean, iconColor?: string, badge?: string }
+type Item = { icon: ReactElement<SvgIconProps>, label: string, active: boolean, iconColor?: string, badge?: string }
 type Props = {
     items: Item[],
     label?: string,

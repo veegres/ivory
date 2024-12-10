@@ -20,12 +20,13 @@ import {
     Receipt,
     Restore
 } from "@mui/icons-material";
+import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
 
 type Color = 'inherit' | 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'
 type Placement = "bottom-end" | 'bottom-start' | 'bottom' | 'left-end' | 'left-start' | 'left' | 'right-end' | 'right-start' | 'right' | 'top-end' | 'top-start' | 'top'
 
 type ButtonProps = Props & {
-    icon: ReactElement,
+    icon: ReactElement<SvgIconProps>,
     tooltip: string,
     color?: Color,
     placement?: Placement,

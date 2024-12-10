@@ -19,14 +19,19 @@ const InitialClusterAuto: ClusterAuto = {
     name: "", tls: {sidecar: false, database: false}, certs: {}, credentials: {}, tags: [], instance: {host: "", port: 8008},
 }
 
-export function ListCreateAuto() {
+type Props = {
+    size?: number,
+}
+
+export function ListCreateAuto(props: Props) {
+    const {size} = props
     const [cluster, setCluster] = useState(InitialClusterAuto)
     const [open, setOpen] = useState(false)
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
     return (
         <>
-            <AutoIconButton tooltip={"Add Cluster Automatically"} onClick={() => setOpen(!open)}/>
+            <AutoIconButton tooltip={"Add Cluster Automatically"} size={size} onClick={() => setOpen(!open)}/>
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
                 <DialogContent sx={SX.content}>
