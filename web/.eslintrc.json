@@ -11,6 +11,7 @@
   ],
   "plugins": ["react", "react-hooks", "react-refresh"],
   "rules": {
+    "no-restricted-imports": "error",
     "react/react-in-jsx-scope": "off",
     "react/no-unescaped-entities": "off",
     "@typescript-eslint/no-explicit-any": "off"
