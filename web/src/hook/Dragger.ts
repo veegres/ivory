@@ -5,7 +5,7 @@ const init = {index: -1, size: 0, ps: 0}
 export function useDragger(minSize: number, onMove: (index: number, size: number) => void) {
     const [columnDrag, setColumnDrag] = useState(init)
 
-    const callbackMouseMove = useCallback(handleMouseMove, [columnDrag.index, columnDrag.ps, columnDrag.size, onMove])
+    const callbackMouseMove = useCallback(handleMouseMove, [columnDrag.index, columnDrag.ps, columnDrag.size, minSize, onMove])
     const callbackMouseUp = useCallback(handleMouseUp, [])
     useEffect(handleEffectDragging, [callbackMouseMove, callbackMouseUp]);
 
