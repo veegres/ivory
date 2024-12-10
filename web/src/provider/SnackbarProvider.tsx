@@ -23,7 +23,7 @@ export function SnackbarProvide(props: { children: ReactNode }) {
     useEffect(handleUseEffectStack, [snackPack, messageInfo, open]);
 
     return (
-        <SnackbarContext.Provider value={message}>
+        <SnackbarContext value={message}>
             {props.children}
             <Snackbar
                 key={messageInfo ? messageInfo.key : undefined}
@@ -36,7 +36,7 @@ export function SnackbarProvide(props: { children: ReactNode }) {
                     {messageInfo ? messageInfo.message : undefined}
                 </Alert>
             </Snackbar>
-        </SnackbarContext.Provider>
+        </SnackbarContext>
     )
 
     function message(message: string, severity: Severity) {

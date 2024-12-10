@@ -1,5 +1,12 @@
 import {createContext, ReactNode, useContext, useEffect} from "react";
-import {createTheme, PaletteMode, Theme, ThemeProvider as MuiThemeProvider, useMediaQuery} from "@mui/material";
+import {
+    createTheme,
+    CssBaseline,
+    PaletteMode,
+    Theme,
+    ThemeProvider as MuiThemeProvider,
+    useMediaQuery
+} from "@mui/material";
 import {useLocalStorageState} from "../hook/LocalStorage";
 import {focusManager, QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
@@ -56,14 +63,15 @@ export function SettingsProvider(props: { children: ReactNode }) {
     useEffect(handleEffectClient, [state.refetchOnWindowsFocus])
 
     return (
-        <ThemeContext.Provider value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, info: muiTheme}}>
+        <ThemeContext value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, info: muiTheme}}>
             <QueryClientProvider client={client}>
                 <MuiThemeProvider theme={muiTheme}>
+                    <CssBaseline enableColorScheme/>
                     {props.children}
                 </MuiThemeProvider>
                 <ReactQueryDevtools/>
             </QueryClientProvider>
-        </ThemeContext.Provider>
+        </ThemeContext>
     );
 
     function setTheme(mode: Mode) {

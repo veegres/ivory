@@ -47,12 +47,12 @@ export function AutocompleteFetch(props: Props) {
         return (
             <TextField
                 {...params}
-                InputProps={inputProps}
                 size={"small"}
                 label={label}
                 variant={variant}
                 margin={margin}
                 placeholder={placeholder}
+                slotProps={{input: inputProps}}
             />
         )
     }

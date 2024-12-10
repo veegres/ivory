@@ -1,4 +1,3 @@
-import {CssBaseline} from "@mui/material";
 import {createRoot} from "react-dom/client";
 import scroll from "../../style/scroll.module.css"
 import {StrictMode} from "react";
@@ -22,7 +21,6 @@ const root = createRoot(container!)
 root.render(
     <StrictMode>
         <SettingsProvider>
-            <CssBaseline enableColorScheme/>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <App />
             </LocalizationProvider>

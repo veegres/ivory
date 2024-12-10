@@ -25,9 +25,9 @@ export function AuthProvider(props: { children: ReactNode }) {
     useEffect(handleEffectAxiosInterceptor, [queryClient])
 
     return (
-        <AuthContext.Provider value={{setToken: setTokenEncrypt, logout}}>
+        <AuthContext value={{setToken: setTokenEncrypt, logout}}>
             {props.children}
-        </AuthContext.Provider>
+        </AuthContext>
     )
 
     function setTokenEncrypt(v: string){
