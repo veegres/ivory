@@ -105,11 +105,11 @@ export function StoreProvider(props: { children: ReactNode }) {
     // we need two providers, because otherwise each team when you use only actions in some component
     // it will rerenders as well, event if you don't use any state inside
     return (
-        <StoreContext.Provider value={getters}>
-            <StoreActionContext.Provider value={setters}>
+        <StoreContext value={getters}>
+            <StoreActionContext value={setters}>
                 {props.children}
-            </StoreActionContext.Provider>
-        </StoreContext.Provider>
+            </StoreActionContext>
+        </StoreContext>
     )
 
     function getGetters(): StoreType {

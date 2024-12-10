@@ -2,7 +2,6 @@ import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
 import * as ServiceWorker from "../../ServiceWorker";
 import {App} from './App';
-import {CssBaseline} from "@mui/material";
 import {createRoot} from "react-dom/client";
 import {StrictMode} from "react";
 import {LocalizationProvider} from "@mui/x-date-pickers";
@@ -28,7 +27,6 @@ const root = createRoot(container!)
 root.render(
     <StrictMode>
         <SettingsProvider>
-            <CssBaseline enableColorScheme/>
             <StoreProvider>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <AuthProvider>

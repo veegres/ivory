@@ -37,9 +37,9 @@ export function CertsTabPath(props: Props) {
                     sx={SX.textField}
                     size={"small"}
                     label={"Path to The File"}
-                    InputProps={{sx: SX.border}}
                     value={path}
                     onChange={(e) => setPath(e.target.value)}
+                    slotProps={{input: {sx: SX.border}}}
                 />
                 <LoadingButton
                     sx={SX.border}

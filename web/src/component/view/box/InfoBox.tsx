@@ -31,7 +31,12 @@ export function InfoBox(props: Props) {
     const borderRadius = withRadius ? "15px" : "4px"
 
     return (
-        <Tooltip PopperProps={{sx: SX.tooltip}} title={tooltip} placement={"top"} arrow={true}>
+        <Tooltip
+            title={tooltip}
+            placement={"top"}
+            arrow={true}
+            slotProps={{popper: {sx: SX.tooltip}}}
+        >
             <Box sx={{...SX.box, padding, borderRadius}}>
                 {children}
             </Box>
