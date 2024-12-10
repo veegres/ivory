@@ -26,7 +26,7 @@ export function CredentialsRow(props: Props) {
     const [password, setPassword] = useState(credential.password)
     const [type, toggleType] = useState(credential.type)
 
-    const prevDisabledRef = useRef<boolean>()
+    const prevDisabledRef = useRef(false)
     useEffect(handleEffectProps, [credential])
     useEffect(handleEffectDisable, [disabled, credential])
     useEffect(handleEffectEmpty, [username, password, onEmpty])

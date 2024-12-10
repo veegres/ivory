@@ -11,6 +11,7 @@ import {SxPropsMap} from "../../../../type/general";
 import {Bloat} from "../../../../type/bloat";
 import select from "../../../../style/select.module.css";
 import {useRouterBloatDelete, useRouterBloatStop} from "../../../../router/bloat";
+import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
@@ -101,7 +102,7 @@ export function OverviewBloatJobItem(props: Props) {
         )
     }
 
-    function renderJobButton(title: string, icon: ReactElement, onClick: () => void, isLoading: boolean) {
+    function renderJobButton(title: string, icon: ReactElement<SvgIconProps>, onClick: () => void, isLoading: boolean) {
         const fontSize = 18
         return (
             <Tooltip title={title} placement={"top"}>

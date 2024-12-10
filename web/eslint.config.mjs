@@ -21,6 +21,7 @@ const compat = new FlatCompat({
  * 1. This file wos written by script migration from old eslint, we should migrate to new usage, something
  * like this ths eslint config https://typescript-eslint.io/getting-started
  * 2. we should specify react version, because it is required by compiler
+ * 3. remove all dependencies that this script added to support old config
  */
 export default [...fixupConfigRules(compat.extends(
     "eslint:recommended",

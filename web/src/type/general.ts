@@ -2,6 +2,7 @@ import {CSSProperties, ReactElement} from "react";
 import {Theme} from "@mui/material";
 import {SecretStatus} from "./secret";
 import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx";
+import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
 
 // COMMON (WEB AND SERVER)
 
@@ -103,7 +104,7 @@ export interface EnumOptions {
     label: string,
     key: string,
     name?: string,
-    icon: ReactElement,
+    icon: ReactElement<SvgIconProps>,
     color?: string,
     badge?: string,
 }
