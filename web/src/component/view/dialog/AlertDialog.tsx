@@ -38,7 +38,7 @@ export function AlertDialog(props: Props) {
     )
 
     function handleAgree() {
-        onAgree && onAgree()
+        if (onAgree) onAgree()
         onClose()
     }
 }
