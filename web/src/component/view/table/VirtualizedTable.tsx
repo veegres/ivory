@@ -107,6 +107,12 @@ export function VirtualizedTable(props: Props) {
         //  renders incorrect size
         enabled: ref !== null,
     })
+
+    // NOTE: we want to add padding between scrollY and table only if it appears, here we can directly set
+    //  padding because we don't have dynamic row height calculation (as for columns we count the width)
+    const isScrollXAppear = (ref?.clientWidth ?? -1) < columnVirtualizer.getTotalSize()
+    const paddingYSize = isScrollXAppear ? paddingDefaultSize : 0
+
     const columnDragger = useDragger(cellMinWidth, columnVirtualizer.resizeItem)
 
     const boxWidthPx = width ? `${width}px` : "100%"
@@ -148,7 +154,7 @@ export function VirtualizedTable(props: Props) {
             <Box
                 ref={setRef}
                 sx={SX.body}
-                paddingBottom={`${paddingDefaultSize}px`}
+                paddingBottom={`${paddingYSize}px`}
                 display={"grid"}
                 gridTemplateColumns={`${cellWidthStickyIndexPx} ${bodyWidthPx} ${cellWidthStickyActionPx}`}
                 gridTemplateRows={`${cellHeightStickyHeadPx} ${bodyHeightPx}`}
