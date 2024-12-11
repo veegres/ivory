@@ -59,8 +59,8 @@ export function QueryRun(props: Props) {
             <Box sx={SX.info}>
                 <QueryResponseInfo
                     url={getPostgresUrl(connection)}
-                    options={data?.options}
-                    time={{start: data?.startTime, end: data?.endTime}}
+                    options={!error ? data?.options : undefined}
+                    time={{start: !error ? data?.startTime : undefined, end: !error ? data?.endTime : undefined}}
                 />
                 <Box sx={SX.buttons}>
                     {varieties && <QueryVarieties varieties={varieties}/>}
