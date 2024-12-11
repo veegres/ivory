@@ -61,6 +61,7 @@ export function VirtualizedTable(props: Props) {
     const [ref, setRef] = useState<Element | null>(null);
 
     const columnSize = columns.length
+    const dragOffset = 6
     const scrollDefaultSize = 6
     const paddingDefaultSize = 6
 
@@ -86,7 +87,7 @@ export function VirtualizedTable(props: Props) {
     //  when scroll appears on the same table size there is not actual space between scroll and
     //  the table (browser behavior)
     const isScrollYAppear = (ref?.clientHeight ?? -1) < rowVirtualizer.getTotalSize()
-    const paddingXSize = isScrollYAppear ? paddingDefaultSize + scrollDefaultSize : 0
+    const paddingXSize = isScrollYAppear ? paddingDefaultSize + scrollDefaultSize : (renderRowActions ? 0 : dragOffset)
     const scrollXOffset = cellWidthStickyIndex + cellWidthStickyAction + paddingXSize
     const rowWidth = useMemo(() => (ref?.clientWidth ?? -1) - scrollXOffset, [ref?.clientWidth, scrollXOffset])
     // NOTE: calculate dynamic cell width, the component should be rendered from scratch to change the size,
@@ -189,7 +190,6 @@ export function VirtualizedTable(props: Props) {
     }
 
     function renderHead() {
-        const dragOffset = 6
         const dragWidth = `${dragOffset * 2}px`
 
         return columnVirtualizer.getVirtualItems().map((virtualColumn) => {
