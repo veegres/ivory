@@ -49,6 +49,7 @@ type Props = {
     rows: any[][],
     loading?: boolean,
     showIndexColumn?: boolean,
+    paddingScroll?: boolean,
     renderRowActions?: (row: any[]) => ReactNode,
     width?: number,
     height?: number,
@@ -60,23 +61,16 @@ export function VirtualizedTable(props: Props) {
     const [ref, setRef] = useState<Element | null>(null);
 
     const columnSize = columns.length
-    const scrollSize = 6
+    const scrollDefaultSize = 6
+    const paddingDefaultSize = 6
 
     const cellWidthStickyIndex = showIndexColumn ? 50 : 0
     const cellWidthStickyAction = renderRowActions ? 38 : 0
     const cellHeightStickyHead = 32
 
-    // NOTE: we need to multiply by 2 because we have padding between table and scroll and sometimes
-    //  scroll can be presented or not, so it is safer to always multiple
-    const cellOffset = cellWidthStickyIndex + cellWidthStickyAction + (scrollSize * 2)
     const cellDefaultWidth = 100
     const cellMinWidth = 50
     const cellHeight = 30
-    // NOTE: calculate the cell width, the component should be rendered from scratch to change the size,
-    //  this is how useVirtualizer work. Nuances:
-    //  - we need -1 is needed to always choose 100 if width is unknown
-    //  - if someone provided column value we want to make column smaller that is why cellMinWidth is used
-    const cellCalcWidth = useMemo(() => Math.max((((ref?.clientWidth ?? -1) - cellOffset) / columnSize), width ? cellMinWidth : cellDefaultWidth), [cellOffset, columnSize, ref?.clientWidth, width])
 
     const rowVirtualizer = useVirtualizer({
         count: rows.length,
@@ -86,6 +80,21 @@ export function VirtualizedTable(props: Props) {
         overscan: 3,
         enabled: ref !== null,
     })
+
+    // NOTE: we want to add padding between scrollX and table only if it appears, here we play
+    //  with row size to archive padding we don't set it directly, because it causes, complication
+    //  when scroll appears on the same table size there is not actual space between scroll and
+    //  the table (browser behavior)
+    const isScrollYAppear = (ref?.clientHeight ?? -1) < rowVirtualizer.getTotalSize()
+    const paddingXSize = isScrollYAppear ? paddingDefaultSize + scrollDefaultSize : 0
+    const scrollXOffset = cellWidthStickyIndex + cellWidthStickyAction + paddingXSize
+    const rowWidth = useMemo(() => (ref?.clientWidth ?? -1) - scrollXOffset, [ref?.clientWidth, scrollXOffset])
+    // NOTE: calculate dynamic cell width, the component should be rendered from scratch to change the size,
+    //  this is how useVirtualizer work. Nuances:
+    //  - -1 is needed to always choose 100 if width is unknown
+    //  - if someone provided column value we want to make column smaller that is why cellMinWidth is used
+    const cellCalcWidth = useMemo(() => Math.max((rowWidth / columnSize), width ? cellMinWidth : cellDefaultWidth), [rowWidth, columnSize, width])
+
     const columnVirtualizer = useVirtualizer({
         horizontal: true,
         count: columnSize,
@@ -139,7 +148,7 @@ export function VirtualizedTable(props: Props) {
             <Box
                 ref={setRef}
                 sx={SX.body}
-                padding={`0px ${scrollSize}px ${scrollSize}px 0px`}
+                paddingBottom={`${paddingDefaultSize}px`}
                 display={"grid"}
                 gridTemplateColumns={`${cellWidthStickyIndexPx} ${bodyWidthPx} ${cellWidthStickyActionPx}`}
                 gridTemplateRows={`${cellHeightStickyHeadPx} ${bodyHeightPx}`}
@@ -174,14 +183,14 @@ export function VirtualizedTable(props: Props) {
     }
 
     function renderHead() {
-        const dragWidth = scrollSize * 2
-        const dragWidthPx = `${dragWidth}px`
+        const dragOffset = 6
+        const dragWidth = `${dragOffset * 2}px`
 
         return columnVirtualizer.getVirtualItems().map((virtualColumn) => {
             const column = columns[virtualColumn.index]
             const width = `${virtualColumn.size}px`
             const transform = `translateX(${virtualColumn.start}px)`
-            const dragTransform = `translateX(${virtualColumn.end - scrollSize}px)`
+            const dragTransform = `translateX(${virtualColumn.end - dragOffset}px)`
             return (
                 <Fragment key={virtualColumn.key}>
                     <Box sx={SX.cellFixed} style={{width, height: cellHeightStickyHeadPx, transform}}>
@@ -191,7 +200,7 @@ export function VirtualizedTable(props: Props) {
                     </Box>
                     <Box
                         sx={SX.columnSeparator}
-                        style={{width: dragWidthPx, height: cellHeightStickyHeadPx, transform: dragTransform}}
+                        style={{width: dragWidth, height: cellHeightStickyHeadPx, transform: dragTransform}}
                         onMouseDown={(e) => columnDragger.onMouseDown(e, virtualColumn.index, virtualColumn.size)}
                     />
                 </Fragment>
