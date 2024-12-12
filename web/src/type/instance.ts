@@ -22,6 +22,7 @@ export interface Instance {
     sidecar: Sidecar,
     scheduledSwitchover?: InstanceScheduledSwitchover,
     scheduledRestart?: InstanceScheduledRestart,
+    tags?: {[key: string]: any},
 }
 
 export interface InstanceScheduledSwitchover {

@@ -140,3 +140,6 @@ tags:
   noloadbalance: false
   clonefrom: false
   nosync: false
+  test_bool: true
+  test_str: pam-pam
+  test_num: 666

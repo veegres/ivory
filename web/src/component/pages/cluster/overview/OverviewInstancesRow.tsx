@@ -19,7 +19,7 @@ import {RestartButton} from "../../../shared/actions/RestartButton";
 import {ReloadButton} from "../../../shared/actions/ReloadButton";
 import {ReinitButton} from "../../../shared/actions/ReinitButton";
 import {InfoColorBox} from "../../../view/box/InfoColorBox";
-import {green, grey, pink, red} from "@mui/material/colors";
+import {blueGrey, green, grey, pink, red} from "@mui/material/colors";
 import {ScheduleButton} from "../../../shared/actions/ScheduleButton";
 
 const SX: SxPropsMap = {
@@ -39,7 +39,7 @@ type Props = {
 
 export function OverviewInstancesRow(props: Props) {
     const {instance, domain, cluster, candidates, error = false} = props
-    const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover} = instance
+    const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = instance
 
     const {isInstanceActive} = useStore()
     const {setInstance} = useStoreAction()
@@ -100,8 +100,16 @@ export function OverviewInstancesRow(props: Props) {
                 {role === "replica" && <InfoColorBox label={"Lag"} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} bgColor={lag > 100 ? red[500] : grey[600]} opacity={0.9}/>}
                 {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} bgColor={pink[900]} opacity={0.9}/>}
                 {scheduledSwitchover && <InfoColorBox label={"Scheduled Switchover"} title={renderScheduledSwitchoverTitle()} bgColor={pink[900]} opacity={0.9}/>}
+                {renderTags()}
             </Box>
         )
+    }
+
+    function renderTags() {
+        if (!tags) return
+        return Object.entries(tags).map(([key, value]) => (
+            <InfoColorBox key={key} label={`${key}: ${value}`} bgColor={blueGrey[600]} opacity={0.9}/>
+        ))
     }
 
     function renderSimpleTitle(name: string, value: string) {
