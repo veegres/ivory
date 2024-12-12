@@ -14,7 +14,7 @@ COPY service/build /opt/service
 COPY web/build /opt/web
 
 # move docker entry file to container
-COPY docker/production/entrypoint.sh /usr/local/bin/
+COPY docker/ivory-prod/entrypoint.sh /usr/local/bin/
 RUN chmod 777 /usr/local/bin/entrypoint.sh
 
 # set up pgcompacttable
