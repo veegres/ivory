@@ -14,11 +14,22 @@ type BloatTarget struct {
 	ExcludeTable  string `json:"excludeTable"`
 }
 
+type BloatOptions struct {
+	Force           bool `json:"force"`
+	NoReindex       bool `json:"noReindex"`
+	NoInitialVacuum bool `json:"noInitialVacuum"`
+	InitialReindex  bool `json:"initialReindex"`
+	RoutineVacuum   bool `json:"routineVacuum"`
+	DelayRatio      int  `json:"delayRatio"`
+	MinTableSize    int  `json:"minTableSize"`
+	MaxTableSize    int  `json:"maxTableSize"`
+}
+
 type BloatRequest struct {
 	Cluster    string       `json:"cluster"`
 	Connection DbConnection `json:"connection"`
 	Target     *BloatTarget `json:"target"`
-	Ratio      int          `json:"ratio"`
+	Options    BloatOptions `json:"options"`
 }
 
 type Bloat struct {

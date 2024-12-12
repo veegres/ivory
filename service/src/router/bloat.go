@@ -105,8 +105,29 @@ func (r *BloatRouter) StartJob(context *gin.Context) {
 	if isDefaultTarget {
 		sb = append(sb, "--all")
 	}
-	if cli.Ratio != 0 {
-		sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Ratio))
+	if cli.Options.Force {
+		sb = append(sb, "--force")
+	}
+	if cli.Options.NoReindex {
+		sb = append(sb, "--no-reindex")
+	}
+	if cli.Options.NoInitialVacuum {
+		sb = append(sb, "--no-initial-vacuum")
+	}
+	if cli.Options.InitialReindex {
+		sb = append(sb, "--initial-reindex")
+	}
+	if cli.Options.RoutineVacuum {
+		sb = append(sb, "--routine-vacuum")
+	}
+	if cli.Options.DelayRatio != 0 {
+		sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Options.DelayRatio))
+	}
+	if cli.Options.MinTableSize != 0 {
+		sb = append(sb, "--min-table-size", strconv.Itoa(cli.Options.MinTableSize))
+	}
+	if cli.Options.MaxTableSize != 0 {
+		sb = append(sb, "--max-table-size", strconv.Itoa(cli.Options.MaxTableSize))
 	}
 	sb = append(sb, "--verbose")
 

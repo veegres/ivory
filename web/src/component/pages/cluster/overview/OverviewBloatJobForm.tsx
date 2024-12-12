@@ -1,18 +1,18 @@
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
-import {Box, Button, TextField} from "@mui/material";
+import {Box, Button, Checkbox, FormControlLabel, TextField} from "@mui/material";
 import {useState} from "react";
 import {SxPropsMap} from "../../../../type/general";
 import {InstanceWeb} from "../../../../type/instance";
 import {Cluster} from "../../../../type/cluster";
-import {BloatTarget} from "../../../../type/bloat";
+import {BloatOptions, BloatTarget} from "../../../../type/bloat";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
 import {useRouterBloatStart} from "../../../../router/bloat";
 import {getQueryConnection} from "../../../../app/utils";
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../router/query";
 
 const SX: SxPropsMap = {
-    form: {display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: "30px"},
-    buttons: {display: "flex", alignItems: "center", gap: 1}
+    form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
+    group: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
 }
 
 type Props = {
@@ -25,7 +25,7 @@ type Props = {
 
 export function OverviewBloatJobForm(props: Props) {
     const {defaultInstance, cluster, target, onClick, setTarget} = props
-    const [ratio, setRadio] = useState<number>()
+    const [options, setOptions] = useState<BloatOptions>({force: false, noReindex: false, routineVacuum: false, initialReindex: false, noInitialVacuum: false})
 
     const start = useRouterBloatStart(cluster.name)
 
@@ -39,7 +39,7 @@ export function OverviewBloatJobForm(props: Props) {
         <Box sx={SX.form}>
             <AutocompleteFetch
                 value={target?.dbName || null}
-                margin={"dense"} variant={"standard"}
+                margin={"dense"} variant={"standard"} size={"small"}
                 label={"Database"}
                 connection={connection}
                 useFetch={useRouterQueryDatabase}
@@ -47,7 +47,7 @@ export function OverviewBloatJobForm(props: Props) {
             />
             <AutocompleteFetch
                 value={target?.schema || null}
-                margin={"dense"} variant={"standard"}
+                margin={"dense"} variant={"standard"} size={"small"}
                 label={"Schema"}
                 connection={connection}
                 useFetch={useRouterQuerySchemas}
@@ -55,17 +55,8 @@ export function OverviewBloatJobForm(props: Props) {
                 disabled={!target?.dbName || !!target?.excludeSchema}
             />
             <AutocompleteFetch
-                value={target?.excludeSchema || null}
-                margin={"dense"} variant={"standard"}
-                label={"Exclude Schema"}
-                connection={connection}
-                useFetch={useRouterQuerySchemas}
-                onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || undefined})}
-                disabled={!target?.dbName || !!target?.schema}
-            />
-            <AutocompleteFetch
                 value={target?.table || null}
-                margin={"dense"} variant={"standard"}
+                margin={"dense"} variant={"standard"} size={"small"}
                 label={"Table"}
                 connection={connection}
                 params={{schema: target?.schema ?? ""}}
@@ -73,9 +64,28 @@ export function OverviewBloatJobForm(props: Props) {
                 onUpdate={(v) => setTarget({...target, table: v || undefined})}
                 disabled={!target?.schema || !!target?.excludeTable}
             />
+            <Box sx={SX.group}>
+                <TextField
+                    label={"Min table size (MB)"} type={"number"} variant={"standard"} size={"small"}
+                    onChange={(e) => setOptions({...options, minTableSize: parseInt(e.target.value)})}
+                />
+                <TextField
+                    label={"Max table size (MB)"} type={"number"} variant={"standard"} size={"small"}
+                    onChange={(e) => setOptions({...options, maxTableSize: parseInt(e.target.value)})}
+                />
+            </Box>
+            <AutocompleteFetch
+                value={target?.excludeSchema || null}
+                margin={"dense"} variant={"standard"} size={"small"}
+                label={"Exclude Schema"}
+                connection={connection}
+                useFetch={useRouterQuerySchemas}
+                onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || undefined})}
+                disabled={!target?.dbName || !!target?.schema}
+            />
             <AutocompleteFetch
                 value={target?.excludeTable || null}
-                margin={"dense"} variant={"standard"}
+                margin={"dense"} variant={"standard"} size={"small"}
                 label={"Exclude Table"}
                 connection={connection}
                 params={{schema: target?.schema ?? ""}}
@@ -83,17 +93,20 @@ export function OverviewBloatJobForm(props: Props) {
                 onUpdate={(v) => setTarget({...target, excludeTable: v || undefined})}
                 disabled={!target?.schema || !!target?.table}
             />
-            <Box sx={SX.buttons}>
+            <Box sx={SX.group}>
                 <TextField
-                    sx={{flexGrow: 1}} size={"small"} label={"Ratio"} type={"number"} variant={"standard"}
-                    onChange={(e) => setRadio(parseInt(e.target.value))}
+                    label={"Delay ratio"} type={"number"} variant={"standard"} size={"small"}
+                    onChange={(e) => setOptions({...options, delayRatio: parseInt(e.target.value)})}
                 />
-                <Box sx={SX.buttons}>
-                    <Button variant={"text"} disabled={start.isPending} onClick={handleRun}>
-                        Clean
-                    </Button>
-                </Box>
             </Box>
+            <Box sx={SX.group}>
+                <FormControlLabel label={"Force"} control={<Checkbox checked={options.force} onChange={(e) => setOptions({...options, force: e.target.checked})}/>}/>
+                <Button variant={"text"} disabled={start.isPending} onClick={handleRun}>Clean</Button>
+            </Box>
+            <FormControlLabel label={"Routing vacuum"} control={<Checkbox checked={options.routineVacuum} onChange={(e) => setOptions({...options, routineVacuum: e.target.checked})}/>}/>
+            <FormControlLabel label={"No initial vacuum"} control={<Checkbox checked={options.noInitialVacuum} onChange={(e) => setOptions({...options, noInitialVacuum: e.target.checked})}/>}/>
+            <FormControlLabel label={"Initial reindex"} disabled={options.noReindex} control={<Checkbox checked={options.initialReindex} onChange={(e) => setOptions({...options, initialReindex: e.target.checked})}/>}/>
+            <FormControlLabel label={"No reindex"} disabled={options.initialReindex} control={<Checkbox checked={options.noReindex} onChange={(e) => setOptions({...options, noReindex: e.target.checked})}/>}/>
         </Box>
     )
 
@@ -104,9 +117,7 @@ export function OverviewBloatJobForm(props: Props) {
             onClick()
             start.mutate({
                 connection: {host, port, credentialId},
-                target,
-                ratio,
-                cluster: cluster.name
+                target, options, cluster: cluster.name,
             })
         }
     }

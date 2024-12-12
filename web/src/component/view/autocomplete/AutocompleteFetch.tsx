@@ -10,7 +10,8 @@ type Props = {
     label?: string,
     placeholder?: string,
     variant?: "standard" | "filled" | "outlined",
-    margin?: 'dense' | 'normal' | 'none',
+    margin?: "dense" | "normal" | "none",
+    size?: "small" | "medium",
     padding?: string,
     value?: string | null,
     connection: QueryConnection,
@@ -19,7 +20,7 @@ type Props = {
 }
 
 export function AutocompleteFetch(props: Props) {
-    const {label, placeholder, variant, margin, padding} = props
+    const {label, placeholder, variant, margin, padding, size} = props
     const {onUpdate, useFetch, disabled = false, value, connection, params} = props
 
     const [inputValue, setInputValue] = useState("")
@@ -31,6 +32,7 @@ export function AutocompleteFetch(props: Props) {
     return (
         <Autocomplete
             fullWidth
+            size={size}
             renderInput={renderInput}
             value={value}
             inputValue={inputValue}
