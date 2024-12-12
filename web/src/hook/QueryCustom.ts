@@ -50,7 +50,7 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
     }
 
     async function handleError(error: any) {
-        if (mutationKey) snackbar(`${mutationKey.join(" ").toUpperCase()} - ERROR, ${getErrorMessage(error)}`, "success")
+        if (mutationKey) snackbar(`${mutationKey.join(" ").toUpperCase()} - ERROR, ${getErrorMessage(error)}`, "error")
         else snackbar(getErrorMessage(error), "error")
     }
 }
