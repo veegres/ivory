@@ -55,12 +55,22 @@ const TABS: ClusterTabs = {
         info: <>
             Here, you can efficiently decrease the size of bloated tables and indexes without imposing
             heavy locks. This functionality is powered by
-            the <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link>
-            tool, which is seamlessly integrated with Ivory for streamlined usage. Ivory simplifies visualization
+            the <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link> tool,
+            which is seamlessly integrated with Ivory for streamlined usage. Ivory simplifies visualization
             and centralizes information about jobs and logs within each cluster, ensuring convenient access when
             needed. It's important to note that this tool can only be executed on the master node, and
             in the target database, the contrib module pgstattuple must be installed using the command
-            "<b>CREATE EXTENSION IF NOT EXISTS pgstattuple;</b>".
+            "<b>CREATE EXTENSION IF NOT EXISTS pgstattuple;</b>". Ivory supports such features as:
+            <ul>
+                <li><b>Delay ratio</b> - A dynamic part of the delay between rounds is calculated as previous-round-time * delay-ratio. By default 2.</li>
+                <li><b>Min table size</b> - Tables smaller than the specified size (in megabytes) will be excluded from processing.</li>
+                <li><b>Max table size</b> - Tables larger than the specified size (in megabytes) will be excluded from processing.</li>
+                <li><b>Force</b> - Try to compact even those tables and indexes that do not meet minimal bloat requirements.</li>
+                <li><b>Routing vacuum</b> - Turn on the routine vacuum. By default all the vacuums are off.</li>
+                <li><b>No initial vacuum</b> - Turn off initial vacuum before table processing.</li>
+                <li><b>Initial reindex</b> - Perform an initial reindex of tables before processing.</li>
+                <li><b>No reindex</b> - Turn off reindexing of tables after processing.</li>
+            </ul>
         </>
     },
 }
