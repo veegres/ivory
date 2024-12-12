@@ -37,7 +37,7 @@ export function OverviewActionInfo(props: Props) {
         <Box sx={SX.box}>
             <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>}>
                 <Box sx={{color: InstanceColor[defaultInstance.role]}}>
-                    {getDomain(defaultInstance.sidecar).toUpperCase()}
+                    {defaultInstance.sidecar.host.toUpperCase()}
                 </Box>
             </InfoBox>
             <InfoBoxList items={infoItems} label={"Configured Cluster Options"}/>

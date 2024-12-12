@@ -4,8 +4,8 @@ import {SxPropsMap} from "../../../type/general";
 
 const SX: SxPropsMap = {
     box: {
-        display: "flex", justifyContent: "center", alignItems: "center", height: "32px",
-        fontSize: "0.8125rem", cursor: "pointer", minWidth: "30px", border: 1, borderColor: "divider"
+        display: "flex", justifyContent: "center", alignItems: "center", height: "32px", textWrap: "nowrap",
+        fontSize: "0.8125rem", cursor: "pointer", minWidth: "30px", border: 1, borderColor: "divider",
     },
     tooltip: {
         [`& .${tooltipClasses.tooltip}`]: {
