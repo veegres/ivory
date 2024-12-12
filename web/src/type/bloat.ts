@@ -11,11 +11,22 @@ export interface BloatTarget {
     excludeTable?: string,
 }
 
+export interface BloatOptions {
+    force?: boolean,
+    noReindex?: boolean,
+    noInitialVacuum?: boolean,
+    initialReindex?: boolean,
+    routineVacuum?: boolean,
+    delayRatio?: number,
+    minTableSize?: number,
+    maxTableSize?: number,
+}
+
 export interface BloatRequest {
     cluster: string,
     connection: DbConnection,
     target?: BloatTarget,
-    ratio?: number,
+    options: BloatOptions,
 }
 
 export interface Bloat {

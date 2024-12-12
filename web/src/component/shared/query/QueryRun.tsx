@@ -70,7 +70,7 @@ export function QueryRun(props: Props) {
                             <Checkbox
                                 sx={SX.checkbox}
                                 size={"small"}
-                                color="secondary"
+                                color={"secondary"}
                                 icon={<WashOutlined/>}
                                 checkedIcon={<Wash/>}
                                 onClick={handleTrimClick}
@@ -81,7 +81,7 @@ export function QueryRun(props: Props) {
                             <Checkbox
                                 sx={SX.checkbox}
                                 size={"small"}
-                                color="secondary"
+                                color={"secondary"}
                                 icon={<HealthAndSafety/>}
                                 checkedIcon={<HealthAndSafety/>}
                                 onClick={handleLimitClick}
