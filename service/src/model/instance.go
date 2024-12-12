@@ -20,6 +20,7 @@ type Instance struct {
 	Sidecar             Sidecar                      `json:"sidecar"`
 	ScheduledSwitchover *InstanceScheduledSwitchover `json:"scheduledSwitchover,omitempty"`
 	ScheduledRestart    *InstanceScheduledRestart    `json:"scheduledRestart,omitempty"`
+	Tags                *map[string]any              `json:"tags,omitempty"`
 }
 
 type InstanceScheduledSwitchover struct {

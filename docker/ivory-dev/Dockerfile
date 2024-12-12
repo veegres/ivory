@@ -1,4 +1,4 @@
-FROM postgres:16.2
+FROM postgres:17.2
 
 RUN apt update
 RUN apt -y install python3-pip
@@ -11,9 +11,10 @@ COPY patroni-initdb.sh /opt
 COPY certs /opt/certs
 
 # this is needed for postgres and patroni to get access to the files
-RUN chown -R postgres:postgres /opt/certs
+RUN chown -R postgres:postgres /opt
+RUN chmod -R 777 /opt
 # this is needed for postgres to read the key, the view should be resticted by postgres rules
-RUN chmod -R 600 /opt/certs/server/server.key
+RUN chmod 600 /opt/certs/server/server.key
 
 USER postgres
 # unclear why it doesn't want to work without making `tmp` as working dear

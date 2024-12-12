@@ -24,6 +24,7 @@ type PatroniInstance struct {
 	Lag              json.RawMessage          `json:"lag"`
 	Timeline         int                      `json:"timeline"`
 	ScheduledRestart *PatroniScheduledRestart `json:"scheduled_restart"`
+	Tags             *map[string]any          `json:"tags"`
 }
 
 type PatroniScheduledRestart struct {
