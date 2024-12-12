@@ -45,6 +45,13 @@ export function OverviewBloatJobItem(props: Props) {
 
     return (
         <Paper sx={SX.paper} variant={"outlined"}>
+            {renderHeader()}
+            {renderBody()}
+        </Paper>
+    )
+
+    function renderHeader() {
+        return (
             <Box sx={SX.header} onClick={() => setOpen(!open)} className={select.none}>
                 <Box sx={SX.headerLine}>
                     <Box>Command</Box>
@@ -79,16 +86,6 @@ export function OverviewBloatJobItem(props: Props) {
                     </Box>
                 </Box>
             </Box>
-            {renderBody()}
-        </Paper>
-    )
-
-    function renderPasswordTooltip() {
-        return (
-            <Box>
-                <Box><b>Ivory Credentials Id</b></Box>
-                <Box>[ provided only for transparency, you need to provide real password and username ]</Box>
-            </Box>
         )
     }
 
@@ -113,6 +110,15 @@ export function OverviewBloatJobItem(props: Props) {
                 )}
                 <LinearProgressStateful sx={SX.loader} loading={isFetching} color={"inherit"} line/>
             </>
+        )
+    }
+
+    function renderPasswordTooltip() {
+        return (
+            <Box>
+                <Box><b>Ivory Credentials Id</b></Box>
+                <Box>[ provided only for transparency, you need to provide real password and username ]</Box>
+            </Box>
         )
     }
 
