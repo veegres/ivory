@@ -21,12 +21,13 @@ import {ReinitButton} from "../../../shared/actions/ReinitButton";
 import {InfoColorBox} from "../../../view/box/InfoColorBox";
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors";
 import {ScheduleButton} from "../../../shared/actions/ScheduleButton";
+import {HiddenScrolling} from "../../../view/scrolling/HiddenScrolling";
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
     nowrap: {whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
     buttons: {display: "flex", justifyContent: "flex-end", alignItems: "center"},
-    data: {display: "flex", flexWrap: "wrap", columnGap: 1, rowGap: "2px", fontSize: "12px"},
+    data: {display: "flex", columnGap: 1, rowGap: "2px", fontSize: "12px"},
 }
 
 type Props = {
@@ -70,7 +71,7 @@ export function OverviewInstancesRow(props: Props) {
                 </Tooltip>
             </TableCell>
             <TableCell sx={SX.nowrap}>{state}</TableCell>
-            <TableCell>{renderData()}</TableCell>
+            <TableCell onClick={(e) => e.stopPropagation()}>{renderData()}</TableCell>
             <TableCell align={"right"} onClick={(e) => e.stopPropagation()}>
                 <Box sx={SX.buttons}>{renderButtons()}</Box>
             </TableCell>
@@ -95,13 +96,15 @@ export function OverviewInstancesRow(props: Props) {
     function renderData() {
         if (role === "unknown") return null
         return (
-            <Box sx={SX.data}>
-                <InfoColorBox label={"Restart"} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} bgColor={pendingRestart ? green[600] : grey[600]} opacity={0.9}/>
-                {role === "replica" && <InfoColorBox label={"Lag"} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} bgColor={lag > 100 ? red[500] : grey[600]} opacity={0.9}/>}
-                {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} bgColor={pink[900]} opacity={0.9}/>}
-                {scheduledSwitchover && <InfoColorBox label={"Scheduled Switchover"} title={renderScheduledSwitchoverTitle()} bgColor={pink[900]} opacity={0.9}/>}
-                {renderTags()}
-            </Box>
+            <HiddenScrolling arrowWidth={"20px"} arrowHeight={"25px"}>
+                <Box sx={SX.data}>
+                    <InfoColorBox label={"Restart"} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} bgColor={pendingRestart ? green[600] : grey[600]} opacity={0.9}/>
+                    {role === "replica" && <InfoColorBox label={"Lag"} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} bgColor={lag > 100 ? red[500] : grey[600]} opacity={0.9}/>}
+                    {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} bgColor={pink[900]} opacity={0.9}/>}
+                    {scheduledSwitchover && <InfoColorBox label={"Scheduled Switchover"} title={renderScheduledSwitchoverTitle()} bgColor={pink[900]} opacity={0.9}/>}
+                    {renderTags()}
+                </Box>
+            </HiddenScrolling>
         )
     }
 
