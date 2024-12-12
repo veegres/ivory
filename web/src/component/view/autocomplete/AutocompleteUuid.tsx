@@ -50,7 +50,7 @@ export function AutocompleteUuid(props: Props) {
         )
     }
 
-    function renderOption(props: HTMLAttributes<HTMLLIElement>, option: Option) {
+    function renderOption(props: HTMLAttributes<HTMLLIElement> & { key: any }, option: Option) {
         return (
             <Box component={"li"} {...props}>
                 {getLabel(option.short, option.name)}

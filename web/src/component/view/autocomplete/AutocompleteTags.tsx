@@ -54,7 +54,7 @@ export function AutocompleteTags(props: Props) {
         )
     }
 
-    function renderOption(props: HTMLAttributes<HTMLLIElement>, option: Option) {
+    function renderOption(props: HTMLAttributes<HTMLLIElement> & { key: any }, option: Option) {
         return (
             <Box component={"li"} {...props}>
                 <Box sx={SX.option}>
