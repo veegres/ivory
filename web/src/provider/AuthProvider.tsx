@@ -17,7 +17,7 @@ export function useAuth() {
     return useContext(AuthContext)
 }
 
-export function AuthProvider(props: { children: ReactNode }) {
+export function AuthProvider(props: {children: ReactNode}) {
     const queryClient = useQueryClient();
     const [token, setToken] = useLocalStorageState("token", "", true);
 
