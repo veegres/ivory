@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 
-export function useWindowSize(element: Element | null) {
+export function useWindowSize(element?: Element) {
     const [windowWidth, setWindowWidth] = useState(element?.clientWidth)
     const [windowHeight, setWindowHeight] = useState(element?.clientHeight)
 
@@ -24,7 +24,7 @@ export function useWindowSize(element: Element | null) {
     }
 }
 
-export function useWindowChildCount(element: Element | null) {
+export function useWindowChildCount(element?: Element) {
     const [count, setCount] = useState(element?.childElementCount)
 
     const callback = useCallback(setWindowDimensions, [element])
@@ -46,14 +46,16 @@ export function useWindowChildCount(element: Element | null) {
     }
 }
 
-export function useWindowScrolled(element: Element | null): [boolean] {
+export function useWindowScrolled(element?: Element): [boolean] {
     const [scrolled, setScrolled] = useState(false)
     const [width, height] = useWindowSize(element)
     const [count] = useWindowChildCount(element)
 
-    useEffect(
-        () => setScrolled(!!element && element.scrollWidth > element.clientWidth),
-        [element, count, width, height]
-    )
+    useEffect(handleEffectScrolled, [element, count, width, height])
+
     return [scrolled]
+
+    function handleEffectScrolled() {
+        setScrolled(!!element && element.scrollWidth > element.clientWidth)
+    }
 }
