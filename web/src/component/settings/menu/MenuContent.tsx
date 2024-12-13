@@ -9,6 +9,7 @@ import {ListItem} from "../../view/box/ListItem";
 import {ListButton} from "../../view/box/ListButton";
 import {SettingOptions} from "../../../app/utils";
 import {ClearCacheButton} from "../../shared/actions/ClearCacheButton";
+import {MenuUncheckInstanceChanger} from "./MenuUncheckInstanceChanger";
 
 const SX: SxPropsMap = {
     list: {display: "flex", flexDirection: "column", gap: 3},
@@ -27,6 +28,7 @@ export function MenuContent(props: Props) {
                 <List name={"Appearance"}>
                     <ListItem title={"Theme"} button={<MenuThemeChanger/>}/>
                     <ListItem title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
+                    <ListItem title={"Uncheck instance block on cluster select"} button={<MenuUncheckInstanceChanger/>}/>
                 </List>
                 <List name={"Privacy and security"}>
                     {renderButton(Settings.PASSWORD)}

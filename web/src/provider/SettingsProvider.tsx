@@ -20,6 +20,7 @@ export enum Mode {
 interface AppearanceStateType {
     mode: Mode,
     refetchOnWindowsFocus: boolean,
+    uncheckInstanceBlockOnClusterChange: boolean,
 }
 
 interface ThemeContextType {
@@ -27,14 +28,16 @@ interface ThemeContextType {
     theme: "dark" | "light",
     setTheme: (m: Mode) => void,
     toggleRefetchOnWindowsRefocus: () => void,
+    toggleUncheckInstanceBlockOnClusterChange: () => void,
     info?: Theme,
 }
 
-const ThemeInitialState: AppearanceStateType = {mode: Mode.SYSTEM, refetchOnWindowsFocus: false}
+const ThemeInitialState: AppearanceStateType = {mode: Mode.SYSTEM, refetchOnWindowsFocus: false, uncheckInstanceBlockOnClusterChange: true}
 const ThemeContext = createContext<ThemeContextType>({
     state: ThemeInitialState,
     theme: "light",
     toggleRefetchOnWindowsRefocus: () => void 0,
+    toggleUncheckInstanceBlockOnClusterChange: () => void 0,
     setTheme: () => void 0,
 })
 const client = new QueryClient()
@@ -63,7 +66,7 @@ export function SettingsProvider(props: { children: ReactNode }) {
     useEffect(handleEffectClient, [state.refetchOnWindowsFocus])
 
     return (
-        <ThemeContext value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, info: muiTheme}}>
+        <ThemeContext value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, toggleUncheckInstanceBlockOnClusterChange: toggleUncheckInstanceBlockOnClusterSelect, info: muiTheme}}>
             <QueryClientProvider client={client}>
                 <MuiThemeProvider theme={muiTheme}>
                     <CssBaseline enableColorScheme/>
@@ -80,6 +83,10 @@ export function SettingsProvider(props: { children: ReactNode }) {
 
     function toggleRefetchOnWindowsRefocus() {
         return setState(prevState => ({...prevState, refetchOnWindowsFocus: !state.refetchOnWindowsFocus}))
+    }
+
+    function toggleUncheckInstanceBlockOnClusterSelect() {
+        return setState(prevState => ({...prevState, uncheckInstanceBlockOnClusterChange: !state.uncheckInstanceBlockOnClusterChange}))
     }
 
     function handleEffectClient() {
