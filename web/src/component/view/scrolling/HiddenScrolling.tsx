@@ -22,7 +22,7 @@ type Props = {
 
 export function HiddenScrolling(props: Props) {
     const {children, renderBefore, renderAfter, arrowWidth = "30px", arrowHeight = "35px"} = props
-    const scrollRef = useRef<Element>(null)
+    const scrollRef = useRef<Element>(undefined)
     const [scrolled] = useWindowScrolled(scrollRef.current)
 
     return (
