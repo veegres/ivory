@@ -1,4 +1,4 @@
-import {ReactNode, useRef} from "react";
+import {ReactNode, useState} from "react";
 import {Box, TabScrollButton} from "@mui/material";
 import {SxPropsMap} from "../../../type/general";
 import {useWindowScrolled} from "../../../hook/WindowObservers";
@@ -22,8 +22,8 @@ type Props = {
 
 export function HiddenScrolling(props: Props) {
     const {children, renderBefore, renderAfter, arrowWidth = "30px", arrowHeight = "35px"} = props
-    const scrollRef = useRef<Element>(undefined)
-    const [scrolled] = useWindowScrolled(scrollRef.current)
+    const [ref, setRef] = useState<Element>();
+    const [scrolled] = useWindowScrolled(ref)
 
     return (
         <Box sx={SX.box}>
@@ -35,7 +35,7 @@ export function HiddenScrolling(props: Props) {
                 onClick={() => handleScroll(-SCROLL_OFFSET)}
             />
             <Box sx={SX.before}>{renderBefore}</Box>
-            <Box ref={scrollRef} sx={SX.group}>{children}</Box>
+            <Box ref={(ref) => setRef(ref as Element)} sx={SX.group}>{children}</Box>
             <Box sx={SX.after}>{renderAfter}</Box>
             <TabScrollButton
                 sx={{...SX.arrow, width: arrowWidth, height: arrowHeight}}
@@ -48,7 +48,7 @@ export function HiddenScrolling(props: Props) {
     )
 
     function handleScroll(scrollOffset: number) {
-        const element = scrollRef.current
+        const element = ref
         if (element) element.scroll(element.scrollLeft += scrollOffset, 0)
     }
 }
