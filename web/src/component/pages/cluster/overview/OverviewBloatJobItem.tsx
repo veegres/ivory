@@ -116,7 +116,7 @@ export function OverviewBloatJobItem(props: Props) {
     function renderPasswordTooltip() {
         return (
             <Box>
-                <Box><b>Ivory Credentials Id</b></Box>
+                <Box><b>Credential ID</b></Box>
                 <Box>[ provided only for transparency, you need to provide real password and username ]</Box>
             </Box>
         )
