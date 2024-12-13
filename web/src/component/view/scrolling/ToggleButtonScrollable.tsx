@@ -1,5 +1,5 @@
 import {SxPropsMap} from "../../../type/general";
-import {useState} from "react";
+import {MouseEvent, useState} from "react";
 import {Box, ToggleButton, Tooltip} from "@mui/material";
 import {HiddenScrolling} from "./HiddenScrolling";
 
@@ -38,13 +38,22 @@ export function ToggleButtonScrollable(props: Props) {
         return (
             <Box sx={SX.after}>
                 <Box sx={SX.info}>
-                    <Tooltip title={"Tags Selected"} placement={"top"}>
+                    <Tooltip title={renderTagsTooltip()} placement={"top"}>
                         <span>{renderSelectButton(count, !isAll)}</span>
                     </Tooltip>
                 </Box>
                 <Box sx={SX.info}>
                     {renderInfo()}
                 </Box>
+            </Box>
+        )
+    }
+
+    function renderTagsTooltip() {
+        return (
+            <Box>
+                <Box><b>Tags Selected</b></Box>
+                <Box>[ hold <i>ctrl</i> to multi select / deselect tags ]</Box>
             </Box>
         )
     }
@@ -69,7 +78,7 @@ export function ToggleButtonScrollable(props: Props) {
         )
     }
 
-    function renderSelectButton(tag: string, selected: boolean, onClick?: (value: string) => void) {
+    function renderSelectButton(tag: string, selected: boolean, onClick?: (e: MouseEvent<HTMLElement>, value: string) => void) {
         return (
             <ToggleButton
                 sx={SX.element}
@@ -79,14 +88,14 @@ export function ToggleButtonScrollable(props: Props) {
                 selected={selected}
                 disabled={!onClick}
                 value={tag}
-                onClick={() => onClick?.(tag)}
+                onClick={(e) => onClick?.(e, tag)}
             >
                 {tag}
             </ToggleButton>
         )
     }
 
-    function renderRemovedButton(tag: string, removed: boolean, onClick?: (value: string) => void) {
+    function renderRemovedButton(tag: string, removed: boolean, onClick?: (e: MouseEvent<HTMLElement>, value: string) => void) {
         if (tag === ALL || !removed) return null
         return (
             <ToggleButton
@@ -97,24 +106,33 @@ export function ToggleButtonScrollable(props: Props) {
                 selected={removed}
                 disabled={!onClick}
                 value={tag}
-                onClick={() => onClick?.(tag)}
+                onClick={(e) => onClick?.(e, tag)}
             >
                 {tag}
             </ToggleButton>
         )
     }
 
-    function handleClick(value: string) {
+    function handleClick(e: MouseEvent, value: string) {
         const tmp = new Set(selectedSet)
         if (tmp.has(value)) {
-            tmp.delete(value)
+            if (e.ctrlKey || tmp.size === 1) {
+                tmp.delete(value)
+            } else {
+                tmp.clear()
+                tmp.add(value)
+            }
             if (tmp.size === 0) tmp.add(ALL)
-            setSelectedSet(tmp)
         } else {
             tmp.delete(ALL)
-            tmp.add(value)
-            setSelectedSet(tmp)
+            if (e.ctrlKey) {
+                tmp.add(value)
+            } else {
+                tmp.clear()
+                tmp.add(value)
+            }
         }
+        setSelectedSet(tmp)
         onUpdate([...tmp])
     }
 
