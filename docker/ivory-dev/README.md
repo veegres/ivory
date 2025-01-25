@@ -39,7 +39,7 @@ All postgres instances are configured with ssl by default, and there are differe
 - `replicator` - used by patroni for replication set up
 - `rewind` - used by patroni for rewind set up
 - `trust` - custom user, it doesn't have any password for connection
-- `admin`  -custom user, it has general password `admin:admin`
+- `admin` - custom user, it has general password `admin:admin`
 - `sslca` - custom user, it requires `verify-ca` connection and has password `sslca:sslca`
 - `sslfull` - custom user, it requires `verify-full` connection and has password `sslfull:sslfull`
 

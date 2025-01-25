@@ -95,12 +95,9 @@ export function SettingsProvider(props: { children: ReactNode }) {
 
     function getTheme(m: Mode): PaletteMode {
         switch (m) {
-            case Mode.DARK:
-                return "dark"
-            case Mode.LIGHT:
-                return "light"
-            default:
-                return prefersDarkMode ? "dark" : "light"
+            case Mode.DARK: return "dark"
+            case Mode.LIGHT: return "light"
+            default: return prefersDarkMode ? "dark" : "light"
         }
     }
 }
