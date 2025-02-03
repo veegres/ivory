@@ -9,6 +9,7 @@
 .show {
     overflow: auto;
     scrollbar-gutter: stable;
+    height: 100vh;
 }
 
 /* ----- TINY ----- */

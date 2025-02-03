@@ -8,7 +8,7 @@ import {useRouterInfo} from "../../router/general";
 
 const SX: SxPropsMap = {
     // we need -8px for bottom scroll, right scroll is always shown that is why we don't need calc
-    box: {display: "flex", flexDirection: "column", gap: 2, flexWrap: "nowrap", height: "calc(100vh - 8px)", minWidth: "1010px"},
+    box: {display: "flex", flexDirection: "column", gap: 2, flexWrap: "nowrap", minHeight: "calc(100vh - 8px)", minWidth: "1010px"},
     body: {display: "flex", alignItems: "center", justifyContent: "center", flexGrow: 1},
 }
 
