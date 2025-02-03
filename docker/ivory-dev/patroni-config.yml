@@ -83,11 +83,12 @@ bootstrap:
     # For kerberos gss based connectivity (discard @.*$)
     #- host replication replicator 127.0.0.1/32 gss include_realm=0
     #- host all all 0.0.0.0/0 gss include_realm=0
-    - hostssl replication replicator 0.0.0.0/0 md5
-    - hostssl all trust 0.0.0.0/0 trust
-    - hostssl all superuser 0.0.0.0/0 md5
-    - hostssl all rewind 0.0.0.0/0 md5
-    - hostssl all admin 0.0.0.0/0 md5
+    - host all replicator 0.0.0.0/0 md5
+    - host all trust 0.0.0.0/0 trust
+    - host all superuser 0.0.0.0/0 md5
+    - host all rewind 0.0.0.0/0 md5
+    - host all admin 0.0.0.0/0 md5
+    - hostnossl all sslno 0.0.0.0/0 md5
     - hostssl all sslca 0.0.0.0/0 md5 clientcert=verify-ca
     - hostssl all sslfull 0.0.0.0/0 md5 clientcert=verify-full
 
