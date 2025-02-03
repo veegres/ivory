@@ -144,17 +144,18 @@ func (p *SidecarClient) getRequest(
 
 func (p *SidecarClient) getClient(certs *Certs, timeout time.Duration) (*http.Client, string, error) {
 	protocol := "http"
-	config := &tls.Config{}
-	transport := &http.Transport{TLSClientConfig: config}
+	tlsConfig := &tls.Config{}
 
 	if certs != nil {
 		protocol = "https"
-		errTls := p.certService.SetTLSConfig(config, *certs)
-		if errTls != nil {
-			return nil, protocol, errTls
-		}
 	}
 
+	errTls := p.certService.EnrichTLSConfig(tlsConfig, certs)
+	if errTls != nil {
+		return nil, protocol, errTls
+	}
+
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	client := &http.Client{Transport: transport, Timeout: timeout}
 	return client, protocol, nil
 }

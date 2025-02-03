@@ -78,14 +78,18 @@ func (s *CertService) GetTLSConfigCertificates(certs Certs) ([]tls.Certificate, 
 	return certificates, nil
 }
 
-func (s *CertService) SetTLSConfig(config *tls.Config, certs Certs) error {
-	rootCA, errRoot := s.GetTLSConfigRootCA(certs)
+func (s *CertService) EnrichTLSConfig(config *tls.Config, certs *Certs) error {
+	if certs == nil {
+		config = nil
+		return nil
+	}
+	rootCA, errRoot := s.GetTLSConfigRootCA(*certs)
 	if errRoot != nil {
 		return errRoot
 	}
 	config.RootCAs = rootCA
 
-	certsConfig, errCert := s.GetTLSConfigCertificates(certs)
+	certsConfig, errCert := s.GetTLSConfigCertificates(*certs)
 	if errCert != nil {
 		return errCert
 	}
