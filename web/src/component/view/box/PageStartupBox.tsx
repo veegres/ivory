@@ -9,7 +9,7 @@ import {useRouterInfo} from "../../../router/general";
 const SX: SxPropsMap = {
     box: {
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        height: "100%", width: "30%", minWidth: "500px", gap: 2
+        width: "30%", minWidth: "500px", gap: 2
     },
     header: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer"},
     buttons: {display: "flex", gap: 4},
