@@ -2,10 +2,11 @@ package service
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"ivory/src/constant"
 	. "ivory/src/model"
 	"ivory/src/persistence"
+
+	"github.com/google/uuid"
 )
 
 type QueryService struct {
@@ -64,7 +65,7 @@ func (s *QueryService) RunQuery(ctx QueryContext, query string, options *QueryOp
 }
 
 func (s *QueryService) GetAllRunningQueriesByApplicationName(ctx QueryContext) (*QueryFields, error) {
-	options := &QueryOptions{Params: []any{s.postgresGateway.GetApplicationName(ctx.Token)}}
+	options := &QueryOptions{Params: []any{s.postgresGateway.GetApplicationName(ctx.Session)}}
 	return s.postgresGateway.GetFields(ctx, constant.GetAllRunningQueriesByApplicationName, options)
 }
 

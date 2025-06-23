@@ -121,7 +121,7 @@ func (s *GeneralService) GetAppInfo(authHeader string) *AppInfo {
 			},
 		}
 	}
-	authorised, authError := s.authService.ValidateHeader(authHeader, appConfig.Auth)
+	authorised, authError := s.authService.ValidateAuthHeader(authHeader, appConfig.Auth)
 
 	return &AppInfo{
 		Company:      appConfig.Company,

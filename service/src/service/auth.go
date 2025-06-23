@@ -2,10 +2,11 @@ package service
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	. "ivory/src/model"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthService struct {
@@ -34,7 +35,7 @@ func (s *AuthService) GetIssuer() string {
 	return s.issuer
 }
 
-func (s *AuthService) Login(login Login, authConfig AuthConfig) (string, *time.Time, error) {
+func (s *AuthService) GenerateAuthToken(login Login, authConfig AuthConfig) (string, *time.Time, error) {
 	switch authConfig.Type {
 	case NONE:
 		return "", nil, errors.New("authentication is not used")
@@ -54,7 +55,7 @@ func (s *AuthService) Login(login Login, authConfig AuthConfig) (string, *time.T
 	}
 }
 
-func (s *AuthService) ValidateHeader(header string, authConfig AuthConfig) (bool, string) {
+func (s *AuthService) ValidateAuthHeader(header string, authConfig AuthConfig) (bool, string) {
 	switch authConfig.Type {
 	case NONE:
 		if header != "" {

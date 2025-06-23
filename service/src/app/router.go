@@ -1,16 +1,19 @@
 package app
 
 import (
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
 	"ivory/src/router"
 	"log/slog"
 	"net/http"
+
+	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/gin"
 )
 
 func NewRouter(di *Context) {
 	engine := gin.Default()
 	engine.UseH2C = true
+
+	tls := di.env.Config.CertKeyFilePath != "" && di.env.Config.CertFilePath != ""
 
 	// NOTE: Serving ivory static files to web
 	if di.env.Config.StaticFilesPath != "" {
@@ -28,7 +31,7 @@ func NewRouter(di *Context) {
 	slog.Info("Ivory serves backend api '/api' under sub path '" + di.env.Config.UrlPath + "'")
 	path := engine.Group(di.env.Config.UrlPath)
 
-	unsafe := path.Group("/api", gin.Recovery())
+	unsafe := path.Group("/api", gin.Recovery(), di.authRouter.SessionMiddleware(tls))
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.generalRouter.GetAppInfo)
 
@@ -38,7 +41,7 @@ func NewRouter(di *Context) {
 	general := unsafe.Group("/", di.secretRouter.ExistMiddleware())
 	generalRouter(general, di.authRouter, di.generalRouter)
 
-	safe := general.Group("/", di.authRouter.Middleware())
+	safe := general.Group("/", di.authRouter.AuthMiddleware())
 	safeRouter(safe, di.secretRouter, di.generalRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
@@ -48,7 +51,7 @@ func NewRouter(di *Context) {
 	instanceRouter(safe, di.instanceRouter)
 	queryRouter(safe, di.queryRouter)
 
-	if di.env.Config.CertKeyFilePath != "" && di.env.Config.CertFilePath != "" {
+	if tls {
 		slog.Info("Ivory serves https connection under address " + di.env.Config.UrlAddress)
 		err := engine.RunTLS(di.env.Config.UrlAddress, di.env.Config.CertFilePath, di.env.Config.CertKeyFilePath)
 		if err != nil {

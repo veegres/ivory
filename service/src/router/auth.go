@@ -1,11 +1,13 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
-	"golang.org/x/exp/slog"
 	. "ivory/src/model"
 	"ivory/src/service"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"golang.org/x/exp/slog"
 )
 
 type AuthRouter struct {
@@ -23,7 +25,24 @@ func NewAuthRouter(
 	}
 }
 
-func (r *AuthRouter) Middleware() gin.HandlerFunc {
+func (r *AuthRouter) SessionMiddleware(secure bool) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		_, errCookie := context.Cookie("session")
+		if errCookie != nil {
+			token, errToken := uuid.NewUUID()
+			if errToken != nil {
+				context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": errToken.Error()})
+				return
+			}
+
+			// NOTE: maxAge is provided in seconds 2592000 sec = 30 days
+			context.SetCookie("session", token.String(), 2592000, "/", "", secure, true)
+		}
+		context.Next()
+	}
+}
+
+func (r *AuthRouter) AuthMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		appConfig, errConfig := r.generalService.GetAppConfig()
 		if errConfig != nil {
@@ -41,7 +60,7 @@ func (r *AuthRouter) Middleware() gin.HandlerFunc {
 		}
 
 		authHeader := context.Request.Header.Get("Authorization")
-		valid, errValid := r.authService.ValidateHeader(authHeader, appConfig.Auth)
+		valid, errValid := r.authService.ValidateAuthHeader(authHeader, appConfig.Auth)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.GetIssuer())
 			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errValid})
@@ -66,7 +85,7 @@ func (r *AuthRouter) Login(context *gin.Context) {
 		return
 	}
 
-	token, exp, err := r.authService.Login(login, appConfig.Auth)
+	token, exp, err := r.authService.GenerateAuthToken(login, appConfig.Auth)
 	if err != nil {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
