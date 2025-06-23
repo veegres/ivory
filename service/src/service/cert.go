@@ -4,13 +4,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"github.com/google/uuid"
-	"golang.org/x/exp/slices"
 	. "ivory/src/model"
 	"ivory/src/persistence"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/google/uuid"
+	"golang.org/x/exp/slices"
 )
 
 type CertService struct {
@@ -78,7 +79,7 @@ func (s *CertService) GetTLSConfigCertificates(certs Certs) ([]tls.Certificate, 
 	return certificates, nil
 }
 
-func (s *CertService) EnrichTLSConfig(config *tls.Config, certs *Certs) error {
+func (s *CertService) EnrichTLSConfig(config **tls.Config, certs *Certs) error {
 	if certs == nil {
 		config = nil
 		return nil
@@ -87,13 +88,13 @@ func (s *CertService) EnrichTLSConfig(config *tls.Config, certs *Certs) error {
 	if errRoot != nil {
 		return errRoot
 	}
-	config.RootCAs = rootCA
+	(*config).RootCAs = rootCA
 
 	certsConfig, errCert := s.GetTLSConfigCertificates(*certs)
 	if errCert != nil {
 		return errCert
 	}
-	config.Certificates = certsConfig
+	(*config).Certificates = certsConfig
 	return nil
 }
 
