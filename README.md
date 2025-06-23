@@ -24,9 +24,23 @@ in a separate virtual machine for collaborative usage, and helps you:
 - [simply execute and save template requests for troubleshooting](doc/instance.md)
 - [check and clean bloat](doc/bloat.md)
 
+<div align="center">
+  <h2>🌟 Support This Project! 🌟</h2>
+</div>
+
+If you found this project helpful, interesting, or inspiring, please consider giving it a **star** ⭐! Your support helps:
+
+✅ **Increase visibility** – More people can discover and benefit from this project.  
+✅ **Boost motivation** – It encourages us to keep improving and adding new features.  
+✅ **Show appreciation** – A small gesture that means a lot to open-source creators!
+
+Thank you for being part of this journey! 🚀
+
+> *"Alone we can do so little; together we can do so much."* — Helen Keller
+
 ## Get started
 1. Start the docker container
-   - Docker Hub `docker run -p 80:80 --restart always aelsergeev/ivory`
+   - Docker Hub `docker run -p 80:80 --restart always veegres/ivory`
    - GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 2. Go to http://localhost:80
 3. Do the initial configuration (Ivory will guide you)

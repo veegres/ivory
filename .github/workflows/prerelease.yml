@@ -99,5 +99,6 @@ jobs:
             IVORY_VERSION_TAG=${{ github.ref_name }}
             IVORY_VERSION_COMMIT=${{ github.sha }}
           tags: |
+            veegres/ivory:${{ github.ref_name }}
             aelsergeev/ivory:${{ github.ref_name }}
             ghcr.io/veegres/ivory:${{ github.ref_name }}
