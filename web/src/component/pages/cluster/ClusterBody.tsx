@@ -1,5 +1,5 @@
 import {Menu} from "../../settings/menu/Menu";
-import {Box, Stack} from "@mui/material";
+import {Stack} from "@mui/material";
 import {List as ClusterList} from "./list/List";
 import {Overview as ClusterOverview} from "./overview/Overview";
 import {Instance as ClusterInstance} from "./instance/Instance";
@@ -11,13 +11,13 @@ const SX: SxPropsMap = {
 
 export function ClusterBody() {
     return (
-        <Box>
+        <>
             <Menu/>
             <Stack sx={SX.stack}>
                 <ClusterList/>
                 <ClusterOverview/>
                 <ClusterInstance/>
             </Stack>
-        </Box>
+        </>
     )
 }
