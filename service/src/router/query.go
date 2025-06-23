@@ -1,12 +1,13 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	. "ivory/src/model"
 	"ivory/src/service"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type QueryRouter struct {
@@ -307,9 +308,12 @@ func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
 }
 
 func (r *QueryRouter) getQueryContext(ctx *gin.Context, con QueryConnection) QueryContext {
-	authHeader := ctx.Request.Header.Get("Authorization")
+	session, errSession := ctx.Cookie("session")
+	if errSession != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": errSession.Error()})
+	}
 	return QueryContext{
 		Connection: con,
-		Token:      authHeader,
+		Session:    session,
 	}
 }

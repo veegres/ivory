@@ -135,7 +135,7 @@ type QueryFields struct {
 
 type QueryContext struct {
 	Connection QueryConnection
-	Token      string
+	Session    string
 }
 
 type QueryParsed struct {

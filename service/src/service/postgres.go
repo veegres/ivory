@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
-	"golang.org/x/exp/slog"
 	"ivory/src/config"
 	. "ivory/src/model"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"golang.org/x/exp/slog"
 )
 
 type PostgresClient struct {
@@ -256,7 +257,7 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 	}
 	cred, errCred := s.passwordService.GetDecrypted(*ctx.Connection.CredentialId)
 	if errCred != nil {
-		return nil, "unknown", errors.New("password problems, check if it is exists")
+		return nil, "unknown", errors.New("password problems, check if it exists")
 	}
 
 	connProtocol := "postgres://"
@@ -273,7 +274,7 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 	conConfig.User = cred.Username
 	conConfig.Password = cred.Password
 	conConfig.RuntimeParams = map[string]string{
-		"application_name": s.GetApplicationName(ctx.Token),
+		"application_name": s.GetApplicationName(ctx.Session),
 	}
 	if errConfig != nil {
 		return nil, connUrl, errConfig
@@ -295,11 +296,6 @@ func (s *PostgresClient) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	}
 }
 
-func (s *PostgresClient) GetApplicationName(token string) string {
-	return s.appName + " [" + s.getTokenSignature(token) + "]"
-}
-
-func (s *PostgresClient) getTokenSignature(token string) string {
-	signature := strings.SplitN(token, ".", 3)[2]
-	return fmt.Sprintf("%.9s", signature)
+func (s *PostgresClient) GetApplicationName(session string) string {
+	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
