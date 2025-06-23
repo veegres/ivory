@@ -5,13 +5,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
 	"io"
 	. "ivory/src/model"
 	"net/http"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type SidecarRequest[R any] struct {
@@ -150,7 +151,7 @@ func (p *SidecarClient) getClient(certs *Certs, timeout time.Duration) (*http.Cl
 		protocol = "https"
 	}
 
-	errTls := p.certService.EnrichTLSConfig(tlsConfig, certs)
+	errTls := p.certService.EnrichTLSConfig(&tlsConfig, certs)
 	if errTls != nil {
 		return nil, protocol, errTls
 	}

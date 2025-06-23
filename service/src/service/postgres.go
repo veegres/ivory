@@ -279,7 +279,7 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 		return nil, connUrl, errConfig
 	}
 
-	errTls := s.certService.EnrichTLSConfig(conConfig.TLSConfig, ctx.Connection.Certs)
+	errTls := s.certService.EnrichTLSConfig(&conConfig.TLSConfig, ctx.Connection.Certs)
 	if errTls != nil {
 		return nil, connUrl, errTls
 	}
