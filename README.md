@@ -40,7 +40,7 @@ Thank you for being part of this journey! 🚀
 
 ## Get started
 1. Start the docker container
-   - Docker Hub `docker run -p 80:80 --restart always veegres/ivory`
+   - Docker Hub `docker run -p 80:80 --restart always veegres/ivory` (deprecated `aelsergeev/ivory`)
    - GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 2. Go to http://localhost:80
 3. Do the initial configuration (Ivory will guide you)
