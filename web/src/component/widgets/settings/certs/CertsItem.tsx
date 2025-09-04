@@ -1,9 +1,9 @@
 import {Box, Tooltip} from "@mui/material";
-import {DeleteIconButton} from "../../view/button/IconButtons";
-import {FileUsageOptions} from "../../../app/utils";
-import {StylePropsMap, SxPropsMap} from "../../../type/general";
-import {Cert} from "../../../type/cert";
-import {useRouterCertDelete} from "../../../router/cert";
+import {DeleteIconButton} from "../../../view/button/IconButtons";
+import {FileUsageOptions} from "../../../../app/utils";
+import {StylePropsMap, SxPropsMap} from "../../../../type/general";
+import {Cert} from "../../../../type/cert";
+import {useRouterCertDelete} from "../../../../router/cert";
 
 const SX: SxPropsMap = {
     item: {display: "flex", alignItems: "center", padding: "5px 10px", margin: "5px 10px", borderRadius: "5px", gap: 2, border: 1, borderColor: "divider"},

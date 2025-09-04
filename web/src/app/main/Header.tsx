@@ -1,12 +1,12 @@
 import {Box, IconButton, Tooltip} from "@mui/material";
 import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
-import {randomUnicodeAnimal} from "../../app/utils";
+import {randomUnicodeAnimal} from "../utils";
 import {useStoreAction} from "../../provider/StoreProvider";
 import {AuthType, SxPropsMap} from "../../type/general";
 import {useAuth} from "../../provider/AuthProvider";
 import {useQueryClient} from "@tanstack/react-query";
-import {GeneralApi} from "../../app/api";
+import {GeneralApi} from "../api";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},

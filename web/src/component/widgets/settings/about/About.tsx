@@ -1,10 +1,10 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {Box, IconButton} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../../type/general";
 import {OpenInNew} from "@mui/icons-material";
-import {IvoryLinks} from "../../../app/utils";
-import {List} from "../../view/box/List";
-import {ListItem} from "../../view/box/ListItem";
+import {IvoryLinks} from "../../../../app/utils";
+import {List} from "../../../view/box/List";
+import {ListItem} from "../../../view/box/ListItem";
 
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0 15px", gap: 3},

@@ -1,14 +1,14 @@
-import {Settings, SxPropsMap} from "../../../type/general";
+import {Settings, SxPropsMap} from "../../../../type/general";
 import {MenuThemeChanger} from "./MenuThemeChanger";
-import {EraseButton} from "../.././widgets/actions/EraseButton";
+import {EraseButton} from "../../actions/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
 import {MenuRefetchChanger} from "./MenuRefetchChanger";
 import {Box} from "@mui/material";
-import {List} from "../../view/box/List";
-import {ListItem} from "../../view/box/ListItem";
-import {ListButton} from "../../view/box/ListButton";
-import {SettingOptions} from "../../../app/utils";
-import {ClearCacheButton} from "../.././widgets/actions/ClearCacheButton";
+import {List} from "../../../view/box/List";
+import {ListItem} from "../../../view/box/ListItem";
+import {ListButton} from "../../../view/box/ListButton";
+import {SettingOptions} from "../../../../app/utils";
+import {ClearCacheButton} from "../../actions/ClearCacheButton";
 import {MenuUncheckInstanceChanger} from "./MenuUncheckInstanceChanger";
 
 const SX: SxPropsMap = {
@@ -38,7 +38,7 @@ export function MenuContent(props: Props) {
                 <List name={"Danger Zone"}>
                     <ListItem
                         title={"Clear cache"}
-                        description={`It will clear your local cache. Sometimes it can be helpful, when after 
+                        description={`It will clear your local cache. Sometimes it can be helpful when after 
                         updates or some changes you see that something is wrong (counts, selection, etc).`}
                         button={<ClearCacheButton />}
                     />

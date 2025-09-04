@@ -1,6 +1,6 @@
-import {ErrorSmart} from "../../view/box/ErrorSmart";
-import {Password, PasswordMap} from "../../../type/password";
-import {InfoAlert} from "../../view/box/InfoAlert";
+import {ErrorSmart} from "../../../view/box/ErrorSmart";
+import {Password, PasswordMap} from "../../../../type/password";
+import {InfoAlert} from "../../../view/box/InfoAlert";
 import {Collapse} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
 import {CredentialsItem} from "./CredentialsItem";
@@ -15,7 +15,7 @@ export function CredentialsList(props: Props) {
     if (error) return <ErrorSmart error={error}/>
 
     const list = Object.entries<Password>(credentials ?? {})
-    if (list.length === 0) return <InfoAlert text={"There is no credentials yet"}/>
+    if (list.length === 0) return <InfoAlert text={"There are no credentials yet"}/>
 
     return (
         <TransitionGroup appear={false}>

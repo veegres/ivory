@@ -1,4 +1,4 @@
-import {Menu} from "../../settings/menu/Menu";
+import {Menu} from "../../widgets/settings/menu/Menu";
 import {Stack} from "@mui/material";
 import {List as ClusterList} from "./list/List";
 import {Overview as ClusterOverview} from "./overview/Overview";

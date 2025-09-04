@@ -1,10 +1,10 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
-import {KeyEnterInput} from "../../view/input/KeyEnterInput";
+import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 import {useState} from "react";
 import {Alert, Box} from "@mui/material";
 import {LoadingButton} from "@mui/lab";
-import {SxPropsMap} from "../../../type/general";
-import {useRouterSecretChange} from "../../../router/general";
+import {SxPropsMap} from "../../../../type/general";
+import {useRouterSecretChange} from "../../../../router/general";
 
 const SX: SxPropsMap = {
     alert: {margin: "0px 10px"},
@@ -30,7 +30,7 @@ export function Secret() {
                     </Box>
                     <Box>
                         By changing the secret <b>Ivory</b> will reencrypt all of your passwords and
-                        all of Ivory login tokens will become invalid (it means that you and all who
+                        all the Ivory login tokens will become invalid (it means that you and all who
                         have been logged in are going to be logged out)
                     </Box>
                 </Box>
