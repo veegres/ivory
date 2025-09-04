@@ -1,73 +1,87 @@
 package app
 
 import (
-	"ivory/src/config"
-	. "ivory/src/model"
-	"ivory/src/persistence"
-	"ivory/src/router"
-	"ivory/src/service"
+	"ivory/src/clients/database/bolt"
+	"ivory/src/clients/database/files"
+	"ivory/src/clients/database/postgres"
+	"ivory/src/clients/env"
+	"ivory/src/clients/sidecar"
+	"ivory/src/clients/sidecar/patroni"
+	"ivory/src/features/auth"
+	"ivory/src/features/bloat"
+	"ivory/src/features/cert"
+	"ivory/src/features/cluster"
+	"ivory/src/features/config"
+	"ivory/src/features/encryption"
+	"ivory/src/features/instance"
+	"ivory/src/features/management"
+	"ivory/src/features/password"
+	"ivory/src/features/query"
+	"ivory/src/features/secret"
+	"ivory/src/features/tag"
 )
 
 type Context struct {
-	env            *config.Env
-	authRouter     *router.AuthRouter
-	clusterRouter  *router.ClusterRouter
-	bloatRouter    *router.BloatRouter
-	certRouter     *router.CertRouter
-	secretRouter   *router.SecretRouter
-	passwordRouter *router.PasswordRouter
-	tagRouter      *router.TagRouter
-	instanceRouter *router.InstanceRouter
-	queryRouter    *router.QueryRouter
-	generalRouter  *router.GeneralRouter
+	env              *env.Env
+	authRouter       *auth.AuthRouter
+	clusterRouter    *cluster.ClusterRouter
+	bloatRouter      *bloat.BloatRouter
+	certRouter       *cert.CertRouter
+	secretRouter     *secret.SecretRouter
+	passwordRouter   *password.PasswordRouter
+	tagRouter        *tag.TagRouter
+	instanceRouter   *instance.InstanceRouter
+	queryRouter      *query.QueryRouter
+	managementRouter *management.Router
+	configRouter     *config.Router
 }
 
 func NewContext() *Context {
-	env := config.NewEnv()
+	v := env.NewEnv()
 
 	// DB
-	db := config.NewBoltDB("ivory.db")
-	clusterBucket := config.NewBoltBucket[Cluster](db, "Cluster")
-	compactTableBucket := config.NewBoltBucket[Bloat](db, "CompactTable")
-	certBucket := config.NewBoltBucket[Cert](db, "Cert")
-	tagBucket := config.NewBoltBucket[[]string](db, "Tag")
-	secretBucket := config.NewBoltBucket[string](db, "Secret")
-	passwordBucket := config.NewBoltBucket[Password](db, "Password")
-	queryBucket := config.NewBoltBucket[Query](db, "Query")
+	db := bolt.NewBoltDB("ivory.db")
+	clusterBucket := bolt.NewBoltBucket[cluster.Cluster](db, "Cluster")
+	compactTableBucket := bolt.NewBoltBucket[bloat.Bloat](db, "CompactTable")
+	certBucket := bolt.NewBoltBucket[cert.Cert](db, "Cert")
+	tagBucket := bolt.NewBoltBucket[[]string](db, "Tag")
+	secretBucket := bolt.NewBoltBucket[string](db, "Secret")
+	passwordBucket := bolt.NewBoltBucket[password.Password](db, "Password")
+	queryBucket := bolt.NewBoltBucket[query.Query](db, "Query")
 
 	// FILES
-	compactTableFiles := config.NewFileGateway("pgcompacttable", ".log")
-	certFiles := config.NewFileGateway("cert", ".crt")
-	configFiles := config.NewFileGateway("config", ".json")
-	queryLogFiles := config.NewFileGateway("query", ".jsonl")
+	compactTableFiles := files.NewFileGateway("pgcompacttable", ".log")
+	certFiles := files.NewFileGateway("cert", ".crt")
+	configFiles := files.NewFileGateway("config", ".json")
+	queryLogFiles := files.NewFileGateway("query", ".jsonl")
 
 	// REPOS
-	clusterRepo := persistence.NewClusterRepository(clusterBucket)
-	bloatRepository := persistence.NewBloatRepository(compactTableBucket, compactTableFiles)
-	certRepo := persistence.NewCertRepository(certBucket, certFiles)
-	tagRepo := persistence.NewTagRepository(tagBucket)
-	secretRepo := persistence.NewSecretRepository(secretBucket)
-	passwordRepo := persistence.NewPasswordRepository(passwordBucket)
-	queryRepo := persistence.NewQueryRepository(queryBucket, queryLogFiles)
+	clusterRepo := cluster.NewClusterRepository(clusterBucket)
+	bloatRepository := bloat.NewBloatRepository(compactTableBucket, compactTableFiles)
+	certRepo := cert.NewCertRepository(certBucket, certFiles)
+	tagRepo := tag.NewTagRepository(tagBucket)
+	secretRepo := secret.NewSecretRepository(secretBucket)
+	passwordRepo := password.NewPasswordRepository(passwordBucket)
+	queryRepo := query.NewQueryRepository(queryBucket, queryLogFiles)
 
 	// SERVICES
-	encryptionService := service.NewEncryptionService()
-	secretService := service.NewSecretService(secretRepo, encryptionService)
-	passwordService := service.NewPasswordService(passwordRepo, secretService, encryptionService)
-	certService := service.NewCertService(certRepo)
+	encryptionService := encryption.NewEncryptionService()
+	secretService := secret.NewSecretService(secretRepo, encryptionService)
+	configService := config.NewService(configFiles, encryptionService, secretService)
+	passwordService := password.NewPasswordService(passwordRepo, secretService, encryptionService)
+	certService := cert.NewCertService(certRepo)
 
-	postgresClient := service.NewPostgresClient(env, passwordService, certService)
-	sidecarClient := service.NewSidecarClient(passwordService, certService)
-	patroniGateway := service.NewPatroniGateway(sidecarClient)
+	sidecarGateway := sidecar.NewSidecarGateway(passwordService, certService)
+	patroniClient := patroni.NewPatroniClient(sidecarGateway)
+	postgresClient := postgres.NewPostgresClient(v.Version.Label, passwordService, certService)
 
-	tagService := service.NewTagService(tagRepo)
-	queryService := service.NewQueryService(queryRepo, secretService, postgresClient)
-	clusterService := service.NewClusterService(clusterRepo, tagService, patroniGateway)
-	bloatService := service.NewBloatService(bloatRepository, passwordService)
-	authService := service.NewAuthService(secretService, encryptionService)
-	generalService := service.NewGeneralService(
-		env,
-		configFiles,
+	tagService := tag.NewTagService(tagRepo)
+	clusterService := cluster.NewClusterService(clusterRepo, tagService, patroniClient)
+	queryService := query.NewQueryService(queryRepo, secretService, postgresClient)
+	bloatService := bloat.NewBloatService(bloatRepository, passwordService)
+	authService := auth.NewAuthService(secretService, encryptionService)
+	managementService := management.NewService(
+		v,
 		authService,
 		passwordService,
 		clusterService,
@@ -76,21 +90,21 @@ func NewContext() *Context {
 		bloatService,
 		queryService,
 		secretService,
+		configService,
 	)
 
-	// TODO refactor: shouldn't router use repos? consider change to service usage (possible cycle dependencies problems)
-	//      repos -> services / gateway -> routers, can service use service? can service use repo that belongs to another service?
 	return &Context{
-		env:            env,
-		authRouter:     router.NewAuthRouter(authService, generalService),
-		clusterRouter:  router.NewClusterRouter(clusterService),
-		bloatRouter:    router.NewBloatRouter(bloatService),
-		certRouter:     router.NewCertRouter(certService),
-		secretRouter:   router.NewSecretRouter(secretService, passwordService),
-		passwordRouter: router.NewPasswordRouter(passwordService),
-		tagRouter:      router.NewTagRouter(tagService),
-		instanceRouter: router.NewInstanceRouter(patroniGateway),
-		queryRouter:    router.NewQueryRouter(queryService, generalService, postgresClient),
-		generalRouter:  router.NewGeneralRouter(generalService),
+		env:              v,
+		authRouter:       auth.NewAuthRouter(authService, configService),
+		clusterRouter:    cluster.NewClusterRouter(clusterService),
+		bloatRouter:      bloat.NewBloatRouter(bloatService),
+		certRouter:       cert.NewCertRouter(certService),
+		secretRouter:     secret.NewSecretRouter(secretService),
+		passwordRouter:   password.NewPasswordRouter(passwordService),
+		tagRouter:        tag.NewTagRouter(tagService),
+		instanceRouter:   instance.NewInstanceRouter(patroniClient),
+		queryRouter:      query.NewQueryRouter(queryService, configService),
+		managementRouter: management.NewRouter(managementService),
+		configRouter:     config.NewRouter(configService),
 	}
 }
