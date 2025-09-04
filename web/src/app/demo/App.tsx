@@ -1,6 +1,6 @@
 import {Box, Button} from "@mui/material";
 import {SxPropsMap} from "../../type/general";
-import {MenuThemeChanger} from "../../component/settings/menu/MenuThemeChanger";
+import {MenuThemeChanger} from "../../component/widgets/settings/menu/MenuThemeChanger";
 import {useState} from "react";
 
 const SX: SxPropsMap = {
@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
  * This component is designed for testing purposes. It can ease/help you to write view components,
  * please, after your test clean this component back. Normally it shouldn't be updates at least of some
  * common parts that could help others to test something. So, please, before commiting any changes
- * don't forget to revert changes in this package.
+ * remember to revert changes in this package.
  */
 export function App() {
     const [boolean, setBoolean] = useState(false)
@@ -25,7 +25,7 @@ export function App() {
                 This component is designed for testing purposes. It can ease/help you to write view components
                 please after your test clean this component back. Normally it shouldn't be updates at least of some
                 common parts that could help others to test something. So, please, before commiting any changes
-                don't forget to revert changes in this package.
+                remember to revert changes in this package.
             </Box>
             <Box sx={SX.actions}>
                 <Button size={"small"} variant={"outlined"} onClick={() => setNum(num + 1)}>{num.toString()}</Button>
