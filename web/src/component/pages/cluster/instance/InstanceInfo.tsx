@@ -3,7 +3,7 @@ import {InstanceInfoStatus} from "./InstanceInfoStatus";
 import {InstanceInfoTable} from "./InstanceInfoTable";
 import {SxPropsMap} from "../../../../type/general";
 import {InstanceTabType, InstanceWeb} from "../../../../type/instance";
-import {QueryActivity} from "../../../shared/query/QueryActivity";
+import {QueryActivity} from "../../.././widgets/query/QueryActivity";
 import {QueryConnection} from "../../../../type/query";
 import {SxPropsFormatter} from "../../../../app/utils";
 

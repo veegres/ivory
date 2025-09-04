@@ -1,8 +1,8 @@
 import {SxPropsMap} from "../../../../type/general";
 import {QueryConnection, QueryType} from "../../../../type/query";
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
-import {Query} from "../../../shared/query/Query";
-import {QueryConsole} from "../../../shared/query/QueryConsole";
+import {Query} from "../../.././widgets/query/Query";
+import {QueryConsole} from "../../.././widgets/query/QueryConsole";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 
 const SX: SxPropsMap = {

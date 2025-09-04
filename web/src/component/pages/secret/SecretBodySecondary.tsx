@@ -2,8 +2,8 @@ import {useState} from "react";
 import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {Typography} from "@mui/material";
-import {EraseButton} from "../../shared/actions/EraseButton";
-import {SecretButton} from "../../shared/actions/SecretButton";
+import {EraseButton} from "../.././widgets/actions/EraseButton";
+import {SecretButton} from "../.././widgets/actions/SecretButton";
 import {useRouterSecretSet} from "../../../router/secret";
 
 

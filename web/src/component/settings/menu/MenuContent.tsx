@@ -1,6 +1,6 @@
 import {Settings, SxPropsMap} from "../../../type/general";
 import {MenuThemeChanger} from "./MenuThemeChanger";
-import {EraseButton} from "../../shared/actions/EraseButton";
+import {EraseButton} from "../.././widgets/actions/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
 import {MenuRefetchChanger} from "./MenuRefetchChanger";
 import {Box} from "@mui/material";
@@ -8,7 +8,7 @@ import {List} from "../../view/box/List";
 import {ListItem} from "../../view/box/ListItem";
 import {ListButton} from "../../view/box/ListButton";
 import {SettingOptions} from "../../../app/utils";
-import {ClearCacheButton} from "../../shared/actions/ClearCacheButton";
+import {ClearCacheButton} from "../.././widgets/actions/ClearCacheButton";
 import {MenuUncheckInstanceChanger} from "./MenuUncheckInstanceChanger";
 
 const SX: SxPropsMap = {
