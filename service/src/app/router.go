@@ -1,7 +1,17 @@
 package app
 
 import (
-	"ivory/src/router"
+	"ivory/src/features/auth"
+	"ivory/src/features/bloat"
+	"ivory/src/features/cert"
+	"ivory/src/features/cluster"
+	"ivory/src/features/config"
+	"ivory/src/features/instance"
+	"ivory/src/features/management"
+	"ivory/src/features/password"
+	"ivory/src/features/query"
+	"ivory/src/features/secret"
+	"ivory/src/features/tag"
 	"log/slog"
 	"net/http"
 
@@ -20,7 +30,7 @@ func NewRouter(di *Context) {
 		slog.Info("Ivory serves static files from '" + di.env.Config.StaticFilesPath + "' under sub path '" + di.env.Config.UrlPath + "'")
 		engine.Use(static.Serve(di.env.Config.UrlPath, static.LocalFile(di.env.Config.StaticFilesPath, true)))
 		engine.NoRoute(func(context *gin.Context) {
-			// NOTE: if files wasn't found and NoRoute come here we need throw 404 and prevent endless redirect
+			// NOTE: if files weren't found and NoRoute come here we need to throw 404 and prevent endless redirect
 			if context.Request.URL.Path != di.env.Config.UrlPath {
 				context.Redirect(http.StatusMovedPermanently, di.env.Config.UrlPath)
 			}
@@ -33,16 +43,16 @@ func NewRouter(di *Context) {
 
 	unsafe := path.Group("/api", gin.Recovery(), di.authRouter.SessionMiddleware(tls))
 	unsafe.GET("/ping", pong)
-	unsafe.GET("/info", di.generalRouter.GetAppInfo)
+	unsafe.GET("/info", di.managementRouter.GetAppInfo)
 
 	initial := unsafe.Group("/", di.secretRouter.EmptyMiddleware())
-	initialRouter(initial, di.secretRouter, di.generalRouter)
+	initialRouter(initial, di.secretRouter, di.managementRouter)
 
 	general := unsafe.Group("/", di.secretRouter.ExistMiddleware())
-	generalRouter(general, di.authRouter, di.generalRouter)
+	generalRouter(general, di.authRouter, di.configRouter)
 
 	safe := general.Group("/", di.authRouter.AuthMiddleware())
-	safeRouter(safe, di.secretRouter, di.generalRouter)
+	safeRouter(safe, di.secretRouter, di.managementRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
 	certRouter(safe, di.certRouter)
@@ -70,102 +80,102 @@ func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
-func generalRouter(g *gin.RouterGroup, ra *router.AuthRouter, rg *router.GeneralRouter) {
+func generalRouter(g *gin.RouterGroup, ra *auth.AuthRouter, rg *config.Router) {
 	g.POST("/login", ra.Login)
 
 	initial := g.Group("/initial")
 	initial.POST("/config", rg.SetAppConfig)
 }
 
-func initialRouter(g *gin.RouterGroup, rs *router.SecretRouter, rg *router.GeneralRouter) {
-	initial := g.Group("/initial")
-	initial.POST("/secret", rs.SetSecret)
-	initial.DELETE("/erase", rg.Erase)
+func initialRouter(g *gin.RouterGroup, rs *secret.SecretRouter, rg *management.Router) {
+	group := g.Group("/initial")
+	group.POST("/secret", rs.SetSecret)
+	group.DELETE("/erase", rg.Erase)
 }
 
-func safeRouter(g *gin.RouterGroup, rs *router.SecretRouter, rg *router.GeneralRouter) {
-	safe := g.Group("/safe")
-	safe.GET("/secret", rs.GetStatus)
-	safe.POST("/secret", rg.ChangeSecret)
-	safe.DELETE("/erase", rg.Erase)
+func safeRouter(g *gin.RouterGroup, rs *secret.SecretRouter, rg *management.Router) {
+	group := g.Group("/safe")
+	group.GET("/secret", rs.GetStatus)
+	group.POST("/secret", rg.ChangeSecret)
+	group.DELETE("/erase", rg.Erase)
 }
 
-func clusterRouter(g *gin.RouterGroup, r *router.ClusterRouter) {
-	cluster := g.Group("/cluster")
-	cluster.GET("", r.GetClusterList)
-	cluster.GET("/:name", r.GetClusterByName)
-	cluster.PUT("", r.PutClusterByName)
-	cluster.POST("/auto", r.PostClusterAuto)
-	cluster.DELETE("/:name", r.DeleteClusterByName)
+func clusterRouter(g *gin.RouterGroup, r *cluster.ClusterRouter) {
+	group := g.Group("/cluster")
+	group.GET("", r.GetClusterList)
+	group.GET("/:name", r.GetClusterByName)
+	group.PUT("", r.PutClusterByName)
+	group.POST("/auto", r.PostClusterAuto)
+	group.DELETE("/:name", r.DeleteClusterByName)
 }
 
-func bloatRouter(g *gin.RouterGroup, r *router.BloatRouter) {
-	cli := g.Group("/cli")
-	cli.GET("/bloat", r.GetCompactTableList)
-	cli.GET("/bloat/:uuid", r.GetCompactTable)
-	cli.GET("/bloat/:uuid/logs", r.GetCompactTableLogs)
-	cli.GET("/bloat/cluster/:name", r.GetCompactTableListByCluster)
-	cli.POST("/bloat/job/start", r.StartJob)
-	cli.POST("/bloat/job/:uuid/stop", r.StopJob)
-	cli.DELETE("/bloat/job/:uuid/delete", r.DeleteJob)
-	cli.GET("/bloat/job/:uuid/stream", r.StreamJob)
+func bloatRouter(g *gin.RouterGroup, r *bloat.BloatRouter) {
+	group := g.Group("/cli")
+	group.GET("/bloat", r.GetCompactTableList)
+	group.GET("/bloat/:uuid", r.GetCompactTable)
+	group.GET("/bloat/:uuid/logs", r.GetCompactTableLogs)
+	group.GET("/bloat/cluster/:name", r.GetCompactTableListByCluster)
+	group.POST("/bloat/job/start", r.StartJob)
+	group.POST("/bloat/job/:uuid/stop", r.StopJob)
+	group.DELETE("/bloat/job/:uuid/delete", r.DeleteJob)
+	group.GET("/bloat/job/:uuid/stream", r.StreamJob)
 }
 
-func certRouter(g *gin.RouterGroup, r *router.CertRouter) {
-	cert := g.Group("/cert")
-	cert.GET("", r.GetCertList)
-	cert.DELETE("/:uuid", r.DeleteCert)
-	cert.POST("/upload", r.PostUploadCert)
-	cert.POST("/add", r.PostAddCert)
+func certRouter(g *gin.RouterGroup, r *cert.CertRouter) {
+	group := g.Group("/cert")
+	group.GET("", r.GetCertList)
+	group.DELETE("/:uuid", r.DeleteCert)
+	group.POST("/upload", r.PostUploadCert)
+	group.POST("/add", r.PostAddCert)
 }
 
-func passwordRouter(g *gin.RouterGroup, r *router.PasswordRouter) {
-	password := g.Group("/password")
-	password.GET("", r.GetCredentials)
-	password.POST("", r.PostCredential)
-	password.PATCH("/:uuid", r.PatchCredential)
-	password.DELETE("/:uuid", r.DeleteCredential)
+func passwordRouter(g *gin.RouterGroup, r *password.PasswordRouter) {
+	group := g.Group("/password")
+	group.GET("", r.GetCredentials)
+	group.POST("", r.PostCredential)
+	group.PATCH("/:uuid", r.PatchCredential)
+	group.DELETE("/:uuid", r.DeleteCredential)
 }
 
-func tagRouter(g *gin.RouterGroup, r *router.TagRouter) {
-	tag := g.Group("/tag")
-	tag.GET("", r.GetTagList)
+func tagRouter(g *gin.RouterGroup, r *tag.TagRouter) {
+	group := g.Group("/group")
+	group.GET("", r.GetTagList)
 }
 
-func instanceRouter(g *gin.RouterGroup, r *router.InstanceRouter) {
-	instance := g.Group("/instance")
-	instance.GET("/overview", r.GetInstanceOverview)
-	instance.GET("/config", r.GetInstanceConfig)
-	instance.PATCH("/config", r.PatchInstanceConfig)
-	instance.POST("/switchover", r.PostInstanceSwitchover)
-	instance.DELETE("/switchover", r.DeleteInstanceSwitchover)
-	instance.POST("/reinitialize", r.PostInstanceReinitialize)
-	instance.POST("/restart", r.PostInstanceRestart)
-	instance.DELETE("/restart", r.DeleteInstanceRestart)
-	instance.POST("/reload", r.PostInstanceReload)
-	instance.POST("/failover", r.PostInstanceFailover)
-	instance.POST("/activate", r.PostInstanceActivate)
-	instance.POST("/pause", r.PostInstancePause)
+func instanceRouter(g *gin.RouterGroup, r *instance.InstanceRouter) {
+	group := g.Group("/instance")
+	group.GET("/overview", r.GetInstanceOverview)
+	group.GET("/config", r.GetInstanceConfig)
+	group.PATCH("/config", r.PatchInstanceConfig)
+	group.POST("/switchover", r.PostInstanceSwitchover)
+	group.DELETE("/switchover", r.DeleteInstanceSwitchover)
+	group.POST("/reinitialize", r.PostInstanceReinitialize)
+	group.POST("/restart", r.PostInstanceRestart)
+	group.DELETE("/restart", r.DeleteInstanceRestart)
+	group.POST("/reload", r.PostInstanceReload)
+	group.POST("/failover", r.PostInstanceFailover)
+	group.POST("/activate", r.PostInstanceActivate)
+	group.POST("/pause", r.PostInstancePause)
 }
 
-func queryRouter(g *gin.RouterGroup, r *router.QueryRouter) {
-	query := g.Group("/query")
-	query.GET("", r.GetQueryList)
-	query.DELETE("/:uuid", r.DeleteQuery)
-	query.POST("/run", r.PostRunQuery)
-	query.POST("/activity", r.PostAllRunningQueriesByApplicationName)
-	query.POST("/databases", r.PostDatabasesQuery)
-	query.POST("/schemas", r.PostSchemasQuery)
-	query.POST("/tables", r.PostTablesQuery)
-	query.POST("/chart", r.PostChartQuery)
-	query.POST("/cancel", r.PostCancelQuery)
-	query.POST("/terminate", r.PostTerminateQuery)
+func queryRouter(g *gin.RouterGroup, r *query.QueryRouter) {
+	group := g.Group("/query")
+	group.GET("", r.GetQueryList)
+	group.DELETE("/:uuid", r.DeleteQuery)
+	group.POST("/run", r.PostRunQuery)
+	group.POST("/activity", r.PostAllRunningQueriesByApplicationName)
+	group.POST("/databases", r.PostDatabasesQuery)
+	group.POST("/schemas", r.PostSchemasQuery)
+	group.POST("/tables", r.PostTablesQuery)
+	group.POST("/chart", r.PostChartQuery)
+	group.POST("/cancel", r.PostCancelQuery)
+	group.POST("/terminate", r.PostTerminateQuery)
 
-	queryManual := query.Group("", r.ManualMiddleware())
-	queryManual.POST("", r.PostQuery)
-	queryManual.PUT("/:uuid", r.PutQuery)
+	manualGroup := group.Group("", r.ManualMiddleware())
+	manualGroup.POST("", r.PostQuery)
+	manualGroup.PUT("/:uuid", r.PutQuery)
 
-	log := query.Group("/log")
-	log.GET("/:uuid", r.GetQueryLog)
-	log.DELETE("/:uuid", r.DeleteQueryLog)
+	logGroup := group.Group("/log")
+	logGroup.GET("/:uuid", r.GetQueryLog)
+	logGroup.DELETE("/:uuid", r.DeleteQueryLog)
 }

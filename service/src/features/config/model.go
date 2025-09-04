@@ -1,0 +1,23 @@
+package config
+
+type AuthType int8
+
+const (
+	NONE AuthType = iota
+	BASIC
+)
+
+type Auth struct {
+	Type AuthType          `json:"type"`
+	Body map[string]string `json:"body"`
+}
+
+type AppConfig struct {
+	Company      string       `json:"company"`
+	Availability Availability `json:"availability"`
+	Auth         Auth         `json:"auth"`
+}
+
+type Availability struct {
+	ManualQuery bool `json:"manualQuery"`
+}
