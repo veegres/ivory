@@ -10,6 +10,11 @@ const SX: SxPropsMap = {
     button: {position: "absolute", right: 10, top: 0, bottom: 0, display: "flex", alignItems: "center"},
     label: {position: "relative", textAlign: "center", fontSize: "15px", fontWeight: "bold", color: "text.secondary"},
     help: {fontSize: "9px", fontWeight: "normal", color: "text.disabled"},
+    info: {
+        display: "flex", justifyContent: "center", alignItems: "center", padding: "0 15px", height: "45px",
+        fontSize: "11px", color: "text.secondary", textAlign: "center",
+    },
+    error: {color: "error.light"},
 }
 
 type Props = {
@@ -18,7 +23,8 @@ type Props = {
 
 export function QueryActivity(props: Props) {
     const {connection} = props
-    const {data, refetch, isFetching} = useRouterActivity(connection)
+    const {data, isError, error, refetch, isFetching} = useRouterActivity(connection)
+    const table = isError ? undefined : data
     return (
         <Box sx={SX.box}>
             <Box sx={SX.label}>
@@ -36,9 +42,16 @@ export function QueryActivity(props: Props) {
                 queryKey={"activity"}
                 height={200}
                 width={320}
-                data={data}
+                data={table}
                 showIndexColumn={false}
             />
+            <Box sx={SX.info}>
+                {isError ? (
+                    <Box sx={SX.error}>{error.message}</Box>
+                ) : (
+                    <Box>This section displays the queries submitted within your current session in Ivory</Box>
+                )}
+            </Box>
         </Box>
     )
 }
