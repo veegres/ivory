@@ -1,8 +1,8 @@
-import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../view/button/IconButtons";
+import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
 import {useEffect, useState} from "react";
-import {Password} from "../../../type/password";
+import {Password} from "../../../../type/password";
 import {CredentialsRow} from "./CredentialsRow";
-import {useRouterPasswordDelete, useRouterPasswordUpdate} from "../../../router/password";
+import {useRouterPasswordDelete, useRouterPasswordUpdate} from "../../../../router/password";
 
 type Props = {
     uuid: string,

@@ -1,12 +1,12 @@
-import {SecretBodyInitial} from "../pages/secret/SecretBodyInitial";
-import {SecretBodySecondary} from "../pages/secret/SecretBodySecondary";
+import {SecretBodyInitial} from "../../component/pages/secret/SecretBodyInitial";
+import {SecretBodySecondary} from "../../component/pages/secret/SecretBodySecondary";
 import {AppInfo} from "../../type/general";
 import {UseQueryResult} from "@tanstack/react-query";
-import {LoginBody} from "../pages/login/LoginBody";
-import {ConfigBody} from "../pages/config/ConfigBody";
-import {ClusterBody} from "../pages/cluster/ClusterBody";
-import {PageErrorBox} from "../view/box/PageErrorBox";
-import {LogoProgress} from "../view/progress/LogoProgress";
+import {LoginBody} from "../../component/pages/login/LoginBody";
+import {ConfigBody} from "../../component/pages/config/ConfigBody";
+import {ClusterBody} from "../../component/pages/cluster/ClusterBody";
+import {PageErrorBox} from "../../component/view/box/PageErrorBox";
+import {LogoProgress} from "../../component/view/progress/LogoProgress";
 
 type Props = {
     info: UseQueryResult<AppInfo>,

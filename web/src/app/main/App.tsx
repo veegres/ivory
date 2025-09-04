@@ -1,13 +1,13 @@
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
-import {Header} from "../../component/section/Header";
-import {Footer} from "../../component/section/Footer";
-import {Body} from "../../component/section/Body";
+import {Header} from "./Header";
+import {Footer} from "./Footer";
+import {Body} from "./Body";
 import {AuthType, SxPropsMap} from "../../type/general";
 import {useRouterInfo} from "../../router/general";
 
 const SX: SxPropsMap = {
-    // NOTE: we need -8px for bottom scroll, right scroll is always shown that is why we don't need calc
+    // NOTE: we need -8px for the bottom scroll, right scroll is always shown that is why we don't need calc
     box: {display: "flex", flexDirection: "column", gap: 2, flexWrap: "nowrap", minHeight: "calc(100vh - 8px)", minWidth: "1010px"},
     body: {display: "flex", justifyContent: "center", alignItems: "stretch", flexGrow: 1},
 }
