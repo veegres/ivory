@@ -14,7 +14,7 @@ jobs:
       - name: Set up GO
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.24'
           cache-dependency-path: service
       - name: Install & Build binary for service
         working-directory: service
