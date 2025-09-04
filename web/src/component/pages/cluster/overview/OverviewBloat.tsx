@@ -3,7 +3,7 @@ import {useState} from "react";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
 import {OverviewBloatJob} from "./OverviewBloatJob";
-import {Query} from "../../../shared/query/Query";
+import {Query} from "../../.././widgets/query/Query";
 import {Cached} from "@mui/icons-material";
 import {SxPropsMap} from "../../../../type/general";
 import {BloatTarget} from "../../../../type/bloat";
