@@ -1,10 +1,10 @@
 package management
 
 import (
-	"ivory/src/clients/env"
 	"ivory/src/features/auth"
 	"ivory/src/features/config"
 	"ivory/src/features/secret"
+	"ivory/src/storage/env"
 )
 
 // COMMON (WEB AND SERVER)

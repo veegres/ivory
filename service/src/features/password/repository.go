@@ -1,7 +1,7 @@
 package password
 
 import (
-	"ivory/src/clients/database/bolt"
+	"ivory/src/storage/bolt"
 
 	"github.com/google/uuid"
 )

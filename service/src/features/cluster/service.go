@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"ivory/src/clients/sidecar"
 	"ivory/src/features/cert"
 	"ivory/src/features/instance"
 	"ivory/src/features/tag"
@@ -8,19 +9,19 @@ import (
 
 type ClusterService struct {
 	clusterRepository *ClusterRepository
+	instanceService   *instance.Service
 	tagService        *tag.TagService
-	instanceClient    instance.InstanceClient
 }
 
 func NewClusterService(
 	clusterRepository *ClusterRepository,
+	instanceService *instance.Service,
 	tagService *tag.TagService,
-	instanceClient instance.InstanceClient,
 ) *ClusterService {
 	return &ClusterService{
 		clusterRepository: clusterRepository,
+		instanceService:   instanceService,
 		tagService:        tagService,
-		instanceClient:    instanceClient,
 	}
 }
 
@@ -78,12 +79,12 @@ func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 		CredentialId: cluster.Credentials.PatroniId,
 		Certs:        requestTls,
 	}
-	overview, _, errOver := s.instanceClient.Overview(request)
+	overview, _, errOver := s.instanceService.Overview(request)
 	if errOver != nil {
 		return Cluster{}, errOver
 	}
 
-	instances := make([]instance.Sidecar, 0)
+	instances := make([]sidecar.Sidecar, 0)
 	for _, item := range overview {
 		instances = append(instances, item.Sidecar)
 	}

@@ -2,8 +2,8 @@ package cert
 
 import (
 	"errors"
-	"ivory/src/clients/database/bolt"
-	"ivory/src/clients/database/files"
+	"ivory/src/storage/bolt"
+	"ivory/src/storage/files"
 
 	"github.com/google/uuid"
 )

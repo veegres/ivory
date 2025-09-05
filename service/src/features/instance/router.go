@@ -7,60 +7,60 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type InstanceRouter struct {
-	gateway InstanceClient
+type Router struct {
+	service *Service
 }
 
-func NewInstanceRouter(gateway InstanceClient) *InstanceRouter {
-	return &InstanceRouter{gateway: gateway}
+func NewInstanceRouter(service *Service) *Router {
+	return &Router{service: service}
 }
 
-func (r *InstanceRouter) GetInstanceOverview(context *gin.Context) {
-	handleParamRequest(context, r.gateway.Overview)
+func (r *Router) GetInstanceOverview(context *gin.Context) {
+	handleParamRequest(context, r.service.Overview)
 }
 
-func (r *InstanceRouter) GetInstanceConfig(context *gin.Context) {
-	handleParamRequest(context, r.gateway.Config)
+func (r *Router) GetInstanceConfig(context *gin.Context) {
+	handleParamRequest(context, r.service.Config)
 }
 
-func (r *InstanceRouter) PatchInstanceConfig(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.ConfigUpdate)
+func (r *Router) PatchInstanceConfig(context *gin.Context) {
+	handleBodyRequest(context, r.service.ConfigUpdate)
 }
 
-func (r *InstanceRouter) PostInstanceSwitchover(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.Switchover)
+func (r *Router) PostInstanceSwitchover(context *gin.Context) {
+	handleBodyRequest(context, r.service.Switchover)
 }
 
-func (r *InstanceRouter) DeleteInstanceSwitchover(context *gin.Context) {
-	handleParamRequest(context, r.gateway.DeleteSwitchover)
+func (r *Router) DeleteInstanceSwitchover(context *gin.Context) {
+	handleParamRequest(context, r.service.DeleteSwitchover)
 }
 
-func (r *InstanceRouter) PostInstanceReinitialize(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.Reinitialize)
+func (r *Router) PostInstanceReinitialize(context *gin.Context) {
+	handleBodyRequest(context, r.service.Reinitialize)
 }
 
-func (r *InstanceRouter) PostInstanceRestart(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.Restart)
+func (r *Router) PostInstanceRestart(context *gin.Context) {
+	handleBodyRequest(context, r.service.Restart)
 }
 
-func (r *InstanceRouter) DeleteInstanceRestart(context *gin.Context) {
-	handleParamRequest(context, r.gateway.DeleteRestart)
+func (r *Router) DeleteInstanceRestart(context *gin.Context) {
+	handleParamRequest(context, r.service.DeleteRestart)
 }
 
-func (r *InstanceRouter) PostInstanceReload(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.Reload)
+func (r *Router) PostInstanceReload(context *gin.Context) {
+	handleBodyRequest(context, r.service.Reload)
 }
 
-func (r *InstanceRouter) PostInstanceFailover(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.Failover)
+func (r *Router) PostInstanceFailover(context *gin.Context) {
+	handleBodyRequest(context, r.service.Failover)
 }
 
-func (r *InstanceRouter) PostInstanceActivate(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.Activate)
+func (r *Router) PostInstanceActivate(context *gin.Context) {
+	handleBodyRequest(context, r.service.Activate)
 }
 
-func (r *InstanceRouter) PostInstancePause(context *gin.Context) {
-	handleBodyRequest(context, r.gateway.Pause)
+func (r *Router) PostInstancePause(context *gin.Context) {
+	handleBodyRequest(context, r.service.Pause)
 }
 
 func handleParamRequest[T any](context *gin.Context, action func(instance InstanceRequest) (T, int, error)) {

@@ -2,7 +2,7 @@ package secret
 
 import (
 	"errors"
-	"ivory/src/clients/database/bolt"
+	"ivory/src/storage/bolt"
 )
 
 type SecretRepository struct {

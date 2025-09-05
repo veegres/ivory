@@ -2,7 +2,6 @@ package management
 
 import (
 	"errors"
-	"ivory/src/clients/env"
 	"ivory/src/features/auth"
 	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
@@ -13,6 +12,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/storage/env"
 )
 
 type Service struct {

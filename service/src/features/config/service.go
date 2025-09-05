@@ -3,9 +3,9 @@ package config
 import (
 	"encoding/json"
 	"errors"
-	"ivory/src/clients/database/files"
 	"ivory/src/features/encryption"
 	"ivory/src/features/secret"
+	"ivory/src/storage/files"
 )
 
 type Service struct {

@@ -6,8 +6,9 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"ivory/src/clients/database/bolt"
-	"ivory/src/clients/database/files"
+	"ivory/src/clients/database"
+	"ivory/src/storage/bolt"
+	"ivory/src/storage/files"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,20 +33,20 @@ func NewQueryRepository(
 	}
 }
 
-func (r *QueryRepository) GetLog(uuid uuid.UUID) ([]QueryFields, error) {
+func (r *QueryRepository) GetLog(uuid uuid.UUID) ([]database.QueryFields, error) {
 	file, err := r.queryLogFiles.OpenByName(uuid.String())
 	if err != nil {
-		return []QueryFields{}, nil
+		return []database.QueryFields{}, nil
 	}
 
-	var elements []QueryFields
+	var elements []database.QueryFields
 	scanner := bufio.NewScanner(file)
 	buf := make([]byte, r.maxBufferCapacity)
 	scanner.Buffer(buf, r.maxBufferCapacity)
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		if len(b) != 0 {
-			var obj QueryFields
+			var obj database.QueryFields
 			errUnmarshal := json.Unmarshal(scanner.Bytes(), &obj)
 			if errUnmarshal == nil {
 				elements = append(elements, obj)
@@ -143,7 +144,7 @@ func (r *QueryRepository) List() ([]Query, error) {
 	return r.bucket.GetList(nil, r.sortAscByCreatedAt)
 }
 
-func (r *QueryRepository) ListByType(queryType QueryType) ([]Query, error) {
+func (r *QueryRepository) ListByType(queryType database.QueryType) ([]Query, error) {
 	return r.bucket.GetList(func(cert Query) bool {
 		return cert.Type == queryType
 	}, r.sortAscByCreatedAt)
