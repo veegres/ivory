@@ -142,7 +142,7 @@ func tagRouter(g *gin.RouterGroup, r *tag.TagRouter) {
 	group.GET("", r.GetTagList)
 }
 
-func instanceRouter(g *gin.RouterGroup, r *instance.InstanceRouter) {
+func instanceRouter(g *gin.RouterGroup, r *instance.Router) {
 	group := g.Group("/instance")
 	group.GET("/overview", r.GetInstanceOverview)
 	group.GET("/config", r.GetInstanceConfig)

@@ -2,6 +2,10 @@ package query
 
 import (
 	"errors"
+	. "ivory/src/clients/database"
+	"ivory/src/clients/database/postgres"
+	"ivory/src/features/cert"
+	"ivory/src/features/password"
 	"ivory/src/features/secret"
 
 	"github.com/google/uuid"
@@ -9,23 +13,29 @@ import (
 
 type QueryService struct {
 	queryRepository *QueryRepository
-	secretService   *secret.SecretService
 	databaseClient  DatabaseClient
+	secretService   *secret.SecretService
+	passwordService *password.PasswordService
+	certService     *cert.CertService
 
 	chartMap map[QueryChartType]QueryRequest
 }
 
 func NewQueryService(
 	queryRepository *QueryRepository,
-	secretService *secret.SecretService,
 	databaseClient DatabaseClient,
+	secretService *secret.SecretService,
+	passwordService *password.PasswordService,
+	certService *cert.CertService,
 ) *QueryService {
 	queryService := &QueryService{
 		databaseClient:  databaseClient,
 		queryRepository: queryRepository,
 		secretService:   secretService,
+		passwordService: passwordService,
+		certService:     certService,
 
-		chartMap: CreateChartsMap(),
+		chartMap: postgres.CreateChartsMap(),
 	}
 	err := queryService.createDefaultQueries()
 	if err != nil {
@@ -34,12 +44,14 @@ func NewQueryService(
 	return queryService
 }
 
-func (s *QueryService) GetLog(queryUuid uuid.UUID) ([]QueryFields, error) {
-	return s.queryRepository.GetLog(queryUuid)
-}
+// QUERY EXECUTION
 
-func (s *QueryService) DeleteLog(queryUuid uuid.UUID) error {
-	return s.queryRepository.DeleteLog(queryUuid)
+func (s *QueryService) RunQuery(queryCtx QueryContext, query string, options *QueryOptions) (*QueryFields, error) {
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return nil, err
+	}
+	return s.databaseClient.GetFields(ctx, query, options)
 }
 
 func (s *QueryService) RunTemplateQuery(ctx QueryContext, uuid uuid.UUID, options *QueryOptions) (*QueryFields, error) {
@@ -58,47 +70,71 @@ func (s *QueryService) RunTemplateQuery(ctx QueryContext, uuid uuid.UUID, option
 	return response, errRun
 }
 
-func (s *QueryService) Cancel(ctx QueryContext, pid int) error {
+func (s *QueryService) Cancel(queryCtx QueryContext, pid int) error {
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return err
+	}
 	return s.databaseClient.Cancel(ctx, pid)
 }
 
-func (s *QueryService) Terminate(ctx QueryContext, pid int) error {
+func (s *QueryService) Terminate(queryCtx QueryContext, pid int) error {
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return err
+	}
 	return s.databaseClient.Terminate(ctx, pid)
 }
 
-func (s *QueryService) RunQuery(ctx QueryContext, query string, options *QueryOptions) (*QueryFields, error) {
-	return s.databaseClient.GetFields(ctx, query, options)
-}
-
-func (s *QueryService) GetAllRunningQueriesByApplicationName(ctx QueryContext) (*QueryFields, error) {
+func (s *QueryService) GetAllRunningQueriesByApplicationName(queryCtx QueryContext) (*QueryFields, error) {
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return nil, err
+	}
 	options := &QueryOptions{Params: []any{s.databaseClient.GetApplicationName(ctx.Session)}}
-	return s.databaseClient.GetFields(ctx, GetAllRunningQueriesByApplicationName, options)
+	return s.databaseClient.GetFields(ctx, postgres.GetAllRunningQueriesByApplicationName, options)
 }
 
-func (s *QueryService) DatabasesQuery(ctx QueryContext, name string) ([]string, error) {
-	return s.databaseClient.GetMany(ctx, GetAllDatabases, []any{"%" + name + "%"})
+func (s *QueryService) DatabasesQuery(queryCtx QueryContext, name string) ([]string, error) {
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return nil, err
+	}
+	return s.databaseClient.GetMany(ctx, postgres.GetAllDatabases, []any{"%" + name + "%"})
 }
 
-func (s *QueryService) SchemasQuery(ctx QueryContext, name string) ([]string, error) {
-	db := ctx.Connection.Db
+func (s *QueryService) SchemasQuery(queryCtx QueryContext, name string) ([]string, error) {
+	db := queryCtx.Connection.Db
 	if db.Name == nil || *db.Name == "" {
 		return []string{}, nil
 	}
-	return s.databaseClient.GetMany(ctx, GetAllSchemas, []any{"%" + name + "%"})
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return nil, err
+	}
+	return s.databaseClient.GetMany(ctx, postgres.GetAllSchemas, []any{"%" + name + "%"})
 }
 
-func (s *QueryService) TablesQuery(ctx QueryContext, schema string, name string) ([]string, error) {
-	db := ctx.Connection.Db
+func (s *QueryService) TablesQuery(queryCtx QueryContext, schema string, name string) ([]string, error) {
+	db := queryCtx.Connection.Db
 	if db.Name == nil || *db.Name == "" || schema == "" {
 		return []string{}, nil
 	}
-	return s.databaseClient.GetMany(ctx, GetAllTables, []any{schema, "%" + name + "%"})
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return nil, err
+	}
+	return s.databaseClient.GetMany(ctx, postgres.GetAllTables, []any{schema, "%" + name + "%"})
 }
 
-func (s *QueryService) ChartQuery(ctx QueryContext, chartType QueryChartType) (*QueryChart, error) {
+func (s *QueryService) ChartQuery(queryCtx QueryContext, chartType QueryChartType) (*QueryChart, error) {
 	request, ok := s.chartMap[chartType]
 	if !ok {
 		return nil, errors.New("chart " + string(chartType) + " is not supported")
+	}
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return nil, err
 	}
 	response, err := s.databaseClient.GetOne(ctx, request.Query)
 	if err != nil {
@@ -106,6 +142,37 @@ func (s *QueryService) ChartQuery(ctx QueryContext, chartType QueryChartType) (*
 	}
 	return &QueryChart{Name: request.Name, Value: response}, nil
 }
+
+func (s *QueryService) mapContext(queryCtx QueryContext) (Context, error) {
+	con := Connection{Database: queryCtx.Connection.Db}
+	ctx := Context{Connection: con, Session: queryCtx.Session}
+	if queryCtx.Connection.CredentialId != nil {
+		cred, errCred := s.passwordService.GetDecrypted(*queryCtx.Connection.CredentialId)
+		if errCred != nil {
+			return ctx, errors.New("password problems, check if it exists")
+		}
+		con.Credentials = &Credentials{Username: cred.Username, Password: cred.Password}
+	}
+	if queryCtx.Connection.Certs != nil {
+		errTls := s.certService.EnrichTLSConfig(&con.TlsConfig, queryCtx.Connection.Certs)
+		if errTls != nil {
+			return ctx, errTls
+		}
+	}
+	return ctx, nil
+}
+
+// QUERY LOGS CRUD
+
+func (s *QueryService) GetLog(queryUuid uuid.UUID) ([]QueryFields, error) {
+	return s.queryRepository.GetLog(queryUuid)
+}
+
+func (s *QueryService) DeleteLog(queryUuid uuid.UUID) error {
+	return s.queryRepository.DeleteLog(queryUuid)
+}
+
+// QUERY CRUD
 
 func (s *QueryService) GetList(queryType *QueryType) ([]Query, error) {
 	if queryType == nil {
@@ -315,128 +382,128 @@ func (s *QueryService) createDefaultQueries() error {
 
 func (s *QueryService) simpleDeadTuples() QueryRequest {
 	n, t, d := "Ratio of dead and live tuples", BLOAT, "Shows 100 tables with biggest number of dead tuples and ratio of dead tuples divided by total numbers of tuples"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultRatioOfDeadTuples}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultRatioOfDeadTuples}
 }
 
 func (s *QueryService) pureDeadTuples() QueryRequest {
 	n, t, d := "Dead tuples and live tuples with last vacuum and analyze Time", BLOAT, "Shows 100 tables with biggest number of dead tuples and their last vacuum and analyze time"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultPureNumberOfDeadTuples}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultPureNumberOfDeadTuples}
 }
 
 func (s *QueryService) tableBloat() QueryRequest {
 	n, t, d := "Table bloat", BLOAT, "This query will read tables using pgstattuple extension and return top 20 bloated tables. WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
 	p, v := []string{"schema", "table"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: DefaultTableBloat}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: postgres.DefaultTableBloat}
 }
 func (s *QueryService) tableBloatApproximate() QueryRequest {
 	n, t, d := "Table bloat approximate", BLOAT, "This query will read tables using pgstattuple extension and return 20 bloated approximate results and doesn't read whole table (but reads toast tables). WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)"
 	p, v := []string{"schema", "table"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: DefaultTableBloatApproximate}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: postgres.DefaultTableBloatApproximate}
 }
 func (s *QueryService) indexBloat() QueryRequest {
 	n, t, d := "Index bloat", BLOAT, "This query will read indexes with pgstattuple extension and return top 100 bloated indexes. WARNING: without index mask query will read all available indexes which could cause I/O spikes. Please enter mask for index name (check all indexes if nothing is specified)"
 	p, v := []string{"index", "schema", "table"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: DefaultIndexBloat}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: postgres.DefaultIndexBloat}
 }
 
 func (s *QueryService) checkTableBloat() QueryRequest {
 	n, t, d := "Check specific table bloat", BLOAT, "Shows one table bloat, you need to edit query and provide table name to see information about it"
 	p, v := []string{"schema.table"}, []QueryVariety{DatabaseSensitive}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: DefaultCheckTableBloat}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: postgres.DefaultCheckTableBloat}
 }
 
 func (s *QueryService) checkIndexBloat() QueryRequest {
 	n, t, d := "Check specific index bloat", BLOAT, "Shows one index bloat, you need to edit query and provide index name to see information about it"
 	p, v := []string{"schema.index"}, []QueryVariety{DatabaseSensitive}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: DefaultCheckIndexBloat}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: postgres.DefaultCheckIndexBloat}
 }
 
 func (s *QueryService) runningQueries() QueryRequest {
 	n, t, d := "Active running queries", ACTIVITY, "Shows running queries. It can be useful if you want to check your queries that is long."
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultActiveRunningQueries}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultActiveRunningQueries}
 }
 
 func (s *QueryService) allQueries() QueryRequest {
 	n, t, d := "All running queries", ACTIVITY, "Shows all queries. Just can help clarify what is going on postgres side."
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultAllRunningQueries}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultAllRunningQueries}
 }
 
 func (s *QueryService) runningVacuums() QueryRequest {
 	n, t, d := "Active vacuums in progress", ACTIVITY, "Shows list of active vacuums and their progress"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultActiveVacuums}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultActiveVacuums}
 }
 func (s *QueryService) allQueriesByState() QueryRequest {
 	n, t, d := "Number of queries by state and database", ACTIVITY, "Shows all queries by state and database"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultAllQueriesByState}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultAllQueriesByState}
 }
 
 func (s *QueryService) allLocks() QueryRequest {
 	n, t, d := "All locks", ACTIVITY, "Shows all locks with lock duration, type, it's ids owner, etc"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultAllLocks}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultAllLocks}
 }
 
 func (s *QueryService) allLocksByType() QueryRequest {
 	n, t, d := "Number of locks by lock type", ACTIVITY, "Shows all locks by lock type"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultAllLocksByLock}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultAllLocksByLock}
 }
 
 func (s *QueryService) config() QueryRequest {
 	n, t, d := "Config", OTHER, "Shows postgres config elements with it's values and information about restart"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultPostgresConfig}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultPostgresConfig}
 }
 
 func (s *QueryService) configDescription() QueryRequest {
 	n, t, d := "Config description", OTHER, "Shows description of postgres config elements"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultPostgresConfigDescription}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultPostgresConfigDescription}
 }
 
 func (s *QueryService) allUsers() QueryRequest {
 	n, t, d := "Users", OTHER, "Shows all users"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultPostgresUsers}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultPostgresUsers}
 }
 
 func (s *QueryService) pureReplication() QueryRequest {
 	n, t, d := "Pure replication", REPLICATION, "Shows pure replication table"
 	v := []QueryVariety{MasterOnly}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: DefaultPureReplication}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: postgres.DefaultPureReplication}
 }
 
 func (s *QueryService) simpleReplication() QueryRequest {
 	n, t, d := "Simple replication", REPLICATION, "Shows simple replication table only with lsn info"
 	v := []QueryVariety{MasterOnly}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: DefaultSimpleReplication}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: postgres.DefaultSimpleReplication}
 }
 
 func (s *QueryService) prettyReplication() QueryRequest {
 	n, t, d := "Pretty replication", REPLICATION, "Shows pretty replication table with data in mb"
 	v := []QueryVariety{MasterOnly}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: DefaultPrettyReplication}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: postgres.DefaultPrettyReplication}
 }
 
 func (s *QueryService) databaseSize() QueryRequest {
 	n, t, d := "Database size", STATISTIC, "Shows all database sizes"
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultDatabaseSize}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultDatabaseSize}
 }
 
 func (s *QueryService) tableSize() QueryRequest {
 	n, t, d := "Table size", STATISTIC, "Shows all table sizes, index size and total (index + table)"
 	v := []QueryVariety{DatabaseSensitive}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: DefaultTableSize}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: postgres.DefaultTableSize}
 }
 
 func (s *QueryService) indexesCache() QueryRequest {
 	n, t, d := "Indexes in cache", STATISTIC, "Shows ratio indexes in cache"
 	v := []QueryVariety{DatabaseSensitive}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: DefaultIndexInCache}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: postgres.DefaultIndexInCache}
 }
 
 func (s *QueryService) indexesUnused() QueryRequest {
 	n, t, d := "Unused indexes", STATISTIC, "Shows unused indexes and their size"
 	v := []QueryVariety{DatabaseSensitive}
-	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: DefaultIndexUnused}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Varieties: v, Query: postgres.DefaultIndexUnused}
 }
 
 func (s *QueryService) indexesInvalid() QueryRequest {
 	n, t, d := "Invalid indexes", STATISTIC, "Shows invalid indexes. It can happen when concurrent index creation failed. It means that postgres doesn't use this index. You need to reindex it concurrently."
-	return QueryRequest{Name: n, Type: &t, Description: &d, Query: DefaultIndexInvalid}
+	return QueryRequest{Name: n, Type: &t, Description: &d, Query: postgres.DefaultIndexInvalid}
 }

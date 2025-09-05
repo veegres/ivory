@@ -1,6 +1,7 @@
 package query
 
 import (
+	"ivory/src/clients/database"
 	"ivory/src/features/config"
 	"net/http"
 	"strconv"
@@ -45,7 +46,7 @@ func (r *QueryRouter) PutQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	var query QueryRequest
+	var query database.QueryRequest
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -60,7 +61,7 @@ func (r *QueryRouter) PutQuery(context *gin.Context) {
 }
 
 func (r *QueryRouter) PostQuery(context *gin.Context) {
-	var query QueryRequest
+	var query database.QueryRequest
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -83,7 +84,7 @@ func (r *QueryRouter) GetQueryList(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
 			return
 		}
-		queryType := QueryType(number)
+		queryType := database.QueryType(number)
 		queryList, err := r.queryService.GetList(&queryType)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -131,7 +132,7 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 		return
 	}
 
-	var res *QueryFields
+	var res *database.QueryFields
 	var err error
 	queryContext := r.getQueryContext(context, req.Connection)
 	if req.QueryUuid != nil {

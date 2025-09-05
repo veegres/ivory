@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"ivory/src/features/cert"
-	"ivory/src/features/password"
-	. "ivory/src/features/query"
+	. "ivory/src/clients/database"
 	"regexp"
 	"strconv"
 	"strings"
@@ -18,28 +16,18 @@ import (
 )
 
 type PostgresClient struct {
-	appName         string
-	passwordService *password.PasswordService
-	certService     *cert.CertService
+	appName string
 }
 
-func NewPostgresClient(
-	appName string,
-	passwordService *password.PasswordService,
-	certService *cert.CertService,
-) *PostgresClient {
-	return &PostgresClient{
-		appName:         appName,
-		passwordService: passwordService,
-		certService:     certService,
-	}
+func NewPostgresClient(appName string) *PostgresClient {
+	return &PostgresClient{appName: appName}
 }
 
 func (s *PostgresClient) GetApplicationName(session string) string {
 	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *PostgresClient) GetMany(ctx QueryContext, query string, queryParams []any) ([]string, error) {
+func (s *PostgresClient) GetMany(ctx Context, query string, queryParams []any) ([]string, error) {
 	values := make([]string, 0)
 	errReq := s.sendRequest(ctx, query, queryParams, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		for rows.Next() {
@@ -58,7 +46,7 @@ func (s *PostgresClient) GetMany(ctx QueryContext, query string, queryParams []a
 	return values, nil
 }
 
-func (s *PostgresClient) GetOne(ctx QueryContext, query string) (any, error) {
+func (s *PostgresClient) GetOne(ctx Context, query string) (any, error) {
 	var value any
 	errReq := s.sendRequest(ctx, query, nil, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		if rows.Next() {
@@ -76,7 +64,7 @@ func (s *PostgresClient) GetOne(ctx QueryContext, query string) (any, error) {
 	return value, nil
 }
 
-func (s *PostgresClient) GetFields(ctx QueryContext, query string, options *QueryOptions) (*QueryFields, error) {
+func (s *PostgresClient) GetFields(ctx Context, query string, options *QueryOptions) (*QueryFields, error) {
 	startTime := time.Now().UnixMilli()
 
 	fields := make([]QueryField, 0)
@@ -134,17 +122,17 @@ func (s *PostgresClient) GetFields(ctx QueryContext, query string, options *Quer
 	return res, nil
 }
 
-func (s *PostgresClient) Cancel(ctx QueryContext, pid int) error {
+func (s *PostgresClient) Cancel(ctx Context, pid int) error {
 	return s.sendRequest(ctx, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
-func (s *PostgresClient) Terminate(ctx QueryContext, pid int) error {
+func (s *PostgresClient) Terminate(ctx Context, pid int) error {
 	return s.sendRequest(ctx, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
 type fn func(pgx.Rows, *pgtype.Map, string) error
 
-func (s *PostgresClient) sendRequest(ctx QueryContext, query string, queryParams []any, parse fn) error {
+func (s *PostgresClient) sendRequest(ctx Context, query string, queryParams []any, parse fn) error {
 	conn, connUrl, errConn := s.getConnection(ctx)
 	if errConn != nil {
 		return errConn
@@ -248,8 +236,9 @@ func (s *PostgresClient) parseQuery(query string) QueryAnalysis {
 	return parsed
 }
 
-func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, error) {
-	db := ctx.Connection.Db
+func (s *PostgresClient) getConnection(ctx Context) (*pgx.Conn, string, error) {
+	connection := ctx.Connection
+	db := connection.Database
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, "unknown", errors.New("database host or port are not specified")
 	}
@@ -259,19 +248,17 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 		dbName = *db.Name
 	}
 
-	if ctx.Connection.CredentialId == nil {
+	credentials := connection.Credentials
+	if credentials == nil {
 		return nil, "unknown", errors.New("password is not set")
-	}
-	cred, errCred := s.passwordService.GetDecrypted(*ctx.Connection.CredentialId)
-	if errCred != nil {
-		return nil, "unknown", errors.New("password problems, check if it exists")
 	}
 
 	connProtocol := "postgres://"
 	connHost := db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
 	connUrl := connProtocol + connHost
 
-	if ctx.Connection.Certs != nil {
+	tlsConfig := connection.TlsConfig
+	if tlsConfig != nil {
 		// NOTE: verify-ca was chosen because it potentially can protect from machine-in-the-middle attack if
 		// it has the right CA policy. More info can be found here https://www.postgresql.org/docs/16/libpq-ssl.html#LIBPQ-SSL-PROTECTION
 		connUrl += "?sslmode=verify-ca"
@@ -281,15 +268,13 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 	if errConfig != nil {
 		return nil, connUrl, errConfig
 	}
-	conConfig.User = cred.Username
-	conConfig.Password = cred.Password
+	conConfig.User = credentials.Username
+	conConfig.Password = credentials.Password
 	conConfig.RuntimeParams = map[string]string{
 		"application_name": s.GetApplicationName(ctx.Session),
 	}
-
-	errTls := s.certService.EnrichTLSConfig(&conConfig.TLSConfig, ctx.Connection.Certs)
-	if errTls != nil {
-		return nil, connUrl, errTls
+	if tlsConfig != nil {
+		conConfig.TLSConfig = tlsConfig
 	}
 
 	conn, err := pgx.ConnectConfig(context.Background(), conConfig)

@@ -1,8 +1,8 @@
 package cluster
 
 import (
+	"ivory/src/clients/sidecar"
 	"ivory/src/features/cert"
-	"ivory/src/features/instance"
 
 	"github.com/google/uuid"
 )
@@ -18,14 +18,14 @@ type ClusterOptions struct {
 
 type Cluster struct {
 	ClusterOptions
-	Name      string             `json:"name"`
-	Instances []instance.Sidecar `json:"instances"`
+	Name      string            `json:"name"`
+	Instances []sidecar.Sidecar `json:"instances"`
 }
 
 type ClusterAuto struct {
 	ClusterOptions
-	Name     string           `json:"name"`
-	Instance instance.Sidecar `json:"instance"`
+	Name     string          `json:"name"`
+	Instance sidecar.Sidecar `json:"instance"`
 }
 
 type ClusterTls struct {

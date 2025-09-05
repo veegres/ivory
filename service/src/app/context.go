@@ -1,10 +1,7 @@
 package app
 
 import (
-	"ivory/src/clients/database/bolt"
-	"ivory/src/clients/database/files"
 	"ivory/src/clients/database/postgres"
-	"ivory/src/clients/env"
 	"ivory/src/clients/sidecar"
 	"ivory/src/clients/sidecar/patroni"
 	"ivory/src/features/auth"
@@ -19,6 +16,9 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/storage/bolt"
+	"ivory/src/storage/env"
+	"ivory/src/storage/files"
 )
 
 type Context struct {
@@ -30,7 +30,7 @@ type Context struct {
 	secretRouter     *secret.SecretRouter
 	passwordRouter   *password.PasswordRouter
 	tagRouter        *tag.TagRouter
-	instanceRouter   *instance.InstanceRouter
+	instanceRouter   *instance.Router
 	queryRouter      *query.QueryRouter
 	managementRouter *management.Router
 	configRouter     *config.Router
@@ -57,12 +57,17 @@ func NewContext() *Context {
 
 	// REPOS
 	clusterRepo := cluster.NewClusterRepository(clusterBucket)
-	bloatRepository := bloat.NewBloatRepository(compactTableBucket, compactTableFiles)
+	bloatRepo := bloat.NewBloatRepository(compactTableBucket, compactTableFiles)
 	certRepo := cert.NewCertRepository(certBucket, certFiles)
 	tagRepo := tag.NewTagRepository(tagBucket)
 	secretRepo := secret.NewSecretRepository(secretBucket)
 	passwordRepo := password.NewPasswordRepository(passwordBucket)
 	queryRepo := query.NewQueryRepository(queryBucket, queryLogFiles)
+
+	// CLIENTS
+	sidecarGateway := sidecar.NewSidecarGateway()
+	patroniClient := patroni.NewPatroniClient(sidecarGateway)
+	postgresClient := postgres.NewPostgresClient(v.Version.Label)
 
 	// SERVICES
 	encryptionService := encryption.NewEncryptionService()
@@ -70,15 +75,11 @@ func NewContext() *Context {
 	configService := config.NewService(configFiles, encryptionService, secretService)
 	passwordService := password.NewPasswordService(passwordRepo, secretService, encryptionService)
 	certService := cert.NewCertService(certRepo)
-
-	sidecarGateway := sidecar.NewSidecarGateway(passwordService, certService)
-	patroniClient := patroni.NewPatroniClient(sidecarGateway)
-	postgresClient := postgres.NewPostgresClient(v.Version.Label, passwordService, certService)
-
+	instanceService := instance.NewService(patroniClient, passwordService, certService)
 	tagService := tag.NewTagService(tagRepo)
-	clusterService := cluster.NewClusterService(clusterRepo, tagService, patroniClient)
-	queryService := query.NewQueryService(queryRepo, secretService, postgresClient)
-	bloatService := bloat.NewBloatService(bloatRepository, passwordService)
+	clusterService := cluster.NewClusterService(clusterRepo, instanceService, tagService)
+	queryService := query.NewQueryService(queryRepo, postgresClient, secretService, passwordService, certService)
+	bloatService := bloat.NewBloatService(bloatRepo, passwordService)
 	authService := auth.NewAuthService(secretService, encryptionService)
 	managementService := management.NewService(
 		v,
@@ -102,7 +103,7 @@ func NewContext() *Context {
 		secretRouter:     secret.NewSecretRouter(secretService),
 		passwordRouter:   password.NewPasswordRouter(passwordService),
 		tagRouter:        tag.NewTagRouter(tagService),
-		instanceRouter:   instance.NewInstanceRouter(patroniClient),
+		instanceRouter:   instance.NewInstanceRouter(instanceService),
 		queryRouter:      query.NewQueryRouter(queryService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),

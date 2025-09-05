@@ -1,7 +1,7 @@
 package tag
 
 import (
-	"ivory/src/clients/database/bolt"
+	"ivory/src/storage/bolt"
 )
 
 type TagRepository struct {

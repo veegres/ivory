@@ -2,9 +2,9 @@ package bloat
 
 import (
 	"errors"
-	"ivory/src/clients/database/bolt"
-	"ivory/src/clients/database/files"
 	. "ivory/src/features/bloat/job"
+	"ivory/src/storage/bolt"
+	"ivory/src/storage/files"
 	"os"
 	"strings"
 	"time"
