@@ -138,7 +138,7 @@ func passwordRouter(g *gin.RouterGroup, r *password.PasswordRouter) {
 }
 
 func tagRouter(g *gin.RouterGroup, r *tag.TagRouter) {
-	group := g.Group("/group")
+	group := g.Group("/tag")
 	group.GET("", r.GetTagList)
 }
 

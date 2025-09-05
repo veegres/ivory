@@ -77,46 +77,46 @@ func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []stri
 func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	element := w.elements[jobUuid]
 	if element == nil {
-		stream(Event{Type: SERVER, Message: "Logs streaming failed: Stream Not Found"})
+		stream(Event{Type: SERVER, Message: "Streaming failed: Stream Not Found"})
 		stream(Event{Type: STATUS, Message: UNKNOWN.String()})
 		return
 	}
 	job := element.job
 	model := element.model
 
-	// subscribe to stream and show status
+	// subscribing to stream and showing status,
 	// we have to subscribe as soon as possible to prevent Job deletion
 	channel := job.Subscribe()
 	stream(Event{Type: STATUS, Message: job.GetStatus().String()})
 
 	// stream logs from file
-	// NOTE: we need to open file one more time, because writer has cursor at the end
+	// NOTE: we need to open the file one more time, because a writer has a cursor at the end
 	reader, errFile := w.bloatRepository.GetOpenFile(model.Uuid)
 	if errFile != nil {
 		stream(Event{Type: SERVER, Message: errFile.Error()})
 	} else {
-		stream(Event{Type: SERVER, Message: "Streaming from file started"})
+		stream(Event{Type: SERVER, Message: "Streaming from the file started"})
+		scanner := bufio.NewScanner(reader)
+		for scanner.Scan() {
+			stream(Event{Type: LOG, Message: scanner.Text()})
+		}
+		if errScanner := scanner.Err(); errScanner != nil {
+			stream(Event{Type: SERVER, Message: errScanner.Error()})
+		}
+		errFileClose := reader.Close()
+		if errFileClose != nil {
+			stream(Event{Type: SERVER, Message: errFileClose.Error()})
+		}
+		stream(Event{Type: SERVER, Message: "Streaming from the file finished"})
 	}
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		stream(Event{Type: LOG, Message: scanner.Text()})
-	}
-	if errScanner := scanner.Err(); errScanner != nil {
-		stream(Event{Type: SERVER, Message: errScanner.Error()})
-	}
-	errFileClose := reader.Close()
-	if errFileClose != nil {
-		stream(Event{Type: SERVER, Message: errFileClose.Error()})
-	}
-	stream(Event{Type: SERVER, Message: "Streaming from file finished"})
 
 	// subscribe to stream and stream logs
 	if channel != nil {
-		stream(Event{Type: SERVER, Message: "Streaming from console started"})
+		stream(Event{Type: SERVER, Message: "Streaming from the console started"})
 		for event := range channel {
 			stream(event)
 		}
-		stream(Event{Type: SERVER, Message: "Streaming from console finished"})
+		stream(Event{Type: SERVER, Message: "Streaming from the console finished"})
 
 		// NOTE: we should get status before unsubscription
 		stream(Event{Type: STATUS, Message: job.GetStatus().String()})

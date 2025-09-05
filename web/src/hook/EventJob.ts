@@ -31,7 +31,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         es.onopen = () => {
             setLogs([])
             setEventSourceFetching(true)
-            addLog("Logs streaming open: New connection was established")
+            addLog("[browser] streaming open: New connection was established")
         }
         es.addEventListener(EventType.LOG, (e: MessageEvent<string>) => addLog(e.data))
         es.addEventListener(EventType.SERVER, (e: MessageEvent<string>) => addLog(e.data))
@@ -41,7 +41,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         })
         es.onerror = () => {
             setEventSourceFetching(false);
-            addLog("Logs streaming error: Trying to reestablish connection")
+            addLog("[browser] streaming error: Trying to reestablish connection")
         }
 
         return () => es.close()

@@ -30,9 +30,9 @@ func (s *ClusterService) List() ([]Cluster, error) {
 
 func (s *ClusterService) ListByTag(tags []string) ([]Cluster, error) {
 	listMap := make(map[string]bool)
-	for _, tag := range tags {
+	for _, t := range tags {
 		// NOTE: we shouldn't check the error here, we want to return an empty array if there is no such tag
-		clusters, _ := s.tagService.Get(tag)
+		clusters, _ := s.tagService.Get(t)
 
 		for _, c := range clusters {
 			if !listMap[c] {
@@ -84,8 +84,8 @@ func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	}
 
 	instances := make([]instance.Sidecar, 0)
-	for _, instance := range overview {
-		instances = append(instances, instance.Sidecar)
+	for _, item := range overview {
+		instances = append(instances, item.Sidecar)
 	}
 
 	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
@@ -123,8 +123,8 @@ func (s *ClusterService) DeleteAll() error {
 func (s *ClusterService) saveTags(name string, tags []string) ([]string, error) {
 	// NOTE: remove duplicates
 	tagMap := make(map[string]bool)
-	for _, tag := range tags {
-		tagMap[tag] = true
+	for _, t := range tags {
+		tagMap[t] = true
 	}
 	tagList := make([]string, 0)
 	for key := range tagMap {

@@ -54,9 +54,11 @@ In each cluster there is initial data set with tables
 
 ## pgcompacttable
 
+Note: You need root privilege to use commands below, use `sudo`
+
 1. Install Perl DBI library `apt install libdbi-perl libdbd-pg-perl`
 2. Download pgcompacttable `curl -o /usr/bin/pgcompacttable https://raw.githubusercontent.com/dataegret/pgcompacttable/master/bin/pgcompacttable`
-3. Make file executable `chmod +x /usr/bin/pgcompacttable`
+3. Make file executable `chmod a+xr /usr/bin/pgcompacttable`
 
 Now you can use pgcompacttable from your console, Ivory will use it as well
 
