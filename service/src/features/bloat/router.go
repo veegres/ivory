@@ -181,7 +181,7 @@ func (r *BloatRouter) StreamJob(context *gin.Context) {
 	// find stream job
 	jobUuid, err := uuid.Parse(context.Param("uuid"))
 	if err != nil {
-		context.SSEvent(SERVER.String(), "Logs streaming failed: Cannot parse UUID")
+		context.SSEvent(SERVER.String(), "Streaming failed: Cannot parse UUID")
 		context.SSEvent(STATUS.String(), UNKNOWN.String())
 		return
 	}

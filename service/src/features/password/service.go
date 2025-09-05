@@ -78,8 +78,11 @@ func (s *PasswordService) Map(credentialType *PasswordType) (PasswordMap, error)
 
 func (s *PasswordService) Get(uuid uuid.UUID) (*Password, error) {
 	cred, err := s.passwordRepository.Get(uuid)
+	if err != nil {
+		return nil, err
+	}
 	cred.Password = s.defaultPasswordWord
-	return &cred, err
+	return &cred, nil
 }
 
 func (s *PasswordService) GetDecrypted(uuid uuid.UUID) (*Password, error) {

@@ -83,7 +83,7 @@ func (s *PostgresClient) GetFields(ctx QueryContext, query string, options *Quer
 	rowList := make([][]any, 0)
 	url := "-"
 
-	// NOTE: we need this object ot avoid fatal errors when options is `nil`
+	// NOTE: we need this object ot avoid fatal errors when the option variable is `nil`
 	tmpOptions := QueryOptions{}
 	if options != nil {
 		tmpOptions.Limit = options.Limit
@@ -119,7 +119,9 @@ func (s *PostgresClient) GetFields(ctx QueryContext, query string, options *Quer
 		return nil, errReq
 	}
 
-	options.Limit = normLimit
+	if options != nil {
+		options.Limit = normLimit
+	}
 	endTime := time.Now().UnixMilli()
 	res := &QueryFields{
 		Fields:    fields,
@@ -191,11 +193,11 @@ func (s *PostgresClient) normalizeQuery(query string, trim *bool, limit *string)
 	return newQuery, newLimit, nil
 }
 
-func (s *PostgresClient) addLimitToQuery(query string, queryParsed QueryAnalysis, limit string) (string, *string) {
-	if queryParsed.LIMIT == 0 && queryParsed.SELECT > 0 && queryParsed.FROM > 0 && queryParsed.EXPLAIN == 0 &&
-		queryParsed.DELETE == 0 && queryParsed.UPDATE == 0 && queryParsed.INSERT == 0 {
+func (s *PostgresClient) addLimitToQuery(query string, queryAnalysis QueryAnalysis, limit string) (string, *string) {
+	if queryAnalysis.LIMIT == 0 && queryAnalysis.SELECT > 0 && queryAnalysis.FROM > 0 && queryAnalysis.EXPLAIN == 0 &&
+		queryAnalysis.DELETE == 0 && queryAnalysis.UPDATE == 0 && queryAnalysis.INSERT == 0 {
 		replace := " LIMIT " + limit + ";"
-		if queryParsed.Semicolon {
+		if queryAnalysis.Semicolon {
 			// NOTE: removing all spaces and semicolon at the end
 			regex := regexp.MustCompile("\\s*;\\s*$")
 			return regex.ReplaceAllString(query, replace), &limit
@@ -276,13 +278,13 @@ func (s *PostgresClient) getConnection(ctx QueryContext) (*pgx.Conn, string, err
 	}
 
 	conConfig, errConfig := pgx.ParseConfig(connUrl)
+	if errConfig != nil {
+		return nil, connUrl, errConfig
+	}
 	conConfig.User = cred.Username
 	conConfig.Password = cred.Password
 	conConfig.RuntimeParams = map[string]string{
 		"application_name": s.GetApplicationName(ctx.Session),
-	}
-	if errConfig != nil {
-		return nil, connUrl, errConfig
 	}
 
 	errTls := s.certService.EnrichTLSConfig(&conConfig.TLSConfig, ctx.Connection.Certs)

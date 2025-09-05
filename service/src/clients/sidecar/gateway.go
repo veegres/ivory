@@ -125,24 +125,33 @@ func (p *SidecarGateway) getRequest(
 	path string,
 	body any,
 ) (*http.Request, error) {
-	var err error
 	var bodyBytes []byte
 
 	if body != nil {
+		var err error
 		bodyBytes, err = json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	req, err := http.NewRequest(method, protocol+"://"+domain+path, bytes.NewReader(bodyBytes))
+	url := protocol + "://" + domain + path
+	req, err := http.NewRequest(method, url, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 
 	if credentialId != nil {
 		passInfo, errPass := p.passwordService.GetDecrypted(*credentialId)
-		err = errPass
+		if errPass != nil {
+			return nil, errPass
+		}
 		req.SetBasicAuth(passInfo.Username, passInfo.Password)
 	}
 
-	return req, err
+	return req, nil
 }
 
 func (p *SidecarGateway) getClient(certs *cert.Certs, timeout time.Duration) (*http.Client, string, error) {
