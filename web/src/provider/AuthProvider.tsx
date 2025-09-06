@@ -1,8 +1,9 @@
 import {createContext, ReactNode, useContext, useEffect} from "react";
-import {api, GeneralApi} from "../app/api";
+import {api} from "../api/api";
 import {useLocalStorageState} from "../hook/LocalStorage";
 import {useQueryClient} from "@tanstack/react-query";
 import {AxiosError, HttpStatusCode} from "axios";
+import {GeneralApi} from "../api/management/router";
 
 interface AuthContextType {
     setToken: (v: string) => void,

@@ -1,7 +1,7 @@
 import {Box, Skeleton} from "@mui/material";
 import {InstanceColor} from "../../../../app/utils";
-import {SxPropsMap} from "../../../../type/general";
-import {Role} from "../../../../type/instance";
+import {SxPropsMap} from "../../../../api/management/type";
+import {Role} from "../../../../api/instance/type";
 
 const SX: SxPropsMap = {
     instanceStatusBlock: {

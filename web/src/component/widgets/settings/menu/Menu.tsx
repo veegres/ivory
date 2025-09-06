@@ -2,7 +2,7 @@ import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {useEffect, useState} from "react";
 import {MenuContent} from "./MenuContent";
-import {Settings, SxPropsMap} from "../../../../type/general";
+import {Settings, SxPropsMap} from "../../../../api/management/type";
 import {SettingOptions} from "../../../../app/utils";
 import {Credentials} from "../credentials/Credentials";
 import {Certs} from "../certs/Certs";

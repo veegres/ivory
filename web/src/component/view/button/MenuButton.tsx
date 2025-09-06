@@ -1,6 +1,6 @@
 import {ReactNode, useState} from "react";
 import {Box, Collapse, Paper} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {MoreIconButton} from "./IconButtons";
 
 const SX: SxPropsMap = {

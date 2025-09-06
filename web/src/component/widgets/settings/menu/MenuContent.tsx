@@ -1,4 +1,4 @@
-import {Settings, SxPropsMap} from "../../../../type/general";
+import {Settings, SxPropsMap} from "../../../../api/management/type";
 import {MenuThemeChanger} from "./MenuThemeChanger";
 import {EraseButton} from "../../actions/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";

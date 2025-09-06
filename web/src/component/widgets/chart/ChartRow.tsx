@@ -1,4 +1,4 @@
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {Box, Chip, Divider} from "@mui/material";
 import {ReactNode} from "react";
 

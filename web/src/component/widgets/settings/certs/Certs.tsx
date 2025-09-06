@@ -4,7 +4,7 @@ import {CertsList} from "./CertsList";
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {CertsTab, TABS} from "./CertsTab";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
-import {useRouterCertList} from "../../../../router/cert";
+import {useRouterCertList} from "../../../../api/cert/hook";
 
 export function Certs() {
     const [tab, setTab] = useState(0)

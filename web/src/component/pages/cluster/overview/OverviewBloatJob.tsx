@@ -2,8 +2,8 @@ import {TransitionGroup} from "react-transition-group";
 import {Collapse} from "@mui/material";
 import {OverviewBloatJobItem} from "./OverviewBloatJobItem";
 import {InfoAlert} from "../../../view/box/InfoAlert";
-import {StylePropsMap} from "../../../../type/general";
-import {Bloat} from "../../../../type/bloat";
+import {StylePropsMap} from "../../../../api/management/type";
+import {Type} from "../../../../api/bloat/type";
 
 const style: StylePropsMap = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}
@@ -11,7 +11,7 @@ const style: StylePropsMap = {
 
 type Props = {
     cluster: string,
-    list: Bloat[],
+    list: Type[],
 }
 
 export function OverviewBloatJob(props: Props) {

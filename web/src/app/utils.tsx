@@ -16,7 +16,7 @@ import {
 import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
-import {PasswordType} from "../type/password";
+import {PasswordType} from "../api/password/type";
 import {
     ColorsMap, Database,
     EnumOptions,
@@ -26,13 +26,13 @@ import {
     Sidecar,
     SidecarStatus,
     SxPropsMap
-} from "../type/general";
-import {CertType} from "../type/cert";
-import {InstanceMap, InstanceRequest, InstanceWeb, Role} from "../type/instance";
-import {JobStatus} from "../type/job";
-import {QueryConnection, QueryVariety} from "../type/query";
+} from "../api/management/type";
+import {CertType} from "../api/cert/type";
+import {InstanceMap, InstanceRequest, InstanceWeb, Role} from "../api/instance/type";
+import {JobStatus} from "../api/bloat/job/type";
+import {QueryConnection, QueryVariety} from "../api/query/type";
 import dayjs from "dayjs";
-import {Cluster} from "../type/cluster";
+import {Cluster} from "../api/cluster/type";
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},

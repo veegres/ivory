@@ -2,7 +2,7 @@ import {PageMainBox} from "../../../view/box/PageMainBox";
 import {ListTags} from "./ListTags";
 import {useStore} from "../../../../provider/StoreProvider";
 import {ListTable} from "./ListTable";
-import {useRouterClusterList} from "../../../../router/cluster";
+import {useRouterClusterList} from "../../../../api/cluster/hook";
 import {useEffect} from "react";
 
 export function List() {

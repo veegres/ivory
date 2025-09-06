@@ -1,5 +1,5 @@
-import {useMutationAdapter} from "../hook/QueryCustom";
-import {GeneralApi, InitialApi} from "../app/api";
+import {useMutationAdapter} from "../../hook/QueryCustom";
+import {GeneralApi, InitialApi} from "../management/router";
 
 export function useRouterSecretSet() {
     return useMutationAdapter({

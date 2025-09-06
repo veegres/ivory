@@ -1,10 +1,10 @@
 import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
-import {AuthConfig, AuthType} from "../../../type/general";
+import {AuthConfig, AuthType} from "../../../api/management/type";
 import {ConfigQuery} from "./query/ConfigQuery";
 import {ConfigAuth} from "./auth/ConfigAuth";
-import {useRouterConfigSet} from "../../../router/general";
+import {useRouterConfigSet} from "../../../api/management/hook";
 import {Button} from "@mui/material";
 
 export function ConfigBody() {

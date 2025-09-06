@@ -1,15 +1,10 @@
 import {CSSProperties, ReactElement} from "react";
 import {Theme} from "@mui/material";
-import {SecretStatus} from "./secret";
+import {SecretStatus} from "../secret/type";
 import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx";
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
 
 // COMMON (WEB AND SERVER)
-
-export interface Response<TData, TError = object> {
-    response: TData,
-    error: TError,
-}
 
 export interface Login {
     username: string,

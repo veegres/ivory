@@ -1,6 +1,6 @@
-import {QueryType} from "../../../type/query";
+import {QueryType} from "../../../api/query/type";
 import {DeleteIconButton} from "../../view/button/IconButtons";
-import {useRouterQueryDelete} from "../../../router/query";
+import {useRouterQueryDelete} from "../../../api/query/hook";
 
 type Props = {
     id: string

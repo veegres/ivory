@@ -1,5 +1,5 @@
-import {useMutationAdapter} from "../hook/QueryCustom";
-import {GeneralApi} from "../app/api";
+import {useMutationAdapter} from "../../hook/QueryCustom";
+import {GeneralApi} from "../management/router";
 
 export function useRouterLogin(onSuccess: (data: any) => void) {
     return useMutationAdapter({

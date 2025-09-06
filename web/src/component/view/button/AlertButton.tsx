@@ -1,7 +1,7 @@
 import {Box, Button, Tooltip} from "@mui/material";
 import {AlertDialog} from "../dialog/AlertDialog";
 import {ReactNode, useState} from "react";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 
 const SX: SxPropsMap = {
     button: {minWidth: "10px", textWrap: "nowrap"},

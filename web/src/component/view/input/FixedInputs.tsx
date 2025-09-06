@@ -1,5 +1,5 @@
 import {Box, FormControl, OutlinedInput} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {useEffect} from "react";
 
 const SX: SxPropsMap = {

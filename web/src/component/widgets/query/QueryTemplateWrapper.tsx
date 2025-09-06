@@ -2,7 +2,7 @@ import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton,
 import {ReactNode, useState} from "react";
 import {QueryBoxBody} from "./QueryBoxBody";
 import {QueryRun} from "./QueryRun";
-import {QueryConnection, QueryVariety} from "../../../type/query";
+import {QueryConnection, QueryVariety} from "../../../api/query/type";
 import {QueryTemplateHead} from "./QueryTemplateHead";
 import {QueryBoxPaper} from "./QueryBoxPaper";
 import {FixedInputs} from "../../view/input/FixedInputs";

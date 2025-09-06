@@ -1,9 +1,9 @@
 import {AlertButton} from "../../view/button/AlertButton";
-import {InstanceRequest} from "../../../type/instance";
+import {InstanceRequest} from "../../../api/instance/type";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
-import {useRouterInstanceRestart} from "../../../router/instance";
+import {SxPropsMap} from "../../../api/management/type";
+import {useRouterInstanceRestart} from "../../../api/instance/hook";
 import {Dayjs} from "dayjs";
 import {ScheduleInput} from "../../view/input/ScheduleInput";
 

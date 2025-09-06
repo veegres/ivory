@@ -1,6 +1,6 @@
 import {Alert, Box, Collapse, ToggleButton, Tooltip} from "@mui/material";
 import {ReactNode, useState} from "react";
-import {Database, SxPropsMap} from "../../../../type/general";
+import {Database, SxPropsMap} from "../../../../api/management/type";
 import {InfoOutlined} from "@mui/icons-material";
 import {DatabaseBox} from "../../../view/box/DatabaseBox";
 

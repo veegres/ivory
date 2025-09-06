@@ -1,6 +1,6 @@
 import {ReactNode} from "react";
-import {ColorsMap, Sidecar} from "./general";
-import {InstanceMap, InstanceWeb} from "./instance";
+import {ColorsMap, Sidecar} from "../management/type";
+import {InstanceMap, InstanceWeb} from "../instance/type";
 
 // COMMON (WEB AND SERVER)
 

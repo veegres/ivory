@@ -1,8 +1,8 @@
 import {CredentialsRow} from "./CredentialsRow";
 import {useState} from "react";
-import {Password, PasswordType} from "../../../../type/password";
+import {Password, PasswordType} from "../../../../api/password/type";
 import {CancelIconButton, SaveIconButton} from "../../../view/button/IconButtons";
-import {useRouterPasswordCreate} from "../../../../router/password";
+import {useRouterPasswordCreate} from "../../../../api/password/hook";
 
 export function CredentialsNew() {
     const initCredential: Password = { username: "", password: "", type: PasswordType.POSTGRES }

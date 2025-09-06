@@ -9,11 +9,11 @@ import {
     isSidecarEqual
 } from "../app/utils";
 import {useStore, useStoreAction} from "../provider/StoreProvider";
-import {Cluster, DetectionType, InstanceDetection} from "../type/cluster";
-import {Sidecar} from "../type/general";
-import {InstanceMap} from "../type/instance";
-import {useRouterInstanceOverview} from "../router/instance";
-import {InstanceApi} from "../app/api";
+import {Cluster, DetectionType, InstanceDetection} from "../api/cluster/type";
+import {Sidecar} from "../api/management/type";
+import {InstanceMap} from "../api/instance/type";
+import {useRouterInstanceOverview} from "../api/instance/hook";
+import {InstanceApi} from "../api/instance/router";
 
 // TODO #414 get rid of this complicated and problematic component with a lot of renders
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {

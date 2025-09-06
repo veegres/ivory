@@ -7,11 +7,11 @@ import {OverviewBloat} from "./OverviewBloat";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {PageMainBox} from "../../../view/box/PageMainBox";
 import {OverviewOptions} from "./OverviewOptions";
-import {SxPropsMap} from "../../../../type/general";
-import {ActiveCluster, ClusterTabs} from "../../../../type/cluster";
+import {SxPropsMap} from "../../../../api/management/type";
+import {ActiveCluster, ClusterTabs} from "../../../../api/cluster/type";
 import {OverviewAction} from "./OverviewAction";
-import {InstanceWeb} from "../../../../type/instance";
-import {useRouterClusterList} from "../../../../router/cluster";
+import {InstanceWeb} from "../../../../api/instance/type";
+import {useRouterClusterList} from "../../../../api/cluster/hook";
 
 const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},

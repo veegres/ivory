@@ -4,8 +4,8 @@ import {purple} from "@mui/material/colors";
 import {getDomain, InstanceColor} from "../../../../app/utils";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
 import {useStoreAction} from "../../../../provider/StoreProvider";
-import {Cluster, InstanceDetection} from "../../../../type/cluster";
-import {SxPropsMap} from "../../../../type/general";
+import {Cluster, InstanceDetection} from "../../../../api/cluster/type";
+import {SxPropsMap} from "../../../../api/management/type";
 import {useSettings} from "../../../../provider/SettingsProvider";
 
 const SX: SxPropsMap = {

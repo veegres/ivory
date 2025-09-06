@@ -3,8 +3,8 @@ import {ReactNode, useState} from "react";
 import {randomUnicodeAnimal} from "../../../app/utils";
 import {LinearProgressStateful} from "../progress/LinearProgressStateful";
 import select from "../../../style/select.module.css";
-import {SxPropsMap} from "../../../type/general";
-import {useRouterInfo} from "../../../router/general";
+import {SxPropsMap} from "../../../api/management/type";
+import {useRouterInfo} from "../../../api/management/hook";
 
 const SX: SxPropsMap = {
     box: {

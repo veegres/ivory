@@ -1,6 +1,6 @@
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {VirtualizedTable} from "../../view/table/VirtualizedTable";
-import {QueryConnection, QueryFields} from "../../../type/query";
+import {QueryConnection, QueryFields} from "../../../api/query/type";
 import {useMemo} from "react";
 import {QueryTableActions} from "./QueryTableActions";
 

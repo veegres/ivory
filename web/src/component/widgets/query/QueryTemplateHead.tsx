@@ -1,6 +1,6 @@
 import select from "../../../style/select.module.css";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {ReactNode, useState} from "react";
 
 const SX: SxPropsMap = {

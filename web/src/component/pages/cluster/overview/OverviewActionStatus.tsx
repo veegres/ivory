@@ -1,9 +1,9 @@
 import {Box} from "@mui/material";
-import {EnumOptions, SidecarStatus, SxPropsMap} from "../../../../type/general";
+import {EnumOptions, SidecarStatus, SxPropsMap} from "../../../../api/management/type";
 import {SidecarStatusOptions} from "../../../../app/utils";
 import {UseMutationResult} from "@tanstack/react-query";
-import {InstanceRequest} from "../../../../type/instance";
-import {useRouterInstanceActivate, useRouterInstancePause} from "../../../../router/instance";
+import {InstanceRequest} from "../../../../api/instance/type";
+import {useRouterInstanceActivate, useRouterInstancePause} from "../../../../api/instance/hook";
 import {InfoBox, Padding} from "../../../view/box/InfoBox";
 import {AlertButton} from "../../../view/button/AlertButton";
 

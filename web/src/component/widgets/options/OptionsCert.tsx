@@ -2,8 +2,8 @@ import {useMemo} from "react";
 
 import {AutocompleteUuid, Option} from "../../view/autocomplete/AutocompleteUuid";
 import {CertOptions, shortUuid} from "../../../app/utils";
-import {CertType} from "../../../type/cert";
-import {useRouterCertList} from "../../../router/cert";
+import {CertType} from "../../../api/cert/type";
+import {useRouterCertList} from "../../../api/cert/hook";
 
 type Props = {
     type: CertType,

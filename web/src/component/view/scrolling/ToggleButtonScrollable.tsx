@@ -1,4 +1,4 @@
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {MouseEvent, useState} from "react";
 import {Box, ToggleButton, Tooltip} from "@mui/material";
 import {HiddenScrolling} from "./HiddenScrolling";

@@ -1,5 +1,5 @@
 import {Box, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {grey} from "@mui/material/colors";
 import {ReactNode} from "react";
 

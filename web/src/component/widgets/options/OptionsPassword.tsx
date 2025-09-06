@@ -1,8 +1,8 @@
 import {CredentialOptions, shortUuid} from "../../../app/utils";
 import {useMemo} from "react";
 import {AutocompleteUuid, Option} from "../../view/autocomplete/AutocompleteUuid";
-import {PasswordType} from "../../../type/password";
-import {useRouterPassword} from "../../../router/password";
+import {PasswordType} from "../../../api/password/type";
+import {useRouterPassword} from "../../../api/password/hook";
 
 type Props = {
     type: PasswordType,

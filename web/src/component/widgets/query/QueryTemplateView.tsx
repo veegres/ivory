@@ -1,5 +1,5 @@
-import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../type/query";
-import {SxPropsMap} from "../../../type/general";
+import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../api/query/type";
+import {SxPropsMap} from "../../../api/management/type";
 import {QueryTemplateWrapper} from "./QueryTemplateWrapper";
 import {QueryBoxBody} from "./QueryBoxBody";
 import {QueryInfoView} from "./QueryInfoView";

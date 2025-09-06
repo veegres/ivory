@@ -1,6 +1,6 @@
 import {SecretBodyInitial} from "../../component/pages/secret/SecretBodyInitial";
 import {SecretBodySecondary} from "../../component/pages/secret/SecretBodySecondary";
-import {AppInfo} from "../../type/general";
+import {AppInfo} from "../../api/management/type";
 import {UseQueryResult} from "@tanstack/react-query";
 import {LoginBody} from "../../component/pages/login/LoginBody";
 import {ConfigBody} from "../../component/pages/config/ConfigBody";

@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
-import {PasswordApi} from "../app/api";
-import {PasswordType} from "../type/password";
-import {useMutationAdapter} from "../hook/QueryCustom";
+import {PasswordType} from "./type";
+import {useMutationAdapter} from "../../hook/QueryCustom";
+import {PasswordApi} from "./router";
 
 export function useRouterPassword(type?: PasswordType) {
     return useQuery({

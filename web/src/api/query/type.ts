@@ -1,5 +1,5 @@
-import {Database} from "./general";
-import {Certs} from "./cluster";
+import {Database} from "../management/type";
+import {Certs} from "../cluster/type";
 
 // COMMON (WEB AND SERVER)
 

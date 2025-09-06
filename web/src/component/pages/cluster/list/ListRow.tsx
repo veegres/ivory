@@ -1,6 +1,6 @@
 import {Box, TableRow, Tooltip} from "@mui/material";
 import {useEffect, useRef, useState} from "react";
-import {Cluster} from "../../../../type/cluster";
+import {Cluster} from "../../../../api/cluster/type";
 import {DynamicInputs} from "../../../view/input/DynamicInputs";
 import {ListCellRead} from "./ListCellRead";
 import {ListCellUpdate} from "./ListCellUpdate";
@@ -9,7 +9,7 @@ import {getDomains, getSidecars, SxPropsFormatter} from "../../../../app/utils";
 import {ListCellChip} from "./ListCellChip";
 import {useInstanceDetection} from "../../../../hook/InstanceDetection";
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
-import {SxPropsMap} from "../../../../type/general";
+import {SxPropsMap} from "../../../../api/management/type";
 
 const SX: SxPropsMap = {
     actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, minHeight: "32px"},

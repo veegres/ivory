@@ -1,6 +1,6 @@
 import {ChangeEvent} from "react";
 import {AlertColor, Box, FormControlLabel, Radio, RadioGroup} from "@mui/material";
-import {AuthConfig, AuthType, SxPropsMap} from "../../../../type/general";
+import {AuthConfig, AuthType, SxPropsMap} from "../../../../api/management/type";
 import {ConfigBox} from "../../../view/box/ConfigBox";
 import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 

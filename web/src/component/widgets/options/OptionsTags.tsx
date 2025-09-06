@@ -1,5 +1,5 @@
 import {AutocompleteTags} from "../../view/autocomplete/AutocompleteTags";
-import {useRouterTagList} from "../../../router/tag";
+import {useRouterTagList} from "../../../api/tag/hook";
 
 type Props = {
     selected?: string[],

@@ -2,7 +2,7 @@ import {Autocomplete, AutocompleteRenderInputParams, TextField} from "@mui/mater
 import {UseQueryResult} from "@tanstack/react-query";
 import {useState} from "react";
 import {useDebounce} from "../../../hook/Debounce";
-import {QueryConnection} from "../../../type/query";
+import {QueryConnection} from "../../../api/query/type";
 
 type Props = {
     onUpdate: (option: string | null) => void,

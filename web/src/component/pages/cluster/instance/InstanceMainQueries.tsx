@@ -1,5 +1,5 @@
-import {SxPropsMap} from "../../../../type/general";
-import {QueryConnection, QueryType} from "../../../../type/query";
+import {SxPropsMap} from "../../../../api/management/type";
+import {QueryConnection, QueryType} from "../../../../api/query/type";
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {Query} from "../../.././widgets/query/Query";
 import {QueryConsole} from "../../.././widgets/query/QueryConsole";

@@ -1,6 +1,6 @@
 import {AlertButton} from "../../view/button/AlertButton";
-import {InstanceRequest} from "../../../type/instance";
-import {useRouterInstanceReload} from "../../../router/instance";
+import {InstanceRequest} from "../../../api/instance/type";
+import {useRouterInstanceReload} from "../../../api/instance/hook";
 
 type Props = {
     request: InstanceRequest,

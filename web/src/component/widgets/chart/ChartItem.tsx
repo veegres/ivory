@@ -1,5 +1,5 @@
 import {Box, CircularProgress, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {
     blue, blueGrey, brown, cyan, deepOrange, deepPurple, green, indigo, orange, pink, purple, red
 } from "@mui/material/colors";

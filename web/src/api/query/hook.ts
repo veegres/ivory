@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
-import {QueryApi} from "../app/api";
-import {QueryChartRequest, QueryConnection, QueryRunRequest, QueryType} from "../type/query";
-import {useMutationAdapter} from "../hook/QueryCustom";
+import {QueryChartRequest, QueryConnection, QueryRunRequest, QueryType} from "./type";
+import {useMutationAdapter} from "../../hook/QueryCustom";
+import {QueryApi} from "./router";
 
 export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
     return useQuery({
