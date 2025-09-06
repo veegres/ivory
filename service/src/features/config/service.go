@@ -9,7 +9,7 @@ import (
 )
 
 type Service struct {
-	configFiles       *files.FileGateway
+	configFiles       *files.Storage
 	encryptionService *encryption.EncryptionService
 	secretService     *secret.SecretService
 
@@ -18,7 +18,7 @@ type Service struct {
 }
 
 func NewService(
-	configFiles *files.FileGateway,
+	configFiles *files.Storage,
 	encryptionService *encryption.EncryptionService,
 	secretService *secret.SecretService,
 ) *Service {

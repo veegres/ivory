@@ -2,18 +2,18 @@ package cert
 
 import (
 	"errors"
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 	"ivory/src/storage/files"
 
 	"github.com/google/uuid"
 )
 
 type CertRepository struct {
-	bucket *bolt.Bucket[Cert]
-	file   *files.FileGateway
+	bucket *db.Bucket[Cert]
+	file   *files.Storage
 }
 
-func NewCertRepository(bucket *bolt.Bucket[Cert], file *files.FileGateway) *CertRepository {
+func NewCertRepository(bucket *db.Bucket[Cert], file *files.Storage) *CertRepository {
 	return &CertRepository{
 		bucket: bucket,
 		file:   file,

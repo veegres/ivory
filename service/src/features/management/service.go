@@ -16,7 +16,7 @@ import (
 )
 
 type Service struct {
-	env             *env.Env
+	env             *env.AppInfo
 	authService     *auth.AuthService
 	passwordService *password.PasswordService
 	clusterService  *cluster.ClusterService
@@ -30,7 +30,7 @@ type Service struct {
 }
 
 func NewService(
-	env *env.Env,
+	env *env.AppInfo,
 	authService *auth.AuthService,
 	passwordService *password.PasswordService,
 	clusterService *cluster.ClusterService,

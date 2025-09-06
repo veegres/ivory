@@ -1,14 +1,14 @@
 package tag
 
 import (
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 )
 
 type TagRepository struct {
-	bucket *bolt.Bucket[[]string]
+	bucket *db.Bucket[[]string]
 }
 
-func NewTagRepository(bucket *bolt.Bucket[[]string]) *TagRepository {
+func NewTagRepository(bucket *db.Bucket[[]string]) *TagRepository {
 	return &TagRepository{
 		bucket: bucket,
 	}

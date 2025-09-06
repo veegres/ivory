@@ -1,16 +1,16 @@
 package password
 
 import (
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 
 	"github.com/google/uuid"
 )
 
 type PasswordRepository struct {
-	bucket *bolt.Bucket[Password]
+	bucket *db.Bucket[Password]
 }
 
-func NewPasswordRepository(bucket *bolt.Bucket[Password]) *PasswordRepository {
+func NewPasswordRepository(bucket *db.Bucket[Password]) *PasswordRepository {
 	return &PasswordRepository{
 		bucket: bucket,
 	}

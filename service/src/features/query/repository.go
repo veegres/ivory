@@ -7,7 +7,7 @@ import (
 	"errors"
 	"io"
 	"ivory/src/clients/database"
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 	"ivory/src/storage/files"
 	"time"
 
@@ -15,13 +15,13 @@ import (
 )
 
 type LogRepository struct {
-	queryLogFiles     *files.FileGateway
+	queryLogFiles     *files.Storage
 	maxBufferCapacity int
 	maxLogElements    int
 }
 
 func NewLogRepository(
-	queryLogFiles *files.FileGateway,
+	queryLogFiles *files.Storage,
 ) *LogRepository {
 	return &LogRepository{
 		queryLogFiles:     queryLogFiles,
@@ -142,12 +142,12 @@ func (r *LogRepository) DeleteAll() error {
 }
 
 type Repository struct {
-	bucket        *bolt.Bucket[Query]
+	bucket        *db.Bucket[Query]
 	LogRepository *LogRepository
 }
 
 func NewRepository(
-	bucket *bolt.Bucket[Query],
+	bucket *db.Bucket[Query],
 	logRepository *LogRepository,
 ) *Repository {
 	return &Repository{

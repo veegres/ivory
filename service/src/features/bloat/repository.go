@@ -3,7 +3,7 @@ package bloat
 import (
 	"errors"
 	. "ivory/src/features/bloat/job"
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 	"ivory/src/storage/files"
 	"os"
 	"strings"
@@ -13,11 +13,11 @@ import (
 )
 
 type BloatRepository struct {
-	bucket *bolt.Bucket[Bloat]
-	file   *files.FileGateway
+	bucket *db.Bucket[Bloat]
+	file   *files.Storage
 }
 
-func NewBloatRepository(bucket *bolt.Bucket[Bloat], file *files.FileGateway) *BloatRepository {
+func NewBloatRepository(bucket *db.Bucket[Bloat], file *files.Storage) *BloatRepository {
 	return &BloatRepository{
 		bucket: bucket,
 		file:   file,

@@ -24,12 +24,12 @@ type Config struct {
 	CertKeyFilePath string
 }
 
-type Env struct {
+type AppInfo struct {
 	Config  Config
 	Version Version
 }
 
-func NewEnv() *Env {
+func NewAppInfo() *AppInfo {
 	ginMode := "debug"
 	if val, ok := os.LookupEnv("GIN_MODE"); ok {
 		ginMode = val
@@ -86,7 +86,7 @@ func NewEnv() *Env {
 	slog.Info("ENV", "IVORY_VERSION_COMMIT", commit)
 	println()
 
-	return &Env{
+	return &AppInfo{
 		Config: Config{
 			UrlAddress:      urlAddress,
 			UrlPath:         urlPath,

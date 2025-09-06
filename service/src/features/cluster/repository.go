@@ -1,14 +1,14 @@
 package cluster
 
 import (
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 )
 
 type ClusterRepository struct {
-	bucket *bolt.Bucket[Cluster]
+	bucket *db.Bucket[Cluster]
 }
 
-func NewClusterRepository(bucket *bolt.Bucket[Cluster]) *ClusterRepository {
+func NewClusterRepository(bucket *db.Bucket[Cluster]) *ClusterRepository {
 	return &ClusterRepository{
 		bucket: bucket,
 	}
