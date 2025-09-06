@@ -62,7 +62,8 @@ func NewContext() *Context {
 	tagRepo := tag.NewTagRepository(tagBucket)
 	secretRepo := secret.NewSecretRepository(secretBucket)
 	passwordRepo := password.NewPasswordRepository(passwordBucket)
-	queryRepo := query.NewQueryRepository(queryBucket, queryLogFiles)
+	queryLogRepo := query.NewLogRepository(queryLogFiles)
+	queryRepo := query.NewRepository(queryBucket, queryLogRepo)
 
 	// CLIENTS
 	sidecarGateway := sidecar.NewSidecarGateway()
@@ -78,7 +79,9 @@ func NewContext() *Context {
 	instanceService := instance.NewService(patroniClient, passwordService, certService)
 	tagService := tag.NewTagService(tagRepo)
 	clusterService := cluster.NewClusterService(clusterRepo, instanceService, tagService)
-	queryService := query.NewQueryService(queryRepo, postgresClient, secretService, passwordService, certService)
+	queryService := query.NewService(queryRepo, secretService)
+	queryLogService := query.NewLogService(queryLogRepo)
+	queryRunService := query.NewRunService(queryRepo, postgresClient, queryLogService, passwordService, certService)
 	bloatService := bloat.NewBloatService(bloatRepo, passwordService)
 	authService := auth.NewAuthService(secretService, encryptionService)
 	managementService := management.NewService(
@@ -104,7 +107,7 @@ func NewContext() *Context {
 		passwordRouter:   password.NewPasswordRouter(passwordService),
 		tagRouter:        tag.NewTagRouter(tagService),
 		instanceRouter:   instance.NewInstanceRouter(instanceService),
-		queryRouter:      query.NewQueryRouter(queryService, configService),
+		queryRouter:      query.NewQueryRouter(queryService, queryRunService, queryLogService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),
 	}
