@@ -95,7 +95,7 @@ func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router)
 
 func safeRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
 	group := g.Group("/safe")
-	group.GET("/secret", rs.GetStatus)
+	group.GET("/secret", rs.GetSecretStatus)
 	group.POST("/secret", rg.ChangeSecret)
 	group.DELETE("/erase", rg.Erase)
 }
@@ -111,14 +111,14 @@ func clusterRouter(g *gin.RouterGroup, r *cluster.Router) {
 
 func bloatRouter(g *gin.RouterGroup, r *bloat.Router) {
 	group := g.Group("/cli")
-	group.GET("/bloat", r.GetCompactTableList)
-	group.GET("/bloat/:uuid", r.GetCompactTable)
-	group.GET("/bloat/:uuid/logs", r.GetCompactTableLogs)
-	group.GET("/bloat/cluster/:name", r.GetCompactTableListByCluster)
-	group.POST("/bloat/job/start", r.StartJob)
-	group.POST("/bloat/job/:uuid/stop", r.StopJob)
+	group.GET("/bloat", r.GetBloatList)
+	group.GET("/bloat/:uuid", r.GetBloat)
+	group.GET("/bloat/:uuid/logs", r.GetBloatLogs)
+	group.GET("/bloat/cluster/:name", r.GetBloatListByCluster)
+	group.POST("/bloat/job/start", r.PostJobStart)
+	group.POST("/bloat/job/:uuid/stop", r.PostJobStop)
 	group.DELETE("/bloat/job/:uuid/delete", r.DeleteJob)
-	group.GET("/bloat/job/:uuid/stream", r.StreamJob)
+	group.GET("/bloat/job/:uuid/stream", r.GetJobStream)
 }
 
 func certRouter(g *gin.RouterGroup, r *cert.Router) {
@@ -162,7 +162,7 @@ func queryRouter(g *gin.RouterGroup, r *query.Router) {
 	group := g.Group("/query")
 	group.GET("", r.GetQueryList)
 	group.POST("/run", r.PostRunQuery)
-	group.POST("/activity", r.PostAllRunningQueriesByApplicationName)
+	group.POST("/activity", r.PostActivityQuery)
 	group.POST("/databases", r.PostDatabasesQuery)
 	group.POST("/schemas", r.PostSchemasQuery)
 	group.POST("/tables", r.PostTablesQuery)

@@ -184,7 +184,7 @@ func (r *Router) DeleteQueryLog(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query log was deleted"})
 }
 
-func (r *Router) PostAllRunningQueriesByApplicationName(context *gin.Context) {
+func (r *Router) PostActivityQuery(context *gin.Context) {
 	var req QueryConnection
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {

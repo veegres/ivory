@@ -38,7 +38,7 @@ func (r *Router) EmptyMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) GetStatus(context *gin.Context) {
+func (r *Router) GetSecretStatus(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": r.secretService.Status()})
 }
 
