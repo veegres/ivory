@@ -78,8 +78,11 @@ func (s *Service) GetTLSConfigCertificates(clientCertId *uuid.UUID, clientKeyId 
 }
 
 func (s *Service) EnrichTLSConfig(config **tls.Config, certs *Certs) error {
+	if *config == nil {
+		*config = &tls.Config{}
+	}
 	if certs == nil {
-		config = nil
+		*config = nil
 		return nil
 	}
 	rootCA, errRoot := s.GetTLSConfigRootCA(certs.ClientCAId)

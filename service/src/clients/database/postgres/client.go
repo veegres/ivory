@@ -274,7 +274,11 @@ func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) 
 		"application_name": s.GetApplicationName(ctx.Session),
 	}
 	if tlsConfig != nil {
-		conConfig.TLSConfig = tlsConfig
+		// NOTE: we rewrite only RootCAs and Certificates, because pgx.ParseConfig creates proper
+		//  tlsConfig for different `sslmode`. For example `verify-ca` should mark `InsecureSkipVerify=true`
+		//  and it always sets `ServerName` it required for `verify-full` mode.
+		conConfig.TLSConfig.RootCAs = tlsConfig.RootCAs
+		conConfig.TLSConfig.Certificates = tlsConfig.Certificates
 	}
 
 	conn, err := pgx.ConnectConfig(context.Background(), conConfig)

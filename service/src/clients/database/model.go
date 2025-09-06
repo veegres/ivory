@@ -22,8 +22,8 @@ type Connection struct {
 }
 
 type Context struct {
-	Connection Connection `json:"connection"`
-	Session    string     `json:"session"`
+	Connection *Connection `json:"connection"`
+	Session    string      `json:"session"`
 }
 
 type QueryOptions struct {
