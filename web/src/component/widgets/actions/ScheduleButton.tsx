@@ -1,11 +1,11 @@
 import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest, InstanceScheduledRestart, InstanceScheduledSwitchover} from "../../../type/instance";
 import {DateTimeFormatter} from "../../../app/utils";
-import {LoadingButton} from "@mui/lab";
 import {NoBox} from "../../view/box/NoBox";
 import {List} from "../../view/box/List";
 import {ListItem} from "../../view/box/ListItem";
 import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../router/instance";
+import {Button} from "@mui/material";
 
 type Props = {
     request: InstanceRequest,
@@ -52,27 +52,27 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteSwitchoverButton() {
         return (
-            <LoadingButton
+            <Button
                 size={"small"}
                 variant={"outlined"}
                 loading={deleteSwitchover.isPending}
                 onClick={() => deleteSwitchover.mutate(request)}
             >
                 Delete
-            </LoadingButton>
+            </Button>
         )
     }
 
     function renderDeleteRestartButton() {
         return (
-            <LoadingButton
+            <Button
                 size={"small"}
                 variant={"outlined"}
                 loading={deleteRestart.isPending}
                 onClick={() => deleteRestart.mutate(request)}
             >
                 Delete
-            </LoadingButton>
+            </Button>
         )
     }
 }

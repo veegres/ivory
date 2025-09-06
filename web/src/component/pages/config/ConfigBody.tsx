@@ -1,11 +1,11 @@
 import {PageStartupBox} from "../../view/box/PageStartupBox";
-import {LoadingButton} from "@mui/lab";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
 import {AuthConfig, AuthType} from "../../../type/general";
 import {ConfigQuery} from "./query/ConfigQuery";
 import {ConfigAuth} from "./auth/ConfigAuth";
 import {useRouterConfigSet} from "../../../router/general";
+import {Button} from "@mui/material";
 
 export function ConfigBody() {
     const [company, setCompany] = useState("")
@@ -23,9 +23,9 @@ export function ConfigBody() {
 
     function renderFooter() {
         return (
-            <LoadingButton variant={"contained"} loading={config.isPending} onClick={handleClick}>
+            <Button variant={"contained"} loading={config.isPending} onClick={handleClick}>
                 Set
-            </LoadingButton>
+            </Button>
         )
     }
 

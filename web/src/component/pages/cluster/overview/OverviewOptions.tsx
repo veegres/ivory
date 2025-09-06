@@ -2,7 +2,7 @@ import {Stack} from "@mui/material";
 import {OverviewOptionsInstance} from "./OverviewOptionsInstance";
 import {getDomain} from "../../../../app/utils";
 import {SxPropsMap} from "../../../../type/general";
-import {Options} from "../../.././widgets/options/Options";
+import {Options} from "../../../widgets/options/Options";
 import {ActiveCluster, ClusterOptions} from "../../../../type/cluster";
 import {useRouterClusterUpdate} from "../../../../router/cluster";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";

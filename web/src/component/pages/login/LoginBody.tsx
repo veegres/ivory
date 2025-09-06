@@ -3,7 +3,6 @@ import {Alert, Button} from "@mui/material";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
 import {AuthType, SxPropsMap} from "../../../type/general";
-import {LoadingButton} from "@mui/lab";
 import {useAuth} from "../../../provider/AuthProvider";
 import {useRouterLogin} from "../../../router/auth";
 
@@ -51,7 +50,7 @@ export function LoginBody(props: Props) {
     function renderLogin() {
         switch (type) {
             case AuthType.NONE: return <Button onClick={logout}>Sign out</Button>
-            case AuthType.BASIC: return <LoadingButton onClick={handleLogin} loading={login.isPending}>Sign in</LoadingButton>
+            case AuthType.BASIC: return <Button onClick={handleLogin} loading={login.isPending}>Sign in</Button>
         }
     }
 

@@ -1,5 +1,5 @@
-import {LoadingButton} from "@mui/lab";
 import {useRouterSecretSet} from "../../../router/secret";
+import {Button} from "@mui/material";
 
 type Props = {
     keyWord: string,
@@ -11,13 +11,13 @@ export function SecretButton(props: Props) {
     const secret = useRouterSecretSet()
 
     return (
-        <LoadingButton
+        <Button
             size={"small"}
             variant={"contained"}
             loading={secret.isPending}
             onClick={() => secret.mutate({ref: refWord, key: keyWord})}
         >
             Set
-        </LoadingButton>
+        </Button>
     )
 }

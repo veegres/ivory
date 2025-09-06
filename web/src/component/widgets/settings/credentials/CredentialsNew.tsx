@@ -11,6 +11,8 @@ export function CredentialsNew() {
     const [clean, setClean] = useState(false)
     const createCredentials = useRouterPasswordCreate(handleCancel)
 
+    console.log(credential);
+
     return (
         <CredentialsRow
             renderButtons={renderButtons()}

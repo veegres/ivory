@@ -1,9 +1,8 @@
-import {Box, Tooltip} from "@mui/material";
+import {Box, Button, Tooltip} from "@mui/material";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {SxPropsMap} from "../../../type/general";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {KeyboardDoubleArrowRight} from "@mui/icons-material";
-import {LoadingButton} from "@mui/lab";
 import {Query} from "../../../type/query";
 import {useRouterQueryUpdate} from "../../../router/query";
 
@@ -32,7 +31,7 @@ export function QueryRestore(props: Props) {
             <Box sx={SX.button}>
                 <Tooltip title={"Restore"} placement={"top"} disableInteractive>
                     <span>
-                        <LoadingButton
+                        <Button
                             disabled={query.default === query.custom}
                             loading={update.isPending}
                             size={"small"}
@@ -40,7 +39,7 @@ export function QueryRestore(props: Props) {
                             onClick={handleUpdate}
                         >
                             <KeyboardDoubleArrowRight/>
-                        </LoadingButton>
+                        </Button>
                     </span>
                 </Tooltip>
             </Box>

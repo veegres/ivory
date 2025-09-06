@@ -1,7 +1,6 @@
-import {Alert, Box, TextField} from "@mui/material";
+import {Alert, Box, Button, TextField} from "@mui/material";
 import {useState} from "react";
 import {CheckCircle} from "@mui/icons-material";
-import {LoadingButton} from "@mui/lab";
 import {SxPropsMap} from "../../../../type/general";
 import {CertType} from "../../../../type/cert";
 import {useRouterCertAdd} from "../../../../router/cert";
@@ -41,7 +40,7 @@ export function CertsTabPath(props: Props) {
                     onChange={(e) => setPath(e.target.value)}
                     slotProps={{input: {sx: SX.border}}}
                 />
-                <LoadingButton
+                <Button
                     sx={SX.border}
                     variant={"outlined"}
                     loading={add.isPending}
@@ -50,7 +49,7 @@ export function CertsTabPath(props: Props) {
                     size={"large"}
                 >
                     <CheckCircle/>
-                </LoadingButton>
+                </Button>
             </Box>
         </Box>
     )

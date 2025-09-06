@@ -1,11 +1,10 @@
 import {AutoIconButton} from "../../../view/button/IconButtons";
 import {useState} from "react";
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, TextField} from "@mui/material";
-import {Options} from "../../.././widgets/options/Options";
+import {Options} from "../../../widgets/options/Options";
 import {SxPropsMap} from "../../../../type/general";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {ClusterAuto} from "../../../../type/cluster";
-import {LoadingButton} from "@mui/lab";
 import {useRouterClusterCreateAuto} from "../../../../router/cluster";
 
 const SX: SxPropsMap = {
@@ -66,12 +65,12 @@ export function ListCreateAuto(props: Props) {
                 </DialogContent>
                 <DialogActions sx={SX.center}>
                     <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
-                    <LoadingButton
+                    <Button
                         loading={updateCluster.isPending}
                         onClick={() => updateCluster.mutate(cluster)}
                     >
                         Save
-                    </LoadingButton>
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>
