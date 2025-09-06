@@ -1,5 +1,5 @@
 import {Alert} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 
 const SX: SxPropsMap = {
     infoAlert: {justifyContent: "center"}

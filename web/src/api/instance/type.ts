@@ -1,7 +1,7 @@
-import {Database, Sidecar} from "./general";
+import {Database, Sidecar} from "../management/type";
 import {ReactNode} from "react";
-import {Certs} from "./cluster";
-import {QueryConnection} from "./query";
+import {Certs} from "../cluster/type";
+import {QueryConnection} from "../query/type";
 
 // COMMON (WEB AND SERVER)
 

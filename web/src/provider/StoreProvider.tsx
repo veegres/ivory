@@ -1,10 +1,10 @@
 import {createContext, ReactNode, useContext, useMemo} from "react";
 import {useQueryClient} from "@tanstack/react-query";
-import {ActiveCluster, Cluster, DetectionType} from "../type/cluster";
-import {InstanceMap, InstanceTabType, InstanceWeb} from "../type/instance";
+import {ActiveCluster, Cluster, DetectionType} from "../api/cluster/type";
+import {InstanceMap, InstanceTabType, InstanceWeb} from "../api/instance/type";
 import {getDomain} from "../app/utils";
 import {useLocalStorageState} from "../hook/LocalStorage";
-import {QueryType} from "../type/query";
+import {QueryType} from "../api/query/type";
 
 // STORE
 interface StoreType {

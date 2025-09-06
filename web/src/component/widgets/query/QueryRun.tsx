@@ -1,9 +1,9 @@
 import {Box, Checkbox, OutlinedInput, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
-import {QueryConnection, QueryVariety} from "../../../type/query";
+import {SxPropsMap} from "../../../api/management/type";
+import {QueryConnection, QueryVariety} from "../../../api/query/type";
 import {RefreshIconButton} from "../../view/button/IconButtons";
 import {QueryVarieties} from "./QueryVarieties";
-import {useRouterQueryRun} from "../../../router/query";
+import {useRouterQueryRun} from "../../../api/query/hook";
 import {QueryTable} from "./QueryTable";
 import {useMemo, useState} from "react";
 import {HealthAndSafety, Wash, WashOutlined} from "@mui/icons-material";

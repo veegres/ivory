@@ -1,6 +1,6 @@
 import {Box} from "@mui/material";
 import {Children, ReactNode} from "react";
-import {SxPropsMap} from "../../../../type/general";
+import {SxPropsMap} from "../../../../api/management/type";
 import {MenuWrapperScroll} from "./MenuWrapperScroll";
 
 const SX: SxPropsMap = {

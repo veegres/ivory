@@ -1,6 +1,6 @@
 import scroll from "../../../style/scroll.module.css";
 import {Box, CircularProgress, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {Fragment, ReactNode, useMemo, useState} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import {NoBox} from "../box/NoBox";

@@ -7,10 +7,10 @@ import {LinearProgressStateful} from "../../../view/progress/LinearProgressState
 import scroll from "../../../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../../../view/scrolling/DynamicRowVirtualizer";
 import {useEventJob} from "../../../../hook/EventJob";
-import {SxPropsMap} from "../../../../type/general";
-import {Bloat} from "../../../../type/bloat";
+import {SxPropsMap} from "../../../../api/management/type";
+import {Type} from "../../../../api/bloat/type";
 import select from "../../../../style/select.module.css";
-import {useRouterBloatDelete, useRouterBloatStop} from "../../../../router/bloat";
+import {useRouterBloatDelete, useRouterBloatStop} from "../../../../api/bloat/hook";
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
 
 const SX: SxPropsMap = {
@@ -31,7 +31,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: string,
-    item: Bloat,
+    item: Type,
 }
 
 export function OverviewBloatJobItem(props: Props) {

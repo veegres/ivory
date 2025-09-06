@@ -1,4 +1,4 @@
-import {useRouterSecretSet} from "../../../router/secret";
+import {useRouterSecretSet} from "../../../api/secret/hook";
 import {Button} from "@mui/material";
 
 type Props = {

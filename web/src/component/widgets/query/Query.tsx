@@ -1,12 +1,12 @@
-import {StylePropsMap} from "../../../type/general";
+import {StylePropsMap} from "../../../api/management/type";
 import {Box, Collapse, Skeleton} from "@mui/material";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {TransitionGroup} from "react-transition-group";
-import {QueryConnection, QueryType} from "../../../type/query";
+import {QueryConnection, QueryType} from "../../../api/query/type";
 import {QueryTemplateNew} from "./QueryTemplateNew";
 import {QueryTemplateView} from "./QueryTemplateView";
-import {useRouterInfo} from "../../../router/general";
-import {useRouterQueryList} from "../../../router/query";
+import {useRouterInfo} from "../../../api/management/hook";
+import {useRouterQueryList} from "../../../api/query/hook";
 
 const style: StylePropsMap = {
     box: {display: "flex", flexDirection: "column", gap: "8px"},

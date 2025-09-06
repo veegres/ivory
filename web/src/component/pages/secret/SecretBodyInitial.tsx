@@ -3,7 +3,7 @@ import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {Typography} from "@mui/material";
 import {SecretButton} from "../.././widgets/actions/SecretButton";
-import {useRouterSecretSet} from "../../../router/secret";
+import {useRouterSecretSet} from "../../../api/secret/hook";
 
 export function SecretBodyInitial() {
     const [key, setKey] = useState("")

@@ -5,12 +5,12 @@ import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
 import {OverviewBloatJob} from "./OverviewBloatJob";
 import {Query} from "../../.././widgets/query/Query";
 import {Cached} from "@mui/icons-material";
-import {SxPropsMap} from "../../../../type/general";
-import {BloatTarget} from "../../../../type/bloat";
-import {QueryType} from "../../../../type/query";
-import {ActiveCluster} from "../../../../type/cluster";
-import {useRouterQueryList} from "../../../../router/query";
-import {useRouterBloatList} from "../../../../router/bloat";
+import {SxPropsMap} from "../../../../api/management/type";
+import {BloatTarget} from "../../../../api/bloat/type";
+import {QueryType} from "../../../../api/query/type";
+import {ActiveCluster} from "../../../../api/cluster/type";
+import {useRouterQueryList} from "../../../../api/query/hook";
+import {useRouterBloatList} from "../../../../api/bloat/hook";
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},

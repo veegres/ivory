@@ -1,8 +1,8 @@
-import {QueryConnection} from "../../../type/query";
-import {useRouterActivity} from "../../../router/query";
+import {QueryConnection} from "../../../api/query/type";
+import {useRouterActivity} from "../../../api/query/hook";
 import {QueryTable} from "./QueryTable";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {RefreshIconButton} from "../../view/button/IconButtons";
 
 const SX: SxPropsMap = {

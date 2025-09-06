@@ -2,9 +2,9 @@ import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {Alert, Button} from "@mui/material";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
-import {AuthType, SxPropsMap} from "../../../type/general";
+import {AuthType, SxPropsMap} from "../../../api/management/type";
 import {useAuth} from "../../../provider/AuthProvider";
-import {useRouterLogin} from "../../../router/auth";
+import {useRouterLogin} from "../../../api/auth/hook";
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},

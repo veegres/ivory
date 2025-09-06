@@ -1,7 +1,7 @@
 import {Accordion, AccordionDetails, AccordionSummary, Box} from "@mui/material";
 import {VirtualizedTable} from "../../view/table/VirtualizedTable";
-import {SxPropsMap} from "../../../type/general";
-import {QueryFields} from "../../../type/query";
+import {SxPropsMap} from "../../../api/management/type";
+import {QueryFields} from "../../../api/query/type";
 import {useMemo, useState} from "react";
 import {KeyboardArrowDown} from "@mui/icons-material";
 import {QueryResponseInfo} from "./QueryResponseInfo";

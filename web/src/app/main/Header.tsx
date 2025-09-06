@@ -3,10 +3,10 @@ import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../utils";
 import {useStoreAction} from "../../provider/StoreProvider";
-import {AuthType, SxPropsMap} from "../../type/general";
+import {AuthType, SxPropsMap} from "../../api/management/type";
 import {useAuth} from "../../provider/AuthProvider";
 import {useQueryClient} from "@tanstack/react-query";
-import {GeneralApi} from "../api";
+import {GeneralApi} from "../../api/management/router";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},

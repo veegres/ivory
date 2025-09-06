@@ -1,6 +1,6 @@
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 
 const SX: SxPropsMap = {
     wrapper: {

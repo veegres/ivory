@@ -1,6 +1,6 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {Box, IconButton} from "@mui/material";
-import {SxPropsMap} from "../../../../type/general";
+import {SxPropsMap} from "../../../../api/management/type";
 import {OpenInNew} from "@mui/icons-material";
 import {IvoryLinks} from "../../../../app/utils";
 import {List} from "../../../view/box/List";

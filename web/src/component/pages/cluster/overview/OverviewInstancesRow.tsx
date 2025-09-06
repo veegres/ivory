@@ -6,11 +6,11 @@ import {
     SizeFormatter,
     SxPropsFormatter
 } from "../../../../app/utils";
-import {Sidecar, SxPropsMap} from "../../../../type/general";
-import {InstanceWeb} from "../../../../type/instance";
+import {Sidecar, SxPropsMap} from "../../../../api/management/type";
+import {InstanceWeb} from "../../../../api/instance/type";
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
-import {Cluster} from "../../../../type/cluster";
+import {Cluster} from "../../../../api/cluster/type";
 import {useEffect} from "react";
 import {MenuButton} from "../../../view/button/MenuButton";
 import {SwitchoverButton} from "../../.././widgets/actions/SwitchoverButton";

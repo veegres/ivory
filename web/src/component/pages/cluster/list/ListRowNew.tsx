@@ -3,7 +3,7 @@ import {DynamicInputs} from "../../../view/input/DynamicInputs";
 import {useState} from "react";
 import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";
-import {SxPropsMap} from "../../../../type/general";
+import {SxPropsMap} from "../../../../api/management/type";
 import {getSidecars} from "../../../../app/utils";
 import {useStore} from "../../../../provider/StoreProvider";
 

@@ -1,9 +1,9 @@
 import {AlertButton} from "../../view/button/AlertButton";
 import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 import {useState} from "react";
-import {Sidecar} from "../../../type/general";
-import {InstanceRequest} from "../../../type/instance";
-import {useRouterInstanceSwitchover} from "../../../router/instance";
+import {Sidecar} from "../../../api/management/type";
+import {InstanceRequest} from "../../../api/instance/type";
+import {useRouterInstanceSwitchover} from "../../../api/instance/hook";
 import {Dayjs} from "dayjs";
 import {ScheduleInput} from "../../view/input/ScheduleInput";
 

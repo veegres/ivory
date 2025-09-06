@@ -2,9 +2,9 @@ import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {useState} from "react";
 import {CertsTabPath} from "./CertsTabPath";
 import {CertsTabUpload} from "./CertsTabUpload";
-import {FileUsageType, SxPropsMap} from "../../../../type/general";
+import {FileUsageType, SxPropsMap} from "../../../../api/management/type";
 import {FileUsageOptions} from "../../../../app/utils";
-import {CertType} from "../../../../type/cert";
+import {CertType} from "../../../../api/cert/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", height: "130px"},

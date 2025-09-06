@@ -1,13 +1,13 @@
 import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../../app/utils";
-import {PasswordType} from "../../../../type/password";
-import {CertType} from "../../../../type/cert";
+import {PasswordType} from "../../../../api/password/type";
+import {CertType} from "../../../../api/cert/type";
 import {purple} from "@mui/material/colors";
 import {Box} from "@mui/material";
 import {InfoBoxList} from "../../../view/box/InfoBoxList";
 import {InfoBox} from "../../../view/box/InfoBox";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
-import {ActiveCluster} from "../../../../type/cluster";
-import {SxPropsMap} from "../../../../type/general";
+import {ActiveCluster} from "../../../../api/cluster/type";
+import {SxPropsMap} from "../../../../api/management/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},

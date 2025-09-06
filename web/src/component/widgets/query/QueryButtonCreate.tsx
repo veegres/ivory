@@ -1,6 +1,6 @@
-import {QueryRequest} from "../../../type/query";
+import {QueryRequest} from "../../../api/query/type";
 import {SaveIconButton} from "../../view/button/IconButtons";
-import {useRouterQueryCreate} from "../../../router/query";
+import {useRouterQueryCreate} from "../../../api/query/hook";
 
 type Props = {
     query: QueryRequest,

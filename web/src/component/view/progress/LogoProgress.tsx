@@ -1,5 +1,5 @@
 import {Box} from "@mui/material";
-import {StylePropsMap, SxPropsMap} from "../../../type/general";
+import {StylePropsMap, SxPropsMap} from "../../../api/management/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", justifyContent: "center", position: "relative"},

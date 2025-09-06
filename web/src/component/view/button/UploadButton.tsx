@@ -1,7 +1,7 @@
 import {FileUploadOutlined} from "@mui/icons-material";
 import {Box, ButtonBase, CircularProgress} from "@mui/material";
 import {ChangeEvent, DragEvent, useState} from "react";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 
 const SX: SxPropsMap = {
     box: {padding: "5px", height: "100%"},

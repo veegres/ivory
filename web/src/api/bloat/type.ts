@@ -1,5 +1,5 @@
-import {DbConnection} from "./general";
-import {JobStatus} from "./job";
+import {DbConnection} from "../management/type";
+import {JobStatus} from "./job/type";
 
 // COMMON (WEB AND SERVER)
 

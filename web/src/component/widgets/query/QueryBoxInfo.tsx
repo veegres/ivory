@@ -1,8 +1,8 @@
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
-import {QueryType} from "../../../type/query";
+import {QueryType} from "../../../api/query/type";
 import {InfoBox, Padding} from "../../view/box/InfoBox";
 
 const SX: SxPropsMap = {

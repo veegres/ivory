@@ -1,5 +1,5 @@
 import {Box, Button} from "@mui/material";
-import {SxPropsMap} from "../../type/general";
+import {SxPropsMap} from "../../api/management/type";
 import {MenuThemeChanger} from "../../component/widgets/settings/menu/MenuThemeChanger";
 import {useState} from "react";
 

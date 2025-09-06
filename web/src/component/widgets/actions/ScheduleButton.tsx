@@ -1,10 +1,10 @@
 import {AlertButton} from "../../view/button/AlertButton";
-import {InstanceRequest, InstanceScheduledRestart, InstanceScheduledSwitchover} from "../../../type/instance";
+import {InstanceRequest, InstanceScheduledRestart, InstanceScheduledSwitchover} from "../../../api/instance/type";
 import {DateTimeFormatter} from "../../../app/utils";
 import {NoBox} from "../../view/box/NoBox";
 import {List} from "../../view/box/List";
 import {ListItem} from "../../view/box/ListItem";
-import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../router/instance";
+import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../api/instance/hook";
 import {Button} from "@mui/material";
 
 type Props = {

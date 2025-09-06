@@ -1,5 +1,5 @@
 import {Box, LinearProgress, SxProps, Theme} from "@mui/material";
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {

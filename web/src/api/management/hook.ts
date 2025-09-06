@@ -1,6 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
-import {GeneralApi, InitialApi, SafeApi} from "../app/api";
-import {useMutationAdapter} from "../hook/QueryCustom";
+import {useMutationAdapter} from "../../hook/QueryCustom";
+import {GeneralApi, InitialApi, SafeApi} from "./router";
+
 
 export function useRouterInfo() {
     return useQuery({

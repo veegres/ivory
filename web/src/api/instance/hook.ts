@@ -1,8 +1,8 @@
 import {useQuery} from "@tanstack/react-query";
-import {InstanceApi} from "../app/api";
-import {InstanceRequest} from "../type/instance";
-import {useMutationAdapter} from "../hook/QueryCustom";
-import {Sidecar} from "../type/general";
+import {InstanceRequest} from "./type";
+import {useMutationAdapter} from "../../hook/QueryCustom";
+import {Sidecar} from "../management/type";
+import {InstanceApi} from "./router";
 
 // TODO #414 it is accept request as a function right now, because otherwise it gets incorrect state.
 //  It is considered as a hack to previous solution, idea is to get rid of InstanceDetection on

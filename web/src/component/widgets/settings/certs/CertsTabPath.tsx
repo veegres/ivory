@@ -1,9 +1,9 @@
 import {Alert, Box, Button, TextField} from "@mui/material";
 import {useState} from "react";
 import {CheckCircle} from "@mui/icons-material";
-import {SxPropsMap} from "../../../../type/general";
-import {CertType} from "../../../../type/cert";
-import {useRouterCertAdd} from "../../../../router/cert";
+import {SxPropsMap} from "../../../../api/management/type";
+import {CertType} from "../../../../api/cert/type";
+import {useRouterCertAdd} from "../../../../api/cert/hook";
 
 const SX: SxPropsMap = {
     box: {

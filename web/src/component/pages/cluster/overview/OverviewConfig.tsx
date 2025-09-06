@@ -7,9 +7,9 @@ import {json} from "@codemirror/lang-json";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {CodeThemes, getSidecarConnection} from "../../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
-import {SxPropsMap} from "../../../../type/general";
-import {ActiveCluster} from "../../../../type/cluster";
-import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../router/instance";
+import {SxPropsMap} from "../../../../api/management/type";
+import {ActiveCluster} from "../../../../api/cluster/type";
+import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook";
 import {useSnackbar} from "../../../../provider/SnackbarProvider";
 
 const SX: SxPropsMap = {

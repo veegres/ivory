@@ -1,6 +1,6 @@
-import {SxPropsMap} from "../../../type/general";
+import {SxPropsMap} from "../../../api/management/type";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
-import {Query} from "../../../type/query";
+import {Query} from "../../../api/query/type";
 import {QueryBoxInfo} from "./QueryBoxInfo";
 import {QueryVarieties} from "./QueryVarieties";
 import {Avatar, Box, Chip} from "@mui/material";
