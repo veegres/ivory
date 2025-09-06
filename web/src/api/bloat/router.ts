@@ -1,6 +1,6 @@
 import {api} from "../api";
-import {R} from "../type";
 import {Bloat, BloatRequest} from "./type";
+import {R} from "../management/type";
 
 export const BloatApi = {
     list: {

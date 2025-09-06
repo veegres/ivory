@@ -3,23 +3,14 @@ import {Theme} from "@mui/material";
 import {SecretStatus} from "../secret/type";
 import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx";
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
+import {AuthInfo} from "../auth/type";
+import {Availability} from "../config/type";
 
 // COMMON (WEB AND SERVER)
 
-export interface Login {
-    username: string,
-    password: string,
-}
-
-export interface DbConnection {
-    host: string,
-    port: number,
-    credentialId: string,
-}
-
-export enum AuthType {
-    NONE,
-    BASIC,
+export interface R<TData, TError = object> {
+    response: TData,
+    error: TError,
 }
 
 export interface AppInfo {
@@ -31,53 +22,17 @@ export interface AppInfo {
     auth: AuthInfo,
 }
 
-export interface AuthInfo {
-    authorised: boolean,
-    error: string,
-    type: AuthType,
+export interface SecretUpdateRequest {
+    previousKey: string,
+    newKey: string,
 }
 
-export interface AppConfig {
-    company: string,
-    availability: Availability,
-    auth: AuthConfig,
-}
-
-export interface AuthConfig {
-    type: AuthType,
-    body: any,
-}
-
-export interface Availability {
-    manualQuery: boolean,
-}
+// ENV VARIABLES (WEB AND SERVER)
 
 export interface Version {
     tag: string,
     commit: string,
     label: string,
-}
-
-export enum FileUsageType {
-    UPLOAD,
-    PATH,
-}
-
-export interface Database {
-    host: string,
-    port: number,
-    name?: string,
-}
-
-export enum SidecarStatus {
-    Active = "ACTIVE",
-    Paused = "PAUSED",
-}
-export interface Sidecar {
-    host: string,
-    port: number,
-    name?: string,
-    status?: SidecarStatus,
 }
 
 // SPECIFIC (WEB)

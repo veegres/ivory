@@ -3,10 +3,11 @@ import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../utils";
 import {useStoreAction} from "../../provider/StoreProvider";
-import {AuthType, SxPropsMap} from "../../api/management/type";
+import {SxPropsMap} from "../../api/management/type";
 import {useAuth} from "../../provider/AuthProvider";
 import {useQueryClient} from "@tanstack/react-query";
-import {GeneralApi} from "../../api/management/router";
+import {ManagementApi} from "../../api/management/router";
+import {AuthType} from "../../api/config/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},
@@ -74,6 +75,6 @@ export function Header(props: Props) {
 
     function handleLogout() {
         logout()
-        queryClient.refetchQueries({queryKey: GeneralApi.info.key()}).then()
+        queryClient.refetchQueries({queryKey: ManagementApi.info.key()}).then()
     }
 }

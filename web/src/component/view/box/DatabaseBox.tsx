@@ -1,5 +1,6 @@
-import {Database, SxPropsMap} from "../../../api/management/type";
+import {SxPropsMap} from "../../../api/management/type";
 import {Box} from "@mui/material";
+import {Database} from "../../../api/query/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", columnGap: 2, justifyContent: "space-evenly", flexWrap: "wrap"},

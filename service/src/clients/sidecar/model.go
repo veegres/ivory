@@ -5,6 +5,8 @@ import (
 	"ivory/src/clients/database"
 )
 
+// COMMON (WEB AND SERVER)
+
 type SidecarStatus string
 
 const (
@@ -17,18 +19,6 @@ type Sidecar struct {
 	Port   int            `json:"port" form:"port"`
 	Name   *string        `json:"name" form:"name"`
 	Status *SidecarStatus `json:"status,omitempty" form:"status"`
-}
-
-type Credentials struct {
-	Username string `json:"username" form:"username"`
-	Password string `json:"password" form:"password"`
-}
-
-type Request struct {
-	Sidecar     Sidecar      `json:"sidecar" form:"sidecar"`
-	Credentials *Credentials `json:"credentials" form:"credentials"`
-	TlsConfig   *tls.Config  `json:"tlsConfig" form:"tlsConfig"`
-	Body        any          `json:"body" form:"body"`
 }
 
 type Instance struct {
@@ -51,4 +41,18 @@ type InstanceScheduledSwitchover struct {
 type InstanceScheduledRestart struct {
 	At             string `json:"at"`
 	PendingRestart bool   `json:"pendingRestart"`
+}
+
+// SPECIFIC (SERVER)
+
+type Request struct {
+	Sidecar     Sidecar      `json:"sidecar" form:"sidecar"`
+	Credentials *Credentials `json:"credentials" form:"credentials"`
+	TlsConfig   *tls.Config  `json:"tlsConfig" form:"tlsConfig"`
+	Body        any          `json:"body" form:"body"`
+}
+
+type Credentials struct {
+	Username string `json:"username" form:"username"`
+	Password string `json:"password" form:"password"`
 }

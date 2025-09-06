@@ -37,7 +37,7 @@ func (s *Service) GetIssuer() string {
 	return s.issuer
 }
 
-func (s *Service) GenerateAuthToken(login Login, authConfig config.Auth) (string, *time.Time, error) {
+func (s *Service) GenerateAuthToken(login Login, authConfig config.AuthConfig) (string, *time.Time, error) {
 	switch authConfig.Type {
 	case config.NONE:
 		return "", nil, errors.New("authentication is not used")
@@ -57,7 +57,7 @@ func (s *Service) GenerateAuthToken(login Login, authConfig config.Auth) (string
 	}
 }
 
-func (s *Service) ValidateAuthHeader(header string, authConfig config.Auth) (bool, string) {
+func (s *Service) ValidateAuthHeader(header string, authConfig config.AuthConfig) (bool, string) {
 	switch authConfig.Type {
 	case config.NONE:
 		if header != "" {

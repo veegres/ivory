@@ -1,8 +1,7 @@
 import { api } from "../api";
-import {Instance, InstanceMap, InstanceRequest} from "./type";
-import {R} from "../type";
+import {Instance, InstanceMap, InstanceRequest, Sidecar} from "./type";
 import {getDomain} from "../../app/utils";
-import {Sidecar} from "../management/type";
+import {R} from "../management/type";
 
 
 export const InstanceApi = {

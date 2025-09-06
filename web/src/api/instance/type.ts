@@ -1,7 +1,7 @@
-import {Database, Sidecar} from "../management/type";
+
 import {ReactNode} from "react";
-import {Certs} from "../cluster/type";
-import {QueryConnection} from "../query/type";
+import {Database, QueryConnection} from "../query/type";
+import {Certs} from "../cert/type";
 
 // COMMON (WEB AND SERVER)
 
@@ -10,6 +10,20 @@ export interface InstanceRequest {
     credentialId?: string,
     certs?: Certs,
     body?: any,
+}
+
+// PATRONI CLIENT (WEB AND SERVER)
+
+export enum SidecarStatus {
+    Active = "ACTIVE",
+    Paused = "PAUSED",
+}
+
+export interface Sidecar {
+    host: string,
+    port: number,
+    name?: string,
+    status?: SidecarStatus,
 }
 
 export type Role = "leader" | "replica" | "unknown";

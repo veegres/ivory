@@ -1,7 +1,11 @@
-import {FileUsageType} from "../management/type";
 import {AxiosProgressEvent} from "axios";
 
 // COMMON (WEB AND SERVER)
+
+export enum FileUsageType {
+    UPLOAD,
+    PATH,
+}
 
 export interface Cert {
     fileName: string,
@@ -35,4 +39,10 @@ export interface CertUploadRequest {
 
 export interface CertTabs {
     [key: number]: { label: string, type: CertType }
+}
+
+export interface Certs {
+    clientCAId?: string,
+    clientCertId?: string,
+    clientKeyId?: string,
 }

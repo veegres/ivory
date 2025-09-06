@@ -109,7 +109,7 @@ func (s *Service) SetAppConfig(newAppConfig AppConfig) error {
 	return s.UpdateAppConfig(updatedAppConfig)
 }
 
-func (s *Service) EncryptAuthConfig(authConfig Auth) (Auth, error) {
+func (s *Service) EncryptAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
 	switch authConfig.Type {
 	case NONE:
 		return authConfig, nil
@@ -132,7 +132,7 @@ func (s *Service) EncryptAuthConfig(authConfig Auth) (Auth, error) {
 	}
 }
 
-func (s *Service) ReEncryptAuthConfig(authConfig Auth, oldSecret [16]byte, newSecret [16]byte) (Auth, error) {
+func (s *Service) ReEncryptAuthConfig(authConfig AuthConfig, oldSecret [16]byte, newSecret [16]byte) (AuthConfig, error) {
 	switch authConfig.Type {
 	case NONE:
 		return authConfig, nil

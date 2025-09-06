@@ -10,9 +10,4 @@ export interface SecretSetRequest {
     ref: string,
 }
 
-export interface SecretUpdateRequest {
-    previousKey: string,
-    newKey: string,
-}
-
 // SPECIFIC (WEB)

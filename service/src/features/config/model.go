@@ -7,7 +7,7 @@ const (
 	BASIC
 )
 
-type Auth struct {
+type AuthConfig struct {
 	Type AuthType          `json:"type"`
 	Body map[string]string `json:"body"`
 }
@@ -15,7 +15,7 @@ type Auth struct {
 type AppConfig struct {
 	Company      string       `json:"company"`
 	Availability Availability `json:"availability"`
-	Auth         Auth         `json:"auth"`
+	Auth         AuthConfig   `json:"auth"`
 }
 
 type Availability struct {

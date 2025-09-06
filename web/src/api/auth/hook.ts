@@ -1,11 +1,11 @@
 import {useMutationAdapter} from "../../hook/QueryCustom";
-import {GeneralApi} from "../management/router";
+import {ManagementApi} from "../management/router";
 
 export function useRouterLogin(onSuccess: (data: any) => void) {
     return useMutationAdapter({
-        mutationFn: GeneralApi.login.fn,
-        mutationKey: GeneralApi.login.key(),
-        successKeys: [GeneralApi.info.key()],
+        mutationFn: ManagementApi.login.fn,
+        mutationKey: ManagementApi.login.key(),
+        successKeys: [ManagementApi.info.key()],
         onSuccess: (_, data) => onSuccess(data),
     })
 }

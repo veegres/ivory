@@ -22,3 +22,10 @@ type AppInfo struct {
 	Secret       secret.SecretStatus `json:"secret"`
 	Auth         auth.Info           `json:"auth"`
 }
+
+type SecretUpdateRequest struct {
+	PreviousKey string `json:"previousKey"`
+	NewKey      string `json:"newKey"`
+}
+
+// SPECIFIC (SERVER)

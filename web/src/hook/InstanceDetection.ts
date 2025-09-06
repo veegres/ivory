@@ -10,8 +10,7 @@ import {
 } from "../app/utils";
 import {useStore, useStoreAction} from "../provider/StoreProvider";
 import {Cluster, DetectionType, InstanceDetection} from "../api/cluster/type";
-import {Sidecar} from "../api/management/type";
-import {InstanceMap} from "../api/instance/type";
+import {InstanceMap, Sidecar} from "../api/instance/type";
 import {useRouterInstanceOverview} from "../api/instance/hook";
 import {InstanceApi} from "../api/instance/router";
 

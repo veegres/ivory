@@ -1,6 +1,7 @@
 import {ReactNode} from "react";
-import {ColorsMap, Sidecar} from "../management/type";
-import {InstanceMap, InstanceWeb} from "../instance/type";
+import {ColorsMap} from "../management/type";
+import {InstanceMap, InstanceWeb, Sidecar} from "../instance/type";
+import {Certs} from "../cert/type";
 
 // COMMON (WEB AND SERVER)
 
@@ -24,12 +25,6 @@ export interface ClusterAuto extends ClusterOptions {
 export interface ClusterTls {
     sidecar: boolean,
     database: boolean,
-}
-
-export interface Certs {
-    clientCAId?: string,
-    clientCertId?: string,
-    clientKeyId?: string,
 }
 
 export interface Credentials {

@@ -6,8 +6,8 @@ import {
     SizeFormatter,
     SxPropsFormatter
 } from "../../../../app/utils";
-import {Sidecar, SxPropsMap} from "../../../../api/management/type";
-import {InstanceWeb} from "../../../../api/instance/type";
+import {SxPropsMap} from "../../../../api/management/type";
+import {InstanceWeb, Sidecar} from "../../../../api/instance/type";
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {Cluster} from "../../../../api/cluster/type";

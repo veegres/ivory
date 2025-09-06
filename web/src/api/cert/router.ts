@@ -1,7 +1,7 @@
 import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "./type";
 import {api} from "../api";
-import {R} from "../type";
 import {AxiosProgressEvent, AxiosRequestConfig} from "axios";
+import {R} from "../management/type";
 
 export const CertApi = {
     list: {
