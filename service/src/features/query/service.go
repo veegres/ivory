@@ -140,7 +140,7 @@ func (s *RunService) ChartQuery(queryCtx QueryContext, chartType QueryChartType)
 
 func (s *RunService) mapContext(queryCtx QueryContext) (Context, error) {
 	con := Connection{Database: queryCtx.Connection.Db}
-	ctx := Context{Connection: con, Session: queryCtx.Session}
+	ctx := Context{Connection: &con, Session: queryCtx.Session}
 	if queryCtx.Connection.CredentialId != nil {
 		cred, errCred := s.passwordService.GetDecrypted(*queryCtx.Connection.CredentialId)
 		if errCred != nil {
