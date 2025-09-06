@@ -2,16 +2,16 @@ package secret
 
 import (
 	"errors"
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 )
 
 type SecretRepository struct {
-	bucket          *bolt.Bucket[string]
+	bucket          *db.Bucket[string]
 	encryptedRefKey string
 	decryptedRefKey string
 }
 
-func NewSecretRepository(bucket *bolt.Bucket[string]) *SecretRepository {
+func NewSecretRepository(bucket *db.Bucket[string]) *SecretRepository {
 	encryptedRef := "encryptedRef"
 	decryptedRef := "decryptedRef"
 	if _, err := bucket.Get(encryptedRef); err != nil {

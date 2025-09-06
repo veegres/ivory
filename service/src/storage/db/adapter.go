@@ -1,4 +1,4 @@
-package bolt
+package db
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-func NewBoltDB(name string) *bolt.DB {
+func NewStorage(name string) *bolt.DB {
 	path := "data/bolt"
 	errMk := os.MkdirAll(path, os.ModePerm)
 	if errMk != nil {
@@ -24,13 +24,13 @@ func NewBoltDB(name string) *bolt.DB {
 }
 
 type Bucket[T any] struct {
-	db   *bolt.DB
-	name []byte
+	storage *bolt.DB
+	name    []byte
 }
 
-func NewBoltBucket[T any](db *bolt.DB, name string) *Bucket[T] {
+func NewBucket[T any](storage *bolt.DB, name string) *Bucket[T] {
 	byteName := []byte(name)
-	err := db.Update(func(tx *bolt.Tx) error {
+	err := storage.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists(byteName)
 		return err
 	})
@@ -38,14 +38,14 @@ func NewBoltBucket[T any](db *bolt.DB, name string) *Bucket[T] {
 		panic(err)
 	}
 	return &Bucket[T]{
-		db:   db,
-		name: byteName,
+		storage: storage,
+		name:    byteName,
 	}
 }
 
 func (b *Bucket[T]) GetList(f func(el T) bool, s func(list []T, i, j int) bool) ([]T, error) {
 	result := make([]T, 0)
-	err := b.db.View(func(tx *bolt.Tx) error {
+	err := b.storage.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(b.name).Cursor()
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
 			var el T
@@ -70,7 +70,7 @@ func (b *Bucket[T]) GetList(f func(el T) bool, s func(list []T, i, j int) bool) 
 
 func (b *Bucket[T]) GetKeyList() ([]string, error) {
 	result := make([]string, 0)
-	err := b.db.View(func(tx *bolt.Tx) error {
+	err := b.storage.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(b.name).Cursor()
 		for key, _ := cursor.First(); key != nil; key, _ = cursor.Next() {
 			result = append(result, string(key))
@@ -82,7 +82,7 @@ func (b *Bucket[T]) GetKeyList() ([]string, error) {
 
 func (b *Bucket[T]) GetMap(filter func(el T) bool) (map[string]T, error) {
 	result := make(map[string]T)
-	err := b.db.View(func(tx *bolt.Tx) error {
+	err := b.storage.View(func(tx *bolt.Tx) error {
 		cursor := tx.Bucket(b.name).Cursor()
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
 			var el T
@@ -102,7 +102,7 @@ func (b *Bucket[T]) GetMap(filter func(el T) bool) (map[string]T, error) {
 
 func (b *Bucket[T]) Get(key string) (T, error) {
 	var value T
-	err := b.db.View(func(tx *bolt.Tx) error {
+	err := b.storage.View(func(tx *bolt.Tx) error {
 		el := tx.Bucket(b.name).Get([]byte(key))
 		if el == nil {
 			return errors.New("element doesn't exist")
@@ -121,7 +121,7 @@ func (b *Bucket[T]) Create(key string, value T) (T, error) {
 	if key == "" {
 		return value, errors.New("element identifier cannot be empty")
 	}
-	err := b.db.Update(func(tx *bolt.Tx) error {
+	err := b.storage.Update(func(tx *bolt.Tx) error {
 		el := tx.Bucket(b.name).Get([]byte(key))
 		if el != nil {
 			return errors.New("such an element already exists")
@@ -140,7 +140,7 @@ func (b *Bucket[T]) Update(key string, value T) error {
 	if key == "" {
 		return errors.New("element identifier cannot be empty")
 	}
-	return b.db.Update(func(tx *bolt.Tx) error {
+	return b.storage.Update(func(tx *bolt.Tx) error {
 		var buff bytes.Buffer
 		err := gob.NewEncoder(&buff).Encode(value)
 		if err != nil {
@@ -151,13 +151,13 @@ func (b *Bucket[T]) Update(key string, value T) error {
 }
 
 func (b *Bucket[T]) Delete(key string) error {
-	return b.db.Update(func(tx *bolt.Tx) error {
+	return b.storage.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(b.name).Delete([]byte(key))
 	})
 }
 
 func (b *Bucket[T]) DeleteAll() error {
-	return b.db.Update(func(tx *bolt.Tx) error {
+	return b.storage.Update(func(tx *bolt.Tx) error {
 		err := tx.DeleteBucket(b.name)
 		if err != nil {
 			return err

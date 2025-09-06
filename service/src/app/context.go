@@ -16,13 +16,13 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
-	"ivory/src/storage/bolt"
+	"ivory/src/storage/db"
 	"ivory/src/storage/env"
 	"ivory/src/storage/files"
 )
 
 type Context struct {
-	env              *env.Env
+	env              *env.AppInfo
 	authRouter       *auth.AuthRouter
 	clusterRouter    *cluster.ClusterRouter
 	bloatRouter      *bloat.BloatRouter
@@ -37,23 +37,23 @@ type Context struct {
 }
 
 func NewContext() *Context {
-	v := env.NewEnv()
+	info := env.NewAppInfo()
 
 	// DB
-	db := bolt.NewBoltDB("ivory.db")
-	clusterBucket := bolt.NewBoltBucket[cluster.Cluster](db, "Cluster")
-	compactTableBucket := bolt.NewBoltBucket[bloat.Bloat](db, "CompactTable")
-	certBucket := bolt.NewBoltBucket[cert.Cert](db, "Cert")
-	tagBucket := bolt.NewBoltBucket[[]string](db, "Tag")
-	secretBucket := bolt.NewBoltBucket[string](db, "Secret")
-	passwordBucket := bolt.NewBoltBucket[password.Password](db, "Password")
-	queryBucket := bolt.NewBoltBucket[query.Query](db, "Query")
+	st := db.NewStorage("ivory.db")
+	clusterBucket := db.NewBucket[cluster.Cluster](st, "Cluster")
+	compactTableBucket := db.NewBucket[bloat.Bloat](st, "CompactTable")
+	certBucket := db.NewBucket[cert.Cert](st, "Cert")
+	tagBucket := db.NewBucket[[]string](st, "Tag")
+	secretBucket := db.NewBucket[string](st, "Secret")
+	passwordBucket := db.NewBucket[password.Password](st, "Password")
+	queryBucket := db.NewBucket[query.Query](st, "Query")
 
 	// FILES
-	compactTableFiles := files.NewFileGateway("pgcompacttable", ".log")
-	certFiles := files.NewFileGateway("cert", ".crt")
-	configFiles := files.NewFileGateway("config", ".json")
-	queryLogFiles := files.NewFileGateway("query", ".jsonl")
+	compactTableFiles := files.NewStorage("pgcompacttable", ".log")
+	certFiles := files.NewStorage("cert", ".crt")
+	configFiles := files.NewStorage("config", ".json")
+	queryLogFiles := files.NewStorage("query", ".jsonl")
 
 	// REPOS
 	clusterRepo := cluster.NewClusterRepository(clusterBucket)
@@ -68,7 +68,7 @@ func NewContext() *Context {
 	// CLIENTS
 	sidecarGateway := sidecar.NewSidecarGateway()
 	patroniClient := patroni.NewPatroniClient(sidecarGateway)
-	postgresClient := postgres.NewPostgresClient(v.Version.Label)
+	postgresClient := postgres.NewPostgresClient(info.Version.Label)
 
 	// SERVICES
 	encryptionService := encryption.NewEncryptionService()
@@ -85,7 +85,7 @@ func NewContext() *Context {
 	bloatService := bloat.NewBloatService(bloatRepo, passwordService)
 	authService := auth.NewAuthService(secretService, encryptionService)
 	managementService := management.NewService(
-		v,
+		info,
 		authService,
 		passwordService,
 		clusterService,
@@ -98,7 +98,7 @@ func NewContext() *Context {
 	)
 
 	return &Context{
-		env:              v,
+		env:              info,
 		authRouter:       auth.NewAuthRouter(authService, configService),
 		clusterRouter:    cluster.NewClusterRouter(clusterService),
 		bloatRouter:      bloat.NewBloatRouter(bloatService),
