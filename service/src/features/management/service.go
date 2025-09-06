@@ -17,28 +17,28 @@ import (
 
 type Service struct {
 	env             *env.AppInfo
-	authService     *auth.AuthService
-	passwordService *password.PasswordService
-	clusterService  *cluster.ClusterService
-	certService     *cert.CertService
-	tagService      *tag.TagService
-	bloatService    *bloat.BloatService
+	authService     *auth.Service
+	passwordService *password.Service
+	clusterService  *cluster.Service
+	certService     *cert.Service
+	tagService      *tag.Service
+	bloatService    *bloat.Service
 	queryService    *query.Service
-	secretService   *secret.SecretService
-	encryption      *encryption.EncryptionService
+	secretService   *secret.Service
+	encryption      *encryption.Service
 	config          *config.Service
 }
 
 func NewService(
 	env *env.AppInfo,
-	authService *auth.AuthService,
-	passwordService *password.PasswordService,
-	clusterService *cluster.ClusterService,
-	certService *cert.CertService,
-	tagService *tag.TagService,
-	bloatService *bloat.BloatService,
+	authService *auth.Service,
+	passwordService *password.Service,
+	clusterService *cluster.Service,
+	certService *cert.Service,
+	tagService *tag.Service,
+	bloatService *bloat.Service,
 	queryService *query.Service,
-	secretService *secret.SecretService,
+	secretService *secret.Service,
 	config *config.Service,
 ) *Service {
 	return &Service{
@@ -109,7 +109,7 @@ func (s *Service) GetAppInfo(authHeader string) *AppInfo {
 			Secret:       s.secretService.Status(),
 			Version:      s.env.Version,
 			Availability: config.Availability{ManualQuery: false},
-			Auth: auth.AuthInfo{
+			Auth: auth.Info{
 				Type:       config.NONE,
 				Authorised: false,
 				Error:      "",
@@ -124,7 +124,7 @@ func (s *Service) GetAppInfo(authHeader string) *AppInfo {
 		Secret:       s.secretService.Status(),
 		Version:      s.env.Version,
 		Availability: appConfig.Availability,
-		Auth: auth.AuthInfo{
+		Auth: auth.Info{
 			Type:       appConfig.Auth.Type,
 			Authorised: authorised,
 			Error:      authError,

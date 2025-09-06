@@ -13,10 +13,10 @@ import (
 )
 
 type SidecarRequest[R any] struct {
-	sidecar *SidecarGateway
+	sidecar *Gateway
 }
 
-func NewSidecarRequest[R any](sidecar *SidecarGateway) *SidecarRequest[R] {
+func NewSidecarRequest[R any](sidecar *Gateway) *SidecarRequest[R] {
 	return &SidecarRequest[R]{
 		sidecar: sidecar,
 	}
@@ -80,13 +80,13 @@ func (p *SidecarRequest[R]) parseResponse(res *http.Response) (*R, int, error) {
 	return &body, status, nil
 }
 
-type SidecarGateway struct{}
+type Gateway struct{}
 
-func NewSidecarGateway() *SidecarGateway {
-	return &SidecarGateway{}
+func NewGateway() *Gateway {
+	return &Gateway{}
 }
 
-func (p *SidecarGateway) send(method string, request Request, path string, timeout time.Duration) (*http.Response, error) {
+func (p *Gateway) send(method string, request Request, path string, timeout time.Duration) (*http.Response, error) {
 	if request.Sidecar.Host == "" {
 		return nil, errors.New("host cannot be empty")
 	}
@@ -103,7 +103,7 @@ func (p *SidecarGateway) send(method string, request Request, path string, timeo
 	return res, errDo
 }
 
-func (p *SidecarGateway) getRequest(
+func (p *Gateway) getRequest(
 	credentials *Credentials,
 	method string,
 	protocol string,
@@ -136,7 +136,7 @@ func (p *SidecarGateway) getRequest(
 	return req, nil
 }
 
-func (p *SidecarGateway) getClient(tlsConfig *tls.Config, timeout time.Duration) (*http.Client, string, error) {
+func (p *Gateway) getClient(tlsConfig *tls.Config, timeout time.Duration) (*http.Client, string, error) {
 	protocol := "http"
 
 	if tlsConfig != nil {

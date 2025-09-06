@@ -9,22 +9,22 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type AuthRouter struct {
-	authService   *AuthService
+type Router struct {
+	authService   *Service
 	configService *config.Service
 }
 
-func NewAuthRouter(
-	authService *AuthService,
+func NewRouter(
+	authService *Service,
 	configService *config.Service,
-) *AuthRouter {
-	return &AuthRouter{
+) *Router {
+	return &Router{
 		configService: configService,
 		authService:   authService,
 	}
 }
 
-func (r *AuthRouter) SessionMiddleware(secure bool) gin.HandlerFunc {
+func (r *Router) SessionMiddleware(secure bool) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		_, errCookie := context.Cookie("session")
 		if errCookie != nil {
@@ -41,7 +41,7 @@ func (r *AuthRouter) SessionMiddleware(secure bool) gin.HandlerFunc {
 	}
 }
 
-func (r *AuthRouter) AuthMiddleware() gin.HandlerFunc {
+func (r *Router) AuthMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		appConfig, errConfig := r.configService.GetAppConfig()
 		if errConfig != nil {
@@ -70,7 +70,7 @@ func (r *AuthRouter) AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *AuthRouter) Login(context *gin.Context) {
+func (r *Router) Login(context *gin.Context) {
 	var login Login
 	parseErr := context.ShouldBindJSON(&login)
 	if parseErr != nil {

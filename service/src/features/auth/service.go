@@ -11,20 +11,20 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type AuthService struct {
-	secretService *secret.SecretService
-	encryption    *encryption.EncryptionService
+type Service struct {
+	secretService *secret.Service
+	encryption    *encryption.Service
 
 	signingAlgorithm *jwt.SigningMethodHMAC
 	issuer           string
 	expiration       time.Duration
 }
 
-func NewAuthService(
-	secretService *secret.SecretService,
-	encryption *encryption.EncryptionService,
-) *AuthService {
-	return &AuthService{
+func NewService(
+	secretService *secret.Service,
+	encryption *encryption.Service,
+) *Service {
+	return &Service{
 		secretService:    secretService,
 		encryption:       encryption,
 		signingAlgorithm: jwt.SigningMethodHS256,
@@ -33,11 +33,11 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) GetIssuer() string {
+func (s *Service) GetIssuer() string {
 	return s.issuer
 }
 
-func (s *AuthService) GenerateAuthToken(login Login, authConfig config.Auth) (string, *time.Time, error) {
+func (s *Service) GenerateAuthToken(login Login, authConfig config.Auth) (string, *time.Time, error) {
 	switch authConfig.Type {
 	case config.NONE:
 		return "", nil, errors.New("authentication is not used")
@@ -57,7 +57,7 @@ func (s *AuthService) GenerateAuthToken(login Login, authConfig config.Auth) (st
 	}
 }
 
-func (s *AuthService) ValidateAuthHeader(header string, authConfig config.Auth) (bool, string) {
+func (s *Service) ValidateAuthHeader(header string, authConfig config.Auth) (bool, string) {
 	switch authConfig.Type {
 	case config.NONE:
 		if header != "" {
@@ -80,7 +80,7 @@ func (s *AuthService) ValidateAuthHeader(header string, authConfig config.Auth) 
 	}
 }
 
-func (s *AuthService) generateToken(username string) (string, *time.Time, error) {
+func (s *Service) generateToken(username string) (string, *time.Time, error) {
 	now := time.Now()
 	exp := now.Add(s.expiration)
 	t := jwt.NewWithClaims(
@@ -95,7 +95,7 @@ func (s *AuthService) generateToken(username string) (string, *time.Time, error)
 	return token, &exp, signErr
 }
 
-func (s *AuthService) validateToken(token string, username string) error {
+func (s *Service) validateToken(token string, username string) error {
 	_, err := jwt.Parse(
 		token,
 		func(t *jwt.Token) (interface{}, error) {
@@ -108,7 +108,7 @@ func (s *AuthService) validateToken(token string, username string) error {
 	return err
 }
 
-func (s *AuthService) getTokenFromHeader(str string) (string, error) {
+func (s *Service) getTokenFromHeader(str string) (string, error) {
 	if str == "" {
 		return "", errors.New("no authorization token")
 	}

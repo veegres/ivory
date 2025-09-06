@@ -80,27 +80,27 @@ func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
-func generalRouter(g *gin.RouterGroup, ra *auth.AuthRouter, rg *config.Router) {
+func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
 	g.POST("/login", ra.Login)
 
 	initial := g.Group("/initial")
 	initial.POST("/config", rg.SetAppConfig)
 }
 
-func initialRouter(g *gin.RouterGroup, rs *secret.SecretRouter, rg *management.Router) {
+func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
 	group := g.Group("/initial")
 	group.POST("/secret", rs.SetSecret)
 	group.DELETE("/erase", rg.Erase)
 }
 
-func safeRouter(g *gin.RouterGroup, rs *secret.SecretRouter, rg *management.Router) {
+func safeRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
 	group := g.Group("/safe")
 	group.GET("/secret", rs.GetStatus)
 	group.POST("/secret", rg.ChangeSecret)
 	group.DELETE("/erase", rg.Erase)
 }
 
-func clusterRouter(g *gin.RouterGroup, r *cluster.ClusterRouter) {
+func clusterRouter(g *gin.RouterGroup, r *cluster.Router) {
 	group := g.Group("/cluster")
 	group.GET("", r.GetClusterList)
 	group.GET("/:name", r.GetClusterByName)
@@ -109,7 +109,7 @@ func clusterRouter(g *gin.RouterGroup, r *cluster.ClusterRouter) {
 	group.DELETE("/:name", r.DeleteClusterByName)
 }
 
-func bloatRouter(g *gin.RouterGroup, r *bloat.BloatRouter) {
+func bloatRouter(g *gin.RouterGroup, r *bloat.Router) {
 	group := g.Group("/cli")
 	group.GET("/bloat", r.GetCompactTableList)
 	group.GET("/bloat/:uuid", r.GetCompactTable)
@@ -121,7 +121,7 @@ func bloatRouter(g *gin.RouterGroup, r *bloat.BloatRouter) {
 	group.GET("/bloat/job/:uuid/stream", r.StreamJob)
 }
 
-func certRouter(g *gin.RouterGroup, r *cert.CertRouter) {
+func certRouter(g *gin.RouterGroup, r *cert.Router) {
 	group := g.Group("/cert")
 	group.GET("", r.GetCertList)
 	group.DELETE("/:uuid", r.DeleteCert)
@@ -129,7 +129,7 @@ func certRouter(g *gin.RouterGroup, r *cert.CertRouter) {
 	group.POST("/add", r.PostAddCert)
 }
 
-func passwordRouter(g *gin.RouterGroup, r *password.PasswordRouter) {
+func passwordRouter(g *gin.RouterGroup, r *password.Router) {
 	group := g.Group("/password")
 	group.GET("", r.GetCredentials)
 	group.POST("", r.PostCredential)
@@ -137,7 +137,7 @@ func passwordRouter(g *gin.RouterGroup, r *password.PasswordRouter) {
 	group.DELETE("/:uuid", r.DeleteCredential)
 }
 
-func tagRouter(g *gin.RouterGroup, r *tag.TagRouter) {
+func tagRouter(g *gin.RouterGroup, r *tag.Router) {
 	group := g.Group("/tag")
 	group.GET("", r.GetTagList)
 }
@@ -158,7 +158,7 @@ func instanceRouter(g *gin.RouterGroup, r *instance.Router) {
 	group.POST("/pause", r.PostInstancePause)
 }
 
-func queryRouter(g *gin.RouterGroup, r *query.QueryRouter) {
+func queryRouter(g *gin.RouterGroup, r *query.Router) {
 	group := g.Group("/query")
 	group.GET("", r.GetQueryList)
 	group.DELETE("/:uuid", r.DeleteQuery)

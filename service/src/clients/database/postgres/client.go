@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	. "ivory/src/clients/database"
+	"ivory/src/clients/database"
 	"regexp"
 	"strconv"
 	"strings"
@@ -15,19 +15,19 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type PostgresClient struct {
+type Client struct {
 	appName string
 }
 
-func NewPostgresClient(appName string) *PostgresClient {
-	return &PostgresClient{appName: appName}
+func NewClient(appName string) *Client {
+	return &Client{appName: appName}
 }
 
-func (s *PostgresClient) GetApplicationName(session string) string {
+func (s *Client) GetApplicationName(session string) string {
 	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *PostgresClient) GetMany(ctx Context, query string, queryParams []any) ([]string, error) {
+func (s *Client) GetMany(ctx database.Context, query string, queryParams []any) ([]string, error) {
 	values := make([]string, 0)
 	errReq := s.sendRequest(ctx, query, queryParams, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		for rows.Next() {
@@ -46,7 +46,7 @@ func (s *PostgresClient) GetMany(ctx Context, query string, queryParams []any) (
 	return values, nil
 }
 
-func (s *PostgresClient) GetOne(ctx Context, query string) (any, error) {
+func (s *Client) GetOne(ctx database.Context, query string) (any, error) {
 	var value any
 	errReq := s.sendRequest(ctx, query, nil, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		if rows.Next() {
@@ -64,15 +64,15 @@ func (s *PostgresClient) GetOne(ctx Context, query string) (any, error) {
 	return value, nil
 }
 
-func (s *PostgresClient) GetFields(ctx Context, query string, options *QueryOptions) (*QueryFields, error) {
+func (s *Client) GetFields(ctx database.Context, query string, options *database.QueryOptions) (*database.QueryFields, error) {
 	startTime := time.Now().UnixMilli()
 
-	fields := make([]QueryField, 0)
+	fields := make([]database.QueryField, 0)
 	rowList := make([][]any, 0)
 	url := "-"
 
 	// NOTE: we need this object ot avoid fatal errors when the option variable is `nil`
-	tmpOptions := QueryOptions{}
+	tmpOptions := database.QueryOptions{}
 	if options != nil {
 		tmpOptions.Limit = options.Limit
 		tmpOptions.Trim = options.Trim
@@ -89,9 +89,9 @@ func (s *PostgresClient) GetFields(ctx Context, query string, options *QueryOpti
 		for _, field := range rows.FieldDescriptions() {
 			dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
 			if !ok {
-				fields = append(fields, QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
+				fields = append(fields, database.QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
 			} else {
-				fields = append(fields, QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
+				fields = append(fields, database.QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
 			}
 		}
 		for rows.Next() {
@@ -111,7 +111,7 @@ func (s *PostgresClient) GetFields(ctx Context, query string, options *QueryOpti
 		options.Limit = normLimit
 	}
 	endTime := time.Now().UnixMilli()
-	res := &QueryFields{
+	res := &database.QueryFields{
 		Fields:    fields,
 		Rows:      rowList,
 		Url:       url,
@@ -122,17 +122,17 @@ func (s *PostgresClient) GetFields(ctx Context, query string, options *QueryOpti
 	return res, nil
 }
 
-func (s *PostgresClient) Cancel(ctx Context, pid int) error {
+func (s *Client) Cancel(ctx database.Context, pid int) error {
 	return s.sendRequest(ctx, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
-func (s *PostgresClient) Terminate(ctx Context, pid int) error {
+func (s *Client) Terminate(ctx database.Context, pid int) error {
 	return s.sendRequest(ctx, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
 type fn func(pgx.Rows, *pgtype.Map, string) error
 
-func (s *PostgresClient) sendRequest(ctx Context, query string, queryParams []any, parse fn) error {
+func (s *Client) sendRequest(ctx database.Context, query string, queryParams []any, parse fn) error {
 	conn, connUrl, errConn := s.getConnection(ctx)
 	if errConn != nil {
 		return errConn
@@ -164,7 +164,7 @@ func (s *PostgresClient) sendRequest(ctx Context, query string, queryParams []an
 	return nil
 }
 
-func (s *PostgresClient) normalizeQuery(query string, trim *bool, limit *string) (string, *string, error) {
+func (s *Client) normalizeQuery(query string, trim *bool, limit *string) (string, *string, error) {
 	if trim == nil || *trim == false {
 		if limit != nil {
 			return "", limit, errors.New("cannot limit query without trimming it")
@@ -181,7 +181,7 @@ func (s *PostgresClient) normalizeQuery(query string, trim *bool, limit *string)
 	return newQuery, newLimit, nil
 }
 
-func (s *PostgresClient) addLimitToQuery(query string, queryAnalysis QueryAnalysis, limit string) (string, *string) {
+func (s *Client) addLimitToQuery(query string, queryAnalysis database.QueryAnalysis, limit string) (string, *string) {
 	if queryAnalysis.LIMIT == 0 && queryAnalysis.SELECT > 0 && queryAnalysis.FROM > 0 && queryAnalysis.EXPLAIN == 0 &&
 		queryAnalysis.DELETE == 0 && queryAnalysis.UPDATE == 0 && queryAnalysis.INSERT == 0 {
 		replace := " LIMIT " + limit + ";"
@@ -196,16 +196,16 @@ func (s *PostgresClient) addLimitToQuery(query string, queryAnalysis QueryAnalys
 	return query, nil
 }
 
-func (s *PostgresClient) trimQuery(query string) string {
+func (s *Client) trimQuery(query string) string {
 	// NOTE: removing all comments from the query with spaces and enters or end of string
 	regex := regexp.MustCompile("\\s*--.*\\n*")
 	return regex.ReplaceAllString(query, "")
 }
 
-func (s *PostgresClient) parseQuery(query string) QueryAnalysis {
+func (s *Client) parseQuery(query string) database.QueryAnalysis {
 	lowerQuery := strings.ToLower(query)
 	words := strings.Fields(lowerQuery)
-	parsed := QueryAnalysis{LIMIT: 0, UPDATE: 0, SELECT: 0, INSERT: 0, DELETE: 0, Semicolon: false}
+	parsed := database.QueryAnalysis{LIMIT: 0, UPDATE: 0, SELECT: 0, INSERT: 0, DELETE: 0, Semicolon: false}
 	for i, word := range words {
 		// NOTE: we need this check to avoid params rename confusion
 		if i-1 > 0 && words[i-1] == "as" {
@@ -236,7 +236,7 @@ func (s *PostgresClient) parseQuery(query string) QueryAnalysis {
 	return parsed
 }
 
-func (s *PostgresClient) getConnection(ctx Context) (*pgx.Conn, string, error) {
+func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) {
 	connection := ctx.Connection
 	db := connection.Database
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
@@ -281,7 +281,7 @@ func (s *PostgresClient) getConnection(ctx Context) (*pgx.Conn, string, error) {
 	return conn, connUrl, err
 }
 
-func (s *PostgresClient) closeConnection(conn *pgx.Conn, ctx context.Context) {
+func (s *Client) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	err := conn.Close(ctx)
 	if err != nil {
 		slog.Warn("postgres close connection", err)

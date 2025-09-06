@@ -5,13 +5,13 @@ import (
 	"ivory/src/storage/db"
 )
 
-type SecretRepository struct {
+type Repository struct {
 	bucket          *db.Bucket[string]
 	encryptedRefKey string
 	decryptedRefKey string
 }
 
-func NewSecretRepository(bucket *db.Bucket[string]) *SecretRepository {
+func NewRepository(bucket *db.Bucket[string]) *Repository {
 	encryptedRef := "encryptedRef"
 	decryptedRef := "decryptedRef"
 	if _, err := bucket.Get(encryptedRef); err != nil {
@@ -26,23 +26,23 @@ func NewSecretRepository(bucket *db.Bucket[string]) *SecretRepository {
 			panic(err)
 		}
 	}
-	return &SecretRepository{
+	return &Repository{
 		bucket:          bucket,
 		encryptedRefKey: encryptedRef,
 		decryptedRefKey: decryptedRef,
 	}
 }
 
-func (r *SecretRepository) UpdateRefs(encrypted string, decrypted string) error {
+func (r *Repository) UpdateRefs(encrypted string, decrypted string) error {
 	errEnc := r.bucket.Update(r.encryptedRefKey, encrypted)
 	errDec := r.bucket.Update(r.decryptedRefKey, decrypted)
 	return errors.Join(errEnc, errDec)
 }
 
-func (r *SecretRepository) GetEncryptedRef() (string, error) {
+func (r *Repository) GetEncryptedRef() (string, error) {
 	return r.bucket.Get(r.encryptedRefKey)
 }
 
-func (r *SecretRepository) GetDecryptedRef() (string, error) {
+func (r *Repository) GetDecryptedRef() (string, error) {
 	return r.bucket.Get(r.decryptedRefKey)
 }

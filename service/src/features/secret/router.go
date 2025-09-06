@@ -6,19 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type SecretRouter struct {
-	secretService *SecretService
+type Router struct {
+	secretService *Service
 }
 
-func NewSecretRouter(
-	secretService *SecretService,
-) *SecretRouter {
-	return &SecretRouter{
+func NewRouter(
+	secretService *Service,
+) *Router {
+	return &Router{
 		secretService: secretService,
 	}
 }
 
-func (r *SecretRouter) ExistMiddleware() gin.HandlerFunc {
+func (r *Router) ExistMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if r.secretService.IsSecretEmpty() {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "usage restricted when secret key is not specified"})
@@ -28,7 +28,7 @@ func (r *SecretRouter) ExistMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *SecretRouter) EmptyMiddleware() gin.HandlerFunc {
+func (r *Router) EmptyMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if !r.secretService.IsSecretEmpty() {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "usage restricted when secret key is specified"})
@@ -38,11 +38,11 @@ func (r *SecretRouter) EmptyMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *SecretRouter) GetStatus(context *gin.Context) {
+func (r *Router) GetStatus(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": r.secretService.Status()})
 }
 
-func (r *SecretRouter) SetSecret(context *gin.Context) {
+func (r *Router) SetSecret(context *gin.Context) {
 	var body SecretSetRequest
 	errBind := context.ShouldBindJSON(&body)
 	if errBind != nil {

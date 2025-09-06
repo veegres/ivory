@@ -7,15 +7,15 @@ import (
 )
 
 type Service struct {
-	sidecarClient   sidecar.SidecarClient
-	passwordService *password.PasswordService
-	certService     *cert.CertService
+	sidecarClient   sidecar.Client
+	passwordService *password.Service
+	certService     *cert.Service
 }
 
 func NewService(
-	sidecarClient sidecar.SidecarClient,
-	passwordService *password.PasswordService,
-	certService *cert.CertService,
+	sidecarClient sidecar.Client,
+	passwordService *password.Service,
+	certService *cert.Service,
 ) *Service {
 	return &Service{
 		sidecarClient:   sidecarClient,

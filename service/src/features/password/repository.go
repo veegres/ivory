@@ -6,43 +6,43 @@ import (
 	"github.com/google/uuid"
 )
 
-type PasswordRepository struct {
+type Repository struct {
 	bucket *db.Bucket[Password]
 }
 
-func NewPasswordRepository(bucket *db.Bucket[Password]) *PasswordRepository {
-	return &PasswordRepository{
+func NewRepository(bucket *db.Bucket[Password]) *Repository {
+	return &Repository{
 		bucket: bucket,
 	}
 }
 
-func (r *PasswordRepository) Create(credential Password) (uuid.UUID, error) {
+func (r *Repository) Create(credential Password) (uuid.UUID, error) {
 	key := uuid.New()
 	return key, r.bucket.Update(key.String(), credential)
 }
 
-func (r *PasswordRepository) Update(key uuid.UUID, credential Password) (uuid.UUID, error) {
+func (r *Repository) Update(key uuid.UUID, credential Password) (uuid.UUID, error) {
 	return key, r.bucket.Update(key.String(), credential)
 }
 
-func (r *PasswordRepository) Delete(key uuid.UUID) error {
+func (r *Repository) Delete(key uuid.UUID) error {
 	return r.bucket.Delete(key.String())
 }
 
-func (r *PasswordRepository) DeleteAll() error {
+func (r *Repository) DeleteAll() error {
 	return r.bucket.DeleteAll()
 }
 
-func (r *PasswordRepository) Map() (PasswordMap, error) {
+func (r *Repository) Map() (PasswordMap, error) {
 	return r.bucket.GetMap(nil)
 }
 
-func (r *PasswordRepository) MapByType(credentialType PasswordType) (PasswordMap, error) {
+func (r *Repository) MapByType(credentialType PasswordType) (PasswordMap, error) {
 	return r.bucket.GetMap(func(credential Password) bool {
 		return credential.Type == credentialType
 	})
 }
 
-func (r *PasswordRepository) Get(uuid uuid.UUID) (Password, error) {
+func (r *Repository) Get(uuid uuid.UUID) (Password, error) {
 	return r.bucket.Get(uuid.String())
 }

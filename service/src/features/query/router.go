@@ -10,20 +10,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type QueryRouter struct {
+type Router struct {
 	service       *Service
 	runService    *RunService
 	logService    *LogService
 	configService *config.Service
 }
 
-func NewQueryRouter(
+func NewRouter(
 	service *Service,
 	runService *RunService,
 	logService *LogService,
 	configService *config.Service,
-) *QueryRouter {
-	return &QueryRouter{
+) *Router {
+	return &Router{
 		service:       service,
 		runService:    runService,
 		logService:    logService,
@@ -31,7 +31,7 @@ func NewQueryRouter(
 	}
 }
 
-func (r *QueryRouter) ManualMiddleware() gin.HandlerFunc {
+func (r *Router) ManualMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		appConfig, errConfig := r.configService.GetAppConfig()
 		if errConfig != nil {
@@ -46,7 +46,7 @@ func (r *QueryRouter) ManualMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *QueryRouter) PutQuery(context *gin.Context) {
+func (r *Router) PutQuery(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -66,7 +66,7 @@ func (r *QueryRouter) PutQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *QueryRouter) PostQuery(context *gin.Context) {
+func (r *Router) PostQuery(context *gin.Context) {
 	var query database.QueryRequest
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
@@ -81,7 +81,7 @@ func (r *QueryRouter) PostQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *QueryRouter) GetQueryList(context *gin.Context) {
+func (r *Router) GetQueryList(context *gin.Context) {
 	queryTypeStr := context.Request.URL.Query().Get("type")
 
 	if queryTypeStr != "" {
@@ -107,7 +107,7 @@ func (r *QueryRouter) GetQueryList(context *gin.Context) {
 	}
 }
 
-func (r *QueryRouter) DeleteQuery(context *gin.Context) {
+func (r *Router) DeleteQuery(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -121,7 +121,7 @@ func (r *QueryRouter) DeleteQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "the query was deleted"})
 }
 
-func (r *QueryRouter) PostRunQuery(context *gin.Context) {
+func (r *Router) PostRunQuery(context *gin.Context) {
 	var req QueryRunRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -156,7 +156,7 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) GetQueryLog(context *gin.Context) {
+func (r *Router) GetQueryLog(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -170,7 +170,7 @@ func (r *QueryRouter) GetQueryLog(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *QueryRouter) DeleteQueryLog(context *gin.Context) {
+func (r *Router) DeleteQueryLog(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -184,7 +184,7 @@ func (r *QueryRouter) DeleteQueryLog(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query log was deleted"})
 }
 
-func (r *QueryRouter) PostAllRunningQueriesByApplicationName(context *gin.Context) {
+func (r *Router) PostAllRunningQueriesByApplicationName(context *gin.Context) {
 	var req QueryConnection
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -202,7 +202,7 @@ func (r *QueryRouter) PostAllRunningQueriesByApplicationName(context *gin.Contex
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {
+func (r *Router) PostDatabasesQuery(context *gin.Context) {
 	var req QueryDatabasesRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -220,7 +220,7 @@ func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) PostSchemasQuery(context *gin.Context) {
+func (r *Router) PostSchemasQuery(context *gin.Context) {
 	var req QuerySchemasRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -238,7 +238,7 @@ func (r *QueryRouter) PostSchemasQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) PostTablesQuery(context *gin.Context) {
+func (r *Router) PostTablesQuery(context *gin.Context) {
 	var req QueryTablesRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -256,7 +256,7 @@ func (r *QueryRouter) PostTablesQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) PostChartQuery(context *gin.Context) {
+func (r *Router) PostChartQuery(context *gin.Context) {
 	var req QueryChartRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -274,7 +274,7 @@ func (r *QueryRouter) PostChartQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": res})
 }
 
-func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
+func (r *Router) PostCancelQuery(context *gin.Context) {
 	var req QueryKillRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -292,7 +292,7 @@ func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query is canceled"})
 }
 
-func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
+func (r *Router) PostTerminateQuery(context *gin.Context) {
 	var req QueryKillRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -310,7 +310,7 @@ func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query is terminated"})
 }
 
-func (r *QueryRouter) getQueryContext(ctx *gin.Context, con QueryConnection) QueryContext {
+func (r *Router) getQueryContext(ctx *gin.Context, con QueryConnection) QueryContext {
 	session, errSession := ctx.Cookie("session")
 	if errSession != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": errSession.Error()})

@@ -1,6 +1,6 @@
 package database
 
-type DatabaseClient interface {
+type Client interface {
 	GetApplicationName(session string) string
 	GetMany(ctx Context, query string, queryParams []any) ([]string, error)
 	GetOne(ctx Context, query string) (any, error)

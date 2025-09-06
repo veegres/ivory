@@ -10,8 +10,8 @@ import (
 
 type Service struct {
 	configFiles       *files.Storage
-	encryptionService *encryption.EncryptionService
-	secretService     *secret.SecretService
+	encryptionService *encryption.Service
+	secretService     *secret.Service
 
 	appConfigFileName string
 	appConfig         *AppConfig
@@ -19,8 +19,8 @@ type Service struct {
 
 func NewService(
 	configFiles *files.Storage,
-	encryptionService *encryption.EncryptionService,
-	secretService *secret.SecretService,
+	encryptionService *encryption.Service,
+	secretService *secret.Service,
 ) *Service {
 	service := &Service{
 		configFiles:       configFiles,

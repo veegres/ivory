@@ -20,5 +20,5 @@ type AppInfo struct {
 	Availability config.Availability `json:"availability"`
 	Version      env.Version         `json:"version"`
 	Secret       secret.SecretStatus `json:"secret"`
-	Auth         auth.AuthInfo       `json:"auth"`
+	Auth         auth.Info           `json:"auth"`
 }

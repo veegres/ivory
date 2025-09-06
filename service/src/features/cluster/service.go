@@ -7,29 +7,29 @@ import (
 	"ivory/src/features/tag"
 )
 
-type ClusterService struct {
-	clusterRepository *ClusterRepository
+type Service struct {
+	clusterRepository *Repository
 	instanceService   *instance.Service
-	tagService        *tag.TagService
+	tagService        *tag.Service
 }
 
-func NewClusterService(
-	clusterRepository *ClusterRepository,
+func NewService(
+	clusterRepository *Repository,
 	instanceService *instance.Service,
-	tagService *tag.TagService,
-) *ClusterService {
-	return &ClusterService{
+	tagService *tag.Service,
+) *Service {
+	return &Service{
 		clusterRepository: clusterRepository,
 		instanceService:   instanceService,
 		tagService:        tagService,
 	}
 }
 
-func (s *ClusterService) List() ([]Cluster, error) {
+func (s *Service) List() ([]Cluster, error) {
 	return s.clusterRepository.List()
 }
 
-func (s *ClusterService) ListByTag(tags []string) ([]Cluster, error) {
+func (s *Service) ListByTag(tags []string) ([]Cluster, error) {
 	listMap := make(map[string]bool)
 	for _, t := range tags {
 		// NOTE: we shouldn't check the error here, we want to return an empty array if there is no such tag
@@ -50,15 +50,15 @@ func (s *ClusterService) ListByTag(tags []string) ([]Cluster, error) {
 	return s.ListByName(listName)
 }
 
-func (s *ClusterService) ListByName(clusters []string) ([]Cluster, error) {
+func (s *Service) ListByName(clusters []string) ([]Cluster, error) {
 	return s.clusterRepository.ListByName(clusters)
 }
 
-func (s *ClusterService) Get(cluster string) (Cluster, error) {
+func (s *Service) Get(cluster string) (Cluster, error) {
 	return s.clusterRepository.Get(cluster)
 }
 
-func (s *ClusterService) Update(cluster Cluster) (*Cluster, error) {
+func (s *Service) Update(cluster Cluster) (*Cluster, error) {
 	tags, err := s.saveTags(cluster.Name, cluster.Tags)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (s *ClusterService) Update(cluster Cluster) (*Cluster, error) {
 	return &cluster, errCluster
 }
 
-func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
+func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	var requestTls *cert.Certs
 	if cluster.Tls.Sidecar {
 		// NOTE: we want to rewrite `nil` only if tls is enabled
@@ -109,7 +109,7 @@ func (s *ClusterService) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	return s.clusterRepository.Create(model)
 }
 
-func (s *ClusterService) Delete(cluster string) error {
+func (s *Service) Delete(cluster string) error {
 	_, errTag := s.tagService.UpdateCluster(cluster, nil)
 	if errTag != nil {
 		return errTag
@@ -117,11 +117,11 @@ func (s *ClusterService) Delete(cluster string) error {
 	return s.clusterRepository.Delete(cluster)
 }
 
-func (s *ClusterService) DeleteAll() error {
+func (s *Service) DeleteAll() error {
 	return s.clusterRepository.DeleteAll()
 }
 
-func (s *ClusterService) saveTags(name string, tags []string) ([]string, error) {
+func (s *Service) saveTags(name string, tags []string) ([]string, error) {
 	// NOTE: remove duplicates
 	tagMap := make(map[string]bool)
 	for _, t := range tags {

@@ -5,7 +5,6 @@ import (
 	"errors"
 	. "ivory/src/features/bloat/job"
 	"ivory/src/features/password"
-	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -13,26 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type BloatService struct {
+type Service struct {
 	start           chan uuid.UUID
 	stop            chan uuid.UUID
 	elements        map[uuid.UUID]*element
 	mutex           *sync.Mutex
-	bloatRepository *BloatRepository
-	passwordService *password.PasswordService
+	bloatRepository *Repository
+	passwordService *password.Service
 }
 
-type element struct {
-	job    *Job
-	model  *Bloat
-	writer *os.File
-}
-
-func NewBloatService(
-	bloatRepository *BloatRepository,
-	passwordService *password.PasswordService,
-) *BloatService {
-	worker := &BloatService{
+func NewService(
+	bloatRepository *Repository,
+	passwordService *password.Service,
+) *Service {
+	worker := &Service{
 		start:           make(chan uuid.UUID),
 		stop:            make(chan uuid.UUID),
 		elements:        make(map[uuid.UUID]*element),
@@ -49,23 +42,23 @@ func NewBloatService(
 	return worker
 }
 
-func (w *BloatService) List() ([]Bloat, error) {
+func (w *Service) List() ([]Bloat, error) {
 	return w.bloatRepository.List()
 }
 
-func (w *BloatService) ListByStatus(status JobStatus) ([]Bloat, error) {
+func (w *Service) ListByStatus(status JobStatus) ([]Bloat, error) {
 	return w.bloatRepository.ListByStatus(status)
 }
 
-func (w *BloatService) ListByCluster(cluster string) ([]Bloat, error) {
+func (w *Service) ListByCluster(cluster string) ([]Bloat, error) {
 	return w.bloatRepository.ListByCluster(cluster)
 }
 
-func (w *BloatService) Get(uuid uuid.UUID) (Bloat, error) {
+func (w *Service) Get(uuid uuid.UUID) (Bloat, error) {
 	return w.bloatRepository.Get(uuid)
 }
 
-func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []string) (*Bloat, error) {
+func (w *Service) Start(credentialId uuid.UUID, cluster string, args []string) (*Bloat, error) {
 	compactTable, err := w.bloatRepository.Create(credentialId, cluster, args)
 	if err != nil {
 		return nil, err
@@ -74,7 +67,7 @@ func (w *BloatService) Start(credentialId uuid.UUID, cluster string, args []stri
 	return compactTable, nil
 }
 
-func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
+func (w *Service) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	element := w.elements[jobUuid]
 	if element == nil {
 		stream(Event{Type: SERVER, Message: "Streaming failed: Stream Not Found"})
@@ -126,7 +119,7 @@ func (w *BloatService) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 	}
 }
 
-func (w *BloatService) Delete(jobUuid uuid.UUID) error {
+func (w *Service) Delete(jobUuid uuid.UUID) error {
 	element := w.elements[jobUuid]
 	if element != nil && element.job.IsJobActive() {
 		return errors.New("job is active")
@@ -134,7 +127,7 @@ func (w *BloatService) Delete(jobUuid uuid.UUID) error {
 	return w.bloatRepository.Delete(jobUuid)
 }
 
-func (w *BloatService) DeleteAll() error {
+func (w *Service) DeleteAll() error {
 	for _, e := range w.elements {
 		e.job.SetStatus(FAILED)
 		for s := range e.job.Subscribers() {
@@ -144,7 +137,7 @@ func (w *BloatService) DeleteAll() error {
 	return w.bloatRepository.DeleteAll()
 }
 
-func (w *BloatService) Stop(jobUuid uuid.UUID) error {
+func (w *Service) Stop(jobUuid uuid.UUID) error {
 	if w.elements[jobUuid] != nil {
 		w.stop <- jobUuid
 		return nil
@@ -153,7 +146,7 @@ func (w *BloatService) Stop(jobUuid uuid.UUID) error {
 	}
 }
 
-func (w *BloatService) runner() {
+func (w *Service) runner() {
 	for id := range w.start {
 		element := w.elements[id]
 		model := w.elements[id].model
@@ -209,7 +202,7 @@ func (w *BloatService) runner() {
 	}
 }
 
-func (w *BloatService) initializer() {
+func (w *Service) initializer() {
 	runningJobs, _ := w.bloatRepository.ListByStatus(RUNNING)
 	for _, runningJob := range runningJobs {
 		_ = w.bloatRepository.UpdateStatus(runningJob, FAILED)
@@ -222,7 +215,7 @@ func (w *BloatService) initializer() {
 	}
 }
 
-func (w *BloatService) cleaner() {
+func (w *Service) cleaner() {
 	ticket := time.NewTicker(10 * time.Second)
 	for range ticket.C {
 		for id, element := range w.elements {
@@ -233,7 +226,7 @@ func (w *BloatService) cleaner() {
 	}
 }
 
-func (w *BloatService) stopper() {
+func (w *Service) stopper() {
 	for id := range w.stop {
 		id := id
 		go func() {
@@ -258,7 +251,7 @@ func (w *BloatService) stopper() {
 	}
 }
 
-func (w *BloatService) jobStatusHandler(element *element, status JobStatus, err error) {
+func (w *Service) jobStatusHandler(element *element, status JobStatus, err error) {
 	model := element.model
 	element.job.SetStatus(status)
 	dbErr := w.bloatRepository.UpdateStatus(*model, status)
@@ -273,7 +266,7 @@ func (w *BloatService) jobStatusHandler(element *element, status JobStatus, err 
 	}
 }
 
-func (w *BloatService) addLogElement(element *element, eventType EventType, message string) {
+func (w *Service) addLogElement(element *element, eventType EventType, message string) {
 	_, errFileWrite := element.writer.WriteString(message + "\n")
 	if errFileWrite != nil {
 		w.sendEvents(element.job, SERVER, errFileWrite.Error())
@@ -282,19 +275,19 @@ func (w *BloatService) addLogElement(element *element, eventType EventType, mess
 	w.sendEvents(element.job, eventType, message)
 }
 
-func (w *BloatService) sendEvents(job *Job, eventType EventType, message string) {
+func (w *Service) sendEvents(job *Job, eventType EventType, message string) {
 	for subscriber := range job.Subscribers() {
 		subscriber <- Event{Type: eventType, Message: message}
 	}
 }
 
-func (w *BloatService) closeEvents(job *Job) {
+func (w *Service) closeEvents(job *Job) {
 	for subscriber := range job.Subscribers() {
 		close(subscriber)
 	}
 }
 
-func (w *BloatService) addElement(model *Bloat) {
+func (w *Service) addElement(model *Bloat) {
 	w.mutex.Lock()
 	// NOTE: we can have potential problem here because file can be nil
 	file, _ := w.bloatRepository.GetOpenFile(model.Uuid)
@@ -303,7 +296,7 @@ func (w *BloatService) addElement(model *Bloat) {
 	w.start <- model.Uuid
 }
 
-func (w *BloatService) removeElement(id uuid.UUID) {
+func (w *Service) removeElement(id uuid.UUID) {
 	w.mutex.Lock()
 	delete(w.elements, id)
 	w.mutex.Unlock()

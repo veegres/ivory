@@ -8,15 +8,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type PasswordRouter struct {
-	passwordService *PasswordService
+type Router struct {
+	passwordService *Service
 }
 
-func NewPasswordRouter(passwordService *PasswordService) *PasswordRouter {
-	return &PasswordRouter{passwordService: passwordService}
+func NewRouter(passwordService *Service) *Router {
+	return &Router{passwordService: passwordService}
 }
 
-func (r *PasswordRouter) GetCredentials(context *gin.Context) {
+func (r *Router) GetCredentials(context *gin.Context) {
 	stringType := context.Request.URL.Query().Get("type")
 	if stringType != "" {
 		number, errAtoi := strconv.Atoi(stringType)
@@ -41,7 +41,7 @@ func (r *PasswordRouter) GetCredentials(context *gin.Context) {
 	}
 }
 
-func (r *PasswordRouter) PostCredential(context *gin.Context) {
+func (r *Router) PostCredential(context *gin.Context) {
 	var credential Password
 	errBind := context.ShouldBindJSON(&credential)
 	if errBind != nil {
@@ -58,7 +58,7 @@ func (r *PasswordRouter) PostCredential(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": gin.H{"key": key.String(), "credential": cred}})
 }
 
-func (r *PasswordRouter) PatchCredential(context *gin.Context) {
+func (r *Router) PatchCredential(context *gin.Context) {
 	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -81,7 +81,7 @@ func (r *PasswordRouter) PatchCredential(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cred})
 }
 
-func (r *PasswordRouter) DeleteCredential(context *gin.Context) {
+func (r *Router) DeleteCredential(context *gin.Context) {
 	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})

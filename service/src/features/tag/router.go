@@ -6,15 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type TagRouter struct {
-	tagService *TagService
+type Router struct {
+	tagService *Service
 }
 
-func NewTagRouter(tagService *TagService) *TagRouter {
-	return &TagRouter{tagService: tagService}
+func NewRouter(tagService *Service) *Router {
+	return &Router{tagService: tagService}
 }
 
-func (r *TagRouter) GetTagList(context *gin.Context) {
+func (r *Router) GetTagList(context *gin.Context) {
 	list, err := r.tagService.List()
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})

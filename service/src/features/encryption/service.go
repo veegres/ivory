@@ -6,14 +6,14 @@ import (
 	"encoding/base64"
 )
 
-type EncryptionService struct{}
+type Service struct{}
 
-func NewEncryptionService() *EncryptionService {
-	return &EncryptionService{}
+func NewService() *Service {
+	return &Service{}
 }
 
 // Encrypt method is to encrypt or hide any classified text
-func (e *EncryptionService) Encrypt(text string, secret [16]byte) (string, error) {
+func (e *Service) Encrypt(text string, secret [16]byte) (string, error) {
 	block, err := aes.NewCipher(secret[:])
 	if err != nil {
 		return "", err
@@ -27,7 +27,7 @@ func (e *EncryptionService) Encrypt(text string, secret [16]byte) (string, error
 }
 
 // Decrypt method is to extract back the encrypted text
-func (e *EncryptionService) Decrypt(text string, secret [16]byte) (string, error) {
+func (e *Service) Decrypt(text string, secret [16]byte) (string, error) {
 	block, err := aes.NewCipher(secret[:])
 	if err != nil {
 		return "", err
@@ -40,11 +40,11 @@ func (e *EncryptionService) Decrypt(text string, secret [16]byte) (string, error
 	return string(cipherText), nil
 }
 
-func (e *EncryptionService) encode(b []byte) string {
+func (e *Service) encode(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func (e *EncryptionService) decode(s string) []byte {
+func (e *Service) decode(s string) []byte {
 	data, _ := base64.StdEncoding.DecodeString(s)
 	return data
 }
