@@ -4,27 +4,27 @@ import (
 	"strings"
 )
 
-type TagService struct {
-	tagRepository *TagRepository
+type Service struct {
+	tagRepository *Repository
 }
 
-func NewTagService(tagRepository *TagRepository) *TagService {
-	return &TagService{tagRepository: tagRepository}
+func NewService(tagRepository *Repository) *Service {
+	return &Service{tagRepository: tagRepository}
 }
 
-func (s *TagService) Get(tag string) ([]string, error) {
+func (s *Service) Get(tag string) ([]string, error) {
 	return s.tagRepository.Get(tag)
 }
 
-func (s *TagService) GetMap() (map[string][]string, error) {
+func (s *Service) GetMap() (map[string][]string, error) {
 	return s.tagRepository.GetMap()
 }
 
-func (s *TagService) List() ([]string, error) {
+func (s *Service) List() ([]string, error) {
 	return s.tagRepository.List()
 }
 
-func (s *TagService) UpdateCluster(cluster string, tags []string) ([]string, error) {
+func (s *Service) UpdateCluster(cluster string, tags []string) ([]string, error) {
 	var tagsLower []string
 	for _, tag := range tags {
 		tagsLower = append(tagsLower, strings.ToLower(tag))
@@ -74,11 +74,11 @@ func (s *TagService) UpdateCluster(cluster string, tags []string) ([]string, err
 	return tagsLower, nil
 }
 
-func (s *TagService) Delete(tag string) error {
+func (s *Service) Delete(tag string) error {
 	tagLower := strings.ToLower(tag)
 	return s.tagRepository.Delete(tagLower)
 }
 
-func (s *TagService) DeleteAll() error {
+func (s *Service) DeleteAll() error {
 	return s.tagRepository.DeleteAll()
 }

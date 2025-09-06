@@ -12,25 +12,25 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type CertService struct {
-	certRepository *CertRepository
+type Service struct {
+	certRepository *Repository
 	formats        []string
 }
 
-func NewCertService(certRepository *CertRepository) *CertService {
-	return &CertService{
+func NewService(certRepository *Repository) *Service {
+	return &Service{
 		certRepository: certRepository,
 
 		formats: []string{".crt", ".key", ".chain"},
 	}
 }
 
-func (s *CertService) Get(uuid uuid.UUID) (Cert, error) {
+func (s *Service) Get(uuid uuid.UUID) (Cert, error) {
 	return s.certRepository.Get(uuid)
 }
 
 // GetTLSConfigRootCA Setting Client CA
-func (s *CertService) GetTLSConfigRootCA(clientCAId *uuid.UUID) (*x509.CertPool, error) {
+func (s *Service) GetTLSConfigRootCA(clientCAId *uuid.UUID) (*x509.CertPool, error) {
 	var rootCa *x509.CertPool
 
 	if clientCAId != nil {
@@ -50,7 +50,7 @@ func (s *CertService) GetTLSConfigRootCA(clientCAId *uuid.UUID) (*x509.CertPool,
 }
 
 // GetTLSConfigCertificates Setting Client Cert with Client Private Key
-func (s *CertService) GetTLSConfigCertificates(clientCertId *uuid.UUID, clientKeyId *uuid.UUID) ([]tls.Certificate, error) {
+func (s *Service) GetTLSConfigCertificates(clientCertId *uuid.UUID, clientKeyId *uuid.UUID) ([]tls.Certificate, error) {
 	var certificates []tls.Certificate
 	if clientCertId != nil && clientKeyId != nil {
 		clientCertInfo, errCert := s.Get(*clientCertId)
@@ -77,7 +77,7 @@ func (s *CertService) GetTLSConfigCertificates(clientCertId *uuid.UUID, clientKe
 	return certificates, nil
 }
 
-func (s *CertService) EnrichTLSConfig(config **tls.Config, certs *Certs) error {
+func (s *Service) EnrichTLSConfig(config **tls.Config, certs *Certs) error {
 	if certs == nil {
 		config = nil
 		return nil
@@ -96,15 +96,15 @@ func (s *CertService) EnrichTLSConfig(config **tls.Config, certs *Certs) error {
 	return nil
 }
 
-func (s *CertService) List() (CertMap, error) {
+func (s *Service) List() (CertMap, error) {
 	return s.certRepository.List()
 }
 
-func (s *CertService) ListByType(certType CertType) (CertMap, error) {
+func (s *Service) ListByType(certType CertType) (CertMap, error) {
 	return s.certRepository.ListByType(certType)
 }
 
-func (s *CertService) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*Cert, error) {
+func (s *Service) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*Cert, error) {
 	fileName := path.Base(pathStr)
 	if fileName == "" {
 		return nil, errors.New("file name cannot be empty")
@@ -125,10 +125,10 @@ func (s *CertService) Create(pathStr string, certType CertType, fileUsageType Fi
 	return s.certRepository.Create(cert, pathStr)
 }
 
-func (s *CertService) Delete(certUuid uuid.UUID) error {
+func (s *Service) Delete(certUuid uuid.UUID) error {
 	return s.certRepository.Delete(certUuid)
 }
 
-func (s *CertService) DeleteAll() error {
+func (s *Service) DeleteAll() error {
 	return s.certRepository.DeleteAll()
 }

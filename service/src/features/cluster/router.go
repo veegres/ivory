@@ -6,15 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ClusterRouter struct {
-	clusterService *ClusterService
+type Router struct {
+	clusterService *Service
 }
 
-func NewClusterRouter(clusterService *ClusterService) *ClusterRouter {
-	return &ClusterRouter{clusterService: clusterService}
+func NewRouter(clusterService *Service) *Router {
+	return &Router{clusterService: clusterService}
 }
 
-func (r *ClusterRouter) GetClusterList(context *gin.Context) {
+func (r *Router) GetClusterList(context *gin.Context) {
 	tags := context.Request.URL.Query()["tags[]"]
 
 	var list []Cluster
@@ -31,7 +31,7 @@ func (r *ClusterRouter) GetClusterList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
-func (r *ClusterRouter) GetClusterByName(context *gin.Context) {
+func (r *Router) GetClusterByName(context *gin.Context) {
 	name := context.Param("name")
 	cluster, err := r.clusterService.Get(name)
 	if err != nil {
@@ -41,7 +41,7 @@ func (r *ClusterRouter) GetClusterByName(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
-func (r *ClusterRouter) PutClusterByName(context *gin.Context) {
+func (r *Router) PutClusterByName(context *gin.Context) {
 	var cluster Cluster
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
@@ -58,7 +58,7 @@ func (r *ClusterRouter) PutClusterByName(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *ClusterRouter) PostClusterAuto(context *gin.Context) {
+func (r *Router) PostClusterAuto(context *gin.Context) {
 	var cluster ClusterAuto
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
@@ -75,7 +75,7 @@ func (r *ClusterRouter) PostClusterAuto(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *ClusterRouter) DeleteClusterByName(context *gin.Context) {
+func (r *Router) DeleteClusterByName(context *gin.Context) {
 	name := context.Param("name")
 	err := r.clusterService.Delete(name)
 	if err != nil {

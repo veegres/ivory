@@ -7,24 +7,24 @@ import (
 	"sync"
 )
 
-type SecretService struct {
+type Service struct {
 	key              [16]byte
 	ref              string
 	mutex            *sync.Mutex
-	secretRepository *SecretRepository
-	encryption       *encryption.EncryptionService
+	secretRepository *Repository
+	encryption       *encryption.Service
 }
 
-func NewSecretService(
-	secretRepository *SecretRepository,
-	encryption *encryption.EncryptionService,
-) *SecretService {
+func NewService(
+	secretRepository *Repository,
+	encryption *encryption.Service,
+) *Service {
 	encryptedRef, err := secretRepository.GetEncryptedRef()
 	if err != nil {
 		panic(err)
 	}
 
-	return &SecretService{
+	return &Service{
 		key:              [16]byte{},
 		ref:              encryptedRef,
 		mutex:            &sync.Mutex{},
@@ -33,15 +33,15 @@ func NewSecretService(
 	}
 }
 
-func (s *SecretService) Get() [16]byte {
+func (s *Service) Get() [16]byte {
 	return s.key
 }
 
-func (s *SecretService) GetByte() []byte {
+func (s *Service) GetByte() []byte {
 	return s.key[:]
 }
 
-func (s *SecretService) Set(decryptedKey string, decryptedRef string) error {
+func (s *Service) Set(decryptedKey string, decryptedRef string) error {
 	if decryptedKey == "" {
 		return errors.New("secret word cannot be empty")
 	}
@@ -80,7 +80,7 @@ func (s *SecretService) Set(decryptedKey string, decryptedRef string) error {
 	return err
 }
 
-func (s *SecretService) Update(prevSecret string, newSecret string) ([16]byte, [16]byte, error) {
+func (s *Service) Update(prevSecret string, newSecret string) ([16]byte, [16]byte, error) {
 	if prevSecret == newSecret {
 		return [16]byte{}, [16]byte{}, errors.New("the secrets are the same")
 	}
@@ -114,7 +114,7 @@ func (s *SecretService) Update(prevSecret string, newSecret string) ([16]byte, [
 	return previousKeyMd5, newKeyMd5, nil
 }
 
-func (s *SecretService) Clean() error {
+func (s *Service) Clean() error {
 	s.mutex.Lock()
 
 	s.ref = ""
@@ -125,11 +125,11 @@ func (s *SecretService) Clean() error {
 	return errUpdateRef
 }
 
-func (s *SecretService) IsRefEmpty() bool {
+func (s *Service) IsRefEmpty() bool {
 	return s.ref == ""
 }
 
-func (s *SecretService) IsSecretEmpty() bool {
+func (s *Service) IsSecretEmpty() bool {
 	for _, b := range s.key {
 		if b != 0 {
 			return false
@@ -138,7 +138,7 @@ func (s *SecretService) IsSecretEmpty() bool {
 	return true
 }
 
-func (s *SecretService) Status() SecretStatus {
+func (s *Service) Status() SecretStatus {
 	return SecretStatus{
 		Key: !s.IsSecretEmpty(),
 		Ref: !s.IsRefEmpty(),

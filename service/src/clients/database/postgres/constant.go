@@ -1,6 +1,6 @@
 package postgres
 
-import . "ivory/src/clients/database"
+import "ivory/src/clients/database"
 
 const GetAllDatabases = `SELECT datname AS name FROM pg_database WHERE datistemplate = false AND datname LIKE $1 LIMIT 100;`
 const GetAllSchemas = `SELECT nspname AS NAME FROM pg_namespace WHERE nspname LIKE $1 LIMIT 100;`
@@ -292,15 +292,15 @@ FROM pg_class, pg_index
 WHERE pg_index.indisvalid = false 
   AND pg_index.indexrelid = pg_class.oid;`
 
-func CreateChartsMap() map[QueryChartType]QueryRequest {
-	return map[QueryChartType]QueryRequest{
-		Databases:      {Name: string(Databases), Query: "SELECT count(*) FROM pg_database;"},
-		Connections:    {Name: Connections, Query: "SELECT count(*) FROM pg_stat_activity;"},
-		DatabaseSize:   {Name: DatabaseSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;"},
-		DatabaseUptime: {Name: DatabaseUptime, Query: "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;"},
-		Schemas:        {Name: Schemas, Query: "SELECT count(*) FROM pg_namespace;"},
-		TablesSize:     {Name: TablesSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
-		IndexesSize:    {Name: IndexesSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
-		TotalSize:      {Name: TotalSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+func CreateChartsMap() map[database.QueryChartType]database.QueryRequest {
+	return map[database.QueryChartType]database.QueryRequest{
+		database.Databases:      {Name: string(database.Databases), Query: "SELECT count(*) FROM pg_database;"},
+		database.Connections:    {Name: database.Connections, Query: "SELECT count(*) FROM pg_stat_activity;"},
+		database.DatabaseSize:   {Name: database.DatabaseSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;"},
+		database.DatabaseUptime: {Name: database.DatabaseUptime, Query: "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;"},
+		database.Schemas:        {Name: database.Schemas, Query: "SELECT count(*) FROM pg_namespace;"},
+		database.TablesSize:     {Name: database.TablesSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+		database.IndexesSize:    {Name: database.IndexesSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
+		database.TotalSize:      {Name: database.TotalSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;"},
 	}
 }

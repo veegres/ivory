@@ -8,33 +8,33 @@ import (
 	"github.com/google/uuid"
 )
 
-type CertRepository struct {
+type Repository struct {
 	bucket *db.Bucket[Cert]
 	file   *files.Storage
 }
 
-func NewCertRepository(bucket *db.Bucket[Cert], file *files.Storage) *CertRepository {
-	return &CertRepository{
+func NewRepository(bucket *db.Bucket[Cert], file *files.Storage) *Repository {
+	return &Repository{
 		bucket: bucket,
 		file:   file,
 	}
 }
 
-func (r *CertRepository) Get(uuid uuid.UUID) (Cert, error) {
+func (r *Repository) Get(uuid uuid.UUID) (Cert, error) {
 	return r.bucket.Get(uuid.String())
 }
 
-func (r *CertRepository) List() (CertMap, error) {
+func (r *Repository) List() (CertMap, error) {
 	return r.bucket.GetMap(nil)
 }
 
-func (r *CertRepository) ListByType(certType CertType) (CertMap, error) {
+func (r *Repository) ListByType(certType CertType) (CertMap, error) {
 	return r.bucket.GetMap(func(cert Cert) bool {
 		return cert.Type == certType
 	})
 }
 
-func (r *CertRepository) Create(cert Cert, pathStr string) (*Cert, error) {
+func (r *Repository) Create(cert Cert, pathStr string) (*Cert, error) {
 	key := uuid.New()
 
 	switch cert.FileUsageType {
@@ -57,7 +57,7 @@ func (r *CertRepository) Create(cert Cert, pathStr string) (*Cert, error) {
 	return &cert, err
 }
 
-func (r *CertRepository) Delete(certUuid uuid.UUID) error {
+func (r *Repository) Delete(certUuid uuid.UUID) error {
 	cert, err := r.Get(certUuid)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (r *CertRepository) Delete(certUuid uuid.UUID) error {
 	return r.bucket.Delete(certUuid.String())
 }
 
-func (r *CertRepository) DeleteAll() error {
+func (r *Repository) DeleteAll() error {
 	errFile := r.file.DeleteAll()
 	errBucket := r.bucket.DeleteAll()
 	return errors.Join(errFile, errBucket)

@@ -7,20 +7,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type PasswordService struct {
-	passwordRepository *PasswordRepository
-	secretService      *secret.SecretService
-	encryption         *encryption.EncryptionService
+type Service struct {
+	passwordRepository *Repository
+	secretService      *secret.Service
+	encryption         *encryption.Service
 
 	defaultPasswordWord string
 }
 
-func NewPasswordService(
-	passwordRepository *PasswordRepository,
-	secretService *secret.SecretService,
-	encryption *encryption.EncryptionService,
-) *PasswordService {
-	return &PasswordService{
+func NewService(
+	passwordRepository *Repository,
+	secretService *secret.Service,
+	encryption *encryption.Service,
+) *Service {
+	return &Service{
 		passwordRepository:  passwordRepository,
 		secretService:       secretService,
 		encryption:          encryption,
@@ -28,7 +28,7 @@ func NewPasswordService(
 	}
 }
 
-func (s *PasswordService) Create(credential Password) (*uuid.UUID, *Password, error) {
+func (s *Service) Create(credential Password) (*uuid.UUID, *Password, error) {
 	encryptedPassword, errEnc := s.encryption.Encrypt(credential.Password, s.secretService.Get())
 	if errEnc != nil {
 		return nil, nil, errEnc
@@ -42,7 +42,7 @@ func (s *PasswordService) Create(credential Password) (*uuid.UUID, *Password, er
 	return &key, &cred, errCreate
 }
 
-func (s *PasswordService) Update(key uuid.UUID, credential Password) (*uuid.UUID, *Password, error) {
+func (s *Service) Update(key uuid.UUID, credential Password) (*uuid.UUID, *Password, error) {
 	encryptedPassword, errEnc := s.encryption.Encrypt(credential.Password, s.secretService.Get())
 	if errEnc != nil {
 		return nil, nil, errEnc
@@ -56,15 +56,15 @@ func (s *PasswordService) Update(key uuid.UUID, credential Password) (*uuid.UUID
 	return &key, &cred, errUpdate
 }
 
-func (s *PasswordService) Delete(key uuid.UUID) error {
+func (s *Service) Delete(key uuid.UUID) error {
 	return s.passwordRepository.Delete(key)
 }
 
-func (s *PasswordService) DeleteAll() error {
+func (s *Service) DeleteAll() error {
 	return s.passwordRepository.DeleteAll()
 }
 
-func (s *PasswordService) Map(credentialType *PasswordType) (PasswordMap, error) {
+func (s *Service) Map(credentialType *PasswordType) (PasswordMap, error) {
 	var err error
 	var credentialMap PasswordMap
 	if credentialType != nil {
@@ -76,7 +76,7 @@ func (s *PasswordService) Map(credentialType *PasswordType) (PasswordMap, error)
 	return credentialHiddenMap, err
 }
 
-func (s *PasswordService) Get(uuid uuid.UUID) (*Password, error) {
+func (s *Service) Get(uuid uuid.UUID) (*Password, error) {
 	cred, err := s.passwordRepository.Get(uuid)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (s *PasswordService) Get(uuid uuid.UUID) (*Password, error) {
 	return &cred, nil
 }
 
-func (s *PasswordService) GetDecrypted(uuid uuid.UUID) (*Password, error) {
+func (s *Service) GetDecrypted(uuid uuid.UUID) (*Password, error) {
 	cred, errCred := s.passwordRepository.Get(uuid)
 	if errCred != nil {
 		return nil, errCred
@@ -98,7 +98,7 @@ func (s *PasswordService) GetDecrypted(uuid uuid.UUID) (*Password, error) {
 	return &cred, nil
 }
 
-func (s *PasswordService) ReEncryptPasswords(oldSecret [16]byte, newSecret [16]byte) error {
+func (s *Service) ReEncryptPasswords(oldSecret [16]byte, newSecret [16]byte) error {
 	credentialMap, errGet := s.passwordRepository.Map()
 	if errGet != nil {
 		return errGet
@@ -126,7 +126,7 @@ func (s *PasswordService) ReEncryptPasswords(oldSecret [16]byte, newSecret [16]b
 	return nil
 }
 
-func (s *PasswordService) hidePasswords(credentialMap PasswordMap) PasswordMap {
+func (s *Service) hidePasswords(credentialMap PasswordMap) PasswordMap {
 	for key, credential := range credentialMap {
 		credential.Password = s.defaultPasswordWord
 		credentialMap[key] = credential

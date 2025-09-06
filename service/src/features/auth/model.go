@@ -1,11 +1,11 @@
 package auth
 
-import . "ivory/src/features/config"
+import "ivory/src/features/config"
 
-type AuthInfo struct {
-	Type       AuthType `json:"type"`
-	Authorised bool     `json:"authorised"`
-	Error      string   `json:"error"`
+type Info struct {
+	Type       config.AuthType `json:"type"`
+	Authorised bool            `json:"authorised"`
+	Error      string          `json:"error"`
 }
 
 type Login struct {

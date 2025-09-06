@@ -1,6 +1,6 @@
 package sidecar
 
-type SidecarClient interface {
+type Client interface {
 	Overview(request Request) ([]Instance, int, error)
 	Config(request Request) (any, int, error)
 	ConfigUpdate(request Request) (any, int, error)

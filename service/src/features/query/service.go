@@ -13,20 +13,20 @@ import (
 
 type RunService struct {
 	queryRepository *Repository
-	databaseClient  DatabaseClient
+	databaseClient  Client
 	logService      *LogService
-	passwordService *password.PasswordService
-	certService     *cert.CertService
+	passwordService *password.Service
+	certService     *cert.Service
 
 	chartMap map[QueryChartType]QueryRequest
 }
 
 func NewRunService(
 	queryRepository *Repository,
-	databaseClient DatabaseClient,
+	databaseClient Client,
 	logService *LogService,
-	passwordService *password.PasswordService,
-	certService *cert.CertService,
+	passwordService *password.Service,
+	certService *cert.Service,
 ) *RunService {
 	return &RunService{
 		queryRepository: queryRepository,
@@ -187,12 +187,12 @@ func (s *LogService) Delete(queryUuid uuid.UUID) error {
 
 type Service struct {
 	repository    *Repository
-	secretService *secret.SecretService
+	secretService *secret.Service
 }
 
 func NewService(
 	repository *Repository,
-	secretService *secret.SecretService,
+	secretService *secret.Service,
 ) *Service {
 	queryService := &Service{
 		repository:    repository,

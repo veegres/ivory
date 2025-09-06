@@ -23,21 +23,21 @@ import (
 
 type Context struct {
 	env              *env.AppInfo
-	authRouter       *auth.AuthRouter
-	clusterRouter    *cluster.ClusterRouter
-	bloatRouter      *bloat.BloatRouter
-	certRouter       *cert.CertRouter
-	secretRouter     *secret.SecretRouter
-	passwordRouter   *password.PasswordRouter
-	tagRouter        *tag.TagRouter
+	authRouter       *auth.Router
+	clusterRouter    *cluster.Router
+	bloatRouter      *bloat.Router
+	certRouter       *cert.Router
+	secretRouter     *secret.Router
+	passwordRouter   *password.Router
+	tagRouter        *tag.Router
 	instanceRouter   *instance.Router
-	queryRouter      *query.QueryRouter
+	queryRouter      *query.Router
 	managementRouter *management.Router
 	configRouter     *config.Router
 }
 
 func NewContext() *Context {
-	info := env.NewAppInfo()
+	appInfo := env.NewAppInfo()
 
 	// DB
 	st := db.NewStorage("ivory.db")
@@ -56,36 +56,36 @@ func NewContext() *Context {
 	queryLogFiles := files.NewStorage("query", ".jsonl")
 
 	// REPOS
-	clusterRepo := cluster.NewClusterRepository(clusterBucket)
-	bloatRepo := bloat.NewBloatRepository(compactTableBucket, compactTableFiles)
-	certRepo := cert.NewCertRepository(certBucket, certFiles)
-	tagRepo := tag.NewTagRepository(tagBucket)
-	secretRepo := secret.NewSecretRepository(secretBucket)
-	passwordRepo := password.NewPasswordRepository(passwordBucket)
+	clusterRepo := cluster.NewRepository(clusterBucket)
+	bloatRepo := bloat.NewRepository(compactTableBucket, compactTableFiles)
+	certRepo := cert.NewRepository(certBucket, certFiles)
+	tagRepo := tag.NewRepository(tagBucket)
+	secretRepo := secret.NewRepository(secretBucket)
+	passwordRepo := password.NewRepository(passwordBucket)
 	queryLogRepo := query.NewLogRepository(queryLogFiles)
 	queryRepo := query.NewRepository(queryBucket, queryLogRepo)
 
 	// CLIENTS
-	sidecarGateway := sidecar.NewSidecarGateway()
-	patroniClient := patroni.NewPatroniClient(sidecarGateway)
-	postgresClient := postgres.NewPostgresClient(info.Version.Label)
+	sidecarGateway := sidecar.NewGateway()
+	patroniClient := patroni.NewClient(sidecarGateway)
+	postgresClient := postgres.NewClient(appInfo.Version.Label)
 
 	// SERVICES
-	encryptionService := encryption.NewEncryptionService()
-	secretService := secret.NewSecretService(secretRepo, encryptionService)
+	encryptionService := encryption.NewService()
+	secretService := secret.NewService(secretRepo, encryptionService)
 	configService := config.NewService(configFiles, encryptionService, secretService)
-	passwordService := password.NewPasswordService(passwordRepo, secretService, encryptionService)
-	certService := cert.NewCertService(certRepo)
+	passwordService := password.NewService(passwordRepo, secretService, encryptionService)
+	certService := cert.NewService(certRepo)
 	instanceService := instance.NewService(patroniClient, passwordService, certService)
-	tagService := tag.NewTagService(tagRepo)
-	clusterService := cluster.NewClusterService(clusterRepo, instanceService, tagService)
+	tagService := tag.NewService(tagRepo)
+	clusterService := cluster.NewService(clusterRepo, instanceService, tagService)
 	queryService := query.NewService(queryRepo, secretService)
 	queryLogService := query.NewLogService(queryLogRepo)
 	queryRunService := query.NewRunService(queryRepo, postgresClient, queryLogService, passwordService, certService)
-	bloatService := bloat.NewBloatService(bloatRepo, passwordService)
-	authService := auth.NewAuthService(secretService, encryptionService)
+	bloatService := bloat.NewService(bloatRepo, passwordService)
+	authService := auth.NewService(secretService, encryptionService)
 	managementService := management.NewService(
-		info,
+		appInfo,
 		authService,
 		passwordService,
 		clusterService,
@@ -98,16 +98,16 @@ func NewContext() *Context {
 	)
 
 	return &Context{
-		env:              info,
-		authRouter:       auth.NewAuthRouter(authService, configService),
-		clusterRouter:    cluster.NewClusterRouter(clusterService),
-		bloatRouter:      bloat.NewBloatRouter(bloatService),
-		certRouter:       cert.NewCertRouter(certService),
-		secretRouter:     secret.NewSecretRouter(secretService),
-		passwordRouter:   password.NewPasswordRouter(passwordService),
-		tagRouter:        tag.NewTagRouter(tagService),
-		instanceRouter:   instance.NewInstanceRouter(instanceService),
-		queryRouter:      query.NewQueryRouter(queryService, queryRunService, queryLogService, configService),
+		env:              appInfo,
+		authRouter:       auth.NewRouter(authService, configService),
+		clusterRouter:    cluster.NewRouter(clusterService),
+		bloatRouter:      bloat.NewRouter(bloatService),
+		certRouter:       cert.NewRouter(certService),
+		secretRouter:     secret.NewRouter(secretService),
+		passwordRouter:   password.NewRouter(passwordService),
+		tagRouter:        tag.NewRouter(tagService),
+		instanceRouter:   instance.NewRouter(instanceService),
+		queryRouter:      query.NewRouter(queryService, queryRunService, queryLogService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),
 	}

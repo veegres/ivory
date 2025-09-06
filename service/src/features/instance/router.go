@@ -11,7 +11,7 @@ type Router struct {
 	service *Service
 }
 
-func NewInstanceRouter(service *Service) *Router {
+func NewRouter(service *Service) *Router {
 	return &Router{service: service}
 }
 

@@ -3,33 +3,33 @@ package patroni
 import (
 	"errors"
 	"ivory/src/clients/database"
-	. "ivory/src/clients/sidecar"
+	"ivory/src/clients/sidecar"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
-type patroniClient struct {
-	gateway *SidecarGateway
+type Client struct {
+	gateway *sidecar.Gateway
 }
 
-func NewPatroniClient(gateway *SidecarGateway) SidecarClient {
-	return &patroniClient{gateway: gateway}
+func NewClient(gateway *sidecar.Gateway) *Client {
+	return &Client{gateway: gateway}
 }
 
-func (p *patroniClient) Overview(request Request) ([]Instance, int, error) {
-	var overview []Instance
+func (p *Client) Overview(request sidecar.Request) ([]sidecar.Instance, int, error) {
+	var overview []sidecar.Instance
 
-	response, status, err := NewSidecarRequest[PatroniCluster](p.gateway).Get(request, "/cluster")
+	response, status, err := sidecar.NewSidecarRequest[PatroniCluster](p.gateway).Get(request, "/cluster")
 	if err != nil {
 		return overview, status, err
 	}
 
-	var sidecarStatus SidecarStatus
+	var sidecarStatus sidecar.SidecarStatus
 	if response.Pause == false {
-		sidecarStatus = Active
+		sidecarStatus = sidecar.Active
 	} else {
-		sidecarStatus = Paused
+		sidecarStatus = sidecar.Paused
 	}
 
 	for _, patroniInstance := range response.Members {
@@ -48,34 +48,34 @@ func (p *patroniClient) Overview(request Request) ([]Instance, int, error) {
 			lag = -1
 		}
 
-		var scheduledRestart *InstanceScheduledRestart
+		var scheduledRestart *sidecar.InstanceScheduledRestart
 		if patroniInstance.ScheduledRestart != nil {
-			scheduledRestart = &InstanceScheduledRestart{
+			scheduledRestart = &sidecar.InstanceScheduledRestart{
 				PendingRestart: patroniInstance.ScheduledRestart.RestartPending,
 				At:             patroniInstance.ScheduledRestart.Schedule,
 			}
 		}
 
-		var scheduledSwitchover *InstanceScheduledSwitchover
+		var scheduledSwitchover *sidecar.InstanceScheduledSwitchover
 		if response.ScheduledSwitchover != nil && response.ScheduledSwitchover.From == host {
 			to := response.ScheduledSwitchover.To
 			if to == "" {
 				to = "(random selection)"
 			}
 
-			scheduledSwitchover = &InstanceScheduledSwitchover{
+			scheduledSwitchover = &sidecar.InstanceScheduledSwitchover{
 				At: response.ScheduledSwitchover.At,
 				To: to,
 			}
 		}
 
-		overview = append(overview, Instance{
+		overview = append(overview, sidecar.Instance{
 			State:               patroniInstance.State,
 			Role:                patroniInstance.Role,
 			Lag:                 lag,
 			PendingRestart:      patroniInstance.PendingRestart,
 			Database:            database.Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-			Sidecar:             Sidecar{Host: host, Port: port, Name: &patroniInstance.Name, Status: &sidecarStatus},
+			Sidecar:             sidecar.Sidecar{Host: host, Port: port, Name: &patroniInstance.Name, Status: &sidecarStatus},
 			ScheduledRestart:    scheduledRestart,
 			ScheduledSwitchover: scheduledSwitchover,
 			Tags:                patroniInstance.Tags,
@@ -85,54 +85,54 @@ func (p *patroniClient) Overview(request Request) ([]Instance, int, error) {
 	return overview, status, err
 }
 
-func (p *patroniClient) Config(request Request) (any, int, error) {
-	return NewSidecarRequest[any](p.gateway).Get(request, "/config")
+func (p *Client) Config(request sidecar.Request) (any, int, error) {
+	return sidecar.NewSidecarRequest[any](p.gateway).Get(request, "/config")
 }
 
-func (p *patroniClient) ConfigUpdate(request Request) (any, int, error) {
-	return NewSidecarRequest[any](p.gateway).Patch(request, "/config")
+func (p *Client) ConfigUpdate(request sidecar.Request) (any, int, error) {
+	return sidecar.NewSidecarRequest[any](p.gateway).Patch(request, "/config")
 }
 
-func (p *patroniClient) Switchover(request Request) (*string, int, error) {
-	return NewSidecarRequest[string](p.gateway).Post(request, "/switchover")
+func (p *Client) Switchover(request sidecar.Request) (*string, int, error) {
+	return sidecar.NewSidecarRequest[string](p.gateway).Post(request, "/switchover")
 }
 
-func (p *patroniClient) DeleteSwitchover(request Request) (*string, int, error) {
-	return NewSidecarRequest[string](p.gateway).Delete(request, "/switchover")
+func (p *Client) DeleteSwitchover(request sidecar.Request) (*string, int, error) {
+	return sidecar.NewSidecarRequest[string](p.gateway).Delete(request, "/switchover")
 }
 
-func (p *patroniClient) Reinitialize(request Request) (*string, int, error) {
-	return NewSidecarRequest[string](p.gateway).Post(request, "/reinitialize")
+func (p *Client) Reinitialize(request sidecar.Request) (*string, int, error) {
+	return sidecar.NewSidecarRequest[string](p.gateway).Post(request, "/reinitialize")
 }
 
-func (p *patroniClient) Restart(request Request) (*string, int, error) {
-	return NewSidecarRequest[string](p.gateway).Post(request, "/restart")
+func (p *Client) Restart(request sidecar.Request) (*string, int, error) {
+	return sidecar.NewSidecarRequest[string](p.gateway).Post(request, "/restart")
 }
 
-func (p *patroniClient) DeleteRestart(request Request) (*string, int, error) {
-	return NewSidecarRequest[string](p.gateway).Delete(request, "/restart")
+func (p *Client) DeleteRestart(request sidecar.Request) (*string, int, error) {
+	return sidecar.NewSidecarRequest[string](p.gateway).Delete(request, "/restart")
 }
 
-func (p *patroniClient) Reload(request Request) (*string, int, error) {
-	return NewSidecarRequest[string](p.gateway).Post(request, "/reload")
+func (p *Client) Reload(request sidecar.Request) (*string, int, error) {
+	return sidecar.NewSidecarRequest[string](p.gateway).Post(request, "/reload")
 }
 
-func (p *patroniClient) Failover(request Request) (*string, int, error) {
-	return NewSidecarRequest[string](p.gateway).Post(request, "/failover")
+func (p *Client) Failover(request sidecar.Request) (*string, int, error) {
+	return sidecar.NewSidecarRequest[string](p.gateway).Post(request, "/failover")
 }
 
-func (p *patroniClient) Activate(request Request) (*string, int, error) {
+func (p *Client) Activate(request sidecar.Request) (*string, int, error) {
 	if request.Body != nil {
 		return nil, http.StatusBadRequest, errors.New("body should be empty")
 	}
 	request.Body = ConfigPause{Pause: false}
-	return NewSidecarRequest[string](p.gateway).Patch(request, "/config")
+	return sidecar.NewSidecarRequest[string](p.gateway).Patch(request, "/config")
 }
 
-func (p *patroniClient) Pause(request Request) (*string, int, error) {
+func (p *Client) Pause(request sidecar.Request) (*string, int, error) {
 	if request.Body != nil {
 		return nil, http.StatusBadRequest, errors.New("body should be empty")
 	}
 	request.Body = ConfigPause{Pause: true}
-	return NewSidecarRequest[string](p.gateway).Patch(request, "/config")
+	return sidecar.NewSidecarRequest[string](p.gateway).Patch(request, "/config")
 }

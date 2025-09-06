@@ -1,7 +1,7 @@
 package management
 
 import (
-	. "ivory/src/features/secret"
+	"ivory/src/features/secret"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,13 +26,13 @@ func (r *Router) Erase(context *gin.Context) {
 }
 
 func (r *Router) ChangeSecret(context *gin.Context) {
-	var secret SecretUpdateRequest
-	errBind := context.ShouldBindJSON(&secret)
+	var request secret.SecretUpdateRequest
+	errBind := context.ShouldBindJSON(&request)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	err := r.service.ChangeSecret(secret.PreviousKey, secret.NewKey)
+	err := r.service.ChangeSecret(request.PreviousKey, request.NewKey)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
