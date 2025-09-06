@@ -87,16 +87,17 @@ export function CredentialsRow(props: Props) {
     }
 
     function handleToggleType() {
+        let tmpType: PasswordType
         switch (type) {
             case PasswordType.POSTGRES:
-                toggleType(PasswordType.PATRONI)
+                tmpType = PasswordType.PATRONI
                 break
             case PasswordType.PATRONI:
-                toggleType(PasswordType.POSTGRES)
+                tmpType = PasswordType.POSTGRES
                 break
-            default:
-                toggleType(PasswordType.POSTGRES)
         }
+        toggleType(tmpType)
+        onChangeCredential({username, password, type: tmpType})
     }
 
     function handleEffectProps() {
