@@ -1,8 +1,7 @@
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 import {useState} from "react";
-import {Alert, Box} from "@mui/material";
-import {LoadingButton} from "@mui/lab";
+import {Alert, Box, Button} from "@mui/material";
 import {SxPropsMap} from "../../../../type/general";
 import {useRouterSecretChange} from "../../../../router/general";
 
@@ -46,14 +45,14 @@ export function Secret() {
                     label={"New Secret"}
                     onChange={(e) => setNewKey(e.target.value)}
                 />
-                <LoadingButton
+                <Button
                     sx={SX.button}
                     variant={"contained"}
                     loading={changeReq.isPending}
                     onClick={() => changeReq.mutate({previousKey: prevKey, newKey})}
                 >
                     Change
-                </LoadingButton>
+                </Button>
             </Box>
         </MenuWrapper>
     )

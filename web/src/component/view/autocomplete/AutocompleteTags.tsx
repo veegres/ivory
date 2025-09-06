@@ -54,9 +54,9 @@ export function AutocompleteTags(props: Props) {
         )
     }
 
-    function renderOption(props: HTMLAttributes<HTMLLIElement> & { key: any }, option: Option) {
+    function renderOption(props: HTMLAttributes<HTMLLIElement>, option: Option) {
         return (
-            <Box component={"li"} {...props}>
+            <Box component={"li"} {...props} key={option.label}>
                 <Box sx={SX.option}>
                     <Box sx={SX.text}>{option.label}</Box>
                     {!option.exist && <Box sx={SX.icon}>new</Box>}

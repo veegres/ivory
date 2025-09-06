@@ -1,6 +1,5 @@
-import {Box, Tooltip} from "@mui/material";
+import {Box, Button, Tooltip} from "@mui/material";
 import {AlertDialog} from "../dialog/AlertDialog";
-import {LoadingButton} from "@mui/lab";
 import {ReactNode, useState} from "react";
 import {SxPropsMap} from "../../../type/general";
 
@@ -40,7 +39,7 @@ export function AlertButton(props: Props) {
             </AlertDialog>
             <Tooltip title={tooltip} placement={"top"} arrow={true}>
                 <Box component={"span"}>
-                    <LoadingButton
+                    <Button
                         sx={SX.button}
                         size={size}
                         color={color}
@@ -50,7 +49,7 @@ export function AlertButton(props: Props) {
                         onClick={() => setOpen(true)}
                     >
                         {label}
-                    </LoadingButton>
+                    </Button>
                 </Box>
             </Tooltip>
         </Box>
