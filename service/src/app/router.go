@@ -161,7 +161,6 @@ func instanceRouter(g *gin.RouterGroup, r *instance.Router) {
 func queryRouter(g *gin.RouterGroup, r *query.Router) {
 	group := g.Group("/query")
 	group.GET("", r.GetQueryList)
-	group.DELETE("/:uuid", r.DeleteQuery)
 	group.POST("/run", r.PostRunQuery)
 	group.POST("/activity", r.PostAllRunningQueriesByApplicationName)
 	group.POST("/databases", r.PostDatabasesQuery)
@@ -174,6 +173,7 @@ func queryRouter(g *gin.RouterGroup, r *query.Router) {
 	manualGroup := group.Group("", r.ManualMiddleware())
 	manualGroup.POST("", r.PostQuery)
 	manualGroup.PUT("/:uuid", r.PutQuery)
+	manualGroup.DELETE("/:uuid", r.DeleteQuery)
 
 	logGroup := group.Group("/log")
 	logGroup.GET("/:uuid", r.GetQueryLog)
