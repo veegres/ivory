@@ -1,7 +1,8 @@
 import {PageMainBox} from "./PageMainBox";
 import {ErrorSmart} from "./ErrorSmart";
 import {Stack} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
+
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     stack: {width: "100%", height: "100%", gap: 4},

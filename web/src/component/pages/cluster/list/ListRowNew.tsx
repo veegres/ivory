@@ -3,9 +3,9 @@ import {DynamicInputs} from "../../../view/input/DynamicInputs";
 import {useState} from "react";
 import {ListCellUpdate} from "./ListCellUpdate";
 import {ListCell} from "./ListCell";
-import {SxPropsMap} from "../../../../api/management/type";
 import {getSidecars} from "../../../../app/utils";
 import {useStore} from "../../../../provider/StoreProvider";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     nodesCellInput: {height: '32px'},

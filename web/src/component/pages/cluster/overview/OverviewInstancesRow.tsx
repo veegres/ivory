@@ -6,7 +6,6 @@ import {
     SizeFormatter,
     SxPropsFormatter
 } from "../../../../app/utils";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InstanceWeb, Sidecar} from "../../../../api/instance/type";
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
@@ -22,6 +21,7 @@ import {InfoColorBox} from "../../../view/box/InfoColorBox";
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors";
 import {ScheduleButton} from "../../../widgets/actions/ScheduleButton";
 import {HiddenScrolling} from "../../../view/scrolling/HiddenScrolling";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},

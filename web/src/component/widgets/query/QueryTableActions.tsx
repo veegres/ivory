@@ -1,7 +1,7 @@
 import {Box, Button} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {useRouterQueryCancel, useRouterQueryTerminate} from "../../../api/query/hook";
 import {QueryConnection} from "../../../api/query/type";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-evenly", color: "text.secondary", padding: "0 3px"},

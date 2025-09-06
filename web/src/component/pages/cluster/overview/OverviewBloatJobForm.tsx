@@ -1,7 +1,6 @@
 import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError";
 import {Box, Button, Checkbox, FormControlLabel, TextField} from "@mui/material";
 import {useState} from "react";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InstanceWeb} from "../../../../api/instance/type";
 import {Cluster} from "../../../../api/cluster/type";
 import {BloatOptions, BloatTarget} from "../../../../api/bloat/type";
@@ -9,6 +8,7 @@ import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
 import {useRouterBloatStart} from "../../../../api/bloat/hook";
 import {getQueryConnection} from "../../../../app/utils";
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},

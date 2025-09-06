@@ -1,11 +1,11 @@
 import {Stack} from "@mui/material";
 import {OverviewOptionsInstance} from "./OverviewOptionsInstance";
 import {getDomain} from "../../../../app/utils";
-import {SxPropsMap} from "../../../../api/management/type";
 import {Options} from "../../../widgets/options/Options";
 import {ActiveCluster, ClusterOptions} from "../../../../api/cluster/type";
 import {useRouterClusterUpdate} from "../../../../api/cluster/hook";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     settings: {width: "250px", gap: "12px", padding: "8px 0"},

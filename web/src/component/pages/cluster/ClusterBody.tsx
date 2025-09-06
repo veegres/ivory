@@ -3,7 +3,8 @@ import {Stack} from "@mui/material";
 import {List as ClusterList} from "./list/List";
 import {Overview as ClusterOverview} from "./overview/Overview";
 import {Instance as ClusterInstance} from "./instance/Instance";
-import {SxPropsMap} from "../../../api/management/type";
+
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     stack: {width: "100%", height: "100%", gap: 4}

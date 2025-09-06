@@ -1,9 +1,9 @@
 import {Alert, Box, Collapse, ToggleButton, Tooltip} from "@mui/material";
 import {ReactNode, useState} from "react";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InfoOutlined} from "@mui/icons-material";
 import {DatabaseBox} from "../../../view/box/DatabaseBox";
 import {Database} from "../../../../api/query/type";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},

@@ -2,13 +2,13 @@ import {QueryBoxBody} from "./QueryBoxBody";
 import {QueryRun} from "./QueryRun";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {useState} from "react";
-import {SxPropsMap} from "../../../api/management/type";
 import {CancelIconButton, PlayIconButton} from "../../view/button/IconButtons";
 import {Box, Paper} from "@mui/material";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {useStore, useStoreAction} from "../../../provider/StoreProvider";
 import {useDebounceFunction} from "../../../hook/Debounce";
 import {QueryConnection} from "../../../api/query/type";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     query: {position: "relative", display: "flex", flexDirection: "column", padding: "2px 2px 15px 2px", fontSize: "13px"},

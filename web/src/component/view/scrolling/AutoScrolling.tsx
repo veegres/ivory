@@ -1,8 +1,8 @@
 import {Box, Button} from "@mui/material";
 import {ReactElement, ReactNode, useEffect, useState} from "react";
 import {ArrowDownward, ArrowUpward, Pause, PlayArrow} from "@mui/icons-material";
-import {SxPropsMap} from "../../../api/management/type";
 import {SxPropsFormatter} from "../../../app/utils";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     wrapper: {display: "flex"},

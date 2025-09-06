@@ -2,7 +2,8 @@ import {DateTimeField} from "@mui/x-date-pickers";
 import {DateTimeFormatter} from "../../../app/utils";
 import dayjs, {Dayjs} from "dayjs";
 import {Box, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
+
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 2},

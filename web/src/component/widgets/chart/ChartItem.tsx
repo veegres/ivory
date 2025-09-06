@@ -1,5 +1,4 @@
 import {Box, CircularProgress, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {
     blue, blueGrey, brown, cyan, deepOrange, deepPurple, green, indigo, orange, pink, purple, red
 } from "@mui/material/colors";
@@ -7,6 +6,7 @@ import {useMemo} from "react";
 import {IconButton, PlayIconButton, RefreshIconButton} from "../../view/button/IconButtons";
 import {InfoOutlined} from "@mui/icons-material";
 import {AxiosError} from "axios";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {

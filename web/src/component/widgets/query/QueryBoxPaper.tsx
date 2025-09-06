@@ -1,6 +1,6 @@
 import {ReactNode} from "react";
-import {SxPropsMap} from "../../../api/management/type";
 import {Paper} from "@mui/material";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     item: {fontSize: "15px"},

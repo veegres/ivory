@@ -3,9 +3,9 @@ import {ReactNode} from "react";
 import {Header} from "./Header";
 import {Footer} from "./Footer";
 import {Body} from "./Body";
-import {SxPropsMap} from "../../api/management/type";
 import {useRouterInfo} from "../../api/management/hook";
 import {AuthType} from "../../api/config/type";
+import {SxPropsMap} from "../type";
 
 const SX: SxPropsMap = {
     // NOTE: we need -8px for the bottom scroll, right scroll is always shown that is why we don't need calc

@@ -1,8 +1,8 @@
 import {QueryVarietyOptions} from "../../../app/utils";
 import {InfoColorBox} from "../../view/box/InfoColorBox";
 import {QueryVariety} from "../../../api/query/type";
-import {SxPropsMap} from "../../../api/management/type";
 import {Box} from "@mui/material";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1, padding: "0px 5px"},

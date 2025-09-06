@@ -1,7 +1,7 @@
 import select from "../../../style/select.module.css";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {ReactNode, useState} from "react";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     head: {display: "flex", padding: "5px 15px"},

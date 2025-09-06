@@ -6,7 +6,8 @@ import {CertType} from "../../../api/cert/type";
 import {OptionsTags} from "./OptionsTags";
 import {ClusterOptions} from "../../../api/cluster/type";
 import {CertOptions, CredentialOptions} from "../../../app/utils";
-import {SxPropsMap} from "../../../api/management/type";
+
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     tls: {width: "50%", fontWeight: "bold"},

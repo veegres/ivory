@@ -1,8 +1,8 @@
 import {ToggleButtonScrollable} from "../../../view/scrolling/ToggleButtonScrollable";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../../api/management/type";
 import {useRouterTagList} from "../../../../api/tag/hook";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     tags: {position: "relative", height: 0, top: "-37px"},

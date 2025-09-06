@@ -1,10 +1,10 @@
 import {Accordion, AccordionDetails, AccordionSummary, Box} from "@mui/material";
 import {VirtualizedTable} from "../../view/table/VirtualizedTable";
-import {SxPropsMap} from "../../../api/management/type";
 import {QueryFields} from "../../../api/query/type";
 import {useMemo, useState} from "react";
 import {KeyboardArrowDown} from "@mui/icons-material";
 import {QueryResponseInfo} from "./QueryResponseInfo";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {borderBottom: 1, borderColor: "divider", "&::before": {display: "none"}, "&:last-child": {borderBottom: 0}},

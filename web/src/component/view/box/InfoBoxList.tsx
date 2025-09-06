@@ -1,10 +1,10 @@
 import {cloneElement, ReactElement} from "react";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {InfoBox, Padding} from "./InfoBox";
 import {InfoColorBoxList} from "./InfoColorBoxList";
 import {green, grey} from "@mui/material/colors";
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {position: "relative", display: "flex", alignItems: "center", justifyContent: "center"},

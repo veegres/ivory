@@ -2,8 +2,8 @@ import {TransitionGroup} from "react-transition-group";
 import {Collapse} from "@mui/material";
 import {OverviewBloatJobItem} from "./OverviewBloatJobItem";
 import {InfoAlert} from "../../../view/box/InfoAlert";
-import {StylePropsMap} from "../../../../api/management/type";
 import {Type} from "../../../../api/bloat/type";
+import {StylePropsMap} from "../../../../app/type";
 
 const style: StylePropsMap = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}

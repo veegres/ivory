@@ -1,10 +1,10 @@
 import {Box, Button, Tooltip} from "@mui/material";
 import {QueryBoxWrapper} from "./QueryBoxWrapper";
-import {SxPropsMap} from "../../../api/management/type";
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {KeyboardDoubleArrowRight} from "@mui/icons-material";
 import {Query} from "../../../api/query/type";
 import {useRouterQueryUpdate} from "../../../api/query/hook";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)", rowGap: 1, columnGap: 2},

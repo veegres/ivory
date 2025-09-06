@@ -2,10 +2,10 @@ import {AutoIconButton} from "../../../view/button/IconButtons";
 import {useState} from "react";
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, TextField} from "@mui/material";
 import {Options} from "../../../widgets/options/Options";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {ClusterAuto} from "../../../../api/cluster/type";
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},

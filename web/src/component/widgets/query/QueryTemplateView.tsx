@@ -1,5 +1,4 @@
 import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../api/query/type";
-import {SxPropsMap} from "../../../api/management/type";
 import {QueryTemplateWrapper} from "./QueryTemplateWrapper";
 import {QueryBoxBody} from "./QueryBoxBody";
 import {QueryInfoView} from "./QueryInfoView";
@@ -17,6 +16,7 @@ import {QueryButtonDelete} from "./QueryButtonDelete";
 import {Box} from "@mui/material";
 import {QueryLog} from "./QueryLog";
 import {QueryButtonUpdate} from "./QueryButtonUpdate";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     name: {fontWeight: "bold"},

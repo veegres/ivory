@@ -7,7 +7,8 @@ import {InfoBoxList} from "../../../view/box/InfoBoxList";
 import {InfoBox} from "../../../view/box/InfoBox";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
 import {ActiveCluster} from "../../../../api/cluster/type";
-import {SxPropsMap} from "../../../../api/management/type";
+
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},

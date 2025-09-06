@@ -2,8 +2,8 @@ import {AlertButton} from "../../view/button/AlertButton";
 import {InstanceRequest} from "../../../api/instance/type";
 import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {useRouterInstanceReinit} from "../../../api/instance/hook";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     force: {margin: "0px"},

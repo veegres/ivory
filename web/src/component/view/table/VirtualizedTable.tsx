@@ -1,11 +1,11 @@
 import scroll from "../../../style/scroll.module.css";
 import {Box, CircularProgress, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {Fragment, ReactNode, useMemo, useState} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import {NoBox} from "../box/NoBox";
 import {useDragger} from "../../../hook/Dragger";
 import {MenuButton} from "../button/MenuButton";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {position: "relative"},

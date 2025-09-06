@@ -1,7 +1,7 @@
 import {ReactNode, useState} from "react";
 import {Box, SxProps, Theme} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {SxPropsFormatter} from "../../../app/utils";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px", minHeight: "40px"},

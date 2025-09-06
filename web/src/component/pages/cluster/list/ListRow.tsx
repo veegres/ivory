@@ -9,7 +9,8 @@ import {getDomains, getSidecars, SxPropsFormatter} from "../../../../app/utils";
 import {ListCellChip} from "./ListCellChip";
 import {useInstanceDetection} from "../../../../hook/InstanceDetection";
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
-import {SxPropsMap} from "../../../../api/management/type";
+
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, minHeight: "32px"},

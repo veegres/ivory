@@ -2,7 +2,8 @@ import {useState} from "react";
 import {FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
 import {InputProps as StandardInputProps} from "@mui/material/Input/Input";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
-import {SxPropsMap} from "../../../api/management/type";
+
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     margin: {margin: "0px"},
