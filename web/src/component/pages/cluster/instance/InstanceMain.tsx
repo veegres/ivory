@@ -3,7 +3,7 @@ import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewEr
 import {Box, Link} from "@mui/material";
 import {SxPropsMap} from "../../../../api/management/type";
 import {InstanceTab, InstanceTabType} from "../../../../api/instance/type";
-import {Chart} from "../../.././widgets/chart/Chart";
+import {Chart} from "../../../widgets/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";

@@ -13,14 +13,14 @@ import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {Cluster} from "../../../../api/cluster/type";
 import {useEffect} from "react";
 import {MenuButton} from "../../../view/button/MenuButton";
-import {SwitchoverButton} from "../../.././widgets/actions/SwitchoverButton";
-import {FailoverButton} from "../../.././widgets/actions/FailoverButton";
-import {RestartButton} from "../../.././widgets/actions/RestartButton";
-import {ReloadButton} from "../../.././widgets/actions/ReloadButton";
-import {ReinitButton} from "../../.././widgets/actions/ReinitButton";
+import {SwitchoverButton} from "../../../widgets/actions/SwitchoverButton";
+import {FailoverButton} from "../../../widgets/actions/FailoverButton";
+import {RestartButton} from "../../../widgets/actions/RestartButton";
+import {ReloadButton} from "../../../widgets/actions/ReloadButton";
+import {ReinitButton} from "../../../widgets/actions/ReinitButton";
 import {InfoColorBox} from "../../../view/box/InfoColorBox";
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors";
-import {ScheduleButton} from "../../.././widgets/actions/ScheduleButton";
+import {ScheduleButton} from "../../../widgets/actions/ScheduleButton";
 import {HiddenScrolling} from "../../../view/scrolling/HiddenScrolling";
 
 const SX: SxPropsMap = {
