@@ -11,16 +11,22 @@ import (
 )
 
 type QueryRouter struct {
-	queryService  *QueryService
+	service       *Service
+	runService    *RunService
+	logService    *LogService
 	configService *config.Service
 }
 
 func NewQueryRouter(
-	queryService *QueryService,
+	service *Service,
+	runService *RunService,
+	logService *LogService,
 	configService *config.Service,
 ) *QueryRouter {
 	return &QueryRouter{
-		queryService:  queryService,
+		service:       service,
+		runService:    runService,
+		logService:    logService,
 		configService: configService,
 	}
 }
@@ -52,7 +58,7 @@ func (r *QueryRouter) PutQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	_, response, err := r.queryService.Update(queryUuid, query)
+	_, response, err := r.service.Update(queryUuid, query)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -67,7 +73,7 @@ func (r *QueryRouter) PostQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	_, response, err := r.queryService.Create(Manual, query)
+	_, response, err := r.service.Create(Manual, query)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -85,14 +91,14 @@ func (r *QueryRouter) GetQueryList(context *gin.Context) {
 			return
 		}
 		queryType := database.QueryType(number)
-		queryList, err := r.queryService.GetList(&queryType)
+		queryList, err := r.service.GetList(&queryType)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		context.JSON(http.StatusOK, gin.H{"response": queryList})
 	} else {
-		queryList, err := r.queryService.GetList(nil)
+		queryList, err := r.service.GetList(nil)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -107,7 +113,7 @@ func (r *QueryRouter) DeleteQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	err := r.queryService.Delete(queryUuid)
+	err := r.service.Delete(queryUuid)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -136,10 +142,10 @@ func (r *QueryRouter) PostRunQuery(context *gin.Context) {
 	var err error
 	queryContext := r.getQueryContext(context, req.Connection)
 	if req.QueryUuid != nil {
-		res, err = r.queryService.RunTemplateQuery(queryContext, *req.QueryUuid, req.QueryOptions)
+		res, err = r.runService.RunTemplateQuery(queryContext, *req.QueryUuid, req.QueryOptions)
 	}
 	if req.Query != nil {
-		res, err = r.queryService.RunQuery(queryContext, *req.Query, req.QueryOptions)
+		res, err = r.runService.RunQuery(queryContext, *req.Query, req.QueryOptions)
 	}
 
 	if err != nil {
@@ -156,7 +162,7 @@ func (r *QueryRouter) GetQueryLog(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	response, err := r.queryService.GetLog(queryUuid)
+	response, err := r.logService.Get(queryUuid)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -170,7 +176,7 @@ func (r *QueryRouter) DeleteQueryLog(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	err := r.queryService.DeleteLog(queryUuid)
+	err := r.logService.Delete(queryUuid)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -187,7 +193,7 @@ func (r *QueryRouter) PostAllRunningQueriesByApplicationName(context *gin.Contex
 	}
 
 	queryContext := r.getQueryContext(context, req)
-	res, err := r.queryService.GetAllRunningQueriesByApplicationName(queryContext)
+	res, err := r.runService.GetAllRunningQueriesByApplicationName(queryContext)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -205,7 +211,7 @@ func (r *QueryRouter) PostDatabasesQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.queryService.DatabasesQuery(queryContext, req.Name)
+	res, err := r.runService.DatabasesQuery(queryContext, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -223,7 +229,7 @@ func (r *QueryRouter) PostSchemasQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.queryService.SchemasQuery(queryContext, req.Name)
+	res, err := r.runService.SchemasQuery(queryContext, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -241,7 +247,7 @@ func (r *QueryRouter) PostTablesQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.queryService.TablesQuery(queryContext, req.Schema, req.Name)
+	res, err := r.runService.TablesQuery(queryContext, req.Schema, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -259,7 +265,7 @@ func (r *QueryRouter) PostChartQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.queryService.ChartQuery(queryContext, *req.Type)
+	res, err := r.runService.ChartQuery(queryContext, *req.Type)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -277,7 +283,7 @@ func (r *QueryRouter) PostCancelQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	errQuery := r.queryService.Cancel(queryContext, req.Pid)
+	errQuery := r.runService.Cancel(queryContext, req.Pid)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return
@@ -295,7 +301,7 @@ func (r *QueryRouter) PostTerminateQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	errQuery := r.queryService.Terminate(queryContext, req.Pid)
+	errQuery := r.runService.Terminate(queryContext, req.Pid)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return

@@ -23,7 +23,7 @@ type Service struct {
 	certService     *cert.CertService
 	tagService      *tag.TagService
 	bloatService    *bloat.BloatService
-	queryService    *query.QueryService
+	queryService    *query.Service
 	secretService   *secret.SecretService
 	encryption      *encryption.EncryptionService
 	config          *config.Service
@@ -37,7 +37,7 @@ func NewService(
 	certService *cert.CertService,
 	tagService *tag.TagService,
 	bloatService *bloat.BloatService,
-	queryService *query.QueryService,
+	queryService *query.Service,
 	secretService *secret.SecretService,
 	config *config.Service,
 ) *Service {

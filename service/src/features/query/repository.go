@@ -14,26 +14,23 @@ import (
 	"github.com/google/uuid"
 )
 
-type QueryRepository struct {
-	bucket            *bolt.Bucket[Query]
+type LogRepository struct {
 	queryLogFiles     *files.FileGateway
 	maxBufferCapacity int
 	maxLogElements    int
 }
 
-func NewQueryRepository(
-	bucket *bolt.Bucket[Query],
+func NewLogRepository(
 	queryLogFiles *files.FileGateway,
-) *QueryRepository {
-	return &QueryRepository{
-		bucket:            bucket,
+) *LogRepository {
+	return &LogRepository{
 		queryLogFiles:     queryLogFiles,
 		maxBufferCapacity: 1024 * 1024,
 		maxLogElements:    10,
 	}
 }
 
-func (r *QueryRepository) GetLog(uuid uuid.UUID) ([]database.QueryFields, error) {
+func (r *LogRepository) Get(uuid uuid.UUID) ([]database.QueryFields, error) {
 	file, err := r.queryLogFiles.OpenByName(uuid.String())
 	if err != nil {
 		return []database.QueryFields{}, nil
@@ -61,11 +58,11 @@ func (r *QueryRepository) GetLog(uuid uuid.UUID) ([]database.QueryFields, error)
 	return elements, nil
 }
 
-func (r *QueryRepository) DeleteLog(uuid uuid.UUID) error {
-	return r.queryLogFiles.DeleteByName(uuid.String())
+func (r *LogRepository) Exist(uuid uuid.UUID) bool {
+	return r.queryLogFiles.ExistByName(uuid.String())
 }
 
-func (r *QueryRepository) AddLog(uuid uuid.UUID, element any) error {
+func (r *LogRepository) Add(uuid uuid.UUID, element any) error {
 	if !r.queryLogFiles.ExistByName(uuid.String()) {
 		_, errCreate := r.queryLogFiles.CreateByName(uuid.String())
 		if errCreate != nil {
@@ -136,21 +133,44 @@ func (r *QueryRepository) AddLog(uuid uuid.UUID, element any) error {
 	return nil
 }
 
-func (r *QueryRepository) Get(uuid uuid.UUID) (Query, error) {
+func (r *LogRepository) Delete(uuid uuid.UUID) error {
+	return r.queryLogFiles.DeleteByName(uuid.String())
+}
+
+func (r *LogRepository) DeleteAll() error {
+	return r.queryLogFiles.DeleteAll()
+}
+
+type Repository struct {
+	bucket        *bolt.Bucket[Query]
+	LogRepository *LogRepository
+}
+
+func NewRepository(
+	bucket *bolt.Bucket[Query],
+	logRepository *LogRepository,
+) *Repository {
+	return &Repository{
+		bucket:        bucket,
+		LogRepository: logRepository,
+	}
+}
+
+func (r *Repository) Get(uuid uuid.UUID) (Query, error) {
 	return r.bucket.Get(uuid.String())
 }
 
-func (r *QueryRepository) List() ([]Query, error) {
+func (r *Repository) List() ([]Query, error) {
 	return r.bucket.GetList(nil, r.sortAscByCreatedAt)
 }
 
-func (r *QueryRepository) ListByType(queryType database.QueryType) ([]Query, error) {
+func (r *Repository) ListByType(queryType database.QueryType) ([]Query, error) {
 	return r.bucket.GetList(func(cert Query) bool {
 		return cert.Type == queryType
 	}, r.sortAscByCreatedAt)
 }
 
-func (r *QueryRepository) Create(query Query) (*uuid.UUID, *Query, error) {
+func (r *Repository) Create(query Query) (*uuid.UUID, *Query, error) {
 	key := uuid.New()
 	query.Id = key
 	query.CreatedAt = time.Now().UnixNano()
@@ -158,27 +178,26 @@ func (r *QueryRepository) Create(query Query) (*uuid.UUID, *Query, error) {
 	return &key, &query, err
 }
 
-func (r *QueryRepository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query, error) {
+func (r *Repository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query, error) {
 	err := r.bucket.Update(key.String(), query)
 	return &key, &query, err
 }
 
-func (r *QueryRepository) Delete(key uuid.UUID) error {
-	keyString := key.String()
+func (r *Repository) Delete(key uuid.UUID) error {
 	var errFile error
-	if r.queryLogFiles.ExistByName(keyString) {
-		errFile = r.queryLogFiles.DeleteByName(keyString)
+	if r.LogRepository.Exist(key) {
+		errFile = r.LogRepository.Delete(key)
 	}
-	errBucket := r.bucket.Delete(keyString)
+	errBucket := r.bucket.Delete(key.String())
 	return errors.Join(errFile, errBucket)
 }
 
-func (r *QueryRepository) DeleteAll() error {
-	errFile := r.queryLogFiles.DeleteAll()
+func (r *Repository) DeleteAll() error {
+	errFile := r.LogRepository.DeleteAll()
 	errBucket := r.bucket.DeleteAll()
 	return errors.Join(errFile, errBucket)
 }
 
-func (r *QueryRepository) sortAscByCreatedAt(list []Query, i, j int) bool {
+func (r *Repository) sortAscByCreatedAt(list []Query, i, j int) bool {
 	return list[i].CreatedAt < list[j].CreatedAt
 }
