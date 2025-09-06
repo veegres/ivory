@@ -12,9 +12,4 @@ type SecretSetRequest struct {
 	Ref string `json:"ref"`
 }
 
-type SecretUpdateRequest struct {
-	PreviousKey string `json:"previousKey"`
-	NewKey      string `json:"newKey"`
-}
-
 // SPECIFIC (SERVER)

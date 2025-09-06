@@ -1,26 +1,10 @@
-import {Database} from "../management/type";
-import {Certs} from "../cluster/type";
+import {Certs} from "../cert/type";
 
 // COMMON (WEB AND SERVER)
-
-export enum QueryType {
-    BLOAT,
-    ACTIVITY,
-    REPLICATION,
-    STATISTIC,
-    OTHER,
-    CONSOLE,
-}
 
 export enum QueryCreation {
     Manual = "manual",
     System = "system",
-}
-
-export enum QueryVariety {
-    DatabaseSensitive,
-    MasterOnly,
-    ReplicaRecommended,
 }
 
 export interface Query {
@@ -36,25 +20,10 @@ export interface Query {
     createAt: number,
 }
 
-export interface QueryRequest {
-    type: QueryType,
-    query: string,
-    name: string,
-    description?: string,
-    varieties?: QueryVariety[],
-    params?: string[],
-}
-
 export interface QueryConnection {
     db: Database,
     certs?: Certs,
     credentialId?: string,
-}
-
-export interface QueryOptions {
-    params?: string[],
-    trim?: boolean,
-    limit?: string,
 }
 
 export interface QueryRunRequest {
@@ -91,10 +60,33 @@ export interface QueryTablesRequest {
     name: string,
 }
 
+// POSTGRES CLIENT (WEB AND SERVER)
+
+export interface Database {
+    host: string,
+    port: number,
+    name?: string,
+}
+
+export interface QueryOptions {
+    params?: string[],
+    trim?: boolean,
+    limit?: string,
+}
+
 export interface QueryField {
     name: string,
     dataType: string,
     dataTypeOID: number,
+}
+
+export interface QueryFields {
+    fields: QueryField[],
+    rows: any[][],
+    url: string,
+    startTime: number,
+    endTime: number,
+    options?: QueryOptions,
 }
 
 export enum QueryChartType {
@@ -113,13 +105,29 @@ export interface QueryChart {
     value: any,
 }
 
-export interface QueryFields {
-    fields: QueryField[],
-    rows: any[][],
-    url: string,
-    startTime: number,
-    endTime: number,
-    options?: QueryOptions,
+export enum QueryType {
+    BLOAT,
+    ACTIVITY,
+    REPLICATION,
+    STATISTIC,
+    OTHER,
+    CONSOLE,
+}
+
+export enum QueryVariety {
+    DatabaseSensitive,
+    MasterOnly,
+    ReplicaRecommended,
+}
+
+
+export interface QueryRequest {
+    type: QueryType,
+    query: string,
+    name: string,
+    description?: string,
+    varieties?: QueryVariety[],
+    params?: string[],
 }
 
 // SPECIFIC (WEB)

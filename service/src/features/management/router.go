@@ -1,7 +1,6 @@
 package management
 
 import (
-	"ivory/src/features/secret"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +25,7 @@ func (r *Router) Erase(context *gin.Context) {
 }
 
 func (r *Router) ChangeSecret(context *gin.Context) {
-	var request secret.SecretUpdateRequest
+	var request SecretUpdateRequest
 	errBind := context.ShouldBindJSON(&request)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})

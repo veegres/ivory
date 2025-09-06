@@ -1,11 +1,11 @@
 import {useMutationAdapter} from "../../hook/QueryCustom";
+import {ConfigApi} from "./router";
 import {ManagementApi} from "../management/router";
-import {SecretApi} from "./router";
 
-export function useRouterSecretSet() {
+export function useRouterConfigSet() {
     return useMutationAdapter({
-        mutationFn: SecretApi.setSecret.fn,
-        mutationKey: SecretApi.setSecret.key(),
+        mutationFn: ConfigApi.setAppConfig.fn,
+        mutationKey: ConfigApi.setAppConfig.key(),
         successKeys: [ManagementApi.info.key()],
     })
 }

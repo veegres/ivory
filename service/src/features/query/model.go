@@ -35,11 +35,6 @@ type QueryConnection struct {
 	CredentialId *uuid.UUID        `json:"credentialId"`
 }
 
-type QueryContext struct {
-	Connection QueryConnection
-	Session    string
-}
-
 type QueryRunRequest struct {
 	Connection   QueryConnection        `json:"connection"`
 	QueryUuid    *uuid.UUID             `json:"queryUuid"`
@@ -74,3 +69,8 @@ type QueryTablesRequest struct {
 }
 
 // SPECIFIC (SERVER)
+
+type QueryContext struct {
+	Connection QueryConnection
+	Session    string
+}

@@ -18,19 +18,15 @@ import {SxProps, Theme} from "@mui/material";
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
 import {PasswordType} from "../api/password/type";
 import {
-    ColorsMap, Database,
-    EnumOptions,
-    FileUsageType,
+    ColorsMap, EnumOptions,
     Links,
     Settings,
-    Sidecar,
-    SidecarStatus,
     SxPropsMap
 } from "../api/management/type";
-import {CertType} from "../api/cert/type";
-import {InstanceMap, InstanceRequest, InstanceWeb, Role} from "../api/instance/type";
+import {CertType, FileUsageType} from "../api/cert/type";
+import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type";
 import {JobStatus} from "../api/bloat/job/type";
-import {QueryConnection, QueryVariety} from "../api/query/type";
+import {Database, QueryConnection, QueryVariety} from "../api/query/type";
 import dayjs from "dayjs";
 import {Cluster} from "../api/cluster/type";
 

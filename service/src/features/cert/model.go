@@ -4,12 +4,6 @@ import "github.com/google/uuid"
 
 // COMMON (WEB AND SERVER)
 
-type Certs struct {
-	ClientCAId   *uuid.UUID `json:"clientCAId"`
-	ClientKeyId  *uuid.UUID `json:"clientKeyId"`
-	ClientCertId *uuid.UUID `json:"clientCertId"`
-}
-
 type FileUsageType int8
 
 const (
@@ -37,6 +31,12 @@ const (
 type CertAddRequest struct {
 	Path string   `json:"path"`
 	Type CertType `json:"type"`
+}
+
+type Certs struct {
+	ClientCAId   *uuid.UUID `json:"clientCAId"`
+	ClientKeyId  *uuid.UUID `json:"clientKeyId"`
+	ClientCertId *uuid.UUID `json:"clientCertId"`
 }
 
 // SPECIFIC (SERVER)

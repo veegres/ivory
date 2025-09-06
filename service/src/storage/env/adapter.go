@@ -14,8 +14,6 @@ type Version struct {
 	Label  string `json:"label"`
 }
 
-// SPECIFIC (SERVER)
-
 type Config struct {
 	UrlAddress      string
 	UrlPath         string

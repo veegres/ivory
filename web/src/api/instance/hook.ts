@@ -1,7 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
-import {InstanceRequest} from "./type";
+import {InstanceRequest, Sidecar} from "./type";
 import {useMutationAdapter} from "../../hook/QueryCustom";
-import {Sidecar} from "../management/type";
 import {InstanceApi} from "./router";
 
 // TODO #414 it is accept request as a function right now, because otherwise it gets incorrect state.

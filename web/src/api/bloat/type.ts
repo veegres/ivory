@@ -1,7 +1,12 @@
-import {DbConnection} from "../management/type";
 import {JobStatus} from "./job/type";
 
 // COMMON (WEB AND SERVER)
+
+export interface DbConnection {
+    host: string,
+    port: number,
+    credentialId: string,
+}
 
 export interface BloatTarget {
     dbName?: string,

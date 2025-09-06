@@ -1,8 +1,9 @@
 import {ChangeEvent} from "react";
 import {AlertColor, Box, FormControlLabel, Radio, RadioGroup} from "@mui/material";
-import {AuthConfig, AuthType, SxPropsMap} from "../../../../api/management/type";
+import {SxPropsMap} from "../../../../api/management/type";
 import {ConfigBox} from "../../../view/box/ConfigBox";
 import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
+import {AuthConfig, AuthType} from "../../../../api/config/type";
 
 const SX: SxPropsMap = {
     radio: {display: "flex", gap: 3},

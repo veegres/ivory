@@ -8,7 +8,8 @@ import {
     QueryType
 } from "./type";
 import {api} from "../api";
-import {R} from "../type";
+
+import {R} from "../management/type";
 
 export const QueryApi = {
     list: {
