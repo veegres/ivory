@@ -2,7 +2,6 @@ import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {useEffect, useState} from "react";
 import {MenuContent} from "./MenuContent";
-import {Settings, SxPropsMap} from "../../../../api/management/type";
 import {SettingOptions} from "../../../../app/utils";
 import {Credentials} from "../credentials/Credentials";
 import {Certs} from "../certs/Certs";
@@ -10,6 +9,7 @@ import {InfoAlert} from "../../../view/box/InfoAlert";
 import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons";
 import {About} from "../about/About";
 import {Secret} from "../secret/Secret";
+import {Settings, SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},

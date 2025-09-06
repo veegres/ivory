@@ -1,7 +1,7 @@
 import {DeleteIconButton, EditIconButton} from "../../../view/button/IconButtons";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../../api/management/type";
 import {useRouterClusterDelete} from "../../../../api/cluster/hook";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},

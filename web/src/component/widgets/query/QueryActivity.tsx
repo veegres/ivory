@@ -2,8 +2,8 @@ import {QueryConnection} from "../../../api/query/type";
 import {useRouterActivity} from "../../../api/query/hook";
 import {QueryTable} from "./QueryTable";
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {RefreshIconButton} from "../../view/button/IconButtons";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1, width: "320px", minHeight: "250px"},

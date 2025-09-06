@@ -7,10 +7,10 @@ import {json} from "@codemirror/lang-json";
 import {ClusterNoInstanceError} from "./OverviewError";
 import {CodeThemes, getSidecarConnection} from "../../../../app/utils";
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
-import {SxPropsMap} from "../../../../api/management/type";
 import {ActiveCluster} from "../../../../api/cluster/type";
 import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook";
 import {useSnackbar} from "../../../../provider/SnackbarProvider";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},

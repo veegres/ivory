@@ -1,7 +1,6 @@
 import {InstanceMainTitle} from "./InstanceMainTitle";
 import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewError";
 import {Box, Link} from "@mui/material";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InstanceTab, InstanceTabType} from "../../../../api/instance/type";
 import {Chart} from "../../../widgets/chart/Chart";
 import {InstanceMainQueries} from "./InstanceMainQueries";
@@ -10,6 +9,7 @@ import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {getQueryConnection} from "../../../../app/utils";
 import {Database, QueryConnection} from "../../../../api/query/type";
 import {useRouterQueryDatabase} from "../../../../api/query/hook";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1},

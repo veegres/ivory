@@ -1,7 +1,7 @@
 import {Box} from "@mui/material";
 import {Children, ReactNode} from "react";
-import {SxPropsMap} from "../../../../api/management/type";
 import {MenuWrapperScroll} from "./MenuWrapperScroll";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1, height: "100%", overflow: "hidden"},

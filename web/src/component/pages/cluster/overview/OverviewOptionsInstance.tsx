@@ -9,9 +9,9 @@ import {
 } from "@mui/material";
 import {useMemo, useState} from "react";
 import {useStoreAction} from "../../../../provider/StoreProvider";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InstanceMap} from "../../../../api/instance/type";
 import {DetectionType} from "../../../../api/cluster/type";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 1},

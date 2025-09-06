@@ -1,5 +1,4 @@
 import {Box, Checkbox, OutlinedInput, Tooltip} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {QueryConnection, QueryVariety} from "../../../api/query/type";
 import {RefreshIconButton} from "../../view/button/IconButtons";
 import {QueryVarieties} from "./QueryVarieties";
@@ -10,6 +9,7 @@ import {HealthAndSafety, Wash, WashOutlined} from "@mui/icons-material";
 import {MenuButton} from "../../view/button/MenuButton";
 import {QueryResponseInfo} from "./QueryResponseInfo";
 import {getPostgresUrl} from "../../../app/utils";
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},

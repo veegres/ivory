@@ -1,7 +1,7 @@
 import {ReactNode} from "react";
-import {ColorsMap} from "../management/type";
 import {InstanceMap, InstanceWeb, Sidecar} from "../instance/type";
 import {Certs} from "../cert/type";
+import {ColorsMap} from "../../app/type";
 
 // COMMON (WEB AND SERVER)
 

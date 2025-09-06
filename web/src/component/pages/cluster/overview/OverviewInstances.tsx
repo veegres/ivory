@@ -1,7 +1,6 @@
 import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import {useIsFetching, useQueryClient} from "@tanstack/react-query";
 import {TableCellLoader} from "../../../view/table/TableCellLoader";
-import {SxPropsMap} from "../../../../api/management/type";
 import {OverviewInstancesRow} from "./OverviewInstancesRow";
 import {RefreshIconButton} from "../../../view/button/IconButtons";
 import {ActiveCluster} from "../../../../api/cluster/type";
@@ -9,6 +8,7 @@ import {InstanceWeb} from "../../../../api/instance/type";
 import {getDomain} from "../../../../app/utils";
 import {ErrorSmart} from "../../../view/box/ErrorSmart";
 import {InstanceApi} from "../../../../api/instance/router";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},

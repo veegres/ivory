@@ -1,11 +1,11 @@
 import {Box} from "@mui/material";
-import {EnumOptions, SxPropsMap} from "../../../../api/management/type";
 import {SidecarStatusOptions} from "../../../../app/utils";
 import {UseMutationResult} from "@tanstack/react-query";
 import {InstanceRequest, SidecarStatus} from "../../../../api/instance/type";
 import {useRouterInstanceActivate, useRouterInstancePause} from "../../../../api/instance/hook";
 import {InfoBox, Padding} from "../../../view/box/InfoBox";
 import {AlertButton} from "../../../view/button/AlertButton";
+import {EnumOptions, SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},

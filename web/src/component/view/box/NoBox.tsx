@@ -1,5 +1,6 @@
 import {Box} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
+
+import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     no: {

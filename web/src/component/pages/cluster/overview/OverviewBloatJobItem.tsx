@@ -7,11 +7,11 @@ import {LinearProgressStateful} from "../../../view/progress/LinearProgressState
 import scroll from "../../../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../../../view/scrolling/DynamicRowVirtualizer";
 import {useEventJob} from "../../../../hook/EventJob";
-import {SxPropsMap} from "../../../../api/management/type";
 import {Type} from "../../../../api/bloat/type";
 import select from "../../../../style/select.module.css";
 import {useRouterBloatDelete, useRouterBloatStop} from "../../../../api/bloat/hook";
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},

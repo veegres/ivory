@@ -2,7 +2,7 @@ import {useState} from "react";
 import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {Typography} from "@mui/material";
-import {SecretButton} from "../.././widgets/actions/SecretButton";
+import {SecretButton} from "../../widgets/actions/SecretButton";
 import {useRouterSecretSet} from "../../../api/secret/hook";
 
 export function SecretBodyInitial() {

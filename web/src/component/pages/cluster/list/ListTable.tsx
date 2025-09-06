@@ -8,11 +8,11 @@ import {useMemo, useState} from "react";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {AddIconButton} from "../../../view/button/IconButtons";
 import {ClusterMap} from "../../../../api/cluster/type";
-import {SxPropsMap} from "../../../../api/management/type";
 import scroll from "../../../../style/scroll.module.css"
 import {ListCreateAuto} from "./ListCreateAuto";
 import {useStore} from "../../../../provider/StoreProvider";
 import {SxPropsFormatter} from "../../../../app/utils";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},

@@ -1,6 +1,6 @@
 import {Box, Link} from "@mui/material";
-import {SxPropsMap} from "../../api/management/type";
 import {IvoryLinks} from "../utils";
+import {SxPropsMap} from "../type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", fontFamily: "monospace", margin: "5px 20px 5px", gap: "5px"},

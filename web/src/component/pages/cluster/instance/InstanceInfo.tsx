@@ -1,11 +1,11 @@
 import {Box, Paper, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {InstanceInfoStatus} from "./InstanceInfoStatus";
 import {InstanceInfoTable} from "./InstanceInfoTable";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InstanceTabType, InstanceWeb} from "../../../../api/instance/type";
-import {QueryActivity} from "../../.././widgets/query/QueryActivity";
+import {QueryActivity} from "../../../widgets/query/QueryActivity";
 import {QueryConnection} from "../../../../api/query/type";
 import {SxPropsFormatter} from "../../../../app/utils";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     info: {display: "flex", flexDirection: "column", gap: 1, margin: "5px 0"},

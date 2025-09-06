@@ -1,4 +1,4 @@
-import {Settings, SxPropsMap} from "../../../../api/management/type";
+
 import {MenuThemeChanger} from "./MenuThemeChanger";
 import {EraseButton} from "../../actions/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
@@ -10,6 +10,7 @@ import {ListButton} from "../../../view/box/ListButton";
 import {SettingOptions} from "../../../../app/utils";
 import {ClearCacheButton} from "../../actions/ClearCacheButton";
 import {MenuUncheckInstanceChanger} from "./MenuUncheckInstanceChanger";
+import {Settings, SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     list: {display: "flex", flexDirection: "column", gap: 3},

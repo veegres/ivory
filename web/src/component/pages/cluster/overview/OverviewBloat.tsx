@@ -3,14 +3,14 @@ import {useState} from "react";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
 import {OverviewBloatJob} from "./OverviewBloatJob";
-import {Query} from "../../.././widgets/query/Query";
+import {Query} from "../../../widgets/query/Query";
 import {Cached} from "@mui/icons-material";
-import {SxPropsMap} from "../../../../api/management/type";
 import {BloatTarget} from "../../../../api/bloat/type";
 import {QueryType} from "../../../../api/query/type";
 import {ActiveCluster} from "../../../../api/cluster/type";
 import {useRouterQueryList} from "../../../../api/query/hook";
 import {useRouterBloatList} from "../../../../api/bloat/hook";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},

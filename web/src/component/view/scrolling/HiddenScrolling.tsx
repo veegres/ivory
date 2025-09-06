@@ -1,7 +1,7 @@
 import {ReactNode, useState} from "react";
 import {Box, TabScrollButton} from "@mui/material";
-import {SxPropsMap} from "../../../api/management/type";
 import {useWindowScrolled} from "../../../hook/WindowObservers";
+import {SxPropsMap} from "../../../app/type";
 
 const SCROLL_OFFSET = 100
 const SX: SxPropsMap = {

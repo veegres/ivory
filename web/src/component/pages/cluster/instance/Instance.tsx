@@ -2,10 +2,10 @@ import {Box, Divider} from "@mui/material";
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
 import {InfoAlert} from "../../../view/box/InfoAlert";
 import {PageMainBox} from "../../../view/box/PageMainBox";
-import {SxPropsMap} from "../../../../api/management/type";
 import {InstanceMain} from "./InstanceMain";
 import {InstanceInfo} from "./InstanceInfo";
 import {getQueryConnection} from "../../../../app/utils";
+import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     content: {display: "flex", gap: 3},
