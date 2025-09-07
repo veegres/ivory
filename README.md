@@ -59,10 +59,10 @@ for minor and major releases. There is some plans to introduce import/export to 
 your data between containers you can follow instructions that are provided bellow.
 
 ### How Ivory stores the data?
-All Ivory data is located inside `/opt/data` directory. Ivory has a docker volume, it means that you won't
+All Ivory data is located inside `/opt/ivory/data` directory. Ivory has a docker volume, it means that you won't
 lose it if your container are going to be rebooted. But you need to consider mount this directory to your 
 local disk if you want to save the data between different containers 
-`--mount type=bind,source=YOUR_LOCAL_PATH,target=/opt/data`, or you can mount volume of the 
+`--mount type=bind,source=YOUR_LOCAL_PATH,target=/opt/ivory/data`, or you can mount volume of the 
 old container to the new one by docker flag `--volumes-from`
 
 ### How to use authentication?
