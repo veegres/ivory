@@ -27,10 +27,10 @@ func NewRouter(di *Context) {
 
 	// NOTE: Serving ivory static files to web
 	if di.env.Config.StaticFilesPath != "" {
-		slog.Info("Ivory serves static files from '" + di.env.Config.StaticFilesPath + "' under sub path '" + di.env.Config.UrlPath + "'")
+		slog.Info("Ivory serves static/web files under the path '" + di.env.Config.UrlPath + "'")
 		engine.Use(static.Serve(di.env.Config.UrlPath, static.LocalFile(di.env.Config.StaticFilesPath, true)))
 		engine.NoRoute(func(context *gin.Context) {
-			// NOTE: if files weren't found and NoRoute come here we need to throw 404 and prevent endless redirect
+			// NOTE: if files weren't found and NoRoute come here, we need to throw 404 and prevent endless redirect
 			if context.Request.URL.Path != di.env.Config.UrlPath {
 				context.Redirect(http.StatusMovedPermanently, di.env.Config.UrlPath)
 			}
@@ -38,7 +38,7 @@ func NewRouter(di *Context) {
 	}
 
 	// NOTE: Setup default sub path for reverse proxies, default "/"
-	slog.Info("Ivory serves backend api '/api' under sub path '" + di.env.Config.UrlPath + "'")
+	slog.Info("Ivory serves backend/service api under the path '" + di.env.Config.UrlPath + "/api'")
 	path := engine.Group(di.env.Config.UrlPath)
 
 	unsafe := path.Group("/api", gin.Recovery(), di.authRouter.SessionMiddleware(tls))

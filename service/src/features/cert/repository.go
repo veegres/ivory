@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/src/storage/db"
 	"ivory/src/storage/files"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -47,6 +48,9 @@ func (r *Repository) Create(cert Cert, pathStr string) (*Cert, error) {
 	case PATH:
 		if !r.file.ExistByPath(pathStr) {
 			return nil, errors.New("there is no such file")
+		}
+		if strings.Contains(pathStr, "/opt/ivory") {
+			return nil, errors.New("the file shouldn't be located in Ivory working package, if you have mount to /opt/ivory package, it is recommended to change it to /opt/YOUR_PACKAGE")
 		}
 		cert.Path = pathStr
 	default:
