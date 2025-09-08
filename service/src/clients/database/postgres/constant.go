@@ -19,7 +19,7 @@ ORDER BY now() - pg_stat_activity.query_start DESC;`
 const DefaultActiveRunningQueries = `SELECT
     pid,
     state,
-    wait_event AS event,
+    wait_event_type || '.' || wait_event AS wait,
     (now() - pg_stat_activity.backend_start)::text AS transaction_duration,
     (now() - pg_stat_activity.query_start)::text AS query_duration,
     query,
@@ -36,7 +36,7 @@ ORDER BY now() - pg_stat_activity.query_start DESC;`
 const DefaultAllRunningQueries = `SELECT
     pid,
     state,
-    wait_event AS event,
+    wait_event_type || '.' || wait_event AS wait,
     (now() - pg_stat_activity.backend_start)::text AS transaction_duration,
     (now() - pg_stat_activity.query_start)::text AS query_duration,
     query,
@@ -50,7 +50,7 @@ ORDER BY now() - pg_stat_activity.query_start DESC;`
 const DefaultActiveVacuums = `SELECT 
     p.pid,
     (now() - a.xact_start)::text                                                   AS duration,
-    coalesce(wait_event_type || '.' || wait_event, 'f')                            AS wait,
+    wait_event_type || '.' || wait_event                         				   AS wait,
     CASE WHEN a.query ~ 'to prevent wraparound' THEN 'freeze' ELSE 'regular' END   AS mode,
     (SELECT datname FROM pg_database WHERE oid = p.datid)                          AS dat,
     p.relid::regclass                                                              AS tab,
