@@ -433,7 +433,7 @@ func (s *Service) tableBloatApproximate() QueryRequest {
 }
 func (s *Service) indexBloat() QueryRequest {
 	n, t, d := "Index bloat", BLOAT, "This query will read indexes with pgstattuple extension and return top 100 bloated indexes. WARNING: without index mask query will read all available indexes which could cause I/O spikes. Please enter mask for index name (check all indexes if nothing is specified)"
-	p, v := []string{"index", "schema", "table"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
+	p, v := []string{"schema", "table", "index"}, []QueryVariety{DatabaseSensitive, ReplicaRecommended}
 	return QueryRequest{Name: n, Type: &t, Description: &d, Params: p, Varieties: v, Query: postgres.DefaultIndexBloat}
 }
 
