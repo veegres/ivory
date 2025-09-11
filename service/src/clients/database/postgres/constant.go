@@ -173,10 +173,8 @@ FROM (
 ORDER BY (toast_free_space + relation_size - (relation_size - free_space) * 100 / fillfactor) DESC
 LIMIT 20;`
 
-const DefaultIndexBloat = `WITH indexes AS (SELECT * from pg_stat_user_indexes)
-SELECT 
+const DefaultIndexBloat = `SELECT 
 	table_name,
-	pg_size_pretty(table_size) AS table_size,
 	index_name,
 	pg_size_pretty(index_size) AS index_size,
 	index_scans,
@@ -184,24 +182,23 @@ SELECT
 	pg_size_pretty(free_space) AS waste
 FROM (
     SELECT 
-		p.schemaname || '.' || c.relname AS table_name,
+		p.schemaname || '.' || p.relname AS table_name,
 		p.indexrelname AS index_name,
 		(SELECT (
 			CASE WHEN avg_leaf_density = 'NaN' THEN 0
 			ELSE greatest(ceil(index_size * (1 - avg_leaf_density / (coalesce((SELECT (regexp_matches(reloptions::text, E'.*fillfactor=(\\d+).*'))[1]),'90')::real)))::bigint, 0) END
 		) FROM pgstatindex(p.indexrelid::regclass::text)) AS free_space,
 		pg_relation_size(p.indexrelid) AS index_size,
-		pg_relation_size(p.relid) AS table_size,
 		p.idx_scan AS index_scans
-    FROM indexes p
+    FROM pg_stat_user_indexes p
 		JOIN pg_class c ON p.indexrelid = c.oid
-		JOIN pg_index i ON i.indexrelid = p.indexrelid
+		JOIN pg_index i ON p.indexrelid = i.indexrelid
     WHERE pg_get_indexdef(p.indexrelid) LIKE '%USING btree%' 
 	  AND i.indisvalid 
 	  AND (c.relpersistence = 'p' OR NOT pg_is_in_recovery())
-	  AND p.indexrelname ~ $1 -- index name
-	  AND p.schemaname ~ $2   -- schema name
-      AND c.relname ~ $3      -- table name
+	  AND p.schemaname ~ $1  -- schema name
+	  AND p.relname ~ $2     -- table name
+      AND p.indexrelname~ $3 -- index name
 ) t
 ORDER BY free_space DESC
 LIMIT 100;`
