@@ -4,7 +4,6 @@ import {Fragment, ReactNode, useMemo, useState} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
 import {NoBox} from "../box/NoBox";
 import {useDragger} from "../../../hook/Dragger";
-import {MenuButton} from "../button/MenuButton";
 import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
@@ -233,7 +232,7 @@ export function VirtualizedTable(props: Props) {
             const transform = `translateY(${virtualRow.start}px)`
             return (
                 <Box key={virtualRow.key} sx={SX.cellFixed} style={{width: cellWidthStickyActionPx, height: cellHeightPx, transform}}>
-                    <MenuButton>{renderRowActions(row)}</MenuButton>
+                    {renderRowActions(row)}
                 </Box>
             )
         })
