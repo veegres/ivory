@@ -11,22 +11,30 @@ const SX: SxPropsMap = {
 
 type Props = {
     children: ReactNode,
+    open?: boolean,
+    onChange?: (o: boolean) => void,
     size?: number,
 }
 
 export function MenuButton(props: Props) {
-    const {children, size} = props
-    const [open, setOpen] = useState(false)
+    const {children, size, open, onChange} = props
+    const [internalOpen, internalSetOpen] = useState(false)
+    const isControlled = open !== undefined
+    const realOpen = isControlled ? open : internalOpen
 
     return (
         <Box sx={SX.box}>
-            <Collapse sx={SX.collapse} in={open} orientation={"horizontal"}>
+            <Collapse sx={SX.collapse} in={realOpen} orientation={"horizontal"}>
                 <Paper sx={SX.paper}>
                     {children}
                 </Paper>
             </Collapse>
-            <MoreIconButton size={size} onClick={() => setOpen(!open)}/>
+            <MoreIconButton size={size} onClick={() =>  onClick(!realOpen)}/>
         </Box>
     )
 
+    function onClick(value: boolean) {
+        if (!isControlled) internalSetOpen(value)
+        onChange?.(value)
+    }
 }
