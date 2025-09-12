@@ -32,15 +32,16 @@ export function AutocompleteFetch(props: Props) {
     return (
         <Autocomplete
             fullWidth
+            freeSolo
             size={size}
             renderInput={renderInput}
             value={value}
+            onChange={(_, v) => onUpdate(v)}
             inputValue={inputValue}
-            disabled={disabled}
             onInputChange={(_, v) => setInputValue(v)}
+            disabled={disabled}
             options={options}
             loading={query.isPending}
-            onChange={(_, v) => onUpdate(v)}
         />
     )
 
