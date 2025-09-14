@@ -18,8 +18,8 @@ type Props = {
 
 export function InstanceMainQueries(props: Props){
     const {connection} = props
-    const {instance: {queryTab}} = useStore()
-    const {setQueryTab} = useStoreAction()
+    const {queryTab} = useStore(s => s.instance)
+    const {setQueryTab} = useStoreAction
 
     return (
         <Box sx={SX.box}>

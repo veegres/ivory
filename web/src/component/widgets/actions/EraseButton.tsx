@@ -7,7 +7,7 @@ type Props = {
 }
 
 export function EraseButton(props: Props) {
-    const {clear} = useStoreAction()
+    const {clear} = useStoreAction
     const cleanInitial = useRouterEraseInitial(clear)
     const cleanSafe = useRouterEraseSafe(clear)
 

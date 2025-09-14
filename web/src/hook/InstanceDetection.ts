@@ -15,9 +15,11 @@ import {useRouterInstanceOverview} from "../api/instance/hook";
 import {InstanceApi} from "../api/instance/router";
 
 // TODO #414 get rid of this complicated and problematic component with a lot of renders
+//   after migration to zustand we should have fewer rerenders
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
-    const {activeCluster} = useStore()
-    const {setCluster, setClusterInfo, setWarnings} = useStoreAction()
+    const activeCluster = useStore(s => s.activeCluster)
+
+    const {setCluster, setClusterInfo, setWarnings} = useStoreAction
     const isClusterActive = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const queryClient = useQueryClient()

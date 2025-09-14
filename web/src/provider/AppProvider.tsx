@@ -8,8 +8,8 @@ import {
     useMediaQuery
 } from "@mui/material";
 import {useLocalStorageState} from "../hook/LocalStorage";
-import {focusManager, QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
+import {focusManager} from "@tanstack/react-query";
+import {MainQueryClient} from "../app/main";
 
 export enum Mode {
     DARK = "dark",
@@ -40,7 +40,6 @@ const ThemeContext = createContext<ThemeContextType>({
     toggleUncheckInstanceBlockOnClusterChange: () => void 0,
     setTheme: () => void 0,
 })
-const client = new QueryClient()
 focusManager.setEventListener(handleFocus => {
     if (typeof window !== "undefined" && window.addEventListener) {
         window.addEventListener("focus", () => handleFocus(), false)
@@ -56,7 +55,7 @@ export function useSettings() {
     return useContext(ThemeContext)
 }
 
-export function SettingsProvider(props: { children: ReactNode }) {
+export function AppProvider(props: { children: ReactNode }) {
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
     const [state, setState] = useLocalStorageState("appearance", ThemeInitialState, true)
 
@@ -67,13 +66,10 @@ export function SettingsProvider(props: { children: ReactNode }) {
 
     return (
         <ThemeContext value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, toggleUncheckInstanceBlockOnClusterChange: toggleUncheckInstanceBlockOnClusterSelect, info: muiTheme}}>
-            <QueryClientProvider client={client}>
-                <MuiThemeProvider theme={muiTheme}>
-                    <CssBaseline enableColorScheme/>
-                    {props.children}
-                </MuiThemeProvider>
-                <ReactQueryDevtools/>
-            </QueryClientProvider>
+            <MuiThemeProvider theme={muiTheme}>
+                <CssBaseline enableColorScheme/>
+                {props.children}
+            </MuiThemeProvider>
         </ThemeContext>
     );
 
@@ -90,7 +86,7 @@ export function SettingsProvider(props: { children: ReactNode }) {
     }
 
     function handleEffectClient() {
-        client.setDefaultOptions({queries: {refetchOnWindowFocus: state.refetchOnWindowsFocus ? "always" : false}})
+        MainQueryClient.setDefaultOptions({queries: {refetchOnWindowFocus: state.refetchOnWindowsFocus ? "always" : false}})
     }
 
     function getTheme(m: Mode): PaletteMode {

@@ -12,8 +12,11 @@ const SX: SxPropsMap = {
 }
 
 export function Instance() {
-    const {activeInstance, activeCluster, isClusterOverviewOpen, instance} = useStore()
-    const {setInstanceBody} = useStoreAction()
+    const activeInstance = useStore(s => s.activeInstance)
+    const activeCluster = useStore(s => s.activeCluster)
+    const isClusterOverviewOpen = useStore(s => s.isClusterOverviewOpen)
+    const instance = useStore(s => s.instance)
+    const {setInstanceBody} = useStoreAction
 
     return (
         <PageMainBox withPadding visible={isClusterOverviewOpen()}>

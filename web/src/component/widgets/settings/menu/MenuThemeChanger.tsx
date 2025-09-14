@@ -1,6 +1,6 @@
 import {ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
 import {BrightnessMediumTwoTone, DarkModeTwoTone, LightModeTwoTone} from "@mui/icons-material";
-import {Mode, useSettings} from "../../../../provider/SettingsProvider";
+import {Mode, useSettings} from "../../../../provider/AppProvider";
 
 import {SxPropsMap} from "../../../../app/type";
 

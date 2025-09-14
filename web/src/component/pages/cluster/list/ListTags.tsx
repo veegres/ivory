@@ -9,8 +9,9 @@ const SX: SxPropsMap = {
 }
 
 export function ListTags() {
-    const {warnings, activeTags} = useStore()
-    const {setTags} = useStoreAction()
+    const warnings = useStore(s => s.warnings)
+    const activeTags = useStore(s => s.activeTags)
+    const {setTags} = useStoreAction
     const query = useRouterTagList()
     const {data} = query
     const warningsCount = Object.values(warnings).filter(it => it).length

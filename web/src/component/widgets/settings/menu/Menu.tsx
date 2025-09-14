@@ -19,9 +19,10 @@ const SX: SxPropsMap = {
 }
 
 export function Menu() {
+    const settings = useStore(s => s.settings)
+    const {toggleSettingsDialog} = useStoreAction
+
     const [page, setPage] = useState(Settings.MENU)
-    const {settings} = useStore()
-    const {toggleSettingsDialog} = useStoreAction()
     const options = SettingOptions[page]
 
     useEffect(handleEffectSettingsClose, [settings])

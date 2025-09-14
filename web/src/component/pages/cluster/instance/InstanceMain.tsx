@@ -50,8 +50,9 @@ type Props = {
 
 export function InstanceMain(props: Props) {
     const {tab, database} = props
-    const {activeCluster, instance: {dbName}} = useStore()
-    const {setDbName} = useStoreAction()
+    const activeCluster = useStore(s => s.activeCluster)
+    const {dbName} = useStore(s => s.instance)
+    const {setDbName} = useStoreAction
 
     if (!activeCluster) return null
     const {cluster} = activeCluster

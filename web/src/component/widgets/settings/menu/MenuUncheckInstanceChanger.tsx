@@ -1,5 +1,5 @@
 import {Switch} from "@mui/material";
-import {useSettings} from "../../../../provider/SettingsProvider";
+import {useSettings} from "../../../../provider/AppProvider";
 
 export function MenuUncheckInstanceChanger() {
     const {state, toggleUncheckInstanceBlockOnClusterChange} = useSettings()

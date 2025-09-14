@@ -1,5 +1,5 @@
 import {Box, Skeleton} from "@mui/material";
-import {useSettings} from "../../../../provider/SettingsProvider";
+import {useSettings} from "../../../../provider/AppProvider";
 import {ErrorSmart} from "../../../view/box/ErrorSmart";
 import {useEffect, useState} from "react";
 import ReactCodeMirror from "@uiw/react-codemirror";
