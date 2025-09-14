@@ -3,7 +3,7 @@ import {AlertButton} from "../../view/button/AlertButton";
 import {useErrorBoundary} from "react-error-boundary";
 
 export function ClearCacheButton() {
-    const {clear} = useStoreAction()
+    const {clear} = useStoreAction
     const {resetBoundary} = useErrorBoundary()
 
     return (

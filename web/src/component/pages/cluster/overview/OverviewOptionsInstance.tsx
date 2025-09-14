@@ -26,7 +26,7 @@ type Props = {
 }
 
 export function OverviewOptionsInstance(props: Props) {
-    const {setClusterInstance, setClusterDetection} = useStoreAction()
+    const {setClusterInstance, setClusterDetection} = useStoreAction
     const {instance, instances, detection} = props
     const [inputValue, setInputValue] = useState<string | undefined>(instance);
 

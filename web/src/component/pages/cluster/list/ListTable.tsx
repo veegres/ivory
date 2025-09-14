@@ -29,7 +29,7 @@ type Props = {
 }
 
 export function ListTable(props: Props) {
-    const {activeCluster} = useStore()
+    const activeCluster = useStore(s => s.activeCluster)
     const {map, error, fetching, pending} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")

@@ -76,8 +76,11 @@ const TABS: ClusterTabs = {
 }
 
 export function Overview() {
-    const {activeCluster, activeClusterTab, activeInstance, activeTags} = useStore()
-    const {setClusterTab} = useStoreAction()
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterTab = useStore(s => s.activeClusterTab)
+    const activeInstance = useStore(s => s.activeInstance)
+    const activeTags = useStore(s => s.activeTags)
+    const {setClusterTab} = useStoreAction
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const clusters = useRouterClusterList(activeTags)

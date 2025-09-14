@@ -6,7 +6,7 @@ import {useRouterClusterList} from "../../../../api/cluster/hook";
 import {useEffect} from "react";
 
 export function List() {
-    const {activeTags} = useStore()
+    const activeTags = useStore(s => s.activeTags)
     const query = useRouterClusterList(activeTags)
     const {data, isPending, isFetching, error} = query
 

@@ -26,7 +26,7 @@ type Props = {
 
 export function Header(props: Props) {
     const {company, show, auth} = props
-    const {toggleSettingsDialog} = useStoreAction()
+    const {toggleSettingsDialog} = useStoreAction
     const {logout} = useAuth()
     const [animal, setAnimal] = useState("")
 

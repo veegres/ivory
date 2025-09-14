@@ -18,7 +18,7 @@ type Props = {
 
 export function ListRowNew(props: Props) {
     const {show, close} = props
-    const {activeTags} = useStore()
+    const activeTags = useStore(s => s.activeTags)
     const [stateName, setStateName] = useState('');
     const [stateNodes, setStateNodes] = useState(['']);
 

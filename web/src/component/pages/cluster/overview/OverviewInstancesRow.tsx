@@ -42,8 +42,8 @@ export function OverviewInstancesRow(props: Props) {
     const {instance, domain, cluster, candidates, error = false} = props
     const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = instance
 
-    const {isInstanceActive} = useStore()
-    const {setInstance} = useStoreAction()
+    const isInstanceActive = useStore(s => s.isInstanceActive)
+    const {setInstance} = useStoreAction
     const checked = isInstanceActive(domain)
     const request = getSidecarConnection(cluster, sidecar)
 

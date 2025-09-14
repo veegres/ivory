@@ -5,7 +5,7 @@ import {getDomain, InstanceColor} from "../../../../app/utils";
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
 import {useStoreAction} from "../../../../provider/StoreProvider";
 import {Cluster, InstanceDetection} from "../../../../api/cluster/type";
-import {useSettings} from "../../../../provider/SettingsProvider";
+import {useSettings} from "../../../../provider/AppProvider";
 import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
@@ -24,7 +24,7 @@ export function ListCellChip(props: Props) {
     const {fetching, active, detection, refetch} = instanceDetection
 
     const {state} = useSettings()
-    const {setCluster, setInstance} = useStoreAction()
+    const {setCluster, setInstance} = useStoreAction
 
     return (
         <Box sx={SX.clusterName}>
