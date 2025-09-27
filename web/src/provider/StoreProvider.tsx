@@ -102,12 +102,11 @@ function setInstance(instance?: InstanceWeb) {
     useStore.setState(s => {
         const clusterName = s.activeCluster?.cluster.name
         if (!clusterName) return s
-        if (!instance) {
-            const store = {...s}
-            delete store.activeInstance[clusterName]
-            return store
-        }
-        return {...s, activeInstance: {...s.activeInstance, [clusterName]: instance}}
+        if (instance) return {...s, activeInstance: {...s.activeInstance, [clusterName]: instance}}
+        if (!s.activeInstance[clusterName]) return s
+        const store = {...s}
+        delete store.activeInstance[clusterName]
+        return store
     })
 }
 function setTags(tags: string[]) {
