@@ -19,7 +19,7 @@ import {InstanceApi} from "../api/instance/router";
 export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): InstanceDetection {
     const activeCluster = useStore(s => s.activeCluster)
 
-    const {setCluster, setClusterInfo, setWarnings} = useStoreAction
+    const {setCluster, setWarnings} = useStoreAction
     const isClusterActive = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const queryClient = useQueryClient()
@@ -37,12 +37,12 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
 
     const combine = useMemo(handleMemoCombine, [instances, instanceMap])
     const colors =  useMemo(handleMemoColors, [combine.combinedInstanceMap])
-    const defaultInstance = handleDefaultInstance()
+    const defaultInstance = useMemo(handleMemoDefaultInstance, [activeCluster?.defaultInstance.sidecar, combine.combinedInstanceMap, isClusterActive])
 
     useEffect(handleEffectNextRequest, [errorUpdateCount, instances, refetch])
     useEffect(handleEffectDetectionChange, [isClusterActive, activeCluster, instances, refetch, queryClient, queryKey])
 
-    useEffect(handleEffectRequestUpdate, [isClusterActive, cluster, defaultInstance, combine, setCluster, setClusterInfo])
+    useEffect(handleEffectRequestUpdate, [isClusterActive, cluster, defaultInstance, combine, setCluster])
     useEffect(handleEffectWarningsUpdate, [cluster.name, combine.warning, setWarnings])
 
     return {
@@ -152,11 +152,11 @@ export function useInstanceDetection(cluster: Cluster, instances: Sidecar[]): In
     }
 
     /**
-     * Either find leader or set query that we send request to.
+     * Either find a leader or set a query that we send the request to.
      * P.S. we cannot use memo for this function because `combine` doesn't change,
      * but we still need to change it every time for clusters without any success request
      */
-    function handleDefaultInstance() {
+    function handleMemoDefaultInstance() {
         const map = combine.combinedInstanceMap
 
         if (defaultDetection.current === "manual") {

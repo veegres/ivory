@@ -1,5 +1,5 @@
-import {ActiveCluster, Cluster, DetectionType} from "../api/cluster/type";
-import {InstanceMap, InstanceTabType, InstanceWeb} from "../api/instance/type";
+import {ActiveCluster, DetectionType} from "../api/cluster/type";
+import {InstanceTabType, InstanceWeb} from "../api/instance/type";
 import {getDomain} from "../app/utils";
 import {QueryType} from "../api/query/type";
 import {create} from "zustand/react";
@@ -55,7 +55,6 @@ export const useStore = create(persist<Store>(
 
 export const useStoreAction = {
     setCluster: setCluster,
-    setClusterInfo: setClusterInfo,
     setClusterInstance: setClusterInstance,
     setClusterDetection: setClusterDetection,
     setClusterTab: setClusterTab,
@@ -73,12 +72,6 @@ export const useStoreAction = {
 // SETTERS
 function setCluster(cluster?: ActiveCluster) {
     useStore.setState(s => ({...s, activeCluster: cluster}))
-}
-function setClusterInfo(cluster: Cluster, defaultInstance: InstanceWeb, combinedInstanceMap: InstanceMap, warning: boolean) {
-    useStore.setState(s => {
-        if (!s.activeCluster) return s
-        return ({...s, activeCluster: {...s.activeCluster, cluster, defaultInstance, combinedInstanceMap, warning}})
-    })
 }
 function setClusterInstance(instance: InstanceWeb) {
     useStore.setState(s => {
