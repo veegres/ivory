@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
 }
 
 export function Instance() {
-    const activeInstance = useStore(s => s.activeInstance)
+    const activeInstance = useStore(s => s.getActiveInstance())
     const activeCluster = useStore(s => s.activeCluster)
     const isClusterOverviewOpen = useStore(s => s.isClusterOverviewOpen)
     const instance = useStore(s => s.instance)

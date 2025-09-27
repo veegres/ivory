@@ -78,7 +78,7 @@ const TABS: ClusterTabs = {
 export function Overview() {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterTab = useStore(s => s.activeClusterTab)
-    const activeInstance = useStore(s => s.activeInstance)
+    const activeInstance = useStore(s => s.getActiveInstance())
     const activeTags = useStore(s => s.activeTags)
     const {setClusterTab} = useStoreAction
     const [infoOpen, setInfoOpen] = useState(false)
