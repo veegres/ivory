@@ -246,3 +246,16 @@ export const SizeFormatter = {
     format: Intl.NumberFormat("en", {notation: "compact", style: "unit", unit: "byte", unitDisplay: "narrow"}),
     pretty: (size: number) => SizeFormatter.format.format(size)
 }
+
+export function hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash * 31 + str.charCodeAt(i)) | 0; // 31 is a common prime multiplier
+    }
+    return hash;
+}
+
+export function hashStringArray(arr: string[]): number {
+    const normalized = [...arr].sort().join("|");
+    return hashString(normalized);
+}

@@ -1,4 +1,3 @@
-
 import {MenuThemeChanger} from "./MenuThemeChanger";
 import {EraseButton} from "../../actions/EraseButton";
 import {MenuWrapper} from "./MenuWrapper";
@@ -9,7 +8,6 @@ import {ListItem} from "../../../view/box/ListItem";
 import {ListButton} from "../../../view/box/ListButton";
 import {SettingOptions} from "../../../../app/utils";
 import {ClearCacheButton} from "../../actions/ClearCacheButton";
-import {MenuUncheckInstanceChanger} from "./MenuUncheckInstanceChanger";
 import {Settings, SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
@@ -29,7 +27,6 @@ export function MenuContent(props: Props) {
                 <List name={"Appearance"}>
                     <ListItem title={"Theme"} button={<MenuThemeChanger/>}/>
                     <ListItem title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
-                    <ListItem title={"Uncheck instance block on cluster select"} button={<MenuUncheckInstanceChanger/>}/>
                 </List>
                 <List name={"Privacy and security"}>
                     {renderButton(Settings.PASSWORD)}

@@ -8,8 +8,9 @@ import {persist} from "zustand/middleware";
 
 // STORE
 interface Store {
-    activeCluster?: ActiveCluster, activeClusterTab: number,
-    activeInstance?: InstanceWeb,
+    activeClusterTab: number,
+    activeCluster?: ActiveCluster,
+    activeInstance: { [cluster: string]: InstanceWeb | undefined },
     activeTags: string[],
     warnings: { [key: string]: boolean },
     settings: boolean,
@@ -23,17 +24,19 @@ interface Store {
     isClusterActive: (name: string) => boolean
     isClusterOverviewOpen: () => boolean
     isInstanceActive: (key: string) => boolean,
+    getActiveInstance: () => InstanceWeb | undefined,
 }
 
 export const useStore = create(persist<Store>(
     (_, get) => ({
-        activeCluster: undefined, activeClusterTab: 0,
-        activeInstance: undefined,
+        activeClusterTab: 0,
+        activeCluster: undefined,
+        activeInstance: {},
         activeTags: ["ALL"],
         warnings: {},
         settings: false,
         instance: {
-        body: InstanceTabType.CHART,
+            body: InstanceTabType.CHART,
             queryTab: QueryType.CONSOLE,
             queryConsole: "",
             dbName: undefined,
@@ -41,6 +44,11 @@ export const useStore = create(persist<Store>(
         isClusterActive: (name: string) => isClusterActive(get(), name),
         isClusterOverviewOpen: () => isClusterOverviewOpen(get()),
         isInstanceActive: (key: string) => isInstanceActive(get(), key),
+        getActiveInstance: () => {
+            const s = get()
+            const activeCluster = s.activeCluster
+            return activeCluster && s.activeInstance[activeCluster.cluster.name]
+        }
     }),
     {name: "store", version: 1}
 ))
@@ -91,7 +99,16 @@ function setWarnings(name: string, warning: boolean) {
     useStore.setState(s => ({...s, warnings: {...s.warnings, [name]: warning}}))
 }
 function setInstance(instance?: InstanceWeb) {
-    useStore.setState(s => ({...s, activeInstance: instance}))
+    useStore.setState(s => {
+        const clusterName = s.activeCluster?.cluster.name
+        if (!clusterName) return s
+        if (!instance) {
+            const store = {...s}
+            delete store.activeInstance[clusterName]
+            return store
+        }
+        return {...s, activeInstance: {...s.activeInstance, [clusterName]: instance}}
+    })
 }
 function setTags(tags: string[]) {
     useStore.setState(s => ({...s, activeTags: tags}))
@@ -123,7 +140,8 @@ function isClusterActive(state: Store, name: string) {
 function isClusterOverviewOpen(state: Store) {
     return !!state.activeCluster && state.activeClusterTab === 0
 }
-function isInstanceActive(state: Store, key: string) {
-    return state.activeInstance ? getDomain(state.activeInstance.sidecar) === key : false
+function isInstanceActive(s: Store, key: string) {
+    const activeInstance = s.getActiveInstance()
+    return activeInstance ? getDomain(activeInstance.sidecar) === key : false
 }
 

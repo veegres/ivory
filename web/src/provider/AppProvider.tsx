@@ -20,7 +20,6 @@ export enum Mode {
 interface AppearanceStateType {
     mode: Mode,
     refetchOnWindowsFocus: boolean,
-    uncheckInstanceBlockOnClusterChange: boolean,
 }
 
 interface ThemeContextType {
@@ -28,16 +27,14 @@ interface ThemeContextType {
     theme: "dark" | "light",
     setTheme: (m: Mode) => void,
     toggleRefetchOnWindowsRefocus: () => void,
-    toggleUncheckInstanceBlockOnClusterChange: () => void,
     info?: Theme,
 }
 
-const ThemeInitialState: AppearanceStateType = {mode: Mode.SYSTEM, refetchOnWindowsFocus: false, uncheckInstanceBlockOnClusterChange: true}
+const ThemeInitialState: AppearanceStateType = {mode: Mode.SYSTEM, refetchOnWindowsFocus: false}
 const ThemeContext = createContext<ThemeContextType>({
     state: ThemeInitialState,
     theme: "light",
     toggleRefetchOnWindowsRefocus: () => void 0,
-    toggleUncheckInstanceBlockOnClusterChange: () => void 0,
     setTheme: () => void 0,
 })
 focusManager.setEventListener(handleFocus => {
@@ -65,7 +62,7 @@ export function AppProvider(props: { children: ReactNode }) {
     useEffect(handleEffectClient, [state.refetchOnWindowsFocus])
 
     return (
-        <ThemeContext value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, toggleUncheckInstanceBlockOnClusterChange: toggleUncheckInstanceBlockOnClusterSelect, info: muiTheme}}>
+        <ThemeContext value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, info: muiTheme}}>
             <MuiThemeProvider theme={muiTheme}>
                 <CssBaseline enableColorScheme/>
                 {props.children}
@@ -81,12 +78,12 @@ export function AppProvider(props: { children: ReactNode }) {
         return setState(prevState => ({...prevState, refetchOnWindowsFocus: !state.refetchOnWindowsFocus}))
     }
 
-    function toggleUncheckInstanceBlockOnClusterSelect() {
-        return setState(prevState => ({...prevState, uncheckInstanceBlockOnClusterChange: !state.uncheckInstanceBlockOnClusterChange}))
-    }
-
     function handleEffectClient() {
-        MainQueryClient.setDefaultOptions({queries: {refetchOnWindowFocus: state.refetchOnWindowsFocus ? "always" : false}})
+        const enabled = state.refetchOnWindowsFocus ? "always" : false
+        // TODO this works only in initial initialization after page rerender...
+        //  it should be set for each query separately to make it work, probably we need to have some wrapper
+        //  of useQuery or reload page?
+        MainQueryClient.setDefaultOptions({queries: {refetchOnWindowFocus: enabled}})
     }
 
     function getTheme(m: Mode): PaletteMode {

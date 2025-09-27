@@ -53,7 +53,7 @@ export function ToggleButtonScrollable(props: Props) {
         return (
             <Box>
                 <Box><b>Tags Selected</b></Box>
-                <Box>[ hold <i>ctrl</i> to multi select / deselect tags ]</Box>
+                <Box>[ use <b>ctrl</b> to pick more than one tag ]</Box>
             </Box>
         )
     }
