@@ -45,7 +45,7 @@ func (r *Router) AuthMiddleware() gin.HandlerFunc {
 		valid, errValid := r.authService.ValidateAuthToken(context, appConfig.Auth)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
-			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errValid})
+			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errValid.Error()})
 			return
 		}
 

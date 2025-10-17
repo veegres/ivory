@@ -3,7 +3,6 @@ import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../utils";
 import {useStoreAction} from "../../provider/StoreProvider";
-import {useAuth} from "../../provider/AuthProvider";
 import {AuthType} from "../../api/config/type";
 import {SxPropsMap} from "../type";
 import {useRouterLogout} from "../../api/auth/hook";
@@ -26,7 +25,6 @@ type Props = {
 export function Header(props: Props) {
     const {company, show, auth} = props
     const {toggleSettingsDialog} = useStoreAction
-    const {logout} = useAuth()
     const [animal, setAnimal] = useState("")
 
     const logoutRouter = useRouterLogout()
@@ -73,7 +71,6 @@ export function Header(props: Props) {
     }
 
     function handleLogout() {
-        logout()
         logoutRouter.mutate()
     }
 }

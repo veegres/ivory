@@ -56,9 +56,6 @@ func (s *Service) getOAuthCodeURL(str string) (string, error) {
 
 func (s *Service) ValidateAuthToken(context *gin.Context, authConfig config.AuthConfig) (bool, error) {
 	token, errToken := s.getToken(context)
-	if errToken != nil {
-		return false, errToken
-	}
 	switch authConfig.Type {
 	case config.NONE:
 		if token != "" {
@@ -66,6 +63,9 @@ func (s *Service) ValidateAuthToken(context *gin.Context, authConfig config.Auth
 		}
 		return true, nil
 	case config.BASIC, config.LDAP, config.OIDC:
+		if errToken != nil {
+			return false, errToken
+		}
 		errValidate := s.validateToken(token)
 		if errValidate != nil {
 			return false, errValidate
