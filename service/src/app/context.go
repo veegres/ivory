@@ -83,7 +83,7 @@ func NewContext() *Context {
 	queryLogService := query.NewLogService(queryLogRepo)
 	queryRunService := query.NewRunService(queryRepo, postgresClient, queryLogService, passwordService, certService)
 	bloatService := bloat.NewService(bloatRepo, passwordService)
-	authService := auth.NewService(secretService, encryptionService)
+	authService := auth.NewService(secretService, configService)
 	managementService := management.NewService(
 		appInfo,
 		authService,
@@ -99,7 +99,7 @@ func NewContext() *Context {
 
 	return &Context{
 		env:              appInfo,
-		authRouter:       auth.NewRouter(authService, configService),
+		authRouter:       auth.NewRouter(authService, appInfo.Config.UrlPath, appInfo.Config.TlsEnabled),
 		clusterRouter:    cluster.NewRouter(clusterService),
 		bloatRouter:      bloat.NewRouter(bloatService),
 		certRouter:       cert.NewRouter(certService),

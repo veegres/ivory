@@ -22,7 +22,7 @@ export function LoginBody(props: Props) {
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
 
-    const login = useRouterLogin(handleSuccess)
+    const login = useRouterLogin(handleSuccess, type)
 
     return (
         <PageStartupBox header={"Authentication"} renderFooter={renderLogin()}>
@@ -45,6 +45,18 @@ export function LoginBody(props: Props) {
                     />
                 </>
             )
+            case AuthType.LDAP: return (
+                <>
+                    <KeyEnterInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
+                    <KeyEnterInput
+                        label={"password"}
+                        hidden
+                        onChange={(e) => setPass(e.target.value)}
+                        onEnterPress={handleLogin}
+                    />
+                </>
+            )
+            case AuthType.OIDC: return null
         }
     }
 
@@ -52,7 +64,13 @@ export function LoginBody(props: Props) {
         switch (type) {
             case AuthType.NONE: return <Button onClick={logout}>Sign out</Button>
             case AuthType.BASIC: return <Button onClick={handleLogin} loading={login.isPending}>Sign in</Button>
+            case AuthType.LDAP: return <Button onClick={handleLogin} loading={login.isPending}>Sign in</Button>
+            case AuthType.OIDC: return <Button onClick={handleOidcLogin}>Sign in with SSO</Button>
         }
+    }
+
+    function handleOidcLogin() {
+        login.mutate(undefined)
     }
 
     function handleLogin() {

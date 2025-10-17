@@ -13,16 +13,17 @@ type Props = {
     label: string,
     hidden?: boolean,
     value?: unknown,
+    required?: boolean,
     onChange: StandardInputProps['onChange'],
     onEnterPress?: () => void,
 }
 
 export function KeyEnterInput(props: Props) {
-    const {label, onChange, hidden = false, onEnterPress, value} = props
+    const {label, onChange, hidden = false, required = true, onEnterPress, value} = props
     const [showPassword, setShowPassword] = useState(false)
 
     return (
-        <FormControl sx={SX.margin} fullWidth required size={"small"} margin={"normal"}>
+        <FormControl sx={SX.margin} fullWidth required={required} size={"small"} margin={"normal"}>
             <InputLabel>{label}</InputLabel>
             <OutlinedInput
                 value={value}

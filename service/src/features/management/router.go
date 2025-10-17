@@ -40,7 +40,6 @@ func (r *Router) ChangeSecret(context *gin.Context) {
 }
 
 func (r *Router) GetAppInfo(context *gin.Context) {
-	authHeader := context.Request.Header.Get("Authorization")
-	info := r.service.GetAppInfo(authHeader)
+	info := r.service.GetAppInfo(context)
 	context.JSON(http.StatusOK, gin.H{"response": info})
 }

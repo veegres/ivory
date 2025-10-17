@@ -1,11 +1,35 @@
 export enum AuthType {
     NONE,
     BASIC,
+    LDAP,
+    OIDC,
 }
 
 export interface AuthConfig {
     type: AuthType,
-    body: any,
+    basic?: BasicConfig,
+    ldap?: LdapConfig,
+    oidc?: OidcConfig,
+}
+
+export interface BasicConfig {
+    username: string,
+    password: string,
+}
+
+export interface LdapConfig {
+    url: string,
+    bindDN: string,
+    bindPass: string,
+    baseDN: string,
+    filter?: string,
+}
+
+export interface OidcConfig {
+    issuerUrl: string,
+    clientId: string,
+    clientSecret: string,
+    redirectUrl: string,
 }
 
 export interface AppConfig {

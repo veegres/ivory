@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"errors"
 )
 
 type Service struct{}
@@ -14,6 +15,9 @@ func NewService() *Service {
 
 // Encrypt method is to encrypt or hide any classified text
 func (e *Service) Encrypt(text string, secret [16]byte) (string, error) {
+	if secret == [16]byte{} {
+		return "", errors.New("secret is empty")
+	}
 	block, err := aes.NewCipher(secret[:])
 	if err != nil {
 		return "", err
@@ -28,6 +32,9 @@ func (e *Service) Encrypt(text string, secret [16]byte) (string, error) {
 
 // Decrypt method is to extract back the encrypted text
 func (e *Service) Decrypt(text string, secret [16]byte) (string, error) {
+	if secret == [16]byte{} {
+		return "", errors.New("secret is empty")
+	}
 	block, err := aes.NewCipher(secret[:])
 	if err != nil {
 		return "", err

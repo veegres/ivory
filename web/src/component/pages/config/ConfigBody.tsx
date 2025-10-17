@@ -10,7 +10,7 @@ import {AuthConfig, AuthType} from "../../../api/config/type";
 export function ConfigBody() {
     const [company, setCompany] = useState("")
     const [query, setQuery] = useState(false)
-    const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE, body: undefined})
+    const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE})
     const config = useRouterConfigSet()
 
     return (

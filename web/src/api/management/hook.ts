@@ -29,7 +29,7 @@ export function useRouterEraseInitial(onSuccess: () => void) {
 
 export function useRouterEraseSafe(onSuccess: () => void) {
     return useMutationAdapter({
-        mutationFn: () => ManagementApi.erase.fn("safe"),
+        mutationFn: () => ManagementApi.erase.fn("management"),
         mutationKey: ManagementApi.erase.key(),
         successKeys: [ManagementApi.info.key()],
         onSuccess: onSuccess,

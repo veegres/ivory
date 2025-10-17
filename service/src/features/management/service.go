@@ -13,6 +13,8 @@ import (
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
 	"ivory/src/storage/env"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Service struct {
@@ -100,7 +102,7 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	return nil
 }
 
-func (s *Service) GetAppInfo(authHeader string) *AppInfo {
+func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	appConfig, err := s.config.GetAppConfig()
 	if err != nil {
 		return &AppInfo{
@@ -116,7 +118,11 @@ func (s *Service) GetAppInfo(authHeader string) *AppInfo {
 			},
 		}
 	}
-	authorised, authError := s.authService.ValidateAuthHeader(authHeader, appConfig.Auth)
+	authorised, authError := s.authService.ValidateAuthToken(context, appConfig.Auth)
+	errorMessage := ""
+	if authError != nil {
+		errorMessage = authError.Error()
+	}
 
 	return &AppInfo{
 		Company:      appConfig.Company,
@@ -127,7 +133,7 @@ func (s *Service) GetAppInfo(authHeader string) *AppInfo {
 		Auth: auth.Info{
 			Type:       appConfig.Auth.Type,
 			Authorised: authorised,
-			Error:      authError,
+			Error:      errorMessage,
 		},
 	}
 }

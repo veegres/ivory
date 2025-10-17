@@ -20,6 +20,7 @@ type Config struct {
 	StaticFilesPath string
 	CertFilePath    string
 	CertKeyFilePath string
+	TlsEnabled      bool
 }
 
 type AppInfo struct {
@@ -91,6 +92,7 @@ func NewAppInfo() *AppInfo {
 			StaticFilesPath: staticFilesPath,
 			CertFilePath:    certFilePath,
 			CertKeyFilePath: certKeyFilePath,
+			TlsEnabled:      certFilePath != "" && certKeyFilePath != "",
 		},
 		Version: Version{
 			Tag:    tag,

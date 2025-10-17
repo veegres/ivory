@@ -23,8 +23,6 @@ func NewRouter(di *Context) {
 	engine := gin.Default()
 	engine.UseH2C = true
 
-	tls := di.env.Config.CertKeyFilePath != "" && di.env.Config.CertFilePath != ""
-
 	// NOTE: Serving ivory static files to web
 	if di.env.Config.StaticFilesPath != "" {
 		slog.Info("Ivory serves static/web files under the path '" + di.env.Config.UrlPath + "'")
@@ -41,7 +39,7 @@ func NewRouter(di *Context) {
 	slog.Info("Ivory serves backend/service api under the path '" + di.env.Config.UrlPath + "/api'")
 	path := engine.Group(di.env.Config.UrlPath)
 
-	unsafe := path.Group("/api", gin.Recovery(), di.authRouter.SessionMiddleware(tls))
+	unsafe := path.Group("/api", gin.Recovery(), di.authRouter.SessionMiddleware())
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.managementRouter.GetAppInfo)
 
@@ -52,7 +50,8 @@ func NewRouter(di *Context) {
 	generalRouter(general, di.authRouter, di.configRouter)
 
 	safe := general.Group("/", di.authRouter.AuthMiddleware())
-	safeRouter(safe, di.secretRouter, di.managementRouter)
+	safe.POST("/logout", di.authRouter.Logout)
+	managementRouter(safe, di.secretRouter, di.managementRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
 	certRouter(safe, di.certRouter)
@@ -61,7 +60,7 @@ func NewRouter(di *Context) {
 	instanceRouter(safe, di.instanceRouter)
 	queryRouter(safe, di.queryRouter)
 
-	if tls {
+	if di.env.Config.TlsEnabled {
 		slog.Info("Ivory serves https connection under address " + di.env.Config.UrlAddress)
 		err := engine.RunTLS(di.env.Config.UrlAddress, di.env.Config.CertFilePath, di.env.Config.CertKeyFilePath)
 		if err != nil {
@@ -81,7 +80,10 @@ func pong(context *gin.Context) {
 }
 
 func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
-	g.POST("/login", ra.Login)
+	g.POST("/basic/login", ra.BasicLogin)
+	g.POST("/ldap/login", ra.LdapLogin)
+	g.GET("/oidc/login", ra.OidcLogin)
+	g.GET("/oidc/callback", ra.OidcCallback)
 
 	initial := g.Group("/initial")
 	initial.POST("/config", rg.SetAppConfig)
@@ -89,15 +91,16 @@ func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
 
 func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
 	group := g.Group("/initial")
+	// TODO check if we can access this endpoint after secret was set
 	group.POST("/secret", rs.SetSecret)
 	group.DELETE("/erase", rg.Erase)
 }
 
-func safeRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
-	group := g.Group("/safe")
+func managementRouter(g *gin.RouterGroup, rs *secret.Router, rm *management.Router) {
+	group := g.Group("/management")
 	group.GET("/secret", rs.GetSecretStatus)
-	group.POST("/secret", rg.ChangeSecret)
-	group.DELETE("/erase", rg.Erase)
+	group.POST("/secret", rm.ChangeSecret)
+	group.DELETE("/erase", rm.Erase)
 }
 
 func clusterRouter(g *gin.RouterGroup, r *cluster.Router) {

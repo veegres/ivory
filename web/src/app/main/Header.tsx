@@ -4,10 +4,9 @@ import {useState} from "react";
 import {randomUnicodeAnimal} from "../utils";
 import {useStoreAction} from "../../provider/StoreProvider";
 import {useAuth} from "../../provider/AuthProvider";
-import {useQueryClient} from "@tanstack/react-query";
-import {ManagementApi} from "../../api/management/router";
 import {AuthType} from "../../api/config/type";
 import {SxPropsMap} from "../type";
+import {useRouterLogout} from "../../api/auth/hook";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},
@@ -30,7 +29,7 @@ export function Header(props: Props) {
     const {logout} = useAuth()
     const [animal, setAnimal] = useState("")
 
-    const queryClient = useQueryClient();
+    const logoutRouter = useRouterLogout()
 
     return (
         <Box sx={SX.box} >
@@ -57,7 +56,7 @@ export function Header(props: Props) {
                         <Settings/>
                     </IconButton>
                 </Tooltip>
-                {auth === AuthType.BASIC && (
+                {auth !== AuthType.NONE && (
                     <Tooltip title={"Sign out"}>
                         <IconButton onClick={handleLogout} color={"inherit"}>
                             <Logout/>
@@ -75,6 +74,6 @@ export function Header(props: Props) {
 
     function handleLogout() {
         logout()
-        queryClient.refetchQueries({queryKey: ManagementApi.info.key()}).then()
+        logoutRouter.mutate()
     }
 }
