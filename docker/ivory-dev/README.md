@@ -80,7 +80,7 @@ It is free to use and has open configuration.
 
 #### Configuration
 ```
-URL:            ldap.forumsys.com
+URL:            ldap://ldap.forumsys.com
 Bind DN:        cn=read-only-admin,dc=example,dc=com
 Bind password:  password
 Base DN:        dc=example,dc=com
