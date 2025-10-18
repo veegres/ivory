@@ -156,5 +156,5 @@ func (r *Router) setCookieToken(context *gin.Context, value string, exp *time.Ti
 }
 
 func (r *Router) setCookieState(context *gin.Context, value string) {
-	context.SetCookie("state", value, 600, "/oidc", "", r.tlsEnabled, true)
+	context.SetCookie("state", value, 600, "/api/oidc", "", r.tlsEnabled, true)
 }
