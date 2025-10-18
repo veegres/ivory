@@ -39,15 +39,15 @@ func NewRouter(di *Context) {
 	unsafe := path.Group("/api", gin.Recovery(), di.authRouter.SessionMiddleware())
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.managementRouter.GetAppInfo)
+	unsafe.POST("/logout", di.authRouter.Logout)
 
-	initial := unsafe.Group("/", di.secretRouter.EmptyMiddleware())
+	initial := unsafe.Group("/", di.secretRouter.EmptySecretMiddleware())
 	initialRouter(initial, di.secretRouter, di.managementRouter)
 
-	general := unsafe.Group("/", di.secretRouter.ExistMiddleware())
+	general := unsafe.Group("/", di.secretRouter.ExistSecretMiddleware())
 	generalRouter(general, di.authRouter, di.configRouter)
 
 	safe := general.Group("/", di.authRouter.AuthMiddleware())
-	safe.POST("/logout", di.authRouter.Logout)
 	managementRouter(safe, di.secretRouter, di.managementRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)
@@ -92,7 +92,6 @@ func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
 
 func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
 	group := g.Group("/initial")
-	// TODO check if we can access this endpoint after secret was set
 	group.POST("/secret", rs.SetSecret)
 	group.DELETE("/erase", rg.Erase)
 }
