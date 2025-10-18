@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -73,7 +74,7 @@ func (r *Router) BasicLogin(context *gin.Context) {
 		return
 	}
 
-	r.setCookieToken(context, token, exp.Second())
+	r.setCookieToken(context, token, exp)
 	context.JSON(http.StatusOK, gin.H{"response": gin.H{"token": token, "expire": exp.String()}})
 }
 
@@ -97,7 +98,7 @@ func (r *Router) LdapLogin(context *gin.Context) {
 		return
 	}
 
-	r.setCookieToken(context, token, exp.Second())
+	r.setCookieToken(context, token, exp)
 	context.JSON(http.StatusOK, gin.H{"response": gin.H{"token": token, "expire": exp.String()}})
 }
 
@@ -135,7 +136,7 @@ func (r *Router) OidcCallback(context *gin.Context) {
 		return
 	}
 
-	r.setCookieToken(context, token, exp.Second())
+	r.setCookieToken(context, token, exp)
 	http.Redirect(context.Writer, context.Request, r.path, http.StatusFound)
 }
 
@@ -148,11 +149,12 @@ func (r *Router) setCookieSession(context *gin.Context, value string) {
 	context.SetCookie("session", value, 2592000, "/", "", r.tlsEnabled, true)
 }
 
-func (r *Router) setCookieToken(context *gin.Context, value string, exp int) {
+func (r *Router) setCookieToken(context *gin.Context, value string, exp *time.Time) {
+	seconds := int(time.Until(*exp).Seconds())
 	context.SetSameSite(http.SameSiteStrictMode)
-	context.SetCookie("token", value, exp, "/", "", r.tlsEnabled, true)
+	context.SetCookie("token", value, seconds, "/", "", r.tlsEnabled, true)
 }
 
 func (r *Router) setCookieState(context *gin.Context, value string) {
-	context.SetCookie("state", value, 3600, "/", "", r.tlsEnabled, true)
+	context.SetCookie("state", value, 600, "/oidc", "", r.tlsEnabled, true)
 }
