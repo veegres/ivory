@@ -18,7 +18,7 @@ import (
 )
 
 type Service struct {
-	env             *env.AppInfo
+	env             *env.AppEnv
 	authService     *auth.Service
 	passwordService *password.Service
 	clusterService  *cluster.Service
@@ -32,7 +32,7 @@ type Service struct {
 }
 
 func NewService(
-	env *env.AppInfo,
+	env *env.AppEnv,
 	authService *auth.Service,
 	passwordService *password.Service,
 	clusterService *cluster.Service,
@@ -106,6 +106,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	appConfig, err := s.config.GetAppConfig()
 	if err != nil {
 		return &AppInfo{
+			Path:         s.env.Config.UrlPath,
 			Company:      "",
 			Configured:   false,
 			Secret:       s.secretService.Status(),
@@ -125,6 +126,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	}
 
 	return &AppInfo{
+		Path:         s.env.Config.UrlPath,
 		Company:      appConfig.Company,
 		Configured:   true,
 		Secret:       s.secretService.Status(),

@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
+import {FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
 import {InputProps as StandardInputProps} from "@mui/material/Input/Input";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
@@ -14,16 +14,18 @@ type Props = {
     hidden?: boolean,
     value?: unknown,
     required?: boolean,
+    disabled?: boolean,
+    helperText?: string,
     onChange: StandardInputProps['onChange'],
     onEnterPress?: () => void,
 }
 
 export function KeyEnterInput(props: Props) {
-    const {label, onChange, hidden = false, required = true, onEnterPress, value} = props
+    const {label, onChange, hidden = false, required = true, disabled = false, helperText, onEnterPress, value} = props
     const [showPassword, setShowPassword] = useState(false)
 
     return (
-        <FormControl sx={SX.margin} fullWidth required={required} size={"small"} margin={"normal"}>
+        <FormControl sx={SX.margin} fullWidth required={required} disabled={disabled} size={"small"} margin={"normal"}>
             <InputLabel>{label}</InputLabel>
             <OutlinedInput
                 value={value}
@@ -34,6 +36,7 @@ export function KeyEnterInput(props: Props) {
                 onChange={onChange}
                 onKeyUp={(e) => handleKeyPress(e.key)}
             />
+            <FormHelperText>{helperText}</FormHelperText>
         </FormControl>
     )
 

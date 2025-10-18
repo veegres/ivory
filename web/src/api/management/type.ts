@@ -11,6 +11,7 @@ export interface R<TData, TError = object> {
 
 export interface AppInfo {
     company: string,
+    path: string,
     configured: boolean,
     secret: SecretStatus,
     availability: Availability,

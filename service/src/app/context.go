@@ -22,7 +22,7 @@ import (
 )
 
 type Context struct {
-	env              *env.AppInfo
+	env              *env.AppEnv
 	authRouter       *auth.Router
 	clusterRouter    *cluster.Router
 	bloatRouter      *bloat.Router
@@ -37,7 +37,7 @@ type Context struct {
 }
 
 func NewContext() *Context {
-	appInfo := env.NewAppInfo()
+	appEnv := env.NewAppEnv()
 
 	// DB
 	st := db.NewStorage("ivory.db")
@@ -68,7 +68,7 @@ func NewContext() *Context {
 	// CLIENTS
 	sidecarGateway := sidecar.NewGateway()
 	patroniClient := patroni.NewClient(sidecarGateway)
-	postgresClient := postgres.NewClient(appInfo.Version.Label)
+	postgresClient := postgres.NewClient(appEnv.Version.Label)
 
 	// SERVICES
 	encryptionService := encryption.NewService()
@@ -85,7 +85,7 @@ func NewContext() *Context {
 	bloatService := bloat.NewService(bloatRepo, passwordService)
 	authService := auth.NewService(secretService, configService)
 	managementService := management.NewService(
-		appInfo,
+		appEnv,
 		authService,
 		passwordService,
 		clusterService,
@@ -98,8 +98,8 @@ func NewContext() *Context {
 	)
 
 	return &Context{
-		env:              appInfo,
-		authRouter:       auth.NewRouter(authService, appInfo.Config.UrlPath, appInfo.Config.TlsEnabled),
+		env:              appEnv,
+		authRouter:       auth.NewRouter(authService, appEnv.Config.UrlPath, appEnv.Config.TlsEnabled),
 		clusterRouter:    cluster.NewRouter(clusterService),
 		bloatRouter:      bloat.NewRouter(bloatService),
 		certRouter:       cert.NewRouter(certService),

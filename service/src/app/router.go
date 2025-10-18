@@ -25,7 +25,6 @@ func NewRouter(di *Context) {
 
 	// NOTE: Serving ivory static files to web
 	if di.env.Config.StaticFilesPath != "" {
-		slog.Info("Ivory serves static/web files under the path '" + di.env.Config.UrlPath + "'")
 		engine.Use(static.Serve(di.env.Config.UrlPath, static.LocalFile(di.env.Config.StaticFilesPath, true)))
 		engine.NoRoute(func(context *gin.Context) {
 			// NOTE: if files weren't found and NoRoute come here, we need to throw 404 and prevent endless redirect
@@ -36,9 +35,7 @@ func NewRouter(di *Context) {
 	}
 
 	// NOTE: Setup default sub path for reverse proxies, default "/"
-	slog.Info("Ivory serves backend/service api under the path '" + di.env.Config.UrlPath + "/api'")
 	path := engine.Group(di.env.Config.UrlPath)
-
 	unsafe := path.Group("/api", gin.Recovery(), di.authRouter.SessionMiddleware())
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", di.managementRouter.GetAppInfo)
@@ -60,14 +57,18 @@ func NewRouter(di *Context) {
 	instanceRouter(safe, di.instanceRouter)
 	queryRouter(safe, di.queryRouter)
 
+	slog.Info("Ivory address: " + di.env.Config.UrlAddress)
+	slog.Info("Ivory WEB path: " + di.env.Config.UrlPath)
+	slog.Info("Ivory API path: " + unsafe.BasePath())
+
 	if di.env.Config.TlsEnabled {
-		slog.Info("Ivory serves https connection under address " + di.env.Config.UrlAddress)
+		slog.Info("Ivory connection type: HTTPS")
 		err := engine.RunTLS(di.env.Config.UrlAddress, di.env.Config.CertFilePath, di.env.Config.CertKeyFilePath)
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		slog.Info("Ivory serves http connection under address " + di.env.Config.UrlAddress)
+		slog.Info("Ivory connection type: HTTP")
 		err := engine.Run(di.env.Config.UrlAddress)
 		if err != nil {
 			panic(err)

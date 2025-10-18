@@ -23,12 +23,12 @@ type Config struct {
 	TlsEnabled      bool
 }
 
-type AppInfo struct {
+type AppEnv struct {
 	Config  Config
 	Version Version
 }
 
-func NewAppInfo() *AppInfo {
+func NewAppEnv() *AppEnv {
 	ginMode := "debug"
 	if val, ok := os.LookupEnv("GIN_MODE"); ok {
 		ginMode = val
@@ -85,7 +85,7 @@ func NewAppInfo() *AppInfo {
 	slog.Info("ENV", "IVORY_VERSION_COMMIT", commit)
 	println()
 
-	return &AppInfo{
+	return &AppEnv{
 		Config: Config{
 			UrlAddress:      urlAddress,
 			UrlPath:         urlPath,
@@ -103,8 +103,8 @@ func NewAppInfo() *AppInfo {
 }
 
 func updateBaseUrlTag(path string, href string) {
-	// NOTE: we need to remove `/` because we set it in replace string
-	//  correct url for base href is `/`, `/ivory/`, `/example/` (it should always be covered by two `/`
+	// NOTE: correct url for base href is `/`, `/ivory/`, `/example/` (it should always be covered by two `/`)
+	//  in case we have href == `/` - we need to clean it because in `regex.ReplaceAllString` we will add it back
 	if href == "/" {
 		href = ""
 	}
@@ -128,7 +128,7 @@ func parseUrlPath(path string) string {
 	}
 	newPath := path
 
-	// NOTE: path should either be empty or with slash as first symbol
+	// NOTE: path should be with slash as first symbol
 	if newPath[0] != '/' {
 		panic("path should contain `/` at the beginning")
 	}

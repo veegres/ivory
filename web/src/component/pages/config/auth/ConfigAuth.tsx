@@ -64,12 +64,13 @@ const Severity: { [key in AuthType]: AlertColor } = {
 }
 
 type Props = {
-    onChange: (auth: AuthConfig) => void,
     auth: AuthConfig,
+    path: string,
+    onChange: (auth: AuthConfig) => void,
 }
 
 export function ConfigAuth(props: Props) {
-    const {onChange, auth} = props
+    const {onChange, auth, path} = props
 
     return (
         <ConfigBox
@@ -134,7 +135,14 @@ export function ConfigAuth(props: Props) {
                 <KeyEnterInput label={"Issuer URL"} value={auth.oidc?.issuerUrl ?? ""} onChange={handleConfigChange("oidc", "issuerUrl")}/>
                 <KeyEnterInput label={"Client ID"} value={auth.oidc?.clientId ?? ""} onChange={handleConfigChange("oidc", "clientId")}/>
                 <KeyEnterInput label={"Client secret"} value={auth.oidc?.clientSecret ?? ""} onChange={handleConfigChange("oidc", "clientSecret")} hidden/>
-                <KeyEnterInput label={"Redirect URL"} value={auth.oidc?.redirectUrl ?? ""} onChange={handleConfigChange("oidc", "redirectUrl")}/>
+                <KeyEnterInput
+                    label={"Redirect URL"}
+                    value={auth.oidc?.redirectUrl ?? ""}
+                    helperText={"This URL must be allowed in your provider configuration"}
+                    required={false}
+                    disabled={true}
+                    onChange={handleConfigChange("oidc", "redirectUrl")}
+                />
             </Box>
         )
     }
@@ -159,6 +167,12 @@ export function ConfigAuth(props: Props) {
 
     function handleAuthTypeChange(e: ChangeEvent<HTMLInputElement>) {
         const type = parseInt(e.target.value) as AuthType
-        onChange({type})
+        if (type === AuthType.OIDC) onChange({type, oidc: {issuerUrl: "", clientId: "", clientSecret: "", redirectUrl: getRedirectUrl()}})
+        else onChange({type})
+    }
+
+    function getRedirectUrl() {
+        const subPath = path === "/" ? "" : path
+        return `${window.location.origin}${subPath}/api/oidc/callback`
     }
 }
