@@ -8,7 +8,7 @@ export const AuthApi = {
         fn: (type: AuthType) => async (req: any) => {
             const url = `/${AuthType[type].toLowerCase()}/login`
             if (type === AuthType.OIDC) {
-                window.location.href = `/api` + url
+                window.location.href = api.defaults.baseURL + url
                 return Promise.resolve(null)
             }
             const response = await api.post<R<any>>(url, req);

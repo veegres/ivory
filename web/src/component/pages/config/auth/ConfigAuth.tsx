@@ -65,12 +65,11 @@ const Severity: { [key in AuthType]: AlertColor } = {
 
 type Props = {
     auth: AuthConfig,
-    path: string,
     onChange: (auth: AuthConfig) => void,
 }
 
 export function ConfigAuth(props: Props) {
-    const {onChange, auth, path} = props
+    const {onChange, auth} = props
 
     return (
         <ConfigBox
@@ -172,7 +171,7 @@ export function ConfigAuth(props: Props) {
     }
 
     function getRedirectUrl() {
-        const subPath = path === "/" ? "" : path
-        return `${window.location.origin}${subPath}/api/oidc/callback`
+        // NOTE: we set base url when configure env variables in backend
+        return `${document.baseURI}api/oidc/callback`
     }
 }

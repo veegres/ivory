@@ -6,20 +6,18 @@ import {ConfigAuth} from "./auth/ConfigAuth";
 import {Button} from "@mui/material";
 import {useRouterConfigSet} from "../../../api/config/hook";
 import {AuthConfig, AuthType} from "../../../api/config/type";
-import {useRouterInfo} from "../../../api/management/hook";
 
 export function ConfigBody() {
     const [company, setCompany] = useState("")
     const [query, setQuery] = useState(false)
     const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE})
     const config = useRouterConfigSet()
-    const info = useRouterInfo()
 
     return (
         <PageStartupBox header={"Configuration"} renderFooter={renderFooter()}>
             <KeyEnterInput label={"Company"} onChange={(e) => setCompany(e.target.value)}/>
             <ConfigQuery onChange={setQuery}/>
-            <ConfigAuth onChange={setAuth} auth={auth} path={info.data?.path ?? ""}/>
+            <ConfigAuth onChange={setAuth} auth={auth}/>
         </PageStartupBox>
     )
 

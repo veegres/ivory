@@ -16,7 +16,6 @@ type Response struct {
 
 type AppInfo struct {
 	Company      string              `json:"company"`
-	Path         string              `json:"path"`
 	Configured   bool                `json:"configured"`
 	Availability config.Availability `json:"availability"`
 	Version      env.Version         `json:"version"`

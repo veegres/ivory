@@ -141,20 +141,24 @@ func (r *Router) OidcCallback(context *gin.Context) {
 }
 
 func (r *Router) Logout(context *gin.Context) {
-	context.SetCookie("token", "", -1, "/", "", r.tlsEnabled, true)
+	context.SetCookie("token", "", -1, r.path, "", r.tlsEnabled, true)
 }
 
 func (r *Router) setCookieSession(context *gin.Context, value string) {
 	// NOTE: maxAge is provided in seconds 2592000 sec = 30 days
-	context.SetCookie("session", value, 2592000, "/", "", r.tlsEnabled, true)
+	context.SetCookie("session", value, 2592000, r.path, "", r.tlsEnabled, true)
 }
 
 func (r *Router) setCookieToken(context *gin.Context, value string, exp *time.Time) {
 	seconds := int(time.Until(*exp).Seconds())
 	context.SetSameSite(http.SameSiteStrictMode)
-	context.SetCookie("token", value, seconds, "/", "", r.tlsEnabled, true)
+	context.SetCookie("token", value, seconds, r.path, "", r.tlsEnabled, true)
 }
 
 func (r *Router) setCookieState(context *gin.Context, value string) {
-	context.SetCookie("state", value, 600, "/api/oidc", "", r.tlsEnabled, true)
+	path := ""
+	if r.path != "/" {
+		path = r.path
+	}
+	context.SetCookie("state", value, 600, path+"/api/oidc", "", r.tlsEnabled, true)
 }

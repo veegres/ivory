@@ -43,11 +43,12 @@ func NewAppEnv() *AppEnv {
 		certKeyFilePath = val
 	}
 
+	tlsEnabled := certFilePath != "" && certKeyFilePath != ""
 	urlAddress := ":8080"
 	if val, ok := os.LookupEnv("IVORY_URL_ADDRESS"); ok {
 		urlAddress = val
 	} else if ginMode == "release" {
-		if certFilePath != "" && certKeyFilePath != "" {
+		if tlsEnabled {
 			urlAddress = ":443"
 		} else {
 			urlAddress = ":80"
@@ -92,7 +93,7 @@ func NewAppEnv() *AppEnv {
 			StaticFilesPath: staticFilesPath,
 			CertFilePath:    certFilePath,
 			CertKeyFilePath: certKeyFilePath,
-			TlsEnabled:      certFilePath != "" && certKeyFilePath != "",
+			TlsEnabled:      tlsEnabled,
 		},
 		Version: Version{
 			Tag:    tag,
