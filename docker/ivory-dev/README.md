@@ -62,6 +62,74 @@ Note: You need root privilege to use commands below, use `sudo`
 
 Now you can use pgcompacttable from your console, Ivory will use it as well
 
+## Authentication
+
+Ivory supports 3 type of authentications *BASIC*, *LDAP*, *OIDC*.
+You can configure them in initial Ivory load, right after secret set.
+Configuration examples:
+
+### BASIC
+
+Just use simple username and password, like `admin:admin`
+
+### LDAP
+
+You can either up local one or use some test ldap providers from the internet.
+The one used during development and recommend for use is [ldap.forumsys.com](https://www.forumsys.com/2022/05/10/online-ldap-test-server/).
+It is free to use and has open configuration.
+
+#### Configuration
+```
+URL:            ldap.forumsys.com
+Bind DN:        cn=read-only-admin,dc=example,dc=com
+Bind password:  password
+Base DN:        dc=example,dc=com
+Filter:         (keep empty)
+```
+
+#### Credentials
+```
+tesla:password
+newton:password
+einstein:password
+euclid:password
+```
+
+P.S. for more credentials and options visit providers page
+
+### OIDC
+
+You can either up local one or use some test ldap providers from the internet.
+During development only closed one was discovered, but it is free to use.
+Provider is [auth0.com](https://auth0.com). You can either create your own provider use that was created already.
+
+#### Configuration
+
+```
+Issuer URL:     dev-xmg2j154iy3amd7t.us.auth0.com
+Client ID:      lMhKMAPfaEa18DjlPmpnCoOkTSLFF6qL
+Client Secret:  EebgFuO_DWPwIlOf6w3JonqOBiikjZYFf74kFjshPp4au-buzmp2yqfx34sfdSzx
+```
+
+#### Credentials
+```
+tesla:password
+newton:password
+einstein:password
+euclid:password
+```
+
+#### Create your own provider
+
+1. Register and login to [auth0.com](https://auth0.com)
+2. Go to the [dashboard](https://manage.auth0.com/dashboard)
+3. Go to application page or find button create application
+4. Choose any and provide some name like `Ivory [DEV]`
+5. Open the application (there you would see configs to use)
+6. Find Application URIs section and add to Allowed callbacks, your local callback `http://localhost:5173/api/oidc/callback`
+7. Check that you have users in Authentication DB (you can register new or use Google auth)
+
+
 ## Certificates
 
 These certificates are only needed for testing purposes, please, don't use them in real VMs, you can
