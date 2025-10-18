@@ -130,7 +130,12 @@ export function ConfigAuth(props: Props) {
     function renderOidc() {
         return (
             <Box sx={SX.oidc}>
-                <KeyEnterInput label={"Issuer URL"} value={auth.oidc?.issuerUrl ?? ""} onChange={handleConfigChange("oidc", "issuerUrl")}/>
+                <KeyEnterInput
+                    label={"Issuer URL"}
+                    value={auth.oidc?.issuerUrl ?? ""}
+                    helperText={"Specify the complete HTTP url, including the protocol prefix http:// or https://"}
+                    onChange={handleConfigChange("oidc", "issuerUrl")}
+                />
                 <KeyEnterInput label={"Client ID"} value={auth.oidc?.clientId ?? ""} onChange={handleConfigChange("oidc", "clientId")}/>
                 <KeyEnterInput label={"Client secret"} value={auth.oidc?.clientSecret ?? ""} onChange={handleConfigChange("oidc", "clientSecret")} hidden/>
                 <KeyEnterInput
@@ -148,7 +153,12 @@ export function ConfigAuth(props: Props) {
     function renderLdap() {
         return (
             <Box sx={SX.ldap}>
-                <KeyEnterInput label={"URL"} value={auth.ldap?.url ?? ""} onChange={handleConfigChange("ldap", "url")}/>
+                <KeyEnterInput
+                    label={"URL"}
+                    helperText={"Specify the complete LDAP url, including the protocol prefix ldap:// or ldaps://"}
+                    value={auth.ldap?.url ?? ""}
+                    onChange={handleConfigChange("ldap", "url")}
+                />
                 <KeyEnterInput label={"Bind DN"} value={auth.ldap?.bindDN ?? ""} onChange={handleConfigChange("ldap", "bindDN")}/>
                 <KeyEnterInput label={"Bind password"} value={auth.ldap?.bindPass ?? ""} onChange={handleConfigChange("ldap", "bindPass")} hidden/>
                 <KeyEnterInput label={"Base DN"} value={auth.ldap?.baseDN ?? ""} onChange={handleConfigChange("ldap", "baseDN")}/>

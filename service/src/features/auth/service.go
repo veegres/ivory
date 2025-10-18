@@ -95,19 +95,18 @@ func (s *Service) GenerateLdapAuthToken(login Login) (string, *time.Time, error)
 	}
 	ldapConfig := appConfig.Auth.Ldap
 	dialer := &net.Dialer{Timeout: 3 * time.Second}
-	// TODO ldap can be configure to to use TLS, consider adding it
-	l, err := ldap.DialURL("ldap://"+ldapConfig.Url, ldap.DialWithDialer(dialer))
+	conn, err := ldap.DialURL(ldapConfig.Url, ldap.DialWithDialer(dialer))
 	if err != nil {
 		return "", nil, err
 	}
-	defer func(l *ldap.Conn) {
-		err := l.Close()
+	defer func(conn *ldap.Conn) {
+		err := conn.Close()
 		if err != nil {
 			slog.Error(err.Error())
 		}
-	}(l)
+	}(conn)
 
-	err = l.Bind(ldapConfig.BindDN, ldapConfig.BindPass)
+	err = conn.Bind(ldapConfig.BindDN, ldapConfig.BindPass)
 	if err != nil {
 		return "", nil, err
 	}
@@ -125,7 +124,7 @@ func (s *Service) GenerateLdapAuthToken(login Login) (string, *time.Time, error)
 		nil,
 	)
 
-	sr, err := l.Search(searchRequest)
+	sr, err := conn.Search(searchRequest)
 	if err != nil {
 		return "", nil, err
 	}
@@ -135,7 +134,7 @@ func (s *Service) GenerateLdapAuthToken(login Login) (string, *time.Time, error)
 	}
 
 	userDn := sr.Entries[0].DN
-	err = l.Bind(userDn, login.Password)
+	err = conn.Bind(userDn, login.Password)
 	if err != nil {
 		return "", nil, err
 	}
