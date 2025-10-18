@@ -106,7 +106,7 @@ Provider is [auth0.com](https://auth0.com). You can either create your own provi
 #### Configuration
 
 ```
-Issuer URL:     dev-xmg2j154iy3amd7t.us.auth0.com
+Issuer URL:     https://dev-xmg2j154iy3amd7t.us.auth0.com/
 Client ID:      lMhKMAPfaEa18DjlPmpnCoOkTSLFF6qL
 Client Secret:  EebgFuO_DWPwIlOf6w3JonqOBiikjZYFf74kFjshPp4au-buzmp2yqfx34sfdSzx
 ```

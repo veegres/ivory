@@ -14,26 +14,25 @@ const SX: SxPropsMap = {
 
 const Description = {
     [AuthType.NONE]: <>
-        No authentications means that anyone will have direct access to <b>Ivory</b> and
-        to all the information provided like certs, password, etc. Anyone who has a link to
-        Ivory will be able to perform any action with database like switchover, reinit, etc.
+        Without authentication, anyone who can access <b>Ivory</b> will have full
+        control over the system. This includes using sensitive data (certificates, passwords, etc.)
+        and executing dangerous database operations like switchover or reinitialization.
     </>,
     [AuthType.BASIC]: <>
-        Basic authentication helps to protect <b>Ivory</b> data from direct access
-        with general username and password. It provides sign in form to get access
-        to <b>Ivory</b>. It will generate unique token for each sign in. Each token
-        has expiration time. You need to provide general username and password
-        that will be used below.
+        Basic authentication helps protect <b>Ivory</b> from unauthorized access using a
+        general username and password. It provides a sign-in form that requires these credentials
+        before granting access to <b>Ivory</b>. You’ll need to specify the username and password below.
     </>,
     [AuthType.OIDC]: <>
-        OIDC authentication helps to protect <b>Ivory</b> data from direct access
-        with OIDC provider. It provides sign in form to get access to <b>Ivory</b>.
-        It will generate a unique token for each sign in. Each token has expiration time.
+        OIDC authentication protects <b>Ivory</b> data by integrating with an external OpenID Connect (OIDC) provider.
+        It’s recommended to create a dedicated application for <b>Ivory</b> and restrict access to specific users only.
+        When configuring OIDC, ensure that <b>Ivory</b>’s callback URL is allowed on the provider side.
+        Also, make sure the Issuer URL exactly matches the value specified in the <i>/.well-known/openid-configuration</i> endpoint.
     </>,
     [AuthType.LDAP]: <>
-        LDAP authentication helps to protect <b>Ivory</b> data from direct access
-        with LDAP provider. It provides sign in form to get access to <b>Ivory</b>.
-        It will generate unique token for each sign in. Each token has expiration time.
+        LDAP authentication protects <b>Ivory</b> by integrating with an LDAP provider.
+        It provides a sign-in form that requires valid LDAP credentials to access <b>Ivory</b>.
+        You can specify a filter below to restrict access to certain users.
     </>
 }
 
