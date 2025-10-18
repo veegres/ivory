@@ -68,7 +68,7 @@ func (s *Service) GetAppConfig() (*AppConfig, error) {
 
 	read, err := s.configFiles.ReadByName(s.appConfigFileName)
 	if err != nil {
-		return nil, errors.New("config is not specified or it cannot be read from file")
+		return nil, errors.New("config is not specified, or it cannot be read from file")
 	}
 
 	var appConfig AppConfig

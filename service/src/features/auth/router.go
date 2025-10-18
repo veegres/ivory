@@ -37,30 +37,17 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 
 func (r *Router) AuthMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		appConfig, errConfig := r.authService.getConfig()
-		if errConfig != nil {
-			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": errConfig.Error()})
-			return
-		}
-
-		valid, errValid := r.authService.ValidateAuthToken(context, appConfig.Auth)
+		valid, errValid := r.authService.ValidateAuthToken(context)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
 			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errValid.Error()})
 			return
 		}
-
 		context.Next()
 	}
 }
 
 func (r *Router) BasicLogin(context *gin.Context) {
-	appConfig, errConfig := r.authService.getConfig()
-	if errConfig != nil {
-		context.JSON(http.StatusForbidden, gin.H{"error": errConfig.Error()})
-		return
-	}
-
 	var login Login
 	parseErr := context.ShouldBindJSON(&login)
 	if parseErr != nil {
@@ -68,7 +55,7 @@ func (r *Router) BasicLogin(context *gin.Context) {
 		return
 	}
 
-	token, exp, errToken := r.authService.GenerateBasicAuthToken(login, appConfig.Auth)
+	token, exp, errToken := r.authService.GenerateBasicAuthToken(login)
 	if errToken != nil {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": errToken.Error()})
 		return
@@ -79,12 +66,6 @@ func (r *Router) BasicLogin(context *gin.Context) {
 }
 
 func (r *Router) LdapLogin(context *gin.Context) {
-	appConfig, errConfig := r.authService.getConfig()
-	if errConfig != nil {
-		context.JSON(http.StatusForbidden, gin.H{"error": errConfig.Error()})
-		return
-	}
-
 	var login Login
 	parseErr := context.ShouldBindJSON(&login)
 	if parseErr != nil {
@@ -92,7 +73,7 @@ func (r *Router) LdapLogin(context *gin.Context) {
 		return
 	}
 
-	token, exp, errToken := r.authService.GenerateLdapAuthToken(login, appConfig.Auth)
+	token, exp, errToken := r.authService.GenerateLdapAuthToken(login)
 	if errToken != nil {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": errToken.Error()})
 		return
