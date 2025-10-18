@@ -42,10 +42,6 @@ func (s *Service) getIssuer() string {
 	return s.issuer
 }
 
-func (s *Service) getConfig() (*config.AppConfig, error) {
-	return s.configService.GetAppConfig()
-}
-
 func (s *Service) getOAuthCodeURL(str string) (string, error) {
 	oauthConfig, _, err := s.configService.GetOAuthConfig()
 	if err != nil {
@@ -54,9 +50,13 @@ func (s *Service) getOAuthCodeURL(str string) (string, error) {
 	return oauthConfig.AuthCodeURL(str), nil
 }
 
-func (s *Service) ValidateAuthToken(context *gin.Context, authConfig config.AuthConfig) (bool, error) {
+func (s *Service) ValidateAuthToken(context *gin.Context) (bool, error) {
+	appConfig, err := s.configService.GetAppConfig()
+	if err != nil {
+		return false, err
+	}
 	token, errToken := s.getToken(context)
-	switch authConfig.Type {
+	switch appConfig.Auth.Type {
 	case config.NONE:
 		if token != "" {
 			return false, errors.New("token should be empty")
@@ -76,21 +76,70 @@ func (s *Service) ValidateAuthToken(context *gin.Context, authConfig config.Auth
 	}
 }
 
-func (s *Service) GenerateBasicAuthToken(login Login, authConfig config.AuthConfig) (string, *time.Time, error) {
-	if login.Username != authConfig.Basic.Username || login.Password != authConfig.Basic.Password {
-		return "", nil, errors.New("credentials are not correct")
-	}
-	return s.generateToken(authConfig.Basic.Username)
-}
-
-func (s *Service) GenerateLdapAuthToken(login Login, authConfig config.AuthConfig) (string, *time.Time, error) {
-	valid, err := s.authenticateLdap(login, authConfig.Ldap)
+func (s *Service) GenerateBasicAuthToken(login Login) (string, *time.Time, error) {
+	appConfig, err := s.configService.GetAppConfig()
 	if err != nil {
 		return "", nil, err
 	}
-	if !valid {
+	basicConfig := appConfig.Auth.Basic
+	if login.Username != basicConfig.Username || login.Password != basicConfig.Password {
 		return "", nil, errors.New("credentials are not correct")
 	}
+	return s.generateToken(login.Username)
+}
+
+func (s *Service) GenerateLdapAuthToken(login Login) (string, *time.Time, error) {
+	appConfig, err := s.configService.GetAppConfig()
+	if err != nil {
+		return "", nil, err
+	}
+	ldapConfig := appConfig.Auth.Ldap
+	dialer := &net.Dialer{Timeout: 3 * time.Second}
+	// TODO ldap can be configure to to use TLS, consider adding it
+	l, err := ldap.DialURL("ldap://"+ldapConfig.Url, ldap.DialWithDialer(dialer))
+	if err != nil {
+		return "", nil, err
+	}
+	defer func(l *ldap.Conn) {
+		err := l.Close()
+		if err != nil {
+			slog.Error(err.Error())
+		}
+	}(l)
+
+	err = l.Bind(ldapConfig.BindDN, ldapConfig.BindPass)
+	if err != nil {
+		return "", nil, err
+	}
+
+	filter := ldapConfig.Filter
+	if filter == "" {
+		filter = "(uid=%s)"
+	}
+
+	searchRequest := ldap.NewSearchRequest(
+		ldapConfig.BaseDN,
+		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+		fmt.Sprintf(filter, login.Username),
+		[]string{"dn"},
+		nil,
+	)
+
+	sr, err := l.Search(searchRequest)
+	if err != nil {
+		return "", nil, err
+	}
+
+	if len(sr.Entries) != 1 {
+		return "", nil, errors.New("user not found or too many entries returned")
+	}
+
+	userDn := sr.Entries[0].DN
+	err = l.Bind(userDn, login.Password)
+	if err != nil {
+		return "", nil, err
+	}
+
 	return s.generateToken(login.Username)
 }
 
@@ -122,57 +171,6 @@ func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error)
 		return "", nil, err
 	}
 	return s.generateToken(claims.Email)
-}
-
-func (s *Service) authenticateLdap(login Login, ldapConfig *config.LdapConfig) (bool, error) {
-	// TODO ldap can be configure to to use TLS, consider adding it
-	dialer := &net.Dialer{Timeout: 3 * time.Second}
-	l, err := ldap.DialURL("ldap://"+ldapConfig.Url, ldap.DialWithDialer(dialer))
-	if err != nil {
-		return false, err
-	}
-	defer func(l *ldap.Conn) {
-		err := l.Close()
-		if err != nil {
-			slog.Error(err.Error())
-		}
-	}(l)
-
-	err = l.Bind(ldapConfig.BindDN, ldapConfig.BindPass)
-	if err != nil {
-		return false, err
-	}
-
-	filter := ldapConfig.Filter
-	if filter == "" {
-		filter = "(uid=%s)"
-	}
-
-	searchRequest := ldap.NewSearchRequest(
-		ldapConfig.BaseDN,
-		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		fmt.Sprintf(filter, login.Username),
-		[]string{"dn"},
-		nil,
-	)
-
-	sr, err := l.Search(searchRequest)
-	if err != nil {
-		return false, err
-	}
-
-	if len(sr.Entries) != 1 {
-		return false, errors.New("user not found or too many entries returned")
-	}
-
-	userdn := sr.Entries[0].DN
-
-	err = l.Bind(userdn, login.Password)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
 }
 
 func (s *Service) generateToken(subject string) (string, *time.Time, error) {

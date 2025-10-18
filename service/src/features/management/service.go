@@ -118,7 +118,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 			},
 		}
 	}
-	authorised, authError := s.authService.ValidateAuthToken(context, appConfig.Auth)
+	authorised, authError := s.authService.ValidateAuthToken(context)
 	errorMessage := ""
 	if authError != nil {
 		errorMessage = authError.Error()
