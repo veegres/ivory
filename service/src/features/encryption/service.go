@@ -15,6 +15,9 @@ func NewService() *Service {
 
 // Encrypt method is to encrypt or hide any classified text
 func (e *Service) Encrypt(text string, secret [16]byte) (string, error) {
+	if text == "" {
+		return "", errors.New("cannot encrypt empty string")
+	}
 	if secret == [16]byte{} {
 		return "", errors.New("secret is empty")
 	}
@@ -32,6 +35,9 @@ func (e *Service) Encrypt(text string, secret [16]byte) (string, error) {
 
 // Decrypt method is to extract back the encrypted text
 func (e *Service) Decrypt(text string, secret [16]byte) (string, error) {
+	if text == "" {
+		return "", errors.New("cannot decrypt empty string")
+	}
 	if secret == [16]byte{} {
 		return "", errors.New("secret is empty")
 	}
