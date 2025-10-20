@@ -68,15 +68,10 @@ func (p *Provider) Verify(login Login) (string, error) {
 		return "", err
 	}
 
-	filter := p.config.Filter
-	if filter == "" {
-		filter = "(uid=%s)"
-	}
-
 	searchRequest := ldap.NewSearchRequest(
 		p.config.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		fmt.Sprintf(filter, login.Username),
+		fmt.Sprintf(p.config.Filter, login.Username),
 		[]string{"dn"},
 		nil,
 	)
@@ -105,8 +100,7 @@ func (p *Provider) getConnection(config *Config) (*ldap.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	//conn.SetTimeout(3 * time.Second)
-
+	conn.SetTimeout(5 * time.Second)
 	err = conn.Bind(config.BindDN, config.BindPass)
 	if err != nil {
 		return nil, err

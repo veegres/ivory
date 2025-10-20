@@ -24,7 +24,7 @@ export interface LdapConfig {
     bindDN: string,
     bindPass: string,
     baseDN: string,
-    filter?: string,
+    filter: string,
 }
 
 export interface OidcConfig {

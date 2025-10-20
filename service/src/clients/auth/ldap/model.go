@@ -10,5 +10,5 @@ type Config struct {
 	BindDN   string `json:"bindDN"`
 	BindPass string `json:"bindPass"`
 	BaseDN   string `json:"baseDN"`
-	Filter   string `json:"filter,omitempty"`
+	Filter   string `json:"filter"`
 }

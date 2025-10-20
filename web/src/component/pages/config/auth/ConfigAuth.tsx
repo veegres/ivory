@@ -163,7 +163,12 @@ export function ConfigAuth(props: Props) {
                 <KeyEnterInput label={"Bind DN"} value={auth.ldap?.bindDN ?? ""} onChange={handleConfigChange("ldap", "bindDN")}/>
                 <KeyEnterInput label={"Bind password"} value={auth.ldap?.bindPass ?? ""} onChange={handleConfigChange("ldap", "bindPass")} hidden/>
                 <KeyEnterInput label={"Base DN"} value={auth.ldap?.baseDN ?? ""} onChange={handleConfigChange("ldap", "baseDN")}/>
-                <KeyEnterInput label={"Filter"} value={auth.ldap?.filter ?? ""} required={false} onChange={handleConfigChange("ldap", "filter")}/>
+                <KeyEnterInput
+                    label={"Filter"}
+                    helperText={"User search filter, for example '(cn=%s)' or '(sAMAccountName=%s)'"}
+                    value={auth.ldap?.filter ?? ""}
+                    onChange={handleConfigChange("ldap", "filter")}
+                />
             </Box>
         )
     }
@@ -177,6 +182,7 @@ export function ConfigAuth(props: Props) {
     function handleAuthTypeChange(e: ChangeEvent<HTMLInputElement>) {
         const type = parseInt(e.target.value) as AuthType
         if (type === AuthType.OIDC) onChange({type, oidc: {issuerUrl: "", clientId: "", clientSecret: "", redirectUrl: getRedirectUrl()}})
+            else if (type === AuthType.LDAP) onChange({type, ldap: {baseDN: "", url: "", bindDN: "", bindPass: "", filter: "(uid=%s)"}})
         else onChange({type})
     }
 
