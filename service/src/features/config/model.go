@@ -1,13 +1,18 @@
 package config
 
-type AuthType int8
-
-const (
-	NONE AuthType = iota
-	BASIC
-	LDAP
-	OIDC
+import (
+	"ivory/src/clients/auth/basic"
+	"ivory/src/clients/auth/ldap"
+	"ivory/src/clients/auth/oidc"
+	"ivory/src/features/auth"
 )
+
+type Info struct {
+	Configured   bool         `json:"configured"`
+	Error        string       `json:"error"`
+	Company      string       `json:"company"`
+	Availability Availability `json:"availability"`
+}
 
 type AppConfig struct {
 	Company      string       `json:"company"`
@@ -16,30 +21,10 @@ type AppConfig struct {
 }
 
 type AuthConfig struct {
-	Type  AuthType     `json:"type"`
-	Basic *BasicConfig `json:"basic"`
-	Ldap  *LdapConfig  `json:"ldap"`
-	Oidc  *OidcConfig  `json:"oidc"`
-}
-
-type LdapConfig struct {
-	Url      string `json:"url"`
-	BindDN   string `json:"bindDN"`
-	BindPass string `json:"bindPass"`
-	BaseDN   string `json:"baseDN"`
-	Filter   string `json:"filter,omitempty"`
-}
-
-type OidcConfig struct {
-	IssuerURL    string `json:"issuerUrl"`
-	ClientID     string `json:"clientId"`
-	ClientSecret string `json:"clientSecret"`
-	RedirectURL  string `json:"redirectUrl"`
-}
-
-type BasicConfig struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Type  auth.AuthType `json:"type"`
+	Basic *basic.Config `json:"basic"`
+	Ldap  *ldap.Config  `json:"ldap"`
+	Oidc  *oidc.Config  `json:"oidc"`
 }
 
 type Availability struct {

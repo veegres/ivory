@@ -1,25 +1,28 @@
 package auth
 
 import (
-	"context"
 	"errors"
-	"fmt"
-	"ivory/src/features/config"
+	"ivory/src/clients/auth/basic"
+	"ivory/src/clients/auth/ldap"
+	"ivory/src/clients/auth/oidc"
 	"ivory/src/features/secret"
-	"log/slog"
-	"net"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-ldap/ldap/v3"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Service struct {
 	secretService *secret.Service
-	configService *config.Service
+	basicProvider *basic.BasicProvider
+	ldapProvider  *ldap.Provider
+	oidcProvider  *oidc.OidcProvider
 
+	authEnabled bool
+	// NOTE: For HMAC signing method, the key can be any []byte.
+	// You need the same key for signing and validating. Whereas for RSA
+	// you need public and private key.
 	signingAlgorithm *jwt.SigningMethodHMAC
 	issuer           string
 	expiration       time.Duration
@@ -27,11 +30,17 @@ type Service struct {
 
 func NewService(
 	secretService *secret.Service,
-	configService *config.Service,
+	basicProvider *basic.BasicProvider,
+	ldapProvider *ldap.Provider,
+	oidcProvider *oidc.OidcProvider,
 ) *Service {
 	return &Service{
-		secretService:    secretService,
-		configService:    configService,
+		secretService: secretService,
+		basicProvider: basicProvider,
+		ldapProvider:  ldapProvider,
+		oidcProvider:  oidcProvider,
+
+		authEnabled:      false,
 		signingAlgorithm: jwt.SigningMethodHS256,
 		issuer:           "ivory",
 		expiration:       time.Hour,
@@ -43,136 +52,53 @@ func (s *Service) getIssuer() string {
 }
 
 func (s *Service) getOAuthCodeURL(str string) (string, error) {
-	oauthConfig, _, err := s.configService.GetOAuthConfig()
-	if err != nil {
-		return "", err
-	}
-	return oauthConfig.AuthCodeURL(str), nil
+	return s.oidcProvider.GetCode(str)
+}
+
+func (s *Service) SetAuthorisation(enabled bool) {
+	s.authEnabled = enabled
 }
 
 func (s *Service) ValidateAuthToken(context *gin.Context) (bool, error) {
-	appConfig, err := s.configService.GetAppConfig()
-	if err != nil {
-		return false, err
+	if !s.authEnabled {
+		return true, errors.New("authorization is disabled")
 	}
 	token, errToken := s.getToken(context)
-	switch appConfig.Auth.Type {
-	case config.NONE:
-		if token != "" {
-			return false, errors.New("token should be empty")
-		}
-		return true, nil
-	case config.BASIC, config.LDAP, config.OIDC:
-		if errToken != nil {
-			return false, errToken
-		}
-		errValidate := s.validateToken(token)
-		if errValidate != nil {
-			return false, errValidate
-		}
-		return true, nil
-	default:
-		return false, errors.New("the authentication type is not specified or incorrect")
+	if errToken != nil {
+		return false, errToken
 	}
+	errValidate := s.validateToken(token)
+	if errValidate != nil {
+		return false, errValidate
+	}
+	return true, nil
 }
 
-func (s *Service) GenerateBasicAuthToken(login Login) (string, *time.Time, error) {
-	appConfig, err := s.configService.GetAppConfig()
+func (s *Service) GenerateBasicAuthToken(login basic.Login) (string, *time.Time, error) {
+	sub, err := s.basicProvider.Verify(login)
 	if err != nil {
 		return "", nil, err
 	}
-	basicConfig := appConfig.Auth.Basic
-	if login.Username != basicConfig.Username || login.Password != basicConfig.Password {
-		return "", nil, errors.New("credentials are not correct")
-	}
-	return s.generateToken(login.Username)
+	return s.generateToken(sub, BASIC)
 }
 
-func (s *Service) GenerateLdapAuthToken(login Login) (string, *time.Time, error) {
-	appConfig, err := s.configService.GetAppConfig()
+func (s *Service) GenerateLdapAuthToken(login ldap.Login) (string, *time.Time, error) {
+	sub, err := s.ldapProvider.Verify(login)
 	if err != nil {
 		return "", nil, err
 	}
-	ldapConfig := appConfig.Auth.Ldap
-	dialer := &net.Dialer{Timeout: 3 * time.Second}
-	conn, err := ldap.DialURL(ldapConfig.Url, ldap.DialWithDialer(dialer))
-	if err != nil {
-		return "", nil, err
-	}
-	defer func(conn *ldap.Conn) {
-		err := conn.Close()
-		if err != nil {
-			slog.Error(err.Error())
-		}
-	}(conn)
-
-	err = conn.Bind(ldapConfig.BindDN, ldapConfig.BindPass)
-	if err != nil {
-		return "", nil, err
-	}
-
-	filter := ldapConfig.Filter
-	if filter == "" {
-		filter = "(uid=%s)"
-	}
-
-	searchRequest := ldap.NewSearchRequest(
-		ldapConfig.BaseDN,
-		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		fmt.Sprintf(filter, login.Username),
-		[]string{"dn"},
-		nil,
-	)
-
-	sr, err := conn.Search(searchRequest)
-	if err != nil {
-		return "", nil, err
-	}
-
-	if len(sr.Entries) != 1 {
-		return "", nil, errors.New("user not found or too many entries returned")
-	}
-
-	userDn := sr.Entries[0].DN
-	err = conn.Bind(userDn, login.Password)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return s.generateToken(login.Username)
+	return s.generateToken(sub, LDAP)
 }
 
 func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error) {
-	oauthConfig, oauthVerifier, err := s.configService.GetOAuthConfig()
+	sub, err := s.oidcProvider.Verify(code)
 	if err != nil {
 		return "", nil, err
 	}
-
-	oauthToken, errExchange := oauthConfig.Exchange(context.Background(), code)
-	if errExchange != nil {
-		return "", nil, errors.Join(errors.New("failed to exchange token"), errExchange)
-	}
-
-	rawIDToken, ok := oauthToken.Extra("id_token").(string)
-	if !ok {
-		return "", nil, errors.New("no id_token field in oauth2 token")
-	}
-
-	idToken, errVerify := oauthVerifier.Verify(context.Background(), rawIDToken)
-	if errVerify != nil {
-		return "", nil, errors.Join(errors.New("failed to verify ID Token"), errVerify)
-	}
-
-	var claims struct {
-		Email string `json:"email"`
-	}
-	if err := idToken.Claims(&claims); err != nil {
-		return "", nil, err
-	}
-	return s.generateToken(claims.Email)
+	return s.generateToken(sub, OIDC)
 }
 
-func (s *Service) generateToken(subject string) (string, *time.Time, error) {
+func (s *Service) generateToken(subject string, authType AuthType) (string, *time.Time, error) {
 	now := time.Now()
 	exp := now.Add(s.expiration)
 	t := jwt.NewWithClaims(
@@ -182,6 +108,7 @@ func (s *Service) generateToken(subject string) (string, *time.Time, error) {
 			"sub": subject,    // subject
 			"iat": now.Unix(), // issued at
 			"exp": exp.Unix(), // expiration time
+			"frm": authType,   // generated from
 		})
 	token, signErr := t.SignedString(s.secretService.GetByte())
 	return token, &exp, signErr
@@ -193,6 +120,7 @@ func (s *Service) validateToken(rawIDToken string) error {
 		func(t *jwt.Token) (interface{}, error) {
 			return s.secretService.GetByte(), nil
 		},
+		jwt.WithValidMethods([]string{s.signingAlgorithm.Alg()}),
 		jwt.WithIssuedAt(),
 		jwt.WithIssuer(s.issuer),
 	)

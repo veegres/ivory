@@ -7,7 +7,6 @@ import (
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
-	"ivory/src/features/encryption"
 	"ivory/src/features/password"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
@@ -27,8 +26,7 @@ type Service struct {
 	bloatService    *bloat.Service
 	queryService    *query.Service
 	secretService   *secret.Service
-	encryption      *encryption.Service
-	config          *config.Service
+	configService   *config.Service
 }
 
 func NewService(
@@ -41,7 +39,7 @@ func NewService(
 	bloatService *bloat.Service,
 	queryService *query.Service,
 	secretService *secret.Service,
-	config *config.Service,
+	configService *config.Service,
 ) *Service {
 	return &Service{
 		env:             env,
@@ -53,7 +51,7 @@ func NewService(
 		tagService:      tagService,
 		queryService:    queryService,
 		secretService:   secretService,
-		config:          config,
+		configService:   configService,
 	}
 }
 
@@ -65,7 +63,7 @@ func (s *Service) Erase() error {
 	errComTable := s.bloatService.DeleteAll()
 	errTag := s.tagService.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
-	errConfig := s.config.DeleteAll()
+	errConfig := s.configService.DeleteAll()
 
 	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery, errConfig)
 }
@@ -75,44 +73,31 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	if err != nil {
 		return err
 	}
-
-	errEnc := s.passwordService.ReEncryptPasswords(prevSha, newSha)
+	errEnc := s.passwordService.Reencrypt(prevSha, newSha)
 	if errEnc != nil {
 		return errEnc
 	}
-
-	appConfig, errAppConfig := s.config.GetAppConfig()
-	if errAppConfig != nil {
-		return errAppConfig
+	errConfig := s.configService.Reencrypt(prevSha, newSha)
+	if errConfig != nil {
+		return errConfig
 	}
-	reEncryptAuthConfig, errAuthConfig := s.config.ReEncryptAuthConfig(appConfig.Auth, prevSha, newSha)
-	if errAuthConfig != nil {
-		return errAuthConfig
-	}
-	updatedAppConfig := config.AppConfig{
-		Company:      appConfig.Company,
-		Availability: appConfig.Availability,
-		Auth:         reEncryptAuthConfig,
-	}
-	errUpdateAppConfig := s.config.UpdateAppConfig(updatedAppConfig)
-	if errUpdateAppConfig != nil {
-		return errUpdateAppConfig
-	}
-
 	return nil
 }
 
 func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
-	appConfig, err := s.config.GetAppConfig()
+	appConfig, err := s.configService.GetAppConfig()
 	if err != nil {
 		return &AppInfo{
-			Company:      "",
-			Configured:   false,
-			Secret:       s.secretService.Status(),
-			Version:      s.env.Version,
-			Availability: config.Availability{ManualQuery: false},
+			Config: config.Info{
+				Configured:   false,
+				Company:      "Ivory",
+				Availability: config.Availability{ManualQuery: false},
+				Error:        err.Error(),
+			},
+			Secret:  s.secretService.Status(),
+			Version: s.env.Version,
 			Auth: auth.Info{
-				Type:       config.NONE,
+				Type:       auth.NONE,
 				Authorised: false,
 				Error:      "",
 			},
@@ -125,11 +110,14 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	}
 
 	return &AppInfo{
-		Company:      appConfig.Company,
-		Configured:   true,
-		Secret:       s.secretService.Status(),
-		Version:      s.env.Version,
-		Availability: appConfig.Availability,
+		Config: config.Info{
+			Configured:   true,
+			Company:      appConfig.Company,
+			Availability: appConfig.Availability,
+			Error:        "",
+		},
+		Secret:  s.secretService.Status(),
+		Version: s.env.Version,
 		Auth: auth.Info{
 			Type:       appConfig.Auth.Type,
 			Authorised: authorised,

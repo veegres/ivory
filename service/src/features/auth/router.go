@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"ivory/src/clients/auth/basic"
+	"ivory/src/clients/auth/ldap"
 	"net/http"
 	"time"
 
@@ -28,7 +30,6 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 				context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": errToken.Error()})
 				return
 			}
-
 			r.setCookieSession(context, session.String())
 		}
 		context.Next()
@@ -48,7 +49,7 @@ func (r *Router) AuthMiddleware() gin.HandlerFunc {
 }
 
 func (r *Router) BasicLogin(context *gin.Context) {
-	var login Login
+	var login basic.Login
 	parseErr := context.ShouldBindJSON(&login)
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -66,7 +67,7 @@ func (r *Router) BasicLogin(context *gin.Context) {
 }
 
 func (r *Router) LdapLogin(context *gin.Context) {
-	var login Login
+	var login ldap.Login
 	parseErr := context.ShouldBindJSON(&login)
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})

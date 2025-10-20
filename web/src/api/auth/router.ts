@@ -1,6 +1,6 @@
 import {api} from "../api";
-import {AuthType} from "../config/type";
 import {R} from "../management/type";
+import {AuthType} from "./type";
 
 export const AuthApi = {
     login: {

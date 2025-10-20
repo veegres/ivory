@@ -1,7 +1,7 @@
 import {useMutationAdapter} from "../../hook/QueryCustom";
-import {AuthType} from "../config/type";
 import {AuthApi} from "./router";
 import {ManagementApi} from "../management/router";
+import {AuthType} from "./type";
 
 export function useRouterLogin(type: AuthType) {
     return useMutationAdapter({

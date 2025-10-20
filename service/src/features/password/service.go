@@ -98,7 +98,7 @@ func (s *Service) GetDecrypted(uuid uuid.UUID) (*Password, error) {
 	return &cred, nil
 }
 
-func (s *Service) ReEncryptPasswords(oldSecret [16]byte, newSecret [16]byte) error {
+func (s *Service) Reencrypt(oldSecret [16]byte, newSecret [16]byte) error {
 	credentialMap, errGet := s.passwordRepository.Map()
 	if errGet != nil {
 		return errGet

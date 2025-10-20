@@ -1,4 +1,9 @@
-import {AuthType} from "../config/type";
+export enum AuthType {
+    NONE,
+    BASIC,
+    LDAP,
+    OIDC,
+}
 
 export interface AuthInfo {
     type: AuthType,

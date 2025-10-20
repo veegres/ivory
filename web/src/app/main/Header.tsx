@@ -3,9 +3,9 @@ import {Logout, Settings} from "@mui/icons-material";
 import {useState} from "react";
 import {randomUnicodeAnimal} from "../utils";
 import {useStoreAction} from "../../provider/StoreProvider";
-import {AuthType} from "../../api/config/type";
 import {SxPropsMap} from "../type";
 import {useRouterLogout} from "../../api/auth/hook";
+import {AuthType} from "../../api/auth/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},
