@@ -44,9 +44,8 @@ func (r *Storage) ExistByName(name string) bool {
 	}
 	if _, err := os.Stat(path); err == nil {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 func (r *Storage) OpenByName(name string) (*os.File, error) {
@@ -76,9 +75,8 @@ func (r *Storage) DeleteByName(name string) error {
 func (r *Storage) ExistByPath(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 func (r *Storage) DeleteAll() error {

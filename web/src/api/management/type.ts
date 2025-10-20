@@ -1,6 +1,6 @@
 import {SecretStatus} from "../secret/type";
 import {AuthInfo} from "../auth/type";
-import {Availability} from "../config/type";
+import {ConfigInfo} from "../config/type";
 
 // COMMON (WEB AND SERVER)
 
@@ -10,10 +10,8 @@ export interface R<TData, TError = object> {
 }
 
 export interface AppInfo {
-    company: string,
-    configured: boolean,
+    config: ConfigInfo,
     secret: SecretStatus,
-    availability: Availability,
     version: Version,
     auth: AuthInfo,
 }

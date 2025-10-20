@@ -15,12 +15,10 @@ type Response struct {
 }
 
 type AppInfo struct {
-	Company      string              `json:"company"`
-	Configured   bool                `json:"configured"`
-	Availability config.Availability `json:"availability"`
-	Version      env.Version         `json:"version"`
-	Secret       secret.SecretStatus `json:"secret"`
-	Auth         auth.Info           `json:"auth"`
+	Config  config.Info         `json:"config"`
+	Version env.Version         `json:"version"`
+	Secret  secret.SecretStatus `json:"secret"`
+	Auth    auth.Info           `json:"auth"`
 }
 
 type SecretUpdateRequest struct {

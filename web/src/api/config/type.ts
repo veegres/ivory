@@ -1,8 +1,10 @@
-export enum AuthType {
-    NONE,
-    BASIC,
-    LDAP,
-    OIDC,
+import {AuthType} from "../auth/type";
+
+export interface ConfigInfo {
+    company: string,
+    configured: boolean,
+    availability: Availability,
+    error: string,
 }
 
 export interface AuthConfig {

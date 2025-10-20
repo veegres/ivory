@@ -1,6 +1,9 @@
 package app
 
 import (
+	"ivory/src/clients/auth/basic"
+	"ivory/src/clients/auth/ldap"
+	"ivory/src/clients/auth/oidc"
 	"ivory/src/clients/database/postgres"
 	"ivory/src/clients/sidecar"
 	"ivory/src/clients/sidecar/patroni"
@@ -70,10 +73,14 @@ func NewContext() *Context {
 	patroniClient := patroni.NewClient(sidecarGateway)
 	postgresClient := postgres.NewClient(appEnv.Version.Label)
 
+	// AUTH PROVIDER
+	basicProvider := basic.NewProvider()
+	ldapProvider := ldap.NewProvider()
+	oidcProvider := oidc.NewProvider()
+
 	// SERVICES
 	encryptionService := encryption.NewService()
 	secretService := secret.NewService(secretRepo, encryptionService)
-	configService := config.NewService(configFiles, encryptionService, secretService)
 	passwordService := password.NewService(passwordRepo, secretService, encryptionService)
 	certService := cert.NewService(certRepo)
 	instanceService := instance.NewService(patroniClient, passwordService, certService)
@@ -83,7 +90,8 @@ func NewContext() *Context {
 	queryLogService := query.NewLogService(queryLogRepo)
 	queryRunService := query.NewRunService(queryRepo, postgresClient, queryLogService, passwordService, certService)
 	bloatService := bloat.NewService(bloatRepo, passwordService)
-	authService := auth.NewService(secretService, configService)
+	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider)
+	configService := config.NewService(configFiles, encryptionService, secretService, authService, basicProvider, ldapProvider, oidcProvider)
 	managementService := management.NewService(
 		appEnv,
 		authService,

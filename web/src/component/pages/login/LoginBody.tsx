@@ -3,8 +3,8 @@ import {Alert, Button} from "@mui/material";
 import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
 import {useRouterLogin, useRouterLogout} from "../../../api/auth/hook";
-import {AuthType} from "../../../api/config/type";
 import {SxPropsMap} from "../../../app/type";
+import {AuthType} from "../../../api/auth/type";
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},
