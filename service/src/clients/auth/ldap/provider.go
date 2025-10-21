@@ -34,6 +34,9 @@ func (p *Provider) SetConfig(config *Config) error {
 	if config.BaseDN == "" {
 		return errors.New("BaseDN is not specified")
 	}
+	if config.Filter == "" {
+		return errors.New("filter is not specified")
+	}
 
 	// NOTE: validate connection
 	conn, err := p.getConnection(config)
@@ -95,12 +98,12 @@ func (p *Provider) Verify(login Login) (string, error) {
 }
 
 func (p *Provider) getConnection(config *Config) (*ldap.Conn, error) {
-	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	dialer := &net.Dialer{Timeout: 3 * time.Second}
 	conn, err := ldap.DialURL(config.Url, ldap.DialWithDialer(dialer))
 	if err != nil {
 		return nil, err
 	}
-	conn.SetTimeout(5 * time.Second)
+	conn.SetTimeout(3 * time.Second)
 	err = conn.Bind(config.BindDN, config.BindPass)
 	if err != nil {
 		return nil, err
