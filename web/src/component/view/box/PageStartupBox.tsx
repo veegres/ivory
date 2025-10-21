@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
         width: "30%", minWidth: "500px", gap: 2
     },
     header: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer"},
-    buttons: {display: "flex", gap: 4},
+    buttons: {display: "flex", gap: 2, width: "100%", justifyContent: "center", alignItems: "center"},
 }
 
 type Props = {

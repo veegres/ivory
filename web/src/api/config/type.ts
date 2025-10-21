@@ -4,7 +4,18 @@ export interface ConfigInfo {
     company: string,
     configured: boolean,
     availability: Availability,
-    error: string,
+    error?: string,
+}
+
+export interface NewAppConfig {
+    secret?: string,
+    appConfig: AppConfig,
+}
+
+export interface AppConfig {
+    company: string,
+    availability: Availability,
+    auth: AuthConfig,
 }
 
 export interface AuthConfig {
@@ -32,12 +43,6 @@ export interface OidcConfig {
     clientId: string,
     clientSecret: string,
     redirectUrl: string,
-}
-
-export interface AppConfig {
-    company: string,
-    availability: Availability,
-    auth: AuthConfig,
 }
 
 export interface Availability {

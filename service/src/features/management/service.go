@@ -86,10 +86,11 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 
 func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	appConfig, err := s.configService.GetAppConfig()
+	configured := s.configService.GetIsConfigured()
 	if err != nil {
 		return &AppInfo{
 			Config: config.Info{
-				Configured:   false,
+				Configured:   configured,
 				Company:      "Ivory",
 				Availability: config.Availability{ManualQuery: false},
 				Error:        err.Error(),
@@ -111,7 +112,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 
 	return &AppInfo{
 		Config: config.Info{
-			Configured:   true,
+			Configured:   configured,
 			Company:      appConfig.Company,
 			Availability: appConfig.Availability,
 			Error:        "",
