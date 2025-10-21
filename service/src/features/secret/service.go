@@ -52,7 +52,7 @@ func (s *Service) Set(decryptedKey string, decryptedRef string) error {
 			return err
 		}
 		if decryptedRef == "" {
-			return errors.New("reference word cannot be empty")
+			return errors.New("the reference word cannot be empty")
 		}
 	}
 	encryptedKey := md5.Sum([]byte(decryptedKey))
@@ -78,6 +78,10 @@ func (s *Service) Set(decryptedKey string, decryptedRef string) error {
 		err = s.Clean()
 	}
 	return err
+}
+
+func (s *Service) Verify(secret string) bool {
+	return s.key == md5.Sum([]byte(secret))
 }
 
 func (s *Service) Update(prevSecret string, newSecret string) ([16]byte, [16]byte, error) {

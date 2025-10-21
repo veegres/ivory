@@ -20,7 +20,7 @@ export function Body(props: Props) {
     if (!data) return <PageErrorBox error={"Something bad happened, we cannot get application initial information"}/>
     if (!data.secret.ref) return <SecretBodyInitial/>
     if (!data.secret.key) return <SecretBodySecondary/>
-    if (!data.config.configured) return <ConfigBody error={data.config.error}/>
+    if (!data.config.configured || data.config.error) return <ConfigBody configured={data.config.configured} error={data.config.error}/>
     if (!data.auth.authorised) return <LoginBody type={data.auth.type} error={data.auth.error}/>
     return <ClusterBody/>
 }

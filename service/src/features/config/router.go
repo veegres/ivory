@@ -15,7 +15,7 @@ func NewRouter(service *Service) *Router {
 }
 
 func (r *Router) SetAppConfig(context *gin.Context) {
-	var appConfig AppConfig
+	var appConfig NewAppConfig
 	errBind := context.ShouldBindJSON(&appConfig)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})

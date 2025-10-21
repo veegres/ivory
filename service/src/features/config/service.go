@@ -21,8 +21,9 @@ type Service struct {
 	ldapProvider      *ldap.Provider
 	oidcProvider      *oidc.OidcProvider
 
-	appConfigFileName string
-	appConfig         *AppConfig
+	appConfig           *AppConfig
+	appConfigFileName   string
+	appConfigConfigured bool
 }
 
 func NewService(
@@ -43,11 +44,13 @@ func NewService(
 		ldapProvider:      ldapProvider,
 		oidcProvider:      oidcProvider,
 
-		appConfigFileName: "application",
+		appConfigFileName:   "application",
+		appConfigConfigured: false,
 	}
 }
 
 func (s *Service) initializeAppConfig() (*AppConfig, error) {
+	s.appConfigConfigured = s.configFiles.ExistByName(s.appConfigFileName)
 	read, err := s.configFiles.ReadByName(s.appConfigFileName)
 	if err != nil {
 		return nil, errors.New("config is not specified")
@@ -99,6 +102,10 @@ func (s *Service) saveAppConfig(config AppConfig) error {
 	return nil
 }
 
+func (s *Service) GetIsConfigured() bool {
+	return s.appConfigConfigured
+}
+
 func (s *Service) GetAppConfig() (*AppConfig, error) {
 	if s.appConfig != nil {
 		return s.appConfig, nil
@@ -111,24 +118,26 @@ func (s *Service) GetAppConfig() (*AppConfig, error) {
 	return s.appConfig, nil
 }
 
-func (s *Service) SetAppConfig(newAppConfig AppConfig) error {
-	if newAppConfig.Company == "" {
+func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
+	if s.GetIsConfigured() && !s.secretService.Verify(newAppConfig.Secret) {
+		return errors.New("config is already set; to change it, you need to provide the correct secret")
+	}
+	appConfig := newAppConfig.AppConfig
+	if appConfig.Company == "" {
 		return errors.New("company name cannot be empty")
 	}
 
-	errValid := s.setAuthConfig(newAppConfig.Auth)
+	errValid := s.setAuthConfig(appConfig.Auth)
 	if errValid != nil {
 		return errValid
 	}
-	encryptedAuthConfig, errAuthConfig := s.encryptAuthConfig(newAppConfig.Auth)
+	encryptedAuthConfig, errAuthConfig := s.encryptAuthConfig(appConfig.Auth)
 	if errAuthConfig != nil {
 		return errAuthConfig
 	}
 
-	s.appConfig = &newAppConfig
-	encryptedAppConfig := newAppConfig
-	encryptedAppConfig.Auth = encryptedAuthConfig
-	return s.saveAppConfig(encryptedAppConfig)
+	appConfig.Auth = encryptedAuthConfig
+	return s.saveAppConfig(appConfig)
 }
 
 func (s *Service) Reencrypt(oldSecret [16]byte, newSecret [16]byte) error {

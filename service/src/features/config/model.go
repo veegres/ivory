@@ -9,9 +9,14 @@ import (
 
 type Info struct {
 	Configured   bool         `json:"configured"`
-	Error        string       `json:"error"`
+	Error        string       `json:"error,omitempty"`
 	Company      string       `json:"company"`
 	Availability Availability `json:"availability"`
+}
+
+type NewAppConfig struct {
+	Secret    string    `json:"secret,omitempty"`
+	AppConfig AppConfig `json:"appConfig"`
 }
 
 type AppConfig struct {

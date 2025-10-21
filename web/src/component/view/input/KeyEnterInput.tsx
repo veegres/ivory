@@ -36,7 +36,7 @@ export function KeyEnterInput(props: Props) {
                 onChange={onChange}
                 onKeyUp={(e) => handleKeyPress(e.key)}
             />
-            <FormHelperText>{helperText}</FormHelperText>
+            {helperText && <FormHelperText>{helperText}</FormHelperText>}
         </FormControl>
     )
 
