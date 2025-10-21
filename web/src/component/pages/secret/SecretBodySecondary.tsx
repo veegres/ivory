@@ -14,16 +14,13 @@ export function SecretBodySecondary() {
     return (
         <PageStartupBox header={"Welcome Back"} renderFooter={renderButtons()}>
             <Typography variant={"caption"}>
-                Looks like Ivory was rebooted. Please, provide the <b>Secret word</b> to be able
-                to continue working with sensitive data.
-                You can start from scratch by cleaning the secret word and sensitive data, just
-                press <b>ERASE</b> button. You will need to provide new secret word. Also it can
-                help if you suddenly forget the secret word.
+                Oops! <b>Ivory</b> was just rebooted. Please enter your <b>Secret word</b> to continue working with sensitive data.
+                If you’ve forgotten it or want to start fresh, simply press <b>ERASE</b> to remove all sensitive data and set a new <b>Secret word</b>.
             </Typography>
             <KeyEnterInput
                 label={"Secret word"}
                 onChange={(e) => setKey(e.target.value)}
-                onEnterPress={() => secret.mutate({ref: "", key})}
+                onEnterPress={() => secret.mutate({key})}
                 hidden
             />
         </PageStartupBox>
@@ -33,7 +30,7 @@ export function SecretBodySecondary() {
         return (
             <>
                 <EraseButton safe={false}/>
-                <SecretButton keyWord={key} refWord={""}/>
+                <SecretButton keyWord={key}/>
             </>
         )
     }

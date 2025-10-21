@@ -7,36 +7,24 @@ import {useRouterSecretSet} from "../../../api/secret/hook";
 
 export function SecretBodyInitial() {
     const [key, setKey] = useState("")
-    const [ref, setRef] = useState("")
     const secret = useRouterSecretSet()
 
     return (
-        <PageStartupBox header={"Welcome"} renderFooter={<SecretButton keyWord={key} refWord={ref}/>}>
+        <PageStartupBox header={"Welcome"} renderFooter={<SecretButton keyWord={key}/>}>
             <Typography variant={"caption"}>
-                <b>This is Ivory</b> — the tool that will help you to manage and troubleshoot your postgres clusters.
-                Ivory needs some information to make your sensitive data safe.
-                <ul style={{paddingLeft: "20px"}}>
-                    <li>
-                        <b>Secret word</b> — this word will be used to encrypt and decrypt sensitive
-                        data like passwords, tokens, etc. Please, don't spread this word among a lot of people
-                        it will prevent leaking sensitive data. Ivory keeps this word only in memory,
-                        it means every time when Ivory will be rebooted you need to pass this word, so
-                        please do not forget it.
-                    </li>
-                    <li>
-                        <b>Reference word</b> — this word will help Ivory to detect either your secret word is
-                        correct or not after Ivory reboot.
-                    </li>
-                </ul>
+                Welcome to <b>Ivory</b> — your assistant for managing and troubleshooting PostgreSQL clusters.
+                To keep your sensitive data safe, we need little information from you.
+                <br/>
+                <br/>
+                <b>Secret word</b> — this word will be used to encrypt and decrypt sensitive information,
+                like passwords and tokens. Keep it private and don’t share it with many people — this helps
+                prevent data leaks. Ivory only keeps this word in memory, so each time you restart the tool,
+                you’ll need to enter it again. Make sure you remember it!
             </Typography>
-            <KeyEnterInput
-                label={"Reference word"}
-                onChange={(e) => setRef(e.target.value)}
-            />
             <KeyEnterInput
                 label={"Secret word"}
                 onChange={(e) => setKey(e.target.value)}
-                onEnterPress={() => secret.mutate({ref, key})}
+                onEnterPress={() => secret.mutate({key})}
                 hidden
             />
         </PageStartupBox>

@@ -50,7 +50,7 @@ func (r *Router) SetSecret(context *gin.Context) {
 		return
 	}
 
-	err := r.secretService.Set(body.Key, body.Ref)
+	err := r.secretService.Set(body.Key)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

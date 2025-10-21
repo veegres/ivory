@@ -8,28 +8,30 @@ import (
 )
 
 type Service struct {
-	key              [16]byte
-	ref              string
-	mutex            *sync.Mutex
-	secretRepository *Repository
-	encryption       *encryption.Service
+	key          [16]byte
+	encryptedRef string
+	decryptedRef string
+	mutex        *sync.Mutex
+	repository   *Repository
+	encryption   *encryption.Service
 }
 
 func NewService(
-	secretRepository *Repository,
+	repository *Repository,
 	encryption *encryption.Service,
 ) *Service {
-	encryptedRef, err := secretRepository.GetEncryptedRef()
+	encryptedRef, err := repository.Get()
 	if err != nil {
 		panic(err)
 	}
 
 	return &Service{
-		key:              [16]byte{},
-		ref:              encryptedRef,
-		mutex:            &sync.Mutex{},
-		secretRepository: secretRepository,
-		encryption:       encryption,
+		key:          [16]byte{},
+		encryptedRef: encryptedRef,
+		decryptedRef: "ivory",
+		mutex:        &sync.Mutex{},
+		repository:   repository,
+		encryption:   encryption,
 	}
 }
 
@@ -41,43 +43,34 @@ func (s *Service) GetByte() []byte {
 	return s.key[:]
 }
 
-func (s *Service) Set(decryptedKey string, decryptedRef string) error {
+func (s *Service) Set(decryptedKey string) error {
 	if decryptedKey == "" {
 		return errors.New("secret word cannot be empty")
 	}
-	if decryptedRef == "" {
-		var err error
-		decryptedRef, err = s.secretRepository.GetDecryptedRef()
-		if err != nil {
-			return err
-		}
-		if decryptedRef == "" {
-			return errors.New("the reference word cannot be empty")
-		}
-	}
 	encryptedKey := md5.Sum([]byte(decryptedKey))
-	encryptedRef, err := s.encryption.Encrypt(decryptedRef, encryptedKey)
+	encryptedRef, err := s.encryption.Encrypt(s.decryptedRef, encryptedKey)
 	if err != nil {
 		return err
 	}
 	s.mutex.Lock()
 	if s.IsRefEmpty() {
+		err = s.repository.Update(encryptedRef)
+		if err != nil {
+			s.mutex.Unlock()
+			return err
+		}
 		s.key = encryptedKey
-		s.ref = encryptedRef
+		s.encryptedRef = encryptedRef
 	} else {
-		if s.ref == encryptedRef {
+		if s.encryptedRef == encryptedRef {
 			s.key = encryptedKey
 		} else {
 			s.mutex.Unlock()
 			return errors.New("the secret is not correct")
 		}
 	}
-	err = s.secretRepository.UpdateRefs(encryptedRef, decryptedRef)
 	s.mutex.Unlock()
-	if err != nil {
-		err = s.Clean()
-	}
-	return err
+	return nil
 }
 
 func (s *Service) Verify(secret string) bool {
@@ -101,7 +94,7 @@ func (s *Service) Update(prevSecret string, newSecret string) ([16]byte, [16]byt
 		return [16]byte{}, [16]byte{}, errors.New("the secret is not correct")
 	}
 
-	decryptedRef, errDec := s.secretRepository.GetDecryptedRef()
+	decryptedRef, errDec := s.repository.Get()
 	if errDec != nil {
 		return [16]byte{}, [16]byte{}, errDec
 	}
@@ -109,7 +102,7 @@ func (s *Service) Update(prevSecret string, newSecret string) ([16]byte, [16]byt
 	if errEnc != nil {
 		return [16]byte{}, [16]byte{}, errEnc
 	}
-	errUpdate := s.secretRepository.UpdateRefs(encryptedRef, decryptedRef)
+	errUpdate := s.repository.Update(encryptedRef)
 	if errUpdate != nil {
 		return [16]byte{}, [16]byte{}, errUpdate
 	}
@@ -121,16 +114,16 @@ func (s *Service) Update(prevSecret string, newSecret string) ([16]byte, [16]byt
 func (s *Service) Clean() error {
 	s.mutex.Lock()
 
-	s.ref = ""
+	s.encryptedRef = ""
 	s.key = [16]byte{}
-	errUpdateRef := s.secretRepository.UpdateRefs("", "")
+	errUpdateRef := s.repository.Update("")
 
 	s.mutex.Unlock()
 	return errUpdateRef
 }
 
 func (s *Service) IsRefEmpty() bool {
-	return s.ref == ""
+	return s.encryptedRef == ""
 }
 
 func (s *Service) IsSecretEmpty() bool {

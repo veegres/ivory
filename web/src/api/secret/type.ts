@@ -7,7 +7,6 @@ export interface SecretStatus {
 
 export interface SecretSetRequest {
     key: string,
-    ref: string,
 }
 
 // SPECIFIC (WEB)

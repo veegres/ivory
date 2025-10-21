@@ -1,48 +1,32 @@
 package secret
 
 import (
-	"errors"
 	"ivory/src/storage/db"
 )
 
 type Repository struct {
 	bucket          *db.Bucket[string]
 	encryptedRefKey string
-	decryptedRefKey string
 }
 
 func NewRepository(bucket *db.Bucket[string]) *Repository {
-	encryptedRef := "encryptedRef"
-	decryptedRef := "decryptedRef"
-	if _, err := bucket.Get(encryptedRef); err != nil {
-		err := bucket.Update(encryptedRef, "")
-		if err != nil {
-			panic(err)
-		}
-	}
-	if _, err := bucket.Get(decryptedRef); err != nil {
-		err := bucket.Update(decryptedRef, "")
+	encryptedRefKey := "encryptedRef"
+	if _, err := bucket.Get(encryptedRefKey); err != nil {
+		err := bucket.Update(encryptedRefKey, "")
 		if err != nil {
 			panic(err)
 		}
 	}
 	return &Repository{
 		bucket:          bucket,
-		encryptedRefKey: encryptedRef,
-		decryptedRefKey: decryptedRef,
+		encryptedRefKey: encryptedRefKey,
 	}
 }
 
-func (r *Repository) UpdateRefs(encrypted string, decrypted string) error {
-	errEnc := r.bucket.Update(r.encryptedRefKey, encrypted)
-	errDec := r.bucket.Update(r.decryptedRefKey, decrypted)
-	return errors.Join(errEnc, errDec)
+func (r *Repository) Update(ref string) error {
+	return r.bucket.Update(r.encryptedRefKey, ref)
 }
 
-func (r *Repository) GetEncryptedRef() (string, error) {
+func (r *Repository) Get() (string, error) {
 	return r.bucket.Get(r.encryptedRefKey)
-}
-
-func (r *Repository) GetDecryptedRef() (string, error) {
-	return r.bucket.Get(r.decryptedRefKey)
 }
