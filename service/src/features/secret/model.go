@@ -9,7 +9,6 @@ type SecretStatus struct {
 
 type SecretSetRequest struct {
 	Key string `json:"key"`
-	Ref string `json:"ref"`
 }
 
 // SPECIFIC (SERVER)
