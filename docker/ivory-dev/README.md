@@ -84,7 +84,7 @@ URL:            ldap://ldap.forumsys.com
 Bind DN:        cn=read-only-admin,dc=example,dc=com
 Bind password:  password
 Base DN:        dc=example,dc=com
-Filter:         (keep empty)
+Filter:         (uid=%s)
 ```
 
 #### Credentials
