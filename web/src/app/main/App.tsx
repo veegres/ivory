@@ -5,7 +5,6 @@ import {Footer} from "./Footer";
 import {Body} from "./Body";
 import {useRouterInfo} from "../../api/management/hook";
 import {SxPropsMap} from "../type";
-import {AuthType} from "../../api/auth/type";
 
 const SX: SxPropsMap = {
     // NOTE: we need -8px for the bottom scroll, right scroll is always shown that is why we don't need calc
@@ -24,13 +23,20 @@ export function App(props: Props) {
     return (
         <Box sx={SX.box}>
             <Box component={"header"}>
-                <Header company={info.data?.config.company ?? "VEEGRES"} show={!props.children && show} auth={info.data?.auth.type ?? AuthType.NONE}/>
+                <Header
+                    company={info.data?.config.company ?? "VEEGRES"}
+                    show={!props.children && show}
+                    showLogout={(info.data?.auth.supported.length ?? 0) > 0}
+                />
             </Box>
             <Box component={"main"} sx={SX.body}>
                 {props.children ? props.children : <Body info={info}/>}
             </Box>
             <Box component={"footer"}>
-                <Footer label={info.data?.version.label ?? "none"} tag={info.data?.version.tag ?? "master"}/>
+                <Footer
+                    label={info.data?.version.label ?? "none"}
+                    tag={info.data?.version.tag ?? "master"}
+                />
             </Box>
         </Box>
     );
