@@ -12,7 +12,7 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ auth.Provider[*Config, Login] = (*Provider)(nil)
+var _ auth.Provider[Config, Login] = (*Provider)(nil)
 
 type Provider struct {
 	config *Config
@@ -22,10 +22,7 @@ func NewProvider() *Provider {
 	return &Provider{}
 }
 
-func (p *Provider) SetConfig(config *Config) error {
-	if config == nil {
-		return errors.New("config is not configured")
-	}
+func (p *Provider) SetConfig(config Config) error {
 	if config.Url == "" {
 		return errors.New("url is not specified")
 	}
@@ -41,7 +38,7 @@ func (p *Provider) SetConfig(config *Config) error {
 	if config.Filter == "" {
 		return errors.New("filter is not specified")
 	}
-	p.config = config
+	p.config = &config
 	return nil
 }
 
@@ -49,7 +46,7 @@ func (p *Provider) DeleteConfig() {
 	p.config = nil
 }
 
-func (p *Provider) Connect(config *Config) error {
+func (p *Provider) Connect(config Config) error {
 	conn, err := p.getConnection(config)
 	if err != nil {
 		return err
@@ -65,7 +62,7 @@ func (p *Provider) Verify(subject Login) (string, error) {
 	if p.config == nil {
 		return "", errors.New("config is not configured")
 	}
-	conn, err := p.getConnection(p.config)
+	conn, err := p.getConnection(*p.config)
 	defer func(conn *ldap.Conn) {
 		if conn == nil {
 			return
@@ -105,7 +102,7 @@ func (p *Provider) Verify(subject Login) (string, error) {
 	return subject.Username, nil
 }
 
-func (p *Provider) getConnection(config *Config) (*ldap.Conn, error) {
+func (p *Provider) getConnection(config Config) (*ldap.Conn, error) {
 	dialer := &net.Dialer{Timeout: 3 * time.Second}
 	conn, err := ldap.DialURL(config.Url, ldap.DialWithDialer(dialer))
 	if err != nil {

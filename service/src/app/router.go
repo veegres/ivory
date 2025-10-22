@@ -81,13 +81,14 @@ func pong(context *gin.Context) {
 }
 
 func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
+	g.POST("/config", rg.SetAppConfig)
+
 	g.POST("/basic/login", ra.BasicLogin)
+	g.GET("/ldap/connect", ra.LdapConnect)
 	g.POST("/ldap/login", ra.LdapLogin)
+	g.GET("/oidc/connect", ra.OidcConnect)
 	g.GET("/oidc/login", ra.OidcLogin)
 	g.GET("/oidc/callback", ra.OidcCallback)
-
-	initial := g.Group("/initial")
-	initial.POST("/config", rg.SetAppConfig)
 }
 
 func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
