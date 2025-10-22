@@ -1,5 +1,5 @@
 import {ChangeEvent, useState} from "react";
-import {Box, Switch, Tab, Tabs} from "@mui/material";
+import {Box, Paper, Switch, Tab, Tabs} from "@mui/material";
 import {ConfigBox} from "../../../view/box/ConfigBox";
 import {SxPropsMap} from "../../../../app/type";
 import {AuthType} from "../../../../api/auth/type";
@@ -10,6 +10,8 @@ import {ConfigAuthLdap} from "./ConfigAuthLdap";
 
 const SX: SxPropsMap = {
     body: {display: "flex", flexDirection: "column", gap: 2},
+    tab: {padding: "10px", minHeight: "40px"},
+    tabs: {minHeight: "40px"},
 }
 
 type Props = {
@@ -50,11 +52,13 @@ export function ConfigAuth(props: Props) {
 
     function renderAuthSwitch() {
         return (
-            <Tabs variant={"fullWidth"} value={authTypeOpen} onChange={(_, v) => setAuthTypeOpen(v)}>
-                <Tab value={AuthType.BASIC} label={AuthType[AuthType.BASIC]}/>
-                <Tab value={AuthType.LDAP} label={AuthType[AuthType.LDAP]}/>
-                <Tab value={AuthType.OIDC} label={AuthType[AuthType.OIDC]}/>
-            </Tabs>
+            <Paper variant={"outlined"}>
+                <Tabs sx={SX.tabs} variant={"fullWidth"} value={authTypeOpen} onChange={(_, v) => setAuthTypeOpen(v)}>
+                    <Tab sx={SX.tab} value={AuthType.BASIC} label={AuthType[AuthType.BASIC]}/>
+                    <Tab sx={SX.tab} value={AuthType.LDAP} label={AuthType[AuthType.LDAP]}/>
+                    <Tab sx={SX.tab} value={AuthType.OIDC} label={AuthType[AuthType.OIDC]}/>
+                </Tabs>
+            </Paper>
         )
     }
 
