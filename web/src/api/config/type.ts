@@ -1,12 +1,3 @@
-import {AuthType} from "../auth/type";
-
-export interface ConfigInfo {
-    company: string,
-    configured: boolean,
-    availability: Availability,
-    error?: string,
-}
-
 export interface NewAppConfig {
     secret?: string,
     appConfig: AppConfig,
@@ -14,23 +5,28 @@ export interface NewAppConfig {
 
 export interface AppConfig {
     company: string,
-    availability: Availability,
+    availability: AvailabilityConfig,
     auth: AuthConfig,
 }
 
 export interface AuthConfig {
-    type: AuthType,
     basic?: BasicConfig,
     ldap?: LdapConfig,
     oidc?: OidcConfig,
 }
 
-export interface BasicConfig {
+export interface AvailabilityConfig {
+    manualQuery: boolean,
+}
+
+export type AuthConfigObject = object
+
+export interface BasicConfig extends AuthConfigObject {
     username: string,
     password: string,
 }
 
-export interface LdapConfig {
+export interface LdapConfig extends AuthConfigObject {
     url: string,
     bindDN: string,
     bindPass: string,
@@ -38,13 +34,9 @@ export interface LdapConfig {
     filter: string,
 }
 
-export interface OidcConfig {
+export interface OidcConfig extends AuthConfigObject {
     issuerUrl: string,
     clientId: string,
     clientSecret: string,
     redirectUrl: string,
-}
-
-export interface Availability {
-    manualQuery: boolean,
 }

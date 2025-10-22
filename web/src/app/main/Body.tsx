@@ -21,6 +21,6 @@ export function Body(props: Props) {
     if (!data.secret.ref) return <SecretBodyInitial/>
     if (!data.secret.key) return <SecretBodySecondary/>
     if (!data.config.configured || data.config.error) return <ConfigBody configured={data.config.configured} error={data.config.error}/>
-    if (!data.auth.authorised) return <LoginBody type={data.auth.type} error={data.auth.error}/>
+    if (!data.auth.authorised) return <LoginBody supported={data.auth.supported} error={data.auth.error}/>
     return <ClusterBody/>
 }

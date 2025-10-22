@@ -157,7 +157,6 @@ func (s *Service) Reencrypt(oldSecret [16]byte, newSecret [16]byte) error {
 
 func (s *Service) DeleteAll() error {
 	s.appConfig = nil
-	s.authService.SetAuthorisation(false)
 	s.basicProvider.DeleteConfig()
 	s.oidcProvider.DeleteConfig()
 	s.ldapProvider.DeleteConfig()
@@ -286,10 +285,9 @@ func (s *Service) reencrypt(str string, oldSecret [16]byte, newSecret [16]byte) 
 }
 
 func (s *Service) setAuthConfig(authConfig AuthConfig) error {
-	if authConfig.Type == auth.NONE {
+	if authConfig.Basic == nil && authConfig.Ldap == nil && authConfig.Oidc == nil {
 		return nil
 	}
-	s.authService.SetAuthorisation(true)
 	var err error
 	if authConfig.Basic != nil {
 		errTmp := s.basicProvider.SetConfig(*authConfig.Basic)

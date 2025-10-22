@@ -1,12 +1,11 @@
 import {useMutationAdapter} from "../../hook/QueryCustom";
 import {AuthApi} from "./router";
 import {ManagementApi} from "../management/router";
-import {AuthType} from "./type";
 
-export function useRouterLogin(type: AuthType) {
+export function useRouterLogin() {
     return useMutationAdapter({
-        mutationFn: AuthApi.login.fn(type),
-        mutationKey: AuthApi.login.key(type),
+        mutationFn: AuthApi.login.fn,
+        mutationKey: AuthApi.login.key(),
         successKeys: [ManagementApi.info.key()],
     })
 }
@@ -16,5 +15,12 @@ export function useRouterLogout() {
         mutationFn: AuthApi.logout.fn,
         mutationKey: AuthApi.logout.key(),
         successKeys: [ManagementApi.info.key()],
+    })
+}
+
+export function useRouterConnect() {
+    return useMutationAdapter({
+        mutationFn: AuthApi.connect.fn,
+        mutationKey: AuthApi.connect.key(),
     })
 }

@@ -1,5 +1,5 @@
-import {ChangeEvent} from "react";
-import {AlertColor, Box, FormControlLabel, Radio, RadioGroup} from "@mui/material";
+import {ChangeEvent, useState} from "react";
+import {Box, FormControlLabel, Radio, RadioGroup, Switch} from "@mui/material";
 import {ConfigBox} from "../../../view/box/ConfigBox";
 import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 import {SxPropsMap} from "../../../../app/type";
@@ -14,11 +14,6 @@ const SX: SxPropsMap = {
 }
 
 const Description = {
-    [AuthType.NONE]: <>
-        Without authentication, anyone who can access <b>Ivory</b> will have full
-        control over the system. This includes using sensitive data (certificates, passwords, etc.)
-        and executing dangerous database operations like switchover or reinitialization.
-    </>,
     [AuthType.BASIC]: <>
         Basic authentication helps protect <b>Ivory</b> from unauthorized access using a
         general username and password. It provides a sign-in form that requires these credentials
@@ -28,7 +23,8 @@ const Description = {
         OIDC authentication protects <b>Ivory</b> data by integrating with an external OpenID Connect (OIDC) provider.
         It’s recommended to create a dedicated application for <b>Ivory</b> and restrict access to specific users only.
         When configuring OIDC, ensure that <b>Ivory</b>’s callback URL is allowed on the provider side.
-        Also, make sure the Issuer URL exactly matches the value specified in the <i>/.well-known/openid-configuration</i> endpoint.
+        Also, make sure the Issuer URL exactly matches the value specified in
+        the <i>/.well-known/openid-configuration</i> endpoint.
     </>,
     [AuthType.LDAP]: <>
         LDAP authentication protects <b>Ivory</b> by integrating with an LDAP provider.
@@ -38,10 +34,6 @@ const Description = {
 }
 
 const Recommendation = {
-    [AuthType.NONE]: <>
-        This type of authentication is recommended for <b>local usage</b>, when
-        you use <b>Ivory</b> in your personal laptop / computer.
-    </>,
     [AuthType.BASIC]: <>
         This type of authentication is recommended for <b>teams</b> or <b>small
         group of people</b>.
@@ -56,13 +48,6 @@ const Recommendation = {
     </>
 }
 
-const Severity: { [key in AuthType]: AlertColor } = {
-    [AuthType.NONE]: "warning",
-    [AuthType.BASIC]: "info",
-    [AuthType.OIDC]: "info",
-    [AuthType.LDAP]: "info",
-}
-
 type Props = {
     auth: AuthConfig,
     onChange: (auth: AuthConfig) => void,
@@ -70,27 +55,24 @@ type Props = {
 
 export function ConfigAuth(props: Props) {
     const {onChange, auth} = props
+    const [authEnabled, setAuthEnabled] = useState(false)
+    const [authTypeOpen, setAuthTypeOpen] = useState(AuthType.BASIC)
 
     return (
         <ConfigBox
             label={"Authentication"}
-            renderAction={renderAction()}
+            renderAction={<Switch size={"small"} onChange={e => setAuthEnabled(e.target.checked)}/>}
             renderBody={renderBody()}
-            showBody={auth.type !== AuthType.NONE}
-            description={Description[auth.type]}
-            recommendation={Recommendation[auth.type]}
-            severity={Severity[auth.type]}
+            showBody={authEnabled}
+            description={authEnabled && Description[authTypeOpen]}
+            recommendation={authEnabled && Recommendation[authTypeOpen]}
+            severity={authEnabled ? "info" : "warning"}
         />
     )
 
-    function renderAction() {
+    function renderAuthSwitch() {
         return (
-            <RadioGroup sx={SX.radio} row value={auth.type} onChange={handleAuthTypeChange}>
-                <FormControlLabel
-                    value={AuthType.NONE}
-                    control={<Radio size={"small"}/>}
-                    label={AuthType[AuthType.NONE].toLowerCase()}
-                />
+            <RadioGroup sx={SX.radio} row value={authTypeOpen} onChange={handleAuthTypeOpen}>
                 <FormControlLabel
                     value={AuthType.BASIC}
                     control={<Radio size={"small"}/>}
@@ -111,19 +93,34 @@ export function ConfigAuth(props: Props) {
     }
 
     function renderBody() {
-        switch (auth.type) {
-            case AuthType.BASIC: return renderBasic()
-            case AuthType.OIDC: return renderOidc()
-            case AuthType.LDAP: return renderLdap()
-            default: return null
+        return (
+            <>
+                {renderAuthSwitch()}
+                {renderAuthBody()}
+            </>
+        )
+    }
+
+    function renderAuthBody() {
+        switch (authTypeOpen) {
+            case AuthType.BASIC:
+                return renderBasic()
+            case AuthType.OIDC:
+                return renderOidc()
+            case AuthType.LDAP:
+                return renderLdap()
+            default:
+                return null
         }
     }
 
     function renderBasic() {
         return (
             <Box sx={SX.basic}>
-                <KeyEnterInput label={"Username"} value={auth.basic?.username ?? ""} onChange={handleConfigChange("basic", "username")}/>
-                <KeyEnterInput label={"Password"} value={auth.basic?.password ?? ""} onChange={handleConfigChange("basic", "password")} hidden />
+                <KeyEnterInput label={"Username"} value={auth.basic?.username ?? ""}
+                               onChange={handleConfigChange("basic", "username")}/>
+                <KeyEnterInput label={"Password"} value={auth.basic?.password ?? ""}
+                               onChange={handleConfigChange("basic", "password")} hidden/>
             </Box>
         )
     }
@@ -137,8 +134,10 @@ export function ConfigAuth(props: Props) {
                     helperText={"Specify the complete HTTP url, including the protocol prefix http:// or https://"}
                     onChange={handleConfigChange("oidc", "issuerUrl")}
                 />
-                <KeyEnterInput label={"Client ID"} value={auth.oidc?.clientId ?? ""} onChange={handleConfigChange("oidc", "clientId")}/>
-                <KeyEnterInput label={"Client secret"} value={auth.oidc?.clientSecret ?? ""} onChange={handleConfigChange("oidc", "clientSecret")} hidden/>
+                <KeyEnterInput label={"Client ID"} value={auth.oidc?.clientId ?? ""}
+                               onChange={handleConfigChange("oidc", "clientId")}/>
+                <KeyEnterInput label={"Client secret"} value={auth.oidc?.clientSecret ?? ""}
+                               onChange={handleConfigChange("oidc", "clientSecret")} hidden/>
                 <KeyEnterInput
                     label={"Redirect URL"}
                     value={auth.oidc?.redirectUrl ?? ""}
@@ -160,9 +159,12 @@ export function ConfigAuth(props: Props) {
                     value={auth.ldap?.url ?? ""}
                     onChange={handleConfigChange("ldap", "url")}
                 />
-                <KeyEnterInput label={"Bind DN"} value={auth.ldap?.bindDN ?? ""} onChange={handleConfigChange("ldap", "bindDN")}/>
-                <KeyEnterInput label={"Bind password"} value={auth.ldap?.bindPass ?? ""} onChange={handleConfigChange("ldap", "bindPass")} hidden/>
-                <KeyEnterInput label={"Base DN"} value={auth.ldap?.baseDN ?? ""} onChange={handleConfigChange("ldap", "baseDN")}/>
+                <KeyEnterInput label={"Bind DN"} value={auth.ldap?.bindDN ?? ""}
+                               onChange={handleConfigChange("ldap", "bindDN")}/>
+                <KeyEnterInput label={"Bind password"} value={auth.ldap?.bindPass ?? ""}
+                               onChange={handleConfigChange("ldap", "bindPass")} hidden/>
+                <KeyEnterInput label={"Base DN"} value={auth.ldap?.baseDN ?? ""}
+                               onChange={handleConfigChange("ldap", "baseDN")}/>
                 <KeyEnterInput
                     label={"Filter"}
                     helperText={"User search filter, for example '(cn=%s)' or '(sAMAccountName=%s)'"}
@@ -179,11 +181,15 @@ export function ConfigAuth(props: Props) {
         }
     }
 
-    function handleAuthTypeChange(e: ChangeEvent<HTMLInputElement>) {
+    function handleAuthTypeOpen(e: ChangeEvent<HTMLInputElement>) {
         const type = parseInt(e.target.value) as AuthType
-        if (type === AuthType.OIDC) onChange({type, oidc: {issuerUrl: "", clientId: "", clientSecret: "", redirectUrl: getRedirectUrl()}})
-            else if (type === AuthType.LDAP) onChange({type, ldap: {baseDN: "", url: "", bindDN: "", bindPass: "", filter: "(uid=%s)"}})
-        else onChange({type})
+        setAuthTypeOpen(type)
+        if (type === AuthType.OIDC) onChange({
+            oidc: {issuerUrl: "", clientId: "", clientSecret: "", redirectUrl: getRedirectUrl()}
+        })
+        if (type === AuthType.LDAP) onChange({
+            ldap: {baseDN: "", url: "", bindDN: "", bindPass: "", filter: "(uid=%s)"}
+        })
     }
 
     function getRedirectUrl() {

@@ -125,7 +125,7 @@ func (r *Router) OidcLogin(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": errState.Error()})
 		return
 	}
-	codeUrl, errCode := r.authService.getOAuthCodeURL(state.String())
+	codeUrl, errCode := r.authService.oidcProvider.GetCode(state.String())
 	if errCode != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": errCode.Error()})
 		return

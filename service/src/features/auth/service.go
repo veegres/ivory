@@ -19,7 +19,6 @@ type Service struct {
 	ldapProvider  *ldap.Provider
 	oidcProvider  *oidc.Provider
 
-	authEnabled bool
 	// NOTE: For HMAC signing method, the key can be any []byte.
 	// You need the same key for signing and validating. Whereas for RSA
 	// you need public and private key.
@@ -40,7 +39,6 @@ func NewService(
 		ldapProvider:  ldapProvider,
 		oidcProvider:  oidcProvider,
 
-		authEnabled:      false,
 		signingAlgorithm: jwt.SigningMethodHS256,
 		issuer:           "ivory",
 		expiration:       time.Hour,
@@ -51,16 +49,22 @@ func (s *Service) getIssuer() string {
 	return s.issuer
 }
 
-func (s *Service) getOAuthCodeURL(str string) (string, error) {
-	return s.oidcProvider.GetCode(str)
-}
-
-func (s *Service) SetAuthorisation(enabled bool) {
-	s.authEnabled = enabled
+func (s *Service) GetSupportedTypes() []AuthType {
+	supported := make([]AuthType, 0)
+	if s.basicProvider.Configured() {
+		supported = append(supported, BASIC)
+	}
+	if s.oidcProvider.Configured() {
+		supported = append(supported, OIDC)
+	}
+	if s.ldapProvider.Configured() {
+		supported = append(supported, LDAP)
+	}
+	return supported
 }
 
 func (s *Service) ValidateAuthToken(context *gin.Context) (bool, error) {
-	if !s.authEnabled {
+	if len(s.GetSupportedTypes()) == 0 {
 		return true, errors.New("authorization is disabled")
 	}
 	token, errToken := s.getToken(context)

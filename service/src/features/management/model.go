@@ -15,10 +15,23 @@ type Response struct {
 }
 
 type AppInfo struct {
-	Config  config.Info         `json:"config"`
+	Auth    AuthInfo            `json:"auth"`
+	Config  ConfigInfo          `json:"config"`
 	Version env.Version         `json:"version"`
 	Secret  secret.SecretStatus `json:"secret"`
-	Auth    auth.Info           `json:"auth"`
+}
+
+type ConfigInfo struct {
+	Configured   bool                      `json:"configured"`
+	Error        string                    `json:"error,omitempty"`
+	Company      string                    `json:"company"`
+	Availability config.AvailabilityConfig `json:"availability"`
+}
+
+type AuthInfo struct {
+	Supported  []auth.AuthType `json:"supported"`
+	Authorised bool            `json:"authorised"`
+	Error      string          `json:"error,omitempty"`
 }
 
 type SecretUpdateRequest struct {
