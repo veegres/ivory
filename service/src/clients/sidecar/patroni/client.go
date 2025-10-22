@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// NOTE: validate that is matches interface in compile-time
+var _ sidecar.Client = (*Client)(nil)
+
 type Client struct {
 	gateway *sidecar.Gateway
 }

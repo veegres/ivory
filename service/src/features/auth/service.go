@@ -15,9 +15,9 @@ import (
 
 type Service struct {
 	secretService *secret.Service
-	basicProvider *basic.BasicProvider
+	basicProvider *basic.Provider
 	ldapProvider  *ldap.Provider
-	oidcProvider  *oidc.OidcProvider
+	oidcProvider  *oidc.Provider
 
 	authEnabled bool
 	// NOTE: For HMAC signing method, the key can be any []byte.
@@ -30,9 +30,9 @@ type Service struct {
 
 func NewService(
 	secretService *secret.Service,
-	basicProvider *basic.BasicProvider,
+	basicProvider *basic.Provider,
 	ldapProvider *ldap.Provider,
-	oidcProvider *oidc.OidcProvider,
+	oidcProvider *oidc.Provider,
 ) *Service {
 	return &Service{
 		secretService: secretService,

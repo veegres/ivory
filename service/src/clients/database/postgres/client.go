@@ -15,6 +15,9 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+// NOTE: validate that is matches interface in compile-time
+var _ database.Client = (*Client)(nil)
+
 type Client struct {
 	appName string
 }
