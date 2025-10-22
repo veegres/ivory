@@ -77,7 +77,7 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	if errEnc != nil {
 		return errEnc
 	}
-	errConfig := s.configService.Reencrypt(prevSha, newSha)
+	errConfig := s.configService.Reencrypt()
 	if errConfig != nil {
 		return errConfig
 	}

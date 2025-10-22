@@ -140,8 +140,8 @@ func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 	return s.saveAppConfig(appConfig)
 }
 
-func (s *Service) Reencrypt(oldSecret [16]byte, newSecret [16]byte) error {
-	newAuthConfig, err := s.reencryptAuthConfig(s.appConfig.Auth, oldSecret, newSecret)
+func (s *Service) Reencrypt() error {
+	newAuthConfig, err := s.encryptAuthConfig(s.appConfig.Auth)
 	if err != nil {
 		return err
 	}
@@ -161,37 +161,6 @@ func (s *Service) DeleteAll() error {
 	s.oidcProvider.DeleteConfig()
 	s.ldapProvider.DeleteConfig()
 	return s.configFiles.DeleteAll()
-}
-
-func (s *Service) reencryptAuthConfig(authConfig AuthConfig, oldSecret [16]byte, newSecret [16]byte) (AuthConfig, error) {
-	if authConfig.Basic != nil {
-		encrypted, err := s.reencrypt(authConfig.Basic.Password, oldSecret, newSecret)
-		if err != nil {
-			return authConfig, err
-		}
-		tmp := *authConfig.Basic
-		tmp.Password = encrypted
-		authConfig.Basic = &tmp
-	}
-	if authConfig.Oidc != nil {
-		encrypted, err := s.reencrypt(authConfig.Oidc.ClientSecret, oldSecret, newSecret)
-		if err != nil {
-			return authConfig, err
-		}
-		tmp := *authConfig.Oidc
-		tmp.ClientSecret = encrypted
-		authConfig.Oidc = &tmp
-	}
-	if authConfig.Ldap != nil {
-		encrypted, err := s.reencrypt(authConfig.Ldap.BindPass, oldSecret, newSecret)
-		if err != nil {
-			return authConfig, err
-		}
-		tmp := *authConfig.Ldap
-		tmp.BindPass = encrypted
-		authConfig.Ldap = &tmp
-	}
-	return authConfig, nil
 }
 
 func (s *Service) encryptAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
@@ -270,18 +239,6 @@ func (s *Service) decrypt(str string) (string, error) {
 		return "", errEnc
 	}
 	return decrypted, nil
-}
-
-func (s *Service) reencrypt(str string, oldSecret [16]byte, newSecret [16]byte) (string, error) {
-	decrypted, errDec := s.encryptionService.Decrypt(str, oldSecret)
-	if errDec != nil {
-		return "", errDec
-	}
-	encrypted, errEnc := s.encryptionService.Encrypt(decrypted, newSecret)
-	if errEnc != nil {
-		return "", errEnc
-	}
-	return encrypted, nil
 }
 
 func (s *Service) setAuthConfig(authConfig AuthConfig) error {
