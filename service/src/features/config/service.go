@@ -292,20 +292,20 @@ func (s *Service) setAuthConfig(authConfig AuthConfig) error {
 	s.authService.SetAuthorisation(true)
 	var err error
 	if authConfig.Basic != nil {
-		errTmp := s.basicProvider.SetConfig(authConfig.Basic)
+		errTmp := s.basicProvider.SetConfig(*authConfig.Basic)
 		if errTmp != nil {
 			err = errors.Join(err, errTmp)
 		}
 
 	}
 	if authConfig.Oidc != nil {
-		errTmp := s.oidcProvider.SetConfig(authConfig.Oidc)
+		errTmp := s.oidcProvider.SetConfig(*authConfig.Oidc)
 		if errTmp != nil {
 			err = errors.Join(err, errTmp)
 		}
 	}
 	if authConfig.Ldap != nil {
-		errTmp := s.ldapProvider.SetConfig(authConfig.Ldap)
+		errTmp := s.ldapProvider.SetConfig(*authConfig.Ldap)
 		if errTmp != nil {
 			err = errors.Join(err, errTmp)
 		}

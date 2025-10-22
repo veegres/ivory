@@ -3,6 +3,7 @@ package auth
 import (
 	"ivory/src/clients/auth/basic"
 	"ivory/src/clients/auth/ldap"
+	"ivory/src/clients/auth/oidc"
 	"net/http"
 	"time"
 
@@ -46,6 +47,40 @@ func (r *Router) AuthMiddleware() gin.HandlerFunc {
 		}
 		context.Next()
 	}
+}
+
+func (r *Router) LdapConnect(context *gin.Context) {
+	var config ldap.Config
+	parseErr := context.ShouldBindJSON(&config)
+	if parseErr != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
+		return
+	}
+
+	err := r.authService.ldapProvider.Connect(config)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": "connected"})
+}
+
+func (r *Router) OidcConnect(context *gin.Context) {
+	var config oidc.Config
+	parseErr := context.ShouldBindJSON(&config)
+	if parseErr != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
+		return
+	}
+
+	err := r.authService.oidcProvider.Connect(config)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": "connected"})
 }
 
 func (r *Router) BasicLogin(context *gin.Context) {

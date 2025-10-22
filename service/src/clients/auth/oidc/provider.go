@@ -10,7 +10,7 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ auth.Provider[*Config, string] = (*Provider)(nil)
+var _ auth.Provider[Config, string] = (*Provider)(nil)
 
 type Provider struct {
 	config        *Config
@@ -22,10 +22,7 @@ func NewProvider() *Provider {
 	return &Provider{}
 }
 
-func (p *Provider) SetConfig(config *Config) error {
-	if config == nil {
-		return errors.New("config is not configured")
-	}
+func (p *Provider) SetConfig(config Config) error {
 	if config.IssuerURL == "" {
 		return errors.New("IssuerURL is not specified")
 	}
@@ -38,7 +35,7 @@ func (p *Provider) SetConfig(config *Config) error {
 	if config.RedirectURL == "" {
 		return errors.New("RedirectURL is not specified")
 	}
-	p.config = config
+	p.config = &config
 	return nil
 }
 
@@ -84,12 +81,12 @@ func (p *Provider) Verify(subject string) (string, error) {
 	return claims.Email, nil
 }
 
-func (p *Provider) Connect(config *Config) error {
+func (p *Provider) Connect(config Config) error {
 	_, err := p.getConnection(config)
 	return err
 }
 
-func (p *Provider) getConnection(config *Config) (*oidc.Provider, error) {
+func (p *Provider) getConnection(config Config) (*oidc.Provider, error) {
 	provider, errProvider := oidc.NewProvider(context.Background(), config.IssuerURL)
 	if errProvider != nil {
 		return nil, errProvider
@@ -101,8 +98,7 @@ func (p *Provider) initialize() error {
 	if p.config == nil {
 		return errors.New("config is not configured")
 	}
-
-	provider, errProvider := oidc.NewProvider(context.Background(), p.config.IssuerURL)
+	provider, errProvider := p.getConnection(*p.config)
 	if errProvider != nil {
 		return errProvider
 	}
