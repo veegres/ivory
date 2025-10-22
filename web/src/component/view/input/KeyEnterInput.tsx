@@ -32,7 +32,7 @@ export function KeyEnterInput(props: Props) {
                 type={hidden && !showPassword ? "password" : "text"}
                 endAdornment={renderAdornment()}
                 label={label}
-                autoComplete={"off"}
+                autoComplete={"new-password"}
                 onChange={onChange}
                 onKeyUp={(e) => handleKeyPress(e.key)}
             />
