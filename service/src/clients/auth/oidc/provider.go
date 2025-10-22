@@ -3,22 +3,26 @@ package oidc
 import (
 	"context"
 	"errors"
+	"ivory/src/clients/auth"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
 
-type OidcProvider struct {
+// NOTE: validate that is matches interface in compile-time
+var _ auth.Provider[*Config, string] = (*Provider)(nil)
+
+type Provider struct {
 	config        *Config
 	oauthConfig   *oauth2.Config
 	oauthVerifier *oidc.IDTokenVerifier
 }
 
-func NewProvider() *OidcProvider {
-	return &OidcProvider{}
+func NewProvider() *Provider {
+	return &Provider{}
 }
 
-func (p *OidcProvider) SetConfig(config *Config) error {
+func (p *Provider) SetConfig(config *Config) error {
 	if config == nil {
 		return errors.New("config is not configured")
 	}
@@ -35,28 +39,28 @@ func (p *OidcProvider) SetConfig(config *Config) error {
 		return errors.New("RedirectURL is not specified")
 	}
 	p.config = config
-	err := p.setOAuthConfig()
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
-func (p *OidcProvider) DeleteConfig() {
+func (p *Provider) DeleteConfig() {
 	p.config = nil
 	p.oauthConfig = nil
 	p.oauthVerifier = nil
 }
 
-func (p *OidcProvider) GetCode(state string) (string, error) {
+func (p *Provider) GetCode(state string) (string, error) {
 	if p.oauthConfig == nil {
 		return "", errors.New("config is not configured")
 	}
 	return p.oauthConfig.AuthCodeURL(state), nil
 }
 
-func (p *OidcProvider) Verify(code string) (string, error) {
-	oauthToken, errExchange := p.oauthConfig.Exchange(context.Background(), code)
+func (p *Provider) Verify(subject string) (string, error) {
+	err := p.initialize()
+	if err != nil {
+		return "", err
+	}
+	oauthToken, errExchange := p.oauthConfig.Exchange(context.Background(), subject)
 	if errExchange != nil {
 		return "", errors.Join(errors.New("failed to exchange token"), errExchange)
 	}
@@ -80,7 +84,20 @@ func (p *OidcProvider) Verify(code string) (string, error) {
 	return claims.Email, nil
 }
 
-func (p *OidcProvider) setOAuthConfig() error {
+func (p *Provider) Connect(config *Config) error {
+	_, err := p.getConnection(config)
+	return err
+}
+
+func (p *Provider) getConnection(config *Config) (*oidc.Provider, error) {
+	provider, errProvider := oidc.NewProvider(context.Background(), config.IssuerURL)
+	if errProvider != nil {
+		return nil, errProvider
+	}
+	return provider, nil
+}
+
+func (p *Provider) initialize() error {
 	if p.config == nil {
 		return errors.New("config is not configured")
 	}

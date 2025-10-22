@@ -17,9 +17,9 @@ type Service struct {
 	encryptionService *encryption.Service
 	secretService     *secret.Service
 	authService       *auth.Service
-	basicProvider     *basic.BasicProvider
+	basicProvider     *basic.Provider
 	ldapProvider      *ldap.Provider
-	oidcProvider      *oidc.OidcProvider
+	oidcProvider      *oidc.Provider
 
 	appConfig           *AppConfig
 	appConfigFileName   string
@@ -31,9 +31,9 @@ func NewService(
 	encryptionService *encryption.Service,
 	secretService *secret.Service,
 	authService *auth.Service,
-	basicProvider *basic.BasicProvider,
+	basicProvider *basic.Provider,
 	ldapProvider *ldap.Provider,
-	oidcProvider *oidc.OidcProvider,
+	oidcProvider *oidc.Provider,
 ) *Service {
 	return &Service{
 		configFiles:       configFiles,
@@ -286,6 +286,10 @@ func (s *Service) reencrypt(str string, oldSecret [16]byte, newSecret [16]byte) 
 }
 
 func (s *Service) setAuthConfig(authConfig AuthConfig) error {
+	if authConfig.Type == auth.NONE {
+		return nil
+	}
+	s.authService.SetAuthorisation(true)
 	var err error
 	if authConfig.Basic != nil {
 		errTmp := s.basicProvider.SetConfig(authConfig.Basic)
@@ -304,15 +308,6 @@ func (s *Service) setAuthConfig(authConfig AuthConfig) error {
 		errTmp := s.ldapProvider.SetConfig(authConfig.Ldap)
 		if errTmp != nil {
 			err = errors.Join(err, errTmp)
-		}
-	}
-	if err != nil {
-		s.basicProvider.DeleteConfig()
-		s.ldapProvider.DeleteConfig()
-		s.oidcProvider.DeleteConfig()
-	} else {
-		if authConfig.Type != auth.NONE {
-			s.authService.SetAuthorisation(true)
 		}
 	}
 	return err

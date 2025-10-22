@@ -2,17 +2,21 @@ package basic
 
 import (
 	"errors"
+	"ivory/src/clients/auth"
 )
 
-type BasicProvider struct {
+// NOTE: validate that is matches interface in compile-time
+var _ auth.Provider[*Config, Login] = (*Provider)(nil)
+
+type Provider struct {
 	config *Config
 }
 
-func NewProvider() *BasicProvider {
-	return &BasicProvider{}
+func NewProvider() *Provider {
+	return &Provider{}
 }
 
-func (p *BasicProvider) SetConfig(config *Config) error {
+func (p *Provider) SetConfig(config *Config) error {
 	if config == nil {
 		return errors.New("config is not configured")
 	}
@@ -26,13 +30,17 @@ func (p *BasicProvider) SetConfig(config *Config) error {
 	return nil
 }
 
-func (p *BasicProvider) DeleteConfig() {
+func (p *Provider) DeleteConfig() {
 	p.config = nil
 }
 
-func (p *BasicProvider) Verify(login Login) (string, error) {
-	if login.Username != p.config.Username || login.Password != p.config.Password {
+func (p *Provider) Verify(subject Login) (string, error) {
+	if subject.Username != p.config.Username || subject.Password != p.config.Password {
 		return "", errors.New("credentials are not correct")
 	}
-	return login.Username, nil
+	return subject.Username, nil
+}
+
+func (p *Provider) Connect(_ *Config) error {
+	return errors.New("connection is obsolete")
 }
