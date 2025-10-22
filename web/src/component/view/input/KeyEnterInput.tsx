@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
 type Props = {
     label: string,
     hidden?: boolean,
-    value?: unknown,
+    value?: string,
     required?: boolean,
     disabled?: boolean,
     helperText?: string,

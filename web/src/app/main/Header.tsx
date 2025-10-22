@@ -5,7 +5,6 @@ import {randomUnicodeAnimal} from "../utils";
 import {useStoreAction} from "../../provider/StoreProvider";
 import {SxPropsMap} from "../type";
 import {useRouterLogout} from "../../api/auth/hook";
-import {AuthType} from "../../api/auth/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},
@@ -18,12 +17,12 @@ const SX: SxPropsMap = {
 
 type Props = {
     company: string,
-    auth: AuthType,
     show: boolean,
+    showLogout: boolean,
 }
 
 export function Header(props: Props) {
-    const {company, show, auth} = props
+    const {company, show, showLogout} = props
     const {toggleSettingsDialog} = useStoreAction
     const [animal, setAnimal] = useState("")
 
@@ -54,7 +53,7 @@ export function Header(props: Props) {
                         <Settings/>
                     </IconButton>
                 </Tooltip>
-                {auth !== AuthType.NONE && (
+                {showLogout && (
                     <Tooltip title={"Sign out"}>
                         <IconButton onClick={handleLogout} color={"inherit"}>
                             <Logout/>

@@ -1,199 +1,84 @@
 import {ChangeEvent, useState} from "react";
-import {Box, FormControlLabel, Radio, RadioGroup, Switch} from "@mui/material";
+import {Box, Switch, Tab, Tabs} from "@mui/material";
 import {ConfigBox} from "../../../view/box/ConfigBox";
-import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 import {SxPropsMap} from "../../../../app/type";
 import {AuthType} from "../../../../api/auth/type";
-import {AuthConfig} from "../../../../api/config/type";
+import {BasicConfig, LdapConfig, OidcConfig} from "../../../../api/config/type";
+import {ConfigAuthBasic} from "./ConfigAuthBasic";
+import {ConfigAuthOidc} from "./ConfigAuthOidc";
+import {ConfigAuthLdap} from "./ConfigAuthLdap";
 
 const SX: SxPropsMap = {
-    radio: {display: "flex"},
-    basic: {display: "flex", gap: 1},
-    oidc: {display: "flex", flexDirection: "column", gap: 1},
-    ldap: {display: "flex", flexDirection: "column", gap: 1},
-}
-
-const Description = {
-    [AuthType.BASIC]: <>
-        Basic authentication helps protect <b>Ivory</b> from unauthorized access using a
-        general username and password. It provides a sign-in form that requires these credentials
-        before granting access to <b>Ivory</b>. You’ll need to specify the username and password below.
-    </>,
-    [AuthType.OIDC]: <>
-        OIDC authentication protects <b>Ivory</b> data by integrating with an external OpenID Connect (OIDC) provider.
-        It’s recommended to create a dedicated application for <b>Ivory</b> and restrict access to specific users only.
-        When configuring OIDC, ensure that <b>Ivory</b>’s callback URL is allowed on the provider side.
-        Also, make sure the Issuer URL exactly matches the value specified in
-        the <i>/.well-known/openid-configuration</i> endpoint.
-    </>,
-    [AuthType.LDAP]: <>
-        LDAP authentication protects <b>Ivory</b> by integrating with an LDAP provider.
-        It provides a sign-in form that requires valid LDAP credentials to access <b>Ivory</b>.
-        You can specify a filter below to restrict access to certain users.
-    </>
-}
-
-const Recommendation = {
-    [AuthType.BASIC]: <>
-        This type of authentication is recommended for <b>teams</b> or <b>small
-        group of people</b>.
-    </>,
-    [AuthType.OIDC]: <>
-        This type of authentication is recommended for <b>companies</b> that use
-        OIDC provider.
-    </>,
-    [AuthType.LDAP]: <>
-        This type of authentication is recommended for <b>companies</b> that use
-        LDAP provider.
-    </>
+    body: {display: "flex", flexDirection: "column", gap: 2},
 }
 
 type Props = {
-    auth: AuthConfig,
-    onChange: (auth: AuthConfig) => void,
+    ldapConfig: LdapConfig,
+    onLdapChange: (config: LdapConfig) => void,
+    basicConfig: BasicConfig,
+    onBasicChange: (config: BasicConfig) => void,
+    oidcConfig: OidcConfig,
+    onOidcChange: (config: OidcConfig) => void,
+    onDefaultChange: () => void,
 }
 
 export function ConfigAuth(props: Props) {
-    const {onChange, auth} = props
+    const {ldapConfig, oidcConfig, basicConfig, onOidcChange, onBasicChange, onLdapChange, onDefaultChange} = props
     const [authEnabled, setAuthEnabled] = useState(false)
     const [authTypeOpen, setAuthTypeOpen] = useState(AuthType.BASIC)
 
     return (
         <ConfigBox
             label={"Authentication"}
-            renderAction={<Switch size={"small"} onChange={e => setAuthEnabled(e.target.checked)}/>}
+            renderAction={<Switch size={"small"} onChange={handleAuthOpen}/>}
             renderBody={renderBody()}
             showBody={authEnabled}
-            description={authEnabled && Description[authTypeOpen]}
-            recommendation={authEnabled && Recommendation[authTypeOpen]}
+            description={<>
+                Without authentication, anyone with access to <b>Ivory</b> can fully control the system,
+                including using sensitive data and performing critical database actions like
+                switchover or reinitialization. <b>Ivory</b> provides support
+                for <b>Basic</b>, <b>OIDC</b> and <b>LDAP</b> authentication methods.
+            </>}
+            recommendation={<>
+                <b>No Auth:</b> Suitable for <b>local use</b> on your personal computer.<br/>
+                <b>Basic Auth:</b> Recommended for <b>teams</b> or <b>small groups</b>.<br/>
+                <b>OIDC / LDAP:</b> Ideal for <b>companies</b> using an OIDC or LDAP provider.<br/>
+            </>}
             severity={authEnabled ? "info" : "warning"}
         />
     )
 
     function renderAuthSwitch() {
         return (
-            <RadioGroup sx={SX.radio} row value={authTypeOpen} onChange={handleAuthTypeOpen}>
-                <FormControlLabel
-                    value={AuthType.BASIC}
-                    control={<Radio size={"small"}/>}
-                    label={AuthType[AuthType.BASIC].toLowerCase()}
-                />
-                <FormControlLabel
-                    value={AuthType.LDAP}
-                    control={<Radio size={"small"}/>}
-                    label={AuthType[AuthType.LDAP].toLowerCase()}
-                />
-                <FormControlLabel
-                    value={AuthType.OIDC}
-                    control={<Radio size={"small"}/>}
-                    label={AuthType[AuthType.OIDC].toLowerCase()}
-                />
-            </RadioGroup>
+            <Tabs variant={"fullWidth"} value={authTypeOpen} onChange={(_, v) => setAuthTypeOpen(v)}>
+                <Tab value={AuthType.BASIC} label={AuthType[AuthType.BASIC]}/>
+                <Tab value={AuthType.LDAP} label={AuthType[AuthType.LDAP]}/>
+                <Tab value={AuthType.OIDC} label={AuthType[AuthType.OIDC]}/>
+            </Tabs>
         )
     }
 
     function renderBody() {
         return (
-            <>
+            <Box sx={SX.body}>
                 {renderAuthSwitch()}
                 {renderAuthBody()}
-            </>
+            </Box>
         )
     }
 
     function renderAuthBody() {
         switch (authTypeOpen) {
-            case AuthType.BASIC:
-                return renderBasic()
-            case AuthType.OIDC:
-                return renderOidc()
-            case AuthType.LDAP:
-                return renderLdap()
-            default:
-                return null
+            case AuthType.BASIC: return <ConfigAuthBasic config={basicConfig} onChange={onBasicChange}/>
+            case AuthType.OIDC: return <ConfigAuthOidc config={oidcConfig} onChange={onOidcChange}/>
+            case AuthType.LDAP: return <ConfigAuthLdap config={ldapConfig} onChange={onLdapChange}/>
+            default: return null
         }
     }
 
-    function renderBasic() {
-        return (
-            <Box sx={SX.basic}>
-                <KeyEnterInput label={"Username"} value={auth.basic?.username ?? ""}
-                               onChange={handleConfigChange("basic", "username")}/>
-                <KeyEnterInput label={"Password"} value={auth.basic?.password ?? ""}
-                               onChange={handleConfigChange("basic", "password")} hidden/>
-            </Box>
-        )
-    }
-
-    function renderOidc() {
-        return (
-            <Box sx={SX.oidc}>
-                <KeyEnterInput
-                    label={"Issuer URL"}
-                    value={auth.oidc?.issuerUrl ?? ""}
-                    helperText={"Specify the complete HTTP url, including the protocol prefix http:// or https://"}
-                    onChange={handleConfigChange("oidc", "issuerUrl")}
-                />
-                <KeyEnterInput label={"Client ID"} value={auth.oidc?.clientId ?? ""}
-                               onChange={handleConfigChange("oidc", "clientId")}/>
-                <KeyEnterInput label={"Client secret"} value={auth.oidc?.clientSecret ?? ""}
-                               onChange={handleConfigChange("oidc", "clientSecret")} hidden/>
-                <KeyEnterInput
-                    label={"Redirect URL"}
-                    value={auth.oidc?.redirectUrl ?? ""}
-                    helperText={"This URL must be allowed in your provider configuration"}
-                    required={false}
-                    disabled={true}
-                    onChange={handleConfigChange("oidc", "redirectUrl")}
-                />
-            </Box>
-        )
-    }
-
-    function renderLdap() {
-        return (
-            <Box sx={SX.ldap}>
-                <KeyEnterInput
-                    label={"URL"}
-                    helperText={"Specify the complete LDAP url, including the protocol prefix ldap:// or ldaps://"}
-                    value={auth.ldap?.url ?? ""}
-                    onChange={handleConfigChange("ldap", "url")}
-                />
-                <KeyEnterInput label={"Bind DN"} value={auth.ldap?.bindDN ?? ""}
-                               onChange={handleConfigChange("ldap", "bindDN")}/>
-                <KeyEnterInput label={"Bind password"} value={auth.ldap?.bindPass ?? ""}
-                               onChange={handleConfigChange("ldap", "bindPass")} hidden/>
-                <KeyEnterInput label={"Base DN"} value={auth.ldap?.baseDN ?? ""}
-                               onChange={handleConfigChange("ldap", "baseDN")}/>
-                <KeyEnterInput
-                    label={"Filter"}
-                    helperText={"User search filter, for example '(cn=%s)' or '(sAMAccountName=%s)'"}
-                    value={auth.ldap?.filter ?? ""}
-                    onChange={handleConfigChange("ldap", "filter")}
-                />
-            </Box>
-        )
-    }
-
-    function handleConfigChange(authType: "basic" | "ldap" | "oidc", key: string) {
-        return (e: ChangeEvent<HTMLInputElement>) => {
-            onChange({...auth, [authType]: {...auth[authType], [key]: e.target.value}})
-        }
-    }
-
-    function handleAuthTypeOpen(e: ChangeEvent<HTMLInputElement>) {
-        const type = parseInt(e.target.value) as AuthType
-        setAuthTypeOpen(type)
-        if (type === AuthType.OIDC) onChange({
-            oidc: {issuerUrl: "", clientId: "", clientSecret: "", redirectUrl: getRedirectUrl()}
-        })
-        if (type === AuthType.LDAP) onChange({
-            ldap: {baseDN: "", url: "", bindDN: "", bindPass: "", filter: "(uid=%s)"}
-        })
-    }
-
-    function getRedirectUrl() {
-        // NOTE: we set base url when configure env variables in backend
-        return `${document.baseURI}api/oidc/callback`
+    function handleAuthOpen(e: ChangeEvent<HTMLInputElement>) {
+        const type = e.target.checked
+        onDefaultChange()
+        setAuthEnabled(type)
     }
 }

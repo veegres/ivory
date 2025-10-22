@@ -5,14 +5,18 @@ import {ConfigQuery} from "./query/ConfigQuery";
 import {ConfigAuth} from "./auth/ConfigAuth";
 import {Alert, Box, Button} from "@mui/material";
 import {useRouterConfigSet} from "../../../api/config/hook";
-import {AuthType} from "../../../api/auth/type";
-import {AuthConfig} from "../../../api/config/type";
+import {BasicConfig, LdapConfig, OidcConfig} from "../../../api/config/type";
 import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},
     center: {display: "flex", justifyContent: "center"},
 }
+
+const defaultBasicConfig: BasicConfig = {password: "", username: ""}
+const defaultLdapConfig: LdapConfig = {bindPass: "", bindDN: "", baseDN: "", filter: "(uid=%s)", url: ""}
+// NOTE: we set base url when configure env variables in the backend
+const defaultOidcConfig: OidcConfig = {clientSecret: "", clientId: "", issuerUrl: "", redirectUrl: `${document.baseURI}api/oidc/callback`}
 
 type Props = {
     configured: boolean,
@@ -24,7 +28,9 @@ export function ConfigBody(props: Props) {
     const [company, setCompany] = useState("")
     const [query, setQuery] = useState(false)
     const [secret, setSecret] = useState("")
-    const [auth, setAuth] = useState<AuthConfig>({type: AuthType.NONE})
+    const [basic, setBasic] = useState<BasicConfig>(defaultBasicConfig)
+    const [ldap, setLdap] = useState<LdapConfig>(defaultLdapConfig)
+    const [oidc, setOidc] = useState<OidcConfig>(defaultOidcConfig)
     const config = useRouterConfigSet()
     const isConfigBroken = configured && error
 
@@ -33,7 +39,11 @@ export function ConfigBody(props: Props) {
             {isConfigBroken && renderError()}
             <KeyEnterInput label={"Company"} onChange={(e) => setCompany(e.target.value)}/>
             <ConfigQuery onChange={setQuery}/>
-            <ConfigAuth onChange={setAuth} auth={auth}/>
+            <ConfigAuth
+                basicConfig={basic} ldapConfig={ldap} oidcConfig={oidc}
+                onDefaultChange={handleDefaultChange}
+                onOidcChange={setOidc} onBasicChange={setBasic} onLdapChange={setLdap}
+            />
         </PageStartupBox>
     )
 
@@ -71,12 +81,22 @@ export function ConfigBody(props: Props) {
         </>)
     }
 
+    function handleDefaultChange() {
+        setBasic(defaultBasicConfig)
+        setLdap(defaultLdapConfig)
+        setOidc(defaultOidcConfig)
+    }
+
     function handleClick() {
         config.mutate({
             secret: isConfigBroken ? secret : undefined,
             appConfig: {
                 company,
-                auth,
+                auth: {
+                    basic: JSON.stringify(basic) === JSON.stringify(defaultBasicConfig) ? undefined : basic,
+                    ldap: JSON.stringify(ldap) === JSON.stringify(defaultLdapConfig) ? undefined : ldap,
+                    oidc: JSON.stringify(oidc) === JSON.stringify(defaultOidcConfig) ? undefined : oidc,
+                },
                 availability: {manualQuery: query},
             }
         })
