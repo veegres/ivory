@@ -50,8 +50,9 @@ func (p *Provider) DeleteConfig() {
 }
 
 func (p *Provider) GetCode(state string) (string, error) {
-	if p.oauthConfig == nil {
-		return "", errors.New("config is not configured")
+	err := p.initialize()
+	if err != nil {
+		return "", err
 	}
 	return p.oauthConfig.AuthCodeURL(state), nil
 }
