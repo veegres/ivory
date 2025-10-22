@@ -11,72 +11,55 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    type: AuthType,
-    error: string,
+    supported: AuthType[],
+    error?: string,
 }
 
 export function LoginBody(props: Props) {
-    const {type, error} = props
+    const {supported, error} = props
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
 
-    const login = useRouterLogin(type)
+    const login = useRouterLogin()
     const logoutRouter = useRouterLogout()
 
     return (
-        <PageStartupBox header={"Authentication"} renderFooter={renderLogin()}>
+        <PageStartupBox header={"Authentication"} renderFooter={renderButtons()}>
             {error && <Alert sx={SX.alert} severity={"warning"} icon={false}>{error}</Alert>}
-            {renderBody()}
+            {renderCreds()}
         </PageStartupBox>
     )
 
-    function renderBody() {
-        switch (type) {
-            case AuthType.NONE: return null
-            case AuthType.BASIC: return (
-                <>
-                    <KeyEnterInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
-                    <KeyEnterInput
-                        label={"password"}
-                        hidden
-                        onChange={(e) => setPass(e.target.value)}
-                        onEnterPress={handleLogin}
-                    />
-                </>
-            )
-            case AuthType.LDAP: return (
-                <>
-                    <KeyEnterInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
-                    <KeyEnterInput
-                        label={"password"}
-                        hidden
-                        onChange={(e) => setPass(e.target.value)}
-                        onEnterPress={handleLogin}
-                    />
-                </>
-            )
-            case AuthType.OIDC: return null
-        }
+    function renderCreds() {
+        if (![AuthType.BASIC, AuthType.LDAP].some(r => supported.includes(r))) return null
+
+        return (
+            <>
+                <KeyEnterInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
+                <KeyEnterInput
+                    label={"password"}
+                    hidden
+                    onChange={(e) => setPass(e.target.value)}
+                    onEnterPress={() => handleLogin(AuthType.BASIC)}
+                />
+            </>
+        )
     }
 
-    function renderLogin() {
-        switch (type) {
-            case AuthType.NONE: return <Button onClick={handleLogout}>Sign out</Button>
-            case AuthType.BASIC: return <Button onClick={handleLogin} loading={login.isPending}>Sign in</Button>
-            case AuthType.LDAP: return <Button onClick={handleLogin} loading={login.isPending}>Sign in</Button>
-            case AuthType.OIDC: return <Button onClick={handleOidcLogin}>Sign in with SSO</Button>
-        }
+    function renderButtons() {
+        if (!supported.length) return <Button onClick={handleLogout}>Sign out</Button>
+
+        return supported.map(type => (
+            <Button key={type} onClick={() => handleLogin(type)} loading={login.isPending}>Sign in with {AuthType[type]}</Button>
+        ))
     }
 
     function handleLogout() {
         logoutRouter.mutate()
     }
 
-    function handleOidcLogin() {
-        login.mutate(undefined)
-    }
-
-    function handleLogin() {
-        login.mutate({username, password})
+    function handleLogin(type: AuthType) {
+        const subject = type === AuthType.OIDC ? undefined : {username, password}
+        login.mutate({type, subject})
     }
 }

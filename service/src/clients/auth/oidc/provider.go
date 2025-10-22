@@ -22,6 +22,10 @@ func NewProvider() *Provider {
 	return &Provider{}
 }
 
+func (p *Provider) Configured() bool {
+	return p.config != nil
+}
+
 func (p *Provider) SetConfig(config Config) error {
 	if config.IssuerURL == "" {
 		return errors.New("IssuerURL is not specified")

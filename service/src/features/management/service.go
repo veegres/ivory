@@ -87,23 +87,25 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	appConfig, err := s.configService.GetAppConfig()
 	configured := s.configService.GetIsConfigured()
+	supportedAuth := s.authService.GetSupportedTypes()
 	if err != nil {
 		return &AppInfo{
-			Config: config.Info{
+			Config: ConfigInfo{
 				Configured:   configured,
 				Company:      "Ivory",
-				Availability: config.Availability{ManualQuery: false},
+				Availability: config.AvailabilityConfig{ManualQuery: false},
 				Error:        err.Error(),
 			},
 			Secret:  s.secretService.Status(),
 			Version: s.env.Version,
-			Auth: auth.Info{
-				Type:       auth.NONE,
+			Auth: AuthInfo{
+				Supported:  supportedAuth,
 				Authorised: false,
 				Error:      "",
 			},
 		}
 	}
+
 	authorised, authError := s.authService.ValidateAuthToken(context)
 	errorMessage := ""
 	if authError != nil {
@@ -111,7 +113,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	}
 
 	return &AppInfo{
-		Config: config.Info{
+		Config: ConfigInfo{
 			Configured:   configured,
 			Company:      appConfig.Company,
 			Availability: appConfig.Availability,
@@ -119,8 +121,8 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 		},
 		Secret:  s.secretService.Status(),
 		Version: s.env.Version,
-		Auth: auth.Info{
-			Type:       appConfig.Auth.Type,
+		Auth: AuthInfo{
+			Supported:  supportedAuth,
 			Authorised: authorised,
 			Error:      errorMessage,
 		},

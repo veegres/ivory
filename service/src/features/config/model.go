@@ -4,15 +4,7 @@ import (
 	"ivory/src/clients/auth/basic"
 	"ivory/src/clients/auth/ldap"
 	"ivory/src/clients/auth/oidc"
-	"ivory/src/features/auth"
 )
-
-type Info struct {
-	Configured   bool         `json:"configured"`
-	Error        string       `json:"error,omitempty"`
-	Company      string       `json:"company"`
-	Availability Availability `json:"availability"`
-}
 
 type NewAppConfig struct {
 	Secret    string    `json:"secret,omitempty"`
@@ -20,18 +12,17 @@ type NewAppConfig struct {
 }
 
 type AppConfig struct {
-	Company      string       `json:"company"`
-	Availability Availability `json:"availability"`
-	Auth         AuthConfig   `json:"auth"`
+	Company      string             `json:"company"`
+	Availability AvailabilityConfig `json:"availability"`
+	Auth         AuthConfig         `json:"auth"`
 }
 
 type AuthConfig struct {
-	Type  auth.AuthType `json:"type"`
 	Basic *basic.Config `json:"basic"`
 	Ldap  *ldap.Config  `json:"ldap"`
 	Oidc  *oidc.Config  `json:"oidc"`
 }
 
-type Availability struct {
+type AvailabilityConfig struct {
 	ManualQuery bool `json:"manualQuery"`
 }
