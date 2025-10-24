@@ -95,7 +95,24 @@ einstein:password
 euclid:password
 ```
 
-P.S. for more credentials and options visit providers page
+P.S. for more credentials and options visit the providers page
+
+#### Create your own provider
+
+You can run your own provider via Docker
+`docker run -p 389:389 -p 636:636 --name simple-ldap-server upekshejay/simple-ldap-test-serveritachi`
+
+Password and Config can be find in container logs, but for easier run, here they are
+```
+URL:            ldaps://localhost or ldap://localhost
+Bind DN:        cn=admin,ou=users,dc=mtr,dc=com
+Bind password:  itachi
+Base DN:        ou=users,dc=mtr,dc=com
+Filter:         (uid=%s)
+```
+
+P.S. recommended testing LDAP with your local provider, because online free service has dense throttle
+policies and for some reason it doesn't work well with timeouts.
 
 ### OIDC
 
