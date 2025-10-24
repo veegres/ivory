@@ -100,7 +100,7 @@ P.S. for more credentials and options visit the providers page
 #### Create your own provider
 
 You can run your own provider via Docker
-`docker run -p 389:389 -p 636:636 --name simple-ldap-server upekshejay/simple-ldap-test-serveritachi`
+`docker run -p 389:389 -p 636:636 --name simple-ldap-server upekshejay/simple-ldap-test-server`
 
 Password and Config can be find in container logs, but for easier run, here they are
 ```
