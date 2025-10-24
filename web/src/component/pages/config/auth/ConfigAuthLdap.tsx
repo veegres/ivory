@@ -1,8 +1,10 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import {SxPropsMap} from "../../../../app/type";
 import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 import {LdapConfig} from "../../../../api/config/type";
 import {ChangeEvent} from "react";
+import {useRouterConnect} from "../../../../api/auth/hook";
+import {AuthType} from "../../../../api/auth/type";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -15,6 +17,7 @@ type Props = {
 
 export function ConfigAuthLdap(props: Props) {
     const {config, onChange} = props
+    const connect = useRouterConnect()
     return (
         <Box sx={SX.box}>
             <KeyEnterInput
@@ -32,6 +35,12 @@ export function ConfigAuthLdap(props: Props) {
                 value={config.filter}
                 onChange={handleConfigChange("filter")}
             />
+            <Button
+                color={"success"}
+                loading={connect.isPending}
+                onClick={() => connect.mutate({type: AuthType.LDAP, config})}>
+                Test Connection
+            </Button>
         </Box>
     )
 
