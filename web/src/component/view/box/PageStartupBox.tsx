@@ -8,8 +8,8 @@ import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     box: {
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        width: "30%", minWidth: "500px", gap: 2
+        display: "flex", flexDirection: "column", alignItems: "center",
+        width: "30%", minWidth: "500px", gap: 2, padding: "150px 0px",
     },
     header: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer"},
     buttons: {display: "flex", gap: 2, width: "100%", justifyContent: "center", alignItems: "center"},
@@ -19,16 +19,17 @@ type Props = {
     children: ReactNode,
     header: string,
     renderFooter: ReactNode,
+    position?: "center" | "start" | "end",
 }
 
 export function PageStartupBox(props: Props) {
-    const {children, header, renderFooter} = props
+    const {children, header, renderFooter, position = "center"} = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 
     const info = useRouterInfo()
 
     return (
-        <Box sx={SX.box}>
+        <Box sx={SX.box} justifyContent={position}>
             <Box sx={SX.header} className={select.none} onClick={() => setAnimal(randomUnicodeAnimal())}>
                 {header} {animal}
             </Box>

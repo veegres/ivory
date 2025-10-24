@@ -35,7 +35,7 @@ export function ConfigBody(props: Props) {
     const isConfigBroken = configured && error
 
     return (
-        <PageStartupBox header={"Configuration"} renderFooter={renderFooter()}>
+        <PageStartupBox header={"Configuration"} renderFooter={renderFooter()} position={"start"}>
             {isConfigBroken && renderError()}
             <KeyEnterInput label={"Company"} onChange={(e) => setCompany(e.target.value)}/>
             <ConfigQuery onChange={setQuery}/>
