@@ -22,7 +22,7 @@ export function Query(props: Props) {
     const query = useRouterQueryList(type)
     const info = useRouterInfo()
 
-    const isManual = info.data?.availability.manualQuery ?? false
+    const isManual = info.data?.config.availability.manualQuery ?? false
 
     return (
         <Box style={style.box}>
