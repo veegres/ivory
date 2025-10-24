@@ -87,6 +87,8 @@ func (p *Provider) Verify(subject string) (string, error) {
 }
 
 func (p *Provider) Connect(config Config) error {
+	// NOTE: just check if connection is possible, it doesn't check the validity of ClientID and ClientSecret
+	//  we cannot verify it for web, but can machine-to-machine, but it's not a case for us
 	_, err := p.getConnection(config)
 	return err
 }
