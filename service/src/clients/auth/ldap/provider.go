@@ -1,11 +1,14 @@
 package ldap
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"ivory/src/clients/auth"
 	"log/slog"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/go-ldap/ldap/v3"
@@ -41,6 +44,11 @@ func (p *Provider) SetConfig(config Config) error {
 	}
 	if config.Filter == "" {
 		return errors.New("filter is not specified")
+	}
+	if config.Tls != nil {
+		if !strings.HasPrefix(config.Url, "ldaps://") {
+			return errors.New("scheme is not ldaps")
+		}
 	}
 	p.config = &config
 	return nil
@@ -108,7 +116,24 @@ func (p *Provider) Verify(subject Login) (string, error) {
 
 func (p *Provider) getConnection(config Config) (*ldap.Conn, error) {
 	dialer := &net.Dialer{Timeout: 3 * time.Second}
-	conn, err := ldap.DialURL(config.Url, ldap.DialWithDialer(dialer))
+
+	tlsConfig := &tls.Config{}
+	if config.Tls != nil && config.Tls.CaCert != "" {
+		certPool := x509.NewCertPool()
+		if ok := certPool.AppendCertsFromPEM([]byte(config.Tls.CaCert)); !ok {
+			return nil, errors.New("failed to append CA cert")
+		}
+		tlsConfig.RootCAs = certPool
+	} else {
+		tlsConfig.InsecureSkipVerify = true
+	}
+
+	options := []ldap.DialOpt{
+		ldap.DialWithDialer(dialer),
+		ldap.DialWithTLSConfig(tlsConfig),
+	}
+
+	conn, err := ldap.DialURL(config.Url, options...)
 	if err != nil {
 		return conn, err
 	}
