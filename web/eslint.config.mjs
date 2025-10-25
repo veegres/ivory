@@ -54,6 +54,7 @@ export default [
       "no-restricted-imports": "error",
       "react/jsx-curly-brace-presence": ["error", { "props": "always" }],
       "object-curly-spacing": ["error", "never"],
+      "react/function-component-definition": ["error", { "namedComponents": "function-declaration" }],
     },
   },
 ];
