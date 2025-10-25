@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {minWidth: "600px", height: "600px"},
     title: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
-    menuIcon: { padding: "8px" },
+    menuIcon: {padding: "8px"},
 }
 
 export function Menu() {

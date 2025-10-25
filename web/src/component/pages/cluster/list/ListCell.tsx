@@ -12,7 +12,7 @@ type Props = {
 }
 
 export function ListCell(props: Props) {
-    const { children } = props
+    const {children} = props
     return (
         <TableCell sx={SX.cell}>{children}</TableCell>
     )

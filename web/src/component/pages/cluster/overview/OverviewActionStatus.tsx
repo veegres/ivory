@@ -45,7 +45,7 @@ export function OverviewActionStatus(props: Props) {
                     loading={action[status].isPending}
                     title={`Are you sure that you want to ${actionButton[status].label}`}
                     description={<>This action either active or pause patroni. More info can be
-                    found <a href="https://patroni.readthedocs.io/en/latest/pause.html">here</a>.</>}
+                    found <a href={"https://patroni.readthedocs.io/en/latest/pause.html"}>here</a>.</>}
                     onClick={() => {action[status].mutate(request)}}
                 />
             </InfoBox>

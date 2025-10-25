@@ -1,5 +1,5 @@
 import {getDomain} from "../../app/utils";
-import { api } from "../api";
+import {api} from "../api";
 import {R} from "../management/type";
 import {Instance, InstanceMap, InstanceRequest, Sidecar} from "./type";
 

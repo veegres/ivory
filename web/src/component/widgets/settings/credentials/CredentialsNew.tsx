@@ -6,7 +6,7 @@ import {CancelIconButton, SaveIconButton} from "../../../view/button/IconButtons
 import {CredentialsRow} from "./CredentialsRow";
 
 export function CredentialsNew() {
-    const initCredential: Password = { username: "", password: "", type: PasswordType.POSTGRES }
+    const initCredential: Password = {username: "", password: "", type: PasswordType.POSTGRES}
     const [credential, setCredential] = useState(initCredential)
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)
@@ -33,7 +33,7 @@ export function CredentialsNew() {
     }
 
     function handleCancel() {
-        setCredential({ ...initCredential, type: credential.type })
+        setCredential({...initCredential, type: credential.type})
         setClean(false)
     }
 
