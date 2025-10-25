@@ -1,12 +1,13 @@
-import {ChangeEvent, useState} from "react";
 import {Box, Paper, Switch, Tab, Tabs} from "@mui/material";
-import {ConfigBox} from "../../../view/box/ConfigBox";
-import {SxPropsMap} from "../../../../app/type";
+import {ChangeEvent, useState} from "react";
+
 import {AuthType} from "../../../../api/auth/type";
 import {BasicConfig, LdapConfig, OidcConfig} from "../../../../api/config/type";
+import {SxPropsMap} from "../../../../app/type";
+import {ConfigBox} from "../../../view/box/ConfigBox";
 import {ConfigAuthBasic} from "./ConfigAuthBasic";
-import {ConfigAuthOidc} from "./ConfigAuthOidc";
 import {ConfigAuthLdap} from "./ConfigAuthLdap";
+import {ConfigAuthOidc} from "./ConfigAuthOidc";
 
 const SX: SxPropsMap = {
     body: {display: "flex", flexDirection: "column", gap: 2},

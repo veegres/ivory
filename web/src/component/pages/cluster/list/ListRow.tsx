@@ -1,16 +1,16 @@
+import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
 import {Box, TableRow, Tooltip} from "@mui/material";
 import {useEffect, useRef, useState} from "react";
+
 import {Cluster} from "../../../../api/cluster/type";
+import {SxPropsMap} from "../../../../app/type";
+import {getDomains, getSidecars, SxPropsFormatter} from "../../../../app/utils";
+import {useInstanceDetection} from "../../../../hook/InstanceDetection";
 import {DynamicInputs} from "../../../view/input/DynamicInputs";
+import {ListCell} from "./ListCell";
+import {ListCellChip} from "./ListCellChip";
 import {ListCellRead} from "./ListCellRead";
 import {ListCellUpdate} from "./ListCellUpdate";
-import {ListCell} from "./ListCell";
-import {getDomains, getSidecars, SxPropsFormatter} from "../../../../app/utils";
-import {ListCellChip} from "./ListCellChip";
-import {useInstanceDetection} from "../../../../hook/InstanceDetection";
-import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
-
-import {SxPropsMap} from "../../../../app/type";
 
 const SX: SxPropsMap = {
     actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, minHeight: "32px"},
@@ -45,7 +45,7 @@ export function ListRow(props: Props) {
                     inputs={stateNodes}
                     colors={instanceDetection.colors}
                     editable={editable}
-                    placeholder={`Instance `}
+                    placeholder={"Instance "}
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>

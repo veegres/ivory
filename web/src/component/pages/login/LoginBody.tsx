@@ -1,10 +1,11 @@
-import {PageStartupBox} from "../../view/box/PageStartupBox";
 import {Alert, Button, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material";
-import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 import {useState} from "react";
+
 import {useRouterLogin, useRouterLogout} from "../../../api/auth/hook";
-import {SxPropsMap} from "../../../app/type";
 import {AuthType} from "../../../api/auth/type";
+import {SxPropsMap} from "../../../app/type";
+import {PageStartupBox} from "../../view/box/PageStartupBox";
+import {KeyEnterInput} from "../../view/input/KeyEnterInput";
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},

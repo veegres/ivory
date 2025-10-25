@@ -1,11 +1,11 @@
 import {api} from "../api";
-import {Cluster, ClusterAuto, ClusterMap} from "./type";
 import {R} from "../management/type";
+import {Cluster, ClusterAuto, ClusterMap} from "./type";
 
 export const ClusterApi = {
     list: {
         key: () => ["cluster", "list"],
-        fn: (tags?: string[]) => api.get<R<Cluster[]>>(`/cluster`, {params: {tags}})
+        fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
             .then((response) => response.data.response.reduce(
                 (map, cluster) => {
                     map[cluster.name] = cluster
@@ -16,12 +16,12 @@ export const ClusterApi = {
     },
     update: {
         key: () => ["cluster", "update"],
-        fn: (cluster: Cluster) => api.put<R<Cluster>>(`/cluster`, cluster)
+        fn: (cluster: Cluster) => api.put<R<Cluster>>("/cluster", cluster)
             .then((response) => response.data.response),
     },
     createAuto: {
         key: () => ["cluster", "auto", "creation"],
-        fn: (cluster: ClusterAuto) => api.post<R<Cluster>>(`/cluster/auto`, cluster)
+        fn: (cluster: ClusterAuto) => api.post<R<Cluster>>("/cluster/auto", cluster)
             .then((response) => response.data.response),
     },
     delete: {

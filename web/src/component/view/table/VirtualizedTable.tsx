@@ -1,10 +1,11 @@
-import scroll from "../../../style/scroll.module.css";
 import {Box, CircularProgress, Tooltip} from "@mui/material";
-import {Fragment, ReactNode, useMemo, useState} from "react";
 import {useVirtualizer} from "@tanstack/react-virtual";
-import {NoBox} from "../box/NoBox";
-import {useDragger} from "../../../hook/Dragger";
+import {Fragment, ReactNode, useMemo, useState} from "react";
+
 import {SxPropsMap} from "../../../app/type";
+import {useDragger} from "../../../hook/Dragger";
+import scroll from "../../../style/scroll.module.css";
+import {NoBox} from "../box/NoBox";
 
 const SX: SxPropsMap = {
     box: {position: "relative"},
@@ -37,7 +38,7 @@ const SX: SxPropsMap = {
         position: "absolute", top: 0, left: 0, zIndex: 4,
         cursor: "col-resize", touchAction: "none",
         display: "flex", alignItems: "center", justifyContent: "center",
-        "&:hover:after": {content: `""`, width: "20%", height: "60%", bgcolor: "secondary.light", borderRadius: "10px"},
+        "&:hover:after": {content: "\"\"", width: "20%", height: "60%", bgcolor: "secondary.light", borderRadius: "10px"},
     },
     headTitle: {display: "flex", fontFamily: "monospace", gap: "4px"},
     empty: {padding: "10px"},
@@ -276,7 +277,7 @@ export function VirtualizedTable(props: Props) {
     }
 
     function getParsedCell(cell: any): ReactNode {
-        if (typeof cell === 'object') return JSON.stringify(cell)
+        if (typeof cell === "object") return JSON.stringify(cell)
         else if (typeof cell === "boolean") return Boolean(cell).toString()
         else return cell
     }

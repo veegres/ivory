@@ -1,12 +1,11 @@
-import {SecretSetRequest} from "./type";
 import {api} from "../api";
-
 import {R} from "../management/type";
+import {SecretSetRequest} from "./type";
 
 export const SecretApi = {
     setSecret: {
         key: () => ["secret", "set"],
-        fn: (request: SecretSetRequest) => api.post<R<string>>(`/initial/secret`, request)
+        fn: (request: SecretSetRequest) => api.post<R<string>>("/initial/secret", request)
             .then((response) => response.data.response),
     },
 }

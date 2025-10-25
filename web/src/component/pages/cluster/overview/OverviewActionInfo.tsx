@@ -1,14 +1,14 @@
-import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../../app/utils";
-import {PasswordType} from "../../../../api/password/type";
-import {CertType} from "../../../../api/cert/type";
-import {purple} from "@mui/material/colors";
 import {Box} from "@mui/material";
-import {InfoBoxList} from "../../../view/box/InfoBoxList";
-import {InfoBox} from "../../../view/box/InfoBox";
-import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
-import {ActiveCluster} from "../../../../api/cluster/type";
+import {purple} from "@mui/material/colors";
 
+import {CertType} from "../../../../api/cert/type";
+import {ActiveCluster} from "../../../../api/cluster/type";
+import {PasswordType} from "../../../../api/password/type";
 import {SxPropsMap} from "../../../../app/type";
+import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../../app/utils";
+import {InfoBox} from "../../../view/box/InfoBox";
+import {InfoBoxList} from "../../../view/box/InfoBoxList";
+import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},

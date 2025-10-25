@@ -1,6 +1,7 @@
 import {Box, Chip, FormControl, OutlinedInput, SxProps, Theme} from "@mui/material";
-import {SxPropsFormatter} from "../../../app/utils";
+
 import {ColorsMap, SxPropsMap} from "../../../app/type";
+import {SxPropsFormatter} from "../../../app/utils";
 
 const SX: SxPropsMap = {
     chip: {width: "100%"},
@@ -28,7 +29,7 @@ export function DynamicInputs(props: Props) {
     )
 
     function renderInputs() {
-        const nodesWithEmptyElement = inputs[inputs.length - 1] === '' ? inputs : [...inputs, '']
+        const nodesWithEmptyElement = inputs[inputs.length - 1] === "" ? inputs : [...inputs, ""]
         return nodesWithEmptyElement.map((input, index) => {
             const color = colorsMap[input.toLowerCase()]
             return (

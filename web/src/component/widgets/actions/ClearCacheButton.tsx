@@ -1,6 +1,7 @@
+import {useErrorBoundary} from "react-error-boundary";
+
 import {useStoreAction} from "../../../provider/StoreProvider";
 import {AlertButton} from "../../view/button/AlertButton";
-import {useErrorBoundary} from "react-error-boundary";
 
 export function ClearCacheButton() {
     const {clear} = useStoreAction

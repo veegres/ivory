@@ -1,8 +1,9 @@
 import {useEffect, useState} from "react";
-import {JobOptions} from "../app/utils";
-import {EventStreamType, EventType, JobStatus} from "../api/bloat/job/type";
+
 import {useRouterBloatLogs} from "../api/bloat/hook";
+import {EventStreamType, EventType, JobStatus} from "../api/bloat/job/type";
 import {BloatApi} from "../api/bloat/router";
+import {JobOptions} from "../app/utils";
 
 type EventJob = {
     isFetching: boolean;

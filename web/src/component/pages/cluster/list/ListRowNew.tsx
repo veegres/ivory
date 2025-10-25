@@ -1,14 +1,15 @@
 import {FormControl, OutlinedInput, TableRow} from "@mui/material";
-import {DynamicInputs} from "../../../view/input/DynamicInputs";
 import {useState} from "react";
-import {ListCellUpdate} from "./ListCellUpdate";
-import {ListCell} from "./ListCell";
+
+import {SxPropsMap} from "../../../../app/type";
 import {getSidecars} from "../../../../app/utils";
 import {useStore} from "../../../../provider/StoreProvider";
-import {SxPropsMap} from "../../../../app/type";
+import {DynamicInputs} from "../../../view/input/DynamicInputs";
+import {ListCell} from "./ListCell";
+import {ListCellUpdate} from "./ListCellUpdate";
 
 const SX: SxPropsMap = {
-    nodesCellInput: {height: '32px'},
+    nodesCellInput: {height: "32px"},
 }
 
 type Props = {
@@ -19,8 +20,8 @@ type Props = {
 export function ListRowNew(props: Props) {
     const {show, close} = props
     const activeTags = useStore(s => s.activeTags)
-    const [stateName, setStateName] = useState('');
-    const [stateNodes, setStateNodes] = useState(['']);
+    const [stateName, setStateName] = useState("");
+    const [stateNodes, setStateNodes] = useState([""]);
 
     if (!show) return null
 
@@ -40,7 +41,7 @@ export function ListRowNew(props: Props) {
                 <DynamicInputs
                     inputs={stateNodes}
                     editable={true}
-                    placeholder={`Instance `}
+                    placeholder={"Instance "}
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>
@@ -67,7 +68,7 @@ export function ListRowNew(props: Props) {
     }
 
     function clean() {
-        setStateName('')
-        setStateNodes([''])
+        setStateName("")
+        setStateNodes([""])
     }
 }

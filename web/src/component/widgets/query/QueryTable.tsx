@@ -1,7 +1,8 @@
+import {useMemo} from "react";
+
+import {QueryConnection, QueryFields} from "../../../api/query/type";
 import {ErrorSmart} from "../../view/box/ErrorSmart";
 import {VirtualizedTable} from "../../view/table/VirtualizedTable";
-import {QueryConnection, QueryFields} from "../../../api/query/type";
-import {useMemo} from "react";
 import {QueryTableActions} from "./QueryTableActions";
 
 type Props = {

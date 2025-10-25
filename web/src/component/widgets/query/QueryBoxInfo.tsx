@@ -1,9 +1,10 @@
-import {QueryBoxWrapper} from "./QueryBoxWrapper";
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
+
 import {QueryType} from "../../../api/query/type";
-import {InfoBox, Padding} from "../../view/box/InfoBox";
 import {SxPropsMap} from "../../../app/type";
+import {InfoBox, Padding} from "../../view/box/InfoBox";
+import {QueryBoxWrapper} from "./QueryBoxWrapper";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},

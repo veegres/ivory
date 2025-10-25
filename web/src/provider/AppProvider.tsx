@@ -1,4 +1,3 @@
-import {createContext, ReactNode, useContext, useEffect} from "react";
 import {
     createTheme,
     CssBaseline,
@@ -7,9 +6,11 @@ import {
     ThemeProvider as MuiThemeProvider,
     useMediaQuery
 } from "@mui/material";
-import {useLocalStorageState} from "../hook/LocalStorage";
 import {focusManager} from "@tanstack/react-query";
+import {createContext, ReactNode, useContext, useEffect} from "react";
+
 import {MainQueryClient} from "../app/main";
+import {useLocalStorageState} from "../hook/LocalStorage";
 
 export enum Mode {
     DARK = "dark",
@@ -53,7 +54,7 @@ export function useSettings() {
 }
 
 export function AppProvider(props: { children: ReactNode }) {
-    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+    const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
     const [state, setState] = useLocalStorageState("appearance", ThemeInitialState, true)
 
     const theme = getTheme(state.mode)

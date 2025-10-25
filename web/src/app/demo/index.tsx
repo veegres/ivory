@@ -1,12 +1,13 @@
-import {createRoot} from "react-dom/client";
-import scroll from "../../style/scroll.module.css"
-import {StrictMode} from "react";
 import {LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
-import utc from "dayjs/plugin/utc";
 import dayjs from "dayjs";
-import {App} from "./App";
+import utc from "dayjs/plugin/utc";
+import {StrictMode} from "react";
+import {createRoot} from "react-dom/client";
+
 import {AppProvider} from "../../provider/AppProvider";
+import scroll from "../../style/scroll.module.css"
+import {App} from "./App";
 
 // extend dayjs with UTC plugin
 dayjs.extend(utc)

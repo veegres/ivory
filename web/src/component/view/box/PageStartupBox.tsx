@@ -1,17 +1,18 @@
 import {Box} from "@mui/material";
 import {ReactNode, useState} from "react";
-import {randomUnicodeAnimal} from "../../../app/utils";
-import {LinearProgressStateful} from "../progress/LinearProgressStateful";
-import select from "../../../style/select.module.css";
+
 import {useRouterInfo} from "../../../api/management/hook";
 import {SxPropsMap} from "../../../app/type";
+import {randomUnicodeAnimal} from "../../../app/utils";
+import select from "../../../style/select.module.css";
+import {LinearProgressStateful} from "../progress/LinearProgressStateful";
 
 const SX: SxPropsMap = {
     box: {
         display: "flex", flexDirection: "column", alignItems: "center",
         width: "30%", minWidth: "500px", gap: 2, padding: "150px 0px",
     },
-    header: {fontSize: '35px', fontWeight: 900, fontFamily: 'monospace', margin: "20px 0", cursor: "pointer"},
+    header: {fontSize: "35px", fontWeight: 900, fontFamily: "monospace", margin: "20px 0", cursor: "pointer"},
     buttons: {display: "flex", gap: 2, width: "100%", justifyContent: "center", alignItems: "center"},
 }
 

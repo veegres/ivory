@@ -1,12 +1,13 @@
 import {InputBase} from "@mui/material";
 import {useEffect, useState} from "react";
+
 import {QueryConnection, QueryRequest, QueryType} from "../../../api/query/type";
+import {SxPropsMap} from "../../../app/type";
+import {CancelIconButton} from "../../view/button/IconButtons";
 import {QueryBoxBody} from "./QueryBoxBody";
+import {QueryButtonCreate} from "./QueryButtonCreate";
 import {QueryInfoEdit} from "./QueryInfoEdit";
 import {QueryTemplateWrapper} from "./QueryTemplateWrapper";
-import {CancelIconButton} from "../../view/button/IconButtons";
-import {QueryButtonCreate} from "./QueryButtonCreate";
-import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
     input: {fontSize: "inherit", padding: "0"},

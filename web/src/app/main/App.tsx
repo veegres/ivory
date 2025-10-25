@@ -1,10 +1,11 @@
 import {Box} from "@mui/material";
 import {ReactNode} from "react";
-import {Header} from "./Header";
-import {Footer} from "./Footer";
-import {Body} from "./Body";
+
 import {useRouterInfo} from "../../api/management/hook";
 import {SxPropsMap} from "../type";
+import {Body} from "./Body";
+import {Footer} from "./Footer";
+import {Header} from "./Header";
 
 const SX: SxPropsMap = {
     // NOTE: we need -8px for the bottom scroll, right scroll is always shown that is why we don't need calc

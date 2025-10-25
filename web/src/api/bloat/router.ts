@@ -1,6 +1,6 @@
 import {api} from "../api";
-import {Bloat, BloatRequest} from "./type";
 import {R} from "../management/type";
+import {Bloat, BloatRequest} from "./type";
 
 export const BloatApi = {
     list: {
@@ -16,7 +16,7 @@ export const BloatApi = {
 
     start: {
         key: () => ["instance", "bloat", "job", "start"],
-        fn: (ctr: BloatRequest) => api.post<R<Bloat>>(`/cli/bloat/job/start`, ctr)
+        fn: (ctr: BloatRequest) => api.post<R<Bloat>>("/cli/bloat/job/start", ctr)
             .then((response) => response.data.response),
     },
     stop: {

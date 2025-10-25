@@ -1,7 +1,7 @@
-import {CSSProperties, ReactElement} from "react";
-import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx";
 import {Theme} from "@mui/material";
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
+import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx";
+import {CSSProperties, ReactElement} from "react";
 
 export interface StylePropsMap {
     [key: string]: CSSProperties,

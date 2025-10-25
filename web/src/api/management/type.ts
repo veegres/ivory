@@ -1,6 +1,6 @@
-import {SecretStatus} from "../secret/type";
 import {AuthType} from "../auth/type";
 import {AvailabilityConfig} from "../config/type";
+import {SecretStatus} from "../secret/type";
 
 // COMMON (WEB AND SERVER)
 

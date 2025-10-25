@@ -1,4 +1,5 @@
 import {Tab, Tabs} from "@mui/material";
+
 import {CertTabs, CertType} from "../../../../api/cert/type";
 
 export const TABS: CertTabs = {

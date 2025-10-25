@@ -1,9 +1,10 @@
 import {Box} from "@mui/material";
-import {ChartRow} from "./ChartRow";
-import {ChartCommon} from "./ChartCommon";
-import {ChartDatabase} from "./ChartDatabase";
+
 import {QueryChartType, QueryConnection} from "../../../api/query/type";
 import {SxPropsMap} from "../../../app/type";
+import {ChartCommon} from "./ChartCommon";
+import {ChartDatabase} from "./ChartDatabase";
+import {ChartRow} from "./ChartRow";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 2},

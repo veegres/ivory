@@ -1,13 +1,13 @@
-import {OptionsPassword} from "./OptionsPassword";
-import {PasswordType} from "../../../api/password/type";
 import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material";
-import {OptionsCert} from "./OptionsCert";
-import {CertType} from "../../../api/cert/type";
-import {OptionsTags} from "./OptionsTags";
-import {ClusterOptions} from "../../../api/cluster/type";
-import {CertOptions, CredentialOptions} from "../../../app/utils";
 
+import {CertType} from "../../../api/cert/type";
+import {ClusterOptions} from "../../../api/cluster/type";
+import {PasswordType} from "../../../api/password/type";
 import {SxPropsMap} from "../../../app/type";
+import {CertOptions, CredentialOptions} from "../../../app/utils";
+import {OptionsCert} from "./OptionsCert";
+import {OptionsPassword} from "./OptionsPassword";
+import {OptionsTags} from "./OptionsTags";
 
 const SX: SxPropsMap = {
     tls: {width: "50%", fontWeight: "bold"},

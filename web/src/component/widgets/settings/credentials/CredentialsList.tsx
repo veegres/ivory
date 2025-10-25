@@ -1,8 +1,9 @@
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
-import {Password, PasswordMap} from "../../../../api/password/type";
-import {InfoAlert} from "../../../view/box/InfoAlert";
 import {Collapse} from "@mui/material";
 import {TransitionGroup} from "react-transition-group";
+
+import {Password, PasswordMap} from "../../../../api/password/type";
+import {ErrorSmart} from "../../../view/box/ErrorSmart";
+import {InfoAlert} from "../../../view/box/InfoAlert";
 import {CredentialsItem} from "./CredentialsItem";
 
 type Props = {

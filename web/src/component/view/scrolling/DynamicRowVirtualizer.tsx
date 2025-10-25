@@ -1,10 +1,11 @@
-import {useRef} from "react";
-import {useVirtualizer} from "@tanstack/react-virtual";
 import {Box, SxProps} from "@mui/material";
 import {Theme} from "@mui/material/styles";
-import {AutoScrolling} from "./AutoScrolling";
-import {SxPropsFormatter} from "../../../app/utils";
+import {useVirtualizer} from "@tanstack/react-virtual";
+import {useRef} from "react";
+
 import {SxPropsMap} from "../../../app/type";
+import {SxPropsFormatter} from "../../../app/utils";
+import {AutoScrolling} from "./AutoScrolling";
 
 const SX: SxPropsMap = {
     container: {width: "100%", overflow: "auto", contain: "strict"},
