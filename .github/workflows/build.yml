@@ -26,6 +26,7 @@ jobs:
         make build
 
 #     - name: Test
+#       working-directory: service
 #       run: go test
 
   javascript:
@@ -48,4 +49,9 @@ jobs:
         npm run build
 
     - name: Lint
+      working-directory: web
       run: npm run lint
+
+    - name: Test
+      working-directory: web
+      run: npm run test
