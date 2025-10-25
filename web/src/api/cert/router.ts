@@ -1,12 +1,13 @@
-import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "./type";
-import {api} from "../api";
 import {AxiosProgressEvent, AxiosRequestConfig} from "axios";
+
+import {api} from "../api";
 import {R} from "../management/type";
+import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "./type";
 
 export const CertApi = {
     list: {
         key: (type?: CertType) => ["cert", "list", type],
-        fn: (type?: CertType) => api.get<R<CertMap>>(`/cert`, {params: {type}})
+        fn: (type?: CertType) => api.get<R<CertMap>>("/cert", {params: {type}})
             .then((response => response.data.response)),
     },
     upload: {
@@ -20,13 +21,13 @@ export const CertApi = {
                 headers: {"Content-Type": "multipart/form-data"},
                 onUploadProgress: (progressEvent: AxiosProgressEvent) => setProgress && setProgress(progressEvent)
             }
-            const response = await api.post<R<Cert>>(`/cert/upload`, formData, config)
+            const response = await api.post<R<Cert>>("/cert/upload", formData, config)
             return response.data.response
         },
     },
     add: {
         key: () => ["cert", "add"],
-        fn: (request: CertAddRequest) => api.post<R<Cert>>(`/cert/add`, request)
+        fn: (request: CertAddRequest) => api.post<R<Cert>>("/cert/add", request)
             .then((response) => response.data.response),
     },
     delete: {

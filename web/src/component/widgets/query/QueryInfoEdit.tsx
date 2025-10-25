@@ -1,10 +1,11 @@
-import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
 import {InputBase, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
-import {QueryBoxInfo} from "./QueryBoxInfo";
-import {DynamicInputs} from "../../view/input/DynamicInputs";
-import {QueryVarietyOptions} from "../../../app/utils";
+
 import {QueryRequest} from "../../../api/query/type";
 import {SxPropsMap} from "../../../app/type";
+import {QueryVarietyOptions} from "../../../app/utils";
+import {DynamicInputs} from "../../view/input/DynamicInputs";
+import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
+import {QueryBoxInfo} from "./QueryBoxInfo";
 
 const SX: SxPropsMap = {
     input: {fontSize: "inherit", padding: "0"},

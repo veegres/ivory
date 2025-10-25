@@ -1,8 +1,9 @@
-import React, {ReactNode, useState} from "react";
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material";
-import {OpenIcon} from "../icon/OpenIcon";
-import {ClearCacheButton} from "../../widgets/actions/ClearCacheButton";
+import React, {ReactNode, useState} from "react";
+
 import {SxPropsMap} from "../../../app/type";
+import {ClearCacheButton} from "../../widgets/actions/ClearCacheButton";
+import {OpenIcon} from "../icon/OpenIcon";
 
 const SX: SxPropsMap = {
     collapse: {display: "flex", flexDirection: "column", gap: 2, marginTop: "20px"},

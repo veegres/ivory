@@ -1,17 +1,16 @@
-import {Password, PasswordMap, PasswordType} from "./type";
 import {api} from "../api";
-
 import {R} from "../management/type";
+import {Password, PasswordMap, PasswordType} from "./type";
 
 export const PasswordApi = {
     list: {
         key: (type?: PasswordType) => ["password", type],
-        fn: (type?: PasswordType) => api.get<R<PasswordMap>>(`/password`, {params: {type}})
+        fn: (type?: PasswordType) => api.get<R<PasswordMap>>("/password", {params: {type}})
             .then((response) => response.data.response),
     },
     create: {
         key: () => ["password", "create"],
-        fn: (credential: Password) => api.post<R<{ key: string, credential: Password }>>(`/password`, credential)
+        fn: (credential: Password) => api.post<R<{ key: string, credential: Password }>>("/password", credential)
             .then((response) => response.data.response),
     },
     update: {

@@ -1,10 +1,11 @@
+import {persist} from "zustand/middleware";
+import {create} from "zustand/react";
+
 import {ActiveCluster, DetectionType} from "../api/cluster/type";
 import {InstanceTabType, InstanceWeb} from "../api/instance/type";
-import {getDomain} from "../app/utils";
 import {QueryType} from "../api/query/type";
-import {create} from "zustand/react";
 import {MainQueryClient} from "../app/main";
-import {persist} from "zustand/middleware";
+import {getDomain} from "../app/utils";
 
 // STORE
 interface Store {

@@ -1,5 +1,6 @@
 import {AlertColor} from "@mui/material";
 import {AxiosError} from "axios";
+
 import {Error} from "./Error";
 
 type Props = {
@@ -14,7 +15,7 @@ export function ErrorSmart({error, type}: Props) {
 
     const {status, statusText, config} = error.response
     const {data, params, url} = config
-    const title = `Error code: ${status ?? 'Unknown Code'} (${statusText ?? 'Unknown Error Name'})`
+    const title = `Error code: ${status ?? "Unknown Code"} (${statusText ?? "Unknown Error Name"})`
     if (status >= 400 && status < 500) {
         const message = error.response.data.error ?? error.response.data
         return <Error type={"warning"} message={message} title={title} stacktrace={error.stack} data={data} params={params} url={url}/>

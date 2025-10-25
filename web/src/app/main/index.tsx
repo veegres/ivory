@@ -1,19 +1,20 @@
-import utc from "dayjs/plugin/utc";
-import dayjs from "dayjs";
-import * as ServiceWorker from "../../ServiceWorker";
-import {App} from './App';
-import {createRoot} from "react-dom/client";
-import {StrictMode} from "react";
 import {LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import {StrictMode} from "react";
+import {createRoot} from "react-dom/client";
 import {ErrorBoundary} from "react-error-boundary";
+
+import {PageErrorBox} from "../../component/view/box/PageErrorBox";
 import {AppProvider} from "../../provider/AppProvider";
 import {AuthProvider} from "../../provider/AuthProvider";
 import {SnackbarProvide} from "../../provider/SnackbarProvider";
-import {PageErrorBox} from "../../component/view/box/PageErrorBox";
+import * as ServiceWorker from "../../ServiceWorker";
 import scroll from "../../style/scroll.module.css"
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
+import {App} from "./App";
 
 // extend dayjs with UTC plugin
 dayjs.extend(utc)

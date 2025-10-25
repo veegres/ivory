@@ -1,11 +1,12 @@
-import {AlertButton} from "../../view/button/AlertButton";
-import {InstanceRequest} from "../../../api/instance/type";
-import {useState} from "react";
 import {Box, FormControlLabel, Switch} from "@mui/material";
-import {useRouterInstanceRestart} from "../../../api/instance/hook";
 import {Dayjs} from "dayjs";
-import {ScheduleInput} from "../../view/input/ScheduleInput";
+import {useState} from "react";
+
+import {useRouterInstanceRestart} from "../../../api/instance/hook";
+import {InstanceRequest} from "../../../api/instance/type";
 import {SxPropsMap} from "../../../app/type";
+import {AlertButton} from "../../view/button/AlertButton";
+import {ScheduleInput} from "../../view/input/ScheduleInput";
 
 const SX: SxPropsMap = {
     pending: {margin: "0px"},

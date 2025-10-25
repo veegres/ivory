@@ -1,6 +1,7 @@
 import {Box, Button} from "@mui/material";
-import {MenuThemeChanger} from "../../component/widgets/settings/menu/MenuThemeChanger";
 import {useState} from "react";
+
+import {MenuThemeChanger} from "../../component/widgets/settings/menu/MenuThemeChanger";
 import {SxPropsMap} from "../type";
 
 const SX: SxPropsMap = {

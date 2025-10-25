@@ -1,10 +1,11 @@
-import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
-import {OverviewActionInfo} from "./OverviewActionInfo";
 import {InfoOutlined, Settings} from "@mui/icons-material";
+import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
+
 import {ActiveCluster} from "../../../../api/cluster/type";
-import {OverviewActionStatus} from "./OverviewActionStatus";
-import {getSidecarConnection} from "../../../../app/utils";
 import {SxPropsMap} from "../../../../app/type";
+import {getSidecarConnection} from "../../../../app/utils";
+import {OverviewActionInfo} from "./OverviewActionInfo";
+import {OverviewActionStatus} from "./OverviewActionStatus";
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},

@@ -1,53 +1,57 @@
-import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
-import react from "eslint-plugin-react";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
+
 import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
+import tseslint from "typescript-eslint";
+import pluginReact from "eslint-plugin-react";
+import pluginReactHooks from "eslint-plugin-react-hooks";
+import pluginReactRefresh from "eslint-plugin-react-refresh";
+import pluginTanstackQuery from "@tanstack/eslint-plugin-query";
+import pluginSimpleImportSort from "eslint-plugin-simple-import-sort";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
-
-/**
- * 1. This file wos written by script migration from old eslint, we should migrate to new usage, something
- * like this ths eslint config https://typescript-eslint.io/getting-started
- * 2. we should specify react version, because it is required by compiler
- * 3. remove all dependencies that this script added to support old config
- */
-export default [...fixupConfigRules(compat.extends(
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@tanstack/eslint-plugin-query/recommended",
-)), {
+export default [
+  {
+    ignores: ["dist", "node_modules"],
+  },
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
     plugins: {
-        react: fixupPluginRules(react),
-        "react-hooks": fixupPluginRules(reactHooks),
-        "react-refresh": reactRefresh,
+      "@typescript-eslint": tseslint.plugin,
+      "react": pluginReact,
+      "react-hooks": pluginReactHooks,
+      "react-refresh": pluginReactRefresh,
+      "@tanstack/query": pluginTanstackQuery,
+      "simple-import-sort": pluginSimpleImportSort,
     },
-
     languageOptions: {
-        globals: {
-            ...globals.browser,
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
         },
-
-        parser: tsParser,
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
     },
-
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
     rules: {
-        "no-restricted-imports": "error",
-        "react/react-in-jsx-scope": "off",
-        "react/no-unescaped-entities": "off",
-        "@typescript-eslint/no-explicit-any": "off",
+      ...tseslint.configs.recommended.rules,
+      ...pluginReact.configs.recommended.rules,
+      ...pluginReactHooks.configs.recommended.rules,
+      ...pluginTanstackQuery.configs.recommended.rules,
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
+      "quotes": ["error", "double"],
+      "react/react-in-jsx-scope": "off",
+      "react/no-unescaped-entities": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "no-restricted-imports": "error",
     },
-}];
+  },
+];

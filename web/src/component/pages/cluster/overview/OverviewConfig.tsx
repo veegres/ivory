@@ -1,16 +1,17 @@
-import {Box, Skeleton} from "@mui/material";
-import {useSettings} from "../../../../provider/AppProvider";
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
-import {useEffect, useState} from "react";
-import ReactCodeMirror from "@uiw/react-codemirror";
 import {json} from "@codemirror/lang-json";
-import {ClusterNoInstanceError} from "./OverviewError";
-import {CodeThemes, getSidecarConnection} from "../../../../app/utils";
-import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
+import {Box, Skeleton} from "@mui/material";
+import ReactCodeMirror from "@uiw/react-codemirror";
+import {useEffect, useState} from "react";
+
 import {ActiveCluster} from "../../../../api/cluster/type";
 import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook";
-import {useSnackbar} from "../../../../provider/SnackbarProvider";
 import {SxPropsMap} from "../../../../app/type";
+import {CodeThemes, getSidecarConnection} from "../../../../app/utils";
+import {useSettings} from "../../../../provider/AppProvider";
+import {useSnackbar} from "../../../../provider/SnackbarProvider";
+import {ErrorSmart} from "../../../view/box/ErrorSmart";
+import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
+import {ClusterNoInstanceError} from "./OverviewError";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},

@@ -1,9 +1,10 @@
 import {Box, FormControl, OutlinedInput} from "@mui/material";
 import {useEffect} from "react";
+
 import {SxPropsMap} from "../../../app/type";
 
 const SX: SxPropsMap = {
-    input: {height: '32px'},
+    input: {height: "32px"},
     box: {display: "grid", gridTemplateColumns: "repeat(auto-fill, 150px)", gap: 1},
 }
 

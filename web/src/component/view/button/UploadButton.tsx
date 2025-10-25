@@ -94,7 +94,7 @@ export function UploadButton(props: Props) {
         return (
             <Box sx={[SX.upload, SX.active]}>
                 <CircularProgress variant={variant} value={value}/>
-                <Box fontSize={"small"}>Loading {value === 100 ? `is finished` : `in process ${value}%`}</Box>
+                <Box fontSize={"small"}>Loading {value === 100 ? "is finished" : `in process ${value}%`}</Box>
             </Box>
         )
     }

@@ -1,8 +1,8 @@
-import {CredentialsNew} from "./CredentialsNew";
+import {useRouterPassword} from "../../../../api/password/hook";
+import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
 import {MenuWrapper} from "../menu/MenuWrapper";
 import {CredentialsList} from "./CredentialsList";
-import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
-import {useRouterPassword} from "../../../../api/password/hook";
+import {CredentialsNew} from "./CredentialsNew";
 
 export function Credentials() {
     const query = useRouterPassword()

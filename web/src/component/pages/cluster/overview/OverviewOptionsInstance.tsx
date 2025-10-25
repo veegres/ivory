@@ -8,10 +8,11 @@ import {
     Tooltip
 } from "@mui/material";
 import {useMemo, useState} from "react";
-import {useStoreAction} from "../../../../provider/StoreProvider";
-import {InstanceMap} from "../../../../api/instance/type";
+
 import {DetectionType} from "../../../../api/cluster/type";
+import {InstanceMap} from "../../../../api/instance/type";
 import {SxPropsMap} from "../../../../app/type";
+import {useStoreAction} from "../../../../provider/StoreProvider";
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 1},

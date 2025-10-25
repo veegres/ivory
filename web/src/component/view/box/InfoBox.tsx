@@ -10,7 +10,7 @@ const SX: SxPropsMap = {
     },
     tooltip: {
         [`& .${tooltipClasses.tooltip}`]: {
-            maxWidth: 'none',
+            maxWidth: "none",
         }
     }
 }

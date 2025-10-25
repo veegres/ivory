@@ -1,7 +1,7 @@
-import {useState} from "react";
+import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, OutlinedInput} from "@mui/material";
 import {InputProps as StandardInputProps} from "@mui/material/Input/Input";
-import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {useState} from "react";
 
 import {SxPropsMap} from "../../../app/type";
 
@@ -16,7 +16,7 @@ type Props = {
     required?: boolean,
     disabled?: boolean,
     helperText?: string,
-    onChange: StandardInputProps['onChange'],
+    onChange: StandardInputProps["onChange"],
     onEnterPress?: () => void,
 }
 
@@ -53,6 +53,6 @@ export function KeyEnterInput(props: Props) {
     }
 
     function handleKeyPress(key: string) {
-        if (key === 'Enter' && onEnterPress) onEnterPress()
+        if (key === "Enter" && onEnterPress) onEnterPress()
     }
 }

@@ -1,11 +1,12 @@
-import {AlertButton} from "../../view/button/AlertButton";
+import {Button} from "@mui/material";
+
+import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../api/instance/hook";
 import {InstanceRequest, InstanceScheduledRestart, InstanceScheduledSwitchover} from "../../../api/instance/type";
 import {DateTimeFormatter} from "../../../app/utils";
-import {NoBox} from "../../view/box/NoBox";
 import {List} from "../../view/box/List";
 import {ListItem} from "../../view/box/ListItem";
-import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../api/instance/hook";
-import {Button} from "@mui/material";
+import {NoBox} from "../../view/box/NoBox";
+import {AlertButton} from "../../view/button/AlertButton";
 
 type Props = {
     request: InstanceRequest,
@@ -25,8 +26,8 @@ export function ScheduleButton(props: Props) {
             color={"secondary"}
             size={"small"}
             label={"Schedule"}
-            title={`Schedule`}
-            description={`Here you can check your schedule information and delete it if it is not actual any more.`}
+            title={"Schedule"}
+            description={"Here you can check your schedule information and delete it if it is not actual any more."}
             disabled={!switchover && !restart}
             loading={deleteRestart.isPending || deleteSwitchover.isPending}
         >

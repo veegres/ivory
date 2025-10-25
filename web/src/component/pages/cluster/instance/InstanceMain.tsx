@@ -1,15 +1,16 @@
-import {InstanceMainTitle} from "./InstanceMainTitle";
-import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewError";
 import {Box, Link} from "@mui/material";
+
 import {InstanceTab, InstanceTabType} from "../../../../api/instance/type";
-import {Chart} from "../../../widgets/chart/Chart";
-import {InstanceMainQueries} from "./InstanceMainQueries";
-import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
-import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
-import {getQueryConnection} from "../../../../app/utils";
-import {Database, QueryConnection} from "../../../../api/query/type";
 import {useRouterQueryDatabase} from "../../../../api/query/hook";
+import {Database, QueryConnection} from "../../../../api/query/type";
 import {SxPropsMap} from "../../../../app/type";
+import {getQueryConnection} from "../../../../app/utils";
+import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
+import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch";
+import {Chart} from "../../../widgets/chart/Chart";
+import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewError";
+import {InstanceMainQueries} from "./InstanceMainQueries";
+import {InstanceMainTitle} from "./InstanceMainTitle";
 
 const SX: SxPropsMap = {
     main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1},

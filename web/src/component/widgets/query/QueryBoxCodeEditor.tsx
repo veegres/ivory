@@ -1,7 +1,8 @@
+import {PostgreSQL, sql} from "@codemirror/lang-sql";
 import ReactCodeMirror from "@uiw/react-codemirror";
+
 import {CodeThemes} from "../../../app/utils";
 import {useSettings} from "../../../provider/AppProvider";
-import {PostgreSQL, sql} from "@codemirror/lang-sql";
 import code from "../../../style/codemirror.module.css";
 
 type Props = {

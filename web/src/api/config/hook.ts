@@ -1,6 +1,6 @@
 import {useMutationAdapter} from "../../hook/QueryCustom";
-import {ConfigApi} from "./router";
 import {ManagementApi} from "../management/router";
+import {ConfigApi} from "./router";
 
 export function useRouterConfigSet() {
     return useMutationAdapter({

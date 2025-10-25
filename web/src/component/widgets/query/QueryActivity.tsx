@@ -1,9 +1,10 @@
-import {QueryConnection} from "../../../api/query/type";
-import {useRouterActivity} from "../../../api/query/hook";
-import {QueryTable} from "./QueryTable";
 import {Box} from "@mui/material";
-import {RefreshIconButton} from "../../view/button/IconButtons";
+
+import {useRouterActivity} from "../../../api/query/hook";
+import {QueryConnection} from "../../../api/query/type";
 import {SxPropsMap} from "../../../app/type";
+import {RefreshIconButton} from "../../view/button/IconButtons";
+import {QueryTable} from "./QueryTable";
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1, width: "320px", minHeight: "250px"},

@@ -1,4 +1,5 @@
 import {Switch} from "@mui/material";
+
 import {ConfigBox} from "../../../view/box/ConfigBox";
 
 type Props = {

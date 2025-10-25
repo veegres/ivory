@@ -3,4 +3,3 @@ export enum AuthType {
     LDAP,
     OIDC,
 }
-

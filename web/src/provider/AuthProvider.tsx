@@ -1,7 +1,8 @@
-import {ReactNode, useEffect} from "react";
-import {api} from "../api/api";
 import {useQueryClient} from "@tanstack/react-query";
 import {AxiosError, HttpStatusCode} from "axios";
+import {ReactNode, useEffect} from "react";
+
+import {api} from "../api/api";
 import {ManagementApi} from "../api/management/router";
 
 export function AuthProvider(props: {children: ReactNode}) {

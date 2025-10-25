@@ -1,4 +1,3 @@
-import {blue, green, indigo, orange, red} from "@mui/material/colors";
 import {
     FilePresentOutlined,
     HeartBroken,
@@ -13,16 +12,18 @@ import {
     Storage,
     UploadFileOutlined
 } from "@mui/icons-material";
-import {AxiosError} from "axios";
 import {SxProps, Theme} from "@mui/material";
+import {blue, green, indigo, orange, red} from "@mui/material/colors";
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
-import {PasswordType} from "../api/password/type";
-import {CertType, FileUsageType} from "../api/cert/type";
-import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type";
-import {JobStatus} from "../api/bloat/job/type";
-import {Database, QueryConnection, QueryVariety} from "../api/query/type";
+import {AxiosError} from "axios";
 import dayjs from "dayjs";
+
+import {JobStatus} from "../api/bloat/job/type";
+import {CertType, FileUsageType} from "../api/cert/type";
 import {Cluster} from "../api/cluster/type";
+import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type";
+import {PasswordType} from "../api/password/type";
+import {Database, QueryConnection, QueryVariety} from "../api/query/type";
 import {ColorsMap, EnumOptions, Links, Settings, SxPropsMap} from "./type";
 
 export const IvoryLinks: Links = {
