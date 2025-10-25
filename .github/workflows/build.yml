@@ -47,5 +47,5 @@ jobs:
         npm install
         npm run build
 
-#     - name: Test
-#       run: yarn test
+    - name: Lint
+      run: npm run lint
