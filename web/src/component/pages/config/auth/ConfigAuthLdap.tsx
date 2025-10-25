@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import {Box, Button} from "@mui/material";
 import {ChangeEvent} from "react";
 
 import {useRouterConnect} from "../../../../api/auth/hook";

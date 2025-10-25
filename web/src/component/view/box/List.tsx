@@ -17,7 +17,7 @@ type Props = {
 }
 
 export function List(props: Props) {
-    const { name, children } = props
+    const {name, children} = props
 
     return (
         <Box sx={SX.container}>

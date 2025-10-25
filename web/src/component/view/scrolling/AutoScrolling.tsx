@@ -21,7 +21,7 @@ type Props = {
 }
 
 export function AutoScrolling(props: Props) {
-    const { auto, scroll, children, length } = props
+    const {auto, scroll, children, length} = props
     const [autoScrolling, setAutoScrolling] = useState(auto)
 
     useEffect(handleEffectAutoScrolling, [autoScrolling, length, scroll])

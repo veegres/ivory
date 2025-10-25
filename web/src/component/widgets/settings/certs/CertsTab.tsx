@@ -14,7 +14,7 @@ type Props = {
 }
 
 export function CertsTab(props: Props) {
-    const { tab, setTab } = props
+    const {tab, setTab} = props
     return (
         <Tabs value={tab} variant={"fullWidth"} centered onChange={(_, value) => setTab(value)}>
             {Object.entries(TABS).map(([key, value]) => (
