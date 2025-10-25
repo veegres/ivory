@@ -32,6 +32,7 @@ export function DynamicRowVirtualizer(props: Props) {
     const {rows, height, sx, className, sxVirtualRow, classNameVirtualRow, auto} = props
     const parentRef = useRef<Element>(null)
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const virtualizer = useVirtualizer({
         count: rows.length,
         getScrollElement: () => parentRef.current,
