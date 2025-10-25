@@ -12,15 +12,13 @@ type EventJob = {
 }
 
 export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean): EventJob {
-    const [logs, setLogs] = useState<string[]>([])
     const [status, setStatus] = useState(JobOptions[initStatus])
     const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
 
     const {isFetching, data} = useRouterBloatLogs(uuid, !status.active && isOpen)
+    const [logs, setLogs] = useState<string[]>(data || [])
 
-    useEffect(() => { if (data) setLogs(data) }, [data])
     useEffect(() => {
-        setStatus(JobOptions[initStatus])
         if (!JobOptions[initStatus].active) return
 
         const es = BloatApi.stream.fn(uuid)
