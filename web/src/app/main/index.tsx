@@ -12,7 +12,6 @@ import {PageErrorBox} from "../../component/view/box/PageErrorBox"
 import {AppProvider} from "../../provider/AppProvider"
 import {AuthProvider} from "../../provider/AuthProvider"
 import {SnackbarProvide} from "../../provider/SnackbarProvider"
-import * as ServiceWorker from "../../ServiceWorker"
 import scroll from "../../style/scroll.module.css"
 import {App} from "./App"
 
@@ -47,7 +46,3 @@ root.render(
     </StrictMode>
 )
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-ServiceWorker.unregister()
