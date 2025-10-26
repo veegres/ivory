@@ -1,4 +1,6 @@
-import {defineConfig} from 'vite'
+/// <reference types="vitest" />
+
+import {defineConfig} from 'vitest/config'
 import react from '@vitejs/plugin-react-swc'
 import {createHash} from "node:crypto";
 
@@ -35,5 +37,10 @@ export default defineConfig({
                 secure: false,
             },
         },
+    },
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: 'test/setup.ts',
     },
 });
