@@ -1,10 +1,10 @@
-import {useQueryClient} from "@tanstack/react-query";
-import {useEffect, useMemo, useRef} from "react";
+import {useQueryClient} from "@tanstack/react-query"
+import {useEffect, useMemo, useRef} from "react"
 
-import {Cluster, DetectionType, InstanceDetection} from "../api/cluster/type";
-import {useRouterInstanceOverview} from "../api/instance/hook";
-import {InstanceApi} from "../api/instance/router";
-import {InstanceMap, Sidecar} from "../api/instance/type";
+import {Cluster, DetectionType, InstanceDetection} from "../api/cluster/type"
+import {useRouterInstanceOverview} from "../api/instance/hook"
+import {InstanceApi} from "../api/instance/router"
+import {InstanceMap, Sidecar} from "../api/instance/type"
 import {
     combineInstances,
     createInstanceColors,
@@ -12,8 +12,8 @@ import {
     getSidecarConnection,
     initialInstance,
     isSidecarEqual
-} from "../app/utils";
-import {useStore, useStoreAction} from "../provider/StoreProvider";
+} from "../app/utils"
+import {useStore, useStoreAction} from "../provider/StoreProvider"
 
 // TODO #414 get rid of this complicated and problematic component with a lot of renders
 //   after migration to zustand we should have fewer rerenders

@@ -1,16 +1,16 @@
-import {HealthAndSafety, Wash, WashOutlined} from "@mui/icons-material";
-import {Box, Checkbox, OutlinedInput, Tooltip} from "@mui/material";
-import {useMemo, useState} from "react";
+import {HealthAndSafety, Wash, WashOutlined} from "@mui/icons-material"
+import {Box, Checkbox, OutlinedInput, Tooltip} from "@mui/material"
+import {useMemo, useState} from "react"
 
-import {useRouterQueryRun} from "../../../api/query/hook";
-import {QueryConnection, QueryVariety} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
-import {getPostgresUrl} from "../../../app/utils";
-import {RefreshIconButton} from "../../view/button/IconButtons";
-import {MenuButton} from "../../view/button/MenuButton";
-import {QueryResponseInfo} from "./QueryResponseInfo";
-import {QueryTable} from "./QueryTable";
-import {QueryVarieties} from "./QueryVarieties";
+import {useRouterQueryRun} from "../../../api/query/hook"
+import {QueryConnection, QueryVariety} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
+import {getPostgresUrl} from "../../../app/utils"
+import {RefreshIconButton} from "../../view/button/IconButtons"
+import {MenuButton} from "../../view/button/MenuButton"
+import {QueryResponseInfo} from "./QueryResponseInfo"
+import {QueryTable} from "./QueryTable"
+import {QueryVarieties} from "./QueryVarieties"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},

@@ -1,8 +1,8 @@
-import {Box, Button} from "@mui/material";
-import {useState} from "react";
+import {Box, Button} from "@mui/material"
+import {useState} from "react"
 
-import {MenuThemeChanger} from "../../component/widgets/settings/menu/MenuThemeChanger";
-import {SxPropsMap} from "../type";
+import {MenuThemeChanger} from "../../component/widgets/settings/menu/MenuThemeChanger"
+import {SxPropsMap} from "../type"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", justifyContent: "space-evenly", alignItems: "center", width: "100vw", height: "100vh"},

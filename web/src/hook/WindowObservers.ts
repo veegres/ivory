@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react"
 
 export function useWindowSize(element?: Element) {
     const [windowWidth, setWindowWidth] = useState(element?.clientWidth)

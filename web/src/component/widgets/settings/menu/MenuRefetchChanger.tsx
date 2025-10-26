@@ -1,6 +1,6 @@
-import {Switch} from "@mui/material";
+import {Switch} from "@mui/material"
 
-import {useSettings} from "../../../../provider/AppProvider";
+import {useSettings} from "../../../../provider/AppProvider"
 
 export function MenuRefetchChanger() {
     const {state, toggleRefetchOnWindowsRefocus} = useSettings()

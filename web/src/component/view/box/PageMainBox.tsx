@@ -1,7 +1,7 @@
-import {Box, Paper} from "@mui/material";
-import {ReactNode} from "react";
+import {Box, Paper} from "@mui/material"
+import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../../app/type";
+import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     box: {display: "flex"},
@@ -21,7 +21,7 @@ export function PageMainBox(props: Props) {
     const {withMarginTop, withMarginBottom} = props
     const elevation = props.elevation ?? 4
     const visible = props.visible ?? true
-    const padding = props.withPadding ? "10px 20px" : "0";
+    const padding = props.withPadding ? "10px 20px" : "0"
     const margin = `${withMarginTop ?? 0} 5% ${withMarginBottom ?? 0}`
 
     if (!visible) return null

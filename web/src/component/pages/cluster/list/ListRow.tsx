@@ -1,16 +1,16 @@
-import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
-import {Box, TableRow, Tooltip} from "@mui/material";
-import {useEffect, useRef, useState} from "react";
+import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
+import {Box, TableRow, Tooltip} from "@mui/material"
+import {useEffect, useRef, useState} from "react"
 
-import {Cluster} from "../../../../api/cluster/type";
-import {SxPropsMap} from "../../../../app/type";
-import {getDomains, getSidecars, SxPropsFormatter} from "../../../../app/utils";
-import {useInstanceDetection} from "../../../../hook/InstanceDetection";
-import {DynamicInputs} from "../../../view/input/DynamicInputs";
-import {ListCell} from "./ListCell";
-import {ListCellChip} from "./ListCellChip";
-import {ListCellRead} from "./ListCellRead";
-import {ListCellUpdate} from "./ListCellUpdate";
+import {Cluster} from "../../../../api/cluster/type"
+import {SxPropsMap} from "../../../../app/type"
+import {getDomains, getSidecars, SxPropsFormatter} from "../../../../app/utils"
+import {useInstanceDetection} from "../../../../hook/InstanceDetection"
+import {DynamicInputs} from "../../../view/input/DynamicInputs"
+import {ListCell} from "./ListCell"
+import {ListCellChip} from "./ListCellChip"
+import {ListCellRead} from "./ListCellRead"
+import {ListCellUpdate} from "./ListCellUpdate"
 
 const SX: SxPropsMap = {
     actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, minHeight: "32px"},

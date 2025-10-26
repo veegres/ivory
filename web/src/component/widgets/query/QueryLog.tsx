@@ -1,11 +1,11 @@
-import {Box} from "@mui/material";
+import {Box} from "@mui/material"
 
-import {useRouterQueryLog, useRouterQueryLogDelete} from "../../../api/query/hook";
-import {SxPropsMap} from "../../../app/type";
-import {ErrorSmart} from "../../view/box/ErrorSmart";
-import {NoBox} from "../../view/box/NoBox";
-import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons";
-import {QueryLogItem} from "./QueryLogItem";
+import {useRouterQueryLog, useRouterQueryLogDelete} from "../../../api/query/hook"
+import {SxPropsMap} from "../../../app/type"
+import {ErrorSmart} from "../../view/box/ErrorSmart"
+import {NoBox} from "../../view/box/NoBox"
+import {ClearAllIconButton, RefreshIconButton} from "../../view/button/IconButtons"
+import {QueryLogItem} from "./QueryLogItem"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},

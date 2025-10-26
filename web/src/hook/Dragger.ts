@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react"
 
 const init = {index: -1, size: 0, ps: 0}
 
@@ -7,7 +7,7 @@ export function useDragger(minSize: number, onMove: (index: number, size: number
 
     const callbackMouseMove = useCallback(handleMouseMove, [columnDrag.index, columnDrag.ps, columnDrag.size, minSize, onMove])
     const callbackMouseUp = useCallback(handleMouseUp, [])
-    useEffect(handleEffectDragging, [callbackMouseMove, callbackMouseUp]);
+    useEffect(handleEffectDragging, [callbackMouseMove, callbackMouseUp])
 
     return {
         onMouseDown: handleMouseDown,

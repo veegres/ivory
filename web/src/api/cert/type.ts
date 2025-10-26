@@ -1,4 +1,4 @@
-import {AxiosProgressEvent} from "axios";
+import {AxiosProgressEvent} from "axios"
 
 // COMMON (WEB AND SERVER)
 

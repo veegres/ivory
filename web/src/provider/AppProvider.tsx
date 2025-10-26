@@ -5,12 +5,12 @@ import {
     Theme,
     ThemeProvider as MuiThemeProvider,
     useMediaQuery
-} from "@mui/material";
-import {focusManager} from "@tanstack/react-query";
-import {createContext, ReactNode, useContext, useEffect} from "react";
+} from "@mui/material"
+import {focusManager} from "@tanstack/react-query"
+import {createContext, ReactNode, useContext, useEffect} from "react"
 
-import {MainQueryClient} from "../app/main";
-import {useLocalStorageState} from "../hook/LocalStorage";
+import {MainQueryClient} from "../app/main"
+import {useLocalStorageState} from "../hook/LocalStorage"
 
 export enum Mode {
     DARK = "dark",
@@ -69,7 +69,7 @@ export function AppProvider(props: { children: ReactNode }) {
                 {props.children}
             </MuiThemeProvider>
         </ThemeContext>
-    );
+    )
 
     function setTheme(mode: Mode) {
         return setState(prevState => ({...prevState, mode}))

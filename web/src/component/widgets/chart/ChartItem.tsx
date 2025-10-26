@@ -1,13 +1,13 @@
-import {InfoOutlined} from "@mui/icons-material";
-import {Box, CircularProgress, Tooltip} from "@mui/material";
+import {InfoOutlined} from "@mui/icons-material"
+import {Box, CircularProgress, Tooltip} from "@mui/material"
 import {
     blue, blueGrey, brown, cyan, deepOrange, deepPurple, green, indigo, orange, pink, purple, red
-} from "@mui/material/colors";
-import {AxiosError} from "axios";
-import {useMemo} from "react";
+} from "@mui/material/colors"
+import {AxiosError} from "axios"
+import {useMemo} from "react"
 
-import {SxPropsMap} from "../../../app/type";
-import {IconButton, PlayIconButton, RefreshIconButton} from "../../view/button/IconButtons";
+import {SxPropsMap} from "../../../app/type"
+import {IconButton, PlayIconButton, RefreshIconButton} from "../../view/button/IconButtons"
 
 const SX: SxPropsMap = {
     box: {

@@ -1,8 +1,8 @@
-import {Box, ToggleButton, Tooltip} from "@mui/material";
-import {MouseEvent, useState} from "react";
+import {Box, ToggleButton, Tooltip} from "@mui/material"
+import {MouseEvent, useState} from "react"
 
-import {SxPropsMap} from "../../../app/type";
-import {HiddenScrolling} from "./HiddenScrolling";
+import {SxPropsMap} from "../../../app/type"
+import {HiddenScrolling} from "./HiddenScrolling"
 
 const ALL = "ALL"
 const SX: SxPropsMap = {

@@ -1,5 +1,5 @@
-import {Skeleton, TableBody as MuiTableBody, TableCell, TableRow} from "@mui/material";
-import {ReactNode} from "react";
+import {Skeleton, TableBody as MuiTableBody, TableCell, TableRow} from "@mui/material"
+import {ReactNode} from "react"
 
 type Props = {
     isLoading: boolean,

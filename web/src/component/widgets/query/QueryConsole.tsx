@@ -1,15 +1,15 @@
-import {Box, Paper} from "@mui/material";
-import {useState} from "react";
+import {Box, Paper} from "@mui/material"
+import {useState} from "react"
 
-import {QueryConnection} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
-import {useDebounceFunction} from "../../../hook/Debounce";
-import {useStore, useStoreAction} from "../../../provider/StoreProvider";
-import {CancelIconButton, PlayIconButton} from "../../view/button/IconButtons";
-import {QueryBoxBody} from "./QueryBoxBody";
-import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
-import {QueryBoxWrapper} from "./QueryBoxWrapper";
-import {QueryRun} from "./QueryRun";
+import {QueryConnection} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
+import {useDebounceFunction} from "../../../hook/Debounce"
+import {useStore, useStoreAction} from "../../../provider/StoreProvider"
+import {CancelIconButton, PlayIconButton} from "../../view/button/IconButtons"
+import {QueryBoxBody} from "./QueryBoxBody"
+import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
+import {QueryBoxWrapper} from "./QueryBoxWrapper"
+import {QueryRun} from "./QueryRun"
 
 const SX: SxPropsMap = {
     query: {position: "relative", display: "flex", flexDirection: "column", padding: "2px 2px 15px 2px", fontSize: "13px"},

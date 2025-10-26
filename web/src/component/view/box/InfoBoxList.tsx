@@ -1,11 +1,11 @@
-import {Box} from "@mui/material";
-import {green, grey} from "@mui/material/colors";
-import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
-import {cloneElement, ReactElement} from "react";
+import {Box} from "@mui/material"
+import {green, grey} from "@mui/material/colors"
+import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon"
+import {cloneElement, ReactElement} from "react"
 
-import {SxPropsMap} from "../../../app/type";
-import {InfoBox, Padding} from "./InfoBox";
-import {InfoColorBoxList} from "./InfoColorBoxList";
+import {SxPropsMap} from "../../../app/type"
+import {InfoBox, Padding} from "./InfoBox"
+import {InfoColorBoxList} from "./InfoColorBoxList"
 
 const SX: SxPropsMap = {
     box: {position: "relative", display: "flex", alignItems: "center", justifyContent: "center"},

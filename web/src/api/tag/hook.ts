@@ -1,6 +1,6 @@
-import {useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query"
 
-import {TagApi} from "./router";
+import {TagApi} from "./router"
 
 export function useRouterTagList() {
     return useQuery({

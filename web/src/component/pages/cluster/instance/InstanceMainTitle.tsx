@@ -1,10 +1,10 @@
-import {InfoOutlined} from "@mui/icons-material";
-import {Alert, Box, Collapse, ToggleButton, Tooltip} from "@mui/material";
-import {ReactNode, useState} from "react";
+import {InfoOutlined} from "@mui/icons-material"
+import {Alert, Box, Collapse, ToggleButton, Tooltip} from "@mui/material"
+import {ReactNode, useState} from "react"
 
-import {Database} from "../../../../api/query/type";
-import {SxPropsMap} from "../../../../app/type";
-import {DatabaseBox} from "../../../view/box/DatabaseBox";
+import {Database} from "../../../../api/query/type"
+import {SxPropsMap} from "../../../../app/type"
+import {DatabaseBox} from "../../../view/box/DatabaseBox"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},

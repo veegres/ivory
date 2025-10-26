@@ -1,7 +1,7 @@
-import {Box, ListItem as MuiListItem} from "@mui/material";
-import {ReactNode} from "react";
+import {Box, ListItem as MuiListItem} from "@mui/material"
+import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../../app/type";
+import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     description: {fontSize: "10px", color: "text.secondary"},

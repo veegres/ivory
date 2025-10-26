@@ -1,10 +1,10 @@
-import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material";
-import {cloneElement, ReactElement, useEffect, useRef, useState} from "react";
+import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material"
+import {cloneElement, ReactElement, useEffect, useRef, useState} from "react"
 
-import {Password, PasswordType} from "../../../../api/password/type";
-import {SxPropsMap} from "../../../../app/type";
-import {CredentialOptions} from "../../../../app/utils";
-import {CredentialsInput} from "./CredentialsInput";
+import {Password, PasswordType} from "../../../../api/password/type"
+import {SxPropsMap} from "../../../../app/type"
+import {CredentialOptions} from "../../../../app/utils"
+import {CredentialsInput} from "./CredentialsInput"
 
 const SX: SxPropsMap = {
     row: {display: "flex", alignItems: "center", gap: "15px", margin: "5px 10px 0px"},

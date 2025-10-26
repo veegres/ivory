@@ -1,8 +1,8 @@
-import {Box, Button, Tooltip} from "@mui/material";
-import {ReactNode, useState} from "react";
+import {Box, Button, Tooltip} from "@mui/material"
+import {ReactNode, useState} from "react"
 
-import {SxPropsMap} from "../../../app/type";
-import {AlertDialog} from "../dialog/AlertDialog";
+import {SxPropsMap} from "../../../app/type"
+import {AlertDialog} from "../dialog/AlertDialog"
 
 const SX: SxPropsMap = {
     button: {minWidth: "10px", textWrap: "nowrap"},

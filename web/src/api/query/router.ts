@@ -1,5 +1,5 @@
-import {api} from "../api";
-import {R} from "../management/type";
+import {api} from "../api"
+import {R} from "../management/type"
 import {
     Query, QueryChart, QueryChartRequest,
     QueryConnection,
@@ -8,7 +8,7 @@ import {
     QueryRequest,
     QueryRunRequest, QuerySchemasRequest, QueryTablesRequest,
     QueryType
-} from "./type";
+} from "./type"
 
 export const QueryApi = {
     list: {

@@ -1,8 +1,8 @@
-import {useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query"
 
-import {useMutationAdapter} from "../../hook/QueryCustom";
-import {TagApi} from "../tag/router";
-import {ClusterApi} from "./router";
+import {useMutationAdapter} from "../../hook/QueryCustom"
+import {TagApi} from "../tag/router"
+import {ClusterApi} from "./router"
 
 export function useRouterClusterList(tags: string[]) {
     const tagsFn = tags[0] === "ALL" ? undefined : tags

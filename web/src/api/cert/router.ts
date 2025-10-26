@@ -1,8 +1,8 @@
-import {AxiosProgressEvent, AxiosRequestConfig} from "axios";
+import {AxiosProgressEvent, AxiosRequestConfig} from "axios"
 
-import {api} from "../api";
-import {R} from "../management/type";
-import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "./type";
+import {api} from "../api"
+import {R} from "../management/type"
+import {Cert, CertAddRequest, CertMap, CertType, CertUploadRequest} from "./type"
 
 export const CertApi = {
     list: {

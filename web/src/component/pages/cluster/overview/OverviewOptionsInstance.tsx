@@ -6,13 +6,13 @@ import {
     ToggleButton,
     ToggleButtonGroup,
     Tooltip
-} from "@mui/material";
-import {useMemo, useState} from "react";
+} from "@mui/material"
+import {useMemo, useState} from "react"
 
-import {DetectionType} from "../../../../api/cluster/type";
-import {InstanceMap} from "../../../../api/instance/type";
-import {SxPropsMap} from "../../../../app/type";
-import {useStoreAction} from "../../../../provider/StoreProvider";
+import {DetectionType} from "../../../../api/cluster/type"
+import {InstanceMap} from "../../../../api/instance/type"
+import {SxPropsMap} from "../../../../app/type"
+import {useStoreAction} from "../../../../provider/StoreProvider"
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 1},
@@ -29,7 +29,7 @@ type Props = {
 export function OverviewOptionsInstance(props: Props) {
     const {setClusterInstance, setClusterDetection} = useStoreAction
     const {instance, instances, detection} = props
-    const [inputValue, setInputValue] = useState<string | undefined>(instance);
+    const [inputValue, setInputValue] = useState<string | undefined>(instance)
 
     const options = useMemo(() => Object.keys(instances), [instances])
 

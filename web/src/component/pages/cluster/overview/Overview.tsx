@@ -1,18 +1,18 @@
-import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material";
-import {useMemo, useState} from "react";
+import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material"
+import {useMemo, useState} from "react"
 
-import {useRouterClusterList} from "../../../../api/cluster/hook";
-import {ActiveCluster, ClusterTabs} from "../../../../api/cluster/type";
-import {InstanceWeb} from "../../../../api/instance/type";
-import {SxPropsMap} from "../../../../app/type";
-import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
-import {InfoAlert} from "../../../view/box/InfoAlert";
-import {PageMainBox} from "../../../view/box/PageMainBox";
-import {OverviewAction} from "./OverviewAction";
-import {OverviewBloat} from "./OverviewBloat";
-import {OverviewConfig} from "./OverviewConfig";
-import {OverviewInstances} from "./OverviewInstances";
-import {OverviewOptions} from "./OverviewOptions";
+import {useRouterClusterList} from "../../../../api/cluster/hook"
+import {ActiveCluster, ClusterTabs} from "../../../../api/cluster/type"
+import {InstanceWeb} from "../../../../api/instance/type"
+import {SxPropsMap} from "../../../../app/type"
+import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {InfoAlert} from "../../../view/box/InfoAlert"
+import {PageMainBox} from "../../../view/box/PageMainBox"
+import {OverviewAction} from "./OverviewAction"
+import {OverviewBloat} from "./OverviewBloat"
+import {OverviewConfig} from "./OverviewConfig"
+import {OverviewInstances} from "./OverviewInstances"
+import {OverviewOptions} from "./OverviewOptions"
 
 const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},

@@ -1,10 +1,10 @@
-import {Collapse} from "@mui/material";
-import {TransitionGroup} from "react-transition-group";
+import {Collapse} from "@mui/material"
+import {TransitionGroup} from "react-transition-group"
 
-import {Cert, CertMap} from "../../../../api/cert/type";
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
-import {InfoAlert} from "../../../view/box/InfoAlert";
-import {CertsItem} from "./CertsItem";
+import {Cert, CertMap} from "../../../../api/cert/type"
+import {ErrorSmart} from "../../../view/box/ErrorSmart"
+import {InfoAlert} from "../../../view/box/InfoAlert"
+import {CertsItem} from "./CertsItem"
 
 type Props = {
     certs?: CertMap,

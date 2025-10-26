@@ -1,8 +1,8 @@
-import {Table, TableCell, TableRow} from "@mui/material";
+import {Table, TableCell, TableRow} from "@mui/material"
 
-import {InstanceWeb} from "../../../../api/instance/type";
-import {SxPropsMap} from "../../../../app/type";
-import {TableBody} from "../../../view/table/TableBody";
+import {InstanceWeb} from "../../../../api/instance/type"
+import {SxPropsMap} from "../../../../app/type"
+import {TableBody} from "../../../view/table/TableBody"
 
 const SX: SxPropsMap = {
     title: {color: "text.disabled", fontWeight: "bold", verticalAlign: "top"},

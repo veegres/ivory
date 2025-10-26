@@ -1,10 +1,10 @@
-import {Collapse} from "@mui/material";
-import {TransitionGroup} from "react-transition-group";
+import {Collapse} from "@mui/material"
+import {TransitionGroup} from "react-transition-group"
 
-import {Bloat} from "../../../../api/bloat/type";
-import {StylePropsMap} from "../../../../app/type";
-import {InfoAlert} from "../../../view/box/InfoAlert";
-import {OverviewBloatJobItem} from "./OverviewBloatJobItem";
+import {Bloat} from "../../../../api/bloat/type"
+import {StylePropsMap} from "../../../../app/type"
+import {InfoAlert} from "../../../view/box/InfoAlert"
+import {OverviewBloatJobItem} from "./OverviewBloatJobItem"
 
 const style: StylePropsMap = {
     transition: {display: "flex", flexDirection: "column", gap: "10px"}

@@ -1,6 +1,6 @@
-import {MutableRefObject, useEffect, useState} from "react";
+import {RefObject, useEffect, useState} from "react"
 
-export function useClickDetection(ref: MutableRefObject<any>) {
+export function useClickDetection(ref: RefObject<any>) {
     const [click, setClick] = useState<"inside" | "outside">()
 
     useEffect(handleEffect, [ref])

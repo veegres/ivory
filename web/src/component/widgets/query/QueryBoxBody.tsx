@@ -1,7 +1,7 @@
-import {Box, Collapse, Divider} from "@mui/material";
-import {ReactNode} from "react";
+import {Box, Collapse, Divider} from "@mui/material"
+import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../../app/type";
+import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     body: {padding: "8px 15px", fontSize: "13px"},

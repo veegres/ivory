@@ -1,7 +1,7 @@
-import {AlertColor} from "@mui/material";
-import {AxiosError} from "axios";
+import {AlertColor} from "@mui/material"
+import {AxiosError} from "axios"
 
-import {Error} from "./Error";
+import {Error} from "./Error"
 
 type Props = {
     error: AxiosError | string | unknown,

@@ -1,17 +1,17 @@
-import {json} from "@codemirror/lang-json";
-import {Box, Skeleton} from "@mui/material";
-import ReactCodeMirror from "@uiw/react-codemirror";
-import {useEffect, useState} from "react";
+import {json} from "@codemirror/lang-json"
+import {Box, Skeleton} from "@mui/material"
+import ReactCodeMirror from "@uiw/react-codemirror"
+import {useEffect, useState} from "react"
 
-import {ActiveCluster} from "../../../../api/cluster/type";
-import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook";
-import {SxPropsMap} from "../../../../app/type";
-import {CodeThemes, getSidecarConnection} from "../../../../app/utils";
-import {useSettings} from "../../../../provider/AppProvider";
-import {useSnackbar} from "../../../../provider/SnackbarProvider";
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
-import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons";
-import {ClusterNoInstanceError} from "./OverviewError";
+import {ActiveCluster} from "../../../../api/cluster/type"
+import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook"
+import {SxPropsMap} from "../../../../app/type"
+import {CodeThemes, getSidecarConnection} from "../../../../app/utils"
+import {useSettings} from "../../../../provider/AppProvider"
+import {useSnackbar} from "../../../../provider/SnackbarProvider"
+import {ErrorSmart} from "../../../view/box/ErrorSmart"
+import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons"
+import {ClusterNoInstanceError} from "./OverviewError"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
@@ -25,7 +25,7 @@ type Props = {
 
 export function OverviewConfig(props: Props) {
     const {info} = props
-    const settings = useSettings();
+    const settings = useSettings()
     const snackbar = useSnackbar()
     const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)

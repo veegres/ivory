@@ -1,13 +1,13 @@
-import {InputBase} from "@mui/material";
-import {useEffect, useState} from "react";
+import {InputBase} from "@mui/material"
+import {useEffect, useState} from "react"
 
-import {QueryConnection, QueryRequest, QueryType} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
-import {CancelIconButton} from "../../view/button/IconButtons";
-import {QueryBoxBody} from "./QueryBoxBody";
-import {QueryButtonCreate} from "./QueryButtonCreate";
-import {QueryInfoEdit} from "./QueryInfoEdit";
-import {QueryTemplateWrapper} from "./QueryTemplateWrapper";
+import {QueryConnection, QueryRequest, QueryType} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
+import {CancelIconButton} from "../../view/button/IconButtons"
+import {QueryBoxBody} from "./QueryBoxBody"
+import {QueryButtonCreate} from "./QueryButtonCreate"
+import {QueryInfoEdit} from "./QueryInfoEdit"
+import {QueryTemplateWrapper} from "./QueryTemplateWrapper"
 
 const SX: SxPropsMap = {
     input: {fontSize: "inherit", padding: "0"},
@@ -23,7 +23,7 @@ export function QueryTemplateNew(props: Props) {
     const [body, setBody] = useState(false)
     const [queryCreate, setQueryCreate] = useState<QueryRequest>({name: "", query: "", type})
 
-    useEffect(handleEffectClose, [queryCreate.name, setBody]);
+    useEffect(handleEffectClose, [queryCreate.name, setBody])
 
     return (
         <QueryTemplateWrapper

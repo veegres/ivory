@@ -1,11 +1,11 @@
-import {Box} from "@mui/material";
-import {ReactNode, useState} from "react";
+import {Box} from "@mui/material"
+import {ReactNode, useState} from "react"
 
-import {useRouterInfo} from "../../../api/management/hook";
-import {SxPropsMap} from "../../../app/type";
-import {randomUnicodeAnimal} from "../../../app/utils";
-import select from "../../../style/select.module.css";
-import {LinearProgressStateful} from "../progress/LinearProgressStateful";
+import {useRouterInfo} from "../../../api/management/hook"
+import {SxPropsMap} from "../../../app/type"
+import {randomUnicodeAnimal} from "../../../app/utils"
+import select from "../../../style/select.module.css"
+import {LinearProgressStateful} from "../progress/LinearProgressStateful"
 
 const SX: SxPropsMap = {
     box: {

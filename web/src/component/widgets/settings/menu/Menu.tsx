@@ -1,16 +1,16 @@
-import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material";
-import {useEffect, useState} from "react";
+import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material"
+import {useEffect, useState} from "react"
 
-import {Settings, SxPropsMap} from "../../../../app/type";
-import {SettingOptions} from "../../../../app/utils";
-import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
-import {InfoAlert} from "../../../view/box/InfoAlert";
-import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons";
-import {About} from "../about/About";
-import {Certs} from "../certs/Certs";
-import {Credentials} from "../credentials/Credentials";
-import {Secret} from "../secret/Secret";
-import {MenuContent} from "./MenuContent";
+import {Settings, SxPropsMap} from "../../../../app/type"
+import {SettingOptions} from "../../../../app/utils"
+import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {InfoAlert} from "../../../view/box/InfoAlert"
+import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons"
+import {About} from "../about/About"
+import {Certs} from "../certs/Certs"
+import {Credentials} from "../credentials/Credentials"
+import {Secret} from "../secret/Secret"
+import {MenuContent} from "./MenuContent"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},

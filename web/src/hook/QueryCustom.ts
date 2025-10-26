@@ -4,11 +4,11 @@ import {
     QueryKey,
     useMutation,
     useQueryClient
-} from "@tanstack/react-query";
-import {AxiosError} from "axios";
+} from "@tanstack/react-query"
+import {AxiosError} from "axios"
 
-import {getErrorMessage} from "../app/utils";
-import {useSnackbar} from "../provider/SnackbarProvider";
+import {getErrorMessage} from "../app/utils"
+import {useSnackbar} from "../provider/SnackbarProvider"
 
 interface MutationAdapterOptions<TData, TError, TVariables, TContext>
     extends Omit<MutationOptions<TData, TError, TVariables, TContext>, "onSuccess"> {
@@ -30,7 +30,7 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
 ) {
     const {successKeys, mutationKey, onSuccess} = options
 
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
     const snackbar = useSnackbar()
 
     return useMutation({

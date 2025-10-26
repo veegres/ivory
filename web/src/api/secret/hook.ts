@@ -1,6 +1,6 @@
-import {useMutationAdapter} from "../../hook/QueryCustom";
-import {ManagementApi} from "../management/router";
-import {SecretApi} from "./router";
+import {useMutationAdapter} from "../../hook/QueryCustom"
+import {ManagementApi} from "../management/router"
+import {SecretApi} from "./router"
 
 export function useRouterSecretSet() {
     return useMutationAdapter({

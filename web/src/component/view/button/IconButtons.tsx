@@ -17,10 +17,10 @@ import {
     PlayArrow,
     Receipt,
     Restore
-} from "@mui/icons-material";
-import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material";
-import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
-import {cloneElement, ReactElement, SyntheticEvent} from "react";
+} from "@mui/icons-material"
+import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material"
+import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon"
+import {cloneElement, ReactElement, SyntheticEvent} from "react"
 
 type Color = "inherit" | "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
 type Placement = "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top"

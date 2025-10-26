@@ -1,11 +1,11 @@
-import {OpenInNew} from "@mui/icons-material";
-import {Box, IconButton} from "@mui/material";
+import {OpenInNew} from "@mui/icons-material"
+import {Box, IconButton} from "@mui/material"
 
-import {SxPropsMap} from "../../../../app/type";
-import {IvoryLinks} from "../../../../app/utils";
-import {List} from "../../../view/box/List";
-import {ListItem} from "../../../view/box/ListItem";
-import {MenuWrapper} from "../menu/MenuWrapper";
+import {SxPropsMap} from "../../../../app/type"
+import {IvoryLinks} from "../../../../app/utils"
+import {List} from "../../../view/box/List"
+import {ListItem} from "../../../view/box/ListItem"
+import {MenuWrapper} from "../menu/MenuWrapper"
 
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0 15px", gap: 3},

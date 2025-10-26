@@ -1,9 +1,9 @@
-import {PostgreSQL, sql} from "@codemirror/lang-sql";
-import ReactCodeMirror from "@uiw/react-codemirror";
+import {PostgreSQL, sql} from "@codemirror/lang-sql"
+import ReactCodeMirror from "@uiw/react-codemirror"
 
-import {CodeThemes} from "../../../app/utils";
-import {useSettings} from "../../../provider/AppProvider";
-import code from "../../../style/codemirror.module.css";
+import {CodeThemes} from "../../../app/utils"
+import {useSettings} from "../../../provider/AppProvider"
+import code from "../../../style/codemirror.module.css"
 
 type Props = {
     value: string,
@@ -14,7 +14,7 @@ type Props = {
 
 export function QueryBoxCodeEditor(props: Props) {
     const {value, editable, autoFocus, onUpdate} = props
-    const settings = useSettings();
+    const settings = useSettings()
 
     return (
         <ReactCodeMirror
