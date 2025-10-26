@@ -1,4 +1,4 @@
-import {Dispatch, SetStateAction, useEffect, useState} from "react";
+import {Dispatch, SetStateAction, useEffect, useState} from "react"
 
 export function useLocalStorageState<T>(key: string, initialState: T | (() => T), sync = false): [T, Dispatch<SetStateAction<T>>] {
     const isObject = typeof initialState === "object"

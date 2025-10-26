@@ -1,5 +1,5 @@
-import {Autocomplete as MuiAutocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material";
-import {HTMLAttributes, useMemo, useState} from "react";
+import {Autocomplete as MuiAutocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material"
+import {HTMLAttributes, useMemo, useState} from "react"
 
 const defaultName = "***"
 

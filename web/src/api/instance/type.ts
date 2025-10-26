@@ -1,8 +1,8 @@
 
-import {ReactNode} from "react";
+import {ReactNode} from "react"
 
-import {Certs} from "../cert/type";
-import {Database, QueryConnection} from "../query/type";
+import {Certs} from "../cert/type"
+import {Database, QueryConnection} from "../query/type"
 
 // COMMON (WEB AND SERVER)
 

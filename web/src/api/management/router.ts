@@ -1,5 +1,5 @@
-import {api} from "../api";
-import {AppInfo, R, SecretUpdateRequest} from "./type";
+import {api} from "../api"
+import {AppInfo, R, SecretUpdateRequest} from "./type"
 
 export const ManagementApi = {
     info: {

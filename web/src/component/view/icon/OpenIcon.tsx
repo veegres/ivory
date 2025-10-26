@@ -1,4 +1,4 @@
-import {KeyboardArrowDown, KeyboardArrowUp} from "@mui/icons-material";
+import {KeyboardArrowDown, KeyboardArrowUp} from "@mui/icons-material"
 
 type Icon = {
     open: boolean,

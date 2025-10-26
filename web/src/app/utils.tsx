@@ -11,20 +11,20 @@ import {
     Shield,
     Storage,
     UploadFileOutlined
-} from "@mui/icons-material";
-import {SxProps, Theme} from "@mui/material";
-import {blue, green, indigo, orange, red} from "@mui/material/colors";
-import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material";
-import {AxiosError} from "axios";
-import dayjs from "dayjs";
+} from "@mui/icons-material"
+import {SxProps, Theme} from "@mui/material"
+import {blue, green, indigo, orange, red} from "@mui/material/colors"
+import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material"
+import {AxiosError} from "axios"
+import dayjs from "dayjs"
 
-import {JobStatus} from "../api/bloat/job/type";
-import {CertType, FileUsageType} from "../api/cert/type";
-import {Cluster} from "../api/cluster/type";
-import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type";
-import {PasswordType} from "../api/password/type";
-import {Database, QueryConnection, QueryVariety} from "../api/query/type";
-import {ColorsMap, EnumOptions, Links, Settings, SxPropsMap} from "./type";
+import {JobStatus} from "../api/bloat/job/type"
+import {CertType, FileUsageType} from "../api/cert/type"
+import {Cluster} from "../api/cluster/type"
+import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type"
+import {PasswordType} from "../api/password/type"
+import {Database, QueryConnection, QueryVariety} from "../api/query/type"
+import {ColorsMap, EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
@@ -108,7 +108,7 @@ export const initialInstance = (sidecar?: Sidecar): InstanceWeb => {
         leader: false,
         inInstances: true,
         inCluster: false,
-    });
+    })
 }
 
 export const isSidecarEqual = (sidecar1?: Sidecar, sidecar2?: Sidecar): boolean => {

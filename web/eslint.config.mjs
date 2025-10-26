@@ -48,6 +48,7 @@ export default [
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
       "quotes": ["error", "double"],
+      "semi": ["error", "never"],
       "react/react-in-jsx-scope": "off",
       "react/no-unescaped-entities": "off",
       "@typescript-eslint/no-explicit-any": "off",

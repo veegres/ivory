@@ -1,12 +1,12 @@
-import {FormControl, OutlinedInput, TableRow} from "@mui/material";
-import {useState} from "react";
+import {FormControl, OutlinedInput, TableRow} from "@mui/material"
+import {useState} from "react"
 
-import {SxPropsMap} from "../../../../app/type";
-import {getSidecars} from "../../../../app/utils";
-import {useStore} from "../../../../provider/StoreProvider";
-import {DynamicInputs} from "../../../view/input/DynamicInputs";
-import {ListCell} from "./ListCell";
-import {ListCellUpdate} from "./ListCellUpdate";
+import {SxPropsMap} from "../../../../app/type"
+import {getSidecars} from "../../../../app/utils"
+import {useStore} from "../../../../provider/StoreProvider"
+import {DynamicInputs} from "../../../view/input/DynamicInputs"
+import {ListCell} from "./ListCell"
+import {ListCellUpdate} from "./ListCellUpdate"
 
 const SX: SxPropsMap = {
     nodesCellInput: {height: "32px"},
@@ -20,8 +20,8 @@ type Props = {
 export function ListRowNew(props: Props) {
     const {show, close} = props
     const activeTags = useStore(s => s.activeTags)
-    const [stateName, setStateName] = useState("");
-    const [stateNodes, setStateNodes] = useState([""]);
+    const [stateName, setStateName] = useState("")
+    const [stateNodes, setStateNodes] = useState([""])
 
     if (!show) return null
 

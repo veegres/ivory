@@ -1,10 +1,10 @@
-import {Box, Button} from "@mui/material";
-import {useState} from "react";
+import {Box, Button} from "@mui/material"
+import {useState} from "react"
 
-import {useRouterQueryCancel, useRouterQueryTerminate} from "../../../api/query/hook";
-import {QueryConnection} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
-import {MenuButton} from "../../view/button/MenuButton";
+import {useRouterQueryCancel, useRouterQueryTerminate} from "../../../api/query/hook"
+import {QueryConnection} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
+import {MenuButton} from "../../view/button/MenuButton"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-evenly", color: "text.secondary", padding: "0 3px"},

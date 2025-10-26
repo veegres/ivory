@@ -1,15 +1,15 @@
-import {Box} from "@mui/material";
+import {Box} from "@mui/material"
 
-import {Settings, SxPropsMap} from "../../../../app/type";
-import {SettingOptions} from "../../../../app/utils";
-import {List} from "../../../view/box/List";
-import {ListButton} from "../../../view/box/ListButton";
-import {ListItem} from "../../../view/box/ListItem";
-import {ClearCacheButton} from "../../actions/ClearCacheButton";
-import {EraseButton} from "../../actions/EraseButton";
-import {MenuRefetchChanger} from "./MenuRefetchChanger";
-import {MenuThemeChanger} from "./MenuThemeChanger";
-import {MenuWrapper} from "./MenuWrapper";
+import {Settings, SxPropsMap} from "../../../../app/type"
+import {SettingOptions} from "../../../../app/utils"
+import {List} from "../../../view/box/List"
+import {ListButton} from "../../../view/box/ListButton"
+import {ListItem} from "../../../view/box/ListItem"
+import {ClearCacheButton} from "../../actions/ClearCacheButton"
+import {EraseButton} from "../../actions/EraseButton"
+import {MenuRefetchChanger} from "./MenuRefetchChanger"
+import {MenuThemeChanger} from "./MenuThemeChanger"
+import {MenuWrapper} from "./MenuWrapper"
 
 const SX: SxPropsMap = {
     list: {display: "flex", flexDirection: "column", gap: 3},

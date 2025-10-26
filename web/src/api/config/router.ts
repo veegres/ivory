@@ -1,6 +1,6 @@
-import {api} from "../api";
-import {R} from "../management/type";
-import {NewAppConfig} from "./type";
+import {api} from "../api"
+import {R} from "../management/type"
+import {NewAppConfig} from "./type"
 
 export const ConfigApi = {
     setAppConfig: {

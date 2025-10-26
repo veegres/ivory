@@ -1,8 +1,8 @@
-import {useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query"
 
-import {useMutationAdapter} from "../../hook/QueryCustom";
-import {BloatApi} from "./router";
-import {Bloat} from "./type";
+import {useMutationAdapter} from "../../hook/QueryCustom"
+import {BloatApi} from "./router"
+import {Bloat} from "./type"
 
 export function useRouterBloatLogs(uuid: string, enabled: boolean) {
     return useQuery({

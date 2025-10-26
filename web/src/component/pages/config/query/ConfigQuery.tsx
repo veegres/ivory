@@ -1,6 +1,6 @@
-import {Switch} from "@mui/material";
+import {Switch} from "@mui/material"
 
-import {ConfigBox} from "../../../view/box/ConfigBox";
+import {ConfigBox} from "../../../view/box/ConfigBox"
 
 type Props = {
     onChange: (enable: boolean) => void,

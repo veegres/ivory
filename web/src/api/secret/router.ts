@@ -1,6 +1,6 @@
-import {api} from "../api";
-import {R} from "../management/type";
-import {SecretSetRequest} from "./type";
+import {api} from "../api"
+import {R} from "../management/type"
+import {SecretSetRequest} from "./type"
 
 export const SecretApi = {
     setSecret: {

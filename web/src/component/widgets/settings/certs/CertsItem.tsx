@@ -1,10 +1,10 @@
-import {Box, Tooltip} from "@mui/material";
+import {Box, Tooltip} from "@mui/material"
 
-import {useRouterCertDelete} from "../../../../api/cert/hook";
-import {Cert} from "../../../../api/cert/type";
-import {StylePropsMap, SxPropsMap} from "../../../../app/type";
-import {FileUsageOptions} from "../../../../app/utils";
-import {DeleteIconButton} from "../../../view/button/IconButtons";
+import {useRouterCertDelete} from "../../../../api/cert/hook"
+import {Cert} from "../../../../api/cert/type"
+import {StylePropsMap, SxPropsMap} from "../../../../app/type"
+import {FileUsageOptions} from "../../../../app/utils"
+import {DeleteIconButton} from "../../../view/button/IconButtons"
 
 const SX: SxPropsMap = {
     item: {display: "flex", alignItems: "center", padding: "5px 10px", margin: "5px 10px", borderRadius: "5px", gap: 2, border: 1, borderColor: "divider"},

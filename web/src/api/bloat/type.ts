@@ -1,4 +1,4 @@
-import {JobStatus} from "./job/type";
+import {JobStatus} from "./job/type"
 
 // COMMON (WEB AND SERVER)
 

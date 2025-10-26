@@ -1,9 +1,9 @@
-import {Box} from "@mui/material";
+import {Box} from "@mui/material"
 
-import {useRouterClusterUpdate} from "../../../../api/cluster/hook";
-import {Cluster} from "../../../../api/cluster/type";
-import {SxPropsMap} from "../../../../app/type";
-import {CancelIconButton, SaveIconButton} from "../../../view/button/IconButtons";
+import {useRouterClusterUpdate} from "../../../../api/cluster/hook"
+import {Cluster} from "../../../../api/cluster/type"
+import {SxPropsMap} from "../../../../app/type"
+import {CancelIconButton, SaveIconButton} from "../../../view/button/IconButtons"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},

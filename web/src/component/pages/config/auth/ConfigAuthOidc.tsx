@@ -1,11 +1,11 @@
-import {Box, Button} from "@mui/material";
-import {ChangeEvent} from "react";
+import {Box, Button} from "@mui/material"
+import {ChangeEvent} from "react"
 
-import {useRouterConnect} from "../../../../api/auth/hook";
-import {AuthType} from "../../../../api/auth/type";
-import {OidcConfig} from "../../../../api/config/type";
-import {SxPropsMap} from "../../../../app/type";
-import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
+import {useRouterConnect} from "../../../../api/auth/hook"
+import {AuthType} from "../../../../api/auth/type"
+import {OidcConfig} from "../../../../api/config/type"
+import {SxPropsMap} from "../../../../app/type"
+import {KeyEnterInput} from "../../../view/input/KeyEnterInput"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},

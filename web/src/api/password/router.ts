@@ -1,6 +1,6 @@
-import {api} from "../api";
-import {R} from "../management/type";
-import {Password, PasswordMap, PasswordType} from "./type";
+import {api} from "../api"
+import {R} from "../management/type"
+import {Password, PasswordMap, PasswordType} from "./type"
 
 export const PasswordApi = {
     list: {

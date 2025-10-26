@@ -1,9 +1,9 @@
-import {Box} from "@mui/material";
+import {Box} from "@mui/material"
 
-import {QueryVariety} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
-import {QueryVarietyOptions} from "../../../app/utils";
-import {InfoColorBox} from "../../view/box/InfoColorBox";
+import {QueryVariety} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
+import {QueryVarietyOptions} from "../../../app/utils"
+import {InfoColorBox} from "../../view/box/InfoColorBox"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1, padding: "0px 5px"},

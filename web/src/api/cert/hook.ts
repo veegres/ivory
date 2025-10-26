@@ -1,8 +1,8 @@
-import {useQuery} from "@tanstack/react-query";
+import {useQuery} from "@tanstack/react-query"
 
-import {useMutationAdapter} from "../../hook/QueryCustom";
-import {CertApi} from "./router";
-import {CertType} from "./type";
+import {useMutationAdapter} from "../../hook/QueryCustom"
+import {CertApi} from "./router"
+import {CertType} from "./type"
 
 export function useRouterCertList(type: CertType) {
     return useQuery({

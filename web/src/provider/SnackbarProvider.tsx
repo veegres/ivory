@@ -1,5 +1,5 @@
-import {Alert, Snackbar} from "@mui/material";
-import {createContext, ReactNode, SyntheticEvent, useContext, useEffect, useState} from "react";
+import {Alert, Snackbar} from "@mui/material"
+import {createContext, ReactNode, SyntheticEvent, useContext, useEffect, useState} from "react"
 
 interface SnackbarMessage {
     message: string,
@@ -16,11 +16,11 @@ export function useSnackbar() {
 }
 
 export function SnackbarProvide(props: { children: ReactNode }) {
-    const [open, setOpen] = useState(false);
-    const [snackPack, setSnackPack] = useState<SnackbarMessage[]>([]);
-    const [messageInfo, setMessageInfo] = useState<SnackbarMessage | undefined>();
+    const [open, setOpen] = useState(false)
+    const [snackPack, setSnackPack] = useState<SnackbarMessage[]>([])
+    const [messageInfo, setMessageInfo] = useState<SnackbarMessage | undefined>()
 
-    useEffect(handleUseEffectStack, [snackPack, messageInfo, open]);
+    useEffect(handleUseEffectStack, [snackPack, messageInfo, open])
 
     return (
         <SnackbarContext value={message}>
@@ -55,12 +55,12 @@ export function SnackbarProvide(props: { children: ReactNode }) {
     function handleUseEffectStack() {
         if (snackPack.length && !messageInfo) {
             // Set a new snack when we don't have an active one
-            setMessageInfo({...snackPack[0]});
-            setSnackPack((prev) => prev.slice(1));
-            setOpen(true);
+            setMessageInfo({...snackPack[0]})
+            setSnackPack((prev) => prev.slice(1))
+            setOpen(true)
         } else if (snackPack.length && messageInfo && open) {
             // Close an active snack when a new one is added
-            setOpen(false);
+            setOpen(false)
         }
     }
 }

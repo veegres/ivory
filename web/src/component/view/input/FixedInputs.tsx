@@ -1,7 +1,7 @@
-import {Box, FormControl, OutlinedInput} from "@mui/material";
-import {useEffect} from "react";
+import {Box, FormControl, OutlinedInput} from "@mui/material"
+import {useEffect} from "react"
 
-import {SxPropsMap} from "../../../app/type";
+import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     input: {height: "32px"},
@@ -18,7 +18,7 @@ export function FixedInputs(props: Props) {
     const {placeholders, values, onChange} = props
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(handleEffectPlaceholders, [JSON.stringify(placeholders)]);
+    useEffect(handleEffectPlaceholders, [JSON.stringify(placeholders)])
 
     return (
         <Box sx={SX.box}>

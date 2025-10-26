@@ -1,6 +1,6 @@
-import {Tab, Tabs} from "@mui/material";
+import {Tab, Tabs} from "@mui/material"
 
-import {CertTabs, CertType} from "../../../../api/cert/type";
+import {CertTabs, CertType} from "../../../../api/cert/type"
 
 export const TABS: CertTabs = {
     0: {label: "Client CA", type: CertType.CLIENT_CA},

@@ -1,7 +1,7 @@
-import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
-import {ReactNode} from "react";
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material"
+import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../../app/type";
+import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},

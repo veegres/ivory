@@ -1,18 +1,18 @@
-import {Clear, Stop} from "@mui/icons-material";
-import {Box, CircularProgress, Divider, IconButton, Paper, Tooltip} from "@mui/material";
-import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon";
-import {cloneElement, ReactElement, useState} from "react";
+import {Clear, Stop} from "@mui/icons-material"
+import {Box, CircularProgress, Divider, IconButton, Paper, Tooltip} from "@mui/material"
+import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon"
+import {cloneElement, ReactElement, useState} from "react"
 
-import {useRouterBloatDelete, useRouterBloatStop} from "../../../../api/bloat/hook";
-import {Bloat} from "../../../../api/bloat/type";
-import {SxPropsMap} from "../../../../app/type";
-import {shortUuid} from "../../../../app/utils";
-import {useEventJob} from "../../../../hook/EventJob";
+import {useRouterBloatDelete, useRouterBloatStop} from "../../../../api/bloat/hook"
+import {Bloat} from "../../../../api/bloat/type"
+import {SxPropsMap} from "../../../../app/type"
+import {shortUuid} from "../../../../app/utils"
+import {useEventJob} from "../../../../hook/EventJob"
 import scroll from "../../../../style/scroll.module.css"
-import select from "../../../../style/select.module.css";
-import {OpenIcon} from "../../../view/icon/OpenIcon";
-import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
-import {DynamicRowVirtualizer} from "../../../view/scrolling/DynamicRowVirtualizer";
+import select from "../../../../style/select.module.css"
+import {OpenIcon} from "../../../view/icon/OpenIcon"
+import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
+import {DynamicRowVirtualizer} from "../../../view/scrolling/DynamicRowVirtualizer"
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
@@ -133,7 +133,7 @@ export function OverviewBloatJobItem(props: Props) {
                             sx={SX.button}
                             size={"small"}
                             onClick={(e) => {
-                                e.stopPropagation();
+                                e.stopPropagation()
                                 onClick()
                             }}
                         >

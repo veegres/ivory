@@ -1,6 +1,6 @@
-import {useRouterQueryUpdate} from "../../../api/query/hook";
-import {QueryRequest} from "../../../api/query/type";
-import {SaveIconButton} from "../../view/button/IconButtons";
+import {useRouterQueryUpdate} from "../../../api/query/hook"
+import {QueryRequest} from "../../../api/query/type"
+import {SaveIconButton} from "../../view/button/IconButtons"
 
 type Props = {
     id: string

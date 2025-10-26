@@ -1,10 +1,10 @@
-import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {QueryConnection, QueryType} from "../../../../api/query/type";
-import {SxPropsMap} from "../../../../app/type";
-import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
-import {Query} from "../../../widgets/query/Query";
-import {QueryConsole} from "../../../widgets/query/QueryConsole";
+import {QueryConnection, QueryType} from "../../../../api/query/type"
+import {SxPropsMap} from "../../../../app/type"
+import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {Query} from "../../../widgets/query/Query"
+import {QueryConsole} from "../../../widgets/query/QueryConsole"
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},

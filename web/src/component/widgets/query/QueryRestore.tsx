@@ -1,11 +1,11 @@
-import {KeyboardDoubleArrowRight} from "@mui/icons-material";
-import {Box, Button, Tooltip} from "@mui/material";
+import {KeyboardDoubleArrowRight} from "@mui/icons-material"
+import {Box, Button, Tooltip} from "@mui/material"
 
-import {useRouterQueryUpdate} from "../../../api/query/hook";
-import {Query} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
-import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
-import {QueryBoxWrapper} from "./QueryBoxWrapper";
+import {useRouterQueryUpdate} from "../../../api/query/hook"
+import {Query} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
+import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
+import {QueryBoxWrapper} from "./QueryBoxWrapper"
 
 const SX: SxPropsMap = {
     box: {display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)", rowGap: 1, columnGap: 2},

@@ -1,10 +1,10 @@
-import {Avatar, Box, Chip} from "@mui/material";
+import {Avatar, Box, Chip} from "@mui/material"
 
-import {Query} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
-import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor";
-import {QueryBoxInfo} from "./QueryBoxInfo";
-import {QueryVarieties} from "./QueryVarieties";
+import {Query} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
+import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
+import {QueryBoxInfo} from "./QueryBoxInfo"
+import {QueryVarieties} from "./QueryVarieties"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},

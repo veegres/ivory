@@ -1,4 +1,4 @@
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
+import {ErrorSmart} from "../../../view/box/ErrorSmart"
 
 export function ClusterNoInstanceError() {
     return <ErrorSmart error={"Main instance is not in the cluster, probably something has happened, you have some problems in your set up or you've change it"} />

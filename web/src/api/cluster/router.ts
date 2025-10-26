@@ -1,6 +1,6 @@
-import {api} from "../api";
-import {R} from "../management/type";
-import {Cluster, ClusterAuto, ClusterMap} from "./type";
+import {api} from "../api"
+import {R} from "../management/type"
+import {Cluster, ClusterAuto, ClusterMap} from "./type"
 
 export const ClusterApi = {
     list: {

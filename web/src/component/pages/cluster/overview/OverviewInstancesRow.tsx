@@ -1,28 +1,28 @@
-import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material";
-import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material";
-import {blueGrey, green, grey, pink, red} from "@mui/material/colors";
-import {useEffect} from "react";
+import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
+import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
+import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
+import {useEffect} from "react"
 
-import {Cluster} from "../../../../api/cluster/type";
-import {InstanceWeb, Sidecar} from "../../../../api/instance/type";
-import {SxPropsMap} from "../../../../app/type";
+import {Cluster} from "../../../../api/cluster/type"
+import {InstanceWeb, Sidecar} from "../../../../api/instance/type"
+import {SxPropsMap} from "../../../../app/type"
 import {
     DateTimeFormatter,
     getSidecarConnection,
     InstanceColor,
     SizeFormatter,
     SxPropsFormatter
-} from "../../../../app/utils";
-import {useStore, useStoreAction} from "../../../../provider/StoreProvider";
-import {InfoColorBox} from "../../../view/box/InfoColorBox";
-import {MenuButton} from "../../../view/button/MenuButton";
-import {HiddenScrolling} from "../../../view/scrolling/HiddenScrolling";
-import {FailoverButton} from "../../../widgets/actions/FailoverButton";
-import {ReinitButton} from "../../../widgets/actions/ReinitButton";
-import {ReloadButton} from "../../../widgets/actions/ReloadButton";
-import {RestartButton} from "../../../widgets/actions/RestartButton";
-import {ScheduleButton} from "../../../widgets/actions/ScheduleButton";
-import {SwitchoverButton} from "../../../widgets/actions/SwitchoverButton";
+} from "../../../../app/utils"
+import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {InfoColorBox} from "../../../view/box/InfoColorBox"
+import {MenuButton} from "../../../view/button/MenuButton"
+import {HiddenScrolling} from "../../../view/scrolling/HiddenScrolling"
+import {FailoverButton} from "../../../widgets/actions/FailoverButton"
+import {ReinitButton} from "../../../widgets/actions/ReinitButton"
+import {ReloadButton} from "../../../widgets/actions/ReloadButton"
+import {RestartButton} from "../../../widgets/actions/RestartButton"
+import {ScheduleButton} from "../../../widgets/actions/ScheduleButton"
+import {SwitchoverButton} from "../../../widgets/actions/SwitchoverButton"
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},

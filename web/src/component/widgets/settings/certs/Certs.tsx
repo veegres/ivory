@@ -1,11 +1,11 @@
-import {useState} from "react";
+import {useState} from "react"
 
-import {useRouterCertList} from "../../../../api/cert/hook";
-import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
-import {MenuWrapper} from "../menu/MenuWrapper";
-import {CertsList} from "./CertsList";
-import {CertsNew} from "./CertsNew";
-import {CertsTab, TABS} from "./CertsTab";
+import {useRouterCertList} from "../../../../api/cert/hook"
+import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
+import {MenuWrapper} from "../menu/MenuWrapper"
+import {CertsList} from "./CertsList"
+import {CertsNew} from "./CertsNew"
+import {CertsTab, TABS} from "./CertsTab"
 
 export function Certs() {
     const [tab, setTab] = useState(0)

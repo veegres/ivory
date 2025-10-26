@@ -1,11 +1,11 @@
-import {Typography} from "@mui/material";
-import {useState} from "react";
+import {Typography} from "@mui/material"
+import {useState} from "react"
 
-import {useRouterSecretSet} from "../../../api/secret/hook";
-import {PageStartupBox} from "../../view/box/PageStartupBox";
-import {KeyEnterInput} from "../../view/input/KeyEnterInput";
-import {EraseButton} from "../../widgets/actions/EraseButton";
-import {SecretButton} from "../../widgets/actions/SecretButton";
+import {useRouterSecretSet} from "../../../api/secret/hook"
+import {PageStartupBox} from "../../view/box/PageStartupBox"
+import {KeyEnterInput} from "../../view/input/KeyEnterInput"
+import {EraseButton} from "../../widgets/actions/EraseButton"
+import {SecretButton} from "../../widgets/actions/SecretButton"
 
 
 export function SecretBodySecondary() {

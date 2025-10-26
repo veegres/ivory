@@ -1,11 +1,11 @@
-import {Box, CircularProgress, Tooltip} from "@mui/material";
-import {useVirtualizer} from "@tanstack/react-virtual";
-import {Fragment, ReactNode, useMemo, useState} from "react";
+import {Box, CircularProgress, Tooltip} from "@mui/material"
+import {useVirtualizer} from "@tanstack/react-virtual"
+import {Fragment, ReactNode, useMemo, useState} from "react"
 
-import {SxPropsMap} from "../../../app/type";
-import {useDragger} from "../../../hook/Dragger";
-import scroll from "../../../style/scroll.module.css";
-import {NoBox} from "../box/NoBox";
+import {SxPropsMap} from "../../../app/type"
+import {useDragger} from "../../../hook/Dragger"
+import scroll from "../../../style/scroll.module.css"
+import {NoBox} from "../box/NoBox"
 
 const SX: SxPropsMap = {
     box: {position: "relative"},
@@ -58,7 +58,7 @@ type Props = {
 export function VirtualizedTable(props: Props) {
     const {columns, rows, renderRowActions, showIndexColumn = true} = props
     const {loading = false, width, height = 306} = props
-    const [ref, setRef] = useState<Element | null>(null);
+    const [ref, setRef] = useState<Element | null>(null)
 
     const columnSize = columns.length
     const dragOffset = 6

@@ -1,9 +1,9 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState} from "react"
 
-import {useRouterBloatLogs} from "../api/bloat/hook";
-import {EventStreamType, EventType, JobStatus} from "../api/bloat/job/type";
-import {BloatApi} from "../api/bloat/router";
-import {JobOptions} from "../app/utils";
+import {useRouterBloatLogs} from "../api/bloat/hook"
+import {EventStreamType, EventType, JobStatus} from "../api/bloat/job/type"
+import {BloatApi} from "../api/bloat/router"
+import {JobOptions} from "../app/utils"
 
 type EventJob = {
     isFetching: boolean;
@@ -23,7 +23,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
 
         const es = BloatApi.stream.fn(uuid)
         const close = () => {
-            es.close();
+            es.close()
             setEventSourceFetching(false)
         }
         const addLog = (log: string) => setLogs((old) => [...old, log])
@@ -39,7 +39,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
             if (e.data === EventStreamType.END) close()
         })
         es.onerror = () => {
-            setEventSourceFetching(false);
+            setEventSourceFetching(false)
             addLog("[browser] streaming error: Trying to reestablish connection")
         }
 

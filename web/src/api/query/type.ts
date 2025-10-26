@@ -1,4 +1,4 @@
-import {Certs} from "../cert/type";
+import {Certs} from "../cert/type"
 
 // COMMON (WEB AND SERVER)
 

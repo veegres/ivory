@@ -1,23 +1,23 @@
-import {Box} from "@mui/material";
-import {useState} from "react";
+import {Box} from "@mui/material"
+import {useState} from "react"
 
-import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../api/query/type";
-import {SxPropsMap} from "../../../app/type";
+import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../api/query/type"
+import {SxPropsMap} from "../../../app/type"
 import {
     CancelIconButton,
     EditIconButton,
     LogIconButton,
     QueryViewIconButton,
     RestoreIconButton
-} from "../../view/button/IconButtons";
-import {QueryBoxBody} from "./QueryBoxBody";
-import {QueryButtonDelete} from "./QueryButtonDelete";
-import {QueryButtonUpdate} from "./QueryButtonUpdate";
-import {QueryInfoEdit} from "./QueryInfoEdit";
-import {QueryInfoView} from "./QueryInfoView";
-import {QueryLog} from "./QueryLog";
-import {QueryRestore} from "./QueryRestore";
-import {QueryTemplateWrapper} from "./QueryTemplateWrapper";
+} from "../../view/button/IconButtons"
+import {QueryBoxBody} from "./QueryBoxBody"
+import {QueryButtonDelete} from "./QueryButtonDelete"
+import {QueryButtonUpdate} from "./QueryButtonUpdate"
+import {QueryInfoEdit} from "./QueryInfoEdit"
+import {QueryInfoView} from "./QueryInfoView"
+import {QueryLog} from "./QueryLog"
+import {QueryRestore} from "./QueryRestore"
+import {QueryTemplateWrapper} from "./QueryTemplateWrapper"
 
 const SX: SxPropsMap = {
     name: {fontWeight: "bold"},

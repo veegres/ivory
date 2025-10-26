@@ -1,8 +1,8 @@
-import {Box, TabScrollButton} from "@mui/material";
-import {ReactNode, useState} from "react";
+import {Box, TabScrollButton} from "@mui/material"
+import {ReactNode, useState} from "react"
 
-import {SxPropsMap} from "../../../app/type";
-import {useWindowScrolled} from "../../../hook/WindowObservers";
+import {SxPropsMap} from "../../../app/type"
+import {useWindowScrolled} from "../../../hook/WindowObservers"
 
 const SCROLL_OFFSET = 100
 const SX: SxPropsMap = {
@@ -23,7 +23,7 @@ type Props = {
 
 export function HiddenScrolling(props: Props) {
     const {children, renderBefore, renderAfter, arrowWidth = "30px", arrowHeight = "35px"} = props
-    const [ref, setRef] = useState<Element>();
+    const [ref, setRef] = useState<Element>()
     const [scrolled] = useWindowScrolled(ref)
 
     return (

@@ -1,15 +1,15 @@
-import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
-import {useIsFetching, useQueryClient} from "@tanstack/react-query";
+import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material"
+import {useIsFetching, useQueryClient} from "@tanstack/react-query"
 
-import {ActiveCluster} from "../../../../api/cluster/type";
-import {InstanceApi} from "../../../../api/instance/router";
-import {InstanceWeb} from "../../../../api/instance/type";
-import {SxPropsMap} from "../../../../app/type";
-import {getDomain} from "../../../../app/utils";
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
-import {RefreshIconButton} from "../../../view/button/IconButtons";
-import {TableCellLoader} from "../../../view/table/TableCellLoader";
-import {OverviewInstancesRow} from "./OverviewInstancesRow";
+import {ActiveCluster} from "../../../../api/cluster/type"
+import {InstanceApi} from "../../../../api/instance/router"
+import {InstanceWeb} from "../../../../api/instance/type"
+import {SxPropsMap} from "../../../../app/type"
+import {getDomain} from "../../../../app/utils"
+import {ErrorSmart} from "../../../view/box/ErrorSmart"
+import {RefreshIconButton} from "../../../view/button/IconButtons"
+import {TableCellLoader} from "../../../view/table/TableCellLoader"
+import {OverviewInstancesRow} from "./OverviewInstancesRow"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
@@ -27,7 +27,7 @@ export function OverviewInstances(props: Props) {
     const {activeInstance, info} = props
     const {cluster, combinedInstanceMap} = info
     const key = {queryKey: InstanceApi.overview.key(cluster.name)}
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient()
     const instanceMapFetching = useIsFetching(key)
     const candidates = Object.values(combinedInstanceMap)
         .filter(sidecar => sidecar.role === "replica")

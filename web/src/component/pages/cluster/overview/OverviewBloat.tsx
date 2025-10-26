@@ -1,17 +1,17 @@
-import {Cached} from "@mui/icons-material";
-import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material";
-import {useState} from "react";
+import {Cached} from "@mui/icons-material"
+import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
+import {useState} from "react"
 
-import {useRouterBloatList} from "../../../../api/bloat/hook";
-import {BloatTarget} from "../../../../api/bloat/type";
-import {ActiveCluster} from "../../../../api/cluster/type";
-import {useRouterQueryList} from "../../../../api/query/hook";
-import {QueryType} from "../../../../api/query/type";
-import {SxPropsMap} from "../../../../app/type";
-import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful";
-import {Query} from "../../../widgets/query/Query";
-import {OverviewBloatJob} from "./OverviewBloatJob";
-import {OverviewBloatJobForm} from "./OverviewBloatJobForm";
+import {useRouterBloatList} from "../../../../api/bloat/hook"
+import {BloatTarget} from "../../../../api/bloat/type"
+import {ActiveCluster} from "../../../../api/cluster/type"
+import {useRouterQueryList} from "../../../../api/query/hook"
+import {QueryType} from "../../../../api/query/type"
+import {SxPropsMap} from "../../../../app/type"
+import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
+import {Query} from "../../../widgets/query/Query"
+import {OverviewBloatJob} from "./OverviewBloatJob"
+import {OverviewBloatJobForm} from "./OverviewBloatJobForm"
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},

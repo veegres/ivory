@@ -1,11 +1,11 @@
-import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
-import {Dayjs} from "dayjs";
-import {useState} from "react";
+import {FormControl, InputLabel, MenuItem, Select} from "@mui/material"
+import {Dayjs} from "dayjs"
+import {useState} from "react"
 
-import {useRouterInstanceSwitchover} from "../../../api/instance/hook";
-import {InstanceRequest, Sidecar} from "../../../api/instance/type";
-import {AlertButton} from "../../view/button/AlertButton";
-import {ScheduleInput} from "../../view/input/ScheduleInput";
+import {useRouterInstanceSwitchover} from "../../../api/instance/hook"
+import {InstanceRequest, Sidecar} from "../../../api/instance/type"
+import {AlertButton} from "../../view/button/AlertButton"
+import {ScheduleInput} from "../../view/input/ScheduleInput"
 
 type Props = {
     request: InstanceRequest,

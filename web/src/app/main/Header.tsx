@@ -1,11 +1,11 @@
-import {Logout, Settings} from "@mui/icons-material";
-import {Box, IconButton, Tooltip} from "@mui/material";
-import {useState} from "react";
+import {Logout, Settings} from "@mui/icons-material"
+import {Box, IconButton, Tooltip} from "@mui/material"
+import {useState} from "react"
 
-import {useRouterLogout} from "../../api/auth/hook";
-import {useStoreAction} from "../../provider/StoreProvider";
-import {SxPropsMap} from "../type";
-import {randomUnicodeAnimal} from "../utils";
+import {useRouterLogout} from "../../api/auth/hook"
+import {useStoreAction} from "../../provider/StoreProvider"
+import {SxPropsMap} from "../type"
+import {randomUnicodeAnimal} from "../utils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},

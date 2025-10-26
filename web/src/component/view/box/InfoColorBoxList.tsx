@@ -1,7 +1,7 @@
-import {Box} from "@mui/material";
+import {Box} from "@mui/material"
 
-import {SxPropsMap} from "../../../app/type";
-import {InfoColorBox} from "./InfoColorBox";
+import {SxPropsMap} from "../../../app/type"
+import {InfoColorBox} from "./InfoColorBox"
 
 const SX: SxPropsMap = {
     list: {display: "flex", gap: 1, justifyContent: "space-evenly", margin: "3px 0"},

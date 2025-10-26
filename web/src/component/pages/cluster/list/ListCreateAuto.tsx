@@ -1,12 +1,12 @@
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, TextField} from "@mui/material";
-import {useState} from "react";
+import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, TextField} from "@mui/material"
+import {useState} from "react"
 
-import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook";
-import {ClusterAuto} from "../../../../api/cluster/type";
-import {SxPropsMap} from "../../../../app/type";
-import {InfoAlert} from "../../../view/box/InfoAlert";
-import {AutoIconButton} from "../../../view/button/IconButtons";
-import {Options} from "../../../widgets/options/Options";
+import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
+import {ClusterAuto} from "../../../../api/cluster/type"
+import {SxPropsMap} from "../../../../app/type"
+import {InfoAlert} from "../../../view/box/InfoAlert"
+import {AutoIconButton} from "../../../view/button/IconButtons"
+import {Options} from "../../../widgets/options/Options"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},

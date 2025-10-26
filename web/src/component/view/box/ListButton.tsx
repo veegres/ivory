@@ -1,8 +1,8 @@
-import {NavigateNext} from "@mui/icons-material";
-import {ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
-import {ReactElement} from "react";
+import {NavigateNext} from "@mui/icons-material"
+import {ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material"
+import {ReactElement} from "react"
 
-import {SxPropsMap} from "../../../app/type";
+import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     button: {borderRadius: "2px", padding: "12px 16px"},

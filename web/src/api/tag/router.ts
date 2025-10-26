@@ -1,5 +1,5 @@
-import {api} from "../api";
-import {R} from "../management/type";
+import {api} from "../api"
+import {R} from "../management/type"
 
 export const TagApi = {
     list: {
