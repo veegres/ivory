@@ -25,9 +25,10 @@ jobs:
         go version
         make build
 
-#     - name: Test
-#       working-directory: service
-#       run: go test
+    - name: Test
+      working-directory: service
+      run: make test
+
 
   javascript:
     name: Build (javascript)
