@@ -335,6 +335,22 @@ func TestProvider_Verify(t *testing.T) {
 			t.Fatalf("Expected no error for correct case, got: %v", err)
 		}
 	})
+
+	t.Run("should return error when not configured", func(t *testing.T) {
+		provider := NewProvider()
+
+		_, err := provider.Verify(Login{
+			Username: "testuser",
+			Password: "password",
+		})
+
+		if err == nil {
+			t.Fatal("Expected error when not configured, got nil")
+		}
+		if err.Error() != "config is not configured" {
+			t.Errorf("Expected 'config is not configured', got: %v", err)
+		}
+	})
 }
 
 func TestProvider_Connect(t *testing.T) {

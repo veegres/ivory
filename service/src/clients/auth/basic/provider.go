@@ -36,6 +36,9 @@ func (p *Provider) DeleteConfig() {
 }
 
 func (p *Provider) Verify(subject Login) (string, error) {
+	if p.config == nil {
+		return "", errors.New("config is not configured")
+	}
 	if subject.Username != p.config.Username || subject.Password != p.config.Password {
 		return "", errors.New("credentials are not correct")
 	}
