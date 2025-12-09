@@ -229,7 +229,7 @@ func TestProvider_DeleteConfig(t *testing.T) {
 	})
 }
 
-func TestProvider_initialize_NotConfigured(t *testing.T) {
+func TestProvider_initialize(t *testing.T) {
 	t.Run("should return error when not configured", func(t *testing.T) {
 		provider := NewProvider()
 
