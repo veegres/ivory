@@ -14,6 +14,17 @@ func NewRouter(service *Service) *Router {
 	return &Router{service: service}
 }
 
+func (r *Router) InitialiseMiddleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		_, err := r.service.GetAppConfig()
+		if err != nil {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		context.Next()
+	}
+}
+
 func (r *Router) SetAppConfig(context *gin.Context) {
 	var appConfig NewAppConfig
 	errBind := context.ShouldBindJSON(&appConfig)

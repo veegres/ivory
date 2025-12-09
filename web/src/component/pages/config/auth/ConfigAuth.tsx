@@ -5,6 +5,7 @@ import {AuthType} from "../../../../api/auth/type"
 import {BasicConfig, LdapConfig, OidcConfig} from "../../../../api/config/type"
 import {SxPropsMap} from "../../../../app/type"
 import {ConfigBox} from "../../../view/box/ConfigBox"
+import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
 import {ConfigAuthBasic} from "./ConfigAuthBasic"
 import {ConfigAuthLdap} from "./ConfigAuthLdap"
 import {ConfigAuthOidc} from "./ConfigAuthOidc"
@@ -23,10 +24,11 @@ type Props = {
     oidcConfig: OidcConfig,
     onOidcChange: (config: OidcConfig) => void,
     onDefaultChange: () => void,
+    onAdminsChange: (v: string) => void,
 }
 
 export function ConfigAuth(props: Props) {
-    const {ldapConfig, oidcConfig, basicConfig, onOidcChange, onBasicChange, onLdapChange, onDefaultChange} = props
+    const {ldapConfig, oidcConfig, basicConfig, onOidcChange, onBasicChange, onLdapChange, onDefaultChange, onAdminsChange} = props
     const [authEnabled, setAuthEnabled] = useState(false)
     const [authTypeOpen, setAuthTypeOpen] = useState(AuthType.BASIC)
 
@@ -66,6 +68,12 @@ export function ConfigAuth(props: Props) {
     function renderBody() {
         return (
             <Box sx={SX.body}>
+                <KeyEnterInput
+                    label={"Superusers"}
+                    required={true}
+                    helperText={"at least one superuser should be provided, use ', ' for several"}
+                    onChange={(e) => onAdminsChange(e.target.value)}
+                />
                 {renderAuthSwitch()}
                 {renderAuthBody()}
             </Box>

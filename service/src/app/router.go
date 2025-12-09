@@ -41,13 +41,13 @@ func NewRouter(di *Context) {
 	unsafe.GET("/info", di.managementRouter.GetAppInfo)
 	unsafe.POST("/logout", di.authRouter.Logout)
 
-	initial := unsafe.Group("/", di.secretRouter.EmptySecretMiddleware())
+	initial := unsafe.Group("/", di.secretRouter.EmptyMiddleware())
 	initialRouter(initial, di.secretRouter, di.managementRouter)
 
-	general := unsafe.Group("/", di.secretRouter.ExistSecretMiddleware())
+	general := unsafe.Group("/", di.secretRouter.ExistMiddleware())
 	generalRouter(general, di.authRouter, di.configRouter)
 
-	safe := general.Group("/", di.authRouter.AuthMiddleware())
+	safe := general.Group("/", di.configRouter.InitialiseMiddleware(), di.authRouter.ValidateMiddleware())
 	managementRouter(safe, di.secretRouter, di.managementRouter)
 	clusterRouter(safe, di.clusterRouter)
 	bloatRouter(safe, di.bloatRouter)

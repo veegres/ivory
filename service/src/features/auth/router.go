@@ -37,7 +37,7 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) AuthMiddleware() gin.HandlerFunc {
+func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		valid, errValid := r.authService.ValidateAuthToken(context)
 		if !valid {

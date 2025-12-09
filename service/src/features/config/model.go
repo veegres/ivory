@@ -18,9 +18,10 @@ type AppConfig struct {
 }
 
 type AuthConfig struct {
-	Basic *basic.Config `json:"basic"`
-	Ldap  *ldap.Config  `json:"ldap"`
-	Oidc  *oidc.Config  `json:"oidc"`
+	Superusers []string      `json:"superusers"`
+	Basic      *basic.Config `json:"basic"`
+	Ldap       *ldap.Config  `json:"ldap"`
+	Oidc       *oidc.Config  `json:"oidc"`
 }
 
 type AvailabilityConfig struct {
