@@ -10,6 +10,10 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+var ErrNotFound = errors.New("element doesn't exist")
+var ErrAlreadyExists = errors.New("such an element already exists")
+var ErrEmptyKey = errors.New("element identifier cannot be empty")
+
 func NewStorage(name string) *bolt.DB {
 	path := "data/bolt"
 	errMk := os.MkdirAll(path, os.ModePerm)
@@ -105,7 +109,7 @@ func (b *Bucket[T]) Get(key string) (T, error) {
 	err := b.storage.View(func(tx *bolt.Tx) error {
 		el := tx.Bucket(b.name).Get([]byte(key))
 		if el == nil {
-			return errors.New("element doesn't exist")
+			return ErrNotFound
 		}
 		buff := bytes.NewBuffer(el)
 		err := gob.NewDecoder(buff).Decode(&value)
@@ -119,12 +123,12 @@ func (b *Bucket[T]) Get(key string) (T, error) {
 
 func (b *Bucket[T]) Create(key string, value T) (T, error) {
 	if key == "" {
-		return value, errors.New("element identifier cannot be empty")
+		return value, ErrEmptyKey
 	}
 	err := b.storage.Update(func(tx *bolt.Tx) error {
 		el := tx.Bucket(b.name).Get([]byte(key))
 		if el != nil {
-			return errors.New("such an element already exists")
+			return ErrAlreadyExists
 		}
 		var buff bytes.Buffer
 		err := gob.NewEncoder(&buff).Encode(value)
@@ -138,7 +142,7 @@ func (b *Bucket[T]) Create(key string, value T) (T, error) {
 
 func (b *Bucket[T]) Update(key string, value T) error {
 	if key == "" {
-		return errors.New("element identifier cannot be empty")
+		return ErrEmptyKey
 	}
 	return b.storage.Update(func(tx *bolt.Tx) error {
 		var buff bytes.Buffer
