@@ -29,6 +29,7 @@ export function ConfigBody(props: Props) {
     const [company, setCompany] = useState("")
     const [query, setQuery] = useState(false)
     const [secret, setSecret] = useState("")
+    const [admins, setAdmins] = useState("")
     const [basic, setBasic] = useState<BasicConfig>(defaultBasicConfig)
     const [ldap, setLdap] = useState<LdapConfig>(defaultLdapConfig)
     const [oidc, setOidc] = useState<OidcConfig>(defaultOidcConfig)
@@ -42,7 +43,7 @@ export function ConfigBody(props: Props) {
             <ConfigQuery onChange={setQuery}/>
             <ConfigAuth
                 basicConfig={basic} ldapConfig={ldap} oidcConfig={oidc}
-                onDefaultChange={handleDefaultChange}
+                onDefaultChange={handleDefaultChange} onAdminsChange={setAdmins}
                 onOidcChange={setOidc} onBasicChange={setBasic} onLdapChange={setLdap}
             />
         </PageStartupBox>
@@ -72,13 +73,7 @@ export function ConfigBody(props: Props) {
                     hidden
                 />
             )}
-            <Button
-                variant={"contained"}
-                loading={config.isPending}
-                onClick={handleClick}
-            >
-                Set
-            </Button>
+            <Button variant={"contained"} loading={config.isPending} onClick={handleClick}>Set</Button>
         </>)
     }
 
@@ -94,6 +89,7 @@ export function ConfigBody(props: Props) {
             appConfig: {
                 company,
                 auth: {
+                    superusers: admins.split(", "),
                     basic: JSON.stringify(basic) === JSON.stringify(defaultBasicConfig) ? undefined : basic,
                     ldap: JSON.stringify(ldap) === JSON.stringify(defaultLdapConfig) ? undefined : ldap,
                     oidc: JSON.stringify(oidc) === JSON.stringify(defaultOidcConfig) ? undefined : oidc,

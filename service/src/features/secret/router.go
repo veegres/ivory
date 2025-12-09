@@ -18,7 +18,7 @@ func NewRouter(
 	}
 }
 
-func (r *Router) ExistSecretMiddleware() gin.HandlerFunc {
+func (r *Router) ExistMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if r.secretService.IsSecretEmpty() {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "usage restricted when the secret key is not specified"})
@@ -28,7 +28,7 @@ func (r *Router) ExistSecretMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) EmptySecretMiddleware() gin.HandlerFunc {
+func (r *Router) EmptyMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if !r.secretService.IsSecretEmpty() {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "usage restricted when the secret key is specified"})

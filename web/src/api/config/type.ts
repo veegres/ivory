@@ -10,6 +10,7 @@ export interface AppConfig {
 }
 
 export interface AuthConfig {
+    superusers: string[],
     basic?: BasicConfig,
     ldap?: LdapConfig,
     oidc?: OidcConfig,

@@ -31,6 +31,7 @@ func NewRouter(
 	}
 }
 
+// ManualMiddleware TODO this is deprecated function and should be changed to use permission instead
 func (r *Router) ManualMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		appConfig, errConfig := r.configService.GetAppConfig()
