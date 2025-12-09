@@ -48,12 +48,13 @@ func (s *Service) Set(decryptedKey string) error {
 		return errors.New("secret word cannot be empty")
 	}
 	encryptedKey := md5.Sum([]byte(decryptedKey))
-	encryptedRef, err := s.encryption.Encrypt(s.decryptedRef, encryptedKey)
-	if err != nil {
-		return err
-	}
 	s.mutex.Lock()
 	if s.IsRefEmpty() {
+		encryptedRef, err := s.encryption.Encrypt(s.decryptedRef, encryptedKey)
+		if err != nil {
+			s.mutex.Unlock()
+			return err
+		}
 		err = s.repository.Update(encryptedRef)
 		if err != nil {
 			s.mutex.Unlock()
@@ -62,7 +63,12 @@ func (s *Service) Set(decryptedKey string) error {
 		s.key = encryptedKey
 		s.encryptedRef = encryptedRef
 	} else {
-		if s.encryptedRef == encryptedRef {
+		decryptedRef, errDec := s.encryption.Decrypt(s.encryptedRef, encryptedKey)
+		if errDec != nil {
+			s.mutex.Unlock()
+			return errDec
+		}
+		if s.decryptedRef == decryptedRef {
 			s.key = encryptedKey
 		} else {
 			s.mutex.Unlock()
