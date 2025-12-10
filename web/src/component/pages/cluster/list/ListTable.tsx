@@ -6,7 +6,6 @@ import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
 import scroll from "../../../../style/scroll.module.css"
-import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {InfoAlert} from "../../../view/box/InfoAlert"
 import {AddIconButton} from "../../../view/button/IconButtons"
 import {TableBody} from "../../../view/table/TableBody"
@@ -26,18 +25,15 @@ type Props = {
     map?: ClusterMap,
     pending: boolean,
     fetching: boolean,
-    error: any,
 }
 
 export function ListTable(props: Props) {
     const activeCluster = useStore(s => s.activeCluster)
-    const {map, error, fetching, pending} = props
+    const {map, fetching, pending} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
 
     const rows = useMemo(() => Object.entries(map ?? {}), [map])
-
-    if (error) return <ErrorSmart error={error}/>
 
     return (
         <Box sx={SX.box} className={scroll.tiny} maxHeight={activeCluster ? "25vh" : "60vh"}>
