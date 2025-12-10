@@ -39,12 +39,17 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		valid, _, errParse := r.authService.ParseAuthToken(context)
+		valid, username, errParse := r.authService.ParseAuthToken(context)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
 			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errParse.Error()})
 			return
 		}
+		if username == "" {
+			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "username cannot be empty"})
+			return
+		}
+		context.Set("username", username)
 		context.Next()
 	}
 }

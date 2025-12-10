@@ -14,6 +14,30 @@ func NewRouter(permissionService *Service) *Router {
 	return &Router{permissionService: permissionService}
 }
 
+func (r *Router) ValidateMiddleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		username := context.MustGet("username").(string)
+		permissions, err := r.permissionService.GetUserPermissions(username)
+		if err != nil {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
+		context.Set("permissions", permissions)
+		context.Next()
+	}
+}
+
+func (r *Router) ValidateMethodMiddleware(permission string) gin.HandlerFunc {
+	return func(context *gin.Context) {
+		permissions := context.MustGet("permissions").(map[string]PermissionStatus)
+		if permissions[permission] != GRANTED {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": permission + " is not permitted"})
+			return
+		}
+		context.Next()
+	}
+}
+
 func (r *Router) GetAllUserPermissions(context *gin.Context) {
 	userPermissions, err := r.permissionService.GetAllUserPermissions()
 	if err != nil {

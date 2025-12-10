@@ -19,8 +19,9 @@ func NewService(permissionRepository *Repository) *Service {
 	}
 }
 
-func (s *Service) SetSuperusers(superusers []string) {
+func (s *Service) SetSuperusers(superusers []string) error {
 	s.superusers = superusers
+	return s.normalize()
 }
 
 func (s *Service) DeleteAdmins() {
@@ -131,4 +132,32 @@ func (s *Service) isValidPermission(permissionName string) bool {
 		}
 	}
 	return false
+}
+
+func (s *Service) normalize() error {
+	permissionsMap, errMap := s.permissionRepository.GetAll()
+	if errMap != nil {
+		return errMap
+	}
+	for username, permissions := range permissionsMap {
+		status := NOT_PERMITTED
+		if slices.Contains(s.superusers, username) {
+			status = GRANTED
+		}
+
+		normalisedPermissions := make(map[string]PermissionStatus)
+		for _, permissionName := range PermissionList {
+			if perm, ok := permissions[permissionName]; !ok {
+				normalisedPermissions[permissionName] = status
+			} else {
+				normalisedPermissions[permissionName] = perm
+			}
+		}
+
+		errUpdate := s.permissionRepository.CreateOrUpdate(username, normalisedPermissions)
+		if errUpdate != nil {
+			return errUpdate
+		}
+	}
+	return nil
 }

@@ -48,16 +48,16 @@ func NewRouter(di *Context) {
 	general := unsafe.Group("/", di.secretRouter.ExistMiddleware())
 	generalRouter(general, di.authRouter, di.configRouter)
 
-	safe := general.Group("/", di.configRouter.InitialiseMiddleware(), di.authRouter.ValidateMiddleware())
-	managementRouter(safe, di.secretRouter, di.managementRouter)
-	clusterRouter(safe, di.clusterRouter)
-	bloatRouter(safe, di.bloatRouter)
-	certRouter(safe, di.certRouter)
-	passwordRouter(safe, di.passwordRouter)
-	permissionRouter(safe, di.permissionRouter)
-	tagRouter(safe, di.tagRouter)
-	instanceRouter(safe, di.instanceRouter)
-	queryRouter(safe, di.queryRouter)
+	safe := general.Group("/", di.configRouter.InitialiseMiddleware(), di.authRouter.ValidateMiddleware(), di.permissionRouter.ValidateMiddleware())
+	managementRouter(safe, di.permissionRouter, di.secretRouter, di.managementRouter)
+	clusterRouter(safe, di.permissionRouter, di.clusterRouter)
+	instanceRouter(safe, di.permissionRouter, di.instanceRouter)
+	tagRouter(safe, di.permissionRouter, di.tagRouter)
+	bloatRouter(safe, di.permissionRouter, di.bloatRouter)
+	certRouter(safe, di.permissionRouter, di.certRouter)
+	passwordRouter(safe, di.permissionRouter, di.passwordRouter)
+	permissionRouter(safe, di.permissionRouter, di.permissionRouter)
+	queryRouter(safe, di.permissionRouter, di.queryRouter)
 
 	slog.Info("Ivory address: " + di.env.Config.UrlAddress)
 	slog.Info("Ivory WEB path: " + di.env.Config.UrlPath)
@@ -99,98 +99,100 @@ func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router)
 	group.DELETE("/erase", rg.Erase)
 }
 
-func managementRouter(g *gin.RouterGroup, rs *secret.Router, rm *management.Router) {
+func managementRouter(g *gin.RouterGroup, rp *permission.Router, rs *secret.Router, rm *management.Router) {
 	group := g.Group("/management")
-	group.GET("/secret", rs.GetSecretStatus)
-	group.POST("/secret", rm.ChangeSecret)
-	group.DELETE("/erase", rm.Erase)
+	group.GET("/secret", rp.ValidateMethodMiddleware("view.management.secret"), rs.GetSecretStatus)
+	group.POST("/secret", rp.ValidateMethodMiddleware("manage.management.secret"), rm.ChangeSecret)
+	group.DELETE("/erase", rp.ValidateMethodMiddleware("manage.management.erase"), rm.Erase)
 }
 
-func clusterRouter(g *gin.RouterGroup, r *cluster.Router) {
+func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router) {
 	group := g.Group("/cluster")
-	group.GET("", r.GetClusterList)
-	group.GET("/:name", r.GetClusterByName)
-	group.PUT("", r.PutClusterByName)
-	group.POST("/auto", r.PostClusterAuto)
-	group.DELETE("/:name", r.DeleteClusterByName)
+	group.GET("", rp.ValidateMethodMiddleware("view.cluster.list"), r.GetClusterList)
+	group.GET("/:name", rp.ValidateMethodMiddleware("view.cluster.item"), r.GetClusterByName)
+	group.PUT("", rp.ValidateMethodMiddleware("manage.cluster.create"), r.PutClusterByName)
+	group.POST("/auto", rp.ValidateMethodMiddleware("manage.cluster.create"), r.PostClusterAuto)
+	group.DELETE("/:name", rp.ValidateMethodMiddleware("manage.cluster.delete"), r.DeleteClusterByName)
 }
 
-func bloatRouter(g *gin.RouterGroup, r *bloat.Router) {
+func bloatRouter(g *gin.RouterGroup, rp *permission.Router, r *bloat.Router) {
 	group := g.Group("/cli")
-	group.GET("/bloat", r.GetBloatList)
-	group.GET("/bloat/:uuid", r.GetBloat)
-	group.GET("/bloat/:uuid/logs", r.GetBloatLogs)
-	group.GET("/bloat/cluster/:name", r.GetBloatListByCluster)
-	group.POST("/bloat/job/start", r.PostJobStart)
-	group.POST("/bloat/job/:uuid/stop", r.PostJobStop)
-	group.DELETE("/bloat/job/:uuid/delete", r.DeleteJob)
-	group.GET("/bloat/job/:uuid/stream", r.GetJobStream)
+	group.GET("/bloat", rp.ValidateMethodMiddleware("view.bloat.list"), r.GetBloatList)
+	group.GET("/bloat/cluster/:name", rp.ValidateMethodMiddleware("view.bloat.list"), r.GetBloatListByCluster)
+	group.GET("/bloat/:uuid", rp.ValidateMethodMiddleware("view.bloat.item"), r.GetBloat)
+	group.GET("/bloat/:uuid/logs", rp.ValidateMethodMiddleware("view.bloat.logs"), r.GetBloatLogs)
+	group.POST("/bloat/job/start", rp.ValidateMethodMiddleware("manage.bloat.job"), r.PostJobStart)
+	group.POST("/bloat/job/:uuid/stop", rp.ValidateMethodMiddleware("manage.bloat.job"), r.PostJobStop)
+	group.DELETE("/bloat/job/:uuid/delete", rp.ValidateMethodMiddleware("manage.bloat.job"), r.DeleteJob)
+	group.GET("/bloat/job/:uuid/stream", rp.ValidateMethodMiddleware("manage.bloat.job"), r.GetJobStream)
 }
 
-func certRouter(g *gin.RouterGroup, r *cert.Router) {
+func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {
 	group := g.Group("/cert")
-	group.GET("", r.GetCertList)
-	group.DELETE("/:uuid", r.DeleteCert)
-	group.POST("/upload", r.PostUploadCert)
-	group.POST("/add", r.PostAddCert)
+	group.GET("", rp.ValidateMethodMiddleware("view.cert.list"), r.GetCertList)
+	group.POST("/upload", rp.ValidateMethodMiddleware("manage.cert.create"), r.PostUploadCert)
+	group.POST("/add", rp.ValidateMethodMiddleware("manage.cert.create"), r.PostAddCert)
+	group.DELETE("/:uuid", rp.ValidateMethodMiddleware("manage.cert.delete"), r.DeleteCert)
 }
 
-func passwordRouter(g *gin.RouterGroup, r *password.Router) {
+func passwordRouter(g *gin.RouterGroup, rp *permission.Router, r *password.Router) {
 	group := g.Group("/password")
-	group.GET("", r.GetCredentials)
-	group.POST("", r.PostCredential)
-	group.PATCH("/:uuid", r.PatchCredential)
-	group.DELETE("/:uuid", r.DeleteCredential)
+	group.GET("", rp.ValidateMethodMiddleware("view.password.list"), r.GetPasswordList)
+	group.POST("", rp.ValidateMethodMiddleware("manage.password.create"), r.PostPassword)
+	group.PATCH("/:uuid", rp.ValidateMethodMiddleware("manage.password.update"), r.PatchPassword)
+	group.DELETE("/:uuid", rp.ValidateMethodMiddleware("manage.password.delete"), r.DeletePassword)
 }
 
-func permissionRouter(g *gin.RouterGroup, r *permission.Router) {
+func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.Router) {
 	group := g.Group("/permission")
-	group.GET("/users", r.GetAllUserPermissions)
 	group.POST("/users/:username/request", r.RequestUserPermission)
-	group.POST("/users/:username/approve", r.ApproveUserPermission)
-	group.POST("/users/:username/reject", r.RejectUserPermission)
-	group.DELETE("/users/:username", r.DeleteUserPermissions)
+	group.GET("/users", rp.ValidateMethodMiddleware("view.permission.list"), r.GetAllUserPermissions)
+	group.POST("/users/:username/approve", rp.ValidateMethodMiddleware("manage.permission.update"), r.ApproveUserPermission)
+	group.POST("/users/:username/reject", rp.ValidateMethodMiddleware("manage.permission.update"), r.RejectUserPermission)
+	group.DELETE("/users/:username", rp.ValidateMethodMiddleware("manage.permission.delete"), r.DeleteUserPermissions)
 }
 
-func tagRouter(g *gin.RouterGroup, r *tag.Router) {
+func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {
 	group := g.Group("/tag")
-	group.GET("", r.GetTagList)
+	group.GET("", rp.ValidateMethodMiddleware("view.tag.list"), r.GetTagList)
 }
 
-func instanceRouter(g *gin.RouterGroup, r *instance.Router) {
+func instanceRouter(g *gin.RouterGroup, rp *permission.Router, r *instance.Router) {
 	group := g.Group("/instance")
-	group.GET("/overview", r.GetInstanceOverview)
-	group.GET("/config", r.GetInstanceConfig)
-	group.PATCH("/config", r.PatchInstanceConfig)
-	group.POST("/switchover", r.PostInstanceSwitchover)
-	group.DELETE("/switchover", r.DeleteInstanceSwitchover)
-	group.POST("/reinitialize", r.PostInstanceReinitialize)
-	group.POST("/restart", r.PostInstanceRestart)
-	group.DELETE("/restart", r.DeleteInstanceRestart)
-	group.POST("/reload", r.PostInstanceReload)
-	group.POST("/failover", r.PostInstanceFailover)
-	group.POST("/activate", r.PostInstanceActivate)
-	group.POST("/pause", r.PostInstancePause)
+	group.GET("/overview", rp.ValidateMethodMiddleware("view.instance.overview"), r.GetInstanceOverview)
+	group.GET("/config", rp.ValidateMethodMiddleware("view.instance.config"), r.GetInstanceConfig)
+	group.PATCH("/config", rp.ValidateMethodMiddleware("manage.instance.config.update"), r.PatchInstanceConfig)
+	group.POST("/switchover", rp.ValidateMethodMiddleware("manage.instance.switchover"), r.PostInstanceSwitchover)
+	group.DELETE("/switchover", rp.ValidateMethodMiddleware("manage.instance.switchover"), r.DeleteInstanceSwitchover)
+	group.POST("/reinitialize", rp.ValidateMethodMiddleware("manage.instance.reinitialize"), r.PostInstanceReinitialize)
+	group.POST("/restart", rp.ValidateMethodMiddleware("manage.instance.restart"), r.PostInstanceRestart)
+	group.DELETE("/restart", rp.ValidateMethodMiddleware("manage.instance.restart"), r.DeleteInstanceRestart)
+	group.POST("/reload", rp.ValidateMethodMiddleware("manage.instance.reload"), r.PostInstanceReload)
+	group.POST("/failover", rp.ValidateMethodMiddleware("manage.instance.failover"), r.PostInstanceFailover)
+	group.POST("/activate", rp.ValidateMethodMiddleware("manage.instance.activation"), r.PostInstanceActivate)
+	group.POST("/pause", rp.ValidateMethodMiddleware("manage.instance.activation"), r.PostInstancePause)
 }
 
-func queryRouter(g *gin.RouterGroup, r *query.Router) {
+func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
 	group := g.Group("/query")
-	group.GET("", r.GetQueryList)
-	group.POST("/run", r.PostRunQuery)
-	group.POST("/activity", r.PostActivityQuery)
-	group.POST("/databases", r.PostDatabasesQuery)
-	group.POST("/schemas", r.PostSchemasQuery)
-	group.POST("/tables", r.PostTablesQuery)
-	group.POST("/chart", r.PostChartQuery)
-	group.POST("/cancel", r.PostCancelQuery)
-	group.POST("/terminate", r.PostTerminateQuery)
+	group.GET("", rp.ValidateMethodMiddleware("view.query.list"), r.GetQueryList)
+	group.POST("", rp.ValidateMethodMiddleware("manage.query.create"), r.PostQuery)
+	group.PUT("/:uuid", rp.ValidateMethodMiddleware("manage.query.update"), r.PutQuery)
+	group.DELETE("/:uuid", rp.ValidateMethodMiddleware("manage.query.delete"), r.DeleteQuery)
 
-	manualGroup := group.Group("", r.ManualMiddleware())
-	manualGroup.POST("", r.PostQuery)
-	manualGroup.PUT("/:uuid", r.PutQuery)
-	manualGroup.DELETE("/:uuid", r.DeleteQuery)
+	executeGroup := group.Group("/execute")
+	// TODO separate console and template request
+	executeGroup.POST("/console", rp.ValidateMethodMiddleware("manage.query.execute.console"), r.PostRunQuery)
+	executeGroup.POST("/template", rp.ValidateMethodMiddleware("manage.query.execute.template"), r.PostRunQuery)
+	executeGroup.POST("/activity", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostActivityQuery)
+	executeGroup.POST("/databases", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostDatabasesQuery)
+	executeGroup.POST("/schemas", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostSchemasQuery)
+	executeGroup.POST("/tables", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostTablesQuery)
+	executeGroup.POST("/chart", rp.ValidateMethodMiddleware("view.query.execute.chart"), r.PostChartQuery)
+	executeGroup.POST("/cancel", rp.ValidateMethodMiddleware("manage.query.execute.cancel"), r.PostCancelQuery)
+	executeGroup.POST("/terminate", rp.ValidateMethodMiddleware("manage.query.execute.cancel"), r.PostTerminateQuery)
 
 	logGroup := group.Group("/log")
-	logGroup.GET("/:uuid", r.GetQueryLog)
-	logGroup.DELETE("/:uuid", r.DeleteQueryLog)
+	logGroup.GET("/:uuid", rp.ValidateMethodMiddleware("view.query.log.list"), r.GetQueryLog)
+	logGroup.DELETE("/:uuid", rp.ValidateMethodMiddleware("manage.query.log.delete"), r.DeleteQueryLog)
 }

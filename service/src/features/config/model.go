@@ -24,6 +24,7 @@ type AuthConfig struct {
 	Oidc       *oidc.Config  `json:"oidc"`
 }
 
+// AvailabilityConfig TODO this is deprecated class and should be removed
 type AvailabilityConfig struct {
 	ManualQuery bool `json:"manualQuery"`
 }

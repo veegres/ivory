@@ -8,6 +8,7 @@ import {ActiveCluster} from "../../../../api/cluster/type"
 import {useRouterQueryList} from "../../../../api/query/hook"
 import {QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
+import {ErrorSmart} from "../../../view/box/ErrorSmart";
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Query} from "../../../widgets/query/Query"
 import {OverviewBloatJob} from "./OverviewBloatJob"
@@ -61,11 +62,9 @@ export function OverviewBloat(props: Props) {
     function renderBody() {
         switch (tab) {
             case ListBlock.JOB:
-                return <OverviewBloatJob list={jobs.data} cluster={cluster.name}/>
+                return jobs.error ? <ErrorSmart error={jobs.error}/> : <OverviewBloatJob list={jobs.data} cluster={cluster.name}/>
             case ListBlock.QUERY:
-                return cluster.credentials.postgresId && (
-                    <Query type={QueryType.BLOAT} connection={{db, certs, credentialId: credentials.postgresId}}/>
-                )
+                return <Query type={QueryType.BLOAT} connection={{db, certs, credentialId: credentials.postgresId}}/>
         }
     }
 

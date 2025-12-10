@@ -42,8 +42,8 @@ export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
 export function useRouterQueryRun(request: QueryRunRequest) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: QueryApi.run.key(request.queryUuid ?? "console"),
-        queryFn: () => QueryApi.run.fn(request.queryUuid ? {...request, query: undefined} : request),
+        queryKey: QueryApi.console.key(request.queryUuid ?? "console"),
+        queryFn: () => QueryApi.console.fn(request.queryUuid ? {...request, query: undefined} : request),
         retry: false, refetchOnWindowFocus: false, structuralSharing: false,
     })
 }
@@ -96,7 +96,7 @@ export function useRouterQueryCancel(queryKey: string) {
     return useMutationAdapter({
         mutationFn: QueryApi.cancel.fn,
         mutationKey: QueryApi.cancel.key(),
-        successKeys: [QueryApi.run.key(queryKey)],
+        successKeys: [QueryApi.console.key(queryKey)],
     })
 }
 
@@ -104,7 +104,7 @@ export function useRouterQueryTerminate(queryKey: string) {
     return useMutationAdapter({
         mutationFn: QueryApi.terminate.fn,
         mutationKey: QueryApi.terminate.key(),
-        successKeys: [QueryApi.run.key(queryKey)],
+        successKeys: [QueryApi.console.key(queryKey)],
     })
 }
 
