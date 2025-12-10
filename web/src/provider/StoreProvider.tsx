@@ -1,17 +1,16 @@
 import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
-import {ActiveCluster, DetectionType} from "../api/cluster/type"
+import {ActiveCluster, ActiveInstance, DetectionType} from "../api/cluster/type"
 import {InstanceTabType, InstanceWeb} from "../api/instance/type"
 import {QueryType} from "../api/query/type"
-import {getDomain} from "../app/utils"
 import {MainQueryClient} from "./AppProvider"
 
 // STORE
 interface Store {
     activeClusterTab: number,
     activeCluster?: ActiveCluster,
-    activeInstance: { [cluster: string]: InstanceWeb | undefined },
+    activeInstance: ActiveInstance,
     activeTags: string[],
     warnings: { [key: string]: boolean },
     settings: boolean,
@@ -21,15 +20,10 @@ interface Store {
         queryConsole: string,
         dbName?: string,
     },
-
-    isClusterActive: (name: string) => boolean
-    isClusterOverviewOpen: () => boolean
-    isInstanceActive: (key: string) => boolean,
-    getActiveInstance: () => InstanceWeb | undefined,
 }
 
 export const useStore = create(persist<Store>(
-    (_, get) => ({
+    () => ({
         activeClusterTab: 0,
         activeCluster: undefined,
         activeInstance: {},
@@ -42,14 +36,6 @@ export const useStore = create(persist<Store>(
             queryConsole: "",
             dbName: undefined,
         },
-        isClusterActive: (name: string) => isClusterActive(get(), name),
-        isClusterOverviewOpen: () => isClusterOverviewOpen(get()),
-        isInstanceActive: (key: string) => isInstanceActive(get(), key),
-        getActiveInstance: () => {
-            const s = get()
-            const activeCluster = s.activeCluster
-            return activeCluster && s.activeInstance[activeCluster.cluster.name]
-        }
     }),
     {name: "store", version: 1}
 ))
@@ -126,15 +112,4 @@ function setDbName(n?: string) {
     useStore.setState(s => ({...s, instance: {...s.instance, dbName: n}}))
 }
 
-// GETTERS
-function isClusterActive(state: Store, name: string) {
-    return name === state.activeCluster?.cluster.name
-}
-function isClusterOverviewOpen(state: Store) {
-    return !!state.activeCluster && state.activeClusterTab === 0
-}
-function isInstanceActive(s: Store, key: string) {
-    const activeInstance = s.getActiveInstance()
-    return activeInstance ? getDomain(activeInstance.sidecar) === key : false
-}
 

@@ -1,7 +1,7 @@
 import {Box, Divider} from "@mui/material"
 
 import {SxPropsMap} from "../../../../app/type"
-import {getQueryConnection} from "../../../../app/utils"
+import {getActiveInstance, getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {InfoAlert} from "../../../view/box/InfoAlert"
 import {PageMainBox} from "../../../view/box/PageMainBox"
@@ -13,14 +13,17 @@ const SX: SxPropsMap = {
 }
 
 export function Instance() {
-    const activeInstance = useStore(s => s.getActiveInstance())
-    const activeCluster = useStore(s => s.activeCluster)
-    const isClusterOverviewOpen = useStore(s => s.isClusterOverviewOpen)
     const instance = useStore(s => s.instance)
+    const activeInstances = useStore(s => s.activeInstance)
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterTab = useStore(s => s.activeClusterTab)
+    const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
+    const activeInstance = getActiveInstance(activeInstances, activeCluster)
+
     const {setInstanceBody} = useStoreAction
 
     return (
-        <PageMainBox withPadding visible={isClusterOverviewOpen()}>
+        <PageMainBox withPadding visible={isClusterOverviewOpen}>
             {renderContent()}
         </PageMainBox>
     )

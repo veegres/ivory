@@ -48,6 +48,10 @@ export interface ActiveCluster {
     detection: DetectionType,
 }
 
+export interface ActiveInstance {
+    [cluster: string]: InstanceWeb | undefined
+}
+
 export interface ClusterTabs {
     [key: number]: {
         label: string,

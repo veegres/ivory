@@ -11,12 +11,35 @@ vi.mock("../../src/hook/LocalStorage", () => ({
     },
 }))
 
-// Mock MainQueryClient
-vi.mock("../../src/app/main", () => ({
-    MainQueryClient: {
+// Mock QueryClient from tanstack
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@tanstack/react-query")>()
+    const mockQueryClient = {
         setDefaultOptions: vi.fn(),
-    },
-}))
+        clear: vi.fn(),
+        mount: vi.fn(),
+        unmount: vi.fn(),
+        isFetching: vi.fn(() => 0),
+        isMutating: vi.fn(() => 0),
+        getQueryData: vi.fn(),
+        setQueryData: vi.fn(),
+        getQueriesData: vi.fn(),
+        setQueriesData: vi.fn(),
+        invalidateQueries: vi.fn(),
+        refetchQueries: vi.fn(),
+        cancelQueries: vi.fn(),
+        removeQueries: vi.fn(),
+        resetQueries: vi.fn(),
+        getQueryCache: vi.fn(),
+        getMutationCache: vi.fn(),
+    }
+    return {
+        ...actual,
+        QueryClient: vi.fn(function(this: any) {
+            return mockQueryClient
+        }),
+    }
+})
 
 // Mock useMediaQuery
 vi.mock("@mui/material", async (importOriginal) => {

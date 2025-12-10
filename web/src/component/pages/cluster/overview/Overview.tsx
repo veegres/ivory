@@ -5,6 +5,7 @@ import {useRouterClusterList} from "../../../../api/cluster/hook"
 import {ActiveCluster, ClusterTabs} from "../../../../api/cluster/type"
 import {InstanceWeb} from "../../../../api/instance/type"
 import {SxPropsMap} from "../../../../app/type"
+import {getActiveInstance} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {InfoAlert} from "../../../view/box/InfoAlert"
 import {PageMainBox} from "../../../view/box/PageMainBox"
@@ -77,10 +78,11 @@ const TABS: ClusterTabs = {
 }
 
 export function Overview() {
-    const activeCluster = useStore(s => s.activeCluster)
     const activeClusterTab = useStore(s => s.activeClusterTab)
-    const activeInstance = useStore(s => s.getActiveInstance())
     const activeTags = useStore(s => s.activeTags)
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeInstances = useStore(s => s.activeInstance)
+    const activeInstance = getActiveInstance(activeInstances, activeCluster)
     const {setClusterTab} = useStoreAction
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)

@@ -1,4 +1,4 @@
-import {renderHook, waitFor} from "@testing-library/react"
+import {act, renderHook, waitFor} from "@testing-library/react"
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest"
 
 import {useLocalStorageState} from "../../src/hook/LocalStorage"
@@ -59,7 +59,9 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", "initial"))
 
             const [, setValue] = result.current
-            setValue("updated")
+            act(() => {
+                setValue("updated")
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toBe("updated")
@@ -71,7 +73,9 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", 0))
 
             const [, setValue] = result.current
-            setValue(42)
+            act(() => {
+                setValue(42)
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toBe(42)
@@ -85,7 +89,9 @@ describe("useLocalStorageState", () => {
             )
 
             const [, setValue] = result.current
-            setValue({count: 5})
+            act(() => {
+                setValue({count: 5})
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toEqual({count: 5})
@@ -97,13 +103,17 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", 0))
 
             const [, setValue] = result.current
-            setValue((prev) => prev + 1)
+            act(() => {
+                setValue((prev) => prev + 1)
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toBe(1)
             })
 
-            setValue((prev) => prev + 1)
+            act(() => {
+                setValue((prev) => prev + 1)
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toBe(2)
@@ -114,7 +124,9 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", "initial"))
 
             const [, setValue] = result.current
-            setValue(undefined as any)
+            act(() => {
+                setValue(undefined as any)
+            })
 
             // localStorage should not be updated
             expect(localStorage.getItem("test-key")).toBe("initial")
@@ -124,7 +136,9 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", "initial"))
 
             const [, setValue] = result.current
-            setValue(null as any)
+            act(() => {
+                setValue(null as any)
+            })
 
             // localStorage should not be updated
             expect(localStorage.getItem("test-key")).toBe("initial")
@@ -152,11 +166,13 @@ describe("useLocalStorageState", () => {
             )
 
             // Simulate storage event from another tab
-            const storageEvent = new StorageEvent("storage", {
-                key: "test-key",
-                newValue: "from-other-tab",
+            act(() => {
+                const storageEvent = new StorageEvent("storage", {
+                    key: "test-key",
+                    newValue: "from-other-tab",
+                })
+                window.dispatchEvent(storageEvent)
             })
-            window.dispatchEvent(storageEvent)
 
             await waitFor(() => {
                 expect(result.current[0]).toBe("from-other-tab")
@@ -216,7 +232,9 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", false))
 
             const [, setValue] = result.current
-            setValue(true)
+            act(() => {
+                setValue(true)
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toBe(true)
@@ -228,7 +246,9 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", "initial"))
 
             const [, setValue] = result.current
-            setValue("")
+            act(() => {
+                setValue("")
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toBe("")
@@ -240,7 +260,9 @@ describe("useLocalStorageState", () => {
             const {result} = renderHook(() => useLocalStorageState("test-key", 100))
 
             const [, setValue] = result.current
-            setValue(0)
+            act(() => {
+                setValue(0)
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toBe(0)
@@ -254,7 +276,9 @@ describe("useLocalStorageState", () => {
 
             const [, setValue] = result.current
             const updatedValue = {user: {name: "Jane", settings: {theme: "light"}}}
-            setValue(updatedValue)
+            act(() => {
+                setValue(updatedValue)
+            })
 
             await waitFor(() => {
                 expect(result.current[0]).toEqual(updatedValue)
@@ -277,7 +301,9 @@ describe("useLocalStorageState", () => {
 
             // Update from first hook
             const [, setValue1] = result1.current
-            setValue1("updated")
+            act(() => {
+                setValue1("updated")
+            })
 
             await waitFor(() => {
                 expect(result1.current[0]).toBe("updated")
