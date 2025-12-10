@@ -5,7 +5,7 @@ import {ActiveCluster} from "../../../../api/cluster/type"
 import {InstanceApi} from "../../../../api/instance/router"
 import {InstanceWeb} from "../../../../api/instance/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getDomain} from "../../../../app/utils"
+import {getDomain, getIsActiveInstance} from "../../../../app/utils"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {RefreshIconButton} from "../../../view/button/IconButtons"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
@@ -54,7 +54,7 @@ export function OverviewInstances(props: Props) {
                 <TableBody>
                     {renderCheckedInstance()}
                     {Object.entries(combinedInstanceMap).map(([key, element]) => (
-                        <OverviewInstancesRow key={key} domain={key} instance={element} cluster={cluster} candidates={candidates}/>
+                        <OverviewInstancesRow key={key} checked={getIsActiveInstance(key, activeInstance)} instance={element} cluster={cluster} candidates={candidates}/>
                     ))}
                 </TableBody>
             </Table>
@@ -66,8 +66,9 @@ export function OverviewInstances(props: Props) {
         if (!activeInstance) return
         const domain = getDomain(activeInstance.sidecar)
         if (combinedInstanceMap[domain]) return
+        const checked = getIsActiveInstance(domain, activeInstance)
         return (
-            <OverviewInstancesRow domain={domain} instance={activeInstance} cluster={cluster} candidates={candidates} error={true}/>
+            <OverviewInstancesRow checked={checked} instance={activeInstance} cluster={cluster} candidates={candidates} error={true}/>
         )
     }
 }
