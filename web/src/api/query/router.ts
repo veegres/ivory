@@ -31,44 +31,44 @@ export const QueryApi = {
         fn: (uuid: string) => api.delete<R<string>>(`/query/${uuid}`)
             .then((response) => response.data.response),
     },
-    run: {
-        key: (type: string) => ["query", "run", type],
-        fn: (req: QueryRunRequest) => api.post<R<QueryFields>>("/query/run", req)
+    console: {
+        key: (type: string) => ["query", "console", type],
+        fn: (req: QueryRunRequest) => api.post<R<QueryFields>>("/query/execute/console", req)
             .then((response) => response.data.response),
     },
     activity: {
-        key: () => QueryApi.run.key("activity"),
-        fn: (req: QueryConnection) => api.post<R<QueryFields>>("/query/activity", req)
+        key: () => QueryApi.console.key("activity"),
+        fn: (req: QueryConnection) => api.post<R<QueryFields>>("/query/execute/activity", req)
             .then((response) => response.data.response),
     },
     databases: {
         key: (con: QueryConnection) => ["query", "databases", con],
-        fn: (req: QueryDatabasesRequest) => api.post<R<string[]>>("/query/databases", req)
+        fn: (req: QueryDatabasesRequest) => api.post<R<string[]>>("/query/execute/databases", req)
             .then((response) => response.data.response),
     },
     schemas: {
         key: (con: QueryConnection) => ["query", "schemas", con],
-        fn: (req: QuerySchemasRequest) => api.post<R<string[]>>("/query/schemas", req)
+        fn: (req: QuerySchemasRequest) => api.post<R<string[]>>("/query/execute/schemas", req)
             .then((response) => response.data.response),
     },
     tables: {
         key: (con: QueryConnection, schema?: string) => ["query", "tables", con, schema ?? "-"],
-        fn: (req: QueryTablesRequest) => api.post<R<string[]>>("/query/tables", req)
+        fn: (req: QueryTablesRequest) => api.post<R<string[]>>("/query/execute/tables", req)
             .then((response) => response.data.response),
     },
     chart: {
         key: (req: QueryChartRequest) => ["query", "chart", req.type, req.connection],
-        fn: (req: QueryChartRequest) => api.post<R<QueryChart>>("/query/chart", req)
+        fn: (req: QueryChartRequest) => api.post<R<QueryChart>>("/query/execute/chart", req)
             .then((response) => response.data.response),
     },
     cancel: {
         key: () => ["query", "cancel"],
-        fn: (req: QueryKillRequest) => api.post<R<string>>("/query/cancel", req)
+        fn: (req: QueryKillRequest) => api.post<R<string>>("/query/execute/cancel", req)
             .then((response) => response.data.response),
     },
     terminate: {
         key: () => ["query", "terminate"],
-        fn: (req: QueryKillRequest) => api.post<R<string>>("/query/terminate", req)
+        fn: (req: QueryKillRequest) => api.post<R<string>>("/query/execute/terminate", req)
             .then((response) => response.data.response),
     },
 

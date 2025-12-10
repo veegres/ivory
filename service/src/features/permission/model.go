@@ -20,7 +20,7 @@ type UserPermissions struct {
 	Permissions map[string]PermissionStatus `json:"permissions"`
 }
 
-// UserPermissionsMap is a map where key is username/email and value is the permissions map
+// UserPermissionsMap is a map where the key is username/email and value is the permissions map
 type UserPermissionsMap map[string]map[string]PermissionStatus
 
 // SPECIFIC (SERVER)
@@ -30,37 +30,59 @@ var PermissionList = []string{
 	"view.cluster.list",
 	"view.cluster.item",
 	"manage.cluster.create",
-	"manage.cluster.update",
 	"manage.cluster.delete",
 
+	// Tags permissions
+	"view.tag.list",
+
 	// Instance permissions
-	"view.instance.list",
-	"view.instance.item",
-	"manage.instance.create",
-	"manage.instance.update",
-	"manage.instance.delete",
+	"view.instance.overview",
+	"view.instance.config",
+	"manage.instance.config.update",
+	"manage.instance.switchover",
+	"manage.instance.reinitialize",
+	"manage.instance.restart",
+	"manage.instance.reload",
+	"manage.instance.failover",
+	"manage.instance.activation",
 
 	// Query permissions
 	"view.query.list",
-	"view.query.item",
-	"manage.query.execute",
-	"manage.query.cancel",
+	"manage.query.create",
+	"manage.query.update",
+	"manage.query.delete",
+	"view.query.execute.info",
+	"view.query.execute.chart",
+	"manage.query.execute.template",
+	"manage.query.execute.console",
+	"view.query.log.list",
+	"manage.query.log.delete",
 
-	// Password/Credential permissions
+	// Password permissions
 	"view.password.list",
-	"view.password.item",
 	"manage.password.create",
 	"manage.password.update",
 	"manage.password.delete",
 
-	// User permissions
-	"view.user.list",
-	"view.user.item",
-	"manage.user.create",
-	"manage.user.update",
-	"manage.user.delete",
+	// Cert permissions
+	"view.cert.list",
+	"manage.cert.create",
+	"manage.cert.delete",
 
 	// Permission management
 	"view.permission.list",
 	"manage.permission.update",
+	"manage.permission.delete",
+
+	// Bloat permissions
+	"view.bloat.list",
+	"view.bloat.item",
+	"view.bloat.logs",
+	"manage.bloat.update",
+	"manage.bloat.job",
+
+	// Management permissions
+	"view.management.secret",
+	"manage.management.secret",
+	"manage.management.erase",
 }

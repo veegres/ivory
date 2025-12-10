@@ -31,22 +31,6 @@ func NewRouter(
 	}
 }
 
-// ManualMiddleware TODO this is deprecated function and should be changed to use permission instead
-func (r *Router) ManualMiddleware() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		appConfig, errConfig := r.configService.GetAppConfig()
-		if errConfig != nil {
-			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": errConfig})
-			return
-		}
-		if !appConfig.Availability.ManualQuery {
-			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "manual queries are restricted"})
-			return
-		}
-		context.Next()
-	}
-}
-
 func (r *Router) PutQuery(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
