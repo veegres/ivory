@@ -84,7 +84,7 @@ function setInstance(instance?: InstanceWeb) {
         if (!clusterName) return s
         if (instance) return {...s, activeInstance: {...s.activeInstance, [clusterName]: instance}}
         if (!s.activeInstance[clusterName]) return s
-        const store = {...s}
+        const store = {...s, activeInstance: {...s.activeInstance}}
         delete store.activeInstance[clusterName]
         return store
     })

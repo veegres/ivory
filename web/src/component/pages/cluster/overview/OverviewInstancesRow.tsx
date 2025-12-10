@@ -1,19 +1,18 @@
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
-import {useEffect} from "react"
 
 import {Cluster} from "../../../../api/cluster/type"
 import {InstanceWeb, Sidecar} from "../../../../api/instance/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
-    DateTimeFormatter, getActiveInstance, getIsActiveInstance,
+    DateTimeFormatter,
     getSidecarConnection,
     InstanceColor,
     SizeFormatter,
     SxPropsFormatter
 } from "../../../../app/utils"
-import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {useStoreAction} from "../../../../provider/StoreProvider"
 import {InfoColorBox} from "../../../view/box/InfoColorBox"
 import {MenuButton} from "../../../view/button/MenuButton"
 import {HiddenScrolling} from "../../../view/scrolling/HiddenScrolling"
@@ -32,24 +31,19 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    domain: string,
     instance: InstanceWeb,
     cluster: Cluster,
     candidates: Sidecar[],
+    checked: boolean
     error?: boolean,
 }
 
 export function OverviewInstancesRow(props: Props) {
-    const {instance, domain, cluster, candidates, error = false} = props
+    const {instance, cluster, candidates, error = false, checked} = props
     const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = instance
 
-    const activeInstance = useStore(s => s.activeInstance)
-    const activeCluster = useStore(s => s.activeCluster)
     const {setInstance} = useStoreAction
-    const checked = getIsActiveInstance(domain, getActiveInstance(activeInstance, activeCluster))
     const request = getSidecarConnection(cluster, sidecar)
-
-    useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])
 
     const sidecarName = `${sidecar.host}:${sidecar.port === 0 ? "-" : sidecar.port}`
     const databaseName = `${database.host}:${database.port === 0 ? "-" : database.port}`
@@ -57,7 +51,7 @@ export function OverviewInstancesRow(props: Props) {
     return (
         <TableRow
             sx={[SX.row, checked && SxPropsFormatter.style.bgImageSelected, error && SxPropsFormatter.style.bgImageError]}
-            onClick={handleCheck(instance, checked)}
+            onClick={handleCheck}
         >
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
@@ -177,11 +171,7 @@ export function OverviewInstancesRow(props: Props) {
         )
     }
 
-    function handleEffectInstanceChanged() {
-        if (checked) setInstance(instance)
-    }
-
-    function handleCheck(instance: InstanceWeb, checked: boolean) {
-        return () => setInstance(checked ? undefined : instance)
+    function handleCheck() {
+        setInstance(checked ? undefined : instance)
     }
 }
