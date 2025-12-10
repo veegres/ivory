@@ -95,10 +95,9 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	if errConfig != nil {
 		return &AppInfo{
 			Config: ConfigInfo{
-				Configured:   configConfigured,
-				Company:      "Ivory",
-				Availability: config.AvailabilityConfig{ManualQuery: false},
-				Error:        errConfig.Error(),
+				Configured: configConfigured,
+				Company:    "Ivory",
+				Error:      errConfig.Error(),
 			},
 			Secret:  s.secretService.Status(),
 			Version: s.env.Version,
@@ -111,6 +110,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 		}
 	}
 
+	// TODO we need to take these info from context
 	authorised, username, errParse := s.authService.ParseAuthToken(context)
 	errAuth := errParse
 	var user *UserInfo
@@ -127,10 +127,9 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 
 	return &AppInfo{
 		Config: ConfigInfo{
-			Configured:   configConfigured,
-			Company:      appConfig.Company,
-			Availability: appConfig.Availability,
-			Error:        "",
+			Configured: configConfigured,
+			Company:    appConfig.Company,
+			Error:      "",
 		},
 		Secret:  s.secretService.Status(),
 		Version: s.env.Version,

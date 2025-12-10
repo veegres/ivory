@@ -11,23 +11,23 @@ import (
 )
 
 type Router struct {
-	service       *Service
-	runService    *RunService
-	logService    *LogService
-	configService *config.Service
+	service        *Service
+	executeService *ExecuteService
+	logService     *LogService
+	configService  *config.Service
 }
 
 func NewRouter(
 	service *Service,
-	runService *RunService,
+	executeService *ExecuteService,
 	logService *LogService,
 	configService *config.Service,
 ) *Router {
 	return &Router{
-		service:       service,
-		runService:    runService,
-		logService:    logService,
-		configService: configService,
+		service:        service,
+		executeService: executeService,
+		logService:     logService,
+		configService:  configService,
 	}
 }
 
@@ -106,41 +106,6 @@ func (r *Router) DeleteQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "the query was deleted"})
 }
 
-func (r *Router) PostRunQuery(context *gin.Context) {
-	var req QueryRunRequest
-	errBind := context.ShouldBindJSON(&req)
-	if errBind != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
-		return
-	}
-
-	if req.QueryUuid != nil && req.Query != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Only one parameter allowed either `queryUuid` or `query`"})
-		return
-	}
-	if (req.QueryUuid == nil || req.QueryUuid.String() == "") && (req.Query == nil || *req.Query == "") {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "At least `queryUuid` or `query` are required"})
-		return
-	}
-
-	var res *database.QueryFields
-	var err error
-	queryContext := r.getQueryContext(context, req.Connection)
-	if req.QueryUuid != nil {
-		res, err = r.runService.RunTemplateQuery(queryContext, *req.QueryUuid, req.QueryOptions)
-	}
-	if req.Query != nil {
-		res, err = r.runService.RunQuery(queryContext, *req.Query, req.QueryOptions)
-	}
-
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	context.JSON(http.StatusOK, gin.H{"response": res})
-}
-
 func (r *Router) GetQueryLog(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
@@ -169,6 +134,54 @@ func (r *Router) DeleteQueryLog(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query log was deleted"})
 }
 
+func (r *Router) PostExecuteTempateQuery(context *gin.Context) {
+	var req QueryTemplateRequest
+	errBind := context.ShouldBindJSON(&req)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+
+	if req.QueryUuid == nil || req.QueryUuid.String() == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "queryUuid is required"})
+		return
+	}
+
+	queryContext := r.getQueryContext(context, req.Connection)
+	res, err := r.executeService.TemplateQuery(queryContext, *req.QueryUuid, req.QueryOptions)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": res})
+}
+
+func (r *Router) PostExecuteConsoleQuery(context *gin.Context) {
+	var req QueryConsoleRequest
+	errBind := context.ShouldBindJSON(&req)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+
+	if req.Query == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "query is required"})
+		return
+	}
+
+	queryContext := r.getQueryContext(context, req.Connection)
+	res, err := r.executeService.ConsoleQuery(queryContext, req.Query, req.QueryOptions)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": res})
+}
+
 func (r *Router) PostActivityQuery(context *gin.Context) {
 	var req QueryConnection
 	errBind := context.ShouldBindJSON(&req)
@@ -178,7 +191,7 @@ func (r *Router) PostActivityQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req)
-	res, err := r.runService.GetAllRunningQueriesByApplicationName(queryContext)
+	res, err := r.executeService.RunningQueriesByApplicationName(queryContext)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -196,7 +209,7 @@ func (r *Router) PostDatabasesQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.runService.DatabasesQuery(queryContext, req.Name)
+	res, err := r.executeService.DatabasesQuery(queryContext, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -214,7 +227,7 @@ func (r *Router) PostSchemasQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.runService.SchemasQuery(queryContext, req.Name)
+	res, err := r.executeService.SchemasQuery(queryContext, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -232,7 +245,7 @@ func (r *Router) PostTablesQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.runService.TablesQuery(queryContext, req.Schema, req.Name)
+	res, err := r.executeService.TablesQuery(queryContext, req.Schema, req.Name)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -250,7 +263,7 @@ func (r *Router) PostChartQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	res, err := r.runService.ChartQuery(queryContext, *req.Type)
+	res, err := r.executeService.ChartQuery(queryContext, *req.Type)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -268,7 +281,7 @@ func (r *Router) PostCancelQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	errQuery := r.runService.Cancel(queryContext, req.Pid)
+	errQuery := r.executeService.CancelQuery(queryContext, req.Pid)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return
@@ -286,7 +299,7 @@ func (r *Router) PostTerminateQuery(context *gin.Context) {
 	}
 
 	queryContext := r.getQueryContext(context, req.Connection)
-	errQuery := r.runService.Terminate(queryContext, req.Pid)
+	errQuery := r.executeService.TerminateQuery(queryContext, req.Pid)
 	if errQuery != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errQuery.Error()})
 		return

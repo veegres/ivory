@@ -12,9 +12,8 @@ type NewAppConfig struct {
 }
 
 type AppConfig struct {
-	Company      string             `json:"company"`
-	Availability AvailabilityConfig `json:"availability"`
-	Auth         AuthConfig         `json:"auth"`
+	Company string     `json:"company"`
+	Auth    AuthConfig `json:"auth"`
 }
 
 type AuthConfig struct {
@@ -22,9 +21,4 @@ type AuthConfig struct {
 	Basic      *basic.Config `json:"basic"`
 	Ldap       *ldap.Config  `json:"ldap"`
 	Oidc       *oidc.Config  `json:"oidc"`
-}
-
-// AvailabilityConfig TODO this is deprecated class and should be removed
-type AvailabilityConfig struct {
-	ManualQuery bool `json:"manualQuery"`
 }

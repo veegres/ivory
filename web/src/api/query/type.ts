@@ -26,10 +26,15 @@ export interface QueryConnection {
     credentialId?: string,
 }
 
-export interface QueryRunRequest {
+export interface QueryTemplateRequest {
     connection: QueryConnection,
     queryUuid?: string,
-    query?: string,
+    queryOptions?: QueryOptions,
+}
+
+export interface QueryConsoleRequest {
+    connection: QueryConnection,
+    query: string,
     queryOptions?: QueryOptions,
 }
 
@@ -131,3 +136,10 @@ export interface QueryRequest {
 }
 
 // SPECIFIC (WEB)
+
+export interface QueryRunRequest {
+    connection: QueryConnection,
+    queryUuid?: string,
+    query: string,
+    queryOptions?: QueryOptions,
+}

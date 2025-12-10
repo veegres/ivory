@@ -30,11 +30,10 @@ enum ViewToggleType {VIEW, EDIT, RESTORE, LOG}
 type Props = {
     query: Query,
     connection: QueryConnection,
-    manual: boolean,
 }
 
 export function QueryTemplateView(props: Props) {
-    const {query, connection, manual} = props
+    const {query, connection} = props
     const [toggleView, setToggleView] = useState<ViewToggleType>()
     const initQueryUpdate: QueryRequest = {...query, query: query.custom}
     const [queryUpdate, setUpdateQuery] = useState(initQueryUpdate)
@@ -84,9 +83,7 @@ export function QueryTemplateView(props: Props) {
                 {query.default !== query.custom && (
                     <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
                 )}
-                {manual && (
-                    <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
-                )}
+                <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
                 {query.creation === QueryCreation.Manual && (
                     <QueryButtonDelete id={query.id} type={query.type}/>
                 )}

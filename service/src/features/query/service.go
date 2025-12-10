@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type RunService struct {
+type ExecuteService struct {
 	queryRepository *Repository
 	databaseClient  Client
 	logService      *LogService
@@ -21,14 +21,14 @@ type RunService struct {
 	chartMap map[QueryChartType]QueryRequest
 }
 
-func NewRunService(
+func NewExecuteService(
 	queryRepository *Repository,
 	databaseClient Client,
 	logService *LogService,
 	passwordService *password.Service,
 	certService *cert.Service,
-) *RunService {
-	return &RunService{
+) *ExecuteService {
+	return &ExecuteService{
 		queryRepository: queryRepository,
 		databaseClient:  databaseClient,
 		logService:      logService,
@@ -41,7 +41,7 @@ func NewRunService(
 
 // QUERY EXECUTION
 
-func (s *RunService) RunQuery(queryCtx QueryContext, query string, options *QueryOptions) (*QueryFields, error) {
+func (s *ExecuteService) ConsoleQuery(queryCtx QueryContext, query string, options *QueryOptions) (*QueryFields, error) {
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (s *RunService) RunQuery(queryCtx QueryContext, query string, options *Quer
 	return s.databaseClient.GetFields(ctx, query, options)
 }
 
-func (s *RunService) RunTemplateQuery(ctx QueryContext, uuid uuid.UUID, options *QueryOptions) (*QueryFields, error) {
+func (s *ExecuteService) TemplateQuery(ctx QueryContext, uuid uuid.UUID, options *QueryOptions) (*QueryFields, error) {
 	query, errQuery := s.queryRepository.Get(uuid)
 	if errQuery != nil {
 		return nil, errQuery
@@ -57,7 +57,7 @@ func (s *RunService) RunTemplateQuery(ctx QueryContext, uuid uuid.UUID, options 
 	if query.Custom == "" {
 		return nil, errors.New("query is empty")
 	}
-	response, errRun := s.RunQuery(ctx, query.Custom, options)
+	response, errRun := s.ConsoleQuery(ctx, query.Custom, options)
 	if errRun == nil && len(response.Rows) > 0 {
 		// NOTE: we don't want fail request if there is some problem with writing to the file
 		_ = s.logService.Add(uuid, response)
@@ -65,7 +65,7 @@ func (s *RunService) RunTemplateQuery(ctx QueryContext, uuid uuid.UUID, options 
 	return response, errRun
 }
 
-func (s *RunService) Cancel(queryCtx QueryContext, pid int) error {
+func (s *ExecuteService) CancelQuery(queryCtx QueryContext, pid int) error {
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (s *RunService) Cancel(queryCtx QueryContext, pid int) error {
 	return s.databaseClient.Cancel(ctx, pid)
 }
 
-func (s *RunService) Terminate(queryCtx QueryContext, pid int) error {
+func (s *ExecuteService) TerminateQuery(queryCtx QueryContext, pid int) error {
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
 		return err
@@ -81,7 +81,7 @@ func (s *RunService) Terminate(queryCtx QueryContext, pid int) error {
 	return s.databaseClient.Terminate(ctx, pid)
 }
 
-func (s *RunService) GetAllRunningQueriesByApplicationName(queryCtx QueryContext) (*QueryFields, error) {
+func (s *ExecuteService) RunningQueriesByApplicationName(queryCtx QueryContext) (*QueryFields, error) {
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (s *RunService) GetAllRunningQueriesByApplicationName(queryCtx QueryContext
 	return s.databaseClient.GetFields(ctx, postgres.GetAllRunningQueriesByApplicationName, options)
 }
 
-func (s *RunService) DatabasesQuery(queryCtx QueryContext, name string) ([]string, error) {
+func (s *ExecuteService) DatabasesQuery(queryCtx QueryContext, name string) ([]string, error) {
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (s *RunService) DatabasesQuery(queryCtx QueryContext, name string) ([]strin
 	return s.databaseClient.GetMany(ctx, postgres.GetAllDatabases, []any{"%" + name + "%"})
 }
 
-func (s *RunService) SchemasQuery(queryCtx QueryContext, name string) ([]string, error) {
+func (s *ExecuteService) SchemasQuery(queryCtx QueryContext, name string) ([]string, error) {
 	db := queryCtx.Connection.Db
 	if db.Name == nil || *db.Name == "" {
 		return []string{}, nil
@@ -110,7 +110,7 @@ func (s *RunService) SchemasQuery(queryCtx QueryContext, name string) ([]string,
 	return s.databaseClient.GetMany(ctx, postgres.GetAllSchemas, []any{"%" + name + "%"})
 }
 
-func (s *RunService) TablesQuery(queryCtx QueryContext, schema string, name string) ([]string, error) {
+func (s *ExecuteService) TablesQuery(queryCtx QueryContext, schema string, name string) ([]string, error) {
 	db := queryCtx.Connection.Db
 	if db.Name == nil || *db.Name == "" || schema == "" {
 		return []string{}, nil
@@ -122,7 +122,7 @@ func (s *RunService) TablesQuery(queryCtx QueryContext, schema string, name stri
 	return s.databaseClient.GetMany(ctx, postgres.GetAllTables, []any{schema, "%" + name + "%"})
 }
 
-func (s *RunService) ChartQuery(queryCtx QueryContext, chartType QueryChartType) (*QueryChart, error) {
+func (s *ExecuteService) ChartQuery(queryCtx QueryContext, chartType QueryChartType) (*QueryChart, error) {
 	request, ok := s.chartMap[chartType]
 	if !ok {
 		return nil, errors.New("chart " + string(chartType) + " is not supported")
@@ -138,7 +138,7 @@ func (s *RunService) ChartQuery(queryCtx QueryContext, chartType QueryChartType)
 	return &QueryChart{Name: request.Name, Value: response}, nil
 }
 
-func (s *RunService) mapContext(queryCtx QueryContext) (Context, error) {
+func (s *ExecuteService) mapContext(queryCtx QueryContext) (Context, error) {
 	con := Connection{Database: queryCtx.Connection.Db}
 	ctx := Context{Connection: &con, Session: queryCtx.Session}
 	if queryCtx.Connection.CredentialId != nil {

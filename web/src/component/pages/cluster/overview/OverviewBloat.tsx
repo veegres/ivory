@@ -8,7 +8,7 @@ import {ActiveCluster} from "../../../../api/cluster/type"
 import {useRouterQueryList} from "../../../../api/query/hook"
 import {QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
+import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Query} from "../../../widgets/query/Query"
 import {OverviewBloatJob} from "./OverviewBloatJob"

@@ -5,7 +5,6 @@ export interface NewAppConfig {
 
 export interface AppConfig {
     company: string,
-    availability: AvailabilityConfig,
     auth: AuthConfig,
 }
 
@@ -14,10 +13,6 @@ export interface AuthConfig {
     basic?: BasicConfig,
     ldap?: LdapConfig,
     oidc?: OidcConfig,
-}
-
-export interface AvailabilityConfig {
-    manualQuery: boolean,
 }
 
 export type AuthConfigObject = object
