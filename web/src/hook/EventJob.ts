@@ -16,7 +16,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
     const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
 
     const {isFetching, data} = useRouterBloatLogs(uuid, !status.active && isOpen)
-    const [logs, setLogs] = useState<string[]>(data || [])
+    const [logs, setLogs] = useState<string[]>([])
 
     useEffect(() => {
         if (!JobOptions[initStatus].active) return
@@ -48,7 +48,7 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
 
     return {
         isFetching: isEventSourceFetching || isFetching,
-        logs,
+        logs: logs.length ? logs : data ?? [],
         status
     }
 }
