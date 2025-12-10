@@ -27,7 +27,7 @@ type Props = {
     varieties?: QueryVariety[],
     connection: QueryConnection,
     queryUuid?: string,
-    query?: string,
+    query: string,
     params?: string[],
 }
 
@@ -49,7 +49,7 @@ export function QueryRun(props: Props) {
                 connection={connection}
                 data={data}
                 error={error}
-                queryKey={queryUuid ?? "console"}
+                refetch={refetch}
                 loading={isFetching}
             />
         </Box>

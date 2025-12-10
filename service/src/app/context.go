@@ -93,7 +93,7 @@ func NewContext() *Context {
 	clusterService := cluster.NewService(clusterRepo, instanceService, tagService)
 	queryService := query.NewService(queryRepo, secretService)
 	queryLogService := query.NewLogService(queryLogRepo)
-	queryRunService := query.NewRunService(queryRepo, postgresClient, queryLogService, passwordService, certService)
+	queryExecuteService := query.NewExecuteService(queryRepo, postgresClient, queryLogService, passwordService, certService)
 	bloatService := bloat.NewService(bloatRepo, passwordService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
@@ -122,7 +122,7 @@ func NewContext() *Context {
 		permissionRouter: permission.NewRouter(permissionService),
 		tagRouter:        tag.NewRouter(tagService),
 		instanceRouter:   instance.NewRouter(instanceService),
-		queryRouter:      query.NewRouter(queryService, queryRunService, queryLogService, configService),
+		queryRouter:      query.NewRouter(queryService, queryExecuteService, queryLogService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),
 	}

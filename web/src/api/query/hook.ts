@@ -40,10 +40,17 @@ export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
 }
 
 export function useRouterQueryRun(request: QueryRunRequest) {
+    const {connection, query, queryOptions, queryUuid} = request
+    const [queryKey, queryFn] = queryUuid ? [
+        QueryApi.template.key(queryUuid),
+        () => QueryApi.template.fn({connection, queryOptions, queryUuid}),
+    ] : [
+        QueryApi.console.key(),
+        () => QueryApi.console.fn({connection, queryOptions, query}),
+    ]
+
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: QueryApi.console.key(request.queryUuid ?? "console"),
-        queryFn: () => QueryApi.console.fn(request.queryUuid ? {...request, query: undefined} : request),
+        queryKey: queryKey, queryFn: queryFn,
         retry: false, refetchOnWindowFocus: false, structuralSharing: false,
     })
 }
@@ -92,19 +99,19 @@ export function useRouterQueryTables(connection: QueryConnection, params: any, e
     })
 }
 
-export function useRouterQueryCancel(queryKey: string) {
+export function useRouterQueryCancel(refetch: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.cancel.fn,
         mutationKey: QueryApi.cancel.key(),
-        successKeys: [QueryApi.console.key(queryKey)],
+        onSuccess: refetch,
     })
 }
 
-export function useRouterQueryTerminate(queryKey: string) {
+export function useRouterQueryTerminate(refetch: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.terminate.fn,
         mutationKey: QueryApi.terminate.key(),
-        successKeys: [QueryApi.console.key(queryKey)],
+        onSuccess: refetch,
     })
 }
 

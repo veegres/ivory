@@ -13,16 +13,16 @@ const SX: SxPropsMap = {
 
 type Props = {
     connection: QueryConnection,
-    queryKey: string,
+    refetch: () => void,
     pid: number,
 }
 
 export function QueryTableActions(props: Props) {
-    const {connection, queryKey, pid} = props
+    const {connection, refetch, pid} = props
     const [open, setOpen] = useState(false)
 
-    const terminate = useRouterQueryTerminate(queryKey)
-    const cancel = useRouterQueryCancel(queryKey)
+    const terminate = useRouterQueryTerminate(refetch)
+    const cancel = useRouterQueryCancel(refetch)
 
     return (
         <MenuButton open={open} onChange={(v) => setOpen(v)}>

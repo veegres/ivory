@@ -7,7 +7,7 @@ import {QueryTableActions} from "./QueryTableActions"
 
 type Props = {
     connection: QueryConnection,
-    queryKey: string,
+    refetch: () => void,
     data?: QueryFields,
     error?: Error | null,
     loading?: boolean,
@@ -17,7 +17,7 @@ type Props = {
 }
 
 export function QueryTable(props: Props) {
-    const {data, error, loading, connection, queryKey, showIndexColumn, height, width} = props
+    const {data, error, loading, connection, refetch, showIndexColumn, height, width} = props
 
     const pidIndex = useMemo(handleMemoPidIndex, [data])
     const columns = useMemo(handleMemoColumns, [data])
@@ -38,7 +38,7 @@ export function QueryTable(props: Props) {
     )
 
     function renderActions(row: any[]) {
-        return <QueryTableActions connection={connection} queryKey={queryKey} pid={row[pidIndex]}/>
+        return <QueryTableActions connection={connection} refetch={refetch} pid={row[pidIndex]}/>
     }
 
     function handleMemoPidIndex() {

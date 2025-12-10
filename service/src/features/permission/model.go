@@ -55,6 +55,8 @@ var PermissionList = []string{
 	"view.query.execute.chart",
 	"manage.query.execute.template",
 	"manage.query.execute.console",
+	"manage.query.execute.cancel",
+	"manage.query.execute.terminate",
 	"view.query.log.list",
 	"manage.query.log.delete",
 

@@ -2,7 +2,6 @@ package management
 
 import (
 	"ivory/src/features/auth"
-	"ivory/src/features/config"
 	"ivory/src/features/permission"
 	"ivory/src/features/secret"
 	"ivory/src/storage/env"
@@ -23,10 +22,9 @@ type AppInfo struct {
 }
 
 type ConfigInfo struct {
-	Configured   bool                      `json:"configured"`
-	Error        string                    `json:"error,omitempty"`
-	Company      string                    `json:"company"`
-	Availability config.AvailabilityConfig `json:"availability"`
+	Configured bool   `json:"configured"`
+	Error      string `json:"error,omitempty"`
+	Company    string `json:"company"`
 }
 
 type AuthInfo struct {

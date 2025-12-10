@@ -7,7 +7,6 @@ import {SxPropsMap} from "../../../app/type"
 import {PageStartupBox} from "../../view/box/PageStartupBox"
 import {KeyEnterInput} from "../../view/input/KeyEnterInput"
 import {ConfigAuth} from "./auth/ConfigAuth"
-import {ConfigQuery} from "./query/ConfigQuery"
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},
@@ -27,7 +26,6 @@ type Props = {
 export function ConfigBody(props: Props) {
     const {configured, error} = props
     const [company, setCompany] = useState("")
-    const [query, setQuery] = useState(false)
     const [secret, setSecret] = useState("")
     const [admins, setAdmins] = useState("")
     const [basic, setBasic] = useState<BasicConfig>(defaultBasicConfig)
@@ -40,7 +38,6 @@ export function ConfigBody(props: Props) {
         <PageStartupBox header={"Configuration"} renderFooter={renderFooter()} position={"start"}>
             {isConfigBroken && renderError()}
             <KeyEnterInput label={"Company"} onChange={(e) => setCompany(e.target.value)}/>
-            <ConfigQuery onChange={setQuery}/>
             <ConfigAuth
                 basicConfig={basic} ldapConfig={ldap} oidcConfig={oidc}
                 onDefaultChange={handleDefaultChange} onAdminsChange={setAdmins}
@@ -94,7 +91,6 @@ export function ConfigBody(props: Props) {
                     ldap: JSON.stringify(ldap) === JSON.stringify(defaultLdapConfig) ? undefined : ldap,
                     oidc: JSON.stringify(oidc) === JSON.stringify(defaultOidcConfig) ? undefined : oidc,
                 },
-                availability: {manualQuery: query},
             }
         })
     }

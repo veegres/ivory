@@ -181,16 +181,15 @@ func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
 	group.DELETE("/:uuid", rp.ValidateMethodMiddleware("manage.query.delete"), r.DeleteQuery)
 
 	executeGroup := group.Group("/execute")
-	// TODO separate console and template request
-	executeGroup.POST("/console", rp.ValidateMethodMiddleware("manage.query.execute.console"), r.PostRunQuery)
-	executeGroup.POST("/template", rp.ValidateMethodMiddleware("manage.query.execute.template"), r.PostRunQuery)
+	executeGroup.POST("/console", rp.ValidateMethodMiddleware("manage.query.execute.console"), r.PostExecuteConsoleQuery)
+	executeGroup.POST("/template", rp.ValidateMethodMiddleware("manage.query.execute.template"), r.PostExecuteTempateQuery)
 	executeGroup.POST("/activity", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostActivityQuery)
 	executeGroup.POST("/databases", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostDatabasesQuery)
 	executeGroup.POST("/schemas", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostSchemasQuery)
 	executeGroup.POST("/tables", rp.ValidateMethodMiddleware("view.query.execute.info"), r.PostTablesQuery)
 	executeGroup.POST("/chart", rp.ValidateMethodMiddleware("view.query.execute.chart"), r.PostChartQuery)
 	executeGroup.POST("/cancel", rp.ValidateMethodMiddleware("manage.query.execute.cancel"), r.PostCancelQuery)
-	executeGroup.POST("/terminate", rp.ValidateMethodMiddleware("manage.query.execute.cancel"), r.PostTerminateQuery)
+	executeGroup.POST("/terminate", rp.ValidateMethodMiddleware("manage.query.execute.terminate"), r.PostTerminateQuery)
 
 	logGroup := group.Group("/log")
 	logGroup.GET("/:uuid", rp.ValidateMethodMiddleware("view.query.log.list"), r.GetQueryLog)

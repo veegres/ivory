@@ -40,7 +40,7 @@ export function QueryActivity(props: Props) {
             </Box>
             <QueryTable
                 connection={connection}
-                queryKey={"activity"}
+                refetch={refetch}
                 height={200}
                 width={320}
                 data={table}

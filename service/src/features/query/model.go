@@ -35,11 +35,16 @@ type QueryConnection struct {
 	CredentialId *uuid.UUID        `json:"credentialId"`
 }
 
-type QueryRunRequest struct {
+type QueryTemplateRequest struct {
 	Connection   QueryConnection        `json:"connection"`
-	QueryUuid    *uuid.UUID             `json:"queryUuid"`
-	Query        *string                `json:"query"`
 	QueryOptions *database.QueryOptions `json:"queryOptions"`
+	QueryUuid    *uuid.UUID             `json:"queryUuid"`
+}
+
+type QueryConsoleRequest struct {
+	Connection   QueryConnection        `json:"connection"`
+	QueryOptions *database.QueryOptions `json:"queryOptions"`
+	Query        string                 `json:"query"`
 }
 
 type QueryKillRequest struct {
