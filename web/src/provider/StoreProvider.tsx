@@ -4,8 +4,8 @@ import {create} from "zustand/react"
 import {ActiveCluster, DetectionType} from "../api/cluster/type"
 import {InstanceTabType, InstanceWeb} from "../api/instance/type"
 import {QueryType} from "../api/query/type"
-import {MainQueryClient} from "../app/main"
 import {getDomain} from "../app/utils"
+import {MainQueryClient} from "./AppProvider"
 
 // STORE
 interface Store {

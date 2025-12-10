@@ -1,7 +1,5 @@
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
-import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {StrictMode} from "react"
@@ -22,27 +20,22 @@ dayjs.extend(utc)
 document.body.classList.add(scroll.hidden)
 document.getElementById("root")!.classList.add(scroll.show)
 
-export const MainQueryClient = new QueryClient()
-
 // render react app
 const container = document.getElementById("root")
 const root = createRoot(container!)
 root.render(
     <StrictMode>
-        <QueryClientProvider client={MainQueryClient}>
-            <ReactQueryDevtools/>
-            <AppProvider>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <AuthProvider>
-                        <SnackbarProvide>
-                            <ErrorBoundary fallbackRender={(e) => (<App><PageErrorBox error={e.error}/></App>)}>
-                                <App/>
-                            </ErrorBoundary>
-                        </SnackbarProvide>
-                    </AuthProvider>
-                </LocalizationProvider>
-            </AppProvider>
-        </QueryClientProvider>
+        <AppProvider>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <AuthProvider>
+                    <SnackbarProvide>
+                        <ErrorBoundary fallbackRender={(e) => (<App><PageErrorBox error={e.error}/></App>)}>
+                            <App/>
+                        </ErrorBoundary>
+                    </SnackbarProvide>
+                </AuthProvider>
+            </LocalizationProvider>
+        </AppProvider>
     </StrictMode>
 )
 

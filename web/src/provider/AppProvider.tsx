@@ -6,10 +6,10 @@ import {
     ThemeProvider as MuiThemeProvider,
     useMediaQuery
 } from "@mui/material"
-import {focusManager} from "@tanstack/react-query"
+import {focusManager, QueryClient, QueryClientProvider} from "@tanstack/react-query"
+import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
 import {createContext, ReactNode, useContext, useEffect} from "react"
 
-import {MainQueryClient} from "../app/main"
 import {useLocalStorageState} from "../hook/LocalStorage"
 
 export enum Mode {
@@ -49,6 +49,8 @@ focusManager.setEventListener(handleFocus => {
     }
 })
 
+export const MainQueryClient = new QueryClient()
+
 export function useSettings() {
     return useContext(ThemeContext)
 }
@@ -64,10 +66,13 @@ export function AppProvider(props: { children: ReactNode }) {
 
     return (
         <ThemeContext value={{state, theme, setTheme, toggleRefetchOnWindowsRefocus, info: muiTheme}}>
-            <MuiThemeProvider theme={muiTheme}>
-                <CssBaseline enableColorScheme/>
-                {props.children}
-            </MuiThemeProvider>
+            <QueryClientProvider client={MainQueryClient}>
+                <ReactQueryDevtools/>
+                <MuiThemeProvider theme={muiTheme}>
+                    <CssBaseline enableColorScheme/>
+                    {props.children}
+                </MuiThemeProvider>
+            </QueryClientProvider>
         </ThemeContext>
     )
 
@@ -89,9 +94,12 @@ export function AppProvider(props: { children: ReactNode }) {
 
     function getTheme(m: Mode): PaletteMode {
         switch (m) {
-            case Mode.DARK: return "dark"
-            case Mode.LIGHT: return "light"
-            default: return prefersDarkMode ? "dark" : "light"
+            case Mode.DARK:
+                return "dark"
+            case Mode.LIGHT:
+                return "light"
+            default:
+                return prefersDarkMode ? "dark" : "light"
         }
     }
 }
