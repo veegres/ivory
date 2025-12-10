@@ -3,7 +3,7 @@ import {useEffect} from "react"
 import {useRouterClusterList} from "../../../../api/cluster/hook"
 import {useRouterTagList} from "../../../../api/tag/hook"
 import {useStore} from "../../../../provider/StoreProvider"
-import {ErrorSmart} from "../../../view/box/ErrorSmart";
+import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {PageMainBox} from "../../../view/box/PageMainBox"
 import {ListTable} from "./ListTable"
 import {ListTags} from "./ListTags"

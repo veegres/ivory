@@ -5,7 +5,7 @@ import {AuthType} from "../../../../api/auth/type"
 import {BasicConfig, LdapConfig, OidcConfig} from "../../../../api/config/type"
 import {SxPropsMap} from "../../../../app/type"
 import {ConfigBox} from "../../../view/box/ConfigBox"
-import {KeyEnterInput} from "../../../view/input/KeyEnterInput";
+import {KeyEnterInput} from "../../../view/input/KeyEnterInput"
 import {ConfigAuthBasic} from "./ConfigAuthBasic"
 import {ConfigAuthLdap} from "./ConfigAuthLdap"
 import {ConfigAuthOidc} from "./ConfigAuthOidc"
