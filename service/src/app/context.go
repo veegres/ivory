@@ -16,6 +16,7 @@ import (
 	"ivory/src/features/instance"
 	"ivory/src/features/management"
 	"ivory/src/features/password"
+	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
@@ -32,6 +33,7 @@ type Context struct {
 	certRouter       *cert.Router
 	secretRouter     *secret.Router
 	passwordRouter   *password.Router
+	permissionRouter *permission.Router
 	tagRouter        *tag.Router
 	instanceRouter   *instance.Router
 	queryRouter      *query.Router
@@ -50,6 +52,7 @@ func NewContext() *Context {
 	tagBucket := db.NewBucket[[]string](st, "Tag")
 	secretBucket := db.NewBucket[string](st, "Secret")
 	passwordBucket := db.NewBucket[password.Password](st, "Password")
+	permissionBucket := db.NewBucket[map[string]permission.PermissionStatus](st, "Permission")
 	queryBucket := db.NewBucket[query.Query](st, "Query")
 
 	// FILES
@@ -65,6 +68,7 @@ func NewContext() *Context {
 	tagRepo := tag.NewRepository(tagBucket)
 	secretRepo := secret.NewRepository(secretBucket)
 	passwordRepo := password.NewRepository(passwordBucket)
+	permissionRepo := permission.NewRepository(permissionBucket)
 	queryLogRepo := query.NewLogRepository(queryLogFiles)
 	queryRepo := query.NewRepository(queryBucket, queryLogRepo)
 
@@ -82,6 +86,7 @@ func NewContext() *Context {
 	encryptionService := encryption.NewService()
 	secretService := secret.NewService(secretRepo, encryptionService)
 	passwordService := password.NewService(passwordRepo, secretService, encryptionService)
+	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
 	instanceService := instance.NewService(patroniClient, passwordService, certService)
 	tagService := tag.NewService(tagRepo)
@@ -90,8 +95,8 @@ func NewContext() *Context {
 	queryLogService := query.NewLogService(queryLogRepo)
 	queryRunService := query.NewRunService(queryRepo, postgresClient, queryLogService, passwordService, certService)
 	bloatService := bloat.NewService(bloatRepo, passwordService)
-	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider)
-	configService := config.NewService(configFiles, encryptionService, secretService, authService, basicProvider, ldapProvider, oidcProvider)
+	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
+	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
 	managementService := management.NewService(
 		appEnv,
 		authService,
@@ -103,6 +108,7 @@ func NewContext() *Context {
 		queryService,
 		secretService,
 		configService,
+		permissionService,
 	)
 
 	return &Context{
@@ -113,6 +119,7 @@ func NewContext() *Context {
 		certRouter:       cert.NewRouter(certService),
 		secretRouter:     secret.NewRouter(secretService),
 		passwordRouter:   password.NewRouter(passwordService),
+		permissionRouter: permission.NewRouter(permissionService),
 		tagRouter:        tag.NewRouter(tagService),
 		instanceRouter:   instance.NewRouter(instanceService),
 		queryRouter:      query.NewRouter(queryService, queryRunService, queryLogService, configService),

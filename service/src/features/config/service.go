@@ -8,6 +8,7 @@ import (
 	"ivory/src/clients/auth/oidc"
 	"ivory/src/features/auth"
 	"ivory/src/features/encryption"
+	"ivory/src/features/permission"
 	"ivory/src/features/secret"
 	"ivory/src/storage/files"
 )
@@ -17,6 +18,7 @@ type Service struct {
 	encryptionService *encryption.Service
 	secretService     *secret.Service
 	authService       *auth.Service
+	permissionService *permission.Service
 	basicProvider     *basic.Provider
 	ldapProvider      *ldap.Provider
 	oidcProvider      *oidc.Provider
@@ -31,6 +33,7 @@ func NewService(
 	encryptionService *encryption.Service,
 	secretService *secret.Service,
 	authService *auth.Service,
+	permissionService *permission.Service,
 	basicProvider *basic.Provider,
 	ldapProvider *ldap.Provider,
 	oidcProvider *oidc.Provider,
@@ -40,6 +43,7 @@ func NewService(
 		encryptionService: encryptionService,
 		secretService:     secretService,
 		authService:       authService,
+		permissionService: permissionService,
 		basicProvider:     basicProvider,
 		ldapProvider:      ldapProvider,
 		oidcProvider:      oidcProvider,
@@ -129,15 +133,22 @@ func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 
 	errValid := s.setAuthConfig(appConfig.Auth)
 	if errValid != nil {
+		s.clearCache()
 		return errValid
 	}
 	encryptedAuthConfig, errAuthConfig := s.encryptAuthConfig(appConfig.Auth)
 	if errAuthConfig != nil {
+		s.clearCache()
 		return errAuthConfig
 	}
 
 	appConfig.Auth = encryptedAuthConfig
-	return s.saveAppConfig(appConfig)
+	errSave := s.saveAppConfig(appConfig)
+	if errSave != nil {
+		s.clearCache()
+		return errSave
+	}
+	return nil
 }
 
 func (s *Service) Reencrypt() error {
@@ -156,11 +167,16 @@ func (s *Service) Reencrypt() error {
 }
 
 func (s *Service) DeleteAll() error {
+	s.clearCache()
+	return s.configFiles.DeleteAll()
+}
+
+func (s *Service) clearCache() {
 	s.appConfig = nil
 	s.basicProvider.DeleteConfig()
 	s.oidcProvider.DeleteConfig()
 	s.ldapProvider.DeleteConfig()
-	return s.configFiles.DeleteAll()
+	s.permissionService.DeleteAdmins()
 }
 
 func (s *Service) encryptAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
@@ -245,6 +261,10 @@ func (s *Service) setAuthConfig(authConfig AuthConfig) error {
 	if authConfig.Basic == nil && authConfig.Ldap == nil && authConfig.Oidc == nil {
 		return nil
 	}
+	if len(authConfig.Superusers) == 0 {
+		return errors.New("there should be at least 1 admin")
+	}
+	s.permissionService.SetSuperusers(authConfig.Superusers)
 	var err error
 	if authConfig.Basic != nil {
 		errTmp := s.basicProvider.SetConfig(*authConfig.Basic)

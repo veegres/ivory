@@ -3,6 +3,7 @@ package management
 import (
 	"ivory/src/features/auth"
 	"ivory/src/features/config"
+	"ivory/src/features/permission"
 	"ivory/src/features/secret"
 	"ivory/src/storage/env"
 )
@@ -31,7 +32,13 @@ type ConfigInfo struct {
 type AuthInfo struct {
 	Supported  []auth.AuthType `json:"supported"`
 	Authorised bool            `json:"authorised"`
+	User       *UserInfo       `json:"user"`
 	Error      string          `json:"error,omitempty"`
+}
+
+type UserInfo struct {
+	Username    string                                 `json:"username"`
+	Permissions map[string]permission.PermissionStatus `json:"permissions"`
 }
 
 type SecretUpdateRequest struct {

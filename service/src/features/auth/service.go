@@ -5,6 +5,7 @@ import (
 	"ivory/src/clients/auth/basic"
 	"ivory/src/clients/auth/ldap"
 	"ivory/src/clients/auth/oidc"
+	"ivory/src/features/permission"
 	"ivory/src/features/secret"
 	"strings"
 	"time"
@@ -14,10 +15,11 @@ import (
 )
 
 type Service struct {
-	secretService *secret.Service
-	basicProvider *basic.Provider
-	ldapProvider  *ldap.Provider
-	oidcProvider  *oidc.Provider
+	secretService     *secret.Service
+	basicProvider     *basic.Provider
+	ldapProvider      *ldap.Provider
+	oidcProvider      *oidc.Provider
+	permissionService *permission.Service
 
 	// NOTE: For HMAC signing method, the key can be any []byte.
 	// You need the same key for signing and validating. Whereas for RSA
@@ -32,12 +34,14 @@ func NewService(
 	basicProvider *basic.Provider,
 	ldapProvider *ldap.Provider,
 	oidcProvider *oidc.Provider,
+	permissionService *permission.Service,
 ) *Service {
 	return &Service{
-		secretService: secretService,
-		basicProvider: basicProvider,
-		ldapProvider:  ldapProvider,
-		oidcProvider:  oidcProvider,
+		secretService:     secretService,
+		basicProvider:     basicProvider,
+		ldapProvider:      ldapProvider,
+		oidcProvider:      oidcProvider,
+		permissionService: permissionService,
 
 		signingAlgorithm: jwt.SigningMethodHS256,
 		issuer:           "ivory",
@@ -63,25 +67,33 @@ func (s *Service) GetSupportedTypes() []AuthType {
 	return supported
 }
 
-func (s *Service) ValidateAuthToken(context *gin.Context) (bool, error) {
+func (s *Service) ParseAuthToken(context *gin.Context) (bool, string, error) {
 	if len(s.GetSupportedTypes()) == 0 {
-		return true, errors.New("authorization is disabled")
+		return true, "", errors.New("authorization is disabled")
 	}
 	token, errToken := s.getToken(context)
 	if errToken != nil {
-		return false, errToken
+		return false, "", errToken
 	}
-	errValidate := s.validateToken(token)
-	if errValidate != nil {
-		return false, errValidate
+	tokenParsed, errParse := s.parseToken(token)
+	if errParse != nil {
+		return false, "", errParse
 	}
-	return true, nil
+	username, errUsername := tokenParsed.Claims.GetSubject()
+	if errUsername != nil {
+		return true, "", errUsername
+	}
+	return true, username, nil
 }
 
 func (s *Service) GenerateBasicAuthToken(login basic.Login) (string, *time.Time, error) {
 	sub, err := s.basicProvider.Verify(login)
 	if err != nil {
 		return "", nil, err
+	}
+	_, errPerm := s.permissionService.CreateUserPermissions(sub)
+	if errPerm != nil {
+		return "", nil, errPerm
 	}
 	return s.generateToken(sub, BASIC)
 }
@@ -91,6 +103,10 @@ func (s *Service) GenerateLdapAuthToken(login ldap.Login) (string, *time.Time, e
 	if err != nil {
 		return "", nil, err
 	}
+	_, errPerm := s.permissionService.CreateUserPermissions(sub)
+	if errPerm != nil {
+		return "", nil, errPerm
+	}
 	return s.generateToken(sub, LDAP)
 }
 
@@ -98,6 +114,10 @@ func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error)
 	sub, err := s.oidcProvider.Verify(code)
 	if err != nil {
 		return "", nil, err
+	}
+	_, errPerm := s.permissionService.CreateUserPermissions(sub)
+	if errPerm != nil {
+		return "", nil, errPerm
 	}
 	return s.generateToken(sub, OIDC)
 }
@@ -118,7 +138,7 @@ func (s *Service) generateToken(subject string, authType AuthType) (string, *tim
 	return token, &exp, signErr
 }
 
-func (s *Service) validateToken(rawIDToken string) error {
+func (s *Service) parseToken(rawIDToken string) (*jwt.Token, error) {
 	token, err := jwt.Parse(
 		rawIDToken,
 		func(t *jwt.Token) (interface{}, error) {
@@ -129,12 +149,12 @@ func (s *Service) validateToken(rawIDToken string) error {
 		jwt.WithIssuer(s.issuer),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if token.Valid {
-		return nil
+		return token, nil
 	}
-	return errors.New("invalid token")
+	return nil, errors.New("invalid token")
 }
 
 func (s *Service) getToken(context *gin.Context) (string, error) {
