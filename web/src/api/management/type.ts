@@ -1,5 +1,4 @@
 import {AuthType} from "../auth/type"
-import {AvailabilityConfig} from "../config/type"
 import {PermissionStatus} from "../permission/type"
 import {SecretStatus} from "../secret/type"
 
@@ -21,10 +20,8 @@ export interface AppInfo {
 export interface ConfigInfo {
     company: string,
     configured: boolean,
-    availability: AvailabilityConfig,
     error?: string,
 }
-
 
 export interface AuthInfo {
     supported: AuthType[],
