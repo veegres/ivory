@@ -110,7 +110,6 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 		}
 	}
 
-	// TODO we need to take these info from context
 	authorised, username, errParse := s.authService.ParseAuthToken(context)
 	errAuth := errParse
 	var user *UserInfo
