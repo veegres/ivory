@@ -16,7 +16,7 @@ func NewRouter(permissionService *Service) *Router {
 
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		username := context.MustGet("username").(string)
+		username := context.GetString("username")
 		permissions, err := r.permissionService.GetUserPermissions(username)
 		if err != nil {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
@@ -29,9 +29,14 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 
 func (r *Router) ValidateMethodMiddleware(permission string) gin.HandlerFunc {
 	return func(context *gin.Context) {
-		permissions := context.MustGet("permissions").(map[string]PermissionStatus)
-		if permissions[permission] != GRANTED {
-			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": permission + " is not permitted"})
+		if val, ok := context.Get("permissions"); ok {
+			permissions := val.(map[string]PermissionStatus)
+			if permissions[permission] != GRANTED {
+				context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": permission + " is not permitted"})
+				return
+			}
+		} else {
+			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "permission validation failed"})
 			return
 		}
 		context.Next()
