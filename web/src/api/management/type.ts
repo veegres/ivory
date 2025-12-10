@@ -1,5 +1,6 @@
 import {AuthType} from "../auth/type"
 import {AvailabilityConfig} from "../config/type"
+import {PermissionStatus} from "../permission/type"
 import {SecretStatus} from "../secret/type"
 
 // COMMON (WEB AND SERVER)
@@ -28,7 +29,13 @@ export interface ConfigInfo {
 export interface AuthInfo {
     supported: AuthType[],
     authorised: boolean,
+    user?: UserInfo,
     error?: string,
+}
+
+export interface UserInfo {
+    username: string,
+    permissions: { [key: string]: PermissionStatus },
 }
 
 export interface SecretUpdateRequest {
@@ -36,13 +43,11 @@ export interface SecretUpdateRequest {
     newKey: string,
 }
 
-// ENV VARIABLES (WEB AND SERVER)
+// SPECIFIC (WEB)
 
 export interface Version {
     tag: string,
     commit: string,
     label: string,
 }
-
-// SPECIFIC (WEB)
 

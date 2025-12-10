@@ -9,6 +9,7 @@ import (
 	"ivory/src/features/instance"
 	"ivory/src/features/management"
 	"ivory/src/features/password"
+	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
@@ -53,6 +54,7 @@ func NewRouter(di *Context) {
 	bloatRouter(safe, di.bloatRouter)
 	certRouter(safe, di.certRouter)
 	passwordRouter(safe, di.passwordRouter)
+	permissionRouter(safe, di.permissionRouter)
 	tagRouter(safe, di.tagRouter)
 	instanceRouter(safe, di.instanceRouter)
 	queryRouter(safe, di.queryRouter)
@@ -139,6 +141,15 @@ func passwordRouter(g *gin.RouterGroup, r *password.Router) {
 	group.POST("", r.PostCredential)
 	group.PATCH("/:uuid", r.PatchCredential)
 	group.DELETE("/:uuid", r.DeleteCredential)
+}
+
+func permissionRouter(g *gin.RouterGroup, r *permission.Router) {
+	group := g.Group("/permission")
+	group.GET("/users", r.GetAllUserPermissions)
+	group.POST("/users/:username/request", r.RequestUserPermission)
+	group.POST("/users/:username/approve", r.ApproveUserPermission)
+	group.POST("/users/:username/reject", r.RejectUserPermission)
+	group.DELETE("/users/:username", r.DeleteUserPermissions)
 }
 
 func tagRouter(g *gin.RouterGroup, r *tag.Router) {

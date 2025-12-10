@@ -25,6 +25,7 @@ export function App(props: Props) {
         <Box sx={SX.box}>
             <Box component={"header"}>
                 <Header
+                    username={info.data?.auth.user?.username ?? "UNKNOWN"}
                     company={info.data?.config.company ?? "VEEGRES"}
                     show={!props.children && show}
                     showLogout={(info.data?.auth.supported.length ?? 0) > 0}

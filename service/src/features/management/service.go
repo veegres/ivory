@@ -8,6 +8,7 @@ import (
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
 	"ivory/src/features/password"
+	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
@@ -17,16 +18,17 @@ import (
 )
 
 type Service struct {
-	env             *env.AppEnv
-	authService     *auth.Service
-	passwordService *password.Service
-	clusterService  *cluster.Service
-	certService     *cert.Service
-	tagService      *tag.Service
-	bloatService    *bloat.Service
-	queryService    *query.Service
-	secretService   *secret.Service
-	configService   *config.Service
+	env               *env.AppEnv
+	authService       *auth.Service
+	passwordService   *password.Service
+	clusterService    *cluster.Service
+	certService       *cert.Service
+	tagService        *tag.Service
+	bloatService      *bloat.Service
+	queryService      *query.Service
+	secretService     *secret.Service
+	configService     *config.Service
+	permissionService *permission.Service
 }
 
 func NewService(
@@ -40,18 +42,20 @@ func NewService(
 	queryService *query.Service,
 	secretService *secret.Service,
 	configService *config.Service,
+	permissionService *permission.Service,
 ) *Service {
 	return &Service{
-		env:             env,
-		authService:     authService,
-		passwordService: passwordService,
-		bloatService:    bloatService,
-		clusterService:  clusterService,
-		certService:     certService,
-		tagService:      tagService,
-		queryService:    queryService,
-		secretService:   secretService,
-		configService:   configService,
+		env:               env,
+		authService:       authService,
+		passwordService:   passwordService,
+		bloatService:      bloatService,
+		clusterService:    clusterService,
+		certService:       certService,
+		tagService:        tagService,
+		queryService:      queryService,
+		secretService:     secretService,
+		configService:     configService,
+		permissionService: permissionService,
 	}
 }
 
@@ -85,36 +89,45 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 }
 
 func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
-	appConfig, err := s.configService.GetAppConfig()
-	configured := s.configService.GetIsConfigured()
-	supportedAuth := s.authService.GetSupportedTypes()
-	if err != nil {
+	appConfig, errConfig := s.configService.GetAppConfig()
+	configConfigured := s.configService.GetIsConfigured()
+	authSupported := s.authService.GetSupportedTypes()
+	if errConfig != nil {
 		return &AppInfo{
 			Config: ConfigInfo{
-				Configured:   configured,
+				Configured:   configConfigured,
 				Company:      "Ivory",
 				Availability: config.AvailabilityConfig{ManualQuery: false},
-				Error:        err.Error(),
+				Error:        errConfig.Error(),
 			},
 			Secret:  s.secretService.Status(),
 			Version: s.env.Version,
 			Auth: AuthInfo{
-				Supported:  supportedAuth,
+				Supported:  authSupported,
 				Authorised: false,
+				User:       nil,
 				Error:      "",
 			},
 		}
 	}
 
-	authorised, authError := s.authService.ValidateAuthToken(context)
-	errorMessage := ""
-	if authError != nil {
-		errorMessage = authError.Error()
+	authorised, username, errParse := s.authService.ParseAuthToken(context)
+	errAuth := errParse
+	var user *UserInfo
+	if username != "" {
+		permissions, errPerm := s.permissionService.GetUserPermissions(username)
+		errAuth = errors.Join(errParse, errPerm)
+		user = &UserInfo{Username: username, Permissions: permissions}
+	}
+
+	errAuthMessage := ""
+	if errAuth != nil {
+		errAuthMessage = errAuth.Error()
 	}
 
 	return &AppInfo{
 		Config: ConfigInfo{
-			Configured:   configured,
+			Configured:   configConfigured,
 			Company:      appConfig.Company,
 			Availability: appConfig.Availability,
 			Error:        "",
@@ -122,9 +135,10 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 		Secret:  s.secretService.Status(),
 		Version: s.env.Version,
 		Auth: AuthInfo{
-			Supported:  supportedAuth,
+			Supported:  authSupported,
 			Authorised: authorised,
-			Error:      errorMessage,
+			User:       user,
+			Error:      errAuthMessage,
 		},
 	}
 }

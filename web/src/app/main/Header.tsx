@@ -13,17 +13,19 @@ const SX: SxPropsMap = {
     title: {fontSize: "35px", fontWeight: 900, fontFamily: "monospace", cursor: "pointer", color: "primary.main", userSelect: "none"},
     caption: {fontSize: "12px", fontWeight: 500, fontFamily: "monospace"},
     emblem: {padding: "5px 8px", fontWeight: "bold", fontSize: "20px"},
-    side: {display: "flex", flex: "1 1 0"},
+    side: {display: "flex", flex: "1 1 0", alignItems: "center"},
+    username: {color: "text.secondary", padding: "5px"},
 }
 
 type Props = {
     company: string,
+    username: string,
     show: boolean,
     showLogout: boolean,
 }
 
 export function Header(props: Props) {
-    const {company, show, showLogout} = props
+    const {company, username, show, showLogout} = props
     const {toggleSettingsDialog} = useStoreAction
     const [animal, setAnimal] = useState("")
 
@@ -41,7 +43,7 @@ export function Header(props: Props) {
                 <Box sx={SX.caption}>[postgres cluster management]</Box>
             </Box>
             <Box sx={SX.side} justifyContent={"end"}>
-                {show && (<Box>{renderRightSide()}</Box>)}
+                {show && renderRightSide()}
             </Box>
         </Box>
     )
@@ -49,6 +51,9 @@ export function Header(props: Props) {
     function renderRightSide() {
         return (
             <>
+                {showLogout && (
+                    <Box sx={SX.username}>{username}</Box>
+                )}
                 <Tooltip title={"Settings"}>
                     <IconButton onClick={toggleSettingsDialog} color={"inherit"}>
                         <Settings/>
