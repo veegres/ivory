@@ -6,12 +6,17 @@ import {QueryType} from "../../src/api/query/type"
 import {useStore, useStoreAction} from "../../src/provider/StoreProvider"
 import {createMockCluster, createMockInstanceWeb} from "../test-helpers"
 
-// Mock the main module to avoid DOM dependencies
-vi.mock("../../src/app/main", () => ({
-    MainQueryClient: {
-        clear: vi.fn(),
-    },
-}))
+// Mock MainQueryClient from AppProvider
+vi.mock("../../src/provider/AppProvider", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../../src/provider/AppProvider")>()
+    return {
+        ...actual,
+        MainQueryClient: {
+            clear: vi.fn(),
+            setDefaultOptions: vi.fn(),
+        },
+    }
+})
 
 describe("StoreProvider", () => {
     beforeEach(() => {
@@ -298,173 +303,4 @@ describe("StoreProvider", () => {
         })
     })
 
-    describe("Store selectors", () => {
-        describe("isClusterActive", () => {
-            it("should return true when cluster is active", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-
-                const state = useStore.getState()
-                expect(state.isClusterActive("test-cluster")).toBe(true)
-            })
-
-            it("should return false when different cluster is active", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-
-                const state = useStore.getState()
-                expect(state.isClusterActive("other-cluster")).toBe(false)
-            })
-
-            it("should return false when no cluster is active", () => {
-                const state = useStore.getState()
-                expect(state.isClusterActive("test-cluster")).toBe(false)
-            })
-        })
-
-        describe("isClusterOverviewOpen", () => {
-            it("should return true when cluster is active and tab is 0", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-                useStoreAction.setClusterTab(0)
-
-                const state = useStore.getState()
-                expect(state.isClusterOverviewOpen()).toBe(true)
-            })
-
-            it("should return false when tab is not 0", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-                useStoreAction.setClusterTab(1)
-
-                const state = useStore.getState()
-                expect(state.isClusterOverviewOpen()).toBe(false)
-            })
-
-            it("should return false when no cluster is active", () => {
-                const state = useStore.getState()
-                expect(state.isClusterOverviewOpen()).toBe(false)
-            })
-        })
-
-        describe("isInstanceActive", () => {
-            it("should return true when instance is active", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-
-                const instance = createMockInstanceWeb({
-                    sidecar: {host: "localhost", port: 8009},
-                })
-
-                useStoreAction.setInstance(instance)
-
-                const state = useStore.getState()
-                expect(state.isInstanceActive("localhost:8009")).toBe(true)
-            })
-
-            it("should return false when different instance is active", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-
-                const instance = createMockInstanceWeb({
-                    sidecar: {host: "localhost", port: 8009},
-                })
-
-                useStoreAction.setInstance(instance)
-
-                const state = useStore.getState()
-                expect(state.isInstanceActive("localhost:8010")).toBe(false)
-            })
-
-            it("should return false when no instance is active", () => {
-                const state = useStore.getState()
-                expect(state.isInstanceActive("localhost:8008")).toBe(false)
-            })
-        })
-
-        describe("getActiveInstance", () => {
-            it("should return active instance for current cluster", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-
-                const instance = createMockInstanceWeb({
-                    sidecar: {host: "localhost", port: 8009},
-                })
-
-                useStoreAction.setInstance(instance)
-
-                const state = useStore.getState()
-                expect(state.getActiveInstance()).toEqual(instance)
-            })
-
-            it("should return undefined when no instance is active", () => {
-                const cluster: ActiveCluster = {
-                    cluster: createMockCluster({name: "test-cluster"}),
-                    defaultInstance: createMockInstanceWeb(),
-                    combinedInstanceMap: {},
-                    warning: false,
-                    detection: "auto",
-                }
-
-                useStoreAction.setCluster(cluster)
-
-                const state = useStore.getState()
-                expect(state.getActiveInstance()).toBeUndefined()
-            })
-
-            it("should return undefined when no cluster is active", () => {
-                const state = useStore.getState()
-                expect(state.getActiveInstance()).toBeUndefined()
-            })
-        })
-    })
 })

@@ -7,7 +7,7 @@ import {Cluster} from "../../../../api/cluster/type"
 import {InstanceWeb, Sidecar} from "../../../../api/instance/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
-    DateTimeFormatter,
+    DateTimeFormatter, getActiveInstance, getIsActiveInstance,
     getSidecarConnection,
     InstanceColor,
     SizeFormatter,
@@ -43,9 +43,10 @@ export function OverviewInstancesRow(props: Props) {
     const {instance, domain, cluster, candidates, error = false} = props
     const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = instance
 
-    const isInstanceActive = useStore(s => s.isInstanceActive)
+    const activeInstance = useStore(s => s.activeInstance)
+    const activeCluster = useStore(s => s.activeCluster)
     const {setInstance} = useStoreAction
-    const checked = isInstanceActive(domain)
+    const checked = getIsActiveInstance(domain, getActiveInstance(activeInstance, activeCluster))
     const request = getSidecarConnection(cluster, sidecar)
 
     useEffect(handleEffectInstanceChanged, [checked, instance, setInstance])

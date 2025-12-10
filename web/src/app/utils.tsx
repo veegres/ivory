@@ -20,7 +20,7 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {Cluster} from "../api/cluster/type"
+import {ActiveCluster, ActiveInstance, Cluster} from "../api/cluster/type"
 import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type"
 import {PasswordType} from "../api/password/type"
 import {Database, QueryConnection, QueryVariety} from "../api/query/type"
@@ -156,6 +156,14 @@ export const getDomain = ({host, port}: Sidecar) => {
 
 export const getDomains = (sidecars: Sidecar[]) => {
     return sidecars.map(value => getDomain(value))
+}
+
+export const getActiveInstance = (activeInstance: ActiveInstance, activeCluster?: ActiveCluster) => {
+    return activeCluster && activeInstance[activeCluster.cluster.name]
+}
+
+export const getIsActiveInstance = (key: string, instance?: InstanceWeb) => {
+    return instance ? getDomain(instance.sidecar) === key : false
 }
 
 export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
