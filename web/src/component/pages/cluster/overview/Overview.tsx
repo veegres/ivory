@@ -146,6 +146,6 @@ export function Overview() {
     }
 
     function handleMemoVisibility() {
-        return Object.keys(clusters.data ?? {}).length !== 0 || clusters.error !== null
+        return Object.keys(clusters.data ?? {}).length !== 0 && clusters.error === null
     }
 }
