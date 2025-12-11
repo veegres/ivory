@@ -125,6 +125,10 @@ func (s *Service) DeleteUserPermissions(username string) error {
 	return s.permissionRepository.Delete(username)
 }
 
+func (s *Service) DeleteAll() error {
+	return s.permissionRepository.DeleteAll()
+}
+
 func (s *Service) isValidPermission(permissionName string) bool {
 	for _, validPerm := range PermissionList {
 		if validPerm == permissionName {

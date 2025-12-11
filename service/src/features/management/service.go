@@ -68,8 +68,9 @@ func (s *Service) Erase() error {
 	errTag := s.tagService.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
+	errPerm := s.permissionService.DeleteAll()
 
-	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery, errConfig)
+	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery, errConfig, errPerm)
 }
 
 func (s *Service) ChangeSecret(previousKey string, newKey string) error {
