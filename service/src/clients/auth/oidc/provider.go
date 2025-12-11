@@ -77,13 +77,25 @@ func (p *Provider) Verify(subject string) (string, error) {
 		return "", errors.Join(errors.New("failed to verify ID Token"), errVerify)
 	}
 
+	// NOTE: standard for scope and claims can be found here https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
 	var claims struct {
-		Email string `json:"email"`
+		Username string `json:"preferred_username"`
+		Nickname string `json:"nickname"`
+		Email    string `json:"email"`
 	}
 	if err := idToken.Claims(&claims); err != nil {
 		return "", err
 	}
-	return claims.Email, nil
+	if claims.Username != "" {
+		return claims.Username, nil
+	}
+	if claims.Email != "" {
+		return claims.Email, nil
+	}
+	if claims.Nickname != "" {
+		return claims.Nickname, nil
+	}
+	return "", errors.New("there is no right claim in ID Token (it should have any of these preferred_username, email, nickname)")
 }
 
 func (p *Provider) Connect(config Config) error {
