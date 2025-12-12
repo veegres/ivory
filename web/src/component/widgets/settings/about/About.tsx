@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../../app/type"
 import {IvoryLinks} from "../../../../app/utils"
 import {List} from "../../../view/box/List"
 import {ListItem} from "../../../view/box/ListItem"
-import {MenuWrapper} from "../menu/MenuWrapper"
+import {MenuWrapperScroll} from "../menu/MenuWrapperScroll"
 
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0 15px", gap: 3},
@@ -15,7 +15,7 @@ const SX: SxPropsMap = {
 
 export function About() {
     return (
-        <MenuWrapper>
+        <MenuWrapperScroll>
             <Box sx={SX.scroll}>
                 <Box sx={SX.image}><img src={"/ivory.png"} width={200} height={200} alt={"Ivory"}/></Box>
                 <Box sx={SX.text}>
@@ -30,7 +30,7 @@ export function About() {
                     ))}
                 </List>
             </Box>
-        </MenuWrapper>
+        </MenuWrapperScroll>
     )
 
     function renderLink(href: string) {
