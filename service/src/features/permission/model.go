@@ -25,6 +25,7 @@ var PermissionList = []string{
 	"view.cluster.list",
 	"view.cluster.item",
 	"manage.cluster.create",
+	"manage.cluster.update",
 	"manage.cluster.delete",
 
 	// Tags permissions

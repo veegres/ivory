@@ -110,7 +110,7 @@ func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router)
 	group := g.Group("/cluster")
 	group.GET("", rp.ValidateMethodMiddleware("view.cluster.list"), r.GetClusterList)
 	group.GET("/:name", rp.ValidateMethodMiddleware("view.cluster.item"), r.GetClusterByName)
-	group.PUT("", rp.ValidateMethodMiddleware("manage.cluster.create"), r.PutClusterByName)
+	group.PUT("", rp.ValidateMethodMiddleware("manage.cluster.update"), r.PutClusterByName)
 	group.POST("/auto", rp.ValidateMethodMiddleware("manage.cluster.create"), r.PostClusterAuto)
 	group.DELETE("/:name", rp.ValidateMethodMiddleware("manage.cluster.delete"), r.DeleteClusterByName)
 }
