@@ -1,12 +1,13 @@
 import {
+    Block, CheckCircleOutlined,
     FilePresentOutlined,
-    HeartBroken,
+    HeartBroken, HelpOutline,
     InfoTwoTone,
     Key,
     LockTwoTone,
     MenuOpen,
     Pause,
-    PlayArrow,
+    PlayArrow, Rule,
     SecurityTwoTone,
     Shield,
     Storage,
@@ -23,6 +24,7 @@ import {CertType, FileUsageType} from "../api/cert/type"
 import {ActiveCluster, ActiveInstance, Cluster} from "../api/cluster/type"
 import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type"
 import {PasswordType} from "../api/password/type"
+import {PermissionStatus} from "../api/permission/type"
 import {Database, QueryConnection, QueryVariety} from "../api/query/type"
 import {ColorsMap, EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
@@ -75,6 +77,7 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen/>, key: "menu"},
     [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone/>, key: "password"},
     [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>, key: "cert"},
+    [Settings.PERMISSION]: {name: "PERMISSION", label: "Permission Manager", icon: <Rule/>, key: "permission"},
     [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <Key/>, key: "secret"},
     [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>, key: "about"},
 }
@@ -83,6 +86,12 @@ export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
     [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900], icon: <></>},
     [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900], icon: <></>},
     [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
+}
+
+export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
+    [PermissionStatus.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: green[900]},
+    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutline/>, color: indigo[300]},
+    [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: red[900]},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {

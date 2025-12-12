@@ -10,20 +10,15 @@ const (
 	GRANTED
 )
 
-type Permission struct {
-	Name   string           `json:"name"`
-	Status PermissionStatus `json:"status"`
-}
-
 type UserPermissions struct {
 	Username    string                      `json:"username"`
 	Permissions map[string]PermissionStatus `json:"permissions"`
 }
 
+// SPECIFIC (SERVER)
+
 // UserPermissionsMap is a map where the key is username/email and value is the permissions map
 type UserPermissionsMap map[string]map[string]PermissionStatus
-
-// SPECIFIC (SERVER)
 
 var PermissionList = []string{
 	// Cluster permissions
