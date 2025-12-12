@@ -19,20 +19,10 @@ export function List() {
 
     return (
         <PageMainBox withMarginTop={"40px"}>
-            {renderBody()}
+            {tags.error ? <ErrorSmart error={tags.error}/> : <ListTags tags={tags.data ?? []}/>}
+            {clusters.error ? <ErrorSmart error={clusters.error}/> : (
+                <ListTable map={clusters.data} fetching={clusters.isFetching} pending={clusters.isPending}/>
+            )}
         </PageMainBox>
     )
-
-    function renderBody() {
-        if (clusters.error) return <ErrorSmart error={clusters.error}/>
-        if (tags.error) return <ErrorSmart error={tags.error}/>
-
-        return (
-            <>
-                <ListTags tags={tags.data ?? []}/>
-                <ListTable map={clusters.data} fetching={clusters.isFetching} pending={clusters.isPending || tags.isPending}/>
-            </>
-        )
-
-    }
 }
