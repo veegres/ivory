@@ -145,7 +145,7 @@ func passwordRouter(g *gin.RouterGroup, rp *permission.Router, r *password.Route
 
 func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.Router) {
 	group := g.Group("/permission")
-	group.POST("/users/:username/request", r.RequestUserPermission)
+	group.POST("/request", r.RequestUserPermission)
 	group.GET("/users", rp.ValidateMethodMiddleware("view.permission.list"), r.GetAllUserPermissions)
 	group.POST("/users/:username/approve", rp.ValidateMethodMiddleware("manage.permission.update"), r.ApproveUserPermission)
 	group.POST("/users/:username/reject", rp.ValidateMethodMiddleware("manage.permission.update"), r.RejectUserPermission)

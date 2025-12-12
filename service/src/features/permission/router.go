@@ -53,12 +53,7 @@ func (r *Router) GetAllUserPermissions(context *gin.Context) {
 }
 
 func (r *Router) RequestUserPermission(context *gin.Context) {
-	username := context.Param("username")
-	if username == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
-		return
-	}
-
+	username := context.GetString("username")
 	var request struct {
 		Permission string `json:"permission"`
 	}
