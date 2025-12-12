@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/src/storage/db"
 	"slices"
+	"sort"
 )
 
 type Service struct {
@@ -42,6 +43,7 @@ func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
 		})
 	}
 
+	sort.Slice(result, func(i, j int) bool { return result[i].Username < result[j].Username })
 	return result, nil
 }
 
