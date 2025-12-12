@@ -30,6 +30,7 @@ export enum Settings {
     PASSWORD,
     CERTIFICATE,
     SECRET,
+    PERMISSION,
     ABOUT,
 }
 

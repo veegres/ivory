@@ -32,6 +32,7 @@ export function MenuContent(props: Props) {
                 <List name={"Privacy and security"}>
                     {renderButton(Settings.PASSWORD)}
                     {renderButton(Settings.CERTIFICATE)}
+                    {renderButton(Settings.PERMISSION)}
                     {renderButton(Settings.SECRET)}
                 </List>
                 <List name={"Danger Zone"}>

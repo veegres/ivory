@@ -9,6 +9,7 @@ import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons"
 import {About} from "../about/About"
 import {Certs} from "../certs/Certs"
 import {Credentials} from "../credentials/Credentials"
+import {Permissions} from "../permissions/Permissions"
 import {Secret} from "../secret/Secret"
 import {MenuContent} from "./MenuContent"
 
@@ -55,6 +56,8 @@ export function Menu() {
                 return <Certs/>
             case Settings.SECRET:
                 return <Secret/>
+            case Settings.PERMISSION:
+                return <Permissions/>
             case Settings.ABOUT:
                 return <About/>
             default:
