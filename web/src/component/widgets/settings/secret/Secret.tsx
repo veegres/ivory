@@ -4,13 +4,11 @@ import {useState} from "react"
 import {useRouterSecretChange} from "../../../../api/management/hook"
 import {SxPropsMap} from "../../../../app/type"
 import {KeyEnterInput} from "../../../view/input/KeyEnterInput"
-import {MenuWrapper} from "../menu/MenuWrapper"
+import {MenuWrapperScroll} from "../menu/MenuWrapperScroll"
 
 const SX: SxPropsMap = {
-    alert: {margin: "0px 10px"},
     text: {display: "flex", flexDirection: "column", gap: 1, textAlign: "center"},
-    form: {display: "flex", flexDirection: "column", gap: 2, margin: "10px 0px"},
-    button: {marginTop: "5px"},
+    form: {display: "flex", flexDirection: "column", gap: 2, margin: "20px 0px"},
     bold: {fontWeight: "bold"},
 }
 
@@ -20,8 +18,8 @@ export function Secret() {
     const changeReq = useRouterSecretChange()
 
     return (
-        <MenuWrapper>
-            <Alert sx={SX.alert} severity={"info"} variant={"outlined"} icon={false}>
+        <MenuWrapperScroll>
+            <Alert severity={"info"} variant={"outlined"} icon={false}>
                 <Box sx={SX.text}>
                     <Box>You can change the secret word here!</Box>
                     <Box sx={SX.bold}>
@@ -47,7 +45,6 @@ export function Secret() {
                     onChange={(e) => setNewKey(e.target.value)}
                 />
                 <Button
-                    sx={SX.button}
                     variant={"contained"}
                     loading={changeReq.isPending}
                     onClick={() => changeReq.mutate({previousKey: prevKey, newKey})}
@@ -55,6 +52,6 @@ export function Secret() {
                     Change
                 </Button>
             </Box>
-        </MenuWrapper>
+        </MenuWrapperScroll>
     )
 }
