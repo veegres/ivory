@@ -100,15 +100,18 @@ func (r *Router) OidcConnect(context *gin.Context) {
 }
 
 func (r *Router) BasicLogin(context *gin.Context) {
+	r.Logout(context)
 	var login basic.Login
 	parseErr := context.ShouldBindJSON(&login)
 	if parseErr != nil {
+		r.setCookieTokenError(context, parseErr.Error())
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
 
 	token, exp, errToken := r.authService.GenerateBasicAuthToken(login)
 	if errToken != nil {
+		r.setCookieTokenError(context, errToken.Error())
 		context.JSON(http.StatusUnauthorized, gin.H{"error": errToken.Error()})
 		return
 	}
@@ -118,15 +121,18 @@ func (r *Router) BasicLogin(context *gin.Context) {
 }
 
 func (r *Router) LdapLogin(context *gin.Context) {
+	r.Logout(context)
 	var login ldap.Login
 	parseErr := context.ShouldBindJSON(&login)
 	if parseErr != nil {
+		r.setCookieTokenError(context, parseErr.Error())
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
 
 	token, exp, errToken := r.authService.GenerateLdapAuthToken(login)
 	if errToken != nil {
+		r.setCookieTokenError(context, errToken.Error())
 		context.JSON(http.StatusUnauthorized, gin.H{"error": errToken.Error()})
 		return
 	}
@@ -136,14 +142,15 @@ func (r *Router) LdapLogin(context *gin.Context) {
 }
 
 func (r *Router) OidcLogin(context *gin.Context) {
+	r.Logout(context)
 	state, errState := uuid.NewUUID()
 	if errState != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": errState.Error()})
+		r.handleTokenError(context, errState.Error())
 		return
 	}
 	codeUrl, errCode := r.authService.oidcProvider.GetCode(state.String())
 	if errCode != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": errCode.Error()})
+		r.handleTokenError(context, errCode.Error())
 		return
 	}
 
@@ -152,20 +159,27 @@ func (r *Router) OidcLogin(context *gin.Context) {
 }
 
 func (r *Router) OidcCallback(context *gin.Context) {
+	err := context.Query("error")
+	if err != "" {
+		errDesc := context.Query("error_description")
+		r.handleTokenError(context, err+": "+errDesc)
+		return
+	}
+
 	state, errState := context.Cookie("state")
 	if errState != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "state cookie not found"})
+		r.handleTokenError(context, "state cookie not found")
 		return
 	}
 
 	if context.Query("state") != state {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid state parameter"})
+		r.handleTokenError(context, "invalid state parameter")
 		return
 	}
 
 	token, exp, errToken := r.authService.GenerateOidcAuthToken(context.Query("code"))
 	if errToken != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": errToken.Error()})
+		r.handleTokenError(context, errToken.Error())
 		return
 	}
 
@@ -175,6 +189,13 @@ func (r *Router) OidcCallback(context *gin.Context) {
 
 func (r *Router) Logout(context *gin.Context) {
 	context.SetCookie("token", "", -1, r.path, "", r.tlsEnabled, true)
+	context.SetCookie("token_error", "", -1, r.path, "", r.tlsEnabled, true)
+}
+
+func (r *Router) handleTokenError(context *gin.Context, err string) {
+	r.setCookieTokenError(context, err)
+	path := r.path + "?error=" + err
+	http.Redirect(context.Writer, context.Request, path, http.StatusFound)
 }
 
 func (r *Router) setCookieSession(context *gin.Context, value string) {
@@ -183,9 +204,18 @@ func (r *Router) setCookieSession(context *gin.Context, value string) {
 }
 
 func (r *Router) setCookieToken(context *gin.Context, value string, exp *time.Time) {
-	seconds := int(time.Until(*exp).Seconds())
+	// NOTE: we add 60 sec just to see proper error when token has expired
+	seconds := int(time.Until(*exp).Seconds()) + 60
 	context.SetSameSite(http.SameSiteStrictMode)
+	context.SetCookie("token_error", "", -1, r.path, "", r.tlsEnabled, true)
 	context.SetCookie("token", value, seconds, r.path, "", r.tlsEnabled, true)
+
+}
+
+func (r *Router) setCookieTokenError(context *gin.Context, value string) {
+	context.SetSameSite(http.SameSiteStrictMode)
+	context.SetCookie("token", "", -1, r.path, "", r.tlsEnabled, true)
+	context.SetCookie("token_error", value, 0, r.path, "", r.tlsEnabled, true)
 }
 
 func (r *Router) setCookieState(context *gin.Context, value string) {

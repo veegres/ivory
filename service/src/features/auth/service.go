@@ -171,6 +171,10 @@ func (s *Service) getToken(context *gin.Context) (string, error) {
 	}
 	cookieToken, errToken := context.Cookie("token")
 	if cookieToken == "" || errToken != nil {
+		cookieTokenError, _ := context.Cookie("token_error")
+		if cookieTokenError != "" {
+			return "", errors.New(cookieTokenError)
+		}
 		return "", errors.New("no authorization token")
 	}
 	return cookieToken, nil
