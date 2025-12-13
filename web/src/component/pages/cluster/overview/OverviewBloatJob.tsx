@@ -3,7 +3,7 @@ import {TransitionGroup} from "react-transition-group"
 
 import {Bloat} from "../../../../api/bloat/type"
 import {StylePropsMap} from "../../../../app/type"
-import {InfoAlert} from "../../../view/box/InfoAlert"
+import {NoBox} from "../../../view/box/NoBox"
 import {OverviewBloatJobItem} from "./OverviewBloatJobItem"
 
 const style: StylePropsMap = {
@@ -17,7 +17,7 @@ type Props = {
 
 export function OverviewBloatJob(props: Props) {
     const {list, cluster} = props
-    if (list.length === 0) return <InfoAlert text={"There is no jobs yet"}/>
+    if (list.length === 0) return <NoBox text={"There is no jobs yet"}/>
 
     return (
         <TransitionGroup style={style.transition} appear={false}>
