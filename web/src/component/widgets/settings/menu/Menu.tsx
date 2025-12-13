@@ -4,7 +4,7 @@ import {useEffect, useState} from "react"
 import {Settings, SxPropsMap} from "../../../../app/type"
 import {SettingOptions} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
-import {InfoAlert} from "../../../view/box/InfoAlert"
+import {AlertCentered} from "../../../view/box/AlertCentered"
 import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons"
 import {About} from "../about/About"
 import {Certs} from "../certs/Certs"
@@ -61,7 +61,7 @@ export function Menu() {
             case Settings.ABOUT:
                 return <About/>
             default:
-                return <InfoAlert text={"Not implemented yet"}/>
+                return <AlertCentered text={"Not implemented yet"}/>
         }
     }
 

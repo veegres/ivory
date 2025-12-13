@@ -19,7 +19,7 @@ type Props = {
 
 export function App(props: Props) {
     const info = useRouterInfo()
-    const show = !info.isPending && !!info.data && info.data.secret.key && info.data.auth.authorised
+    const show = !info.isPending && !!info.data && info.data.secret.key && info.data.auth.authorised && !!info.data.auth.user?.permissions
 
     return (
         <Box sx={SX.box}>

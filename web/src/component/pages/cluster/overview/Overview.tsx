@@ -7,7 +7,7 @@ import {InstanceWeb} from "../../../../api/instance/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getActiveInstance} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
-import {InfoAlert} from "../../../view/box/InfoAlert"
+import {AlertCentered} from "../../../view/box/AlertCentered"
 import {PageMainBox} from "../../../view/box/PageMainBox"
 import {OverviewAction} from "./OverviewAction"
 import {OverviewBloat} from "./OverviewBloat"
@@ -108,8 +108,8 @@ export function Overview() {
     )
 
     function renderMainBlock() {
-        if (!activeCluster) return <InfoAlert text={"Please, select a cluster to see the overview! (click on the name)"}/>
-        if (!tab) return <InfoAlert text={"Coming soon — we're working on it!"}/>
+        if (!activeCluster) return <AlertCentered text={"Please, select a cluster to see the overview! (click on the name)"}/>
+        if (!tab) return <AlertCentered text={"Coming soon — we're working on it!"}/>
         return tab.body(activeCluster, activeInstance)
     }
 

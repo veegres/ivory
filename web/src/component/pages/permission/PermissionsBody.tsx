@@ -1,6 +1,7 @@
-import {Alert} from "@mui/material"
+import {Typography} from "@mui/material"
 
 import {PermissionStatus} from "../../../api/permission/type"
+import {AlertCentered} from "../../view/box/AlertCentered"
 import {PageStartupBox} from "../../view/box/PageStartupBox"
 import {Menu} from "../../widgets/settings/menu/Menu"
 import {PermissionsList} from "../../widgets/settings/permissions/PermissionsList"
@@ -15,10 +16,14 @@ export function PermissionsBody(props: Props) {
     return (
         <PageStartupBox header={"Permissions"} renderFooter={renderFooter()} position={"start"}>
             <Menu/>
-            <Alert variant={"outlined"} color={"warning"} icon={false}>
+            <Typography variant={"h6"}>Glad to see you, {username}!</Typography>
+            <AlertCentered
+                severity={"warning"}
+                text={`
                 You don't have any permissions yet. You can request them here. Once
                 you request permissions, please wait for an authorized person to grant approval.
-            </Alert>
+                `}
+            />
         </PageStartupBox>
     )
 

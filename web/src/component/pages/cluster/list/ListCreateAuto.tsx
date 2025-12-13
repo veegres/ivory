@@ -4,7 +4,7 @@ import {useState} from "react"
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
 import {ClusterAuto} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {InfoAlert} from "../../../view/box/InfoAlert"
+import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AutoIconButton} from "../../../view/button/IconButtons"
 import {Options} from "../../../widgets/options/Options"
 
@@ -35,7 +35,7 @@ export function ListCreateAuto(props: Props) {
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
                 <DialogContent sx={SX.content}>
-                    <InfoAlert text={"Specify only one instance and the others will be detected automatically."}/>
+                    <AlertCentered text={"Specify only one instance and the others will be detected automatically."}/>
                     <TextField
                         size={"small"}
                         label={"Name"}

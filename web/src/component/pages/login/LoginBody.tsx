@@ -1,11 +1,12 @@
 import {Alert, Button, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterLogin, useRouterLogout} from "../../../api/auth/hook"
+import {useRouterLogin} from "../../../api/auth/hook"
 import {AuthType} from "../../../api/auth/type"
 import {SxPropsMap} from "../../../app/type"
 import {PageStartupBox} from "../../view/box/PageStartupBox"
 import {KeyEnterInput} from "../../view/input/KeyEnterInput"
+import {LogoutButton} from "../../widgets/actions/LogoutButton"
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},
@@ -23,9 +24,7 @@ export function LoginBody(props: Props) {
     const [auth, setAuth] = useState<AuthType>(supported[0] ?? AuthType.BASIC)
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
-
     const login = useRouterLogin()
-    const logoutRouter = useRouterLogout()
 
     return (
         <PageStartupBox header={"Authentication"} renderFooter={renderFooter()} position={"start"}>
@@ -54,7 +53,7 @@ export function LoginBody(props: Props) {
     }
 
     function renderFooter() {
-        if (!supported.length) return <Button onClick={handleLogout}>Sign out</Button>
+        if (!supported.length) return <LogoutButton/>
 
         return (
             <Button onClick={() => handleLogin(auth)} loading={login.isPending} fullWidth={true}>
@@ -75,10 +74,6 @@ export function LoginBody(props: Props) {
                 ))}
             </ToggleButtonGroup>
         )
-    }
-
-    function handleLogout() {
-        logoutRouter.mutate()
     }
 
     function handleLogin(type: AuthType) {

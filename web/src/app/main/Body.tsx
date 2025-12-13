@@ -6,6 +6,7 @@ import {ClusterBody} from "../../component/pages/cluster/ClusterBody"
 import {ConfigBody} from "../../component/pages/config/ConfigBody"
 import {LoginBody} from "../../component/pages/login/LoginBody"
 import {PermissionsBody} from "../../component/pages/permission/PermissionsBody"
+import {PermissionsLogout} from "../../component/pages/permission/PermissionsLogout"
 import {SecretBodyInitial} from "../../component/pages/secret/SecretBodyInitial"
 import {SecretBodySecondary} from "../../component/pages/secret/SecretBodySecondary"
 import {PageErrorBox} from "../../component/view/box/PageErrorBox"
@@ -25,7 +26,8 @@ export function Body(props: Props) {
     if (!data.secret.key) return <SecretBodySecondary/>
     if (!data.config.configured || data.config.error) return <ConfigBody configured={data.config.configured} error={data.config.error}/>
     if (!data.auth.authorised) return <LoginBody supported={data.auth.supported} error={data.auth.error}/>
-    if (data.auth.user && !Object.values(data.auth.user.permissions).some(s => s === PermissionStatus.GRANTED)) {
+    if (!data.auth.user?.permissions) return <PermissionsLogout username={data.auth.user?.username}/>
+    if (!Object.values(data.auth.user.permissions).some(s => s === PermissionStatus.GRANTED)) {
         const {username, permissions} = data.auth.user
         return <PermissionsBody username={username} permissions={permissions}/>
     }
