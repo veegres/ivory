@@ -2,6 +2,7 @@ import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
 import {useRouterInfo} from "../../api/management/hook"
+import {useQueryParamErrorHandler} from "../../hook/QueryParamErrorHandler"
 import {SxPropsMap} from "../type"
 import {Body} from "./Body"
 import {Footer} from "./Footer"
@@ -18,6 +19,7 @@ type Props = {
 }
 
 export function App(props: Props) {
+    useQueryParamErrorHandler()
     const info = useRouterInfo()
     const show = !info.isPending && !!info.data && info.data.secret.key && info.data.auth.authorised && !!info.data.auth.user?.permissions
 
