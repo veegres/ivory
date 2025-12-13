@@ -147,9 +147,9 @@ func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.R
 	group := g.Group("/permission")
 	group.POST("/request", r.RequestUserPermission)
 	group.GET("/users", rp.ValidateMethodMiddleware("view.permission.list"), r.GetAllUserPermissions)
-	group.POST("/users/:username/approve", rp.ValidateMethodMiddleware("manage.permission.update"), r.ApproveUserPermission)
-	group.POST("/users/:username/reject", rp.ValidateMethodMiddleware("manage.permission.update"), r.RejectUserPermission)
-	group.DELETE("/users/:username", rp.ValidateMethodMiddleware("manage.permission.delete"), r.DeleteUserPermissions)
+	group.POST("/users/:permUsername/approve", rp.ValidateMethodMiddleware("manage.permission.update"), r.ApproveUserPermission)
+	group.POST("/users/:permUsername/reject", rp.ValidateMethodMiddleware("manage.permission.update"), r.RejectUserPermission)
+	group.DELETE("/users/:permUsername", rp.ValidateMethodMiddleware("manage.permission.delete"), r.DeleteUserPermissions)
 }
 
 func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {

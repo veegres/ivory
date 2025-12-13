@@ -26,7 +26,7 @@ export function Body(props: Props) {
     if (!data.secret.key) return <SecretBodySecondary/>
     if (!data.config.configured || data.config.error) return <ConfigBody configured={data.config.configured} error={data.config.error}/>
     if (!data.auth.authorised) return <LoginBody supported={data.auth.supported} error={data.auth.error}/>
-    if (!data.auth.user?.permissions) return <PermissionsLogout username={data.auth.user?.username}/>
+    if (!data.auth.user?.permissions) return <PermissionsLogout username={data.auth.user?.username} error={data.auth.error}/>
     if (!Object.values(data.auth.user.permissions).some(s => s === PermissionStatus.GRANTED)) {
         const {username, permissions} = data.auth.user
         return <PermissionsBody username={username} permissions={permissions}/>
