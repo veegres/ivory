@@ -47,7 +47,10 @@ func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
 	return result, nil
 }
 
-func (s *Service) GetUserPermissions(username string) (map[string]PermissionStatus, error) {
+func (s *Service) GetUserPermissions(username string, authEnabled bool) (map[string]PermissionStatus, error) {
+	if !authEnabled {
+		return s.getAllPermissionsWithStatus(GRANTED), nil
+	}
 	if username == "" {
 		return nil, errors.New("username cannot be empty")
 	}
@@ -75,11 +78,7 @@ func (s *Service) CreateUserPermissions(username string) (map[string]PermissionS
 		status = GRANTED
 	}
 
-	permissions := make(map[string]PermissionStatus)
-	for _, permissionName := range PermissionList {
-		permissions[permissionName] = status
-	}
-
+	permissions := s.getAllPermissionsWithStatus(status)
 	errCreate := s.permissionRepository.CreateOrUpdate(username, permissions)
 	if errCreate != nil {
 		return nil, errCreate
@@ -100,26 +99,6 @@ func (s *Service) RejectUserPermission(username string, permissionName string) e
 	return s.updateUserPermission(username, permissionName, NOT_PERMITTED)
 }
 
-func (s *Service) updateUserPermission(username string, permissionName string, status PermissionStatus) error {
-	if username == "" {
-		return errors.New("username cannot be empty")
-	}
-	if slices.Contains(s.superusers, username) {
-		return errors.New("cannot change permissions for superusers")
-	}
-	if !s.isValidPermission(permissionName) {
-		return errors.New("invalid permission name: " + permissionName)
-	}
-
-	existingPermissions, err := s.permissionRepository.Get(username)
-	if err != nil {
-		return err
-	}
-
-	existingPermissions[permissionName] = status
-	return s.permissionRepository.CreateOrUpdate(username, existingPermissions)
-}
-
 func (s *Service) DeleteUserPermissions(username string) error {
 	if username == "" {
 		return errors.New("username cannot be empty")
@@ -138,6 +117,34 @@ func (s *Service) isValidPermission(permissionName string) bool {
 		}
 	}
 	return false
+}
+
+func (s *Service) getAllPermissionsWithStatus(status PermissionStatus) map[string]PermissionStatus {
+	permissions := make(map[string]PermissionStatus)
+	for _, permissionName := range PermissionList {
+		permissions[permissionName] = status
+	}
+	return permissions
+}
+
+func (s *Service) updateUserPermission(username string, permissionName string, status PermissionStatus) error {
+	if username == "" {
+		return errors.New("username cannot be empty")
+	}
+	if slices.Contains(s.superusers, username) {
+		return errors.New("cannot change permissions for superusers")
+	}
+	if !s.isValidPermission(permissionName) {
+		return errors.New("invalid permission name: " + permissionName)
+	}
+
+	existingPermissions, err := s.permissionRepository.Get(username)
+	if err != nil {
+		return err
+	}
+
+	existingPermissions[permissionName] = status
+	return s.permissionRepository.CreateOrUpdate(username, existingPermissions)
 }
 
 func (s *Service) normalize() error {

@@ -14,6 +14,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var ErrAuthDisabled = errors.New("authorization is disabled")
+
 type Service struct {
 	secretService     *secret.Service
 	basicProvider     *basic.Provider
@@ -69,7 +71,7 @@ func (s *Service) GetSupportedTypes() []AuthType {
 
 func (s *Service) ParseAuthToken(context *gin.Context) (bool, string, error) {
 	if len(s.GetSupportedTypes()) == 0 {
-		return true, "", errors.New("authorization is disabled")
+		return true, "", ErrAuthDisabled
 	}
 	token, errToken := s.getToken(context)
 	if errToken != nil {

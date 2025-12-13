@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"ivory/src/clients/auth/basic"
 	"ivory/src/clients/auth/ldap"
 	"ivory/src/clients/auth/oidc"
@@ -39,15 +40,20 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
+		context.Set("auth", true)
 		valid, username, errParse := r.authService.ParseAuthToken(context)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
 			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errParse.Error()})
 			return
 		}
-		if username == "" {
-			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "username cannot be empty"})
-			return
+		if errors.Is(errParse, ErrAuthDisabled) {
+			context.Set("auth", false)
+		} else {
+			if username == "" {
+				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "username cannot be empty"})
+				return
+			}
 		}
 		context.Set("username", username)
 		context.Next()
