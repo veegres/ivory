@@ -4,8 +4,16 @@ import {SecretApi} from "./router"
 
 export function useRouterSecretSet() {
     return useMutationAdapter({
-        mutationFn: SecretApi.setSecret.fn,
-        mutationKey: SecretApi.setSecret.key(),
+        mutationFn: SecretApi.set.fn,
+        mutationKey: SecretApi.set.key(),
+        successKeys: [ManagementApi.info.key()],
+    })
+}
+
+export function useRouterSecretSkip() {
+    return useMutationAdapter({
+        mutationFn: SecretApi.skip.fn,
+        mutationKey: SecretApi.skip.key(),
         successKeys: [ManagementApi.info.key()],
     })
 }

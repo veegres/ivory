@@ -7,6 +7,8 @@ import (
 	"sync"
 )
 
+var ErrWrongSecret = errors.New("the secret is not correct")
+
 type Service struct {
 	key          [16]byte
 	encryptedRef string
@@ -20,19 +22,28 @@ func NewService(
 	repository *Repository,
 	encryption *encryption.Service,
 ) *Service {
-	encryptedRef, err := repository.Get()
-	if err != nil {
-		panic(err)
+	decryptedRef := "ivory"
+	encryptedRef, errRef := repository.Get()
+
+	if errRef != nil {
+		panic(errRef)
 	}
 
-	return &Service{
+	s := &Service{
 		key:          [16]byte{},
 		encryptedRef: encryptedRef,
-		decryptedRef: "ivory",
+		decryptedRef: decryptedRef,
 		mutex:        &sync.Mutex{},
 		repository:   repository,
 		encryption:   encryption,
 	}
+
+	if !s.IsRefEmpty() {
+		encryptedKey := md5.Sum([]byte(decryptedRef))
+		_ = s.checkRef(encryptedKey)
+	}
+
+	return s
 }
 
 func (s *Service) Get() [16]byte {
@@ -43,39 +54,60 @@ func (s *Service) GetByte() []byte {
 	return s.key[:]
 }
 
-func (s *Service) Set(decryptedKey string) error {
-	if decryptedKey == "" {
-		return errors.New("secret word cannot be empty")
-	}
-	encryptedKey := md5.Sum([]byte(decryptedKey))
+func (s *Service) SetDefault() error {
 	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if !s.IsRefEmpty() {
+		return errors.New("secret is already set")
+	}
+	encryptedKey := md5.Sum([]byte(s.decryptedRef))
+	return s.setRef(encryptedKey)
+}
+
+func (s *Service) Set(secret string) error {
+	if secret == "" {
+		return errors.New("secret cannot be empty")
+	}
+	secretMd5 := md5.Sum([]byte(secret))
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	if s.IsRefEmpty() {
-		encryptedRef, err := s.encryption.Encrypt(s.decryptedRef, encryptedKey)
+		err := s.setRef(secretMd5)
 		if err != nil {
-			s.mutex.Unlock()
 			return err
 		}
-		err = s.repository.Update(encryptedRef)
-		if err != nil {
-			s.mutex.Unlock()
-			return err
-		}
-		s.key = encryptedKey
-		s.encryptedRef = encryptedRef
 	} else {
-		decryptedRef, errDec := s.encryption.Decrypt(s.encryptedRef, encryptedKey)
-		if errDec != nil {
-			s.mutex.Unlock()
-			return errDec
-		}
-		if s.decryptedRef == decryptedRef {
-			s.key = encryptedKey
-		} else {
-			s.mutex.Unlock()
-			return errors.New("the secret is not correct")
+		err := s.checkRef(secretMd5)
+		if err != nil {
+			return err
 		}
 	}
-	s.mutex.Unlock()
+	return nil
+}
+
+func (s *Service) setRef(key [16]byte) error {
+	encryptedRef, err := s.encryption.Encrypt(s.decryptedRef, key)
+	if err != nil {
+		return err
+	}
+	err = s.repository.Update(encryptedRef)
+	if err != nil {
+		return err
+	}
+	s.key = key
+	s.encryptedRef = encryptedRef
+	return nil
+}
+
+func (s *Service) checkRef(key [16]byte) error {
+	decryptedRef, errDec := s.encryption.Decrypt(s.encryptedRef, key)
+	if errDec != nil {
+		return errors.Join(ErrWrongSecret, errDec)
+	}
+	if s.decryptedRef != decryptedRef {
+		return ErrWrongSecret
+	}
+	s.key = key
 	return nil
 }
 
@@ -91,20 +123,22 @@ func (s *Service) Update(prevSecret string, newSecret string) ([16]byte, [16]byt
 		return [16]byte{}, [16]byte{}, errors.New("there is no secret")
 	}
 
+	if newSecret == "" {
+		newSecret = s.decryptedRef
+	}
+	if prevSecret == "" {
+		prevSecret = s.decryptedRef
+	}
 	previousKeyMd5 := md5.Sum([]byte(prevSecret))
 	newKeyMd5 := md5.Sum([]byte(newSecret))
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	if previousKeyMd5 != s.key {
-		return [16]byte{}, [16]byte{}, errors.New("the secret is not correct")
+		return [16]byte{}, [16]byte{}, ErrWrongSecret
 	}
 
-	decryptedRef, errDec := s.repository.Get()
-	if errDec != nil {
-		return [16]byte{}, [16]byte{}, errDec
-	}
-	encryptedRef, errEnc := s.encryption.Encrypt(decryptedRef, newKeyMd5)
+	encryptedRef, errEnc := s.encryption.Encrypt(s.decryptedRef, newKeyMd5)
 	if errEnc != nil {
 		return [16]byte{}, [16]byte{}, errEnc
 	}
