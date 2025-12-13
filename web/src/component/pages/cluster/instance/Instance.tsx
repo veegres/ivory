@@ -3,7 +3,7 @@ import {Box, Divider} from "@mui/material"
 import {SxPropsMap} from "../../../../app/type"
 import {getActiveInstance, getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
-import {InfoAlert} from "../../../view/box/InfoAlert"
+import {AlertCentered} from "../../../view/box/AlertCentered"
 import {PageMainBox} from "../../../view/box/PageMainBox"
 import {InstanceInfo} from "./InstanceInfo"
 import {InstanceMain} from "./InstanceMain"
@@ -29,7 +29,7 @@ export function Instance() {
     )
 
     function renderContent() {
-        if (!activeInstance || !activeCluster) return <InfoAlert text={"Please, select an instance to see the information!"}/>
+        if (!activeInstance || !activeCluster) return <AlertCentered text={"Please, select an instance to see the information!"}/>
 
         const connection = getQueryConnection(activeCluster.cluster, activeInstance.database)
 

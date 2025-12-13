@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
 import scroll from "../../../../style/scroll.module.css"
-import {InfoAlert} from "../../../view/box/InfoAlert"
+import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AddIconButton} from "../../../view/button/IconButtons"
 import {TableBody} from "../../../view/table/TableBody"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
@@ -83,7 +83,7 @@ export function ListTable(props: Props) {
         return (
             <TableRow>
                 <TableCell colSpan={3}>
-                    <InfoAlert text={"There are no clusters yet. You can add them manually or by auto detection."}/>
+                    <AlertCentered text={"There are no clusters yet. You can add them manually or by auto detection."}/>
                 </TableCell>
             </TableRow>
         )

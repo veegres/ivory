@@ -32,7 +32,7 @@ export interface AuthInfo {
 
 export interface UserInfo {
     username: string,
-    permissions: { [key: string]: PermissionStatus },
+    permissions?: { [key: string]: PermissionStatus },
 }
 
 export interface SecretUpdateRequest {

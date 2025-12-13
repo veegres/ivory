@@ -261,10 +261,10 @@ func (s *Service) setAuthConfig(authConfig AuthConfig) error {
 	if authConfig.Basic == nil && authConfig.Ldap == nil && authConfig.Oidc == nil {
 		return nil
 	}
-	if len(authConfig.Superusers) == 0 {
-		return errors.New("there should be at least 1 admin")
+	errSuper := s.permissionService.SetSuperusers(authConfig.Superusers)
+	if errSuper != nil {
+		return errSuper
 	}
-	s.permissionService.SetSuperusers(authConfig.Superusers)
 	var err error
 	if authConfig.Basic != nil {
 		errTmp := s.basicProvider.SetConfig(*authConfig.Basic)

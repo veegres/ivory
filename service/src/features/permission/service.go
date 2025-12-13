@@ -21,6 +21,12 @@ func NewService(permissionRepository *Repository) *Service {
 }
 
 func (s *Service) SetSuperusers(superusers []string) error {
+	if len(superusers) == 0 {
+		return errors.New("there should be at least 1 superuser")
+	}
+	if slices.Contains(superusers, "") {
+		return errors.New("superusers cannot have empty name")
+	}
 	s.superusers = superusers
 	return s.normalize()
 }
