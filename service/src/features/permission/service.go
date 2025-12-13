@@ -159,10 +159,12 @@ func (s *Service) getStatus(permUsername string) PermissionStatus {
 	return NOT_PERMITTED
 }
 
-func (s *Service) updateUserPermission(username string, permissionName string, status PermissionStatus) error {
-	if username == "" {
+func (s *Service) updateUserPermission(permUsername string, permissionName string, status PermissionStatus) error {
+	if permUsername == "" {
 		return errors.New("username cannot be empty")
 	}
+	split := strings.Split(permUsername, ":")
+	username := split[1]
 	if slices.Contains(s.superusers, username) {
 		return errors.New("cannot change permissions for superusers")
 	}
@@ -170,13 +172,13 @@ func (s *Service) updateUserPermission(username string, permissionName string, s
 		return errors.New("invalid permission name: " + permissionName)
 	}
 
-	existingPermissions, err := s.permissionRepository.Get(username)
+	existingPermissions, err := s.permissionRepository.Get(permUsername)
 	if err != nil {
 		return err
 	}
 
 	existingPermissions[permissionName] = status
-	return s.permissionRepository.CreateOrUpdate(username, existingPermissions)
+	return s.permissionRepository.CreateOrUpdate(permUsername, existingPermissions)
 }
 
 func (s *Service) normalize() error {
