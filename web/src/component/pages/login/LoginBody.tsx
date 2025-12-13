@@ -1,4 +1,4 @@
-import {Alert, Button, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Alert, Button, Chip, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {useState} from "react"
 
 import {useRouterLogin} from "../../../api/auth/hook"
@@ -22,6 +22,7 @@ type Props = {
 export function LoginBody(props: Props) {
     const {supported, error} = props
     const [auth, setAuth] = useState<AuthType>(supported[0] ?? AuthType.BASIC)
+    const [show, setShow] = useState(false)
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
     const login = useRouterLogin()
@@ -29,9 +30,8 @@ export function LoginBody(props: Props) {
     return (
         <PageStartupBox header={"Authentication"} renderFooter={renderFooter()} position={"start"}>
             {renderButtons()}
-            <Divider/>
-            {error && <Alert sx={SX.alert} severity={"warning"} icon={false}>{error}</Alert>}
-            <Divider/>
+            <Divider flexItem={true}><Chip label={"✦"} size={"small"} onClick={() => setShow(!show)}/></Divider>
+            {show && error && <Alert sx={SX.alert} severity={"warning"} icon={false}>{error}</Alert>}
             {renderCreds()}
         </PageStartupBox>
     )
