@@ -69,59 +69,64 @@ func (s *Service) GetSupportedTypes() []AuthType {
 	return supported
 }
 
-func (s *Service) ParseAuthToken(context *gin.Context) (bool, string, error) {
+func (s *Service) ParseAuthToken(context *gin.Context) (bool, string, *AuthType, error) {
 	if len(s.GetSupportedTypes()) == 0 {
-		return true, "", ErrAuthDisabled
+		return true, "", nil, ErrAuthDisabled
 	}
 	token, errToken := s.getToken(context)
 	if errToken != nil {
-		return false, "", errToken
+		return false, "", nil, errToken
 	}
 	tokenParsed, errParse := s.parseToken(token)
 	if errParse != nil {
-		return false, "", errParse
+		return false, "", nil, errParse
 	}
 	username, errUsername := tokenParsed.Claims.GetSubject()
 	if errUsername != nil {
-		return true, "", errUsername
+		return true, "", nil, errUsername
 	}
-	return true, username, nil
+	frm, ok := tokenParsed.Claims.(jwt.MapClaims)["frm"].(float64)
+	if !ok {
+		return true, "", nil, errors.New("invalid token: cannot parse auth type")
+	}
+	authType := AuthType(frm)
+	return true, username, &authType, nil
 }
 
 func (s *Service) GenerateBasicAuthToken(login basic.Login) (string, *time.Time, error) {
-	sub, err := s.basicProvider.Verify(login)
+	username, err := s.basicProvider.Verify(login)
 	if err != nil {
 		return "", nil, err
 	}
-	_, errPerm := s.permissionService.CreateUserPermissions(sub)
+	_, errPerm := s.permissionService.CreateUserPermissions(BASIC.String(), username)
 	if errPerm != nil {
 		return "", nil, errPerm
 	}
-	return s.generateToken(sub, BASIC)
+	return s.generateToken(username, BASIC)
 }
 
 func (s *Service) GenerateLdapAuthToken(login ldap.Login) (string, *time.Time, error) {
-	sub, err := s.ldapProvider.Verify(login)
+	username, err := s.ldapProvider.Verify(login)
 	if err != nil {
 		return "", nil, err
 	}
-	_, errPerm := s.permissionService.CreateUserPermissions(sub)
+	_, errPerm := s.permissionService.CreateUserPermissions(LDAP.String(), username)
 	if errPerm != nil {
 		return "", nil, errPerm
 	}
-	return s.generateToken(sub, LDAP)
+	return s.generateToken(username, LDAP)
 }
 
 func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error) {
-	sub, err := s.oidcProvider.Verify(code)
+	username, err := s.oidcProvider.Verify(code)
 	if err != nil {
 		return "", nil, err
 	}
-	_, errPerm := s.permissionService.CreateUserPermissions(sub)
+	_, errPerm := s.permissionService.CreateUserPermissions(OIDC.String(), username)
 	if errPerm != nil {
 		return "", nil, errPerm
 	}
-	return s.generateToken(sub, OIDC)
+	return s.generateToken(username, OIDC)
 }
 
 func (s *Service) generateToken(subject string, authType AuthType) (string, *time.Time, error) {

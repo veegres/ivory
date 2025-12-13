@@ -7,3 +7,7 @@ const (
 	LDAP
 	OIDC
 )
+
+func (s AuthType) String() string {
+	return []string{"basic", "ldap", "oidc"}[s]
+}

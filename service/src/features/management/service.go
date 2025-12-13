@@ -111,20 +111,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 		}
 	}
 
-	authorised, username, errParse := s.authService.ParseAuthToken(context)
-	authEnabled := true
-	if errors.Is(errParse, auth.ErrAuthDisabled) {
-		authEnabled = false
-	}
-	permissions, errPerm := s.permissionService.GetUserPermissions(username, authEnabled)
-	user := &UserInfo{Username: username, Permissions: permissions}
-
-	errAuth := errors.Join(errParse, errPerm)
-	errAuthMessage := ""
-	if errAuth != nil {
-		errAuthMessage = errAuth.Error()
-	}
-
+	authorised, user, authError := s.getAuthInfo(context)
 	return &AppInfo{
 		Config: ConfigInfo{
 			Configured: configConfigured,
@@ -137,7 +124,27 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 			Supported:  authSupported,
 			Authorised: authorised,
 			User:       user,
-			Error:      errAuthMessage,
+			Error:      authError,
 		},
 	}
+}
+
+func (s Service) getAuthInfo(context *gin.Context) (bool, *UserInfo, string) {
+	authorised, username, authType, errParse := s.authService.ParseAuthToken(context)
+	if username == "" {
+		if errParse != nil {
+			return authorised, nil, errParse.Error()
+		}
+		return authorised, nil, ""
+	}
+	prefix := ""
+	if authType != nil {
+		prefix = authType.String()
+	}
+	permissions, errPerm := s.permissionService.GetUserPermissions(prefix, username, errors.Is(errParse, auth.ErrAuthDisabled))
+	user := &UserInfo{Username: username, Permissions: permissions}
+	if errPerm != nil {
+		return authorised, user, errPerm.Error()
+	}
+	return authorised, user, ""
 }

@@ -5,6 +5,7 @@ import (
 	"ivory/src/storage/db"
 	"slices"
 	"sort"
+	"strings"
 )
 
 type Service struct {
@@ -53,25 +54,27 @@ func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
 	return result, nil
 }
 
-func (s *Service) GetUserPermissions(username string, authEnabled bool) (map[string]PermissionStatus, error) {
-	if !authEnabled {
+func (s *Service) GetUserPermissions(prefix string, username string, allowAll bool) (map[string]PermissionStatus, error) {
+	if allowAll {
 		return s.getAllPermissionsWithStatus(GRANTED), nil
 	}
-	if username == "" {
-		return nil, errors.New("username cannot be empty")
+	permUsername, errName := s.getFullUsername(prefix, username)
+	if errName != nil {
+		return nil, errName
 	}
-	permissions, err := s.permissionRepository.Get(username)
+	permissions, err := s.permissionRepository.Get(permUsername)
 	if err != nil {
 		return nil, err
 	}
 	return permissions, nil
 }
 
-func (s *Service) CreateUserPermissions(username string) (map[string]PermissionStatus, error) {
-	if username == "" {
-		return nil, errors.New("username cannot be empty")
+func (s *Service) CreateUserPermissions(prefix string, username string) (map[string]PermissionStatus, error) {
+	permUsername, errName := s.getFullUsername(prefix, username)
+	if errName != nil {
+		return nil, errName
 	}
-	existingPermissions, err := s.permissionRepository.Get(username)
+	existingPermissions, err := s.permissionRepository.Get(permUsername)
 	if err != nil && !errors.Is(err, db.ErrNotFound) {
 		return nil, err
 	}
@@ -79,13 +82,10 @@ func (s *Service) CreateUserPermissions(username string) (map[string]PermissionS
 		return existingPermissions, nil
 	}
 
-	status := NOT_PERMITTED
-	if slices.Contains(s.superusers, username) {
-		status = GRANTED
-	}
+	status := s.getStatus(permUsername)
 
 	permissions := s.getAllPermissionsWithStatus(status)
-	errCreate := s.permissionRepository.CreateOrUpdate(username, permissions)
+	errCreate := s.permissionRepository.CreateOrUpdate(permUsername, permissions)
 	if errCreate != nil {
 		return nil, errCreate
 	}
@@ -93,27 +93,44 @@ func (s *Service) CreateUserPermissions(username string) (map[string]PermissionS
 	return permissions, nil
 }
 
-func (s *Service) RequestUserPermission(username string, permissionName string) error {
-	return s.updateUserPermission(username, permissionName, PENDING)
+func (s *Service) RequestUserPermission(prefix string, username string, permissionName string) error {
+	permUsername, errName := s.getFullUsername(prefix, username)
+	if errName != nil {
+		return errName
+	}
+	return s.updateUserPermission(permUsername, permissionName, PENDING)
 }
 
-func (s *Service) ApproveUserPermission(username string, permissionName string) error {
-	return s.updateUserPermission(username, permissionName, GRANTED)
+func (s *Service) ApproveUserPermission(permUsername string, permissionName string) error {
+	return s.updateUserPermission(permUsername, permissionName, GRANTED)
 }
 
-func (s *Service) RejectUserPermission(username string, permissionName string) error {
-	return s.updateUserPermission(username, permissionName, NOT_PERMITTED)
+func (s *Service) RejectUserPermission(permUsername string, permissionName string) error {
+	return s.updateUserPermission(permUsername, permissionName, NOT_PERMITTED)
 }
 
-func (s *Service) DeleteUserPermissions(username string) error {
-	if username == "" {
+func (s *Service) DeleteUserPermissions(permUsername string) error {
+	if permUsername == "" {
 		return errors.New("username cannot be empty")
 	}
-	return s.permissionRepository.Delete(username)
+	return s.permissionRepository.Delete(permUsername)
 }
 
 func (s *Service) DeleteAll() error {
 	return s.permissionRepository.DeleteAll()
+}
+
+func (s *Service) getFullUsername(prefix string, username string) (string, error) {
+	if username == "" {
+		return "", errors.New("username cannot be empty")
+	}
+	if prefix == "" {
+		return "", errors.New("prefix cannot be empty")
+	}
+	if slices.Contains(s.superusers, username) {
+		prefix = "superuser"
+	}
+	return prefix + ":" + username, nil
 }
 
 func (s *Service) isValidPermission(permissionName string) bool {
@@ -131,6 +148,15 @@ func (s *Service) getAllPermissionsWithStatus(status PermissionStatus) map[strin
 		permissions[permissionName] = status
 	}
 	return permissions
+}
+
+func (s *Service) getStatus(permUsername string) PermissionStatus {
+	split := strings.Split(permUsername, ":")
+	username := split[1]
+	if slices.Contains(s.superusers, username) {
+		return GRANTED
+	}
+	return NOT_PERMITTED
 }
 
 func (s *Service) updateUserPermission(username string, permissionName string, status PermissionStatus) error {
@@ -158,12 +184,8 @@ func (s *Service) normalize() error {
 	if errMap != nil {
 		return errMap
 	}
-	for username, permissions := range permissionsMap {
-		status := NOT_PERMITTED
-		if slices.Contains(s.superusers, username) {
-			status = GRANTED
-		}
-
+	for permUsername, permissions := range permissionsMap {
+		status := s.getStatus(permUsername)
 		normalisedPermissions := make(map[string]PermissionStatus)
 		for _, permissionName := range PermissionList {
 			if perm, ok := permissions[permissionName]; !ok {
@@ -173,7 +195,7 @@ func (s *Service) normalize() error {
 			}
 		}
 
-		errUpdate := s.permissionRepository.CreateOrUpdate(username, normalisedPermissions)
+		errUpdate := s.permissionRepository.CreateOrUpdate(permUsername, normalisedPermissions)
 		if errUpdate != nil {
 			return errUpdate
 		}
