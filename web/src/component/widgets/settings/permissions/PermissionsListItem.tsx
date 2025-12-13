@@ -13,7 +13,8 @@ import {PermissionOptions} from "../../../../app/utils"
 const SX: SxPropsMap = {
     item: {
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        borderTop: 1, borderColor: "divider", padding: "3px 8px"
+        borderBottom: 1, borderColor: "divider", padding: "3px 8px",
+        "&:first-child": {borderTop: 1, borderColor: "divider"},
     },
     wrap: {display: "flex", alignItems: "center", gap: 1, height: "28px"},
     button: {padding: "2px 5px"},
@@ -23,10 +24,10 @@ type Props = {
     name: string,
     status: PermissionStatus,
     username: string,
-    view: "admin" | "user",
+    view?: "admin" | "user",
 }
 
-export function PermissionsItem(props: Props) {
+export function PermissionsListItem(props: Props) {
     const {username, name, status, view = "user"} = props
     const options = PermissionOptions[status]
     const request = useRouterPermissionRequest()

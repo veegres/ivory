@@ -6,7 +6,7 @@ import {SxPropsFormatter} from "../../../../app/utils"
 import scroll from "../../../../style/scroll.module.css"
 
 const SX: SxPropsMap = {
-    box: {height: "100%", overflowY: "auto", padding: "0 10px"},
+    box: {height: "100%", overflowY: "scroll", padding: "0px 5px 0px 0px"},
 }
 
 type Props = {

@@ -1,9 +1,10 @@
 import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../hook/QueryCustom"
+import {ManagementApi} from "../management/router"
 import {PermissionApi} from "./router"
 
-export function useRouterPermission() {
+export function useRouterPermissions() {
     return useQuery({
         queryKey: PermissionApi.list.key(),
         queryFn: () => PermissionApi.list.fn()
@@ -14,7 +15,7 @@ export function useRouterPermissionRequest() {
     return useMutationAdapter({
         mutationFn: PermissionApi.request.fn,
         mutationKey: PermissionApi.request.key(),
-        successKeys: [PermissionApi.list.key()],
+        successKeys: [ManagementApi.info.key()],
     })
 }
 
