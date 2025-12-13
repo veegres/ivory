@@ -16,8 +16,9 @@ func NewRouter(permissionService *Service) *Router {
 
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
+		authEnabled := context.GetBool("auth")
 		username := context.GetString("username")
-		permissions, err := r.permissionService.GetUserPermissions(username)
+		permissions, err := r.permissionService.GetUserPermissions(username, authEnabled)
 		if err != nil {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return

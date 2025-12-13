@@ -112,14 +112,14 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	}
 
 	authorised, username, errParse := s.authService.ParseAuthToken(context)
-	errAuth := errParse
-	var user *UserInfo
-	if username != "" {
-		permissions, errPerm := s.permissionService.GetUserPermissions(username)
-		errAuth = errors.Join(errParse, errPerm)
-		user = &UserInfo{Username: username, Permissions: permissions}
+	authEnabled := true
+	if errors.Is(errParse, auth.ErrAuthDisabled) {
+		authEnabled = false
 	}
+	permissions, errPerm := s.permissionService.GetUserPermissions(username, authEnabled)
+	user := &UserInfo{Username: username, Permissions: permissions}
 
+	errAuth := errors.Join(errParse, errPerm)
 	errAuthMessage := ""
 	if errAuth != nil {
 		errAuthMessage = errAuth.Error()
