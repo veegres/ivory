@@ -95,6 +95,7 @@ func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
 
 func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
 	group := g.Group("/initial")
+	group.POST("/skip", rs.SkipSecret)
 	group.POST("/secret", rs.SetSecret)
 	group.DELETE("/erase", rg.Erase)
 }

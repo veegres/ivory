@@ -42,6 +42,15 @@ func (r *Router) GetSecretStatus(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": r.secretService.Status()})
 }
 
+func (r *Router) SkipSecret(context *gin.Context) {
+	err := r.secretService.SetDefault()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": "the secret was set"})
+}
+
 func (r *Router) SetSecret(context *gin.Context) {
 	var body SecretSetRequest
 	errBind := context.ShouldBindJSON(&body)
