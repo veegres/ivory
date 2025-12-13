@@ -6,6 +6,7 @@ import {useRouterInfo} from "../../../../api/management/hook"
 import {useRouterPermissions} from "../../../../api/permission/hook"
 import {SxPropsMap} from "../../../../app/type"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
+import {NoBox} from "../../../view/box/NoBox"
 import {MenuWrapper} from "../menu/MenuWrapper"
 import {PermissionsList} from "./PermissionsList"
 
@@ -37,8 +38,9 @@ export function Permissions() {
     )
 
     function renderSelfPermissions() {
-        if (!info.data?.auth.user) return
+        if (!info.data?.auth.user) return <ErrorSmart error={"Can't get user info"}/>
         const {username, permissions} = info.data.auth.user
+        if (permissions.length === 0) return <NoBox text={"You don't have any permissions"}/>
         return (
             <Paper variant={"outlined"}>
                 <PermissionsList permissions={permissions} username={username}/>
@@ -49,8 +51,9 @@ export function Permissions() {
     function renderUserPermissions() {
         if (permissions.isLoading) return renderLoading()
         if (permissions.isError) return <ErrorSmart error={permissions.error}/>
+        if (!permissions.data || permissions.data.length === 0) return <NoBox text={"There is no users"}/>
 
-        return permissions.data?.map(({username, permissions}) => (
+        return permissions.data.map(({username, permissions}) => (
             <Accordion
                 key={username}
                 elevation={0}

@@ -83,7 +83,7 @@ export function ListTable(props: Props) {
         return (
             <TableRow>
                 <TableCell colSpan={3}>
-                    <InfoAlert text={"There is no clusters yet. You can add them manually or by auto detection."}/>
+                    <InfoAlert text={"There are no clusters yet. You can add them manually or by auto detection."}/>
                 </TableCell>
             </TableRow>
         )

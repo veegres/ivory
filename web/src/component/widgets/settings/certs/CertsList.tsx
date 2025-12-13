@@ -3,7 +3,7 @@ import {TransitionGroup} from "react-transition-group"
 
 import {Cert, CertMap} from "../../../../api/cert/type"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
-import {InfoAlert} from "../../../view/box/InfoAlert"
+import {NoBox} from "../../../view/box/NoBox"
 import {CertsItem} from "./CertsItem"
 
 type Props = {
@@ -16,7 +16,7 @@ export function CertsList(props: Props) {
     if (error) return <ErrorSmart error={error}/>
 
     const list = Object.entries<Cert>(certs ?? {})
-    if (list.length === 0) return <InfoAlert text={"There are no files yet"}/>
+    if (list.length === 0) return <NoBox text={"There are no files yet"}/>
 
     return (
         <TransitionGroup appear={false}>
