@@ -5,20 +5,20 @@ import (
 )
 
 type Repository struct {
-	bucket *db.Bucket[map[string]PermissionStatus]
+	bucket *db.Bucket[PermissionMap]
 }
 
-func NewRepository(bucket *db.Bucket[map[string]PermissionStatus]) *Repository {
+func NewRepository(bucket *db.Bucket[PermissionMap]) *Repository {
 	return &Repository{
 		bucket: bucket,
 	}
 }
 
-func (r *Repository) CreateOrUpdate(username string, permissions map[string]PermissionStatus) error {
+func (r *Repository) CreateOrUpdate(username string, permissions PermissionMap) error {
 	return r.bucket.Update(username, permissions)
 }
 
-func (r *Repository) Get(username string) (map[string]PermissionStatus, error) {
+func (r *Repository) Get(username string) (PermissionMap, error) {
 	return r.bucket.Get(username)
 }
 

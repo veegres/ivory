@@ -1,6 +1,6 @@
 import {Typography} from "@mui/material"
 
-import {PermissionStatus} from "../../../api/permission/type"
+import {PermissionMap} from "../../../api/permission/type"
 import {AlertCentered} from "../../view/box/AlertCentered"
 import {PageStartupBox} from "../../view/box/PageStartupBox"
 import {Menu} from "../../widgets/settings/menu/Menu"
@@ -8,7 +8,7 @@ import {PermissionsList} from "../../widgets/settings/permissions/PermissionsLis
 
 type Props = {
     username: string,
-    permissions: { [permission: string]: PermissionStatus },
+    permissions: PermissionMap,
 }
 
 export function PermissionsBody(props: Props) {

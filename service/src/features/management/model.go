@@ -35,8 +35,8 @@ type AuthInfo struct {
 }
 
 type UserInfo struct {
-	Username    string                                 `json:"username"`
-	Permissions map[string]permission.PermissionStatus `json:"permissions"`
+	Username    string                   `json:"username"`
+	Permissions permission.PermissionMap `json:"permissions"`
 }
 
 type SecretUpdateRequest struct {

@@ -1,7 +1,7 @@
 import {Box, Button} from "@mui/material"
 import {cloneElement} from "react"
 
-import {PermissionStatus} from "../../../../api/permission/type"
+import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {PermissionOptions} from "../../../../app/utils"
 import {PermissionsButtons} from "./PermissionsButtons"
@@ -17,7 +17,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    name: string,
+    name: Permission,
     status: PermissionStatus,
     username: string,
     view?: "admin" | "user",

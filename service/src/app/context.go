@@ -52,7 +52,7 @@ func NewContext() *Context {
 	tagBucket := db.NewBucket[[]string](st, "Tag")
 	secretBucket := db.NewBucket[string](st, "Secret")
 	passwordBucket := db.NewBucket[password.Password](st, "Password")
-	permissionBucket := db.NewBucket[map[string]permission.PermissionStatus](st, "Permission")
+	permissionBucket := db.NewBucket[permission.PermissionMap](st, "Permission")
 	queryBucket := db.NewBucket[query.Query](st, "Query")
 
 	// FILES

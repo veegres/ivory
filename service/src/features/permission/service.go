@@ -62,7 +62,7 @@ func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
 	return result, nil
 }
 
-func (s *Service) GetUserPermissions(prefix string, username string, allowAll bool) (map[string]PermissionStatus, error) {
+func (s *Service) GetUserPermissions(prefix string, username string, allowAll bool) (PermissionMap, error) {
 	if allowAll {
 		return s.getAllPermissionsWithStatus(GRANTED), nil
 	}
@@ -77,7 +77,7 @@ func (s *Service) GetUserPermissions(prefix string, username string, allowAll bo
 	return permissions, nil
 }
 
-func (s *Service) CreateUserPermissions(prefix string, username string) (map[string]PermissionStatus, error) {
+func (s *Service) CreateUserPermissions(prefix string, username string) (PermissionMap, error) {
 	permUsername, errName := s.getFullUsername(prefix, username)
 	if errName != nil {
 		return nil, errName
@@ -101,20 +101,20 @@ func (s *Service) CreateUserPermissions(prefix string, username string) (map[str
 	return permissions, nil
 }
 
-func (s *Service) RequestUserPermissions(prefix string, username string, permissionNames []string) error {
+func (s *Service) RequestUserPermissions(prefix string, username string, permissions []Permission) error {
 	permUsername, errName := s.getFullUsername(prefix, username)
 	if errName != nil {
 		return errName
 	}
-	return s.updateUserPermissions(permUsername, permissionNames, PENDING)
+	return s.updateUserPermissions(permUsername, permissions, PENDING)
 }
 
-func (s *Service) ApproveUserPermissions(permUsername string, permissionNames []string) error {
-	return s.updateUserPermissions(permUsername, permissionNames, GRANTED)
+func (s *Service) ApproveUserPermissions(permUsername string, permissions []Permission) error {
+	return s.updateUserPermissions(permUsername, permissions, GRANTED)
 }
 
-func (s *Service) RejectUserPermissions(permUsername string, permissionNames []string) error {
-	return s.updateUserPermissions(permUsername, permissionNames, NOT_PERMITTED)
+func (s *Service) RejectUserPermissions(permUsername string, permissions []Permission) error {
+	return s.updateUserPermissions(permUsername, permissions, NOT_PERMITTED)
 }
 
 func (s *Service) DeleteUserPermissions(permUsername string) error {
@@ -141,19 +141,19 @@ func (s *Service) getFullUsername(prefix string, username string) (string, error
 	return prefix + ":" + username, nil
 }
 
-func (s *Service) isValidPermission(permissionName string) bool {
-	for _, validPerm := range PermissionList {
-		if validPerm == permissionName {
+func (s *Service) isValidPermission(permission Permission) bool {
+	for _, validPerm := range Permissions {
+		if validPerm == permission {
 			return true
 		}
 	}
 	return false
 }
 
-func (s *Service) getAllPermissionsWithStatus(status PermissionStatus) map[string]PermissionStatus {
-	permissions := make(map[string]PermissionStatus)
-	for _, permissionName := range PermissionList {
-		permissions[permissionName] = status
+func (s *Service) getAllPermissionsWithStatus(status PermissionStatus) PermissionMap {
+	permissions := make(PermissionMap)
+	for _, permission := range Permissions {
+		permissions[permission] = status
 	}
 	return permissions
 }
@@ -167,18 +167,18 @@ func (s *Service) getStatus(permUsername string) PermissionStatus {
 	return NOT_PERMITTED
 }
 
-func (s *Service) updateUserPermissions(permUsername string, permissionNames []string, status PermissionStatus) error {
+func (s *Service) updateUserPermissions(permUsername string, permissions []Permission, status PermissionStatus) error {
 	var err error
-	for _, permissionName := range permissionNames {
-		errPerm := s.updateUserPermission(permUsername, permissionName, status)
+	for _, permission := range permissions {
+		errPerm := s.updateUserPermission(permUsername, permission, status)
 		if errPerm != nil {
-			err = errors.Join(err, fmt.Errorf("%s: %w", permissionName, errPerm))
+			err = errors.Join(err, fmt.Errorf("%s: %w", permission, errPerm))
 		}
 	}
 	return err
 }
 
-func (s *Service) updateUserPermission(permUsername string, permissionName string, status PermissionStatus) error {
+func (s *Service) updateUserPermission(permUsername string, permission Permission, status PermissionStatus) error {
 	if permUsername == "" {
 		return ErrUsernameCannotBeEmpty
 	}
@@ -187,7 +187,7 @@ func (s *Service) updateUserPermission(permUsername string, permissionName strin
 	if slices.Contains(s.superusers, username) {
 		return ErrCannotChangePermissionsForSuperusers
 	}
-	if !s.isValidPermission(permissionName) {
+	if !s.isValidPermission(permission) {
 		return ErrInvalidPermission
 	}
 
@@ -196,7 +196,7 @@ func (s *Service) updateUserPermission(permUsername string, permissionName strin
 		return err
 	}
 
-	existingPermissions[permissionName] = status
+	existingPermissions[permission] = status
 	return s.permissionRepository.CreateOrUpdate(permUsername, existingPermissions)
 }
 
@@ -207,12 +207,12 @@ func (s *Service) normalize() error {
 	}
 	for permUsername, permissions := range permissionsMap {
 		status := s.getStatus(permUsername)
-		normalisedPermissions := make(map[string]PermissionStatus)
-		for _, permissionName := range PermissionList {
-			if perm, ok := permissions[permissionName]; !ok {
-				normalisedPermissions[permissionName] = status
+		normalisedPermissions := make(PermissionMap)
+		for _, permission := range Permissions {
+			if perm, ok := permissions[permission]; !ok {
+				normalisedPermissions[permission] = status
 			} else {
-				normalisedPermissions[permissionName] = perm
+				normalisedPermissions[permission] = perm
 			}
 		}
 

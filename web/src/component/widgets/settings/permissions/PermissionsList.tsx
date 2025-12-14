@@ -2,7 +2,7 @@ import {Search} from "@mui/icons-material"
 import {Box, InputBase} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {PermissionStatus} from "../../../../api/permission/type"
+import {Permission, PermissionMap, PermissionStatus} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {NoBox} from "../../../view/box/NoBox"
 import {PermissionsButtons} from "./PermissionsButtons"
@@ -17,7 +17,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     username: string,
-    permissions: { [permission: string]: PermissionStatus },
+    permissions: PermissionMap,
     view?: "admin" | "user",
 }
 
@@ -60,6 +60,6 @@ export function PermissionsList(props: Props) {
     }
 
     function handleMemoSearch() {
-        return Object.entries(permissions).filter(([name]) => name.includes(search))
+        return Object.entries(permissions).filter(([name]) => name.includes(search)) as [Permission, PermissionStatus][]
     }
 }

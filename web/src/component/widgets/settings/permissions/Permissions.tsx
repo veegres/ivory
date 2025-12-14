@@ -40,7 +40,7 @@ export function Permissions() {
     function renderSelfPermissions() {
         if (!info.data?.auth.user) return <ErrorSmart error={"Can't get user info"}/>
         const {username, permissions} = info.data.auth.user
-        if (!permissions || permissions.length === 0) return <NoBox text={"You don't have any permissions"}/>
+        if (!permissions || Object.keys(permissions).length === 0) return <NoBox text={"You don't have any permissions"}/>
         return (
             <Paper variant={"outlined"}>
                 <PermissionsList permissions={permissions} username={username}/>

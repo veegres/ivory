@@ -5,7 +5,7 @@ import {
     useRouterPermissionReject,
     useRouterPermissionRequest,
 } from "../../../../api/permission/hook"
-import {PermissionStatus} from "../../../../api/permission/type"
+import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 
 const SX: SxPropsMap = {
@@ -15,7 +15,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     username: string,
-    permissions: [string, PermissionStatus][],
+    permissions: [Permission, PermissionStatus][],
     approve?: boolean,
     reject?: boolean,
     request?: boolean,
