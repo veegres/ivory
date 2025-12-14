@@ -10,7 +10,7 @@ import {Options} from "../../../widgets/options/Options"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
-    content: {display: "flex", flexDirection: "column", gap: 2, padding: "0 24px"},
+    content: {display: "flex", flexDirection: "column", gap: 1, padding: "0 24px"},
     center: {display: "flex", justifyContent: "center", gap: 3},
     instance: {display: "flex", gap: 2},
 }

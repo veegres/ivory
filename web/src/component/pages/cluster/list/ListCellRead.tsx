@@ -1,8 +1,10 @@
 import {Box} from "@mui/material"
 
 import {useRouterClusterDelete} from "../../../../api/cluster/hook"
+import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {DeleteIconButton, EditIconButton} from "../../../view/button/IconButtons"
+import {Access} from "../../../widgets/access/Access"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},
@@ -21,8 +23,12 @@ export function ListCellRead(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <EditIconButton disabled={isPending || isSuccess} onClick={toggle}/>
-            <DeleteIconButton loading={isPending} disabled={isSuccess} onClick={handleDelete}/>
+            <Access permission={Permission.ManageClusterUpdate}>
+                <EditIconButton disabled={isPending || isSuccess} onClick={toggle}/>
+            </Access>
+            <Access permission={Permission.ManageClusterDelete}>
+                <DeleteIconButton loading={isPending} disabled={isSuccess} onClick={handleDelete}/>
+            </Access>
         </Box>
     )
 

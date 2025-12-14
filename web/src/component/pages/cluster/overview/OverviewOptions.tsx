@@ -9,7 +9,7 @@ import {Options} from "../../../widgets/options/Options"
 import {OverviewOptionsInstance} from "./OverviewOptionsInstance"
 
 const SX: SxPropsMap = {
-    settings: {width: "250px", gap: "12px", padding: "8px 0"},
+    settings: {width: "250px", gap: 1, padding: "8px 0"},
 }
 
 type Props = {
