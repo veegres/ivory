@@ -8,6 +8,10 @@ import (
 )
 
 var ErrWrongSecret = errors.New("the secret is not correct")
+var ErrSecretAlreadySet = errors.New("secret is already set")
+var ErrSecretCannotBeEmpty = errors.New("secret cannot be empty")
+var ErrSecretsAreSame = errors.New("the secrets are the same")
+var ErrNoSecret = errors.New("there is no secret")
 
 type Service struct {
 	key          [16]byte
@@ -58,7 +62,7 @@ func (s *Service) SetDefault() error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	if !s.IsRefEmpty() {
-		return errors.New("secret is already set")
+		return ErrSecretAlreadySet
 	}
 	encryptedKey := md5.Sum([]byte(s.decryptedRef))
 	return s.setRef(encryptedKey)
@@ -66,7 +70,7 @@ func (s *Service) SetDefault() error {
 
 func (s *Service) Set(secret string) error {
 	if secret == "" {
-		return errors.New("secret cannot be empty")
+		return ErrSecretCannotBeEmpty
 	}
 	secretMd5 := md5.Sum([]byte(secret))
 	s.mutex.Lock()
@@ -117,10 +121,10 @@ func (s *Service) Verify(secret string) bool {
 
 func (s *Service) Update(prevSecret string, newSecret string) ([16]byte, [16]byte, error) {
 	if prevSecret == newSecret {
-		return [16]byte{}, [16]byte{}, errors.New("the secrets are the same")
+		return [16]byte{}, [16]byte{}, ErrSecretsAreSame
 	}
 	if s.IsSecretEmpty() {
-		return [16]byte{}, [16]byte{}, errors.New("there is no secret")
+		return [16]byte{}, [16]byte{}, ErrNoSecret
 	}
 
 	if newSecret == "" {

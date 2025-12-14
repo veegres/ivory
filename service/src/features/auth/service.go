@@ -15,6 +15,10 @@ import (
 )
 
 var ErrAuthDisabled = errors.New("authorization is disabled")
+var ErrInvalidTokenCannotParseAuthType = errors.New("invalid token: cannot parse auth type")
+var ErrInvalidToken = errors.New("invalid token")
+var ErrNoAuthorizationToken = errors.New("no authorization token")
+var ErrInvalidAuthorizationHeader = errors.New("invalid authorisation header")
 
 type Service struct {
 	secretService     *secret.Service
@@ -87,7 +91,7 @@ func (s *Service) ParseAuthToken(context *gin.Context) (bool, string, *AuthType,
 	}
 	frm, ok := tokenParsed.Claims.(jwt.MapClaims)["frm"].(float64)
 	if !ok {
-		return true, "", nil, errors.New("invalid token: cannot parse auth type")
+		return true, "", nil, ErrInvalidTokenCannotParseAuthType
 	}
 	authType := AuthType(frm)
 	return true, username, &authType, nil
@@ -161,7 +165,7 @@ func (s *Service) parseToken(rawIDToken string) (*jwt.Token, error) {
 	if token.Valid {
 		return token, nil
 	}
-	return nil, errors.New("invalid token")
+	return nil, ErrInvalidToken
 }
 
 func (s *Service) getToken(context *gin.Context) (string, error) {
@@ -175,18 +179,18 @@ func (s *Service) getToken(context *gin.Context) (string, error) {
 		if cookieTokenError != "" {
 			return "", errors.New(cookieTokenError)
 		}
-		return "", errors.New("no authorization token")
+		return "", ErrNoAuthorizationToken
 	}
 	return cookieToken, nil
 }
 
 func (s *Service) getTokenFromHeader(str string) (string, error) {
 	if str == "" {
-		return "", errors.New("no authorization token")
+		return "", ErrNoAuthorizationToken
 	}
 	parts := strings.SplitN(str, " ", 2)
 	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		return "", errors.New("invalid authorisation header")
+		return "", ErrInvalidAuthorizationHeader
 	}
 	return parts[1], nil
 }

@@ -14,6 +14,16 @@ import (
 	"github.com/go-ldap/ldap/v3"
 )
 
+var ErrUrlNotSpecified = errors.New("url is not specified")
+var ErrBindDNNotSpecified = errors.New("BindDN is not specified")
+var ErrBindPassNotSpecified = errors.New("BindPass is not specified")
+var ErrBaseDNNotSpecified = errors.New("BaseDN is not specified")
+var ErrFilterNotSpecified = errors.New("filter is not specified")
+var ErrSchemeNotLdaps = errors.New("scheme is not ldaps")
+var ErrConfigNotConfigured = errors.New("config is not configured")
+var ErrUserNotFoundOrTooMany = errors.New("user isn't found or too many entries returned")
+var ErrFailedToAppendCACert = errors.New("failed to append CA cert")
+
 // NOTE: validate that is matches interface in compile-time
 var _ auth.Provider[Config, Login] = (*Provider)(nil)
 
@@ -31,23 +41,23 @@ func (p *Provider) Configured() bool {
 
 func (p *Provider) SetConfig(config Config) error {
 	if config.Url == "" {
-		return errors.New("url is not specified")
+		return ErrUrlNotSpecified
 	}
 	if config.BindDN == "" {
-		return errors.New("BindDN is not specified")
+		return ErrBindDNNotSpecified
 	}
 	if config.BindPass == "" {
-		return errors.New("BindPass is not specified")
+		return ErrBindPassNotSpecified
 	}
 	if config.BaseDN == "" {
-		return errors.New("BaseDN is not specified")
+		return ErrBaseDNNotSpecified
 	}
 	if config.Filter == "" {
-		return errors.New("filter is not specified")
+		return ErrFilterNotSpecified
 	}
 	if config.Tls != nil {
 		if !strings.HasPrefix(config.Url, "ldaps://") {
-			return errors.New("scheme is not ldaps")
+			return ErrSchemeNotLdaps
 		}
 	}
 	p.config = &config
@@ -72,7 +82,7 @@ func (p *Provider) Connect(config Config) error {
 
 func (p *Provider) Verify(subject Login) (string, error) {
 	if p.config == nil {
-		return "", errors.New("config is not configured")
+		return "", ErrConfigNotConfigured
 	}
 	conn, err := p.getConnection(*p.config)
 	defer func(conn *ldap.Conn) {
@@ -102,7 +112,7 @@ func (p *Provider) Verify(subject Login) (string, error) {
 	}
 
 	if len(result.Entries) != 1 {
-		return "", errors.New("user isn't found or too many entries returned")
+		return "", ErrUserNotFoundOrTooMany
 	}
 
 	userDn := result.Entries[0].DN
@@ -121,7 +131,7 @@ func (p *Provider) getConnection(config Config) (*ldap.Conn, error) {
 	if config.Tls != nil && config.Tls.CaCert != "" {
 		certPool := x509.NewCertPool()
 		if ok := certPool.AppendCertsFromPEM([]byte(config.Tls.CaCert)); !ok {
-			return nil, errors.New("failed to append CA cert")
+			return nil, ErrFailedToAppendCACert
 		}
 		tlsConfig.RootCAs = certPool
 	} else {

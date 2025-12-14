@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+var ErrFileNameEmpty = errors.New("file name cannot be empty")
+var ErrFileNameInvalidChars = errors.New("file name contains invalid characters '/', '.'")
+
 type Storage struct {
 	path string
 	ext  string
@@ -87,10 +90,10 @@ func (r *Storage) DeleteAll() error {
 
 func (r *Storage) getPath(name string) (string, error) {
 	if name == "" {
-		return "", errors.New("file name cannot be empty")
+		return "", ErrFileNameEmpty
 	}
 	if strings.ContainsAny(name, "./") {
-		return "", errors.New("file name contains invalid characters '/', '.'")
+		return "", ErrFileNameInvalidChars
 	}
 	return r.path + "/" + name + r.ext, nil
 }

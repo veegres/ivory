@@ -13,6 +13,10 @@ import (
 	"ivory/src/storage/files"
 )
 
+var ErrConfigNotSpecified = errors.New("config is not specified")
+var ErrConfigAlreadySet = errors.New("config is already set; to change it, you need to provide the correct secret")
+var ErrCompanyNameEmpty = errors.New("company name cannot be empty")
+
 type Service struct {
 	configFiles       *files.Storage
 	encryptionService *encryption.Service
@@ -57,7 +61,7 @@ func (s *Service) initializeAppConfig() (*AppConfig, error) {
 	s.appConfigConfigured = s.configFiles.ExistByName(s.appConfigFileName)
 	read, err := s.configFiles.ReadByName(s.appConfigFileName)
 	if err != nil {
-		return nil, errors.New("config is not specified")
+		return nil, ErrConfigNotSpecified
 	}
 	var appConfig AppConfig
 	errUnmarshal := json.Unmarshal(read, &appConfig)
@@ -124,11 +128,11 @@ func (s *Service) GetAppConfig() (*AppConfig, error) {
 
 func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 	if s.GetIsConfigured() && !s.secretService.Verify(newAppConfig.Secret) {
-		return errors.New("config is already set; to change it, you need to provide the correct secret")
+		return ErrConfigAlreadySet
 	}
 	appConfig := newAppConfig.AppConfig
 	if appConfig.Company == "" {
-		return errors.New("company name cannot be empty")
+		return ErrCompanyNameEmpty
 	}
 
 	errValid := s.setAuthConfig(appConfig.Auth)

@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var ErrBodyShouldBeEmpty = errors.New("body should be empty")
+
 // NOTE: validate that is matches interface in compile-time
 var _ sidecar.Client = (*Client)(nil)
 
@@ -126,7 +128,7 @@ func (p *Client) Failover(request sidecar.Request) (*string, int, error) {
 
 func (p *Client) Activate(request sidecar.Request) (*string, int, error) {
 	if request.Body != nil {
-		return nil, http.StatusBadRequest, errors.New("body should be empty")
+		return nil, http.StatusBadRequest, ErrBodyShouldBeEmpty
 	}
 	request.Body = ConfigPause{Pause: false}
 	return sidecar.NewSidecarRequest[string](p.gateway).Patch(request, "/config")
@@ -134,7 +136,7 @@ func (p *Client) Activate(request sidecar.Request) (*string, int, error) {
 
 func (p *Client) Pause(request sidecar.Request) (*string, int, error) {
 	if request.Body != nil {
-		return nil, http.StatusBadRequest, errors.New("body should be empty")
+		return nil, http.StatusBadRequest, ErrBodyShouldBeEmpty
 	}
 	request.Body = ConfigPause{Pause: true}
 	return sidecar.NewSidecarRequest[string](p.gateway).Patch(request, "/config")

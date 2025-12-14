@@ -14,6 +14,8 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrCannotParseFileCorrupted = errors.New("cannot parse file, it is corrupted")
+
 type LogRepository struct {
 	queryLogFiles     *files.Storage
 	maxBufferCapacity int
@@ -52,7 +54,7 @@ func (r *LogRepository) Get(uuid uuid.UUID) ([]database.QueryFields, error) {
 	}
 
 	if errScanner := scanner.Err(); errScanner != nil {
-		return nil, errors.Join(errors.New("cannot parse file, it is corrupted"), errScanner)
+		return nil, errors.Join(ErrCannotParseFileCorrupted, errScanner)
 	}
 
 	return elements, nil
@@ -87,7 +89,7 @@ func (r *LogRepository) Add(uuid uuid.UUID, element any) error {
 		lines++
 	}
 	if errCounter := counter.Err(); errCounter != nil {
-		return errors.Join(errors.New("cannot parse file, it is corrupted"), errCounter)
+		return errors.Join(ErrCannotParseFileCorrupted, errCounter)
 	}
 
 	// reset cursor in the file for new scanner
@@ -109,7 +111,7 @@ func (r *LogRepository) Add(uuid uuid.UUID, element any) error {
 		}
 	}
 	if errScanner := scanner.Err(); errScanner != nil {
-		return errors.Join(errors.New("cannot parse file, it is corrupted"), errScanner)
+		return errors.Join(ErrCannotParseFileCorrupted, errScanner)
 	}
 
 	// parse and add new element to the buffer
