@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+var ErrAtLeastOneSuperuser = errors.New("there should be at least 1 superuser")
+var ErrSuperusersCannotHaveEmptyName = errors.New("superusers cannot have empty name")
+var ErrUsernameCannotBeEmpty = errors.New("username cannot be empty")
+var ErrPrefixCannotBeEmpty = errors.New("prefix cannot be empty")
+var ErrCannotChangePermissionsForSuperusers = errors.New("cannot change permissions for superusers")
+
 type Service struct {
 	permissionRepository *Repository
 
@@ -23,10 +29,10 @@ func NewService(permissionRepository *Repository) *Service {
 
 func (s *Service) SetSuperusers(superusers []string) error {
 	if len(superusers) == 0 {
-		return errors.New("there should be at least 1 superuser")
+		return ErrAtLeastOneSuperuser
 	}
 	if slices.Contains(superusers, "") {
-		return errors.New("superusers cannot have empty name")
+		return ErrSuperusersCannotHaveEmptyName
 	}
 	s.superusers = superusers
 	return s.normalize()
@@ -111,7 +117,7 @@ func (s *Service) RejectUserPermission(permUsername string, permissionName strin
 
 func (s *Service) DeleteUserPermissions(permUsername string) error {
 	if permUsername == "" {
-		return errors.New("username cannot be empty")
+		return ErrUsernameCannotBeEmpty
 	}
 	return s.permissionRepository.Delete(permUsername)
 }
@@ -122,10 +128,10 @@ func (s *Service) DeleteAll() error {
 
 func (s *Service) getFullUsername(prefix string, username string) (string, error) {
 	if username == "" {
-		return "", errors.New("username cannot be empty")
+		return "", ErrUsernameCannotBeEmpty
 	}
 	if prefix == "" {
-		return "", errors.New("prefix cannot be empty")
+		return "", ErrPrefixCannotBeEmpty
 	}
 	if slices.Contains(s.superusers, username) {
 		prefix = "superuser"
@@ -161,12 +167,12 @@ func (s *Service) getStatus(permUsername string) PermissionStatus {
 
 func (s *Service) updateUserPermission(permUsername string, permissionName string, status PermissionStatus) error {
 	if permUsername == "" {
-		return errors.New("username cannot be empty")
+		return ErrUsernameCannotBeEmpty
 	}
 	split := strings.Split(permUsername, ":")
 	username := split[1]
 	if slices.Contains(s.superusers, username) {
-		return errors.New("cannot change permissions for superusers")
+		return ErrCannotChangePermissionsForSuperusers
 	}
 	if !s.isValidPermission(permissionName) {
 		return errors.New("invalid permission name: " + permissionName)

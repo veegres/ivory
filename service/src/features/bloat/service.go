@@ -12,6 +12,9 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrJobIsActive = errors.New("job is active")
+var ErrNoSuchActiveJob = errors.New("there is no such active job")
+
 type Service struct {
 	start           chan uuid.UUID
 	stop            chan uuid.UUID
@@ -122,7 +125,7 @@ func (w *Service) Stream(jobUuid uuid.UUID, stream func(event Event)) {
 func (w *Service) Delete(jobUuid uuid.UUID) error {
 	element := w.elements[jobUuid]
 	if element != nil && element.job.IsJobActive() {
-		return errors.New("job is active")
+		return ErrJobIsActive
 	}
 	return w.bloatRepository.Delete(jobUuid)
 }
@@ -142,7 +145,7 @@ func (w *Service) Stop(jobUuid uuid.UUID) error {
 		w.stop <- jobUuid
 		return nil
 	} else {
-		return errors.New("there is no such active job")
+		return ErrNoSuchActiveJob
 	}
 }
 

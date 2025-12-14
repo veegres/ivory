@@ -9,6 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrNoSuchFile = errors.New("there is no such file")
+var ErrFileInIvoryPackage = errors.New("the file shouldn't be located in Ivory working package, if you have mount to /opt/ivory package, it is recommended to change it to /opt/YOUR_PACKAGE")
+var ErrUnknownCertificateType = errors.New("unknown certificate type")
+
 type Repository struct {
 	bucket *db.Bucket[Cert]
 	file   *files.Storage
@@ -47,14 +51,14 @@ func (r *Repository) Create(cert Cert, pathStr string) (*Cert, error) {
 		cert.Path = path
 	case PATH:
 		if !r.file.ExistByPath(pathStr) {
-			return nil, errors.New("there is no such file")
+			return nil, ErrNoSuchFile
 		}
 		if strings.Contains(pathStr, "/opt/ivory") {
-			return nil, errors.New("the file shouldn't be located in Ivory working package, if you have mount to /opt/ivory package, it is recommended to change it to /opt/YOUR_PACKAGE")
+			return nil, ErrFileInIvoryPackage
 		}
 		cert.Path = pathStr
 	default:
-		return nil, errors.New("unknown certificate type")
+		return nil, ErrUnknownCertificateType
 	}
 
 	err := r.bucket.Update(key.String(), cert)

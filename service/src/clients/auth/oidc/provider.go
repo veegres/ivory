@@ -9,6 +9,16 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var ErrIssuerURLNotSpecified = errors.New("IssuerURL is not specified")
+var ErrClientIDNotSpecified = errors.New("ClientID is not specified")
+var ErrClientSecretNotSpecified = errors.New("ClientSecret is not specified")
+var ErrRedirectURLNotSpecified = errors.New("RedirectURL is not specified")
+var ErrFailedToExchangeToken = errors.New("failed to exchange token")
+var ErrNoIDTokenField = errors.New("no id_token field in oauth2 token")
+var ErrFailedToVerifyIDToken = errors.New("failed to verify ID Token")
+var ErrNoRightClaim = errors.New("there is no right claim in ID Token (it should have any of these preferred_username, email, nickname)")
+var ErrConfigNotConfigured = errors.New("config is not configured")
+
 // NOTE: validate that is matches interface in compile-time
 var _ auth.Provider[Config, string] = (*Provider)(nil)
 
@@ -28,16 +38,16 @@ func (p *Provider) Configured() bool {
 
 func (p *Provider) SetConfig(config Config) error {
 	if config.IssuerURL == "" {
-		return errors.New("IssuerURL is not specified")
+		return ErrIssuerURLNotSpecified
 	}
 	if config.ClientID == "" {
-		return errors.New("ClientID is not specified")
+		return ErrClientIDNotSpecified
 	}
 	if config.ClientSecret == "" {
-		return errors.New("ClientSecret is not specified")
+		return ErrClientSecretNotSpecified
 	}
 	if config.RedirectURL == "" {
-		return errors.New("RedirectURL is not specified")
+		return ErrRedirectURLNotSpecified
 	}
 	p.config = &config
 	return nil
@@ -64,17 +74,17 @@ func (p *Provider) Verify(subject string) (string, error) {
 	}
 	oauthToken, errExchange := p.oauthConfig.Exchange(context.Background(), subject)
 	if errExchange != nil {
-		return "", errors.Join(errors.New("failed to exchange token"), errExchange)
+		return "", errors.Join(ErrFailedToExchangeToken, errExchange)
 	}
 
 	rawIDToken, ok := oauthToken.Extra("id_token").(string)
 	if !ok {
-		return "", errors.New("no id_token field in oauth2 token")
+		return "", ErrNoIDTokenField
 	}
 
 	idToken, errVerify := p.oauthVerifier.Verify(context.Background(), rawIDToken)
 	if errVerify != nil {
-		return "", errors.Join(errors.New("failed to verify ID Token"), errVerify)
+		return "", errors.Join(ErrFailedToVerifyIDToken, errVerify)
 	}
 
 	// NOTE: standard for scope and claims can be found here https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
@@ -95,7 +105,7 @@ func (p *Provider) Verify(subject string) (string, error) {
 	if claims.Nickname != "" {
 		return claims.Nickname, nil
 	}
-	return "", errors.New("there is no right claim in ID Token (it should have any of these preferred_username, email, nickname)")
+	return "", ErrNoRightClaim
 }
 
 func (p *Provider) Connect(config Config) error {
@@ -115,7 +125,7 @@ func (p *Provider) getConnection(config Config) (*oidc.Provider, error) {
 
 func (p *Provider) initialize() error {
 	if p.config == nil {
-		return errors.New("config is not configured")
+		return ErrConfigNotConfigured
 	}
 	provider, errProvider := p.getConnection(*p.config)
 	if errProvider != nil {

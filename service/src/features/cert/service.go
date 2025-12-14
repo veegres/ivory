@@ -12,6 +12,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+var ErrMutualTLSRequiresBothCertAndKey = errors.New("to be able to establish mutual tls connection, you need to provide both client cert and client private key")
+var ErrFileNameCannotBeEmpty = errors.New("file name cannot be empty")
+
 type Service struct {
 	certRepository *Repository
 	formats        []string
@@ -71,7 +74,7 @@ func (s *Service) GetTLSConfigCertificates(clientCertId *uuid.UUID, clientKeyId 
 
 	// NOTE: xor operation for `nil` check
 	if (clientCertId == nil || clientKeyId == nil) && clientCertId != clientKeyId {
-		return nil, errors.New("to be able to establish mutual tls connection, you need to provide both client cert and client private key")
+		return nil, ErrMutualTLSRequiresBothCertAndKey
 	}
 
 	return certificates, nil
@@ -110,7 +113,7 @@ func (s *Service) ListByType(certType CertType) (CertMap, error) {
 func (s *Service) Create(pathStr string, certType CertType, fileUsageType FileUsageType) (*Cert, error) {
 	fileName := path.Base(pathStr)
 	if fileName == "" {
-		return nil, errors.New("file name cannot be empty")
+		return nil, ErrFileNameCannotBeEmpty
 	}
 
 	fileFormat := path.Ext(pathStr)

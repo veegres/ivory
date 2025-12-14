@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var ErrHostEmpty = errors.New("host cannot be empty")
+
 type SidecarRequest[R any] struct {
 	sidecar *Gateway
 }
@@ -88,7 +90,7 @@ func NewGateway() *Gateway {
 
 func (p *Gateway) send(method string, request Request, path string, timeout time.Duration) (*http.Response, error) {
 	if request.Sidecar.Host == "" {
-		return nil, errors.New("host cannot be empty")
+		return nil, ErrHostEmpty
 	}
 	client, protocol, errClient := p.getClient(request.TlsConfig, timeout)
 	if errClient != nil {

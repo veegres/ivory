@@ -9,6 +9,13 @@ import (
 	"io"
 )
 
+var ErrCannotEncryptEmptyString = errors.New("cannot encrypt empty string")
+var ErrSecretEmpty = errors.New("secret is empty")
+var ErrCannotDecryptEmptyString = errors.New("cannot decrypt empty string")
+var ErrCiphertextTooShort = errors.New("ciphertext too short")
+var ErrDecryptionFailed = errors.New("decryption failed: authentication check failed or invalid ciphertext")
+var ErrInvalidBase64Encoding = errors.New("invalid base64 encoding")
+
 type Service struct{}
 
 func NewService() *Service {
@@ -19,10 +26,10 @@ func NewService() *Service {
 // The IV (nonce) is randomly generated and prepended to the ciphertext
 func (e *Service) Encrypt(text string, secret [16]byte) (string, error) {
 	if text == "" {
-		return "", errors.New("cannot encrypt empty string")
+		return "", ErrCannotEncryptEmptyString
 	}
 	if secret == [16]byte{} {
-		return "", errors.New("secret is empty")
+		return "", ErrSecretEmpty
 	}
 
 	block, err := aes.NewCipher(secret[:])
@@ -56,10 +63,10 @@ func (e *Service) Encrypt(text string, secret [16]byte) (string, error) {
 // Verifies authentication tag and returns error if tampered
 func (e *Service) Decrypt(text string, secret [16]byte) (string, error) {
 	if text == "" {
-		return "", errors.New("cannot decrypt empty string")
+		return "", ErrCannotDecryptEmptyString
 	}
 	if secret == [16]byte{} {
-		return "", errors.New("secret is empty")
+		return "", ErrSecretEmpty
 	}
 
 	block, err := aes.NewCipher(secret[:])
@@ -81,7 +88,7 @@ func (e *Service) Decrypt(text string, secret [16]byte) (string, error) {
 	// Check minimum length (nonce + at least some data)
 	nonceSize := aesGCM.NonceSize()
 	if len(cipherText) < nonceSize {
-		return "", errors.New("ciphertext too short")
+		return "", ErrCiphertextTooShort
 	}
 
 	// Extract nonce and ciphertext
@@ -90,7 +97,7 @@ func (e *Service) Decrypt(text string, secret [16]byte) (string, error) {
 	// Decrypt and verify authentication tag
 	plainText, err := aesGCM.Open(nil, nonce, cipherText, nil)
 	if err != nil {
-		return "", errors.New("decryption failed: authentication check failed or invalid ciphertext")
+		return "", ErrDecryptionFailed
 	}
 
 	return string(plainText), nil
@@ -103,7 +110,7 @@ func (e *Service) encode(b []byte) string {
 func (e *Service) decode(s string) ([]byte, error) {
 	data, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {
-		return nil, errors.New("invalid base64 encoding")
+		return nil, ErrInvalidBase64Encoding
 	}
 	return data, nil
 }

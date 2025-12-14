@@ -15,6 +15,10 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+var ErrCannotLimitWithoutTrim = errors.New("cannot limit query without trimming it")
+var ErrDatabaseHostOrPortNotSpecified = errors.New("database host or port are not specified")
+var ErrPasswordNotSet = errors.New("password is not set")
+
 // NOTE: validate that is matches interface in compile-time
 var _ database.Client = (*Client)(nil)
 
@@ -170,7 +174,7 @@ func (s *Client) sendRequest(ctx database.Context, query string, queryParams []a
 func (s *Client) normalizeQuery(query string, trim *bool, limit *string) (string, *string, error) {
 	if trim == nil || *trim == false {
 		if limit != nil {
-			return "", limit, errors.New("cannot limit query without trimming it")
+			return "", limit, ErrCannotLimitWithoutTrim
 		} else {
 			return query, limit, nil
 		}
@@ -243,7 +247,7 @@ func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) 
 	connection := ctx.Connection
 	db := connection.Database
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
-		return nil, "unknown", errors.New("database host or port are not specified")
+		return nil, "unknown", ErrDatabaseHostOrPortNotSpecified
 	}
 
 	dbName := "postgres"
@@ -253,7 +257,7 @@ func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) 
 
 	credentials := connection.Credentials
 	if credentials == nil {
-		return nil, "unknown", errors.New("password is not set")
+		return nil, "unknown", ErrPasswordNotSet
 	}
 
 	connProtocol := "postgres://"

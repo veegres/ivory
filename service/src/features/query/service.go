@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrQueryEmpty = errors.New("query is empty")
+var ErrPasswordProblems = errors.New("password problems, check if it exists")
+var ErrAllFieldsRequired = errors.New("all fields have to be filled")
+var ErrNameChangeNotAllowed = errors.New("name change is not allowed for system queries")
+var ErrTypeChangeNotAllowed = errors.New("type change is not allowed for system queries")
+var ErrDescriptionChangeNotAllowed = errors.New("description change is not allowed for system queries")
+var ErrDeletionOfSystemQueriesRestricted = errors.New("deletion of system queries is restricted")
+
 type ExecuteService struct {
 	queryRepository *Repository
 	databaseClient  Client
@@ -55,7 +63,7 @@ func (s *ExecuteService) TemplateQuery(ctx QueryContext, uuid uuid.UUID, options
 		return nil, errQuery
 	}
 	if query.Custom == "" {
-		return nil, errors.New("query is empty")
+		return nil, ErrQueryEmpty
 	}
 	response, errRun := s.ConsoleQuery(ctx, query.Custom, options)
 	if errRun == nil && len(response.Rows) > 0 {
@@ -144,7 +152,7 @@ func (s *ExecuteService) mapContext(queryCtx QueryContext) (Context, error) {
 	if queryCtx.Connection.CredentialId != nil {
 		cred, errCred := s.passwordService.GetDecrypted(*queryCtx.Connection.CredentialId)
 		if errCred != nil {
-			return ctx, errors.New("password problems, check if it exists")
+			return ctx, ErrPasswordProblems
 		}
 		con.Credentials = &Credentials{Username: cred.Username, Password: cred.Password}
 	}
@@ -215,7 +223,7 @@ func (s *Service) GetList(queryType *QueryType) ([]Query, error) {
 
 func (s *Service) Create(creation QueryCreation, query QueryRequest) (*uuid.UUID, *Query, error) {
 	if query.Name == "" || query.Type == nil || query.Query == "" {
-		return nil, nil, errors.New("all fields have to be filled")
+		return nil, nil, ErrAllFieldsRequired
 	}
 
 	return s.repository.Create(Query{
@@ -237,13 +245,13 @@ func (s *Service) Update(key uuid.UUID, query QueryRequest) (*uuid.UUID, *Query,
 	}
 	if currentQuery.Creation == System {
 		if query.Name != currentQuery.Name {
-			return nil, nil, errors.New("name change is not allowed for system queries")
+			return nil, nil, ErrNameChangeNotAllowed
 		}
 		if *query.Type != currentQuery.Type {
-			return nil, nil, errors.New("type change is not allowed for system queries")
+			return nil, nil, ErrTypeChangeNotAllowed
 		}
 		if *query.Description != *currentQuery.Description {
-			return nil, nil, errors.New("description change is not allowed for system queries")
+			return nil, nil, ErrDescriptionChangeNotAllowed
 		}
 
 		return s.repository.Update(key, Query{
@@ -296,7 +304,7 @@ func (s *Service) Delete(key uuid.UUID) error {
 	if currentQuery.Creation == Manual {
 		return s.repository.Delete(key)
 	} else {
-		return errors.New("deletion of system queries is restricted")
+		return ErrDeletionOfSystemQueriesRestricted
 	}
 }
 
