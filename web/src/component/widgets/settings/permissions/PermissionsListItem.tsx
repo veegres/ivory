@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
     item: {
         display: "flex", justifyContent: "space-between", alignItems: "center",
         borderBottom: 1, borderColor: "divider", padding: "3px 8px",
-        "&:first-child": {borderTop: 1, borderColor: "divider"},
+        "&:first-of-type": {borderTop: 1, borderColor: "divider"},
     },
     wrap: {display: "flex", alignItems: "center", gap: 1, height: "28px"},
     button: {padding: "2px 5px"},
