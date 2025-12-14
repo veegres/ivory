@@ -4,9 +4,11 @@ import {useState} from "react"
 
 import {useRouterInstanceRestart} from "../../../api/instance/hook"
 import {InstanceRequest} from "../../../api/instance/type"
+import {Permission} from "../../../api/permission/type"
 import {SxPropsMap} from "../../../app/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
+import {Access} from "../access/Access"
 
 const SX: SxPropsMap = {
     pending: {margin: "0px"},
@@ -29,23 +31,25 @@ export function RestartButton(props: Props) {
     const body = {schedule, restart_pending: pending || undefined}
 
     return (
-        <AlertButton
-            size={"small"}
-            label={"Restart"}
-            title={`Make a restart of ${request.sidecar.host}?`}
-            description={"It will restart postgres, that will cause some downtime."}
-            loading={restart.isPending}
-            onClick={handleClick}
-        >
-            <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
-            <FormControlLabel
-                sx={SX.pending}
-                disabled={!schedule}
-                labelPlacement={"start"}
-                control={<Switch checked={pending} onClick={() => setPending(!pending)}/>}
-                label={renderLabel()}
-            />
-        </AlertButton>
+        <Access permission={Permission.ManageInstanceRestart}>
+            <AlertButton
+                size={"small"}
+                label={"Restart"}
+                title={`Make a restart of ${request.sidecar.host}?`}
+                description={"It will restart postgres, that will cause some downtime."}
+                loading={restart.isPending}
+                onClick={handleClick}
+            >
+                <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
+                <FormControlLabel
+                    sx={SX.pending}
+                    disabled={!schedule}
+                    labelPlacement={"start"}
+                    control={<Switch checked={pending} onClick={() => setPending(!pending)}/>}
+                    label={renderLabel()}
+                />
+            </AlertButton>
+        </Access>
     )
 
     function renderLabel() {

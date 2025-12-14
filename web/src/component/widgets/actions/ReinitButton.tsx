@@ -3,8 +3,10 @@ import {useState} from "react"
 
 import {useRouterInstanceReinit} from "../../../api/instance/hook"
 import {InstanceRequest} from "../../../api/instance/type"
+import {Permission} from "../../../api/permission/type"
 import {SxPropsMap} from "../../../app/type"
 import {AlertButton} from "../../view/button/AlertButton"
+import {Access} from "../access/Access"
 
 const SX: SxPropsMap = {
     force: {margin: "0px"},
@@ -24,21 +26,23 @@ export function ReinitButton(props: Props) {
     const body = {force}
 
     return (
-        <AlertButton
-            color={"info"}
-            label={"Reinit"}
-            title={`Make a reinit of ${request.sidecar.host}?`}
-            description={"It will erase all node data and will download it from scratch."}
-            loading={reinit.isPending}
-            onClick={handleClick}
-        >
-            <FormControlLabel
-                sx={SX.force}
-                labelPlacement={"start"}
-                control={<Switch checked={force} onClick={() => setForce(!force)}/>}
-                label={renderLabel()}
-            />
-        </AlertButton>
+        <Access permission={Permission.ManageInstanceReinitialize}>
+            <AlertButton
+                color={"info"}
+                label={"Reinit"}
+                title={`Make a reinit of ${request.sidecar.host}?`}
+                description={"It will erase all node data and will download it from scratch."}
+                loading={reinit.isPending}
+                onClick={handleClick}
+            >
+                <FormControlLabel
+                    sx={SX.force}
+                    labelPlacement={"start"}
+                    control={<Switch checked={force} onClick={() => setForce(!force)}/>}
+                    label={renderLabel()}
+                />
+            </AlertButton>
+        </Access>
     )
 
     function renderLabel() {
