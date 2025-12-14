@@ -14,7 +14,7 @@ type Props = {
 export function PermissionsBody(props: Props) {
     const {username, permissions} = props
     return (
-        <PageStartupBox header={"Permissions"} renderFooter={renderFooter()} position={"start"}>
+        <PageStartupBox header={"Permissions"} renderFooter={renderFooter()} position={"start"} padding={"50px 0px"}>
             <Menu/>
             <Typography variant={"h6"}>Glad to see you, {username}!</Typography>
             <AlertCentered
