@@ -4,8 +4,10 @@ import {useState} from "react"
 
 import {useRouterInstanceSwitchover} from "../../../api/instance/hook"
 import {InstanceRequest, Sidecar} from "../../../api/instance/type"
+import {Permission} from "../../../api/permission/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
+import {Access} from "../access/Access"
 
 type Props = {
     request: InstanceRequest,
@@ -23,18 +25,20 @@ export function SwitchoverButton(props: Props) {
     const body = {leader: request.sidecar.name, candidate, scheduled_at: schedule}
 
     return (
-        <AlertButton
-            color={"secondary"}
-            label={"Switchover"}
-            title={`Make a switchover of ${request.sidecar.host}?`}
-            description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
-             candidate, the candidate will be chosen randomly.`}
-            loading={switchover.isPending}
-            onClick={handleClick}
-        >
-            {renderCandidates()}
-            <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
-        </AlertButton>
+        <Access permission={Permission.ManageInstanceSwitchover}>
+            <AlertButton
+                color={"secondary"}
+                label={"Switchover"}
+                title={`Make a switchover of ${request.sidecar.host}?`}
+                description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
+                 candidate, the candidate will be chosen randomly.`}
+                loading={switchover.isPending}
+                onClick={handleClick}
+            >
+                {renderCandidates()}
+                <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
+            </AlertButton>
+        </Access>
     )
 
     function renderCandidates() {

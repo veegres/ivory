@@ -90,7 +90,7 @@ export function OverviewInstancesRow(props: Props) {
     }
 
     function renderData() {
-        if (role === "unknown") return null
+        if (role === "unknown") return
         return (
             <HiddenScrolling arrowWidth={"20px"} arrowHeight={"25px"}>
                 <Box sx={SX.data}>
@@ -116,7 +116,7 @@ export function OverviewInstancesRow(props: Props) {
     }
 
     function renderScheduledSwitchoverTitle() {
-        if (scheduledSwitchover === undefined) return null
+        if (scheduledSwitchover === undefined) return
         return (
             <Box>
                 {renderSimpleTitle("to", scheduledSwitchover.to)}
@@ -126,7 +126,7 @@ export function OverviewInstancesRow(props: Props) {
     }
 
     function renderScheduledRestartTitle() {
-        if (scheduledRestart === undefined) return null
+        if (scheduledRestart === undefined) return
         return (
             <Box>
                 {renderSimpleTitle("pending restart", String(scheduledRestart.pendingRestart))}
@@ -136,7 +136,7 @@ export function OverviewInstancesRow(props: Props) {
     }
 
     function renderMenuButtons() {
-        if (role === "unknown") return null
+        if (role === "unknown") return
         return (
             <MenuButton>
                 <ScheduleButton request={request} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
@@ -151,12 +151,12 @@ export function OverviewInstancesRow(props: Props) {
         switch (role) {
             case "replica": return <ReinitButton request={request} cluster={cluster.name}/>
             case "leader": return <SwitchoverButton request={request} cluster={cluster.name} candidates={candidates}/>
-            default: return null
+            default: return
         }
     }
 
     function renderWarning(inCluster: boolean, inInstances: boolean) {
-        if (inCluster && inInstances) return null
+        if (inCluster && inInstances) return
 
         let title = "Instance is not in cluster list or cluster itself!"
         if (inCluster && !inInstances) title = "Instance is not in your cluster list!"
