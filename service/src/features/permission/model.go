@@ -17,6 +17,10 @@ type UserPermissions struct {
 
 // SPECIFIC (SERVER)
 
+type PermissionRequest struct {
+	Permissions []string `json:"permissions" binding:"required"`
+}
+
 // UserPermissionsMap is a map where the key is username/email and value is the permissions map
 type UserPermissionsMap map[string]map[string]PermissionStatus
 

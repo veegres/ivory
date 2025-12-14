@@ -57,15 +57,13 @@ func (r *Router) GetAllUserPermissions(context *gin.Context) {
 func (r *Router) RequestUserPermission(context *gin.Context) {
 	username := context.GetString("username")
 	prefix := context.GetString("authType")
-	var request struct {
-		Permission string `json:"permission"`
-	}
+	var request PermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := r.permissionService.RequestUserPermission(prefix, username, request.Permission)
+	err := r.permissionService.RequestUserPermissions(prefix, username, request.Permissions)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,15 +79,13 @@ func (r *Router) ApproveUserPermission(context *gin.Context) {
 		return
 	}
 
-	var request struct {
-		Permission string `json:"permission"`
-	}
+	var request PermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := r.permissionService.ApproveUserPermission(permUsername, request.Permission)
+	err := r.permissionService.ApproveUserPermissions(permUsername, request.Permissions)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -105,15 +101,13 @@ func (r *Router) RejectUserPermission(context *gin.Context) {
 		return
 	}
 
-	var request struct {
-		Permission string `json:"permission"`
-	}
+	var request PermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := r.permissionService.RejectUserPermission(permUsername, request.Permission)
+	err := r.permissionService.RejectUserPermissions(permUsername, request.Permissions)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

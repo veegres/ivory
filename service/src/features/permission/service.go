@@ -108,12 +108,43 @@ func (s *Service) RequestUserPermission(prefix string, username string, permissi
 	return s.updateUserPermission(permUsername, permissionName, PENDING)
 }
 
+func (s *Service) RequestUserPermissions(prefix string, username string, permissionNames []string) error {
+	permUsername, errName := s.getFullUsername(prefix, username)
+	if errName != nil {
+		return errName
+	}
+	for _, permissionName := range permissionNames {
+		if err := s.updateUserPermission(permUsername, permissionName, PENDING); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Service) ApproveUserPermission(permUsername string, permissionName string) error {
 	return s.updateUserPermission(permUsername, permissionName, GRANTED)
 }
 
+func (s *Service) ApproveUserPermissions(permUsername string, permissionNames []string) error {
+	for _, permissionName := range permissionNames {
+		if err := s.updateUserPermission(permUsername, permissionName, GRANTED); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Service) RejectUserPermission(permUsername string, permissionName string) error {
 	return s.updateUserPermission(permUsername, permissionName, NOT_PERMITTED)
+}
+
+func (s *Service) RejectUserPermissions(permUsername string, permissionNames []string) error {
+	for _, permissionName := range permissionNames {
+		if err := s.updateUserPermission(permUsername, permissionName, NOT_PERMITTED); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Service) DeleteUserPermissions(permUsername string) error {
