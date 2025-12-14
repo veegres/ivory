@@ -29,12 +29,12 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) ValidateMethodMiddleware(permission string) gin.HandlerFunc {
+func (r *Router) ValidateMethodMiddleware(permission Permission) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if val, ok := context.Get("permissions"); ok {
-			permissions := val.(map[string]PermissionStatus)
+			permissions := val.(PermissionMap)
 			if permissions[permission] != GRANTED {
-				context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": permission + " is not permitted"})
+				context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": string(permission) + " is not permitted"})
 				return
 			}
 		} else {

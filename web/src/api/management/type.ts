@@ -1,5 +1,5 @@
 import {AuthType} from "../auth/type"
-import {PermissionStatus} from "../permission/type"
+import {PermissionMap} from "../permission/type"
 import {SecretStatus} from "../secret/type"
 
 // COMMON (WEB AND SERVER)
@@ -32,7 +32,7 @@ export interface AuthInfo {
 
 export interface UserInfo {
     username: string,
-    permissions?: { [key: string]: PermissionStatus },
+    permissions?: PermissionMap,
 }
 
 export interface SecretUpdateRequest {
