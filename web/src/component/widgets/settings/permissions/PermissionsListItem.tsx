@@ -75,16 +75,16 @@ export function PermissionsListItem(props: Props) {
     }
 
     function renderApprove(label: string) {
-        const r = {username, permission: name}
+        const r = {username, permissions: [name]}
         return <Button sx={SX.button} color={"success"} size={"small"} loading={approve.isPending} onClick={() => approve.mutate(r)}>{label}</Button>
     }
     function renderReject(label: string) {
-        const r = {username, permission: name}
+        const r = {username, permissions: [name]}
         return <Button sx={SX.button} color={"warning"} size={"small"} loading={reject.isPending} onClick={() => reject.mutate(r)}>{label}</Button>
     }
     function renderRequest() {
         return (
-            <Button sx={SX.button} size={"small"} loading={request.isPending} onClick={() => request.mutate(name)}>Request</Button>
+            <Button sx={SX.button} size={"small"} loading={request.isPending} onClick={() => request.mutate([name])}>Request</Button>
         )
     }
 }

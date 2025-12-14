@@ -10,20 +10,20 @@ export const PermissionApi = {
     },
     request: {
         key: () => ["permission", "request"],
-        fn: (permission: string) =>
-            api.post("/permission/request", {permission})
+        fn: (permissions: string[]) =>
+            api.post("/permission/request", {permissions})
                 .then((response) => response.data.response),
     },
     approve: {
         key: () => ["permission", "approve"],
-        fn: ({username, permission}: { username: string, permission: string }) =>
-            api.post(`/permission/users/${username}/approve`, {permission})
+        fn: ({username, permissions}: { username: string, permissions: string[] }) =>
+            api.post(`/permission/users/${username}/approve`, {permissions})
                 .then((response) => response.data.response),
     },
     reject: {
         key: () => ["permission", "reject"],
-        fn: ({username, permission}: { username: string, permission: string }) =>
-            api.post(`/permission/users/${username}/reject`, {permission})
+        fn: ({username, permissions}: { username: string, permissions: string[] }) =>
+            api.post(`/permission/users/${username}/reject`, {permissions})
                 .then((response) => response.data.response),
     },
     delete: {
