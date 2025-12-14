@@ -2,6 +2,7 @@ package permission
 
 import (
 	"errors"
+	"fmt"
 	"ivory/src/storage/db"
 	"slices"
 	"sort"
@@ -175,7 +176,7 @@ func (s *Service) updateUserPermission(permUsername string, permissionName strin
 		return ErrCannotChangePermissionsForSuperusers
 	}
 	if !s.isValidPermission(permissionName) {
-		return errors.New("invalid permission name: " + permissionName)
+		return fmt.Errorf("invalid permission name: %s", permissionName)
 	}
 
 	existingPermissions, err := s.permissionRepository.Get(permUsername)

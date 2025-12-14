@@ -3,6 +3,7 @@ package bloat
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	. "ivory/src/features/bloat/job"
 	"ivory/src/features/password"
 	"os/exec"
@@ -161,7 +162,7 @@ func (w *Service) runner() {
 			// Get password
 			credential, errCred := w.passwordService.GetDecrypted(model.CredentialId)
 			if errCred != nil {
-				w.jobStatusHandler(element, FAILED, errors.New("Password error: "+errCred.Error()))
+				w.jobStatusHandler(element, FAILED, fmt.Errorf("password error: %w", errCred))
 				return
 			}
 			credentialArgs := []string{
@@ -174,11 +175,11 @@ func (w *Service) runner() {
 			cmd := exec.Command("pgcompacttable", args...)
 			pipe, errPipe := cmd.StdoutPipe()
 			if errPipe != nil {
-				w.jobStatusHandler(element, FAILED, errors.New("pgcompacttable execution error: "+errPipe.Error()))
+				w.jobStatusHandler(element, FAILED, fmt.Errorf("pgcompacttable execution error: %w", errPipe))
 				return
 			}
 			if errStart := cmd.Start(); errStart != nil {
-				w.jobStatusHandler(element, FAILED, errors.New("pgcompacttable execution error: "+errStart.Error()))
+				w.jobStatusHandler(element, FAILED, fmt.Errorf("pgcompacttable execution error: %w", errStart))
 				return
 			}
 			w.elements[jobUuid].job.SetCommand(cmd)
@@ -194,7 +195,7 @@ func (w *Service) runner() {
 
 			// Wait when pipe will be closed
 			if errWait := cmd.Wait(); errWait != nil && element.job.IsJobActive() {
-				w.jobStatusHandler(element, FAILED, errors.New("pgcompacttable execution error: "+errWait.Error()))
+				w.jobStatusHandler(element, FAILED, fmt.Errorf("pgcompacttable execution error: %w", errWait))
 				return
 			}
 
@@ -244,9 +245,9 @@ func (w *Service) stopper() {
 					w.jobStatusHandler(element, STOPPED, nil)
 				} else {
 					if job.IsJobActive() {
-						w.jobStatusHandler(element, FINISHED, errors.New("Kill pgcompacttable error: "+killErr.Error()))
+						w.jobStatusHandler(element, FINISHED, fmt.Errorf("kill pgcompacttable error: %w", killErr))
 					} else {
-						w.jobStatusHandler(element, job.GetStatus(), errors.New("Kill pgcompacttable error: "+killErr.Error()))
+						w.jobStatusHandler(element, job.GetStatus(), fmt.Errorf("kill pgcompacttable error: %w", killErr))
 					}
 				}
 			}

@@ -2,6 +2,7 @@ package query
 
 import (
 	"errors"
+	"fmt"
 	. "ivory/src/clients/database"
 	"ivory/src/clients/database/postgres"
 	"ivory/src/features/cert"
@@ -133,7 +134,7 @@ func (s *ExecuteService) TablesQuery(queryCtx QueryContext, schema string, name 
 func (s *ExecuteService) ChartQuery(queryCtx QueryContext, chartType QueryChartType) (*QueryChart, error) {
 	request, ok := s.chartMap[chartType]
 	if !ok {
-		return nil, errors.New("chart " + string(chartType) + " is not supported")
+		return nil, fmt.Errorf("chart %s is not supported", chartType)
 	}
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
@@ -141,7 +142,7 @@ func (s *ExecuteService) ChartQuery(queryCtx QueryContext, chartType QueryChartT
 	}
 	response, err := s.databaseClient.GetOne(ctx, request.Query)
 	if err != nil {
-		return nil, errors.Join(errors.New("cannot get "+request.Name), err)
+		return nil, fmt.Errorf("cannot get %s: %w", request.Name, err)
 	}
 	return &QueryChart{Name: request.Name, Value: response}, nil
 }
