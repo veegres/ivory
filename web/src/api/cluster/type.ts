@@ -3,6 +3,7 @@ import {ReactNode} from "react"
 import {ColorsMap} from "../../app/type"
 import {Certs} from "../cert/type"
 import {InstanceMap, InstanceWeb, Sidecar} from "../instance/type"
+import {Permission} from "../permission/type"
 
 // COMMON (WEB AND SERVER)
 
@@ -52,12 +53,11 @@ export interface ActiveInstance {
     [cluster: string]: InstanceWeb | undefined
 }
 
-export interface ClusterTabs {
-    [key: number]: {
-        label: string,
-        body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => ReactNode,
-        info?: ReactNode,
-    }
+export interface ClusterTab {
+    label: string,
+    body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => ReactNode,
+    permission: Permission,
+    info?: ReactNode,
 }
 
 export type DetectionType = "auto" | "manual"

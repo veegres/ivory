@@ -5,6 +5,7 @@ import {cloneElement, ReactElement, useState} from "react"
 
 import {useRouterBloatDelete, useRouterBloatStop} from "../../../../api/bloat/hook"
 import {Bloat} from "../../../../api/bloat/type"
+import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {shortUuid} from "../../../../app/utils"
 import {useEventJob} from "../../../../hook/EventJob"
@@ -13,6 +14,7 @@ import select from "../../../../style/select.module.css"
 import {OpenIcon} from "../../../view/icon/OpenIcon"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {DynamicRowVirtualizer} from "../../../view/scrolling/DynamicRowVirtualizer"
+import {Access} from "../../../widgets/access/Access"
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
@@ -20,7 +22,7 @@ const SX: SxPropsMap = {
     row: {"&:hover": {color: "primary.main"}},
     emptyLine: {textAlign: "center", textTransform: "uppercase"},
     header: {display: "flex", flexDirection: "column", fontWeight: "bold", cursor: "pointer"},
-    headerLine: {display: "flex", justifyContent: "space-between", flexWrap: "nowrap"},
+    headerLine: {display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "nowrap", height: "20px"},
     loader: {margin: "10px 0 5px"},
     divider: {margin: "5px 0"},
     logs: {colorScheme: "dark"},
@@ -58,10 +60,12 @@ export function OverviewBloatJobItem(props: Props) {
                     <Box>Command</Box>
                     <Box sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
-                        {status.active ?
-                            renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isPending) :
-                            renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isPending)
-                        }
+                        <Access permission={Permission.ManageBloatJob}>
+                            {status.active ?
+                                renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isPending) :
+                                renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isPending)
+                            }
+                        </Access>
                     </Box>
                 </Box>
                 <Box sx={SX.headerLine}>
@@ -77,13 +81,15 @@ export function OverviewBloatJobItem(props: Props) {
                         <Tooltip title={`Job ID: ${uuid}`}>
                             <Box>{shortUuid(uuid)}</Box>
                         </Tooltip>
-                        <Tooltip title={"Open"}>
-                            <Box sx={SX.tooltipBox}>
-                                <IconButton sx={SX.button} size={"small"}>
-                                    <OpenIcon open={open} size={18}/>
-                                </IconButton>
-                            </Box>
-                        </Tooltip>
+                        <Access permission={Permission.ViewBloatLogs}>
+                            <Tooltip title={"Open"}>
+                                <Box sx={SX.tooltipBox}>
+                                    <IconButton sx={SX.button} size={"small"}>
+                                        <OpenIcon open={open} size={18}/>
+                                    </IconButton>
+                                </Box>
+                            </Tooltip>
+                        </Access>
                     </Box>
                 </Box>
             </Box>

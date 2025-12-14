@@ -5,12 +5,14 @@ import {useEffect, useState} from "react"
 
 import {ActiveCluster} from "../../../../api/cluster/type"
 import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook"
+import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {CodeThemes, getSidecarConnection} from "../../../../app/utils"
 import {useSettings} from "../../../../provider/AppProvider"
 import {useSnackbar} from "../../../../provider/SnackbarProvider"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons"
+import {Access} from "../../../widgets/access/Access"
 import {ClusterNoInstanceError} from "./OverviewError"
 
 const SX: SxPropsMap = {
@@ -60,7 +62,9 @@ export function OverviewConfig(props: Props) {
                 />
             </Box>
             <Box sx={SX.buttons}>
-                {renderUpdateButtons()}
+                <Access permission={Permission.ManageInstanceConfigUpdate}>
+                    {renderUpdateButtons()}
+                </Access>
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
             </Box>
         </Box>

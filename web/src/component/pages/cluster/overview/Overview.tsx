@@ -2,8 +2,10 @@ import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {useRouterClusterList} from "../../../../api/cluster/hook"
-import {ActiveCluster, ClusterTabs} from "../../../../api/cluster/type"
+import {ActiveCluster, ClusterTab} from "../../../../api/cluster/type"
 import {InstanceWeb} from "../../../../api/instance/type"
+import {useRouterInfo} from "../../../../api/management/hook"
+import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getActiveInstance} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -27,9 +29,10 @@ const SX: SxPropsMap = {
     collapse: {height: "100%"},
 }
 
-const TABS: ClusterTabs = {
-    0: {
+const TABS: ClusterTab[] = [
+    {
         label: "Overview",
+        permission: Permission.ViewInstanceOverview,
         body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => <OverviewInstances info={cluster} activeInstance={activeInstance}/>,
         info: <>
             The Overview tab offers visibility into the current status of your cluster. From here, you can
@@ -39,8 +42,9 @@ const TABS: ClusterTabs = {
             to which Ivory sends requests by accessing the settings in the top right corner.
         </>
     },
-    1: {
+    {
         label: "Config",
+        permission: Permission.ViewInstanceConfig,
         body: (cluster: ActiveCluster) => <OverviewConfig info={cluster}/>,
         info: <>
             You can adjust your PostgreSQL configurations here, and any changes made will be applied to
@@ -51,8 +55,9 @@ const TABS: ClusterTabs = {
             the <Link href={"https://patroni.readthedocs.io/en/latest/rest_api.html#config-endpoint"} target={"_blank"}>documentation</Link>.
         </>
     },
-    2: {
+    {
         label: "Bloat",
+        permission: Permission.ViewBloatList,
         body: (cluster: ActiveCluster) => <OverviewBloat info={cluster}/>,
         info: <>
             Here, you can efficiently decrease the size of bloated tables and indexes without imposing
@@ -75,7 +80,7 @@ const TABS: ClusterTabs = {
             </ul>
         </>
     },
-}
+]
 
 export function Overview() {
     const activeClusterTab = useStore(s => s.activeClusterTab)
@@ -87,6 +92,8 @@ export function Overview() {
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const clusters = useRouterClusterList(activeTags)
+    const info = useRouterInfo()
+    const permissions = info.data?.auth.user?.permissions
     const tab = TABS[activeClusterTab]
 
     const visible = useMemo(handleMemoVisibility, [clusters.data, clusters.error])
@@ -94,8 +101,10 @@ export function Overview() {
     return (
         <PageMainBox withPadding visible={visible}>
             <Box sx={SX.headBox}>
-                <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)}>
-                    {Object.entries(TABS).map(([key, value]) => (<Tab key={key} label={value.label}/>))}
+                <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)} role={"tab"}>
+                    {TABS.map((value, i) => permissions && permissions[value.permission] === PermissionStatus.GRANTED && (
+                        <Tab key={i} value={i} label={value.label}/>
+                    ))}
                 </Tabs>
                 {renderActions()}
             </Box>

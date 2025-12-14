@@ -122,10 +122,10 @@ func bloatRouter(g *gin.RouterGroup, rp *permission.Router, r *bloat.Router) {
 	group.GET("/bloat/cluster/:name", rp.ValidateMethodMiddleware(permission.ViewBloatList), r.GetBloatListByCluster)
 	group.GET("/bloat/:uuid", rp.ValidateMethodMiddleware(permission.ViewBloatItem), r.GetBloat)
 	group.GET("/bloat/:uuid/logs", rp.ValidateMethodMiddleware(permission.ViewBloatLogs), r.GetBloatLogs)
+	group.GET("/bloat/job/:uuid/stream", rp.ValidateMethodMiddleware(permission.ViewBloatLogs), r.GetJobStream)
 	group.POST("/bloat/job/start", rp.ValidateMethodMiddleware(permission.ManageBloatJob), r.PostJobStart)
 	group.POST("/bloat/job/:uuid/stop", rp.ValidateMethodMiddleware(permission.ManageBloatJob), r.PostJobStop)
 	group.DELETE("/bloat/job/:uuid/delete", rp.ValidateMethodMiddleware(permission.ManageBloatJob), r.DeleteJob)
-	group.GET("/bloat/job/:uuid/stream", rp.ValidateMethodMiddleware(permission.ManageBloatJob), r.GetJobStream)
 }
 
 func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {
