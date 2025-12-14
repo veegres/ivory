@@ -9,7 +9,7 @@ import {PermissionsButtons} from "./PermissionsButtons"
 const SX: SxPropsMap = {
     item: {
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        borderBottom: 1, borderColor: "divider", padding: "3px 8px",
+        borderBottom: 1, borderColor: "divider", padding: "4px 8px", height: "35px",
         "&:first-of-type": {borderTop: 1, borderColor: "divider"},
     },
     button: {padding: "2px 5px"},

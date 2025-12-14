@@ -9,7 +9,7 @@ import {PermissionStatus} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", alignItems: "center", height: "28px"},
+    box: {display: "flex", alignItems: "center"},
     button: {padding: "2px 5px"},
 }
 

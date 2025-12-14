@@ -11,7 +11,7 @@ import {PermissionsListItem} from "./PermissionsListItem"
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", width: "100%"},
     header: {display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px"},
-    search: {display: "flex", alignItems: "center", gap: 1, flexGrow: 1},
+    search: {display: "flex", alignItems: "center", gap: 1, flexGrow: 1, height: "27px"},
     filter: {width: "100%"},
 }
 
