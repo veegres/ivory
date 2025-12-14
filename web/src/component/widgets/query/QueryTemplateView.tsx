@@ -1,6 +1,7 @@
 import {Box} from "@mui/material"
 import {useState} from "react"
 
+import {Permission} from "../../../api/permission/type"
 import {Query, QueryConnection, QueryCreation, QueryRequest} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {
@@ -8,8 +9,9 @@ import {
     EditIconButton,
     LogIconButton,
     QueryViewIconButton,
-    RestoreIconButton
+    RestoreIconButton,
 } from "../../view/button/IconButtons"
+import {Access} from "../access/Access"
 import {QueryBoxBody} from "./QueryBoxBody"
 import {QueryButtonDelete} from "./QueryButtonDelete"
 import {QueryButtonUpdate} from "./QueryButtonUpdate"
@@ -79,14 +81,20 @@ export function QueryTemplateView(props: Props) {
         return (
             <>
                 <QueryViewIconButton onClick={handleToggleBody(ViewToggleType.VIEW)}/>
-                <LogIconButton onClick={handleToggleBody(ViewToggleType.LOG)}/>
-                {query.default !== query.custom && (
-                    <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
-                )}
-                <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
-                {query.creation === QueryCreation.Manual && (
-                    <QueryButtonDelete id={query.id} type={query.type}/>
-                )}
+                <Access permission={Permission.ViewQueryLogList}>
+                    <LogIconButton onClick={handleToggleBody(ViewToggleType.LOG)}/>
+                </Access>
+                <Access permission={Permission.ManageQueryUpdate}>
+                    {query.default !== query.custom && (
+                        <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
+                    )}
+                    <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
+                </Access>
+                <Access permission={Permission.ManageQueryDelete}>
+                    {query.creation === QueryCreation.Manual && (
+                        <QueryButtonDelete id={query.id} type={query.type}/>
+                    )}
+                </Access>
             </>
         )
     }

@@ -1,9 +1,11 @@
 import {Alert} from "@mui/material"
 import {ReactNode, useState} from "react"
 
+import {Permission} from "../../../api/permission/type"
 import {QueryConnection, QueryVariety} from "../../../api/query/type"
-import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton,} from "../../view/button/IconButtons"
+import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton} from "../../view/button/IconButtons"
 import {FixedInputs} from "../../view/input/FixedInputs"
+import {Access} from "../access/Access"
 import {QueryBoxBody} from "./QueryBoxBody"
 import {QueryBoxPaper} from "./QueryBoxPaper"
 import {QueryRun} from "./QueryRun"
@@ -103,18 +105,17 @@ export function QueryTemplateWrapper(props: Props) {
 
     function renderQueryParamsButton() {
         return !checkView[ViewCheckType.PARAMS] ? (
-            <QueryParamsIconButton color={"secondary"} disabled={!params || params.length == 0}
-                                   onClick={handleCheckView(ViewCheckType.PARAMS)}/>
+            <QueryParamsIconButton color={"secondary"} disabled={!params || params.length == 0} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
         ) : (
-            <CancelIconButton color={"secondary"} tooltip={"Close Query Params"}
-                              onClick={handleCheckView(ViewCheckType.PARAMS)}/>
+            <CancelIconButton color={"secondary"} tooltip={"Close Query Params"} onClick={handleCheckView(ViewCheckType.PARAMS)}/>
         )
     }
 
     function renderRunButton() {
         return !checkView[ViewCheckType.RUN] ? (
-            <PlayIconButton color={"success"} disabled={!query && !queryUuid}
-                            onClick={handleCheckView(ViewCheckType.RUN)}/>
+            <Access permission={Permission.ManageQueryExecuteTemplate}>
+                <PlayIconButton color={"success"} disabled={!query && !queryUuid} onClick={handleCheckView(ViewCheckType.RUN)}/>
+            </Access>
         ) : (
             <CancelIconButton color={"success"} tooltip={"Close"} onClick={handleCheckView(ViewCheckType.RUN)}/>
         )

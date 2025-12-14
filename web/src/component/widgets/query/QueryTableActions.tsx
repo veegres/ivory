@@ -1,13 +1,15 @@
 import {Box, Button} from "@mui/material"
 import {useState} from "react"
 
+import {Permission} from "../../../api/permission/type"
 import {useRouterQueryCancel, useRouterQueryTerminate} from "../../../api/query/hook"
 import {QueryConnection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {MenuButton} from "../../view/button/MenuButton"
+import {Access} from "../access/Access"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", justifyContent: "space-evenly", color: "text.secondary", padding: "0 3px"},
+    box: {display: "flex", justifyContent: "space-evenly", alignItems: "center", color: "text.secondary", padding: "0 3px", height: "22px"},
     actionButton: {padding: "2px 4px", fontSize: "10px"},
 }
 
@@ -27,23 +29,27 @@ export function QueryTableActions(props: Props) {
     return (
         <MenuButton open={open} onChange={(v) => setOpen(v)}>
             <Box sx={SX.box}>
-                <Button
-                    sx={SX.actionButton}
-                    size={"small"}
-                    variant={"text"}
-                    color={"error"}
-                    onClick={() => {terminate.mutate({connection, pid}); setOpen(false)}}
-                >
-                    Terminate
-                </Button>
-                <Button
-                    sx={SX.actionButton}
-                    size={"small"}
-                    variant={"text"}
-                    onClick={() => {cancel.mutate({connection, pid}); setOpen(false)}}
-                >
-                    Cancel
-                </Button>
+                <Access permission={Permission.ManageQueryExecuteTerminate}>
+                    <Button
+                        sx={SX.actionButton}
+                        size={"small"}
+                        variant={"text"}
+                        color={"error"}
+                        onClick={() => {terminate.mutate({connection, pid}); setOpen(false)}}
+                    >
+                        Terminate
+                    </Button>
+                </Access>
+                <Access permission={Permission.ManageQueryExecuteCancel}>
+                    <Button
+                        sx={SX.actionButton}
+                        size={"small"}
+                        variant={"text"}
+                        onClick={() => {cancel.mutate({connection, pid}); setOpen(false)}}
+                    >
+                        Cancel
+                    </Button>
+                </Access>
             </Box>
         </MenuButton>
     )

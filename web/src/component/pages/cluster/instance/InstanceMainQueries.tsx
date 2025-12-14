@@ -1,8 +1,10 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
+import {Permission} from "../../../../api/permission/type"
 import {QueryConnection, QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {Access} from "../../../widgets/access/Access"
 import {Query} from "../../../widgets/query/Query"
 import {QueryConsole} from "../../../widgets/query/QueryConsole"
 
@@ -25,16 +27,18 @@ export function InstanceMainQueries(props: Props){
     return (
         <Box sx={SX.box}>
             <Box sx={SX.filters}>
-                <ToggleButton
-                    sx={SX.group}
-                    size={"small"}
-                    color={"secondary"}
-                    value={QueryType.CONSOLE}
-                    selected={queryTab === QueryType.CONSOLE}
-                    onClick={() => setQueryTab(QueryType.CONSOLE)}
-                >
-                    CONSOLE
-                </ToggleButton>
+                <Access permission={Permission.ManageQueryExecuteConsole}>
+                    <ToggleButton
+                        sx={SX.group}
+                        size={"small"}
+                        color={"secondary"}
+                        value={QueryType.CONSOLE}
+                        selected={queryTab === QueryType.CONSOLE}
+                        onClick={() => setQueryTab(QueryType.CONSOLE)}
+                    >
+                        CONSOLE
+                    </ToggleButton>
+                </Access>
 
                 <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={queryTab} orientation={"vertical"}>
                     <ToggleButton value={QueryType.ACTIVITY} onClick={() => setQueryTab(QueryType.ACTIVITY)}>

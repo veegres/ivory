@@ -92,7 +92,7 @@ export function Overview() {
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const clusters = useRouterClusterList(activeTags)
-    const info = useRouterInfo()
+    const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
     const tab = TABS[activeClusterTab]
 
