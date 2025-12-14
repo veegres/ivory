@@ -7,6 +7,7 @@ import {
 } from "../../../../api/permission/hook"
 import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
+import {Access} from "../../access/Access"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center"},
@@ -31,8 +32,8 @@ export function PermissionsButtons(props: Props) {
     return (
         <Box sx={SX.box}>
             {request && renderRequest()}
-            {approve && renderApprove()}
-            {reject && renderReject()}
+            <Access permission={Permission.ManagePermissionUpdate}>{approve && renderApprove()}</Access>
+            <Access permission={Permission.ManagePermissionUpdate}>{reject && renderReject()}</Access>
         </Box>
     )
 
