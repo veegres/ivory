@@ -2,13 +2,17 @@ import {Box, Tooltip} from "@mui/material"
 
 import {useRouterCertDelete} from "../../../../api/cert/hook"
 import {Cert} from "../../../../api/cert/type"
+import {Permission} from "../../../../api/permission/type"
 import {StylePropsMap, SxPropsMap} from "../../../../app/type"
 import {FileUsageOptions} from "../../../../app/utils"
 import {DeleteIconButton} from "../../../view/button/IconButtons"
+import {Access} from "../../access/Access"
 
 const SX: SxPropsMap = {
-    item: {display: "flex", alignItems: "center", padding: "5px 10px", margin: "5px 10px", borderRadius: "5px", gap: 2, border: 1, borderColor: "divider"},
-    body: {flexGrow: 1, display: "flex", gap: 2},
+    item: {
+        display: "flex", alignItems: "center", padding: "5px 10px", margin: "5px 10px",
+        borderRadius: "5px", gap: 1, border: 1, borderColor: "divider", height: "42px",
+    },
     name: {flexBasis: "150px"},
     path: {flexBasis: "400px", fontSize: "13px", color: "text.disabled"},
 }
@@ -38,7 +42,9 @@ export function CertsItem(props: Props) {
             <Tooltip placement={"top-start"} title={cert.path}>
                 <Box sx={SX.path} style={style.break}>{cert.path}</Box>
             </Tooltip>
-            <DeleteIconButton loading={deleteCert.isPending} onClick={() => deleteCert.mutate(uuid)}/>
+            <Access permission={Permission.ManageCertDelete}>
+                <DeleteIconButton loading={deleteCert.isPending} onClick={() => deleteCert.mutate(uuid)}/>
+            </Access>
         </Box>
     )
 }

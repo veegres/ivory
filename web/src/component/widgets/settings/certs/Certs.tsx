@@ -1,7 +1,9 @@
 import {useState} from "react"
 
 import {useRouterCertList} from "../../../../api/cert/hook"
+import {Permission} from "../../../../api/permission/type"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
+import {Access} from "../../access/Access"
 import {MenuWrapper} from "../menu/MenuWrapper"
 import {CertsList} from "./CertsList"
 import {CertsNew} from "./CertsNew"
@@ -16,7 +18,7 @@ export function Certs() {
     return (
         <MenuWrapper>
             <CertsTab tab={tab} setTab={setTab}/>
-            <CertsNew type={type}/>
+            <Access permission={Permission.ManageCertCreate}><CertsNew type={type}/></Access>
             <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
             <CertsList certs={data} error={error}/>
         </MenuWrapper>

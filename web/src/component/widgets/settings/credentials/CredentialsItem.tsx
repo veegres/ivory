@@ -2,7 +2,9 @@ import {useEffect, useState} from "react"
 
 import {useRouterPasswordDelete, useRouterPasswordUpdate} from "../../../../api/password/hook"
 import {Password} from "../../../../api/password/type"
+import {Permission} from "../../../../api/permission/type"
 import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons"
+import {Access} from "../../access/Access"
 import {CredentialsRow} from "./CredentialsRow"
 
 type Props = {
@@ -35,8 +37,12 @@ export function CredentialsItem(props: Props) {
     function renderReadButtons() {
         return (
             <>
-                <EditIconButton size={36} onClick={() => setEdit(true)} disabled={deleteCredentials.isPending}/>
-                <DeleteIconButton size={36} loading={deleteCredentials.isPending} onClick={handleDelete}/>
+                <Access permission={Permission.ManagePasswordUpdate}>
+                    <EditIconButton size={36} onClick={() => setEdit(true)} disabled={deleteCredentials.isPending}/>
+                </Access>
+                <Access permission={Permission.ManagePasswordDelete}>
+                    <DeleteIconButton size={36} loading={deleteCredentials.isPending} onClick={handleDelete}/>
+                </Access>
             </>
         )
     }
