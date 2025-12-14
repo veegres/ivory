@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -119,7 +120,7 @@ func (s *Service) Create(pathStr string, certType CertType, fileUsageType FileUs
 	fileFormat := path.Ext(pathStr)
 	idx := slices.IndexFunc(s.formats, func(s string) bool { return s == fileFormat })
 	if idx == -1 {
-		return nil, errors.New("file format is not correct, allowed formats: " + strings.Join(s.formats, ", "))
+		return nil, fmt.Errorf("file format is not correct, allowed formats: %s", strings.Join(s.formats, ", "))
 	}
 
 	cert := Cert{
