@@ -9,7 +9,7 @@ type Props = FragmentProps & {
 }
 
 export function Access(props: Props) {
-    const info = useRouterInfo()
+    const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
     if (permissions && permissions[props.permission] !== PermissionStatus.GRANTED) return
     return cloneElement(<Fragment/>, {children: props.children})
@@ -20,7 +20,7 @@ type PropsBox = BoxProps & {
 }
 
 export function AccessBox(props: PropsBox) {
-    const info = useRouterInfo()
+    const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
     if (permissions && permissions[props.permission] !== PermissionStatus.GRANTED) return
     return cloneElement(<Box/>, props)

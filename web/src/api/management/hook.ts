@@ -3,11 +3,11 @@ import {useQuery} from "@tanstack/react-query"
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ManagementApi} from "./router"
 
-export function useRouterInfo() {
+export function useRouterInfo(enabled: boolean = true) {
     return useQuery({
         queryKey: ManagementApi.info.key(),
         queryFn: () => ManagementApi.info.fn(),
-        refetchOnWindowFocus: "always",
+        refetchOnWindowFocus: "always", enabled,
     })
 }
 

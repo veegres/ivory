@@ -1,10 +1,12 @@
 import {Box, Collapse, Skeleton} from "@mui/material"
 import {TransitionGroup} from "react-transition-group"
 
+import {Permission} from "../../../api/permission/type"
 import {useRouterQueryList} from "../../../api/query/hook"
 import {QueryConnection, QueryType} from "../../../api/query/type"
 import {StylePropsMap} from "../../../app/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
+import {Access} from "../access/Access"
 import {QueryTemplateNew} from "./QueryTemplateNew"
 import {QueryTemplateView} from "./QueryTemplateView"
 
@@ -23,7 +25,9 @@ export function Query(props: Props) {
 
     return (
         <Box style={style.box}>
-            <QueryTemplateNew type={type} connection={connection}/>
+            <Access permission={Permission.ManageQueryCreate}>
+                <QueryTemplateNew type={type} connection={connection}/>
+            </Access>
             {renderList()}
         </Box>
     )
