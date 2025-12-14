@@ -62,7 +62,6 @@ export enum Permission {
     ViewBloatList = "view.bloat.list",
     ViewBloatItem = "view.bloat.item",
     ViewBloatLogs = "view.bloat.logs",
-    ManageBloatUpdate = "manage.bloat.update",
     ManageBloatJob = "manage.bloat.job",
 
     // Management permissions

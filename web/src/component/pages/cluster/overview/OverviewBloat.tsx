@@ -5,12 +5,14 @@ import {useState} from "react"
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
 import {ActiveCluster} from "../../../../api/cluster/type"
+import {Permission} from "../../../../api/permission/type"
 import {useRouterQueryList} from "../../../../api/query/hook"
 import {QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection} from "../../../../app/utils"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
+import {AccessBox} from "../../../widgets/access/Access"
 import {Query} from "../../../widgets/query/Query"
 import {OverviewBloatJob} from "./OverviewBloatJob"
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm"
@@ -41,7 +43,7 @@ export function OverviewBloat(props: Props) {
 
     return (
         <Box>
-            <Box sx={SX.option}>
+            <AccessBox sx={SX.option} permission={Permission.ManageBloatJob}>
                 <Box sx={SX.form}>
                     <OverviewBloatJobForm
                         defaultInstance={defaultInstance}
@@ -53,7 +55,7 @@ export function OverviewBloat(props: Props) {
                 </Box>
                 <Divider orientation={"vertical"} flexItem/>
                 {renderToggle()}
-            </Box>
+            </AccessBox>
             <LinearProgressStateful sx={SX.loader} loading={loading} color={"inherit"}/>
             {renderBody()}
         </Box>

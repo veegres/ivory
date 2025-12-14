@@ -81,11 +81,10 @@ const (
 	ManagePermissionDelete Permission = "manage.permission.delete"
 
 	// Bloat permissions
-	ViewBloatList     Permission = "view.bloat.list"
-	ViewBloatItem     Permission = "view.bloat.item"
-	ViewBloatLogs     Permission = "view.bloat.logs"
-	ManageBloatUpdate Permission = "manage.bloat.update"
-	ManageBloatJob    Permission = "manage.bloat.job"
+	ViewBloatList  Permission = "view.bloat.list"
+	ViewBloatItem  Permission = "view.bloat.item"
+	ViewBloatLogs  Permission = "view.bloat.logs"
+	ManageBloatJob Permission = "manage.bloat.job"
 
 	// Management permissions
 	ViewManagementSecret   Permission = "view.management.secret"
@@ -134,7 +133,6 @@ var Permissions = []Permission{
 	ViewBloatList,
 	ViewBloatItem,
 	ViewBloatLogs,
-	ManageBloatUpdate,
 	ManageBloatJob,
 	ViewManagementSecret,
 	ManageManagementSecret,
