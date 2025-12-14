@@ -89,9 +89,9 @@ export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
 }
 
 export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
-    [PermissionStatus.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: green[900]},
-    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutline/>, color: indigo[300]},
-    [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: red[900]},
+    [PermissionStatus.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: "success.main"},
+    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutline/>, color: "secondary.main"},
+    [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
 export const createInstanceColors = (instances: InstanceMap) => {
