@@ -3,13 +3,16 @@ import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {CertType} from "../../../api/cert/type"
 import {ClusterOptions} from "../../../api/cluster/type"
 import {PasswordType} from "../../../api/password/type"
+import {Permission} from "../../../api/permission/type"
 import {SxPropsMap} from "../../../app/type"
 import {CertOptions, CredentialOptions} from "../../../app/utils"
+import {Access} from "../access/Access"
 import {OptionsCert} from "./OptionsCert"
 import {OptionsPassword} from "./OptionsPassword"
 import {OptionsTags} from "./OptionsTags"
 
 const SX: SxPropsMap = {
+    box: {display: "flex", flexDirection: "column", gap: 1},
     tls: {width: "50%", fontWeight: "bold"},
 }
 
@@ -23,7 +26,7 @@ export function Options(props: Props) {
     const {credentials, tags, certs, tls} = cluster
 
     return (
-        <>
+        <Access sx={SX.box} permission={Permission.ManageClusterUpdate}>
             <OptionsPassword type={PasswordType.POSTGRES} selected={credentials.postgresId} onUpdate={handlePasswordUpdate}/>
             <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId} onUpdate={handlePasswordUpdate}/>
             <Divider variant={"middle"}/>
@@ -38,7 +41,7 @@ export function Options(props: Props) {
             <OptionsCert type={CertType.CLIENT_KEY} selected={certs.clientKeyId} onUpdate={handleCertUpdate}/>
             <Divider variant={"middle"}/>
             <OptionsTags selected={tags} onUpdate={handleTagsUpdate}/>
-        </>
+        </Access>
     )
 
     function handlePasswordUpdate(t: PasswordType, s?: string) {

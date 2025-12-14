@@ -2,6 +2,7 @@ import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {ClusterMap} from "../../../../api/cluster/type"
+import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
@@ -10,6 +11,7 @@ import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AddIconButton} from "../../../view/button/IconButtons"
 import {TableBody} from "../../../view/table/TableBody"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
+import {Access} from "../../../widgets/access/Access"
 import {ListCreateAuto} from "./ListCreateAuto"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
@@ -43,8 +45,14 @@ export function ListTable(props: Props) {
                         <TableCell sx={[SxPropsFormatter.style.paper, SX.nameCell]}>Cluster Name</TableCell>
                         <TableCell sx={SxPropsFormatter.style.paper}>Instances</TableCell>
                         <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={fetching && !pending}>
-                            <ListCreateAuto />
-                            <AddIconButton tooltip={"Add Cluster Manually"} onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
+                            <Access permission={Permission.ManageClusterCreate}><ListCreateAuto /></Access>
+                            <Access permission={Permission.ManageClusterUpdate}>
+                                <AddIconButton
+                                    tooltip={"Add Cluster Manually"}
+                                    onClick={() => setShowNewElement(true)}
+                                    disabled={showNewElement}
+                                />
+                            </Access>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>
