@@ -8,6 +8,7 @@ import {MainQueryClient} from "./AppProvider"
 
 // STORE
 interface Store {
+    searchCluster: string,
     activeClusterTab: number,
     activeCluster?: ActiveCluster,
     activeInstance: ActiveInstance,
@@ -24,6 +25,7 @@ interface Store {
 
 export const useStore = create(persist<Store>(
     () => ({
+        searchCluster: "",
         activeClusterTab: 0,
         activeCluster: undefined,
         activeInstance: {},
@@ -42,6 +44,7 @@ export const useStore = create(persist<Store>(
 
 export const useStoreAction = {
     setCluster: setCluster,
+    setSearchCluster: setSearchCluster,
     setClusterInstance: setClusterInstance,
     setClusterDetection: setClusterDetection,
     setClusterTab: setClusterTab,
@@ -57,6 +60,9 @@ export const useStoreAction = {
 }
 
 // SETTERS
+function setSearchCluster(search: string) {
+    useStore.setState(s => ({...s, searchCluster: search}))
+}
 function setCluster(cluster?: ActiveCluster) {
     useStore.setState(s => ({...s, activeCluster: cluster}))
 }

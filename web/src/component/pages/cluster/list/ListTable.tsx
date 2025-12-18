@@ -31,11 +31,12 @@ type Props = {
 
 export function ListTable(props: Props) {
     const activeCluster = useStore(s => s.activeCluster)
+    const search = useStore(s => s.searchCluster)
     const {map, fetching, pending} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
 
-    const rows = useMemo(() => Object.entries(map ?? {}), [map])
+    const rows = useMemo(() => Object.entries(map ?? {}).filter(([name]) => name.includes(search)), [map, search])
 
     return (
         <Box sx={SX.box} className={scroll.tiny} maxHeight={activeCluster ? "25vh" : "60vh"}>
@@ -45,7 +46,9 @@ export function ListTable(props: Props) {
                         <TableCell sx={[SxPropsFormatter.style.paper, SX.nameCell]}>Cluster Name</TableCell>
                         <TableCell sx={SxPropsFormatter.style.paper}>Instances</TableCell>
                         <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={fetching && !pending}>
-                            <Access permission={Permission.ManageClusterCreate}><ListCreateAuto /></Access>
+                            <Access permission={Permission.ManageClusterCreate}>
+                                <ListCreateAuto/>
+                            </Access>
                             <Access permission={Permission.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"Add Cluster Manually"}
