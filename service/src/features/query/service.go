@@ -192,19 +192,30 @@ func (s *LogService) Delete(queryUuid uuid.UUID) error {
 	return s.logRepository.Delete(queryUuid)
 }
 
+func (s *LogService) Exist(queryUuid uuid.UUID) bool {
+	return s.logRepository.Exist(queryUuid)
+}
+
+func (s *LogService) DeleteAll() error {
+	return s.logRepository.DeleteAll()
+}
+
 // QUERY CRUD
 
 type Service struct {
 	repository    *Repository
 	secretService *secret.Service
+	logService    *LogService
 }
 
 func NewService(
 	repository *Repository,
+	logService *LogService,
 	secretService *secret.Service,
 ) *Service {
 	queryService := &Service{
 		repository:    repository,
+		logService:    logService,
 		secretService: secretService,
 	}
 	err := queryService.createDefaultQueries()
@@ -217,9 +228,9 @@ func NewService(
 func (s *Service) GetList(queryType *QueryType) ([]Query, error) {
 	if queryType == nil {
 		return s.repository.List()
-	} else {
-		return s.repository.ListByType(*queryType)
 	}
+
+	return s.repository.ListByType(*queryType)
 }
 
 func (s *Service) Create(creation QueryCreation, query QueryRequest) (*uuid.UUID, *Query, error) {
@@ -302,17 +313,23 @@ func (s *Service) Delete(key uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	if currentQuery.Creation == Manual {
-		return s.repository.Delete(key)
-	} else {
+	if currentQuery.Creation == System {
 		return ErrDeletionOfSystemQueriesRestricted
 	}
+
+	var errLog error
+	if s.logService.Exist(key) {
+		errLog = s.logService.Delete(key)
+	}
+	errBucket := s.repository.Delete(key)
+	return errors.Join(errLog, errBucket)
 }
 
 func (s *Service) DeleteAll() error {
+	errLog := s.logService.DeleteAll()
 	errDel := s.repository.DeleteAll()
 	errDefQueries := s.createDefaultQueries()
-	return errors.Join(errDel, errDefQueries)
+	return errors.Join(errLog, errDel, errDefQueries)
 }
 
 func (s *Service) createDefaultQueries() error {

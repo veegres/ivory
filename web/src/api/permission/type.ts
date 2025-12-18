@@ -68,6 +68,7 @@ export enum Permission {
     ViewManagementSecret = "view.management.secret",
     ManageManagementSecret = "manage.management.secret",
     ManageManagementErase = "manage.management.erase",
+    ManageManagementFree = "manage.management.free",
 }
 
 export type PermissionMap = {

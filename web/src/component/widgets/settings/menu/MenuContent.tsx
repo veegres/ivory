@@ -9,6 +9,7 @@ import {ListItem} from "../../../view/box/ListItem"
 import {Access} from "../../access/Access"
 import {ClearCacheButton} from "../../actions/ClearCacheButton"
 import {EraseButton} from "../../actions/EraseButton"
+import {FreeButton} from "../../actions/FreeButton"
 import {MenuRefetchChanger} from "./MenuRefetchChanger"
 import {MenuThemeChanger} from "./MenuThemeChanger"
 import {MenuWrapper} from "./MenuWrapper"
@@ -40,10 +41,16 @@ export function MenuContent(props: Props) {
                 <List name={"Danger Zone"}>
                     <ListItem
                         title={"Clear cache"}
-                        description={`It will clear your local cache. Sometimes it can be helpful when after 
-                        updates or some changes you see that something is wrong (counts, selection, etc).`}
+                        description={"This clears your local cache. Useful if you experience issues after updates or changes."}
                         button={<ClearCacheButton />}
                     />
+                    <Access permission={Permission.ManageManagementFree}>
+                        <ListItem
+                            title={"Free space"}
+                            description={"If the VM is running out of disk space, this can help free some space."}
+                            button={<FreeButton/>}
+                        />
+                    </Access>
                     <Access permission={Permission.ManageManagementErase}>
                         <ListItem
                             title={"Erase all data"}

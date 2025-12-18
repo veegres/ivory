@@ -90,6 +90,7 @@ const (
 	ViewManagementSecret   Permission = "view.management.secret"
 	ManageManagementSecret Permission = "manage.management.secret"
 	ManageManagementErase  Permission = "manage.management.erase"
+	ManageManagementFree   Permission = "manage.management.free"
 )
 
 var Permissions = []Permission{
@@ -137,4 +138,5 @@ var Permissions = []Permission{
 	ViewManagementSecret,
 	ManageManagementSecret,
 	ManageManagementErase,
+	ManageManagementFree,
 }
