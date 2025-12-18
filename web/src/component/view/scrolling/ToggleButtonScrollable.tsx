@@ -1,5 +1,6 @@
-import {Box, ToggleButton, Tooltip} from "@mui/material"
-import {MouseEvent, useState} from "react"
+import {Box, SxProps, ToggleButton, Tooltip} from "@mui/material"
+import {Theme} from "@mui/material/styles"
+import {cloneElement, MouseEvent, ReactElement, useState} from "react"
 
 import {SxPropsMap} from "../../../app/type"
 import {HiddenScrolling} from "./HiddenScrolling"
@@ -7,18 +8,18 @@ import {HiddenScrolling} from "./HiddenScrolling"
 const ALL = "ALL"
 const SX: SxPropsMap = {
     after: {display: "flex", gap: "3px"},
-    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1.1", border: "1px solid", borderColor: "divider"},
+    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1.1"},
 }
 
 type Props = {
     tags: string[],
     selected: string[],
-    warnings?: number,
-    onUpdate: (tags: string[]) => void
+    renderActions?: ReactElement<{sx?: SxProps<Theme>}>[],
+    onUpdate: (tags: string[]) => void,
 }
 
 export function ToggleButtonScrollable(props: Props) {
-    const {tags, selected, warnings, onUpdate} = props
+    const {tags, selected, onUpdate, renderActions} = props
     const tagsSet = new Set(tags)
     const [selectedSet, setSelectedSet] = useState(new Set(selected))
 
@@ -38,14 +39,10 @@ export function ToggleButtonScrollable(props: Props) {
     function renderAfter() {
         return (
             <Box sx={SX.after}>
-                <Box sx={SX.info}>
-                    <Tooltip title={renderTagsTooltip()} placement={"top"}>
-                        <span>{renderSelectButton(count, !isAll)}</span>
-                    </Tooltip>
-                </Box>
-                <Box sx={SX.info}>
-                    {renderInfo()}
-                </Box>
+                {renderInfo()}
+                <Tooltip title={renderTagsTooltip()} placement={"top"}>
+                    <span>{renderSelectButton(count, !isAll)}</span>
+                </Tooltip>
             </Box>
         )
     }
@@ -60,23 +57,8 @@ export function ToggleButtonScrollable(props: Props) {
     }
 
     function renderInfo() {
-        if (warnings === undefined) return
-        return (
-            <Tooltip title={"Warnings"} placement={"top"}>
-                <span>
-                    <ToggleButton
-                        sx={SX.element}
-                        color={"warning"}
-                        size={"small"}
-                        selected={warnings > 0}
-                        disabled
-                        value={warnings}
-                    >
-                        {warnings}
-                    </ToggleButton>
-                </span>
-            </Tooltip>
-        )
+        if (renderActions === undefined) return
+        return renderActions.map(e => cloneElement(e, {sx: SX.element}))
     }
 
     function renderSelectButton(tag: string, selected: boolean, onClick?: (e: MouseEvent<HTMLElement>, value: string) => void) {
