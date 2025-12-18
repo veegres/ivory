@@ -26,6 +26,7 @@ type Service struct {
 	tagService        *tag.Service
 	bloatService      *bloat.Service
 	queryService      *query.Service
+	queryLogService   *query.LogService
 	secretService     *secret.Service
 	configService     *config.Service
 	permissionService *permission.Service
@@ -40,6 +41,7 @@ func NewService(
 	tagService *tag.Service,
 	bloatService *bloat.Service,
 	queryService *query.Service,
+	queryLogService *query.LogService,
 	secretService *secret.Service,
 	configService *config.Service,
 	permissionService *permission.Service,
@@ -53,10 +55,17 @@ func NewService(
 		certService:       certService,
 		tagService:        tagService,
 		queryService:      queryService,
+		queryLogService:   queryLogService,
 		secretService:     secretService,
 		configService:     configService,
 		permissionService: permissionService,
 	}
+}
+
+func (s *Service) Free() error {
+	errComTable := s.bloatService.DeleteAll()
+	errQuery := s.queryLogService.DeleteAll()
+	return errors.Join(errComTable, errQuery)
 }
 
 func (s *Service) Erase() error {
@@ -69,7 +78,6 @@ func (s *Service) Erase() error {
 	errQuery := s.queryService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
-
 	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery, errConfig, errPerm)
 }
 
@@ -129,7 +137,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	}
 }
 
-func (s Service) getAuthInfo(context *gin.Context) (bool, *UserInfo, string) {
+func (s *Service) getAuthInfo(context *gin.Context) (bool, *UserInfo, string) {
 	authorised, username, authType, errParse := s.authService.ParseAuthToken(context)
 	if username == "" {
 		if errParse != nil {

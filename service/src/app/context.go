@@ -70,7 +70,7 @@ func NewContext() *Context {
 	passwordRepo := password.NewRepository(passwordBucket)
 	permissionRepo := permission.NewRepository(permissionBucket)
 	queryLogRepo := query.NewLogRepository(queryLogFiles)
-	queryRepo := query.NewRepository(queryBucket, queryLogRepo)
+	queryRepo := query.NewRepository(queryBucket)
 
 	// CLIENTS
 	sidecarGateway := sidecar.NewGateway()
@@ -91,8 +91,8 @@ func NewContext() *Context {
 	instanceService := instance.NewService(patroniClient, passwordService, certService)
 	tagService := tag.NewService(tagRepo)
 	clusterService := cluster.NewService(clusterRepo, instanceService, tagService)
-	queryService := query.NewService(queryRepo, secretService)
 	queryLogService := query.NewLogService(queryLogRepo)
+	queryService := query.NewService(queryRepo, queryLogService, secretService)
 	queryExecuteService := query.NewExecuteService(queryRepo, postgresClient, queryLogService, passwordService, certService)
 	bloatService := bloat.NewService(bloatRepo, passwordService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
@@ -106,6 +106,7 @@ func NewContext() *Context {
 		tagService,
 		bloatService,
 		queryService,
+		queryLogService,
 		secretService,
 		configService,
 		permissionService,

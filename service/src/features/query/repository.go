@@ -144,17 +144,14 @@ func (r *LogRepository) DeleteAll() error {
 }
 
 type Repository struct {
-	bucket        *db.Bucket[Query]
-	LogRepository *LogRepository
+	bucket *db.Bucket[Query]
 }
 
 func NewRepository(
 	bucket *db.Bucket[Query],
-	logRepository *LogRepository,
 ) *Repository {
 	return &Repository{
-		bucket:        bucket,
-		LogRepository: logRepository,
+		bucket: bucket,
 	}
 }
 
@@ -186,18 +183,11 @@ func (r *Repository) Update(key uuid.UUID, query Query) (*uuid.UUID, *Query, err
 }
 
 func (r *Repository) Delete(key uuid.UUID) error {
-	var errFile error
-	if r.LogRepository.Exist(key) {
-		errFile = r.LogRepository.Delete(key)
-	}
-	errBucket := r.bucket.Delete(key.String())
-	return errors.Join(errFile, errBucket)
+	return r.bucket.Delete(key.String())
 }
 
 func (r *Repository) DeleteAll() error {
-	errFile := r.LogRepository.DeleteAll()
-	errBucket := r.bucket.DeleteAll()
-	return errors.Join(errFile, errBucket)
+	return r.bucket.DeleteAll()
 }
 
 func (r *Repository) sortAscByCreatedAt(list []Query, i, j int) bool {

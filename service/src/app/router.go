@@ -105,6 +105,7 @@ func managementRouter(g *gin.RouterGroup, rp *permission.Router, rs *secret.Rout
 	group.GET("/secret", rp.ValidateMethodMiddleware(permission.ViewManagementSecret), rs.GetSecretStatus)
 	group.POST("/secret", rp.ValidateMethodMiddleware(permission.ManageManagementSecret), rm.ChangeSecret)
 	group.DELETE("/erase", rp.ValidateMethodMiddleware(permission.ManageManagementErase), rm.Erase)
+	group.DELETE("/free", rp.ValidateMethodMiddleware(permission.ManageManagementFree), rm.Free)
 }
 
 func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router) {

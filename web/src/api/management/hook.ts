@@ -37,3 +37,11 @@ export function useRouterEraseSafe(onSuccess: () => void) {
     })
 }
 
+export function useRouterFree() {
+    return useMutationAdapter({
+        mutationFn: () => ManagementApi.free.fn(),
+        mutationKey: ManagementApi.free.key(),
+        successKeys: [ManagementApi.info.key()],
+    })
+}
+
