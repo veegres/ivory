@@ -24,6 +24,11 @@ export const ClusterApi = {
         fn: (cluster: ClusterAuto) => api.post<R<Cluster>>("/cluster/auto", cluster)
             .then((response) => response.data.response),
     },
+    fixAuto: {
+        key: () => ["cluster", "auto", "fix"],
+        fn: (name: string) => api.post<R<Cluster>>(`/cluster/auto/${name}`)
+            .then((response) => response.data.response),
+    },
     delete: {
         key: () => ["cluster", "delete"],
         fn: (name: string) => api.delete(`/cluster/${name}`)

@@ -9,6 +9,7 @@ import {getDomain, getIsActiveInstance} from "../../../../app/utils"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {RefreshIconButton} from "../../../view/button/IconButtons"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
+import {OverviewInstancesFixAuto} from "./OverviewInstancesFixAuto"
 import {OverviewInstancesRow} from "./OverviewInstancesRow"
 
 const SX: SxPropsMap = {
@@ -46,8 +47,9 @@ export function OverviewInstances(props: Props) {
                         <TableCell width={"15%"}>Postgres</TableCell>
                         <TableCell width={"150px"}>State</TableCell>
                         <TableCell/>
-                        <TableCellLoader sx={SX.buttonCell} isFetching={instanceMapFetching > 0}>
-                            <RefreshIconButton onClick={() => queryClient.refetchQueries(key)} disabled={instanceMapFetching > 0}/>
+                        <TableCellLoader sx={SX.buttonCell} isFetching={false}>
+                            <OverviewInstancesFixAuto name={cluster.name}/>
+                            <RefreshIconButton onClick={() => queryClient.refetchQueries(key)} loading={instanceMapFetching > 0}/>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>

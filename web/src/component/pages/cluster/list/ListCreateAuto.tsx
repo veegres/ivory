@@ -3,9 +3,11 @@ import {useState} from "react"
 
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
 import {ClusterAuto} from "../../../../api/cluster/type"
+import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AutoIconButton} from "../../../view/button/IconButtons"
+import {Access} from "../../../widgets/access/Access"
 import {Options} from "../../../widgets/options/Options"
 
 const SX: SxPropsMap = {
@@ -30,7 +32,7 @@ export function ListCreateAuto(props: Props) {
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
     return (
-        <>
+        <Access permission={Permission.ManageClusterCreate}>
             <AutoIconButton tooltip={"Add Cluster Automatically"} size={size} onClick={() => setOpen(!open)}/>
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
@@ -74,7 +76,7 @@ export function ListCreateAuto(props: Props) {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </>
+        </Access>
     )
 
     function handleNameUpdate(v: string) {

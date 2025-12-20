@@ -40,3 +40,11 @@ export function useRouterClusterCreateAuto(onSuccess?: () => void) {
         onSuccess: onSuccess,
     })
 }
+
+export function useRouterClusterFixAuto() {
+    return useMutationAdapter({
+        mutationFn: ClusterApi.fixAuto.fn,
+        mutationKey: ClusterApi.fixAuto.key(),
+        successKeys: [ClusterApi.list.key()],
+    })
+}

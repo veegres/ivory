@@ -1,6 +1,9 @@
 package instance
 
 import (
+	"crypto/tls"
+	"errors"
+	"fmt"
 	"ivory/src/clients/sidecar"
 	"ivory/src/features/cert"
 	"ivory/src/features/password"
@@ -22,6 +25,40 @@ func NewService(
 		passwordService: passwordService,
 		certService:     certService,
 	}
+}
+
+func (s *Service) AutoOverview(request InstanceAutoRequest) ([]sidecar.Instance, int, error) {
+	var tlsConfig *tls.Config
+	if request.Certs != nil {
+		err := s.certService.EnrichTLSConfig(&tlsConfig, request.Certs)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+	var cred *sidecar.Credentials
+	if request.CredentialId != nil {
+		pass, err := s.passwordService.GetDecrypted(*request.CredentialId)
+		if err != nil {
+			return nil, 0, err
+		}
+		cred = &sidecar.Credentials{Username: pass.Username, Password: pass.Password}
+	}
+	var overview []sidecar.Instance
+	var statusCode int
+	var errorChain error
+	for i, instance := range request.Sidecars {
+		r := sidecar.Request{Sidecar: instance, Body: request.Body, TlsConfig: tlsConfig, Credentials: cred}
+		var err error
+		overview, statusCode, err = s.sidecarClient.Overview(r)
+		if err == nil {
+			break
+		}
+		errorChain = errors.Join(errorChain, fmt.Errorf("#%d failed %d: %w", i, statusCode, err))
+	}
+	if overview == nil {
+		return nil, statusCode, errorChain
+	}
+	return overview, statusCode, nil
 }
 
 func (s *Service) Overview(instance InstanceRequest) ([]sidecar.Instance, int, error) {
