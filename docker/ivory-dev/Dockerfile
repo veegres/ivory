@@ -19,4 +19,4 @@ RUN chmod 600 /opt/certs/server/server.key
 USER postgres
 # unclear why it doesn't want to work without making `tmp` as working dear
 WORKDIR /tmp
-ENTRYPOINT patroni /opt/patroni-config.yml
+ENTRYPOINT exec patroni /opt/patroni-config.yml
