@@ -18,7 +18,7 @@ import {
     Receipt,
     Restore
 } from "@mui/icons-material"
-import {Box, CircularProgress, IconButton as MuiIconButton, Tooltip} from "@mui/material"
+import {Box, IconButton as MuiIconButton, Tooltip} from "@mui/material"
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon"
 import {cloneElement, ReactElement, SyntheticEvent} from "react"
 
@@ -33,9 +33,8 @@ type ButtonProps = Props & {
 }
 
 export function IconButton(props: ButtonProps) {
-    const {icon, color, placement, onClick, tooltip, disabled = false, size = 32} = props
-    const loading = props.loading ?? false
-    // 0.56 is ratio for size = 32 and fontSize = 18
+    const {icon, color, placement, onClick, tooltip, disabled = false, size = 32, loading} = props
+    // 0.56 is the ratio for size = 32 and fontSize = 18
     const fontSize = Math.floor(size * 0.56)
 
     return (
@@ -44,10 +43,11 @@ export function IconButton(props: ButtonProps) {
                 <MuiIconButton
                     sx={{height: `${size}px`, width: `${size}px`}}
                     color={color}
+                    loading={loading}
                     disabled={loading || disabled}
                     onClick={onClick}
                 >
-                    {loading ? <CircularProgress size={fontSize - 2}/> : cloneElement(icon, {sx: {fontSize}})}
+                    {cloneElement(icon, {sx: {fontSize}})}
                 </MuiIconButton>
             </Box>
         </Tooltip>

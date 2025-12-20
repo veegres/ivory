@@ -109,6 +109,43 @@ func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	return s.clusterRepository.Create(model)
 }
 
+func (s *Service) FixAuto(name string) (*Cluster, error) {
+	cluster, clusterError := s.Get(name)
+	if clusterError != nil {
+		return nil, clusterError
+	}
+	var certs *cert.Certs
+	if cluster.Tls.Sidecar {
+		certs = &cluster.Certs
+	}
+	request := instance.InstanceAutoRequest{
+		Sidecars:     cluster.Instances,
+		CredentialId: cluster.Credentials.PatroniId,
+		Certs:        certs,
+	}
+	overview, _, errOver := s.instanceService.AutoOverview(request)
+	if errOver != nil {
+		return nil, errOver
+	}
+
+	instances := make([]sidecar.Sidecar, 0)
+	for _, item := range overview {
+		instances = append(instances, item.Sidecar)
+	}
+
+	model := Cluster{
+		Name:      cluster.Name,
+		Instances: instances,
+		ClusterOptions: ClusterOptions{
+			Tls:         cluster.Tls,
+			Certs:       cluster.Certs,
+			Credentials: cluster.Credentials,
+			Tags:        cluster.Tags,
+		},
+	}
+	return &model, s.clusterRepository.Update(model)
+}
+
 func (s *Service) Delete(cluster string) error {
 	_, errTag := s.tagService.UpdateCluster(cluster, nil)
 	if errTag != nil {

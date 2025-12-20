@@ -17,3 +17,10 @@ type InstanceRequest struct {
 }
 
 // SPECIFIC (SERVER)
+
+type InstanceAutoRequest struct {
+	Sidecars     []sidecar.Sidecar `json:"sidecars" form:"sidecars"`
+	CredentialId *uuid.UUID        `json:"credentialId" form:"credentialId"`
+	Certs        *cert.Certs       `json:"certs" form:"certs"`
+	Body         any               `json:"body" form:"body"`
+}

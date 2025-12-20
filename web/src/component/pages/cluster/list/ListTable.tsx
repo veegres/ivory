@@ -46,9 +46,7 @@ export function ListTable(props: Props) {
                         <TableCell sx={[SxPropsFormatter.style.paper, SX.nameCell]}>Cluster Name</TableCell>
                         <TableCell sx={SxPropsFormatter.style.paper}>Instances</TableCell>
                         <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={fetching && !pending}>
-                            <Access permission={Permission.ManageClusterCreate}>
-                                <ListCreateAuto/>
-                            </Access>
+                            <ListCreateAuto/>
                             <Access permission={Permission.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"Add Cluster Manually"}
