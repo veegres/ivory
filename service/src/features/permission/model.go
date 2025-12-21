@@ -32,6 +32,7 @@ const (
 	// Cluster permissions
 	ViewClusterList     Permission = "view.cluster.list"
 	ViewClusterItem     Permission = "view.cluster.item"
+	ViewClusterOverview Permission = "view.cluster.overview"
 	ManageClusterCreate Permission = "manage.cluster.create"
 	ManageClusterUpdate Permission = "manage.cluster.update"
 	ManageClusterDelete Permission = "manage.cluster.delete"
@@ -96,6 +97,7 @@ const (
 var Permissions = []Permission{
 	ViewClusterList,
 	ViewClusterItem,
+	ViewClusterOverview,
 	ManageClusterCreate,
 	ManageClusterUpdate,
 	ManageClusterDelete,

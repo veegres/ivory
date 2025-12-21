@@ -1,6 +1,8 @@
 package cluster
 
 import (
+	"encoding/json"
+	"ivory/src/clients/sidecar"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +31,26 @@ func (r *Router) GetClusterList(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"response": list})
+}
+
+func (r *Router) GetClusterOverview(context *gin.Context) {
+	name := context.Param("name")
+	query := context.Query("sidecar")
+	var side *sidecar.Sidecar
+	if query != "" {
+		errBind := json.Unmarshal([]byte(query), &side)
+		if errBind != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+			return
+		}
+	}
+
+	overview, err := r.clusterService.Overview(name, side)
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": overview})
 }
 
 func (r *Router) GetClusterByName(context *gin.Context) {

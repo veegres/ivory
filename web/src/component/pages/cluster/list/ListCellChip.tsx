@@ -1,12 +1,7 @@
-import {Box, Chip, Tooltip} from "@mui/material"
-import {purple} from "@mui/material/colors"
+import {Box, Chip} from "@mui/material"
+import {ReactNode} from "react"
 
-import {Cluster, InstanceDetection} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getDomain, InstanceColor} from "../../../../app/utils"
-import {useStoreAction} from "../../../../provider/StoreProvider"
-import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
-import {AutoRefreshIconButton, RefreshIconButton} from "../../../view/button/IconButtons"
 
 const SX: SxPropsMap = {
     chip: {width: "100%"},
@@ -14,50 +9,26 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: Cluster,
-    instanceDetection: InstanceDetection,
+    name: string,
+    active: boolean,
+    onClick: () => void,
+    renderRefresh: ReactNode,
 }
 
 export function ListCellChip(props: Props) {
-    const {cluster, instanceDetection} = props
-    const {defaultInstance, combinedInstanceMap, warning} = instanceDetection
-    const {fetching, active, detection, refetch} = instanceDetection
-
-    const {setCluster} = useStoreAction
+    const {name, active, onClick, renderRefresh} = props
 
     return (
         <Box sx={SX.clusterName}>
-            <Tooltip title={renderChipTooltip()} placement={"right-start"} arrow disableInteractive>
-                <Chip
-                    sx={SX.chip}
-                    color={active ? "primary" : "default"}
-                    label={cluster.name}
-                    onClick={handleClick}
-                />
-            </Tooltip>
-            {instanceDetection.detection === "auto" ? (
-                <AutoRefreshIconButton loading={fetching}  onClick={refetch}/>
-            ) : (
-                <RefreshIconButton loading={fetching} onClick={refetch}/>
-            )}
+            <Chip
+                sx={SX.chip}
+                color={active ? "primary" : "default"}
+                label={name}
+                onClick={onClick}
+            />
+            {renderRefresh}
         </Box>
     )
 
-    // TODO we have same component in Overview page probably we should combine them
-    function renderChipTooltip() {
-        const items = [
-            {title: "Detection", label: detection, bgColor: purple[400]},
-            {title: "Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]},
-        ]
 
-        return <InfoColorBoxList items={items} label={"Cluster Detection"}/>
-    }
-
-    function handleClick() {
-        if (active) {
-            setCluster(undefined)
-        } else {
-            setCluster({cluster, defaultInstance, combinedInstanceMap, warning, detection})
-        }
-    }
 }

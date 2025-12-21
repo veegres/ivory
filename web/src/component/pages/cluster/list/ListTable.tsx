@@ -1,7 +1,7 @@
 import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {ClusterMap} from "../../../../api/cluster/type"
+import {Cluster} from "../../../../api/cluster/type"
 import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
@@ -24,7 +24,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    map?: ClusterMap,
+    list: Cluster[],
     pending: boolean,
     fetching: boolean,
 }
@@ -32,11 +32,11 @@ type Props = {
 export function ListTable(props: Props) {
     const activeCluster = useStore(s => s.activeCluster)
     const search = useStore(s => s.searchCluster)
-    const {map, fetching, pending} = props
+    const {list, fetching, pending} = props
     const [showNewElement, setShowNewElement] = useState(false)
     const [editNode, setEditNode] = useState("")
 
-    const rows = useMemo(() => Object.entries(map ?? {}).filter(([name]) => name.includes(search)), [map, search])
+    const rows = useMemo(() => list.filter((c) => c.name.includes(search)), [list, search])
 
     return (
         <Box sx={SX.box} className={scroll.tiny} maxHeight={activeCluster ? "25vh" : "60vh"}>
@@ -68,20 +68,19 @@ export function ListTable(props: Props) {
     )
 
     function renderRemovedRow() {
-        if (!activeCluster || !map) return
-        if (map[activeCluster.cluster.name] !== undefined) return
+        if (!activeCluster || !list.length) return
+        if (list.some(e => e.name === activeCluster.cluster.name)) return
         return (
             <ListRow cluster={activeCluster.cluster} editable={false}/>
         )
     }
 
     function renderRows() {
-        return rows.map(([name, cluster]) => {
-            const editable = name === editNode
-            const toggle = () => setEditNode(editable ? "" : name)
-
+        return rows.map((cluster) => {
+            const editable = cluster.name === editNode
+            const toggle = () => setEditNode(editable ? "" : cluster.name)
             return (
-                <ListRow key={name} cluster={cluster} editable={editable} toggle={toggle}/>
+                <ListRow key={cluster.name} cluster={cluster} editable={editable} toggle={toggle}/>
             )
         })
     }

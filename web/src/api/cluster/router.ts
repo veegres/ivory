@@ -1,18 +1,21 @@
+import {getDomain, initialInstance} from "../../app/utils"
 import {api} from "../api"
+import {Sidecar} from "../instance/type"
 import {R} from "../management/type"
-import {Cluster, ClusterAuto, ClusterMap} from "./type"
+import {Cluster, ClusterAuto, ClusterOverview} from "./type"
 
 export const ClusterApi = {
     list: {
         key: () => ["cluster", "list"],
         fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
-            .then((response) => response.data.response.reduce(
-                (map, cluster) => {
-                    map[cluster.name] = cluster
-                    return map
-                },
-                {} as ClusterMap
-            )),
+            .then((response) => response.data.response.map(v => (
+                {...v, unknownInstances: Object.fromEntries(v.sidecars.map(i => [getDomain(i), initialInstance(i)]))} as Cluster
+            ))),
+    },
+    overview: {
+        key: (name?: string, sidecar?: Sidecar) => ["cluster", "overview", name, sidecar?.host, sidecar?.port],
+        fn: (name: string, sidecar?: Sidecar) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {sidecar: JSON.stringify(sidecar)}})
+            .then((response) => response.data.response),
     },
     update: {
         key: () => ["cluster", "update"],

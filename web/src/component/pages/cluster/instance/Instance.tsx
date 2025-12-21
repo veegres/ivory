@@ -18,7 +18,7 @@ export function Instance() {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterTab = useStore(s => s.activeClusterTab)
     const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
-    const activeInstance = getActiveInstance(activeInstances, activeCluster)
+    const activeInstance = getActiveInstance(activeInstances, activeCluster?.cluster)
 
     const {setInstanceBody} = useStoreAction
 

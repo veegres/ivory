@@ -1,8 +1,8 @@
 import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
-import {ActiveCluster, ActiveInstance, DetectionType} from "../api/cluster/type"
-import {InstanceTabType, InstanceWeb} from "../api/instance/type"
+import {ActiveCluster, ActiveInstance, Instance} from "../api/cluster/type"
+import {InstanceTabType} from "../api/instance/type"
 import {QueryType} from "../api/query/type"
 import {MainQueryClient} from "./AppProvider"
 
@@ -45,7 +45,6 @@ export const useStore = create(persist<Store>(
 export const useStoreAction = {
     setCluster: setCluster,
     setSearchCluster: setSearchCluster,
-    setClusterInstance: setClusterInstance,
     setClusterDetection: setClusterDetection,
     setClusterTab: setClusterTab,
     setWarnings: setWarnings,
@@ -66,16 +65,10 @@ function setSearchCluster(search: string) {
 function setCluster(cluster?: ActiveCluster) {
     useStore.setState(s => ({...s, activeCluster: cluster}))
 }
-function setClusterInstance(instance: InstanceWeb) {
+function setClusterDetection(detectBy?: Instance) {
     useStore.setState(s => {
         if (!s.activeCluster) return s
-        return {...s, activeCluster: {...s.activeCluster, defaultInstance: instance, detection: "manual"}}
-    })
-}
-function setClusterDetection(detection: DetectionType) {
-    useStore.setState(s => {
-        if (!s.activeCluster) return s
-        return {...s, activeCluster: {...s.activeCluster, detection}}
+        return {...s, activeCluster: {...s.activeCluster, detectBy}}
     })
 }
 function setClusterTab(tab: number) {
@@ -84,7 +77,7 @@ function setClusterTab(tab: number) {
 function setWarnings(name: string, warning: boolean) {
     useStore.setState(s => ({...s, warnings: {...s.warnings, [name]: warning}}))
 }
-function setInstance(instance?: InstanceWeb) {
+function setInstance(instance?: Instance) {
     useStore.setState(s => {
         const clusterName = s.activeCluster?.cluster.name
         if (!clusterName) return s

@@ -2,8 +2,8 @@ import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
 
-import {Cluster} from "../../../../api/cluster/type"
-import {InstanceWeb, Sidecar} from "../../../../api/instance/type"
+import {Cluster, Instance} from "../../../../api/cluster/type"
+import {Sidecar} from "../../../../api/instance/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
     DateTimeFormatter,
@@ -31,7 +31,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: InstanceWeb,
+    instance: Instance,
     cluster: Cluster,
     candidates: Sidecar[],
     checked: boolean
@@ -40,7 +40,7 @@ type Props = {
 
 export function OverviewInstancesRow(props: Props) {
     const {instance, cluster, candidates, error = false, checked} = props
-    const {role, sidecar, database, state, lag, inInstances, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = instance
+    const {role, sidecar, database, state, lag, inSidecar, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = instance
 
     const {setInstance} = useStoreAction
     const request = getSidecarConnection(cluster, sidecar)
@@ -54,7 +54,7 @@ export function OverviewInstancesRow(props: Props) {
             onClick={handleCheck}
         >
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
-            <TableCell align={"center"}>{renderWarning(inCluster, inInstances)}</TableCell>
+            <TableCell align={"center"}>{renderWarning(inSidecar, inCluster)}</TableCell>
             <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>
                 <Tooltip title={sidecarName} placement={"top-start"}>
@@ -140,7 +140,7 @@ export function OverviewInstancesRow(props: Props) {
         return (
             <MenuButton>
                 <ScheduleButton request={request} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
-                <FailoverButton request={request} cluster={cluster.name} disabled={instance.leader}/>
+                <FailoverButton request={request} cluster={cluster.name} disabled={instance.role === "leader"}/>
                 <RestartButton request={request} cluster={cluster.name}/>
                 <ReloadButton request={request} cluster={cluster.name}/>
             </MenuButton>

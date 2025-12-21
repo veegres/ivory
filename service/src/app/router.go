@@ -110,12 +110,14 @@ func managementRouter(g *gin.RouterGroup, rp *permission.Router, rs *secret.Rout
 
 func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router) {
 	group := g.Group("/cluster")
+
 	group.GET("", rp.ValidateMethodMiddleware(permission.ViewClusterList), r.GetClusterList)
 	group.GET("/:name", rp.ValidateMethodMiddleware(permission.ViewClusterItem), r.GetClusterByName)
 	group.PUT("", rp.ValidateMethodMiddleware(permission.ManageClusterUpdate), r.PutClusterByName)
+	group.DELETE("/:name", rp.ValidateMethodMiddleware(permission.ManageClusterDelete), r.DeleteClusterByName)
+	group.GET("/overview/:name", rp.ValidateMethodMiddleware(permission.ViewClusterOverview), r.GetClusterOverview)
 	group.POST("/auto", rp.ValidateMethodMiddleware(permission.ManageClusterCreate), r.PostClusterAutoCreate)
 	group.POST("/auto/:name", rp.ValidateMethodMiddleware(permission.ManageClusterUpdate), r.PostClusterAutoFix)
-	group.DELETE("/:name", rp.ValidateMethodMiddleware(permission.ManageClusterDelete), r.DeleteClusterByName)
 }
 
 func bloatRouter(g *gin.RouterGroup, rp *permission.Router, r *bloat.Router) {

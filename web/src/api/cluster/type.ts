@@ -1,9 +1,13 @@
 import {ReactNode} from "react"
 
-import {ColorsMap} from "../../app/type"
 import {Certs} from "../cert/type"
-import {InstanceMap, InstanceWeb, Sidecar} from "../instance/type"
+import {
+    InstanceScheduledRestart,
+    InstanceScheduledSwitchover, Role,
+    Sidecar,
+} from "../instance/type"
 import {Permission} from "../permission/type"
+import {Database} from "../query/type"
 
 // COMMON (WEB AND SERVER)
 
@@ -16,7 +20,9 @@ export interface ClusterOptions {
 
 export interface Cluster extends ClusterOptions {
     name: string,
-    instances: Sidecar[],
+    sidecars: Sidecar[],
+    unknownInstances: { [domain: string]: Instance },
+
 }
 
 export interface ClusterAuto extends ClusterOptions {
@@ -34,42 +40,42 @@ export interface Credentials {
     postgresId?: string,
 }
 
-// SPECIFIC (WEB)
 
-// TODO should we return map from backend?
-export interface ClusterMap {
-    [name: string]: Cluster,
+export interface ClusterOverview {
+    instances: { [domain: string]: Instance },
+    detectedBy?: Sidecar,
+    mainInstance?: Instance,
 }
+
+export interface Instance {
+    state: string,
+    role: Role,
+    lag: number,
+    pendingRestart: boolean,
+    database: Database,
+    sidecar: Sidecar,
+    scheduledSwitchover?: InstanceScheduledSwitchover,
+    scheduledRestart?: InstanceScheduledRestart,
+    tags?: {[key: string]: any},
+    inCluster: boolean,
+    inSidecar: boolean,
+}
+
+// SPECIFIC (WEB)
 
 export interface ActiveCluster {
     cluster: Cluster,
-    defaultInstance: InstanceWeb,
-    combinedInstanceMap: InstanceMap,
+    detectBy?: Instance,
     warning: boolean,
-    detection: DetectionType,
 }
 
 export interface ActiveInstance {
-    [cluster: string]: InstanceWeb | undefined
+    [cluster: string]: Instance | undefined
 }
 
 export interface ClusterTab {
     label: string,
-    body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => ReactNode,
+    body: (cluster: Cluster, overview?: ClusterOverview) => ReactNode,
     permission: Permission,
     info?: ReactNode,
 }
-
-export type DetectionType = "auto" | "manual"
-
-export interface InstanceDetection {
-    defaultInstance: InstanceWeb,
-    combinedInstanceMap: InstanceMap,
-    detection: DetectionType,
-    warning: boolean,
-    colors: ColorsMap,
-    fetching: boolean,
-    active: boolean,
-    refetch: () => void,
-}
-

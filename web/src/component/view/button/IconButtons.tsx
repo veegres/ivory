@@ -20,25 +20,26 @@ import {
 } from "@mui/icons-material"
 import {Box, IconButton as MuiIconButton, Tooltip} from "@mui/material"
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon"
-import {cloneElement, ReactElement, SyntheticEvent} from "react"
+import {cloneElement, ReactElement, ReactNode, SyntheticEvent} from "react"
 
 type Color = "inherit" | "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
 type Placement = "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top"
 
 type ButtonProps = Props & {
     icon: ReactElement<SvgIconProps>,
-    tooltip: string,
+    tooltip: ReactNode,
     color?: Color,
     placement?: Placement,
+    arrow?: boolean,
 }
 
 export function IconButton(props: ButtonProps) {
-    const {icon, color, placement, onClick, tooltip, disabled = false, size = 32, loading} = props
+    const {icon, color, placement, arrow, onClick, tooltip, disabled = false, size = 32, loading} = props
     // 0.56 is the ratio for size = 32 and fontSize = 18
     const fontSize = Math.floor(size * 0.56)
 
     return (
-        <Tooltip title={tooltip} placement={placement ?? "top"} disableInteractive>
+        <Tooltip title={tooltip} placement={placement ?? "top"} arrow={arrow} disableInteractive>
             <Box component={"span"}>
                 <MuiIconButton
                     sx={{height: `${size}px`, width: `${size}px`}}
@@ -61,100 +62,82 @@ type Props = {
     disabled?: boolean,
     color?: Color,
     placement?: Placement,
-    tooltip?: string,
+    tooltip?: ReactNode,
+    arrow?: boolean,
 }
 
 export function EditIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Edit/>} tooltip={"Edit"}/>
+    return <IconButton icon={<Edit/>} tooltip={"Edit"} {...props}/>
 }
 
 export function DeleteIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Delete/>} tooltip={"Delete"}/>
+    return <IconButton icon={<Delete/>} tooltip={"Delete"} {...props}/>
 }
 
 export function CancelIconButton(props: Props) {
-    const {disabled, tooltip} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Cancel/>} tooltip={tooltip ?? "Cancel"}/>
+    return <IconButton icon={<Cancel/>} tooltip={"Cancel"} {...props}/>
 }
 
 export function SaveIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<CheckCircle/>} tooltip={"Save"}/>
+    return <IconButton icon={<CheckCircle/>} tooltip={"Save"} {...props}/>
 }
 
 export function RefreshIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Cached/>} tooltip={"Refresh"}/>
+    return <IconButton icon={<Cached/>} tooltip={"Refresh"} {...props}/>
 }
 
 export function AutoRefreshIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoMode/>} tooltip={"Auto Detection"}/>
+    return <IconButton icon={<AutoMode/>} tooltip={"Auto Detection"} {...props}/>
 }
 
 export function BackIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<ArrowBack/>} tooltip={"Back"}/>
+    return <IconButton icon={<ArrowBack/>} tooltip={"Back"} {...props}/>
 }
 
 export function CloseIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Close/>} tooltip={"Close"}/>
+    return <IconButton icon={<Close/>} tooltip={"Close"} {...props}/>
 }
 
 export function AddIconButton(props: Props) {
-    const {disabled, tooltip} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Add/>} tooltip={tooltip ?? "Add"}/>
+    return <IconButton icon={<Add/>} tooltip={"Add"} {...props}/>
 }
 
 export function AutoIconButton(props: Props) {
-    const {disabled, tooltip} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<AutoFixHigh/>} tooltip={tooltip ?? "Auto"}/>
+    return <IconButton icon={<AutoFixHigh/>} tooltip={"Auto"} {...props}/>
 }
 
 export function PlayIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<PlayArrow/>} tooltip={"RUN"}/>
+    return <IconButton icon={<PlayArrow/>} tooltip={"RUN"} {...props}/>
 }
 
 export function QueryParamsIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<ManageSearch/>} tooltip={"Query Params"}/>
+    return <IconButton icon={<ManageSearch/>} tooltip={"Query Params"} {...props}/>
 }
 
 export function RestoreIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Restore/>} tooltip={"Restore"}/>
+    return <IconButton icon={<Restore/>} tooltip={"Restore"} {...props}/>
 }
 
 export function CopyIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<CopyAll/>} tooltip={"Copy"}/>
+    return <IconButton icon={<CopyAll/>} tooltip={"Copy"} {...props}/>
 }
 
 export function QueryViewIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Receipt/>} tooltip={"Query View"}/>
+    return <IconButton icon={<Receipt/>} tooltip={"Query View"} {...props}/>
 }
 
 export function LogIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<PendingActions/>} tooltip={"Log"}/>
+    return <IconButton icon={<PendingActions/>} tooltip={"Log"} {...props}/>
 }
 
 export function InfoIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<Info/>} tooltip={"Info"}/>
+    return <IconButton icon={<Info/>} tooltip={"Info"} {...props}/>
 }
 
 export function ClearAllIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<ClearAll/>} tooltip={"Clear All"}/>
+    return <IconButton icon={<ClearAll/>} tooltip={"Clear All"} {...props}/>
 }
 
 export function MoreIconButton(props: Props) {
-    const {disabled} = props
-    return <IconButton {...props} disabled={disabled ?? false} icon={<MoreVert/>} tooltip={""}/>
+    return <IconButton icon={<MoreVert/>} tooltip={""} {...props}/>
 }

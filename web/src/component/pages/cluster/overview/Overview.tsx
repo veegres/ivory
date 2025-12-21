@@ -1,19 +1,19 @@
 import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {useRouterClusterList} from "../../../../api/cluster/hook"
-import {ActiveCluster, ClusterTab} from "../../../../api/cluster/type"
-import {InstanceWeb} from "../../../../api/instance/type"
+import {useRouterClusterList, useRouterClusterOverview} from "../../../../api/cluster/hook"
+import {ClusterTab} from "../../../../api/cluster/type"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getActiveInstance} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
+import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {PageMainBox} from "../../../view/box/PageMainBox"
 import {OverviewAction} from "./OverviewAction"
 import {OverviewBloat} from "./OverviewBloat"
 import {OverviewConfig} from "./OverviewConfig"
+import {ClusterNoInstanceError} from "./OverviewError"
 import {OverviewInstances} from "./OverviewInstances"
 import {OverviewOptions} from "./OverviewOptions"
 
@@ -33,7 +33,7 @@ const TABS: ClusterTab[] = [
     {
         label: "Overview",
         permission: Permission.ViewInstanceOverview,
-        body: (cluster: ActiveCluster, activeInstance?: InstanceWeb) => <OverviewInstances info={cluster} activeInstance={activeInstance}/>,
+        body: (cluster, overview) => <OverviewInstances cluster={cluster} instances={overview?.instances}/>,
         info: <>
             The Overview tab offers visibility into the current status of your cluster. From here, you can
             utilize essential features to manage your cluster, including switchover, reinit, restart, reload,
@@ -45,7 +45,10 @@ const TABS: ClusterTab[] = [
     {
         label: "Config",
         permission: Permission.ViewInstanceConfig,
-        body: (cluster: ActiveCluster) => <OverviewConfig info={cluster}/>,
+        body: (cluster, overview) => {
+            if (!overview?.mainInstance) return <ClusterNoInstanceError/>
+            return <OverviewConfig cluster={cluster} instance={overview.mainInstance}/>
+        },
         info: <>
             You can adjust your PostgreSQL configurations here, and any changes made will be applied to
             all cluster instances. Instead of rewriting the entire configuration, it applies a patch
@@ -58,7 +61,10 @@ const TABS: ClusterTab[] = [
     {
         label: "Bloat",
         permission: Permission.ViewBloatList,
-        body: (cluster: ActiveCluster) => <OverviewBloat info={cluster}/>,
+        body: (cluster, overview) => {
+            if (!overview?.mainInstance) return <ClusterNoInstanceError/>
+            return <OverviewBloat cluster={cluster} instance={overview.mainInstance}/>
+        },
         info: <>
             Here, you can efficiently decrease the size of bloated tables and indexes without imposing
             heavy locks. This functionality is powered by
@@ -86,12 +92,11 @@ export function Overview() {
     const activeClusterTab = useStore(s => s.activeClusterTab)
     const activeTags = useStore(s => s.activeTags)
     const activeCluster = useStore(s => s.activeCluster)
-    const activeInstances = useStore(s => s.activeInstance)
-    const activeInstance = getActiveInstance(activeInstances, activeCluster)
     const {setClusterTab} = useStoreAction
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const clusters = useRouterClusterList(activeTags)
+    const overview = useRouterClusterOverview(activeCluster?.cluster.name)
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
     const tab = TABS[activeClusterTab]
@@ -119,13 +124,17 @@ export function Overview() {
     function renderMainBlock() {
         if (!activeCluster) return <AlertCentered text={"Please, select a cluster to see the overview! (click on the name)"}/>
         if (!tab) return <AlertCentered text={"Coming soon — we're working on it!"}/>
-        return tab.body(activeCluster, activeInstance)
+        return <>
+            {overview.error && <ErrorSmart error={overview.error}/>}
+            {tab.body(activeCluster.cluster, overview.data)}
+        </>
     }
 
     function renderActions() {
         if (!activeCluster) return null
         return <OverviewAction
             cluster={activeCluster}
+            mainInstance={overview.data?.mainInstance}
             selectInfo={infoOpen}
             disableInfo={!tab.info}
             toggleInfo={() => setInfoOpen(!infoOpen)}
@@ -150,7 +159,7 @@ export function Overview() {
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    <OverviewOptions info={activeCluster}/>
+                    <OverviewOptions info={activeCluster} overview={overview.data}/>
                 </Box>
             </Collapse>
         )

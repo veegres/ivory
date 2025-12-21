@@ -1,6 +1,7 @@
 import {Box, Paper, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {InstanceTabType, InstanceWeb} from "../../../../api/instance/type"
+import {Instance} from "../../../../api/cluster/type"
+import {InstanceTabType} from "../../../../api/instance/type"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {QueryConnection} from "../../../../api/query/type"
@@ -17,7 +18,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: InstanceWeb,
+    instance: Instance,
     tab: InstanceTabType,
     onTab: (tab: InstanceTabType) => void,
     connection: QueryConnection,

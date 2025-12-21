@@ -27,23 +27,24 @@ func NewService(
 	}
 }
 
-func (s *Service) AutoOverview(request InstanceAutoRequest) ([]sidecar.Instance, int, error) {
+func (s *Service) OverviewAuto(request InstanceAutoRequest) ([]sidecar.Instance, int, *sidecar.Sidecar, error) {
 	var tlsConfig *tls.Config
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&tlsConfig, request.Certs)
 		if err != nil {
-			return nil, 0, err
+			return nil, 0, nil, err
 		}
 	}
 	var cred *sidecar.Credentials
 	if request.CredentialId != nil {
 		pass, err := s.passwordService.GetDecrypted(*request.CredentialId)
 		if err != nil {
-			return nil, 0, err
+			return nil, 0, nil, err
 		}
 		cred = &sidecar.Credentials{Username: pass.Username, Password: pass.Password}
 	}
 	var overview []sidecar.Instance
+	var detectedBy *sidecar.Sidecar
 	var statusCode int
 	var errorChain error
 	for i, instance := range request.Sidecars {
@@ -51,14 +52,15 @@ func (s *Service) AutoOverview(request InstanceAutoRequest) ([]sidecar.Instance,
 		var err error
 		overview, statusCode, err = s.sidecarClient.Overview(r)
 		if err == nil {
+			detectedBy = &instance
 			break
 		}
 		errorChain = errors.Join(errorChain, fmt.Errorf("#%d failed %d: %w", i, statusCode, err))
 	}
 	if overview == nil {
-		return nil, statusCode, errorChain
+		return nil, statusCode, nil, errorChain
 	}
-	return overview, statusCode, nil
+	return overview, statusCode, detectedBy, nil
 }
 
 func (s *Service) Overview(instance InstanceRequest) ([]sidecar.Instance, int, error) {

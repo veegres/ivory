@@ -49,11 +49,12 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     cluster={{
                         name: stateName,
-                        instances: getSidecars(stateNodes),
+                        sidecars: getSidecars(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
                         credentials: {},
-                        tls: {sidecar: false, database: false}
+                        tls: {sidecar: false, database: false},
+                        unknownInstances: {},
                     }}
                     toggle={toggle}
                     onUpdate={clean}

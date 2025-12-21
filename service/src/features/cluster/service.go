@@ -1,6 +1,8 @@
 package cluster
 
 import (
+	"errors"
+	"fmt"
 	"ivory/src/clients/sidecar"
 	"ivory/src/features/cert"
 	"ivory/src/features/instance"
@@ -59,6 +61,12 @@ func (s *Service) Get(cluster string) (Cluster, error) {
 }
 
 func (s *Service) Update(cluster Cluster) (*Cluster, error) {
+	if cluster.Name == "" {
+		return nil, errors.New("cluster name cannot be empty")
+	}
+	if cluster.Sidecars == nil {
+		return nil, errors.New("cluster sidecars cannot be empty")
+	}
 	tags, err := s.saveTags(cluster.Name, cluster.Tags)
 	if err != nil {
 		return nil, err
@@ -68,25 +76,58 @@ func (s *Service) Update(cluster Cluster) (*Cluster, error) {
 	return &cluster, errCluster
 }
 
+func (s *Service) Overview(name string, side *sidecar.Sidecar) (*ClusterOverview, error) {
+	cluster, clusterError := s.Get(name)
+	if clusterError != nil {
+		return nil, clusterError
+	}
+	detectedBy := side
+	var instances []sidecar.Instance
+	var err error
+	if side == nil {
+		instances, detectedBy, err = s.getOverviewAuto(cluster.Sidecars, cluster.ClusterOptions)
+	} else {
+		instances, err = s.getOverview(*side, cluster.ClusterOptions)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	detectedByDomain := fmt.Sprintf("%s:%d", detectedBy.Host, detectedBy.Port)
+	var mainInstance *Instance
+	instancesMap := make(map[string]Instance)
+	for _, el := range instances {
+		domain := fmt.Sprintf("%s:%d", el.Sidecar.Host, el.Sidecar.Port)
+		fullInstance := Instance{el, false, true}
+		instancesMap[domain] = fullInstance
+
+		if detectedByDomain == domain {
+			mainInstance = &fullInstance
+		}
+		if fullInstance.Role == sidecar.Leader {
+			mainInstance = &fullInstance
+		}
+	}
+	for _, sc := range cluster.Sidecars {
+		domain := fmt.Sprintf("%s:%d", sc.Host, sc.Port)
+		if value, ok := instancesMap[domain]; ok {
+			instancesMap[domain] = Instance{value.Instance, true, value.InSidecar}
+		} else {
+			instancesMap[domain] = Instance{sidecar.Instance{Sidecar: sc}, false, false}
+		}
+	}
+	return &ClusterOverview{instancesMap, detectedBy, mainInstance}, nil
+}
+
 func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
-	var requestTls *cert.Certs
-	if cluster.Tls.Sidecar {
-		// NOTE: we want to rewrite `nil` only if tls is enabled
-		requestTls = &cluster.Certs
-	}
-	request := instance.InstanceRequest{
-		Sidecar:      cluster.Instance,
-		CredentialId: cluster.Credentials.PatroniId,
-		Certs:        requestTls,
-	}
-	overview, _, errOver := s.instanceService.Overview(request)
+	overview, errOver := s.getOverview(cluster.Instance, cluster.ClusterOptions)
 	if errOver != nil {
 		return Cluster{}, errOver
 	}
 
-	instances := make([]sidecar.Sidecar, 0)
+	sidecars := make([]sidecar.Sidecar, 0)
 	for _, item := range overview {
-		instances = append(instances, item.Sidecar)
+		sidecars = append(sidecars, item.Sidecar)
 	}
 
 	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
@@ -96,8 +137,8 @@ func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 	cluster.Tags = tags
 
 	model := Cluster{
-		Name:      cluster.Name,
-		Instances: instances,
+		Name:     cluster.Name,
+		Sidecars: sidecars,
 		ClusterOptions: ClusterOptions{
 			Tls:         cluster.Tls,
 			Certs:       cluster.Certs,
@@ -114,28 +155,19 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 	if clusterError != nil {
 		return nil, clusterError
 	}
-	var certs *cert.Certs
-	if cluster.Tls.Sidecar {
-		certs = &cluster.Certs
-	}
-	request := instance.InstanceAutoRequest{
-		Sidecars:     cluster.Instances,
-		CredentialId: cluster.Credentials.PatroniId,
-		Certs:        certs,
-	}
-	overview, _, errOver := s.instanceService.AutoOverview(request)
-	if errOver != nil {
-		return nil, errOver
+	overview, _, err := s.getOverviewAuto(cluster.Sidecars, cluster.ClusterOptions)
+	if err != nil {
+		return nil, err
 	}
 
-	instances := make([]sidecar.Sidecar, 0)
+	sidecars := make([]sidecar.Sidecar, 0)
 	for _, item := range overview {
-		instances = append(instances, item.Sidecar)
+		sidecars = append(sidecars, item.Sidecar)
 	}
 
 	model := Cluster{
-		Name:      cluster.Name,
-		Instances: instances,
+		Name:     cluster.Name,
+		Sidecars: sidecars,
 		ClusterOptions: ClusterOptions{
 			Tls:         cluster.Tls,
 			Certs:       cluster.Certs,
@@ -144,6 +176,39 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 		},
 	}
 	return &model, s.clusterRepository.Update(model)
+}
+
+func (s *Service) getOverview(sidecar sidecar.Sidecar, cluster ClusterOptions) ([]sidecar.Instance, error) {
+	var certs *cert.Certs
+	// NOTE: we want to rewrite `nil` only if tls is enabled
+	if cluster.Tls.Sidecar {
+		certs = &cluster.Certs
+	}
+	request := instance.InstanceRequest{
+		Sidecar:      sidecar,
+		CredentialId: cluster.Credentials.PatroniId,
+		Certs:        certs,
+	}
+	overview, _, errOver := s.instanceService.Overview(request)
+	return overview, errOver
+}
+
+func (s *Service) getOverviewAuto(sidecars []sidecar.Sidecar, cluster ClusterOptions) ([]sidecar.Instance, *sidecar.Sidecar, error) {
+	var certs *cert.Certs
+	// NOTE: we want to rewrite `nil` only if tls is enabled
+	if cluster.Tls.Sidecar {
+		certs = &cluster.Certs
+	}
+	request := instance.InstanceAutoRequest{
+		Sidecars:     sidecars,
+		CredentialId: cluster.Credentials.PatroniId,
+		Certs:        certs,
+	}
+	overview, _, detectedBy, errOver := s.instanceService.OverviewAuto(request)
+	if errOver != nil {
+		return nil, nil, errOver
+	}
+	return overview, detectedBy, nil
 }
 
 func (s *Service) Delete(cluster string) error {
