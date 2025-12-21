@@ -1,6 +1,7 @@
 import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../hook/QueryCustom"
+import {useStore} from "../../provider/StoreProvider"
 import {TagApi} from "../tag/router"
 import {ClusterApi} from "./router"
 
@@ -12,6 +13,16 @@ export function useRouterClusterList(tags: string[]) {
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ClusterApi.list.key(),
         queryFn: () => ClusterApi.list.fn(tagsFn),
+    })
+}
+
+export function useRouterClusterOverview(name?: string) {
+    const activeCluster = useStore(s => s.activeCluster)
+    const instance = activeCluster?.cluster.name === name ? activeCluster?.detectBy : undefined
+    return useQuery({
+        queryKey: ClusterApi.overview.key(name, instance?.sidecar),
+        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", instance?.sidecar),
+        enabled: !!name, retry: false,
     })
 }
 
@@ -41,10 +52,10 @@ export function useRouterClusterCreateAuto(onSuccess?: () => void) {
     })
 }
 
-export function useRouterClusterFixAuto() {
+export function useRouterClusterFixAuto(cluster: string) {
     return useMutationAdapter({
         mutationFn: ClusterApi.fixAuto.fn,
         mutationKey: ClusterApi.fixAuto.key(),
-        successKeys: [ClusterApi.list.key()],
+        successKeys: [ClusterApi.list.key(), ClusterApi.overview.key(cluster)],
     })
 }

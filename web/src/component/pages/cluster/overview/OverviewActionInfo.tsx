@@ -1,11 +1,10 @@
 import {Box} from "@mui/material"
-import {purple} from "@mui/material/colors"
 
 import {CertType} from "../../../../api/cert/type"
-import {ActiveCluster} from "../../../../api/cluster/type"
+import {Cluster, Instance} from "../../../../api/cluster/type"
 import {PasswordType} from "../../../../api/password/type"
 import {SxPropsMap} from "../../../../app/type"
-import {CertOptions, CredentialOptions, getDomain, InstanceColor} from "../../../../app/utils"
+import {CertOptions, CredentialOptions, getDetectionItems} from "../../../../app/utils"
 import {InfoBox} from "../../../view/box/InfoBox"
 import {InfoBoxList} from "../../../view/box/InfoBoxList"
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
@@ -15,11 +14,13 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: ActiveCluster,
+    cluster: Cluster,
+    detectBy?: Instance,
+    mainInstance?: Instance,
 }
 
 export function OverviewActionInfo(props: Props) {
-    const {cluster, defaultInstance, detection} = props.cluster
+    const {mainInstance, cluster, detectBy} = props
 
     const infoItems = [
         {...CredentialOptions[PasswordType.POSTGRES], active: !!cluster.credentials.postgresId},
@@ -29,16 +30,14 @@ export function OverviewActionInfo(props: Props) {
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
     ]
 
-    const detectionItems = [
-        {title: "Detection", label: detection, bgColor: purple[400]},
-        {title: "Main Instance", label: getDomain(defaultInstance.sidecar), bgColor: InstanceColor[defaultInstance.role]}
-    ]
+    const detectionItems = getDetectionItems(mainInstance, detectBy)
+    const instance = detectionItems[1]
 
     return (
         <Box sx={SX.box}>
             <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>}>
-                <Box sx={{color: InstanceColor[defaultInstance.role]}}>
-                    {defaultInstance.sidecar.host.toUpperCase()}
+                <Box sx={{color: instance.bgColor}}>
+                    {instance.label.toUpperCase()}
                 </Box>
             </InfoBox>
             <InfoBoxList items={infoItems} label={"Configured Cluster Options"}/>

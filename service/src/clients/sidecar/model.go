@@ -21,9 +21,17 @@ type Sidecar struct {
 	Status *SidecarStatus `json:"status,omitempty" form:"status"`
 }
 
+type Role string
+
+const (
+	Leader  Role = "leader"
+	Replica      = "replica"
+	Unknown      = "unknown"
+)
+
 type Instance struct {
 	State               string                       `json:"state"`
-	Role                string                       `json:"role"`
+	Role                Role                         `json:"role"`
 	Lag                 int64                        `json:"lag"`
 	PendingRestart      bool                         `json:"pendingRestart"`
 	Database            database.Database            `json:"database"`

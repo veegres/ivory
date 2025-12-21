@@ -14,19 +14,19 @@ import {
     UploadFileOutlined
 } from "@mui/icons-material"
 import {SxProps, Theme} from "@mui/material"
-import {blue, green, indigo, orange, red} from "@mui/material/colors"
+import {blue, green, indigo, orange, purple, red} from "@mui/material/colors"
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material"
 import {AxiosError} from "axios"
 import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {ActiveCluster, ActiveInstance, Cluster} from "../api/cluster/type"
-import {InstanceMap, InstanceRequest, InstanceWeb, Role, Sidecar, SidecarStatus} from "../api/instance/type"
+import {ActiveInstance, Cluster, Instance} from "../api/cluster/type"
+import {InstanceRequest, Role, Sidecar, SidecarStatus} from "../api/instance/type"
 import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
 import {Database, QueryConnection, QueryVariety} from "../api/query/type"
-import {ColorsMap, EnumOptions, Links, Settings, SxPropsMap} from "./type"
+import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
@@ -94,69 +94,21 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const createInstanceColors = (instances: InstanceMap) => {
-    return Object.values(instances).reduce(
-        (map, instance) => {
-            const domain = getDomain(instance.sidecar)
-            map[domain] = !instance.inCluster || !instance.inInstances ? "warning" : (instance.leader ? "success" : "primary")
-            return map
-        },
-        {} as ColorsMap
-    )
-}
-
-export const initialInstance = (sidecar?: Sidecar): InstanceWeb => {
-    const defaultSidecar = sidecar ?? {host: "-", port: 8008}
+export const initialInstance = (sidecar?: Sidecar): Instance => {
     return ({
         state: "-",
         role: "unknown",
         lag: -1,
         pendingRestart: false,
-        sidecar: defaultSidecar,
+        sidecar: sidecar ?? {host: "-", port: 8008},
         database: {host: "-", port: 0},
-        leader: false,
-        inInstances: true,
-        inCluster: false,
+        inCluster: true,
+        inSidecar: false,
     })
 }
 
 export const isSidecarEqual = (sidecar1?: Sidecar, sidecar2?: Sidecar): boolean => {
     return sidecar1?.host === sidecar2?.host && sidecar1?.port === sidecar2?.port
-}
-
-/**
- * Combine instances from patroni and from ivory
- */
-export const combineInstances = (instanceNames: Sidecar[], instanceInCluster: InstanceMap) => {
-    const map: InstanceMap = {}
-    let warning: boolean = false
-
-    for (const key in instanceInCluster) {
-        if (getDomains(instanceNames).includes(key)) {
-            map[key] = {...instanceInCluster[key], inInstances: true}
-        } else {
-            map[key] = {...instanceInCluster[key], inInstances: false}
-        }
-    }
-
-    for (const value of instanceNames) {
-        const domain = getDomain(value)
-        if (!map[domain]) {
-            map[domain] = initialInstance(value)
-        }
-    }
-
-    for (const key in map) {
-        const value = map[key]
-        if (!value.inInstances || !value.inCluster) {
-            warning = true
-        }
-    }
-
-    return {
-        combinedInstanceMap: map,
-        warning,
-    }
 }
 
 export const getDomain = ({host, port}: Sidecar) => {
@@ -167,11 +119,11 @@ export const getDomains = (sidecars: Sidecar[]) => {
     return sidecars.map(value => getDomain(value))
 }
 
-export const getActiveInstance = (activeInstance: ActiveInstance, activeCluster?: ActiveCluster) => {
-    return activeCluster && activeInstance[activeCluster.cluster.name]
+export const getActiveInstance = (activeInstance: ActiveInstance, cluster?: Cluster) => {
+    return cluster && activeInstance[cluster.name]
 }
 
-export const getIsActiveInstance = (key: string, instance?: InstanceWeb) => {
+export const getIsActiveInstance = (key: string, instance?: Instance) => {
     return instance ? getDomain(instance.sidecar) === key : false
 }
 
@@ -194,6 +146,17 @@ export const getSidecar = (domain: string): Sidecar => {
 
 export const getSidecars = (domains: string[]): Sidecar[] => {
     return domains.map(value => getSidecar(value))
+}
+
+export const getDetectionItems = (mainInstance?: Instance, detectBy?: Instance) => {
+    const detection = detectBy ? "manual" : "auto"
+    const instance = detectBy ?? mainInstance
+    const label = instance ? getDomain(instance.sidecar) : "none"
+    const role = instance?.role ?? "unknown"
+    return [
+        {title: "Detection", label: detection, bgColor: purple[400]},
+        {title: "Main Instance", label: label, bgColor: InstanceColor[role]}
+    ]
 }
 
 export const shortUuid = (uuid: string) => uuid.substring(0, 8)

@@ -1,11 +1,20 @@
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, TableRow, Tooltip} from "@mui/material"
-import {useEffect, useRef, useState} from "react"
+import {useEffect, useMemo, useRef, useState} from "react"
 
+import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster} from "../../../../api/cluster/type"
-import {SxPropsMap} from "../../../../app/type"
-import {getDomains, getSidecars, SxPropsFormatter} from "../../../../app/utils"
-import {useInstanceDetection} from "../../../../hook/InstanceDetection"
+import {ColorsMap, SxPropsMap} from "../../../../app/type"
+import {
+    getDetectionItems,
+    getDomain,
+    getDomains,
+    getSidecars,
+    SxPropsFormatter,
+} from "../../../../app/utils"
+import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
+import {AutoRefreshIconButton, RefreshIconButton} from "../../../view/button/IconButtons"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {ListCell} from "./ListCell"
 import {ListCellChip} from "./ListCellChip"
@@ -26,24 +35,33 @@ type Props = {
 
 export function ListRow(props: Props) {
     const {cluster, editable, toggle} = props
-    const {name, instances} = cluster
+
+    const activeCluster = useStore(s => s.activeCluster)
+    const {setWarnings, setCluster} = useStoreAction
+    const active = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const ref = useRef<HTMLTableRowElement | null>(null)
-    const [stateNodes, setStateNodes] = useState(getDomains(instances))
-    const instanceDetection = useInstanceDetection(cluster, instances)
+    const [stateNodes, setStateNodes] = useState(getDomains(cluster.sidecars))
 
-    useEffect(handleEffectScroll, [instanceDetection.active])
-    useEffect(handleEffectInstancesUpdate, [instances])
+    const overview = useRouterClusterOverview(cluster.name)
+    const instances = overview.data?.instances ?? cluster.unknownInstances
+    const mainInstance = overview.data?.mainInstance
+    const warning = useMemo(handleMemoWarning, [instances])
+    const colors = useMemo(handleMemoColors, [instances])
+
+    useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
+    useEffect(handleEffectScroll, [active])
+    useEffect(handleEffectInstancesUpdate, [cluster.sidecars])
 
     return (
-        <TableRow sx={[instanceDetection.active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]} ref={ref}>
+        <TableRow sx={[active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]} ref={ref}>
             <ListCell>
-                <ListCellChip cluster={cluster} instanceDetection={instanceDetection}/>
+                <ListCellChip name={cluster.name} active={active} onClick={handleClick} renderRefresh={renderRefresh()}/>
             </ListCell>
             <ListCell>
                 <DynamicInputs
                     inputs={stateNodes}
-                    colors={instanceDetection.colors}
+                    colors={colors}
                     editable={editable}
                     placeholder={"Instance "}
                     onChange={n => setStateNodes(n)}
@@ -51,14 +69,19 @@ export function ListRow(props: Props) {
             </ListCell>
             <ListCell>
                 <Box sx={SX.actions}>
-                    {instanceDetection.warning && (
+                    {warning && !overview.error && !overview.isFetching && (
                         <Tooltip title={"Problems were detected, select the cluster to see it"} placement={"top"}>
                             <WarningAmberRounded color={"warning"}/>
                         </Tooltip>
                     )}
+                    {overview.error && (
+                        <Tooltip title={overview.error.message} placement={"top"}>
+                            <ErrorOutlineRounded color={"error"}/>
+                        </Tooltip>
+                    )}
                     {!toggle && (
                         <Tooltip title={"This cluster is not in this list. It was selected that is why you see it. Just uncheck it."} placement={"top"}>
-                            <ErrorOutlineRounded color={"error"}/>
+                            <ErrorOutlineRounded color={"secondary"}/>
                         </Tooltip>
                     )}
                     {renderButtons()}
@@ -70,22 +93,84 @@ export function ListRow(props: Props) {
     function renderButtons() {
         if (!toggle) return
         return !editable ? (
-            <ListCellRead name={name} toggle={toggle}/>
+            <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, instances: getSidecars(stateNodes)}}
+                cluster={{...cluster, sidecars: getSidecars(stateNodes)}}
                 toggle={toggle}
-                onUpdate={instanceDetection.refetch}
-                onClose={() => setStateNodes(getDomains(instances))}
+                onUpdate={overview.refetch}
+                onClose={() => setStateNodes(getDomains(cluster.sidecars))}
             />
         )
     }
 
+    function renderRefresh() {
+        return !active || !activeCluster?.detectBy ? (
+            <AutoRefreshIconButton
+                tooltip={renderChipTooltip()}
+                placement={"right-start"}
+                arrow={true}
+                loading={overview.isFetching}
+                onClick={() => overview.refetch()}
+            />
+        ) : (
+            <RefreshIconButton
+                tooltip={renderChipTooltip()}
+                placement={"right-start"}
+                arrow={true}
+                loading={overview.isFetching}
+                onClick={() => overview.refetch()}
+            />
+        )
+    }
+
+    function renderChipTooltip() {
+        const detectBy = activeCluster?.detectBy
+        const items = getDetectionItems(mainInstance, detectBy)
+        return <InfoColorBoxList items={items} label={"Cluster Detection"}/>
+    }
+
+    function handleMemoColors() {
+        return Object.values(instances).reduce(
+            (map, instance) => {
+                const domain = getDomain(instance.sidecar)
+                map[domain] = !instance.inSidecar || !instance.inCluster ? "warning" : (instance.role === "leader" ? "success" : "primary")
+                return map
+            },
+            {} as ColorsMap
+        )
+    }
+
+    function handleMemoWarning() {
+        for (const key in instances) {
+            const value = instances[key]
+            if (!value.inCluster || !value.inSidecar) {
+                return true
+            }
+        }
+        return false
+    }
+
+    function handleEffectWarningsUpdate() {
+        setWarnings(cluster.name, warning)
+        return () => {
+            if (warning) setWarnings(cluster.name, false)
+        }
+    }
+
     function handleEffectScroll() {
-        if (instanceDetection.active) ref.current?.scrollIntoView({block: "nearest"})
+        if (active) ref.current?.scrollIntoView({block: "nearest"})
     }
 
     function handleEffectInstancesUpdate() {
-        setStateNodes(getDomains(instances))
+        setStateNodes(getDomains(cluster.sidecars))
+    }
+
+    function handleClick() {
+        if (active) {
+            setCluster(undefined)
+        } else {
+            setCluster({cluster, warning})
+        }
     }
 }

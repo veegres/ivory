@@ -1,12 +1,10 @@
 import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material"
-import {useIsFetching, useQueryClient} from "@tanstack/react-query"
 
-import {ActiveCluster} from "../../../../api/cluster/type"
-import {InstanceApi} from "../../../../api/instance/router"
-import {InstanceWeb} from "../../../../api/instance/type"
+import {useRouterClusterOverview} from "../../../../api/cluster/hook"
+import {Cluster, Instance} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getDomain, getIsActiveInstance} from "../../../../app/utils"
-import {ErrorSmart} from "../../../view/box/ErrorSmart"
+import {getActiveInstance, getDomain, getIsActiveInstance} from "../../../../app/utils"
+import {useStore} from "../../../../provider/StoreProvider"
 import {RefreshIconButton} from "../../../view/button/IconButtons"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
 import {OverviewInstancesFixAuto} from "./OverviewInstancesFixAuto"
@@ -20,20 +18,19 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    info: ActiveCluster,
-    activeInstance?: InstanceWeb,
+    cluster: Cluster,
+    instances?: { [domain: string]: Instance },
 }
 
 export function OverviewInstances(props: Props) {
-    const {activeInstance, info} = props
-    const {cluster, combinedInstanceMap} = info
-    const key = {queryKey: InstanceApi.overview.key(cluster.name)}
-    const queryClient = useQueryClient()
-    const instanceMapFetching = useIsFetching(key)
-    const candidates = Object.values(combinedInstanceMap)
+    const {cluster} = props
+    const instances = props.instances ?? cluster.unknownInstances
+    const activeInstances = useStore(s => s.activeInstance)
+    const activeInstance = getActiveInstance(activeInstances, cluster)
+    const overview = useRouterClusterOverview(cluster.name)
+    const candidates = Object.values(instances)
         .filter(sidecar => sidecar.role === "replica")
         .map(instance => instance.sidecar)
-    const error = queryClient.getQueryState(key.queryKey)?.error
 
     return (
         <Box sx={SX.box}>
@@ -49,25 +46,27 @@ export function OverviewInstances(props: Props) {
                         <TableCell/>
                         <TableCellLoader sx={SX.buttonCell} isFetching={false}>
                             <OverviewInstancesFixAuto name={cluster.name}/>
-                            <RefreshIconButton onClick={() => queryClient.refetchQueries(key)} loading={instanceMapFetching > 0}/>
+                            <RefreshIconButton
+                                onClick={() => overview.refetch()}
+                                loading={overview.isFetching}
+                            />
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {renderCheckedInstance()}
-                    {Object.entries(combinedInstanceMap).map(([key, element]) => (
+                    {Object.entries(instances).map(([key, element]) => (
                         <OverviewInstancesRow key={key} checked={getIsActiveInstance(key, activeInstance)} instance={element} cluster={cluster} candidates={candidates}/>
                     ))}
                 </TableBody>
             </Table>
-            {error && <ErrorSmart error={error}/>}
         </Box>
     )
 
     function renderCheckedInstance() {
         if (!activeInstance) return
         const domain = getDomain(activeInstance.sidecar)
-        if (combinedInstanceMap[domain]) return
+        if (instances[domain]) return
         const checked = getIsActiveInstance(domain, activeInstance)
         return (
             <OverviewInstancesRow checked={checked} instance={activeInstance} cluster={cluster} candidates={candidates} error={true}/>

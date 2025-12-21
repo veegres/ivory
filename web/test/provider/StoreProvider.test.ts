@@ -4,7 +4,7 @@ import type {ActiveCluster} from "../../src/api/cluster/type"
 import {InstanceTabType} from "../../src/api/instance/type"
 import {QueryType} from "../../src/api/query/type"
 import {useStore, useStoreAction} from "../../src/provider/StoreProvider"
-import {createMockCluster, createMockInstanceWeb} from "../test-helpers"
+import {createMockCluster, createMockInstance} from "../test-helpers"
 
 // Mock MainQueryClient from AppProvider
 vi.mock("../../src/provider/AppProvider", async (importOriginal) => {
@@ -45,10 +45,7 @@ describe("StoreProvider", () => {
         it("should set active cluster", () => {
             const cluster: ActiveCluster = {
                 cluster: createMockCluster({name: "test-cluster"}),
-                defaultInstance: createMockInstanceWeb(),
-                combinedInstanceMap: {},
                 warning: false,
-                detection: "auto",
             }
 
             useStoreAction.setCluster(cluster)
@@ -60,10 +57,7 @@ describe("StoreProvider", () => {
         it("should clear active cluster when undefined", () => {
             const cluster: ActiveCluster = {
                 cluster: createMockCluster({name: "test-cluster"}),
-                defaultInstance: createMockInstanceWeb(),
-                combinedInstanceMap: {},
                 warning: false,
-                detection: "auto",
             }
 
             useStoreAction.setCluster(cluster)
@@ -74,61 +68,30 @@ describe("StoreProvider", () => {
         })
     })
 
-    describe("setClusterInstance", () => {
-        it("should update default instance in active cluster", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                defaultInstance: createMockInstanceWeb({role: "leader"}),
-                combinedInstanceMap: {},
-                warning: false,
-                detection: "auto",
-            }
-
-            useStoreAction.setCluster(cluster)
-
-            const newInstance = createMockInstanceWeb({
-                role: "replica",
-                sidecar: {host: "localhost", port: 8009},
-            })
-
-            useStoreAction.setClusterInstance(newInstance)
-
-            const state = useStore.getState()
-            expect(state.activeCluster?.defaultInstance).toEqual(newInstance)
-            expect(state.activeCluster?.detection).toBe("manual")
-        })
-
-        it("should not update if no active cluster", () => {
-            const instance = createMockInstanceWeb()
-
-            const stateBefore = useStore.getState()
-            useStoreAction.setClusterInstance(instance)
-            const stateAfter = useStore.getState()
-
-            expect(stateAfter).toEqual(stateBefore)
-        })
-    })
 
     describe("setClusterDetection", () => {
-        it("should update detection type", () => {
+        it("should update detection instance", () => {
             const cluster: ActiveCluster = {
                 cluster: createMockCluster({name: "test-cluster"}),
-                defaultInstance: createMockInstanceWeb(),
-                combinedInstanceMap: {},
                 warning: false,
-                detection: "auto",
             }
 
             useStoreAction.setCluster(cluster)
-            useStoreAction.setClusterDetection("manual")
+
+            const detectInstance = createMockInstance({
+                sidecar: {host: "localhost", port: 8009},
+            })
+            useStoreAction.setClusterDetection(detectInstance)
 
             const state = useStore.getState()
-            expect(state.activeCluster?.detection).toBe("manual")
+            expect(state.activeCluster?.detectBy).toEqual(detectInstance)
         })
 
         it("should not update if no active cluster", () => {
+            const instance = createMockInstance()
+
             const stateBefore = useStore.getState()
-            useStoreAction.setClusterDetection("manual")
+            useStoreAction.setClusterDetection(instance)
             const stateAfter = useStore.getState()
 
             expect(stateAfter).toEqual(stateBefore)
@@ -174,15 +137,12 @@ describe("StoreProvider", () => {
         it("should set active instance for cluster", () => {
             const cluster: ActiveCluster = {
                 cluster: createMockCluster({name: "test-cluster"}),
-                defaultInstance: createMockInstanceWeb(),
-                combinedInstanceMap: {},
                 warning: false,
-                detection: "auto",
             }
 
             useStoreAction.setCluster(cluster)
 
-            const instance = createMockInstanceWeb({
+            const instance = createMockInstance({
                 sidecar: {host: "localhost", port: 8009},
             })
 
@@ -195,15 +155,12 @@ describe("StoreProvider", () => {
         it("should remove active instance when undefined", () => {
             const cluster: ActiveCluster = {
                 cluster: createMockCluster({name: "test-cluster"}),
-                defaultInstance: createMockInstanceWeb(),
-                combinedInstanceMap: {},
                 warning: false,
-                detection: "auto",
             }
 
             useStoreAction.setCluster(cluster)
 
-            const instance = createMockInstanceWeb({
+            const instance = createMockInstance({
                 sidecar: {host: "localhost", port: 8009},
             })
 
@@ -215,7 +172,7 @@ describe("StoreProvider", () => {
         })
 
         it("should not update if no active cluster", () => {
-            const instance = createMockInstanceWeb()
+            const instance = createMockInstance()
 
             const stateBefore = useStore.getState()
             useStoreAction.setInstance(instance)

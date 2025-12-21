@@ -3,7 +3,7 @@ import {Box, Skeleton} from "@mui/material"
 import ReactCodeMirror from "@uiw/react-codemirror"
 import {useEffect, useState} from "react"
 
-import {ActiveCluster} from "../../../../api/cluster/type"
+import {Cluster, Instance} from "../../../../api/cluster/type"
 import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook"
 import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
@@ -13,7 +13,6 @@ import {useSnackbar} from "../../../../provider/SnackbarProvider"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons"
 import {Access} from "../../../widgets/access/Access"
-import {ClusterNoInstanceError} from "./OverviewError"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
@@ -22,27 +21,25 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    info: ActiveCluster
+    cluster: Cluster,
+    instance: Instance,
 }
 
 export function OverviewConfig(props: Props) {
-    const {info} = props
+    const {instance, cluster} = props
     const settings = useSettings()
     const snackbar = useSnackbar()
-    const {defaultInstance, cluster} = info
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const {sidecar} = defaultInstance
-    const connection = getSidecarConnection(cluster, sidecar)
+    const connection = getSidecarConnection(cluster, instance.sidecar)
 
-    const config = useRouterInstanceConfig(connection, defaultInstance.inCluster)
-    const updateConfig = useRouterInstanceConfigUpdate(sidecar, () => setIsEditable(false))
+    const config = useRouterInstanceConfig(connection, !!instance.sidecar)
+    const updateConfig = useRouterInstanceConfigUpdate(instance.sidecar, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 
     useEffect(() => setConfigState(stringify(data)), [data])
 
-    if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
     if (isError) return <ErrorSmart error={error}/>
     if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
 

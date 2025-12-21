@@ -18,8 +18,8 @@ type ClusterOptions struct {
 
 type Cluster struct {
 	ClusterOptions
-	Name      string            `json:"name"`
-	Instances []sidecar.Sidecar `json:"instances"`
+	Name     string            `json:"name"`
+	Sidecars []sidecar.Sidecar `json:"sidecars"`
 }
 
 type ClusterAuto struct {
@@ -36,6 +36,18 @@ type ClusterTls struct {
 type Credentials struct {
 	PatroniId  *uuid.UUID `json:"patroniId"`
 	PostgresId *uuid.UUID `json:"postgresId"`
+}
+
+type ClusterOverview struct {
+	Instances    map[string]Instance `json:"instances"`
+	DetectedBy   *sidecar.Sidecar    `json:"detectedBy"`
+	MainInstance *Instance           `json:"mainInstance"`
+}
+
+type Instance struct {
+	sidecar.Instance
+	InCluster bool `json:"inCluster"`
+	InSidecar bool `json:"inSidecar"`
 }
 
 // SPECIFIC (SERVER)

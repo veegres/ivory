@@ -4,7 +4,7 @@ import {useState} from "react"
 
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
-import {ActiveCluster} from "../../../../api/cluster/type"
+import {Cluster, Instance} from "../../../../api/cluster/type"
 import {Permission} from "../../../../api/permission/type"
 import {useRouterQueryList} from "../../../../api/query/hook"
 import {QueryType} from "../../../../api/query/type"
@@ -28,25 +28,26 @@ const SX: SxPropsMap = {
 enum ListBlock {JOB, QUERY}
 
 type Props = {
-    info: ActiveCluster
+    cluster: Cluster,
+    instance: Instance,
 }
 
 export function OverviewBloat(props: Props) {
-    const {cluster, defaultInstance} = props.info
+    const {cluster, instance} = props
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()
 
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db = {...defaultInstance.database, database: target?.dbName}
+    const db = {...instance.database, database: target?.dbName}
 
     return (
         <Box>
             <AccessBox sx={SX.option} permission={Permission.ManageBloatJob}>
                 <Box sx={SX.form}>
                     <OverviewBloatJobForm
-                        defaultInstance={defaultInstance}
+                        instance={instance}
                         cluster={cluster}
                         onClick={() => setTab(ListBlock.JOB)}
                         target={target}

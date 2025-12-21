@@ -10,6 +10,7 @@ export enum Permission {
     // Cluster permissions
     ViewClusterList = "view.cluster.list",
     ViewClusterItem = "view.cluster.item",
+    ViewClusterOverview = "view.cluster.overview",
     ManageClusterCreate = "manage.cluster.create",
     ManageClusterUpdate = "manage.cluster.update",
     ManageClusterDelete = "manage.cluster.delete",

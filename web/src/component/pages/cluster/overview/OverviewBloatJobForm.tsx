@@ -3,13 +3,12 @@ import {useState} from "react"
 
 import {useRouterBloatStart} from "../../../../api/bloat/hook"
 import {BloatOptions, BloatTarget} from "../../../../api/bloat/type"
-import {Cluster} from "../../../../api/cluster/type"
-import {InstanceWeb} from "../../../../api/instance/type"
+import {Cluster, Instance} from "../../../../api/cluster/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection} from "../../../../app/utils"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
-import {ClusterNoInstanceError, ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError"
+import {ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError"
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
@@ -17,7 +16,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    defaultInstance: InstanceWeb,
+    instance: Instance,
     cluster: Cluster,
     onClick: () => void,
     target?: BloatTarget,
@@ -25,16 +24,15 @@ type Props = {
 }
 
 export function OverviewBloatJobForm(props: Props) {
-    const {defaultInstance, cluster, target, onClick, setTarget} = props
+    const {instance, cluster, target, onClick, setTarget} = props
     const [options, setOptions] = useState<BloatOptions>({force: false, noReindex: false, routineVacuum: false, initialReindex: false, noInitialVacuum: false})
 
     const start = useRouterBloatStart(cluster.name)
 
-    if (!defaultInstance.inCluster) return <ClusterNoInstanceError/>
-    if (!defaultInstance.leader) return <ClusterNoLeaderError/>
+    if (instance.role !== "leader") return <ClusterNoLeaderError/>
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
-    const db = {...defaultInstance.database, name: target?.dbName}
+    const db = {...instance.database, name: target?.dbName}
     const connection = getQueryConnection(cluster, db)
     return (
         <Box sx={SX.form}>
@@ -113,8 +111,8 @@ export function OverviewBloatJobForm(props: Props) {
 
     function handleRun() {
         const credentialId = cluster.credentials.postgresId
-        if (defaultInstance && credentialId) {
-            const {database: {host, port}} = defaultInstance
+        if (instance && credentialId) {
+            const {database: {host, port}} = instance
             onClick()
             start.mutate({
                 connection: {host, port, credentialId},

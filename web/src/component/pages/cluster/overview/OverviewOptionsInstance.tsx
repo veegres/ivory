@@ -9,9 +9,9 @@ import {
 } from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {DetectionType} from "../../../../api/cluster/type"
-import {InstanceMap} from "../../../../api/instance/type"
+import {Instance} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
+import {getDomain} from "../../../../app/utils"
 import {useStoreAction} from "../../../../provider/StoreProvider"
 
 const SX: SxPropsMap = {
@@ -21,15 +21,17 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: string
-    instances: InstanceMap
-    detection: DetectionType
+    instances: { [p: string]: Instance },
+    mainInstance?: Instance,
+    detectBy?: Instance,
 }
 
 export function OverviewOptionsInstance(props: Props) {
-    const {setClusterInstance, setClusterDetection} = useStoreAction
-    const {instance, instances, detection} = props
-    const [inputValue, setInputValue] = useState<string | undefined>(instance)
+    const {setClusterDetection} = useStoreAction
+    const {detectBy, instances, mainInstance} = props
+
+    const value = getDomain(detectBy?.sidecar ?? mainInstance?.sidecar ?? {host: "-", port: 0})
+    const [inputValue, setInputValue] = useState<string | undefined>(value)
 
     const options = useMemo(() => Object.keys(instances), [instances])
 
@@ -39,7 +41,7 @@ export function OverviewOptionsInstance(props: Props) {
                 sx={SX.autocomplete}
                 size={"small"}
                 options={options}
-                value={instance}
+                value={value}
                 disableClearable
                 onChange={(_, value, reason) => handleOnChange(value, reason)}
                 inputValue={inputValue}
@@ -52,8 +54,8 @@ export function OverviewOptionsInstance(props: Props) {
                     <ToggleButton
                         sx={SX.toggle}
                         value={"auto"}
-                        selected={detection === "auto"}
-                        onClick={() => setClusterDetection("auto")}>
+                        selected={!detectBy}
+                        onClick={() => setClusterDetection(undefined)}>
                         A
                     </ToggleButton>
                 </Tooltip>
@@ -61,8 +63,8 @@ export function OverviewOptionsInstance(props: Props) {
                     <ToggleButton
                         sx={SX.toggle}
                         value={"manual"}
-                        selected={detection === "manual"}
-                        onClick={() => setClusterDetection("manual")}>
+                        selected={!!detectBy}
+                        onClick={() => setClusterDetection(mainInstance)}>
                         M
                     </ToggleButton>
                 </Tooltip>
@@ -71,6 +73,6 @@ export function OverviewOptionsInstance(props: Props) {
     )
 
     function handleOnChange(value: string, reason: AutocompleteChangeReason) {
-        if (value && reason === "selectOption") setClusterInstance(instances[value])
+        if (value && reason === "selectOption") setClusterDetection(instances[value])
     }
 }
