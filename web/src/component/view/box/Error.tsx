@@ -1,5 +1,5 @@
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material"
-import React, {ReactNode, useState} from "react"
+import React, {useState} from "react"
 
 import {SxPropsMap} from "../../../app/type"
 import {ClearCacheButton} from "../../widgets/actions/ClearCacheButton"
@@ -8,7 +8,7 @@ import {OpenIcon} from "../icon/OpenIcon"
 const SX: SxPropsMap = {
     collapse: {display: "flex", flexDirection: "column", gap: 2, marginTop: "20px"},
     label: {fontWeight: "bold"},
-    message: {display: "flex", gap: 2, justifyContent: "space-between", alignItems: "center"},
+    message: {display: "flex", gap: 2, justifyContent: "space-between", alignItems: "center", whiteSpace: "pre-line"},
     alert: {"& .MuiAlert-message": {flexGrow: 1}, width: "inherit"},
     input: {whiteSpace: "pre-wrap", wordWrap: "break-word"},
 }
@@ -17,7 +17,7 @@ type Props = {
     message: string,
     type: AlertColor,
     title?: string,
-    stacktrace?: ReactNode,
+    stacktrace?: string,
     params?: string,
     data?: string,
     url?: string,
@@ -34,9 +34,9 @@ export function Error(props: Props) {
             <AlertTitle>{title ?? type.toString().toUpperCase()}</AlertTitle>
             <Box sx={SX.message}>
                 <Box>
-                    <Box component={"span"}>{message}. </Box>
+                    <Box>{message}</Box>
                     {clear && (
-                        <Box component={"span"}>
+                        <Box>
                             It can be caused because of local cache corruption.
                             You can try to clean it, sometimes it can fix the problem.
                         </Box>
@@ -47,21 +47,21 @@ export function Error(props: Props) {
             <Collapse in={isStacktrace && isOpen}>
                 <Box sx={SX.collapse} onClick={handleDisable}>
                     {renderInfoBox("URL", url)}
-                    {renderInfoBox("Request Params", params)}
-                    {renderInfoBox("Request Body", data)}
+                    {renderInfoBox("Request Params", params, true)}
+                    {renderInfoBox("Request Body", data, true)}
                     {renderInfoBox("Stacktrace", stacktrace)}
                 </Box>
             </Collapse>
         </Alert>
     )
 
-    function renderInfoBox(name: string, value: ReactNode) {
+    function renderInfoBox(name: string, value?: string, json: boolean = false) {
+        const label = json ? JSON.stringify(value, null, 4) : value
+        const labelNotEmpty = label == "{}" || label == "[]" ? undefined : label
         return (
             <Box>
                 <Box sx={SX.label}>{name}</Box>
-                <InputLabel sx={SX.input}>
-                    {JSON.stringify(value, null, 4) ?? "-"}
-                </InputLabel>
+                <InputLabel sx={SX.input}>{labelNotEmpty ?? "-"}</InputLabel>
             </Box>
         )
     }
