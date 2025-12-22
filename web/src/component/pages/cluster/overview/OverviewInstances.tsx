@@ -27,7 +27,7 @@ export function OverviewInstances(props: Props) {
     const instances = props.instances ?? cluster.unknownInstances
     const activeInstances = useStore(s => s.activeInstance)
     const activeInstance = getActiveInstance(activeInstances, cluster)
-    const overview = useRouterClusterOverview(cluster.name)
+    const overview = useRouterClusterOverview(cluster.name, false)
     const candidates = Object.values(instances)
         .filter(sidecar => sidecar.role === "replica")
         .map(instance => instance.sidecar)

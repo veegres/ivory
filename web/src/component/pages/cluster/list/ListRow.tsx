@@ -52,6 +52,7 @@ export function ListRow(props: Props) {
     useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
     useEffect(handleEffectScroll, [active])
     useEffect(handleEffectInstancesUpdate, [cluster.sidecars])
+    useEffect(handleEffectActiveClusterUpdate, [active, cluster, setCluster, warning])
 
     return (
         <TableRow sx={[active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]} ref={ref}>
@@ -156,6 +157,14 @@ export function ListRow(props: Props) {
         return () => {
             if (warning) setWarnings(cluster.name, false)
         }
+    }
+
+
+    // NOTE: we could potentially take the data from tanstack.query, but then we couldn't
+    //  see the selected cluster which is not on the list
+    function handleEffectActiveClusterUpdate() {
+        if (!active) return
+        setCluster({cluster, warning})
     }
 
     function handleEffectScroll() {
