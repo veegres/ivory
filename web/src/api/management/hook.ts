@@ -1,6 +1,8 @@
 import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../hook/QueryCustom"
+import {ClusterApi} from "../cluster/router"
+import {QueryApi} from "../query/router"
 import {ManagementApi} from "./router"
 
 export function useRouterInfo(enabled: boolean = true) {
@@ -39,9 +41,22 @@ export function useRouterEraseSafe(onSuccess: () => void) {
 
 export function useRouterFree() {
     return useMutationAdapter({
-        mutationFn: () => ManagementApi.free.fn(),
+        mutationFn: ManagementApi.free.fn,
         mutationKey: ManagementApi.free.key(),
-        successKeys: [ManagementApi.info.key()],
     })
 }
 
+export function useRouterExport() {
+    return useMutationAdapter({
+        mutationFn: ManagementApi.export.fn,
+        mutationKey: ManagementApi.export.key(),
+    })
+}
+
+export function useRouterImport() {
+    return useMutationAdapter({
+        mutationFn: ManagementApi.import.fn,
+        mutationKey: ManagementApi.import.key(),
+        successKeys: [ClusterApi.list.key(), QueryApi.list.key()],
+    })
+}

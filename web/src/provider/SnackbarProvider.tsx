@@ -32,7 +32,7 @@ export function SnackbarProvide(props: { children: ReactNode }) {
                 onClose={handleClose}
                 slotProps={{transition: {onExited: handleExited}}}
             >
-                <Alert sx={{width: "100%"}} severity={messageInfo?.severity} variant={"filled"} onClose={handleClose}>
+                <Alert sx={{width: "100%", whiteSpace: "pre-wrap"}} severity={messageInfo?.severity} variant={"filled"} onClose={handleClose}>
                     {messageInfo ? messageInfo.message : undefined}
                 </Alert>
             </Snackbar>

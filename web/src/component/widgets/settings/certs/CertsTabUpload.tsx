@@ -33,7 +33,7 @@ export function CertsTabUpload(props: Props) {
     function getUploadInfo() {
         const error = upload.isError ? getErrorMessage(upload.error) : undefined
         const loading = {
-            isLoading: upload.isPending,
+            loading: upload.isPending,
             loaded: progress?.loaded,
             total: progress?.total,
         }

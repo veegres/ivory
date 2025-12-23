@@ -1,3 +1,5 @@
+import {AxiosProgressEvent} from "axios"
+
 import {AuthType} from "../auth/type"
 import {PermissionMap} from "../permission/type"
 import {SecretStatus} from "../secret/type"
@@ -8,7 +10,6 @@ export interface R<TData, TError = object> {
     response: TData,
     error: TError,
 }
-
 
 export interface AppInfo {
     auth: AuthInfo,
@@ -46,5 +47,10 @@ export interface Version {
     tag: string,
     commit: string,
     label: string,
+}
+
+export interface ImportUploadRequest {
+    file: File,
+    setProgress?: (progressEvent: AxiosProgressEvent) => void
 }
 

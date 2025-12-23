@@ -7,6 +7,7 @@ import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons"
 import {About} from "../about/About"
+import {Backup} from "../backup/Backup"
 import {Certs} from "../certs/Certs"
 import {Credentials} from "../credentials/Credentials"
 import {Permissions} from "../permissions/Permissions"
@@ -58,6 +59,8 @@ export function Menu() {
                 return <Secret/>
             case Settings.PERMISSION:
                 return <Permissions/>
+            case Settings.BACKUP:
+                return <Backup/>
             case Settings.ABOUT:
                 return <About/>
             default:
