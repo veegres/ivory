@@ -1,6 +1,7 @@
 package management
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +32,32 @@ func (r *Router) Free(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"response": "data was cleaned"})
+	context.JSON(http.StatusOK, gin.H{"response": "data is cleaned"})
+}
+
+func (r *Router) Import(context *gin.Context) {
+	file, errFile := context.FormFile("file")
+	if errFile != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errFile.Error()})
+		return
+	}
+	errImport := r.service.Import(file)
+	if errImport != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errImport.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": "data is imported"})
+}
+
+func (r *Router) Export(context *gin.Context) {
+	context.Header("Content-Disposition", "attachment; filename=ivory.bak")
+	context.Header("Content-Type", "application/json")
+	data, err := r.service.Export()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	_ = json.NewEncoder(context.Writer).Encode(data)
 }
 
 func (r *Router) ChangeSecret(context *gin.Context) {

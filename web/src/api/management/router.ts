@@ -1,5 +1,7 @@
+import {AxiosProgressEvent, AxiosRequestConfig} from "axios"
+
 import {api} from "../api"
-import {AppInfo, R, SecretUpdateRequest} from "./type"
+import {AppInfo, ImportUploadRequest, R, SecretUpdateRequest} from "./type"
 
 export const ManagementApi = {
     info: {
@@ -21,5 +23,33 @@ export const ManagementApi = {
         key: () => ["free"],
         fn: () => api.delete<R<string>>("/management/free")
             .then((response) => response.data.response),
+    },
+    export: {
+        key: () => ["export"],
+        fn: () => api.post("/management/export", {}, {responseType: "blob"})
+            .then((response) => {
+                const url = window.URL.createObjectURL(new Blob([response.data]))
+                const link = document.createElement("a")
+                link.href = url
+                link.setAttribute("download", "ivory.bak")
+                document.body.appendChild(link)
+                link.click()
+                link.remove()
+                window.URL.revokeObjectURL(url)
+            }),
+    },
+    import: {
+        key: () => ["import"],
+        fn: async (request: ImportUploadRequest) => {
+            const {file, setProgress} = request
+            const formData = new FormData()
+            formData.append("file", file)
+            const config: AxiosRequestConfig = {
+                headers: {"Content-Type": "multipart/form-data"},
+                onUploadProgress: (progressEvent: AxiosProgressEvent) => setProgress && setProgress(progressEvent)
+            }
+            const response = await api.post<R<string>>("/management/import", formData, config)
+            return response.data.response
+        },
     }
 }

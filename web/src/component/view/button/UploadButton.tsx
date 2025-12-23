@@ -1,5 +1,5 @@
 import {FileUploadOutlined} from "@mui/icons-material"
-import {Box, ButtonBase, CircularProgress} from "@mui/material"
+import {Box, Button, CircularProgress} from "@mui/material"
 import {ChangeEvent, DragEvent, useState} from "react"
 
 import {SxPropsMap} from "../../../app/type"
@@ -7,20 +7,12 @@ import {SxPropsMap} from "../../../app/type"
 const SX: SxPropsMap = {
     box: {padding: "5px", height: "100%"},
     upload: {
-        minHeight: "120px",
-        minWidth: "350px",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        justifyContent: "space-evenly",
-        padding: "10px 20px",
-        border: "2px dashed",
-        borderRadius: "15px",
-        gap: 1
+        minHeight: "120px", minWidth: "350px", width: "100%", height: "100%", display: "flex",
+        alignItems: "center", flexDirection: "column", justifyContent: "space-evenly",
+        padding: "10px 20px", border: "2px dashed", borderRadius: "15px", gap: 1,
     },
-    error: {color: "error.main"},
+    error: {color: "error.main", whiteSpace: "pre-wrap"},
+    label: {textTransform: "uppercase", fontSize: "12px"},
     active: (theme) => ({
         pointerEvents: "none",
         boxShadow: `inset 0px 0px 50px 50px ${color[theme.palette.mode]}`,
@@ -35,9 +27,9 @@ const color = {
 
 type Props = {
     accept: string,
-    maxSize: string,
+    maxSize?: string,
     loading: {
-        isLoading: boolean,
+        loading: boolean,
         loaded?: number,
         total?: number,
     },
@@ -46,7 +38,7 @@ type Props = {
 }
 
 export function UploadButton(props: Props) {
-    const {accept, maxSize, loading: {isLoading, loaded, total}, error} = props
+    const {accept, maxSize, loading: {loading, loaded, total}, error} = props
     const [active, setActive] = useState(false)
 
     return (
@@ -62,20 +54,20 @@ export function UploadButton(props: Props) {
     )
 
     function renderBody() {
-        if (isLoading) return renderLoading()
+        if (loading) return renderLoading()
         if (active) return renderDrop()
         return renderButton()
     }
 
     function renderButton() {
         return (
-            <ButtonBase sx={[SX.upload, SX.button]} component={"label"}>
+            <Button sx={[SX.upload, SX.button]} color={"inherit"} component={"label"}>
                 <input hidden accept={accept} multiple type={"file"} onChange={handleChange}/>
                 <FileUploadOutlined fontSize={"large"}/>
-                <Box>Drag a file here or click to upload a file</Box>
-                {maxSize && !error && <Box fontSize={"small"}>Maximum file size is {maxSize}</Box>}
-                {error && <Box sx={SX.error} fontSize={"small"}>Error: {error}</Box>}
-            </ButtonBase>
+                <Box sx={SX.label}>Drag and drop a file or click to browse</Box>
+                {maxSize && !error && <Box textTransform={"none"} fontSize={"small"}>Maximum file size is {maxSize}</Box>}
+                {error && <Box sx={SX.error} textTransform={"none"} fontSize={"small"}>{error}</Box>}
+            </Button>
         )
     }
 
@@ -83,7 +75,7 @@ export function UploadButton(props: Props) {
         return (
             <Box sx={[SX.upload, SX.active]}>
                 <FileUploadOutlined fontSize={"large"}/>
-                <Box>Drop a file here</Box>
+                <Box sx={SX.label}>Drop the file here</Box>
             </Box>
         )
     }

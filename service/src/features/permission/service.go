@@ -37,7 +37,7 @@ func (s *Service) SetSuperusers(superusers []string) error {
 		return ErrSuperusersCannotHaveEmptyName
 	}
 	s.superusers = superusers
-	return s.normalize()
+	return s.normalizeDatabase()
 }
 
 func (s *Service) DeleteAdmins() {
@@ -128,6 +128,13 @@ func (s *Service) DeleteAll() error {
 	return s.permissionRepository.DeleteAll()
 }
 
+func (s *Service) UpdateUserPermissions(username string, permissions PermissionMap) error {
+	if username == "" {
+		return ErrUsernameCannotBeEmpty
+	}
+	return s.permissionRepository.CreateOrUpdate(username, permissions)
+}
+
 func (s *Service) getFullUsername(prefix string, username string) (string, error) {
 	if username == "" {
 		return "", ErrUsernameCannotBeEmpty
@@ -200,7 +207,7 @@ func (s *Service) updateUserPermission(permUsername string, permission Permissio
 	return s.permissionRepository.CreateOrUpdate(permUsername, existingPermissions)
 }
 
-func (s *Service) normalize() error {
+func (s *Service) normalizeDatabase() error {
 	permissionsMap, errMap := s.permissionRepository.GetAll()
 	if errMap != nil {
 		return errMap
@@ -215,7 +222,6 @@ func (s *Service) normalize() error {
 				normalisedPermissions[permission] = perm
 			}
 		}
-
 		errUpdate := s.permissionRepository.CreateOrUpdate(permUsername, normalisedPermissions)
 		if errUpdate != nil {
 			return errUpdate

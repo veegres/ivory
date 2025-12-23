@@ -45,3 +45,64 @@ type SecretUpdateRequest struct {
 }
 
 // SPECIFIC (SERVER)
+
+// Backup this struct shouldn't change its API over time it is important for backward compatability
+// which Ivory and users rely on. It shouldn't import any model, you should always create its own
+// struct even if it requires duplicating code
+type Backup struct {
+	Clusters    []backupCluster     `json:"clusters"`
+	Queries     []backupQuery       `json:"queries"`
+	Permissions []backupPermissions `json:"permissions"`
+}
+
+type backupCluster struct {
+	Name     string          `json:"name"`
+	Tags     []string        `json:"tags"`
+	Sidecars []backupSidecar `json:"sidecars"`
+}
+
+type backupSidecar struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
+}
+
+type backupQuery struct {
+	Name        string               `json:"name"`
+	Type        backupQueryType      `json:"type"`
+	Varieties   []backupQueryVariety `json:"varieties"`
+	Params      []string             `json:"params"`
+	Description *string              `json:"description"`
+	Default     string               `json:"default"`
+	Custom      string               `json:"custom"`
+}
+
+type backupQueryType int8
+
+const (
+	BLOAT backupQueryType = iota
+	ACTIVITY
+	REPLICATION
+	STATISTIC
+	OTHER
+)
+
+type backupQueryVariety int8
+
+const (
+	DatabaseSensitive backupQueryVariety = iota
+	MasterOnly
+	ReplicaRecommended
+)
+
+type backupPermissions struct {
+	Username    string                          `json:"username"`
+	Permissions map[string]backupPermissionType `json:"permissions"`
+}
+
+type backupPermissionType int
+
+const (
+	NOT_PERMITTED backupPermissionType = iota
+	PENDING
+	GRANTED
+)
