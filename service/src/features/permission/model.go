@@ -92,8 +92,7 @@ const (
 	ManageManagementSecret Permission = "manage.management.secret"
 	ManageManagementErase  Permission = "manage.management.erase"
 	ManageManagementFree   Permission = "manage.management.free"
-	ManageManagementExport Permission = "manage.management.export"
-	ManageManagementImport Permission = "manage.management.import"
+	ManageManagementBackup Permission = "manage.management.backup"
 )
 
 var Permissions = []Permission{
@@ -143,6 +142,5 @@ var Permissions = []Permission{
 	ManageManagementSecret,
 	ManageManagementErase,
 	ManageManagementFree,
-	ManageManagementExport,
-	ManageManagementImport,
+	ManageManagementBackup,
 }

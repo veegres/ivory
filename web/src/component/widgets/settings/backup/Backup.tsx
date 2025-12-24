@@ -2,14 +2,12 @@ import {AxiosProgressEvent} from "axios"
 import {useState} from "react"
 
 import {useRouterExport, useRouterImport} from "../../../../api/management/hook"
-import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getErrorMessage} from "../../../../app/utils"
 import {AlertInformative} from "../../../view/box/AlertInformative"
 import {List} from "../../../view/box/List"
 import {DownloadButton} from "../../../view/button/DownloadButton"
 import {UploadButton} from "../../../view/button/UploadButton"
-import {Access} from "../../access/Access"
 import {MenuWrapperScroll} from "../menu/MenuWrapperScroll"
 
 const SX: SxPropsMap = {
@@ -36,7 +34,7 @@ export function Backup() {
                 title={"Backup and Restore Your Data"}
                 subtitle={`
                     Ivory backs up all clusters, permissions, and manual queries. We ensure full
-                     backward compatibility for backup files across all versions.
+                    backward compatibility for backup files across all versions.
                 `}
                 description={<>
                     Please note that importing data may overwrite existing clusters or user
@@ -48,22 +46,18 @@ export function Backup() {
                     version compatibility can be found on the Security page.
                 </>}
             />
-            <Access permission={Permission.ManageManagementExport}>
-                <List name={"Export backup"}>
-                   <DownloadButton onClick={exp.mutate}/>
-                </List>
-            </Access>
-            <Access permission={Permission.ManageManagementImport}>
-                <List name={"Import backup"}>
-                    <UploadButton
-                        accept={".bak"}
-                        maxSize={"1GB"}
-                        loading={{loading: imp.isPending, loaded: progress?.loaded, total: progress?.total}}
-                        error={error}
-                        onUpload={handleOnUpload}
-                    />
-                </List>
-            </Access>
+            <List name={"Export backup"}>
+               <DownloadButton onClick={exp.mutate}/>
+            </List>
+            <List name={"Import backup"}>
+                <UploadButton
+                    accept={".bak"}
+                    maxSize={"1GB"}
+                    loading={{loading: imp.isPending, loaded: progress?.loaded, total: progress?.total}}
+                    error={error}
+                    onUpload={handleOnUpload}
+                />
+            </List>
         </MenuWrapperScroll>
     )
 

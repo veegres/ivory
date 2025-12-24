@@ -60,7 +60,7 @@ export function MenuContent(props: Props) {
                     </Access>
                 </List>
                 <List name={"About"}>
-                    {renderButton(Settings.BACKUP)}
+                    <Access permission={Permission.ManageManagementBackup}>{renderButton(Settings.BACKUP)}</Access>
                     {renderButton(Settings.ABOUT)}
                 </List>
             </Box>
