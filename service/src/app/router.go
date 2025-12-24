@@ -106,8 +106,8 @@ func managementRouter(g *gin.RouterGroup, rp *permission.Router, rs *secret.Rout
 	group.POST("/secret", rp.ValidateMethodMiddleware(permission.ManageManagementSecret), rm.ChangeSecret)
 	group.DELETE("/erase", rp.ValidateMethodMiddleware(permission.ManageManagementErase), rm.Erase)
 	group.DELETE("/free", rp.ValidateMethodMiddleware(permission.ManageManagementFree), rm.Free)
-	group.POST("/export", rp.ValidateMethodMiddleware(permission.ManageManagementExport), rm.Export)
-	group.POST("/import", rp.ValidateMethodMiddleware(permission.ManageManagementImport), rm.Import)
+	group.POST("/export", rp.ValidateMethodMiddleware(permission.ManageManagementBackup), rm.Export)
+	group.POST("/import", rp.ValidateMethodMiddleware(permission.ManageManagementBackup), rm.Import)
 }
 
 func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router) {
