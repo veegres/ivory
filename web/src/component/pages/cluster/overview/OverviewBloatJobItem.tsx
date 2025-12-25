@@ -35,13 +35,14 @@ const SX: SxPropsMap = {
 type Props = {
     cluster: string,
     item: Bloat,
+    refetchList: () => void,
 }
 
 export function OverviewBloatJobItem(props: Props) {
-    const {item, cluster} = props
+    const {item, cluster, refetchList} = props
     const {uuid, status: initStatus, command, credentialId} = item
     const [open, setOpen] = useState(false)
-    const {isFetching, logs, status} = useEventJob(uuid, initStatus, open)
+    const {isFetching, logs, status} = useEventJob(uuid, initStatus, open, refetchList)
 
     const deleteJob = useRouterBloatDelete(uuid, cluster)
     const stopJob = useRouterBloatStop()

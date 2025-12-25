@@ -13,17 +13,18 @@ const style: StylePropsMap = {
 type Props = {
     cluster: string,
     list: Bloat[],
+    refetchList: () => void,
 }
 
 export function OverviewBloatJob(props: Props) {
-    const {list, cluster} = props
+    const {list, cluster, refetchList} = props
     if (list.length === 0) return <NoBox text={"There is no jobs yet"}/>
 
     return (
         <TransitionGroup style={style.transition} appear={false}>
             {list.map((value) => (
                 <Collapse key={value.uuid}>
-                    <OverviewBloatJobItem key={value.uuid} item={value} cluster={cluster}/>
+                    <OverviewBloatJobItem key={value.uuid} item={value} cluster={cluster} refetchList={refetchList}/>
                 </Collapse>
             ))}
         </TransitionGroup>

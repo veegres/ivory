@@ -11,12 +11,13 @@ type EventJob = {
     status: { name: string; color: string; active: boolean }
 }
 
-export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean): EventJob {
+export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean, refetchList: () => void): EventJob {
     const [status, setStatus] = useState(JobOptions[initStatus])
     const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
 
-    const {data, error, isFetching} = useRouterBloatLogs(uuid, !status.active && isOpen)
+    const fetchFile = !status.active && isOpen
     const [logs, setLogs] = useState<string[]>([])
+    const {data, error, isFetching, isError} = useRouterBloatLogs(uuid, fetchFile)
 
     useEffect(() => {
         if (!JobOptions[initStatus].active) return
@@ -36,7 +37,11 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         es.addEventListener(EventType.SERVER, (e: MessageEvent<string>) => addLog(e.data))
         es.addEventListener(EventType.STATUS, (e: MessageEvent<JobStatus>) => setStatus(JobOptions[e.data]))
         es.addEventListener(EventType.STREAM, (e: MessageEvent<EventStreamType>) => {
-            if (e.data === EventStreamType.END) close()
+            if (e.data === EventStreamType.END) {
+                // NOTE: we need to refresh the job list because it keeps old job status
+                refetchList()
+                close()
+            }
         })
         es.onerror = () => {
             setEventSourceFetching(false)
@@ -44,11 +49,11 @@ export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean
         }
 
         return () => es.close()
-    }, [uuid, initStatus])
+    }, [uuid, initStatus, refetchList])
 
     return {
         isFetching: isEventSourceFetching || isFetching,
-        logs: logs.length ? logs : data ?? isFetching ? [] : [`[browser] streaming error: ${error?.message ?? "unknown"}`],
-        status
+        logs: !fetchFile ? logs : (data ?? (!isError ? [] : [`[browser] streaming error: ${error.message ?? "unknown"}`])),
+        status: status,
     }
 }
