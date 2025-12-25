@@ -2,7 +2,7 @@ import {KeyboardArrowDown} from "@mui/icons-material"
 import {Accordion, AccordionDetails, AccordionSummary, Box} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {QueryFields} from "../../../api/query/type"
+import {QueryFields} from "../../../api/postgres"
 import {SxPropsMap} from "../../../app/type"
 import {VirtualizedTable} from "../../view/table/VirtualizedTable"
 import {QueryResponseInfo} from "./QueryResponseInfo"
