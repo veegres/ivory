@@ -22,6 +22,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var ErrInvalidQueryType = errors.New("invalid query type")
+var ErrInvalidQueryVariety = errors.New("invalid query variety")
+var ErrInvalidPermissionStatus = errors.New("invalid permission status")
+var ErrInvalidPermission = errors.New("invalid permission")
+
 type Service struct {
 	env               *env.AppEnv
 	authService       *auth.Service
@@ -276,7 +281,7 @@ func queryTypeToBackup(qt database.QueryType) (backupQueryType, error) {
 	case database.OTHER:
 		return OTHER, nil
 	default:
-		return 0, errors.New("invalid query type")
+		return 0, ErrInvalidQueryType
 	}
 }
 
@@ -290,7 +295,7 @@ func queryVarietyToBackup(qv database.QueryVariety) (backupQueryVariety, error) 
 	case database.ReplicaRecommended:
 		return ReplicaRecommended, nil
 	default:
-		return 0, errors.New("invalid query variety")
+		return 0, ErrInvalidQueryVariety
 	}
 }
 
@@ -320,7 +325,7 @@ func permissionStatusToBackup(ps permission.PermissionStatus) (backupPermissionT
 	case permission.GRANTED:
 		return GRANTED, nil
 	default:
-		return 0, errors.New("invalid permission status")
+		return 0, ErrInvalidPermissionStatus
 	}
 }
 
@@ -348,11 +353,11 @@ func (s *Service) Import(file *multipart.FileHeader) error {
 	}
 	// Save queries
 	for i, bq := range bkp.Queries {
-		queryRequest, errMap := backupToQueryRequest(bq)
+		queryModel, errMap := backupToQuery(bq)
 		if errMap != nil {
 			continue
 		}
-		_, _, errMut := s.queryService.Create(query.Manual, queryRequest)
+		_, _, errMut := s.queryService.Create(query.Manual, queryModel)
 		if errMut != nil {
 			err = errors.Join(err, fmt.Errorf("%s[%d]: %w", "query", i, errMut))
 		}
@@ -387,8 +392,8 @@ func backupToCluster(bc backupCluster) cluster.Cluster {
 	}
 }
 
-// Mapper: backupQuery to QueryRequest
-func backupToQueryRequest(bq backupQuery) (database.QueryRequest, error) {
+// Mapper: backupQuery to Query
+func backupToQuery(bq backupQuery) (database.Query, error) {
 	varieties := make([]database.QueryVariety, 0, len(bq.Varieties))
 	for _, v := range bq.Varieties {
 		variety, err := syncQueryVariety(v)
@@ -399,10 +404,10 @@ func backupToQueryRequest(bq backupQuery) (database.QueryRequest, error) {
 
 	queryType, err := syncQueryType(bq.Type)
 	if err != nil {
-		return database.QueryRequest{}, err
+		return database.Query{}, err
 	}
 
-	return database.QueryRequest{
+	return database.Query{
 		Name:        bq.Name,
 		Type:        &queryType,
 		Description: bq.Description,
@@ -426,7 +431,7 @@ func syncQueryType(bqt backupQueryType) (database.QueryType, error) {
 	case OTHER:
 		return database.OTHER, nil
 	default:
-		return 0, errors.New("invalid query type")
+		return 0, ErrInvalidQueryType
 	}
 }
 
@@ -440,7 +445,7 @@ func syncQueryVariety(bqv backupQueryVariety) (database.QueryVariety, error) {
 	case ReplicaRecommended:
 		return database.ReplicaRecommended, nil
 	default:
-		return 0, errors.New("invalid query variety")
+		return 0, ErrInvalidQueryVariety
 	}
 }
 
@@ -471,7 +476,7 @@ func syncPermission(p string) (permission.Permission, error) {
 			return validPerm, nil
 		}
 	}
-	return "", errors.New("invalid permission")
+	return "", ErrInvalidPermission
 }
 
 // Sync: backupPermissionType to PermissionStatus
@@ -484,6 +489,6 @@ func syncPermissionStatus(bpt backupPermissionType) (permission.PermissionStatus
 	case GRANTED:
 		return permission.GRANTED, nil
 	default:
-		return 0, errors.New("invalid permission status")
+		return 0, ErrInvalidPermissionStatus
 	}
 }

@@ -9,6 +9,9 @@ import (
 	"ivory/src/features/tag"
 )
 
+var ErrClusterNameEmpty = errors.New("cluster name cannot be empty")
+var ErrClusterSidecarsEmpty = errors.New("cluster sidecars cannot be empty")
+
 type Service struct {
 	clusterRepository *Repository
 	instanceService   *instance.Service
@@ -62,10 +65,10 @@ func (s *Service) Get(cluster string) (Cluster, error) {
 
 func (s *Service) Update(cluster Cluster) (*Cluster, error) {
 	if cluster.Name == "" {
-		return nil, errors.New("cluster name cannot be empty")
+		return nil, ErrClusterNameEmpty
 	}
 	if cluster.Sidecars == nil {
-		return nil, errors.New("cluster sidecars cannot be empty")
+		return nil, ErrClusterSidecarsEmpty
 	}
 	tags, err := s.saveTags(cluster.Name, cluster.Tags)
 	if err != nil {

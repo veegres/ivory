@@ -73,6 +73,11 @@ type QueryTablesRequest struct {
 	Name       string          `json:"name"`
 }
 
+type QueryChart struct {
+	Name  string `json:"name"`
+	Value any    `json:"value"`
+}
+
 // SPECIFIC (SERVER)
 
 type QueryContext struct {
