@@ -54,7 +54,7 @@ export function ListRowNew(props: Props) {
                         certs: {},
                         credentials: {},
                         tls: {sidecar: false, database: false},
-                        unknownInstances: {},
+                        sidecarsOverview: {},
                     }}
                     toggle={toggle}
                     onUpdate={clean}

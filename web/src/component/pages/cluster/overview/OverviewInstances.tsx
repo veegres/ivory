@@ -1,9 +1,8 @@
 import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material"
 
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
-import {Cluster, Instance} from "../../../../api/cluster/type"
+import {Cluster, InstanceOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getActiveInstance, getDomain, getIsActiveInstance} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
 import {RefreshIconButton} from "../../../view/button/IconButtons"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
@@ -19,17 +18,17 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    instances?: { [domain: string]: Instance },
+    instances?: InstanceOverview,
 }
 
 export function OverviewInstances(props: Props) {
     const {cluster} = props
-    const instances = props.instances ?? cluster.unknownInstances
-    const activeInstances = useStore(s => s.activeInstance)
-    const activeInstance = getActiveInstance(activeInstances, cluster)
+    const instances = props.instances ?? cluster.sidecarsOverview
+    const activeInstance = useStore(s => s.activeInstance[cluster.name])
     const overview = useRouterClusterOverview(cluster.name, false)
     const candidates = Object.values(instances)
-        .filter(sidecar => sidecar.role === "replica")
+        .filter(instance => !!instance)
+        .filter(instance => instance.role === "replica")
         .map(instance => instance.sidecar)
 
     return (
@@ -56,7 +55,14 @@ export function OverviewInstances(props: Props) {
                 <TableBody>
                     {renderCheckedInstance()}
                     {Object.entries(instances).map(([key, element]) => (
-                        <OverviewInstancesRow key={key} checked={getIsActiveInstance(key, activeInstance)} instance={element} cluster={cluster} candidates={candidates}/>
+                        <OverviewInstancesRow
+                            key={key}
+                            name={key}
+                            checked={key === activeInstance}
+                            instance={element}
+                            cluster={cluster}
+                            candidates={candidates}
+                        />
                     ))}
                 </TableBody>
             </Table>
@@ -65,11 +71,9 @@ export function OverviewInstances(props: Props) {
 
     function renderCheckedInstance() {
         if (!activeInstance) return
-        const domain = getDomain(activeInstance.sidecar)
-        if (instances[domain]) return
-        const checked = getIsActiveInstance(domain, activeInstance)
+        if (instances.hasOwnProperty(activeInstance)) return
         return (
-            <OverviewInstancesRow checked={checked} instance={activeInstance} cluster={cluster} candidates={candidates} error={true}/>
+            <OverviewInstancesRow name={activeInstance} checked={true} cluster={cluster} candidates={candidates} error={true}/>
         )
     }
 }

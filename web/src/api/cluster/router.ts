@@ -1,4 +1,4 @@
-import {getDomain, initialInstance} from "../../app/utils"
+import {getDomain} from "../../app/utils"
 import {api} from "../api"
 import {Sidecar} from "../instance/type"
 import {R} from "../management/type"
@@ -9,7 +9,7 @@ export const ClusterApi = {
         key: () => ["cluster", "list"],
         fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
             .then((response) => response.data.response.map(v => (
-                {...v, unknownInstances: Object.fromEntries(v.sidecars.map(i => [getDomain(i), initialInstance(i)]))} as Cluster
+                {...v, sidecarsOverview: Object.fromEntries(v.sidecars.map(i => [getDomain(i), undefined]))} as Cluster
             ))),
     },
     overview: {

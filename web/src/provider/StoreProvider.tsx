@@ -1,7 +1,7 @@
 import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
-import {ActiveCluster, ActiveInstance, Instance} from "../api/cluster/type"
+import {ActiveCluster, Instance} from "../api/cluster/type"
 import {InstanceTabType} from "../api/instance/type"
 import {QueryType} from "../api/query/type"
 import {MainQueryClient} from "./AppProvider"
@@ -11,7 +11,7 @@ interface Store {
     searchCluster: string,
     activeClusterTab: number,
     activeCluster?: ActiveCluster,
-    activeInstance: ActiveInstance,
+    activeInstance: { [cluster: string]: string | undefined },
     activeTags: string[],
     warnings: { [key: string]: boolean },
     settings: boolean,
@@ -39,7 +39,7 @@ export const useStore = create(persist<Store>(
             dbName: undefined,
         },
     }),
-    {name: "store", version: 1}
+    {name: "store", version: 1},
 ))
 
 export const useStoreAction = {
@@ -62,22 +62,27 @@ export const useStoreAction = {
 function setSearchCluster(search: string) {
     useStore.setState(s => ({...s, searchCluster: search}))
 }
+
 function setCluster(cluster?: ActiveCluster) {
     useStore.setState(s => ({...s, activeCluster: cluster}))
 }
+
 function setClusterDetection(detectBy?: Instance) {
     useStore.setState(s => {
         if (!s.activeCluster) return s
         return {...s, activeCluster: {...s.activeCluster, detectBy}}
     })
 }
+
 function setClusterTab(tab: number) {
     useStore.setState(s => ({...s, activeClusterTab: tab}))
 }
+
 function setWarnings(name: string, warning: boolean) {
     useStore.setState(s => ({...s, warnings: {...s.warnings, [name]: warning}}))
 }
-function setInstance(instance?: Instance) {
+
+function setInstance(instance?: string) {
     useStore.setState(s => {
         const clusterName = s.activeCluster?.cluster.name
         if (!clusterName) return s
@@ -88,25 +93,32 @@ function setInstance(instance?: Instance) {
         return store
     })
 }
+
 function setTags(tags: string[]) {
     useStore.setState(s => ({...s, activeTags: tags}))
 }
+
 function toggleSettingsDialog() {
     useStore.setState(s => ({...s, settings: !s.settings}))
 }
+
 function clear() {
     MainQueryClient.clear()
     useStore.setState(useStore.getInitialState)
 }
+
 function setConsoleQuery(q: string) {
     useStore.setState(s => ({...s, instance: {...s.instance, queryConsole: q}}))
 }
+
 function setInstanceBody(t: InstanceTabType) {
     useStore.setState(s => ({...s, instance: {...s.instance, body: t}}))
 }
+
 function setQueryTab(t: QueryType) {
     useStore.setState(s => ({...s, instance: {...s.instance, queryTab: t}}))
 }
+
 function setDbName(n?: string) {
     useStore.setState(s => ({...s, instance: {...s.instance, dbName: n}}))
 }

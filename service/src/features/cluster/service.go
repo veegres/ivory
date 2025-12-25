@@ -95,11 +95,11 @@ func (s *Service) Overview(name string, side *sidecar.Sidecar) (*ClusterOverview
 
 	detectedByDomain := fmt.Sprintf("%s:%d", detectedBy.Host, detectedBy.Port)
 	var mainInstance *Instance
-	instancesMap := make(map[string]Instance)
+	instancesMap := make(map[string]*Instance)
 	for _, el := range instances {
 		domain := fmt.Sprintf("%s:%d", el.Sidecar.Host, el.Sidecar.Port)
 		fullInstance := Instance{el, false, true}
-		instancesMap[domain] = fullInstance
+		instancesMap[domain] = &fullInstance
 
 		if detectedByDomain == domain {
 			mainInstance = &fullInstance
@@ -110,10 +110,10 @@ func (s *Service) Overview(name string, side *sidecar.Sidecar) (*ClusterOverview
 	}
 	for _, sc := range cluster.Sidecars {
 		domain := fmt.Sprintf("%s:%d", sc.Host, sc.Port)
-		if value, ok := instancesMap[domain]; ok {
-			instancesMap[domain] = Instance{value.Instance, true, value.InSidecar}
+		if value, ok := instancesMap[domain]; ok && value != nil {
+			instancesMap[domain] = &Instance{value.Instance, true, value.InSidecar}
 		} else {
-			instancesMap[domain] = Instance{sidecar.Instance{Sidecar: sc}, false, false}
+			instancesMap[domain] = nil
 		}
 	}
 	return &ClusterOverview{instancesMap, detectedBy, mainInstance}, nil

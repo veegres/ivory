@@ -20,7 +20,7 @@ type Props = {
 export function InstanceInfoStatus(props: Props) {
     const {role, loading} = props
     if (loading) return <Skeleton variant={"rectangular"} sx={SX.instanceStatusBlock}/>
-    const background = role && InstanceColor[role]
+    const background = role && InstanceColor[role].color
 
     return (
         <Box sx={{...SX.instanceStatusBlock, background}}>
