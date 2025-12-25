@@ -65,7 +65,7 @@ export function OverviewBloat(props: Props) {
     function renderBody() {
         switch (tab) {
             case ListBlock.JOB:
-                return jobs.error ? <ErrorSmart error={jobs.error}/> : <OverviewBloatJob list={jobs.data} cluster={cluster.name}/>
+                return jobs.error ? <ErrorSmart error={jobs.error}/> : <OverviewBloatJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
             case ListBlock.QUERY:
                 return <Query type={QueryType.BLOAT} connection={getConnectionRequest(cluster, db)}/>
         }
