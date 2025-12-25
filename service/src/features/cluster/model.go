@@ -39,10 +39,12 @@ type Credentials struct {
 }
 
 type ClusterOverview struct {
-	Instances    map[string]Instance `json:"instances"`
-	DetectedBy   *sidecar.Sidecar    `json:"detectedBy"`
-	MainInstance *Instance           `json:"mainInstance"`
+	Instances    InstanceOverview `json:"instances"`
+	DetectedBy   *sidecar.Sidecar `json:"detectedBy"`
+	MainInstance *Instance        `json:"mainInstance"`
 }
+
+type InstanceOverview map[string]*Instance
 
 type Instance struct {
 	sidecar.Instance

@@ -13,7 +13,7 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {ActiveInstance, Cluster, Instance} from "../api/cluster/type"
+import {Cluster, Instance} from "../api/cluster/type"
 import {InstanceRequest, Role, Sidecar, SidecarStatus} from "../api/instance/type"
 import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
@@ -29,10 +29,10 @@ export const IvoryLinks: Links = {
     sponsorship: {name: "Sponsorship", link: "https://patreon.com/anselvo"}
 }
 
-export const InstanceColor: { [key in Role]: string } = {
-    leader: green[600],
-    replica: blue[500],
-    unknown: orange[500],
+export const InstanceColor: { [key in Role]: { label: "success" | "primary" | "error" | "warning", color: string } } = {
+    leader: {label: "success", color: green[600]},
+    replica: {label: "primary", color: blue[500]},
+    unknown: {label: "warning", color:  orange[500]},
 }
 
 export const JobOptions: { [key in JobStatus]: { name: string, color: string, active: boolean } } = {
@@ -87,13 +87,13 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const initialInstance = (sidecar?: Sidecar): Instance => {
+export const initialInstance = (domain: string): Instance => {
     return ({
         state: "-",
         role: "unknown",
         lag: -1,
         pendingRestart: false,
-        sidecar: sidecar ?? {host: "-", port: 8008},
+        sidecar: getSidecar(domain),
         database: {host: "-", port: 0},
         inCluster: true,
         inSidecar: false,
@@ -110,14 +110,6 @@ export const getDomain = ({host, port}: Sidecar) => {
 
 export const getDomains = (sidecars: Sidecar[]) => {
     return sidecars.map(value => getDomain(value))
-}
-
-export const getActiveInstance = (activeInstance: ActiveInstance, cluster?: Cluster) => {
-    return cluster && activeInstance[cluster.name]
-}
-
-export const getIsActiveInstance = (key: string, instance?: Instance) => {
-    return instance ? getDomain(instance.sidecar) === key : false
 }
 
 export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
@@ -148,7 +140,7 @@ export const getDetectionItems = (mainInstance?: Instance, detectBy?: Instance) 
     const role = instance?.role ?? "unknown"
     return [
         {title: "Detection", label: detection, bgColor: purple[400]},
-        {title: "Main Instance", label: label, bgColor: InstanceColor[role]}
+        {title: "Main Instance", label: label, bgColor: InstanceColor[role].color}
     ]
 }
 

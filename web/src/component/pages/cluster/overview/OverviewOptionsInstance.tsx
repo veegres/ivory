@@ -9,9 +9,9 @@ import {
 } from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {Instance} from "../../../../api/cluster/type"
+import {Instance, InstanceOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getDomain} from "../../../../app/utils"
+import {getDomain, initialInstance} from "../../../../app/utils"
 import {useStoreAction} from "../../../../provider/StoreProvider"
 
 const SX: SxPropsMap = {
@@ -21,7 +21,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instances: { [p: string]: Instance },
+    instances: InstanceOverview,
     mainInstance?: Instance,
     detectBy?: Instance,
 }
@@ -73,6 +73,6 @@ export function OverviewOptionsInstance(props: Props) {
     )
 
     function handleOnChange(value: string, reason: AutocompleteChangeReason) {
-        if (value && reason === "selectOption") setClusterDetection(instances[value])
+        if (value && reason === "selectOption") setClusterDetection(instances[value] ?? initialInstance(value))
     }
 }

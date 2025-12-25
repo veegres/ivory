@@ -1,7 +1,8 @@
 import {Box, Divider} from "@mui/material"
 
+import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getActiveInstance, getQueryConnection} from "../../../../app/utils"
+import {getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {PageMainBox} from "../../../view/box/PageMainBox"
@@ -13,15 +14,15 @@ const SX: SxPropsMap = {
 }
 
 export function Instance() {
+    const {setInstanceBody} = useStoreAction
     const instance = useStore(s => s.instance)
-    const activeInstances = useStore(s => s.activeInstance)
     const activeCluster = useStore(s => s.activeCluster)
+    const activeInstanceName = useStore(s => s.activeInstance[activeCluster?.cluster.name ?? ""])
     const activeClusterTab = useStore(s => s.activeClusterTab)
     const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
-    const activeInstance = getActiveInstance(activeInstances, activeCluster?.cluster)
 
-    const {setInstanceBody} = useStoreAction
-
+    const overview = useRouterClusterOverview(activeCluster?.cluster.name, false)
+    const activeInstance = overview.data && overview.data.instances[activeInstanceName ?? ""]
     return (
         <PageMainBox withPadding visible={isClusterOverviewOpen}>
             {renderContent()}
@@ -29,7 +30,8 @@ export function Instance() {
     )
 
     function renderContent() {
-        if (!activeInstance || !activeCluster) return <AlertCentered text={"Please, select an instance to see the information!"}/>
+        if (!activeInstanceName || !activeCluster) return <AlertCentered text={"Please, select an instance to see the information!"}/>
+        if (!activeInstance) return <AlertCentered text={"There is not enough information about the instance!"} severity={"warning"}/>
 
         const connection = getQueryConnection(activeCluster.cluster, activeInstance.database)
 

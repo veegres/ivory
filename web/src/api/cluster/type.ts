@@ -21,8 +21,7 @@ export interface ClusterOptions {
 export interface Cluster extends ClusterOptions {
     name: string,
     sidecars: Sidecar[],
-    unknownInstances: { [domain: string]: Instance },
-
+    sidecarsOverview: InstanceOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
@@ -42,9 +41,13 @@ export interface Credentials {
 
 
 export interface ClusterOverview {
-    instances: { [domain: string]: Instance },
+    instances: InstanceOverview,
     detectedBy?: Sidecar,
     mainInstance?: Instance,
+}
+
+export interface InstanceOverview {
+    [sidecar: string]: Instance | undefined
 }
 
 export interface Instance {
@@ -70,7 +73,7 @@ export interface ActiveCluster {
 }
 
 export interface ActiveInstance {
-    [cluster: string]: Instance | undefined
+    [cluster: string]: string | undefined
 }
 
 export interface ClusterTab {

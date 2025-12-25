@@ -4,7 +4,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
     return {
         name: "test-cluster",
         sidecars: [{host: "localhost", port: 8008}],
-        unknownInstances: {},
+        sidecarsOverview: {},
         tls: {sidecar: false, database: false},
         certs: {},
         credentials: {},

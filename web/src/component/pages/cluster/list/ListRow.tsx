@@ -7,9 +7,8 @@ import {Cluster} from "../../../../api/cluster/type"
 import {ColorsMap, SxPropsMap} from "../../../../app/type"
 import {
     getDetectionItems,
-    getDomain,
     getDomains,
-    getSidecars,
+    getSidecars, InstanceColor,
     SxPropsFormatter,
 } from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -44,7 +43,7 @@ export function ListRow(props: Props) {
     const [stateNodes, setStateNodes] = useState(getDomains(cluster.sidecars))
 
     const overview = useRouterClusterOverview(cluster.name)
-    const instances = overview.data?.instances ?? cluster.unknownInstances
+    const instances = overview.data?.instances ?? cluster.sidecarsOverview
     const mainInstance = overview.data?.mainInstance
     const warning = useMemo(handleMemoWarning, [instances])
     const colors = useMemo(handleMemoColors, [instances])
@@ -132,10 +131,9 @@ export function ListRow(props: Props) {
     }
 
     function handleMemoColors() {
-        return Object.values(instances).reduce(
-            (map, instance) => {
-                const domain = getDomain(instance.sidecar)
-                map[domain] = !instance.inSidecar || !instance.inCluster ? "warning" : (instance.role === "leader" ? "success" : "primary")
+        return Object.entries(instances).reduce(
+            (map, [domain, instance]) => {
+                map[domain] = InstanceColor[instance?.role ?? "unknown"].label
                 return map
             },
             {} as ColorsMap
@@ -144,10 +142,8 @@ export function ListRow(props: Props) {
 
     function handleMemoWarning() {
         for (const key in instances) {
-            const value = instances[key]
-            if (!value.inCluster || !value.inSidecar) {
-                return true
-            }
+            const instance = instances[key]
+            if (!instance) return true
         }
         return false
     }

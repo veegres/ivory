@@ -7,10 +7,10 @@ import {Sidecar} from "../../../../api/instance/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
     DateTimeFormatter,
-    getSidecarConnection,
+    getSidecarConnection, initialInstance,
     InstanceColor,
     SizeFormatter,
-    SxPropsFormatter
+    SxPropsFormatter,
 } from "../../../../app/utils"
 import {useStoreAction} from "../../../../provider/StoreProvider"
 import {InfoColorBox} from "../../../view/box/InfoColorBox"
@@ -31,21 +31,21 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: Instance,
+    name: string,
+    instance?: Instance,
     cluster: Cluster,
     candidates: Sidecar[],
-    checked: boolean
+    checked: boolean,
     error?: boolean,
 }
 
 export function OverviewInstancesRow(props: Props) {
-    const {instance, cluster, candidates, error = false, checked} = props
-    const {role, sidecar, database, state, lag, inSidecar, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = instance
+    const {instance: tmpInstance, cluster, candidates, error = false, name, checked} = props
+    const {role, sidecar, database, state, lag, inSidecar, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = tmpInstance ?? initialInstance(name)
 
     const {setInstance} = useStoreAction
     const request = getSidecarConnection(cluster, sidecar)
 
-    const sidecarName = `${sidecar.host}:${sidecar.port === 0 ? "-" : sidecar.port}`
     const databaseName = `${database.host}:${database.port === 0 ? "-" : database.port}`
 
     return (
@@ -55,10 +55,10 @@ export function OverviewInstancesRow(props: Props) {
         >
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning(inSidecar, inCluster)}</TableCell>
-            <TableCell sx={{color: InstanceColor[role]}}>{role.toUpperCase()}</TableCell>
+            <TableCell sx={{color: InstanceColor[role].color}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>
-                <Tooltip title={sidecarName} placement={"top-start"}>
-                    <Box sx={SX.nowrap}>{sidecarName}</Box>
+                <Tooltip title={name} placement={"top-start"}>
+                    <Box sx={SX.nowrap}>{name}</Box>
                 </Tooltip>
             </TableCell>
             <TableCell sx={SX.nowrap}>
@@ -140,7 +140,7 @@ export function OverviewInstancesRow(props: Props) {
         return (
             <MenuButton>
                 <ScheduleButton request={request} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
-                <FailoverButton request={request} cluster={cluster.name} disabled={instance.role === "leader"}/>
+                <FailoverButton request={request} cluster={cluster.name} disabled={role === "leader"}/>
                 <RestartButton request={request} cluster={cluster.name}/>
                 <ReloadButton request={request} cluster={cluster.name}/>
             </MenuButton>
@@ -172,6 +172,6 @@ export function OverviewInstancesRow(props: Props) {
     }
 
     function handleCheck() {
-        setInstance(checked ? undefined : instance)
+        setInstance(checked ? undefined : name)
     }
 }
