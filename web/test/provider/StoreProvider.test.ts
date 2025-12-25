@@ -2,8 +2,9 @@ import {beforeEach, describe, expect, it, vi} from "vitest"
 
 import type {ActiveCluster} from "../../src/api/cluster/type"
 import {InstanceTabType} from "../../src/api/instance/type"
-import {QueryType} from "../../src/api/query/type"
+import {QueryType} from "../../src/api/postgres"
 import {getDomain} from "../../src/app/utils"
+import {MainQueryClient} from "../../src/provider/AppProvider"
 import {useStore, useStoreAction} from "../../src/provider/StoreProvider"
 import {createMockCluster, createMockInstance} from "../test-helpers"
 
@@ -23,12 +24,15 @@ describe("StoreProvider", () => {
     beforeEach(() => {
         // Reset store to initial state before each test
         useStore.setState(useStore.getInitialState())
+        // Clear all mocks
+        vi.clearAllMocks()
     })
 
     describe("Initial state", () => {
         it("should have correct initial values", () => {
             const state = useStore.getState()
 
+            expect(state.searchCluster).toBe("")
             expect(state.activeClusterTab).toBe(0)
             expect(state.activeCluster).toBeUndefined()
             expect(state.activeInstance).toEqual({})
@@ -39,6 +43,32 @@ describe("StoreProvider", () => {
             expect(state.instance.queryTab).toBe(QueryType.CONSOLE)
             expect(state.instance.queryConsole).toBe("")
             expect(state.instance.dbName).toBeUndefined()
+            expect(state.instance.dbSchema).toBeUndefined()
+        })
+    })
+
+    describe("setSearchCluster", () => {
+        it("should set search cluster text", () => {
+            useStoreAction.setSearchCluster("test-search")
+
+            const state = useStore.getState()
+            expect(state.searchCluster).toBe("test-search")
+        })
+
+        it("should update search cluster text", () => {
+            useStoreAction.setSearchCluster("first")
+            useStoreAction.setSearchCluster("second")
+
+            const state = useStore.getState()
+            expect(state.searchCluster).toBe("second")
+        })
+
+        it("should clear search cluster when empty string", () => {
+            useStoreAction.setSearchCluster("test")
+            useStoreAction.setSearchCluster("")
+
+            const state = useStore.getState()
+            expect(state.searchCluster).toBe("")
         })
     })
 
@@ -68,7 +98,6 @@ describe("StoreProvider", () => {
             expect(state.activeCluster).toBeUndefined()
         })
     })
-
 
     describe("setClusterDetection", () => {
         it("should update detection instance", () => {
@@ -258,6 +287,91 @@ describe("StoreProvider", () => {
 
             const state = useStore.getState()
             expect(state.instance.dbName).toBeUndefined()
+        })
+    })
+
+    describe("setDbSchema", () => {
+        it("should set database schema", () => {
+            useStoreAction.setDbSchema("public")
+
+            const state = useStore.getState()
+            expect(state.instance.dbSchema).toBe("public")
+        })
+
+        it("should update database schema", () => {
+            useStoreAction.setDbSchema("public")
+            useStoreAction.setDbSchema("private")
+
+            const state = useStore.getState()
+            expect(state.instance.dbSchema).toBe("private")
+        })
+
+        it("should clear database schema when undefined", () => {
+            useStoreAction.setDbSchema("public")
+            useStoreAction.setDbSchema(undefined)
+
+            const state = useStore.getState()
+            expect(state.instance.dbSchema).toBeUndefined()
+        })
+    })
+
+    describe("clear", () => {
+        it("should reset store to initial state", () => {
+            // Set various values
+            useStoreAction.setSearchCluster("test-search")
+            useStoreAction.setClusterTab(2)
+            useStoreAction.setTags(["tag1", "tag2"])
+            useStoreAction.setWarnings("test-warning", true)
+            useStoreAction.toggleSettingsDialog()
+            useStoreAction.setConsoleQuery("SELECT * FROM users")
+            useStoreAction.setDbName("testdb")
+            useStoreAction.setDbSchema("public")
+
+            // Clear store
+            useStoreAction.clear()
+
+            const state = useStore.getState()
+            const initialState = useStore.getInitialState()
+
+            expect(state).toEqual(initialState)
+        })
+
+        it("should call MainQueryClient.clear", () => {
+            useStoreAction.clear()
+
+            expect(MainQueryClient.clear).toHaveBeenCalled()
+        })
+
+        it("should reset activeCluster", () => {
+            const cluster: ActiveCluster = {
+                cluster: createMockCluster({name: "test-cluster"}),
+                warning: false,
+            }
+
+            useStoreAction.setCluster(cluster)
+            useStoreAction.clear()
+
+            const state = useStore.getState()
+            expect(state.activeCluster).toBeUndefined()
+        })
+
+        it("should reset activeInstance", () => {
+            const cluster: ActiveCluster = {
+                cluster: createMockCluster({name: "test-cluster"}),
+                warning: false,
+            }
+
+            useStoreAction.setCluster(cluster)
+
+            const instance = createMockInstance({
+                sidecar: {host: "localhost", port: 8009},
+            })
+
+            useStoreAction.setInstance(getDomain(instance.sidecar))
+            useStoreAction.clear()
+
+            const state = useStore.getState()
+            expect(state.activeInstance).toEqual({})
         })
     })
 
