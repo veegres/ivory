@@ -3,7 +3,7 @@ import {create} from "zustand/react"
 
 import {ActiveCluster, Instance} from "../api/cluster/type"
 import {InstanceTabType} from "../api/instance/type"
-import {QueryType} from "../api/query/type"
+import {QueryType} from "../api/postgres"
 import {MainQueryClient} from "./AppProvider"
 
 // STORE
@@ -20,6 +20,7 @@ interface Store {
         queryTab: QueryType,
         queryConsole: string,
         dbName?: string,
+        dbSchema?: string,
     },
 }
 
@@ -37,6 +38,7 @@ export const useStore = create(persist<Store>(
             queryTab: QueryType.CONSOLE,
             queryConsole: "",
             dbName: undefined,
+            dbSchema: undefined,
         },
     }),
     {name: "store", version: 1},
@@ -56,6 +58,7 @@ export const useStoreAction = {
     setInstanceBody: setInstanceBody,
     setQueryTab: setQueryTab,
     setDbName: setDbName,
+    setDbSchema: setDbSchema,
 }
 
 // SETTERS
@@ -121,6 +124,10 @@ function setQueryTab(t: QueryType) {
 
 function setDbName(n?: string) {
     useStore.setState(s => ({...s, instance: {...s.instance, dbName: n}}))
+}
+
+function setDbSchema(n?: string) {
+    useStore.setState(s => ({...s, instance: {...s.instance, dbSchema: n}}))
 }
 
 

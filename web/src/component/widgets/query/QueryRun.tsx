@@ -2,8 +2,8 @@ import {HealthAndSafety, Wash, WashOutlined} from "@mui/icons-material"
 import {Box, Checkbox, OutlinedInput, Tooltip} from "@mui/material"
 import {useMemo, useState} from "react"
 
+import {ConnectionRequest, QueryVariety} from "../../../api/postgres"
 import {useRouterQueryRun} from "../../../api/query/hook"
-import {QueryConnection, QueryVariety} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {getPostgresUrl} from "../../../app/utils"
 import {RefreshIconButton} from "../../view/button/IconButtons"
@@ -25,7 +25,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     varieties?: QueryVariety[],
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     queryUuid?: string,
     query: string,
     params?: string[],

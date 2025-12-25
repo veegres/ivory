@@ -2,7 +2,7 @@ import {InfoOutlined} from "@mui/icons-material"
 import {Alert, Box, Collapse, ToggleButton, Tooltip} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {Database} from "../../../../api/query/type"
+import {Database} from "../../../../api/postgres"
 import {SxPropsMap} from "../../../../app/type"
 import {DatabaseBox} from "../../../view/box/DatabaseBox"
 
@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
     label: {fontWeight: "bold", fontSize: "30px", width: "125px"},
     toggle: {padding: "3px"},
     buttons: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, height: "45px"},
-    info: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 3},
+    info: {display: "flex", alignItems: "center", gap: 2},
 }
 
 type Props = {

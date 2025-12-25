@@ -6,10 +6,10 @@ import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Instance} from "../../../../api/cluster/type"
 import {Permission} from "../../../../api/permission/type"
+import {Database, QueryType} from "../../../../api/postgres"
 import {useRouterQueryList} from "../../../../api/query/hook"
-import {QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getQueryConnection} from "../../../../app/utils"
+import {getConnectionRequest} from "../../../../app/utils"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {AccessBox} from "../../../widgets/access/Access"
@@ -40,7 +40,7 @@ export function OverviewBloat(props: Props) {
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db = {...instance.database, database: target?.dbName}
+    const db = {...instance.database, name: target?.database, schema: target?.schema} as Database
 
     return (
         <Box>
@@ -67,7 +67,7 @@ export function OverviewBloat(props: Props) {
             case ListBlock.JOB:
                 return jobs.error ? <ErrorSmart error={jobs.error}/> : <OverviewBloatJob list={jobs.data} cluster={cluster.name}/>
             case ListBlock.QUERY:
-                return <Query type={QueryType.BLOAT} connection={getQueryConnection(cluster, db)}/>
+                return <Query type={QueryType.BLOAT} connection={getConnectionRequest(cluster, db)}/>
         }
     }
 

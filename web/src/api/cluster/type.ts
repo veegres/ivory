@@ -7,7 +7,7 @@ import {
     Sidecar,
 } from "../instance/type"
 import {Permission} from "../permission/type"
-import {Database} from "../query/type"
+import {Database} from "../postgres"
 
 // COMMON (WEB AND SERVER)
 

@@ -134,7 +134,7 @@ func (r *Router) DeleteQueryLog(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query log was deleted"})
 }
 
-func (r *Router) PostExecuteTempateQuery(context *gin.Context) {
+func (r *Router) PostExecuteTemplateQuery(context *gin.Context) {
 	var req QueryTemplateRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -183,7 +183,7 @@ func (r *Router) PostExecuteConsoleQuery(context *gin.Context) {
 }
 
 func (r *Router) PostActivityQuery(context *gin.Context) {
-	var req QueryConnection
+	var req database.ConnectionRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -308,7 +308,7 @@ func (r *Router) PostTerminateQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "query is terminated"})
 }
 
-func (r *Router) getQueryContext(ctx *gin.Context, con QueryConnection) QueryContext {
+func (r *Router) getQueryContext(ctx *gin.Context, con database.ConnectionRequest) QueryContext {
 	session, errSession := ctx.Cookie("session")
 	if errSession != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": errSession.Error()})

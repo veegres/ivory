@@ -2,7 +2,6 @@ package query
 
 import (
 	"ivory/src/clients/database"
-	"ivory/src/features/cert"
 
 	"github.com/google/uuid"
 )
@@ -29,48 +28,42 @@ type Query struct {
 	CreatedAt   int64                   `json:"createdAt"`
 }
 
-type QueryConnection struct {
-	Db           database.Database `json:"db"`
-	Certs        *cert.Certs       `json:"certs"`
-	CredentialId *uuid.UUID        `json:"credentialId"`
-}
-
 type QueryTemplateRequest struct {
-	Connection   QueryConnection        `json:"connection"`
-	QueryOptions *database.QueryOptions `json:"queryOptions"`
-	QueryUuid    *uuid.UUID             `json:"queryUuid"`
+	Connection   database.ConnectionRequest `json:"connection"`
+	QueryOptions *database.QueryOptions     `json:"queryOptions"`
+	QueryUuid    *uuid.UUID                 `json:"queryUuid"`
 }
 
 type QueryConsoleRequest struct {
-	Connection   QueryConnection        `json:"connection"`
-	QueryOptions *database.QueryOptions `json:"queryOptions"`
-	Query        string                 `json:"query"`
+	Connection   database.ConnectionRequest `json:"connection"`
+	QueryOptions *database.QueryOptions     `json:"queryOptions"`
+	Query        string                     `json:"query"`
 }
 
 type QueryKillRequest struct {
-	Connection QueryConnection `json:"connection"`
-	Pid        int             `json:"pid"`
+	Connection database.ConnectionRequest `json:"connection"`
+	Pid        int                        `json:"pid"`
 }
 
 type QueryChartRequest struct {
-	Connection QueryConnection          `json:"connection"`
-	Type       *database.QueryChartType `json:"type"`
+	Connection database.ConnectionRequest `json:"connection"`
+	Type       *database.QueryChartType   `json:"type"`
 }
 
 type QueryDatabasesRequest struct {
-	Connection QueryConnection `json:"connection"`
-	Name       string          `json:"name"`
+	Connection database.ConnectionRequest `json:"connection"`
+	Name       string                     `json:"name"`
 }
 
 type QuerySchemasRequest struct {
-	Connection QueryConnection `json:"connection"`
-	Name       string          `json:"name"`
+	Connection database.ConnectionRequest `json:"connection"`
+	Name       string                     `json:"name"`
 }
 
 type QueryTablesRequest struct {
-	Connection QueryConnection `json:"connection"`
-	Schema     string          `json:"schema"`
-	Name       string          `json:"name"`
+	Connection database.ConnectionRequest `json:"connection"`
+	Schema     string                     `json:"schema"`
+	Name       string                     `json:"name"`
 }
 
 type QueryChart struct {
@@ -81,6 +74,6 @@ type QueryChart struct {
 // SPECIFIC (SERVER)
 
 type QueryContext struct {
-	Connection QueryConnection
+	Connection database.ConnectionRequest
 	Session    string
 }

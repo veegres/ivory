@@ -2,7 +2,7 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
-import {QueryConnection} from "../query/type"
+import {ConnectionRequest} from "../postgres"
 
 // COMMON (WEB AND SERVER)
 
@@ -44,6 +44,6 @@ export interface InstanceScheduledRestart {
 export enum InstanceTabType {QUERY, CHART}
 export interface InstanceTab {
     label: string,
-    body: (connection: QueryConnection) => ReactNode,
+    body: (connection: ConnectionRequest) => ReactNode,
     info?: ReactNode,
 }

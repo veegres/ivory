@@ -1,4 +1,4 @@
-import {Certs} from "../cert/type"
+import {ConnectionRequest, QueryChartType, QueryOptions, QueryType, QueryVariety} from "../postgres"
 
 // COMMON (WEB AND SERVER)
 
@@ -20,89 +20,43 @@ export interface Query {
     createAt: number,
 }
 
-export interface QueryConnection {
-    db: Database,
-    certs?: Certs,
-    credentialId?: string,
-}
-
 export interface QueryTemplateRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     queryUuid?: string,
     queryOptions?: QueryOptions,
 }
 
 export interface QueryConsoleRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     query: string,
     queryOptions?: QueryOptions,
 }
 
 export interface QueryKillRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     pid: number,
 }
 
 export interface QueryChartRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     type: QueryChartType,
 }
 
 
 export interface QueryDatabasesRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     name: string,
 }
 
 export interface QuerySchemasRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     name: string,
 }
 
 export interface QueryTablesRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     schema: string,
     name: string,
-}
-
-// POSTGRES CLIENT (WEB AND SERVER)
-
-export interface Database {
-    host: string,
-    port: number,
-    name?: string,
-}
-
-export interface QueryOptions {
-    params?: string[],
-    trim?: boolean,
-    limit?: string,
-}
-
-export interface QueryField {
-    name: string,
-    dataType: string,
-    dataTypeOID: number,
-}
-
-export interface QueryFields {
-    fields: QueryField[],
-    rows: any[][],
-    url: string,
-    startTime: number,
-    endTime: number,
-    options?: QueryOptions,
-}
-
-export enum QueryChartType {
-    Databases = "Databases",
-    Connections = "Connections",
-    DatabaseSize = "Database Size",
-    DatabaseUptime = "Database Uptime",
-    Schemas = "Schemas",
-    TablesSize = "Tables Size",
-    IndexesSize = "Indexes Size",
-    TotalSize = "Total Size",
 }
 
 export interface QueryChart {
@@ -110,35 +64,10 @@ export interface QueryChart {
     value: any,
 }
 
-export enum QueryType {
-    BLOAT,
-    ACTIVITY,
-    REPLICATION,
-    STATISTIC,
-    OTHER,
-    CONSOLE,
-}
-
-export enum QueryVariety {
-    DatabaseSensitive,
-    MasterOnly,
-    ReplicaRecommended,
-}
-
-
-export interface QueryRequest {
-    type: QueryType,
-    query: string,
-    name: string,
-    description?: string,
-    varieties?: QueryVariety[],
-    params?: string[],
-}
-
 // SPECIFIC (WEB)
 
 export interface QueryRunRequest {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     queryUuid?: string,
     query: string,
     queryOptions?: QueryOptions,

@@ -1,9 +1,11 @@
 import {api} from "../api"
 import {R} from "../management/type"
+import {ConnectionRequest, Query as QueryRequest,QueryFields, QueryType} from "../postgres"
 import {
-    Query, QueryChart, QueryChartRequest, QueryConnection, QueryConsoleRequest,
-    QueryDatabasesRequest, QueryFields, QueryKillRequest, QueryRequest,
-    QuerySchemasRequest, QueryTablesRequest, QueryTemplateRequest, QueryType
+    Query,
+    QueryChart, QueryChartRequest, QueryConsoleRequest,
+    QueryDatabasesRequest, QueryKillRequest,
+    QuerySchemasRequest, QueryTablesRequest, QueryTemplateRequest,
 } from "./type"
 
 export const QueryApi = {
@@ -39,21 +41,21 @@ export const QueryApi = {
     },
     activity: {
         key: () => ["query", "execute", "activity"],
-        fn: (req: QueryConnection) => api.post<R<QueryFields>>("/query/execute/activity", req)
+        fn: (req: ConnectionRequest) => api.post<R<QueryFields>>("/query/execute/activity", req)
             .then((response) => response.data.response),
     },
     databases: {
-        key: (con: QueryConnection) => ["query", "execute", "databases", con],
+        key: (con: ConnectionRequest) => ["query", "execute", "databases", con],
         fn: (req: QueryDatabasesRequest) => api.post<R<string[]>>("/query/execute/databases", req)
             .then((response) => response.data.response),
     },
     schemas: {
-        key: (con: QueryConnection) => ["query", "execute", "schemas", con],
+        key: (con: ConnectionRequest) => ["query", "execute", "schemas", con],
         fn: (req: QuerySchemasRequest) => api.post<R<string[]>>("/query/execute/schemas", req)
             .then((response) => response.data.response),
     },
     tables: {
-        key: (con: QueryConnection, schema?: string) => ["query", "execute", "tables", con, schema ?? "-"],
+        key: (con: ConnectionRequest, schema?: string) => ["query", "execute", "tables", con, schema ?? "-"],
         fn: (req: QueryTablesRequest) => api.post<R<string[]>>("/query/execute/tables", req)
             .then((response) => response.data.response),
     },

@@ -2,8 +2,8 @@ import {Box, Button} from "@mui/material"
 import {useState} from "react"
 
 import {Permission} from "../../../api/permission/type"
+import {ConnectionRequest} from "../../../api/postgres"
 import {useRouterQueryCancel, useRouterQueryTerminate} from "../../../api/query/hook"
-import {QueryConnection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {MenuButton} from "../../view/button/MenuButton"
 import {Access} from "../access/Access"
@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     refetch: () => void,
     pid: number,
 }
