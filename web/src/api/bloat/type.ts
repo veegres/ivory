@@ -1,15 +1,10 @@
+import {ConnectionRequest} from "../postgres"
 import {JobStatus} from "./job/type"
 
 // COMMON (WEB AND SERVER)
 
-export interface DbConnection {
-    host: string,
-    port: number,
-    credentialId: string,
-}
-
 export interface BloatTarget {
-    dbName?: string,
+    database?: string,
     schema?: string,
     table?: string,
     excludeSchema?: string,
@@ -29,7 +24,7 @@ export interface BloatOptions {
 
 export interface BloatRequest {
     cluster: string,
-    connection: DbConnection,
+    connection: ConnectionRequest,
     target?: BloatTarget,
     options: BloatOptions,
 }

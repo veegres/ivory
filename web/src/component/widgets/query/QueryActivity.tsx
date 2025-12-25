@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 
+import {ConnectionRequest} from "../../../api/postgres"
 import {useRouterActivity} from "../../../api/query/hook"
-import {QueryConnection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {RefreshIconButton} from "../../view/button/IconButtons"
 import {QueryTable} from "./QueryTable"
@@ -19,7 +19,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
 }
 
 export function QueryActivity(props: Props) {

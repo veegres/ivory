@@ -32,7 +32,7 @@ export function AutocompleteTags(props: Props) {
         <Autocomplete
             multiple
             size={"small"}
-            autoHighlight
+            autoHighlight={true}
             loading={loading}
             options={options}
             value={value}
@@ -43,7 +43,7 @@ export function AutocompleteTags(props: Props) {
             onInputChange={(_, v) => setInputValue(v.toLowerCase())}
             onChange={handleOnChange}
             isOptionEqualToValue={(o, v) => o.label === v.label}
-            filterSelectedOptions
+            filterSelectedOptions={true}
             renderOption={renderOption}
             renderInput={renderInput}
         />

@@ -2,8 +2,8 @@ import {Box, Collapse, Skeleton} from "@mui/material"
 import {TransitionGroup} from "react-transition-group"
 
 import {Permission} from "../../../api/permission/type"
+import {ConnectionRequest, QueryType} from "../../../api/postgres"
 import {useRouterQueryList} from "../../../api/query/hook"
-import {QueryConnection, QueryType} from "../../../api/query/type"
 import {StylePropsMap} from "../../../app/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {Access} from "../access/Access"
@@ -16,7 +16,7 @@ const style: StylePropsMap = {
 
 type Props = {
     type: QueryType,
-    connection: QueryConnection,
+    connection: ConnectionRequest,
 }
 
 export function Query(props: Props) {

@@ -1,12 +1,12 @@
 import {AxiosError} from "axios"
 
+import {ConnectionRequest, QueryChartType} from "../../../api/postgres"
 import {useRouterQueryChart} from "../../../api/query/hook"
-import {QueryChartType, QueryConnection} from "../../../api/query/type"
 import {ChartItem, Color} from "./ChartItem"
 
 type Props = {
     type: QueryChartType,
-    connection: QueryConnection,
+    connection: ConnectionRequest,
 }
 
 export function ChartDatabase(props: Props) {

@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
-import {QueryType} from "../../../api/query/type"
+import {QueryType} from "../../../api/postgres"
 import {SxPropsMap} from "../../../app/type"
 import {InfoBox, Padding} from "../../view/box/InfoBox"
 import {QueryBoxWrapper} from "./QueryBoxWrapper"

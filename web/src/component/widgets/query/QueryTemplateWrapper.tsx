@@ -2,7 +2,7 @@ import {Alert} from "@mui/material"
 import {ReactNode, useState} from "react"
 
 import {Permission} from "../../../api/permission/type"
-import {QueryConnection, QueryVariety} from "../../../api/query/type"
+import {ConnectionRequest, QueryVariety} from "../../../api/postgres"
 import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton} from "../../view/button/IconButtons"
 import {FixedInputs} from "../../view/input/FixedInputs"
 import {Access} from "../access/Access"
@@ -21,7 +21,7 @@ const initialViewCheckMap: ViewCheckMap = {
 }
 
 type Props = {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
     queryUuid?: string,
     varieties?: QueryVariety[],
     params?: string[],

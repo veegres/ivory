@@ -1,6 +1,7 @@
 package bloat
 
 import (
+	"ivory/src/clients/database"
 	. "ivory/src/features/bloat/job"
 	"os"
 
@@ -9,14 +10,26 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type DbConnection struct {
-	Host         string    `json:"host"`
-	Port         int       `json:"port"`
+type Bloat struct {
+	Uuid         uuid.UUID `json:"uuid"`
 	CredentialId uuid.UUID `json:"credentialId"`
+	Cluster      string    `json:"cluster"`
+	Status       JobStatus `json:"status"`
+	Command      string    `json:"command"`
+	CommandArgs  []string  `json:"commandArgs"`
+	LogsPath     string    `json:"logsPath"`
+	CreatedAt    int64     `json:"createdAt"`
+}
+
+type BloatRequest struct {
+	Cluster    string                     `json:"cluster"`
+	Connection database.ConnectionRequest `json:"connection"`
+	Target     *BloatTarget               `json:"target"`
+	Options    BloatOptions               `json:"options"`
 }
 
 type BloatTarget struct {
-	DbName        string `json:"dbName"`
+	Database      string `json:"database"`
 	Schema        string `json:"schema"`
 	Table         string `json:"table"`
 	ExcludeSchema string `json:"excludeSchema"`
@@ -32,24 +45,6 @@ type BloatOptions struct {
 	DelayRatio      int  `json:"delayRatio"`
 	MinTableSize    int  `json:"minTableSize"`
 	MaxTableSize    int  `json:"maxTableSize"`
-}
-
-type BloatRequest struct {
-	Cluster    string       `json:"cluster"`
-	Connection DbConnection `json:"connection"`
-	Target     *BloatTarget `json:"target"`
-	Options    BloatOptions `json:"options"`
-}
-
-type Bloat struct {
-	Uuid         uuid.UUID `json:"uuid"`
-	CredentialId uuid.UUID `json:"credentialId"`
-	Cluster      string    `json:"cluster"`
-	Status       JobStatus `json:"status"`
-	Command      string    `json:"command"`
-	CommandArgs  []string  `json:"commandArgs"`
-	LogsPath     string    `json:"logsPath"`
-	CreatedAt    int64     `json:"createdAt"`
 }
 
 // SPECIFIC (SERVER)

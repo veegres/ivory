@@ -17,7 +17,7 @@ import {Cluster, Instance} from "../api/cluster/type"
 import {InstanceRequest, Role, Sidecar, SidecarStatus} from "../api/instance/type"
 import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
-import {Database, QueryConnection, QueryVariety} from "../api/query/type"
+import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {
@@ -112,7 +112,7 @@ export const getDomains = (sidecars: Sidecar[]) => {
     return sidecars.map(value => getDomain(value))
 }
 
-export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
+export function getConnectionRequest(cluster: Cluster, db: Database): ConnectionRequest {
     const credentialId = cluster.credentials.postgresId
     const certs = cluster.tls.database ? cluster.certs : undefined
     return {db, certs, credentialId}
@@ -174,7 +174,7 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
-export const getPostgresUrl = (con: QueryConnection) => {
+export const getPostgresUrl = (con: ConnectionRequest) => {
     return `postgres://${con.db.host}:${con.db.port}/${con.db.name ?? "postgres"}`
 }
 

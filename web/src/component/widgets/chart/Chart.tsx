@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {QueryChartType, QueryConnection} from "../../../api/query/type"
+import {ConnectionRequest, QueryChartType} from "../../../api/postgres"
 import {SxPropsMap} from "../../../app/type"
 import {ChartCommon} from "./ChartCommon"
 import {ChartDatabase} from "./ChartDatabase"
@@ -17,7 +17,7 @@ const Charts = {
 }
 
 type Props = {
-    connection: QueryConnection,
+    connection: ConnectionRequest,
 }
 
 export function Chart(props: Props) {

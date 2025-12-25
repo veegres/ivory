@@ -189,7 +189,7 @@ func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
 
 	executeGroup := group.Group("/execute")
 	executeGroup.POST("/console", rp.ValidateMethodMiddleware(permission.ManageQueryExecuteConsole), r.PostExecuteConsoleQuery)
-	executeGroup.POST("/template", rp.ValidateMethodMiddleware(permission.ManageQueryExecuteTemplate), r.PostExecuteTempateQuery)
+	executeGroup.POST("/template", rp.ValidateMethodMiddleware(permission.ManageQueryExecuteTemplate), r.PostExecuteTemplateQuery)
 	executeGroup.POST("/activity", rp.ValidateMethodMiddleware(permission.ViewQueryExecuteInfo), r.PostActivityQuery)
 	executeGroup.POST("/databases", rp.ValidateMethodMiddleware(permission.ViewQueryExecuteInfo), r.PostDatabasesQuery)
 	executeGroup.POST("/schemas", rp.ValidateMethodMiddleware(permission.ViewQueryExecuteInfo), r.PostSchemasQuery)

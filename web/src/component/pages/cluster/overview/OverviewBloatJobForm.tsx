@@ -6,7 +6,7 @@ import {BloatOptions, BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Instance} from "../../../../api/cluster/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getQueryConnection} from "../../../../app/utils"
+import {getConnectionRequest} from "../../../../app/utils"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
 import {ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError"
 
@@ -32,17 +32,17 @@ export function OverviewBloatJobForm(props: Props) {
     if (instance.role !== "leader") return <ClusterNoLeaderError/>
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
-    const db = {...instance.database, name: target?.dbName}
-    const connection = getQueryConnection(cluster, db)
+    const db = {...instance.database, name: target?.database}
+    const connection = getConnectionRequest(cluster, db)
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
-                value={target?.dbName || null}
+                value={target?.database || null}
                 margin={"dense"} variant={"standard"} size={"small"}
                 label={"Database"}
                 connection={connection}
                 useFetch={useRouterQueryDatabase}
-                onUpdate={(v) => setTarget({dbName: v || undefined})}
+                onUpdate={(v) => setTarget({database: v || undefined})}
             />
             <AutocompleteFetch
                 value={target?.schema || null}
@@ -50,8 +50,8 @@ export function OverviewBloatJobForm(props: Props) {
                 label={"Schema"}
                 connection={connection}
                 useFetch={useRouterQuerySchemas}
-                onUpdate={(v) => setTarget({dbName: target?.dbName, schema: v || undefined})}
-                disabled={!target?.dbName || !!target?.excludeSchema}
+                onUpdate={(v) => setTarget({database: target?.database, schema: v || undefined})}
+                disabled={!target?.database || !!target?.excludeSchema}
             />
             <AutocompleteFetch
                 value={target?.table || null}
@@ -79,8 +79,8 @@ export function OverviewBloatJobForm(props: Props) {
                 label={"Exclude Schema"}
                 connection={connection}
                 useFetch={useRouterQuerySchemas}
-                onUpdate={(v) => setTarget({dbName: target?.dbName, excludeSchema: v || undefined})}
-                disabled={!target?.dbName || !!target?.schema}
+                onUpdate={(v) => setTarget({database: target?.database, excludeSchema: v || undefined})}
+                disabled={!target?.database || !!target?.schema}
             />
             <AutocompleteFetch
                 value={target?.excludeTable || null}
@@ -115,7 +115,10 @@ export function OverviewBloatJobForm(props: Props) {
             const {database: {host, port}} = instance
             onClick()
             start.mutate({
-                connection: {host, port, credentialId},
+                connection: {
+                    db: {host, port, name: target?.database, schema: target?.schema},
+                    credentialId,
+                },
                 target, options, cluster: cluster.name,
             })
         }

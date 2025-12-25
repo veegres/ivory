@@ -1,10 +1,10 @@
+import {Query} from "../../../api/postgres"
 import {useRouterQueryUpdate} from "../../../api/query/hook"
-import {QueryRequest} from "../../../api/query/type"
 import {SaveIconButton} from "../../view/button/IconButtons"
 
 type Props = {
     id: string
-    query: QueryRequest,
+    query: Query,
     onSuccess?: () => void,
 }
 

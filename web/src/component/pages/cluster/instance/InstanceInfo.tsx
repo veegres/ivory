@@ -4,7 +4,7 @@ import {Instance} from "../../../../api/cluster/type"
 import {InstanceTabType} from "../../../../api/instance/type"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {Permission, PermissionStatus} from "../../../../api/permission/type"
-import {QueryConnection} from "../../../../api/query/type"
+import {ConnectionRequest} from "../../../../api/postgres"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {Access} from "../../../widgets/access/Access"
@@ -21,7 +21,7 @@ type Props = {
     instance: Instance,
     tab: InstanceTabType,
     onTab: (tab: InstanceTabType) => void,
-    connection: QueryConnection,
+    connection: ConnectionRequest,
 }
 
 export function InstanceInfo(props: Props) {

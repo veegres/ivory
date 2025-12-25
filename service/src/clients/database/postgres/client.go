@@ -146,12 +146,27 @@ func (s *Client) sendRequest(ctx database.Context, query string, queryParams []a
 	}
 	defer s.closeConnection(conn, context.Background())
 
+	txCtx := context.Background()
+	tx, errTx := conn.Begin(txCtx)
+	if errTx != nil {
+		return errTx
+	}
+	defer s.closeTransaction(tx, txCtx)
+
+	if ctx.Connection.Database.Schema != nil {
+		safeSchema := pgx.Identifier{*ctx.Connection.Database.Schema}.Sanitize()
+		_, errSchema := tx.Exec(txCtx, fmt.Sprintf("SET LOCAL search_path TO %s", safeSchema))
+		if errSchema != nil {
+			return fmt.Errorf("failed to set schema: %w", errSchema)
+		}
+	}
+
 	var rows pgx.Rows
 	var err error
 	if queryParams == nil {
-		rows, err = conn.Query(context.Background(), query)
+		rows, err = tx.Query(txCtx, query)
 	} else {
-		rows, err = conn.Query(context.Background(), query, queryParams...)
+		rows, err = tx.Query(txCtx, query, queryParams...)
 	}
 	if err != nil {
 		return err
@@ -175,9 +190,8 @@ func (s *Client) normalizeQuery(query string, trim *bool, limit *string) (string
 	if trim == nil || *trim == false {
 		if limit != nil {
 			return "", limit, ErrCannotLimitWithoutTrim
-		} else {
-			return query, limit, nil
 		}
+		return query, limit, nil
 	}
 	trimmedQuery := s.trimQuery(query)
 	if limit == nil {
@@ -196,9 +210,8 @@ func (s *Client) addLimitToQuery(query string, queryAnalysis database.QueryAnaly
 			// NOTE: removing all spaces and semicolon at the end
 			regex := regexp.MustCompile("\\s*;\\s*$")
 			return regex.ReplaceAllString(query, replace), &limit
-		} else {
-			return query + replace, &limit
 		}
+		return query + replace, &limit
 	}
 	return query, nil
 }
@@ -296,5 +309,12 @@ func (s *Client) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	err := conn.Close(ctx)
 	if err != nil {
 		slog.Warn("postgres close connection", err)
+	}
+}
+
+func (s *Client) closeTransaction(tx pgx.Tx, txCtx context.Context) {
+	err := tx.Rollback(txCtx)
+	if err != nil {
+		slog.Warn("postgres rollback", err)
 	}
 }

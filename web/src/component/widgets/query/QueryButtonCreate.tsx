@@ -1,9 +1,9 @@
+import {Query} from "../../../api/postgres"
 import {useRouterQueryCreate} from "../../../api/query/hook"
-import {QueryRequest} from "../../../api/query/type"
 import {SaveIconButton} from "../../view/button/IconButtons"
 
 type Props = {
-    query: QueryRequest,
+    query: Query,
     onSuccess?: () => void,
 }
 

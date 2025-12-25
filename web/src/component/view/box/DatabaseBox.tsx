@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {Database} from "../../../api/query/type"
+import {Database} from "../../../api/postgres"
 import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
