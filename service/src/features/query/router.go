@@ -37,7 +37,7 @@ func (r *Router) PutQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	var query database.QueryRequest
+	var query database.Query
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -52,7 +52,7 @@ func (r *Router) PutQuery(context *gin.Context) {
 }
 
 func (r *Router) PostQuery(context *gin.Context) {
-	var query database.QueryRequest
+	var query database.Query
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})

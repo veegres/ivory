@@ -46,11 +46,6 @@ const (
 	TotalSize                     = "Total Size"
 )
 
-type QueryChart struct {
-	Name  string `json:"name"`
-	Value any    `json:"value"`
-}
-
 type QueryType int8
 
 const (
@@ -69,7 +64,7 @@ const (
 	ReplicaRecommended
 )
 
-type QueryRequest struct {
+type Query struct {
 	Name        string         `json:"name"`
 	Type        *QueryType     `json:"type"`
 	Description *string        `json:"description"`

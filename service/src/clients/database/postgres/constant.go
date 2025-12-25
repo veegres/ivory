@@ -289,8 +289,8 @@ FROM pg_class, pg_index
 WHERE pg_index.indisvalid = false 
   AND pg_index.indexrelid = pg_class.oid;`
 
-func CreateChartsMap() map[database.QueryChartType]database.QueryRequest {
-	return map[database.QueryChartType]database.QueryRequest{
+func CreateChartsMap() map[database.QueryChartType]database.Query {
+	return map[database.QueryChartType]database.Query{
 		database.Databases:      {Name: string(database.Databases), Query: "SELECT count(*) FROM pg_database;"},
 		database.Connections:    {Name: database.Connections, Query: "SELECT count(*) FROM pg_stat_activity;"},
 		database.DatabaseSize:   {Name: database.DatabaseSize, Query: "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;"},
