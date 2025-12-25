@@ -15,7 +15,6 @@ export interface ConnectionRequest {
     credentialId?: string,
 }
 
-
 export interface QueryOptions {
     params?: string[],
     trim?: boolean,
