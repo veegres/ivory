@@ -3,6 +3,7 @@ import {beforeEach, describe, expect, it, vi} from "vitest"
 import type {ActiveCluster} from "../../src/api/cluster/type"
 import {InstanceTabType} from "../../src/api/instance/type"
 import {QueryType} from "../../src/api/query/type"
+import {getDomain} from "../../src/app/utils"
 import {useStore, useStoreAction} from "../../src/provider/StoreProvider"
 import {createMockCluster, createMockInstance} from "../test-helpers"
 
@@ -146,10 +147,10 @@ describe("StoreProvider", () => {
                 sidecar: {host: "localhost", port: 8009},
             })
 
-            useStoreAction.setInstance(instance)
+            useStoreAction.setInstance(getDomain(instance.sidecar))
 
             const state = useStore.getState()
-            expect(state.activeInstance["test-cluster"]).toEqual(instance)
+            expect(state.activeInstance["test-cluster"]).toEqual(getDomain(instance.sidecar))
         })
 
         it("should remove active instance when undefined", () => {
@@ -164,7 +165,7 @@ describe("StoreProvider", () => {
                 sidecar: {host: "localhost", port: 8009},
             })
 
-            useStoreAction.setInstance(instance)
+            useStoreAction.setInstance(getDomain(instance.sidecar))
             useStoreAction.setInstance(undefined)
 
             const state = useStore.getState()
@@ -175,7 +176,7 @@ describe("StoreProvider", () => {
             const instance = createMockInstance()
 
             const stateBefore = useStore.getState()
-            useStoreAction.setInstance(instance)
+            useStoreAction.setInstance(getDomain(instance.sidecar))
             const stateAfter = useStore.getState()
 
             expect(stateAfter).toEqual(stateBefore)
