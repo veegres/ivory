@@ -62,7 +62,6 @@ export enum QueryVariety {
     ReplicaRecommended,
 }
 
-
 export interface Query {
     type: QueryType,
     query: string,
