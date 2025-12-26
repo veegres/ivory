@@ -13,7 +13,7 @@ export const ClusterApi = {
             ))),
     },
     overview: {
-        key: (name?: string, sidecar?: Sidecar) => ["cluster", "overview", name, sidecar?.host, sidecar?.port],
+        key: (name?: string, sidecar?: Sidecar) => ["cluster", "overview", name, sidecar?.host, sidecar?.port].filter(Boolean),
         fn: (name: string, sidecar?: Sidecar) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {sidecar: JSON.stringify(sidecar)}})
             .then((response) => response.data.response),
     },
