@@ -4,10 +4,11 @@ import {useMemo, useState} from "react"
 
 import {ConnectionRequest, QueryVariety} from "../../../api/postgres"
 import {useRouterQueryRun} from "../../../api/query/hook"
+import {QueryApi} from "../../../api/query/router"
 import {SxPropsMap} from "../../../app/type"
 import {getPostgresUrl} from "../../../app/utils"
-import {RefreshIconButton} from "../../view/button/IconButtons"
 import {MenuButton} from "../../view/button/MenuButton"
+import {Refresher} from "../refresher/Refresher"
 import {QueryResponseInfo} from "./QueryResponseInfo"
 import {QueryTable} from "./QueryTable"
 import {QueryVarieties} from "./QueryVarieties"
@@ -15,10 +16,7 @@ import {QueryVarieties} from "./QueryVarieties"
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, fontSize: "13.5px"},
-    label: {color: "text.secondary", cursor: "pointer", fontSize: "13.5px", whiteSpace: "nowrap"},
-    word: {whiteSpace: "wrap", wordBreak: "break-all"},
-    infoRight: {display: "flex", alignItems: "center", gap: 1},
-    buttons: {display: "flex", alignItems: "center", fontSize: "10px"},
+    buttons: {display: "flex", alignItems: "center", fontSize: "10px", gap: "4px"},
     limit: {height: "26px", width: "90px", fontSize: "14px"},
     checkbox: {height: "26px", width: "26px"},
 }
@@ -41,6 +39,7 @@ export function QueryRun(props: Props) {
         [connection, limit, params, query, queryUuid, trim]
     )
     const {data, error, isFetching, refetch} = useRouterQueryRun(queryRunRequest)
+    const queryKey = queryUuid ? QueryApi.template.key(queryUuid) : QueryApi.console.key()
 
     return (
         <Box sx={SX.box}>
@@ -65,7 +64,7 @@ export function QueryRun(props: Props) {
                 />
                 <Box sx={SX.buttons}>
                     {varieties && <QueryVarieties varieties={varieties}/>}
-                    <RefreshIconButton color={"success"} loading={isFetching} onClick={() => refetch()}/>
+                    <Refresher queryKeys={[queryKey]}/>
                     <MenuButton>
                         <Tooltip title={"Trim and Remove Comments"} placement={"top"}>
                             <Checkbox

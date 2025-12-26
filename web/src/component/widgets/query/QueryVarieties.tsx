@@ -6,7 +6,7 @@ import {QueryVarietyOptions} from "../../../app/utils"
 import {InfoColorBox} from "../../view/box/InfoColorBox"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", alignItems: "center", gap: 1, padding: "0px 5px"},
+    box: {display: "flex", alignItems: "center", gap: "4px", padding: "0px 5px", height: "100%"},
 }
 
 type Props = {
@@ -19,7 +19,13 @@ export function QueryVarieties(props: Props) {
             {props.varieties.map(v => {
                 const {badge, label, color} = QueryVarietyOptions[v]
                 return (
-                    <InfoColorBox key={v} label={badge ?? "UNKNOWN"} title={label} bgColor={color} opacity={0.8}/>
+                    <InfoColorBox
+                        key={v}
+                        label={badge ?? "UNKNOWN"}
+                        title={label}
+                        bgColor={color}
+                        opacity={0.8}
+                    />
                 )
             })}
         </Box>

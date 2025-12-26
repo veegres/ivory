@@ -55,7 +55,7 @@ export function ListRow(props: Props) {
 
     return (
         <TableRow sx={[active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]} ref={ref}>
-            <ListCell>
+            <ListCell width={"220px"}>
                 <ListCellChip name={cluster.name} active={active} onClick={handleClick} renderRefresh={renderRefresh()}/>
             </ListCell>
             <ListCell>
@@ -67,7 +67,7 @@ export function ListRow(props: Props) {
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>
-            <ListCell>
+            <ListCell width={"130px"}>
                 <Box sx={SX.actions}>
                     {warning && !overview.error && !overview.isFetching && (
                         <Tooltip title={"Problems were detected, select the cluster to see it"} placement={"top"}>

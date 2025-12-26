@@ -2,15 +2,16 @@ import {Box} from "@mui/material"
 
 import {ConnectionRequest} from "../../../api/postgres"
 import {useRouterActivity} from "../../../api/query/hook"
+import {QueryApi} from "../../../api/query/router"
 import {SxPropsMap} from "../../../app/type"
-import {RefreshIconButton} from "../../view/button/IconButtons"
+import {Refresher} from "../refresher/Refresher"
 import {QueryTable} from "./QueryTable"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1, width: "320px", minHeight: "250px"},
-    button: {position: "absolute", right: 10, top: 0, bottom: 0, display: "flex", alignItems: "center"},
-    label: {position: "relative", textAlign: "center", fontSize: "15px", fontWeight: "bold", color: "text.secondary"},
-    help: {fontSize: "9px", fontWeight: "normal", color: "text.disabled"},
+    box: {display: "flex", flexDirection: "column", width: "320px", minHeight: "250px"},
+    head: {display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0px 10px"},
+    label: {fontSize: "15px", fontWeight: "bold", color: "text.secondary", textTransform: "uppercase", textAlign: "center"},
+    help: {fontSize: "9px", fontWeight: "normal", color: "text.disabled", textAlign: "center"},
     info: {
         display: "flex", justifyContent: "center", alignItems: "center", padding: "0 15px", height: "45px",
         fontSize: "11px", color: "text.secondary", textAlign: "center",
@@ -24,19 +25,16 @@ type Props = {
 
 export function QueryActivity(props: Props) {
     const {connection} = props
-    const {data, isError, error, refetch, isFetching} = useRouterActivity(connection)
+    const {data, isError, error, refetch} = useRouterActivity(connection)
     const table = isError ? undefined : data
     return (
         <Box sx={SX.box}>
-            <Box sx={SX.label}>
-                <Box>Your Active Queries</Box>
-                <Box sx={SX.help}>[ hold shift for horizontal scrolling ]</Box>
-                <Box sx={SX.button}>
-                    <RefreshIconButton
-                        disabled={isFetching}
-                        onClick={() => refetch()}
-                    />
+            <Box>
+                <Box sx={SX.head}>
+                    <Box sx={SX.label}>Active Queries</Box>
+                    <Box><Refresher queryKeys={[QueryApi.activity.key()]} size={26}/></Box>
                 </Box>
+                <Box sx={SX.help}>[ hold shift for horizontal scrolling ]</Box>
             </Box>
             <QueryTable
                 connection={connection}
