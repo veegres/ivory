@@ -8,12 +8,13 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    children: ReactNode
+    children: ReactNode,
+    width?: number | string,
 }
 
 export function ListCell(props: Props) {
-    const {children} = props
+    const {children, width} = props
     return (
-        <TableCell sx={SX.cell}>{children}</TableCell>
+        <TableCell sx={SX.cell} width={width}>{children}</TableCell>
     )
 }

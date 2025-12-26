@@ -1,7 +1,7 @@
 import {ArrowDropDown, ArrowDropUp, Autorenew} from "@mui/icons-material"
 import {Box, Button, ButtonGroup, ClickAwayListener, MenuItem, Paper, Popper, SxProps, Theme} from "@mui/material"
 import {QueryKey, useQueryClient} from "@tanstack/react-query"
-import {useRef, useState} from "react"
+import {useEffect, useRef, useState} from "react"
 
 import {SxPropsMap} from "../../../app/type"
 
@@ -10,7 +10,7 @@ const SX: SxPropsMap = {
     item: {padding: "3px 10px", fontSize: "14px", justifyContent: "center"},
     popper: {zIndex: 3},
     icon: {fontSize: "16px", color: "text.secondary"},
-    label: {color: "text.secondary"},
+    label: {color: "text.secondary", lineHeight: 1},
 }
 
 const group = (size: number): SxProps<Theme> => ({"& .MuiButtonGroup-grouped": {
@@ -28,12 +28,15 @@ type Props = {
 }
 
 export function Refresher(props: Props) {
-    const {size = 30, queryKeys} = props
+    const {size = 28, queryKeys} = props
     const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
     const [period, setPeriod] = useState(periods[0])
     const [label, ms] = period
     const anchorRef = useRef(null)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => () => {handleClear(periods[0][1])}, [])
 
     return (
         <>
@@ -59,6 +62,12 @@ export function Refresher(props: Props) {
             </Popper>
         </>
     )
+
+    function handleClear(ms: number) {
+        for (const queryKey of queryKeys) {
+            queryClient.setQueryDefaults(queryKey, {refetchInterval: ms})
+        }
+    }
 
     async function handleInterval(label: string, ms: number) {
         setPeriod([label, ms])

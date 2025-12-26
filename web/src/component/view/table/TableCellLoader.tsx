@@ -4,25 +4,31 @@ import {cloneElement, ReactElement} from "react"
 import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", justifyContent: "right", alignItems: "center"},
+    box: {display: "flex", justifyContent: "space-between", alignItems: "center"},
     progress: {display: "flex", justifyContent: "center", alignItems: "center", padding: "0 5px"},
 }
 
 type Children = ReactElement<{size?: number}> | ReactElement<{size?: number}>[]
 type Props = {
-    isFetching: boolean,
+    loading: boolean,
+    label?: string,
     children?: Children,
+    width?: number | string,
     sx?: SxProps<Theme>,
     size?: number,
+    colSpan?: number,
 }
 
 export function TableCellLoader(props: Props) {
-    const {isFetching, children, sx, size = 32} = props
+    const {loading, children, sx, width, size = 32, colSpan, label} = props
     return (
-        <TableCell sx={sx}>
+        <TableCell sx={sx} width={width} colSpan={colSpan}>
             <Box sx={SX.box}>
-                {isFetching && <Box sx={SX.progress}><CircularProgress size={size - 15}/></Box>}
-                {children && renderChildren(children)}
+                <Box>{label}</Box>
+                <Box sx={SX.box}>
+                    {loading && <Box sx={SX.progress}><CircularProgress size={size - 15}/></Box>}
+                    {children && renderChildren(children)}
+                </Box>
             </Box>
         </TableCell>
     )

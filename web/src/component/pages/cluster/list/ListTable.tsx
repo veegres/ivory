@@ -1,6 +1,7 @@
 import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material"
 import {useMemo, useState} from "react"
 
+import {ClusterApi} from "../../../../api/cluster/router"
 import {Cluster} from "../../../../api/cluster/type"
 import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
@@ -12,6 +13,7 @@ import {AddIconButton} from "../../../view/button/IconButtons"
 import {TableBody} from "../../../view/table/TableBody"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
 import {Access} from "../../../widgets/access/Access"
+import {Refresher} from "../../../widgets/refresher/Refresher"
 import {ListCreateAuto} from "./ListCreateAuto"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
@@ -19,8 +21,7 @@ import {ListRowNew} from "./ListRowNew"
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
     table: {"tr:last-child td": {border: 0}, "tr td, th": {padding: "5px 10px"}},
-    nameCell: {width: "220px"},
-    buttonCell: {width: "130px"},
+    refresh: {padding: "0px 5px"},
 }
 
 type Props = {
@@ -43,9 +44,16 @@ export function ListTable(props: Props) {
             <Table size={"small"} sx={SX.table} stickyHeader>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={[SxPropsFormatter.style.paper, SX.nameCell]}>Cluster Name</TableCell>
-                        <TableCell sx={SxPropsFormatter.style.paper}>Instances</TableCell>
-                        <TableCellLoader sx={[SxPropsFormatter.style.paper, SX.buttonCell]} isFetching={fetching && !pending}>
+                        <TableCell sx={SxPropsFormatter.style.paper}>Cluster Name</TableCell>
+                        <TableCellLoader
+                            sx={SxPropsFormatter.style.paper}
+                            label={"Instances"}
+                            colSpan={2}
+                            loading={fetching && !pending}
+                        >
+                            <Box sx={SX.refresh}>
+                                <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
+                            </Box>
                             <ListCreateAuto/>
                             <Access permission={Permission.ManageClusterUpdate}>
                                 <AddIconButton

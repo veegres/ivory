@@ -12,7 +12,6 @@ import {OverviewInstancesRow} from "./OverviewInstancesRow"
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
     table: {"tr:last-child td": {border: 0}, "tr th, td": {padding: "2px 5px"}, tableLayout: "fixed"},
-    buttonCell: {width: "160px"},
     warning: {display: "flex", justifyContent: "center"},
 }
 
@@ -43,7 +42,7 @@ export function OverviewInstances(props: Props) {
                         <TableCell width={"15%"}>Postgres</TableCell>
                         <TableCell width={"150px"}>State</TableCell>
                         <TableCell/>
-                        <TableCellLoader sx={SX.buttonCell} isFetching={false}>
+                        <TableCellLoader width={"160px"} loading={false}>
                             <OverviewInstancesFixAuto name={cluster.name}/>
                             <RefreshIconButton
                                 onClick={() => overview.refetch()}

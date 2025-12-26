@@ -61,7 +61,7 @@ export function useRouterActivity(connection: ConnectionRequest) {
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: QueryApi.activity.key(),
         queryFn: () => QueryApi.activity.fn(connection),
-        retry: false, refetchOnWindowFocus: true, refetchInterval: 5000,
+        retry: false, refetchOnWindowFocus: true,
     })
 }
 
