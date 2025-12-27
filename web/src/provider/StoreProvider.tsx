@@ -14,6 +14,7 @@ interface Store {
     activeInstance: { [cluster: string]: string | undefined },
     activeTags: string[],
     warnings: { [key: string]: boolean },
+    refresh: { [key: string]: [string, number] },
     settings: boolean,
     instance: {
         body: InstanceTabType,
@@ -33,6 +34,7 @@ export const useStore = create(persist<Store>(
         activeTags: ["ALL"],
         warnings: {},
         settings: false,
+        refresh: {},
         instance: {
             body: InstanceTabType.CHART,
             queryTab: QueryType.CONSOLE,
@@ -59,6 +61,7 @@ export const useStoreAction = {
     setQueryTab: setQueryTab,
     setDbName: setDbName,
     setDbSchema: setDbSchema,
+    setRefreshPeriod: setRefreshPeriod,
 }
 
 // SETTERS
@@ -129,5 +132,10 @@ function setDbName(n?: string) {
 function setDbSchema(n?: string) {
     useStore.setState(s => ({...s, instance: {...s.instance, dbSchema: n}}))
 }
+
+function setRefreshPeriod(key: string, period: [string, number]) {
+    useStore.setState(s => ({...s, refresh: {...s.refresh, [key]: period}}))
+}
+
 
 

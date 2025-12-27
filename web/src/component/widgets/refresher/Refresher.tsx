@@ -4,6 +4,7 @@ import {QueryKey, useQueryClient} from "@tanstack/react-query"
 import {useEffect, useRef, useState} from "react"
 
 import {SxPropsMap} from "../../../app/type"
+import {useStore, useStoreAction} from "../../../provider/StoreProvider"
 
 const SX: SxPropsMap = {
     select: {display: "flex", flexDirection: "column", minWidth: "60px", padding: "5px 0px"},
@@ -30,9 +31,11 @@ type Props = {
 
 export function Refresher(props: Props) {
     const {size = 28, queryKeys, defaultPeriod} = props
+    const queryKeysStr = queryKeys.map(k => k.join(".")).join(".")
     const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
-    const [period, setPeriod] = useState(defaultPeriod ?? periods[0])
+    const period = useStore(s => s.refresh[queryKeysStr]) ?? defaultPeriod ?? periods[0]
+    const {setRefreshPeriod} = useStoreAction
     const [label, ms] = period
     const anchorRef = useRef(null)
 
@@ -47,13 +50,12 @@ export function Refresher(props: Props) {
                     {ms === 0 ? (open ? <ArrowDropUp sx={SX.icon}/> : <ArrowDropDown sx={SX.icon}/>) : <Box sx={SX.label}>{label}</Box>}
                 </Button>
             </ButtonGroup>
-            { }
             <Popper sx={SX.popper} open={open} anchorEl={anchorRef.current} placement={"bottom"}>
                 <Paper>
                     <ClickAwayListener onClickAway={() => setOpen(false)}>
                         <Box sx={SX.select} onClick={() => setOpen(false)}>
                             {periods.map(([label, ms]) => (
-                                <MenuItem key={label} sx={SX.item} onClick={() => handleInterval(label, ms)}>
+                                <MenuItem key={label} sx={SX.item} onClick={() => handleClick(label, ms)}>
                                     {label}
                                 </MenuItem>
                             ))}
@@ -65,7 +67,7 @@ export function Refresher(props: Props) {
     )
     
     function handleEffect() {
-        if (defaultPeriod) handleInterval(defaultPeriod[0], defaultPeriod[1]).then()
+        if (period[1] !== 0) handleInterval(period[1]).then()
         return () => handleClear(periods[0][1])
     }
 
@@ -75,8 +77,12 @@ export function Refresher(props: Props) {
         }
     }
 
-    async function handleInterval(label: string, ms: number) {
-        setPeriod([label, ms])
+    function handleClick(label: string, ms: number) {
+        setRefreshPeriod(queryKeysStr, [label, ms])
+        handleInterval(ms).then()
+    }
+
+    async function handleInterval(ms: number) {
         for (const queryKey of queryKeys) {
             queryClient.setQueryDefaults(queryKey, {refetchInterval: ms})
             await queryClient.refetchQueries({queryKey})
