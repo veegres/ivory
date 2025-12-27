@@ -27,7 +27,7 @@ export function ListRowNew(props: Props) {
 
     return (
         <TableRow>
-            <ListCell>
+            <ListCell width={"220px"}>
                 <FormControl fullWidth>
                     <OutlinedInput
                         sx={SX.nodesCellInput}
@@ -45,7 +45,7 @@ export function ListRowNew(props: Props) {
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>
-            <ListCell>
+            <ListCell width={"130px"}>
                 <ListCellUpdate
                     cluster={{
                         name: stateName,

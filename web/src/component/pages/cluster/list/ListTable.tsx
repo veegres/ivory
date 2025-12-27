@@ -76,8 +76,8 @@ export function ListTable(props: Props) {
     )
 
     function renderRemovedRow() {
-        if (!activeCluster || !list.length) return
-        if (list.some(e => e.name === activeCluster.cluster.name)) return
+        if (!activeCluster) return
+        if (rows.some(e => e.name === activeCluster.cluster.name)) return
         return (
             <ListRow cluster={activeCluster.cluster} editable={false}/>
         )
@@ -95,11 +95,15 @@ export function ListTable(props: Props) {
 
     function renderEmpty() {
         if (pending || showNewElement || rows.length || activeCluster) return
-
+        const text = search ? (
+            "There are no clusters that match your filter"
+        ) : (
+            "There are no clusters yet. You can add them manually or by auto detection"
+        )
         return (
             <TableRow>
                 <TableCell colSpan={3}>
-                    <AlertCentered text={"There are no clusters yet. You can add them manually or by auto detection."}/>
+                    <AlertCentered text={text}/>
                 </TableCell>
             </TableRow>
         )

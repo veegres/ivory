@@ -1,5 +1,5 @@
 import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material"
-import {useMemo, useState} from "react"
+import {useState} from "react"
 
 import {useRouterClusterList, useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {ClusterTab} from "../../../../api/cluster/type"
@@ -101,10 +101,9 @@ export function Overview() {
     const permissions = info.data?.auth.user?.permissions
     const tab = TABS[activeClusterTab]
 
-    const visible = useMemo(handleMemoVisibility, [clusters.data, clusters.error])
 
     return (
-        <PageMainBox withPadding visible={visible}>
+        <PageMainBox withPadding visible={!!clusters.data?.length || !!activeCluster}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)} role={"tab"}>
                     {TABS.map((value, i) => permissions && permissions[value.permission] === PermissionStatus.GRANTED && (
@@ -163,9 +162,5 @@ export function Overview() {
                 </Box>
             </Collapse>
         )
-    }
-
-    function handleMemoVisibility() {
-        return Object.keys(clusters.data ?? {}).length !== 0 && clusters.error === null
     }
 }
