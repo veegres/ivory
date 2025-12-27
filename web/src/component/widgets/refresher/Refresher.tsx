@@ -25,18 +25,19 @@ const periods: [string, number][] = [
 type Props = {
     queryKeys: QueryKey[],
     size?: number,
+    defaultPeriod?: [string, number],
 }
 
 export function Refresher(props: Props) {
-    const {size = 28, queryKeys} = props
+    const {size = 28, queryKeys, defaultPeriod} = props
     const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
-    const [period, setPeriod] = useState(periods[0])
+    const [period, setPeriod] = useState(defaultPeriod ?? periods[0])
     const [label, ms] = period
     const anchorRef = useRef(null)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => () => {handleClear(periods[0][1])}, [])
+    useEffect(handleEffect, [])
 
     return (
         <>
@@ -62,6 +63,11 @@ export function Refresher(props: Props) {
             </Popper>
         </>
     )
+    
+    function handleEffect() {
+        if (defaultPeriod) handleInterval(defaultPeriod[0], defaultPeriod[1]).then()
+        return () => handleClear(periods[0][1])
+    }
 
     function handleClear(ms: number) {
         for (const queryKey of queryKeys) {

@@ -32,7 +32,7 @@ export function QueryActivity(props: Props) {
             <Box>
                 <Box sx={SX.head}>
                     <Box sx={SX.label}>Active Queries</Box>
-                    <Box><Refresher queryKeys={[QueryApi.activity.key()]} size={26}/></Box>
+                    <Box><Refresher queryKeys={[QueryApi.activity.key()]} size={26} defaultPeriod={["5s", 5000]}/></Box>
                 </Box>
                 <Box sx={SX.help}>[ hold shift for horizontal scrolling ]</Box>
             </Box>
