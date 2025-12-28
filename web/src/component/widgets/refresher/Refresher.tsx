@@ -1,5 +1,16 @@
 import {ArrowDropDown, ArrowDropUp, Autorenew} from "@mui/icons-material"
-import {Box, Button, ButtonGroup, ClickAwayListener, MenuItem, Paper, Popper, SxProps, Theme} from "@mui/material"
+import {
+    Box,
+    Button,
+    ButtonGroup,
+    ClickAwayListener,
+    MenuItem,
+    Paper,
+    Popper,
+    SxProps,
+    Theme,
+    Tooltip,
+} from "@mui/material"
 import {QueryKey, useQueryClient} from "@tanstack/react-query"
 import {useEffect, useRef, useState} from "react"
 
@@ -45,10 +56,14 @@ export function Refresher(props: Props) {
     return (
         <>
             <ButtonGroup color={"inherit"} ref={anchorRef} sx={group(size)}>
-                <Button onClick={handleRefresh}><Autorenew sx={SX.icon}/></Button>
-                <Button onClick={() => setOpen(!open)}>
-                    {ms === 0 ? (open ? <ArrowDropUp sx={SX.icon}/> : <ArrowDropDown sx={SX.icon}/>) : <Box sx={SX.label}>{label}</Box>}
-                </Button>
+                <Tooltip title={"Refresh"} placement={"top"} disableInteractive>
+                    <Button onClick={handleRefresh}><Autorenew sx={SX.icon}/></Button>
+                </Tooltip>
+                <Tooltip title={"Auto Refresh"} placement={"top"} disableInteractive>
+                    <Button onClick={() => setOpen(!open)}>
+                        {ms === 0 ? (open ? <ArrowDropUp sx={SX.icon}/> : <ArrowDropDown sx={SX.icon}/>) : <Box sx={SX.label}>{label}</Box>}
+                    </Button>
+                </Tooltip>
             </ButtonGroup>
             <Popper sx={SX.popper} open={open} anchorEl={anchorRef.current} placement={"bottom"}>
                 <Paper>
