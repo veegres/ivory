@@ -23,7 +23,7 @@ import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 export const IvoryLinks: Links = {
     git: {name: "Github", link: "https://github.com/veegres/ivory"},
     docs: {name: "Docs", link: "https://github.com/veegres/ivory/blob/master/README.md"},
-    repository: {name: "Repository", link: "https://hub.docker.com/r/aelsergeev/ivory"},
+    repository: {name: "Repository", link: "https://hub.docker.com/r/veegres/ivory"},
     issues: {name: "Issues", link: "https://github.com/veegres/ivory/issues"},
     release: {name: "Releases", link: "https://github.com/veegres/ivory/releases"},
     sponsorship: {name: "Sponsorship", link: "https://boosty.to/anselvo/purchase/1454406"}
