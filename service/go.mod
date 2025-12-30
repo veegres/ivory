@@ -6,7 +6,7 @@ toolchain go1.24.6
 
 require (
 	github.com/boltdb/bolt v1.3.1
-	github.com/coreos/go-oidc/v3 v3.16.0
+	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/gin-contrib/static v1.1.5
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-ldap/ldap/v3 v3.4.12
