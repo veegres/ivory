@@ -1,5 +1,7 @@
 package sidecar
 
+import "ivory/src/clients/http"
+
 type Client interface {
 	Overview(request Request) ([]Instance, int, error)
 	Config(request Request) (any, int, error)
@@ -13,4 +15,23 @@ type Client interface {
 	Failover(request Request) (*string, int, error)
 	Activate(request Request) (*string, int, error)
 	Pause(request Request) (*string, int, error)
+}
+
+func Map(request Request, path string) http.Request {
+	var creds *http.Credentials
+	if request.Credentials != nil {
+		creds = &http.Credentials{
+			Username: request.Credentials.Username,
+			Password: request.Credentials.Password,
+		}
+	}
+
+	return http.Request{
+		Host:        request.Sidecar.Host,
+		Port:        request.Sidecar.Port,
+		Path:        path,
+		Body:        request.Body,
+		Credentials: creds,
+		TLSConfig:   request.TlsConfig,
+	}
 }

@@ -3,8 +3,9 @@ package patroni
 import (
 	"encoding/json"
 	"ivory/src/clients/database"
+	"ivory/src/clients/http"
 	"ivory/src/clients/sidecar"
-	"net/http"
+	nethttp "net/http"
 	"testing"
 )
 
@@ -28,8 +29,8 @@ func TestClient_Overview_Mapping(t *testing.T) {
 		}
 
 		// Mock the gateway response
-		mockGateway := &sidecar.Gateway{}
-		client := NewClient(mockGateway)
+		httpClient := &http.Client{}
+		client := NewClient(httpClient)
 
 		// We'll test the mapping logic by simulating what the response would be
 		// Since Overview() makes actual HTTP calls, we test the mapping separately
@@ -292,7 +293,7 @@ func TestClient_Overview_ScheduledOperations(t *testing.T) {
 }
 
 func TestClient_Activate(t *testing.T) {
-	client := NewClient(&sidecar.Gateway{})
+	client := NewClient(&http.Client{})
 
 	t.Run("should return error when body is not nil", func(t *testing.T) {
 		request := sidecar.Request{
@@ -304,8 +305,8 @@ func TestClient_Activate(t *testing.T) {
 		if err == nil {
 			t.Fatal("Expected error when body is not nil, got nil")
 		}
-		if status != http.StatusBadRequest {
-			t.Errorf("Expected status %d, got %d", http.StatusBadRequest, status)
+		if status != nethttp.StatusBadRequest {
+			t.Errorf("Expected status %d, got %d", nethttp.StatusBadRequest, status)
 		}
 		if err.Error() != "body should be empty" {
 			t.Errorf("Expected 'body should be empty', got '%s'", err.Error())
@@ -314,7 +315,7 @@ func TestClient_Activate(t *testing.T) {
 }
 
 func TestClient_Pause(t *testing.T) {
-	client := NewClient(&sidecar.Gateway{})
+	client := NewClient(&http.Client{})
 
 	t.Run("should return error when body is not nil", func(t *testing.T) {
 		request := sidecar.Request{
@@ -326,8 +327,8 @@ func TestClient_Pause(t *testing.T) {
 		if err == nil {
 			t.Fatal("Expected error when body is not nil, got nil")
 		}
-		if status != http.StatusBadRequest {
-			t.Errorf("Expected status %d, got %d", http.StatusBadRequest, status)
+		if status != nethttp.StatusBadRequest {
+			t.Errorf("Expected status %d, got %d", nethttp.StatusBadRequest, status)
 		}
 		if err.Error() != "body should be empty" {
 			t.Errorf("Expected 'body should be empty', got '%s'", err.Error())
