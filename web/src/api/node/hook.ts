@@ -5,6 +5,15 @@ import {ClusterApi} from "../cluster/router"
 import {NodeApi} from "./router"
 import {NodeRequest, Sidecar} from "./type"
 
+export function useRouterNodeOverview(request: NodeRequest, enabled: boolean) {
+    return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: NodeApi.overview.key(request.sidecar),
+        queryFn: () => NodeApi.overview.fn(request),
+        enabled,
+    })
+}
+
 export function useRouterNodeConfig(request: NodeRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -92,5 +101,60 @@ export function useRouterNodePause(cluster: string) {
         mutationFn: NodeApi.pause.fn,
         mutationKey: NodeApi.pause.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
+    })
+}
+
+export function useRouterNodeMetrics(request: {vmId: string}, enabled: boolean) {
+    return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: NodeApi.metrics.key(request.vmId),
+        queryFn: () => NodeApi.metrics.fn(request),
+        enabled,
+    })
+}
+
+export function useRouterNodeDockerList(request: {vmId: string}, enabled: boolean) {
+    return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: NodeApi.docker.list.key(request.vmId),
+        queryFn: () => NodeApi.docker.list.fn(request),
+        enabled,
+    })
+}
+
+export function useRouterNodeDockerLogs(vmId: string, container: string, tail: number, enabled: boolean) {
+    return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: NodeApi.docker.logs.key(vmId, container),
+        queryFn: () => NodeApi.docker.logs.fn({vmId, container, tail}),
+        enabled,
+    })
+}
+
+export function useRouterNodeDockerDeploy() {
+    return useMutationAdapter({
+        mutationFn: NodeApi.docker.deploy.fn,
+        mutationKey: NodeApi.docker.deploy.key(),
+    })
+}
+
+export function useRouterNodeDockerStop() {
+    return useMutationAdapter({
+        mutationFn: NodeApi.docker.stop.fn,
+        mutationKey: NodeApi.docker.stop.key(),
+    })
+}
+
+export function useRouterNodeDockerRun() {
+    return useMutationAdapter({
+        mutationFn: NodeApi.docker.run.fn,
+        mutationKey: NodeApi.docker.run.key(),
+    })
+}
+
+export function useRouterNodeDockerDelete() {
+    return useMutationAdapter({
+        mutationFn: NodeApi.docker.delete.fn,
+        mutationKey: NodeApi.docker.delete.key(),
     })
 }

@@ -25,6 +25,25 @@ type SshRequest struct {
 
 type SshMetrics = ssh.Metrics
 
+type DockerRequest struct {
+	VmId      uuid.UUID `json:"vmId" form:"vmId" binding:"required"`
+	Image     string    `json:"image" form:"image"`
+	Container string    `json:"container" form:"container"`
+	Options   string    `json:"options" form:"options"`
+}
+
+type DockerLogsRequest struct {
+	VmId      uuid.UUID `json:"vmId" form:"vmId" binding:"required"`
+	Container string    `json:"container" form:"container" binding:"required"`
+	Tail      int       `json:"tail" form:"tail"`
+}
+
+type DockerResult struct {
+	Stdout   string `json:"stdout"`
+	Stderr   string `json:"stderr"`
+	ExitCode int    `json:"exitCode"`
+}
+
 // SPECIFIC (SERVER)
 
 type NodeAutoRequest struct {

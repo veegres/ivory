@@ -19,15 +19,18 @@ export enum Permission {
     ViewTagList = "view.tag.list",
 
     // Node permissions
-    ViewNodeOverview = "view.node.overview",
-    ViewNodeConfig = "view.node.config",
-    ManageNodeConfigUpdate = "manage.node.config.update",
-    ManageNodeSwitchover = "manage.node.switchover",
-    ManageNodeReinitialize = "manage.node.reinitialize",
-    ManageNodeRestart = "manage.node.restart",
-    ManageNodeReload = "manage.node.reload",
-    ManageNodeFailover = "manage.node.failover",
-    ManageNodeActivation = "manage.node.activation",
+    ViewNodeDbOverview = "view.node.db.overview",
+    ViewNodeDbConfig = "view.node.db.config",
+    ViewNodeVmMetrics = "view.node.vm.metrics",
+    ManageNodeDbConfigUpdate = "manage.node.db.config.update",
+    ManageNodeDbSwitchover = "manage.node.db.switchover",
+    ManageNodeDbReinitialize = "manage.node.db.reinitialize",
+    ManageNodeDbRestart = "manage.node.db.restart",
+    ManageNodeDbReload = "manage.node.db.reload",
+    ManageNodeDbFailover = "manage.node.db.failover",
+    ManageNodeDbActivation = "manage.node.db.activation",
+    ManageNodeVmDocker = "manage.node.vm.docker",
+    ViewNodeVmDocker = "view.node.vm.docker",
 
     // Query permissions
     ViewQueryList = "view.query.list",
