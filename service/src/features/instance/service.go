@@ -5,25 +5,33 @@ import (
 	"errors"
 	"fmt"
 	"ivory/src/clients/sidecar"
+	sshclient "ivory/src/clients/ssh"
 	"ivory/src/features/cert"
 	"ivory/src/features/password"
+	"ivory/src/features/vm"
 )
 
 type Service struct {
 	sidecarClient   sidecar.Client
+	sshClient       sshclient.Client
 	passwordService *password.Service
 	certService     *cert.Service
+	vmService       *vm.Service
 }
 
 func NewService(
 	sidecarClient sidecar.Client,
+	sshClient sshclient.Client,
 	passwordService *password.Service,
 	certService *cert.Service,
+	vmService *vm.Service,
 ) *Service {
 	return &Service{
 		sidecarClient:   sidecarClient,
+		sshClient:       sshClient,
 		passwordService: passwordService,
 		certService:     certService,
+		vmService:       vmService,
 	}
 }
 
@@ -157,6 +165,42 @@ func (s *Service) Pause(instance InstanceRequest) (*string, int, error) {
 		return nil, 0, err
 	}
 	return s.sidecarClient.Pause(request)
+}
+
+func (s *Service) ExecuteVmCommand(request VmCommandRequest) (*VmCommandResult, int, error) {
+	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	if err != nil {
+		return nil, 0, err
+	}
+	result, err := s.sshClient.Execute(*vmModel, request.Command)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, 200, nil
+}
+
+func (s *Service) ExecuteVmDockerCommand(request VmCommandRequest) (*VmCommandResult, int, error) {
+	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	if err != nil {
+		return nil, 0, err
+	}
+	result, err := s.sshClient.ExecuteDocker(*vmModel, request.Command)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, 200, nil
+}
+
+func (s *Service) VmMetrics(request VmRequest) (*VmMetrics, int, error) {
+	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	if err != nil {
+		return nil, 0, err
+	}
+	result, err := s.sshClient.Metrics(*vmModel)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, 200, nil
 }
 
 func (s *Service) mapRequest(instance InstanceRequest) (sidecar.Request, error) {

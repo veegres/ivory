@@ -16,6 +16,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/features/vm"
 	"ivory/src/storage/env"
 	"mime/multipart"
 
@@ -40,6 +41,7 @@ type Service struct {
 	secretService     *secret.Service
 	configService     *config.Service
 	permissionService *permission.Service
+	vmService         *vm.Service
 }
 
 func NewService(
@@ -55,6 +57,7 @@ func NewService(
 	secretService *secret.Service,
 	configService *config.Service,
 	permissionService *permission.Service,
+	vmService *vm.Service,
 ) *Service {
 	return &Service{
 		env:               env,
@@ -69,6 +72,7 @@ func NewService(
 		secretService:     secretService,
 		configService:     configService,
 		permissionService: permissionService,
+		vmService:         vmService,
 	}
 }
 
@@ -88,7 +92,8 @@ func (s *Service) Erase() error {
 	errQuery := s.queryService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
-	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery, errConfig, errPerm)
+	errVm := s.vmService.DeleteAll()
+	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery, errConfig, errPerm, errVm)
 }
 
 func (s *Service) ChangeSecret(previousKey string, newKey string) error {
@@ -103,6 +108,10 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	errConfig := s.configService.Reencrypt()
 	if errConfig != nil {
 		return errConfig
+	}
+	errVm := s.vmService.Reencrypt(prevSha, newSha)
+	if errVm != nil {
+		return errVm
 	}
 	return nil
 }

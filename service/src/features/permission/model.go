@@ -37,13 +37,22 @@ const (
 	ManageClusterUpdate Permission = "manage.cluster.update"
 	ManageClusterDelete Permission = "manage.cluster.delete"
 
+	// VM permissions
+	ViewVmList     Permission = "view.vm.list"
+	ViewVmItem     Permission = "view.vm.item"
+	ManageVmCreate Permission = "manage.vm.create"
+	ManageVmUpdate Permission = "manage.vm.update"
+	ManageVmDelete Permission = "manage.vm.delete"
+
 	// Tags permissions
 	ViewTagList Permission = "view.tag.list"
 
 	// Instance permissions
 	ViewInstanceOverview       Permission = "view.instance.overview"
 	ViewInstanceConfig         Permission = "view.instance.config"
+	ViewInstanceVmMetrics      Permission = "view.instance.vm.metrics"
 	ManageInstanceConfigUpdate Permission = "manage.instance.config.update"
+	ManageInstanceVmExecute    Permission = "manage.instance.vm.execute"
 	ManageInstanceSwitchover   Permission = "manage.instance.switchover"
 	ManageInstanceReinitialize Permission = "manage.instance.reinitialize"
 	ManageInstanceRestart      Permission = "manage.instance.restart"
@@ -102,10 +111,17 @@ var Permissions = []Permission{
 	ManageClusterCreate,
 	ManageClusterUpdate,
 	ManageClusterDelete,
+	ViewVmList,
+	ViewVmItem,
+	ManageVmCreate,
+	ManageVmUpdate,
+	ManageVmDelete,
 	ViewTagList,
 	ViewInstanceOverview,
 	ViewInstanceConfig,
+	ViewInstanceVmMetrics,
 	ManageInstanceConfigUpdate,
+	ManageInstanceVmExecute,
 	ManageInstanceSwitchover,
 	ManageInstanceReinitialize,
 	ManageInstanceRestart,

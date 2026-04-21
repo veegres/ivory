@@ -12,7 +12,7 @@ type Service struct {
 	secretService      *secret.Service
 	encryption         *encryption.Service
 
-	defaultPasswordWord string
+	hiddenPassword string
 }
 
 func NewService(
@@ -21,10 +21,10 @@ func NewService(
 	encryption *encryption.Service,
 ) *Service {
 	return &Service{
-		passwordRepository:  passwordRepository,
-		secretService:       secretService,
-		encryption:          encryption,
-		defaultPasswordWord: "********",
+		passwordRepository: passwordRepository,
+		secretService:      secretService,
+		encryption:         encryption,
+		hiddenPassword:     "********",
 	}
 }
 
@@ -38,7 +38,7 @@ func (s *Service) Create(credential Password) (*uuid.UUID, *Password, error) {
 	key, errCreate := s.passwordRepository.Create(encryptedCred)
 
 	cred := encryptedCred
-	cred.Password = s.defaultPasswordWord
+	cred.Password = s.hiddenPassword
 	return &key, &cred, errCreate
 }
 
@@ -52,7 +52,7 @@ func (s *Service) Update(key uuid.UUID, credential Password) (*uuid.UUID, *Passw
 	key, errUpdate := s.passwordRepository.Update(key, encryptedCred)
 
 	cred := encryptedCred
-	cred.Password = s.defaultPasswordWord
+	cred.Password = s.hiddenPassword
 	return &key, &cred, errUpdate
 }
 
@@ -81,7 +81,7 @@ func (s *Service) Get(uuid uuid.UUID) (*Password, error) {
 	if err != nil {
 		return nil, err
 	}
-	cred.Password = s.defaultPasswordWord
+	cred.Password = s.hiddenPassword
 	return &cred, nil
 }
 
@@ -128,7 +128,7 @@ func (s *Service) Reencrypt(oldSecret [16]byte, newSecret [16]byte) error {
 
 func (s *Service) hidePasswords(credentialMap PasswordMap) PasswordMap {
 	for key, credential := range credentialMap {
-		credential.Password = s.defaultPasswordWord
+		credential.Password = s.hiddenPassword
 		credentialMap[key] = credential
 	}
 	return credentialMap

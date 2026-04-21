@@ -5,8 +5,9 @@ import (
 	"ivory/src/clients/auth/ldap"
 	"ivory/src/clients/auth/oidc"
 	"ivory/src/clients/database/postgres"
-	"ivory/src/clients/sidecar"
+	"ivory/src/clients/http"
 	"ivory/src/clients/sidecar/patroni"
+	"ivory/src/clients/ssh"
 	"ivory/src/features/auth"
 	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
@@ -20,6 +21,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/features/vm"
 	"ivory/src/storage/db"
 	"ivory/src/storage/env"
 	"ivory/src/storage/files"
@@ -39,6 +41,7 @@ type Context struct {
 	queryRouter      *query.Router
 	managementRouter *management.Router
 	configRouter     *config.Router
+	vmRouter         *vm.Router
 }
 
 func NewContext() *Context {
@@ -54,6 +57,7 @@ func NewContext() *Context {
 	passwordBucket := db.NewBucket[password.Password](st, "Password")
 	permissionBucket := db.NewBucket[permission.PermissionMap](st, "Permission")
 	queryBucket := db.NewBucket[query.Query](st, "Query")
+	vmBucket := db.NewBucket[vm.VM](st, "Vm")
 
 	// FILES
 	compactTableFiles := files.NewStorage("pgcompacttable", ".log")
@@ -71,11 +75,13 @@ func NewContext() *Context {
 	permissionRepo := permission.NewRepository(permissionBucket)
 	queryLogRepo := query.NewLogRepository(queryLogFiles)
 	queryRepo := query.NewRepository(queryBucket)
+	vmRepo := vm.NewRepository(vmBucket)
 
 	// CLIENTS
-	sidecarGateway := sidecar.NewGateway()
-	patroniClient := patroni.NewClient(sidecarGateway)
+	httpClient := http.NewClient()
+	patroniClient := patroni.NewClient(httpClient)
 	postgresClient := postgres.NewClient(appEnv.Version.Label)
+	sshClient := ssh.NewClient()
 
 	// AUTH PROVIDER
 	basicProvider := basic.NewProvider()
@@ -88,7 +94,8 @@ func NewContext() *Context {
 	passwordService := password.NewService(passwordRepo, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
-	instanceService := instance.NewService(patroniClient, passwordService, certService)
+	vmService := vm.NewService(vmRepo, secretService, encryptionService)
+	instanceService := instance.NewService(patroniClient, sshClient, passwordService, certService, vmService)
 	tagService := tag.NewService(tagRepo)
 	clusterService := cluster.NewService(clusterRepo, instanceService, tagService)
 	queryLogService := query.NewLogService(queryLogRepo)
@@ -110,6 +117,7 @@ func NewContext() *Context {
 		secretService,
 		configService,
 		permissionService,
+		vmService,
 	)
 
 	return &Context{
@@ -126,5 +134,6 @@ func NewContext() *Context {
 		queryRouter:      query.NewRouter(queryService, queryExecuteService, queryLogService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),
+		vmRouter:         vm.NewRouter(vmService),
 	}
 }

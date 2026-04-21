@@ -13,6 +13,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/features/vm"
 	"log/slog"
 	"net/http"
 
@@ -53,6 +54,7 @@ func NewRouter(di *Context) {
 	clusterRouter(safe, di.permissionRouter, di.clusterRouter)
 	instanceRouter(safe, di.permissionRouter, di.instanceRouter)
 	tagRouter(safe, di.permissionRouter, di.tagRouter)
+	vmRouter(safe, di.permissionRouter, di.vmRouter)
 	bloatRouter(safe, di.permissionRouter, di.bloatRouter)
 	certRouter(safe, di.permissionRouter, di.certRouter)
 	passwordRouter(safe, di.permissionRouter, di.passwordRouter)
@@ -164,11 +166,23 @@ func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {
 	group.GET("", rp.ValidateMethodMiddleware(permission.ViewTagList), r.GetTagList)
 }
 
+func vmRouter(g *gin.RouterGroup, rp *permission.Router, r *vm.Router) {
+	group := g.Group("/vm")
+	group.GET("", rp.ValidateMethodMiddleware(permission.ViewVmList), r.GetVmList)
+	group.GET("/:uuid", rp.ValidateMethodMiddleware(permission.ViewVmItem), r.GetVm)
+	group.POST("", rp.ValidateMethodMiddleware(permission.ManageVmCreate), r.PostVm)
+	group.PATCH("/:uuid", rp.ValidateMethodMiddleware(permission.ManageVmUpdate), r.PatchVm)
+	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(permission.ManageVmDelete), r.DeleteVm)
+}
+
 func instanceRouter(g *gin.RouterGroup, rp *permission.Router, r *instance.Router) {
 	group := g.Group("/instance")
 	group.GET("/overview", rp.ValidateMethodMiddleware(permission.ViewInstanceOverview), r.GetInstanceOverview)
 	group.GET("/config", rp.ValidateMethodMiddleware(permission.ViewInstanceConfig), r.GetInstanceConfig)
+	group.GET("/vm/metrics", rp.ValidateMethodMiddleware(permission.ViewInstanceVmMetrics), r.GetVmMetrics)
 	group.PATCH("/config", rp.ValidateMethodMiddleware(permission.ManageInstanceConfigUpdate), r.PatchInstanceConfig)
+	group.POST("/vm/execute", rp.ValidateMethodMiddleware(permission.ManageInstanceVmExecute), r.PostVmExecute)
+	group.POST("/vm/docker", rp.ValidateMethodMiddleware(permission.ManageInstanceVmExecute), r.PostVmDockerExecute)
 	group.POST("/switchover", rp.ValidateMethodMiddleware(permission.ManageInstanceSwitchover), r.PostInstanceSwitchover)
 	group.DELETE("/switchover", rp.ValidateMethodMiddleware(permission.ManageInstanceSwitchover), r.DeleteInstanceSwitchover)
 	group.POST("/reinitialize", rp.ValidateMethodMiddleware(permission.ManageInstanceReinitialize), r.PostInstanceReinitialize)
