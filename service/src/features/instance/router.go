@@ -63,21 +63,13 @@ func (r *Router) PostInstancePause(context *gin.Context) {
 	handleBodyRequest(context, r.service.Pause)
 }
 
-func (r *Router) PostVmExecute(context *gin.Context) {
-	handleBodyRequestOf(context, r.service.ExecuteVmCommand)
+func (r *Router) GetMetrics(context *gin.Context) {
+	handleParamRequestOf(context, r.service.Metrics)
 }
 
-func (r *Router) PostVmDockerExecute(context *gin.Context) {
-	handleBodyRequestOf(context, r.service.ExecuteVmDockerCommand)
-}
-
-func (r *Router) GetVmMetrics(context *gin.Context) {
-	handleParamRequestOf(context, r.service.VmMetrics)
-}
-
-func handleParamRequest[T any](context *gin.Context, action func(instance InstanceRequest) (T, int, error)) {
+func handleParamRequest[T any](context *gin.Context, action func(instance Request) (T, int, error)) {
 	query := context.Query("request")
-	var instance InstanceRequest
+	var instance Request
 	errBind := json.Unmarshal([]byte(query), &instance)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -87,7 +79,7 @@ func handleParamRequest[T any](context *gin.Context, action func(instance Instan
 	handleResponse(context, body, status, err)
 }
 
-func handleBodyRequest[T any](context *gin.Context, action func(instance InstanceRequest) (T, int, error)) {
+func handleBodyRequest[T any](context *gin.Context, action func(instance Request) (T, int, error)) {
 	handleBodyRequestOf(context, action)
 }
 

@@ -187,7 +187,7 @@ func (s *Service) getOverview(sidecar sidecar.Sidecar, cluster ClusterOptions) (
 	if cluster.Tls.Sidecar {
 		certs = &cluster.Certs
 	}
-	request := instance.InstanceRequest{
+	request := instance.Request{
 		Sidecar:      sidecar,
 		CredentialId: cluster.Credentials.PatroniId,
 		Certs:        certs,
