@@ -22,7 +22,7 @@ type Props = {
     renderActions?: ReactNode,
 }
 
-export function InstanceMainTitle(props: Props) {
+export function NodeMainTitle(props: Props) {
     const {label, info, renderActions, db} = props
     const [alert, setAlert] = useState(false)
 

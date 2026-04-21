@@ -18,16 +18,16 @@ export enum Permission {
     // Tags permissions
     ViewTagList = "view.tag.list",
 
-    // Instance permissions
-    ViewInstanceOverview = "view.instance.overview",
-    ViewInstanceConfig = "view.instance.config",
-    ManageInstanceConfigUpdate = "manage.instance.config.update",
-    ManageInstanceSwitchover = "manage.instance.switchover",
-    ManageInstanceReinitialize = "manage.instance.reinitialize",
-    ManageInstanceRestart = "manage.instance.restart",
-    ManageInstanceReload = "manage.instance.reload",
-    ManageInstanceFailover = "manage.instance.failover",
-    ManageInstanceActivation = "manage.instance.activation",
+    // Node permissions
+    ViewNodeOverview = "view.node.overview",
+    ViewNodeConfig = "view.node.config",
+    ManageNodeConfigUpdate = "manage.node.config.update",
+    ManageNodeSwitchover = "manage.node.switchover",
+    ManageNodeReinitialize = "manage.node.reinitialize",
+    ManageNodeRestart = "manage.node.restart",
+    ManageNodeReload = "manage.node.reload",
+    ManageNodeFailover = "manage.node.failover",
+    ManageNodeActivation = "manage.node.activation",
 
     // Query permissions
     ViewQueryList = "view.query.list",

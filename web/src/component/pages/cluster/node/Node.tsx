@@ -6,23 +6,23 @@ import {getConnectionRequest} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {PageMainBox} from "../../../view/box/PageMainBox"
-import {InstanceInfo} from "./InstanceInfo"
-import {InstanceMain} from "./InstanceMain"
+import {NodeInfo} from "./NodeInfo"
+import {NodeMain} from "./NodeMain"
 
 const SX: SxPropsMap = {
     content: {display: "flex", gap: 3},
 }
 
-export function Instance() {
-    const {setInstanceBody} = useStoreAction
-    const instance = useStore(s => s.instance)
+export function Node() {
+    const {setNodeBody} = useStoreAction
+    const node = useStore(s => s.node)
     const activeCluster = useStore(s => s.activeCluster)
-    const activeInstanceName = useStore(s => s.activeInstance[activeCluster?.cluster.name ?? ""])
+    const activeNodeName = useStore(s => s.activeNode[activeCluster?.cluster.name ?? ""])
     const activeClusterTab = useStore(s => s.activeClusterTab)
     const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
 
     const overview = useRouterClusterOverview(activeCluster?.cluster.name, false)
-    const activeInstance = overview.data && overview.data.instances[activeInstanceName ?? ""]
+    const activeNode = overview.data && overview.data.nodes[activeNodeName ?? ""]
     return (
         <PageMainBox withPadding visible={isClusterOverviewOpen}>
             {renderContent()}
@@ -30,16 +30,16 @@ export function Instance() {
     )
 
     function renderContent() {
-        if (!activeInstanceName || !activeCluster) return <AlertCentered text={"Please, select an instance to see the information!"}/>
-        if (!activeInstance) return <AlertCentered text={"There is not enough information about the instance!"} severity={"warning"}/>
+        if (!activeNodeName || !activeCluster) return <AlertCentered text={"Please, select a node to see the information!"}/>
+        if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
 
-        const connection = getConnectionRequest(activeCluster.cluster, activeInstance.database)
+        const connection = getConnectionRequest(activeCluster.cluster, activeNode.database)
 
         return (
             <Box sx={SX.content}>
-                <InstanceInfo instance={activeInstance} tab={instance.body} onTab={setInstanceBody} connection={connection}/>
+                <NodeInfo node={activeNode} tab={node.body} onTab={setNodeBody} connection={connection}/>
                 <Divider orientation={"vertical"} flexItem/>
-                <InstanceMain tab={instance.body} database={activeInstance.database}/>
+                <NodeMain tab={node.body} database={activeNode.database}/>
             </Box>
         )
     }

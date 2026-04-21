@@ -1,20 +1,20 @@
-import {useRouterInstanceReload} from "../../../api/instance/hook"
-import {InstanceRequest} from "../../../api/instance/type"
+import {useRouterNodeReload} from "../../../api/node/hook"
+import {NodeRequest} from "../../../api/node/type"
 import {Permission} from "../../../api/permission/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: InstanceRequest,
+    request: NodeRequest,
     cluster: string,
 }
 
 export function ReloadButton(props: Props) {
     const {request, cluster} = props
-    const reload = useRouterInstanceReload(cluster)
+    const reload = useRouterNodeReload(cluster)
 
     return (
-        <Access permission={Permission.ManageInstanceReload}>
+        <Access permission={Permission.ManageNodeReload}>
             <AlertButton
                 size={"small"}
                 label={"Reload"}

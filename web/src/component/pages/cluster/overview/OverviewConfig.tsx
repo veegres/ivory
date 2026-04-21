@@ -3,8 +3,8 @@ import {Box, Skeleton} from "@mui/material"
 import ReactCodeMirror from "@uiw/react-codemirror"
 import {useEffect, useState} from "react"
 
-import {Cluster, Instance} from "../../../../api/cluster/type"
-import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook"
+import {Cluster, Node} from "../../../../api/cluster/type"
+import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../api/node/hook"
 import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {CodeThemes, getSidecarConnection} from "../../../../app/utils"
@@ -22,19 +22,19 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    instance: Instance,
+    node: Node,
 }
 
 export function OverviewConfig(props: Props) {
-    const {instance, cluster} = props
+    const {node, cluster} = props
     const settings = useSettings()
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const connection = getSidecarConnection(cluster, instance.sidecar)
+    const connection = getSidecarConnection(cluster, node.sidecar)
 
-    const config = useRouterInstanceConfig(connection, !!instance.sidecar)
-    const updateConfig = useRouterInstanceConfigUpdate(instance.sidecar, () => setIsEditable(false))
+    const config = useRouterNodeConfig(connection, !!node.sidecar)
+    const updateConfig = useRouterNodeConfigUpdate(node.sidecar, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 
@@ -59,7 +59,7 @@ export function OverviewConfig(props: Props) {
                 />
             </Box>
             <Box sx={SX.buttons}>
-                <Access permission={Permission.ManageInstanceConfigUpdate}>
+                <Access permission={Permission.ManageNodeConfigUpdate}>
                     {renderUpdateButtons()}
                 </Access>
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>

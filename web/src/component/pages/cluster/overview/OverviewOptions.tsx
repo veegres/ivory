@@ -5,7 +5,7 @@ import {ActiveCluster, ClusterOptions, ClusterOverview} from "../../../../api/cl
 import {SxPropsMap} from "../../../../app/type"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Options} from "../../../widgets/options/Options"
-import {OverviewOptionsInstance} from "./OverviewOptionsInstance"
+import {OverviewOptionsNode} from "./OverviewOptionsNode"
 
 const SX: SxPropsMap = {
     settings: {width: "250px", gap: 1, padding: "8px 0"},
@@ -24,9 +24,9 @@ export function OverviewOptions(props: Props) {
 
     return (
         <Stack sx={SX.settings}>
-            <OverviewOptionsInstance
-                instances={overview?.instances ?? cluster.sidecarsOverview}
-                mainInstance={overview?.mainInstance}
+            <OverviewOptionsNode
+                nodes={overview?.nodes ?? cluster.sidecarsOverview}
+                mainNode={overview?.mainNode}
                 detectBy={detectBy}
             />
             <LinearProgressStateful loading={updateCluster.isPending} line={true} color={"inherit"}/>

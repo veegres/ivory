@@ -6,8 +6,8 @@ import (
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
-	"ivory/src/features/instance"
 	"ivory/src/features/management"
+	"ivory/src/features/node"
 	"ivory/src/features/password"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
@@ -52,7 +52,7 @@ func NewRouter(di *Context) {
 	safe := general.Group("/", di.configRouter.InitialiseMiddleware(), di.authRouter.ValidateMiddleware(), di.permissionRouter.ValidateMiddleware())
 	managementRouter(safe, di.permissionRouter, di.secretRouter, di.managementRouter)
 	clusterRouter(safe, di.permissionRouter, di.clusterRouter)
-	instanceRouter(safe, di.permissionRouter, di.instanceRouter)
+	nodeRouter(safe, di.permissionRouter, di.nodeRouter)
 	tagRouter(safe, di.permissionRouter, di.tagRouter)
 	vmRouter(safe, di.permissionRouter, di.vmRouter)
 	bloatRouter(safe, di.permissionRouter, di.bloatRouter)
@@ -175,21 +175,21 @@ func vmRouter(g *gin.RouterGroup, rp *permission.Router, r *vm.Router) {
 	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(permission.ManageVmDelete), r.DeleteVm)
 }
 
-func instanceRouter(g *gin.RouterGroup, rp *permission.Router, r *instance.Router) {
-	group := g.Group("/instance")
-	group.GET("/overview", rp.ValidateMethodMiddleware(permission.ViewInstanceOverview), r.GetInstanceOverview)
-	group.GET("/config", rp.ValidateMethodMiddleware(permission.ViewInstanceConfig), r.GetInstanceConfig)
-	group.GET("/metrics", rp.ValidateMethodMiddleware(permission.ViewInstanceVmMetrics), r.GetMetrics)
-	group.PATCH("/config", rp.ValidateMethodMiddleware(permission.ManageInstanceConfigUpdate), r.PatchInstanceConfig)
-	group.POST("/switchover", rp.ValidateMethodMiddleware(permission.ManageInstanceSwitchover), r.PostInstanceSwitchover)
-	group.DELETE("/switchover", rp.ValidateMethodMiddleware(permission.ManageInstanceSwitchover), r.DeleteInstanceSwitchover)
-	group.POST("/reinitialize", rp.ValidateMethodMiddleware(permission.ManageInstanceReinitialize), r.PostInstanceReinitialize)
-	group.POST("/restart", rp.ValidateMethodMiddleware(permission.ManageInstanceRestart), r.PostInstanceRestart)
-	group.DELETE("/restart", rp.ValidateMethodMiddleware(permission.ManageInstanceRestart), r.DeleteInstanceRestart)
-	group.POST("/reload", rp.ValidateMethodMiddleware(permission.ManageInstanceReload), r.PostInstanceReload)
-	group.POST("/failover", rp.ValidateMethodMiddleware(permission.ManageInstanceFailover), r.PostInstanceFailover)
-	group.POST("/activate", rp.ValidateMethodMiddleware(permission.ManageInstanceActivation), r.PostInstanceActivate)
-	group.POST("/pause", rp.ValidateMethodMiddleware(permission.ManageInstanceActivation), r.PostInstancePause)
+func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
+	group := g.Group("/node")
+	group.GET("/overview", rp.ValidateMethodMiddleware(permission.ViewNodeOverview), r.GetNodeOverview)
+	group.GET("/config", rp.ValidateMethodMiddleware(permission.ViewNodeConfig), r.GetNodeConfig)
+	group.GET("/metrics", rp.ValidateMethodMiddleware(permission.ViewNodeVmMetrics), r.GetMetrics)
+	group.PATCH("/config", rp.ValidateMethodMiddleware(permission.ManageNodeConfigUpdate), r.PatchNodeConfig)
+	group.POST("/switchover", rp.ValidateMethodMiddleware(permission.ManageNodeSwitchover), r.PostNodeSwitchover)
+	group.DELETE("/switchover", rp.ValidateMethodMiddleware(permission.ManageNodeSwitchover), r.DeleteNodeSwitchover)
+	group.POST("/reinitialize", rp.ValidateMethodMiddleware(permission.ManageNodeReinitialize), r.PostNodeReinitialize)
+	group.POST("/restart", rp.ValidateMethodMiddleware(permission.ManageNodeRestart), r.PostNodeRestart)
+	group.DELETE("/restart", rp.ValidateMethodMiddleware(permission.ManageNodeRestart), r.DeleteNodeRestart)
+	group.POST("/reload", rp.ValidateMethodMiddleware(permission.ManageNodeReload), r.PostNodeReload)
+	group.POST("/failover", rp.ValidateMethodMiddleware(permission.ManageNodeFailover), r.PostNodeFailover)
+	group.POST("/activate", rp.ValidateMethodMiddleware(permission.ManageNodeActivation), r.PostNodeActivate)
+	group.POST("/pause", rp.ValidateMethodMiddleware(permission.ManageNodeActivation), r.PostNodePause)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {

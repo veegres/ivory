@@ -13,8 +13,8 @@ import {PageMainBox} from "../../../view/box/PageMainBox"
 import {OverviewAction} from "./OverviewAction"
 import {OverviewBloat} from "./OverviewBloat"
 import {OverviewConfig} from "./OverviewConfig"
-import {ClusterNoInstanceError} from "./OverviewError"
-import {OverviewInstances} from "./OverviewInstances"
+import {ClusterNoNodeError} from "./OverviewError"
+import {OverviewNodes} from "./OverviewNodes"
 import {OverviewOptions} from "./OverviewOptions"
 
 const SX: SxPropsMap = {
@@ -32,26 +32,26 @@ const SX: SxPropsMap = {
 const TABS: ClusterTab[] = [
     {
         label: "Overview",
-        permission: Permission.ViewInstanceOverview,
-        body: (cluster, overview) => <OverviewInstances cluster={cluster} instances={overview?.instances}/>,
+        permission: Permission.ViewNodeOverview,
+        body: (cluster, overview) => <OverviewNodes cluster={cluster} nodes={overview?.nodes}/>,
         info: <>
             The Overview tab offers visibility into the current status of your cluster. From here, you can
             utilize essential features to manage your cluster, including switchover, reinit, restart, reload,
-            failover, and more. The leader node is automatically detected by sending requests to each instance
-            until a successful connection is established. You have the flexibility to change the main instance
+            failover, and more. The leader node is automatically detected by sending requests to each node
+            until a successful connection is established. You have the flexibility to change the main node
             to which Ivory sends requests by accessing the settings in the top right corner.
         </>
     },
     {
         label: "Config",
-        permission: Permission.ViewInstanceConfig,
+        permission: Permission.ViewNodeConfig,
         body: (cluster, overview) => {
-            if (!overview?.mainInstance) return <ClusterNoInstanceError/>
-            return <OverviewConfig cluster={cluster} instance={overview.mainInstance}/>
+            if (!overview?.mainNode) return <ClusterNoNodeError/>
+            return <OverviewConfig cluster={cluster} node={overview.mainNode}/>
         },
         info: <>
             You can adjust your PostgreSQL configurations here, and any changes made will be applied to
-            all cluster instances. Instead of rewriting the entire configuration, it applies a patch
+            all cluster nodes. Instead of rewriting the entire configuration, it applies a patch
             update. If you wish to remove a specific setting, simply set it to <b>null</b>. Keep in mind that
             modifying certain parameters may necessitate restarting PostgreSQL. For further details on how
             this process functions, refer to
@@ -62,8 +62,8 @@ const TABS: ClusterTab[] = [
         label: "Bloat",
         permission: Permission.ViewBloatList,
         body: (cluster, overview) => {
-            if (!overview?.mainInstance) return <ClusterNoInstanceError/>
-            return <OverviewBloat cluster={cluster} instance={overview.mainInstance}/>
+            if (!overview?.mainNode) return <ClusterNoNodeError/>
+            return <OverviewBloat cluster={cluster} node={overview.mainNode}/>
         },
         info: <>
             Here, you can efficiently decrease the size of bloated tables and indexes without imposing
@@ -133,7 +133,7 @@ export function Overview() {
         if (!activeCluster) return null
         return <OverviewAction
             cluster={activeCluster}
-            mainInstance={overview.data?.mainInstance}
+            mainNode={overview.data?.mainNode}
             selectInfo={infoOpen}
             disableInfo={!tab.info}
             toggleInfo={() => setInfoOpen(!infoOpen)}

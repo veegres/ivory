@@ -1,7 +1,7 @@
 import {InfoOutlined, Settings} from "@mui/icons-material"
 import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
-import {ActiveCluster, Instance} from "../../../../api/cluster/type"
+import {ActiveCluster, Node} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getSidecarConnection} from "../../../../app/utils"
 import {OverviewActionInfo} from "./OverviewActionInfo"
@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: ActiveCluster,
-    mainInstance?: Instance,
+    mainNode?: Node,
     selectInfo: boolean,
     disableInfo: boolean,
     toggleInfo: () => void,
@@ -23,9 +23,9 @@ type Props = {
 }
 
 export function OverviewAction(props: Props) {
-    const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainInstance} = props
+    const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainNode} = props
     const {name} = cluster.cluster
-    const sidecar = mainInstance?.sidecar
+    const sidecar = mainNode?.sidecar
     return (
         <Box sx={SX.box}>
             {sidecar && sidecar.status && (
@@ -35,7 +35,7 @@ export function OverviewAction(props: Props) {
                     request={getSidecarConnection(cluster.cluster, sidecar)}
                 />
             )}
-            <OverviewActionInfo cluster={cluster.cluster} detectBy={cluster.detectBy} mainInstance={mainInstance}/>
+            <OverviewActionInfo cluster={cluster.cluster} detectBy={cluster.detectBy} mainNode={mainNode}/>
             <ToggleButtonGroup size={"small"}>
                 <ToggleButton
                     sx={SX.toggleButton}

@@ -1,13 +1,13 @@
 import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material"
 
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
-import {Cluster, InstanceOverview} from "../../../../api/cluster/type"
+import {Cluster, NodeOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
 import {useStore} from "../../../../provider/StoreProvider"
 import {RefreshIconButton} from "../../../view/button/IconButtons"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
-import {OverviewInstancesFixAuto} from "./OverviewInstancesFixAuto"
-import {OverviewInstancesRow} from "./OverviewInstancesRow"
+import {OverviewNodesFixAuto} from "./OverviewNodesFixAuto"
+import {OverviewNodesRow} from "./OverviewNodesRow"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
@@ -17,18 +17,18 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    instances?: InstanceOverview,
+    nodes?: NodeOverview,
 }
 
-export function OverviewInstances(props: Props) {
+export function OverviewNodes(props: Props) {
     const {cluster} = props
-    const instances = props.instances ?? cluster.sidecarsOverview
-    const activeInstance = useStore(s => s.activeInstance[cluster.name])
+    const nodes = props.nodes ?? cluster.sidecarsOverview
+    const activeNode = useStore(s => s.activeNode[cluster.name])
     const overview = useRouterClusterOverview(cluster.name, false)
-    const candidates = Object.values(instances)
-        .filter(instance => !!instance)
-        .filter(instance => instance.role === "replica")
-        .map(instance => instance.sidecar)
+    const candidates = Object.values(nodes)
+        .filter(node => !!node)
+        .filter(node => node.role === "replica")
+        .map(node => node.sidecar)
 
     return (
         <Box sx={SX.box}>
@@ -43,7 +43,7 @@ export function OverviewInstances(props: Props) {
                         <TableCell width={"150px"}>State</TableCell>
                         <TableCell/>
                         <TableCellLoader width={"160px"} loading={false}>
-                            <OverviewInstancesFixAuto name={cluster.name}/>
+                            <OverviewNodesFixAuto name={cluster.name}/>
                             <RefreshIconButton
                                 onClick={() => overview.refetch()}
                                 loading={overview.isFetching}
@@ -52,13 +52,13 @@ export function OverviewInstances(props: Props) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {renderCheckedInstance()}
-                    {Object.entries(instances).map(([key, element]) => (
-                        <OverviewInstancesRow
+                    {renderCheckedNode()}
+                    {Object.entries(nodes).map(([key, element]) => (
+                        <OverviewNodesRow
                             key={key}
                             name={key}
-                            checked={key === activeInstance}
-                            instance={element}
+                            checked={key === activeNode}
+                            node={element}
                             cluster={cluster}
                             candidates={candidates}
                         />
@@ -68,11 +68,11 @@ export function OverviewInstances(props: Props) {
         </Box>
     )
 
-    function renderCheckedInstance() {
-        if (!activeInstance) return
-        if (instances.hasOwnProperty(activeInstance)) return
+    function renderCheckedNode() {
+        if (!activeNode) return
+        if (nodes.hasOwnProperty(activeNode)) return
         return (
-            <OverviewInstancesRow name={activeInstance} checked={true} cluster={cluster} candidates={candidates} error={true}/>
+            <OverviewNodesRow name={activeNode} checked={true} cluster={cluster} candidates={candidates} error={true}/>
         )
     }
 }

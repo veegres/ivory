@@ -4,7 +4,7 @@ import {Permission} from "../../../api/permission/type"
 import {SxPropsMap} from "../../../app/type"
 import {Access} from "../../widgets/access/Access"
 import {Menu} from "../../widgets/settings/menu/Menu"
-import {Instance as ClusterInstance} from "./instance/Instance"
+import {Node as ClusterNode} from "./node/Node"
 import {List as ClusterList} from "./list/List"
 import {Overview as ClusterOverview} from "./overview/Overview"
 
@@ -18,9 +18,9 @@ export function ClusterBody() {
             <Menu/>
             <Stack sx={SX.stack}>
                 <ClusterList/>
-                <Access permission={Permission.ViewInstanceOverview}>
+                <Access permission={Permission.ViewNodeOverview}>
                     <ClusterOverview/>
-                    <ClusterInstance/>
+                    <ClusterNode/>
                 </Access>
             </Stack>
         </>

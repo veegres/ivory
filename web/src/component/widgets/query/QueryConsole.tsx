@@ -23,7 +23,7 @@ type Props = {
 
 export function QueryConsole(props: Props) {
     const {connection} = props
-    const {queryConsole} = useStore(s => s.instance)
+    const {queryConsole} = useStore(s => s.node)
     const {setConsoleQuery} = useStoreAction
     const [run, setRun] = useState(false)
     const [query, setQuery] = useState(queryConsole)

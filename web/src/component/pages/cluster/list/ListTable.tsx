@@ -47,7 +47,7 @@ export function ListTable(props: Props) {
                         <TableCell sx={SxPropsFormatter.style.paper} width={"220px"}>Cluster Name</TableCell>
                         <TableCellLoader
                             sx={SxPropsFormatter.style.paper}
-                            label={"Instances"}
+                            label={"Nodes"}
                             colSpan={2}
                             loading={fetching && !pending}
                         >

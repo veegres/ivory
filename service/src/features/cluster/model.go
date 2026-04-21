@@ -24,8 +24,8 @@ type Cluster struct {
 
 type ClusterAuto struct {
 	ClusterOptions
-	Name     string          `json:"name"`
-	Instance sidecar.Sidecar `json:"instance"`
+	Name string          `json:"name"`
+	Node sidecar.Sidecar `json:"node"`
 }
 
 type ClusterTls struct {
@@ -39,14 +39,14 @@ type Credentials struct {
 }
 
 type ClusterOverview struct {
-	Instances    InstanceOverview `json:"instances"`
-	DetectedBy   *sidecar.Sidecar `json:"detectedBy"`
-	MainInstance *Instance        `json:"mainInstance"`
+	Nodes      NodeOverview     `json:"nodes"`
+	DetectedBy *sidecar.Sidecar `json:"detectedBy"`
+	MainNode   *Node            `json:"mainNode"`
 }
 
-type InstanceOverview map[string]*Instance
+type NodeOverview map[string]*Node
 
-type Instance struct {
+type Node struct {
 	sidecar.Instance
 	InCluster bool `json:"inCluster"`
 	InSidecar bool `json:"inSidecar"`

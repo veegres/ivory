@@ -10,7 +10,7 @@ type Props = {
     name: string,
 }
 
-export function OverviewInstancesFixAuto(props: Props) {
+export function OverviewNodesFixAuto(props: Props) {
     const {name} = props
     const autoFix = useRouterClusterFixAuto(name)
     const [open, setOpen] = useState(false)

@@ -4,7 +4,7 @@ import {useState} from "react"
 
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
-import {Cluster, Instance} from "../../../../api/cluster/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
 import {Permission} from "../../../../api/permission/type"
 import {Database, QueryType} from "../../../../api/postgres"
 import {useRouterQueryList} from "../../../../api/query/hook"
@@ -29,25 +29,25 @@ enum ListBlock {JOB, QUERY}
 
 type Props = {
     cluster: Cluster,
-    instance: Instance,
+    node: Node,
 }
 
 export function OverviewBloat(props: Props) {
-    const {cluster, instance} = props
+    const {cluster, node} = props
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()
 
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db = {...instance.database, name: target?.database, schema: target?.schema} as Database
+    const db = {...node.database, name: target?.database, schema: target?.schema} as Database
 
     return (
         <Box>
             <AccessBox sx={SX.option} permission={Permission.ManageBloatJob}>
                 <Box sx={SX.form}>
                     <OverviewBloatJobForm
-                        instance={instance}
+                        node={node}
                         cluster={cluster}
                         onClick={() => setTab(ListBlock.JOB)}
                         target={target}

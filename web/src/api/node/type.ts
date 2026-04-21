@@ -6,7 +6,7 @@ import {ConnectionRequest} from "../postgres"
 
 // COMMON (WEB AND SERVER)
 
-export interface InstanceRequest {
+export interface NodeRequest {
     sidecar: Sidecar,
     credentialId?: string,
     certs?: Certs,
@@ -29,20 +29,20 @@ export interface Sidecar {
 
 export type Role = "leader" | "replica" | "unknown";
 
-export interface InstanceScheduledSwitchover {
+export interface NodeScheduledSwitchover {
     at: string,
     to: string,
 }
 
-export interface InstanceScheduledRestart {
+export interface NodeScheduledRestart {
     at: string,
     pendingRestart: boolean,
 }
 
 // SPECIFIC (WEB)
 
-export enum InstanceTabType {QUERY, CHART}
-export interface InstanceTab {
+export enum NodeTabType {QUERY, CHART}
+export interface NodeTab {
     label: string,
     body: (connection: ConnectionRequest) => ReactNode,
     info?: ReactNode,

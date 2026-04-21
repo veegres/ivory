@@ -13,8 +13,8 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {Cluster, Instance} from "../api/cluster/type"
-import {InstanceRequest, Role, Sidecar, SidecarStatus} from "../api/instance/type"
+import {Cluster, Node} from "../api/cluster/type"
+import {NodeRequest, Role, Sidecar, SidecarStatus} from "../api/node/type"
 import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
 import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
@@ -29,7 +29,7 @@ export const IvoryLinks: Links = {
     sponsorship: {name: "Sponsorship", link: "https://boosty.to/anselvo/purchase/1454406"}
 }
 
-export const InstanceColor: { [key in Role]: { label: "success" | "primary" | "error" | "warning", color: string } } = {
+export const NodeColor: { [key in Role]: { label: "success" | "primary" | "error" | "warning", color: string } } = {
     leader: {label: "success", color: green[600]},
     replica: {label: "primary", color: blue[500]},
     unknown: {label: "warning", color:  orange[500]},
@@ -87,7 +87,7 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const initialInstance = (domain: string): Instance => {
+export const initialNode = (domain: string): Node => {
     return ({
         state: "-",
         role: "unknown",
@@ -118,7 +118,7 @@ export function getConnectionRequest(cluster: Cluster, db: Database): Connection
     return {db, certs, credentialId}
 }
 
-export function getSidecarConnection(cluster: Cluster, sidecar: Sidecar): InstanceRequest {
+export function getSidecarConnection(cluster: Cluster, sidecar: Sidecar): NodeRequest {
     const credentialId = cluster.credentials.patroniId
     const certs = cluster.tls.sidecar ? cluster.certs : undefined
     return {sidecar, certs, credentialId}
@@ -133,14 +133,14 @@ export const getSidecars = (domains: string[]): Sidecar[] => {
     return domains.map(value => getSidecar(value))
 }
 
-export const getDetectionItems = (mainInstance?: Instance, detectBy?: Instance) => {
+export const getDetectionItems = (mainNode?: Node, detectBy?: Node) => {
     const detection = detectBy ? "manual" : "auto"
-    const instance = detectBy ?? mainInstance
-    const label = instance ? getDomain(instance.sidecar) : "none"
-    const role = instance?.role ?? "unknown"
+    const node = detectBy ?? mainNode
+    const label = node ? getDomain(node.sidecar) : "none"
+    const role = node?.role ?? "unknown"
     return [
         {title: "Detection", label: detection, bgColor: purple[400]},
-        {title: "Main Instance", label: label, bgColor: InstanceColor[role].color}
+        {title: "Main Node", label: label, bgColor: NodeColor[role].color}
     ]
 }
 

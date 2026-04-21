@@ -1,6 +1,6 @@
 import {getDomain} from "../../app/utils"
 import {api} from "../api"
-import {Sidecar} from "../instance/type"
+import {Sidecar} from "../node/type"
 import {R} from "../management/type"
 import {Cluster, ClusterAuto, ClusterOverview} from "./type"
 

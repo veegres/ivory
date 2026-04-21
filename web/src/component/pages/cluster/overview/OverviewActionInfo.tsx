@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 
 import {CertType} from "../../../../api/cert/type"
-import {Cluster, Instance} from "../../../../api/cluster/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
 import {PasswordType} from "../../../../api/password/type"
 import {SxPropsMap} from "../../../../app/type"
 import {CertOptions, CredentialOptions, getDetectionItems} from "../../../../app/utils"
@@ -15,12 +15,12 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    detectBy?: Instance,
-    mainInstance?: Instance,
+    detectBy?: Node,
+    mainNode?: Node,
 }
 
 export function OverviewActionInfo(props: Props) {
-    const {mainInstance, cluster, detectBy} = props
+    const {mainNode, cluster, detectBy} = props
 
     const infoItems = [
         {...CredentialOptions[PasswordType.POSTGRES], active: !!cluster.credentials.postgresId},
@@ -30,14 +30,14 @@ export function OverviewActionInfo(props: Props) {
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
     ]
 
-    const detectionItems = getDetectionItems(mainInstance, detectBy)
-    const instance = detectionItems[1]
+    const detectionItems = getDetectionItems(mainNode, detectBy)
+    const node = detectionItems[1]
 
     return (
         <Box sx={SX.box}>
             <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>}>
-                <Box sx={{color: instance.bgColor}}>
-                    {instance.label.toUpperCase()}
+                <Box sx={{color: node.bgColor}}>
+                    {node.label.toUpperCase()}
                 </Box>
             </InfoBox>
             <InfoBoxList items={infoItems} label={"Configured Cluster Options"}/>

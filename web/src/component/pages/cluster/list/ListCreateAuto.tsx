@@ -14,11 +14,11 @@ const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {display: "flex", flexDirection: "column", gap: 1, padding: "0 24px"},
     center: {display: "flex", justifyContent: "center", gap: 3},
-    instance: {display: "flex", gap: 2},
+    node: {display: "flex", gap: 2},
 }
 
 const InitialClusterAuto: ClusterAuto = {
-    name: "", tls: {sidecar: false, database: false}, certs: {}, credentials: {}, tags: [], instance: {host: "", port: 8008},
+    name: "", tls: {sidecar: false, database: false}, certs: {}, credentials: {}, tags: [], node: {host: "", port: 8008},
 }
 
 type Props = {
@@ -37,7 +37,7 @@ export function ListCreateAuto(props: Props) {
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
                 <DialogContent sx={SX.content}>
-                    <AlertCentered text={"Specify only one instance and the others will be detected automatically."}/>
+                    <AlertCentered text={"Specify only one node and the others will be detected automatically."}/>
                     <TextField
                         size={"small"}
                         label={"Name"}
@@ -45,13 +45,13 @@ export function ListCreateAuto(props: Props) {
                         value={cluster.name}
                         onChange={(e) => handleNameUpdate(e.target.value)}
                     />
-                    <Box sx={SX.instance}>
+                    <Box sx={SX.node}>
                         <TextField
                             fullWidth
                             size={"small"}
                             label={"Domain"}
                             required
-                            value={cluster.instance.host}
+                            value={cluster.node.host}
                             onChange={(e) => handleHostUpdate(e.target.value)}
                         />
                         <TextField
@@ -59,7 +59,7 @@ export function ListCreateAuto(props: Props) {
                             size={"small"}
                             label={"Port"}
                             required
-                            value={cluster.instance.port}
+                            value={cluster.node.port}
                             onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
                         />
                     </Box>
@@ -84,11 +84,11 @@ export function ListCreateAuto(props: Props) {
     }
 
     function handleHostUpdate(v: string) {
-        setCluster(c => ({...c, instance: {...c.instance, host: v}}))
+        setCluster(c => ({...c, node: {...c.node, host: v}}))
     }
 
     function handlePortUpdate(v: number) {
-        setCluster(c => ({...c, instance: {...c.instance, port: v}}))
+        setCluster(c => ({...c, node: {...c.node, port: v}}))
     }
 
     function handleSuccessUpdate() {

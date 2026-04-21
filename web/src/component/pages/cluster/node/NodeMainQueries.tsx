@@ -19,9 +19,9 @@ type Props = {
     connection: ConnectionRequest,
 }
 
-export function InstanceMainQueries(props: Props){
+export function NodeMainQueries(props: Props){
     const {connection} = props
-    const {queryTab} = useStore(s => s.instance)
+    const {queryTab} = useStore(s => s.node)
     const {setQueryTab} = useStoreAction
 
     return (

@@ -1,4 +1,4 @@
-package instance
+package node
 
 import (
 	"encoding/json"
@@ -15,51 +15,51 @@ func NewRouter(service *Service) *Router {
 	return &Router{service: service}
 }
 
-func (r *Router) GetInstanceOverview(context *gin.Context) {
+func (r *Router) GetNodeOverview(context *gin.Context) {
 	handleParamRequest(context, r.service.Overview)
 }
 
-func (r *Router) GetInstanceConfig(context *gin.Context) {
+func (r *Router) GetNodeConfig(context *gin.Context) {
 	handleParamRequest(context, r.service.Config)
 }
 
-func (r *Router) PatchInstanceConfig(context *gin.Context) {
+func (r *Router) PatchNodeConfig(context *gin.Context) {
 	handleBodyRequest(context, r.service.ConfigUpdate)
 }
 
-func (r *Router) PostInstanceSwitchover(context *gin.Context) {
+func (r *Router) PostNodeSwitchover(context *gin.Context) {
 	handleBodyRequest(context, r.service.Switchover)
 }
 
-func (r *Router) DeleteInstanceSwitchover(context *gin.Context) {
+func (r *Router) DeleteNodeSwitchover(context *gin.Context) {
 	handleParamRequest(context, r.service.DeleteSwitchover)
 }
 
-func (r *Router) PostInstanceReinitialize(context *gin.Context) {
+func (r *Router) PostNodeReinitialize(context *gin.Context) {
 	handleBodyRequest(context, r.service.Reinitialize)
 }
 
-func (r *Router) PostInstanceRestart(context *gin.Context) {
+func (r *Router) PostNodeRestart(context *gin.Context) {
 	handleBodyRequest(context, r.service.Restart)
 }
 
-func (r *Router) DeleteInstanceRestart(context *gin.Context) {
+func (r *Router) DeleteNodeRestart(context *gin.Context) {
 	handleParamRequest(context, r.service.DeleteRestart)
 }
 
-func (r *Router) PostInstanceReload(context *gin.Context) {
+func (r *Router) PostNodeReload(context *gin.Context) {
 	handleBodyRequest(context, r.service.Reload)
 }
 
-func (r *Router) PostInstanceFailover(context *gin.Context) {
+func (r *Router) PostNodeFailover(context *gin.Context) {
 	handleBodyRequest(context, r.service.Failover)
 }
 
-func (r *Router) PostInstanceActivate(context *gin.Context) {
+func (r *Router) PostNodeActivate(context *gin.Context) {
 	handleBodyRequest(context, r.service.Activate)
 }
 
-func (r *Router) PostInstancePause(context *gin.Context) {
+func (r *Router) PostNodePause(context *gin.Context) {
 	handleBodyRequest(context, r.service.Pause)
 }
 
@@ -67,19 +67,19 @@ func (r *Router) GetMetrics(context *gin.Context) {
 	handleParamRequestOf(context, r.service.Metrics)
 }
 
-func handleParamRequest[T any](context *gin.Context, action func(instance Request) (T, int, error)) {
+func handleParamRequest[T any](context *gin.Context, action func(node Request) (T, int, error)) {
 	query := context.Query("request")
-	var instance Request
-	errBind := json.Unmarshal([]byte(query), &instance)
+	var node Request
+	errBind := json.Unmarshal([]byte(query), &node)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	body, status, err := action(instance)
+	body, status, err := action(node)
 	handleResponse(context, body, status, err)
 }
 
-func handleBodyRequest[T any](context *gin.Context, action func(instance Request) (T, int, error)) {
+func handleBodyRequest[T any](context *gin.Context, action func(node Request) (T, int, error)) {
 	handleBodyRequestOf(context, action)
 }
 

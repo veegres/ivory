@@ -2,15 +2,15 @@ import {FormControl, InputLabel, MenuItem, Select} from "@mui/material"
 import {Dayjs} from "dayjs"
 import {useState} from "react"
 
-import {useRouterInstanceSwitchover} from "../../../api/instance/hook"
-import {InstanceRequest, Sidecar} from "../../../api/instance/type"
+import {useRouterNodeSwitchover} from "../../../api/node/hook"
+import {NodeRequest, Sidecar} from "../../../api/node/type"
 import {Permission} from "../../../api/permission/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: InstanceRequest,
+    request: NodeRequest,
     cluster: string,
     candidates: Sidecar[],
 }
@@ -20,12 +20,12 @@ export function SwitchoverButton(props: Props) {
 
     const [candidate, setCandidates] = useState("")
     const [schedule, setSchedule] = useState<Dayjs>()
-    const switchover = useRouterInstanceSwitchover(cluster)
+    const switchover = useRouterNodeSwitchover(cluster)
     // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name
     const body = {leader: request.sidecar.name, candidate, scheduled_at: schedule}
 
     return (
-        <Access permission={Permission.ManageInstanceSwitchover}>
+        <Access permission={Permission.ManageNodeSwitchover}>
             <AlertButton
                 color={"secondary"}
                 label={"Switchover"}
