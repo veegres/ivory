@@ -14,8 +14,8 @@ import (
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
 	"ivory/src/features/encryption"
-	"ivory/src/features/instance"
 	"ivory/src/features/management"
+	"ivory/src/features/node"
 	"ivory/src/features/password"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
@@ -37,7 +37,7 @@ type Context struct {
 	passwordRouter   *password.Router
 	permissionRouter *permission.Router
 	tagRouter        *tag.Router
-	instanceRouter   *instance.Router
+	nodeRouter       *node.Router
 	queryRouter      *query.Router
 	managementRouter *management.Router
 	configRouter     *config.Router
@@ -95,9 +95,9 @@ func NewContext() *Context {
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
 	vmService := vm.NewService(vmRepo, secretService, encryptionService)
-	instanceService := instance.NewService(patroniClient, sshClient, passwordService, certService, vmService)
+	nodeService := node.NewService(patroniClient, sshClient, passwordService, certService, vmService)
 	tagService := tag.NewService(tagRepo)
-	clusterService := cluster.NewService(clusterRepo, instanceService, tagService)
+	clusterService := cluster.NewService(clusterRepo, nodeService, tagService)
 	queryLogService := query.NewLogService(queryLogRepo)
 	queryService := query.NewService(queryRepo, queryLogService, secretService)
 	queryExecuteService := query.NewExecuteService(queryRepo, postgresClient, queryLogService, passwordService, certService)
@@ -130,7 +130,7 @@ func NewContext() *Context {
 		passwordRouter:   password.NewRouter(passwordService),
 		permissionRouter: permission.NewRouter(permissionService),
 		tagRouter:        tag.NewRouter(tagService),
-		instanceRouter:   instance.NewRouter(instanceService),
+		nodeRouter:       node.NewRouter(nodeService),
 		queryRouter:      query.NewRouter(queryService, queryExecuteService, queryLogService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),

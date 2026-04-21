@@ -2,10 +2,10 @@ import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
 import {
-    InstanceScheduledRestart,
-    InstanceScheduledSwitchover, Role,
+    NodeScheduledRestart,
+    NodeScheduledSwitchover, Role,
     Sidecar,
-} from "../instance/type"
+} from "../node/type"
 import {Permission} from "../permission/type"
 import {Database} from "../postgres"
 
@@ -21,12 +21,12 @@ export interface ClusterOptions {
 export interface Cluster extends ClusterOptions {
     name: string,
     sidecars: Sidecar[],
-    sidecarsOverview: InstanceOverview,
+    sidecarsOverview: NodeOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
     name: string,
-    instance: Sidecar,
+    node: Sidecar,
 }
 
 export interface ClusterTls {
@@ -41,24 +41,24 @@ export interface Credentials {
 
 
 export interface ClusterOverview {
-    instances: InstanceOverview,
+    nodes: NodeOverview,
     detectedBy?: Sidecar,
-    mainInstance?: Instance,
+    mainNode?: Node,
 }
 
-export interface InstanceOverview {
-    [sidecar: string]: Instance | undefined
+export interface NodeOverview {
+    [sidecar: string]: Node | undefined
 }
 
-export interface Instance {
+export interface Node {
     state: string,
     role: Role,
     lag: number,
     pendingRestart: boolean,
     database: Database,
     sidecar: Sidecar,
-    scheduledSwitchover?: InstanceScheduledSwitchover,
-    scheduledRestart?: InstanceScheduledRestart,
+    scheduledSwitchover?: NodeScheduledSwitchover,
+    scheduledRestart?: NodeScheduledRestart,
     tags?: {[key: string]: any},
     inCluster: boolean,
     inSidecar: boolean,
@@ -68,11 +68,11 @@ export interface Instance {
 
 export interface ActiveCluster {
     cluster: Cluster,
-    detectBy?: Instance,
+    detectBy?: Node,
     warning: boolean,
 }
 
-export interface ActiveInstance {
+export interface ActiveNode {
     [cluster: string]: string | undefined
 }
 

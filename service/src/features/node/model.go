@@ -1,4 +1,4 @@
-package instance
+package node
 
 import (
 	"ivory/src/clients/sidecar"
@@ -17,7 +17,7 @@ type Request struct {
 	Body         any             `json:"body" form:"body"`
 }
 
-type Instance = sidecar.Instance
+type Node = sidecar.Instance
 
 type SshRequest struct {
 	VmId uuid.UUID `json:"vmId" form:"vmId" binding:"required"`
@@ -27,7 +27,7 @@ type SshMetrics = ssh.Metrics
 
 // SPECIFIC (SERVER)
 
-type InstanceAutoRequest struct {
+type NodeAutoRequest struct {
 	Sidecars     []sidecar.Sidecar `json:"sidecars" form:"sidecars"`
 	CredentialId *uuid.UUID        `json:"credentialId" form:"credentialId"`
 	Certs        *cert.Certs       `json:"certs" form:"certs"`

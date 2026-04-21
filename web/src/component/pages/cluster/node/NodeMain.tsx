@@ -1,6 +1,6 @@
 import {Box, Link} from "@mui/material"
 
-import {InstanceTab, InstanceTabType} from "../../../../api/instance/type"
+import {NodeTab, NodeTabType} from "../../../../api/node/type"
 import {ConnectionRequest, Database} from "../../../../api/postgres"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
@@ -9,16 +9,16 @@ import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
 import {Chart} from "../../../widgets/chart/Chart"
 import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewError"
-import {InstanceMainQueries} from "./InstanceMainQueries"
-import {InstanceMainTitle} from "./InstanceMainTitle"
+import {NodeMainQueries} from "./NodeMainQueries"
+import {NodeMainTitle} from "./NodeMainTitle"
 
 const SX: SxPropsMap = {
     main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1},
     inputs: {display: "flex", alignItems: "center", gap: 1, width: "300px"},
 }
 
-const Tabs: {[key in InstanceTabType]: InstanceTab} = {
-    [InstanceTabType.CHART]: {
+const Tabs: {[key in NodeTabType]: NodeTab} = {
+    [NodeTabType.CHART]: {
         label: "Charts",
         body: (connection: ConnectionRequest) => <Chart connection={connection}/>,
         info: <>
@@ -28,9 +28,9 @@ const Tabs: {[key in InstanceTabType]: InstanceTab} = {
             it <Link href={"https://github.com/veegres/ivory/issues"} target={"_blank"}>here</Link>
         </>
     },
-    [InstanceTabType.QUERY]: {
+    [NodeTabType.QUERY]: {
         label: "Queries",
-        body: (connection: ConnectionRequest) => <InstanceMainQueries connection={connection}/>,
+        body: (connection: ConnectionRequest) => <NodeMainQueries connection={connection}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres (<b>always use LIMIT in queries
             to reduce number of rows, it will help to render and execute query faster</b>). There are some default queries
@@ -46,14 +46,14 @@ const Tabs: {[key in InstanceTabType]: InstanceTab} = {
 }
 
 type Props = {
-    tab: InstanceTabType,
+    tab: NodeTabType,
     database: Database,
 }
 
-export function InstanceMain(props: Props) {
+export function NodeMain(props: Props) {
     const {tab, database} = props
     const activeCluster = useStore(s => s.activeCluster)
-    const {dbName, dbSchema} = useStore(s => s.instance)
+    const {dbName, dbSchema} = useStore(s => s.node)
     const {setDbName, setDbSchema} = useStoreAction
 
     if (!activeCluster) return null
@@ -66,7 +66,7 @@ export function InstanceMain(props: Props) {
 
     return (
         <Box sx={SX.main}>
-            <InstanceMainTitle label={label} info={info} db={database} renderActions={renderActions()}/>
+            <NodeMainTitle label={label} info={info} db={database} renderActions={renderActions()}/>
             {renderBody()}
         </Box>
     )

@@ -1,7 +1,7 @@
 import {Button} from "@mui/material"
 
-import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../api/instance/hook"
-import {InstanceRequest, InstanceScheduledRestart, InstanceScheduledSwitchover} from "../../../api/instance/type"
+import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../../api/node/hook"
+import {NodeRequest, NodeScheduledRestart, NodeScheduledSwitchover} from "../../../api/node/type"
 import {Permission} from "../../../api/permission/type"
 import {DateTimeFormatter} from "../../../app/utils"
 import {List} from "../../view/box/List"
@@ -11,17 +11,17 @@ import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: InstanceRequest,
+    request: NodeRequest,
     cluster: string,
-    switchover?: InstanceScheduledSwitchover,
-    restart?: InstanceScheduledRestart,
+    switchover?: NodeScheduledSwitchover,
+    restart?: NodeScheduledRestart,
 }
 
 export function ScheduleButton(props: Props) {
     const {request, cluster, switchover, restart} = props
 
-    const deleteRestart = useRouterInstanceRestartDelete(cluster)
-    const deleteSwitchover = useRouterInstanceSwitchoverDelete(cluster)
+    const deleteRestart = useRouterNodeRestartDelete(cluster)
+    const deleteSwitchover = useRouterNodeSwitchoverDelete(cluster)
 
     return (
         <AlertButton
@@ -55,7 +55,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteSwitchoverButton() {
         return (
-            <Access permission={Permission.ManageInstanceSwitchover}>
+            <Access permission={Permission.ManageNodeSwitchover}>
                 <Button
                     size={"small"}
                     variant={"outlined"}
@@ -70,7 +70,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteRestartButton() {
         return (
-            <Access permission={Permission.ManageInstanceRestart}>
+            <Access permission={Permission.ManageNodeRestart}>
                 <Button
                     size={"small"}
                     variant={"outlined"}

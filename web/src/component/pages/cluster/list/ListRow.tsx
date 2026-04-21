@@ -8,7 +8,7 @@ import {ColorsMap, SxPropsMap} from "../../../../app/type"
 import {
     getDetectionItems,
     getDomains,
-    getSidecars, InstanceColor,
+    getSidecars, NodeColor,
     SxPropsFormatter,
 } from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -43,14 +43,14 @@ export function ListRow(props: Props) {
     const [stateNodes, setStateNodes] = useState(getDomains(cluster.sidecars))
 
     const overview = useRouterClusterOverview(cluster.name)
-    const instances = overview.data?.instances ?? cluster.sidecarsOverview
-    const mainInstance = overview.data?.mainInstance
-    const warning = useMemo(handleMemoWarning, [instances])
-    const colors = useMemo(handleMemoColors, [instances])
+    const nodes = overview.data?.nodes ?? cluster.sidecarsOverview
+    const mainNode = overview.data?.mainNode
+    const warning = useMemo(handleMemoWarning, [nodes])
+    const colors = useMemo(handleMemoColors, [nodes])
 
     useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
     useEffect(handleEffectScroll, [active])
-    useEffect(handleEffectInstancesUpdate, [cluster.sidecars])
+    useEffect(handleEffectNodesUpdate, [cluster.sidecars])
     useEffect(handleEffectActiveClusterUpdate, [active, cluster, setCluster, warning])
 
     return (
@@ -63,7 +63,7 @@ export function ListRow(props: Props) {
                     inputs={stateNodes}
                     colors={colors}
                     editable={editable}
-                    placeholder={"Instance "}
+                    placeholder={"Node "}
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>
@@ -126,14 +126,14 @@ export function ListRow(props: Props) {
 
     function renderChipTooltip() {
         const detectBy = activeCluster?.detectBy
-        const items = getDetectionItems(mainInstance, detectBy)
+        const items = getDetectionItems(mainNode, detectBy)
         return <InfoColorBoxList items={items} label={"Cluster Detection"}/>
     }
 
     function handleMemoColors() {
-        return Object.entries(instances).reduce(
-            (map, [domain, instance]) => {
-                map[domain] = InstanceColor[instance?.role ?? "unknown"].label
+        return Object.entries(nodes).reduce(
+            (map, [domain, node]) => {
+                map[domain] = NodeColor[node?.role ?? "unknown"].label
                 return map
             },
             {} as ColorsMap
@@ -141,9 +141,9 @@ export function ListRow(props: Props) {
     }
 
     function handleMemoWarning() {
-        for (const key in instances) {
-            const instance = instances[key]
-            if (!instance) return true
+        for (const key in nodes) {
+            const node = nodes[key]
+            if (!node) return true
         }
         return false
     }
@@ -167,7 +167,7 @@ export function ListRow(props: Props) {
         if (active) ref.current?.scrollIntoView({block: "nearest"})
     }
 
-    function handleEffectInstancesUpdate() {
+    function handleEffectNodesUpdate() {
         setStateNodes(getDomains(cluster.sidecars))
     }
 

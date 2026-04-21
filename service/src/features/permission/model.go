@@ -47,18 +47,17 @@ const (
 	// Tags permissions
 	ViewTagList Permission = "view.tag.list"
 
-	// Instance permissions
-	ViewInstanceOverview       Permission = "view.instance.overview"
-	ViewInstanceConfig         Permission = "view.instance.config"
-	ViewInstanceVmMetrics      Permission = "view.instance.vm.metrics"
-	ManageInstanceConfigUpdate Permission = "manage.instance.config.update"
-	ManageInstanceVmExecute    Permission = "manage.instance.vm.execute"
-	ManageInstanceSwitchover   Permission = "manage.instance.switchover"
-	ManageInstanceReinitialize Permission = "manage.instance.reinitialize"
-	ManageInstanceRestart      Permission = "manage.instance.restart"
-	ManageInstanceReload       Permission = "manage.instance.reload"
-	ManageInstanceFailover     Permission = "manage.instance.failover"
-	ManageInstanceActivation   Permission = "manage.instance.activation"
+	// Node permissions
+	ViewNodeOverview       Permission = "view.node.overview"
+	ViewNodeConfig         Permission = "view.node.config"
+	ViewNodeVmMetrics      Permission = "view.node.metrics"
+	ManageNodeConfigUpdate Permission = "manage.node.config.update"
+	ManageNodeSwitchover   Permission = "manage.node.switchover"
+	ManageNodeReinitialize Permission = "manage.node.reinitialize"
+	ManageNodeRestart      Permission = "manage.node.restart"
+	ManageNodeReload       Permission = "manage.node.reload"
+	ManageNodeFailover     Permission = "manage.node.failover"
+	ManageNodeActivation   Permission = "manage.node.activation"
 
 	// Query permissions
 	ViewQueryList               Permission = "view.query.list"
@@ -117,17 +116,16 @@ var Permissions = []Permission{
 	ManageVmUpdate,
 	ManageVmDelete,
 	ViewTagList,
-	ViewInstanceOverview,
-	ViewInstanceConfig,
-	ViewInstanceVmMetrics,
-	ManageInstanceConfigUpdate,
-	ManageInstanceVmExecute,
-	ManageInstanceSwitchover,
-	ManageInstanceReinitialize,
-	ManageInstanceRestart,
-	ManageInstanceReload,
-	ManageInstanceFailover,
-	ManageInstanceActivation,
+	ViewNodeOverview,
+	ViewNodeConfig,
+	ViewNodeVmMetrics,
+	ManageNodeConfigUpdate,
+	ManageNodeSwitchover,
+	ManageNodeReinitialize,
+	ManageNodeRestart,
+	ManageNodeReload,
+	ManageNodeFailover,
+	ManageNodeActivation,
 	ViewQueryList,
 	ManageQueryCreate,
 	ManageQueryUpdate,

@@ -41,7 +41,7 @@ export function ListRowNew(props: Props) {
                 <DynamicInputs
                     inputs={stateNodes}
                     editable={true}
-                    placeholder={"Instance "}
+                    placeholder={"Node "}
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>

@@ -2,13 +2,13 @@ import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
 
-import {Cluster, Instance} from "../../../../api/cluster/type"
-import {Sidecar} from "../../../../api/instance/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
+import {Sidecar} from "../../../../api/node/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
     DateTimeFormatter,
-    getSidecarConnection, initialInstance,
-    InstanceColor,
+    getSidecarConnection, initialNode,
+    NodeColor,
     SizeFormatter,
     SxPropsFormatter,
 } from "../../../../app/utils"
@@ -32,18 +32,18 @@ const SX: SxPropsMap = {
 
 type Props = {
     name: string,
-    instance?: Instance,
+    node?: Node,
     cluster: Cluster,
     candidates: Sidecar[],
     checked: boolean,
     error?: boolean,
 }
 
-export function OverviewInstancesRow(props: Props) {
-    const {instance: tmpInstance, cluster, candidates, error = false, name, checked} = props
-    const {role, sidecar, database, state, lag, inSidecar, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = tmpInstance ?? initialInstance(name)
+export function OverviewNodesRow(props: Props) {
+    const {node: tmpNode, cluster, candidates, error = false, name, checked} = props
+    const {role, sidecar, database, state, lag, inSidecar, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = tmpNode ?? initialNode(name)
 
-    const {setInstance} = useStoreAction
+    const {setNode} = useStoreAction
     const request = getSidecarConnection(cluster, sidecar)
 
     const databaseName = `${database.host}:${database.port === 0 ? "-" : database.port}`
@@ -55,7 +55,7 @@ export function OverviewInstancesRow(props: Props) {
         >
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning(inSidecar, inCluster)}</TableCell>
-            <TableCell sx={{color: InstanceColor[role].color}}>{role.toUpperCase()}</TableCell>
+            <TableCell sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>
                 <Tooltip title={name} placement={"top-start"}>
                     <Box sx={SX.nowrap}>{name}</Box>
@@ -76,7 +76,7 @@ export function OverviewInstancesRow(props: Props) {
 
     function renderButtons() {
         if (error) return (
-            <Tooltip title={"This instance is not in this cluster anymore. It was before that is why you see it. Just uncheck it."} placement={"top"}>
+            <Tooltip title={"This node is not in this cluster anymore. It was before that is why you see it. Just uncheck it."} placement={"top"}>
                 <ErrorOutlineRounded color={"error"}/>
             </Tooltip>
         )
@@ -155,12 +155,12 @@ export function OverviewInstancesRow(props: Props) {
         }
     }
 
-    function renderWarning(inCluster: boolean, inInstances: boolean) {
-        if (inCluster && inInstances) return
+    function renderWarning(inCluster: boolean, inNodes: boolean) {
+        if (inCluster && inNodes) return
 
-        let title = "Instance is not in cluster list or cluster itself!"
-        if (inCluster && !inInstances) title = "Instance is not in your cluster list!"
-        if (!inCluster && inInstances) title = "Instance is not in cluster!"
+        let title = "Node is not in cluster list or cluster itself!"
+        if (inCluster && !inNodes) title = "Node is not in your cluster list!"
+        if (!inCluster && inNodes) title = "Node is not in cluster!"
 
         return (
             <Box sx={SX.data}>
@@ -172,6 +172,6 @@ export function OverviewInstancesRow(props: Props) {
     }
 
     function handleCheck() {
-        setInstance(checked ? undefined : name)
+        setNode(checked ? undefined : name)
     }
 }

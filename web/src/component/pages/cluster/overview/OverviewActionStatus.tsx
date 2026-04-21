@@ -1,8 +1,8 @@
 import {Box} from "@mui/material"
 import {UseMutationResult} from "@tanstack/react-query"
 
-import {useRouterInstanceActivate, useRouterInstancePause} from "../../../../api/instance/hook"
-import {InstanceRequest, SidecarStatus} from "../../../../api/instance/type"
+import {useRouterNodeActivate, useRouterNodePause} from "../../../../api/node/hook"
+import {NodeRequest, SidecarStatus} from "../../../../api/node/type"
 import {Permission} from "../../../../api/permission/type"
 import {EnumOptions, SxPropsMap} from "../../../../app/type"
 import {SidecarStatusOptions} from "../../../../app/utils"
@@ -17,17 +17,17 @@ const SX: SxPropsMap = {
 type Props = {
     cluster: string,
     status: SidecarStatus,
-    request: InstanceRequest,
+    request: NodeRequest,
 }
 
 export function OverviewActionStatus(props: Props) {
     const {status, cluster, request} = props
 
-    const activate = useRouterInstanceActivate(cluster)
-    const pause = useRouterInstancePause(cluster)
+    const activate = useRouterNodeActivate(cluster)
+    const pause = useRouterNodePause(cluster)
 
     const options = SidecarStatusOptions[status]
-    const action: { [key in SidecarStatus]: UseMutationResult<string, any, InstanceRequest, unknown> } = {
+    const action: { [key in SidecarStatus]: UseMutationResult<string, any, NodeRequest, unknown> } = {
         [SidecarStatus.Active]: pause,
         [SidecarStatus.Paused]: activate
     }
@@ -38,7 +38,7 @@ export function OverviewActionStatus(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <Access permission={Permission.ManageInstanceActivation}>
+            <Access permission={Permission.ManageNodeActivation}>
                 <InfoBox padding={Padding.No}>
                     <AlertButton
                         size={"small"}

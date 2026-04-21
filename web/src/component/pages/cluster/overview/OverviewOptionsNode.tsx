@@ -9,9 +9,9 @@ import {
 } from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {Instance, InstanceOverview} from "../../../../api/cluster/type"
+import {Node, NodeOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getDomain, initialInstance} from "../../../../app/utils"
+import {getDomain, initialNode} from "../../../../app/utils"
 import {useStoreAction} from "../../../../provider/StoreProvider"
 
 const SX: SxPropsMap = {
@@ -21,19 +21,19 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instances: InstanceOverview,
-    mainInstance?: Instance,
-    detectBy?: Instance,
+    nodes: NodeOverview,
+    mainNode?: Node,
+    detectBy?: Node,
 }
 
-export function OverviewOptionsInstance(props: Props) {
+export function OverviewOptionsNode(props: Props) {
     const {setClusterDetection} = useStoreAction
-    const {detectBy, instances, mainInstance} = props
+    const {detectBy, nodes, mainNode} = props
 
-    const value = getDomain(detectBy?.sidecar ?? mainInstance?.sidecar ?? {host: "-", port: 0})
+    const value = getDomain(detectBy?.sidecar ?? mainNode?.sidecar ?? {host: "-", port: 0})
     const [inputValue, setInputValue] = useState<string | undefined>(value)
 
-    const options = useMemo(() => Object.keys(instances), [instances])
+    const options = useMemo(() => Object.keys(nodes), [nodes])
 
     return (
         <Box sx={SX.box}>
@@ -47,7 +47,7 @@ export function OverviewOptionsInstance(props: Props) {
                 inputValue={inputValue}
                 isOptionEqualToValue={(option, value) => option === value}
                 onInputChange={(_, value) => setInputValue(value)}
-                renderInput={(params) => <TextField {...params} label={"Main Instance"}/>}
+                renderInput={(params) => <TextField {...params} label={"Main Node"}/>}
             />
             <ToggleButtonGroup size={"small"}>
                 <Tooltip title={"AUTO"} placement={"top"}>
@@ -64,7 +64,7 @@ export function OverviewOptionsInstance(props: Props) {
                         sx={SX.toggle}
                         value={"manual"}
                         selected={!!detectBy}
-                        onClick={() => setClusterDetection(mainInstance)}>
+                        onClick={() => setClusterDetection(mainNode)}>
                         M
                     </ToggleButton>
                 </Tooltip>
@@ -73,6 +73,6 @@ export function OverviewOptionsInstance(props: Props) {
     )
 
     function handleOnChange(value: string, reason: AutocompleteChangeReason) {
-        if (value && reason === "selectOption") setClusterDetection(instances[value] ?? initialInstance(value))
+        if (value && reason === "selectOption") setClusterDetection(nodes[value] ?? initialNode(value))
     }
 }

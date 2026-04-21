@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"ivory/src/clients/sidecar"
 	"ivory/src/features/cert"
-	"ivory/src/features/instance"
+	"ivory/src/features/node"
 	"ivory/src/features/tag"
 )
 
@@ -14,18 +14,18 @@ var ErrClusterSidecarsEmpty = errors.New("cluster sidecars cannot be empty")
 
 type Service struct {
 	clusterRepository *Repository
-	instanceService   *instance.Service
+	nodeService       *node.Service
 	tagService        *tag.Service
 }
 
 func NewService(
 	clusterRepository *Repository,
-	instanceService *instance.Service,
+	nodeService *node.Service,
 	tagService *tag.Service,
 ) *Service {
 	return &Service{
 		clusterRepository: clusterRepository,
-		instanceService:   instanceService,
+		nodeService:       nodeService,
 		tagService:        tagService,
 	}
 }
@@ -85,45 +85,45 @@ func (s *Service) Overview(name string, side *sidecar.Sidecar) (*ClusterOverview
 		return nil, clusterError
 	}
 	detectedBy := side
-	var instances []sidecar.Instance
+	var nodes []sidecar.Instance
 	var err error
 	if side == nil {
-		instances, detectedBy, err = s.getOverviewAuto(cluster.Sidecars, cluster.ClusterOptions)
+		nodes, detectedBy, err = s.getOverviewAuto(cluster.Sidecars, cluster.ClusterOptions)
 	} else {
-		instances, err = s.getOverview(*side, cluster.ClusterOptions)
+		nodes, err = s.getOverview(*side, cluster.ClusterOptions)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	detectedByDomain := fmt.Sprintf("%s:%d", detectedBy.Host, detectedBy.Port)
-	var mainInstance *Instance
-	instancesMap := make(map[string]*Instance)
-	for _, el := range instances {
+	var mainNode *Node
+	nodesMap := make(map[string]*Node)
+	for _, el := range nodes {
 		domain := fmt.Sprintf("%s:%d", el.Sidecar.Host, el.Sidecar.Port)
-		fullInstance := Instance{el, false, true}
-		instancesMap[domain] = &fullInstance
+		fullNode := Node{el, false, true}
+		nodesMap[domain] = &fullNode
 
 		if detectedByDomain == domain {
-			mainInstance = &fullInstance
+			mainNode = &fullNode
 		}
-		if fullInstance.Role == sidecar.Leader {
-			mainInstance = &fullInstance
+		if fullNode.Role == sidecar.Leader {
+			mainNode = &fullNode
 		}
 	}
 	for _, sc := range cluster.Sidecars {
 		domain := fmt.Sprintf("%s:%d", sc.Host, sc.Port)
-		if value, ok := instancesMap[domain]; ok && value != nil {
-			instancesMap[domain] = &Instance{value.Instance, true, value.InSidecar}
+		if value, ok := nodesMap[domain]; ok && value != nil {
+			nodesMap[domain] = &Node{value.Instance, true, value.InSidecar}
 		} else {
-			instancesMap[domain] = nil
+			nodesMap[domain] = nil
 		}
 	}
-	return &ClusterOverview{instancesMap, detectedBy, mainInstance}, nil
+	return &ClusterOverview{nodesMap, detectedBy, mainNode}, nil
 }
 
 func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
-	overview, errOver := s.getOverview(cluster.Instance, cluster.ClusterOptions)
+	overview, errOver := s.getOverview(cluster.Node, cluster.ClusterOptions)
 	if errOver != nil {
 		return Cluster{}, errOver
 	}
@@ -187,12 +187,12 @@ func (s *Service) getOverview(sidecar sidecar.Sidecar, cluster ClusterOptions) (
 	if cluster.Tls.Sidecar {
 		certs = &cluster.Certs
 	}
-	request := instance.Request{
+	request := node.Request{
 		Sidecar:      sidecar,
 		CredentialId: cluster.Credentials.PatroniId,
 		Certs:        certs,
 	}
-	overview, _, errOver := s.instanceService.Overview(request)
+	overview, _, errOver := s.nodeService.Overview(request)
 	return overview, errOver
 }
 
@@ -202,12 +202,12 @@ func (s *Service) getOverviewAuto(sidecars []sidecar.Sidecar, cluster ClusterOpt
 	if cluster.Tls.Sidecar {
 		certs = &cluster.Certs
 	}
-	request := instance.InstanceAutoRequest{
+	request := node.NodeAutoRequest{
 		Sidecars:     sidecars,
 		CredentialId: cluster.Credentials.PatroniId,
 		Certs:        certs,
 	}
-	overview, _, detectedBy, errOver := s.instanceService.OverviewAuto(request)
+	overview, _, detectedBy, errOver := s.nodeService.OverviewAuto(request)
 	if errOver != nil {
 		return nil, nil, errOver
 	}

@@ -1,7 +1,7 @@
 import {Box, Paper, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {Instance} from "../../../../api/cluster/type"
-import {InstanceTabType} from "../../../../api/instance/type"
+import {Node} from "../../../../api/cluster/type"
+import {NodeTabType} from "../../../../api/node/type"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {ConnectionRequest} from "../../../../api/postgres"
@@ -9,8 +9,8 @@ import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {Access} from "../../../widgets/access/Access"
 import {QueryActivity} from "../../../widgets/query/QueryActivity"
-import {InstanceInfoStatus} from "./InstanceInfoStatus"
-import {InstanceInfoTable} from "./InstanceInfoTable"
+import {NodeInfoStatus} from "./NodeInfoStatus"
+import {NodeInfoTable} from "./NodeInfoTable"
 
 const SX: SxPropsMap = {
     info: {display: "flex", flexDirection: "column", gap: 1, margin: "5px 0", minWidth: "332px"},
@@ -18,14 +18,14 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: Instance,
-    tab: InstanceTabType,
-    onTab: (tab: InstanceTabType) => void,
+    node: Node,
+    tab: NodeTabType,
+    onTab: (tab: NodeTabType) => void,
     connection: ConnectionRequest,
 }
 
-export function InstanceInfo(props: Props) {
-    const {instance, tab, onTab, connection} = props
+export function NodeInfo(props: Props) {
+    const {node, tab, onTab, connection} = props
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
     const access = !!permissions && permissions[Permission.ViewQueryExecuteChart] === PermissionStatus.GRANTED
@@ -33,16 +33,16 @@ export function InstanceInfo(props: Props) {
     return (
         <Box sx={SX.info}>
             <ToggleButtonGroup size={"small"} color={"secondary"} fullWidth value={tab}>
-                <ToggleButton value={InstanceTabType.CHART} onClick={() => onTab(InstanceTabType.CHART)} disabled={!access}>
+                <ToggleButton value={NodeTabType.CHART} onClick={() => onTab(NodeTabType.CHART)} disabled={!access}>
                     Charts
                 </ToggleButton>
-                <ToggleButton value={InstanceTabType.QUERY} onClick={() => onTab(InstanceTabType.QUERY)}>
+                <ToggleButton value={NodeTabType.QUERY} onClick={() => onTab(NodeTabType.QUERY)}>
                     Queries
                 </ToggleButton>
             </ToggleButtonGroup>
-            <InstanceInfoStatus role={instance.role}/>
+            <NodeInfoStatus role={node.role}/>
             <Paper sx={SX.paper} variant={"outlined"}>
-                <InstanceInfoTable instance={instance}/>
+                <NodeInfoTable node={node}/>
             </Paper>
             <Access permission={Permission.ViewQueryExecuteInfo}>
                 <Paper sx={SX.paper} variant={"outlined"}>

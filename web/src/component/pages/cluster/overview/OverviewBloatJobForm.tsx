@@ -3,7 +3,7 @@ import {useState} from "react"
 
 import {useRouterBloatStart} from "../../../../api/bloat/hook"
 import {BloatOptions, BloatTarget} from "../../../../api/bloat/type"
-import {Cluster, Instance} from "../../../../api/cluster/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
 import {getConnectionRequest} from "../../../../app/utils"
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: Instance,
+    node: Node,
     cluster: Cluster,
     onClick: () => void,
     target?: BloatTarget,
@@ -24,15 +24,15 @@ type Props = {
 }
 
 export function OverviewBloatJobForm(props: Props) {
-    const {instance, cluster, target, onClick, setTarget} = props
+    const {node, cluster, target, onClick, setTarget} = props
     const [options, setOptions] = useState<BloatOptions>({force: false, noReindex: false, routineVacuum: false, initialReindex: false, noInitialVacuum: false})
 
     const start = useRouterBloatStart(cluster.name)
 
-    if (instance.role !== "leader") return <ClusterNoLeaderError/>
+    if (node.role !== "leader") return <ClusterNoLeaderError/>
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
-    const db = {...instance.database, name: target?.database}
+    const db = {...node.database, name: target?.database}
     const connection = getConnectionRequest(cluster, db)
     return (
         <Box sx={SX.form}>
@@ -111,8 +111,8 @@ export function OverviewBloatJobForm(props: Props) {
 
     function handleRun() {
         const credentialId = cluster.credentials.postgresId
-        if (instance && credentialId) {
-            const {database: {host, port}} = instance
+        if (node && credentialId) {
+            const {database: {host, port}} = node
             onClick()
             start.mutate({
                 connection: {

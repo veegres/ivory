@@ -18,10 +18,10 @@ export function useRouterClusterList(tags: string[]) {
 
 export function useRouterClusterOverview(name?: string, enabled: boolean = true) {
     const activeCluster = useStore(s => s.activeCluster)
-    const instance = activeCluster?.cluster.name === name ? activeCluster?.detectBy : undefined
+    const node = activeCluster?.cluster.name === name ? activeCluster?.detectBy : undefined
     return useQuery({
-        queryKey: ClusterApi.overview.key(name, instance?.sidecar),
-        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", instance?.sidecar),
+        queryKey: ClusterApi.overview.key(name, node?.sidecar),
+        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", node?.sidecar),
         enabled: !!name && enabled, retry: false,
     })
 }
