@@ -177,19 +177,31 @@ func vmRouter(g *gin.RouterGroup, rp *permission.Router, r *vm.Router) {
 
 func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	group := g.Group("/node")
-	group.GET("/overview", rp.ValidateMethodMiddleware(permission.ViewNodeOverview), r.GetNodeOverview)
-	group.GET("/config", rp.ValidateMethodMiddleware(permission.ViewNodeConfig), r.GetNodeConfig)
-	group.GET("/metrics", rp.ValidateMethodMiddleware(permission.ViewNodeVmMetrics), r.GetMetrics)
-	group.PATCH("/config", rp.ValidateMethodMiddleware(permission.ManageNodeConfigUpdate), r.PatchNodeConfig)
-	group.POST("/switchover", rp.ValidateMethodMiddleware(permission.ManageNodeSwitchover), r.PostNodeSwitchover)
-	group.DELETE("/switchover", rp.ValidateMethodMiddleware(permission.ManageNodeSwitchover), r.DeleteNodeSwitchover)
-	group.POST("/reinitialize", rp.ValidateMethodMiddleware(permission.ManageNodeReinitialize), r.PostNodeReinitialize)
-	group.POST("/restart", rp.ValidateMethodMiddleware(permission.ManageNodeRestart), r.PostNodeRestart)
-	group.DELETE("/restart", rp.ValidateMethodMiddleware(permission.ManageNodeRestart), r.DeleteNodeRestart)
-	group.POST("/reload", rp.ValidateMethodMiddleware(permission.ManageNodeReload), r.PostNodeReload)
-	group.POST("/failover", rp.ValidateMethodMiddleware(permission.ManageNodeFailover), r.PostNodeFailover)
-	group.POST("/activate", rp.ValidateMethodMiddleware(permission.ManageNodeActivation), r.PostNodeActivate)
-	group.POST("/pause", rp.ValidateMethodMiddleware(permission.ManageNodeActivation), r.PostNodePause)
+
+	dbGroup := group.Group("/db")
+	dbGroup.GET("/overview", rp.ValidateMethodMiddleware(permission.ViewNodeDbOverview), r.GetNodeOverview)
+	dbGroup.GET("/config", rp.ValidateMethodMiddleware(permission.ViewNodeDbConfig), r.GetNodeConfig)
+	dbGroup.PATCH("/config", rp.ValidateMethodMiddleware(permission.ManageNodeDbConfigUpdate), r.PatchNodeConfig)
+	dbGroup.POST("/switchover", rp.ValidateMethodMiddleware(permission.ManageNodeDbSwitchover), r.PostNodeSwitchover)
+	dbGroup.DELETE("/switchover", rp.ValidateMethodMiddleware(permission.ManageNodeDbSwitchover), r.DeleteNodeSwitchover)
+	dbGroup.POST("/reinitialize", rp.ValidateMethodMiddleware(permission.ManageNodeDbReinitialize), r.PostNodeReinitialize)
+	dbGroup.POST("/restart", rp.ValidateMethodMiddleware(permission.ManageNodeDbRestart), r.PostNodeRestart)
+	dbGroup.DELETE("/restart", rp.ValidateMethodMiddleware(permission.ManageNodeDbRestart), r.DeleteNodeRestart)
+	dbGroup.POST("/reload", rp.ValidateMethodMiddleware(permission.ManageNodeDbReload), r.PostNodeReload)
+	dbGroup.POST("/failover", rp.ValidateMethodMiddleware(permission.ManageNodeDbFailover), r.PostNodeFailover)
+	dbGroup.POST("/activate", rp.ValidateMethodMiddleware(permission.ManageNodeDbActivation), r.PostNodeActivate)
+	dbGroup.POST("/pause", rp.ValidateMethodMiddleware(permission.ManageNodeDbActivation), r.PostNodePause)
+
+	vmGroup := group.Group("/vm")
+	vmGroup.GET("/metrics", rp.ValidateMethodMiddleware(permission.ViewNodeVmMetrics), r.GetMetrics)
+
+	dockerGroup := vmGroup.Group("/docker")
+	dockerGroup.GET("", rp.ValidateMethodMiddleware(permission.ViewNodeVmDocker), r.GetDockerList)
+	dockerGroup.GET("/logs", rp.ValidateMethodMiddleware(permission.ViewNodeVmDocker), r.GetDockerLogs)
+	dockerGroup.POST("/deploy", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerDeploy)
+	dockerGroup.POST("/stop", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerStop)
+	dockerGroup.POST("/run", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerRun)
+	dockerGroup.POST("/delete", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerDelete)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {

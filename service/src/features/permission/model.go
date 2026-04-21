@@ -48,16 +48,18 @@ const (
 	ViewTagList Permission = "view.tag.list"
 
 	// Node permissions
-	ViewNodeOverview       Permission = "view.node.overview"
-	ViewNodeConfig         Permission = "view.node.config"
-	ViewNodeVmMetrics      Permission = "view.node.metrics"
-	ManageNodeConfigUpdate Permission = "manage.node.config.update"
-	ManageNodeSwitchover   Permission = "manage.node.switchover"
-	ManageNodeReinitialize Permission = "manage.node.reinitialize"
-	ManageNodeRestart      Permission = "manage.node.restart"
-	ManageNodeReload       Permission = "manage.node.reload"
-	ManageNodeFailover     Permission = "manage.node.failover"
-	ManageNodeActivation   Permission = "manage.node.activation"
+	ViewNodeDbOverview       Permission = "view.node.db.overview"
+	ViewNodeDbConfig         Permission = "view.node.db.config"
+	ViewNodeVmMetrics        Permission = "view.node.vm.metrics"
+	ManageNodeDbConfigUpdate Permission = "manage.node.db.config.update"
+	ManageNodeDbSwitchover   Permission = "manage.node.db.switchover"
+	ManageNodeDbReinitialize Permission = "manage.node.db.reinitialize"
+	ManageNodeDbRestart      Permission = "manage.node.db.restart"
+	ManageNodeDbReload       Permission = "manage.node.db.reload"
+	ManageNodeDbFailover     Permission = "manage.node.db.failover"
+	ManageNodeDbActivation   Permission = "manage.node.db.activation"
+	ManageNodeVmDocker       Permission = "manage.node.vm.docker"
+	ViewNodeVmDocker         Permission = "view.node.vm.docker"
 
 	// Query permissions
 	ViewQueryList               Permission = "view.query.list"
@@ -116,16 +118,18 @@ var Permissions = []Permission{
 	ManageVmUpdate,
 	ManageVmDelete,
 	ViewTagList,
-	ViewNodeOverview,
-	ViewNodeConfig,
+	ViewNodeDbOverview,
+	ViewNodeDbConfig,
 	ViewNodeVmMetrics,
-	ManageNodeConfigUpdate,
-	ManageNodeSwitchover,
-	ManageNodeReinitialize,
-	ManageNodeRestart,
-	ManageNodeReload,
-	ManageNodeFailover,
-	ManageNodeActivation,
+	ManageNodeDbConfigUpdate,
+	ManageNodeDbSwitchover,
+	ManageNodeDbReinitialize,
+	ManageNodeDbRestart,
+	ManageNodeDbReload,
+	ManageNodeDbFailover,
+	ManageNodeDbActivation,
+	ManageNodeVmDocker,
+	ViewNodeVmDocker,
 	ViewQueryList,
 	ManageQueryCreate,
 	ManageQueryUpdate,
