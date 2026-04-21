@@ -35,7 +35,7 @@ func NewService(
 	}
 }
 
-func (s *Service) OverviewAuto(request InstanceAutoRequest) ([]sidecar.Instance, int, *sidecar.Sidecar, error) {
+func (s *Service) OverviewAuto(request InstanceAutoRequest) ([]Instance, int, *sidecar.Sidecar, error) {
 	var tlsConfig *tls.Config
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&tlsConfig, request.Certs)
@@ -71,7 +71,7 @@ func (s *Service) OverviewAuto(request InstanceAutoRequest) ([]sidecar.Instance,
 	return overview, statusCode, detectedBy, nil
 }
 
-func (s *Service) Overview(instance InstanceRequest) ([]sidecar.Instance, int, error) {
+func (s *Service) Overview(instance Request) ([]Instance, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -79,7 +79,7 @@ func (s *Service) Overview(instance InstanceRequest) ([]sidecar.Instance, int, e
 	return s.sidecarClient.Overview(request)
 }
 
-func (s *Service) Config(instance InstanceRequest) (any, int, error) {
+func (s *Service) Config(instance Request) (any, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -87,7 +87,7 @@ func (s *Service) Config(instance InstanceRequest) (any, int, error) {
 	return s.sidecarClient.Config(request)
 }
 
-func (s *Service) ConfigUpdate(instance InstanceRequest) (any, int, error) {
+func (s *Service) ConfigUpdate(instance Request) (any, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -95,7 +95,7 @@ func (s *Service) ConfigUpdate(instance InstanceRequest) (any, int, error) {
 	return s.sidecarClient.ConfigUpdate(request)
 }
 
-func (s *Service) Switchover(instance InstanceRequest) (*string, int, error) {
+func (s *Service) Switchover(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -103,7 +103,7 @@ func (s *Service) Switchover(instance InstanceRequest) (*string, int, error) {
 	return s.sidecarClient.Switchover(request)
 }
 
-func (s *Service) DeleteSwitchover(instance InstanceRequest) (*string, int, error) {
+func (s *Service) DeleteSwitchover(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -111,7 +111,7 @@ func (s *Service) DeleteSwitchover(instance InstanceRequest) (*string, int, erro
 	return s.sidecarClient.DeleteSwitchover(request)
 }
 
-func (s *Service) Reinitialize(instance InstanceRequest) (*string, int, error) {
+func (s *Service) Reinitialize(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -119,7 +119,7 @@ func (s *Service) Reinitialize(instance InstanceRequest) (*string, int, error) {
 	return s.sidecarClient.Reinitialize(request)
 }
 
-func (s *Service) Restart(instance InstanceRequest) (*string, int, error) {
+func (s *Service) Restart(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -127,7 +127,7 @@ func (s *Service) Restart(instance InstanceRequest) (*string, int, error) {
 	return s.sidecarClient.Restart(request)
 }
 
-func (s *Service) DeleteRestart(instance InstanceRequest) (*string, int, error) {
+func (s *Service) DeleteRestart(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -135,7 +135,7 @@ func (s *Service) DeleteRestart(instance InstanceRequest) (*string, int, error) 
 	return s.sidecarClient.DeleteRestart(request)
 }
 
-func (s *Service) Reload(instance InstanceRequest) (*string, int, error) {
+func (s *Service) Reload(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -143,7 +143,7 @@ func (s *Service) Reload(instance InstanceRequest) (*string, int, error) {
 	return s.sidecarClient.Reload(request)
 }
 
-func (s *Service) Failover(instance InstanceRequest) (*string, int, error) {
+func (s *Service) Failover(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -151,7 +151,7 @@ func (s *Service) Failover(instance InstanceRequest) (*string, int, error) {
 	return s.sidecarClient.Failover(request)
 }
 
-func (s *Service) Activate(instance InstanceRequest) (*string, int, error) {
+func (s *Service) Activate(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -159,7 +159,7 @@ func (s *Service) Activate(instance InstanceRequest) (*string, int, error) {
 	return s.sidecarClient.Activate(request)
 }
 
-func (s *Service) Pause(instance InstanceRequest) (*string, int, error) {
+func (s *Service) Pause(instance Request) (*string, int, error) {
 	request, err := s.mapRequest(instance)
 	if err != nil {
 		return nil, 0, err
@@ -167,31 +167,7 @@ func (s *Service) Pause(instance InstanceRequest) (*string, int, error) {
 	return s.sidecarClient.Pause(request)
 }
 
-func (s *Service) ExecuteVmCommand(request VmCommandRequest) (*VmCommandResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
-	if err != nil {
-		return nil, 0, err
-	}
-	result, err := s.sshClient.Execute(*vmModel, request.Command)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 200, nil
-}
-
-func (s *Service) ExecuteVmDockerCommand(request VmCommandRequest) (*VmCommandResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
-	if err != nil {
-		return nil, 0, err
-	}
-	result, err := s.sshClient.ExecuteDocker(*vmModel, request.Command)
-	if err != nil {
-		return nil, 0, err
-	}
-	return result, 200, nil
-}
-
-func (s *Service) VmMetrics(request VmRequest) (*VmMetrics, int, error) {
+func (s *Service) Metrics(request SshRequest) (*SshMetrics, int, error) {
 	vmModel, err := s.vmService.GetDecrypted(request.VmId)
 	if err != nil {
 		return nil, 0, err
@@ -203,7 +179,7 @@ func (s *Service) VmMetrics(request VmRequest) (*VmMetrics, int, error) {
 	return result, 200, nil
 }
 
-func (s *Service) mapRequest(instance InstanceRequest) (sidecar.Request, error) {
+func (s *Service) mapRequest(instance Request) (sidecar.Request, error) {
 	request := sidecar.Request{Sidecar: instance.Sidecar, Body: instance.Body}
 	if instance.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&request.TlsConfig, instance.Certs)

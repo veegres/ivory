@@ -2,7 +2,7 @@ package instance
 
 import (
 	"ivory/src/clients/sidecar"
-	sshclient "ivory/src/clients/ssh"
+	"ivory/src/clients/ssh"
 	"ivory/src/features/cert"
 
 	"github.com/google/uuid"
@@ -10,24 +10,20 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type InstanceRequest struct {
+type Request struct {
 	Sidecar      sidecar.Sidecar `json:"sidecar" form:"sidecar"`
 	CredentialId *uuid.UUID      `json:"credentialId" form:"credentialId"`
 	Certs        *cert.Certs     `json:"certs" form:"certs"`
 	Body         any             `json:"body" form:"body"`
 }
 
-type VmRequest struct {
+type Instance = sidecar.Instance
+
+type SshRequest struct {
 	VmId uuid.UUID `json:"vmId" form:"vmId" binding:"required"`
 }
 
-type VmCommandRequest struct {
-	VmId    uuid.UUID `json:"vmId" binding:"required"`
-	Command string    `json:"command" binding:"required"`
-}
-
-type VmCommandResult = sshclient.CommandResult
-type VmMetrics = sshclient.Metrics
+type SshMetrics = ssh.Metrics
 
 // SPECIFIC (SERVER)
 
