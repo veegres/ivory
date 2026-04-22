@@ -6,11 +6,11 @@ import (
 )
 
 func (s *Service) Metrics(request SshRequest) (*SshMetrics, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	connection, err := s.getSshConnection(request.VmId)
 	if err != nil {
 		return nil, 0, err
 	}
-	result, err := s.sshClient.Metrics(*vmModel)
+	result, err := s.sshClient.Metrics(*connection)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -18,13 +18,13 @@ func (s *Service) Metrics(request SshRequest) (*SshMetrics, int, error) {
 }
 
 func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	connection, err := s.getSshConnection(request.VmId)
 	if err != nil {
 		return nil, 0, err
 	}
 	// Pull then run
 	command := fmt.Sprintf("pull %s && run -d %s %s", request.Image, request.Options, request.Image)
-	res, err := s.sshClient.ExecuteDocker(*vmModel, command)
+	res, err := s.sshClient.ExecuteDocker(*connection, command)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -32,11 +32,11 @@ func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, int, error
 }
 
 func (s *Service) DockerStop(request DockerRequest) (*DockerResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	connection, err := s.getSshConnection(request.VmId)
 	if err != nil {
 		return nil, 0, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*vmModel, "stop "+request.Container)
+	res, err := s.sshClient.ExecuteDocker(*connection, "stop "+request.Container)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -44,11 +44,11 @@ func (s *Service) DockerStop(request DockerRequest) (*DockerResult, int, error) 
 }
 
 func (s *Service) DockerRun(request DockerRequest) (*DockerResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	connection, err := s.getSshConnection(request.VmId)
 	if err != nil {
 		return nil, 0, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*vmModel, fmt.Sprintf("run -d %s %s", request.Options, request.Image))
+	res, err := s.sshClient.ExecuteDocker(*connection, fmt.Sprintf("run -d %s %s", request.Options, request.Image))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -56,11 +56,11 @@ func (s *Service) DockerRun(request DockerRequest) (*DockerResult, int, error) {
 }
 
 func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	connection, err := s.getSshConnection(request.VmId)
 	if err != nil {
 		return nil, 0, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*vmModel, "rm "+request.Container)
+	res, err := s.sshClient.ExecuteDocker(*connection, "rm "+request.Container)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -68,11 +68,11 @@ func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, int, error
 }
 
 func (s *Service) DockerList(request SshRequest) (*DockerResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	connection, err := s.getSshConnection(request.VmId)
 	if err != nil {
 		return nil, 0, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*vmModel, "ps -a")
+	res, err := s.sshClient.ExecuteDocker(*connection, "ps -a")
 	if err != nil {
 		return nil, 0, err
 	}
@@ -80,7 +80,7 @@ func (s *Service) DockerList(request SshRequest) (*DockerResult, int, error) {
 }
 
 func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, int, error) {
-	vmModel, err := s.vmService.GetDecrypted(request.VmId)
+	connection, err := s.getSshConnection(request.VmId)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -89,7 +89,7 @@ func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, int, err
 		command += "--tail " + strconv.Itoa(request.Tail) + " "
 	}
 	command += request.Container
-	res, err := s.sshClient.ExecuteDocker(*vmModel, command)
+	res, err := s.sshClient.ExecuteDocker(*connection, command)
 	if err != nil {
 		return nil, 0, err
 	}

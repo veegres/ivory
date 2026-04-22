@@ -44,7 +44,7 @@ func (s *Service) OverviewAuto(request NodeAutoRequest) ([]Node, int, *keeper.Ke
 }
 
 func (s *Service) Overview(node Request) ([]Node, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -52,7 +52,7 @@ func (s *Service) Overview(node Request) ([]Node, int, error) {
 }
 
 func (s *Service) Config(node Request) (any, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -60,7 +60,7 @@ func (s *Service) Config(node Request) (any, int, error) {
 }
 
 func (s *Service) ConfigUpdate(node Request) (any, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -68,7 +68,7 @@ func (s *Service) ConfigUpdate(node Request) (any, int, error) {
 }
 
 func (s *Service) Switchover(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -76,7 +76,7 @@ func (s *Service) Switchover(node Request) (*string, int, error) {
 }
 
 func (s *Service) DeleteSwitchover(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -84,7 +84,7 @@ func (s *Service) DeleteSwitchover(node Request) (*string, int, error) {
 }
 
 func (s *Service) Reinitialize(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -92,7 +92,7 @@ func (s *Service) Reinitialize(node Request) (*string, int, error) {
 }
 
 func (s *Service) Restart(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -100,7 +100,7 @@ func (s *Service) Restart(node Request) (*string, int, error) {
 }
 
 func (s *Service) DeleteRestart(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -108,7 +108,7 @@ func (s *Service) DeleteRestart(node Request) (*string, int, error) {
 }
 
 func (s *Service) Reload(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -116,7 +116,7 @@ func (s *Service) Reload(node Request) (*string, int, error) {
 }
 
 func (s *Service) Failover(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -124,7 +124,7 @@ func (s *Service) Failover(node Request) (*string, int, error) {
 }
 
 func (s *Service) Activate(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -132,7 +132,7 @@ func (s *Service) Activate(node Request) (*string, int, error) {
 }
 
 func (s *Service) Pause(node Request) (*string, int, error) {
-	request, err := s.mapRequest(node)
+	request, err := s.getKeeperRequest(node)
 	if err != nil {
 		return nil, 0, err
 	}
