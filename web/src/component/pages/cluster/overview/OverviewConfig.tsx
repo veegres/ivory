@@ -7,7 +7,7 @@ import {Cluster, Node} from "../../../../api/cluster/type"
 import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../api/node/hook"
 import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
-import {CodeThemes, getSidecarConnection} from "../../../../app/utils"
+import {CodeThemes, getKeeperConnection} from "../../../../app/utils"
 import {useSettings} from "../../../../provider/AppProvider"
 import {useSnackbar} from "../../../../provider/SnackbarProvider"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
@@ -31,10 +31,10 @@ export function OverviewConfig(props: Props) {
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const connection = getSidecarConnection(cluster, node.sidecar)
+    const connection = getKeeperConnection(cluster, node.keeper)
 
-    const config = useRouterNodeConfig(connection, !!node.sidecar)
-    const updateConfig = useRouterNodeConfigUpdate(node.sidecar, () => setIsEditable(false))
+    const config = useRouterNodeConfig(connection, !!node.keeper)
+    const updateConfig = useRouterNodeConfigUpdate(node.keeper, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 
@@ -59,7 +59,7 @@ export function OverviewConfig(props: Props) {
                 />
             </Box>
             <Box sx={SX.buttons}>
-                <Access permission={Permission.ManageNodeConfigUpdate}>
+                <Access permission={Permission.ManageNodeDbConfigUpdate}>
                     {renderUpdateButtons()}
                 </Access>
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>

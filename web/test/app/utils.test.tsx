@@ -4,15 +4,15 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {Sidecar} from "../../src/api/instance/type"
+import {Keeper} from "../../src/api/node/type"
 import {
     DateTimeFormatter,
     getDomain,
     getDomains,
     getErrorMessage,
-    getSidecar,
-    getSidecars,
-    isSidecarEqual,
+    getKeeper,
+    getKeepers,
+    isKeeperEqual,
     randomUnicodeAnimal,
     shortUuid,
     SizeFormatter,
@@ -30,56 +30,56 @@ describe("shortUuid", () => {
 })
 
 describe("getDomain", () => {
-  it("should return the domain string from a Sidecar object", () => {
-    const sidecar: Sidecar = {host: "localhost", port: 8008}
-    expect(getDomain(sidecar)).toBe("localhost:8008")
+  it("should return the domain string from a Keeper object", () => {
+    const keeper: Keeper = {host: "localhost", port: 8008}
+    expect(getDomain(keeper)).toBe("localhost:8008")
   })
 
 })
 
 describe("getDomains", () => {
-    it("should return an array of domain strings from an array of Sidecar objects", () => {
-        const sidecars: Sidecar[] = [
+    it("should return an array of domain strings from an array of Keeper objects", () => {
+        const keepers: Keeper[] = [
             {host: "localhost", port: 8008},
             {host: "127.0.0.1", port: 8008},
         ]
-        expect(getDomains(sidecars)).toEqual(["localhost:8008", "127.0.0.1:8008"])
+        expect(getDomains(keepers)).toEqual(["localhost:8008", "127.0.0.1:8008"])
     })
 })
 
-describe("getSidecar", () => {
-    it("should return a Sidecar object from a domain string", () => {
+describe("getKeeper", () => {
+    it("should return a Keeper object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getSidecar(domain)).toEqual({host: "localhost", port: 8008})
+        expect(getKeeper(domain)).toEqual({host: "localhost", port: 8008})
     })
 
-    it("should return a Sidecar object with default port if port is not in domain string", () => {
+    it("should return a Keeper object with default port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getSidecar(domain)).toEqual({host: "localhost", port: 8008})
+        expect(getKeeper(domain)).toEqual({host: "localhost", port: 8008})
     })
 })
 
-describe("getSidecars", () => {
-    it("should return an array of Sidecar objects from an array of domain strings", () => {
+describe("getKeepers", () => {
+    it("should return an array of Keeper objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
-        expect(getSidecars(domains)).toEqual([
+        expect(getKeepers(domains)).toEqual([
             {host: "localhost", port: 8008},
             {host: "127.0.0.1", port: 8008},
         ])
     })
 })
 
-describe("isSidecarEqual", () => {
-    it("should return true if sidecars are equal", () => {
-        const sidecar1: Sidecar = {host: "localhost", port: 8008}
-        const sidecar2: Sidecar = {host: "localhost", port: 8008}
-        expect(isSidecarEqual(sidecar1, sidecar2)).toBe(true)
+describe("isKeeperEqual", () => {
+    it("should return true if keepers are equal", () => {
+        const keeper1: Keeper = {host: "localhost", port: 8008}
+        const keeper2: Keeper = {host: "localhost", port: 8008}
+        expect(isKeeperEqual(keeper1, keeper2)).toBe(true)
     })
 
-    it("should return false if sidecars are not equal", () => {
-        const sidecar1: Sidecar = {host: "localhost", port: 8008}
-        const sidecar2: Sidecar = {host: "localhost", port: 8009}
-        expect(isSidecarEqual(sidecar1, sidecar2)).toBe(false)
+    it("should return false if keepers are not equal", () => {
+        const keeper1: Keeper = {host: "localhost", port: 8008}
+        const keeper2: Keeper = {host: "localhost", port: 8009}
+        expect(isKeeperEqual(keeper1, keeper2)).toBe(false)
     })
 })
 

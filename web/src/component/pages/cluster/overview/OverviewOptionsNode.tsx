@@ -30,7 +30,7 @@ export function OverviewOptionsNode(props: Props) {
     const {setClusterDetection} = useStoreAction
     const {detectBy, nodes, mainNode} = props
 
-    const value = getDomain(detectBy?.sidecar ?? mainNode?.sidecar ?? {host: "-", port: 0})
+    const value = getDomain(detectBy?.keeper ?? mainNode?.keeper ?? {host: "-", port: 0})
     const [inputValue, setInputValue] = useState<string | undefined>(value)
 
     const options = useMemo(() => Object.keys(nodes), [nodes])
@@ -47,7 +47,7 @@ export function OverviewOptionsNode(props: Props) {
                 inputValue={inputValue}
                 isOptionEqualToValue={(option, value) => option === value}
                 onInputChange={(_, value) => setInputValue(value)}
-                renderInput={(params) => <TextField {...params} label={"Main Node"}/>}
+                renderInput={(params) => <TextField {...params} label={"Main Keeper"}/>}
             />
             <ToggleButtonGroup size={"small"}>
                 <Tooltip title={"AUTO"} placement={"top"}>

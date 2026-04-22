@@ -1,7 +1,7 @@
 import {getDomain} from "../../app/utils"
 import {api} from "../api"
-import {Sidecar} from "../node/type"
 import {R} from "../management/type"
+import {Keeper} from "../node/type"
 import {Cluster, ClusterAuto, ClusterOverview} from "./type"
 
 export const ClusterApi = {
@@ -9,12 +9,12 @@ export const ClusterApi = {
         key: () => ["cluster", "list"],
         fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
             .then((response) => response.data.response.map(v => (
-                {...v, sidecarsOverview: Object.fromEntries(v.sidecars.map(i => [getDomain(i), undefined]))} as Cluster
+                {...v, keepersOverview: Object.fromEntries(v.keepers.map(i => [getDomain(i), undefined]))} as Cluster
             ))),
     },
     overview: {
-        key: (name?: string, sidecar?: Sidecar) => ["cluster", "overview", name, sidecar?.host, sidecar?.port].filter(Boolean),
-        fn: (name: string, sidecar?: Sidecar) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {sidecar: JSON.stringify(sidecar)}})
+        key: (name?: string, keeper?: Keeper) => ["cluster", "overview", name, keeper?.host, keeper?.port].filter(Boolean),
+        fn: (name: string, keeper?: Keeper) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {keeper: JSON.stringify(keeper)}})
             .then((response) => response.data.response),
     },
     update: {

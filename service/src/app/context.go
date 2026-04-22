@@ -6,7 +6,7 @@ import (
 	"ivory/src/clients/auth/oidc"
 	"ivory/src/clients/database/postgres"
 	"ivory/src/clients/http"
-	"ivory/src/clients/sidecar/patroni"
+	"ivory/src/clients/keeper/patroni"
 	"ivory/src/clients/ssh"
 	"ivory/src/features/auth"
 	"ivory/src/features/bloat"

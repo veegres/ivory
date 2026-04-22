@@ -3,7 +3,7 @@ import {Dayjs} from "dayjs"
 import {useState} from "react"
 
 import {useRouterNodeSwitchover} from "../../../api/node/hook"
-import {NodeRequest, Sidecar} from "../../../api/node/type"
+import {Keeper,NodeRequest} from "../../../api/node/type"
 import {Permission} from "../../../api/permission/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
@@ -12,7 +12,7 @@ import {Access} from "../access/Access"
 type Props = {
     request: NodeRequest,
     cluster: string,
-    candidates: Sidecar[],
+    candidates: Keeper[],
 }
 
 export function SwitchoverButton(props: Props) {
@@ -22,14 +22,14 @@ export function SwitchoverButton(props: Props) {
     const [schedule, setSchedule] = useState<Dayjs>()
     const switchover = useRouterNodeSwitchover(cluster)
     // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name
-    const body = {leader: request.sidecar.name, candidate, scheduled_at: schedule}
+    const body = {leader: request.keeper.name, candidate, scheduled_at: schedule}
 
     return (
-        <Access permission={Permission.ManageNodeSwitchover}>
+        <Access permission={Permission.ManageNodeDbSwitchover}>
             <AlertButton
                 color={"secondary"}
                 label={"Switchover"}
-                title={`Make a switchover of ${request.sidecar.host}?`}
+                title={`Make a switchover of ${request.keeper.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
                  candidate, the candidate will be chosen randomly.`}
                 loading={switchover.isPending}
@@ -54,8 +54,8 @@ export function SwitchoverButton(props: Props) {
                     variant={"outlined"}
                 >
                     <MenuItem value={""}><em>none (will be chosen randomly)</em></MenuItem>
-                    {candidates.map(sidecar => (
-                        <MenuItem key={sidecar.host} value={sidecar.name}>{sidecar.host}</MenuItem>
+                    {candidates.map(keeper => (
+                        <MenuItem key={keeper.host} value={keeper.name}>{keeper.host}</MenuItem>
                     ))}
                 </Select>
             </FormControl>

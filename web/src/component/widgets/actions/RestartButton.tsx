@@ -31,11 +31,11 @@ export function RestartButton(props: Props) {
     const body = {schedule, restart_pending: pending || undefined}
 
     return (
-        <Access permission={Permission.ManageNodeRestart}>
+        <Access permission={Permission.ManageNodeDbRestart}>
             <AlertButton
                 size={"small"}
                 label={"Restart"}
-                title={`Make a restart of ${request.sidecar.host}?`}
+                title={`Make a restart of ${request.keeper.host}?`}
                 description={"It will restart postgres, that will cause some downtime."}
                 loading={restart.isPending}
                 onClick={handleClick}

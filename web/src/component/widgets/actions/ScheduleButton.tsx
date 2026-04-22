@@ -55,7 +55,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteSwitchoverButton() {
         return (
-            <Access permission={Permission.ManageNodeSwitchover}>
+            <Access permission={Permission.ManageNodeDbSwitchover}>
                 <Button
                     size={"small"}
                     variant={"outlined"}
@@ -70,7 +70,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteRestartButton() {
         return (
-            <Access permission={Permission.ManageNodeRestart}>
+            <Access permission={Permission.ManageNodeDbRestart}>
                 <Button
                     size={"small"}
                     variant={"outlined"}

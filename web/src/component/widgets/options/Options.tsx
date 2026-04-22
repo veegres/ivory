@@ -31,7 +31,7 @@ export function Options(props: Props) {
             <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId} onUpdate={handlePasswordUpdate}/>
             <Divider variant={"middle"}/>
             <ToggleButtonGroup size={"small"} fullWidth>
-                <ToggleButton onClick={handleTlsSidecarUpdate} selected={tls.sidecar} value={"sidecar"}>Sidecar</ToggleButton>
+                <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
                 <ToggleButton sx={SX.tls} disabled={true} value={"tls"}>TLS</ToggleButton>
                 <ToggleButton onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
             </ToggleButtonGroup>
@@ -56,8 +56,8 @@ export function Options(props: Props) {
         onUpdate({...cluster, tags})
     }
 
-    function handleTlsSidecarUpdate() {
-        onUpdate({...cluster, tls: {...cluster.tls, sidecar: !tls.sidecar}})
+    function handleTlsKeeperUpdate() {
+        onUpdate({...cluster, tls: {...cluster.tls, keeper: !tls.keeper}})
     }
 
     function handleTlsDatabaseUpdate() {

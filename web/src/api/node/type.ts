@@ -7,24 +7,24 @@ import {ConnectionRequest} from "../postgres"
 // COMMON (WEB AND SERVER)
 
 export interface NodeRequest {
-    sidecar: Sidecar,
+    keeper: Keeper,
     credentialId?: string,
     certs?: Certs,
     body?: any,
 }
 
-// PATRONI CLIENT (WEB AND SERVER)
+// KEEPER CLIENT (WEB AND SERVER)
 
-export enum SidecarStatus {
+export enum KeeperStatus {
     Active = "ACTIVE",
     Paused = "PAUSED",
 }
 
-export interface Sidecar {
+export interface Keeper {
     host: string,
     port: number,
     name?: string,
-    status?: SidecarStatus,
+    status?: KeeperStatus,
 }
 
 export type Role = "leader" | "replica" | "unknown";

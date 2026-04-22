@@ -4,10 +4,10 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"ivory/src/clients/sidecar"
+	"ivory/src/clients/keeper"
 )
 
-func (s *Service) OverviewAuto(request NodeAutoRequest) ([]Node, int, *sidecar.Sidecar, error) {
+func (s *Service) OverviewAuto(request NodeAutoRequest) ([]Node, int, *keeper.Keeper, error) {
 	var tlsConfig *tls.Config
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&tlsConfig, request.Certs)
@@ -15,22 +15,22 @@ func (s *Service) OverviewAuto(request NodeAutoRequest) ([]Node, int, *sidecar.S
 			return nil, 0, nil, err
 		}
 	}
-	var cred *sidecar.Credentials
+	var cred *keeper.Credentials
 	if request.CredentialId != nil {
 		pass, err := s.passwordService.GetDecrypted(*request.CredentialId)
 		if err != nil {
 			return nil, 0, nil, err
 		}
-		cred = &sidecar.Credentials{Username: pass.Username, Password: pass.Password}
+		cred = &keeper.Credentials{Username: pass.Username, Password: pass.Password}
 	}
-	var overview []sidecar.Instance
-	var detectedBy *sidecar.Sidecar
+	var overview []keeper.Node
+	var detectedBy *keeper.Keeper
 	var statusCode int
 	var errorChain error
-	for i, instance := range request.Sidecars {
-		r := sidecar.Request{Sidecar: instance, Body: request.Body, TlsConfig: tlsConfig, Credentials: cred}
+	for i, instance := range request.Keepers {
+		r := keeper.Request{Keeper: instance, Body: request.Body, TlsConfig: tlsConfig, Credentials: cred}
 		var err error
-		overview, statusCode, err = s.sidecarClient.Overview(r)
+		overview, statusCode, err = s.keeperClient.Overview(r)
 		if err == nil {
 			detectedBy = &instance
 			break
@@ -48,7 +48,7 @@ func (s *Service) Overview(node Request) ([]Node, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Overview(request)
+	return s.keeperClient.Overview(request)
 }
 
 func (s *Service) Config(node Request) (any, int, error) {
@@ -56,7 +56,7 @@ func (s *Service) Config(node Request) (any, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Config(request)
+	return s.keeperClient.Config(request)
 }
 
 func (s *Service) ConfigUpdate(node Request) (any, int, error) {
@@ -64,7 +64,7 @@ func (s *Service) ConfigUpdate(node Request) (any, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.ConfigUpdate(request)
+	return s.keeperClient.ConfigUpdate(request)
 }
 
 func (s *Service) Switchover(node Request) (*string, int, error) {
@@ -72,7 +72,7 @@ func (s *Service) Switchover(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Switchover(request)
+	return s.keeperClient.Switchover(request)
 }
 
 func (s *Service) DeleteSwitchover(node Request) (*string, int, error) {
@@ -80,7 +80,7 @@ func (s *Service) DeleteSwitchover(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.DeleteSwitchover(request)
+	return s.keeperClient.DeleteSwitchover(request)
 }
 
 func (s *Service) Reinitialize(node Request) (*string, int, error) {
@@ -88,7 +88,7 @@ func (s *Service) Reinitialize(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Reinitialize(request)
+	return s.keeperClient.Reinitialize(request)
 }
 
 func (s *Service) Restart(node Request) (*string, int, error) {
@@ -96,7 +96,7 @@ func (s *Service) Restart(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Restart(request)
+	return s.keeperClient.Restart(request)
 }
 
 func (s *Service) DeleteRestart(node Request) (*string, int, error) {
@@ -104,7 +104,7 @@ func (s *Service) DeleteRestart(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.DeleteRestart(request)
+	return s.keeperClient.DeleteRestart(request)
 }
 
 func (s *Service) Reload(node Request) (*string, int, error) {
@@ -112,7 +112,7 @@ func (s *Service) Reload(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Reload(request)
+	return s.keeperClient.Reload(request)
 }
 
 func (s *Service) Failover(node Request) (*string, int, error) {
@@ -120,7 +120,7 @@ func (s *Service) Failover(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Failover(request)
+	return s.keeperClient.Failover(request)
 }
 
 func (s *Service) Activate(node Request) (*string, int, error) {
@@ -128,7 +128,7 @@ func (s *Service) Activate(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Activate(request)
+	return s.keeperClient.Activate(request)
 }
 
 func (s *Service) Pause(node Request) (*string, int, error) {
@@ -136,5 +136,5 @@ func (s *Service) Pause(node Request) (*string, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.sidecarClient.Pause(request)
+	return s.keeperClient.Pause(request)
 }

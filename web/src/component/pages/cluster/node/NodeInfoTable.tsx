@@ -25,8 +25,8 @@ export function NodeInfoTable(props: Props) {
                     <TableCell sx={SX.wrap}>{node.state}</TableCell>
                 </TableRow>
                 <TableRow>
-                    <TableCell sx={SX.title}>Sidecar</TableCell>
-                    <TableCell sx={SX.wrap}>{node.sidecar.host}:{node.sidecar.port.toString()}</TableCell>
+                    <TableCell sx={SX.title}>Keeper</TableCell>
+                    <TableCell sx={SX.wrap}>{node.keeper.host}:{node.keeper.port.toString()}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>

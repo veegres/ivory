@@ -2,9 +2,9 @@ import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
 import {
+    Keeper,
     NodeScheduledRestart,
     NodeScheduledSwitchover, Role,
-    Sidecar,
 } from "../node/type"
 import {Permission} from "../permission/type"
 import {Database} from "../postgres"
@@ -20,17 +20,17 @@ export interface ClusterOptions {
 
 export interface Cluster extends ClusterOptions {
     name: string,
-    sidecars: Sidecar[],
-    sidecarsOverview: NodeOverview,
+    keepers: Keeper[],
+    keepersOverview: NodeOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
     name: string,
-    node: Sidecar,
+    node: Keeper,
 }
 
 export interface ClusterTls {
-    sidecar: boolean,
+    keeper: boolean,
     database: boolean,
 }
 
@@ -42,12 +42,12 @@ export interface Credentials {
 
 export interface ClusterOverview {
     nodes: NodeOverview,
-    detectedBy?: Sidecar,
+    detectedBy?: Keeper,
     mainNode?: Node,
 }
 
 export interface NodeOverview {
-    [sidecar: string]: Node | undefined
+    [keeper: string]: Node | undefined
 }
 
 export interface Node {
@@ -56,12 +56,12 @@ export interface Node {
     lag: number,
     pendingRestart: boolean,
     database: Database,
-    sidecar: Sidecar,
+    keeper: Keeper,
     scheduledSwitchover?: NodeScheduledSwitchover,
     scheduledRestart?: NodeScheduledRestart,
     tags?: {[key: string]: any},
     inCluster: boolean,
-    inSidecar: boolean,
+    inKeeper: boolean,
 }
 
 // SPECIFIC (WEB)

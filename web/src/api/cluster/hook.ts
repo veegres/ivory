@@ -20,8 +20,8 @@ export function useRouterClusterOverview(name?: string, enabled: boolean = true)
     const activeCluster = useStore(s => s.activeCluster)
     const node = activeCluster?.cluster.name === name ? activeCluster?.detectBy : undefined
     return useQuery({
-        queryKey: ClusterApi.overview.key(name, node?.sidecar),
-        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", node?.sidecar),
+        queryKey: ClusterApi.overview.key(name, node?.keeper),
+        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", node?.keeper),
         enabled: !!name && enabled, retry: false,
     })
 }
@@ -52,10 +52,10 @@ export function useRouterClusterCreateAuto(onSuccess?: () => void) {
     })
 }
 
-export function useRouterClusterFixAuto(cluster: string) {
+export function useRouterClusterFixAuto(name: string) {
     return useMutationAdapter({
         mutationFn: ClusterApi.fixAuto.fn,
         mutationKey: ClusterApi.fixAuto.key(),
-        successKeys: [ClusterApi.list.key(), ClusterApi.overview.key(cluster)],
+        successKeys: [ClusterApi.list.key(), ClusterApi.overview.key(name)]
     })
 }

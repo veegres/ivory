@@ -1,7 +1,7 @@
 package node
 
 import (
-	"ivory/src/clients/sidecar"
+	"ivory/src/clients/keeper"
 	"ivory/src/clients/ssh"
 	"ivory/src/features/cert"
 
@@ -11,13 +11,13 @@ import (
 // COMMON (WEB AND SERVER)
 
 type Request struct {
-	Sidecar      sidecar.Sidecar `json:"sidecar" form:"sidecar"`
-	CredentialId *uuid.UUID      `json:"credentialId" form:"credentialId"`
-	Certs        *cert.Certs     `json:"certs" form:"certs"`
-	Body         any             `json:"body" form:"body"`
+	Keeper       keeper.Keeper `json:"keeper" form:"keeper"`
+	CredentialId *uuid.UUID    `json:"credentialId" form:"credentialId"`
+	Certs        *cert.Certs   `json:"certs" form:"certs"`
+	Body         any           `json:"body" form:"body"`
 }
 
-type Node = sidecar.Instance
+type Node = keeper.Node
 
 type SshRequest struct {
 	VmId uuid.UUID `json:"vmId" form:"vmId" binding:"required"`
@@ -47,8 +47,8 @@ type DockerResult struct {
 // SPECIFIC (SERVER)
 
 type NodeAutoRequest struct {
-	Sidecars     []sidecar.Sidecar `json:"sidecars" form:"sidecars"`
-	CredentialId *uuid.UUID        `json:"credentialId" form:"credentialId"`
-	Certs        *cert.Certs       `json:"certs" form:"certs"`
-	Body         any               `json:"body" form:"body"`
+	Keepers      []keeper.Keeper `json:"keepers" form:"keepers"`
+	CredentialId *uuid.UUID      `json:"credentialId" form:"credentialId"`
+	Certs        *cert.Certs     `json:"certs" form:"certs"`
+	Body         any             `json:"body" form:"body"`
 }
