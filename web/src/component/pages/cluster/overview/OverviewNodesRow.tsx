@@ -3,11 +3,11 @@ import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
 
 import {Cluster, Node} from "../../../../api/cluster/type"
-import {Sidecar} from "../../../../api/node/type"
+import {Keeper} from "../../../../api/node/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
     DateTimeFormatter,
-    getSidecarConnection, initialNode,
+    getKeeperConnection, initialNode,
     NodeColor,
     SizeFormatter,
     SxPropsFormatter,
@@ -34,17 +34,17 @@ type Props = {
     name: string,
     node?: Node,
     cluster: Cluster,
-    candidates: Sidecar[],
+    candidates: Keeper[],
     checked: boolean,
     error?: boolean,
 }
 
 export function OverviewNodesRow(props: Props) {
     const {node: tmpNode, cluster, candidates, error = false, name, checked} = props
-    const {role, sidecar, database, state, lag, inSidecar, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = tmpNode ?? initialNode(name)
+    const {role, keeper, database, state, lag, inKeeper, pendingRestart, inCluster, scheduledRestart, scheduledSwitchover, tags} = tmpNode ?? initialNode(name)
 
     const {setNode} = useStoreAction
-    const request = getSidecarConnection(cluster, sidecar)
+    const request = getKeeperConnection(cluster, keeper)
 
     const databaseName = `${database.host}:${database.port === 0 ? "-" : database.port}`
 
@@ -54,7 +54,7 @@ export function OverviewNodesRow(props: Props) {
             onClick={handleCheck}
         >
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
-            <TableCell align={"center"}>{renderWarning(inSidecar, inCluster)}</TableCell>
+            <TableCell align={"center"}>{renderWarning(inKeeper, inCluster)}</TableCell>
             <TableCell sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>
                 <Tooltip title={name} placement={"top-start"}>

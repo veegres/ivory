@@ -14,11 +14,11 @@ export function ReloadButton(props: Props) {
     const reload = useRouterNodeReload(cluster)
 
     return (
-        <Access permission={Permission.ManageNodeReload}>
+        <Access permission={Permission.ManageNodeDbReload}>
             <AlertButton
                 size={"small"}
                 label={"Reload"}
-                title={`Make a reload of ${request.sidecar.host}?`}
+                title={`Make a reload of ${request.keeper.host}?`}
                 description={`It will reload postgres config, it doesn't have any downtime. It won't help if pending 
                 restart is true, some parameters require postgres restart.`}
                 loading={reload.isPending}

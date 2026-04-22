@@ -1,7 +1,7 @@
 package cluster
 
 import (
-	"ivory/src/clients/sidecar"
+	"ivory/src/clients/keeper"
 	"ivory/src/features/cert"
 
 	"github.com/google/uuid"
@@ -18,18 +18,18 @@ type ClusterOptions struct {
 
 type Cluster struct {
 	ClusterOptions
-	Name     string            `json:"name"`
-	Sidecars []sidecar.Sidecar `json:"sidecars"`
+	Name    string          `json:"name"`
+	Keepers []keeper.Keeper `json:"sidecars"`
 }
 
 type ClusterAuto struct {
 	ClusterOptions
-	Name string          `json:"name"`
-	Node sidecar.Sidecar `json:"node"`
+	Name string        `json:"name"`
+	Node keeper.Keeper `json:"node"`
 }
 
 type ClusterTls struct {
-	Sidecar  bool `json:"sidecar"`
+	Keeper   bool `json:"sidecar"`
 	Database bool `json:"database"`
 }
 
@@ -39,17 +39,17 @@ type Credentials struct {
 }
 
 type ClusterOverview struct {
-	Nodes      NodeOverview     `json:"nodes"`
-	DetectedBy *sidecar.Sidecar `json:"detectedBy"`
-	MainNode   *Node            `json:"mainNode"`
+	Nodes      NodeOverview   `json:"nodes"`
+	DetectedBy *keeper.Keeper `json:"detectedBy"`
+	MainNode   *Node          `json:"mainNode"`
 }
 
 type NodeOverview map[string]*Node
 
 type Node struct {
-	sidecar.Instance
+	keeper.Node
 	InCluster bool `json:"inCluster"`
-	InSidecar bool `json:"inSidecar"`
+	InKeeper  bool `json:"inSidecar"`
 }
 
 // SPECIFIC (SERVER)

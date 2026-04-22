@@ -8,7 +8,7 @@ import {ColorsMap, SxPropsMap} from "../../../../app/type"
 import {
     getDetectionItems,
     getDomains,
-    getSidecars, NodeColor,
+    getKeepers, NodeColor,
     SxPropsFormatter,
 } from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -40,17 +40,17 @@ export function ListRow(props: Props) {
     const active = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const ref = useRef<HTMLTableRowElement | null>(null)
-    const [stateNodes, setStateNodes] = useState(getDomains(cluster.sidecars))
+    const [stateNodes, setStateNodes] = useState(getDomains(cluster.keepers))
 
     const overview = useRouterClusterOverview(cluster.name)
-    const nodes = overview.data?.nodes ?? cluster.sidecarsOverview
+    const nodes = overview.data?.nodes ?? cluster.keepersOverview
     const mainNode = overview.data?.mainNode
     const warning = useMemo(handleMemoWarning, [nodes])
     const colors = useMemo(handleMemoColors, [nodes])
 
     useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
     useEffect(handleEffectScroll, [active])
-    useEffect(handleEffectNodesUpdate, [cluster.sidecars])
+    useEffect(handleEffectNodesUpdate, [cluster.keepers])
     useEffect(handleEffectActiveClusterUpdate, [active, cluster, setCluster, warning])
 
     return (
@@ -96,10 +96,10 @@ export function ListRow(props: Props) {
             <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, sidecars: getSidecars(stateNodes)}}
+                cluster={{...cluster, keepers: getKeepers(stateNodes)}}
                 toggle={toggle}
                 onUpdate={overview.refetch}
-                onClose={() => setStateNodes(getDomains(cluster.sidecars))}
+                onClose={() => setStateNodes(getDomains(cluster.keepers))}
             />
         )
     }
@@ -168,7 +168,7 @@ export function ListRow(props: Props) {
     }
 
     function handleEffectNodesUpdate() {
-        setStateNodes(getDomains(cluster.sidecars))
+        setStateNodes(getDomains(cluster.keepers))
     }
 
     function handleClick() {

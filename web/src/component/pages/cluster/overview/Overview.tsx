@@ -32,7 +32,7 @@ const SX: SxPropsMap = {
 const TABS: ClusterTab[] = [
     {
         label: "Overview",
-        permission: Permission.ViewNodeOverview,
+        permission: Permission.ViewNodeDbOverview,
         body: (cluster, overview) => <OverviewNodes cluster={cluster} nodes={overview?.nodes}/>,
         info: <>
             The Overview tab offers visibility into the current status of your cluster. From here, you can
@@ -44,7 +44,7 @@ const TABS: ClusterTab[] = [
     },
     {
         label: "Config",
-        permission: Permission.ViewNodeConfig,
+        permission: Permission.ViewNodeDbConfig,
         body: (cluster, overview) => {
             if (!overview?.mainNode) return <ClusterNoNodeError/>
             return <OverviewConfig cluster={cluster} node={overview.mainNode}/>

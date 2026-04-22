@@ -1,7 +1,7 @@
 package node
 
 import (
-	"ivory/src/clients/sidecar"
+	"ivory/src/clients/keeper"
 	sshclient "ivory/src/clients/ssh"
 	"ivory/src/features/cert"
 	"ivory/src/features/password"
@@ -9,7 +9,7 @@ import (
 )
 
 type Service struct {
-	sidecarClient   sidecar.Client
+	keeperClient    keeper.Client
 	sshClient       sshclient.Client
 	passwordService *password.Service
 	certService     *cert.Service
@@ -17,14 +17,14 @@ type Service struct {
 }
 
 func NewService(
-	sidecarClient sidecar.Client,
+	keeperClient keeper.Client,
 	sshClient sshclient.Client,
 	passwordService *password.Service,
 	certService *cert.Service,
 	vmService *vm.Service,
 ) *Service {
 	return &Service{
-		sidecarClient:   sidecarClient,
+		keeperClient:    keeperClient,
 		sshClient:       sshClient,
 		passwordService: passwordService,
 		certService:     certService,
@@ -32,8 +32,8 @@ func NewService(
 	}
 }
 
-func (s *Service) mapRequest(instance Request) (sidecar.Request, error) {
-	request := sidecar.Request{Sidecar: instance.Sidecar, Body: instance.Body}
+func (s *Service) mapRequest(instance Request) (keeper.Request, error) {
+	request := keeper.Request{Keeper: instance.Keeper, Body: instance.Body}
 	if instance.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&request.TlsConfig, instance.Certs)
 		if err != nil {
@@ -45,7 +45,7 @@ func (s *Service) mapRequest(instance Request) (sidecar.Request, error) {
 		if err != nil {
 			return request, err
 		}
-		request.Credentials = &sidecar.Credentials{Username: pass.Username, Password: pass.Password}
+		request.Credentials = &keeper.Credentials{Username: pass.Username, Password: pass.Password}
 	}
 	return request, nil
 }

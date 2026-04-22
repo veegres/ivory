@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"ivory/src/clients/database"
-	"ivory/src/clients/sidecar"
+	"ivory/src/clients/keeper"
 	"ivory/src/features/auth"
 	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
@@ -226,11 +226,11 @@ func (s *Service) Export() (*Backup, error) {
 
 // Mapper: Cluster to backupCluster
 func clusterToBackup(c cluster.Cluster) *backupCluster {
-	sidecars := make([]backupSidecar, len(c.Sidecars))
-	for i, sc := range c.Sidecars {
+	sidecars := make([]backupSidecar, len(c.Keepers))
+	for i, k := range c.Keepers {
 		sidecars[i] = backupSidecar{
-			Host: sc.Host,
-			Port: sc.Port,
+			Host: k.Host,
+			Port: k.Port,
 		}
 	}
 	return &backupCluster{
@@ -379,11 +379,11 @@ func (s *Service) Import(file *multipart.FileHeader) error {
 
 // Mapper: backupCluster to Cluster
 func backupToCluster(bc backupCluster) cluster.Cluster {
-	sidecars := make([]sidecar.Sidecar, len(bc.Sidecars))
-	for i, sc := range bc.Sidecars {
-		sidecars[i] = sidecar.Sidecar{
-			Host: sc.Host,
-			Port: sc.Port,
+	keepers := make([]keeper.Keeper, len(bc.Sidecars))
+	for i, k := range bc.Sidecars {
+		keepers[i] = keeper.Keeper{
+			Host: k.Host,
+			Port: k.Port,
 		}
 	}
 	return cluster.Cluster{
@@ -391,7 +391,7 @@ func backupToCluster(bc backupCluster) cluster.Cluster {
 		ClusterOptions: cluster.ClusterOptions{
 			Tags: bc.Tags,
 		},
-		Sidecars: sidecars,
+		Keepers: keepers,
 	}
 }
 

@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
 }
 
 const InitialClusterAuto: ClusterAuto = {
-    name: "", tls: {sidecar: false, database: false}, certs: {}, credentials: {}, tags: [], node: {host: "", port: 8008},
+    name: "", tls: {keeper: false, database: false}, certs: {}, credentials: {}, tags: [], node: {host: "", port: 8008},
 }
 
 type Props = {

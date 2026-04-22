@@ -22,13 +22,13 @@ type Props = {
 
 export function OverviewNodes(props: Props) {
     const {cluster} = props
-    const nodes = props.nodes ?? cluster.sidecarsOverview
+    const nodes = props.nodes ?? cluster.keepersOverview
     const activeNode = useStore(s => s.activeNode[cluster.name])
     const overview = useRouterClusterOverview(cluster.name, false)
     const candidates = Object.values(nodes)
         .filter(node => !!node)
         .filter(node => node.role === "replica")
-        .map(node => node.sidecar)
+        .map(node => node.keeper)
 
     return (
         <Box sx={SX.box}>
@@ -38,7 +38,7 @@ export function OverviewNodes(props: Props) {
                         <TableCell width={"44px"}/>
                         <TableCell width={"40px"}/>
                         <TableCell width={"110px"}>Role</TableCell>
-                        <TableCell width={"15%"}>Sidecar</TableCell>
+                        <TableCell width={"15%"}>Keeper</TableCell>
                         <TableCell width={"15%"}>Postgres</TableCell>
                         <TableCell width={"150px"}>State</TableCell>
                         <TableCell/>

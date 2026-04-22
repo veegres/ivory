@@ -26,11 +26,11 @@ export function ReinitButton(props: Props) {
     const body = {force}
 
     return (
-        <Access permission={Permission.ManageNodeReinitialize}>
+        <Access permission={Permission.ManageNodeDbReinitialize}>
             <AlertButton
                 color={"info"}
                 label={"Reinit"}
-                title={`Make a reinit of ${request.sidecar.host}?`}
+                title={`Make a reinit of ${request.keeper.host}?`}
                 description={"It will erase all node data and will download it from scratch."}
                 loading={reinit.isPending}
                 onClick={handleClick}

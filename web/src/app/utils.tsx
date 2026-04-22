@@ -14,7 +14,7 @@ import dayjs from "dayjs"
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node} from "../api/cluster/type"
-import {NodeRequest, Role, Sidecar, SidecarStatus} from "../api/node/type"
+import {Keeper, KeeperStatus,NodeRequest, Role} from "../api/node/type"
 import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
 import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
@@ -49,9 +49,9 @@ export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
     [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", icon: <HeartBroken/>, key: "patroniId"}
 }
 
-export const SidecarStatusOptions: { [key in SidecarStatus]: EnumOptions } = {
-    [SidecarStatus.Active]: {name: "ACTIVE", label: "Activate Sidecar", icon: <Pause/>, color: green[600], key: "active"},
-    [SidecarStatus.Paused]: {name: "PAUSED", label: "Pause Sidecar", icon: <PlayArrow/>, color: orange[500], key: "paused"}
+export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {
+    [KeeperStatus.Active]: {name: "ACTIVE", label: "Activate Keeper", icon: <Pause/>, color: green[600], key: "active"},
+    [KeeperStatus.Paused]: {name: "PAUSED", label: "Pause Keeper", icon: <PlayArrow/>, color: orange[500], key: "paused"}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {
@@ -93,23 +93,23 @@ export const initialNode = (domain: string): Node => {
         role: "unknown",
         lag: -1,
         pendingRestart: false,
-        sidecar: getSidecar(domain),
+        keeper: getKeeper(domain),
         database: {host: "-", port: 0},
         inCluster: true,
-        inSidecar: false,
+        inKeeper: false,
     })
 }
 
-export const isSidecarEqual = (sidecar1?: Sidecar, sidecar2?: Sidecar): boolean => {
-    return sidecar1?.host === sidecar2?.host && sidecar1?.port === sidecar2?.port
+export const isKeeperEqual = (keeper1?: Keeper, keeper2?: Keeper): boolean => {
+    return keeper1?.host === keeper2?.host && keeper1?.port === keeper2?.port
 }
 
-export const getDomain = ({host, port}: Sidecar) => {
+export const getDomain = ({host, port}: Keeper) => {
     return `${host.toLowerCase()}${port ? `:${port}` : ""}`
 }
 
-export const getDomains = (sidecars: Sidecar[]) => {
-    return sidecars.map(value => getDomain(value))
+export const getDomains = (keepers: Keeper[]) => {
+    return keepers.map(value => getDomain(value))
 }
 
 export function getConnectionRequest(cluster: Cluster, db: Database): ConnectionRequest {
@@ -118,25 +118,25 @@ export function getConnectionRequest(cluster: Cluster, db: Database): Connection
     return {db, certs, credentialId}
 }
 
-export function getSidecarConnection(cluster: Cluster, sidecar: Sidecar): NodeRequest {
+export function getKeeperConnection(cluster: Cluster, keeper: Keeper): NodeRequest {
     const credentialId = cluster.credentials.patroniId
-    const certs = cluster.tls.sidecar ? cluster.certs : undefined
-    return {sidecar, certs, credentialId}
+    const certs = cluster.tls.keeper ? cluster.certs : undefined
+    return {keeper, certs, credentialId}
 }
 
-export const getSidecar = (domain: string): Sidecar => {
+export const getKeeper = (domain: string): Keeper => {
     const [host, port] = domain.split(":")
     return {host, port: port ? parseInt(port) : 8008}
 }
 
-export const getSidecars = (domains: string[]): Sidecar[] => {
-    return domains.map(value => getSidecar(value))
+export const getKeepers = (domains: string[]): Keeper[] => {
+    return domains.map(value => getKeeper(value))
 }
 
 export const getDetectionItems = (mainNode?: Node, detectBy?: Node) => {
     const detection = detectBy ? "manual" : "auto"
     const node = detectBy ?? mainNode
-    const label = node ? getDomain(node.sidecar) : "none"
+    const label = node ? getDomain(node.keeper) : "none"
     const role = node?.role ?? "unknown"
     return [
         {title: "Detection", label: detection, bgColor: purple[400]},

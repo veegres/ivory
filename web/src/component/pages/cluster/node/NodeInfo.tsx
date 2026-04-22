@@ -1,8 +1,8 @@
 import {Box, Paper, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {Node} from "../../../../api/cluster/type"
-import {NodeTabType} from "../../../../api/node/type"
 import {useRouterInfo} from "../../../../api/management/hook"
+import {NodeTabType} from "../../../../api/node/type"
 import {Permission, PermissionStatus} from "../../../../api/permission/type"
 import {ConnectionRequest} from "../../../../api/postgres"
 import {SxPropsMap} from "../../../../app/type"

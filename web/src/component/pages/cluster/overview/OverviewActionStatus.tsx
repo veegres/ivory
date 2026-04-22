@@ -2,10 +2,10 @@ import {Box} from "@mui/material"
 import {UseMutationResult} from "@tanstack/react-query"
 
 import {useRouterNodeActivate, useRouterNodePause} from "../../../../api/node/hook"
-import {NodeRequest, SidecarStatus} from "../../../../api/node/type"
+import {KeeperStatus,NodeRequest} from "../../../../api/node/type"
 import {Permission} from "../../../../api/permission/type"
 import {EnumOptions, SxPropsMap} from "../../../../app/type"
-import {SidecarStatusOptions} from "../../../../app/utils"
+import {KeeperStatusOptions} from "../../../../app/utils"
 import {InfoBox, Padding} from "../../../view/box/InfoBox"
 import {AlertButton} from "../../../view/button/AlertButton"
 import {Access} from "../../../widgets/access/Access"
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: string,
-    status: SidecarStatus,
+    status: KeeperStatus,
     request: NodeRequest,
 }
 
@@ -26,19 +26,19 @@ export function OverviewActionStatus(props: Props) {
     const activate = useRouterNodeActivate(cluster)
     const pause = useRouterNodePause(cluster)
 
-    const options = SidecarStatusOptions[status]
-    const action: { [key in SidecarStatus]: UseMutationResult<string, any, NodeRequest, unknown> } = {
-        [SidecarStatus.Active]: pause,
-        [SidecarStatus.Paused]: activate
+    const options = KeeperStatusOptions[status]
+    const action: { [key in KeeperStatus]: UseMutationResult<string, any, NodeRequest, unknown> } = {
+        [KeeperStatus.Active]: pause,
+        [KeeperStatus.Paused]: activate
     }
-    const actionButton: { [key in SidecarStatus]: EnumOptions } = {
-        [SidecarStatus.Active]: SidecarStatusOptions.PAUSED,
-        [SidecarStatus.Paused]: SidecarStatusOptions.ACTIVE
+    const actionButton: { [key in KeeperStatus]: EnumOptions } = {
+        [KeeperStatus.Active]: KeeperStatusOptions.PAUSED,
+        [KeeperStatus.Paused]: KeeperStatusOptions.ACTIVE
     }
 
     return (
         <Box sx={SX.box}>
-            <Access permission={Permission.ManageNodeActivation}>
+            <Access permission={Permission.ManageNodeDbActivation}>
                 <InfoBox padding={Padding.No}>
                     <AlertButton
                         size={"small"}
@@ -53,7 +53,7 @@ export function OverviewActionStatus(props: Props) {
                     />
                 </InfoBox>
             </Access>
-            <InfoBox tooltip={"Sidecar Status"}>
+            <InfoBox tooltip={"Keeper Status"}>
                 <Box sx={{color: options.color}}>{options.name}</Box>
             </InfoBox>
         </Box>
