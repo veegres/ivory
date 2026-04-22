@@ -2,7 +2,7 @@ import {FormControl, OutlinedInput, TableRow} from "@mui/material"
 import {useState} from "react"
 
 import {SxPropsMap} from "../../../../app/type"
-import {getKeepers} from "../../../../app/utils"
+import {getNodeConnections} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {ListCell} from "./ListCell"
@@ -49,12 +49,12 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     cluster={{
                         name: stateName,
-                        keepers: getKeepers(stateNodes),
+                        nodes: getNodeConnections(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
                         credentials: {},
                         tls: {keeper: false, database: false},
-                        keepersOverview: {},
+                        nodesOverview: {},
                     }}
                     toggle={toggle}
                     onUpdate={clean}

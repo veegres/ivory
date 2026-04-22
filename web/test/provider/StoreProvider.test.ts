@@ -109,7 +109,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const detectNode = createMockNode({
-                keeper: {host: "localhost", port: 8009},
+                connection: {host: "localhost", keeperPort: 8009},
             })
             useStoreAction.setClusterDetection(detectNode)
 
@@ -173,13 +173,13 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                keeper: {host: "localhost", port: 8009},
+                connection: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setNode(getDomain(node.keeper))
+            useStoreAction.setNode(getDomain(node.connection))
 
             const state = useStore.getState()
-            expect(state.activeNode["test-cluster"]).toEqual(getDomain(node.keeper))
+            expect(state.activeNode["test-cluster"]).toEqual(getDomain(node.connection))
         })
 
         it("should remove active node when undefined", () => {
@@ -191,10 +191,10 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                keeper: {host: "localhost", port: 8009},
+                connection: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setNode(getDomain(node.keeper))
+            useStoreAction.setNode(getDomain(node.connection))
             useStoreAction.setNode(undefined)
 
             const state = useStore.getState()
@@ -205,7 +205,7 @@ describe("StoreProvider", () => {
             const node = createMockNode()
 
             const stateBefore = useStore.getState()
-            useStoreAction.setNode(getDomain(node.keeper))
+            useStoreAction.setNode(getDomain(node.connection))
             const stateAfter = useStore.getState()
 
             expect(stateAfter).toEqual(stateBefore)
@@ -364,10 +364,10 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                keeper: {host: "localhost", port: 8009},
+                connection: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setNode(getDomain(node.keeper))
+            useStoreAction.setNode(getDomain(node.connection))
             useStoreAction.clear()
 
             const state = useStore.getState()

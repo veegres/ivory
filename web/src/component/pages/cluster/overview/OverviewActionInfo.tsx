@@ -1,6 +1,7 @@
 import {Box} from "@mui/material"
 
 import {CertType} from "../../../../api/cert/type"
+import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster, Node} from "../../../../api/cluster/type"
 import {PasswordType} from "../../../../api/password/type"
 import {SxPropsMap} from "../../../../app/type"
@@ -20,7 +21,7 @@ type Props = {
 }
 
 export function OverviewActionInfo(props: Props) {
-    const {mainNode, cluster, detectBy} = props
+    const {mainNode, cluster} = props
 
     const infoItems = [
         {...CredentialOptions[PasswordType.POSTGRES], active: !!cluster.credentials.postgresId},
@@ -30,7 +31,8 @@ export function OverviewActionInfo(props: Props) {
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
     ]
 
-    const detectionItems = getDetectionItems(mainNode, detectBy)
+    const overview = useRouterClusterOverview(cluster.name, false)
+    const detectionItems = getDetectionItems(mainNode, overview.data?.detectedBy)
     const node = detectionItems[1]
 
     return (

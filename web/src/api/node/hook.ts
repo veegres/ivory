@@ -3,12 +3,12 @@ import {useQuery} from "@tanstack/react-query"
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ClusterApi} from "../cluster/router"
 import {NodeApi} from "./router"
-import {Keeper,NodeRequest} from "./type"
+import {NodeConnection,NodeRequest} from "./type"
 
 export function useRouterNodeOverview(request: NodeRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.overview.key(request.keeper),
+        queryKey: NodeApi.overview.key(request.connection),
         queryFn: () => NodeApi.overview.fn(request),
         enabled,
     })
@@ -17,17 +17,17 @@ export function useRouterNodeOverview(request: NodeRequest, enabled: boolean) {
 export function useRouterNodeConfig(request: NodeRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.config.key(request.keeper),
+        queryKey: NodeApi.config.key(request.connection),
         queryFn: () => NodeApi.config.fn(request),
         enabled,
     })
 }
 
-export function useRouterNodeConfigUpdate(keeper: Keeper, onSuccess: () => void) {
+export function useRouterNodeConfigUpdate(connection: NodeConnection, onSuccess: () => void) {
     return useMutationAdapter({
         mutationFn: NodeApi.updateConfig.fn,
         mutationKey: NodeApi.updateConfig.key(),
-        successKeys: [NodeApi.config.key(keeper)],
+        successKeys: [NodeApi.config.key(connection)],
         onSuccess: onSuccess,
     })
 }

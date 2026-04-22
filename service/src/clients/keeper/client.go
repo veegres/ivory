@@ -3,7 +3,7 @@ package keeper
 import "ivory/src/clients/http"
 
 type Client interface {
-	Overview(request Request) ([]Node, int, error)
+	Overview(request Request) ([]Response, int, error)
 	Config(request Request) (any, int, error)
 	ConfigUpdate(request Request) (any, int, error)
 	Switchover(request Request) (*string, int, error)
@@ -27,8 +27,8 @@ func Map(request Request, path string) http.Request {
 	}
 
 	return http.Request{
-		Host:        request.Keeper.Host,
-		Port:        request.Keeper.Port,
+		Host:        request.Host,
+		Port:        request.Port,
 		Path:        path,
 		Body:        request.Body,
 		Credentials: creds,

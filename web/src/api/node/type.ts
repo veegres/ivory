@@ -6,14 +6,41 @@ import {ConnectionRequest} from "../postgres"
 
 // COMMON (WEB AND SERVER)
 
+export interface VM {
+    id: string,
+    name: string,
+    host: string,
+    sshPort: number,
+    username: string,
+    sshKey: string,
+}
+
+export interface NodeConnection {
+    vmId?: string,
+    host: string,
+    sshPort?: number,
+    keeperPort: number,
+    dbPort?: number,
+}
+
 export interface NodeRequest {
-    keeper: Keeper,
+    connection: NodeConnection,
     credentialId?: string,
     certs?: Certs,
     body?: any,
 }
 
-// KEEPER CLIENT (WEB AND SERVER)
+export interface NodeAutoRequest {
+    connections: NodeConnection[],
+    credentialId?: string,
+    certs?: Certs,
+    body?: any,
+}
+
+export interface Node {
+    connection: NodeConnection,
+    response: KeeperResponse,
+}
 
 export enum KeeperStatus {
     Active = "ACTIVE",
@@ -28,6 +55,21 @@ export interface Keeper {
 }
 
 export type Role = "leader" | "replica" | "unknown";
+
+export interface KeeperResponse {
+    name?: string,
+    status?: KeeperStatus,
+    state: string,
+    role: Role,
+    lag: number,
+    pendingRestart: boolean,
+    scheduledSwitchover?: NodeScheduledSwitchover,
+    scheduledRestart?: NodeScheduledRestart,
+    tags?: {[key: string]: any},
+    discoveredHost: string,
+    discoveredKeeperPort: number,
+    discoveredDbPort: number,
+}
 
 export interface NodeScheduledSwitchover {
     at: string,

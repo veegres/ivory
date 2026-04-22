@@ -25,7 +25,7 @@ export function OverviewOptions(props: Props) {
     return (
         <Stack sx={SX.settings}>
             <OverviewOptionsNode
-                nodes={overview?.nodes ?? cluster.keepersOverview}
+                nodes={overview?.nodes ?? cluster.nodesOverview}
                 mainNode={overview?.mainNode}
                 detectBy={detectBy}
             />

@@ -10,14 +10,25 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type Request struct {
-	Keeper       keeper.Keeper `json:"keeper" form:"keeper"`
-	CredentialId *uuid.UUID    `json:"credentialId" form:"credentialId"`
-	Certs        *cert.Certs   `json:"certs" form:"certs"`
-	Body         any           `json:"body" form:"body"`
+type NodeConnection struct {
+	VmId       *uuid.UUID `json:"vmId,omitempty" form:"vmId"`
+	Host       string     `json:"host" form:"host"`
+	SshPort    int        `json:"sshPort,omitempty" form:"sshPort"`
+	KeeperPort int        `json:"keeperPort" form:"keeperPort"`
+	DbPort     int        `json:"dbPort,omitempty" form:"dbPort"`
 }
 
-type Node = keeper.Node
+type Node struct {
+	Connection NodeConnection  `json:"connection"`
+	Response   keeper.Response `json:"response"`
+}
+
+type Request struct {
+	Connection   NodeConnection `json:"connection" form:"connection"`
+	CredentialId *uuid.UUID     `json:"credentialId" form:"credentialId"`
+	Certs        *cert.Certs    `json:"certs" form:"certs"`
+	Body         any            `json:"body" form:"body"`
+}
 
 type SshRequest struct {
 	VmId uuid.UUID `json:"vmId" form:"vmId" binding:"required"`
@@ -47,8 +58,8 @@ type DockerResult struct {
 // SPECIFIC (SERVER)
 
 type NodeAutoRequest struct {
-	Keepers      []keeper.Keeper `json:"keepers" form:"keepers"`
-	CredentialId *uuid.UUID      `json:"credentialId" form:"credentialId"`
-	Certs        *cert.Certs     `json:"certs" form:"certs"`
-	Body         any             `json:"body" form:"body"`
+	Connections  []NodeConnection `json:"connections" form:"connections"`
+	CredentialId *uuid.UUID       `json:"credentialId" form:"credentialId"`
+	Certs        *cert.Certs      `json:"certs" form:"certs"`
+	Body         any              `json:"body" form:"body"`
 }

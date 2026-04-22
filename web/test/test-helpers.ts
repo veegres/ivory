@@ -3,8 +3,8 @@ import type {Cluster, Node} from "../src/api/cluster/type"
 export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
     return {
         name: "test-cluster",
-        keepers: [{host: "localhost", port: 8008}],
-        keepersOverview: {},
+        nodes: [{host: "localhost", keeperPort: 8008}],
+        nodesOverview: {},
         tls: {keeper: false, database: false},
         certs: {},
         credentials: {},
@@ -15,12 +15,16 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
 
 export function createMockNode(overrides: Partial<Node> = {}): Node {
     return {
-        keeper: {host: "localhost", port: 8008},
-        state: "running",
-        role: "leader",
-        lag: 0,
-        pendingRestart: false,
-        database: {host: "localhost", port: 5432, name: "postgres"},
+        connection: {host: "localhost", keeperPort: 8008},
+        response: {
+            state: "running",
+            role: "leader",
+            lag: 0,
+            pendingRestart: false,
+            discoveredHost: "localhost",
+            discoveredKeeperPort: 8008,
+            discoveredDbPort: 5432,
+        },
         inCluster: true,
         inKeeper: true,
         ...overrides,

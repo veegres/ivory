@@ -1,16 +1,16 @@
 import {api} from "../api"
 import {R} from "../management/type"
-import {Keeper,NodeRequest} from "./type"
+import {NodeConnection,NodeRequest} from "./type"
 
 
 export const NodeApi = {
     overview: {
-        key: (keeper: Keeper) => ["node", "db", "overview", keeper.host, keeper.port],
+        key: (connection: NodeConnection) => ["node", "db", "overview", connection.host, connection.keeperPort],
         fn: (request: NodeRequest) => api.get<R<any>>("/node/db/overview", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
     config: {
-        key: (keeper: Keeper) => ["node", "db", "config", keeper.host, keeper.port],
+        key: (connection: NodeConnection) => ["node", "db", "config", connection.host, connection.keeperPort],
         fn: (request: NodeRequest) => api.get<R<any>>("/node/db/config", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
