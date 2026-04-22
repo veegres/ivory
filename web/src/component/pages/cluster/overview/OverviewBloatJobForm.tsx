@@ -29,10 +29,10 @@ export function OverviewBloatJobForm(props: Props) {
 
     const start = useRouterBloatStart(cluster.name)
 
-    if (node.response.role !== "leader") return <ClusterNoLeaderError/>
+    if (node.keeper.role !== "leader") return <ClusterNoLeaderError/>
     if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
 
-    const db = {host: node.response.discoveredHost, port: node.response.discoveredDbPort, name: target?.database}
+    const db = {host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database}
     const connection = getConnectionRequest(cluster, db)
     return (
         <Box sx={SX.form}>
@@ -112,7 +112,7 @@ export function OverviewBloatJobForm(props: Props) {
     function handleRun() {
         const credentialId = cluster.credentials.postgresId
         if (node && credentialId) {
-            const {response: {discoveredHost, discoveredDbPort}} = node
+            const {keeper: {discoveredHost, discoveredDbPort}} = node
             onClick()
             start.mutate({
                 connection: {

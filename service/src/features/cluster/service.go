@@ -79,7 +79,7 @@ func (s *Service) Update(cluster Cluster) (*Cluster, error) {
 	return &cluster, errCluster
 }
 
-func (s *Service) Overview(name string, k *node.NodeConnection) (*ClusterOverview, error) {
+func (s *Service) Overview(name string, k *node.Connection) (*ClusterOverview, error) {
 	cluster, clusterError := s.Get(name)
 	if clusterError != nil {
 		return nil, clusterError
@@ -108,7 +108,7 @@ func (s *Service) Overview(name string, k *node.NodeConnection) (*ClusterOvervie
 		if detectedByDomain == domain {
 			mainNode = &fullNode
 		}
-		if fullNode.Response.Role == keeper.Leader {
+		if fullNode.Keeper.Role == keeper.Leader {
 			mainNode = &fullNode
 		}
 	}
@@ -129,7 +129,7 @@ func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 		return Cluster{}, errOver
 	}
 
-	nodesConnections := make([]node.NodeConnection, 0)
+	nodesConnections := make([]node.Connection, 0)
 	for _, item := range nodes {
 		nodesConnections = append(nodesConnections, item.Connection)
 	}
@@ -164,7 +164,7 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 		return nil, err
 	}
 
-	nodesConnections := make([]node.NodeConnection, 0)
+	nodesConnections := make([]node.Connection, 0)
 	for _, item := range nodes {
 		nodesConnections = append(nodesConnections, item.Connection)
 	}
@@ -182,7 +182,7 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 	return &model, s.clusterRepository.Update(model)
 }
 
-func (s *Service) getOverview(connection node.NodeConnection, cluster ClusterOptions) ([]node.Node, error) {
+func (s *Service) getOverview(connection node.Connection, cluster ClusterOptions) ([]node.Node, error) {
 	var certs *cert.Certs
 	// NOTE: we want to rewrite `nil` only if tls is enabled
 	if cluster.Tls.Keeper {
@@ -197,13 +197,13 @@ func (s *Service) getOverview(connection node.NodeConnection, cluster ClusterOpt
 	return nodes, errOver
 }
 
-func (s *Service) getOverviewAuto(connections []node.NodeConnection, cluster ClusterOptions) ([]node.Node, int, *keeper.Keeper, error) {
+func (s *Service) getOverviewAuto(connections []node.Connection, cluster ClusterOptions) ([]node.Node, int, *keeper.Keeper, error) {
 	var certs *cert.Certs
 	// NOTE: we want to rewrite `nil` only if tls is enabled
 	if cluster.Tls.Keeper {
 		certs = &cluster.Certs
 	}
-	request := node.NodeAutoRequest{
+	request := node.AutoRequest{
 		Connections:  connections,
 		CredentialId: cluster.Credentials.PatroniId,
 		Certs:        certs,

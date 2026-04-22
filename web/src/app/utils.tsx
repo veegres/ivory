@@ -14,7 +14,7 @@ import dayjs from "dayjs"
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node} from "../api/cluster/type"
-import {Keeper, KeeperStatus, NodeConnection, NodeRequest, Role} from "../api/node/type"
+import {Connection, Keeper, KeeperStatus, NodeRequest, Role} from "../api/node/type"
 import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
 import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
@@ -91,7 +91,7 @@ export const initialNode = (domain: string): Node => {
     const connection = getNodeConnection(domain)
     return ({
         connection: connection,
-        response: {
+        keeper: {
             state: "-",
             role: "unknown",
             lag: -1,
@@ -105,17 +105,17 @@ export const initialNode = (domain: string): Node => {
     })
 }
 
-export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boolean => {
+export const isConnectionEqual = (c1?: Connection, c2?: Connection): boolean => {
     return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort
 }
 
-export const getDomain = (connection: NodeConnection | Keeper) => {
+export const getDomain = (connection: Connection | Keeper) => {
     const host = connection.host
-    const port = (connection as NodeConnection).keeperPort ?? (connection as Keeper).port
+    const port = (connection as Connection).keeperPort ?? (connection as Keeper).port
     return `${host.toLowerCase()}${port ? `:${port}` : ""}`
 }
 
-export const getDomains = (nodes: NodeConnection[]) => {
+export const getDomains = (nodes: Connection[]) => {
     return nodes.map(value => getDomain(value))
 }
 
@@ -125,18 +125,18 @@ export function getConnectionRequest(cluster: Cluster, db: Database): Connection
     return {db, certs, credentialId}
 }
 
-export function getKeeperConnection(cluster: Cluster, connection: NodeConnection): NodeRequest {
+export function getKeeperConnection(cluster: Cluster, connection: Connection): NodeRequest {
     const credentialId = cluster.credentials.patroniId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
     return {connection, certs, credentialId}
 }
 
-export const getNodeConnection = (domain: string): NodeConnection => {
+export const getNodeConnection = (domain: string): Connection => {
     const [host, port] = domain.split(":")
     return {host, keeperPort: port ? parseInt(port) : 8008}
 }
 
-export const getNodeConnections = (domains: string[]): NodeConnection[] => {
+export const getNodeConnections = (domains: string[]): Connection[] => {
     return domains.map(value => getNodeConnection(value))
 }
 
@@ -144,7 +144,7 @@ export const getDetectionItems = (mainNode?: Node, detectBy?: Keeper) => {
     const detection = detectBy ? "manual" : "auto"
     const connection = detectBy ?? mainNode?.connection
     const label = connection ? getDomain(connection) : "none"
-    const role = mainNode?.response.role ?? "unknown"
+    const role = mainNode?.keeper.role ?? "unknown"
     return [
         {title: "Detection", label: detection, bgColor: purple[400]},
         {title: "Main Node", label: label, bgColor: NodeColor[role].color}

@@ -22,7 +22,7 @@ export function NodeInfoTable(props: Props) {
             <TableBody isLoading={false} cellCount={2}>
                 <TableRow>
                     <TableCell sx={SX.title}>State</TableCell>
-                    <TableCell sx={SX.wrap}>{node.response.state}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.keeper.state}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Keeper</TableCell>
@@ -30,7 +30,7 @@ export function NodeInfoTable(props: Props) {
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>
-                    <TableCell sx={SX.wrap}>{node.response.discoveredHost}:{node.response.discoveredDbPort.toString()}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.keeper.discoveredHost}:{node.keeper.discoveredDbPort.toString()}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>

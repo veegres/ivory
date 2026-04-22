@@ -2,9 +2,9 @@ import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
 import {
+    Connection,
     Keeper,
-    Node as BaseNode,
-    NodeConnection,
+    NodeResponse as BaseNode,
 } from "../node/type"
 import {Permission} from "../permission/type"
 
@@ -19,13 +19,13 @@ export interface ClusterOptions {
 
 export interface Cluster extends ClusterOptions {
     name: string,
-    nodes: NodeConnection[],
+    nodes: Connection[],
     nodesOverview: NodeOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
     name: string,
-    node: NodeConnection,
+    node: Connection,
 }
 
 export interface ClusterTls {

@@ -10,7 +10,7 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type NodeConnection struct {
+type Connection struct {
 	VmId       *uuid.UUID `json:"vmId,omitempty" form:"vmId"`
 	Host       string     `json:"host" form:"host"`
 	SshPort    int        `json:"sshPort,omitempty" form:"sshPort"`
@@ -19,15 +19,15 @@ type NodeConnection struct {
 }
 
 type Node struct {
-	Connection NodeConnection  `json:"connection"`
-	Response   keeper.Response `json:"response"`
+	Connection Connection      `json:"connection"`
+	Keeper     keeper.Response `json:"keeper"`
 }
 
 type Request struct {
-	Connection   NodeConnection `json:"connection" form:"connection"`
-	CredentialId *uuid.UUID     `json:"credentialId" form:"credentialId"`
-	Certs        *cert.Certs    `json:"certs" form:"certs"`
-	Body         any            `json:"body" form:"body"`
+	Connection   Connection  `json:"connection" form:"connection"`
+	CredentialId *uuid.UUID  `json:"credentialId" form:"credentialId"`
+	Certs        *cert.Certs `json:"certs" form:"certs"`
+	Body         any         `json:"body" form:"body"`
 }
 
 type SshRequest struct {
@@ -57,9 +57,9 @@ type DockerResult struct {
 
 // SPECIFIC (SERVER)
 
-type NodeAutoRequest struct {
-	Connections  []NodeConnection `json:"connections" form:"connections"`
-	CredentialId *uuid.UUID       `json:"credentialId" form:"credentialId"`
-	Certs        *cert.Certs      `json:"certs" form:"certs"`
-	Body         any              `json:"body" form:"body"`
+type AutoRequest struct {
+	Connections  []Connection `json:"connections" form:"connections"`
+	CredentialId *uuid.UUID   `json:"credentialId" form:"credentialId"`
+	Certs        *cert.Certs  `json:"certs" form:"certs"`
+	Body         any          `json:"body" form:"body"`
 }

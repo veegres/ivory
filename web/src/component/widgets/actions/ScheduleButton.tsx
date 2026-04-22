@@ -1,7 +1,7 @@
 import {Button} from "@mui/material"
 
 import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../../api/node/hook"
-import {NodeRequest, NodeScheduledRestart, NodeScheduledSwitchover} from "../../../api/node/type"
+import {NodeRequest, ScheduledRestart, ScheduledSwitchover} from "../../../api/node/type"
 import {Permission} from "../../../api/permission/type"
 import {DateTimeFormatter} from "../../../app/utils"
 import {List} from "../../view/box/List"
@@ -13,8 +13,8 @@ import {Access} from "../access/Access"
 type Props = {
     request: NodeRequest,
     cluster: string,
-    switchover?: NodeScheduledSwitchover,
-    restart?: NodeScheduledRestart,
+    switchover?: ScheduledSwitchover,
+    restart?: ScheduledRestart,
 }
 
 export function ScheduleButton(props: Props) {

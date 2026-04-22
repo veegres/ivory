@@ -40,7 +40,7 @@ export function OverviewBloat(props: Props) {
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db = {host: node.response.discoveredHost, port: node.response.discoveredDbPort, name: target?.database, schema: target?.schema} as Database
+    const db = {host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database, schema: target?.schema} as Database
 
     return (
         <Box>

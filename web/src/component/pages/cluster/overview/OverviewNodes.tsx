@@ -27,7 +27,7 @@ export function OverviewNodes(props: Props) {
     const overview = useRouterClusterOverview(cluster.name, false)
     const candidates = Object.values(nodes)
         .filter(node => !!node)
-        .filter(node => node.response.role === "replica")
+        .filter(node => node.keeper.role === "replica")
         .map(node => node.connection)
 
     return (

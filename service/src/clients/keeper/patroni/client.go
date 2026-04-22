@@ -73,10 +73,10 @@ func (p *Client) mapLag(lag json.RawMessage) int64 {
 	return -1
 }
 
-func (p *Client) mapRestart(restart *PatroniScheduledRestart) *keeper.NodeScheduledRestart {
-	var scheduledRestart *keeper.NodeScheduledRestart
+func (p *Client) mapRestart(restart *PatroniScheduledRestart) *keeper.ScheduledRestart {
+	var scheduledRestart *keeper.ScheduledRestart
 	if restart != nil {
-		scheduledRestart = &keeper.NodeScheduledRestart{
+		scheduledRestart = &keeper.ScheduledRestart{
 			PendingRestart: restart.RestartPending,
 			At:             restart.Schedule,
 		}
@@ -84,15 +84,15 @@ func (p *Client) mapRestart(restart *PatroniScheduledRestart) *keeper.NodeSchedu
 	return scheduledRestart
 }
 
-func (p *Client) mapSwitchover(host string, switchover *PatroniScheduledSwitchover) *keeper.NodeScheduledSwitchover {
-	var scheduledSwitchover *keeper.NodeScheduledSwitchover
+func (p *Client) mapSwitchover(host string, switchover *PatroniScheduledSwitchover) *keeper.ScheduledSwitchover {
+	var scheduledSwitchover *keeper.ScheduledSwitchover
 	if switchover != nil && switchover.From == host {
 		to := switchover.To
 		if to == "" {
 			to = "(random selection)"
 		}
 
-		scheduledSwitchover = &keeper.NodeScheduledSwitchover{
+		scheduledSwitchover = &keeper.ScheduledSwitchover{
 			At: switchover.At,
 			To: to,
 		}

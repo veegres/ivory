@@ -379,9 +379,9 @@ func (s *Service) Import(file *multipart.FileHeader) error {
 
 // Mapper: backupCluster to Cluster
 func backupToCluster(bc backupCluster) cluster.Cluster {
-	nodes := make([]node.NodeConnection, len(bc.Sidecars))
+	nodes := make([]node.Connection, len(bc.Sidecars))
 	for i, k := range bc.Sidecars {
-		nodes[i] = node.NodeConnection{
+		nodes[i] = node.Connection{
 			Host:       k.Host,
 			KeeperPort: k.Port,
 		}

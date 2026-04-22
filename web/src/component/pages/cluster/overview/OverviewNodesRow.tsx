@@ -3,7 +3,7 @@ import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
 
 import {Cluster, Node} from "../../../../api/cluster/type"
-import {NodeConnection} from "../../../../api/node/type"
+import {Connection} from "../../../../api/node/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
     DateTimeFormatter,
@@ -34,7 +34,7 @@ type Props = {
     name: string,
     node?: Node,
     cluster: Cluster,
-    candidates: NodeConnection[],
+    candidates: Connection[],
     checked: boolean,
     error?: boolean,
 }
@@ -42,7 +42,7 @@ type Props = {
 export function OverviewNodesRow(props: Props) {
     const {node: tmpNode, cluster, candidates, error = false, name, checked} = props
     const node = tmpNode ?? initialNode(name)
-    const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags, discoveredHost, discoveredDbPort} = node.response
+    const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags, discoveredHost, discoveredDbPort} = node.keeper
     const {connection, inKeeper, inCluster} = node
 
     const {setNode} = useStoreAction

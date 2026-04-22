@@ -3,7 +3,7 @@ import {useQuery} from "@tanstack/react-query"
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ClusterApi} from "../cluster/router"
 import {NodeApi} from "./router"
-import {NodeConnection,NodeRequest} from "./type"
+import {Connection,NodeRequest} from "./type"
 
 export function useRouterNodeOverview(request: NodeRequest, enabled: boolean) {
     return useQuery({
@@ -23,7 +23,7 @@ export function useRouterNodeConfig(request: NodeRequest, enabled: boolean) {
     })
 }
 
-export function useRouterNodeConfigUpdate(connection: NodeConnection, onSuccess: () => void) {
+export function useRouterNodeConfigUpdate(connection: Connection, onSuccess: () => void) {
     return useMutationAdapter({
         mutationFn: NodeApi.updateConfig.fn,
         mutationKey: NodeApi.updateConfig.key(),

@@ -40,7 +40,7 @@ export function NodeInfo(props: Props) {
                     Queries
                 </ToggleButton>
             </ToggleButtonGroup>
-            <NodeInfoStatus role={node.response.role}/>
+            <NodeInfoStatus role={node.keeper.role}/>
             <Paper sx={SX.paper} variant={"outlined"}>
                 <NodeInfoTable node={node}/>
             </Paper>
