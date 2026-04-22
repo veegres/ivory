@@ -6,6 +6,11 @@ import "@testing-library/jest-dom"
 import {cleanup} from "@testing-library/react"
 import {afterEach} from "vitest"
 
+import {setupLocalStorageMock} from "./test-helpers"
+
+// Initialize global mocks
+setupLocalStorageMock()
+
 // Cleanup after each test
 afterEach(() => {
     cleanup()

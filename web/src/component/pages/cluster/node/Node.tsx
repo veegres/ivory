@@ -33,7 +33,7 @@ export function Node() {
         if (!activeNodeName || !activeCluster) return <AlertCentered text={"Please, select a node to see the information!"}/>
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
 
-        const database = {host: activeNode.response.discoveredHost, port: activeNode.response.discoveredDbPort}
+        const database = {host: activeNode.keeper.discoveredHost, port: activeNode.keeper.discoveredDbPort}
         const connection = getConnectionRequest(activeCluster.cluster, database)
 
         return (

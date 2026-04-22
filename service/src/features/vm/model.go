@@ -8,8 +8,8 @@ type VM struct {
 	Id       uuid.UUID `json:"id"`
 	Name     string    `json:"name"`
 	Host     string    `json:"host"`
-	SshPort  int       `json:"sshPort"`
 	Username string    `json:"username"`
+	SshPort  int       `json:"sshPort"`
 	SshKey   string    `json:"sshKey"`
 }
 

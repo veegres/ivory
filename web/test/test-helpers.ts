@@ -31,6 +31,29 @@ export function createMockNode(overrides: Partial<Node> = {}): Node {
     }
 }
 
-// Alias for backwards compatibility
-export const createMockInstance = createMockNode
-export const createMockInstanceWeb = createMockNode
+export function setupLocalStorageMock() {
+    const localStorageMock = (() => {
+        let store: Record<string, string> = {}
+        return {
+            getItem: (key: string) => (key in store) ? store[key] : null,
+            setItem: (key: string, value: string) => {
+                store[key] = value.toString()
+            },
+            clear: () => {
+                store = {}
+            },
+            removeItem: (key: string) => {
+                delete store[key]
+            },
+            get length() {
+                return Object.keys(store).length
+            },
+            key: (index: number) => Object.keys(store)[index] || null,
+        }
+    })()
+
+    Object.defineProperty(window, "localStorage", {
+        value: localStorageMock,
+        writable: true,
+    })
+}
