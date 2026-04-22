@@ -3,11 +3,10 @@ import {ReactNode} from "react"
 import {Certs} from "../cert/type"
 import {
     Keeper,
-    NodeScheduledRestart,
-    NodeScheduledSwitchover, Role,
+    Node as BaseNode,
+    NodeConnection,
 } from "../node/type"
 import {Permission} from "../permission/type"
-import {Database} from "../postgres"
 
 // COMMON (WEB AND SERVER)
 
@@ -20,13 +19,13 @@ export interface ClusterOptions {
 
 export interface Cluster extends ClusterOptions {
     name: string,
-    keepers: Keeper[],
-    keepersOverview: NodeOverview,
+    nodes: NodeConnection[],
+    nodesOverview: NodeOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
     name: string,
-    node: Keeper,
+    node: NodeConnection,
 }
 
 export interface ClusterTls {
@@ -47,19 +46,10 @@ export interface ClusterOverview {
 }
 
 export interface NodeOverview {
-    [keeper: string]: Node | undefined
+    [domain: string]: Node | undefined
 }
 
-export interface Node {
-    state: string,
-    role: Role,
-    lag: number,
-    pendingRestart: boolean,
-    database: Database,
-    keeper: Keeper,
-    scheduledSwitchover?: NodeScheduledSwitchover,
-    scheduledRestart?: NodeScheduledRestart,
-    tags?: {[key: string]: any},
+export interface Node extends BaseNode {
     inCluster: boolean,
     inKeeper: boolean,
 }

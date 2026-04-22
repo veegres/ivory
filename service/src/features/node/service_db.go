@@ -23,24 +23,37 @@ func (s *Service) OverviewAuto(request NodeAutoRequest) ([]Node, int, *keeper.Ke
 		}
 		cred = &keeper.Credentials{Username: pass.Username, Password: pass.Password}
 	}
-	var overview []keeper.Node
+	var keeperResponses []keeper.Response
 	var detectedBy *keeper.Keeper
 	var statusCode int
 	var errorChain error
-	for i, instance := range request.Keepers {
-		r := keeper.Request{Keeper: instance, Body: request.Body, TlsConfig: tlsConfig, Credentials: cred}
+	for i, connection := range request.Connections {
+		r := keeper.Request{Host: connection.Host, Port: connection.KeeperPort, Body: request.Body, TlsConfig: tlsConfig, Credentials: cred}
 		var err error
-		overview, statusCode, err = s.keeperClient.Overview(r)
+		keeperResponses, statusCode, err = s.keeperClient.Overview(r)
 		if err == nil {
-			detectedBy = &instance
+			detectedBy = &keeper.Keeper{Host: connection.Host, Port: connection.KeeperPort}
 			break
 		}
 		errorChain = errors.Join(errorChain, fmt.Errorf("#%d failed %d: %w", i, statusCode, err))
 	}
-	if overview == nil {
+	if keeperResponses == nil {
 		return nil, statusCode, nil, errorChain
 	}
-	return overview, statusCode, detectedBy, nil
+
+	nodes := make([]Node, 0, len(keeperResponses))
+	for _, kr := range keeperResponses {
+		nodes = append(nodes, Node{
+			Connection: NodeConnection{
+				Host:       kr.DiscoveredHost,
+				KeeperPort: kr.DiscoveredKeeperPort,
+				DbPort:     kr.DiscoveredDbPort,
+			},
+			Response: kr,
+		})
+	}
+
+	return nodes, statusCode, detectedBy, nil
 }
 
 func (s *Service) Overview(node Request) ([]Node, int, error) {
@@ -48,7 +61,24 @@ func (s *Service) Overview(node Request) ([]Node, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Overview(request)
+	keeperResponses, status, err := s.keeperClient.Overview(request)
+	if err != nil {
+		return nil, status, err
+	}
+
+	nodes := make([]Node, 0, len(keeperResponses))
+	for _, kr := range keeperResponses {
+		nodes = append(nodes, Node{
+			Connection: NodeConnection{
+				Host:       kr.DiscoveredHost,
+				KeeperPort: kr.DiscoveredKeeperPort,
+				DbPort:     kr.DiscoveredDbPort,
+			},
+			Response: kr,
+		})
+	}
+
+	return nodes, status, nil
 }
 
 func (s *Service) Config(node Request) (any, int, error) {

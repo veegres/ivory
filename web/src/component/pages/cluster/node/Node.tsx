@@ -33,13 +33,14 @@ export function Node() {
         if (!activeNodeName || !activeCluster) return <AlertCentered text={"Please, select a node to see the information!"}/>
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
 
-        const connection = getConnectionRequest(activeCluster.cluster, activeNode.database)
+        const database = {host: activeNode.response.discoveredHost, port: activeNode.response.discoveredDbPort}
+        const connection = getConnectionRequest(activeCluster.cluster, database)
 
         return (
             <Box sx={SX.content}>
                 <NodeInfo node={activeNode} tab={node.body} onTab={setNodeBody} connection={connection}/>
                 <Divider orientation={"vertical"} flexItem/>
-                <NodeMain tab={node.body} database={activeNode.database}/>
+                <NodeMain tab={node.body} database={database}/>
             </Box>
         )
     }

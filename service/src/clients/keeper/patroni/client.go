@@ -3,7 +3,6 @@ package patroni
 import (
 	"encoding/json"
 	"errors"
-	"ivory/src/clients/database"
 	"ivory/src/clients/http"
 	"ivory/src/clients/keeper"
 	nethttp "net/http"
@@ -24,8 +23,8 @@ func NewClient(httpClient *http.Client) *Client {
 	return &Client{httpClient: httpClient}
 }
 
-func (p *Client) Overview(request keeper.Request) ([]keeper.Node, int, error) {
-	var overview []keeper.Node
+func (p *Client) Overview(request keeper.Request) ([]keeper.Response, int, error) {
+	var overview []keeper.Response
 
 	response, status, err := http.NewJSONRequest[PatroniCluster](p.httpClient).Get(keeper.Map(request, "/cluster"))
 	if err != nil {
@@ -48,16 +47,19 @@ func (p *Client) Overview(request keeper.Request) ([]keeper.Node, int, error) {
 			return nil, nethttp.StatusBadRequest, errCast
 		}
 
-		overview = append(overview, keeper.Node{
-			State:               patroniInstance.State,
-			Role:                p.mapRole(patroniInstance.Role),
-			Lag:                 p.mapLag(patroniInstance.Lag),
-			PendingRestart:      patroniInstance.PendingRestart,
-			Database:            database.Database{Host: patroniInstance.Host, Port: patroniInstance.Port},
-			Keeper:              keeper.Keeper{Host: host, Port: port, Name: &patroniInstance.Name, Status: &keeperStatus},
-			ScheduledRestart:    p.mapRestart(patroniInstance.ScheduledRestart),
-			ScheduledSwitchover: p.mapSwitchover(host, response.ScheduledSwitchover),
-			Tags:                patroniInstance.Tags,
+		overview = append(overview, keeper.Response{
+			Name:                 &patroniInstance.Name,
+			Status:               &keeperStatus,
+			State:                patroniInstance.State,
+			Role:                 p.mapRole(patroniInstance.Role),
+			Lag:                  p.mapLag(patroniInstance.Lag),
+			PendingRestart:       patroniInstance.PendingRestart,
+			ScheduledRestart:     p.mapRestart(patroniInstance.ScheduledRestart),
+			ScheduledSwitchover:  p.mapSwitchover(host, response.ScheduledSwitchover),
+			Tags:                 patroniInstance.Tags,
+			DiscoveredHost:       patroniInstance.Host,
+			DiscoveredDbPort:     patroniInstance.Port,
+			DiscoveredKeeperPort: port,
 		})
 	}
 

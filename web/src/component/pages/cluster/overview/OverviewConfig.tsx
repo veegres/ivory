@@ -31,10 +31,10 @@ export function OverviewConfig(props: Props) {
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const connection = getKeeperConnection(cluster, node.keeper)
+    const connection = getKeeperConnection(cluster, node.connection)
 
-    const config = useRouterNodeConfig(connection, !!node.keeper)
-    const updateConfig = useRouterNodeConfigUpdate(node.keeper, () => setIsEditable(false))
+    const config = useRouterNodeConfig(connection, !!node.connection)
+    const updateConfig = useRouterNodeConfigUpdate(node.connection, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 

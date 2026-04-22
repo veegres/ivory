@@ -8,7 +8,7 @@ import {ColorsMap, SxPropsMap} from "../../../../app/type"
 import {
     getDetectionItems,
     getDomains,
-    getKeepers, NodeColor,
+    getNodeConnections, NodeColor,
     SxPropsFormatter,
 } from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -40,17 +40,17 @@ export function ListRow(props: Props) {
     const active = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const ref = useRef<HTMLTableRowElement | null>(null)
-    const [stateNodes, setStateNodes] = useState(getDomains(cluster.keepers))
+    const [stateNodes, setStateNodes] = useState(getDomains(cluster.nodes))
 
     const overview = useRouterClusterOverview(cluster.name)
-    const nodes = overview.data?.nodes ?? cluster.keepersOverview
+    const nodes = overview.data?.nodes ?? cluster.nodesOverview
     const mainNode = overview.data?.mainNode
     const warning = useMemo(handleMemoWarning, [nodes])
     const colors = useMemo(handleMemoColors, [nodes])
 
     useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
     useEffect(handleEffectScroll, [active])
-    useEffect(handleEffectNodesUpdate, [cluster.keepers])
+    useEffect(handleEffectNodesUpdate, [cluster.nodes])
     useEffect(handleEffectActiveClusterUpdate, [active, cluster, setCluster, warning])
 
     return (
@@ -96,10 +96,10 @@ export function ListRow(props: Props) {
             <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, keepers: getKeepers(stateNodes)}}
+                cluster={{...cluster, nodes: getNodeConnections(stateNodes)}}
                 toggle={toggle}
                 onUpdate={overview.refetch}
-                onClose={() => setStateNodes(getDomains(cluster.keepers))}
+                onClose={() => setStateNodes(getDomains(cluster.nodes))}
             />
         )
     }
@@ -125,7 +125,7 @@ export function ListRow(props: Props) {
     }
 
     function renderChipTooltip() {
-        const detectBy = activeCluster?.detectBy
+        const detectBy = overview.data?.detectedBy
         const items = getDetectionItems(mainNode, detectBy)
         return <InfoColorBoxList items={items} label={"Cluster Detection"}/>
     }
@@ -133,7 +133,7 @@ export function ListRow(props: Props) {
     function handleMemoColors() {
         return Object.entries(nodes).reduce(
             (map, [domain, node]) => {
-                map[domain] = NodeColor[node?.role ?? "unknown"].label
+                map[domain] = NodeColor[node?.response.role ?? "unknown"].label
                 return map
             },
             {} as ColorsMap
@@ -168,7 +168,7 @@ export function ListRow(props: Props) {
     }
 
     function handleEffectNodesUpdate() {
-        setStateNodes(getDomains(cluster.keepers))
+        setStateNodes(getDomains(cluster.nodes))
     }
 
     function handleClick() {

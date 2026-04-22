@@ -35,7 +35,7 @@ export function RestartButton(props: Props) {
             <AlertButton
                 size={"small"}
                 label={"Restart"}
-                title={`Make a restart of ${request.keeper.host}?`}
+                title={`Make a restart of ${request.connection.host}?`}
                 description={"It will restart postgres, that will cause some downtime."}
                 loading={restart.isPending}
                 onClick={handleClick}

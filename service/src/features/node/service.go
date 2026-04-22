@@ -35,7 +35,7 @@ func NewService(
 }
 
 func (s *Service) getKeeperRequest(request Request) (keeper.Request, error) {
-	keeperRequest := keeper.Request{Keeper: request.Keeper, Body: request.Body}
+	keeperRequest := keeper.Request{Host: request.Connection.Host, Port: request.Connection.KeeperPort, Body: request.Body}
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, request.Certs)
 		if err != nil {
@@ -59,7 +59,7 @@ func (s *Service) getSshConnection(id uuid.UUID) (*ssh.Connection, error) {
 	}
 	return &ssh.Connection{
 		Host:     connection.Host,
-		Port:     connection.Port,
+		Port:     connection.SshPort,
 		Username: connection.Username,
 		Key:      connection.SshKey,
 	}, nil

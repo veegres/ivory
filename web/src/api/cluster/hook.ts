@@ -20,8 +20,8 @@ export function useRouterClusterOverview(name?: string, enabled: boolean = true)
     const activeCluster = useStore(s => s.activeCluster)
     const node = activeCluster?.cluster.name === name ? activeCluster?.detectBy : undefined
     return useQuery({
-        queryKey: ClusterApi.overview.key(name, node?.keeper),
-        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", node?.keeper),
+        queryKey: ClusterApi.overview.key(name, node?.connection),
+        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", node?.connection),
         enabled: !!name && enabled, retry: false,
     })
 }

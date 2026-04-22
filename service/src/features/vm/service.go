@@ -179,7 +179,7 @@ func validate(model VM) error {
 		return ErrVmHostEmpty
 	case strings.TrimSpace(model.Username) == "":
 		return ErrVmUsernameEmpty
-	case model.Port <= 0:
+	case model.SshPort <= 0:
 		return ErrVmPortInvalid
 	case strings.TrimSpace(model.SshKey) == "":
 		return ErrVmSshKeyEmpty

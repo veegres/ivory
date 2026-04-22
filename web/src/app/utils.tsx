@@ -14,7 +14,7 @@ import dayjs from "dayjs"
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node} from "../api/cluster/type"
-import {Keeper, KeeperStatus,NodeRequest, Role} from "../api/node/type"
+import {Keeper, KeeperStatus, NodeConnection, NodeRequest, Role} from "../api/node/type"
 import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
 import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
@@ -88,28 +88,35 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
 }
 
 export const initialNode = (domain: string): Node => {
+    const connection = getNodeConnection(domain)
     return ({
-        state: "-",
-        role: "unknown",
-        lag: -1,
-        pendingRestart: false,
-        keeper: getKeeper(domain),
-        database: {host: "-", port: 0},
+        connection: connection,
+        response: {
+            state: "-",
+            role: "unknown",
+            lag: -1,
+            pendingRestart: false,
+            discoveredHost: connection.host,
+            discoveredKeeperPort: connection.keeperPort,
+            discoveredDbPort: connection.dbPort ?? 0,
+        },
         inCluster: true,
         inKeeper: false,
     })
 }
 
-export const isKeeperEqual = (keeper1?: Keeper, keeper2?: Keeper): boolean => {
-    return keeper1?.host === keeper2?.host && keeper1?.port === keeper2?.port
+export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boolean => {
+    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort
 }
 
-export const getDomain = ({host, port}: Keeper) => {
+export const getDomain = (connection: NodeConnection | Keeper) => {
+    const host = connection.host
+    const port = (connection as NodeConnection).keeperPort ?? (connection as Keeper).port
     return `${host.toLowerCase()}${port ? `:${port}` : ""}`
 }
 
-export const getDomains = (keepers: Keeper[]) => {
-    return keepers.map(value => getDomain(value))
+export const getDomains = (nodes: NodeConnection[]) => {
+    return nodes.map(value => getDomain(value))
 }
 
 export function getConnectionRequest(cluster: Cluster, db: Database): ConnectionRequest {
@@ -118,26 +125,26 @@ export function getConnectionRequest(cluster: Cluster, db: Database): Connection
     return {db, certs, credentialId}
 }
 
-export function getKeeperConnection(cluster: Cluster, keeper: Keeper): NodeRequest {
+export function getKeeperConnection(cluster: Cluster, connection: NodeConnection): NodeRequest {
     const credentialId = cluster.credentials.patroniId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
-    return {keeper, certs, credentialId}
+    return {connection, certs, credentialId}
 }
 
-export const getKeeper = (domain: string): Keeper => {
+export const getNodeConnection = (domain: string): NodeConnection => {
     const [host, port] = domain.split(":")
-    return {host, port: port ? parseInt(port) : 8008}
+    return {host, keeperPort: port ? parseInt(port) : 8008}
 }
 
-export const getKeepers = (domains: string[]): Keeper[] => {
-    return domains.map(value => getKeeper(value))
+export const getNodeConnections = (domains: string[]): NodeConnection[] => {
+    return domains.map(value => getNodeConnection(value))
 }
 
-export const getDetectionItems = (mainNode?: Node, detectBy?: Node) => {
+export const getDetectionItems = (mainNode?: Node, detectBy?: Keeper) => {
     const detection = detectBy ? "manual" : "auto"
-    const node = detectBy ?? mainNode
-    const label = node ? getDomain(node.keeper) : "none"
-    const role = node?.role ?? "unknown"
+    const connection = detectBy ?? mainNode?.connection
+    const label = connection ? getDomain(connection) : "none"
+    const role = mainNode?.response.role ?? "unknown"
     return [
         {title: "Detection", label: detection, bgColor: purple[400]},
         {title: "Main Node", label: label, bgColor: NodeColor[role].color}

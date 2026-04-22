@@ -25,14 +25,15 @@ type Props = {
 export function OverviewAction(props: Props) {
     const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainNode} = props
     const {name} = cluster.cluster
-    const keeper = mainNode?.keeper
+    const connection = mainNode?.connection
+    const status = mainNode?.response.status
     return (
         <Box sx={SX.box}>
-            {keeper && keeper.status && (
+            {connection && status && (
                 <OverviewActionStatus
-                    status={keeper.status}
+                    status={status}
                     cluster={name}
-                    request={getKeeperConnection(cluster.cluster, keeper)}
+                    request={getKeeperConnection(cluster.cluster, connection)}
                 />
             )}
             <OverviewActionInfo cluster={cluster.cluster} detectBy={cluster.detectBy} mainNode={mainNode}/>

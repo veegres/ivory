@@ -22,15 +22,15 @@ export function NodeInfoTable(props: Props) {
             <TableBody isLoading={false} cellCount={2}>
                 <TableRow>
                     <TableCell sx={SX.title}>State</TableCell>
-                    <TableCell sx={SX.wrap}>{node.state}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.response.state}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Keeper</TableCell>
-                    <TableCell sx={SX.wrap}>{node.keeper.host}:{node.keeper.port.toString()}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.connection.host}:{node.connection.keeperPort.toString()}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>
-                    <TableCell sx={SX.wrap}>{node.database.host}:{node.database.port.toString()}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.response.discoveredHost}:{node.response.discoveredDbPort.toString()}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>

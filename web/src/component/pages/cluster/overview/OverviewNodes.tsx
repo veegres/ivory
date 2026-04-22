@@ -22,13 +22,13 @@ type Props = {
 
 export function OverviewNodes(props: Props) {
     const {cluster} = props
-    const nodes = props.nodes ?? cluster.keepersOverview
+    const nodes = props.nodes ?? cluster.nodesOverview
     const activeNode = useStore(s => s.activeNode[cluster.name])
     const overview = useRouterClusterOverview(cluster.name, false)
     const candidates = Object.values(nodes)
         .filter(node => !!node)
-        .filter(node => node.role === "replica")
-        .map(node => node.keeper)
+        .filter(node => node.response.role === "replica")
+        .map(node => node.connection)
 
     return (
         <Box sx={SX.box}>

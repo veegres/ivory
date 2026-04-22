@@ -2,7 +2,7 @@ package cluster
 
 import (
 	"encoding/json"
-	"ivory/src/clients/keeper"
+	"ivory/src/features/node"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +36,7 @@ func (r *Router) GetClusterList(context *gin.Context) {
 func (r *Router) GetClusterOverview(context *gin.Context) {
 	name := context.Param("name")
 	query := context.Query("keeper")
-	var side *keeper.Keeper
+	var side *node.NodeConnection
 	if query != "" {
 		errBind := json.Unmarshal([]byte(query), &side)
 		if errBind != nil {

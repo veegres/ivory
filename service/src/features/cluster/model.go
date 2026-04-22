@@ -3,6 +3,7 @@ package cluster
 import (
 	"ivory/src/clients/keeper"
 	"ivory/src/features/cert"
+	"ivory/src/features/node"
 
 	"github.com/google/uuid"
 )
@@ -18,14 +19,14 @@ type ClusterOptions struct {
 
 type Cluster struct {
 	ClusterOptions
-	Name    string          `json:"name"`
-	Keepers []keeper.Keeper `json:"sidecars"`
+	Name  string                `json:"name"`
+	Nodes []node.NodeConnection `json:"nodes"`
 }
 
 type ClusterAuto struct {
 	ClusterOptions
-	Name string        `json:"name"`
-	Node keeper.Keeper `json:"node"`
+	Name string              `json:"name"`
+	Node node.NodeConnection `json:"node"`
 }
 
 type ClusterTls struct {
@@ -47,7 +48,7 @@ type ClusterOverview struct {
 type NodeOverview map[string]*Node
 
 type Node struct {
-	keeper.Node
+	node.Node
 	InCluster bool `json:"inCluster"`
 	InKeeper  bool `json:"inSidecar"`
 }

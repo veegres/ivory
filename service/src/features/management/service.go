@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"ivory/src/clients/database"
-	"ivory/src/clients/keeper"
 	"ivory/src/features/auth"
 	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
+	"ivory/src/features/node"
 	"ivory/src/features/password"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
@@ -226,11 +226,11 @@ func (s *Service) Export() (*Backup, error) {
 
 // Mapper: Cluster to backupCluster
 func clusterToBackup(c cluster.Cluster) *backupCluster {
-	sidecars := make([]backupSidecar, len(c.Keepers))
-	for i, k := range c.Keepers {
+	sidecars := make([]backupSidecar, len(c.Nodes))
+	for i, n := range c.Nodes {
 		sidecars[i] = backupSidecar{
-			Host: k.Host,
-			Port: k.Port,
+			Host: n.Host,
+			Port: n.KeeperPort,
 		}
 	}
 	return &backupCluster{
@@ -379,11 +379,11 @@ func (s *Service) Import(file *multipart.FileHeader) error {
 
 // Mapper: backupCluster to Cluster
 func backupToCluster(bc backupCluster) cluster.Cluster {
-	keepers := make([]keeper.Keeper, len(bc.Sidecars))
+	nodes := make([]node.NodeConnection, len(bc.Sidecars))
 	for i, k := range bc.Sidecars {
-		keepers[i] = keeper.Keeper{
-			Host: k.Host,
-			Port: k.Port,
+		nodes[i] = node.NodeConnection{
+			Host:       k.Host,
+			KeeperPort: k.Port,
 		}
 	}
 	return cluster.Cluster{
@@ -391,7 +391,7 @@ func backupToCluster(bc backupCluster) cluster.Cluster {
 		ClusterOptions: cluster.ClusterOptions{
 			Tags: bc.Tags,
 		},
-		Keepers: keepers,
+		Nodes: nodes,
 	}
 }
 

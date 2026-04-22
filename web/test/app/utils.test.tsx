@@ -4,15 +4,15 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {Keeper} from "../../src/api/node/type"
+import {NodeConnection} from "../../src/api/node/type"
 import {
     DateTimeFormatter,
     getDomain,
     getDomains,
     getErrorMessage,
-    getKeeper,
-    getKeepers,
-    isKeeperEqual,
+    getNodeConnection,
+    getNodeConnections,
+    isConnectionEqual,
     randomUnicodeAnimal,
     shortUuid,
     SizeFormatter,
@@ -30,56 +30,56 @@ describe("shortUuid", () => {
 })
 
 describe("getDomain", () => {
-  it("should return the domain string from a Keeper object", () => {
-    const keeper: Keeper = {host: "localhost", port: 8008}
-    expect(getDomain(keeper)).toBe("localhost:8008")
+  it("should return the domain string from a NodeConnection object", () => {
+    const connection: NodeConnection = {host: "localhost", keeperPort: 8008}
+    expect(getDomain(connection)).toBe("localhost:8008")
   })
 
 })
 
 describe("getDomains", () => {
-    it("should return an array of domain strings from an array of Keeper objects", () => {
-        const keepers: Keeper[] = [
-            {host: "localhost", port: 8008},
-            {host: "127.0.0.1", port: 8008},
+    it("should return an array of domain strings from an array of NodeConnection objects", () => {
+        const connections: NodeConnection[] = [
+            {host: "localhost", keeperPort: 8008},
+            {host: "127.0.0.1", keeperPort: 8008},
         ]
-        expect(getDomains(keepers)).toEqual(["localhost:8008", "127.0.0.1:8008"])
+        expect(getDomains(connections)).toEqual(["localhost:8008", "127.0.0.1:8008"])
     })
 })
 
-describe("getKeeper", () => {
-    it("should return a Keeper object from a domain string", () => {
+describe("getNodeConnection", () => {
+    it("should return a NodeConnection object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getKeeper(domain)).toEqual({host: "localhost", port: 8008})
+        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: 8008})
     })
 
-    it("should return a Keeper object with default port if port is not in domain string", () => {
+    it("should return a NodeConnection object with default port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getKeeper(domain)).toEqual({host: "localhost", port: 8008})
+        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: 8008})
     })
 })
 
-describe("getKeepers", () => {
-    it("should return an array of Keeper objects from an array of domain strings", () => {
+describe("getNodeConnections", () => {
+    it("should return an array of NodeConnection objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
-        expect(getKeepers(domains)).toEqual([
-            {host: "localhost", port: 8008},
-            {host: "127.0.0.1", port: 8008},
+        expect(getNodeConnections(domains)).toEqual([
+            {host: "localhost", keeperPort: 8008},
+            {host: "127.0.0.1", keeperPort: 8008},
         ])
     })
 })
 
-describe("isKeeperEqual", () => {
-    it("should return true if keepers are equal", () => {
-        const keeper1: Keeper = {host: "localhost", port: 8008}
-        const keeper2: Keeper = {host: "localhost", port: 8008}
-        expect(isKeeperEqual(keeper1, keeper2)).toBe(true)
+describe("isConnectionEqual", () => {
+    it("should return true if connections are equal", () => {
+        const c1: NodeConnection = {host: "localhost", keeperPort: 8008}
+        const c2: NodeConnection = {host: "localhost", keeperPort: 8008}
+        expect(isConnectionEqual(c1, c2)).toBe(true)
     })
 
-    it("should return false if keepers are not equal", () => {
-        const keeper1: Keeper = {host: "localhost", port: 8008}
-        const keeper2: Keeper = {host: "localhost", port: 8009}
-        expect(isKeeperEqual(keeper1, keeper2)).toBe(false)
+    it("should return false if connections are not equal", () => {
+        const c1: NodeConnection = {host: "localhost", keeperPort: 8008}
+        const c2: NodeConnection = {host: "localhost", keeperPort: 8009}
+        expect(isConnectionEqual(c1, c2)).toBe(false)
     })
 })
 

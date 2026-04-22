@@ -2,7 +2,6 @@ package patroni
 
 import (
 	"encoding/json"
-	"ivory/src/clients/database"
 	"ivory/src/clients/http"
 	"ivory/src/clients/keeper"
 	nethttp "net/http"
@@ -31,9 +30,6 @@ func TestClient_Overview_Mapping(t *testing.T) {
 		// Mock the gateway response
 		httpClient := &http.Client{}
 		_ = NewClient(httpClient)
-
-		// We'll test the mapping logic by simulating what the response would be
-		// Since Overview() makes actual HTTP calls, we test the mapping separately
 
 		// Verify the struct is created correctly
 		if len(patroniResponse.Members) != 1 {
@@ -202,28 +198,29 @@ func TestClient_Pause(t *testing.T) {
 	})
 }
 
-func TestKeeperNode_Mapping(t *testing.T) {
-	t.Run("should map to internal node model correctly", func(t *testing.T) {
-		expectedNode := keeper.Node{
-			Role:           keeper.Leader,
-			Keeper:         keeper.Keeper{Host: "10.0.0.1", Port: 8008},
-			Database:       database.Database{Host: "db1.example.com", Port: 5432},
-			State:          "running",
-			Lag:            0,
-			PendingRestart: false,
+func TestKeeperResponse_Mapping(t *testing.T) {
+	t.Run("should map to internal response model correctly", func(t *testing.T) {
+		expectedResponse := keeper.Response{
+			Role:                 keeper.Leader,
+			State:                "running",
+			Lag:                  0,
+			PendingRestart:       false,
+			DiscoveredHost:       "db1.example.com",
+			DiscoveredDbPort:     5432,
+			DiscoveredKeeperPort: 8008,
 		}
 
-		if expectedNode.Role != keeper.Leader {
-			t.Errorf("Expected role 'leader', got '%s'", expectedNode.Role)
+		if expectedResponse.Role != keeper.Leader {
+			t.Errorf("Expected role 'leader', got '%s'", expectedResponse.Role)
 		}
-		if expectedNode.Keeper.Host != "10.0.0.1" {
-			t.Errorf("Expected keeper host '10.0.0.1', got '%s'", expectedNode.Keeper.Host)
+		if expectedResponse.DiscoveredHost != "db1.example.com" {
+			t.Errorf("Expected host 'db1.example.com', got '%s'", expectedResponse.DiscoveredHost)
 		}
-		if expectedNode.Keeper.Port != 8008 {
-			t.Errorf("Expected keeper port 8008, got %d", expectedNode.Keeper.Port)
+		if expectedResponse.DiscoveredDbPort != 5432 {
+			t.Errorf("Expected db port 5432, got %d", expectedResponse.DiscoveredDbPort)
 		}
-		if expectedNode.Database.Host != "db1.example.com" {
-			t.Errorf("Expected database host 'db1.example.com', got '%s'", expectedNode.Database.Host)
+		if expectedResponse.DiscoveredKeeperPort != 8008 {
+			t.Errorf("Expected keeper port 8008, got %d", expectedResponse.DiscoveredKeeperPort)
 		}
 	})
 }
