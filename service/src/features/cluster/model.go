@@ -19,14 +19,14 @@ type ClusterOptions struct {
 
 type Cluster struct {
 	ClusterOptions
-	Name  string                `json:"name"`
-	Nodes []node.NodeConnection `json:"nodes"`
+	Name  string            `json:"name"`
+	Nodes []node.Connection `json:"nodes"`
 }
 
 type ClusterAuto struct {
 	ClusterOptions
-	Name string              `json:"name"`
-	Node node.NodeConnection `json:"node"`
+	Name string          `json:"name"`
+	Node node.Connection `json:"node"`
 }
 
 type ClusterTls struct {

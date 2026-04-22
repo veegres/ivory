@@ -4,7 +4,7 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {NodeConnection} from "../../src/api/node/type"
+import {Connection} from "../../src/api/node/type"
 import {
     DateTimeFormatter,
     getDomain,
@@ -31,7 +31,7 @@ describe("shortUuid", () => {
 
 describe("getDomain", () => {
   it("should return the domain string from a NodeConnection object", () => {
-    const connection: NodeConnection = {host: "localhost", keeperPort: 8008}
+    const connection: Connection = {host: "localhost", keeperPort: 8008}
     expect(getDomain(connection)).toBe("localhost:8008")
   })
 
@@ -39,7 +39,7 @@ describe("getDomain", () => {
 
 describe("getDomains", () => {
     it("should return an array of domain strings from an array of NodeConnection objects", () => {
-        const connections: NodeConnection[] = [
+        const connections: Connection[] = [
             {host: "localhost", keeperPort: 8008},
             {host: "127.0.0.1", keeperPort: 8008},
         ]
@@ -71,14 +71,14 @@ describe("getNodeConnections", () => {
 
 describe("isConnectionEqual", () => {
     it("should return true if connections are equal", () => {
-        const c1: NodeConnection = {host: "localhost", keeperPort: 8008}
-        const c2: NodeConnection = {host: "localhost", keeperPort: 8008}
+        const c1: Connection = {host: "localhost", keeperPort: 8008}
+        const c2: Connection = {host: "localhost", keeperPort: 8008}
         expect(isConnectionEqual(c1, c2)).toBe(true)
     })
 
     it("should return false if connections are not equal", () => {
-        const c1: NodeConnection = {host: "localhost", keeperPort: 8008}
-        const c2: NodeConnection = {host: "localhost", keeperPort: 8009}
+        const c1: Connection = {host: "localhost", keeperPort: 8008}
+        const c2: Connection = {host: "localhost", keeperPort: 8009}
         expect(isConnectionEqual(c1, c2)).toBe(false)
     })
 })

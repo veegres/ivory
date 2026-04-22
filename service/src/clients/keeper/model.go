@@ -22,15 +22,15 @@ const (
 )
 
 type Response struct {
-	Name                *string                  `json:"name"`
-	Status              *KeeperStatus            `json:"status,omitempty"`
-	State               string                   `json:"state"`
-	Role                Role                     `json:"role"`
-	Lag                 int64                    `json:"lag"`
-	PendingRestart      bool                     `json:"pendingRestart"`
-	ScheduledSwitchover *NodeScheduledSwitchover `json:"scheduledSwitchover,omitempty"`
-	ScheduledRestart    *NodeScheduledRestart    `json:"scheduledRestart,omitempty"`
-	Tags                *map[string]any          `json:"tags,omitempty"`
+	Name                *string              `json:"name"`
+	Status              *KeeperStatus        `json:"status,omitempty"`
+	State               string               `json:"state"`
+	Role                Role                 `json:"role"`
+	Lag                 int64                `json:"lag"`
+	PendingRestart      bool                 `json:"pendingRestart"`
+	ScheduledSwitchover *ScheduledSwitchover `json:"scheduledSwitchover,omitempty"`
+	ScheduledRestart    *ScheduledRestart    `json:"scheduledRestart,omitempty"`
+	Tags                *map[string]any      `json:"tags,omitempty"`
 
 	// Discovered Topology (Crucial for Auto-Creation)
 	DiscoveredHost       string `json:"discoveredHost"`
@@ -45,12 +45,12 @@ type Keeper struct {
 	Status *KeeperStatus `json:"status,omitempty"`
 }
 
-type NodeScheduledSwitchover struct {
+type ScheduledSwitchover struct {
 	At string `json:"at"`
 	To string `json:"to"`
 }
 
-type NodeScheduledRestart struct {
+type ScheduledRestart struct {
 	At             string `json:"at"`
 	PendingRestart bool   `json:"pendingRestart"`
 }

@@ -6,16 +6,7 @@ import {ConnectionRequest} from "../postgres"
 
 // COMMON (WEB AND SERVER)
 
-export interface VM {
-    id: string,
-    name: string,
-    host: string,
-    sshPort: number,
-    username: string,
-    sshKey: string,
-}
-
-export interface NodeConnection {
+export interface Connection {
     vmId?: string,
     host: string,
     sshPort?: number,
@@ -23,23 +14,16 @@ export interface NodeConnection {
     dbPort?: number,
 }
 
+export interface NodeResponse {
+    connection: Connection,
+    keeper: KeeperResponse,
+}
+
 export interface NodeRequest {
-    connection: NodeConnection,
+    connection: Connection,
     credentialId?: string,
     certs?: Certs,
     body?: any,
-}
-
-export interface NodeAutoRequest {
-    connections: NodeConnection[],
-    credentialId?: string,
-    certs?: Certs,
-    body?: any,
-}
-
-export interface Node {
-    connection: NodeConnection,
-    response: KeeperResponse,
 }
 
 export enum KeeperStatus {
@@ -63,20 +47,20 @@ export interface KeeperResponse {
     role: Role,
     lag: number,
     pendingRestart: boolean,
-    scheduledSwitchover?: NodeScheduledSwitchover,
-    scheduledRestart?: NodeScheduledRestart,
+    scheduledSwitchover?: ScheduledSwitchover,
+    scheduledRestart?: ScheduledRestart,
     tags?: {[key: string]: any},
     discoveredHost: string,
     discoveredKeeperPort: number,
     discoveredDbPort: number,
 }
 
-export interface NodeScheduledSwitchover {
+export interface ScheduledSwitchover {
     at: string,
     to: string,
 }
 
-export interface NodeScheduledRestart {
+export interface ScheduledRestart {
     at: string,
     pendingRestart: boolean,
 }

@@ -36,7 +36,7 @@ func (r *Router) GetClusterList(context *gin.Context) {
 func (r *Router) GetClusterOverview(context *gin.Context) {
 	name := context.Param("name")
 	query := context.Query("keeper")
-	var side *node.NodeConnection
+	var side *node.Connection
 	if query != "" {
 		errBind := json.Unmarshal([]byte(query), &side)
 		if errBind != nil {

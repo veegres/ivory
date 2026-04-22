@@ -1,7 +1,7 @@
 import {getDomain} from "../../app/utils"
 import {api} from "../api"
 import {R} from "../management/type"
-import {NodeConnection} from "../node/type"
+import {Connection} from "../node/type"
 import {Cluster, ClusterAuto, ClusterOverview} from "./type"
 
 export const ClusterApi = {
@@ -13,8 +13,8 @@ export const ClusterApi = {
             ))),
     },
     overview: {
-        key: (name?: string, connection?: NodeConnection) => ["cluster", "overview", name, connection?.host, connection?.keeperPort].filter(Boolean),
-        fn: (name: string, connection?: NodeConnection) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {keeper: JSON.stringify(connection)}})
+        key: (name?: string, connection?: Connection) => ["cluster", "overview", name, connection?.host, connection?.keeperPort].filter(Boolean),
+        fn: (name: string, connection?: Connection) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {keeper: JSON.stringify(connection)}})
             .then((response) => response.data.response),
     },
     update: {

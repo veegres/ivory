@@ -7,7 +7,7 @@ import (
 	"ivory/src/clients/keeper"
 )
 
-func (s *Service) OverviewAuto(request NodeAutoRequest) ([]Node, int, *keeper.Keeper, error) {
+func (s *Service) OverviewAuto(request AutoRequest) ([]Node, int, *keeper.Keeper, error) {
 	var tlsConfig *tls.Config
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&tlsConfig, request.Certs)
@@ -44,12 +44,12 @@ func (s *Service) OverviewAuto(request NodeAutoRequest) ([]Node, int, *keeper.Ke
 	nodes := make([]Node, 0, len(keeperResponses))
 	for _, kr := range keeperResponses {
 		nodes = append(nodes, Node{
-			Connection: NodeConnection{
+			Connection: Connection{
 				Host:       kr.DiscoveredHost,
 				KeeperPort: kr.DiscoveredKeeperPort,
 				DbPort:     kr.DiscoveredDbPort,
 			},
-			Response: kr,
+			Keeper: kr,
 		})
 	}
 
@@ -69,12 +69,12 @@ func (s *Service) Overview(node Request) ([]Node, int, error) {
 	nodes := make([]Node, 0, len(keeperResponses))
 	for _, kr := range keeperResponses {
 		nodes = append(nodes, Node{
-			Connection: NodeConnection{
+			Connection: Connection{
 				Host:       kr.DiscoveredHost,
 				KeeperPort: kr.DiscoveredKeeperPort,
 				DbPort:     kr.DiscoveredDbPort,
 			},
-			Response: kr,
+			Keeper: kr,
 		})
 	}
 
