@@ -133,7 +133,7 @@ export function ListRow(props: Props) {
     function handleMemoColors() {
         return Object.entries(nodes).reduce(
             (map, [domain, node]) => {
-                map[domain] = NodeColor[node?.response.role ?? "unknown"].label
+                map[domain] = NodeColor[node?.keeper.role ?? "unknown"].label
                 return map
             },
             {} as ColorsMap
