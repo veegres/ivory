@@ -2,15 +2,17 @@ package node
 
 import (
 	"ivory/src/clients/keeper"
-	sshclient "ivory/src/clients/ssh"
+	"ivory/src/clients/ssh"
 	"ivory/src/features/cert"
 	"ivory/src/features/password"
 	"ivory/src/features/vm"
+
+	"github.com/google/uuid"
 )
 
 type Service struct {
 	keeperClient    keeper.Client
-	sshClient       sshclient.Client
+	sshClient       ssh.Client
 	passwordService *password.Service
 	certService     *cert.Service
 	vmService       *vm.Service
@@ -18,7 +20,7 @@ type Service struct {
 
 func NewService(
 	keeperClient keeper.Client,
-	sshClient sshclient.Client,
+	sshClient ssh.Client,
 	passwordService *password.Service,
 	certService *cert.Service,
 	vmService *vm.Service,
@@ -32,20 +34,33 @@ func NewService(
 	}
 }
 
-func (s *Service) mapRequest(instance Request) (keeper.Request, error) {
-	request := keeper.Request{Keeper: instance.Keeper, Body: instance.Body}
-	if instance.Certs != nil {
-		err := s.certService.EnrichTLSConfig(&request.TlsConfig, instance.Certs)
+func (s *Service) getKeeperRequest(request Request) (keeper.Request, error) {
+	keeperRequest := keeper.Request{Keeper: request.Keeper, Body: request.Body}
+	if request.Certs != nil {
+		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, request.Certs)
 		if err != nil {
-			return request, err
+			return keeperRequest, err
 		}
 	}
-	if instance.CredentialId != nil {
-		pass, err := s.passwordService.GetDecrypted(*instance.CredentialId)
+	if request.CredentialId != nil {
+		pass, err := s.passwordService.GetDecrypted(*request.CredentialId)
 		if err != nil {
-			return request, err
+			return keeperRequest, err
 		}
-		request.Credentials = &keeper.Credentials{Username: pass.Username, Password: pass.Password}
+		keeperRequest.Credentials = &keeper.Credentials{Username: pass.Username, Password: pass.Password}
 	}
-	return request, nil
+	return keeperRequest, nil
+}
+
+func (s *Service) getSshConnection(id uuid.UUID) (*ssh.Connection, error) {
+	connection, err := s.vmService.GetDecrypted(id)
+	if err != nil {
+		return nil, err
+	}
+	return &ssh.Connection{
+		Host:     connection.Host,
+		Port:     connection.Port,
+		Username: connection.Username,
+		Key:      connection.SshKey,
+	}, nil
 }

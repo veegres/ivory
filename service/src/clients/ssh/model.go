@@ -1,10 +1,10 @@
 package ssh
 
-type VM struct {
+type Connection struct {
 	Host     string
 	Port     int
 	Username string
-	SshKey   string
+	Key      string
 }
 
 type CommandResult struct {

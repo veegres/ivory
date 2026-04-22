@@ -2,7 +2,6 @@ package vm
 
 import (
 	"errors"
-	"ivory/src/clients/ssh"
 	"ivory/src/features/encryption"
 	"ivory/src/features/secret"
 	"strings"
@@ -142,25 +141,21 @@ func (s *Service) Reencrypt(oldSecret [16]byte, newSecret [16]byte) error {
 	return nil
 }
 
-func (s *Service) GetDecrypted(id uuid.UUID) (*ssh.VM, error) {
+func (s *Service) GetDecrypted(id uuid.UUID) (*VM, error) {
 	model, err := s.repository.Get(id)
 	if err != nil {
 		return nil, err
 	}
-	sshKey, err := s.encryption.Decrypt(model.SshKey, s.secret.Get())
+	sshKeyDecrypted, err := s.encryption.Decrypt(model.SshKey, s.secret.Get())
 	if err != nil {
 		return nil, err
 	}
-	return &ssh.VM{
-		Host:     model.Host,
-		Port:     model.Port,
-		Username: model.Username,
-		SshKey:   sshKey,
-	}, nil
+	model.SshKey = sshKeyDecrypted
+	return &model, nil
 }
 
-func (s *Service) encryptKey(sshKey string) (string, error) {
-	return s.encryption.Encrypt(sshKey, s.secret.Get())
+func (s *Service) encryptKey(key string) (string, error) {
+	return s.encryption.Encrypt(key, s.secret.Get())
 }
 
 func (s *Service) hideSshKeys(list []VM) []VM {

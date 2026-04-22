@@ -19,9 +19,9 @@ var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
 var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 
 type Client interface {
-	Execute(vm VM, command string) (*CommandResult, error)
-	ExecuteDocker(vm VM, command string) (*CommandResult, error)
-	Metrics(vm VM) (*Metrics, error)
+	Execute(connection Connection, command string) (*CommandResult, error)
+	ExecuteDocker(connection Connection, command string) (*CommandResult, error)
+	Metrics(connection Connection) (*Metrics, error)
 }
 
 type client struct {
@@ -32,25 +32,25 @@ func NewClient() Client {
 	return &client{timeout: 10 * time.Second}
 }
 
-func (c *client) Execute(vm VM, command string) (*CommandResult, error) {
+func (c *client) Execute(connection Connection, command string) (*CommandResult, error) {
 	trimmed := strings.TrimSpace(command)
 	if trimmed == "" {
 		return nil, ErrCommandEmpty
 	}
 
-	signer, err := ssh.ParsePrivateKey([]byte(vm.SshKey))
+	signer, err := ssh.ParsePrivateKey([]byte(connection.Key))
 	if err != nil {
 		return nil, err
 	}
 
 	config := &ssh.ClientConfig{
-		User:            vm.Username,
+		User:            connection.Username,
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         c.timeout,
 	}
 
-	target, err := getDialAddress(vm)
+	target, err := getDialAddress(connection)
 	if err != nil {
 		return nil, err
 	}
@@ -90,12 +90,12 @@ func (c *client) Execute(vm VM, command string) (*CommandResult, error) {
 	return result, nil
 }
 
-func (c *client) ExecuteDocker(vm VM, command string) (*CommandResult, error) {
-	return c.Execute(vm, normalizeDockerCommand(command))
+func (c *client) ExecuteDocker(connection Connection, command string) (*CommandResult, error) {
+	return c.Execute(connection, normalizeDockerCommand(command))
 }
 
-func (c *client) Metrics(vm VM) (*Metrics, error) {
-	result, err := c.Execute(vm, MetricsCommand)
+func (c *client) Metrics(connection Connection) (*Metrics, error) {
+	result, err := c.Execute(connection, MetricsCommand)
 	if err != nil {
 		return nil, err
 	}
@@ -113,8 +113,8 @@ func normalizeDockerCommand(command string) string {
 	return "docker " + trimmed
 }
 
-func getDialAddress(vm VM) (string, error) {
-	host := strings.TrimSpace(vm.Host)
+func getDialAddress(connection Connection) (string, error) {
+	host := strings.TrimSpace(connection.Host)
 	if host == "" {
 		return "", ErrHostEmpty
 	}
@@ -125,7 +125,7 @@ func getDialAddress(vm VM) (string, error) {
 			return "", err
 		}
 		if parsed.Hostname() != "" {
-			port := vm.Port
+			port := connection.Port
 			if parsed.Port() != "" {
 				parsedPort, err := strconv.Atoi(parsed.Port())
 				if err != nil {
@@ -141,7 +141,7 @@ func getDialAddress(vm VM) (string, error) {
 		return host, nil
 	}
 
-	return net.JoinHostPort(host, strconv.Itoa(vm.Port)), nil
+	return net.JoinHostPort(host, strconv.Itoa(connection.Port)), nil
 }
 
 func parseMetrics(output string) (*Metrics, error) {
