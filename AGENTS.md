@@ -18,8 +18,25 @@ Frontend:
 
 Use `docker/ivory-dev/` for the stack.
 
-## Coding Style & Naming Conventions
-Follow existing file naming: Go packages are lowercase; frontend files use PascalCase for components (`QueryTable.tsx`) and descriptive camel-case names for hooks/providers. In TypeScript, prefer `interface` for shared types, `type` for component props, and function declarations for named React components. Frontend lint rules enforce double quotes, no semicolons, sorted imports, and React Hook discipline. Keep styling in MUI `sx` objects, CSS modules, or top-level constants rather than inline JSX clutter.
+## Architectural Patterns
+- **Vertical Consolidation**: Prefer grouping all management logic for a single entity into one feature. For example, the `node` feature manages both the Host/VM (SSH, Docker, metrics) and the Database/Keeper (HA, config).
+- **Service Splitting**: To keep code manageable, split large services by concern using a `service_<domain>.go` naming convention (e.g., `service_db.go` and `service_host.go`).
+- **Generic Clients**: Centralize transport-level logic in generic clients (like `clients/http` or `clients/ssh`) and keep domain-specific logic in wrappers or consumers.
+
+## Nomenclature
+- **Node**: Refers to a single server entity (Hardware + Software).
+- **Keeper**: Refers to the HA management tool (e.g., Patroni).
+- **VM**: Refers specifically to the virtual machine/host level.
+
+## Coding & UI Standards
+- **Surgical Renaming**: When asked to rename components or fields, ONLY update the terminology. DO NOT refactor implementation logic, move methods to props, or change the component structure unless explicitly directed.
+- **Component Style**: Follow the established pattern of using dedicated helper methods (e.g., `handleAction`, `renderContent`, `handleEffect`) within functional components to keep the JSX clean.
+- **Cache Management**: Be cautious when updating React Query keys. If a linter warns about a missing dependency that was intentionally omitted to control cache invalidation, use `// eslint-disable-next-line` instead of changing the key signature.
+
+## Backward Compatibility & Persistence
+- **Backup Models are Sacred**: Structs used for backups (e.g., `Backup`, `backupCluster`) must remain unchanged in their nomenclature and JSON tags to ensure long-term compatibility. If changes are necessary, a new backup version must be introduced.
+- **Internal DB Migration**: Internal database models (e.g., `Cluster` in `features/cluster/model.go`) can be refactored and their JSON tags updated. The backup tool is the primary mechanism for users to migrate data between versions if the internal schema breaks.
+- **Data Integrity**: When renaming internal models, always verify if they are part of the backup/export logic before changing their JSON representation.
 
 ## Testing Guidelines
 Backend tests use Go's standard `testing` package with table-driven tests and `t.Run()` subtests. Focus on storage adapters, client mappers, and service logic; avoid thin routers and external network calls. Frontend tests use Vitest and Testing Library. Mirror `web/src/` inside `web/test/`, for example `web/src/hook/Debounce.ts` -> `web/test/hook/Debounce.test.ts`. No coverage threshold is defined, but new logic should ship with targeted tests.
