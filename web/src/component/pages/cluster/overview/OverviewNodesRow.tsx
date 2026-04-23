@@ -42,13 +42,11 @@ type Props = {
 export function OverviewNodesRow(props: Props) {
     const {node: tmpNode, cluster, candidates, error = false, name, checked} = props
     const node = tmpNode ?? initialNode(name)
-    const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags, discoveredHost, discoveredDbPort} = node.keeper
+    const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = node.keeper
     const {connection, inKeeper, inCluster} = node
 
     const {setNode} = useStoreAction
     const request = getKeeperConnection(cluster, connection)
-
-    const databaseName = `${discoveredHost}:${discoveredDbPort === 0 ? "-" : discoveredDbPort}`
 
     return (
         <TableRow
@@ -60,14 +58,11 @@ export function OverviewNodesRow(props: Props) {
             <TableCell sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>
                 <Tooltip title={name} placement={"top-start"}>
-                    <Box sx={SX.nowrap}>{name}</Box>
+                    <Box sx={SX.nowrap}>{node.connection.host}</Box>
                 </Tooltip>
             </TableCell>
-            <TableCell sx={SX.nowrap}>
-                <Tooltip title={databaseName} placement={"top-start"}>
-                    <Box sx={SX.nowrap}>{databaseName}</Box>
-                </Tooltip>
-            </TableCell>
+            <TableCell sx={SX.nowrap}>{node.connection.keeperPort ?? "-"}</TableCell>
+            <TableCell sx={SX.nowrap}>{node.connection.dbPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{state}</TableCell>
             <TableCell onClick={(e) => e.stopPropagation()}>{renderData()}</TableCell>
             <TableCell align={"right"} onClick={(e) => e.stopPropagation()}>
