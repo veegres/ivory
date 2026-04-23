@@ -38,8 +38,9 @@ export function OverviewNodes(props: Props) {
                         <TableCell width={"44px"}/>
                         <TableCell width={"40px"}/>
                         <TableCell width={"110px"}>Role</TableCell>
-                        <TableCell width={"15%"}>Keeper</TableCell>
-                        <TableCell width={"15%"}>Postgres</TableCell>
+                        <TableCell width={"20%"}>Host</TableCell>
+                        <TableCell width={"100px"}>Keeper</TableCell>
+                        <TableCell width={"100px"}>Database</TableCell>
                         <TableCell width={"150px"}>State</TableCell>
                         <TableCell/>
                         <TableCellLoader width={"160px"} loading={false}>
