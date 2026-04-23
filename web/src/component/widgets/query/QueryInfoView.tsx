@@ -50,7 +50,7 @@ export function QueryInfoView(props: Props) {
         if (!params) return renderNoElement("PREPARED PARAMS")
         return (
             <Box sx={SX.params}>
-                {params.map((input, index) => (
+                {params.map((input: string, index: number) => (
                     <Chip
                         key={index}
                         avatar={<Avatar>${index + 1}</Avatar>}

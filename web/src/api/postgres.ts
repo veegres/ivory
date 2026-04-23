@@ -1,18 +1,10 @@
 // COMMON (WEB AND SERVER)
 
-import {Certs} from "./cert/type"
-
 export interface Database {
     host: string,
     port: number,
     name?: string,
     schema?: string,
-}
-
-export interface ConnectionRequest {
-    db: Database,
-    certs?: Certs,
-    credentialId?: string,
 }
 
 export interface QueryOptions {

@@ -35,8 +35,8 @@ type ClusterTls struct {
 }
 
 type Vaults struct {
-	PatroniId  *uuid.UUID `json:"patroniId"`
-	PostgresId *uuid.UUID `json:"postgresId"`
+	KeeperId   *uuid.UUID `json:"keeperId"`
+	DatabaseId *uuid.UUID `json:"databaseId"`
 }
 
 type ClusterOverview struct {

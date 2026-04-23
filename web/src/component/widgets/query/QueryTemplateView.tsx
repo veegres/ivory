@@ -2,8 +2,8 @@ import {Box} from "@mui/material"
 import {useState} from "react"
 
 import {Permission} from "../../../api/permission/type"
-import {ConnectionRequest, Query as QueryRequest} from "../../../api/postgres"
-import {Query, QueryCreation} from "../../../api/query/type"
+import {Query as QueryRequest} from "../../../api/postgres"
+import {Connection, Query, QueryCreation} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {
     CancelIconButton,
@@ -32,7 +32,7 @@ enum ViewToggleType {VIEW, EDIT, RESTORE, LOG}
 
 type Props = {
     query: Query,
-    connection: ConnectionRequest,
+    connection: Connection,
 }
 
 export function QueryTemplateView(props: Props) {
@@ -54,13 +54,13 @@ export function QueryTemplateView(props: Props) {
             query={query.custom}
         >
             <QueryBoxBody show={toggleView === ViewToggleType.VIEW}>
-                <QueryInfoView query={query}/>
+                <QueryInfoView query={query as any}/>
             </QueryBoxBody>
             <QueryBoxBody show={toggleView === ViewToggleType.EDIT}>
-                <QueryInfoEdit query={queryUpdate} onChange={setUpdateQuery}/>
+                <QueryInfoEdit query={queryUpdate as any} onChange={setUpdateQuery as any}/>
             </QueryBoxBody>
             <QueryBoxBody show={toggleView === ViewToggleType.RESTORE}>
-                <QueryRestore query={query} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
+                <QueryRestore query={query as any} onSuccess={handleToggleBody(ViewToggleType.VIEW)}/>
             </QueryBoxBody>
             <QueryBoxBody show={toggleView === ViewToggleType.LOG}>
                 <QueryLog queryId={query.id}/>

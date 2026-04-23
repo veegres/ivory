@@ -150,8 +150,8 @@ func (s *ExecuteService) ChartQuery(queryCtx QueryContext, chartType database.Qu
 func (s *ExecuteService) mapContext(queryCtx QueryContext) (database.Context, error) {
 	con := database.Connection{Database: queryCtx.Connection.Db}
 	ctx := database.Context{Connection: &con, Session: queryCtx.Session}
-	if queryCtx.Connection.CredentialId != nil {
-		cred, errCred := s.vaultService.GetDecrypted(*queryCtx.Connection.CredentialId)
+	if queryCtx.Connection.VaultId != nil {
+		cred, errCred := s.vaultService.GetDecrypted(*queryCtx.Connection.VaultId)
 		if errCred != nil {
 			return ctx, ErrVaultProblems
 		}

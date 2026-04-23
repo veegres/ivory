@@ -2,7 +2,7 @@ import {Autocomplete, AutocompleteRenderInputParams, TextField} from "@mui/mater
 import {UseQueryResult} from "@tanstack/react-query"
 import {useState} from "react"
 
-import {ConnectionRequest} from "../../../api/postgres"
+import {Connection} from "../../../api/query/type"
 import {useDebounce} from "../../../hook/Debounce"
 
 type Props = {
@@ -15,9 +15,9 @@ type Props = {
     size?: "small" | "medium",
     padding?: string,
     value?: string | null,
-    connection: ConnectionRequest,
+    connection: Connection,
     params?: any,
-    useFetch: (connection: ConnectionRequest, params: any, enabled?: boolean) => UseQueryResult<string[], Error>
+    useFetch: (connection: Connection, params: any, enabled?: boolean) => UseQueryResult<string[], Error>
 }
 
 export function AutocompleteFetch(props: Props) {

@@ -24,8 +24,8 @@ export function OverviewActionInfo(props: Props) {
     const {mainNode, cluster} = props
 
     const infoItems = [
-        {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.postgresId},
-        {...VaultOptions[VaultType.KEEPER_PASSWORD], active: !!cluster.vaults.patroniId},
+        {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.databaseId},
+        {...VaultOptions[VaultType.KEEPER_PASSWORD], active: !!cluster.vaults.keeperId},
         {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
         {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}

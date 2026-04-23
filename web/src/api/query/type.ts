@@ -1,6 +1,9 @@
-import {ConnectionRequest, QueryChartType, QueryOptions, QueryType, QueryVariety} from "../postgres"
+import {Certs} from "../cert/type"
+import {QueryChartType, QueryOptions, QueryType, QueryVariety, Database} from "../postgres"
 
 // COMMON (WEB AND SERVER)
+
+export {QueryType}
 
 export enum QueryCreation {
     Manual = "manual",
@@ -20,41 +23,47 @@ export interface Query {
     createAt: number,
 }
 
+export interface Connection {
+    db: Database,
+    certs?: Certs,
+    vaultId?: string,
+}
+
 export interface QueryTemplateRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     queryUuid?: string,
     queryOptions?: QueryOptions,
 }
 
 export interface QueryConsoleRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     query: string,
     queryOptions?: QueryOptions,
 }
 
 export interface QueryKillRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     pid: number,
 }
 
 export interface QueryChartRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     type: QueryChartType,
 }
 
 
 export interface QueryDatabasesRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     name: string,
 }
 
 export interface QuerySchemasRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     name: string,
 }
 
 export interface QueryTablesRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     schema: string,
     name: string,
 }
@@ -67,7 +76,7 @@ export interface QueryChart {
 // SPECIFIC (WEB)
 
 export interface QueryRunRequest {
-    connection: ConnectionRequest,
+    connection: Connection,
     queryUuid?: string,
     query: string,
     queryOptions?: QueryOptions,

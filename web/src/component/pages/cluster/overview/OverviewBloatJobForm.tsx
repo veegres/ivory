@@ -6,7 +6,7 @@ import {BloatOptions, BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Node} from "../../../../api/cluster/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnectionRequest} from "../../../../app/utils"
+import {getConnection} from "../../../../app/utils"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
 import {ClusterNoLeaderError, ClusterNoPostgresVault} from "./OverviewError"
 
@@ -30,10 +30,10 @@ export function OverviewBloatJobForm(props: Props) {
     const start = useRouterBloatStart(cluster.name)
 
     if (node.keeper.role !== "leader") return <ClusterNoLeaderError/>
-    if (!cluster.vaults.postgresId) return <ClusterNoPostgresVault/>
+    if (!cluster.vaults.databaseId) return <ClusterNoPostgresVault/>
 
     const db = {host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database}
-    const connection = getConnectionRequest(cluster, db)
+    const connection = getConnection(cluster, db)
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
@@ -110,7 +110,7 @@ export function OverviewBloatJobForm(props: Props) {
     )
 
     function handleRun() {
-        const vaultId = cluster.vaults.postgresId
+        const vaultId = cluster.vaults.databaseId
         if (node && vaultId) {
             const {keeper: {discoveredHost, discoveredDbPort}} = node
             onClick()

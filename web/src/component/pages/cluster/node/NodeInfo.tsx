@@ -4,7 +4,7 @@ import {Node} from "../../../../api/cluster/type"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {NodeTabType} from "../../../../api/node/type"
 import {Permission, PermissionStatus} from "../../../../api/permission/type"
-import {ConnectionRequest} from "../../../../api/postgres"
+import {Connection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {Access} from "../../../widgets/access/Access"
@@ -21,7 +21,7 @@ type Props = {
     node: Node,
     tab: NodeTabType,
     onTab: (tab: NodeTabType) => void,
-    connection: ConnectionRequest,
+    connection: Connection,
 }
 
 export function NodeInfo(props: Props) {

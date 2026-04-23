@@ -1,10 +1,11 @@
 import {Box, Link} from "@mui/material"
 
 import {NodeTab, NodeTabType} from "../../../../api/node/type"
-import {ConnectionRequest, Database} from "../../../../api/postgres"
+import {Database} from "../../../../api/postgres"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../api/query/hook"
+import {Connection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnectionRequest} from "../../../../app/utils"
+import {getConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
 import {Chart} from "../../../widgets/chart/Chart"
@@ -20,7 +21,7 @@ const SX: SxPropsMap = {
 const Tabs: {[key in NodeTabType]: NodeTab} = {
     [NodeTabType.CHART]: {
         label: "Charts",
-        body: (connection: ConnectionRequest) => <Chart connection={connection}/>,
+        body: (connection: Connection) => <Chart connection={connection}/>,
         info: <>
             Here you can check some basic charts about your overall database and each database separately
             by specifying database name in the input near by.
@@ -30,7 +31,7 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
     },
     [NodeTabType.QUERY]: {
         label: "Queries",
-        body: (connection: ConnectionRequest) => <NodeMainQueries connection={connection}/>,
+        body: (connection: Connection) => <NodeMainQueries connection={connection}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres (<b>always use LIMIT in queries
             to reduce number of rows, it will help to render and execute query faster</b>). There are some default queries
@@ -60,9 +61,9 @@ export function NodeMain(props: Props) {
     const {cluster} = activeCluster
     const {label, info, body} = Tabs[tab]
 
-    const vaultId = cluster.vaults.postgresId
+    const vaultId = cluster.vaults.databaseId
     const db = {...database, name: dbName, schema: dbSchema} as Database
-    const connection = getConnectionRequest(cluster, db)
+    const connection = getConnection(cluster, db)
 
     return (
         <Box sx={SX.main}>
