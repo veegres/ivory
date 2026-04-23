@@ -1,7 +1,8 @@
 import {InputBase} from "@mui/material"
 import {useEffect, useState} from "react"
 
-import {ConnectionRequest, Query, QueryType} from "../../../api/postgres"
+import {Query, QueryType} from "../../../api/postgres"
+import {Connection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {CancelIconButton} from "../../view/button/IconButtons"
 import {QueryBoxBody} from "./QueryBoxBody"
@@ -15,7 +16,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     type: QueryType,
-    connection: ConnectionRequest,
+    connection: Connection,
 }
 
 export function QueryTemplateNew(props: Props) {

@@ -2,7 +2,7 @@ import {Box, Divider} from "@mui/material"
 
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnectionRequest} from "../../../../app/utils"
+import {getConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {PageMainBox} from "../../../view/box/PageMainBox"
@@ -34,7 +34,7 @@ export function Node() {
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
 
         const database = {host: activeNode.keeper.discoveredHost, port: activeNode.keeper.discoveredDbPort}
-        const connection = getConnectionRequest(activeCluster.cluster, database)
+        const connection = getConnection(activeCluster.cluster, database)
 
         return (
             <Box sx={SX.content}>

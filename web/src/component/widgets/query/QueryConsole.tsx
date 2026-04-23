@@ -1,7 +1,7 @@
 import {Box, Paper} from "@mui/material"
 import {useState} from "react"
 
-import {ConnectionRequest} from "../../../api/postgres"
+import {Connection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {useDebounceFunction} from "../../../hook/Debounce"
 import {useStore, useStoreAction} from "../../../provider/StoreProvider"
@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: ConnectionRequest,
+    connection: Connection,
 }
 
 export function QueryConsole(props: Props) {

@@ -49,6 +49,6 @@ export function QueryRestore(props: Props) {
     )
 
     function handleUpdate() {
-        update.mutate({id: query.id, query: {...query, query: query.default}})
+        update.mutate({id: query.id, query: {...query, query: query.default} as any})
     }
 }

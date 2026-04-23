@@ -3,6 +3,7 @@ package bloat
 import (
 	"ivory/src/clients/database"
 	. "ivory/src/features/bloat/job"
+	"ivory/src/features/cert"
 	"os"
 
 	"github.com/google/uuid"
@@ -21,11 +22,17 @@ type Bloat struct {
 	CreatedAt   int64     `json:"createdAt"`
 }
 
+type Connection struct {
+	Db      database.Database `json:"db"`
+	Certs   *cert.Certs       `json:"certs"`
+	VaultId *uuid.UUID        `json:"vaultId"`
+}
+
 type BloatRequest struct {
-	Cluster    string                     `json:"cluster"`
-	Connection database.ConnectionRequest `json:"connection"`
-	Target     *BloatTarget               `json:"target"`
-	Options    BloatOptions               `json:"options"`
+	Cluster    string       `json:"cluster"`
+	Connection Connection   `json:"connection"`
+	Target     *BloatTarget `json:"target"`
+	Options    BloatOptions `json:"options"`
 }
 
 type BloatTarget struct {

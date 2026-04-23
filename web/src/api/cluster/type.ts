@@ -34,8 +34,8 @@ export interface ClusterTls {
 }
 
 export interface Vault {
-    patroniId?: string,
-    postgresId?: string,
+    keeperId?: string,
+    databaseId?: string,
 }
 
 

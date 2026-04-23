@@ -15,9 +15,10 @@ import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node} from "../api/cluster/type"
 import {Connection, Keeper, KeeperStatus, NodeRequest, Role} from "../api/node/type"
-import {PermissionStatus} from "../api/permission/type"
-import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
 import {VaultType} from "../api/vault/type"
+import {PermissionStatus} from "../api/permission/type"
+import {Database, QueryVariety} from "../api/postgres"
+import {Connection as QueryConnection} from "../api/query/type"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {
@@ -45,8 +46,8 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
 }
 
 export const VaultOptions: { [key in VaultType]: EnumOptions } = {
-    [VaultType.DATABASE_PASSWORD]: {name: "DATABASE_PASSWORD", label: "Database Password", icon: <Storage/>, key: "postgresId"},
-    [VaultType.KEEPER_PASSWORD]: {name: "KEEPER_PASSWORD", label: "Keeper Password", icon: <HeartBroken/>, key: "patroniId"},
+    [VaultType.DATABASE_PASSWORD]: {name: "DATABASE_PASSWORD", label: "Database Password", icon: <Storage/>, key: "databaseId"},
+    [VaultType.KEEPER_PASSWORD]: {name: "KEEPER_PASSWORD", label: "Keeper Password", icon: <HeartBroken/>, key: "keeperId"},
     [VaultType.SSH_PASSWORD]: {name: "SSH_PASSWORD", label: "SSH Password", icon: <LockTwoTone/>, key: "sshVaultId"},
     [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
 }
@@ -121,14 +122,14 @@ export const getDomains = (nodes: Connection[]) => {
     return nodes.map(value => getDomain(value))
 }
 
-export function getConnectionRequest(cluster: Cluster, db: Database): ConnectionRequest {
-    const credentialId = cluster.vaults.postgresId
+export function getConnection(cluster: Cluster, db: Database): QueryConnection {
+    const vaultId = cluster.vaults.databaseId
     const certs = cluster.tls.database ? cluster.certs : undefined
-    return {db, certs, credentialId}
+    return {db, certs, vaultId}
 }
 
 export function getKeeperConnection(cluster: Cluster, connection: Connection): NodeRequest {
-    const vaultId = cluster.vaults.patroniId
+    const vaultId = cluster.vaults.keeperId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
     return {connection, certs, vaultId}
 }
@@ -183,7 +184,7 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
-export const getPostgresUrl = (con: ConnectionRequest) => {
+export const getPostgresUrl = (con: QueryConnection) => {
     return `postgres://${con.db.host}:${con.db.port}/${con.db.name ?? "postgres"}`
 }
 

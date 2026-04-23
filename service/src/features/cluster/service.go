@@ -190,7 +190,7 @@ func (s *Service) getOverview(connection node.Connection, cluster ClusterOptions
 	}
 	request := node.Request{
 		Connection: connection,
-		VaultId:    cluster.Vaults.PatroniId,
+		VaultId:    cluster.Vaults.KeeperId,
 		Certs:      certs,
 	}
 	nodes, _, errOver := s.nodeService.Overview(request)
@@ -205,7 +205,7 @@ func (s *Service) getOverviewAuto(connections []node.Connection, cluster Cluster
 	}
 	request := node.AutoRequest{
 		Connections: connections,
-		VaultId:     cluster.Vaults.PatroniId,
+		VaultId:     cluster.Vaults.KeeperId,
 		Certs:       certs,
 	}
 	return s.nodeService.OverviewAuto(request)

@@ -2,9 +2,6 @@ package database
 
 import (
 	"crypto/tls"
-	"ivory/src/features/cert"
-
-	"github.com/google/uuid"
 )
 
 // COMMON (WEB AND SERVER)
@@ -14,12 +11,6 @@ type Database struct {
 	Port   int     `json:"port"`
 	Name   *string `json:"name"`
 	Schema *string `json:"schema"`
-}
-
-type ConnectionRequest struct {
-	Db           Database    `json:"db"`
-	Certs        *cert.Certs `json:"certs"`
-	CredentialId *uuid.UUID  `json:"credentialId"`
 }
 
 type QueryOptions struct {

@@ -1,7 +1,14 @@
-import {ConnectionRequest} from "../postgres"
+import {Certs} from "../cert/type"
+import {Database} from "../postgres"
 import {JobStatus} from "./job/type"
 
 // COMMON (WEB AND SERVER)
+
+export interface Connection {
+    db: Database,
+    certs?: Certs,
+    vaultId?: string,
+}
 
 export interface BloatTarget {
     database?: string,
@@ -24,7 +31,7 @@ export interface BloatOptions {
 
 export interface BloatRequest {
     cluster: string,
-    connection: ConnectionRequest,
+    connection: Connection,
     target?: BloatTarget,
     options: BloatOptions,
 }
