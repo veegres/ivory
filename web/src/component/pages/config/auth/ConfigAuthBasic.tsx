@@ -19,7 +19,7 @@ export function ConfigAuthBasic(props: Props) {
     return (
         <Box sx={SX.box}>
             <KeyEnterInput label={"Username"} value={config.username} onChange={handleConfigChange("username")}/>
-            <KeyEnterInput label={"Password"} value={config.password} onChange={handleConfigChange("password")} hidden/>
+            <KeyEnterInput label={"Password"} value={config.password} onChange={handleConfigChange("Password")} hidden/>
         </Box>
     )
 

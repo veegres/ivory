@@ -18,7 +18,7 @@ export function EraseButton(props: Props) {
             color={"error"}
             label={"Erase"}
             title={"Erase all data?"}
-            description={"This action will remove all of your data (passwords, certs, logs, queries, etc)."}
+            description={"This action will remove all of your data (vaults, certs, logs, queries, etc)."}
             loading={cleanSafe.isPending || cleanInitial.isPending}
             onClick={() => props.safe ? cleanSafe.mutate() : cleanInitial.mutate()}
         />

@@ -1,22 +1,22 @@
 import {useMemo} from "react"
 
-import {useRouterPassword} from "../../../api/password/hook"
-import {PasswordType} from "../../../api/password/type"
-import {CredentialOptions, shortUuid} from "../../../app/utils"
+import {useRouterVault} from "../../../api/vault/hook"
+import {VaultType} from "../../../api/vault/type"
+import {shortUuid,VaultOptions} from "../../../app/utils"
 import {AutocompleteUuid, Option} from "../../view/autocomplete/AutocompleteUuid"
 
 type Props = {
-    type: PasswordType,
+    type: VaultType,
     selected?: string,
-    onUpdate: (type: PasswordType, s?: string) => void,
+    onUpdate: (type: VaultType, s?: string) => void,
 }
 
-export function OptionsPassword(props: Props) {
+export function OptionsVault(props: Props) {
     const {type, onUpdate, selected} = props
     const passId = selected ?? ""
-    const {label} = CredentialOptions[type]
+    const {label} = VaultOptions[type]
 
-    const query = useRouterPassword(type)
+    const query = useRouterVault(type)
     const options = useMemo(handleMemoOptions, [query.data])
 
     return (

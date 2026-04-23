@@ -37,20 +37,13 @@ const (
 	ManageClusterUpdate Permission = "manage.cluster.update"
 	ManageClusterDelete Permission = "manage.cluster.delete"
 
-	// VM permissions
-	ViewVmList     Permission = "view.vm.list"
-	ViewVmItem     Permission = "view.vm.item"
-	ManageVmCreate Permission = "manage.vm.create"
-	ManageVmUpdate Permission = "manage.vm.update"
-	ManageVmDelete Permission = "manage.vm.delete"
-
 	// Tags permissions
 	ViewTagList Permission = "view.tag.list"
 
 	// Node permissions
 	ViewNodeDbOverview       Permission = "view.node.db.overview"
 	ViewNodeDbConfig         Permission = "view.node.db.config"
-	ViewNodeVmMetrics        Permission = "view.node.vm.metrics"
+	ViewNodeSshMetrics       Permission = "view.node.ssh.metrics"
 	ManageNodeDbConfigUpdate Permission = "manage.node.db.config.update"
 	ManageNodeDbSwitchover   Permission = "manage.node.db.switchover"
 	ManageNodeDbReinitialize Permission = "manage.node.db.reinitialize"
@@ -58,8 +51,8 @@ const (
 	ManageNodeDbReload       Permission = "manage.node.db.reload"
 	ManageNodeDbFailover     Permission = "manage.node.db.failover"
 	ManageNodeDbActivation   Permission = "manage.node.db.activation"
-	ManageNodeVmDocker       Permission = "manage.node.vm.docker"
-	ViewNodeVmDocker         Permission = "view.node.vm.docker"
+	ManageNodeSshDocker      Permission = "manage.node.ssh.docker"
+	ViewNodeSshDocker        Permission = "view.node.ssh.docker"
 
 	// Query permissions
 	ViewQueryList               Permission = "view.query.list"
@@ -75,11 +68,11 @@ const (
 	ViewQueryLogList            Permission = "view.query.log.list"
 	ManageQueryLogDelete        Permission = "manage.query.log.delete"
 
-	// Password permissions
-	ViewPasswordList     Permission = "view.password.list"
-	ManagePasswordCreate Permission = "manage.password.create"
-	ManagePasswordUpdate Permission = "manage.password.update"
-	ManagePasswordDelete Permission = "manage.password.delete"
+	// Vault permissions
+	ViewVaultList     Permission = "view.vault.list"
+	ManageVaultCreate Permission = "manage.vault.create"
+	ManageVaultUpdate Permission = "manage.vault.update"
+	ManageVaultDelete Permission = "manage.vault.delete"
 
 	// Cert permissions
 	ViewCertList     Permission = "view.cert.list"
@@ -112,15 +105,10 @@ var Permissions = []Permission{
 	ManageClusterCreate,
 	ManageClusterUpdate,
 	ManageClusterDelete,
-	ViewVmList,
-	ViewVmItem,
-	ManageVmCreate,
-	ManageVmUpdate,
-	ManageVmDelete,
 	ViewTagList,
 	ViewNodeDbOverview,
 	ViewNodeDbConfig,
-	ViewNodeVmMetrics,
+	ViewNodeSshMetrics,
 	ManageNodeDbConfigUpdate,
 	ManageNodeDbSwitchover,
 	ManageNodeDbReinitialize,
@@ -128,8 +116,8 @@ var Permissions = []Permission{
 	ManageNodeDbReload,
 	ManageNodeDbFailover,
 	ManageNodeDbActivation,
-	ManageNodeVmDocker,
-	ViewNodeVmDocker,
+	ManageNodeSshDocker,
+	ViewNodeSshDocker,
 	ViewQueryList,
 	ManageQueryCreate,
 	ManageQueryUpdate,
@@ -142,10 +130,10 @@ var Permissions = []Permission{
 	ManageQueryExecuteTerminate,
 	ViewQueryLogList,
 	ManageQueryLogDelete,
-	ViewPasswordList,
-	ManagePasswordCreate,
-	ManagePasswordUpdate,
-	ManagePasswordDelete,
+	ViewVaultList,
+	ManageVaultCreate,
+	ManageVaultUpdate,
+	ManageVaultDelete,
 	ViewCertList,
 	ManageCertCreate,
 	ManageCertDelete,

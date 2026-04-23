@@ -1,4 +1,4 @@
-package password
+package vault
 
 import (
 	"net/http"
@@ -9,14 +9,14 @@ import (
 )
 
 type Router struct {
-	passwordService *Service
+	vaultService *Service
 }
 
-func NewRouter(passwordService *Service) *Router {
-	return &Router{passwordService: passwordService}
+func NewRouter(vaultService *Service) *Router {
+	return &Router{vaultService: vaultService}
 }
 
-func (r *Router) GetPasswordList(context *gin.Context) {
+func (r *Router) GetVaultList(context *gin.Context) {
 	stringType := context.Request.URL.Query().Get("type")
 	if stringType != "" {
 		number, errAtoi := strconv.Atoi(stringType)
@@ -24,55 +24,55 @@ func (r *Router) GetPasswordList(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": errAtoi.Error()})
 			return
 		}
-		credType := PasswordType(number)
-		credentials, err := r.passwordService.Map(&credType)
+		credType := VaultType(number)
+		vaults, err := r.vaultService.Map(&credType)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"response": credentials})
+		context.JSON(http.StatusOK, gin.H{"response": vaults})
 	} else {
-		credentials, err := r.passwordService.Map(nil)
+		vaults, err := r.vaultService.Map(nil)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"response": credentials})
+		context.JSON(http.StatusOK, gin.H{"response": vaults})
 	}
 }
 
-func (r *Router) PostPassword(context *gin.Context) {
-	var credential Password
-	errBind := context.ShouldBindJSON(&credential)
+func (r *Router) PostVault(context *gin.Context) {
+	var vault Vault
+	errBind := context.ShouldBindJSON(&vault)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
-	key, cred, err := r.passwordService.Create(credential)
+	key, cred, err := r.vaultService.Create(vault)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"response": gin.H{"key": key.String(), "credential": cred}})
+	context.JSON(http.StatusOK, gin.H{"response": gin.H{"key": key.String(), "vault": cred}})
 }
 
-func (r *Router) PatchPassword(context *gin.Context) {
+func (r *Router) PatchVault(context *gin.Context) {
 	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
 
-	var credential Password
-	errBind := context.ShouldBindJSON(&credential)
+	var vault Vault
+	errBind := context.ShouldBindJSON(&vault)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
 
-	_, cred, err := r.passwordService.Update(credUuid, credential)
+	_, cred, err := r.vaultService.Update(credUuid, vault)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,13 +81,13 @@ func (r *Router) PatchPassword(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cred})
 }
 
-func (r *Router) DeletePassword(context *gin.Context) {
+func (r *Router) DeleteVault(context *gin.Context) {
 	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	deleteErr := r.passwordService.Delete(credUuid)
+	deleteErr := r.vaultService.Delete(credUuid)
 	if deleteErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": deleteErr.Error()})
 		return

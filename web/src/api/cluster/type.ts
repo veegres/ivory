@@ -13,7 +13,7 @@ import {Permission} from "../permission/type"
 export interface ClusterOptions {
     tls: ClusterTls,
     certs: Certs,
-    credentials: Credentials,
+    vaults: Vault,
     tags?: string[],
 }
 
@@ -33,7 +33,7 @@ export interface ClusterTls {
     database: boolean,
 }
 
-export interface Credentials {
+export interface Vault {
     patroniId?: string,
     postgresId?: string,
 }

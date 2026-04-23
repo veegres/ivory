@@ -78,7 +78,7 @@ export function OverviewBloat(props: Props) {
                     <ToggleButton value={ListBlock.JOB} onClick={handleJobTab}>
                         Jobs
                     </ToggleButton>
-                    <ToggleButton value={ListBlock.QUERY} onClick={handleQueryTab} disabled={!cluster.credentials.postgresId}>
+                    <ToggleButton value={ListBlock.QUERY} onClick={handleQueryTab} disabled={!cluster.vaults.postgresId}>
                         Queries
                     </ToggleButton>
                 </ToggleButtonGroup>

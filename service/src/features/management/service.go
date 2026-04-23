@@ -11,12 +11,11 @@ import (
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
 	"ivory/src/features/node"
-	"ivory/src/features/password"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
-	"ivory/src/features/vm"
+	"ivory/src/features/vault"
 	"ivory/src/storage/env"
 	"mime/multipart"
 
@@ -31,7 +30,7 @@ var ErrInvalidPermission = errors.New("invalid permission")
 type Service struct {
 	env               *env.AppEnv
 	authService       *auth.Service
-	passwordService   *password.Service
+	vaultService      *vault.Service
 	clusterService    *cluster.Service
 	certService       *cert.Service
 	tagService        *tag.Service
@@ -41,13 +40,12 @@ type Service struct {
 	secretService     *secret.Service
 	configService     *config.Service
 	permissionService *permission.Service
-	vmService         *vm.Service
 }
 
 func NewService(
 	env *env.AppEnv,
 	authService *auth.Service,
-	passwordService *password.Service,
+	vaultService *vault.Service,
 	clusterService *cluster.Service,
 	certService *cert.Service,
 	tagService *tag.Service,
@@ -57,12 +55,11 @@ func NewService(
 	secretService *secret.Service,
 	configService *config.Service,
 	permissionService *permission.Service,
-	vmService *vm.Service,
 ) *Service {
 	return &Service{
 		env:               env,
 		authService:       authService,
-		passwordService:   passwordService,
+		vaultService:      vaultService,
 		bloatService:      bloatService,
 		clusterService:    clusterService,
 		certService:       certService,
@@ -72,7 +69,6 @@ func NewService(
 		secretService:     secretService,
 		configService:     configService,
 		permissionService: permissionService,
-		vmService:         vmService,
 	}
 }
 
@@ -84,7 +80,7 @@ func (s *Service) Free() error {
 
 func (s *Service) Erase() error {
 	errSecret := s.secretService.Clean()
-	errPass := s.passwordService.DeleteAll()
+	errCred := s.vaultService.DeleteAll()
 	errCert := s.certService.DeleteAll()
 	errCluster := s.clusterService.DeleteAll()
 	errComTable := s.bloatService.DeleteAll()
@@ -92,8 +88,7 @@ func (s *Service) Erase() error {
 	errQuery := s.queryService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
-	errVm := s.vmService.DeleteAll()
-	return errors.Join(errSecret, errPass, errCert, errCluster, errComTable, errTag, errQuery, errConfig, errPerm, errVm)
+	return errors.Join(errSecret, errCred, errCert, errCluster, errComTable, errTag, errQuery, errConfig, errPerm)
 }
 
 func (s *Service) ChangeSecret(previousKey string, newKey string) error {
@@ -101,17 +96,13 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	if err != nil {
 		return err
 	}
-	errEnc := s.passwordService.Reencrypt(prevSha, newSha)
+	errEnc := s.vaultService.Reencrypt(prevSha, newSha)
 	if errEnc != nil {
 		return errEnc
 	}
 	errConfig := s.configService.Reencrypt()
 	if errConfig != nil {
 		return errConfig
-	}
-	errVm := s.vmService.Reencrypt(prevSha, newSha)
-	if errVm != nil {
-		return errVm
 	}
 	return nil
 }

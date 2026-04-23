@@ -9,7 +9,7 @@ import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons"
 import {About} from "../about/About"
 import {Backup} from "../backup/Backup"
 import {Certs} from "../certs/Certs"
-import {Credentials} from "../credentials/Credentials"
+import {Vault} from "../vault/Vault"
 import {Permissions} from "../permissions/Permissions"
 import {Secret} from "../secret/Secret"
 import {MenuContent} from "./MenuContent"
@@ -51,8 +51,8 @@ export function Menu() {
         switch (page) {
             case Settings.MENU:
                 return <MenuContent onUpdate={setPage}/>
-            case Settings.PASSWORD:
-                return <Credentials/>
+            case Settings.VAULT:
+                return <Vault/>
             case Settings.CERTIFICATE:
                 return <Certs/>
             case Settings.SECRET:

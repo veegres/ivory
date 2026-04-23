@@ -21,9 +21,9 @@ const InitialClusterAuto: ClusterAuto = {
     name: "",
     tls: {keeper: false, database: false},
     certs: {},
-    credentials: {},
+    vaults: {},
     tags: [],
-    node: {vmId: "00000000-0000-0000-0000-000000000000", host: "localhost"},
+    node: {host: "", keeperPort: undefined},
 }
 
 type Props = {

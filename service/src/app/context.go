@@ -16,12 +16,11 @@ import (
 	"ivory/src/features/encryption"
 	"ivory/src/features/management"
 	"ivory/src/features/node"
-	"ivory/src/features/password"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
-	"ivory/src/features/vm"
+	"ivory/src/features/vault"
 	"ivory/src/storage/db"
 	"ivory/src/storage/env"
 	"ivory/src/storage/files"
@@ -34,14 +33,13 @@ type Context struct {
 	bloatRouter      *bloat.Router
 	certRouter       *cert.Router
 	secretRouter     *secret.Router
-	passwordRouter   *password.Router
+	vaultRouter      *vault.Router
 	permissionRouter *permission.Router
 	tagRouter        *tag.Router
 	nodeRouter       *node.Router
 	queryRouter      *query.Router
 	managementRouter *management.Router
 	configRouter     *config.Router
-	vmRouter         *vm.Router
 }
 
 func NewContext() *Context {
@@ -54,10 +52,9 @@ func NewContext() *Context {
 	certBucket := db.NewBucket[cert.Cert](st, "Cert")
 	tagBucket := db.NewBucket[[]string](st, "Tag")
 	secretBucket := db.NewBucket[string](st, "Secret")
-	passwordBucket := db.NewBucket[password.Password](st, "Password")
+	vaultBucket := db.NewBucket[vault.Vault](st, "Vault")
 	permissionBucket := db.NewBucket[permission.PermissionMap](st, "Permission")
 	queryBucket := db.NewBucket[query.Query](st, "Query")
-	vmBucket := db.NewBucket[vm.VM](st, "Vm")
 
 	// FILES
 	compactTableFiles := files.NewStorage("pgcompacttable", ".log")
@@ -71,11 +68,10 @@ func NewContext() *Context {
 	certRepo := cert.NewRepository(certBucket, certFiles)
 	tagRepo := tag.NewRepository(tagBucket)
 	secretRepo := secret.NewRepository(secretBucket)
-	passwordRepo := password.NewRepository(passwordBucket)
+	vaultRepo := vault.NewRepository(vaultBucket)
 	permissionRepo := permission.NewRepository(permissionBucket)
 	queryLogRepo := query.NewLogRepository(queryLogFiles)
 	queryRepo := query.NewRepository(queryBucket)
-	vmRepo := vm.NewRepository(vmBucket)
 
 	// CLIENTS
 	httpClient := http.NewClient()
@@ -91,23 +87,22 @@ func NewContext() *Context {
 	// SERVICES
 	encryptionService := encryption.NewService()
 	secretService := secret.NewService(secretRepo, encryptionService)
-	passwordService := password.NewService(passwordRepo, secretService, encryptionService)
+	vaultService := vault.NewService(vaultRepo, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
-	vmService := vm.NewService(vmRepo, secretService, encryptionService)
-	nodeService := node.NewService(patroniClient, sshClient, passwordService, certService, vmService)
+	nodeService := node.NewService(patroniClient, sshClient, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService)
 	queryLogService := query.NewLogService(queryLogRepo)
 	queryService := query.NewService(queryRepo, queryLogService, secretService)
-	queryExecuteService := query.NewExecuteService(queryRepo, postgresClient, queryLogService, passwordService, certService)
-	bloatService := bloat.NewService(bloatRepo, passwordService)
+	queryExecuteService := query.NewExecuteService(queryRepo, postgresClient, queryLogService, vaultService, certService)
+	bloatService := bloat.NewService(bloatRepo, vaultService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
 	managementService := management.NewService(
 		appEnv,
 		authService,
-		passwordService,
+		vaultService,
 		clusterService,
 		certService,
 		tagService,
@@ -117,7 +112,6 @@ func NewContext() *Context {
 		secretService,
 		configService,
 		permissionService,
-		vmService,
 	)
 
 	return &Context{
@@ -127,13 +121,12 @@ func NewContext() *Context {
 		bloatRouter:      bloat.NewRouter(bloatService),
 		certRouter:       cert.NewRouter(certService),
 		secretRouter:     secret.NewRouter(secretService),
-		passwordRouter:   password.NewRouter(passwordService),
+		vaultRouter:      vault.NewRouter(vaultService),
 		permissionRouter: permission.NewRouter(permissionService),
 		tagRouter:        tag.NewRouter(tagService),
 		nodeRouter:       node.NewRouter(nodeService),
 		queryRouter:      query.NewRouter(queryService, queryExecuteService, queryLogService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),
-		vmRouter:         vm.NewRouter(vmService),
 	}
 }

@@ -29,7 +29,7 @@ const SX: SxPropsMap = {
     button: {padding: "1px"},
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
     separator: {display: "flex", alignItems: "start", marginLeft: "10px"},
-    credential: {display: "inline", color: "text.secondary", marginLeft: "5px"},
+    vault: {display: "inline", color: "text.secondary", marginLeft: "5px"},
 }
 
 type Props = {
@@ -40,7 +40,7 @@ type Props = {
 
 export function OverviewBloatJobItem(props: Props) {
     const {item, cluster, refetchList} = props
-    const {uuid, status: initStatus, command, credentialId} = item
+    const {uuid, status: initStatus, command, vaultId} = item
     const [open, setOpen] = useState(false)
     const {isFetching, logs, status} = useEventJob(uuid, initStatus, open, refetchList)
 
@@ -72,9 +72,9 @@ export function OverviewBloatJobItem(props: Props) {
                 <Box sx={SX.headerLine}>
                     <Box>
                         {command}
-                        <Tooltip title={renderPasswordTooltip()} placement={"top"}>
-                            <Box sx={SX.credential}>
-                                --username {shortUuid(credentialId)} --password {shortUuid(credentialId)}
+                        <Tooltip title={renderVaultTooltip()} placement={"top"}>
+                            <Box sx={SX.vault}>
+                                --username {shortUuid(vaultId)} --vault {shortUuid(vaultId)}
                             </Box>
                         </Tooltip>
                     </Box>
@@ -121,11 +121,11 @@ export function OverviewBloatJobItem(props: Props) {
         )
     }
 
-    function renderPasswordTooltip() {
+    function renderVaultTooltip() {
         return (
             <Box>
-                <Box><b>Credential ID</b></Box>
-                <Box>[ provided only for transparency, you need to provide real password and username ]</Box>
+                <Box><b>Vault ID</b></Box>
+                <Box>[ provided only for transparency, you need to provide real vault and username ]</Box>
             </Box>
         )
     }

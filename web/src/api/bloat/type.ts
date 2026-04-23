@@ -32,7 +32,7 @@ export interface BloatRequest {
 export interface Bloat {
     uuid: string,
     status: JobStatus,
-    credentialId: string,
+    vaultId: string,
     command: string,
     commandArgs: string,
     logsPath: string

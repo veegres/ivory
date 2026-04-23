@@ -7,8 +7,8 @@ import {ConnectionRequest} from "../postgres"
 // COMMON (WEB AND SERVER)
 
 export interface Connection {
-    vmId: string,
     host: string,
+    sshKeyId?: string,
     sshPort?: number,
     keeperPort?: number,
     dbPort?: number,
@@ -21,9 +21,32 @@ export interface NodeResponse {
 
 export interface NodeRequest {
     connection: Connection,
-    credentialId?: string,
+    vaultId?: string,
     certs?: Certs,
     body?: any,
+}
+
+export interface SshRequest {
+    connection: Connection,
+}
+
+export interface DockerRequest {
+    connection: Connection,
+    image?: string,
+    container?: string,
+    options?: string,
+}
+
+export interface DockerLogsRequest {
+    connection: Connection,
+    container: string,
+    tail?: number,
+}
+
+export interface DockerResult {
+    stdout: string,
+    stderr: string,
+    exitCode: number,
 }
 
 export enum KeeperStatus {

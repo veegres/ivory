@@ -27,7 +27,7 @@ export interface EnumOptions {
 
 export enum Settings {
     MENU,
-    PASSWORD,
+    VAULT,
     CERTIFICATE,
     SECRET,
     PERMISSION,

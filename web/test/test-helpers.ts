@@ -3,11 +3,11 @@ import type {Cluster, Node} from "../src/api/cluster/type"
 export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
     return {
         name: "test-cluster",
-        nodes: [{vmId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8008}],
+        nodes: [{sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8008}],
         nodesOverview: {},
         tls: {keeper: false, database: false},
         certs: {},
-        credentials: {},
+        vaults: {},
         tags: [],
         ...overrides,
     }
@@ -15,7 +15,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
 
 export function createMockNode(overrides: Partial<Node> = {}): Node {
     return {
-        connection: {vmId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8008},
+        connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8008},
         keeper: {
             state: "running",
             role: "leader",

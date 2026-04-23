@@ -22,7 +22,7 @@ export function Secret() {
                 title={"You can change your secret here"}
                 subtitle={"This is useful if your secret has been compromised or if someone gained access to Ivory and you want to force all users to log out"}
                 description={<>
-                    When you change the secret, Ivory will re-encrypt all your stored passwords, and
+                    When you change the secret, Ivory will re-encrypt all your stored vaults, and
                     all existing Ivory login tokens will be invalidated. This means that you and
                     everyone else currently logged in will be logged out.
                     If you skipped setting a secret during the initial setup, you can set it here—just

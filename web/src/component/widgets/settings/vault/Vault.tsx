@@ -1,22 +1,22 @@
-import {useRouterPassword} from "../../../../api/password/hook"
 import {Permission} from "../../../../api/permission/type"
+import {useRouterVault} from "../../../../api/vault/hook"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Access} from "../../access/Access"
 import {MenuWrapper} from "../menu/MenuWrapper"
-import {CredentialsList} from "./CredentialsList"
-import {CredentialsNew} from "./CredentialsNew"
+import {VaultList} from "./VaultList"
+import {VaultNew} from "./VaultNew"
 
-export function Credentials() {
-    const query = useRouterPassword()
+export function Vault() {
+    const query = useRouterVault()
     const {data, error, isFetching} = query
 
     return (
         <MenuWrapper>
-            <Access permission={Permission.ManagePasswordCreate}>
-                <CredentialsNew/>
+            <Access permission={Permission.ManageVaultCreate}>
+                <VaultNew/>
             </Access>
             <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
-            <CredentialsList credentials={data} error={error}/>
+            <VaultList vaults={data} error={error}/>
         </MenuWrapper>
     )
 }

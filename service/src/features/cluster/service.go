@@ -144,10 +144,10 @@ func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 		Name:  cluster.Name,
 		Nodes: nodesConnections,
 		ClusterOptions: ClusterOptions{
-			Tls:         cluster.Tls,
-			Certs:       cluster.Certs,
-			Credentials: cluster.Credentials,
-			Tags:        tags,
+			Tls:    cluster.Tls,
+			Certs:  cluster.Certs,
+			Vaults: cluster.Vaults,
+			Tags:   tags,
 		},
 	}
 
@@ -173,10 +173,10 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 		Name:  cluster.Name,
 		Nodes: nodesConnections,
 		ClusterOptions: ClusterOptions{
-			Tls:         cluster.Tls,
-			Certs:       cluster.Certs,
-			Credentials: cluster.Credentials,
-			Tags:        cluster.Tags,
+			Tls:    cluster.Tls,
+			Certs:  cluster.Certs,
+			Vaults: cluster.Vaults,
+			Tags:   cluster.Tags,
 		},
 	}
 	return &model, s.clusterRepository.Update(model)
@@ -189,9 +189,9 @@ func (s *Service) getOverview(connection node.Connection, cluster ClusterOptions
 		certs = &cluster.Certs
 	}
 	request := node.Request{
-		Connection:   connection,
-		CredentialId: cluster.Credentials.PatroniId,
-		Certs:        certs,
+		Connection: connection,
+		VaultId:    cluster.Vaults.PatroniId,
+		Certs:      certs,
 	}
 	nodes, _, errOver := s.nodeService.Overview(request)
 	return nodes, errOver
@@ -204,9 +204,9 @@ func (s *Service) getOverviewAuto(connections []node.Connection, cluster Cluster
 		certs = &cluster.Certs
 	}
 	request := node.AutoRequest{
-		Connections:  connections,
-		CredentialId: cluster.Credentials.PatroniId,
-		Certs:        certs,
+		Connections: connections,
+		VaultId:     cluster.Vaults.PatroniId,
+		Certs:       certs,
 	}
 	return s.nodeService.OverviewAuto(request)
 }
