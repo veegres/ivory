@@ -25,7 +25,7 @@ export function OverviewNodesFixAuto(props: Props) {
             <AlertDialog
                 open={open}
                 title={"Auto Fix"}
-                description={"This will update cluster with current state of the cluster from the source."}
+                description={"Update cluster to match the keeper's current state."}
                 onClose={() => setOpen(false)}
                 onAgree={() => autoFix.mutate(name)}
             />
