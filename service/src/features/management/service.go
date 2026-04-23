@@ -149,12 +149,6 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 
 func (s *Service) getAuthInfo(context *gin.Context) (bool, *UserInfo, string) {
 	authorised, username, authType, errParse := s.authService.ParseAuthToken(context)
-	if username == "" {
-		if errParse != nil {
-			return authorised, nil, errParse.Error()
-		}
-		return authorised, nil, ""
-	}
 	prefix := ""
 	if authType != nil {
 		prefix = authType.String()
