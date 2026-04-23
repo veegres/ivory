@@ -33,7 +33,7 @@ export function MenuContent(props: Props) {
                     <ListItem title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
                 </List>
                 <List name={"Privacy and security"}>
-                    <Access permission={Permission.ViewPasswordList}>{renderButton(Settings.PASSWORD)}</Access>
+                    <Access permission={Permission.ViewVaultList}>{renderButton(Settings.VAULT)}</Access>
                     <Access permission={Permission.ViewCertList}>{renderButton(Settings.CERTIFICATE)}</Access>
                     <Access permission={Permission.ManageManagementSecret}>{renderButton(Settings.SECRET)}</Access>
                     {renderButton(Settings.PERMISSION)}

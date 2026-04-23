@@ -8,12 +8,11 @@ import (
 	"ivory/src/features/config"
 	"ivory/src/features/management"
 	"ivory/src/features/node"
-	"ivory/src/features/password"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
-	"ivory/src/features/vm"
+	"ivory/src/features/vault"
 	"log/slog"
 	"net/http"
 
@@ -54,10 +53,9 @@ func NewRouter(di *Context) {
 	clusterRouter(safe, di.permissionRouter, di.clusterRouter)
 	nodeRouter(safe, di.permissionRouter, di.nodeRouter)
 	tagRouter(safe, di.permissionRouter, di.tagRouter)
-	vmRouter(safe, di.permissionRouter, di.vmRouter)
 	bloatRouter(safe, di.permissionRouter, di.bloatRouter)
 	certRouter(safe, di.permissionRouter, di.certRouter)
-	passwordRouter(safe, di.permissionRouter, di.passwordRouter)
+	vaultRouter(safe, di.permissionRouter, di.vaultRouter)
 	permissionRouter(safe, di.permissionRouter, di.permissionRouter)
 	queryRouter(safe, di.permissionRouter, di.queryRouter)
 
@@ -144,12 +142,12 @@ func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {
 	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(permission.ManageCertDelete), r.DeleteCert)
 }
 
-func passwordRouter(g *gin.RouterGroup, rp *permission.Router, r *password.Router) {
-	group := g.Group("/password")
-	group.GET("", rp.ValidateMethodMiddleware(permission.ViewPasswordList), r.GetPasswordList)
-	group.POST("", rp.ValidateMethodMiddleware(permission.ManagePasswordCreate), r.PostPassword)
-	group.PATCH("/:uuid", rp.ValidateMethodMiddleware(permission.ManagePasswordUpdate), r.PatchPassword)
-	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(permission.ManagePasswordDelete), r.DeletePassword)
+func vaultRouter(g *gin.RouterGroup, rp *permission.Router, r *vault.Router) {
+	group := g.Group("/vault")
+	group.GET("", rp.ValidateMethodMiddleware(permission.ViewVaultList), r.GetVaultList)
+	group.POST("", rp.ValidateMethodMiddleware(permission.ManageVaultCreate), r.PostVault)
+	group.PATCH("/:uuid", rp.ValidateMethodMiddleware(permission.ManageVaultUpdate), r.PatchVault)
+	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(permission.ManageVaultDelete), r.DeleteVault)
 }
 
 func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.Router) {
@@ -164,15 +162,6 @@ func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.R
 func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {
 	group := g.Group("/tag")
 	group.GET("", rp.ValidateMethodMiddleware(permission.ViewTagList), r.GetTagList)
-}
-
-func vmRouter(g *gin.RouterGroup, rp *permission.Router, r *vm.Router) {
-	group := g.Group("/vm")
-	group.GET("", rp.ValidateMethodMiddleware(permission.ViewVmList), r.GetVmList)
-	group.GET("/:uuid", rp.ValidateMethodMiddleware(permission.ViewVmItem), r.GetVm)
-	group.POST("", rp.ValidateMethodMiddleware(permission.ManageVmCreate), r.PostVm)
-	group.PATCH("/:uuid", rp.ValidateMethodMiddleware(permission.ManageVmUpdate), r.PatchVm)
-	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(permission.ManageVmDelete), r.DeleteVm)
 }
 
 func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
@@ -192,16 +181,16 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	dbGroup.POST("/activate", rp.ValidateMethodMiddleware(permission.ManageNodeDbActivation), r.PostNodeActivate)
 	dbGroup.POST("/pause", rp.ValidateMethodMiddleware(permission.ManageNodeDbActivation), r.PostNodePause)
 
-	vmGroup := group.Group("/vm")
-	vmGroup.GET("/metrics", rp.ValidateMethodMiddleware(permission.ViewNodeVmMetrics), r.GetMetrics)
+	sshGroup := group.Group("/ssh")
+	sshGroup.GET("/metrics", rp.ValidateMethodMiddleware(permission.ViewNodeSshMetrics), r.GetMetrics)
 
-	dockerGroup := vmGroup.Group("/docker")
-	dockerGroup.GET("", rp.ValidateMethodMiddleware(permission.ViewNodeVmDocker), r.GetDockerList)
-	dockerGroup.GET("/logs", rp.ValidateMethodMiddleware(permission.ViewNodeVmDocker), r.GetDockerLogs)
-	dockerGroup.POST("/deploy", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerDeploy)
-	dockerGroup.POST("/stop", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerStop)
-	dockerGroup.POST("/run", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerRun)
-	dockerGroup.POST("/delete", rp.ValidateMethodMiddleware(permission.ManageNodeVmDocker), r.PostDockerDelete)
+	dockerGroup := sshGroup.Group("/docker")
+	dockerGroup.GET("", rp.ValidateMethodMiddleware(permission.ViewNodeSshDocker), r.GetDockerList)
+	dockerGroup.GET("/logs", rp.ValidateMethodMiddleware(permission.ViewNodeSshDocker), r.GetDockerLogs)
+	dockerGroup.POST("/deploy", rp.ValidateMethodMiddleware(permission.ManageNodeSshDocker), r.PostDockerDeploy)
+	dockerGroup.POST("/stop", rp.ValidateMethodMiddleware(permission.ManageNodeSshDocker), r.PostDockerStop)
+	dockerGroup.POST("/run", rp.ValidateMethodMiddleware(permission.ManageNodeSshDocker), r.PostDockerRun)
+	dockerGroup.POST("/delete", rp.ValidateMethodMiddleware(permission.ManageNodeSshDocker), r.PostDockerDelete)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {

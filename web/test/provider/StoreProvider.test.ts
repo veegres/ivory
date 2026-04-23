@@ -109,7 +109,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const detectNode = createMockNode({
-                connection: {vmId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
+                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
             })
             useStoreAction.setClusterDetection(detectNode)
 
@@ -173,7 +173,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {vmId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
+                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.connection))
@@ -191,7 +191,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {vmId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
+                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.connection))
@@ -364,7 +364,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {vmId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
+                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.connection))

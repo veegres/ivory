@@ -8,7 +8,7 @@ import {getConnectionRequest} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
 import {Chart} from "../../../widgets/chart/Chart"
-import {ClusterNoPostgresPassword, NoDatabaseError} from "../overview/OverviewError"
+import {ClusterNoPostgresVault, NoDatabaseError} from "../overview/OverviewError"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTitle} from "./NodeMainTitle"
 
@@ -60,7 +60,7 @@ export function NodeMain(props: Props) {
     const {cluster} = activeCluster
     const {label, info, body} = Tabs[tab]
 
-    const credentialId = cluster.credentials.postgresId
+    const vaultId = cluster.vaults.postgresId
     const db = {...database, name: dbName, schema: dbSchema} as Database
     const connection = getConnectionRequest(cluster, db)
 
@@ -72,13 +72,13 @@ export function NodeMain(props: Props) {
     )
 
     function renderBody() {
-        if (!credentialId) return <ClusterNoPostgresPassword/>
+        if (!vaultId) return <ClusterNoPostgresVault/>
         if (database.host === "-") return <NoDatabaseError/>
         return body(connection)
     }
 
     function renderActions() {
-        if (!credentialId) return null
+        if (!vaultId) return null
         return (
             <Box sx={SX.inputs}>
                 <AutocompleteFetch

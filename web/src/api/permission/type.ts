@@ -21,7 +21,7 @@ export enum Permission {
     // Node permissions
     ViewNodeDbOverview = "view.node.db.overview",
     ViewNodeDbConfig = "view.node.db.config",
-    ViewNodeVmMetrics = "view.node.vm.metrics",
+    ViewNodeSshMetrics = "view.node.ssh.metrics",
     ManageNodeDbConfigUpdate = "manage.node.db.config.update",
     ManageNodeDbSwitchover = "manage.node.db.switchover",
     ManageNodeDbReinitialize = "manage.node.db.reinitialize",
@@ -29,8 +29,8 @@ export enum Permission {
     ManageNodeDbReload = "manage.node.db.reload",
     ManageNodeDbFailover = "manage.node.db.failover",
     ManageNodeDbActivation = "manage.node.db.activation",
-    ManageNodeVmDocker = "manage.node.vm.docker",
-    ViewNodeVmDocker = "view.node.vm.docker",
+    ManageNodeSshDocker = "manage.node.ssh.docker",
+    ViewNodeSshDocker = "view.node.ssh.docker",
 
     // Query permissions
     ViewQueryList = "view.query.list",
@@ -46,11 +46,11 @@ export enum Permission {
     ViewQueryLogList = "view.query.log.list",
     ManageQueryLogDelete = "manage.query.log.delete",
 
-    // Password permissions
-    ViewPasswordList = "view.password.list",
-    ManagePasswordCreate = "manage.password.create",
-    ManagePasswordUpdate = "manage.password.update",
-    ManagePasswordDelete = "manage.password.delete",
+    // Vault permissions
+    ViewVaultList = "view.vault.list",
+    ManageVaultCreate = "manage.vault.create",
+    ManageVaultUpdate = "manage.vault.update",
+    ManageVaultDelete = "manage.vault.delete",
 
     // Cert permissions
     ViewCertList = "view.cert.list",

@@ -1,10 +1,10 @@
 import {Box, FormHelperText, ToggleButton, Tooltip} from "@mui/material"
 import {cloneElement, ReactElement, useEffect, useRef, useState} from "react"
 
-import {Password, PasswordType} from "../../../../api/password/type"
+import {Vault, VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
-import {CredentialOptions} from "../../../../app/utils"
-import {CredentialsInput} from "./CredentialsInput"
+import {VaultOptions} from "../../../../app/utils"
+import {VaultInput} from "./VaultInput"
 
 const SX: SxPropsMap = {
     row: {display: "flex", alignItems: "center", gap: "15px", margin: "5px 10px 0px"},
@@ -15,22 +15,24 @@ const SX: SxPropsMap = {
 type Props = {
     renderButtons: ReactElement,
     disabled: boolean,
-    credential: Password,
+    vault: Vault,
     error: boolean,
-    onChangeCredential: (value: Password) => void
+    onChangeVault: (value: Vault) => void
     onEmpty: (value: boolean) => void
 }
 
-export function CredentialsRow(props: Props) {
-    const {renderButtons, credential, disabled, onChangeCredential, onEmpty, error} = props
-    const [username, setUsername] = useState(credential.username)
-    const [password, setPassword] = useState(credential.password)
-    const [type, toggleType] = useState(credential.type)
+export function VaultRow(props: Props) {
+    const {renderButtons, vault, disabled, onChangeVault, onEmpty, error} = props
+    const [username, setUsername] = useState(vault.username)
+    const [secret, setSecret] = useState(vault.secret)
+    const [type, toggleType] = useState(vault.type)
 
     const prevDisabledRef = useRef(false)
-    useEffect(handleEffectProps, [credential])
-    useEffect(handleEffectDisable, [disabled, credential])
-    useEffect(handleEffectEmpty, [username, password, onEmpty])
+    useEffect(handleEffectProps, [vault])
+    useEffect(handleEffectDisable, [disabled, vault])
+    useEffect(handleEffectEmpty, [username, secret, onEmpty])
+
+    const isSsh = type === VaultType.SSH_PASSWORD || type === VaultType.SSH_KEY
 
     return (
         <Box sx={SX.row}>
@@ -39,7 +41,7 @@ export function CredentialsRow(props: Props) {
                 {/* we need this to have the same indent as in input */}
                 <FormHelperText>{" "}</FormHelperText>
             </Box>
-            <CredentialsInput
+            <VaultInput
                 label={"username"}
                 type={"username"}
                 value={username}
@@ -47,13 +49,13 @@ export function CredentialsRow(props: Props) {
                 error={error}
                 onChange={handleUsername}
             />
-            <CredentialsInput
-                label={"password"}
-                type={disabled ? "string" : "password"}
-                value={password}
+            <VaultInput
+                label={isSsh && type === VaultType.SSH_KEY ? "key" : "password"}
+                type={disabled ? "string" : (type === VaultType.SSH_KEY ? "string" : "password")}
+                value={secret}
                 disabled={disabled}
                 error={error}
-                onChange={handlePassword}
+                onChange={handleSecret}
             />
             <Box display={"inline-flex"} flexDirection={"column"}>
                 <Box sx={SX.buttons}>{renderButtons}</Box>
@@ -64,7 +66,7 @@ export function CredentialsRow(props: Props) {
     )
 
     function renderToggle() {
-        const option = CredentialOptions[type]
+        const option = VaultOptions[type]
 
         return (
             <Tooltip title={option.name} placement={"top"} disableInteractive>
@@ -77,51 +79,59 @@ export function CredentialsRow(props: Props) {
         )
     }
 
-    function handleUsername(value: string) {
-        setUsername(value)
-        onChangeCredential({username: value, password, type})
+    function handleUsername(v: string) {
+        setUsername(v)
+        onChangeVault({username: v, secret, type})
     }
 
-    function handlePassword(value: string) {
-        setPassword(value)
-        onChangeCredential({username, password: value, type})
+    function handleSecret(v: string) {
+        setSecret(v)
+        onChangeVault({username, secret: v, type})
     }
 
     function handleToggleType() {
-        let tmpType: PasswordType
+        let tmpType: VaultType
         switch (type) {
-            case PasswordType.POSTGRES:
-                tmpType = PasswordType.PATRONI
+            case VaultType.DATABASE_PASSWORD:
+                tmpType = VaultType.KEEPER_PASSWORD
                 break
-            case PasswordType.PATRONI:
-                tmpType = PasswordType.POSTGRES
+            case VaultType.KEEPER_PASSWORD:
+                tmpType = VaultType.SSH_PASSWORD
                 break
+            case VaultType.SSH_PASSWORD:
+                tmpType = VaultType.SSH_KEY
+                break
+            case VaultType.SSH_KEY:
+                tmpType = VaultType.DATABASE_PASSWORD
+                break
+            default:
+                tmpType = VaultType.DATABASE_PASSWORD
         }
         toggleType(tmpType)
-        onChangeCredential({username, password, type: tmpType})
+        onChangeVault({username, secret, type: tmpType})
     }
 
     function handleEffectProps() {
-        setUsername(credential.username)
-        setPassword(credential.password)
-        toggleType(credential.type)
+        setUsername(vault.username)
+        setSecret(vault.secret)
+        toggleType(vault.type)
     }
 
     function handleEffectDisable() {
         if (!prevDisabledRef.current && disabled) {
-            setUsername(credential.username)
-            setPassword(credential.password)
-            toggleType(credential.type)
+            setUsername(vault.username)
+            setSecret(vault.secret)
+            toggleType(vault.type)
         }
         if (prevDisabledRef.current && !disabled) {
-            setPassword("")
+            setSecret("")
         }
         prevDisabledRef.current = disabled
     }
 
     function handleEffectEmpty() {
         if (!username) onEmpty(true)
-        else if (!password) onEmpty(true)
+        else if (!secret) onEmpty(true)
         else onEmpty(false)
     }
 }

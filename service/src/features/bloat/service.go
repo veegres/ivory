@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	. "ivory/src/features/bloat/job"
-	"ivory/src/features/password"
+	"ivory/src/features/vault"
 	"os/exec"
 	"sync"
 	"time"
@@ -22,12 +22,12 @@ type Service struct {
 	elements        map[uuid.UUID]*element
 	mutex           *sync.Mutex
 	bloatRepository *Repository
-	passwordService *password.Service
+	vaultService    *vault.Service
 }
 
 func NewService(
 	bloatRepository *Repository,
-	passwordService *password.Service,
+	vaultService *vault.Service,
 ) *Service {
 	worker := &Service{
 		start:           make(chan uuid.UUID),
@@ -35,7 +35,7 @@ func NewService(
 		elements:        make(map[uuid.UUID]*element),
 		mutex:           &sync.Mutex{},
 		bloatRepository: bloatRepository,
-		passwordService: passwordService,
+		vaultService:    vaultService,
 	}
 
 	// run channel subscribers
@@ -62,8 +62,8 @@ func (w *Service) Get(uuid uuid.UUID) (Bloat, error) {
 	return w.bloatRepository.Get(uuid)
 }
 
-func (w *Service) Start(credentialId uuid.UUID, cluster string, args []string) (*Bloat, error) {
-	compactTable, err := w.bloatRepository.Create(credentialId, cluster, args)
+func (w *Service) Start(vaultId uuid.UUID, cluster string, args []string) (*Bloat, error) {
+	compactTable, err := w.bloatRepository.Create(vaultId, cluster, args)
 	if err != nil {
 		return nil, err
 	}
@@ -159,19 +159,19 @@ func (w *Service) runner() {
 			defer func() { _ = element.writer.Close() }()
 			w.jobStatusHandler(element, RUNNING, nil)
 
-			// Get password
-			credential, errCred := w.passwordService.GetDecrypted(model.CredentialId)
+			// Get vault
+			cred, errCred := w.vaultService.GetDecrypted(model.VaultId)
 			if errCred != nil {
-				w.jobStatusHandler(element, FAILED, fmt.Errorf("password error: %w", errCred))
+				w.jobStatusHandler(element, FAILED, fmt.Errorf("vault error: %w", errCred))
 				return
 			}
-			credentialArgs := []string{
-				"--user", credential.Username,
-				"--password", credential.Password,
+			vaultArgs := []string{
+				"--user", cred.Username,
+				"--password", cred.Secret,
 			}
 
 			// Run command
-			args := append(model.CommandArgs, credentialArgs...)
+			args := append(model.CommandArgs, vaultArgs...)
 			cmd := exec.Command("pgcompacttable", args...)
 			pipe, errPipe := cmd.StdoutPipe()
 			if errPipe != nil {

@@ -8,7 +8,7 @@ import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} fro
 import {SxPropsMap} from "../../../../app/type"
 import {getConnectionRequest} from "../../../../app/utils"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
-import {ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError"
+import {ClusterNoLeaderError, ClusterNoPostgresVault} from "./OverviewError"
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
@@ -30,7 +30,7 @@ export function OverviewBloatJobForm(props: Props) {
     const start = useRouterBloatStart(cluster.name)
 
     if (node.keeper.role !== "leader") return <ClusterNoLeaderError/>
-    if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
+    if (!cluster.vaults.postgresId) return <ClusterNoPostgresVault/>
 
     const db = {host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database}
     const connection = getConnectionRequest(cluster, db)
@@ -110,14 +110,14 @@ export function OverviewBloatJobForm(props: Props) {
     )
 
     function handleRun() {
-        const credentialId = cluster.credentials.postgresId
-        if (node && credentialId) {
+        const vaultId = cluster.vaults.postgresId
+        if (node && vaultId) {
             const {keeper: {discoveredHost, discoveredDbPort}} = node
             onClick()
             start.mutate({
                 connection: {
                     db: {host: discoveredHost, port: discoveredDbPort, name: target?.database, schema: target?.schema},
-                    credentialId,
+                    vaultId,
                 },
                 target, options, cluster: cluster.name,
             })

@@ -11,10 +11,10 @@ import (
 // COMMON (WEB AND SERVER)
 
 type ClusterOptions struct {
-	Tls         ClusterTls  `json:"tls"`
-	Certs       cert.Certs  `json:"certs"`
-	Credentials Credentials `json:"credentials"`
-	Tags        []string    `json:"tags"`
+	Tls    ClusterTls `json:"tls"`
+	Certs  cert.Certs `json:"certs"`
+	Vaults Vaults     `json:"vaults"`
+	Tags   []string   `json:"tags"`
 }
 
 type Cluster struct {
@@ -34,7 +34,7 @@ type ClusterTls struct {
 	Database bool `json:"database"`
 }
 
-type Credentials struct {
+type Vaults struct {
 	PatroniId  *uuid.UUID `json:"patroniId"`
 	PostgresId *uuid.UUID `json:"postgresId"`
 }

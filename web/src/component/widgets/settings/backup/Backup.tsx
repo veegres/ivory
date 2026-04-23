@@ -39,7 +39,7 @@ export function Backup() {
                 description={<>
                     Please note that importing data may overwrite existing clusters or user
                     permissions, which could lead to data loss in the event of a conflict. For
-                    security reasons, passwords and credential states are not included in
+                    security reasons, credential are not included in
                     backups and must be re-entered manually. While direct database compatibility
                     between versions is not guaranteed, Ivory backups are designed for universal
                     compatibility. Use this tool to safely migrate data between versions. Detailed

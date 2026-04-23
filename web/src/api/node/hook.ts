@@ -3,7 +3,7 @@ import {useQuery} from "@tanstack/react-query"
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ClusterApi} from "../cluster/router"
 import {NodeApi} from "./router"
-import {Connection,NodeRequest} from "./type"
+import {Connection, NodeRequest, SshRequest, DockerLogsRequest} from "./type"
 
 export function useRouterNodeOverview(request: NodeRequest, enabled: boolean) {
     return useQuery({
@@ -104,29 +104,29 @@ export function useRouterNodePause(cluster: string) {
     })
 }
 
-export function useRouterNodeMetrics(request: {vmId: string}, enabled: boolean) {
+export function useRouterNodeMetrics(request: SshRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.metrics.key(request.vmId),
+        queryKey: NodeApi.metrics.key(request.connection),
         queryFn: () => NodeApi.metrics.fn(request),
         enabled,
     })
 }
 
-export function useRouterNodeDockerList(request: {vmId: string}, enabled: boolean) {
+export function useRouterNodeDockerList(request: SshRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.docker.list.key(request.vmId),
+        queryKey: NodeApi.docker.list.key(request.connection),
         queryFn: () => NodeApi.docker.list.fn(request),
         enabled,
     })
 }
 
-export function useRouterNodeDockerLogs(vmId: string, container: string, tail: number, enabled: boolean) {
+export function useRouterNodeDockerLogs(request: DockerLogsRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.docker.logs.key(vmId, container),
-        queryFn: () => NodeApi.docker.logs.fn({vmId, container, tail}),
+        queryKey: NodeApi.docker.logs.key(request.connection, request.container),
+        queryFn: () => NodeApi.docker.logs.fn(request),
         enabled,
     })
 }

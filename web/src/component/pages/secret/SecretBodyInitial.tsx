@@ -19,7 +19,7 @@ export function SecretBodyInitial() {
                 <br/>
                 <br/>
                 <b>Secret word</b> — this word will be used to encrypt and decrypt sensitive information,
-                like passwords and tokens. Keep it private and don’t share it with many people — this helps
+                like credentials and tokens. Keep it private and don’t share it with many people — this helps
                 prevent data leaks. Ivory only keeps this word in memory, so each time you restart the tool,
                 you’ll need to enter it again. Make sure you remember it! You may <i>skip</i> this step, in
                 which case Ivory will apply a default value (this option is not recommended). You can modify

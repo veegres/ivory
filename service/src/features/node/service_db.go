@@ -16,12 +16,12 @@ func (s *Service) OverviewAuto(request AutoRequest) ([]Node, int, *keeper.Keeper
 		}
 	}
 	var cred *keeper.Credentials
-	if request.CredentialId != nil {
-		pass, err := s.passwordService.GetDecrypted(*request.CredentialId)
+	if request.VaultId != nil {
+		pass, err := s.vaultService.GetDecrypted(*request.VaultId)
 		if err != nil {
 			return nil, 0, nil, err
 		}
-		cred = &keeper.Credentials{Username: pass.Username, Password: pass.Password}
+		cred = &keeper.Credentials{Username: pass.Username, Password: pass.Secret}
 	}
 	var keeperResponses []keeper.Response
 	var detectedBy *keeper.Keeper

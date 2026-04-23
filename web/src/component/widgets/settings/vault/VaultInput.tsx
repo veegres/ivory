@@ -16,7 +16,7 @@ type Props = {
     onChange: (value: string) => void
 }
 
-export function CredentialsInput(props: Props) {
+export function VaultInput(props: Props) {
     const {label, type, value, disabled, onChange, error: initError = false} = props
     const [error, setError] = useState(false)
 

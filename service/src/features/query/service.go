@@ -6,14 +6,14 @@ import (
 	"ivory/src/clients/database"
 	"ivory/src/clients/database/postgres"
 	"ivory/src/features/cert"
-	"ivory/src/features/password"
 	"ivory/src/features/secret"
+	"ivory/src/features/vault"
 
 	"github.com/google/uuid"
 )
 
 var ErrQueryEmpty = errors.New("query is empty")
-var ErrPasswordProblems = errors.New("password problems, check if it exists")
+var ErrVaultProblems = errors.New("vault problems, check if it exists")
 var ErrAllFieldsRequired = errors.New("all fields have to be filled")
 var ErrNameChangeNotAllowed = errors.New("name change is not allowed for system queries")
 var ErrTypeChangeNotAllowed = errors.New("type change is not allowed for system queries")
@@ -24,7 +24,7 @@ type ExecuteService struct {
 	queryRepository *Repository
 	databaseClient  database.Client
 	logService      *LogService
-	passwordService *password.Service
+	vaultService    *vault.Service
 	certService     *cert.Service
 
 	chartMap map[database.QueryChartType]database.Query
@@ -34,14 +34,14 @@ func NewExecuteService(
 	queryRepository *Repository,
 	databaseClient database.Client,
 	logService *LogService,
-	passwordService *password.Service,
+	vaultService *vault.Service,
 	certService *cert.Service,
 ) *ExecuteService {
 	return &ExecuteService{
 		queryRepository: queryRepository,
 		databaseClient:  databaseClient,
 		logService:      logService,
-		passwordService: passwordService,
+		vaultService:    vaultService,
 		certService:     certService,
 
 		chartMap: postgres.CreateChartsMap(),
@@ -151,11 +151,11 @@ func (s *ExecuteService) mapContext(queryCtx QueryContext) (database.Context, er
 	con := database.Connection{Database: queryCtx.Connection.Db}
 	ctx := database.Context{Connection: &con, Session: queryCtx.Session}
 	if queryCtx.Connection.CredentialId != nil {
-		cred, errCred := s.passwordService.GetDecrypted(*queryCtx.Connection.CredentialId)
+		cred, errCred := s.vaultService.GetDecrypted(*queryCtx.Connection.CredentialId)
 		if errCred != nil {
-			return ctx, ErrPasswordProblems
+			return ctx, ErrVaultProblems
 		}
-		con.Credentials = &database.Credentials{Username: cred.Username, Password: cred.Password}
+		con.Credentials = &database.Credentials{Username: cred.Username, Password: cred.Secret}
 	}
 	if queryCtx.Connection.Certs != nil {
 		errTls := s.certService.EnrichTLSConfig(&con.TlsConfig, queryCtx.Connection.Certs)

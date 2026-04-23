@@ -1,36 +1,33 @@
 package node
 
 import (
+	"errors"
 	"ivory/src/clients/keeper"
 	"ivory/src/clients/ssh"
 	"ivory/src/features/cert"
-	"ivory/src/features/password"
-	"ivory/src/features/vm"
-
-	"github.com/google/uuid"
+	"ivory/src/features/vault"
 )
 
+var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
+
 type Service struct {
-	keeperClient    keeper.Client
-	sshClient       ssh.Client
-	passwordService *password.Service
-	certService     *cert.Service
-	vmService       *vm.Service
+	keeperClient keeper.Client
+	sshClient    ssh.Client
+	vaultService *vault.Service
+	certService  *cert.Service
 }
 
 func NewService(
 	keeperClient keeper.Client,
 	sshClient ssh.Client,
-	passwordService *password.Service,
+	vaultService *vault.Service,
 	certService *cert.Service,
-	vmService *vm.Service,
 ) *Service {
 	return &Service{
-		keeperClient:    keeperClient,
-		sshClient:       sshClient,
-		passwordService: passwordService,
-		certService:     certService,
-		vmService:       vmService,
+		keeperClient: keeperClient,
+		sshClient:    sshClient,
+		vaultService: vaultService,
+		certService:  certService,
 	}
 }
 
@@ -42,25 +39,34 @@ func (s *Service) getKeeperRequest(request Request) (keeper.Request, error) {
 			return keeperRequest, err
 		}
 	}
-	if request.CredentialId != nil {
-		pass, err := s.passwordService.GetDecrypted(*request.CredentialId)
+	if request.VaultId != nil {
+		cred, err := s.vaultService.GetDecrypted(*request.VaultId)
 		if err != nil {
 			return keeperRequest, err
 		}
-		keeperRequest.Credentials = &keeper.Credentials{Username: pass.Username, Password: pass.Password}
+		keeperRequest.Credentials = &keeper.Credentials{Username: cred.Username, Password: cred.Secret}
 	}
 	return keeperRequest, nil
 }
 
-func (s *Service) getSshConnection(id uuid.UUID) (*ssh.Connection, error) {
-	connection, err := s.vmService.GetDecrypted(id)
+func (s *Service) getSshConnection(connection Connection) (*ssh.Connection, error) {
+	if connection.SshKeyId == nil {
+		return nil, ErrSshKeyNotSpecified
+	}
+	cred, err := s.vaultService.GetDecrypted(*connection.SshKeyId)
 	if err != nil {
 		return nil, err
 	}
+
+	sshPort := connection.SshPort
+	if sshPort == 0 {
+		sshPort = 22
+	}
+
 	return &ssh.Connection{
 		Host:     connection.Host,
-		Port:     connection.SshPort,
-		Username: connection.Username,
-		Key:      connection.SshKey,
+		Port:     sshPort,
+		Username: cred.Username,
+		Key:      cred.Secret,
 	}, nil
 }

@@ -3,9 +3,9 @@ import {Box} from "@mui/material"
 import {CertType} from "../../../../api/cert/type"
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster, Node} from "../../../../api/cluster/type"
-import {PasswordType} from "../../../../api/password/type"
+import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
-import {CertOptions, CredentialOptions, getDetectionItems} from "../../../../app/utils"
+import {CertOptions, VaultOptions, getDetectionItems} from "../../../../app/utils"
 import {InfoBox} from "../../../view/box/InfoBox"
 import {InfoBoxList} from "../../../view/box/InfoBoxList"
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
@@ -24,8 +24,8 @@ export function OverviewActionInfo(props: Props) {
     const {mainNode, cluster} = props
 
     const infoItems = [
-        {...CredentialOptions[PasswordType.POSTGRES], active: !!cluster.credentials.postgresId},
-        {...CredentialOptions[PasswordType.PATRONI], active: !!cluster.credentials.patroniId},
+        {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.postgresId},
+        {...VaultOptions[VaultType.KEEPER_PASSWORD], active: !!cluster.vaults.patroniId},
         {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
         {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}

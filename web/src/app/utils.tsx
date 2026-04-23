@@ -15,9 +15,9 @@ import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node} from "../api/cluster/type"
 import {Connection, Keeper, KeeperStatus, NodeRequest, Role} from "../api/node/type"
-import {PasswordType} from "../api/password/type"
 import {PermissionStatus} from "../api/permission/type"
 import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
+import {VaultType} from "../api/vault/type"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {
@@ -44,9 +44,11 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
     [JobStatus.STOPPED]: {name: "STOPPED", color: "rgb(185,185,185)", active: false},
 }
 
-export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
-    [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", icon: <Storage/>, key: "postgresId"},
-    [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", icon: <HeartBroken/>, key: "patroniId"}
+export const VaultOptions: { [key in VaultType]: EnumOptions } = {
+    [VaultType.DATABASE_PASSWORD]: {name: "DATABASE_PASSWORD", label: "Database Password", icon: <Storage/>, key: "postgresId"},
+    [VaultType.KEEPER_PASSWORD]: {name: "KEEPER_PASSWORD", label: "Keeper Password", icon: <HeartBroken/>, key: "patroniId"},
+    [VaultType.SSH_PASSWORD]: {name: "SSH_PASSWORD", label: "SSH Password", icon: <LockTwoTone/>, key: "sshVaultId"},
+    [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
 }
 
 export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {
@@ -67,7 +69,7 @@ export const FileUsageOptions: { [key in FileUsageType]: EnumOptions } = {
 
 export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen/>, key: "menu"},
-    [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone/>, key: "password"},
+    [Settings.VAULT]: {name: "VAULT", label: "Vault Manager", icon: <LockTwoTone/>, key: "vault"},
     [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>, key: "cert"},
     [Settings.PERMISSION]: {name: "PERMISSION", label: "Permission Manager", icon: <RuleTwoTone/>, key: "permission"},
     [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <KeyTwoTone/>, key: "secret"},
@@ -106,7 +108,7 @@ export const initialNode = (domain: string): Node => {
 }
 
 export const isConnectionEqual = (c1?: Connection, c2?: Connection): boolean => {
-    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.vmId === c2?.vmId
+    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.sshKeyId === c2?.sshKeyId
 }
 
 export const getDomain = (connection: Connection | Keeper) => {
@@ -120,20 +122,20 @@ export const getDomains = (nodes: Connection[]) => {
 }
 
 export function getConnectionRequest(cluster: Cluster, db: Database): ConnectionRequest {
-    const credentialId = cluster.credentials.postgresId
+    const credentialId = cluster.vaults.postgresId
     const certs = cluster.tls.database ? cluster.certs : undefined
     return {db, certs, credentialId}
 }
 
 export function getKeeperConnection(cluster: Cluster, connection: Connection): NodeRequest {
-    const credentialId = cluster.credentials.patroniId
+    const vaultId = cluster.vaults.patroniId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
-    return {connection, certs, credentialId}
+    return {connection, certs, vaultId}
 }
 
 export const getNodeConnection = (domain: string): Connection => {
     const [host, port] = domain.split(":")
-    return {vmId: "00000000-0000-0000-0000-000000000000", host, keeperPort: port ? parseInt(port) : undefined}
+    return {host, keeperPort: port ? parseInt(port) : undefined}
 }
 
 export const getNodeConnections = (domains: string[]): Connection[] => {
@@ -219,4 +221,3 @@ export const SizeFormatter = {
     format: Intl.NumberFormat("en", {notation: "compact", style: "unit", unit: "byte", unitDisplay: "narrow"}),
     pretty: (size: number) => SizeFormatter.format.format(size)
 }
-

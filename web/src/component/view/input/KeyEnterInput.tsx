@@ -22,17 +22,17 @@ type Props = {
 
 export function KeyEnterInput(props: Props) {
     const {label, onChange, hidden = false, required = true, disabled = false, helperText, onEnterPress, value} = props
-    const [showPassword, setShowPassword] = useState(false)
+    const [showVault, setShowVault] = useState(false)
 
     return (
         <FormControl sx={SX.margin} fullWidth required={required} disabled={disabled} size={"small"} margin={"normal"}>
             <InputLabel>{label}</InputLabel>
             <OutlinedInput
                 value={value}
-                type={hidden && !showPassword ? "password" : "text"}
+                type={hidden && !showVault ? "vault" : "text"}
                 endAdornment={renderAdornment()}
                 label={label}
-                autoComplete={"new-password"}
+                autoComplete={"new-vault"}
                 onChange={onChange}
                 onKeyUp={(e) => handleKeyPress(e.key)}
             />
@@ -45,8 +45,8 @@ export function KeyEnterInput(props: Props) {
 
         return (
             <InputAdornment position={"end"}>
-                <IconButton onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                <IconButton onClick={() => setShowVault(!showVault)}>
+                    {showVault ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
             </InputAdornment>
         )

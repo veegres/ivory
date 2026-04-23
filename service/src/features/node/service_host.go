@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Service) Metrics(request SshRequest) (*SshMetrics, int, error) {
-	connection, err := s.getSshConnection(request.VmId)
+	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -18,7 +18,7 @@ func (s *Service) Metrics(request SshRequest) (*SshMetrics, int, error) {
 }
 
 func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, int, error) {
-	connection, err := s.getSshConnection(request.VmId)
+	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -32,7 +32,7 @@ func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, int, error
 }
 
 func (s *Service) DockerStop(request DockerRequest) (*DockerResult, int, error) {
-	connection, err := s.getSshConnection(request.VmId)
+	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -44,7 +44,7 @@ func (s *Service) DockerStop(request DockerRequest) (*DockerResult, int, error) 
 }
 
 func (s *Service) DockerRun(request DockerRequest) (*DockerResult, int, error) {
-	connection, err := s.getSshConnection(request.VmId)
+	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -56,7 +56,7 @@ func (s *Service) DockerRun(request DockerRequest) (*DockerResult, int, error) {
 }
 
 func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, int, error) {
-	connection, err := s.getSshConnection(request.VmId)
+	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -68,7 +68,7 @@ func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, int, error
 }
 
 func (s *Service) DockerList(request SshRequest) (*DockerResult, int, error) {
-	connection, err := s.getSshConnection(request.VmId)
+	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -80,7 +80,7 @@ func (s *Service) DockerList(request SshRequest) (*DockerResult, int, error) {
 }
 
 func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, int, error) {
-	connection, err := s.getSshConnection(request.VmId)
+	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -11,14 +11,14 @@ import (
 // COMMON (WEB AND SERVER)
 
 type Bloat struct {
-	Uuid         uuid.UUID `json:"uuid"`
-	CredentialId uuid.UUID `json:"credentialId"`
-	Cluster      string    `json:"cluster"`
-	Status       JobStatus `json:"status"`
-	Command      string    `json:"command"`
-	CommandArgs  []string  `json:"commandArgs"`
-	LogsPath     string    `json:"logsPath"`
-	CreatedAt    int64     `json:"createdAt"`
+	Uuid        uuid.UUID `json:"uuid"`
+	VaultId     uuid.UUID `json:"vaultId"`
+	Cluster     string    `json:"cluster"`
+	Status      JobStatus `json:"status"`
+	Command     string    `json:"command"`
+	CommandArgs []string  `json:"commandArgs"`
+	LogsPath    string    `json:"logsPath"`
+	CreatedAt   int64     `json:"createdAt"`
 }
 
 type BloatRequest struct {

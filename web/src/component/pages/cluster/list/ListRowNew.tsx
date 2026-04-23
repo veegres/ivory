@@ -52,7 +52,7 @@ export function ListRowNew(props: Props) {
                         nodes: getNodeConnections(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
-                        credentials: {},
+                        vaults: {},
                         tls: {keeper: false, database: false},
                         nodesOverview: {},
                     }}

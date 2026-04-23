@@ -2,13 +2,13 @@ import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {CertType} from "../../../api/cert/type"
 import {ClusterOptions} from "../../../api/cluster/type"
-import {PasswordType} from "../../../api/password/type"
+import {VaultType} from "../../../api/vault/type"
 import {Permission} from "../../../api/permission/type"
 import {SxPropsMap} from "../../../app/type"
-import {CertOptions, CredentialOptions} from "../../../app/utils"
+import {CertOptions, VaultOptions} from "../../../app/utils"
 import {AccessBox} from "../access/Access"
 import {OptionsCert} from "./OptionsCert"
-import {OptionsPassword} from "./OptionsPassword"
+import {OptionsVault} from "./OptionsVault"
 import {OptionsTags} from "./OptionsTags"
 
 const SX: SxPropsMap = {
@@ -23,12 +23,12 @@ type Props = {
 
 export function Options(props: Props) {
     const {onUpdate, cluster} = props
-    const {credentials, tags, certs, tls} = cluster
+    const {vaults, tags, certs, tls} = cluster
 
     return (
         <AccessBox sx={SX.box} permission={Permission.ManageClusterUpdate}>
-            <OptionsPassword type={PasswordType.POSTGRES} selected={credentials.postgresId} onUpdate={handlePasswordUpdate}/>
-            <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId} onUpdate={handlePasswordUpdate}/>
+            <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.postgresId} onUpdate={handleVaultUpdate}/>
+            <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.patroniId} onUpdate={handleVaultUpdate}/>
             <Divider variant={"middle"}/>
             <ToggleButtonGroup size={"small"} fullWidth>
                 <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
@@ -44,8 +44,8 @@ export function Options(props: Props) {
         </AccessBox>
     )
 
-    function handlePasswordUpdate(t: PasswordType, s?: string) {
-        onUpdate({...cluster, credentials: {...cluster.credentials, [CredentialOptions[t].key]: s}})
+    function handleVaultUpdate(t: VaultType, s?: string) {
+        onUpdate({...cluster, vaults: {...cluster.vaults, [VaultOptions[t].key]: s}})
     }
 
     function handleCertUpdate(t: CertType, s?: string) {
