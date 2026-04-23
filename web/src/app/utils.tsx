@@ -97,7 +97,7 @@ export const initialNode = (domain: string): Node => {
             lag: -1,
             pendingRestart: false,
             discoveredHost: connection.host,
-            discoveredKeeperPort: connection.keeperPort,
+            discoveredKeeperPort: connection.keeperPort ?? 0,
             discoveredDbPort: connection.dbPort ?? 0,
         },
         inCluster: true,
@@ -106,7 +106,7 @@ export const initialNode = (domain: string): Node => {
 }
 
 export const isConnectionEqual = (c1?: Connection, c2?: Connection): boolean => {
-    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort
+    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.vmId === c2?.vmId
 }
 
 export const getDomain = (connection: Connection | Keeper) => {
@@ -133,7 +133,7 @@ export function getKeeperConnection(cluster: Cluster, connection: Connection): N
 
 export const getNodeConnection = (domain: string): Connection => {
     const [host, port] = domain.split(":")
-    return {host, keeperPort: port ? parseInt(port) : 8008}
+    return {vmId: "00000000-0000-0000-0000-000000000000", host, keeperPort: port ? parseInt(port) : undefined}
 }
 
 export const getNodeConnections = (domains: string[]): Connection[] => {

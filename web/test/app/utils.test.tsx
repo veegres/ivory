@@ -22,6 +22,8 @@ import {
 // Extend dayjs with UTC plugin for DateTimeFormatter tests
 dayjs.extend(utc)
 
+const mockVmId = "00000000-0000-0000-0000-000000000000";
+
 describe("shortUuid", () => {
   it("should return the first 8 characters of a UUID", () => {
     const uuid = "12345678-90ab-cdef-1234-567890abcdef"
@@ -31,17 +33,21 @@ describe("shortUuid", () => {
 
 describe("getDomain", () => {
   it("should return the domain string from a NodeConnection object", () => {
-    const connection: Connection = {host: "localhost", keeperPort: 8008}
+    const connection: Connection = {vmId: mockVmId, host: "localhost", keeperPort: 8008}
     expect(getDomain(connection)).toBe("localhost:8008")
   })
 
+  it("should return the domain string without port if keeperPort is undefined", () => {
+    const connection: Connection = {vmId: mockVmId, host: "localhost"}
+    expect(getDomain(connection)).toBe("localhost")
+  })
 })
 
 describe("getDomains", () => {
     it("should return an array of domain strings from an array of NodeConnection objects", () => {
         const connections: Connection[] = [
-            {host: "localhost", keeperPort: 8008},
-            {host: "127.0.0.1", keeperPort: 8008},
+            {vmId: mockVmId, host: "localhost", keeperPort: 8008},
+            {vmId: mockVmId, host: "127.0.0.1", keeperPort: 8008},
         ]
         expect(getDomains(connections)).toEqual(["localhost:8008", "127.0.0.1:8008"])
     })
@@ -50,12 +56,12 @@ describe("getDomains", () => {
 describe("getNodeConnection", () => {
     it("should return a NodeConnection object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: 8008})
+        expect(getNodeConnection(domain)).toEqual({vmId: mockVmId, host: "localhost", keeperPort: 8008})
     })
 
-    it("should return a NodeConnection object with default port if port is not in domain string", () => {
+    it("should return a NodeConnection object with undefined port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: 8008})
+        expect(getNodeConnection(domain)).toEqual({vmId: mockVmId, host: "localhost", keeperPort: undefined})
     })
 })
 
@@ -63,22 +69,28 @@ describe("getNodeConnections", () => {
     it("should return an array of NodeConnection objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
         expect(getNodeConnections(domains)).toEqual([
-            {host: "localhost", keeperPort: 8008},
-            {host: "127.0.0.1", keeperPort: 8008},
+            {vmId: mockVmId, host: "localhost", keeperPort: 8008},
+            {vmId: mockVmId, host: "127.0.0.1", keeperPort: undefined},
         ])
     })
 })
 
 describe("isConnectionEqual", () => {
     it("should return true if connections are equal", () => {
-        const c1: Connection = {host: "localhost", keeperPort: 8008}
-        const c2: Connection = {host: "localhost", keeperPort: 8008}
+        const c1: Connection = {vmId: mockVmId, host: "localhost", keeperPort: 8008}
+        const c2: Connection = {vmId: mockVmId, host: "localhost", keeperPort: 8008}
         expect(isConnectionEqual(c1, c2)).toBe(true)
     })
 
     it("should return false if connections are not equal", () => {
-        const c1: Connection = {host: "localhost", keeperPort: 8008}
-        const c2: Connection = {host: "localhost", keeperPort: 8009}
+        const c1: Connection = {vmId: mockVmId, host: "localhost", keeperPort: 8008}
+        const c2: Connection = {vmId: mockVmId, host: "localhost", keeperPort: 8009}
+        expect(isConnectionEqual(c1, c2)).toBe(false)
+    })
+
+    it("should return false if vmId is different", () => {
+        const c1: Connection = {vmId: mockVmId, host: "localhost", keeperPort: 8008}
+        const c2: Connection = {vmId: "different-uuid", host: "localhost", keeperPort: 8008}
         expect(isConnectionEqual(c1, c2)).toBe(false)
     })
 })

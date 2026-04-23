@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var ErrVmNameEmpty = errors.New("vm name cannot be empty")
 var ErrVmHostEmpty = errors.New("vm host cannot be empty")
 var ErrVmUsernameEmpty = errors.New("vm username cannot be empty")
 var ErrVmPortInvalid = errors.New("vm ssh port should be greater than 0")
@@ -173,8 +172,6 @@ func (s *Service) hideSshKey(model VM) VM {
 
 func validate(model VM) error {
 	switch {
-	case strings.TrimSpace(model.Name) == "":
-		return ErrVmNameEmpty
 	case strings.TrimSpace(model.Host) == "":
 		return ErrVmHostEmpty
 	case strings.TrimSpace(model.Username) == "":
