@@ -30,7 +30,7 @@ export function OverviewOptionsNode(props: Props) {
     const {setClusterDetection} = useStoreAction
     const {detectBy, nodes, mainNode} = props
 
-    const connection = detectBy?.connection ?? mainNode?.connection ?? {host: "-", keeperPort: 0}
+    const connection = detectBy?.connection ?? mainNode?.connection ?? {vmId: "00000000-0000-0000-0000-000000000000", host: "-"}
     const value = getDomain(connection)
     const [inputValue, setInputValue] = useState<string | undefined>(value)
 

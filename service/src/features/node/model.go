@@ -11,11 +11,11 @@ import (
 // COMMON (WEB AND SERVER)
 
 type Connection struct {
-	VmId       *uuid.UUID `json:"vmId,omitempty" form:"vmId"`
-	Host       string     `json:"host" form:"host"`
-	SshPort    int        `json:"sshPort,omitempty" form:"sshPort"`
-	KeeperPort int        `json:"keeperPort" form:"keeperPort"`
-	DbPort     int        `json:"dbPort,omitempty" form:"dbPort"`
+	VmId       uuid.UUID `json:"vmId" form:"vmId"`
+	Host       string    `json:"host" form:"host"`
+	SshPort    int       `json:"sshPort,omitempty" form:"sshPort"`
+	KeeperPort int       `json:"keeperPort,omitempty" form:"keeperPort"`
+	DbPort     int       `json:"dbPort,omitempty" form:"dbPort"`
 }
 
 type Node struct {

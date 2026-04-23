@@ -25,12 +25,20 @@ export function NodeInfoTable(props: Props) {
                     <TableCell sx={SX.wrap}>{node.keeper.state}</TableCell>
                 </TableRow>
                 <TableRow>
+                    <TableCell sx={SX.title}>Host</TableCell>
+                    <TableCell sx={SX.wrap}>{node.connection.host}</TableCell>
+                </TableRow>
+                <TableRow>
+                    <TableCell sx={SX.title}>SSH</TableCell>
+                    <TableCell sx={SX.wrap}>{node.connection.sshPort?.toString() ?? "-"}</TableCell>
+                </TableRow>
+                <TableRow>
                     <TableCell sx={SX.title}>Keeper</TableCell>
-                    <TableCell sx={SX.wrap}>{node.connection.host}:{node.connection.keeperPort.toString()}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.connection.keeperPort?.toString() ?? "-"}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>
-                    <TableCell sx={SX.wrap}>{node.keeper.discoveredHost}:{node.keeper.discoveredDbPort.toString()}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.connection.dbPort?.toString() ?? "-"}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>

@@ -18,7 +18,12 @@ const SX: SxPropsMap = {
 }
 
 const InitialClusterAuto: ClusterAuto = {
-    name: "", tls: {keeper: false, database: false}, certs: {}, credentials: {}, tags: [], node: {host: "", keeperPort: 8008},
+    name: "",
+    tls: {keeper: false, database: false},
+    certs: {},
+    credentials: {},
+    tags: [],
+    node: {vmId: "00000000-0000-0000-0000-000000000000", host: "localhost"},
 }
 
 type Props = {
@@ -59,7 +64,7 @@ export function ListCreateAuto(props: Props) {
                             size={"small"}
                             label={"Port"}
                             required
-                            value={cluster.node.keeperPort}
+                            value={cluster.node.keeperPort || ""}
                             onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
                         />
                     </Box>
@@ -88,7 +93,7 @@ export function ListCreateAuto(props: Props) {
     }
 
     function handlePortUpdate(v: number) {
-        setCluster(c => ({...c, node: {...c.node, keeperPort: v}}))
+        setCluster(c => ({...c, node: {...c.node, keeperPort: isNaN(v) ? undefined : v}}))
     }
 
     function handleSuccessUpdate() {

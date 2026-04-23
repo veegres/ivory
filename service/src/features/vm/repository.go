@@ -18,7 +18,7 @@ func NewRepository(bucket *db.Bucket[VM]) *Repository {
 
 func (r *Repository) List() ([]VM, error) {
 	return r.bucket.GetList(nil, func(list []VM, i int, j int) bool {
-		return list[i].Name < list[j].Name
+		return list[i].Host < list[j].Host
 	})
 }
 

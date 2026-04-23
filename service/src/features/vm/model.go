@@ -6,7 +6,6 @@ import "github.com/google/uuid"
 
 type VM struct {
 	Id       uuid.UUID `json:"id"`
-	Name     string    `json:"name"`
 	Host     string    `json:"host"`
 	Username string    `json:"username"`
 	SshPort  int       `json:"sshPort"`

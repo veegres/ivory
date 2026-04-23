@@ -7,10 +7,10 @@ import {ConnectionRequest} from "../postgres"
 // COMMON (WEB AND SERVER)
 
 export interface Connection {
-    vmId?: string,
+    vmId: string,
     host: string,
     sshPort?: number,
-    keeperPort: number,
+    keeperPort?: number,
     dbPort?: number,
 }
 
