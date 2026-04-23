@@ -58,9 +58,9 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid auth type"})
 				return
 			}
+			context.Set("username", username)
+			context.Set("authType", authType.String())
 		}
-		context.Set("username", username)
-		context.Set("authType", authType.String())
 		context.Next()
 	}
 }
