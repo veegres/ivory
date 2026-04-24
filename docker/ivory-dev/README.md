@@ -199,3 +199,40 @@ certs
     ├── server.scr -- Server Certificate Signing Request
     └── server.crt -- Server Certificate
 ```
+
+## SSH
+
+If you want test ssh integration on your local VM you need to do these:
+
+### 1. Install SSH server
+
+```bash
+sudo apt install openssh-server && sudo systemctl enable --now ssh
+sudo dnf install openssh-server && sudo systemctl enable --now sshd
+sudo pacman -S openssh && sudo systemctl enable --now sshd
+```
+
+### 2. Generate a key pair
+
+```bash
+ssh-keygen -t ed25519 -C "local-test-key"
+```
+
+Accept defaults, leave passphrase empty for testing. Creates:
+- `~/.ssh/id_ed25519` — private key
+- `~/.ssh/id_ed25519.pub` — public key
+
+### 3. Authorize the key
+
+```bash
+cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
+```
+
+### 4. Connect
+
+```bash
+ssh localhost
+```
+
+Type `yes` on first connect. You're in — no password needed.
