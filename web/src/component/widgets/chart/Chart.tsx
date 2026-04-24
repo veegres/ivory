@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {QueryChartType} from "../../../api/postgres"
+import {QueryChartType} from "../../../api/query/postgres"
 import {Connection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {ChartCommon} from "./ChartCommon"

@@ -1,6 +1,6 @@
 import {useMemo} from "react"
 
-import {QueryFields} from "../../../api/postgres"
+import {QueryFields} from "../../../api/query/postgres"
 import {Connection} from "../../../api/query/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {VirtualizedTable} from "../../view/table/VirtualizedTable"

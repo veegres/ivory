@@ -1,6 +1,6 @@
 import {InputBase, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
-import {Query} from "../../../api/postgres"
+import {Query} from "../../../api/query/postgres"
 import {SxPropsMap} from "../../../app/type"
 import {QueryVarietyOptions} from "../../../app/utils"
 import {DynamicInputs} from "../../view/input/DynamicInputs"

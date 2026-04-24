@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../hook/QueryCustom"
-import {QueryType} from "../postgres"
+import {QueryType} from "./postgres"
 import {QueryApi} from "./router"
 import {Connection, QueryChartRequest, QueryRunRequest} from "./type"
 

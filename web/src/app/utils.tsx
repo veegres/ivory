@@ -15,10 +15,10 @@ import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node} from "../api/cluster/type"
 import {Connection, Keeper, KeeperStatus, NodeRequest, Role} from "../api/node/type"
-import {VaultType} from "../api/vault/type"
 import {PermissionStatus} from "../api/permission/type"
-import {Database, QueryVariety} from "../api/postgres"
+import {Database, QueryVariety} from "../api/query/postgres"
 import {Connection as QueryConnection} from "../api/query/type"
+import {VaultType} from "../api/vault/type"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {
