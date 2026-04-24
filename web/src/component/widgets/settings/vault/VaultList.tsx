@@ -16,7 +16,7 @@ export function VaultList(props: Props) {
     if (error) return <ErrorSmart error={error}/>
 
     const list = Object.entries<Vault>(vaults ?? {})
-    if (list.length === 0) return <NoBox text={"There are no vaults yet"}/>
+    if (list.length === 0) return <NoBox text={"There are no Credentials yet"}/>
 
     return (
         <TransitionGroup appear={false}>

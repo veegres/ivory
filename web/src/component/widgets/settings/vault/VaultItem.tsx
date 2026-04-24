@@ -1,9 +1,10 @@
+import {Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material"
 import {useEffect, useState} from "react"
 
+import {Permission} from "../../../../api/permission/type"
 import {useRouterVaultDelete, useRouterVaultUpdate} from "../../../../api/vault/hook"
 import {Vault} from "../../../../api/vault/type"
-import {Permission} from "../../../../api/permission/type"
-import {CancelIconButton, DeleteIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons"
+import {SimpleButton} from "../../../view/button/SimpleButton"
 import {Access} from "../../access/Access"
 import {VaultRow} from "./VaultRow"
 
@@ -13,22 +14,21 @@ type Props = {
 }
 
 export function VaultItem(props: Props) {
-    const {uuid} = props
+    const {uuid, vault: v} = props
     const [edit, setEdit] = useState(false)
     const [empty, setEmpty] = useState(false)
-    const [vault, setVault] = useState(props.vault)
+    const [vault, setVault] = useState(v)
 
     const deleteVault = useRouterVaultDelete()
-    const updateVault = useRouterVaultUpdate(() => setEdit(false))
+    const updateVault = useRouterVaultUpdate(v.type, () => setEdit(false))
 
-    useEffect(() => {setVault(vault)}, [vault])
+    useEffect(() => setVault(vault), [vault])
 
     return (
         <VaultRow
             renderButtons={edit ? renderWriteButtons() : renderReadButtons()}
             disabled={!edit}
-            error={edit}
-            vault={props.vault}
+            vault={v}
             onChangeVault={(vault) => setVault(vault)}
             onEmpty={(v) => setEmpty(v)}
         />
@@ -38,10 +38,10 @@ export function VaultItem(props: Props) {
         return (
             <>
                 <Access permission={Permission.ManageVaultUpdate}>
-                    <EditIconButton size={36} onClick={() => setEdit(true)} disabled={deleteVault.isPending}/>
+                    <SimpleButton onClick={() => setEdit(true)} disabled={deleteVault.isPending}><Edit/></SimpleButton>
                 </Access>
                 <Access permission={Permission.ManageVaultDelete}>
-                    <DeleteIconButton size={36} loading={deleteVault.isPending} onClick={handleDelete}/>
+                    <SimpleButton  loading={deleteVault.isPending} onClick={handleDelete}><Delete/></SimpleButton>
                 </Access>
             </>
         )
@@ -50,8 +50,8 @@ export function VaultItem(props: Props) {
     function renderWriteButtons() {
         return (
             <>
-                <CancelIconButton size={36} onClick={() => setEdit(false)} disabled={updateVault.isPending}/>
-                <SaveIconButton size={36} loading={updateVault.isPending} onClick={handleUpdate} disabled={empty}/>
+                <SimpleButton onClick={() => setEdit(false)} disabled={updateVault.isPending}><Cancel/></SimpleButton>
+                <SimpleButton loading={updateVault.isPending} onClick={handleUpdate} disabled={empty}><CheckCircle/></SimpleButton>
             </>
         )
     }
