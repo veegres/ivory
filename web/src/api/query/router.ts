@@ -1,6 +1,6 @@
 import {api} from "../api"
 import {R} from "../management/type"
-import {Query as QueryRequest, QueryFields, QueryType} from "../postgres"
+import {Query as QueryRequest, QueryFields, QueryType} from "./postgres"
 import {
     Connection,
     Query,

@@ -1,5 +1,5 @@
 import {Certs} from "../cert/type"
-import {Database} from "../postgres"
+import {Database} from "../query/postgres"
 import {JobStatus} from "./job/type"
 
 // COMMON (WEB AND SERVER)

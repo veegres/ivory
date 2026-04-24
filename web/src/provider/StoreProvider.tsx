@@ -3,7 +3,7 @@ import {create} from "zustand/react"
 
 import {ActiveCluster, Node} from "../api/cluster/type"
 import {NodeTabType} from "../api/node/type"
-import {QueryType} from "../api/postgres"
+import {QueryType} from "../api/query/postgres"
 import {MainQueryClient} from "./AppProvider"
 
 // STORE

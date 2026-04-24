@@ -1,7 +1,7 @@
 import {InputBase} from "@mui/material"
 import {useEffect, useState} from "react"
 
-import {Query, QueryType} from "../../../api/postgres"
+import {Query, QueryType} from "../../../api/query/postgres"
 import {Connection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {CancelIconButton} from "../../view/button/IconButtons"
