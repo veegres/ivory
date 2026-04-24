@@ -19,20 +19,20 @@ export function useRouterVaultDelete() {
     })
 }
 
-export function useRouterVaultUpdate(onSuccess?: () => void) {
+export function useRouterVaultUpdate(type?: VaultType, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: VaultApi.update.fn,
         mutationKey: VaultApi.update.key(),
-        successKeys: [VaultApi.list.key()],
+        successKeys: [VaultApi.list.key(type)],
         onSuccess: onSuccess,
     })
 }
 
-export function useRouterVaultCreate(onSuccess?: () => void) {
+export function useRouterVaultCreate(type?: VaultType, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: VaultApi.create.fn,
         mutationKey: VaultApi.create.key(),
-        successKeys: [VaultApi.list.key()],
+        successKeys: [VaultApi.list.key(type)],
         onSuccess: onSuccess,
     })
 }

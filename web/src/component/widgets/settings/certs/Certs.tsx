@@ -1,13 +1,20 @@
 import {useState} from "react"
 
 import {useRouterCertList} from "../../../../api/cert/hook"
+import {CertTabs, CertType} from "../../../../api/cert/type"
 import {Permission} from "../../../../api/permission/type"
+import {TabsButton} from "../../../view/button/TabsButton"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Access} from "../../access/Access"
 import {MenuWrapper} from "../menu/MenuWrapper"
 import {CertsList} from "./CertsList"
 import {CertsNew} from "./CertsNew"
-import {CertsTab, TABS} from "./CertsTab"
+
+export const TABS: CertTabs = {
+    0: {label: "Client CA", type: CertType.CLIENT_CA},
+    1: {label: "Client Cert", type: CertType.CLIENT_CERT},
+    2: {label: "Client Key", type: CertType.CLIENT_KEY},
+}
 
 export function Certs() {
     const [tab, setTab] = useState(0)
@@ -17,7 +24,7 @@ export function Certs() {
 
     return (
         <MenuWrapper>
-            <CertsTab tab={tab} setTab={setTab}/>
+            <TabsButton tab={tab} tabs={TABS} setTab={setTab}/>
             <Access permission={Permission.ManageCertCreate}><CertsNew type={type}/></Access>
             <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
             <CertsList certs={data} error={error}/>

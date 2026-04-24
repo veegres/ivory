@@ -1,5 +1,5 @@
-import {FormControl, FormHelperText, InputLabel, OutlinedInput} from "@mui/material"
-import {useEffect, useState} from "react"
+import {FormControl, InputLabel, OutlinedInput, Theme} from "@mui/material"
+import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx"
 
 import {SxPropsMap} from "../../../../app/type"
 
@@ -8,23 +8,18 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
+    sx?: SystemStyleObject<Theme>,
     label: string,
     type: string,
     value: string,
     disabled: boolean,
-    error: boolean,
     onChange: (value: string) => void
 }
 
 export function VaultInput(props: Props) {
-    const {label, type, value, disabled, onChange, error: initError = false} = props
-    const [error, setError] = useState(false)
-
-    useEffect(() => { if (!initError) setError(false) }, [initError])
-
-    const isErrorShown = !disabled && error
+    const {sx, label, type, value, disabled, onChange} = props
     return (
-        <FormControl disabled={disabled} error={isErrorShown}>
+        <FormControl sx={sx} disabled={disabled}>
             <InputLabel shrink>{label}</InputLabel>
             <OutlinedInput
                 sx={SX.input}
@@ -32,14 +27,8 @@ export function VaultInput(props: Props) {
                 label={label}
                 type={type}
                 value={value}
-                onChange={(e) => handleOnChange(e.target.value)}
+                onChange={(e) => onChange(e.target.value)}
             />
-            <FormHelperText>{isErrorShown ? "empty field" : " "}</FormHelperText>
         </FormControl>
     )
-
-    function handleOnChange(value: string) {
-        if (value) setError(false); else setError(true)
-        onChange(value)
-    }
 }

@@ -18,3 +18,7 @@ export interface VaultMap {
 }
 
 // SPECIFIC (WEB)
+
+export interface VaultTabs {
+    [key: number]: { label: string, type: VaultType }
+}
