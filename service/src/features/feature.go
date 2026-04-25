@@ -19,7 +19,6 @@ const (
 	// Node features
 	ViewNodeDbOverview       Feature = "view.node.db.overview"
 	ViewNodeDbConfig         Feature = "view.node.db.config"
-	ViewNodeSshMetrics       Feature = "view.node.ssh.metrics"
 	ManageNodeDbConfigUpdate Feature = "manage.node.db.config.update"
 	ManageNodeDbSwitchover   Feature = "manage.node.db.switchover"
 	ManageNodeDbReinitialize Feature = "manage.node.db.reinitialize"
@@ -27,22 +26,26 @@ const (
 	ManageNodeDbReload       Feature = "manage.node.db.reload"
 	ManageNodeDbFailover     Feature = "manage.node.db.failover"
 	ManageNodeDbActivation   Feature = "manage.node.db.activation"
-	ManageNodeSshDocker      Feature = "manage.node.ssh.docker"
-	ViewNodeSshDocker        Feature = "view.node.ssh.docker"
+
+	ViewNodeSshMetrics  Feature = "view.node.ssh.metrics"
+	ViewNodeSshDocker   Feature = "view.node.ssh.docker"
+	ManageNodeSshDocker Feature = "manage.node.ssh.docker"
 
 	// Query features
-	ViewQueryList               Feature = "view.query.list"
-	ManageQueryCreate           Feature = "manage.query.create"
-	ManageQueryUpdate           Feature = "manage.query.update"
-	ManageQueryDelete           Feature = "manage.query.delete"
+	ViewQueryList     Feature = "view.query.list"
+	ManageQueryCreate Feature = "manage.query.create"
+	ManageQueryUpdate Feature = "manage.query.update"
+	ManageQueryDelete Feature = "manage.query.delete"
+
 	ViewQueryExecuteInfo        Feature = "view.query.execute.info"
 	ViewQueryExecuteChart       Feature = "view.query.execute.chart"
 	ManageQueryExecuteTemplate  Feature = "manage.query.execute.template"
 	ManageQueryExecuteConsole   Feature = "manage.query.execute.console"
 	ManageQueryExecuteCancel    Feature = "manage.query.execute.cancel"
 	ManageQueryExecuteTerminate Feature = "manage.query.execute.terminate"
-	ViewQueryLogList            Feature = "view.query.log.list"
-	ManageQueryLogDelete        Feature = "manage.query.log.delete"
+
+	ViewQueryLogList     Feature = "view.query.log.list"
+	ManageQueryLogDelete Feature = "manage.query.log.delete"
 
 	// Vault features
 	ViewVaultList     Feature = "view.vault.list"

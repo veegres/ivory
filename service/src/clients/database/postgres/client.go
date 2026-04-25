@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"ivory/src/clients/database"
+	"ivory/src/features"
 	"regexp"
 	"strconv"
 	"strings"
@@ -28,6 +29,17 @@ type Client struct {
 
 func NewClient(appName string) *Client {
 	return &Client{appName: appName}
+}
+
+func (s *Client) SupportedFeatures() []features.Feature {
+	return []features.Feature{
+		features.ViewQueryExecuteInfo,
+		features.ViewQueryExecuteChart,
+		features.ManageQueryExecuteTemplate,
+		features.ManageQueryExecuteConsole,
+		features.ManageQueryExecuteCancel,
+		features.ManageQueryExecuteTerminate,
+	}
 }
 
 func (s *Client) GetApplicationName(session string) string {

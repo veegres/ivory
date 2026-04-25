@@ -18,23 +18,24 @@ type Connection struct {
 	DbPort     int        `json:"dbPort,omitempty" form:"dbPort"`
 }
 
-type Node struct {
-	Connection Connection      `json:"connection"`
-	Keeper     keeper.Response `json:"keeper"`
-}
-
-type Request struct {
+type KeeperRequest struct {
 	Connection Connection  `json:"connection" form:"connection"`
+	Type       keeper.Type `json:"type" form:"type"`
 	VaultId    *uuid.UUID  `json:"vaultId" form:"vaultId"`
 	Certs      *cert.Certs `json:"certs" form:"certs"`
 	Body       any         `json:"body" form:"body"`
+}
+
+type KeeperResponse struct {
+	Connection Connection      `json:"connection"`
+	Keeper     keeper.Response `json:"keeper"`
 }
 
 type SshRequest struct {
 	Connection Connection `json:"connection" form:"connection" binding:"required"`
 }
 
-type SshMetrics = ssh.Metrics
+type SshResponseMetrics = ssh.Metrics
 
 type DockerRequest struct {
 	Connection Connection `json:"connection" form:"connection" binding:"required"`
@@ -57,8 +58,9 @@ type DockerResult struct {
 
 // SPECIFIC (SERVER)
 
-type AutoRequest struct {
+type KeeperAutoRequest struct {
 	Connections []Connection `json:"connections" form:"connections"`
+	Type        keeper.Type  `json:"type" form:"type"`
 	VaultId     *uuid.UUID   `json:"vaultId" form:"vaultId"`
 	Certs       *cert.Certs  `json:"certs" form:"certs"`
 	Body        any          `json:"body" form:"body"`

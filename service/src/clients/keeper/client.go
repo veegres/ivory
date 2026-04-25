@@ -1,6 +1,12 @@
 package keeper
 
-import "ivory/src/clients/http"
+import (
+	"errors"
+	"ivory/src/clients/http"
+	"ivory/src/features"
+)
+
+var ErrClientNotImplemented = errors.New("client is not implemented")
 
 type Client interface {
 	Overview(request Request) ([]Response, int, error)
@@ -15,6 +21,28 @@ type Client interface {
 	Failover(request Request) (*string, int, error)
 	Activate(request Request) (*string, int, error)
 	Pause(request Request) (*string, int, error)
+	SupportedFeatures() []features.Feature
+}
+
+type Registry struct {
+	clients map[Type]Client
+}
+
+func NewRegistry() *Registry {
+	return &Registry{
+		clients: make(map[Type]Client),
+	}
+}
+
+func (f *Registry) Register(t Type, client Client) {
+	f.clients[t] = client
+}
+
+func (f *Registry) Get(t Type) (Client, error) {
+	if client, ok := f.clients[t]; ok {
+		return client, nil
+	}
+	return nil, ErrClientNotImplemented
 }
 
 func Map(request Request, path string) http.Request {

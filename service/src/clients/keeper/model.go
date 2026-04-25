@@ -6,11 +6,18 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type KeeperStatus string
+type Type int8
 
 const (
-	Paused KeeperStatus = "PAUSED"
-	Active              = "ACTIVE"
+	PATRONI Type = iota
+	POSTGRES
+)
+
+type Status string
+
+const (
+	Paused Status = "PAUSED"
+	Active        = "ACTIVE"
 )
 
 type Role string
@@ -23,7 +30,7 @@ const (
 
 type Response struct {
 	Name                *string              `json:"name"`
-	Status              *KeeperStatus        `json:"status,omitempty"`
+	Status              *Status              `json:"status,omitempty"`
 	State               string               `json:"state"`
 	Role                Role                 `json:"role"`
 	Lag                 int64                `json:"lag"`
@@ -39,10 +46,10 @@ type Response struct {
 }
 
 type Keeper struct {
-	Host   string        `json:"host"`
-	Port   int           `json:"port"`
-	Name   *string       `json:"name"`
-	Status *KeeperStatus `json:"status,omitempty"`
+	Host   string  `json:"host"`
+	Port   int     `json:"port"`
+	Name   *string `json:"name"`
+	Status *Status `json:"status,omitempty"`
 }
 
 type ScheduledSwitchover struct {

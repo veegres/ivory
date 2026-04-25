@@ -4,8 +4,10 @@ import (
 	"ivory/src/clients/auth/basic"
 	"ivory/src/clients/auth/ldap"
 	"ivory/src/clients/auth/oidc"
+	"ivory/src/clients/database"
 	"ivory/src/clients/database/postgres"
 	"ivory/src/clients/http"
+	"ivory/src/clients/keeper"
 	"ivory/src/clients/keeper/patroni"
 	"ivory/src/clients/ssh"
 	"ivory/src/features/auth"
@@ -80,6 +82,12 @@ func NewContext() *Context {
 	postgresClient := postgres.NewClient(appEnv.Version.Label)
 	sshClient := ssh.NewClient()
 
+	// REGISTRY (we cannot use Factory pattern in clients package because of cycle dependencies)
+	keeperRegistry := keeper.NewRegistry()
+	keeperRegistry.Register(keeper.PATRONI, patroniClient)
+	dbRegistry := database.NewRegistry()
+	dbRegistry.Register(database.POSTGRES, postgresClient)
+
 	// AUTH PROVIDER
 	basicProvider := basic.NewProvider()
 	ldapProvider := ldap.NewProvider()
@@ -91,12 +99,12 @@ func NewContext() *Context {
 	vaultService := vault.NewService(vaultRepo, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
-	nodeService := node.NewService(patroniClient, sshClient, vaultService, certService)
+	nodeService := node.NewService(keeperRegistry, sshClient, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService)
 	queryLogService := query.NewLogService(queryLogRepo)
 	queryService := query.NewService(queryRepo, queryLogService, secretService)
-	queryExecuteService := query.NewExecuteService(queryRepo, postgresClient, queryLogService, vaultService, certService)
+	queryExecuteService := query.NewExecuteService(queryRepo, dbRegistry, queryLogService, vaultService, certService)
 	bloatService := bloat.NewService(bloatRepo, vaultService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)

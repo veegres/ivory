@@ -21,28 +21,28 @@ var ErrDescriptionChangeNotAllowed = errors.New("description change is not allow
 var ErrDeletionOfSystemQueriesRestricted = errors.New("deletion of system queries is restricted")
 
 type ExecuteService struct {
-	queryRepository *Repository
-	databaseClient  database.Client
-	logService      *LogService
-	vaultService    *vault.Service
-	certService     *cert.Service
+	queryRepository  *Repository
+	databaseRegistry *database.Registry
+	logService       *LogService
+	vaultService     *vault.Service
+	certService      *cert.Service
 
 	chartMap map[database.QueryChartType]database.Query
 }
 
 func NewExecuteService(
 	queryRepository *Repository,
-	databaseClient database.Client,
+	databaseRegistry *database.Registry,
 	logService *LogService,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *ExecuteService {
 	return &ExecuteService{
-		queryRepository: queryRepository,
-		databaseClient:  databaseClient,
-		logService:      logService,
-		vaultService:    vaultService,
-		certService:     certService,
+		queryRepository:  queryRepository,
+		databaseRegistry: databaseRegistry,
+		logService:       logService,
+		vaultService:     vaultService,
+		certService:      certService,
 
 		chartMap: postgres.CreateChartsMap(),
 	}
@@ -55,7 +55,11 @@ func (s *ExecuteService) ConsoleQuery(queryCtx QueryContext, query string, optio
 	if err != nil {
 		return nil, err
 	}
-	return s.databaseClient.GetFields(ctx, query, options)
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return nil, err
+	}
+	return client.GetFields(ctx, query, options)
 }
 
 func (s *ExecuteService) TemplateQuery(ctx QueryContext, uuid uuid.UUID, options *database.QueryOptions) (*database.QueryFields, error) {
@@ -79,7 +83,11 @@ func (s *ExecuteService) CancelQuery(queryCtx QueryContext, pid int) error {
 	if err != nil {
 		return err
 	}
-	return s.databaseClient.Cancel(ctx, pid)
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return err
+	}
+	return client.Cancel(ctx, pid)
 }
 
 func (s *ExecuteService) TerminateQuery(queryCtx QueryContext, pid int) error {
@@ -87,7 +95,11 @@ func (s *ExecuteService) TerminateQuery(queryCtx QueryContext, pid int) error {
 	if err != nil {
 		return err
 	}
-	return s.databaseClient.Terminate(ctx, pid)
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return err
+	}
+	return client.Terminate(ctx, pid)
 }
 
 func (s *ExecuteService) RunningQueriesByApplicationName(queryCtx QueryContext) (*database.QueryFields, error) {
@@ -95,8 +107,12 @@ func (s *ExecuteService) RunningQueriesByApplicationName(queryCtx QueryContext) 
 	if err != nil {
 		return nil, err
 	}
-	options := &database.QueryOptions{Params: []any{s.databaseClient.GetApplicationName(ctx.Session)}}
-	return s.databaseClient.GetFields(ctx, postgres.GetAllRunningQueriesByApplicationName, options)
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return nil, err
+	}
+	options := &database.QueryOptions{Params: []any{client.GetApplicationName(ctx.Session)}}
+	return client.GetFields(ctx, postgres.GetAllRunningQueriesByApplicationName, options)
 }
 
 func (s *ExecuteService) DatabasesQuery(queryCtx QueryContext, name string) ([]string, error) {
@@ -104,7 +120,11 @@ func (s *ExecuteService) DatabasesQuery(queryCtx QueryContext, name string) ([]s
 	if err != nil {
 		return nil, err
 	}
-	return s.databaseClient.GetMany(ctx, postgres.GetAllDatabases, []any{"%" + name + "%"})
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return nil, err
+	}
+	return client.GetMany(ctx, postgres.GetAllDatabases, []any{"%" + name + "%"})
 }
 
 func (s *ExecuteService) SchemasQuery(queryCtx QueryContext, name string) ([]string, error) {
@@ -116,7 +136,11 @@ func (s *ExecuteService) SchemasQuery(queryCtx QueryContext, name string) ([]str
 	if err != nil {
 		return nil, err
 	}
-	return s.databaseClient.GetMany(ctx, postgres.GetAllSchemas, []any{"%" + name + "%"})
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return nil, err
+	}
+	return client.GetMany(ctx, postgres.GetAllSchemas, []any{"%" + name + "%"})
 }
 
 func (s *ExecuteService) TablesQuery(queryCtx QueryContext, schema string, name string) ([]string, error) {
@@ -128,7 +152,11 @@ func (s *ExecuteService) TablesQuery(queryCtx QueryContext, schema string, name 
 	if err != nil {
 		return nil, err
 	}
-	return s.databaseClient.GetMany(ctx, postgres.GetAllTables, []any{schema, "%" + name + "%"})
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return nil, err
+	}
+	return client.GetMany(ctx, postgres.GetAllTables, []any{schema, "%" + name + "%"})
 }
 
 func (s *ExecuteService) ChartQuery(queryCtx QueryContext, chartType database.QueryChartType) (*QueryChart, error) {
@@ -140,7 +168,11 @@ func (s *ExecuteService) ChartQuery(queryCtx QueryContext, chartType database.Qu
 	if err != nil {
 		return nil, err
 	}
-	response, err := s.databaseClient.GetOne(ctx, request.Query)
+	client, err := s.databaseRegistry.Get(ctx.Connection.Database.Type)
+	if err != nil {
+		return nil, err
+	}
+	response, err := client.GetOne(ctx, request.Query)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get %s: %w", request.Name, err)
 	}

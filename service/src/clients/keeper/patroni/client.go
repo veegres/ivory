@@ -5,6 +5,7 @@ import (
 	"errors"
 	"ivory/src/clients/http"
 	"ivory/src/clients/keeper"
+	"ivory/src/features"
 	nethttp "net/http"
 	"strconv"
 	"strings"
@@ -23,6 +24,20 @@ func NewClient(httpClient *http.Client) *Client {
 	return &Client{httpClient: httpClient}
 }
 
+func (p *Client) SupportedFeatures() []features.Feature {
+	return []features.Feature{
+		features.ViewNodeDbOverview,
+		features.ViewNodeDbConfig,
+		features.ManageNodeDbConfigUpdate,
+		features.ManageNodeDbSwitchover,
+		features.ManageNodeDbReinitialize,
+		features.ManageNodeDbRestart,
+		features.ManageNodeDbReload,
+		features.ManageNodeDbFailover,
+		features.ManageNodeDbActivation,
+	}
+}
+
 func (p *Client) Overview(request keeper.Request) ([]keeper.Response, int, error) {
 	var overview []keeper.Response
 
@@ -31,7 +46,7 @@ func (p *Client) Overview(request keeper.Request) ([]keeper.Response, int, error
 		return overview, status, err
 	}
 
-	var keeperStatus keeper.KeeperStatus
+	var keeperStatus keeper.Status
 	if response.Pause == false {
 		keeperStatus = keeper.Active
 	} else {

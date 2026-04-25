@@ -7,7 +7,11 @@ import (
 	"ivory/src/clients/keeper"
 )
 
-func (s *Service) OverviewAuto(request AutoRequest) ([]Node, int, *keeper.Keeper, error) {
+func (s *Service) OverviewAuto(request KeeperAutoRequest) ([]KeeperResponse, int, *keeper.Keeper, error) {
+	client, errClient := s.keeperRegistry.Get(request.Type)
+	if errClient != nil {
+		return nil, 0, nil, errClient
+	}
 	var tlsConfig *tls.Config
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&tlsConfig, request.Certs)
@@ -30,7 +34,7 @@ func (s *Service) OverviewAuto(request AutoRequest) ([]Node, int, *keeper.Keeper
 	for i, connection := range request.Connections {
 		r := keeper.Request{Host: connection.Host, Port: connection.KeeperPort, Body: request.Body, TlsConfig: tlsConfig, Credentials: cred}
 		var err error
-		keeperResponses, statusCode, err = s.keeperClient.Overview(r)
+		keeperResponses, statusCode, err = client.Overview(r)
 		if err == nil {
 			detectedBy = &keeper.Keeper{Host: connection.Host, Port: connection.KeeperPort}
 			break
@@ -41,9 +45,9 @@ func (s *Service) OverviewAuto(request AutoRequest) ([]Node, int, *keeper.Keeper
 		return nil, statusCode, nil, errorChain
 	}
 
-	nodes := make([]Node, 0, len(keeperResponses))
+	nodes := make([]KeeperResponse, 0, len(keeperResponses))
 	for _, kr := range keeperResponses {
-		nodes = append(nodes, Node{
+		nodes = append(nodes, KeeperResponse{
 			Connection: Connection{
 				Host:       kr.DiscoveredHost,
 				KeeperPort: kr.DiscoveredKeeperPort,
@@ -56,19 +60,23 @@ func (s *Service) OverviewAuto(request AutoRequest) ([]Node, int, *keeper.Keeper
 	return nodes, statusCode, detectedBy, nil
 }
 
-func (s *Service) Overview(node Request) ([]Node, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Overview(r KeeperRequest) ([]KeeperResponse, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	keeperResponses, status, err := s.keeperClient.Overview(request)
+	keeperResponses, status, err := client.Overview(request)
 	if err != nil {
 		return nil, status, err
 	}
 
-	nodes := make([]Node, 0, len(keeperResponses))
+	nodes := make([]KeeperResponse, 0, len(keeperResponses))
 	for _, kr := range keeperResponses {
-		nodes = append(nodes, Node{
+		nodes = append(nodes, KeeperResponse{
 			Connection: Connection{
 				Host:       kr.DiscoveredHost,
 				KeeperPort: kr.DiscoveredKeeperPort,
@@ -81,90 +89,134 @@ func (s *Service) Overview(node Request) ([]Node, int, error) {
 	return nodes, status, nil
 }
 
-func (s *Service) Config(node Request) (any, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Config(r KeeperRequest) (any, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Config(request)
+	return client.Config(request)
 }
 
-func (s *Service) ConfigUpdate(node Request) (any, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) ConfigUpdate(r KeeperRequest) (any, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.ConfigUpdate(request)
+	return client.ConfigUpdate(request)
 }
 
-func (s *Service) Switchover(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Switchover(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Switchover(request)
+	return client.Switchover(request)
 }
 
-func (s *Service) DeleteSwitchover(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) DeleteSwitchover(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.DeleteSwitchover(request)
+	return client.DeleteSwitchover(request)
 }
 
-func (s *Service) Reinitialize(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Reinitialize(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Reinitialize(request)
+	return client.Reinitialize(request)
 }
 
-func (s *Service) Restart(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Restart(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Restart(request)
+	return client.Restart(request)
 }
 
-func (s *Service) DeleteRestart(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) DeleteRestart(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.DeleteRestart(request)
+	return client.DeleteRestart(request)
 }
 
-func (s *Service) Reload(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Reload(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Reload(request)
+	return client.Reload(request)
 }
 
-func (s *Service) Failover(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Failover(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Failover(request)
+	return client.Failover(request)
 }
 
-func (s *Service) Activate(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Activate(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Activate(request)
+	return client.Activate(request)
 }
 
-func (s *Service) Pause(node Request) (*string, int, error) {
-	request, err := s.getKeeperRequest(node)
+func (s *Service) Pause(r KeeperRequest) (*string, int, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, 0, errClient
+	}
+	request, err := s.getKeeperRequest(r)
 	if err != nil {
 		return nil, 0, err
 	}
-	return s.keeperClient.Pause(request)
+	return client.Pause(request)
 }

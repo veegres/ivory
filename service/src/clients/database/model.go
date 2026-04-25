@@ -6,7 +6,15 @@ import (
 
 // COMMON (WEB AND SERVER)
 
+type Type int8
+
+const (
+	POSTGRES Type = iota
+	ETCD
+)
+
 type Database struct {
+	Type   Type    `json:"type"`
 	Host   string  `json:"host"`
 	Port   int     `json:"port"`
 	Name   *string `json:"name"`

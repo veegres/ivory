@@ -91,9 +91,9 @@ func (r *Router) GetDockerLogs(context *gin.Context) {
 	handleParamRequestOf(context, r.service.DockerLogs)
 }
 
-func handleParamRequest[T any](context *gin.Context, action func(node Request) (T, int, error)) {
+func handleParamRequest[T any](context *gin.Context, action func(node KeeperRequest) (T, int, error)) {
 	query := context.Query("request")
-	var node Request
+	var node KeeperRequest
 	errBind := json.Unmarshal([]byte(query), &node)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -103,7 +103,7 @@ func handleParamRequest[T any](context *gin.Context, action func(node Request) (
 	handleResponse(context, body, status, err)
 }
 
-func handleBodyRequest[T any](context *gin.Context, action func(node Request) (T, int, error)) {
+func handleBodyRequest[T any](context *gin.Context, action func(node KeeperRequest) (T, int, error)) {
 	handleBodyRequestOf(context, action)
 }
 
