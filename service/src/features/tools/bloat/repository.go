@@ -2,7 +2,7 @@ package bloat
 
 import (
 	"errors"
-	. "ivory/src/features/bloat/job"
+	. "ivory/src/features/tools/bloat/job"
 	"ivory/src/storage/db"
 	"ivory/src/storage/files"
 	"os"

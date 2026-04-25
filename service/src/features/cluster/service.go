@@ -10,6 +10,7 @@ import (
 	"ivory/src/features/node"
 	"ivory/src/features/query"
 	"ivory/src/features/tag"
+	"ivory/src/features/tools"
 	"slices"
 )
 
@@ -21,6 +22,7 @@ type Service struct {
 	nodeService       *node.Service
 	tagService        *tag.Service
 	queryService      *query.Service
+	toolsService      *tools.Service
 }
 
 func NewService(
@@ -28,12 +30,14 @@ func NewService(
 	nodeService *node.Service,
 	tagService *tag.Service,
 	queryService *query.Service,
+	toolsService *tools.Service,
 ) *Service {
 	return &Service{
 		clusterRepository: clusterRepository,
 		nodeService:       nodeService,
 		tagService:        tagService,
 		queryService:      queryService,
+		toolsService:      toolsService,
 	}
 }
 
@@ -237,7 +241,8 @@ func (s *Service) getOverviewAuto(connections []node.Connection, cluster Cluster
 func (s *Service) getSupportedFeatures(k keeper.Type, db database.Type) []features.Feature {
 	fk := s.nodeService.SupportedFeatures(k)
 	fdb := s.queryService.SupportedFeatures(db)
-	return slices.Concat(fk, fdb)
+	ft := s.toolsService.SupportedFeatures(db)
+	return slices.Concat(fk, fdb, ft)
 }
 
 func (s *Service) saveTags(name string, tags []string) ([]string, error) {

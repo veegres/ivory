@@ -2,8 +2,8 @@ package bloat
 
 import (
 	"ivory/src/clients/database"
-	. "ivory/src/features/bloat/job"
 	"ivory/src/features/cert"
+	. "ivory/src/features/tools/bloat/job"
 	"os"
 
 	"github.com/google/uuid"

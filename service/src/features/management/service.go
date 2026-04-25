@@ -4,7 +4,6 @@ import (
 	"errors"
 	"ivory/src/features/auth"
 	"ivory/src/features/backup"
-	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
@@ -12,6 +11,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/features/tools"
 	"ivory/src/features/vault"
 	"ivory/src/storage/env"
 	"mime/multipart"
@@ -26,7 +26,7 @@ type Service struct {
 	clusterService    *cluster.Service
 	certService       *cert.Service
 	tagService        *tag.Service
-	bloatService      *bloat.Service
+	toolsService      *tools.Service
 	queryService      *query.Service
 	secretService     *secret.Service
 	configService     *config.Service
@@ -41,7 +41,7 @@ func NewService(
 	clusterService *cluster.Service,
 	certService *cert.Service,
 	tagService *tag.Service,
-	bloatService *bloat.Service,
+	toolsService *tools.Service,
 	queryService *query.Service,
 	secretService *secret.Service,
 	configService *config.Service,
@@ -52,7 +52,7 @@ func NewService(
 		env:               env,
 		authService:       authService,
 		vaultService:      vaultService,
-		bloatService:      bloatService,
+		toolsService:      toolsService,
 		clusterService:    clusterService,
 		certService:       certService,
 		tagService:        tagService,
@@ -65,7 +65,7 @@ func NewService(
 }
 
 func (s *Service) Free() error {
-	errComTable := s.bloatService.DeleteAll()
+	errComTable := s.toolsService.DeleteAll()
 	errQuery := s.queryService.DeleteAllLogs()
 	return errors.Join(errComTable, errQuery)
 }
@@ -75,12 +75,12 @@ func (s *Service) Erase() error {
 	errCred := s.vaultService.DeleteAll()
 	errCert := s.certService.DeleteAll()
 	errCluster := s.clusterService.DeleteAll()
-	errComTable := s.bloatService.DeleteAll()
+	errTools := s.toolsService.DeleteAll()
 	errTag := s.tagService.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
-	return errors.Join(errSecret, errCred, errCert, errCluster, errComTable, errTag, errQuery, errConfig, errPerm)
+	return errors.Join(errSecret, errCred, errCert, errCluster, errTools, errTag, errQuery, errConfig, errPerm)
 }
 
 func (s *Service) ChangeSecret(previousKey string, newKey string) error {

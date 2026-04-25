@@ -3,7 +3,6 @@ package app
 import (
 	"ivory/src/features"
 	"ivory/src/features/auth"
-	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
@@ -13,6 +12,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/features/tools"
 	"ivory/src/features/vault"
 	"log/slog"
 	"net/http"
@@ -54,7 +54,7 @@ func NewRouter(di *Context) {
 	clusterRouter(safe, di.permissionRouter, di.clusterRouter)
 	nodeRouter(safe, di.permissionRouter, di.nodeRouter)
 	tagRouter(safe, di.permissionRouter, di.tagRouter)
-	bloatRouter(safe, di.permissionRouter, di.bloatRouter)
+	toolsRouter(safe, di.permissionRouter, di.toolsRouter)
 	certRouter(safe, di.permissionRouter, di.certRouter)
 	vaultRouter(safe, di.permissionRouter, di.vaultRouter)
 	permissionRouter(safe, di.permissionRouter, di.permissionRouter)
@@ -123,16 +123,16 @@ func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router)
 	group.POST("/auto/:name", rp.ValidateMethodMiddleware(features.ManageClusterUpdate), r.PostClusterAutoFix)
 }
 
-func bloatRouter(g *gin.RouterGroup, rp *permission.Router, r *bloat.Router) {
-	group := g.Group("/cli")
-	group.GET("/bloat", rp.ValidateMethodMiddleware(features.ViewBloatList), r.GetBloatList)
-	group.GET("/bloat/cluster/:name", rp.ValidateMethodMiddleware(features.ViewBloatList), r.GetBloatListByCluster)
-	group.GET("/bloat/:uuid", rp.ValidateMethodMiddleware(features.ViewBloatItem), r.GetBloat)
-	group.GET("/bloat/:uuid/logs", rp.ValidateMethodMiddleware(features.ViewBloatLogs), r.GetBloatLogs)
-	group.GET("/bloat/job/:uuid/stream", rp.ValidateMethodMiddleware(features.ViewBloatLogs), r.GetJobStream)
-	group.POST("/bloat/job/start", rp.ValidateMethodMiddleware(features.ManageBloatJob), r.PostJobStart)
-	group.POST("/bloat/job/:uuid/stop", rp.ValidateMethodMiddleware(features.ManageBloatJob), r.PostJobStop)
-	group.DELETE("/bloat/job/:uuid/delete", rp.ValidateMethodMiddleware(features.ManageBloatJob), r.DeleteJob)
+func toolsRouter(g *gin.RouterGroup, rp *permission.Router, r *tools.Router) {
+	group := g.Group("/tool")
+	group.GET("/bloat", rp.ValidateMethodMiddleware(features.ViewBloatList), r.Bloat.GetBloatList)
+	group.GET("/bloat/cluster/:name", rp.ValidateMethodMiddleware(features.ViewBloatList), r.Bloat.GetBloatListByCluster)
+	group.GET("/bloat/:uuid", rp.ValidateMethodMiddleware(features.ViewBloatItem), r.Bloat.GetBloat)
+	group.GET("/bloat/:uuid/logs", rp.ValidateMethodMiddleware(features.ViewBloatLogs), r.Bloat.GetBloatLogs)
+	group.GET("/bloat/job/:uuid/stream", rp.ValidateMethodMiddleware(features.ViewBloatLogs), r.Bloat.GetJobStream)
+	group.POST("/bloat/job/start", rp.ValidateMethodMiddleware(features.ManageBloatJob), r.Bloat.PostJobStart)
+	group.POST("/bloat/job/:uuid/stop", rp.ValidateMethodMiddleware(features.ManageBloatJob), r.Bloat.PostJobStop)
+	group.DELETE("/bloat/job/:uuid/delete", rp.ValidateMethodMiddleware(features.ManageBloatJob), r.Bloat.DeleteJob)
 }
 
 func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {

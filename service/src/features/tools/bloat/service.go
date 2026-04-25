@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	. "ivory/src/features/bloat/job"
+	. "ivory/src/features/tools/bloat/job"
 	"ivory/src/features/vault"
 	"os/exec"
 	"sync"
