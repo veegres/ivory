@@ -2,6 +2,7 @@ package management
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -41,7 +42,7 @@ func (r *Router) Import(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errFile.Error()})
 		return
 	}
-	errImport := r.service.Import(file)
+	errImport := r.service.BackupImport(file)
 	if errImport != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errImport.Error()})
 		return
@@ -50,9 +51,10 @@ func (r *Router) Import(context *gin.Context) {
 }
 
 func (r *Router) Export(context *gin.Context) {
-	context.Header("Content-Disposition", "attachment; filename=ivory.bak")
+	fileName := r.service.BackupFileName()
+	context.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
 	context.Header("Content-Type", "application/json")
-	data, err := r.service.Export()
+	data, err := r.service.BackupExport()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

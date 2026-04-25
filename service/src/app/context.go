@@ -9,6 +9,7 @@ import (
 	"ivory/src/clients/keeper/patroni"
 	"ivory/src/clients/ssh"
 	"ivory/src/features/auth"
+	"ivory/src/features/backup"
 	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
@@ -99,6 +100,7 @@ func NewContext() *Context {
 	bloatService := bloat.NewService(bloatRepo, vaultService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
+	backupService := backup.NewService(clusterService, queryService, permissionService)
 	managementService := management.NewService(
 		appEnv,
 		authService,
@@ -112,6 +114,7 @@ func NewContext() *Context {
 		secretService,
 		configService,
 		permissionService,
+		backupService,
 	)
 
 	return &Context{
