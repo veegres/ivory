@@ -2,8 +2,10 @@ import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider,
 import {useState} from "react"
 
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
-import {ClusterAuto, ClusterType} from "../../../../api/cluster/type"
+import {ClusterAuto} from "../../../../api/cluster/type"
+import {DatabaseType} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
+import {KeeperType} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AutoIconButton} from "../../../view/button/IconButtons"
@@ -19,7 +21,8 @@ const SX: SxPropsMap = {
 
 const InitialClusterAuto: ClusterAuto = {
     name: "",
-    type: ClusterType.POSTGRES_PATRONI,
+    dbType: DatabaseType.POSTGRES,
+    keeperType: KeeperType.PATRONI,
     tls: {keeper: false, database: false},
     certs: {},
     vaults: {},

@@ -1,6 +1,12 @@
 // COMMON (WEB AND SERVER)
 
+export enum DatabaseType {
+    POSTGRES,
+    ETCD,
+}
+
 export interface Database {
+    type: DatabaseType,
     host: string,
     port: number,
     name?: string,

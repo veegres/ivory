@@ -46,7 +46,7 @@ vi.mock("@mui/material", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@mui/material")>()
     return {
         ...actual,
-        useMediaQuery: vi.fn(() => false),
+        useMediaQuery: vi.fn(() => true),
     }
 })
 

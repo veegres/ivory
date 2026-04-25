@@ -1,7 +1,7 @@
 import {AxiosError} from "axios"
 
+import {QueryChartType} from "../../../api/database/type"
 import {useRouterQueryChart} from "../../../api/query/hook"
-import {QueryChartType} from "../../../api/query/postgres"
 import {Connection} from "../../../api/query/type"
 import {ChartItem, Color} from "./ChartItem"
 

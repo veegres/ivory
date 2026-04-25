@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {QueryVariety} from "../../../api/query/postgres"
+import {QueryVariety} from "../../../api/database/type"
 import {SxPropsMap} from "../../../app/type"
 import {QueryVarietyOptions} from "../../../app/utils"
 import {InfoColorBox} from "../../view/box/InfoColorBox"

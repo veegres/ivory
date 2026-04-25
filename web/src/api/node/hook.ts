@@ -3,9 +3,9 @@ import {useQuery} from "@tanstack/react-query"
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ClusterApi} from "../cluster/router"
 import {NodeApi} from "./router"
-import {Connection, DockerLogsRequest, NodeRequest, SshRequest} from "./type"
+import {Connection, DockerLogsRequest, KeeperRequest, SshRequest} from "./type"
 
-export function useRouterNodeOverview(request: NodeRequest, enabled: boolean) {
+export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.overview.key(request.connection),
@@ -14,7 +14,7 @@ export function useRouterNodeOverview(request: NodeRequest, enabled: boolean) {
     })
 }
 
-export function useRouterNodeConfig(request: NodeRequest, enabled: boolean) {
+export function useRouterNodeConfig(request: KeeperRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.config.key(request.connection),

@@ -1,5 +1,5 @@
 import {Certs} from "../cert/type"
-import {Database,QueryChartType, QueryOptions, QueryType, QueryVariety} from "./postgres"
+import {Database, QueryChartType, QueryOptions, QueryType, QueryVariety} from "../database/type"
 
 // COMMON (WEB AND SERVER)
 

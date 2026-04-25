@@ -1,6 +1,6 @@
 import {Box, Tooltip} from "@mui/material"
 
-import {QueryOptions} from "../../../api/query/postgres"
+import {QueryOptions} from "../../../api/database/type"
 import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {

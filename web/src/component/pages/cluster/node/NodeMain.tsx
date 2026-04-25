@@ -1,8 +1,8 @@
 import {Box, Link} from "@mui/material"
 
+import {Database} from "../../../../api/database/type"
 import {NodeTab, NodeTabType} from "../../../../api/node/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../api/query/hook"
-import {Database} from "../../../../api/query/postgres"
 import {Connection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getConnection} from "../../../../app/utils"

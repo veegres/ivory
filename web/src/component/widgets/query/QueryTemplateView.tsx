@@ -1,8 +1,8 @@
 import {Box} from "@mui/material"
 import {useState} from "react"
 
+import {Query as QueryRequest} from "../../../api/database/type"
 import {Feature} from "../../../api/feature"
-import {Query as QueryRequest} from "../../../api/query/postgres"
 import {Connection, Query, QueryCreation} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {
