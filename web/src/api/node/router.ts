@@ -1,6 +1,6 @@
 import {api} from "../api"
 import {R} from "../management/type"
-import {Connection, NodeRequest, SshRequest, DockerRequest, DockerLogsRequest} from "./type"
+import {Connection, DockerLogsRequest, DockerRequest, NodeRequest, SshRequest} from "./type"
 
 
 export const NodeApi = {

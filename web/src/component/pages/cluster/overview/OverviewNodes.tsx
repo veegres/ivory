@@ -39,6 +39,7 @@ export function OverviewNodes(props: Props) {
                         <TableCell width={"40px"}/>
                         <TableCell width={"110px"}>Role</TableCell>
                         <TableCell width={"20%"}>Host</TableCell>
+                        <TableCell width={"100px"}>SSH</TableCell>
                         <TableCell width={"100px"}>Keeper</TableCell>
                         <TableCell width={"100px"}>Database</TableCell>
                         <TableCell width={"150px"}>State</TableCell>

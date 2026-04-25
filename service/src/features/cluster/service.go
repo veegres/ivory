@@ -142,6 +142,7 @@ func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 
 	model := Cluster{
 		Name:  cluster.Name,
+		Type:  cluster.Type,
 		Nodes: nodesConnections,
 		ClusterOptions: ClusterOptions{
 			Tls:    cluster.Tls,
@@ -171,6 +172,7 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 
 	model := Cluster{
 		Name:  cluster.Name,
+		Type:  cluster.Type,
 		Nodes: nodesConnections,
 		ClusterOptions: ClusterOptions{
 			Tls:    cluster.Tls,

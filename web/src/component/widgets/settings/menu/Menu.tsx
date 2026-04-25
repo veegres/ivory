@@ -9,9 +9,9 @@ import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons"
 import {About} from "../about/About"
 import {Backup} from "../backup/Backup"
 import {Certs} from "../certs/Certs"
-import {Vault} from "../vault/Vault"
 import {Permissions} from "../permissions/Permissions"
 import {Secret} from "../secret/Secret"
+import {Vault} from "../vault/Vault"
 import {MenuContent} from "./MenuContent"
 
 const SX: SxPropsMap = {
