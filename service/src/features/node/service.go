@@ -36,6 +36,14 @@ func NewService(
 	}
 }
 
+func (s *Service) SupportedFeatures(t keeper.Type) []features.Feature {
+	c, e := s.keeperRegistry.Get(t)
+	if e != nil {
+		return []features.Feature{}
+	}
+	return c.SupportedFeatures()
+}
+
 func (s *Service) getKeeperRequest(request KeeperRequest) (keeper.Request, error) {
 	keeperRequest := keeper.Request{Host: request.Connection.Host, Port: request.Connection.KeeperPort, Body: request.Body}
 	if request.Certs != nil {

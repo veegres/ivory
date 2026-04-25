@@ -3,10 +3,14 @@ package cluster
 import (
 	"errors"
 	"fmt"
+	"ivory/src/clients/database"
 	"ivory/src/clients/keeper"
+	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/node"
+	"ivory/src/features/query"
 	"ivory/src/features/tag"
+	"slices"
 )
 
 var ErrClusterNameEmpty = errors.New("cluster name cannot be empty")
@@ -16,17 +20,20 @@ type Service struct {
 	clusterRepository *Repository
 	nodeService       *node.Service
 	tagService        *tag.Service
+	queryService      *query.Service
 }
 
 func NewService(
 	clusterRepository *Repository,
 	nodeService *node.Service,
 	tagService *tag.Service,
+	queryService *query.Service,
 ) *Service {
 	return &Service{
 		clusterRepository: clusterRepository,
 		nodeService:       nodeService,
 		tagService:        tagService,
+		queryService:      queryService,
 	}
 }
 
@@ -39,7 +46,6 @@ func (s *Service) ListByTag(tags []string) ([]Cluster, error) {
 	for _, t := range tags {
 		// NOTE: we shouldn't check the error here, we want to return an empty array if there is no such tag
 		clusters, _ := s.tagService.Get(t)
-
 		for _, c := range clusters {
 			if !listMap[c] {
 				listMap[c] = true
@@ -77,6 +83,18 @@ func (s *Service) Update(cluster Cluster) (*Cluster, error) {
 	cluster.Tags = tags
 	errCluster := s.clusterRepository.Update(cluster)
 	return &cluster, errCluster
+}
+
+func (s *Service) Delete(cluster string) error {
+	_, errTag := s.tagService.UpdateCluster(cluster, nil)
+	if errTag != nil {
+		return errTag
+	}
+	return s.clusterRepository.Delete(cluster)
+}
+
+func (s *Service) DeleteAll() error {
+	return s.clusterRepository.DeleteAll()
 }
 
 func (s *Service) Overview(name string, k *node.Connection) (*ClusterOverview, error) {
@@ -120,7 +138,8 @@ func (s *Service) Overview(name string, k *node.Connection) (*ClusterOverview, e
 			nodesMap[domain] = nil
 		}
 	}
-	return &ClusterOverview{nodesMap, detectedBy, mainNode}, nil
+	supportedFeatures := s.getSupportedFeatures(cluster.KeeperType, cluster.DbType)
+	return &ClusterOverview{nodesMap, detectedBy, mainNode, supportedFeatures}, nil
 }
 
 func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
@@ -215,16 +234,10 @@ func (s *Service) getOverviewAuto(connections []node.Connection, cluster Cluster
 	return s.nodeService.OverviewAuto(request)
 }
 
-func (s *Service) Delete(cluster string) error {
-	_, errTag := s.tagService.UpdateCluster(cluster, nil)
-	if errTag != nil {
-		return errTag
-	}
-	return s.clusterRepository.Delete(cluster)
-}
-
-func (s *Service) DeleteAll() error {
-	return s.clusterRepository.DeleteAll()
+func (s *Service) getSupportedFeatures(k keeper.Type, db database.Type) []features.Feature {
+	fk := s.nodeService.SupportedFeatures(k)
+	fdb := s.queryService.SupportedFeatures(db)
+	return slices.Concat(fk, fdb)
 }
 
 func (s *Service) saveTags(name string, tags []string) ([]string, error) {

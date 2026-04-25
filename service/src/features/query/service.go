@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/src/clients/database"
 	"ivory/src/clients/database/postgres"
+	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/secret"
 	"ivory/src/features/vault"
@@ -47,4 +48,12 @@ func NewService(
 		panic("Cannot create default queries: " + err.Error())
 	}
 	return queryService
+}
+
+func (s *Service) SupportedFeatures(t database.Type) []features.Feature {
+	c, e := s.databaseRegistry.Get(t)
+	if e != nil {
+		return []features.Feature{}
+	}
+	return c.SupportedFeatures()
 }
