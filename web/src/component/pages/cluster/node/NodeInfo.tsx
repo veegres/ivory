@@ -1,9 +1,10 @@
 import {Box, Paper, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {Node} from "../../../../api/cluster/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {NodeTabType} from "../../../../api/node/type"
-import {Permission, PermissionStatus} from "../../../../api/permission/type"
+import {Status} from "../../../../api/permission/type"
 import {Connection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
@@ -28,7 +29,7 @@ export function NodeInfo(props: Props) {
     const {node, tab, onTab, connection} = props
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
-    const access = !!permissions && permissions[Permission.ViewQueryExecuteChart] === PermissionStatus.GRANTED
+    const access = !!permissions && permissions[Feature.ViewQueryExecuteChart] === Status.GRANTED
 
     return (
         <Box sx={SX.info}>
@@ -44,7 +45,7 @@ export function NodeInfo(props: Props) {
             <Paper sx={SX.paper} variant={"outlined"}>
                 <NodeInfoTable node={node}/>
             </Paper>
-            <Access permission={Permission.ViewQueryExecuteInfo}>
+            <Access feature={Feature.ViewQueryExecuteInfo}>
                 <Paper sx={SX.paper} variant={"outlined"}>
                     <QueryActivity connection={connection}/>
                 </Paper>

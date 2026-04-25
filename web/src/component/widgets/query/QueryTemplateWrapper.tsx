@@ -1,7 +1,7 @@
 import {Alert} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
 import {QueryVariety} from "../../../api/query/postgres"
 import {Connection} from "../../../api/query/type"
 import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton} from "../../view/button/IconButtons"
@@ -114,7 +114,7 @@ export function QueryTemplateWrapper(props: Props) {
 
     function renderRunButton() {
         return !checkView[ViewCheckType.RUN] ? (
-            <Access permission={Permission.ManageQueryExecuteTemplate}>
+            <Access feature={Feature.ManageQueryExecuteTemplate}>
                 <PlayIconButton color={"success"} disabled={!query && !queryUuid} onClick={handleCheckView(ViewCheckType.RUN)}/>
             </Access>
         ) : (

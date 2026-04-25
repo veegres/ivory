@@ -1,6 +1,6 @@
+import {Feature} from "../../../api/feature"
 import {useRouterNodeFailover} from "../../../api/node/hook"
 import {NodeRequest} from "../../../api/node/type"
-import {Permission} from "../../../api/permission/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
 
@@ -19,7 +19,7 @@ export function FailoverButton(props: Props) {
     const body = {candidate: name}
 
     return (
-        <Access permission={Permission.ManageNodeDbFailover}>
+        <Access feature={Feature.ManageNodeDbFailover}>
             <AlertButton
                 color={"error"}
                 size={"small"}

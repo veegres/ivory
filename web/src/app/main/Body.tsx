@@ -1,7 +1,7 @@
 import {UseQueryResult} from "@tanstack/react-query"
 
 import {AppInfo} from "../../api/management/type"
-import {PermissionStatus} from "../../api/permission/type"
+import {Status} from "../../api/permission/type"
 import {ClusterBody} from "../../component/pages/cluster/ClusterBody"
 import {ConfigBody} from "../../component/pages/config/ConfigBody"
 import {LoginBody} from "../../component/pages/login/LoginBody"
@@ -27,7 +27,7 @@ export function Body(props: Props) {
     if (!data.config.configured || data.config.error) return <ConfigBody configured={data.config.configured} error={data.config.error}/>
     if (!data.auth.authorised) return <LoginBody supported={data.auth.supported} error={data.auth.error}/>
     if (!data.auth.user?.permissions) return <PermissionsLogout username={data.auth.user?.username} error={data.auth.error}/>
-    if (!Object.values(data.auth.user.permissions).some(s => s === PermissionStatus.GRANTED)) {
+    if (!Object.values(data.auth.user.permissions).some(s => s === Status.GRANTED)) {
         const {username, permissions} = data.auth.user
         return <PermissionsBody username={username} permissions={permissions}/>
     }

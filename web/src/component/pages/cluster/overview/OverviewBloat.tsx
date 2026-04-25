@@ -5,7 +5,7 @@ import {useState} from "react"
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Node} from "../../../../api/cluster/type"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterQueryList} from "../../../../api/query/hook"
 import {Database, QueryType} from "../../../../api/query/postgres"
 import {SxPropsMap} from "../../../../app/type"
@@ -44,7 +44,7 @@ export function OverviewBloat(props: Props) {
 
     return (
         <Box>
-            <AccessBox sx={SX.option} permission={Permission.ManageBloatJob}>
+            <AccessBox sx={SX.option} feature={Feature.ManageBloatJob}>
                 <Box sx={SX.form}>
                     <OverviewBloatJobForm
                         node={node}

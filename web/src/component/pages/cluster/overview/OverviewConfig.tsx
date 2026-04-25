@@ -4,8 +4,8 @@ import ReactCodeMirror from "@uiw/react-codemirror"
 import {useEffect, useState} from "react"
 
 import {Cluster, Node} from "../../../../api/cluster/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../api/node/hook"
-import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {CodeThemes, getKeeperConnection} from "../../../../app/utils"
 import {useSettings} from "../../../../provider/AppProvider"
@@ -59,7 +59,7 @@ export function OverviewConfig(props: Props) {
                 />
             </Box>
             <Box sx={SX.buttons}>
-                <Access permission={Permission.ManageNodeDbConfigUpdate}>
+                <Access feature={Feature.ManageNodeDbConfigUpdate}>
                     {renderUpdateButtons()}
                 </Access>
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>

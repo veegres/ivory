@@ -2,9 +2,9 @@ import {Box, FormControlLabel, Switch} from "@mui/material"
 import {Dayjs} from "dayjs"
 import {useState} from "react"
 
+import {Feature} from "../../../api/feature"
 import {useRouterNodeRestart} from "../../../api/node/hook"
 import {NodeRequest} from "../../../api/node/type"
-import {Permission} from "../../../api/permission/type"
 import {SxPropsMap} from "../../../app/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
@@ -31,7 +31,7 @@ export function RestartButton(props: Props) {
     const body = {schedule, restart_pending: pending || undefined}
 
     return (
-        <Access permission={Permission.ManageNodeDbRestart}>
+        <Access feature={Feature.ManageNodeDbRestart}>
             <AlertButton
                 size={"small"}
                 label={"Restart"}

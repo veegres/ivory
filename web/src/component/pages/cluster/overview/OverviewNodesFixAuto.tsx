@@ -1,7 +1,7 @@
 import {useState} from "react"
 
 import {useRouterClusterFixAuto} from "../../../../api/cluster/hook"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {AutoIconButton} from "../../../view/button/IconButtons"
 import {AlertDialog} from "../../../view/dialog/AlertDialog"
 import {Access} from "../../../widgets/access/Access"
@@ -16,7 +16,7 @@ export function OverviewNodesFixAuto(props: Props) {
     const [open, setOpen] = useState(false)
 
     return (
-        <Access permission={Permission.ManageClusterUpdate}>
+        <Access feature={Feature.ManageClusterUpdate}>
             <AutoIconButton
                 tooltip={"Auto Fix"}
                 onClick={() => setOpen(true)}

@@ -15,7 +15,7 @@ import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node} from "../api/cluster/type"
 import {Connection, Keeper, KeeperStatus, NodeRequest, Role} from "../api/node/type"
-import {PermissionStatus} from "../api/permission/type"
+import {Status} from "../api/permission/type"
 import {Database, QueryVariety} from "../api/query/postgres"
 import {Connection as QueryConnection} from "../api/query/type"
 import {VaultType} from "../api/vault/type"
@@ -84,10 +84,10 @@ export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
     [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
 }
 
-export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
-    [PermissionStatus.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: "success.main"},
-    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutline/>, color: "secondary.main"},
-    [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
+export const PermissionOptions: { [key in Status]: EnumOptions } = {
+    [Status.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: "success.main"},
+    [Status.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutline/>, color: "secondary.main"},
+    [Status.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
 export const initialNode = (domain: string): Node => {

@@ -1,7 +1,8 @@
 import {Box, Button} from "@mui/material"
 import {cloneElement} from "react"
 
-import {Permission, PermissionStatus} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
+import {Status} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {PermissionOptions} from "../../../../app/utils"
 import {PermissionsButtons} from "./PermissionsButtons"
@@ -17,8 +18,8 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    name: Permission,
-    status: PermissionStatus,
+    name: Feature,
+    status: Status,
     username: string,
     view?: "admin" | "user",
 }
@@ -42,18 +43,18 @@ export function PermissionsListItem(props: Props) {
             return <PermissionsButtons
                 username={username}
                 permissions={[[name, status]]}
-                approve={status === PermissionStatus.NOT_PERMITTED || status === PermissionStatus.PENDING}
-                reject={status === PermissionStatus.GRANTED || status === PermissionStatus.PENDING}
+                approve={status === Status.NOT_PERMITTED || status === Status.PENDING}
+                reject={status === Status.GRANTED || status === Status.PENDING}
             />
         }
-        if (status === PermissionStatus.NOT_PERMITTED) {
+        if (status === Status.NOT_PERMITTED) {
             return <PermissionsButtons username={username} permissions={[[name, status]]} request={true}/>
         }
         return renderStatus(status)
     }
 
-    function renderStatus(status: PermissionStatus) {
-        return <Button sx={SX.button} disabled={true} size={"small"}>{PermissionStatus[status]}</Button>
+    function renderStatus(status: Status) {
+        return <Button sx={SX.button} disabled={true} size={"small"}>{Status[status]}</Button>
     }
 
 

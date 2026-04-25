@@ -5,7 +5,7 @@ import {cloneElement, ReactElement, useState} from "react"
 
 import {useRouterBloatDelete, useRouterBloatStop} from "../../../../api/bloat/hook"
 import {Bloat} from "../../../../api/bloat/type"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {SxPropsMap} from "../../../../app/type"
 import {shortUuid} from "../../../../app/utils"
 import {useEventJob} from "../../../../hook/EventJob"
@@ -61,7 +61,7 @@ export function OverviewBloatJobItem(props: Props) {
                     <Box>Command</Box>
                     <Box sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
-                        <Access permission={Permission.ManageBloatJob}>
+                        <Access feature={Feature.ManageBloatJob}>
                             {status.active ?
                                 renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isPending) :
                                 renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isPending)
@@ -82,7 +82,7 @@ export function OverviewBloatJobItem(props: Props) {
                         <Tooltip title={`Job ID: ${uuid}`}>
                             <Box>{shortUuid(uuid)}</Box>
                         </Tooltip>
-                        <Access permission={Permission.ViewBloatLogs}>
+                        <Access feature={Feature.ViewBloatLogs}>
                             <Tooltip title={"Open"}>
                                 <Box sx={SX.tooltipBox}>
                                     <IconButton sx={SX.button} size={"small"}>

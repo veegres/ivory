@@ -1,9 +1,9 @@
 import {Box} from "@mui/material"
 import {UseMutationResult} from "@tanstack/react-query"
 
+import {Feature} from "../../../../api/feature"
 import {useRouterNodeActivate, useRouterNodePause} from "../../../../api/node/hook"
 import {KeeperStatus,NodeRequest} from "../../../../api/node/type"
-import {Permission} from "../../../../api/permission/type"
 import {EnumOptions, SxPropsMap} from "../../../../app/type"
 import {KeeperStatusOptions} from "../../../../app/utils"
 import {InfoBox, Padding} from "../../../view/box/InfoBox"
@@ -38,7 +38,7 @@ export function OverviewActionStatus(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <Access permission={Permission.ManageNodeDbActivation}>
+            <Access feature={Feature.ManageNodeDbActivation}>
                 <InfoBox padding={Padding.No}>
                     <AlertButton
                         size={"small"}

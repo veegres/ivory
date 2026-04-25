@@ -1,6 +1,6 @@
+import {Feature} from "../../../api/feature"
 import {useRouterNodeReload} from "../../../api/node/hook"
 import {NodeRequest} from "../../../api/node/type"
-import {Permission} from "../../../api/permission/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
 
@@ -14,7 +14,7 @@ export function ReloadButton(props: Props) {
     const reload = useRouterNodeReload(cluster)
 
     return (
-        <Access permission={Permission.ManageNodeDbReload}>
+        <Access feature={Feature.ManageNodeDbReload}>
             <AlertButton
                 size={"small"}
                 label={"Reload"}

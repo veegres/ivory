@@ -1,8 +1,8 @@
 import {Button} from "@mui/material"
 
+import {Feature} from "../../../api/feature"
 import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../../api/node/hook"
 import {NodeRequest, ScheduledRestart, ScheduledSwitchover} from "../../../api/node/type"
-import {Permission} from "../../../api/permission/type"
 import {DateTimeFormatter} from "../../../app/utils"
 import {List} from "../../view/box/List"
 import {ListItem} from "../../view/box/ListItem"
@@ -55,7 +55,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteSwitchoverButton() {
         return (
-            <Access permission={Permission.ManageNodeDbSwitchover}>
+            <Access feature={Feature.ManageNodeDbSwitchover}>
                 <Button
                     size={"small"}
                     variant={"outlined"}
@@ -70,7 +70,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteRestartButton() {
         return (
-            <Access permission={Permission.ManageNodeDbRestart}>
+            <Access feature={Feature.ManageNodeDbRestart}>
                 <Button
                     size={"small"}
                     variant={"outlined"}

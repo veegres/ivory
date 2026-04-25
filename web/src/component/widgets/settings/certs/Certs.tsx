@@ -2,7 +2,7 @@ import {useState} from "react"
 
 import {useRouterCertList} from "../../../../api/cert/hook"
 import {CertTabs, CertType} from "../../../../api/cert/type"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {TabsButton} from "../../../view/button/TabsButton"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Access} from "../../access/Access"
@@ -25,7 +25,7 @@ export function Certs() {
     return (
         <MenuWrapper>
             <TabsButton tab={tab} tabs={TABS} setTab={setTab}/>
-            <Access permission={Permission.ManageCertCreate}><CertsNew type={type}/></Access>
+            <Access feature={Feature.ManageCertCreate}><CertsNew type={type}/></Access>
             <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
             <CertsList certs={data} error={error}/>
         </MenuWrapper>

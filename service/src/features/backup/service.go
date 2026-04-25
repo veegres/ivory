@@ -13,8 +13,8 @@ import (
 
 var ErrInvalidQueryType = errors.New("invalid query type")
 var ErrInvalidQueryVariety = errors.New("invalid query variety")
-var ErrInvalidPermissionStatus = errors.New("invalid permission status")
-var ErrInvalidPermission = errors.New("invalid permission")
+var ErrInvalidStatus = errors.New("invalid status")
+var ErrInvalidFeature = errors.New("invalid feature")
 
 // Service manages the lifecycle of system backups (export/import).
 // It handles backward compatibility by dispatching imports to version-specific

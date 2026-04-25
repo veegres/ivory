@@ -2,9 +2,9 @@ import {FormControl, InputLabel, MenuItem, Select} from "@mui/material"
 import {Dayjs} from "dayjs"
 import {useState} from "react"
 
+import {Feature} from "../../../api/feature"
 import {useRouterNodeSwitchover} from "../../../api/node/hook"
 import {Connection, NodeRequest} from "../../../api/node/type"
-import {Permission} from "../../../api/permission/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
 import {Access} from "../access/Access"
@@ -26,7 +26,7 @@ export function SwitchoverButton(props: Props) {
     const body = {leader: name, candidate, scheduled_at: schedule}
 
     return (
-        <Access permission={Permission.ManageNodeDbSwitchover}>
+        <Access feature={Feature.ManageNodeDbSwitchover}>
             <AlertButton
                 color={"secondary"}
                 label={"Switchover"}

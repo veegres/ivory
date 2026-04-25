@@ -1,12 +1,12 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
+import {Feature} from "../feature"
 import {
     Connection,
     Keeper,
     NodeResponse as BaseNode,
 } from "../node/type"
-import {Permission} from "../permission/type"
 
 // COMMON (WEB AND SERVER)
 
@@ -77,6 +77,6 @@ export interface ActiveNode {
 export interface ClusterTab {
     label: string,
     body: (cluster: Cluster, overview?: ClusterOverview) => ReactNode,
-    permission: Permission,
+    feature: Feature,
     info?: ReactNode,
 }

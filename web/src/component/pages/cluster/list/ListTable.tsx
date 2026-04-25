@@ -3,7 +3,7 @@ import {useMemo, useState} from "react"
 
 import {ClusterApi} from "../../../../api/cluster/router"
 import {Cluster} from "../../../../api/cluster/type"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
@@ -55,7 +55,7 @@ export function ListTable(props: Props) {
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
                             <ListCreateAuto/>
-                            <Access permission={Permission.ManageClusterUpdate}>
+                            <Access feature={Feature.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"Add Cluster Manually"}
                                     onClick={() => setShowNewElement(true)}

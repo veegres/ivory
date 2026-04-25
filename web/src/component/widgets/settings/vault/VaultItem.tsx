@@ -1,7 +1,7 @@
 import {Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material"
 import {useEffect, useState} from "react"
 
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterVaultDelete, useRouterVaultUpdate} from "../../../../api/vault/hook"
 import {Vault} from "../../../../api/vault/type"
 import {SimpleButton} from "../../../view/button/SimpleButton"
@@ -37,10 +37,10 @@ export function VaultItem(props: Props) {
     function renderReadButtons() {
         return (
             <>
-                <Access permission={Permission.ManageVaultUpdate}>
+                <Access feature={Feature.ManageVaultUpdate}>
                     <SimpleButton onClick={() => setEdit(true)} disabled={deleteVault.isPending}><Edit/></SimpleButton>
                 </Access>
-                <Access permission={Permission.ManageVaultDelete}>
+                <Access feature={Feature.ManageVaultDelete}>
                     <SimpleButton  loading={deleteVault.isPending} onClick={handleDelete}><Delete/></SimpleButton>
                 </Access>
             </>
