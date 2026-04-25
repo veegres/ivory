@@ -3,7 +3,7 @@ import {UseMutationResult} from "@tanstack/react-query"
 
 import {Feature} from "../../../../api/feature"
 import {useRouterNodeActivate, useRouterNodePause} from "../../../../api/node/hook"
-import {KeeperStatus,NodeRequest} from "../../../../api/node/type"
+import {KeeperRequest, KeeperStatus} from "../../../../api/node/type"
 import {EnumOptions, SxPropsMap} from "../../../../app/type"
 import {KeeperStatusOptions} from "../../../../app/utils"
 import {InfoBox, Padding} from "../../../view/box/InfoBox"
@@ -17,7 +17,7 @@ const SX: SxPropsMap = {
 type Props = {
     cluster: string,
     status: KeeperStatus,
-    request: NodeRequest,
+    request: KeeperRequest,
 }
 
 export function OverviewActionStatus(props: Props) {
@@ -27,7 +27,7 @@ export function OverviewActionStatus(props: Props) {
     const pause = useRouterNodePause(cluster)
 
     const options = KeeperStatusOptions[status]
-    const action: { [key in KeeperStatus]: UseMutationResult<string, any, NodeRequest, unknown> } = {
+    const action: { [key in KeeperStatus]: UseMutationResult<string, any, KeeperRequest, unknown> } = {
         [KeeperStatus.Active]: pause,
         [KeeperStatus.Paused]: activate
     }

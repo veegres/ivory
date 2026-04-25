@@ -1,7 +1,8 @@
 import {FormControl, OutlinedInput, TableRow} from "@mui/material"
 import {useState} from "react"
 
-import {ClusterType} from "../../../../api/cluster/type"
+import {DatabaseType} from "../../../../api/database/type"
+import {KeeperType} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getNodeConnections} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
@@ -50,7 +51,8 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     cluster={{
                         name: stateName,
-                        type: ClusterType.POSTGRES_PATRONI,
+                        dbType: DatabaseType.POSTGRES,
+                        keeperType: KeeperType.PATRONI,
                         nodes: getNodeConnections(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},

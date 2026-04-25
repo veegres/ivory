@@ -5,9 +5,9 @@ import {useState} from "react"
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Node} from "../../../../api/cluster/type"
+import {Database, DatabaseType, QueryType} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {useRouterQueryList} from "../../../../api/query/hook"
-import {Database, QueryType} from "../../../../api/query/postgres"
 import {SxPropsMap} from "../../../../app/type"
 import {getConnection} from "../../../../app/utils"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
@@ -40,7 +40,7 @@ export function OverviewBloat(props: Props) {
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db = {host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database, schema: target?.schema} as Database
+    const db = {type: DatabaseType.POSTGRES, host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database, schema: target?.schema} as Database
 
     return (
         <Box>

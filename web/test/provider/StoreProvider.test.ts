@@ -2,7 +2,7 @@ import {beforeEach, describe, expect, it, vi} from "vitest"
 
 import type {ActiveCluster} from "../../src/api/cluster/type"
 import {NodeTabType} from "../../src/api/node/type"
-import {QueryType} from "../../src/api/query/postgres"
+import {QueryType} from "../../src/api/database/type"
 import {getDomain} from "../../src/app/utils"
 import {MainQueryClient} from "../../src/provider/AppProvider"
 import {useStore, useStoreAction} from "../../src/provider/StoreProvider"

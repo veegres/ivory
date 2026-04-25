@@ -1,5 +1,5 @@
+import {Query} from "../../../api/database/type"
 import {useRouterQueryUpdate} from "../../../api/query/hook"
-import {Query} from "../../../api/query/postgres"
 import {SaveIconButton} from "../../view/button/IconButtons"
 
 type Props = {

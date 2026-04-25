@@ -4,13 +4,13 @@ import {useState} from "react"
 
 import {Feature} from "../../../api/feature"
 import {useRouterNodeSwitchover} from "../../../api/node/hook"
-import {Connection, NodeRequest} from "../../../api/node/type"
+import {Connection, KeeperRequest} from "../../../api/node/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: NodeRequest,
+    request: KeeperRequest,
     cluster: string,
     candidates: Connection[],
     name?: string,

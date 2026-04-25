@@ -1,10 +1,12 @@
-
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
+import {KeeperResponse as BaseKeeperResponse, KeeperType, Status as KeeperStatus} from "../keeper/type"
 import {Connection as QueryConnection} from "../query/type"
 
 // COMMON (WEB AND SERVER)
+
+export {KeeperStatus, KeeperType}
 
 export interface Connection {
     host: string,
@@ -14,13 +16,14 @@ export interface Connection {
     dbPort?: number,
 }
 
-export interface NodeResponse {
+export interface KeeperResponse {
     connection: Connection,
-    keeper: KeeperResponse,
+    keeper: BaseKeeperResponse,
 }
 
-export interface NodeRequest {
+export interface KeeperRequest {
     connection: Connection,
+    type: KeeperType,
     vaultId?: string,
     certs?: Certs,
     body?: any,
@@ -47,45 +50,6 @@ export interface DockerResult {
     stdout: string,
     stderr: string,
     exitCode: number,
-}
-
-export enum KeeperStatus {
-    Active = "ACTIVE",
-    Paused = "PAUSED",
-}
-
-export interface Keeper {
-    host: string,
-    port: number,
-    name?: string,
-    status?: KeeperStatus,
-}
-
-export type Role = "leader" | "replica" | "unknown";
-
-export interface KeeperResponse {
-    name?: string,
-    status?: KeeperStatus,
-    state: string,
-    role: Role,
-    lag: number,
-    pendingRestart: boolean,
-    scheduledSwitchover?: ScheduledSwitchover,
-    scheduledRestart?: ScheduledRestart,
-    tags?: {[key: string]: any},
-    discoveredHost: string,
-    discoveredKeeperPort: number,
-    discoveredDbPort: number,
-}
-
-export interface ScheduledSwitchover {
-    at: string,
-    to: string,
-}
-
-export interface ScheduledRestart {
-    at: string,
-    pendingRestart: boolean,
 }
 
 // SPECIFIC (WEB)

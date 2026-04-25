@@ -28,6 +28,13 @@ const (
 	Unknown      = "unknown"
 )
 
+type Keeper struct {
+	Host   string  `json:"host"`
+	Port   int     `json:"port"`
+	Name   *string `json:"name"`
+	Status *Status `json:"status,omitempty"`
+}
+
 type Response struct {
 	Name                *string              `json:"name"`
 	Status              *Status              `json:"status,omitempty"`
@@ -43,13 +50,6 @@ type Response struct {
 	DiscoveredHost       string `json:"discoveredHost"`
 	DiscoveredKeeperPort int    `json:"discoveredKeeperPort"`
 	DiscoveredDbPort     int    `json:"discoveredDbPort"`
-}
-
-type Keeper struct {
-	Host   string  `json:"host"`
-	Port   int     `json:"port"`
-	Name   *string `json:"name"`
-	Status *Status `json:"status,omitempty"`
 }
 
 type ScheduledSwitchover struct {

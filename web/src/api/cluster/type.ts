@@ -1,38 +1,33 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
+import {DatabaseType} from "../database/type"
 import {Feature} from "../feature"
+import {Keeper, KeeperType} from "../keeper/type"
 import {
     Connection,
-    Keeper,
-    NodeResponse as BaseNode,
+    KeeperResponse as BaseNode,
 } from "../node/type"
 
 // COMMON (WEB AND SERVER)
 
 export interface ClusterOptions {
+    dbType: DatabaseType,
+    keeperType: KeeperType,
     tls: ClusterTls,
     certs: Certs,
     vaults: Vault,
     tags?: string[],
 }
 
-export enum ClusterType {
-    POSTGRES_PATRONI,
-    POSTGRES,
-    ETCD,
-}
-
 export interface Cluster extends ClusterOptions {
     name: string,
-    type: ClusterType,
     nodes: Connection[],
     nodesOverview: NodeOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
     name: string,
-    type: ClusterType,
     node: Connection,
 }
 

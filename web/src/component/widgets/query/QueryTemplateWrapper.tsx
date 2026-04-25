@@ -1,8 +1,8 @@
 import {Alert} from "@mui/material"
 import {ReactNode, useState} from "react"
 
+import {QueryVariety} from "../../../api/database/type"
 import {Feature} from "../../../api/feature"
-import {QueryVariety} from "../../../api/query/postgres"
 import {Connection} from "../../../api/query/type"
 import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton} from "../../view/button/IconButtons"
 import {FixedInputs} from "../../view/input/FixedInputs"

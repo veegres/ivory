@@ -4,7 +4,7 @@ import {useState} from "react"
 
 import {Feature} from "../../../api/feature"
 import {useRouterNodeRestart} from "../../../api/node/hook"
-import {NodeRequest} from "../../../api/node/type"
+import {KeeperRequest} from "../../../api/node/type"
 import {SxPropsMap} from "../../../app/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    request: NodeRequest,
+    request: KeeperRequest,
     cluster: string,
 }
 

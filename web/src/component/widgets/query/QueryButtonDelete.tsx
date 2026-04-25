@@ -1,5 +1,5 @@
+import {QueryType} from "../../../api/database/type"
 import {useRouterQueryDelete} from "../../../api/query/hook"
-import {QueryType} from "../../../api/query/postgres"
 import {DeleteIconButton} from "../../view/button/IconButtons"
 
 type Props = {

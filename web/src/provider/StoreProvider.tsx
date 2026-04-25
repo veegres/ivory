@@ -2,8 +2,8 @@ import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
 import {ActiveCluster, Node} from "../api/cluster/type"
+import {QueryType} from "../api/database/type"
 import {NodeTabType} from "../api/node/type"
-import {QueryType} from "../api/query/postgres"
 import {MainQueryClient} from "./AppProvider"
 
 // STORE

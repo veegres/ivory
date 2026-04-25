@@ -1,8 +1,9 @@
 import {Button} from "@mui/material"
 
 import {Feature} from "../../../api/feature"
+import {ScheduledRestart, ScheduledSwitchover} from "../../../api/keeper/type"
 import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../../api/node/hook"
-import {NodeRequest, ScheduledRestart, ScheduledSwitchover} from "../../../api/node/type"
+import {KeeperRequest} from "../../../api/node/type"
 import {DateTimeFormatter} from "../../../app/utils"
 import {List} from "../../view/box/List"
 import {ListItem} from "../../view/box/ListItem"
@@ -11,7 +12,7 @@ import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: NodeRequest,
+    request: KeeperRequest,
     cluster: string,
     switchover?: ScheduledSwitchover,
     restart?: ScheduledRestart,

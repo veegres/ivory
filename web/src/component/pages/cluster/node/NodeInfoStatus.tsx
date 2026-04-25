@@ -1,6 +1,6 @@
 import {Box, Skeleton} from "@mui/material"
 
-import {Role} from "../../../../api/node/type"
+import {Role} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
 import {NodeColor} from "../../../../app/utils"
 

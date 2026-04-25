@@ -1,13 +1,29 @@
 import {Certs} from "../cert/type"
-import {Database} from "../query/postgres"
+import {Database} from "../database/type"
 import {JobStatus} from "./job/type"
 
 // COMMON (WEB AND SERVER)
+
+export interface Bloat {
+    uuid: string,
+    status: JobStatus,
+    vaultId: string,
+    command: string,
+    commandArgs: string,
+    logsPath: string,
+}
 
 export interface Connection {
     db: Database,
     certs?: Certs,
     vaultId?: string,
+}
+
+export interface BloatRequest {
+    cluster: string,
+    connection: Connection,
+    target?: BloatTarget,
+    options: BloatOptions,
 }
 
 export interface BloatTarget {
@@ -27,22 +43,6 @@ export interface BloatOptions {
     delayRatio?: number,
     minTableSize?: number,
     maxTableSize?: number,
-}
-
-export interface BloatRequest {
-    cluster: string,
-    connection: Connection,
-    target?: BloatTarget,
-    options: BloatOptions,
-}
-
-export interface Bloat {
-    uuid: string,
-    status: JobStatus,
-    vaultId: string,
-    command: string,
-    commandArgs: string,
-    logsPath: string
 }
 
 // SPECIFIC (WEB)

@@ -4,6 +4,7 @@ import {useState} from "react"
 import {useRouterBloatStart} from "../../../../api/bloat/hook"
 import {BloatOptions, BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Node} from "../../../../api/cluster/type"
+import {DatabaseType} from "../../../../api/database/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
 import {getConnection} from "../../../../app/utils"
@@ -30,9 +31,10 @@ export function OverviewBloatJobForm(props: Props) {
     const start = useRouterBloatStart(cluster.name)
 
     if (node.keeper.role !== "leader") return <ClusterNoLeaderError/>
-    if (!cluster.vaults.databaseId) return <ClusterNoPostgresVault/>
+    const vaultId = cluster.vaults.databaseId
+    if (!vaultId) return <ClusterNoPostgresVault/>
 
-    const db = {host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database}
+    const db = {type: DatabaseType.POSTGRES, host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database}
     const connection = getConnection(cluster, db)
     return (
         <Box sx={SX.form}>
@@ -110,13 +112,12 @@ export function OverviewBloatJobForm(props: Props) {
     )
 
     function handleRun() {
-        const vaultId = cluster.vaults.databaseId
         if (node && vaultId) {
             const {keeper: {discoveredHost, discoveredDbPort}} = node
             onClick()
             start.mutate({
                 connection: {
-                    db: {host: discoveredHost, port: discoveredDbPort, name: target?.database, schema: target?.schema},
+                    db: {type: DatabaseType.POSTGRES, host: discoveredHost, port: discoveredDbPort, name: target?.database, schema: target?.schema},
                     vaultId,
                 },
                 target, options, cluster: cluster.name,
