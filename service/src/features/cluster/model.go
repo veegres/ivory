@@ -3,6 +3,7 @@ package cluster
 import (
 	"ivory/src/clients/database"
 	"ivory/src/clients/keeper"
+	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/node"
 
@@ -43,9 +44,10 @@ type Vaults struct {
 }
 
 type ClusterOverview struct {
-	Nodes      NodeOverview   `json:"nodes"`
-	DetectedBy *keeper.Keeper `json:"detectedBy"`
-	MainNode   *Node          `json:"mainNode"`
+	Nodes      NodeOverview       `json:"nodes"`
+	DetectedBy *keeper.Keeper     `json:"detectedBy"`
+	MainNode   *Node              `json:"mainNode"`
+	Features   []features.Feature `json:"features"`
 }
 
 type NodeOverview map[string]*Node
