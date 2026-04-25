@@ -32,6 +32,7 @@ Use `docker/ivory-dev/` for the stack.
 
 ## Coding & UI Standards
 - **Surgical Renaming**: When asked to rename components or fields, ONLY update the terminology. DO NOT refactor implementation logic, move methods to props, or change the component structure unless explicitly directed.
+- **Data Synchronization**: When syncing frontend types with backend changes, perform the MINIMAL necessary updates to ensure compilation. DO NOT redesign or refactor UI components during a data sync task. If a type change appears to require a major UI redesign, ASK for clarification first.
 - **Component Style**: Follow the established pattern of using dedicated helper methods (e.g., `handleAction`, `renderContent`, `handleEffect`) within functional components to keep the JSX clean.
 - **Cache Management**: Be cautious when updating React Query keys. If a linter warns about a missing dependency that was intentionally omitted to control cache invalidation, use `// eslint-disable-next-line` instead of changing the key signature.
 
@@ -41,7 +42,9 @@ Use `docker/ivory-dev/` for the stack.
 - **Data Integrity**: When renaming internal models, always verify if they are part of the backup/export logic before changing their JSON representation.
 
 ## Testing Guidelines
-Backend tests use Go's standard `testing` package with table-driven tests and `t.Run()` subtests. Focus on storage adapters, client mappers, and service logic; avoid thin routers and external network calls. Frontend tests use Vitest and Testing Library. Mirror `web/src/` inside `web/test/`, for example `web/src/hook/Debounce.ts` -> `web/test/hook/Debounce.test.ts`. No coverage threshold is defined, but new logic should ship with targeted tests.
+- **Zero Deletion Policy**: NEVER delete existing tests during refactoring or type synchronization. If types change, UPDATE the tests to match the new structures. A "refactor" that results in fewer tests is a failure.
+- **Backend Tests**: Backend tests use Go's standard `testing` package with table-driven tests and `t.Run()` subtests. Focus on storage adapters, client mappers, and service logic; avoid thin routers and external network calls.
+- **Frontend Tests**: Frontend tests use Vitest and Testing Library. Mirror `web/src/` inside `web/test/`, for example `web/src/hook/Debounce.ts` -> `web/test/hook/Debounce.test.ts`. No coverage threshold is defined, but new logic should ship with targeted tests.
 
 ## Commit & Pull Request Guidelines
 Recent commits use short, imperative summaries such as `add tooltips for refresh buttons` and `fix problem with different column widths in list`. Keep commit subjects concise and specific; add a body when the change needs context. Pull requests should describe behavior changes clearly, link relevant issues, and include screenshots or GIFs for UI work. Before opening a PR, run the relevant backend tests, frontend lint, and affected frontend tests.
