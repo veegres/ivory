@@ -13,11 +13,11 @@ import (
 	"ivory/src/features/query"
 )
 
-// ImportV1 restores data from a V1 backup file.
+// importV1 restores data from a V1 backup file.
 // It maps the fixed BackupV1 schema to the current internal models.
 // If internal structures evolve, this method must provide sensible defaults
 // for new fields that didn't exist in V1 (e.g., setting Cluster.Type to POSTGRES_PATRONI).
-func (s *Service) ImportV1(data []byte) error {
+func (s *Service) importV1(data []byte) error {
 	var bkp BackupV1
 	if err := json.Unmarshal(data, &bkp); err != nil {
 		return err

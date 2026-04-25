@@ -157,7 +157,7 @@ func (s *Service) BackupFileName() string {
 	return s.backupService.GetFileName()
 }
 
-func (s *Service) BackupExport() (*backup.BackupV1, error) {
+func (s *Service) BackupExport() ([]byte, error) {
 	return s.backupService.Export()
 }
 
