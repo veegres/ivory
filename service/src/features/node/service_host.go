@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func (s *Service) Metrics(request SshRequest) (*SshMetrics, int, error) {
+func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, int, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
 		return nil, 0, err

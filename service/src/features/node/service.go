@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/src/clients/keeper"
 	"ivory/src/clients/ssh"
+	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/vault"
 )
@@ -11,27 +12,31 @@ import (
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
-	keeperClient keeper.Client
-	sshClient    ssh.Client
-	vaultService *vault.Service
-	certService  *cert.Service
+	keeperRegistry *keeper.Registry
+	sshClient      ssh.Client
+	vaultService   *vault.Service
+	certService    *cert.Service
+
+	dbFeatures map[features.Feature]bool
 }
 
 func NewService(
-	keeperClient keeper.Client,
+	keeperRegistry *keeper.Registry,
 	sshClient ssh.Client,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *Service {
 	return &Service{
-		keeperClient: keeperClient,
-		sshClient:    sshClient,
-		vaultService: vaultService,
-		certService:  certService,
+		keeperRegistry: keeperRegistry,
+		sshClient:      sshClient,
+		vaultService:   vaultService,
+		certService:    certService,
+
+		dbFeatures: make(map[features.Feature]bool),
 	}
 }
 
-func (s *Service) getKeeperRequest(request Request) (keeper.Request, error) {
+func (s *Service) getKeeperRequest(request KeeperRequest) (keeper.Request, error) {
 	keeperRequest := keeper.Request{Host: request.Connection.Host, Port: request.Connection.KeeperPort, Body: request.Body}
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, request.Certs)

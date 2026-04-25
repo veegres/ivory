@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"ivory/src/clients/database"
 	"ivory/src/clients/keeper"
 	"ivory/src/features/cert"
 	"ivory/src/features/node"
@@ -11,31 +12,23 @@ import (
 // COMMON (WEB AND SERVER)
 
 type ClusterOptions struct {
-	Tls    ClusterTls `json:"tls"`
-	Certs  cert.Certs `json:"certs"`
-	Vaults Vaults     `json:"vaults"`
-	Tags   []string   `json:"tags"`
+	DbType     database.Type `json:"dbType"`
+	KeeperType keeper.Type   `json:"keeperType"`
+	Tls        ClusterTls    `json:"tls"`
+	Certs      cert.Certs    `json:"certs"`
+	Vaults     Vaults        `json:"vaults"`
+	Tags       []string      `json:"tags"`
 }
-
-type ClusterType int8
-
-const (
-	POSTGRES_PATRONI ClusterType = iota
-	POSTGRES
-	ETCD
-)
 
 type Cluster struct {
 	ClusterOptions
 	Name  string            `json:"name"`
-	Type  ClusterType       `json:"type"`
 	Nodes []node.Connection `json:"nodes"`
 }
 
 type ClusterAuto struct {
 	ClusterOptions
 	Name string          `json:"name"`
-	Type ClusterType     `json:"type"`
 	Node node.Connection `json:"node"`
 }
 
@@ -58,7 +51,7 @@ type ClusterOverview struct {
 type NodeOverview map[string]*Node
 
 type Node struct {
-	node.Node
+	node.KeeperResponse
 	InCluster bool `json:"inCluster"`
 	InKeeper  bool `json:"inSidecar"`
 }

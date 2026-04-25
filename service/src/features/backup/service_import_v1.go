@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"ivory/src/clients/database"
+	"ivory/src/clients/keeper"
 	"ivory/src/features"
 	"ivory/src/features/cluster"
 	"ivory/src/features/node"
@@ -64,9 +65,10 @@ func backupToClusterV1(bc backupClusterV1) cluster.Cluster {
 	}
 	return cluster.Cluster{
 		Name: bc.Name,
-		Type: cluster.POSTGRES_PATRONI,
 		ClusterOptions: cluster.ClusterOptions{
-			Tags: bc.Tags,
+			DbType:     database.POSTGRES,
+			KeeperType: keeper.PATRONI,
+			Tags:       bc.Tags,
 		},
 		Nodes: nodes,
 	}
