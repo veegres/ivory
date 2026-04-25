@@ -44,7 +44,7 @@ export function OverviewBloat(props: Props) {
 
     return (
         <Box>
-            <AccessBox sx={SX.option} feature={Feature.ManageBloatJob}>
+            <AccessBox sx={SX.option} feature={Feature.ManageToolBloatJob}>
                 <Box sx={SX.form}>
                     <OverviewBloatJobForm
                         node={node}

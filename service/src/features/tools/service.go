@@ -36,10 +36,10 @@ func (s *Service) SupportedFeatures(t database.Type) []features.Feature {
 	switch t {
 	case database.POSTGRES:
 		return []features.Feature{
-			features.ViewBloatList,
-			features.ViewBloatItem,
-			features.ViewBloatLogs,
-			features.ManageBloatJob,
+			features.ViewToolBloatList,
+			features.ViewToolBloatItem,
+			features.ViewToolBloatLogs,
+			features.ManageToolBloatJob,
 		}
 	default:
 		return []features.Feature{}

@@ -27,7 +27,7 @@ export function NodeMainQueries(props: Props){
     return (
         <Box sx={SX.box}>
             <Box sx={SX.filters}>
-                <Access feature={Feature.ManageQueryExecuteConsole}>
+                <Access feature={Feature.ManageQueryDbConsole}>
                     <ToggleButton
                         sx={SX.group}
                         size={"small"}
