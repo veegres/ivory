@@ -1,6 +1,7 @@
 package permission
 
 import (
+	"ivory/src/features"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,12 +30,12 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) ValidateMethodMiddleware(permission Permission) gin.HandlerFunc {
+func (r *Router) ValidateMethodMiddleware(feature features.Feature) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if val, ok := context.Get("permissions"); ok {
 			permissions := val.(PermissionMap)
-			if permissions[permission] != GRANTED {
-				context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": string(permission) + " is not permitted"})
+			if permissions[feature] != GRANTED {
+				context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": string(feature) + " is not permitted"})
 				return
 			}
 		} else {

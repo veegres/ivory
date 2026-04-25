@@ -142,7 +142,7 @@ func userPermissionsToBackupV1(up permission.UserPermissions) (*backupPermission
 	}, nil
 }
 
-func permissionStatusToBackupV1(ps permission.PermissionStatus) (backupPermissionTypeV1, error) {
+func permissionStatusToBackupV1(ps permission.Status) (backupPermissionTypeV1, error) {
 	switch ps {
 	case permission.NOT_PERMITTED:
 		return NOT_PERMITTED_V1, nil
@@ -151,6 +151,6 @@ func permissionStatusToBackupV1(ps permission.PermissionStatus) (backupPermissio
 	case permission.GRANTED:
 		return GRANTED_V1, nil
 	default:
-		return 0, ErrInvalidPermissionStatus
+		return 0, ErrInvalidStatus
 	}
 }

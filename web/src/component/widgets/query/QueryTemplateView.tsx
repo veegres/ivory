@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {useState} from "react"
 
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
 import {Query as QueryRequest} from "../../../api/query/postgres"
 import {Connection, Query, QueryCreation} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
@@ -82,16 +82,16 @@ export function QueryTemplateView(props: Props) {
         return (
             <>
                 <QueryViewIconButton onClick={handleToggleBody(ViewToggleType.VIEW)}/>
-                <Access permission={Permission.ViewQueryLogList}>
+                <Access feature={Feature.ViewQueryLogList}>
                     <LogIconButton onClick={handleToggleBody(ViewToggleType.LOG)}/>
                 </Access>
-                <Access permission={Permission.ManageQueryUpdate}>
+                <Access feature={Feature.ManageQueryUpdate}>
                     {query.default !== query.custom && (
                         <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
                     )}
                     <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
                 </Access>
-                <Access permission={Permission.ManageQueryDelete}>
+                <Access feature={Feature.ManageQueryDelete}>
                     {query.creation === QueryCreation.Manual && (
                         <QueryButtonDelete id={query.id} type={query.type}/>
                     )}

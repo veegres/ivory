@@ -3,8 +3,9 @@ import {useState} from "react"
 
 import {useRouterClusterList, useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {ClusterTab} from "../../../../api/cluster/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterInfo} from "../../../../api/management/hook"
-import {Permission, PermissionStatus} from "../../../../api/permission/type"
+import {Status} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
@@ -32,7 +33,7 @@ const SX: SxPropsMap = {
 const TABS: ClusterTab[] = [
     {
         label: "Overview",
-        permission: Permission.ViewNodeDbOverview,
+        feature: Feature.ViewNodeDbOverview,
         body: (cluster, overview) => <OverviewNodes cluster={cluster} nodes={overview?.nodes}/>,
         info: <>
             The Overview tab offers visibility into the current status of your cluster. From here, you can
@@ -44,7 +45,7 @@ const TABS: ClusterTab[] = [
     },
     {
         label: "Config",
-        permission: Permission.ViewNodeDbConfig,
+        feature: Feature.ViewNodeDbConfig,
         body: (cluster, overview) => {
             if (!overview?.mainNode) return <ClusterNoNodeError/>
             return <OverviewConfig cluster={cluster} node={overview.mainNode}/>
@@ -60,7 +61,7 @@ const TABS: ClusterTab[] = [
     },
     {
         label: "Bloat",
-        permission: Permission.ViewBloatList,
+        feature: Feature.ViewBloatList,
         body: (cluster, overview) => {
             if (!overview?.mainNode) return <ClusterNoNodeError/>
             return <OverviewBloat cluster={cluster} node={overview.mainNode}/>
@@ -106,7 +107,7 @@ export function Overview() {
         <PageMainBox withPadding visible={!!clusters.data?.length || !!activeCluster}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)} role={"tab"}>
-                    {TABS.map((value, i) => permissions && permissions[value.permission] === PermissionStatus.GRANTED && (
+                    {TABS.map((value, i) => permissions && permissions[value.feature] === Status.GRANTED && (
                         <Tab key={i} value={i} label={value.label}/>
                     ))}
                 </Tabs>

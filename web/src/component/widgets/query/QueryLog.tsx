@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
 import {useRouterQueryLog, useRouterQueryLogDelete} from "../../../api/query/hook"
 import {SxPropsMap} from "../../../app/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
@@ -31,7 +31,7 @@ export function QueryLog(props: Props) {
                 <Box>Previous Responses</Box>
                 <Box sx={SX.info}>
                     {result.data && (<Box sx={SX.label}>[ {result.data.length} of 10 ]</Box>)}
-                    <Access permission={Permission.ManageQueryLogDelete}>
+                    <Access feature={Feature.ManageQueryLogDelete}>
                         <ClearAllIconButton onClick={() => clear.mutate(queryId)} loading={clear.isPending} disabled={result.data && !result.data.length}/>
                     </Access>
                     <RefreshIconButton onClick={() => result.refetch()} loading={result.isFetching}/>

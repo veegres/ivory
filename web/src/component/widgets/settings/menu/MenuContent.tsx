@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {Settings, SxPropsMap} from "../../../../app/type"
 import {SettingOptions} from "../../../../app/utils"
 import {List} from "../../../view/box/List"
@@ -33,9 +33,9 @@ export function MenuContent(props: Props) {
                     <ListItem title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
                 </List>
                 <List name={"Privacy and security"}>
-                    <Access permission={Permission.ViewVaultList}>{renderButton(Settings.VAULT)}</Access>
-                    <Access permission={Permission.ViewCertList}>{renderButton(Settings.CERTIFICATE)}</Access>
-                    <Access permission={Permission.ManageManagementSecret}>{renderButton(Settings.SECRET)}</Access>
+                    <Access feature={Feature.ViewVaultList}>{renderButton(Settings.VAULT)}</Access>
+                    <Access feature={Feature.ViewCertList}>{renderButton(Settings.CERTIFICATE)}</Access>
+                    <Access feature={Feature.ManageManagementSecret}>{renderButton(Settings.SECRET)}</Access>
                     {renderButton(Settings.PERMISSION)}
                 </List>
                 <List name={"Danger Zone"}>
@@ -44,14 +44,14 @@ export function MenuContent(props: Props) {
                         description={"This clears your local cache. Useful if you experience issues after updates or changes."}
                         button={<ClearCacheButton />}
                     />
-                    <Access permission={Permission.ManageManagementFree}>
+                    <Access feature={Feature.ManageManagementFree}>
                         <ListItem
                             title={"Free space"}
                             description={"If the VM is running out of disk space, this can help free some space."}
                             button={<FreeButton/>}
                         />
                     </Access>
-                    <Access permission={Permission.ManageManagementErase}>
+                    <Access feature={Feature.ManageManagementErase}>
                         <ListItem
                             title={"Erase all data"}
                             description={"Once you erase all data, there is no going back. Please be certain."}
@@ -60,7 +60,7 @@ export function MenuContent(props: Props) {
                     </Access>
                 </List>
                 <List name={"About"}>
-                    <Access permission={Permission.ManageManagementBackup}>{renderButton(Settings.BACKUP)}</Access>
+                    <Access feature={Feature.ManageManagementBackup}>{renderButton(Settings.BACKUP)}</Access>
                     {renderButton(Settings.ABOUT)}
                 </List>
             </Box>

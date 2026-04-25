@@ -1,16 +1,18 @@
 package permission
 
+import "ivory/src/features"
+
 // COMMON (WEB AND SERVER)
 
-type PermissionStatus int
+type Status int
 
 const (
-	NOT_PERMITTED PermissionStatus = iota
+	NOT_PERMITTED Status = iota
 	PENDING
 	GRANTED
 )
 
-type PermissionMap map[Permission]PermissionStatus
+type PermissionMap map[features.Feature]Status
 
 type UserPermissions struct {
 	Username    string        `json:"username"`
@@ -20,133 +22,8 @@ type UserPermissions struct {
 // SPECIFIC (SERVER)
 
 type PermissionRequest struct {
-	Permissions []Permission `json:"permissions" binding:"required"`
+	Permissions []features.Feature `json:"permissions" binding:"required"`
 }
 
 // UserPermissionsMap is a map where the key is username/email and value is the permissions map
 type UserPermissionsMap map[string]PermissionMap
-
-type Permission string
-
-const (
-	// Cluster permissions
-	ViewClusterList     Permission = "view.cluster.list"
-	ViewClusterItem     Permission = "view.cluster.item"
-	ViewClusterOverview Permission = "view.cluster.overview"
-	ManageClusterCreate Permission = "manage.cluster.create"
-	ManageClusterUpdate Permission = "manage.cluster.update"
-	ManageClusterDelete Permission = "manage.cluster.delete"
-
-	// Tags permissions
-	ViewTagList Permission = "view.tag.list"
-
-	// Node permissions
-	ViewNodeDbOverview       Permission = "view.node.db.overview"
-	ViewNodeDbConfig         Permission = "view.node.db.config"
-	ViewNodeSshMetrics       Permission = "view.node.ssh.metrics"
-	ManageNodeDbConfigUpdate Permission = "manage.node.db.config.update"
-	ManageNodeDbSwitchover   Permission = "manage.node.db.switchover"
-	ManageNodeDbReinitialize Permission = "manage.node.db.reinitialize"
-	ManageNodeDbRestart      Permission = "manage.node.db.restart"
-	ManageNodeDbReload       Permission = "manage.node.db.reload"
-	ManageNodeDbFailover     Permission = "manage.node.db.failover"
-	ManageNodeDbActivation   Permission = "manage.node.db.activation"
-	ManageNodeSshDocker      Permission = "manage.node.ssh.docker"
-	ViewNodeSshDocker        Permission = "view.node.ssh.docker"
-
-	// Query permissions
-	ViewQueryList               Permission = "view.query.list"
-	ManageQueryCreate           Permission = "manage.query.create"
-	ManageQueryUpdate           Permission = "manage.query.update"
-	ManageQueryDelete           Permission = "manage.query.delete"
-	ViewQueryExecuteInfo        Permission = "view.query.execute.info"
-	ViewQueryExecuteChart       Permission = "view.query.execute.chart"
-	ManageQueryExecuteTemplate  Permission = "manage.query.execute.template"
-	ManageQueryExecuteConsole   Permission = "manage.query.execute.console"
-	ManageQueryExecuteCancel    Permission = "manage.query.execute.cancel"
-	ManageQueryExecuteTerminate Permission = "manage.query.execute.terminate"
-	ViewQueryLogList            Permission = "view.query.log.list"
-	ManageQueryLogDelete        Permission = "manage.query.log.delete"
-
-	// Vault permissions
-	ViewVaultList     Permission = "view.vault.list"
-	ManageVaultCreate Permission = "manage.vault.create"
-	ManageVaultUpdate Permission = "manage.vault.update"
-	ManageVaultDelete Permission = "manage.vault.delete"
-
-	// Cert permissions
-	ViewCertList     Permission = "view.cert.list"
-	ManageCertCreate Permission = "manage.cert.create"
-	ManageCertDelete Permission = "manage.cert.delete"
-
-	// Permission management
-	ViewPermissionList     Permission = "view.permission.list"
-	ManagePermissionUpdate Permission = "manage.permission.update"
-	ManagePermissionDelete Permission = "manage.permission.delete"
-
-	// Bloat permissions
-	ViewBloatList  Permission = "view.bloat.list"
-	ViewBloatItem  Permission = "view.bloat.item"
-	ViewBloatLogs  Permission = "view.bloat.logs"
-	ManageBloatJob Permission = "manage.bloat.job"
-
-	// Management permissions
-	ViewManagementSecret   Permission = "view.management.secret"
-	ManageManagementSecret Permission = "manage.management.secret"
-	ManageManagementErase  Permission = "manage.management.erase"
-	ManageManagementFree   Permission = "manage.management.free"
-	ManageManagementBackup Permission = "manage.management.backup"
-)
-
-var Permissions = []Permission{
-	ViewClusterList,
-	ViewClusterItem,
-	ViewClusterOverview,
-	ManageClusterCreate,
-	ManageClusterUpdate,
-	ManageClusterDelete,
-	ViewTagList,
-	ViewNodeDbOverview,
-	ViewNodeDbConfig,
-	ViewNodeSshMetrics,
-	ManageNodeDbConfigUpdate,
-	ManageNodeDbSwitchover,
-	ManageNodeDbReinitialize,
-	ManageNodeDbRestart,
-	ManageNodeDbReload,
-	ManageNodeDbFailover,
-	ManageNodeDbActivation,
-	ManageNodeSshDocker,
-	ViewNodeSshDocker,
-	ViewQueryList,
-	ManageQueryCreate,
-	ManageQueryUpdate,
-	ManageQueryDelete,
-	ViewQueryExecuteInfo,
-	ViewQueryExecuteChart,
-	ManageQueryExecuteTemplate,
-	ManageQueryExecuteConsole,
-	ManageQueryExecuteCancel,
-	ManageQueryExecuteTerminate,
-	ViewQueryLogList,
-	ManageQueryLogDelete,
-	ViewVaultList,
-	ManageVaultCreate,
-	ManageVaultUpdate,
-	ManageVaultDelete,
-	ViewCertList,
-	ManageCertCreate,
-	ManageCertDelete,
-	ViewPermissionList,
-	ManagePermissionUpdate,
-	ManagePermissionDelete,
-	ViewBloatList,
-	ViewBloatItem,
-	ViewBloatLogs,
-	ManageBloatJob,
-	ViewManagementSecret,
-	ManageManagementSecret,
-	ManageManagementErase,
-	ManageManagementFree,
-	ManageManagementBackup,
-}

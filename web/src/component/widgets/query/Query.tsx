@@ -1,7 +1,7 @@
 import {Box, Collapse, Skeleton} from "@mui/material"
 import {TransitionGroup} from "react-transition-group"
 
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
 import {useRouterQueryList} from "../../../api/query/hook"
 import {QueryType} from "../../../api/query/postgres"
 import {Connection} from "../../../api/query/type"
@@ -26,7 +26,7 @@ export function Query(props: Props) {
 
     return (
         <Box style={style.box}>
-            <Access permission={Permission.ManageQueryCreate}>
+            <Access feature={Feature.ManageQueryCreate}>
                 <QueryTemplateNew type={type} connection={connection}/>
             </Access>
             {renderList()}

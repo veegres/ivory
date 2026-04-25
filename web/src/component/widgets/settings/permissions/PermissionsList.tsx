@@ -2,7 +2,8 @@ import {Search} from "@mui/icons-material"
 import {Box, InputBase} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {Permission, PermissionMap, PermissionStatus} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
+import {PermissionMap, Status} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {NoBox} from "../../../view/box/NoBox"
 import {PermissionsButtons} from "./PermissionsButtons"
@@ -60,6 +61,6 @@ export function PermissionsList(props: Props) {
     }
 
     function handleMemoSearch() {
-        return Object.entries(permissions).filter(([name]) => name.includes(search)) as [Permission, PermissionStatus][]
+        return Object.entries(permissions).filter(([name]) => name.includes(search)) as [Feature, Status][]
     }
 }

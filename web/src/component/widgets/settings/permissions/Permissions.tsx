@@ -1,7 +1,7 @@
 import {Box, Tab, Tabs} from "@mui/material"
 import {useState} from "react"
 
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {Access} from "../../access/Access"
 import {MenuWrapper} from "../menu/MenuWrapper"
 import {PermissionsSelfList} from "./PermissionsSelfList"
@@ -11,7 +11,7 @@ export function Permissions() {
     const [tab, setTab] = useState<"self" | "users">("self")
     return (
         <MenuWrapper>
-            <Access permission={Permission.ViewPermissionList}>
+            <Access feature={Feature.ViewPermissionList}>
                 <Tabs variant={"fullWidth"} value={tab} onChange={(_, value) => setTab(value as "self" | "users")}>
                     <Tab label={"Self"} value={"self"}/>
                     <Tab label={"Users"} value={"users"}/>

@@ -3,6 +3,7 @@ package permission
 import (
 	"errors"
 	"fmt"
+	"ivory/src/features"
 	"ivory/src/storage/db"
 	"slices"
 	"sort"
@@ -14,7 +15,7 @@ var ErrSuperusersCannotHaveEmptyName = errors.New("superusers cannot have empty 
 var ErrUsernameCannotBeEmpty = errors.New("username cannot be empty")
 var ErrPrefixCannotBeEmpty = errors.New("prefix cannot be empty")
 var ErrCannotChangePermissionsForSuperusers = errors.New("cannot change permissions for superusers")
-var ErrInvalidPermission = errors.New("invalid permission")
+var ErrInvalidFeature = errors.New("invalid feature")
 
 type Service struct {
 	permissionRepository *Repository
@@ -101,20 +102,20 @@ func (s *Service) CreateUserPermissions(prefix string, username string) (Permiss
 	return permissions, nil
 }
 
-func (s *Service) RequestUserPermissions(prefix string, username string, permissions []Permission) error {
+func (s *Service) RequestUserPermissions(prefix string, username string, featuresList []features.Feature) error {
 	permUsername, errName := s.getFullUsername(prefix, username)
 	if errName != nil {
 		return errName
 	}
-	return s.updateUserPermissions(permUsername, permissions, PENDING)
+	return s.updateUserPermissions(permUsername, featuresList, PENDING)
 }
 
-func (s *Service) ApproveUserPermissions(permUsername string, permissions []Permission) error {
-	return s.updateUserPermissions(permUsername, permissions, GRANTED)
+func (s *Service) ApproveUserPermissions(permUsername string, featuresList []features.Feature) error {
+	return s.updateUserPermissions(permUsername, featuresList, GRANTED)
 }
 
-func (s *Service) RejectUserPermissions(permUsername string, permissions []Permission) error {
-	return s.updateUserPermissions(permUsername, permissions, NOT_PERMITTED)
+func (s *Service) RejectUserPermissions(permUsername string, featuresList []features.Feature) error {
+	return s.updateUserPermissions(permUsername, featuresList, NOT_PERMITTED)
 }
 
 func (s *Service) DeleteUserPermissions(permUsername string) error {
@@ -148,24 +149,24 @@ func (s *Service) getFullUsername(prefix string, username string) (string, error
 	return prefix + ":" + username, nil
 }
 
-func (s *Service) isValidPermission(permission Permission) bool {
-	for _, validPerm := range Permissions {
-		if validPerm == permission {
+func (s *Service) isValidFeature(feature features.Feature) bool {
+	for _, validFeature := range features.All {
+		if validFeature == feature {
 			return true
 		}
 	}
 	return false
 }
 
-func (s *Service) getAllPermissionsWithStatus(status PermissionStatus) PermissionMap {
+func (s *Service) getAllPermissionsWithStatus(status Status) PermissionMap {
 	permissions := make(PermissionMap)
-	for _, permission := range Permissions {
-		permissions[permission] = status
+	for _, feature := range features.All {
+		permissions[feature] = status
 	}
 	return permissions
 }
 
-func (s *Service) getStatus(permUsername string) PermissionStatus {
+func (s *Service) getStatus(permUsername string) Status {
 	split := strings.Split(permUsername, ":")
 	username := split[1]
 	if slices.Contains(s.superusers, username) {
@@ -174,18 +175,18 @@ func (s *Service) getStatus(permUsername string) PermissionStatus {
 	return NOT_PERMITTED
 }
 
-func (s *Service) updateUserPermissions(permUsername string, permissions []Permission, status PermissionStatus) error {
+func (s *Service) updateUserPermissions(permUsername string, featuresList []features.Feature, status Status) error {
 	var err error
-	for _, permission := range permissions {
-		errPerm := s.updateUserPermission(permUsername, permission, status)
+	for _, feature := range featuresList {
+		errPerm := s.updateUserPermission(permUsername, feature, status)
 		if errPerm != nil {
-			err = errors.Join(err, fmt.Errorf("%s: %w", permission, errPerm))
+			err = errors.Join(err, fmt.Errorf("%s: %w", feature, errPerm))
 		}
 	}
 	return err
 }
 
-func (s *Service) updateUserPermission(permUsername string, permission Permission, status PermissionStatus) error {
+func (s *Service) updateUserPermission(permUsername string, feature features.Feature, status Status) error {
 	if permUsername == "" {
 		return ErrUsernameCannotBeEmpty
 	}
@@ -194,8 +195,8 @@ func (s *Service) updateUserPermission(permUsername string, permission Permissio
 	if slices.Contains(s.superusers, username) {
 		return ErrCannotChangePermissionsForSuperusers
 	}
-	if !s.isValidPermission(permission) {
-		return ErrInvalidPermission
+	if !s.isValidFeature(feature) {
+		return ErrInvalidFeature
 	}
 
 	existingPermissions, err := s.permissionRepository.Get(permUsername)
@@ -203,7 +204,7 @@ func (s *Service) updateUserPermission(permUsername string, permission Permissio
 		return err
 	}
 
-	existingPermissions[permission] = status
+	existingPermissions[feature] = status
 	return s.permissionRepository.CreateOrUpdate(permUsername, existingPermissions)
 }
 
@@ -215,11 +216,11 @@ func (s *Service) normalizeDatabase() error {
 	for permUsername, permissions := range permissionsMap {
 		status := s.getStatus(permUsername)
 		normalisedPermissions := make(PermissionMap)
-		for _, permission := range Permissions {
-			if perm, ok := permissions[permission]; !ok {
-				normalisedPermissions[permission] = status
+		for _, feature := range features.All {
+			if perm, ok := permissions[feature]; !ok {
+				normalisedPermissions[feature] = status
 			} else {
-				normalisedPermissions[permission] = perm
+				normalisedPermissions[feature] = perm
 			}
 		}
 		errUpdate := s.permissionRepository.CreateOrUpdate(permUsername, normalisedPermissions)

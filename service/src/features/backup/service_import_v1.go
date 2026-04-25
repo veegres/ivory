@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"ivory/src/clients/database"
+	"ivory/src/features"
 	"ivory/src/features/cluster"
 	"ivory/src/features/node"
 	"ivory/src/features/permission"
@@ -144,16 +145,16 @@ func backupToUserPermissionsV1(bp backupPermissionsV1) permission.UserPermission
 	}
 }
 
-func syncPermissionV1(p string) (permission.Permission, error) {
-	for _, validPerm := range permission.Permissions {
-		if string(validPerm) == p {
-			return validPerm, nil
+func syncPermissionV1(p string) (features.Feature, error) {
+	for _, validFeature := range features.All {
+		if string(validFeature) == p {
+			return validFeature, nil
 		}
 	}
-	return "", ErrInvalidPermission
+	return "", ErrInvalidFeature
 }
 
-func syncPermissionStatusV1(bpt backupPermissionTypeV1) (permission.PermissionStatus, error) {
+func syncPermissionStatusV1(bpt backupPermissionTypeV1) (permission.Status, error) {
 	switch bpt {
 	case NOT_PERMITTED_V1:
 		return permission.NOT_PERMITTED, nil
@@ -162,6 +163,6 @@ func syncPermissionStatusV1(bpt backupPermissionTypeV1) (permission.PermissionSt
 	case GRANTED_V1:
 		return permission.GRANTED, nil
 	default:
-		return 0, ErrInvalidPermissionStatus
+		return 0, ErrInvalidStatus
 	}
 }

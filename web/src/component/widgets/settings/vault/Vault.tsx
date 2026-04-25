@@ -1,6 +1,6 @@
 import {useState} from "react"
 
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterVault} from "../../../../api/vault/hook"
 import {VaultTabs, VaultType} from "../../../../api/vault/type"
 import {TabsButton} from "../../../view/button/TabsButton"
@@ -25,7 +25,7 @@ export function Vault() {
     return (
         <MenuWrapper>
             <TabsButton tabs={TABS} tab={tab} setTab={setTab}/>
-            <Access permission={Permission.ManageVaultCreate}>
+            <Access feature={Feature.ManageVaultCreate}>
                 <VaultItemNew type={type}/>
             </Access>
             <LinearProgressStateful color={"inherit"} loading={isFetching} line/>

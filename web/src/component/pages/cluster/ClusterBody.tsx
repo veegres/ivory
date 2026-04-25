@@ -1,6 +1,6 @@
 import {Stack} from "@mui/material"
 
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
 import {SxPropsMap} from "../../../app/type"
 import {Access} from "../../widgets/access/Access"
 import {Menu} from "../../widgets/settings/menu/Menu"
@@ -18,7 +18,7 @@ export function ClusterBody() {
             <Menu/>
             <Stack sx={SX.stack}>
                 <ClusterList/>
-                <Access permission={Permission.ViewNodeDbOverview}>
+                <Access feature={Feature.ViewNodeDbOverview}>
                     <ClusterOverview/>
                     <ClusterNode/>
                 </Access>

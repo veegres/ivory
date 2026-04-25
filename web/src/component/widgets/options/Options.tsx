@@ -2,7 +2,7 @@ import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {CertType} from "../../../api/cert/type"
 import {ClusterOptions} from "../../../api/cluster/type"
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
 import {VaultType} from "../../../api/vault/type"
 import {SxPropsMap} from "../../../app/type"
 import {CertOptions, VaultOptions} from "../../../app/utils"
@@ -26,7 +26,7 @@ export function Options(props: Props) {
     const {vaults, tags, certs, tls} = cluster
 
     return (
-        <AccessBox sx={SX.box} permission={Permission.ManageClusterUpdate}>
+        <AccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
             <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/>
             <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/>
             <Divider variant={"middle"}/>

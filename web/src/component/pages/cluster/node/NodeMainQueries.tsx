@@ -1,6 +1,6 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {Connection, QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -27,7 +27,7 @@ export function NodeMainQueries(props: Props){
     return (
         <Box sx={SX.box}>
             <Box sx={SX.filters}>
-                <Access permission={Permission.ManageQueryExecuteConsole}>
+                <Access feature={Feature.ManageQueryExecuteConsole}>
                     <ToggleButton
                         sx={SX.group}
                         size={"small"}
