@@ -1,7 +1,6 @@
 package management
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -59,7 +58,7 @@ func (r *Router) Export(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_ = json.NewEncoder(context.Writer).Encode(data)
+	_, _ = context.Writer.Write(data)
 }
 
 func (r *Router) ChangeSecret(context *gin.Context) {

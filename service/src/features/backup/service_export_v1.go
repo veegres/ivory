@@ -7,7 +7,14 @@ import (
 	"ivory/src/features/query"
 )
 
-func (s *Service) Export() (*BackupV1, error) {
+// exportV1 builds the fixed V1 backup representation from current internal
+// models.
+//
+// This function defines how the current system is projected into the frozen V1
+// wire schema. Once a new backup format is introduced, exportV1 must remain
+// unchanged so Ivory can continue producing or reasoning about legacy V1 data if
+// needed, while new exports should move to exportV2 or later.
+func (s *Service) exportV1() (*BackupV1, error) {
 	clusters, errCluster := s.clusterService.List()
 	if errCluster != nil {
 		return nil, errCluster

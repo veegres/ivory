@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,6 +16,9 @@ var ErrInvalidQueryType = errors.New("invalid query type")
 var ErrInvalidQueryVariety = errors.New("invalid query variety")
 var ErrInvalidStatus = errors.New("invalid status")
 var ErrInvalidFeature = errors.New("invalid feature")
+var ErrUnsupportedBackupVersion = errors.New("unsupported backup version")
+
+const latestBackupVersion = "v1"
 
 // Service manages the lifecycle of system backups (export/import).
 // It handles backward compatibility by dispatching imports to version-specific
@@ -23,7 +27,6 @@ type Service struct {
 	clusterService    *cluster.Service
 	queryService      *query.Service
 	permissionService *permission.Service
-	currentVersion    string
 }
 
 func NewService(
@@ -35,7 +38,6 @@ func NewService(
 		clusterService:    clusterService,
 		queryService:      queryService,
 		permissionService: permissionService,
-		currentVersion:    "v1",
 	}
 }
 
@@ -43,7 +45,27 @@ func NewService(
 // The filename includes the version (e.g., ivory.v1.bak) which is used
 // for version detection during import.
 func (s *Service) GetFileName() string {
-	return fmt.Sprintf("ivory.%s.bak", s.currentVersion)
+	return fmt.Sprintf("ivory.%s.bak", latestBackupVersion)
+}
+
+// Export is the entry point for creating a backup file in the latest supported
+// wire format.
+//
+// Callers should treat the returned bytes as an opaque payload and should not
+// depend on any specific versioned backup struct. When the backup schema must
+// change in a backward-incompatible way, this method should switch to exporting
+// the new version while preserving older import handlers for legacy files.
+func (s *Service) Export() ([]byte, error) {
+	switch latestBackupVersion {
+	case "v1":
+		backupModel, err := s.exportV1()
+		if err != nil {
+			return nil, err
+		}
+		return json.Marshal(backupModel)
+	default:
+		return nil, ErrUnsupportedBackupVersion
+	}
 }
 
 // Import is the entry point for restoring data from a backup file.
@@ -62,7 +84,7 @@ func (s *Service) Import(file *multipart.FileHeader) error {
 	}
 
 	if strings.Contains(file.Filename, ".v1.") || !strings.Contains(file.Filename, ".v") {
-		return s.ImportV1(data)
+		return s.importV1(data)
 	}
 
 	return fmt.Errorf("unsupported backup version in filename: %s", file.Filename)
