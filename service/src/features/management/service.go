@@ -28,7 +28,6 @@ type Service struct {
 	tagService        *tag.Service
 	bloatService      *bloat.Service
 	queryService      *query.Service
-	queryLogService   *query.LogService
 	secretService     *secret.Service
 	configService     *config.Service
 	permissionService *permission.Service
@@ -44,7 +43,6 @@ func NewService(
 	tagService *tag.Service,
 	bloatService *bloat.Service,
 	queryService *query.Service,
-	queryLogService *query.LogService,
 	secretService *secret.Service,
 	configService *config.Service,
 	permissionService *permission.Service,
@@ -59,7 +57,6 @@ func NewService(
 		certService:       certService,
 		tagService:        tagService,
 		queryService:      queryService,
-		queryLogService:   queryLogService,
 		secretService:     secretService,
 		configService:     configService,
 		permissionService: permissionService,
@@ -69,7 +66,7 @@ func NewService(
 
 func (s *Service) Free() error {
 	errComTable := s.bloatService.DeleteAll()
-	errQuery := s.queryLogService.DeleteAll()
+	errQuery := s.queryService.DeleteAllLogs()
 	return errors.Join(errComTable, errQuery)
 }
 

@@ -73,8 +73,7 @@ func NewContext() *Context {
 	secretRepo := secret.NewRepository(secretBucket)
 	vaultRepo := vault.NewRepository(vaultBucket)
 	permissionRepo := permission.NewRepository(permissionBucket)
-	queryLogRepo := query.NewLogRepository(queryLogFiles)
-	queryRepo := query.NewRepository(queryBucket)
+	queryRepo := query.NewRepository(queryBucket, queryLogFiles)
 
 	// CLIENTS
 	httpClient := http.NewClient()
@@ -102,9 +101,7 @@ func NewContext() *Context {
 	nodeService := node.NewService(keeperRegistry, sshClient, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService)
-	queryLogService := query.NewLogService(queryLogRepo)
-	queryService := query.NewService(queryRepo, queryLogService, secretService)
-	queryExecuteService := query.NewExecuteService(queryRepo, dbRegistry, queryLogService, vaultService, certService)
+	queryService := query.NewService(queryRepo, dbRegistry, vaultService, certService, secretService)
 	bloatService := bloat.NewService(bloatRepo, vaultService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
@@ -118,7 +115,6 @@ func NewContext() *Context {
 		tagService,
 		bloatService,
 		queryService,
-		queryLogService,
 		secretService,
 		configService,
 		permissionService,
@@ -136,7 +132,7 @@ func NewContext() *Context {
 		permissionRouter: permission.NewRouter(permissionService),
 		tagRouter:        tag.NewRouter(tagService),
 		nodeRouter:       node.NewRouter(nodeService),
-		queryRouter:      query.NewRouter(queryService, queryExecuteService, queryLogService, configService),
+		queryRouter:      query.NewRouter(queryService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),
 	}
