@@ -12,7 +12,6 @@ import (
 	"ivory/src/clients/ssh"
 	"ivory/src/features/auth"
 	"ivory/src/features/backup"
-	"ivory/src/features/bloat"
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
@@ -23,6 +22,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/features/tools"
 	"ivory/src/features/vault"
 	"ivory/src/storage/db"
 	"ivory/src/storage/env"
@@ -33,7 +33,7 @@ type Context struct {
 	env              *env.AppEnv
 	authRouter       *auth.Router
 	clusterRouter    *cluster.Router
-	bloatRouter      *bloat.Router
+	toolsRouter      *tools.Router
 	certRouter       *cert.Router
 	secretRouter     *secret.Router
 	vaultRouter      *vault.Router
@@ -51,7 +51,6 @@ func NewContext() *Context {
 	// DB
 	st := db.NewStorage("ivory.db")
 	clusterBucket := db.NewBucket[cluster.Cluster](st, "Cluster")
-	compactTableBucket := db.NewBucket[bloat.Bloat](st, "CompactTable")
 	certBucket := db.NewBucket[cert.Cert](st, "Cert")
 	tagBucket := db.NewBucket[[]string](st, "Tag")
 	secretBucket := db.NewBucket[string](st, "Secret")
@@ -60,14 +59,12 @@ func NewContext() *Context {
 	queryBucket := db.NewBucket[query.Query](st, "Query")
 
 	// FILES
-	compactTableFiles := files.NewStorage("pgcompacttable", ".log")
 	certFiles := files.NewStorage("cert", ".crt")
 	configFiles := files.NewStorage("config", ".json")
 	queryLogFiles := files.NewStorage("query", ".jsonl")
 
 	// REPOS
 	clusterRepo := cluster.NewRepository(clusterBucket)
-	bloatRepo := bloat.NewRepository(compactTableBucket, compactTableFiles)
 	certRepo := cert.NewRepository(certBucket, certFiles)
 	tagRepo := tag.NewRepository(tagBucket)
 	secretRepo := secret.NewRepository(secretBucket)
@@ -100,9 +97,9 @@ func NewContext() *Context {
 	certService := cert.NewService(certRepo)
 	nodeService := node.NewService(keeperRegistry, sshClient, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
-	bloatService := bloat.NewService(bloatRepo, vaultService)
+	toolsService := tools.NewService(vaultService)
 	queryService := query.NewService(queryRepo, dbRegistry, vaultService, certService, secretService)
-	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService)
+	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
 	backupService := backup.NewService(clusterService, queryService, permissionService)
@@ -113,7 +110,7 @@ func NewContext() *Context {
 		clusterService,
 		certService,
 		tagService,
-		bloatService,
+		toolsService,
 		queryService,
 		secretService,
 		configService,
@@ -125,7 +122,7 @@ func NewContext() *Context {
 		env:              appEnv,
 		authRouter:       auth.NewRouter(authService, appEnv.Config.UrlPath, appEnv.Config.TlsEnabled),
 		clusterRouter:    cluster.NewRouter(clusterService),
-		bloatRouter:      bloat.NewRouter(bloatService),
+		toolsRouter:      tools.NewRouter(toolsService),
 		certRouter:       cert.NewRouter(certService),
 		secretRouter:     secret.NewRouter(secretService),
 		vaultRouter:      vault.NewRouter(vaultService),

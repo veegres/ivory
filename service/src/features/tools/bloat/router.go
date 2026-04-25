@@ -1,7 +1,7 @@
 package bloat
 
 import (
-	. "ivory/src/features/bloat/job"
+	. "ivory/src/features/tools/bloat/job"
 	"net/http"
 	"strconv"
 
