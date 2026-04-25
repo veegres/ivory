@@ -33,12 +33,12 @@ func NewClient(appName string) *Client {
 
 func (s *Client) SupportedFeatures() []features.Feature {
 	return []features.Feature{
-		features.ViewQueryExecuteInfo,
-		features.ViewQueryExecuteChart,
-		features.ManageQueryExecuteTemplate,
-		features.ManageQueryExecuteConsole,
-		features.ManageQueryExecuteCancel,
-		features.ManageQueryExecuteTerminate,
+		features.ViewQueryDbInfo,
+		features.ViewQueryDbChart,
+		features.ManageQueryDbTemplate,
+		features.ManageQueryDbConsole,
+		features.ManageQueryDbCancel,
+		features.ManageQueryDbTerminate,
 	}
 }
 

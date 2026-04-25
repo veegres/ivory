@@ -27,16 +27,16 @@ export enum Feature {
     ViewNodeSshDocker = "view.node.ssh.docker",
 
     // Query features
-    ViewQueryList = "view.query.list",
-    ManageQueryCreate = "manage.query.create",
-    ManageQueryUpdate = "manage.query.update",
-    ManageQueryDelete = "manage.query.delete",
-    ViewQueryExecuteInfo = "view.query.execute.info",
-    ViewQueryExecuteChart = "view.query.execute.chart",
-    ManageQueryExecuteTemplate = "manage.query.execute.template",
-    ManageQueryExecuteConsole = "manage.query.execute.console",
-    ManageQueryExecuteCancel = "manage.query.execute.cancel",
-    ManageQueryExecuteTerminate = "manage.query.execute.terminate",
+    ViewQueryCrudList = "view.query.crud.list",
+    ManageQueryCrudCreate = "manage.query.crud.create",
+    ManageQueryCrudUpdate = "manage.query.crud.update",
+    ManageQueryCrudDelete = "manage.query.crud.delete",
+    ViewQueryDbInfo = "view.query.db.info",
+    ViewQueryDbChart = "view.query.db.chart",
+    ManageQueryDbTemplate = "manage.query.db.template",
+    ManageQueryDbConsole = "manage.query.db.console",
+    ManageQueryDbCancel = "manage.query.db.cancel",
+    ManageQueryDbTerminate = "manage.query.db.terminate",
     ViewQueryLogList = "view.query.log.list",
     ManageQueryLogDelete = "manage.query.log.delete",
 
@@ -57,10 +57,10 @@ export enum Feature {
     ManagePermissionDelete = "manage.permission.delete",
 
     // Bloat features
-    ViewBloatList = "view.bloat.list",
-    ViewBloatItem = "view.bloat.item",
-    ViewBloatLogs = "view.bloat.logs",
-    ManageBloatJob = "manage.bloat.job",
+    ViewToolBloatList = "view.tool.bloat.list",
+    ViewToolBloatItem = "view.tool.bloat.item",
+    ViewToolBloatLogs = "view.tool.bloat.logs",
+    ManageToolBloatJob = "manage.tool.bloat.job",
 
     // Management features
     ViewManagementSecret = "view.management.secret",

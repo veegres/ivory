@@ -85,13 +85,13 @@ export function QueryTemplateView(props: Props) {
                 <Access feature={Feature.ViewQueryLogList}>
                     <LogIconButton onClick={handleToggleBody(ViewToggleType.LOG)}/>
                 </Access>
-                <Access feature={Feature.ManageQueryUpdate}>
+                <Access feature={Feature.ManageQueryCrudUpdate}>
                     {query.default !== query.custom && (
                         <RestoreIconButton onClick={handleToggleBody(ViewToggleType.RESTORE)}/>
                     )}
                     <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
                 </Access>
-                <Access feature={Feature.ManageQueryDelete}>
+                <Access feature={Feature.ManageQueryCrudDelete}>
                     {query.creation === QueryCreation.Manual && (
                         <QueryButtonDelete id={query.id} type={query.type}/>
                     )}

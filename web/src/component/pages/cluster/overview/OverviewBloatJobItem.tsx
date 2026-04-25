@@ -61,7 +61,7 @@ export function OverviewBloatJobItem(props: Props) {
                     <Box>Command</Box>
                     <Box sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
-                        <Access feature={Feature.ManageBloatJob}>
+                        <Access feature={Feature.ManageToolBloatJob}>
                             {status.active ?
                                 renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isPending) :
                                 renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isPending)
@@ -82,7 +82,7 @@ export function OverviewBloatJobItem(props: Props) {
                         <Tooltip title={`Job ID: ${uuid}`}>
                             <Box>{shortUuid(uuid)}</Box>
                         </Tooltip>
-                        <Access feature={Feature.ViewBloatLogs}>
+                        <Access feature={Feature.ViewToolBloatLogs}>
                             <Tooltip title={"Open"}>
                                 <Box sx={SX.tooltipBox}>
                                     <IconButton sx={SX.button} size={"small"}>

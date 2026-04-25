@@ -114,7 +114,7 @@ export function QueryTemplateWrapper(props: Props) {
 
     function renderRunButton() {
         return !checkView[ViewCheckType.RUN] ? (
-            <Access feature={Feature.ManageQueryExecuteTemplate}>
+            <Access feature={Feature.ManageQueryDbTemplate}>
                 <PlayIconButton color={"success"} disabled={!query && !queryUuid} onClick={handleCheckView(ViewCheckType.RUN)}/>
             </Access>
         ) : (

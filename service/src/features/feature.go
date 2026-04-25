@@ -32,17 +32,17 @@ const (
 	ManageNodeSshDocker Feature = "manage.node.ssh.docker"
 
 	// Query features
-	ViewQueryList     Feature = "view.query.list"
-	ManageQueryCreate Feature = "manage.query.create"
-	ManageQueryUpdate Feature = "manage.query.update"
-	ManageQueryDelete Feature = "manage.query.delete"
+	ViewQueryCrudList     Feature = "view.query.crud.list"
+	ManageQueryCrudCreate Feature = "manage.query.crud.create"
+	ManageQueryCrudUpdate Feature = "manage.query.crud.update"
+	ManageQueryCrudDelete Feature = "manage.query.crud.delete"
 
-	ViewQueryExecuteInfo        Feature = "view.query.execute.info"
-	ViewQueryExecuteChart       Feature = "view.query.execute.chart"
-	ManageQueryExecuteTemplate  Feature = "manage.query.execute.template"
-	ManageQueryExecuteConsole   Feature = "manage.query.execute.console"
-	ManageQueryExecuteCancel    Feature = "manage.query.execute.cancel"
-	ManageQueryExecuteTerminate Feature = "manage.query.execute.terminate"
+	ViewQueryDbInfo        Feature = "view.query.db.info"
+	ViewQueryDbChart       Feature = "view.query.db.chart"
+	ManageQueryDbTemplate  Feature = "manage.query.db.template"
+	ManageQueryDbConsole   Feature = "manage.query.db.console"
+	ManageQueryDbCancel    Feature = "manage.query.db.cancel"
+	ManageQueryDbTerminate Feature = "manage.query.db.terminate"
 
 	ViewQueryLogList     Feature = "view.query.log.list"
 	ManageQueryLogDelete Feature = "manage.query.log.delete"
@@ -63,11 +63,11 @@ const (
 	ManagePermissionUpdate Feature = "manage.permission.update"
 	ManagePermissionDelete Feature = "manage.permission.delete"
 
-	// Bloat features
-	ViewBloatList  Feature = "view.bloat.list"
-	ViewBloatItem  Feature = "view.bloat.item"
-	ViewBloatLogs  Feature = "view.bloat.logs"
-	ManageBloatJob Feature = "manage.bloat.job"
+	// Tool features
+	ViewToolBloatList  Feature = "view.tool.bloat.list"
+	ViewToolBloatItem  Feature = "view.tool.bloat.item"
+	ViewToolBloatLogs  Feature = "view.tool.bloat.logs"
+	ManageToolBloatJob Feature = "manage.tool.bloat.job"
 
 	// Management features
 	ViewManagementSecret   Feature = "view.management.secret"
@@ -97,16 +97,16 @@ var All = []Feature{
 	ManageNodeDbActivation,
 	ManageNodeSshDocker,
 	ViewNodeSshDocker,
-	ViewQueryList,
-	ManageQueryCreate,
-	ManageQueryUpdate,
-	ManageQueryDelete,
-	ViewQueryExecuteInfo,
-	ViewQueryExecuteChart,
-	ManageQueryExecuteTemplate,
-	ManageQueryExecuteConsole,
-	ManageQueryExecuteCancel,
-	ManageQueryExecuteTerminate,
+	ViewQueryCrudList,
+	ManageQueryCrudCreate,
+	ManageQueryCrudUpdate,
+	ManageQueryCrudDelete,
+	ViewQueryDbInfo,
+	ViewQueryDbChart,
+	ManageQueryDbTemplate,
+	ManageQueryDbConsole,
+	ManageQueryDbCancel,
+	ManageQueryDbTerminate,
 	ViewQueryLogList,
 	ManageQueryLogDelete,
 	ViewVaultList,
@@ -119,10 +119,10 @@ var All = []Feature{
 	ViewPermissionList,
 	ManagePermissionUpdate,
 	ManagePermissionDelete,
-	ViewBloatList,
-	ViewBloatItem,
-	ViewBloatLogs,
-	ManageBloatJob,
+	ViewToolBloatList,
+	ViewToolBloatItem,
+	ViewToolBloatLogs,
+	ManageToolBloatJob,
 	ViewManagementSecret,
 	ManageManagementSecret,
 	ManageManagementErase,

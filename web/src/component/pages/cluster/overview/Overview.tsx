@@ -61,7 +61,7 @@ const TABS: ClusterTab[] = [
     },
     {
         label: "Bloat",
-        feature: Feature.ViewBloatList,
+        feature: Feature.ViewToolBloatList,
         body: (cluster, overview) => {
             if (!overview?.mainNode) return <ClusterNoNodeError/>
             return <OverviewBloat cluster={cluster} node={overview.mainNode}/>

@@ -29,7 +29,7 @@ export function QueryTableActions(props: Props) {
     return (
         <MenuButton open={open} onChange={(v) => setOpen(v)}>
             <Box sx={SX.box}>
-                <Access feature={Feature.ManageQueryExecuteTerminate}>
+                <Access feature={Feature.ManageQueryDbTerminate}>
                     <Button
                         sx={SX.actionButton}
                         size={"small"}
@@ -40,7 +40,7 @@ export function QueryTableActions(props: Props) {
                         Terminate
                     </Button>
                 </Access>
-                <Access feature={Feature.ManageQueryExecuteCancel}>
+                <Access feature={Feature.ManageQueryDbCancel}>
                     <Button
                         sx={SX.actionButton}
                         size={"small"}

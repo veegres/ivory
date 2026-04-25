@@ -29,7 +29,7 @@ export function NodeInfo(props: Props) {
     const {node, tab, onTab, connection} = props
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
-    const access = !!permissions && permissions[Feature.ViewQueryExecuteChart] === Status.GRANTED
+    const access = !!permissions && permissions[Feature.ViewQueryDbChart] === Status.GRANTED
 
     return (
         <Box sx={SX.info}>
@@ -45,7 +45,7 @@ export function NodeInfo(props: Props) {
             <Paper sx={SX.paper} variant={"outlined"}>
                 <NodeInfoTable node={node}/>
             </Paper>
-            <Access feature={Feature.ViewQueryExecuteInfo}>
+            <Access feature={Feature.ViewQueryDbInfo}>
                 <Paper sx={SX.paper} variant={"outlined"}>
                     <QueryActivity connection={connection}/>
                 </Paper>

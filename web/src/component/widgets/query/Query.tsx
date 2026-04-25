@@ -26,7 +26,7 @@ export function Query(props: Props) {
 
     return (
         <Box style={style.box}>
-            <Access feature={Feature.ManageQueryCreate}>
+            <Access feature={Feature.ManageQueryCrudCreate}>
                 <QueryTemplateNew type={type} connection={connection}/>
             </Access>
             {renderList()}
