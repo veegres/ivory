@@ -17,15 +17,25 @@ type ClusterOptions struct {
 	Tags   []string   `json:"tags"`
 }
 
+type ClusterType int8
+
+const (
+	POSTGRES_PATRONI ClusterType = iota
+	POSTGRES
+	ETCD
+)
+
 type Cluster struct {
 	ClusterOptions
 	Name  string            `json:"name"`
+	Type  ClusterType       `json:"type"`
 	Nodes []node.Connection `json:"nodes"`
 }
 
 type ClusterAuto struct {
 	ClusterOptions
 	Name string          `json:"name"`
+	Type ClusterType     `json:"type"`
 	Node node.Connection `json:"node"`
 }
 

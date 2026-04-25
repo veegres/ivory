@@ -22,7 +22,7 @@ import {
 // Extend dayjs with UTC plugin for DateTimeFormatter tests
 dayjs.extend(utc)
 
-const mockSshKeyId = "00000000-0000-0000-0000-000000000000";
+const mockSshKeyId = "00000000-0000-0000-0000-000000000000"
 
 describe("shortUuid", () => {
   it("should return the first 8 characters of a UUID", () => {
@@ -56,12 +56,12 @@ describe("getDomains", () => {
 describe("getNodeConnection", () => {
     it("should return a NodeConnection object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getNodeConnection(domain)).toEqual({sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008})
+        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: 8008})
     })
 
     it("should return a NodeConnection object with undefined port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getNodeConnection(domain)).toEqual({sshKeyId: mockSshKeyId, host: "localhost", keeperPort: undefined})
+        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: undefined})
     })
 })
 
@@ -69,8 +69,8 @@ describe("getNodeConnections", () => {
     it("should return an array of NodeConnection objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
         expect(getNodeConnections(domains)).toEqual([
-            {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008},
-            {sshKeyId: mockSshKeyId, host: "127.0.0.1", keeperPort: undefined},
+            {host: "localhost", keeperPort: 8008},
+            {host: "127.0.0.1", keeperPort: undefined},
         ])
     })
 })

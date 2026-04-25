@@ -61,6 +61,7 @@ export function OverviewNodesRow(props: Props) {
                     <Box sx={SX.nowrap}>{node.connection.host}</Box>
                 </Tooltip>
             </TableCell>
+            <TableCell sx={SX.nowrap}>{node.connection.sshPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{node.connection.keeperPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{node.connection.dbPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{state}</TableCell>

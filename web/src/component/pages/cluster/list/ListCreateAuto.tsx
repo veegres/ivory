@@ -2,7 +2,7 @@ import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider,
 import {useState} from "react"
 
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
-import {ClusterAuto} from "../../../../api/cluster/type"
+import {ClusterAuto, ClusterType} from "../../../../api/cluster/type"
 import {Permission} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {AlertCentered} from "../../../view/box/AlertCentered"
@@ -19,6 +19,7 @@ const SX: SxPropsMap = {
 
 const InitialClusterAuto: ClusterAuto = {
     name: "",
+    type: ClusterType.POSTGRES_PATRONI,
     tls: {keeper: false, database: false},
     certs: {},
     vaults: {},

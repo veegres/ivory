@@ -379,6 +379,7 @@ func backupToCluster(bc backupCluster) cluster.Cluster {
 	}
 	return cluster.Cluster{
 		Name: bc.Name,
+		Type: cluster.POSTGRES_PATRONI,
 		ClusterOptions: cluster.ClusterOptions{
 			Tags: bc.Tags,
 		},

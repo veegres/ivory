@@ -3,6 +3,8 @@
 ## Project Structure & Module Organization
 Ivory is split into a Go backend in `service/` and a Vite/React frontend in `web/`. Backend packages live under `service/src/`, organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `app/` for wiring. Frontend source lives in `web/src/`, with `api/` for client adapters, `component/` for UI, `provider/` and `hook/` for shared state and behavior, and `style/` for CSS modules. Tests live in `service/src/**/_test.go` and `web/test/`. Docs and screenshots are under `doc/`; local Docker setups are under `docker/`.
 
+**Mandatory Check**: When modifying frontend code, always run `cd web && npm run lint` and `cd web && npm run build` to ensure no linting or TypeScript compilation errors were introduced.
+
 ## Build, Test, and Development Commands
 Backend:
 - `make -C service build` builds `service/build/ivory`.

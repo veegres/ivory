@@ -2,14 +2,14 @@ import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {CertType} from "../../../api/cert/type"
 import {ClusterOptions} from "../../../api/cluster/type"
-import {VaultType} from "../../../api/vault/type"
 import {Permission} from "../../../api/permission/type"
+import {VaultType} from "../../../api/vault/type"
 import {SxPropsMap} from "../../../app/type"
 import {CertOptions, VaultOptions} from "../../../app/utils"
 import {AccessBox} from "../access/Access"
 import {OptionsCert} from "./OptionsCert"
-import {OptionsVault} from "./OptionsVault"
 import {OptionsTags} from "./OptionsTags"
+import {OptionsVault} from "./OptionsVault"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},

@@ -17,14 +17,22 @@ export interface ClusterOptions {
     tags?: string[],
 }
 
+export enum ClusterType {
+    POSTGRES_PATRONI,
+    POSTGRES,
+    ETCD,
+}
+
 export interface Cluster extends ClusterOptions {
     name: string,
+    type: ClusterType,
     nodes: Connection[],
     nodesOverview: NodeOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
     name: string,
+    type: ClusterType,
     node: Connection,
 }
 
