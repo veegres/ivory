@@ -48,7 +48,7 @@ export const useStore = create(persist<Store>(
 
 export const useStoreAction = {
     setCluster: setCluster,
-    setSearchCluster: setSearchCluster,
+    setSearchCluster: setClusterSearch,
     setClusterDetection: setClusterKeeper,
     setClusterTab: setClusterTab,
     setWarnings: setWarnings,
@@ -65,7 +65,7 @@ export const useStoreAction = {
 }
 
 // SETTERS
-function setSearchCluster(search: string) {
+function setClusterSearch(search: string) {
     useStore.setState(s => ({...s, searchCluster: search}))
 }
 

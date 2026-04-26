@@ -159,8 +159,7 @@ export const getNodeConnections = (kt: KeeperType, dbt: DatabaseType, domains: s
 }
 
 export const getMainKeeper = (nodes: NodeOverview = {}, detectedKeeper?: string): [string?, Node?] => {
-    if (detectedKeeper) return [detectedKeeper, nodes[detectedKeeper]]
-    return Object.entries(nodes).find(([_, v]) => v.keeper.role === "leader") ?? []
+    return Object.entries(nodes).find(([_, v]) => v.keeper.role === "leader") ?? [detectedKeeper, nodes[detectedKeeper ?? ""]]
 }
 
 export const getDetectionItems = (nodes: NodeOverview = {}, detectedKeeper?: string, manualKeeper?: string) => {
