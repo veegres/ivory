@@ -200,27 +200,29 @@ func TestClient_Pause(t *testing.T) {
 
 func TestKeeperResponse_Mapping(t *testing.T) {
 	t.Run("should map to internal response model correctly", func(t *testing.T) {
+		host := "db1.example.com"
+		dbPort, keeperPort := 5432, 8008
 		expectedResponse := keeper.Response{
 			Role:                 keeper.Leader,
 			State:                "running",
 			Lag:                  0,
 			PendingRestart:       false,
-			DiscoveredHost:       "db1.example.com",
-			DiscoveredDbPort:     5432,
-			DiscoveredKeeperPort: 8008,
+			DiscoveredHost:       &host,
+			DiscoveredDbPort:     &dbPort,
+			DiscoveredKeeperPort: &keeperPort,
 		}
 
 		if expectedResponse.Role != keeper.Leader {
 			t.Errorf("Expected role 'leader', got '%s'", expectedResponse.Role)
 		}
-		if expectedResponse.DiscoveredHost != "db1.example.com" {
-			t.Errorf("Expected host 'db1.example.com', got '%s'", expectedResponse.DiscoveredHost)
+		if *expectedResponse.DiscoveredHost != "db1.example.com" {
+			t.Errorf("Expected host 'db1.example.com', got '%s'", *expectedResponse.DiscoveredHost)
 		}
-		if expectedResponse.DiscoveredDbPort != 5432 {
-			t.Errorf("Expected db port 5432, got %d", expectedResponse.DiscoveredDbPort)
+		if *expectedResponse.DiscoveredDbPort != 5432 {
+			t.Errorf("Expected db port 5432, got %d", *expectedResponse.DiscoveredDbPort)
 		}
-		if expectedResponse.DiscoveredKeeperPort != 8008 {
-			t.Errorf("Expected keeper port 8008, got %d", expectedResponse.DiscoveredKeeperPort)
+		if *expectedResponse.DiscoveredKeeperPort != 8008 {
+			t.Errorf("Expected keeper port 8008, got %d", *expectedResponse.DiscoveredKeeperPort)
 		}
 	})
 }

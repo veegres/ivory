@@ -5,12 +5,12 @@ import {Connection, DockerLogsRequest, DockerRequest, KeeperRequest, SshRequest}
 
 export const NodeApi = {
     overview: {
-        key: (connection: Connection) => ["node", "db", "overview", connection.host, connection.keeperPort],
+        key: (h: string, p?: number) => ["node", "db", "overview", h, p],
         fn: (request: KeeperRequest) => api.get<R<any>>("/node/db/overview", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
     config: {
-        key: (connection: Connection) => ["node", "db", "config", connection.host, connection.keeperPort],
+        key: (h: string, p?: number) => ["node", "db", "config", h, p],
         fn: (request: KeeperRequest) => api.get<R<any>>("/node/db/config", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },

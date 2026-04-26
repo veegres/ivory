@@ -8,7 +8,7 @@ import {Connection, DockerLogsRequest, KeeperRequest, SshRequest} from "./type"
 export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.overview.key(request.connection),
+        queryKey: NodeApi.overview.key(request.host, request.port),
         queryFn: () => NodeApi.overview.fn(request),
         enabled,
     })
@@ -17,7 +17,7 @@ export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) 
 export function useRouterNodeConfig(request: KeeperRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.config.key(request.connection),
+        queryKey: NodeApi.config.key(request.host, request.port),
         queryFn: () => NodeApi.config.fn(request),
         enabled,
     })
@@ -27,7 +27,7 @@ export function useRouterNodeConfigUpdate(connection: Connection, onSuccess: () 
     return useMutationAdapter({
         mutationFn: NodeApi.updateConfig.fn,
         mutationKey: NodeApi.updateConfig.key(),
-        successKeys: [NodeApi.config.key(connection)],
+        successKeys: [NodeApi.config.key(connection.host, connection.keeperPort)],
         onSuccess: onSuccess,
     })
 }

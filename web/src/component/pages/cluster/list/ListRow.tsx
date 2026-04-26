@@ -5,12 +5,7 @@ import {useEffect, useMemo, useRef, useState} from "react"
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster} from "../../../../api/cluster/type"
 import {ColorsMap, SxPropsMap} from "../../../../app/type"
-import {
-    getDetectionItems,
-    getDomains,
-    getNodeConnections, NodeColor,
-    SxPropsFormatter,
-} from "../../../../app/utils"
+import {getDetectionItems, getDomains, getNodeConnections, NodeColor, SxPropsFormatter} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
 import {AutoRefreshIconButton, RefreshIconButton} from "../../../view/button/IconButtons"
@@ -44,9 +39,9 @@ export function ListRow(props: Props) {
 
     const overview = useRouterClusterOverview(cluster.name)
     const nodes = overview.data?.nodes ?? cluster.nodesOverview
-    const mainNode = overview.data?.mainNode
-    const warning = useMemo(handleMemoWarning, [nodes])
-    const colors = useMemo(handleMemoColors, [nodes])
+    const detectedDomain = overview.data?.detectedDomain
+    const [warning, colors] = useMemo(handleMemoNodes, [nodes])
+    const detectionItems = useMemo(() => getDetectionItems(nodes, detectedDomain, activeCluster?.manualKeeper), [nodes, detectedDomain, activeCluster?.manualKeeper])
 
     useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
     useEffect(handleEffectScroll, [active])
@@ -96,7 +91,7 @@ export function ListRow(props: Props) {
             <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, nodes: getNodeConnections(stateNodes)}}
+                cluster={{...cluster, nodes: getNodeConnections(cluster.keeperType, cluster.dbType, stateNodes)}}
                 toggle={toggle}
                 onUpdate={overview.refetch}
                 onClose={() => setStateNodes(getDomains(cluster.nodes))}
@@ -105,7 +100,7 @@ export function ListRow(props: Props) {
     }
 
     function renderRefresh() {
-        return !active || !activeCluster?.detectBy ? (
+        return !active || !activeCluster?.manualKeeper ? (
             <AutoRefreshIconButton
                 tooltip={renderChipTooltip()}
                 placement={"right-start"}
@@ -125,28 +120,28 @@ export function ListRow(props: Props) {
     }
 
     function renderChipTooltip() {
-        const detectBy = overview.data?.detectedBy
-        const items = getDetectionItems(mainNode, detectBy)
-        return <InfoColorBoxList items={items} label={"Cluster Detection"}/>
+        return <InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>
     }
 
-    function handleMemoColors() {
-        return Object.entries(nodes).reduce(
+    function handleMemoNodes(): [boolean, ColorsMap] {
+        const getColors = () => Object.entries(nodes).reduce(
             (map, [domain, node]) => {
-                map[domain] = NodeColor[node?.keeper.role ?? "unknown"].label
+                map[domain] = NodeColor[node.keeper.role].label
                 return map
             },
             {} as ColorsMap
         )
+
+        const getWarning = () => {
+            for (const key in nodes) {
+                const node = nodes[key]
+                if (!node) return true
+            }
+            return false
+        }
+        return [getWarning(), getColors()]
     }
 
-    function handleMemoWarning() {
-        for (const key in nodes) {
-            const node = nodes[key]
-            if (!node) return true
-        }
-        return false
-    }
 
     function handleEffectWarningsUpdate() {
         setWarnings(cluster.name, warning)

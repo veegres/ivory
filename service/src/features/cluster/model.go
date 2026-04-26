@@ -29,8 +29,9 @@ type Cluster struct {
 
 type ClusterAuto struct {
 	ClusterOptions
-	Name string          `json:"name"`
-	Node node.Connection `json:"node"`
+	Name string `json:"name"`
+	Host string `json:"host"`
+	Port int    `json:"port"`
 }
 
 type ClusterTls struct {
@@ -44,18 +45,16 @@ type Vaults struct {
 }
 
 type ClusterOverview struct {
-	Nodes      NodeOverview       `json:"nodes"`
-	DetectedBy *keeper.Keeper     `json:"detectedBy"`
-	MainNode   *Node              `json:"mainNode"`
-	Features   []features.Feature `json:"features"`
+	Nodes          NodeOverview       `json:"nodes"`
+	DetectedDomain string             `json:"detectedDomain"`
+	Features       []features.Feature `json:"features"`
 }
 
-type NodeOverview map[string]*Node
+type NodeOverview map[string]Node
 
 type Node struct {
 	node.KeeperResponse
-	InCluster bool `json:"inCluster"`
-	InKeeper  bool `json:"inSidecar"`
+	Warnings []string `json:"warnings"`
 }
 
 // SPECIFIC (SERVER)

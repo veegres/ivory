@@ -7,7 +7,7 @@ import {Cluster, Node} from "../../../../api/cluster/type"
 import {Feature} from "../../../../api/feature"
 import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../api/node/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {CodeThemes, getKeeperConnection} from "../../../../app/utils"
+import {CodeThemes, getKeeperRequest} from "../../../../app/utils"
 import {useSettings} from "../../../../provider/AppProvider"
 import {useSnackbar} from "../../../../provider/SnackbarProvider"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
@@ -31,7 +31,7 @@ export function OverviewConfig(props: Props) {
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const connection = getKeeperConnection(cluster, node.connection)
+    const connection = getKeeperRequest(cluster, node.connection.host, node.connection.keeperPort ?? 0)
 
     const config = useRouterNodeConfig(connection, !!node.connection)
     const updateConfig = useRouterNodeConfigUpdate(node.connection, () => setIsEditable(false))

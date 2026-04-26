@@ -45,7 +45,7 @@ func (s *Service) SupportedFeatures(t keeper.Type) []features.Feature {
 }
 
 func (s *Service) getKeeperRequest(request KeeperRequest) (keeper.Request, error) {
-	keeperRequest := keeper.Request{Host: request.Connection.Host, Port: request.Connection.KeeperPort, Body: request.Body}
+	keeperRequest := keeper.Request{Host: request.Host, Port: request.Port, Body: request.Body}
 	if request.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, request.Certs)
 		if err != nil {

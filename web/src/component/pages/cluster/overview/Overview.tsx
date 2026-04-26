@@ -1,5 +1,5 @@
 import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material"
-import {useState} from "react"
+import {useMemo, useState} from "react"
 
 import {useRouterClusterList, useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {ClusterTab} from "../../../../api/cluster/type"
@@ -7,6 +7,7 @@ import {Feature} from "../../../../api/feature"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {Status} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
+import {getMainKeeper} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
@@ -34,7 +35,7 @@ const TABS: ClusterTab[] = [
     {
         label: "Overview",
         feature: Feature.ViewNodeDbOverview,
-        body: (cluster, overview) => <OverviewNodes cluster={cluster} nodes={overview?.nodes}/>,
+        body: (cluster, _, nodes) => <OverviewNodes cluster={cluster} nodes={nodes}/>,
         info: <>
             The Overview tab offers visibility into the current status of your cluster. From here, you can
             utilize essential features to manage your cluster, including switchover, reinit, restart, reload,
@@ -46,9 +47,9 @@ const TABS: ClusterTab[] = [
     {
         label: "Config",
         feature: Feature.ViewNodeDbConfig,
-        body: (cluster, overview) => {
-            if (!overview?.mainNode) return <ClusterNoNodeError/>
-            return <OverviewConfig cluster={cluster} node={overview.mainNode}/>
+        body: (cluster, mainNode) => {
+            if (!mainNode) return <ClusterNoNodeError/>
+            return <OverviewConfig cluster={cluster} node={mainNode}/>
         },
         info: <>
             You can adjust your PostgreSQL configurations here, and any changes made will be applied to
@@ -62,9 +63,9 @@ const TABS: ClusterTab[] = [
     {
         label: "Bloat",
         feature: Feature.ViewToolBloatList,
-        body: (cluster, overview) => {
-            if (!overview?.mainNode) return <ClusterNoNodeError/>
-            return <OverviewBloat cluster={cluster} node={overview.mainNode}/>
+        body: (cluster, mainNode) => {
+            if (!mainNode) return <ClusterNoNodeError/>
+            return <OverviewBloat cluster={cluster} node={mainNode}/>
         },
         info: <>
             Here, you can efficiently decrease the size of bloated tables and indexes without imposing
@@ -100,8 +101,8 @@ export function Overview() {
     const overview = useRouterClusterOverview(activeCluster?.cluster.name, false)
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
+    const [mainDomain, mainNode] = useMemo(() => getMainKeeper(overview.data?.nodes, overview.data?.detectedDomain), [overview])
     const tab = TABS[activeClusterTab]
-
 
     return (
         <PageMainBox withPadding visible={!!clusters.data?.length || !!activeCluster}>
@@ -126,7 +127,7 @@ export function Overview() {
         if (!tab) return <AlertCentered text={"Coming soon — we're working on it!"}/>
         return <>
             {overview.error && <ErrorSmart error={overview.error}/>}
-            {tab.body(activeCluster.cluster, overview.data)}
+            {tab.body(activeCluster.cluster, mainNode, overview.data?.nodes)}
         </>
     }
 
@@ -134,7 +135,7 @@ export function Overview() {
         if (!activeCluster) return null
         return <OverviewAction
             cluster={activeCluster}
-            mainNode={overview.data?.mainNode}
+            mainNode={[mainDomain, mainNode]}
             selectInfo={infoOpen}
             disableInfo={!tab.info}
             toggleInfo={() => setInfoOpen(!infoOpen)}
@@ -159,7 +160,7 @@ export function Overview() {
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    <OverviewOptions info={activeCluster} overview={overview.data}/>
+                    <OverviewOptions info={activeCluster} overview={overview.data} mainKeeper={mainDomain}/>
                 </Box>
             </Collapse>
         )

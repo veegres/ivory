@@ -34,8 +34,7 @@ export function createMockNode(overrides: Partial<Node> = {}): Node {
             discoveredKeeperPort: 8008,
             discoveredDbPort: 5432,
         },
-        inCluster: true,
-        inKeeper: false,
+        warnings: [],
         ...overrides,
     }
 }

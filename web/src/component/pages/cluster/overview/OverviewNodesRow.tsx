@@ -7,7 +7,7 @@ import {Connection} from "../../../../api/node/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
     DateTimeFormatter,
-    getKeeperConnection, initialNode,
+    getKeeperRequest, initialNode,
     NodeColor,
     SizeFormatter,
     SxPropsFormatter,
@@ -41,12 +41,12 @@ type Props = {
 
 export function OverviewNodesRow(props: Props) {
     const {node: tmpNode, cluster, candidates, error = false, name, checked} = props
-    const node = tmpNode ?? initialNode(name)
+    const node = tmpNode ?? initialNode(cluster.keeperType, cluster.dbType, name)
     const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = node.keeper
-    const {connection, inKeeper, inCluster} = node
+    const {connection, warnings} = node
 
     const {setNode} = useStoreAction
-    const request = getKeeperConnection(cluster, connection)
+    const request = getKeeperRequest(cluster, connection.host, connection.keeperPort ?? 0)
 
     return (
         <TableRow
@@ -54,7 +54,7 @@ export function OverviewNodesRow(props: Props) {
             onClick={handleCheck}
         >
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
-            <TableCell align={"center"}>{renderWarning(inKeeper, inCluster)}</TableCell>
+            <TableCell align={"center"}>{renderWarning()}</TableCell>
             <TableCell sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>
                 <Tooltip title={name} placement={"top-start"}>
@@ -148,21 +148,16 @@ export function OverviewNodesRow(props: Props) {
     function renderRoleButtons() {
         switch (role) {
             case "replica": return <ReinitButton request={request} cluster={cluster.name}/>
-            case "leader": return <SwitchoverButton request={request} cluster={cluster.name} candidates={candidates}/>
+            case "leader": return <SwitchoverButton request={request} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
             default: return
         }
     }
 
-    function renderWarning(inCluster: boolean, inNodes: boolean) {
-        if (inCluster && inNodes) return
-
-        let title = "Node is not in cluster list or cluster itself!"
-        if (inCluster && !inNodes) title = "Node is not in your cluster list!"
-        if (!inCluster && inNodes) title = "Node is not in cluster!"
-
+    function renderWarning() {
+        if (warnings.length === 0) return
         return (
             <Box sx={SX.data}>
-                <Tooltip title={title} placement={"top"}>
+                <Tooltip title={warnings.join(", ")} placement={"top"}>
                     <WarningAmberRounded color={"warning"}/>
                 </Tooltip>
             </Box>

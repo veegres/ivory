@@ -3,11 +3,8 @@ import {ReactNode} from "react"
 import {Certs} from "../cert/type"
 import {DatabaseType} from "../database/type"
 import {Feature} from "../feature"
-import {Keeper, KeeperType} from "../keeper/type"
-import {
-    Connection,
-    KeeperResponse as BaseNode,
-} from "../node/type"
+import {KeeperType} from "../keeper/type"
+import {Connection, KeeperResponse} from "../node/type"
 
 // COMMON (WEB AND SERVER)
 
@@ -41,37 +38,31 @@ export interface Vault {
     databaseId?: string,
 }
 
-
 export interface ClusterOverview {
     nodes: NodeOverview,
-    detectedBy?: Keeper,
-    mainNode?: Node,
+    detectedDomain: string,
+    features: Feature[],
 }
 
 export interface NodeOverview {
-    [domain: string]: Node | undefined
+    [domain: string]: Node,
 }
 
-export interface Node extends BaseNode {
-    inCluster: boolean,
-    inKeeper: boolean,
+export interface Node extends KeeperResponse {
+    warnings: string[],
 }
 
 // SPECIFIC (WEB)
 
 export interface ActiveCluster {
     cluster: Cluster,
-    detectBy?: Node,
     warning: boolean,
-}
-
-export interface ActiveNode {
-    [cluster: string]: string | undefined
+    manualKeeper?: string,
 }
 
 export interface ClusterTab {
     label: string,
-    body: (cluster: Cluster, overview?: ClusterOverview) => ReactNode,
+    body: (cluster: Cluster, mainNode?: Node, nodes?: NodeOverview) => ReactNode,
     feature: Feature,
     info?: ReactNode,
 }

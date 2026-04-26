@@ -19,11 +19,12 @@ type Connection struct {
 }
 
 type KeeperRequest struct {
-	Connection Connection  `json:"connection" form:"connection"`
-	Type       keeper.Type `json:"type" form:"type"`
-	VaultId    *uuid.UUID  `json:"vaultId" form:"vaultId"`
-	Certs      *cert.Certs `json:"certs" form:"certs"`
-	Body       any         `json:"body" form:"body"`
+	Type    keeper.Type `json:"type" form:"type"`
+	Host    string      `json:"host" form:"host"`
+	Port    int         `json:"port" form:"port"`
+	VaultId *uuid.UUID  `json:"vaultId" form:"vaultId"`
+	Certs   *cert.Certs `json:"certs" form:"certs"`
+	Body    any         `json:"body" form:"body"`
 }
 
 type KeeperResponse struct {

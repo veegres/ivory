@@ -7,9 +7,9 @@ import {Cluster, Node} from "../../../../api/cluster/type"
 import {DatabaseType} from "../../../../api/database/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnection} from "../../../../app/utils"
+import {getQueryConnection} from "../../../../app/utils"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
-import {ClusterNoLeaderError, ClusterNoPostgresVault} from "./OverviewError"
+import {ClusterNoLeaderError, ClusterNoPostgresVault, NoDatabaseError} from "./OverviewError"
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
@@ -33,9 +33,10 @@ export function OverviewBloatJobForm(props: Props) {
     if (node.keeper.role !== "leader") return <ClusterNoLeaderError/>
     const vaultId = cluster.vaults.databaseId
     if (!vaultId) return <ClusterNoPostgresVault/>
+    if (!node.connection.host || !node.connection.dbPort) return <NoDatabaseError/>
 
-    const db = {type: DatabaseType.POSTGRES, host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database}
-    const connection = getConnection(cluster, db)
+    const db = {type: DatabaseType.POSTGRES, host: node.connection.host, port: node.connection.dbPort, name: target?.database}
+    const connection = getQueryConnection(cluster, db)
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
@@ -113,13 +114,10 @@ export function OverviewBloatJobForm(props: Props) {
 
     function handleRun() {
         if (node && vaultId) {
-            const {keeper: {discoveredHost, discoveredDbPort}} = node
+            const dbRun = {...db, schema: target?.schema}
             onClick()
             start.mutate({
-                connection: {
-                    db: {type: DatabaseType.POSTGRES, host: discoveredHost, port: discoveredDbPort, name: target?.database, schema: target?.schema},
-                    vaultId,
-                },
+                connection: getQueryConnection(cluster, dbRun),
                 target, options, cluster: cluster.name,
             })
         }

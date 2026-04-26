@@ -9,7 +9,7 @@ import {Database, DatabaseType, QueryType} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {useRouterQueryList} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnection} from "../../../../app/utils"
+import {getQueryConnection} from "../../../../app/utils"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {AccessBox} from "../../../widgets/access/Access"
@@ -40,7 +40,13 @@ export function OverviewBloat(props: Props) {
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db = {type: DatabaseType.POSTGRES, host: node.keeper.discoveredHost, port: node.keeper.discoveredDbPort, name: target?.database, schema: target?.schema} as Database
+    const db: Database = {
+        type: DatabaseType.POSTGRES,
+        host: node.connection.host,
+        port: node.connection.dbPort || node.keeper.discoveredDbPort || 5432,
+        name: target?.database,
+        schema: target?.schema,
+    }
 
     return (
         <Box>
@@ -65,9 +71,13 @@ export function OverviewBloat(props: Props) {
     function renderBody() {
         switch (tab) {
             case ListBlock.JOB:
-                return jobs.error ? <ErrorSmart error={jobs.error}/> : <OverviewBloatJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
+                return jobs.error ? (
+                    <ErrorSmart error={jobs.error}/>
+                ) : (
+                    <OverviewBloatJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
+                )
             case ListBlock.QUERY:
-                return <Query type={QueryType.BLOAT} connection={getConnection(cluster, db)}/>
+                return <Query type={QueryType.BLOAT} connection={getQueryConnection(cluster, db)}/>
         }
     }
 

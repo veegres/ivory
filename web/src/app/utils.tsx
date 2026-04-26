@@ -13,10 +13,10 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {Cluster, Node} from "../api/cluster/type"
-import {Database, QueryVariety} from "../api/database/type"
-import {Keeper, Role, Status as KeeperStatus} from "../api/keeper/type"
-import {Connection, KeeperRequest} from "../api/node/type"
+import {Cluster, Node, NodeOverview} from "../api/cluster/type"
+import {Database, DatabaseType, QueryVariety} from "../api/database/type"
+import {Keeper, KeeperType, Role, Status as KeeperStatus} from "../api/keeper/type"
+import {Connection as NodeConnection, KeeperRequest} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
 import {Connection as QueryConnection} from "../api/query/type"
 import {VaultType} from "../api/vault/type"
@@ -91,67 +91,86 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const initialNode = (domain: string): Node => {
-    const connection = getNodeConnection(domain)
+export const DefaultKeeperPorts = {
+    [KeeperType.PATRONI]: 8008,
+    [KeeperType.POSTGRES]: 5432,
+}
+
+export const DefaultDatabasePorts = {
+    [DatabaseType.POSTGRES]: 5432,
+    [DatabaseType.ETCD]: 2379,
+}
+
+export const initialNode = (kt: KeeperType, dbt: DatabaseType, domain: string): Node => {
+    const connection = getNodeConnection(kt, dbt, domain)
     return ({
         connection: connection,
+        warnings: ["no response from keeper"],
         keeper: {
             state: "-",
             role: "unknown",
             lag: -1,
             pendingRestart: false,
             discoveredHost: connection.host,
-            discoveredKeeperPort: connection.keeperPort ?? 0,
-            discoveredDbPort: connection.dbPort ?? 0,
+            discoveredKeeperPort: kt,
+            discoveredDbPort: dbt,
         },
-        inCluster: true,
-        inKeeper: false,
     })
 }
 
-export const isConnectionEqual = (c1?: Connection, c2?: Connection): boolean => {
+export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boolean => {
     return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.sshKeyId === c2?.sshKeyId
 }
 
-export const getDomain = (connection: Connection | Keeper) => {
+export const getDomain = (connection: NodeConnection) => {
     const host = connection.host
-    const port = (connection as Connection).keeperPort ?? (connection as Keeper).port
+    const port = (connection as NodeConnection).keeperPort ?? (connection as Keeper).port
     return `${host.toLowerCase()}${port ? `:${port}` : ""}`
 }
 
-export const getDomains = (nodes: Connection[]) => {
+export const getDomains = (nodes: NodeConnection[]) => {
     return nodes.map(value => getDomain(value))
 }
 
-export function getConnection(cluster: Cluster, db: Database): QueryConnection {
+export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
     const vaultId = cluster.vaults.databaseId
     const certs = cluster.tls.database ? cluster.certs : undefined
     return {db, certs, vaultId}
 }
 
-export function getKeeperConnection(cluster: Cluster, connection: Connection): KeeperRequest {
+export function getKeeperRequest(cluster: Cluster, host: string, port: number): KeeperRequest {
     const vaultId = cluster.vaults.keeperId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
-    return {connection, certs, vaultId, type: cluster.keeperType}
+    return {host, port, certs, vaultId, type: cluster.keeperType}
 }
 
-export const getNodeConnection = (domain: string): Connection => {
-    const [host, port] = domain.split(":")
-    return {host, keeperPort: port ? parseInt(port) : undefined}
+export const getNodeConnection = (kt: KeeperType, dbt: DatabaseType, domain: string): NodeConnection => {
+    const [host, keeperPort, dbPort, sshPort] = domain.split(":")
+    return {
+        host,
+        keeperPort: parseInt(keeperPort) || DefaultKeeperPorts[kt],
+        dbPort: parseInt(dbPort) || DefaultDatabasePorts[dbt],
+        sshPort: parseInt(sshPort) || 22,
+    }
 }
 
-export const getNodeConnections = (domains: string[]): Connection[] => {
-    return domains.map(value => getNodeConnection(value))
+export const getNodeConnections = (kt: KeeperType, dbt: DatabaseType, domains: string[]): NodeConnection[] => {
+    return domains.map(value => getNodeConnection(kt, dbt, value))
 }
 
-export const getDetectionItems = (mainNode?: Node, detectBy?: Keeper) => {
-    const detection = detectBy ? "manual" : "auto"
-    const connection = detectBy ?? mainNode?.connection
-    const label = connection ? getDomain(connection) : "none"
-    const role = mainNode?.keeper.role ?? "unknown"
+export const getMainKeeper = (nodes: NodeOverview = {}, detectedKeeper?: string): [string?, Node?] => {
+    if (detectedKeeper) return [detectedKeeper, nodes[detectedKeeper]]
+    return Object.entries(nodes).find(([_, v]) => v.keeper.role === "leader") ?? []
+}
+
+export const getDetectionItems = (nodes: NodeOverview = {}, detectedKeeper?: string, manualKeeper?: string) => {
+    const detection = manualKeeper ? "manual" : "auto"
+    const [domain, node] = getMainKeeper(nodes, manualKeeper ?? detectedKeeper)
+    const mainLabel = domain ?? "none"
+    const mainRole = node?.keeper.role ?? "unknown"
     return [
         {title: "Detection", label: detection, bgColor: purple[400]},
-        {title: "Main Node", label: label, bgColor: NodeColor[role].color}
+        {title: "Main Keeper", label: mainLabel, bgColor: NodeColor[mainRole].color}
     ]
 }
 
@@ -197,7 +216,7 @@ export const CodeThemes = {
 
 export const SxPropsFormatter = {
     /**
-     * This function is needed to fix typescript issues when
+     * This function is needed to fix TypeScript issues when
      * `sx` can be an array and `SxProps` can be an array type
      *
      * https://github.com/mui/material-ui/issues/29900

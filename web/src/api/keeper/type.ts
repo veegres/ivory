@@ -20,7 +20,7 @@ export interface Keeper {
 }
 
 export interface KeeperResponse {
-    name?: string,
+    key?: string,
     status?: Status,
     state: string,
     role: Role,
@@ -29,9 +29,9 @@ export interface KeeperResponse {
     scheduledSwitchover?: ScheduledSwitchover,
     scheduledRestart?: ScheduledRestart,
     tags?: {[key: string]: any},
-    discoveredHost: string,
-    discoveredKeeperPort: number,
-    discoveredDbPort: number,
+    discoveredHost?: string,
+    discoveredKeeperPort?: number,
+    discoveredDbPort?: number,
 }
 
 export interface ScheduledSwitchover {

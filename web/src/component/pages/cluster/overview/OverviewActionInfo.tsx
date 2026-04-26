@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 
 import {CertType} from "../../../../api/cert/type"
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
-import {Cluster, Node} from "../../../../api/cluster/type"
+import {Cluster} from "../../../../api/cluster/type"
 import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
 import {CertOptions, getDetectionItems,VaultOptions} from "../../../../app/utils"
@@ -16,12 +16,11 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    detectBy?: Node,
-    mainNode?: Node,
+    manualKeeper?: string,
 }
 
 export function OverviewActionInfo(props: Props) {
-    const {mainNode, cluster} = props
+    const {cluster, manualKeeper} = props
 
     const infoItems = [
         {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.databaseId},
@@ -32,7 +31,8 @@ export function OverviewActionInfo(props: Props) {
     ]
 
     const overview = useRouterClusterOverview(cluster.name, false)
-    const detectionItems = getDetectionItems(mainNode, overview.data?.detectedBy)
+    const {nodes, detectedDomain} = overview.data ?? {}
+    const detectionItems = getDetectionItems(nodes, detectedDomain, manualKeeper)
     const node = detectionItems[1]
 
     return (

@@ -1,7 +1,7 @@
 import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
-import {ActiveCluster, Node} from "../api/cluster/type"
+import {ActiveCluster} from "../api/cluster/type"
 import {QueryType} from "../api/database/type"
 import {NodeTabType} from "../api/node/type"
 import {MainQueryClient} from "./AppProvider"
@@ -49,7 +49,7 @@ export const useStore = create(persist<Store>(
 export const useStoreAction = {
     setCluster: setCluster,
     setSearchCluster: setSearchCluster,
-    setClusterDetection: setClusterDetection,
+    setClusterDetection: setClusterKeeper,
     setClusterTab: setClusterTab,
     setWarnings: setWarnings,
     setNode: setNode,
@@ -73,10 +73,10 @@ function setCluster(cluster?: ActiveCluster) {
     useStore.setState(s => ({...s, activeCluster: cluster}))
 }
 
-function setClusterDetection(detectBy?: Node) {
+function setClusterKeeper(manualKeeper?: string) {
     useStore.setState(s => {
         if (!s.activeCluster) return s
-        return {...s, activeCluster: {...s.activeCluster, detectBy}}
+        return {...s, activeCluster: {...s.activeCluster, manualKeeper: manualKeeper}}
     })
 }
 
