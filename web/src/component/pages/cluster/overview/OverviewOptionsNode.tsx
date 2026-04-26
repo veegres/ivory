@@ -49,7 +49,8 @@ export function OverviewOptionsNode(props: Props) {
                         sx={SX.toggle}
                         value={"auto"}
                         selected={!manualKeeper}
-                        onClick={() => setClusterDetection(undefined)}>
+                        onClick={() => setClusterDetection(undefined)}
+                    >
                         A
                     </ToggleButton>
                 </Tooltip>
@@ -58,7 +59,8 @@ export function OverviewOptionsNode(props: Props) {
                         sx={SX.toggle}
                         value={"manual"}
                         selected={!!manualKeeper}
-                        onClick={() => setClusterDetection(mainKeeper ?? options[0])}>
+                        onClick={() => setClusterDetection(mainKeeper ?? options[0])}
+                    >
                         M
                     </ToggleButton>
                 </Tooltip>

@@ -65,7 +65,7 @@ export function ListRow(props: Props) {
             <ListCell width={"130px"}>
                 <Box sx={SX.actions}>
                     {warning && !overview.error && !overview.isFetching && (
-                        <Tooltip title={"Problems were detected, select the cluster to see it"} placement={"top"}>
+                        <Tooltip title={"Issues detected — select a cluster to view details"} placement={"top"}>
                             <WarningAmberRounded color={"warning"}/>
                         </Tooltip>
                     )}
@@ -75,7 +75,7 @@ export function ListRow(props: Props) {
                         </Tooltip>
                     )}
                     {!toggle && (
-                        <Tooltip title={"This cluster is not in this list. It was selected that is why you see it. Just uncheck it."} placement={"top"}>
+                        <Tooltip title={"This cluster isn't in the list — it appears here because it was manually selected. Uncheck it to remove it."} placement={"top"}>
                             <ErrorOutlineRounded color={"secondary"}/>
                         </Tooltip>
                     )}
@@ -131,11 +131,10 @@ export function ListRow(props: Props) {
             },
             {} as ColorsMap
         )
-
         const getWarning = () => {
             for (const key in nodes) {
                 const node = nodes[key]
-                if (!node) return true
+                if (node.warnings.length > 0) return true
             }
             return false
         }
