@@ -19,7 +19,7 @@ export function VaultItem(props: Props) {
     const [empty, setEmpty] = useState(false)
     const [vault, setVault] = useState(v)
 
-    const deleteVault = useRouterVaultDelete()
+    const deleteVault = useRouterVaultDelete(v.type)
     const updateVault = useRouterVaultUpdate(v.type, () => setEdit(false))
 
     useEffect(() => setVault(vault), [vault])
