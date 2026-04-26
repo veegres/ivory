@@ -11,11 +11,11 @@ export function useRouterVault(type?: VaultType) {
     })
 }
 
-export function useRouterVaultDelete() {
+export function useRouterVaultDelete(type?: VaultType) {
     return useMutationAdapter({
         mutationFn: VaultApi.delete.fn,
         mutationKey: VaultApi.delete.key(),
-        successKeys: [VaultApi.list.key()],
+        successKeys: [VaultApi.list.key(type)],
     })
 }
 
