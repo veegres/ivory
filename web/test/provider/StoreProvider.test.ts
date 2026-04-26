@@ -108,22 +108,17 @@ describe("StoreProvider", () => {
 
             useStoreAction.setCluster(cluster)
 
-            const detectNode = createMockNode({
-                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
-            })
-            useStoreAction.setClusterDetection(detectNode)
+            const manualKeeper = "test-keeper"
+            useStoreAction.setClusterDetection("test-keeper")
 
             const state = useStore.getState()
-            expect(state.activeCluster?.detectBy).toEqual(detectNode)
+            expect(state.activeCluster?.manualKeeper).toEqual(manualKeeper)
         })
 
         it("should not update if no active cluster", () => {
-            const node = createMockNode()
-
             const stateBefore = useStore.getState()
-            useStoreAction.setClusterDetection(node)
+            useStoreAction.setClusterDetection("test-keeper")
             const stateAfter = useStore.getState()
-
             expect(stateAfter).toEqual(stateBefore)
         })
     })

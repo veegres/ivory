@@ -1,17 +1,11 @@
 import {
-    Autocomplete,
-    AutocompleteChangeReason,
-    Box,
-    TextField,
-    ToggleButton,
-    ToggleButtonGroup,
-    Tooltip
+    Autocomplete, AutocompleteChangeReason, Box, TextField,
+    ToggleButton, ToggleButtonGroup, Tooltip
 } from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {Node, NodeOverview} from "../../../../api/cluster/type"
+import {NodeOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getDomain, initialNode} from "../../../../app/utils"
 import {useStoreAction} from "../../../../provider/StoreProvider"
 
 const SX: SxPropsMap = {
@@ -22,16 +16,15 @@ const SX: SxPropsMap = {
 
 type Props = {
     nodes: NodeOverview,
-    mainNode?: Node,
-    detectBy?: Node,
+    mainKeeper?: string,
+    manualKeeper?: string,
 }
 
 export function OverviewOptionsNode(props: Props) {
     const {setClusterDetection} = useStoreAction
-    const {detectBy, nodes, mainNode} = props
+    const {manualKeeper, nodes, mainKeeper} = props
 
-    const connection = detectBy?.connection ?? mainNode?.connection ?? {sshId: "00000000-0000-0000-0000-000000000000", host: "-"}
-    const value = getDomain(connection)
+    const value = manualKeeper ?? mainKeeper ?? "-"
     const [inputValue, setInputValue] = useState<string | undefined>(value)
 
     const options = useMemo(() => Object.keys(nodes), [nodes])
@@ -55,7 +48,7 @@ export function OverviewOptionsNode(props: Props) {
                     <ToggleButton
                         sx={SX.toggle}
                         value={"auto"}
-                        selected={!detectBy}
+                        selected={!manualKeeper}
                         onClick={() => setClusterDetection(undefined)}>
                         A
                     </ToggleButton>
@@ -64,8 +57,8 @@ export function OverviewOptionsNode(props: Props) {
                     <ToggleButton
                         sx={SX.toggle}
                         value={"manual"}
-                        selected={!!detectBy}
-                        onClick={() => setClusterDetection(mainNode)}>
+                        selected={!!manualKeeper}
+                        onClick={() => setClusterDetection(mainKeeper ?? options[0])}>
                         M
                     </ToggleButton>
                 </Tooltip>
@@ -74,6 +67,6 @@ export function OverviewOptionsNode(props: Props) {
     )
 
     function handleOnChange(value: string, reason: AutocompleteChangeReason) {
-        if (value && reason === "selectOption") setClusterDetection(nodes[value] ?? initialNode(value))
+        if (value && reason === "selectOption") setClusterDetection(value)
     }
 }

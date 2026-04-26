@@ -1,7 +1,6 @@
-import {getDomain} from "../../app/utils"
+import {getDomain, initialNode} from "../../app/utils"
 import {api} from "../api"
 import {R} from "../management/type"
-import {Connection} from "../node/type"
 import {Cluster, ClusterAuto, ClusterOverview} from "./type"
 
 export const ClusterApi = {
@@ -9,12 +8,16 @@ export const ClusterApi = {
         key: () => ["cluster", "list"],
         fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
             .then((response) => response.data.response.map(v => (
-                {...v, nodesOverview: Object.fromEntries(v.nodes.map(i => [getDomain(i), undefined]))} as Cluster
+                {...v, nodesOverview: Object.fromEntries(v.nodes.map(c => {
+                    const domain = getDomain(c)
+                    return [domain, initialNode(v.keeperType, v.dbType, domain)]
+                }))} as Cluster
             ))),
     },
     overview: {
-        key: (name?: string, connection?: Connection) => ["cluster", "overview", name, connection?.host, connection?.keeperPort].filter(Boolean),
-        fn: (name: string, connection?: Connection) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {keeper: JSON.stringify(connection)}})
+        key: (name?: string, host?: string, port?: string) => ["cluster", "overview", name, host, port],
+        fn: (name: string, host?: string, port?: string) => api
+            .get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {host, port}})
             .then((response) => response.data.response),
     },
     update: {

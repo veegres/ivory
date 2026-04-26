@@ -63,7 +63,7 @@ func (p *Client) Overview(request keeper.Request) ([]keeper.Response, int, error
 		}
 
 		overview = append(overview, keeper.Response{
-			Name:                 &patroniInstance.Name,
+			Key:                  &patroniInstance.Name,
 			Status:               &keeperStatus,
 			State:                patroniInstance.State,
 			Role:                 p.mapRole(patroniInstance.Role),
@@ -72,9 +72,9 @@ func (p *Client) Overview(request keeper.Request) ([]keeper.Response, int, error
 			ScheduledRestart:     p.mapRestart(patroniInstance.ScheduledRestart),
 			ScheduledSwitchover:  p.mapSwitchover(host, response.ScheduledSwitchover),
 			Tags:                 patroniInstance.Tags,
-			DiscoveredHost:       patroniInstance.Host,
-			DiscoveredDbPort:     patroniInstance.Port,
-			DiscoveredKeeperPort: port,
+			DiscoveredHost:       &patroniInstance.Host,
+			DiscoveredDbPort:     &patroniInstance.Port,
+			DiscoveredKeeperPort: &port,
 		})
 	}
 

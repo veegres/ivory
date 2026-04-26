@@ -4,6 +4,8 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
+import {DatabaseType} from "../../src/api/database/type"
+import {KeeperType} from "../../src/api/keeper/type"
 import {Connection} from "../../src/api/node/type"
 import {
     DateTimeFormatter,
@@ -56,21 +58,31 @@ describe("getDomains", () => {
 describe("getNodeConnection", () => {
     it("should return a NodeConnection object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: 8008})
+        expect(getNodeConnection(KeeperType.PATRONI, DatabaseType.POSTGRES, domain)).toEqual({
+            host: "localhost",
+            keeperPort: 8008,
+            dbPort: 5432,
+            sshPort: 22
+        })
     })
 
-    it("should return a NodeConnection object with undefined port if port is not in domain string", () => {
+    it("should return a NodeConnection object with default port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getNodeConnection(domain)).toEqual({host: "localhost", keeperPort: undefined})
+        expect(getNodeConnection(KeeperType.PATRONI, DatabaseType.POSTGRES, domain)).toEqual({
+            host: "localhost",
+            keeperPort: 8008,
+            dbPort: 5432,
+            sshPort: 22
+        })
     })
 })
 
 describe("getNodeConnections", () => {
     it("should return an array of NodeConnection objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
-        expect(getNodeConnections(domains)).toEqual([
-            {host: "localhost", keeperPort: 8008},
-            {host: "127.0.0.1", keeperPort: undefined},
+        expect(getNodeConnections(KeeperType.PATRONI, DatabaseType.POSTGRES, domains)).toEqual([
+            {host: "localhost", keeperPort: 8008, dbPort: 5432, sshPort: 22},
+            {host: "127.0.0.1", keeperPort: 8008, dbPort: 5432, sshPort: 22},
         ])
     })
 })

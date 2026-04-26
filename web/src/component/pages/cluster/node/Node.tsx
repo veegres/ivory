@@ -3,10 +3,11 @@ import {Box, Divider} from "@mui/material"
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {DatabaseType} from "../../../../api/database/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnection} from "../../../../app/utils"
+import {getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {PageMainBox} from "../../../view/box/PageMainBox"
+import {NoDatabaseError} from "../overview/OverviewError"
 import {NodeInfo} from "./NodeInfo"
 import {NodeMain} from "./NodeMain"
 
@@ -33,9 +34,10 @@ export function Node() {
     function renderContent() {
         if (!activeNodeName || !activeCluster) return <AlertCentered text={"Please, select a node to see the information!"}/>
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
+        if (!activeNode.connection.host || !activeNode.connection.dbPort) return <NoDatabaseError/>
 
-        const database = {type: DatabaseType.POSTGRES, host: activeNode.keeper.discoveredHost, port: activeNode.keeper.discoveredDbPort}
-        const connection = getConnection(activeCluster.cluster, database)
+        const database = {type: DatabaseType.POSTGRES, host: activeNode.connection.host, port: activeNode.connection.dbPort}
+        const connection = getQueryConnection(activeCluster.cluster, database)
 
         return (
             <Box sx={SX.content}>

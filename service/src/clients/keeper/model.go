@@ -32,24 +32,24 @@ type Keeper struct {
 	Host   string  `json:"host"`
 	Port   int     `json:"port"`
 	Name   *string `json:"name"`
-	Status *Status `json:"status,omitempty"`
+	Status *Status `json:"status"`
 }
 
 type Response struct {
-	Name                *string              `json:"name"`
-	Status              *Status              `json:"status,omitempty"`
+	Key                 *string              `json:"key"`
+	Status              *Status              `json:"status"`
 	State               string               `json:"state"`
 	Role                Role                 `json:"role"`
 	Lag                 int64                `json:"lag"`
 	PendingRestart      bool                 `json:"pendingRestart"`
-	ScheduledSwitchover *ScheduledSwitchover `json:"scheduledSwitchover,omitempty"`
-	ScheduledRestart    *ScheduledRestart    `json:"scheduledRestart,omitempty"`
-	Tags                *map[string]any      `json:"tags,omitempty"`
+	ScheduledSwitchover *ScheduledSwitchover `json:"scheduledSwitchover"`
+	ScheduledRestart    *ScheduledRestart    `json:"scheduledRestart"`
+	Tags                *map[string]any      `json:"tags"`
 
 	// Discovered Topology (Crucial for Auto-Creation)
-	DiscoveredHost       string `json:"discoveredHost"`
-	DiscoveredKeeperPort int    `json:"discoveredKeeperPort"`
-	DiscoveredDbPort     int    `json:"discoveredDbPort"`
+	DiscoveredHost       *string `json:"discoveredHost"`
+	DiscoveredKeeperPort *int    `json:"discoveredKeeperPort"`
+	DiscoveredDbPort     *int    `json:"discoveredDbPort"`
 }
 
 type ScheduledSwitchover struct {

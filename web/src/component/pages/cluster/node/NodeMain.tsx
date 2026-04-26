@@ -5,7 +5,7 @@ import {NodeTab, NodeTabType} from "../../../../api/node/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../api/query/hook"
 import {Connection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnection} from "../../../../app/utils"
+import {getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
 import {Chart} from "../../../widgets/chart/Chart"
@@ -63,7 +63,7 @@ export function NodeMain(props: Props) {
 
     const vaultId = cluster.vaults.databaseId
     const db = {...database, name: dbName, schema: dbSchema} as Database
-    const connection = getConnection(cluster, db)
+    const connection = getQueryConnection(cluster, db)
 
     return (
         <Box sx={SX.main}>

@@ -1,9 +1,8 @@
 package cluster
 
 import (
-	"encoding/json"
-	"ivory/src/features/node"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,17 +34,19 @@ func (r *Router) GetClusterList(context *gin.Context) {
 
 func (r *Router) GetClusterOverview(context *gin.Context) {
 	name := context.Param("name")
-	query := context.Query("keeper")
-	var side *node.Connection
-	if query != "" {
-		errBind := json.Unmarshal([]byte(query), &side)
-		if errBind != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
-			return
-		}
+	host := context.Query("host")
+	port := context.Query("port")
+
+	if port == "" {
+		port = "0"
+	}
+	parsedPort, err := strconv.Atoi(port)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	overview, err := r.clusterService.Overview(name, side)
+	overview, err := r.clusterService.Overview(name, host, parsedPort)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

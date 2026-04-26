@@ -22,7 +22,8 @@ export interface KeeperResponse {
 }
 
 export interface KeeperRequest {
-    connection: Connection,
+    host: string,
+    port: number,
     type: KeeperType,
     vaultId?: string,
     certs?: Certs,

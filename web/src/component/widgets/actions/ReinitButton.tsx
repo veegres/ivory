@@ -30,7 +30,7 @@ export function ReinitButton(props: Props) {
             <AlertButton
                 color={"info"}
                 label={"Reinit"}
-                title={`Make a reinit of ${request.connection.host}?`}
+                title={`Make a reinit of ${request.host}?`}
                 description={"It will erase all node data and will download it from scratch."}
                 loading={reinit.isPending}
                 onClick={handleClick}

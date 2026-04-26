@@ -14,11 +14,12 @@ const SX: SxPropsMap = {
 type Props = {
     info: ActiveCluster,
     overview?: ClusterOverview,
+    mainKeeper?: string,
 }
 
 export function OverviewOptions(props: Props) {
-    const {info, overview} = props
-    const {detectBy, cluster} = info
+    const {info, overview, mainKeeper} = props
+    const {manualKeeper, cluster} = info
 
     const updateCluster = useRouterClusterUpdate()
 
@@ -26,8 +27,8 @@ export function OverviewOptions(props: Props) {
         <Stack sx={SX.settings}>
             <OverviewOptionsNode
                 nodes={overview?.nodes ?? cluster.nodesOverview}
-                mainNode={overview?.mainNode}
-                detectBy={detectBy}
+                mainKeeper={mainKeeper}
+                manualKeeper={manualKeeper}
             />
             <LinearProgressStateful loading={updateCluster.isPending} line={true} color={"inherit"}/>
             <Options cluster={cluster} onUpdate={handleClusterUpdate}/>

@@ -18,7 +18,7 @@ export function ReloadButton(props: Props) {
             <AlertButton
                 size={"small"}
                 label={"Reload"}
-                title={`Make a reload of ${request.connection.host}?`}
+                title={`Make a reload of ${request.host}?`}
                 description={`It will reload postgres config, it doesn't have any downtime. It won't help if pending 
                 restart is true, some parameters require postgres restart.`}
                 loading={reload.isPending}

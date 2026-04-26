@@ -13,24 +13,24 @@ type Props = {
     request: KeeperRequest,
     cluster: string,
     candidates: Connection[],
-    name?: string,
+    leaderKey?: string,
 }
 
 export function SwitchoverButton(props: Props) {
-    const {request, candidates, cluster, name} = props
+    const {request, candidates, cluster, leaderKey} = props
 
-    const [candidate, setCandidates] = useState("")
+    const [candidate, setCandidates] = useState<string>()
     const [schedule, setSchedule] = useState<Dayjs>()
     const switchover = useRouterNodeSwitchover(cluster)
-    // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name
-    const body = {leader: name, candidate, scheduled_at: schedule}
+    // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name (key)
+    const body = {leader: leaderKey, candidate, scheduled_at: schedule}
 
     return (
         <Access feature={Feature.ManageNodeDbSwitchover}>
             <AlertButton
                 color={"secondary"}
                 label={"Switchover"}
-                title={`Make a switchover of ${request.connection.host}?`}
+                title={`Make a switchover of ${request.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
                  candidate, the candidate will be chosen randomly.`}
                 loading={switchover.isPending}
@@ -54,7 +54,7 @@ export function SwitchoverButton(props: Props) {
                     fullWidth={true}
                     variant={"outlined"}
                 >
-                    <MenuItem value={""}><em>none (will be chosen randomly)</em></MenuItem>
+                    <MenuItem value={undefined}><em>none (will be chosen randomly)</em></MenuItem>
                     {candidates.map(connection => (
                         <MenuItem key={connection.host} value={connection.host}>{connection.host}</MenuItem>
                     ))}
@@ -66,6 +66,6 @@ export function SwitchoverButton(props: Props) {
     function handleClick() {
         switchover.mutate({...request, body})
         setSchedule(undefined)
-        setCandidates("")
+        setCandidates(undefined)
     }
 }
