@@ -5,7 +5,9 @@ import {useEffect, useMemo, useRef, useState} from "react"
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster} from "../../../../api/cluster/type"
 import {ColorsMap, SxPropsMap} from "../../../../app/type"
-import {getDetectionItems, getDomains, getNodeConnections, NodeColor, SxPropsFormatter} from "../../../../app/utils"
+import {
+    getDetectionItems, getDomain, getDomains, getNodeConnections, NodeColor, SxPropsFormatter,
+} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
 import {AutoRefreshIconButton, RefreshIconButton} from "../../../view/button/IconButtons"
@@ -40,12 +42,12 @@ export function ListRow(props: Props) {
     const overview = useRouterClusterOverview(cluster.name)
     const nodes = overview.data?.nodes ?? cluster.nodesOverview
     const detectedDomain = overview.data?.detectedDomain
-    const [warning, colors] = useMemo(handleMemoNodes, [nodes])
+    const [warning, colors] = useMemo(handleMemoNodes, [nodes, editable])
     const detectionItems = useMemo(() => getDetectionItems(nodes, detectedDomain, activeCluster?.manualKeeper), [nodes, detectedDomain, activeCluster?.manualKeeper])
 
+    useEffect(handleEffectNodesUpdate, [cluster.nodes, editable])
     useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
     useEffect(handleEffectScroll, [active])
-    useEffect(handleEffectNodesUpdate, [cluster.nodes])
     useEffect(handleEffectActiveClusterUpdate, [active, cluster, setCluster, warning])
 
     return (
@@ -125,8 +127,9 @@ export function ListRow(props: Props) {
 
     function handleMemoNodes(): [boolean, ColorsMap] {
         const getColors = () => Object.entries(nodes).reduce(
-            (map, [domain, node]) => {
-                map[domain] = NodeColor[node.keeper.role].label
+            (map, [_, node]) => {
+                const d = getDomain(node.connection, !editable)
+                map[d] = NodeColor[node.keeper.role].label
                 return map
             },
             {} as ColorsMap
@@ -162,7 +165,7 @@ export function ListRow(props: Props) {
     }
 
     function handleEffectNodesUpdate() {
-        setStateNodes(getDomains(cluster.nodes))
+        setStateNodes(getDomains(cluster.nodes, !editable))
     }
 
     function handleClick() {
