@@ -125,29 +125,39 @@ func (s *Service) Overview(name string, host string, port int) (*ClusterOverview
 		return nil, err
 	}
 
-	nodesMap := make(map[string]Node)
+	clusterNodeMap := make(map[string]Node)
 	for _, n := range cluster.Nodes {
 		domain := s.getKeyDomain(n.Host, n.KeeperPort)
-		defaultKeeper := keeper.Response{Role: keeper.Unknown, State: "-"}
-		keeperResponse := node.KeeperResponse{Connection: n, Keeper: defaultKeeper}
-		warnings := []string{"no node found in keeper response"}
-		nodesMap[domain] = Node{keeperResponse, warnings}
-	}
-
-	for _, el := range nodes {
-		domain := s.getKeyDomain(el.Connection.Host, el.Connection.KeeperPort)
-		if v, ok := nodesMap[domain]; ok {
-			v.Keeper = el.Keeper
-			v.Warnings = []string{}
-			nodesMap[domain] = v
+		if v, ok := clusterNodeMap[domain]; ok {
+			v.Warnings = append(v.Warnings, "node is declared more than once in the cluster configuration")
+			clusterNodeMap[domain] = v
 		} else {
-			warnings := []string{"additional node was found in keeper response"}
-			nodesMap[domain] = Node{el, warnings}
+			keeperResponse := node.KeeperResponse{Connection: n}
+			clusterNodeMap[domain] = Node{KeeperResponse: keeperResponse}
 		}
 	}
 
+	resultNodeMap := make(map[string]Node)
+	for _, el := range nodes {
+		domain := s.getKeyDomain(el.Connection.Host, el.Connection.KeeperPort)
+		if v, ok := clusterNodeMap[domain]; ok {
+			v.Keeper = el.Keeper
+			resultNodeMap[domain] = v
+			delete(clusterNodeMap, domain)
+		} else {
+			warnings := []string{"node was found in Keeper response, but not in the cluster configuration"}
+			resultNodeMap[domain] = Node{el, warnings}
+		}
+	}
+
+	for domain, n := range clusterNodeMap {
+		n.Keeper = keeper.Response{Role: keeper.Unknown, State: "-"}
+		n.Warnings = append(n.Warnings, "node was not found in Keeper response")
+		resultNodeMap[domain] = n
+	}
+
 	supportedFeatures := s.getSupportedFeatures(cluster.KeeperType, cluster.DbType)
-	return &ClusterOverview{nodesMap, detectedDomain, supportedFeatures}, nil
+	return &ClusterOverview{resultNodeMap, detectedDomain, supportedFeatures}, nil
 }
 
 func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {

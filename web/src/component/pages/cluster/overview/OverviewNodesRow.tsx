@@ -156,7 +156,7 @@ export function OverviewNodesRow(props: Props) {
         if (warnings.length === 0) return
         return (
             <Box sx={SX.data}>
-                <Tooltip title={warnings.join(", ")} placement={"top"}>
+                <Tooltip title={warnings.map((s, i) => (<Box key={i}>{i+1}. {s}</Box>))} placement={"top"}>
                     <WarningAmberRounded color={"warning"}/>
                 </Tooltip>
             </Box>
