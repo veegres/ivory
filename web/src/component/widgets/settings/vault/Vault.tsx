@@ -7,8 +7,8 @@ import {TabsButton} from "../../../view/button/TabsButton"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Access} from "../../access/Access"
 import {MenuWrapper} from "../menu/MenuWrapper"
-import {VaultItemNew} from "./VaultItemNew"
 import {VaultList} from "./VaultList"
+import {VaultNew} from "./VaultNew"
 
 export const TABS: VaultTabs = {
     0: {label: "DATABASE PASS", type: VaultType.DATABASE_PASSWORD},
@@ -26,7 +26,7 @@ export function Vault() {
         <MenuWrapper>
             <TabsButton tabs={TABS} tab={tab} setTab={setTab}/>
             <Access feature={Feature.ManageVaultCreate}>
-                <VaultItemNew type={type}/>
+                <VaultNew type={type}/>
             </Access>
             <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
             <VaultList vaults={data} error={error}/>

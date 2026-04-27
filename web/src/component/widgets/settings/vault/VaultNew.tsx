@@ -24,7 +24,7 @@ type Props = {
     type: VaultType,
 }
 
-export function VaultItemNew(props: Props) {
+export function VaultNew(props: Props) {
     const {type} = props
     const initVault: Vault = {username: "", secret: "", type}
     const options = VaultOptions[type]

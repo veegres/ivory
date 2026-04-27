@@ -4,7 +4,7 @@ import {TransitionGroup} from "react-transition-group"
 import {Vault, VaultMap} from "../../../../api/vault/type"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {NoBox} from "../../../view/box/NoBox"
-import {VaultItem} from "./VaultItem"
+import {VaultListItem} from "./VaultListItem"
 
 type Props = {
     vaults?: VaultMap,
@@ -22,7 +22,7 @@ export function VaultList(props: Props) {
         <TransitionGroup appear={false}>
             {list.map(([key, vault]) => (
                 <Collapse key={key}>
-                    <VaultItem uuid={key} vault={vault}/>
+                    <VaultListItem uuid={key} vault={vault}/>
                 </Collapse>
             ))}
         </TransitionGroup>
