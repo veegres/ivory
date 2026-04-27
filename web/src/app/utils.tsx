@@ -15,7 +15,7 @@ import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node, NodeOverview} from "../api/cluster/type"
 import {Database, DatabaseType, QueryVariety} from "../api/database/type"
-import {Keeper, KeeperType, Role, Status as KeeperStatus} from "../api/keeper/type"
+import {KeeperType, Role, Status as KeeperStatus} from "../api/keeper/type"
 import {Connection as NodeConnection, KeeperRequest} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
 import {Connection as QueryConnection} from "../api/query/type"
@@ -122,15 +122,6 @@ export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boo
     return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.sshKeyId === c2?.sshKeyId
 }
 
-export const getDomain = (connection: NodeConnection) => {
-    const host = connection.host
-    const port = (connection as NodeConnection).keeperPort ?? (connection as Keeper).port
-    return `${host.toLowerCase()}${port ? `:${port}` : ""}`
-}
-
-export const getDomains = (nodes: NodeConnection[]) => {
-    return nodes.map(value => getDomain(value))
-}
 
 export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
     const vaultId = cluster.vaults.databaseId
@@ -144,13 +135,27 @@ export function getKeeperRequest(cluster: Cluster, host: string, port: number): 
     return {host, port, certs, vaultId, type: cluster.keeperType}
 }
 
+export const getDomain = (connection: NodeConnection, simple: boolean = true) => {
+    const host = connection.host
+    const keeperPort = connection.keeperPort ? `:${connection.keeperPort}` : ""
+    const dbPort = !simple && connection.dbPort ? `:${connection.dbPort}` : ""
+    const sshPort = !simple && connection.sshPort ? `:${connection.sshPort}` : ""
+    const sshKeyId = !simple && connection.sshKeyId ? `:${connection.sshKeyId}` : ""
+    return `${host.toLowerCase()}${keeperPort}${dbPort}${sshPort}${sshKeyId}`
+}
+
+export const getDomains = (nodes: NodeConnection[], simple: boolean = true) => {
+    return nodes.map(value => getDomain(value, simple))
+}
+
 export const getNodeConnection = (kt: KeeperType, dbt: DatabaseType, domain: string): NodeConnection => {
-    const [host, keeperPort, dbPort, sshPort] = domain.split(":")
+    const [host, keeperPort, dbPort, sshPort, sshKeyId] = domain.split(":")
     return {
-        host,
+        host: host.toLowerCase(),
         keeperPort: parseInt(keeperPort) || DefaultKeeperPorts[kt],
         dbPort: parseInt(dbPort) || DefaultDatabasePorts[dbt],
         sshPort: parseInt(sshPort) || 22,
+        sshKeyId: sshKeyId,
     }
 }
 
