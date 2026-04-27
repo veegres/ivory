@@ -1,4 +1,5 @@
 import {Cancel, CheckCircle, Delete, Edit} from "@mui/icons-material"
+import {Box, Tooltip} from "@mui/material"
 import {useEffect, useState} from "react"
 
 import {Feature} from "../../../../api/feature"
@@ -13,7 +14,7 @@ type Props = {
     vault: Vault,
 }
 
-export function VaultItem(props: Props) {
+export function VaultListItem(props: Props) {
     const {uuid, vault: v} = props
     const [edit, setEdit] = useState(false)
     const [empty, setEmpty] = useState(false)
@@ -25,13 +26,17 @@ export function VaultItem(props: Props) {
     useEffect(() => setVault(vault), [vault])
 
     return (
-        <VaultRow
-            renderButtons={edit ? renderWriteButtons() : renderReadButtons()}
-            disabled={!edit}
-            vault={v}
-            onChangeVault={(vault) => setVault(vault)}
-            onEmpty={(v) => setEmpty(v)}
-        />
+        <Tooltip title={`ID: ${uuid}`} placement={"top-start"}>
+            <Box>
+                <VaultRow
+                    renderButtons={edit ? renderWriteButtons() : renderReadButtons()}
+                    disabled={!edit}
+                    vault={v}
+                    onChangeVault={(vault) => setVault(vault)}
+                    onEmpty={(v) => setEmpty(v)}
+                />
+            </Box>
+        </Tooltip>
     )
 
     function renderReadButtons() {
