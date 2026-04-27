@@ -35,16 +35,15 @@ export function OverviewNodes(props: Props) {
             <Table size={"small"} sx={SX.table}>
                 <TableHead>
                     <TableRow>
-                        <TableCell width={"44px"}/>
-                        <TableCell width={"40px"}/>
-                        <TableCell width={"110px"}>Role</TableCell>
-                        <TableCell width={"20%"}>Host</TableCell>
-                        <TableCell width={"100px"}>SSH</TableCell>
-                        <TableCell width={"100px"}>Keeper</TableCell>
-                        <TableCell width={"100px"}>Database</TableCell>
-                        <TableCell width={"150px"}>State</TableCell>
-                        <TableCell/>
-                        <TableCellLoader width={"160px"} loading={false}>
+                        <TableCell sx={{width: "44px"}}/>
+                        <TableCell sx={{width: "40px"}}/>
+                        <TableCell sx={{width: "110px"}}>Role</TableCell>
+                        <TableCell sx={{width: "15%"}}>Host</TableCell>
+                        <TableCell sx={{width: "60px"}}>SSH</TableCell>
+                        <TableCell sx={{width: "70px"}}>Keeper</TableCell>
+                        <TableCell sx={{width: "80px"}}>Database</TableCell>
+                        <TableCell sx={{width: "10%"}}>State</TableCell>
+                        <TableCellLoader sx={{width: "75%"}} loading={false}>
                             <OverviewNodesFixAuto name={cluster.name}/>
                             <RefreshIconButton
                                 onClick={() => overview.refetch()}

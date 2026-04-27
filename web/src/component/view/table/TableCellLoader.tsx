@@ -13,16 +13,15 @@ type Props = {
     loading: boolean,
     label?: string,
     children?: Children,
-    width?: number | string,
     sx?: SxProps<Theme>,
     size?: number,
     colSpan?: number,
 }
 
 export function TableCellLoader(props: Props) {
-    const {loading, children, sx, width, size = 32, colSpan, label} = props
+    const {loading, children, sx, size = 32, colSpan, label} = props
     return (
-        <TableCell sx={sx} width={width} colSpan={colSpan}>
+        <TableCell sx={sx} colSpan={colSpan}>
             <Box sx={SX.box}>
                 <Box>{label}</Box>
                 <Box sx={SX.box}>

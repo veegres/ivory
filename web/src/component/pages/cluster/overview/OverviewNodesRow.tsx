@@ -26,8 +26,9 @@ import {SwitchoverButton} from "../../../widgets/actions/SwitchoverButton"
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
     nowrap: {whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
-    buttons: {display: "flex", justifyContent: "flex-end", alignItems: "center"},
+    buttons: {display: "flex", alignItems: "center"},
     data: {display: "flex", columnGap: 1, rowGap: "2px", fontSize: "12px"},
+    last: {display: "flex", justifyContent: "space-between", alignItems: "center", height: "100%"},
 }
 
 type Props = {
@@ -56,18 +57,16 @@ export function OverviewNodesRow(props: Props) {
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning()}</TableCell>
             <TableCell sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</TableCell>
-            <TableCell sx={SX.nowrap}>
-                <Tooltip title={name} placement={"top-start"}>
-                    <Box sx={SX.nowrap}>{node.connection.host}</Box>
-                </Tooltip>
-            </TableCell>
+            <TableCell sx={SX.nowrap}>{node.connection.host}</TableCell>
             <TableCell sx={SX.nowrap}>{node.connection.sshPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{node.connection.keeperPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{node.connection.dbPort ?? "-"}</TableCell>
-            <TableCell sx={SX.nowrap}>{state}</TableCell>
-            <TableCell onClick={(e) => e.stopPropagation()}>{renderData()}</TableCell>
-            <TableCell align={"right"} onClick={(e) => e.stopPropagation()}>
-                <Box sx={SX.buttons}>{renderButtons()}</Box>
+            <TableCell sx={SX.nowrap}>{state ?? "-"}</TableCell>
+            <TableCell>
+                <Box sx={SX.last} onClick={(e) => e.stopPropagation()}>
+                    {renderData()}
+                    <Box sx={SX.buttons}>{renderButtons()}</Box>
+                </Box>
             </TableCell>
         </TableRow>
     )
