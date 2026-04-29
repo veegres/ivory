@@ -1,9 +1,9 @@
 package os
 
-type Type int8
+type Plugin string
 
 const (
-	Linux Type = iota
+	Linux Plugin = "linux"
 )
 
 type Metrics struct {

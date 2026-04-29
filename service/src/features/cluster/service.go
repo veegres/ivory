@@ -156,7 +156,7 @@ func (s *Service) Overview(name string, host string, port int) (*ClusterOverview
 		resultNodeMap[domain] = n
 	}
 
-	supportedFeatures := s.getSupportedFeatures(cluster.KeeperType, cluster.DbType)
+	supportedFeatures := s.getSupportedFeatures(cluster.KeeperPlugin, cluster.DbPlugin)
 	return &ClusterOverview{resultNodeMap, detectedDomain, supportedFeatures}, nil
 }
 
@@ -181,12 +181,12 @@ func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 		Name:  cluster.Name,
 		Nodes: nodesConnections,
 		ClusterOptions: ClusterOptions{
-			DbType:     cluster.DbType,
-			KeeperType: cluster.KeeperType,
-			Tls:        cluster.Tls,
-			Certs:      cluster.Certs,
-			Vaults:     cluster.Vaults,
-			Tags:       tags,
+			DbPlugin:     cluster.DbPlugin,
+			KeeperPlugin: cluster.KeeperPlugin,
+			Tls:          cluster.Tls,
+			Certs:        cluster.Certs,
+			Vaults:       cluster.Vaults,
+			Tags:         tags,
 		},
 	}
 
@@ -212,12 +212,12 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 		Name:  cluster.Name,
 		Nodes: nodesConnections,
 		ClusterOptions: ClusterOptions{
-			DbType:     cluster.DbType,
-			KeeperType: cluster.KeeperType,
-			Tls:        cluster.Tls,
-			Certs:      cluster.Certs,
-			Vaults:     cluster.Vaults,
-			Tags:       cluster.Tags,
+			DbPlugin:     cluster.DbPlugin,
+			KeeperPlugin: cluster.KeeperPlugin,
+			Tls:          cluster.Tls,
+			Certs:        cluster.Certs,
+			Vaults:       cluster.Vaults,
+			Tags:         cluster.Tags,
 		},
 	}
 	return &model, s.clusterRepository.Update(model)
@@ -234,6 +234,7 @@ func (s *Service) getOverview(host string, port int, cluster ClusterOptions) ([]
 		certs = &cluster.Certs
 	}
 	request := node.KeeperRequest{
+		Plugin:  cluster.KeeperPlugin,
 		Host:    host,
 		Port:    port,
 		VaultId: cluster.Vaults.KeeperId,
@@ -251,6 +252,7 @@ func (s *Service) getOverviewAuto(connections []node.Connection, cluster Cluster
 	}
 	request := node.KeeperAutoRequest{
 		Connections: connections,
+		Plugin:      cluster.KeeperPlugin,
 		VaultId:     cluster.Vaults.KeeperId,
 		Certs:       certs,
 	}
@@ -258,7 +260,7 @@ func (s *Service) getOverviewAuto(connections []node.Connection, cluster Cluster
 	return nodes, detected, err
 }
 
-func (s *Service) getSupportedFeatures(k keeper.Type, db database.Type) []features.Feature {
+func (s *Service) getSupportedFeatures(k keeper.Plugin, db database.Plugin) []features.Feature {
 	fk := s.nodeService.SupportedFeatures(k)
 	fdb := s.queryService.SupportedFeatures(db)
 	ft := s.toolsService.SupportedFeatures(db)

@@ -26,7 +26,7 @@ type Service struct {
 	secretService    *secret.Service
 
 	appName  string
-	chartMap map[database.Type]map[ChartType]Request
+	chartMap map[database.Plugin]map[ChartType]Request
 }
 
 func NewService(
@@ -57,7 +57,7 @@ func (s *Service) GetApplicationName(session string) string {
 	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *Service) SupportedFeatures(t database.Type) []features.Feature {
+func (s *Service) SupportedFeatures(t database.Plugin) []features.Feature {
 	c, e := s.databaseRegistry.Get(t)
 	if e != nil {
 		return []features.Feature{}
@@ -70,12 +70,12 @@ func (s *Service) getDatabaseAdapter(queryCtx Context) (database.Adapter, databa
 	if err != nil {
 		return nil, database.Context{}, err
 	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Plugin)
 	return client, ctx, err
 }
 
 func (s *Service) initializeSystemCharts() {
-	s.chartMap = make(map[database.Type]map[ChartType]Request)
+	s.chartMap = make(map[database.Plugin]map[ChartType]Request)
 	for t, adapter := range s.databaseRegistry.All() {
 		s.chartMap[t] = make(map[ChartType]Request)
 		for name, query := range adapter.SystemCharts() {

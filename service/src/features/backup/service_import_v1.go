@@ -66,9 +66,9 @@ func backupToClusterV1(bc backupClusterV1) cluster.Cluster {
 	return cluster.Cluster{
 		Name: bc.Name,
 		ClusterOptions: cluster.ClusterOptions{
-			DbType:     database.POSTGRES,
-			KeeperType: keeper.PATRONI,
-			Tags:       bc.Tags,
+			DbPlugin:     database.POSTGRES,
+			KeeperPlugin: keeper.PATRONI,
+			Tags:         bc.Tags,
 		},
 		Nodes: nodes,
 	}

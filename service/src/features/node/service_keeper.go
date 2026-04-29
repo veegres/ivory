@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Service) OverviewAuto(request KeeperAutoRequest) ([]KeeperResponse, int, *Connection, error) {
-	client, errClient := s.keeperRegistry.Get(request.Type)
+	client, errClient := s.keeperRegistry.Get(request.Plugin)
 	if errClient != nil {
 		return nil, 0, nil, errClient
 	}

@@ -119,6 +119,7 @@ func NewContext() *Context {
 		tagService,
 		toolsService,
 		queryService,
+		nodeService,
 		secretService,
 		configService,
 		permissionService,

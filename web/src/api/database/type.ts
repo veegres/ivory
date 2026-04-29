@@ -1,12 +1,12 @@
 // COMMON (WEB AND SERVER)
 
-export enum Type {
-    POSTGRES,
-    ETCD,
+export enum Plugin {
+    POSTGRES = "postgres",
+    ETCD = "etcd",
 }
 
 export interface Config {
-    type: Type,
+    plugin: Plugin,
     host: string,
     port: number,
     name?: string,

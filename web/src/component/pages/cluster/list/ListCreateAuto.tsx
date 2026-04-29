@@ -3,9 +3,9 @@ import {useState} from "react"
 
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
 import {ClusterAuto} from "../../../../api/cluster/type"
-import {Type as DbType} from "../../../../api/database/type"
+import {Plugin as DbPlugin} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
-import {KeeperType} from "../../../../api/keeper/type"
+import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AutoIconButton} from "../../../view/button/IconButtons"
@@ -21,8 +21,8 @@ const SX: SxPropsMap = {
 
 const InitialClusterAuto: ClusterAuto = {
     name: "",
-    dbType: DbType.POSTGRES,
-    keeperType: KeeperType.PATRONI,
+    dbPlugin: DbPlugin.POSTGRES,
+    keeperPlugin: KeeperPlugin.PATRONI,
     tls: {keeper: false, database: false},
     certs: {},
     vaults: {},

@@ -1,16 +1,16 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
-import {Type} from "../database/type"
+import {Plugin as DbPlugin} from "../database/type"
 import {Feature} from "../feature"
-import {KeeperType} from "../keeper/type"
+import {Plugin as KeeperPlugin} from "../keeper/type"
 import {Connection, KeeperResponse} from "../node/type"
 
 // COMMON (WEB AND SERVER)
 
 export interface ClusterOptions {
-    dbType: Type,
-    keeperType: KeeperType,
+    dbPlugin: DbPlugin,
+    keeperPlugin: KeeperPlugin,
     tls: ClusterTls,
     certs: Certs,
     vaults: Vault,

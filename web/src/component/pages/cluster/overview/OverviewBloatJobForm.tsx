@@ -4,7 +4,7 @@ import {useState} from "react"
 import {useRouterBloatStart} from "../../../../api/bloat/hook"
 import {BloatOptions, BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Node} from "../../../../api/cluster/type"
-import {Type as DbType} from "../../../../api/database/type"
+import {Plugin as DbPlugin} from "../../../../api/database/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection} from "../../../../app/utils"
@@ -35,7 +35,7 @@ export function OverviewBloatJobForm(props: Props) {
     if (!vaultId) return <ClusterNoPostgresVault/>
     if (!node.connection.host || !node.connection.dbPort) return <NoDatabaseError/>
 
-    const db = {type: DbType.POSTGRES, host: node.connection.host, port: node.connection.dbPort, name: target?.database}
+    const db = {plugin: DbPlugin.POSTGRES, host: node.connection.host, port: node.connection.dbPort, name: target?.database}
     const connection = getQueryConnection(cluster, db)
     return (
         <Box sx={SX.form}>

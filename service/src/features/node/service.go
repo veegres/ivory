@@ -38,6 +38,14 @@ func NewService(
 	}
 }
 
+func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
+	c, e := s.keeperRegistry.Get(t)
+	if e != nil {
+		return []features.Feature{}
+	}
+	return c.SupportedFeatures()
+}
+
 func (s *Service) getOSAdapter(connection Connection) (os.Adapter, *ssh.Connection, error) {
 	sshConn, err := s.getSshConnection(connection)
 	if err != nil {
@@ -48,20 +56,12 @@ func (s *Service) getOSAdapter(connection Connection) (os.Adapter, *ssh.Connecti
 }
 
 func (s *Service) getKeeperAdapter(r KeeperRequest) (keeper.Adapter, keeper.Request, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
+	client, errClient := s.keeperRegistry.Get(r.Plugin)
 	if errClient != nil {
 		return nil, keeper.Request{}, errClient
 	}
 	request, err := s.getKeeperRequest(r)
 	return client, request, err
-}
-
-func (s *Service) SupportedFeatures(t keeper.Type) []features.Feature {
-	c, e := s.keeperRegistry.Get(t)
-	if e != nil {
-		return []features.Feature{}
-	}
-	return c.SupportedFeatures()
 }
 
 func (s *Service) getKeeperRequest(request KeeperRequest) (keeper.Request, error) {

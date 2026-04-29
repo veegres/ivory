@@ -1,8 +1,8 @@
 // COMMON (WEB AND SERVER)
 
-export enum KeeperType {
-    PATRONI,
-    POSTGRES,
+export enum Plugin {
+    PATRONI = "patroni",
+    POSTGRES = "postgres",
 }
 
 export enum Status {

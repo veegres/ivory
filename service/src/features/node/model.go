@@ -19,12 +19,12 @@ type Connection struct {
 }
 
 type KeeperRequest struct {
-	Type    keeper.Type `json:"type" form:"type"`
-	Host    string      `json:"host" form:"host"`
-	Port    int         `json:"port" form:"port"`
-	VaultId *uuid.UUID  `json:"vaultId" form:"vaultId"`
-	Certs   *cert.Certs `json:"certs" form:"certs"`
-	Body    any         `json:"body" form:"body"`
+	Plugin  keeper.Plugin `json:"plugin" form:"plugin"`
+	Host    string        `json:"host" form:"host"`
+	Port    int           `json:"port" form:"port"`
+	VaultId *uuid.UUID    `json:"vaultId" form:"vaultId"`
+	Certs   *cert.Certs   `json:"certs" form:"certs"`
+	Body    any           `json:"body" form:"body"`
 }
 
 type KeeperResponse struct {
@@ -56,9 +56,9 @@ type DockerResult = os.DockerResult
 // SPECIFIC (SERVER)
 
 type KeeperAutoRequest struct {
-	Connections []Connection `json:"connections" form:"connections"`
-	Type        keeper.Type  `json:"type" form:"type"`
-	VaultId     *uuid.UUID   `json:"vaultId" form:"vaultId"`
-	Certs       *cert.Certs  `json:"certs" form:"certs"`
-	Body        any          `json:"body" form:"body"`
+	Connections []Connection  `json:"connections" form:"connections"`
+	Plugin      keeper.Plugin `json:"plugin" form:"plugin"`
+	VaultId     *uuid.UUID    `json:"vaultId" form:"vaultId"`
+	Certs       *cert.Certs   `json:"certs" form:"certs"`
+	Body        any           `json:"body" form:"body"`
 }
