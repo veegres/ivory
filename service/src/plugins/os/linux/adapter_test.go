@@ -42,3 +42,27 @@ eth0: 2048 2 0 0 0 0 0 0 4096 4 0 0 0 0 0 0
 		t.Fatalf("unexpected transmitted bytes: %d", metrics.Network.TransmittedBytes)
 	}
 }
+
+func TestNormalizeDockerCommand(t *testing.T) {
+	tests := []struct {
+		name     string
+		command  string
+		expected string
+	}{
+		{name: "prefix plain command", command: "ps", expected: "docker ps"},
+		{name: "keep docker command", command: "docker ps", expected: "docker ps"},
+		{name: "keep sudo docker command", command: "sudo docker ps", expected: "sudo docker ps"},
+		{name: "trim spaces", command: "  images  ", expected: "docker images"},
+	}
+
+	adapter := &Adapter{}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actual := adapter.normalizeDockerCommand(test.command)
+			if actual != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, actual)
+			}
+		})
+	}
+}

@@ -14,7 +14,6 @@ import (
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
-	sshClient      *ssh.Client
 	osRegistry     *os.PluginRegistry
 	keeperRegistry *keeper.PluginRegistry
 	vaultService   *vault.Service
@@ -24,14 +23,12 @@ type Service struct {
 }
 
 func NewService(
-	sshClient *ssh.Client,
 	osRegistry *os.PluginRegistry,
 	keeperRegistry *keeper.PluginRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *Service {
 	return &Service{
-		sshClient:      sshClient,
 		osRegistry:     osRegistry,
 		keeperRegistry: keeperRegistry,
 		vaultService:   vaultService,
