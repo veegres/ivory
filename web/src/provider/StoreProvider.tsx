@@ -36,7 +36,7 @@ export const useStore = create(persist<Store>(
         settings: false,
         refresh: {},
         node: {
-            body: NodeTabType.CHART,
+            body: NodeTabType.MONITOR,
             queryTab: QueryType.CONSOLE,
             queryConsole: "",
             dbName: undefined,

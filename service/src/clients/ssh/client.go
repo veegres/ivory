@@ -2,6 +2,8 @@ package ssh
 
 import (
 	"bytes"
+	"crypto/ed25519"
+	"crypto/rand"
 	"errors"
 	"net"
 	"net/url"
@@ -18,27 +20,21 @@ var ErrInvalidCpuMetrics = errors.New("invalid cpu metrics output")
 var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
 var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 
-type Client interface {
-	Execute(connection Connection, command string) (*CommandResult, error)
-	ExecuteDocker(connection Connection, command string) (*CommandResult, error)
-	Metrics(connection Connection) (*Metrics, error)
-}
-
-type client struct {
+type Client struct {
 	timeout time.Duration
 }
 
-func NewClient() Client {
-	return &client{timeout: 10 * time.Second}
+func NewClient() *Client {
+	return &Client{timeout: 10 * time.Second}
 }
 
-func (c *client) Execute(connection Connection, command string) (*CommandResult, error) {
+func (c *Client) Execute(connection Connection, command string) (*CommandResult, error) {
 	trimmed := strings.TrimSpace(command)
 	if trimmed == "" {
 		return nil, ErrCommandEmpty
 	}
 
-	signer, err := ssh.ParsePrivateKey([]byte(connection.Key))
+	signer, err := ssh.NewSignerFromKey(connection.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -90,11 +86,26 @@ func (c *client) Execute(connection Connection, command string) (*CommandResult,
 	return result, nil
 }
 
-func (c *client) ExecuteDocker(connection Connection, command string) (*CommandResult, error) {
+func (c *Client) ExecuteDocker(connection Connection, command string) (*CommandResult, error) {
 	return c.Execute(connection, normalizeDockerCommand(command))
 }
 
-func (c *client) Metrics(connection Connection) (*Metrics, error) {
+func (c *Client) GenerateKey() (string, string, error) {
+	pubKey, prvKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return "", "", err
+	}
+	sshPubKey, err := ssh.NewPublicKey(pubKey)
+	if err != nil {
+		return "", "'", err
+	}
+	// NOTE: it always adds `\n` at the end, so we need to trim it
+	sshPubKeyAuth := strings.TrimSuffix(string(ssh.MarshalAuthorizedKey(sshPubKey)), "\n")
+	sshPubKeyAuthComment := sshPubKeyAuth + " " + "ivory"
+	return sshPubKeyAuthComment, string(prvKey), nil
+}
+
+func (c *Client) Metrics(connection Connection) (*Metrics, error) {
 	result, err := c.Execute(connection, MetricsCommand)
 	if err != nil {
 		return nil, err

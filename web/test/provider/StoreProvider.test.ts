@@ -39,7 +39,7 @@ describe("StoreProvider", () => {
             expect(state.activeTags).toEqual(["ALL"])
             expect(state.warnings).toEqual({})
             expect(state.settings).toBe(false)
-            expect(state.node.body).toBe(NodeTabType.CHART)
+            expect(state.node.body).toBe(NodeTabType.MONITOR)
             expect(state.node.queryTab).toBe(QueryType.CONSOLE)
             expect(state.node.queryConsole).toBe("")
             expect(state.node.dbName).toBeUndefined()

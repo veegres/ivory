@@ -1,14 +1,12 @@
 import {Box, Link} from "@mui/material"
 
-import {Database} from "../../../../api/database/type"
-import {NodeTab, NodeTabType} from "../../../../api/node/type"
+import {Connection as SshConnection, NodeTab, NodeTabType} from "../../../../api/node/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../api/query/hook"
-import {Connection} from "../../../../api/query/type"
+import {Connection as QueryConnection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
-import {Chart} from "../../../widgets/chart/Chart"
+import {Monitor} from "../../../widgets/monitor/Monitor"
 import {ClusterNoPostgresVault, NoDatabaseError} from "../overview/OverviewError"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTitle} from "./NodeMainTitle"
@@ -19,9 +17,9 @@ const SX: SxPropsMap = {
 }
 
 const Tabs: {[key in NodeTabType]: NodeTab} = {
-    [NodeTabType.CHART]: {
-        label: "Charts",
-        body: (connection: Connection) => <Chart connection={connection}/>,
+    [NodeTabType.MONITOR]: {
+        label: "Monitor",
+        body: (queryCon: QueryConnection, sshCon: SshConnection) => <Monitor queryCon={queryCon} sshCon={sshCon}/>,
         info: <>
             Here you can check some basic charts about your overall database and each database separately
             by specifying database name in the input near by.
@@ -31,7 +29,7 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
     },
     [NodeTabType.QUERY]: {
         label: "Queries",
-        body: (connection: Connection) => <NodeMainQueries connection={connection}/>,
+        body: (queryCon: QueryConnection) => <NodeMainQueries connection={queryCon}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres (<b>always use LIMIT in queries
             to reduce number of rows, it will help to render and execute query faster</b>). There are some default queries
@@ -48,43 +46,41 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
 
 type Props = {
     tab: NodeTabType,
-    database: Database,
+    queryCon: QueryConnection,
+    sshCon: SshConnection,
 }
 
 export function NodeMain(props: Props) {
-    const {tab, database} = props
-    const activeCluster = useStore(s => s.activeCluster)
+    const {tab, queryCon: qc, sshCon: sc} = props
     const {dbName, dbSchema} = useStore(s => s.node)
     const {setDbName, setDbSchema} = useStoreAction
 
-    if (!activeCluster) return null
-    const {cluster} = activeCluster
     const {label, info, body} = Tabs[tab]
 
-    const vaultId = cluster.vaults.databaseId
-    const db = {...database, name: dbName, schema: dbSchema} as Database
-    const connection = getQueryConnection(cluster, db)
+    const db = {...qc.db, name: dbName, schema: dbSchema}
+    const queryCon = {...qc, db}
+    const sshCon = sc
 
     return (
         <Box sx={SX.main}>
-            <NodeMainTitle label={label} info={info} db={database} renderActions={renderActions()}/>
+            <NodeMainTitle label={label} info={info} db={db} renderActions={renderActions()}/>
             {renderBody()}
         </Box>
     )
 
     function renderBody() {
-        if (!vaultId) return <ClusterNoPostgresVault/>
-        if (database.host === "-") return <NoDatabaseError/>
-        return body(connection)
+        if (!queryCon.vaultId) return <ClusterNoPostgresVault/>
+        if (db.host === "-") return <NoDatabaseError/>
+        return body(queryCon, sshCon)
     }
 
     function renderActions() {
-        if (!vaultId) return null
+        if (!queryCon.vaultId) return null
         return (
             <Box sx={SX.inputs}>
                 <AutocompleteFetch
                     value={dbSchema || null}
-                    connection={connection}
+                    connection={queryCon}
                     useFetch={useRouterQuerySchemas}
                     placeholder={"Schema"}
                     variant={"outlined"}
@@ -94,7 +90,7 @@ export function NodeMain(props: Props) {
                 />
                 <AutocompleteFetch
                     value={dbName || null}
-                    connection={connection}
+                    connection={queryCon}
                     useFetch={useRouterQueryDatabase}
                     placeholder={"Database"}
                     variant={"outlined"}

@@ -53,7 +53,7 @@ type Props = {
     onClick: () => void,
 }
 
-export function ChartItem(props: Props) {
+export function MonitorItem(props: Props) {
     const {value, label, color, loading, error, onClick} = props
 
     const bg = useMemo(handleMemoBackground, [color])

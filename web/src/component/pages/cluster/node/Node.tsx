@@ -37,13 +37,13 @@ export function Node() {
         if (!activeNode.connection.host || !activeNode.connection.dbPort) return <NoDatabaseError/>
 
         const database = {type: DatabaseType.POSTGRES, host: activeNode.connection.host, port: activeNode.connection.dbPort}
-        const connection = getQueryConnection(activeCluster.cluster, database)
+        const queryCon = getQueryConnection(activeCluster.cluster, database)
 
         return (
             <Box sx={SX.content}>
-                <NodeInfo node={activeNode} tab={node.body} onTab={setNodeBody} connection={connection}/>
+                <NodeInfo node={activeNode} tab={node.body} onTab={setNodeBody} connection={queryCon}/>
                 <Divider orientation={"vertical"} flexItem/>
-                <NodeMain tab={node.body} database={database}/>
+                <NodeMain tab={node.body} queryCon={queryCon} sshCon={activeNode.connection}/>
             </Box>
         )
     }

@@ -1,6 +1,7 @@
 package node
 
 import (
+	"crypto/ed25519"
 	"errors"
 	"ivory/src/clients/keeper"
 	"ivory/src/clients/ssh"
@@ -13,7 +14,7 @@ var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
 	keeperRegistry *keeper.Registry
-	sshClient      ssh.Client
+	sshClient      *ssh.Client
 	vaultService   *vault.Service
 	certService    *cert.Service
 
@@ -22,7 +23,7 @@ type Service struct {
 
 func NewService(
 	keeperRegistry *keeper.Registry,
-	sshClient ssh.Client,
+	sshClient *ssh.Client,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *Service {
@@ -77,9 +78,9 @@ func (s *Service) getSshConnection(connection Connection) (*ssh.Connection, erro
 	}
 
 	return &ssh.Connection{
-		Host:     connection.Host,
-		Port:     sshPort,
-		Username: cred.Username,
-		Key:      cred.Secret,
+		Host:       connection.Host,
+		Port:       sshPort,
+		Username:   cred.Username,
+		PrivateKey: ed25519.PrivateKey(cred.Secret),
 	}, nil
 }

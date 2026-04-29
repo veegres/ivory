@@ -34,7 +34,7 @@ export function NodeInfo(props: Props) {
     return (
         <Box sx={SX.info}>
             <ToggleButtonGroup size={"small"} color={"secondary"} fullWidth value={tab}>
-                <ToggleButton value={NodeTabType.CHART} onClick={() => onTab(NodeTabType.CHART)} disabled={!access}>
+                <ToggleButton value={NodeTabType.MONITOR} onClick={() => onTab(NodeTabType.MONITOR)} disabled={!access}>
                     Charts
                 </ToggleButton>
                 <ToggleButton value={NodeTabType.QUERY} onClick={() => onTab(NodeTabType.QUERY)}>

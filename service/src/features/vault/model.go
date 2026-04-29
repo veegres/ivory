@@ -5,9 +5,10 @@ import "github.com/google/uuid"
 // COMMON (WEB AND SERVER)
 
 type Vault struct {
+	Type     VaultType `json:"type"`
 	Username string    `json:"username"`
 	Secret   string    `json:"secret"`
-	Type     VaultType `json:"type"`
+	Metadata *string   `json:"metadata,omitempty"`
 }
 
 type VaultType int
