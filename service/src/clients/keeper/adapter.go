@@ -6,9 +6,10 @@ import (
 	"ivory/src/features"
 )
 
+var ErrBodyShouldBeEmpty = errors.New("body should be empty")
 var ErrClientNotImplemented = errors.New("client is not implemented")
 
-type Client interface {
+type Adapter interface {
 	Overview(request Request) ([]Response, int, error)
 	Config(request Request) (any, int, error)
 	ConfigUpdate(request Request) (any, int, error)
@@ -25,21 +26,21 @@ type Client interface {
 }
 
 type Registry struct {
-	clients map[Type]Client
+	clients map[Type]Adapter
 }
 
 func NewRegistry() *Registry {
 	return &Registry{
-		clients: make(map[Type]Client),
+		clients: make(map[Type]Adapter),
 	}
 }
 
-func (f *Registry) Register(t Type, client Client) {
-	f.clients[t] = client
+func (r *Registry) Register(t Type, client Adapter) {
+	r.clients[t] = client
 }
 
-func (f *Registry) Get(t Type) (Client, error) {
-	if client, ok := f.clients[t]; ok {
+func (r *Registry) Get(t Type) (Adapter, error) {
+	if client, ok := r.clients[t]; ok {
 		return client, nil
 	}
 	return nil, ErrClientNotImplemented

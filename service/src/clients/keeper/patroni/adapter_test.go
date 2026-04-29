@@ -29,7 +29,7 @@ func TestClient_Overview_Mapping(t *testing.T) {
 
 		// Mock the gateway response
 		httpClient := &http.Client{}
-		_ = NewClient(httpClient)
+		_ = NewAdapter(httpClient)
 
 		// Verify the struct is created correctly
 		if len(patroniResponse.Members) != 1 {
@@ -48,7 +48,7 @@ func TestClient_Overview_Mapping(t *testing.T) {
 			{"trailing slash", "http://10.0.0.1:8008/", "10.0.0.1"},
 		}
 
-		_ = &Client{}
+		_ = &Adapter{}
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestClient_Overview_Mapping(t *testing.T) {
 }
 
 func TestClient_mapLag(t *testing.T) {
-	client := &Client{}
+	client := &Adapter{}
 
 	t.Run("valid lag", func(t *testing.T) {
 		patroniInstance := PatroniInstance{
@@ -104,7 +104,7 @@ func TestClient_mapLag(t *testing.T) {
 }
 
 func TestClient_mapRole(t *testing.T) {
-	client := &Client{}
+	client := &Adapter{}
 
 	testCases := []struct {
 		input    string
@@ -126,7 +126,7 @@ func TestClient_mapRole(t *testing.T) {
 }
 
 func TestClient_mapRestart(t *testing.T) {
-	client := &Client{}
+	client := &Adapter{}
 
 	t.Run("valid restart", func(t *testing.T) {
 		patroniRestart := &PatroniScheduledRestart{
@@ -155,7 +155,7 @@ func TestClient_mapRestart(t *testing.T) {
 }
 
 func TestClient_Activate(t *testing.T) {
-	client := NewClient(&http.Client{})
+	client := NewAdapter(&http.Client{})
 
 	t.Run("should return error when body is not nil", func(t *testing.T) {
 		request := keeper.Request{
@@ -177,7 +177,7 @@ func TestClient_Activate(t *testing.T) {
 }
 
 func TestClient_Pause(t *testing.T) {
-	client := NewClient(&http.Client{})
+	client := NewAdapter(&http.Client{})
 
 	t.Run("should return error when body is not nil", func(t *testing.T) {
 		request := keeper.Request{

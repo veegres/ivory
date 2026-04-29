@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"ivory/src/clients/os"
 	"strconv"
 )
 
@@ -10,7 +11,11 @@ func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, error) {
 	if err != nil {
 		return nil, err
 	}
-	result, err := s.sshClient.Metrics(*connection)
+	adapter, err := s.osRegistry.Get(os.Linux)
+	if err != nil {
+		return nil, err
+	}
+	result, err := adapter.Metrics(*connection)
 	if err != nil {
 		return nil, err
 	}

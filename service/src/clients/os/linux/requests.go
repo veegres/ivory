@@ -1,4 +1,4 @@
-package ssh
+package linux
 
 const MetricsCommand = `sh -lc '
 echo __IVORY_CPU_1__; head -n 1 /proc/stat;
