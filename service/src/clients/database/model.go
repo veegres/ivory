@@ -30,8 +30,8 @@ type Connection struct {
 }
 
 type Context struct {
-	Connection *Connection `json:"connection"`
-	Session    string      `json:"session"`
+	Connection  *Connection `json:"connection"`
+	Application string      `json:"application"`
 }
 
 type Credentials struct {
@@ -69,4 +69,44 @@ type QueryFields struct {
 	EndTime   int64         `json:"endTime"`
 	Url       string        `json:"url"`
 	Options   *QueryOptions `json:"options"`
+}
+
+type SystemRequestCategory int8
+
+const (
+	BLOAT SystemRequestCategory = iota
+	ACTIVITY
+	REPLICATION
+	STATISTIC
+	OTHER
+)
+
+type SystemRequestVariety int8
+
+const (
+	DatabaseSensitive SystemRequestVariety = iota
+	MasterOnly
+	ReplicaRecommended
+)
+
+type SystemChartType string
+
+const (
+	Databases      SystemChartType = "Databases"
+	Connections                    = "Connections"
+	DatabaseSize                   = "Database Size"
+	DatabaseUptime                 = "Database Uptime"
+	Schemas                        = "Schemas"
+	TablesSize                     = "Tables Size"
+	IndexesSize                    = "Indexes Size"
+	TotalSize                      = "Total Size"
+)
+
+type SystemRequest struct {
+	Name        string
+	Type        SystemRequestCategory
+	Description string
+	Query       string
+	Varieties   []SystemRequestVariety
+	Params      []string
 }

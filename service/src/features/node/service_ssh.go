@@ -11,11 +11,13 @@ func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, error) {
 	if err != nil {
 		return nil, err
 	}
-	adapter, err := s.osRegistry.Get(os.Linux)
+	// NOTE: today we only support Linux nodes for metrics collection.
+	// In the future, the node connection should carry its OS type.
+	linuxAdapter, err := s.osRegistry.Get(os.Linux)
 	if err != nil {
 		return nil, err
 	}
-	result, err := adapter.Metrics(*connection)
+	result, err := linuxAdapter.Metrics(*connection)
 	if err != nil {
 		return nil, err
 	}

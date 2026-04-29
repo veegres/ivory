@@ -3,7 +3,6 @@ package query
 import (
 	"fmt"
 	"ivory/src/clients/database"
-	"ivory/src/clients/database/postgres"
 
 	"github.com/google/uuid"
 )
@@ -69,8 +68,8 @@ func (s *Service) RunningQueriesByApplicationName(queryCtx Context) (*DbResponse
 	if err != nil {
 		return nil, err
 	}
-	options := &database.QueryOptions{Params: []any{client.GetApplicationName(ctx.Session)}}
-	return client.GetFields(ctx, postgres.GetAllRunningQueriesByApplicationName, options)
+	options := &database.QueryOptions{Params: []any{ctx.Application}}
+	return client.ActiveQueries(ctx, options)
 }
 
 func (s *Service) DatabasesQuery(queryCtx Context, name string) ([]string, error) {
@@ -82,7 +81,7 @@ func (s *Service) DatabasesQuery(queryCtx Context, name string) ([]string, error
 	if err != nil {
 		return nil, err
 	}
-	return client.GetMany(ctx, postgres.GetAllDatabases, []any{"%" + name + "%"})
+	return client.ListDatabases(ctx, name)
 }
 
 func (s *Service) SchemasQuery(queryCtx Context, name string) ([]string, error) {
@@ -98,7 +97,7 @@ func (s *Service) SchemasQuery(queryCtx Context, name string) ([]string, error) 
 	if err != nil {
 		return nil, err
 	}
-	return client.GetMany(ctx, postgres.GetAllSchemas, []any{"%" + name + "%"})
+	return client.ListSchemas(ctx, name)
 }
 
 func (s *Service) TablesQuery(queryCtx Context, schema string, name string) ([]string, error) {
@@ -114,19 +113,24 @@ func (s *Service) TablesQuery(queryCtx Context, schema string, name string) ([]s
 	if err != nil {
 		return nil, err
 	}
-	return client.GetMany(ctx, postgres.GetAllTables, []any{schema, "%" + name + "%"})
+	return client.ListTables(ctx, schema, name)
 }
 
 func (s *Service) ChartQuery(queryCtx Context, chartType ChartType) (*Chart, error) {
-	request, ok := s.chartMap[chartType]
+	dbType := queryCtx.Connection.Db.Type
+	typeMap, ok := s.chartMap[dbType]
 	if !ok {
-		return nil, fmt.Errorf("chart %s is not supported", chartType)
+		return nil, fmt.Errorf("charts for database type %v are not supported", dbType)
+	}
+	request, ok := typeMap[chartType]
+	if !ok {
+		return nil, fmt.Errorf("chart %s is not supported for database type %v", chartType, dbType)
 	}
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
 		return nil, err
 	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, err := s.databaseRegistry.Get(dbType)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +143,7 @@ func (s *Service) ChartQuery(queryCtx Context, chartType ChartType) (*Chart, err
 
 func (s *Service) mapContext(queryCtx Context) (database.Context, error) {
 	con := database.Connection{Config: queryCtx.Connection.Db}
-	ctx := database.Context{Connection: &con, Session: queryCtx.Session}
+	ctx := database.Context{Connection: &con, Application: s.GetApplicationName(queryCtx.Session)}
 	if queryCtx.Connection.VaultId != nil {
 		cred, errCred := s.vaultService.GetDecrypted(*queryCtx.Connection.VaultId)
 		if errCred != nil {

@@ -5,39 +5,8 @@ import (
 	"testing"
 )
 
-func TestClient_GetApplicationName(t *testing.T) {
-	client := NewAdapter("TestApp")
-
-	t.Run("should truncate session ID to 7 characters", func(t *testing.T) {
-		result := client.GetApplicationName("1234567890abcdef")
-
-		expected := "TestApp [1234567]"
-		if result != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, result)
-		}
-	})
-
-	t.Run("should handle short session ID", func(t *testing.T) {
-		result := client.GetApplicationName("abc")
-
-		expected := "TestApp [abc]"
-		if result != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, result)
-		}
-	})
-
-	t.Run("should handle exactly 7 characters", func(t *testing.T) {
-		result := client.GetApplicationName("abcdefg")
-
-		expected := "TestApp [abcdefg]"
-		if result != expected {
-			t.Errorf("Expected '%s', got '%s'", expected, result)
-		}
-	})
-}
-
 func TestClient_trimQuery(t *testing.T) {
-	client := NewAdapter("TestApp")
+	client := NewAdapter()
 
 	t.Run("should remove single line comment", func(t *testing.T) {
 		query := "SELECT * FROM users -- this is a comment\nWHERE id = 1"
@@ -90,7 +59,7 @@ func TestClient_trimQuery(t *testing.T) {
 }
 
 func TestClient_parseQuery(t *testing.T) {
-	client := NewAdapter("TestApp")
+	client := NewAdapter()
 
 	t.Run("should parse basic SELECT query", func(t *testing.T) {
 		query := "SELECT * FROM users"
@@ -233,7 +202,7 @@ func TestClient_parseQuery(t *testing.T) {
 }
 
 func TestClient_addLimitToQuery(t *testing.T) {
-	client := NewAdapter("TestApp")
+	client := NewAdapter()
 
 	t.Run("should add LIMIT to SELECT query without semicolon", func(t *testing.T) {
 		query := "SELECT * FROM users"
@@ -404,7 +373,7 @@ func TestClient_addLimitToQuery(t *testing.T) {
 }
 
 func TestClient_normalizeQuery(t *testing.T) {
-	client := NewAdapter("TestApp")
+	client := NewAdapter()
 
 	t.Run("should return original query when trim is nil", func(t *testing.T) {
 		query := "SELECT * FROM users -- comment"
