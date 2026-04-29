@@ -51,11 +51,7 @@ type DockerLogsRequest struct {
 	Tail       int        `json:"tail" form:"tail"`
 }
 
-type DockerResult struct {
-	Stdout   string `json:"stdout"`
-	Stderr   string `json:"stderr"`
-	ExitCode int    `json:"exitCode"`
-}
+type DockerResult = os.DockerResult
 
 // SPECIFIC (SERVER)
 

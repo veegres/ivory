@@ -12,6 +12,16 @@ var ErrClientNotImplemented = errors.New("client is not implemented")
 
 type Adapter interface {
 	Metrics(connection ssh.Connection) (*Metrics, error)
+	DockerManager
+}
+
+type DockerManager interface {
+	DockerList(connection ssh.Connection) (*DockerResult, error)
+	DockerDeploy(connection ssh.Connection, image, options string) (*DockerResult, error)
+	DockerRun(connection ssh.Connection, options, image string) (*DockerResult, error)
+	DockerStop(connection ssh.Connection, container string) (*DockerResult, error)
+	DockerDelete(connection ssh.Connection, container string) (*DockerResult, error)
+	DockerLogs(connection ssh.Connection, container string, tail int) (*DockerResult, error)
 }
 
 type PluginRegistry struct {

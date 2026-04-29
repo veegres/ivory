@@ -83,10 +83,6 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 	return result, nil
 }
 
-func (c *Client) ExecuteDocker(connection Connection, command string) (*CommandResult, error) {
-	return c.Execute(connection, c.normalizeDockerCommand(command))
-}
-
 func (c *Client) GenerateKey() (string, string, error) {
 	pubKey, prvKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
@@ -100,17 +96,6 @@ func (c *Client) GenerateKey() (string, string, error) {
 	sshPubKeyAuth := strings.TrimSuffix(string(ssh.MarshalAuthorizedKey(sshPubKey)), "\n")
 	sshPubKeyAuthComment := sshPubKeyAuth + " " + "ivory"
 	return sshPubKeyAuthComment, string(prvKey), nil
-}
-
-func (c *Client) normalizeDockerCommand(command string) string {
-	trimmed := strings.TrimSpace(command)
-	if trimmed == "" {
-		return ""
-	}
-	if strings.HasPrefix(trimmed, "docker ") || trimmed == "docker" || strings.HasPrefix(trimmed, "sudo docker ") {
-		return trimmed
-	}
-	return "docker " + trimmed
 }
 
 func (c *Client) getDialAddress(connection Connection) (string, error) {

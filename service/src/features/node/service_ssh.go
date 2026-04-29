@@ -1,9 +1,7 @@
 package node
 
 import (
-	"fmt"
 	"ivory/src/plugins/os"
-	"strconv"
 )
 
 func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, error) {
@@ -29,13 +27,11 @@ func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Pull then run
-	command := fmt.Sprintf("pull %s && run -d %s %s", request.Image, request.Options, request.Image)
-	res, err := s.sshClient.ExecuteDocker(*connection, command)
+	linuxAdapter, err := s.osRegistry.Get(os.Linux)
 	if err != nil {
 		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return linuxAdapter.DockerDeploy(*connection, request.Image, request.Options)
 }
 
 func (s *Service) DockerStop(request DockerRequest) (*DockerResult, error) {
@@ -43,11 +39,11 @@ func (s *Service) DockerStop(request DockerRequest) (*DockerResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*connection, "stop "+request.Container)
+	linuxAdapter, err := s.osRegistry.Get(os.Linux)
 	if err != nil {
 		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return linuxAdapter.DockerStop(*connection, request.Container)
 }
 
 func (s *Service) DockerRun(request DockerRequest) (*DockerResult, error) {
@@ -55,11 +51,11 @@ func (s *Service) DockerRun(request DockerRequest) (*DockerResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*connection, fmt.Sprintf("run -d %s %s", request.Options, request.Image))
+	linuxAdapter, err := s.osRegistry.Get(os.Linux)
 	if err != nil {
 		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return linuxAdapter.DockerRun(*connection, request.Options, request.Image)
 }
 
 func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, error) {
@@ -67,11 +63,11 @@ func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*connection, "rm "+request.Container)
+	linuxAdapter, err := s.osRegistry.Get(os.Linux)
 	if err != nil {
 		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return linuxAdapter.DockerDelete(*connection, request.Container)
 }
 
 func (s *Service) DockerList(request SshRequest) (*DockerResult, error) {
@@ -79,11 +75,11 @@ func (s *Service) DockerList(request SshRequest) (*DockerResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.sshClient.ExecuteDocker(*connection, "ps -a")
+	linuxAdapter, err := s.osRegistry.Get(os.Linux)
 	if err != nil {
 		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return linuxAdapter.DockerList(*connection)
 }
 
 func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, error) {
@@ -91,14 +87,9 @@ func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	command := "logs "
-	if request.Tail > 0 {
-		command += "--tail " + strconv.Itoa(request.Tail) + " "
-	}
-	command += request.Container
-	res, err := s.sshClient.ExecuteDocker(*connection, command)
+	linuxAdapter, err := s.osRegistry.Get(os.Linux)
 	if err != nil {
 		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return linuxAdapter.DockerLogs(*connection, request.Container, request.Tail)
 }

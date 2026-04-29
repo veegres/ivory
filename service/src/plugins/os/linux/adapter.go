@@ -1,6 +1,7 @@
 package linux
 
 import (
+	"fmt"
 	"ivory/src/clients/ssh"
 	"ivory/src/plugins/os"
 	"strconv"
@@ -24,6 +25,55 @@ func (a *Adapter) Metrics(connection ssh.Connection) (*os.Metrics, error) {
 		return nil, err
 	}
 	return a.parseMetrics(result.Stdout)
+}
+
+func (a *Adapter) DockerList(connection ssh.Connection) (*os.DockerResult, error) {
+	return a.executeDocker(connection, "ps -a")
+}
+
+func (a *Adapter) DockerDeploy(connection ssh.Connection, image, options string) (*os.DockerResult, error) {
+	command := fmt.Sprintf("pull %s && run -d %s %s", image, options, image)
+	return a.executeDocker(connection, command)
+}
+
+func (a *Adapter) DockerRun(connection ssh.Connection, options, image string) (*os.DockerResult, error) {
+	return a.executeDocker(connection, fmt.Sprintf("run -d %s %s", options, image))
+}
+
+func (a *Adapter) DockerStop(connection ssh.Connection, container string) (*os.DockerResult, error) {
+	return a.executeDocker(connection, "stop "+container)
+}
+
+func (a *Adapter) DockerDelete(connection ssh.Connection, container string) (*os.DockerResult, error) {
+	return a.executeDocker(connection, "rm "+container)
+}
+
+func (a *Adapter) DockerLogs(connection ssh.Connection, container string, tail int) (*os.DockerResult, error) {
+	command := "logs "
+	if tail > 0 {
+		command += "--tail " + strconv.Itoa(tail) + " "
+	}
+	command += container
+	return a.executeDocker(connection, command)
+}
+
+func (a *Adapter) executeDocker(connection ssh.Connection, command string) (*os.DockerResult, error) {
+	res, err := a.sshClient.Execute(connection, a.normalizeDockerCommand(command))
+	if err != nil {
+		return nil, err
+	}
+	return &os.DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+}
+
+func (a *Adapter) normalizeDockerCommand(command string) string {
+	trimmed := strings.TrimSpace(command)
+	if trimmed == "" {
+		return ""
+	}
+	if strings.HasPrefix(trimmed, "docker ") || trimmed == "docker" || strings.HasPrefix(trimmed, "sudo docker ") {
+		return trimmed
+	}
+	return "docker " + trimmed
 }
 
 func (a *Adapter) parseMetrics(output string) (*os.Metrics, error) {

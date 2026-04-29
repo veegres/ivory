@@ -27,3 +27,9 @@ type NetworkMetrics struct {
 	ReceivedBytes    uint64 `json:"receivedBytes"`
 	TransmittedBytes uint64 `json:"transmittedBytes"`
 }
+
+type DockerResult struct {
+	Stdout   string `json:"stdout"`
+	Stderr   string `json:"stderr"`
+	ExitCode int    `json:"exitCode"`
+}
