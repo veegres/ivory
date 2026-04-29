@@ -61,11 +61,7 @@ func (s *Service) OverviewAuto(request KeeperAutoRequest) ([]KeeperResponse, int
 }
 
 func (s *Service) Overview(r KeeperRequest) ([]KeeperResponse, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -91,11 +87,7 @@ func (s *Service) Overview(r KeeperRequest) ([]KeeperResponse, int, error) {
 }
 
 func (s *Service) Config(r KeeperRequest) (any, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -103,11 +95,7 @@ func (s *Service) Config(r KeeperRequest) (any, int, error) {
 }
 
 func (s *Service) ConfigUpdate(r KeeperRequest) (any, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -115,11 +103,7 @@ func (s *Service) ConfigUpdate(r KeeperRequest) (any, int, error) {
 }
 
 func (s *Service) Switchover(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -127,11 +111,7 @@ func (s *Service) Switchover(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) DeleteSwitchover(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -139,11 +119,7 @@ func (s *Service) DeleteSwitchover(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) Reinitialize(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -151,11 +127,7 @@ func (s *Service) Reinitialize(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) Restart(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -163,11 +135,7 @@ func (s *Service) Restart(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) DeleteRestart(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -175,11 +143,7 @@ func (s *Service) DeleteRestart(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) Reload(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -187,11 +151,7 @@ func (s *Service) Reload(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) Failover(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -199,11 +159,7 @@ func (s *Service) Failover(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) Activate(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -211,11 +167,7 @@ func (s *Service) Activate(r KeeperRequest) (*string, int, error) {
 }
 
 func (s *Service) Pause(r KeeperRequest) (*string, int, error) {
-	client, errClient := s.keeperRegistry.Get(r.Type)
-	if errClient != nil {
-		return nil, 0, errClient
-	}
-	request, err := s.getKeeperRequest(r)
+	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -38,6 +38,24 @@ func NewService(
 	}
 }
 
+func (s *Service) getOSAdapter(connection Connection) (os.Adapter, *ssh.Connection, error) {
+	sshConn, err := s.getSshConnection(connection)
+	if err != nil {
+		return nil, nil, err
+	}
+	adapter, err := s.osRegistry.Get(os.Linux)
+	return adapter, sshConn, err
+}
+
+func (s *Service) getKeeperAdapter(r KeeperRequest) (keeper.Adapter, keeper.Request, error) {
+	client, errClient := s.keeperRegistry.Get(r.Type)
+	if errClient != nil {
+		return nil, keeper.Request{}, errClient
+	}
+	request, err := s.getKeeperRequest(r)
+	return client, request, err
+}
+
 func (s *Service) SupportedFeatures(t keeper.Type) []features.Feature {
 	c, e := s.keeperRegistry.Get(t)
 	if e != nil {

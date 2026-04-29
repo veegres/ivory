@@ -65,6 +65,15 @@ func (s *Service) SupportedFeatures(t database.Type) []features.Feature {
 	return c.SupportedFeatures()
 }
 
+func (s *Service) getDatabaseAdapter(queryCtx Context) (database.Adapter, database.Context, error) {
+	ctx, err := s.mapContext(queryCtx)
+	if err != nil {
+		return nil, database.Context{}, err
+	}
+	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	return client, ctx, err
+}
+
 func (s *Service) initializeSystemCharts() {
 	s.chartMap = make(map[database.Type]map[ChartType]Request)
 	for t, adapter := range s.databaseRegistry.All() {
