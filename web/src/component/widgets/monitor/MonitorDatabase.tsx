@@ -1,12 +1,11 @@
 import {AxiosError} from "axios"
 
-import {QueryChartType} from "../../../api/database/type"
 import {useRouterQueryChart} from "../../../api/query/hook"
-import {Connection} from "../../../api/query/type"
-import {Color,MonitorItem} from "./MonitorItem"
+import {ChartType, Connection} from "../../../api/query/type"
+import {Color, MonitorItem} from "./MonitorItem"
 
 type Props = {
-    type: QueryChartType,
+    type: ChartType,
     connection: Connection,
 }
 

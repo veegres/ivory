@@ -1,7 +1,6 @@
 package backup
 
 import (
-	"ivory/src/clients/database"
 	"ivory/src/features/cluster"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
@@ -75,7 +74,7 @@ func clusterToBackupV1(c cluster.Cluster) backupClusterV1 {
 	}
 }
 
-func queryToBackupV1(q query.Query) (*backupQueryV1, error) {
+func queryToBackupV1(q query.Response) (*backupQueryV1, error) {
 	if q.Creation == query.System {
 		return nil, nil
 	}
@@ -104,30 +103,30 @@ func queryToBackupV1(q query.Query) (*backupQueryV1, error) {
 	}, nil
 }
 
-func queryTypeToBackupV1(qt database.QueryType) (backupQueryTypeV1, error) {
+func queryTypeToBackupV1(qt query.Type) (backupQueryTypeV1, error) {
 	switch qt {
-	case database.BLOAT:
+	case query.BLOAT:
 		return BLOAT_V1, nil
-	case database.ACTIVITY:
+	case query.ACTIVITY:
 		return ACTIVITY_V1, nil
-	case database.REPLICATION:
+	case query.REPLICATION:
 		return REPLICATION_V1, nil
-	case database.STATISTIC:
+	case query.STATISTIC:
 		return STATISTIC_V1, nil
-	case database.OTHER:
+	case query.OTHER:
 		return OTHER_V1, nil
 	default:
 		return 0, ErrInvalidQueryType
 	}
 }
 
-func queryVarietyToBackupV1(qv database.QueryVariety) (backupQueryVarietyV1, error) {
+func queryVarietyToBackupV1(qv query.VarietyType) (backupQueryVarietyV1, error) {
 	switch qv {
-	case database.DatabaseSensitive:
+	case query.DatabaseSensitive:
 		return DatabaseSensitiveV1, nil
-	case database.MasterOnly:
+	case query.MasterOnly:
 		return MasterOnlyV1, nil
-	case database.ReplicaRecommended:
+	case query.ReplicaRecommended:
 		return ReplicaRecommendedV1, nil
 	default:
 		return 0, ErrInvalidQueryVariety

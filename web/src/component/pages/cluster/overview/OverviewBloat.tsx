@@ -5,9 +5,10 @@ import {useState} from "react"
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Node} from "../../../../api/cluster/type"
-import {Database, DatabaseType, QueryType} from "../../../../api/database/type"
+import {Config, Type as DbType} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {useRouterQueryList} from "../../../../api/query/hook"
+import {Type as QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection} from "../../../../app/utils"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
@@ -40,8 +41,8 @@ export function OverviewBloat(props: Props) {
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db: Database = {
-        type: DatabaseType.POSTGRES,
+    const db: Config = {
+        type: DbType.POSTGRES,
         host: node.connection.host,
         port: node.connection.dbPort || node.keeper.discoveredDbPort || 5432,
         name: target?.database,

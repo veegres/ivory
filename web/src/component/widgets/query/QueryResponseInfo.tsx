@@ -1,6 +1,6 @@
 import {Box, Tooltip} from "@mui/material"
 
-import {QueryOptions} from "../../../api/database/type"
+import {DbOptions} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
@@ -15,7 +15,7 @@ const SX: SxPropsMap = {
 type Props = {
     url: string,
     time: {start?: number, end?: number},
-    options?: QueryOptions,
+    options?: DbOptions,
 }
 
 export function QueryResponseInfo(props: Props) {

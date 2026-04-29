@@ -23,9 +23,9 @@ type Bloat struct {
 }
 
 type Connection struct {
-	Db      database.Database `json:"db"`
-	Certs   *cert.Certs       `json:"certs"`
-	VaultId *uuid.UUID        `json:"vaultId"`
+	Db      database.Config `json:"db"`
+	Certs   *cert.Certs     `json:"certs"`
+	VaultId *uuid.UUID      `json:"vaultId"`
 }
 
 type BloatRequest struct {

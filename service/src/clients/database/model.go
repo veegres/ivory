@@ -13,7 +13,7 @@ const (
 	ETCD
 )
 
-type Database struct {
+type Config struct {
 	Type   Type    `json:"type"`
 	Host   string  `json:"host"`
 	Port   int     `json:"port"`
@@ -21,71 +21,10 @@ type Database struct {
 	Schema *string `json:"schema"`
 }
 
-type QueryOptions struct {
-	Params []any   `json:"params"`
-	Limit  *string `json:"limit"`
-	Trim   *bool   `json:"trim"`
-}
-
-type QueryField struct {
-	Name        string `json:"name"`
-	DataType    string `json:"dataType"`
-	DataTypeOID uint32 `json:"dataTypeOID"`
-}
-
-type QueryFields struct {
-	Fields    []QueryField  `json:"fields"`
-	Rows      [][]any       `json:"rows"`
-	StartTime int64         `json:"startTime"`
-	EndTime   int64         `json:"endTime"`
-	Url       string        `json:"url"`
-	Options   *QueryOptions `json:"options"`
-}
-
-type QueryChartType string
-
-const (
-	Databases      QueryChartType = "Databases"
-	Connections                   = "Connections"
-	DatabaseSize                  = "Database Size"
-	DatabaseUptime                = "Database Uptime"
-	Schemas                       = "Schemas"
-	TablesSize                    = "Tables Size"
-	IndexesSize                   = "Indexes Size"
-	TotalSize                     = "Total Size"
-)
-
-type QueryType int8
-
-const (
-	BLOAT QueryType = iota
-	ACTIVITY
-	REPLICATION
-	STATISTIC
-	OTHER
-)
-
-type QueryVariety int8
-
-const (
-	DatabaseSensitive QueryVariety = iota
-	MasterOnly
-	ReplicaRecommended
-)
-
-type Query struct {
-	Name        string         `json:"name"`
-	Type        *QueryType     `json:"type"`
-	Description *string        `json:"description"`
-	Query       string         `json:"query"`
-	Varieties   []QueryVariety `json:"varieties"`
-	Params      []string       `json:"params"`
-}
-
 // SPECIFIC (SERVER)
 
 type Connection struct {
-	Database    Database     `json:"database" form:"database"`
+	Config      Config       `json:"config" form:"config"`
 	Credentials *Credentials `json:"credentials" form:"credentials"`
 	TlsConfig   *tls.Config  `json:"tlsConfig" form:"tlsConfig"`
 }
@@ -109,4 +48,25 @@ type QueryAnalysis struct {
 	FROM      int
 	EXPLAIN   int
 	Semicolon bool
+}
+
+type QueryOptions struct {
+	Params []any   `json:"params"`
+	Limit  *string `json:"limit"`
+	Trim   *bool   `json:"trim"`
+}
+
+type QueryField struct {
+	Name        string `json:"name"`
+	DataType    string `json:"dataType"`
+	DataTypeOID uint32 `json:"dataTypeOID"`
+}
+
+type QueryFields struct {
+	Fields    []QueryField  `json:"fields"`
+	Rows      [][]any       `json:"rows"`
+	StartTime int64         `json:"startTime"`
+	EndTime   int64         `json:"endTime"`
+	Url       string        `json:"url"`
+	Options   *QueryOptions `json:"options"`
 }

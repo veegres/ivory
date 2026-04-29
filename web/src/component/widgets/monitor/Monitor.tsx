@@ -1,8 +1,7 @@
 import {Box} from "@mui/material"
 
-import {QueryChartType} from "../../../api/database/type"
 import {Connection as NodeConnection} from "../../../api/node/type"
-import {Connection as QueryConnection} from "../../../api/query/type"
+import {ChartType, Connection as QueryConnection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {MonitorCommon} from "./MonitorCommon"
 import {MonitorDatabase} from "./MonitorDatabase"
@@ -15,8 +14,8 @@ const SX: SxPropsMap = {
 }
 
 const Charts = {
-    common: [QueryChartType.Databases, QueryChartType.Connections, QueryChartType.DatabaseSize, QueryChartType.DatabaseUptime],
-    database: [QueryChartType.Schemas, QueryChartType.TablesSize, QueryChartType.IndexesSize, QueryChartType.TotalSize],
+    common: [ChartType.Databases, ChartType.Connections, ChartType.DatabaseSize, ChartType.DatabaseUptime],
+    database: [ChartType.Schemas, ChartType.TablesSize, ChartType.IndexesSize, ChartType.TotalSize],
 }
 
 type Props = {

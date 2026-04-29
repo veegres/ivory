@@ -1,5 +1,5 @@
 import {Certs} from "../cert/type"
-import {Database} from "../database/type"
+import {Config} from "../database/type"
 import {JobStatus} from "./job/type"
 
 // COMMON (WEB AND SERVER)
@@ -14,7 +14,7 @@ export interface Bloat {
 }
 
 export interface Connection {
-    db: Database,
+    db: Config,
     certs?: Certs,
     vaultId?: string,
 }

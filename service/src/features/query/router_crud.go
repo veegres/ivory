@@ -1,7 +1,6 @@
 package query
 
 import (
-	"ivory/src/clients/database"
 	"net/http"
 	"strconv"
 
@@ -15,7 +14,7 @@ func (r *Router) PutQuery(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
-	var query database.Query
+	var query Request
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -30,7 +29,7 @@ func (r *Router) PutQuery(context *gin.Context) {
 }
 
 func (r *Router) PostQuery(context *gin.Context) {
-	var query database.Query
+	var query Request
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -53,7 +52,7 @@ func (r *Router) GetQueryList(context *gin.Context) {
 			context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
 			return
 		}
-		queryType := database.QueryType(number)
+		queryType := Type(number)
 		queryList, err := r.service.GetList(&queryType)
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

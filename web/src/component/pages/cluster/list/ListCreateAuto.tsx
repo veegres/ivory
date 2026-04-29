@@ -3,7 +3,7 @@ import {useState} from "react"
 
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
 import {ClusterAuto} from "../../../../api/cluster/type"
-import {DatabaseType} from "../../../../api/database/type"
+import {Type as DbType} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {KeeperType} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
@@ -21,7 +21,7 @@ const SX: SxPropsMap = {
 
 const InitialClusterAuto: ClusterAuto = {
     name: "",
-    dbType: DatabaseType.POSTGRES,
+    dbType: DbType.POSTGRES,
     keeperType: KeeperType.PATRONI,
     tls: {keeper: false, database: false},
     certs: {},

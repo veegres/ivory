@@ -1,9 +1,8 @@
 import {Alert} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {QueryVariety} from "../../../api/database/type"
 import {Feature} from "../../../api/feature"
-import {Connection} from "../../../api/query/type"
+import {Connection, VarietyType} from "../../../api/query/type"
 import {CancelIconButton, InfoIconButton, PlayIconButton, QueryParamsIconButton} from "../../view/button/IconButtons"
 import {FixedInputs} from "../../view/input/FixedInputs"
 import {Access} from "../access/Access"
@@ -24,7 +23,7 @@ const initialViewCheckMap: ViewCheckMap = {
 type Props = {
     connection: Connection,
     queryUuid?: string,
-    varieties?: QueryVariety[],
+    varieties?: VarietyType[],
     params?: string[],
     children: ReactNode,
     renderButtons: ReactNode,

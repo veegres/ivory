@@ -165,8 +165,8 @@ func (s *Client) sendRequest(ctx database.Context, query string, queryParams []a
 	}
 	defer s.closeTransaction(tx, txCtx)
 
-	if ctx.Connection.Database.Schema != nil {
-		safeSchema := pgx.Identifier{*ctx.Connection.Database.Schema}.Sanitize()
+	if ctx.Connection.Config.Schema != nil {
+		safeSchema := pgx.Identifier{*ctx.Connection.Config.Schema}.Sanitize()
 		_, errSchema := tx.Exec(txCtx, fmt.Sprintf("SET LOCAL search_path TO %s", safeSchema))
 		if errSchema != nil {
 			return fmt.Errorf("failed to set schema: %w", errSchema)
@@ -270,7 +270,7 @@ func (s *Client) parseQuery(query string) database.QueryAnalysis {
 
 func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) {
 	connection := ctx.Connection
-	db := connection.Database
+	db := connection.Config
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, "unknown", ErrDatabaseHostOrPortNotSpecified
 	}

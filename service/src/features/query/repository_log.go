@@ -6,25 +6,24 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"ivory/src/clients/database"
 
 	"github.com/google/uuid"
 )
 
-func (r *Repository) getLog(uuid uuid.UUID) ([]database.QueryFields, error) {
+func (r *Repository) getLog(uuid uuid.UUID) ([]DbResponse, error) {
 	file, err := r.queryLogFiles.OpenByName(uuid.String())
 	if err != nil {
-		return []database.QueryFields{}, nil
+		return []DbResponse{}, nil
 	}
 
-	var elements []database.QueryFields
+	var elements []DbResponse
 	scanner := bufio.NewScanner(file)
 	buf := make([]byte, r.maxBufferCapacity)
 	scanner.Buffer(buf, r.maxBufferCapacity)
 	for scanner.Scan() {
 		b := scanner.Bytes()
 		if len(b) != 0 {
-			var obj database.QueryFields
+			var obj DbResponse
 			errUnmarshal := json.Unmarshal(scanner.Bytes(), &obj)
 			if errUnmarshal == nil {
 				elements = append(elements, obj)

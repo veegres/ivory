@@ -74,8 +74,8 @@ func backupToClusterV1(bc backupClusterV1) cluster.Cluster {
 	}
 }
 
-func backupToQueryV1(bq backupQueryV1) (database.Query, error) {
-	varieties := make([]database.QueryVariety, 0, len(bq.Varieties))
+func backupToQueryV1(bq backupQueryV1) (query.Request, error) {
+	varieties := make([]query.VarietyType, 0, len(bq.Varieties))
 	for _, v := range bq.Varieties {
 		variety, err := syncQueryVarietyV1(v)
 		if err == nil {
@@ -85,10 +85,10 @@ func backupToQueryV1(bq backupQueryV1) (database.Query, error) {
 
 	queryType, err := syncQueryTypeV1(bq.Type)
 	if err != nil {
-		return database.Query{}, err
+		return query.Request{}, err
 	}
 
-	return database.Query{
+	return query.Request{
 		Name:        bq.Name,
 		Type:        &queryType,
 		Description: bq.Description,
@@ -98,31 +98,31 @@ func backupToQueryV1(bq backupQueryV1) (database.Query, error) {
 	}, nil
 }
 
-func syncQueryTypeV1(bqt backupQueryTypeV1) (database.QueryType, error) {
+func syncQueryTypeV1(bqt backupQueryTypeV1) (query.Type, error) {
 	switch bqt {
 	case BLOAT_V1:
-		return database.BLOAT, nil
+		return query.BLOAT, nil
 	case ACTIVITY_V1:
-		return database.ACTIVITY, nil
+		return query.ACTIVITY, nil
 	case REPLICATION_V1:
-		return database.REPLICATION, nil
+		return query.REPLICATION, nil
 	case STATISTIC_V1:
-		return database.STATISTIC, nil
+		return query.STATISTIC, nil
 	case OTHER_V1:
-		return database.OTHER, nil
+		return query.OTHER, nil
 	default:
 		return 0, ErrInvalidQueryType
 	}
 }
 
-func syncQueryVarietyV1(bqv backupQueryVarietyV1) (database.QueryVariety, error) {
+func syncQueryVarietyV1(bqv backupQueryVarietyV1) (query.VarietyType, error) {
 	switch bqv {
 	case DatabaseSensitiveV1:
-		return database.DatabaseSensitive, nil
+		return query.DatabaseSensitive, nil
 	case MasterOnlyV1:
-		return database.MasterOnly, nil
+		return query.MasterOnly, nil
 	case ReplicaRecommendedV1:
-		return database.ReplicaRecommended, nil
+		return query.ReplicaRecommended, nil
 	default:
 		return 0, ErrInvalidQueryVariety
 	}

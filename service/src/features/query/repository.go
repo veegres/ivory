@@ -9,14 +9,14 @@ import (
 var ErrCannotParseFileCorrupted = errors.New("cannot parse file, it is corrupted")
 
 type Repository struct {
-	bucket            *db.Bucket[Query]
+	bucket            *db.Bucket[Response]
 	queryLogFiles     *files.Storage
 	maxBufferCapacity int
 	maxLogElements    int
 }
 
 func NewRepository(
-	bucket *db.Bucket[Query],
+	bucket *db.Bucket[Response],
 	queryLogFiles *files.Storage,
 ) *Repository {
 	return &Repository{
