@@ -453,9 +453,9 @@ func TestClient_normalizeQuery(t *testing.T) {
 	})
 
 	t.Run("should trim query without adding limit", func(t *testing.T) {
-		query := "SELECT * FROM users -- comment\nWHERE id = 1"
+		query := "SELECT * FROM users -- this is a comment\nWHERE id = 1"
 		trimTrue := true
-		result, limit, err := client.normalizeQuery(query, &trimTrue, nil)
+		result, newLimit, err := client.normalizeQuery(query, &trimTrue, nil)
 
 		if err != nil {
 			t.Fatalf("Expected no error, got: %v", err)
@@ -464,8 +464,8 @@ func TestClient_normalizeQuery(t *testing.T) {
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
-		if limit != nil {
-			t.Errorf("Expected nil limit, got %v", limit)
+		if newLimit != nil {
+			t.Errorf("Expected nil limit, got %v", newLimit)
 		}
 	})
 
@@ -534,10 +534,8 @@ func TestClient_normalizeQuery(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Expected no error, got: %v", err)
 		}
-		// Note: trimQuery removes comments and their trailing newlines
-		// Regex \\s*--.*\\n* removes spaces before comment, comment text, and newlines
-		// Result has tabs from original indentation but no newlines
-		expected := "SELECT u.id, u.name\t\tFROM users u\t\tWHERE u.active = true LIMIT 25;"
+		// Note: trimQuery now normalizes all whitespace to single spaces
+		expected := "SELECT u.id, u.name FROM users u WHERE u.active = true LIMIT 25;"
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}

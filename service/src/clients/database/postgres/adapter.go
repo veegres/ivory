@@ -224,9 +224,12 @@ func (a *Adapter) addLimitToQuery(query string, queryAnalysis database.QueryAnal
 }
 
 func (a *Adapter) trimQuery(query string) string {
-	// NOTE: removing all comments from the query with spaces and enters or end of string
-	regex := regexp.MustCompile("\\s*--.*\\n*")
-	return regex.ReplaceAllString(query, "")
+	// Remove comments
+	commentRegex := regexp.MustCompile("--.*")
+	query = commentRegex.ReplaceAllString(query, " ")
+
+	// Normalize whitespace (including tabs and newlines)
+	return strings.Join(strings.Fields(query), " ")
 }
 
 func (a *Adapter) parseQuery(query string) database.QueryAnalysis {
