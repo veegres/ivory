@@ -1,12 +1,12 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
-import {KeeperResponse as BaseKeeperResponse, KeeperType, Status as KeeperStatus} from "../keeper/type"
+import {KeeperResponse as BaseKeeperResponse, Plugin as KeeperPlugin, Status as KeeperStatus} from "../keeper/type"
 import {Connection as QueryConnection} from "../query/type"
 
 // COMMON (WEB AND SERVER)
 
-export {KeeperStatus, KeeperType}
+export {KeeperPlugin,KeeperStatus}
 
 export interface Connection {
     host: string,
@@ -24,7 +24,7 @@ export interface KeeperResponse {
 export interface KeeperRequest {
     host: string,
     port: number,
-    type: KeeperType,
+    plugin: KeeperPlugin,
     vaultId?: string,
     certs?: Certs,
     body?: any,

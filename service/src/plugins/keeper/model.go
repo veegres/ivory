@@ -6,11 +6,11 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type Type int8
+type Plugin string
 
 const (
-	PATRONI Type = iota
-	POSTGRES
+	PATRONI  Plugin = "patroni"
+	POSTGRES Plugin = "postgres"
 )
 
 type Status string

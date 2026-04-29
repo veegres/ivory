@@ -32,7 +32,7 @@ func NewService(
 	}
 }
 
-func (s *Service) SupportedFeatures(t database.Type) []features.Feature {
+func (s *Service) SupportedFeatures(t database.Plugin) []features.Feature {
 	switch t {
 	case database.POSTGRES:
 		return []features.Feature{

@@ -93,7 +93,7 @@ export function ListRow(props: Props) {
             <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, nodes: getNodeConnections(cluster.keeperType, cluster.dbType, stateNodes)}}
+                cluster={{...cluster, nodes: getNodeConnections(cluster.keeperPlugin, cluster.dbPlugin, stateNodes)}}
                 toggle={toggle}
                 onUpdate={overview.refetch}
                 onClose={() => setStateNodes(getDomains(cluster.nodes))}

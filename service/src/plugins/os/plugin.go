@@ -25,20 +25,20 @@ type DockerManager interface {
 }
 
 type PluginRegistry struct {
-	clients map[Type]Adapter
+	clients map[Plugin]Adapter
 }
 
 func NewPluginRegistry() *PluginRegistry {
 	return &PluginRegistry{
-		clients: make(map[Type]Adapter),
+		clients: make(map[Plugin]Adapter),
 	}
 }
 
-func (r *PluginRegistry) Register(clientType Type, client Adapter) {
-	r.clients[clientType] = client
+func (r *PluginRegistry) Register(name Plugin, client Adapter) {
+	r.clients[name] = client
 }
 
-func (r *PluginRegistry) Get(t Type) (Adapter, error) {
+func (r *PluginRegistry) Get(t Plugin) (Adapter, error) {
 	if client, ok := r.clients[t]; ok {
 		return client, nil
 	}

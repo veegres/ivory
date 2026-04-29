@@ -13,12 +13,12 @@ import (
 // COMMON (WEB AND SERVER)
 
 type ClusterOptions struct {
-	DbType     database.Type `json:"dbType"`
-	KeeperType keeper.Type   `json:"keeperType"`
-	Tls        ClusterTls    `json:"tls"`
-	Certs      cert.Certs    `json:"certs"`
-	Vaults     Vaults        `json:"vaults"`
-	Tags       []string      `json:"tags"`
+	DbPlugin     database.Plugin `json:"dbPlugin"`
+	KeeperPlugin keeper.Plugin   `json:"keeperPlugin"`
+	Tls          ClusterTls      `json:"tls"`
+	Certs        cert.Certs      `json:"certs"`
+	Vaults       Vaults          `json:"vaults"`
+	Tags         []string        `json:"tags"`
 }
 
 type Cluster struct {

@@ -89,14 +89,14 @@ func (s *Service) TablesQuery(queryCtx Context, schema string, name string) ([]s
 }
 
 func (s *Service) ChartQuery(queryCtx Context, chartType ChartType) (*Chart, error) {
-	dbType := queryCtx.Connection.Db.Type
-	typeMap, ok := s.chartMap[dbType]
+	dbPlugin := queryCtx.Connection.Db.Plugin
+	typeMap, ok := s.chartMap[dbPlugin]
 	if !ok {
-		return nil, fmt.Errorf("charts for database type %v are not supported", dbType)
+		return nil, fmt.Errorf("charts for database type %v are not supported", dbPlugin)
 	}
 	request, ok := typeMap[chartType]
 	if !ok {
-		return nil, fmt.Errorf("chart %s is not supported for database type %v", chartType, dbType)
+		return nil, fmt.Errorf("chart %s is not supported for database type %v", chartType, dbPlugin)
 	}
 
 	client, ctx, err := s.getDatabaseAdapter(queryCtx)

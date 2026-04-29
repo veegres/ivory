@@ -42,7 +42,7 @@ type Props = {
 
 export function OverviewNodesRow(props: Props) {
     const {node: tmpNode, cluster, candidates, error = false, name, checked} = props
-    const node = tmpNode ?? initialNode(cluster.keeperType, cluster.dbType, name)
+    const node = tmpNode ?? initialNode(cluster.keeperPlugin, cluster.dbPlugin, name)
     const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = node.keeper
     const {connection, warnings} = node
 

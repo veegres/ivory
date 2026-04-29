@@ -7,6 +7,7 @@ import (
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
+	"ivory/src/features/node"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
@@ -28,6 +29,7 @@ type Service struct {
 	tagService        *tag.Service
 	toolsService      *tools.Service
 	queryService      *query.Service
+	nodeService       *node.Service
 	secretService     *secret.Service
 	configService     *config.Service
 	permissionService *permission.Service
@@ -43,6 +45,7 @@ func NewService(
 	tagService *tag.Service,
 	toolsService *tools.Service,
 	queryService *query.Service,
+	nodeService *node.Service,
 	secretService *secret.Service,
 	configService *config.Service,
 	permissionService *permission.Service,
@@ -57,6 +60,7 @@ func NewService(
 		certService:       certService,
 		tagService:        tagService,
 		queryService:      queryService,
+		nodeService:       nodeService,
 		secretService:     secretService,
 		configService:     configService,
 		permissionService: permissionService,
@@ -103,6 +107,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	appConfig, errConfig := s.configService.GetAppConfig()
 	configConfigured := s.configService.GetIsConfigured()
 	authSupported := s.authService.GetSupportedTypes()
+
 	if errConfig != nil {
 		return &AppInfo{
 			Config: ConfigInfo{

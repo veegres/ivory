@@ -5,7 +5,7 @@ import {useState} from "react"
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
 import {Cluster, Node} from "../../../../api/cluster/type"
-import {Config, Type as DbType} from "../../../../api/database/type"
+import {Config, Plugin as DbPlugin} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {useRouterQueryList} from "../../../../api/query/hook"
 import {Type as QueryType} from "../../../../api/query/type"
@@ -42,7 +42,7 @@ export function OverviewBloat(props: Props) {
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
     const db: Config = {
-        type: DbType.POSTGRES,
+        plugin: DbPlugin.POSTGRES,
         host: node.connection.host,
         port: node.connection.dbPort || node.keeper.discoveredDbPort || 5432,
         name: target?.database,

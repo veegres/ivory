@@ -6,15 +6,15 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type Type int8
+type Plugin string
 
 const (
-	POSTGRES Type = iota
-	ETCD
+	POSTGRES Plugin = "postgres"
+	ETCD     Plugin = "etcd"
 )
 
 type Config struct {
-	Type   Type    `json:"type"`
+	Plugin Plugin  `json:"plugin"`
 	Host   string  `json:"host"`
 	Port   int     `json:"port"`
 	Name   *string `json:"name"`

@@ -14,8 +14,8 @@ import dayjs from "dayjs"
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node, NodeOverview} from "../api/cluster/type"
-import {Config as DbConfig, Type as DbType} from "../api/database/type"
-import {KeeperType, Role, Status as KeeperStatus} from "../api/keeper/type"
+import {Config as DbConfig, Plugin as DbPlugin} from "../api/database/type"
+import {Plugin as KeeperPlugin, Role, Status as KeeperStatus} from "../api/keeper/type"
 import {Connection as NodeConnection, KeeperRequest} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
 import {VarietyType} from "../api/query/type"
@@ -93,16 +93,16 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
 }
 
 export const DefaultKeeperPorts = {
-    [KeeperType.PATRONI]: 8008,
-    [KeeperType.POSTGRES]: 5432,
+    [KeeperPlugin.PATRONI]: 8008,
+    [KeeperPlugin.POSTGRES]: 5432,
 }
 
 export const DefaultDatabasePorts = {
-    [DbType.POSTGRES]: 5432,
-    [DbType.ETCD]: 2379,
+    [DbPlugin.POSTGRES]: 5432,
+    [DbPlugin.ETCD]: 2379,
 }
 
-export const initialNode = (kt: KeeperType, dbt: DbType, domain: string): Node => {
+export const initialNode = (kt: KeeperPlugin, dbt: DbPlugin, domain: string): Node => {
     const connection = getNodeConnection(kt, dbt, domain)
     return ({
         connection: connection,
@@ -113,8 +113,8 @@ export const initialNode = (kt: KeeperType, dbt: DbType, domain: string): Node =
             lag: -1,
             pendingRestart: false,
             discoveredHost: connection.host,
-            discoveredKeeperPort: kt,
-            discoveredDbPort: dbt,
+            discoveredKeeperPort: DefaultKeeperPorts[kt],
+            discoveredDbPort: DefaultDatabasePorts[dbt],
         },
     })
 }
@@ -132,7 +132,7 @@ export function getQueryConnection(cluster: Cluster, db: DbConfig): QueryConnect
 export function getKeeperRequest(cluster: Cluster, host: string, port: number): KeeperRequest {
     const vaultId = cluster.vaults.keeperId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
-    return {host, port, certs, vaultId, type: cluster.keeperType}
+    return {host, port, certs, vaultId, plugin: cluster.keeperPlugin}
 }
 
 export const getDomain = (connection: NodeConnection, simple: boolean = true) => {
@@ -148,7 +148,7 @@ export const getDomains = (nodes: NodeConnection[], simple: boolean = true) => {
     return nodes.map(value => getDomain(value, simple))
 }
 
-export const getNodeConnection = (kt: KeeperType, dbt: DbType, domain: string): NodeConnection => {
+export const getNodeConnection = (kt: KeeperPlugin, dbt: DbPlugin, domain: string): NodeConnection => {
     const [host, keeperPort, dbPort, sshPort, sshKeyId] = domain.split(":")
     return {
         host: host.toLowerCase(),
@@ -159,7 +159,7 @@ export const getNodeConnection = (kt: KeeperType, dbt: DbType, domain: string): 
     }
 }
 
-export const getNodeConnections = (kt: KeeperType, dbt: DbType, domains: string[]): NodeConnection[] => {
+export const getNodeConnections = (kt: KeeperPlugin, dbt: DbPlugin, domains: string[]): NodeConnection[] => {
     return domains.map(value => getNodeConnection(kt, dbt, value))
 }
 

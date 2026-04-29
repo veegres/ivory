@@ -4,8 +4,8 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {Type} from "../../src/api/database/type"
-import {KeeperType} from "../../src/api/keeper/type"
+import {Plugin as DbPlugin} from "../../src/api/database/type"
+import {Plugin as KeeperPlugin} from "../../src/api/keeper/type"
 import {Connection} from "../../src/api/node/type"
 import {
     DateTimeFormatter,
@@ -58,7 +58,7 @@ describe("getDomains", () => {
 describe("getNodeConnection", () => {
     it("should return a NodeConnection object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getNodeConnection(KeeperType.PATRONI, Type.POSTGRES, domain)).toEqual({
+        expect(getNodeConnection(KeeperPlugin.PATRONI, DbPlugin.POSTGRES, domain)).toEqual({
             host: "localhost",
             keeperPort: 8008,
             dbPort: 5432,
@@ -68,7 +68,7 @@ describe("getNodeConnection", () => {
 
     it("should return a NodeConnection object with default port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getNodeConnection(KeeperType.PATRONI, Type.POSTGRES, domain)).toEqual({
+        expect(getNodeConnection(KeeperPlugin.PATRONI, DbPlugin.POSTGRES, domain)).toEqual({
             host: "localhost",
             keeperPort: 8008,
             dbPort: 5432,
@@ -80,7 +80,7 @@ describe("getNodeConnection", () => {
 describe("getNodeConnections", () => {
     it("should return an array of NodeConnection objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
-        expect(getNodeConnections(KeeperType.PATRONI, Type.POSTGRES, domains)).toEqual([
+        expect(getNodeConnections(KeeperPlugin.PATRONI, DbPlugin.POSTGRES, domains)).toEqual([
             {host: "localhost", keeperPort: 8008, dbPort: 5432, sshPort: 22},
             {host: "127.0.0.1", keeperPort: 8008, dbPort: 5432, sshPort: 22},
         ])
