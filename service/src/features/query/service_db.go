@@ -2,7 +2,7 @@ package query
 
 import (
 	"fmt"
-	"ivory/src/clients/database"
+	"ivory/src/plugins/database"
 
 	"github.com/google/uuid"
 )

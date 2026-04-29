@@ -25,21 +25,21 @@ type Adapter interface {
 	SupportedFeatures() []features.Feature
 }
 
-type Registry struct {
+type PluginRegistry struct {
 	clients map[Type]Adapter
 }
 
-func NewRegistry() *Registry {
-	return &Registry{
+func NewPluginRegistry() *PluginRegistry {
+	return &PluginRegistry{
 		clients: make(map[Type]Adapter),
 	}
 }
 
-func (r *Registry) Register(t Type, client Adapter) {
+func (r *PluginRegistry) Register(t Type, client Adapter) {
 	r.clients[t] = client
 }
 
-func (r *Registry) Get(t Type) (Adapter, error) {
+func (r *PluginRegistry) Get(t Type) (Adapter, error) {
 	if client, ok := r.clients[t]; ok {
 		return client, nil
 	}

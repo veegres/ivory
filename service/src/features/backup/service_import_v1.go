@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"ivory/src/clients/database"
-	"ivory/src/clients/keeper"
 	"ivory/src/features"
 	"ivory/src/features/cluster"
 	"ivory/src/features/node"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
+	"ivory/src/plugins/database"
+	"ivory/src/plugins/keeper"
 )
 
 // importV1 restores data from a V1 backup file.

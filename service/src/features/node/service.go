@@ -3,20 +3,20 @@ package node
 import (
 	"crypto/ed25519"
 	"errors"
-	"ivory/src/clients/keeper"
-	"ivory/src/clients/os"
 	"ivory/src/clients/ssh"
 	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/vault"
+	"ivory/src/plugins/keeper"
+	"ivory/src/plugins/os"
 )
 
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
 	sshClient      *ssh.Client
-	osRegistry     *os.Registry
-	keeperRegistry *keeper.Registry
+	osRegistry     *os.PluginRegistry
+	keeperRegistry *keeper.PluginRegistry
 	vaultService   *vault.Service
 	certService    *cert.Service
 
@@ -25,8 +25,8 @@ type Service struct {
 
 func NewService(
 	sshClient *ssh.Client,
-	osRegistry *os.Registry,
-	keeperRegistry *keeper.Registry,
+	osRegistry *os.PluginRegistry,
+	keeperRegistry *keeper.PluginRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *Service {

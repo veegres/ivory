@@ -1,7 +1,7 @@
 package query
 
 import (
-	"ivory/src/clients/database"
+	"ivory/src/plugins/database"
 
 	"github.com/google/uuid"
 )

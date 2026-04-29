@@ -14,21 +14,21 @@ type Adapter interface {
 	Metrics(connection ssh.Connection) (*Metrics, error)
 }
 
-type Registry struct {
+type PluginRegistry struct {
 	clients map[Type]Adapter
 }
 
-func NewRegistry() *Registry {
-	return &Registry{
+func NewPluginRegistry() *PluginRegistry {
+	return &PluginRegistry{
 		clients: make(map[Type]Adapter),
 	}
 }
 
-func (r *Registry) Register(clientType Type, client Adapter) {
+func (r *PluginRegistry) Register(clientType Type, client Adapter) {
 	r.clients[clientType] = client
 }
 
-func (r *Registry) Get(t Type) (Adapter, error) {
+func (r *PluginRegistry) Get(t Type) (Adapter, error) {
 	if client, ok := r.clients[t]; ok {
 		return client, nil
 	}

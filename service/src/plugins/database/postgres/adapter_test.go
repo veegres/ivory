@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"ivory/src/clients/database"
+	"ivory/src/plugins/database"
 	"testing"
 )
 

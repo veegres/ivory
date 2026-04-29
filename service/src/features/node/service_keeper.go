@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"ivory/src/clients/keeper"
+	"ivory/src/plugins/keeper"
 )
 
 func (s *Service) OverviewAuto(request KeeperAutoRequest) ([]KeeperResponse, int, *Connection, error) {

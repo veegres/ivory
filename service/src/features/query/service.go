@@ -3,11 +3,11 @@ package query
 import (
 	"errors"
 	"fmt"
-	"ivory/src/clients/database"
 	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/secret"
 	"ivory/src/features/vault"
+	"ivory/src/plugins/database"
 )
 
 var ErrQueryEmpty = errors.New("query is empty")
@@ -20,7 +20,7 @@ var ErrDeletionOfSystemQueriesRestricted = errors.New("deletion of system querie
 
 type Service struct {
 	repository       *Repository
-	databaseRegistry *database.Registry
+	databaseRegistry *database.PluginRegistry
 	vaultService     *vault.Service
 	certService      *cert.Service
 	secretService    *secret.Service
@@ -31,7 +31,7 @@ type Service struct {
 
 func NewService(
 	repository *Repository,
-	databaseRegistry *database.Registry,
+	databaseRegistry *database.PluginRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 	secretService *secret.Service,
