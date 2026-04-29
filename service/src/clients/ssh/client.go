@@ -5,10 +5,12 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"net"
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -18,11 +20,33 @@ var ErrCommandEmpty = errors.New("command cannot be empty")
 var ErrHostEmpty = errors.New("vm host cannot be empty")
 
 type Client struct {
-	timeout time.Duration
+	timeout    time.Duration
+	mu         sync.RWMutex
+	knownHosts map[string][]byte
+	dial       func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error)
 }
 
 func NewClient() *Client {
-	return &Client{timeout: 10 * time.Second}
+	return &Client{
+		timeout:    10 * time.Second,
+		knownHosts: make(map[string][]byte),
+		dial:       ssh.Dial,
+	}
+}
+
+func (c *Client) GenerateKey() (string, string, error) {
+	pubKey, prvKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return "", "", err
+	}
+	sshPubKey, err := ssh.NewPublicKey(pubKey)
+	if err != nil {
+		return "", "'", err
+	}
+	// NOTE: it always adds `\n` at the end, so we need to trim it
+	sshPubKeyAuth := strings.TrimSuffix(string(ssh.MarshalAuthorizedKey(sshPubKey)), "\n")
+	sshPubKeyAuthComment := sshPubKeyAuth + " " + "ivory"
+	return sshPubKeyAuthComment, string(prvKey), nil
 }
 
 func (c *Client) Execute(connection Connection, command string) (*CommandResult, error) {
@@ -39,7 +63,7 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 	config := &ssh.ClientConfig{
 		User:            connection.Username,
 		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: c.hostKeyCallback,
 		Timeout:         c.timeout,
 	}
 
@@ -48,7 +72,7 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 		return nil, err
 	}
 
-	conn, err := ssh.Dial("tcp", target, config)
+	conn, err := c.dial("tcp", target, config)
 	if err != nil {
 		return nil, err
 	}
@@ -83,19 +107,25 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 	return result, nil
 }
 
-func (c *Client) GenerateKey() (string, string, error) {
-	pubKey, prvKey, err := ed25519.GenerateKey(rand.Reader)
-	if err != nil {
-		return "", "", err
+func (c *Client) hostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) error {
+	marshaledKey := key.Marshal()
+
+	c.mu.RLock()
+	knownKey, ok := c.knownHosts[hostname]
+	c.mu.RUnlock()
+
+	if !ok {
+		c.mu.Lock()
+		c.knownHosts[hostname] = marshaledKey
+		c.mu.Unlock()
+		return nil
 	}
-	sshPubKey, err := ssh.NewPublicKey(pubKey)
-	if err != nil {
-		return "", "'", err
+
+	if !bytes.Equal(knownKey, marshaledKey) {
+		return fmt.Errorf("ssh: host key mismatch for %s", hostname)
 	}
-	// NOTE: it always adds `\n` at the end, so we need to trim it
-	sshPubKeyAuth := strings.TrimSuffix(string(ssh.MarshalAuthorizedKey(sshPubKey)), "\n")
-	sshPubKeyAuthComment := sshPubKeyAuth + " " + "ivory"
-	return sshPubKeyAuthComment, string(prvKey), nil
+
+	return nil
 }
 
 func (c *Client) getDialAddress(connection Connection) (string, error) {
