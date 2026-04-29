@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"ivory/src/clients/database"
 	"ivory/src/features"
+	"ivory/src/plugins/database"
 	"regexp"
 	"strconv"
 	"strings"

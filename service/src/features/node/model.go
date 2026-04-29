@@ -1,9 +1,9 @@
 package node
 
 import (
-	"ivory/src/clients/keeper"
-	"ivory/src/clients/os"
 	"ivory/src/features/cert"
+	"ivory/src/plugins/keeper"
+	"ivory/src/plugins/os"
 
 	"github.com/google/uuid"
 )

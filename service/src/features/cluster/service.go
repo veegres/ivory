@@ -3,14 +3,14 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	"ivory/src/clients/database"
-	"ivory/src/clients/keeper"
 	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/node"
 	"ivory/src/features/query"
 	"ivory/src/features/tag"
 	"ivory/src/features/tools"
+	"ivory/src/plugins/database"
+	"ivory/src/plugins/keeper"
 	"slices"
 )
 

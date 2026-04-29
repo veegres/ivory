@@ -2,7 +2,7 @@ package node
 
 import (
 	"fmt"
-	"ivory/src/clients/os"
+	"ivory/src/plugins/os"
 	"strconv"
 )
 

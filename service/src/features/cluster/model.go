@@ -1,11 +1,11 @@
 package cluster
 
 import (
-	"ivory/src/clients/database"
-	"ivory/src/clients/keeper"
 	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/node"
+	"ivory/src/plugins/database"
+	"ivory/src/plugins/keeper"
 
 	"github.com/google/uuid"
 )

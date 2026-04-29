@@ -3,8 +3,8 @@ package patroni
 import (
 	"encoding/json"
 	"ivory/src/clients/http"
-	"ivory/src/clients/keeper"
 	"ivory/src/features"
+	"ivory/src/plugins/keeper"
 	nethttp "net/http"
 	"strconv"
 	"strings"

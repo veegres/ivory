@@ -2,10 +2,10 @@ package tools
 
 import (
 	"errors"
-	"ivory/src/clients/database"
 	"ivory/src/features"
 	"ivory/src/features/tools/bloat"
 	"ivory/src/features/vault"
+	"ivory/src/plugins/database"
 	"ivory/src/storage/db"
 	"ivory/src/storage/files"
 )

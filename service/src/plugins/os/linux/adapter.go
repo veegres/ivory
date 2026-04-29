@@ -1,8 +1,8 @@
 package linux
 
 import (
-	"ivory/src/clients/os"
 	"ivory/src/clients/ssh"
+	"ivory/src/plugins/os"
 	"strconv"
 	"strings"
 )

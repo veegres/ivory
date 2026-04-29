@@ -4,13 +4,7 @@ import (
 	"ivory/src/clients/auth/basic"
 	"ivory/src/clients/auth/ldap"
 	"ivory/src/clients/auth/oidc"
-	"ivory/src/clients/database"
-	"ivory/src/clients/database/postgres"
 	"ivory/src/clients/http"
-	"ivory/src/clients/keeper"
-	"ivory/src/clients/keeper/patroni"
-	"ivory/src/clients/os"
-	"ivory/src/clients/os/linux"
 	"ivory/src/clients/ssh"
 	"ivory/src/features/auth"
 	"ivory/src/features/backup"
@@ -26,6 +20,12 @@ import (
 	"ivory/src/features/tag"
 	"ivory/src/features/tools"
 	"ivory/src/features/vault"
+	"ivory/src/plugins/database"
+	"ivory/src/plugins/database/postgres"
+	"ivory/src/plugins/keeper"
+	"ivory/src/plugins/keeper/patroni"
+	"ivory/src/plugins/os"
+	"ivory/src/plugins/os/linux"
 	"ivory/src/storage/db"
 	"ivory/src/storage/env"
 	"ivory/src/storage/files"
@@ -84,12 +84,12 @@ func NewContext() *Context {
 	linuxAdapter := linux.NewAdapter(sshClient)
 
 	// REGISTRY (we cannot use Factory pattern in clients package because of cycle dependencies)
-	keeperRegistry := keeper.NewRegistry()
-	keeperRegistry.Register(keeper.PATRONI, patroniAdapter)
-	dbRegistry := database.NewRegistry()
-	dbRegistry.Register(database.POSTGRES, postgresAdapter)
-	osRegistry := os.NewRegistry()
-	osRegistry.Register(os.Linux, linuxAdapter)
+	keeperPlugins := keeper.NewPluginRegistry()
+	keeperPlugins.Register(keeper.PATRONI, patroniAdapter)
+	dbPlugins := database.NewPluginRegistry()
+	dbPlugins.Register(database.POSTGRES, postgresAdapter)
+	osPlugins := os.NewPluginRegistry()
+	osPlugins.Register(os.Linux, linuxAdapter)
 
 	// AUTH PROVIDER
 	basicProvider := basic.NewProvider()
@@ -102,10 +102,10 @@ func NewContext() *Context {
 	vaultService := vault.NewService(vaultRepo, sshClient, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
-	nodeService := node.NewService(sshClient, osRegistry, keeperRegistry, vaultService, certService)
+	nodeService := node.NewService(sshClient, osPlugins, keeperPlugins, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
 	toolsService := tools.NewService(vaultService)
-	queryService := query.NewService(queryRepo, dbRegistry, vaultService, certService, secretService, appEnv.Version.Label)
+	queryService := query.NewService(queryRepo, dbPlugins, vaultService, certService, secretService, appEnv.Version.Label)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
