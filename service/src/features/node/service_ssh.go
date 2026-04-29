@@ -1,95 +1,57 @@
 package node
 
-import (
-	"ivory/src/plugins/os"
-)
-
 func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, error) {
-	connection, err := s.getSshConnection(request.Connection)
+	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {
 		return nil, err
 	}
-	// NOTE: today we only support Linux nodes for metrics collection.
-	// In the future, the node connection should carry its OS type.
-	linuxAdapter, err := s.osRegistry.Get(os.Linux)
-	if err != nil {
-		return nil, err
-	}
-	result, err := linuxAdapter.Metrics(*connection)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
+	return adapter.Metrics(*conn)
 }
 
 func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, error) {
-	connection, err := s.getSshConnection(request.Connection)
+	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {
 		return nil, err
 	}
-	linuxAdapter, err := s.osRegistry.Get(os.Linux)
-	if err != nil {
-		return nil, err
-	}
-	return linuxAdapter.DockerDeploy(*connection, request.Image, request.Options)
+	return adapter.DockerDeploy(*conn, request.Image, request.Options)
 }
 
 func (s *Service) DockerStop(request DockerRequest) (*DockerResult, error) {
-	connection, err := s.getSshConnection(request.Connection)
+	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {
 		return nil, err
 	}
-	linuxAdapter, err := s.osRegistry.Get(os.Linux)
-	if err != nil {
-		return nil, err
-	}
-	return linuxAdapter.DockerStop(*connection, request.Container)
+	return adapter.DockerStop(*conn, request.Container)
 }
 
 func (s *Service) DockerRun(request DockerRequest) (*DockerResult, error) {
-	connection, err := s.getSshConnection(request.Connection)
+	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {
 		return nil, err
 	}
-	linuxAdapter, err := s.osRegistry.Get(os.Linux)
-	if err != nil {
-		return nil, err
-	}
-	return linuxAdapter.DockerRun(*connection, request.Options, request.Image)
+	return adapter.DockerRun(*conn, request.Options, request.Image)
 }
 
 func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, error) {
-	connection, err := s.getSshConnection(request.Connection)
+	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {
 		return nil, err
 	}
-	linuxAdapter, err := s.osRegistry.Get(os.Linux)
-	if err != nil {
-		return nil, err
-	}
-	return linuxAdapter.DockerDelete(*connection, request.Container)
+	return adapter.DockerDelete(*conn, request.Container)
 }
 
 func (s *Service) DockerList(request SshRequest) (*DockerResult, error) {
-	connection, err := s.getSshConnection(request.Connection)
+	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {
 		return nil, err
 	}
-	linuxAdapter, err := s.osRegistry.Get(os.Linux)
-	if err != nil {
-		return nil, err
-	}
-	return linuxAdapter.DockerList(*connection)
+	return adapter.DockerList(*conn)
 }
 
 func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, error) {
-	connection, err := s.getSshConnection(request.Connection)
+	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {
 		return nil, err
 	}
-	linuxAdapter, err := s.osRegistry.Get(os.Linux)
-	if err != nil {
-		return nil, err
-	}
-	return linuxAdapter.DockerLogs(*connection, request.Container, request.Tail)
+	return adapter.DockerLogs(*conn, request.Container, request.Tail)
 }

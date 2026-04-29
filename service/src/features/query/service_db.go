@@ -8,11 +8,7 @@ import (
 )
 
 func (s *Service) ConsoleQuery(queryCtx Context, query string, options *DbOptions) (*DbResponse, error) {
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return nil, err
-	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,11 +32,7 @@ func (s *Service) TemplateQuery(ctx Context, uuid uuid.UUID, options *DbOptions)
 }
 
 func (s *Service) CancelQuery(queryCtx Context, pid int) error {
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return err
-	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return err
 	}
@@ -48,11 +40,7 @@ func (s *Service) CancelQuery(queryCtx Context, pid int) error {
 }
 
 func (s *Service) TerminateQuery(queryCtx Context, pid int) error {
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return err
-	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return err
 	}
@@ -60,11 +48,7 @@ func (s *Service) TerminateQuery(queryCtx Context, pid int) error {
 }
 
 func (s *Service) RunningQueriesByApplicationName(queryCtx Context) (*DbResponse, error) {
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return nil, err
-	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +57,7 @@ func (s *Service) RunningQueriesByApplicationName(queryCtx Context) (*DbResponse
 }
 
 func (s *Service) DatabasesQuery(queryCtx Context, name string) ([]string, error) {
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return nil, err
-	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -89,11 +69,7 @@ func (s *Service) SchemasQuery(queryCtx Context, name string) ([]string, error) 
 	if db.Name == nil || *db.Name == "" {
 		return []string{}, nil
 	}
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return nil, err
-	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -105,11 +81,7 @@ func (s *Service) TablesQuery(queryCtx Context, schema string, name string) ([]s
 	if db.Name == nil || *db.Name == "" || schema == "" {
 		return []string{}, nil
 	}
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return nil, err
-	}
-	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Type)
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -126,11 +98,8 @@ func (s *Service) ChartQuery(queryCtx Context, chartType ChartType) (*Chart, err
 	if !ok {
 		return nil, fmt.Errorf("chart %s is not supported for database type %v", chartType, dbType)
 	}
-	ctx, err := s.mapContext(queryCtx)
-	if err != nil {
-		return nil, err
-	}
-	client, err := s.databaseRegistry.Get(dbType)
+
+	client, ctx, err := s.getDatabaseAdapter(queryCtx)
 	if err != nil {
 		return nil, err
 	}
