@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"ivory/src/clients/database"
 	"ivory/src/features"
@@ -16,22 +15,18 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-var ErrCannotLimitWithoutTrim = errors.New("cannot limit query without trimming it")
-var ErrDatabaseHostOrPortNotSpecified = errors.New("database host or port are not specified")
-var ErrPasswordNotSet = errors.New("password is not set")
-
 // NOTE: validate that is matches interface in compile-time
-var _ database.Client = (*Client)(nil)
+var _ database.Adapter = (*Adapter)(nil)
 
-type Client struct {
+type Adapter struct {
 	appName string
 }
 
-func NewClient(appName string) *Client {
-	return &Client{appName: appName}
+func NewAdapter(appName string) *Adapter {
+	return &Adapter{appName: appName}
 }
 
-func (s *Client) SupportedFeatures() []features.Feature {
+func (a *Adapter) SupportedFeatures() []features.Feature {
 	return []features.Feature{
 		features.ViewQueryDbInfo,
 		features.ViewQueryDbChart,
@@ -42,13 +37,13 @@ func (s *Client) SupportedFeatures() []features.Feature {
 	}
 }
 
-func (s *Client) GetApplicationName(session string) string {
-	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
+func (a *Adapter) GetApplicationName(session string) string {
+	return a.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *Client) GetMany(ctx database.Context, query string, queryParams []any) ([]string, error) {
+func (a *Adapter) GetMany(ctx database.Context, query string, queryParams []any) ([]string, error) {
 	values := make([]string, 0)
-	errReq := s.sendRequest(ctx, query, queryParams, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
+	errReq := a.sendRequest(ctx, query, queryParams, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		for rows.Next() {
 			var value string
 			err := rows.Scan(&value)
@@ -65,9 +60,9 @@ func (s *Client) GetMany(ctx database.Context, query string, queryParams []any) 
 	return values, nil
 }
 
-func (s *Client) GetOne(ctx database.Context, query string) (any, error) {
+func (a *Adapter) GetOne(ctx database.Context, query string) (any, error) {
 	var value any
-	errReq := s.sendRequest(ctx, query, nil, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
+	errReq := a.sendRequest(ctx, query, nil, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		if rows.Next() {
 			values, err := rows.Values()
 			if err != nil {
@@ -83,7 +78,7 @@ func (s *Client) GetOne(ctx database.Context, query string) (any, error) {
 	return value, nil
 }
 
-func (s *Client) GetFields(ctx database.Context, query string, options *database.QueryOptions) (*database.QueryFields, error) {
+func (a *Adapter) GetFields(ctx database.Context, query string, options *database.QueryOptions) (*database.QueryFields, error) {
 	startTime := time.Now().UnixMilli()
 
 	fields := make([]database.QueryField, 0)
@@ -98,12 +93,12 @@ func (s *Client) GetFields(ctx database.Context, query string, options *database
 		tmpOptions.Params = options.Params
 	}
 
-	normQuery, normLimit, errNormQuery := s.normalizeQuery(query, tmpOptions.Trim, tmpOptions.Limit)
+	normQuery, normLimit, errNormQuery := a.normalizeQuery(query, tmpOptions.Trim, tmpOptions.Limit)
 	if errNormQuery != nil {
 		return nil, errNormQuery
 	}
 
-	errReq := s.sendRequest(ctx, normQuery, tmpOptions.Params, func(rows pgx.Rows, typeMap *pgtype.Map, connUrl string) error {
+	errReq := a.sendRequest(ctx, normQuery, tmpOptions.Params, func(rows pgx.Rows, typeMap *pgtype.Map, connUrl string) error {
 		url = connUrl
 		for _, field := range rows.FieldDescriptions() {
 			dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
@@ -141,29 +136,29 @@ func (s *Client) GetFields(ctx database.Context, query string, options *database
 	return res, nil
 }
 
-func (s *Client) Cancel(ctx database.Context, pid int) error {
-	return s.sendRequest(ctx, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")", nil, nil)
+func (a *Adapter) Cancel(ctx database.Context, pid int) error {
+	return a.sendRequest(ctx, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
-func (s *Client) Terminate(ctx database.Context, pid int) error {
-	return s.sendRequest(ctx, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")", nil, nil)
+func (a *Adapter) Terminate(ctx database.Context, pid int) error {
+	return a.sendRequest(ctx, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
 type fn func(pgx.Rows, *pgtype.Map, string) error
 
-func (s *Client) sendRequest(ctx database.Context, query string, queryParams []any, parse fn) error {
-	conn, connUrl, errConn := s.getConnection(ctx)
+func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []any, parse fn) error {
+	conn, connUrl, errConn := a.getConnection(ctx)
 	if errConn != nil {
 		return errConn
 	}
-	defer s.closeConnection(conn, context.Background())
+	defer a.closeConnection(conn, context.Background())
 
 	txCtx := context.Background()
 	tx, errTx := conn.Begin(txCtx)
 	if errTx != nil {
 		return errTx
 	}
-	defer s.closeTransaction(tx, txCtx)
+	defer a.closeTransaction(tx, txCtx)
 
 	if ctx.Connection.Config.Schema != nil {
 		safeSchema := pgx.Identifier{*ctx.Connection.Config.Schema}.Sanitize()
@@ -198,23 +193,23 @@ func (s *Client) sendRequest(ctx database.Context, query string, queryParams []a
 	return nil
 }
 
-func (s *Client) normalizeQuery(query string, trim *bool, limit *string) (string, *string, error) {
+func (a *Adapter) normalizeQuery(query string, trim *bool, limit *string) (string, *string, error) {
 	if trim == nil || *trim == false {
 		if limit != nil {
-			return "", limit, ErrCannotLimitWithoutTrim
+			return "", limit, database.ErrCannotLimitWithoutTrim
 		}
 		return query, limit, nil
 	}
-	trimmedQuery := s.trimQuery(query)
+	trimmedQuery := a.trimQuery(query)
 	if limit == nil {
 		return trimmedQuery, limit, nil
 	}
-	parsed := s.parseQuery(trimmedQuery)
-	newQuery, newLimit := s.addLimitToQuery(trimmedQuery, parsed, *limit)
+	parsed := a.parseQuery(trimmedQuery)
+	newQuery, newLimit := a.addLimitToQuery(trimmedQuery, parsed, *limit)
 	return newQuery, newLimit, nil
 }
 
-func (s *Client) addLimitToQuery(query string, queryAnalysis database.QueryAnalysis, limit string) (string, *string) {
+func (a *Adapter) addLimitToQuery(query string, queryAnalysis database.QueryAnalysis, limit string) (string, *string) {
 	if queryAnalysis.LIMIT == 0 && queryAnalysis.SELECT > 0 && queryAnalysis.FROM > 0 && queryAnalysis.EXPLAIN == 0 &&
 		queryAnalysis.DELETE == 0 && queryAnalysis.UPDATE == 0 && queryAnalysis.INSERT == 0 {
 		replace := " LIMIT " + limit + ";"
@@ -228,13 +223,13 @@ func (s *Client) addLimitToQuery(query string, queryAnalysis database.QueryAnaly
 	return query, nil
 }
 
-func (s *Client) trimQuery(query string) string {
+func (a *Adapter) trimQuery(query string) string {
 	// NOTE: removing all comments from the query with spaces and enters or end of string
 	regex := regexp.MustCompile("\\s*--.*\\n*")
 	return regex.ReplaceAllString(query, "")
 }
 
-func (s *Client) parseQuery(query string) database.QueryAnalysis {
+func (a *Adapter) parseQuery(query string) database.QueryAnalysis {
 	lowerQuery := strings.ToLower(query)
 	words := strings.Fields(lowerQuery)
 	parsed := database.QueryAnalysis{LIMIT: 0, UPDATE: 0, SELECT: 0, INSERT: 0, DELETE: 0, Semicolon: false}
@@ -268,11 +263,11 @@ func (s *Client) parseQuery(query string) database.QueryAnalysis {
 	return parsed
 }
 
-func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) {
+func (a *Adapter) getConnection(ctx database.Context) (*pgx.Conn, string, error) {
 	connection := ctx.Connection
 	db := connection.Config
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
-		return nil, "unknown", ErrDatabaseHostOrPortNotSpecified
+		return nil, "unknown", database.ErrDatabaseHostOrPortNotSpecified
 	}
 
 	dbName := "postgres"
@@ -282,7 +277,7 @@ func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) 
 
 	credentials := connection.Credentials
 	if credentials == nil {
-		return nil, "unknown", ErrPasswordNotSet
+		return nil, "unknown", database.ErrPasswordNotSet
 	}
 
 	connProtocol := "postgres://"
@@ -303,7 +298,7 @@ func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) 
 	conConfig.User = credentials.Username
 	conConfig.Password = credentials.Password
 	conConfig.RuntimeParams = map[string]string{
-		"application_name": s.GetApplicationName(ctx.Session),
+		"application_name": a.GetApplicationName(ctx.Session),
 	}
 	if tlsConfig != nil {
 		// NOTE: we rewrite only RootCAs and Certificates, because pgx.ParseConfig creates proper
@@ -317,14 +312,14 @@ func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) 
 	return conn, connUrl, err
 }
 
-func (s *Client) closeConnection(conn *pgx.Conn, ctx context.Context) {
+func (a *Adapter) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	err := conn.Close(ctx)
 	if err != nil {
 		slog.Warn("postgres close connection", err)
 	}
 }
 
-func (s *Client) closeTransaction(tx pgx.Tx, txCtx context.Context) {
+func (a *Adapter) closeTransaction(tx pgx.Tx, txCtx context.Context) {
 	err := tx.Rollback(txCtx)
 	if err != nil {
 		slog.Warn("postgres rollback", err)

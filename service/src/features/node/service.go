@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"errors"
 	"ivory/src/clients/keeper"
+	"ivory/src/clients/os"
 	"ivory/src/clients/ssh"
 	"ivory/src/features"
 	"ivory/src/features/cert"
@@ -13,8 +14,9 @@ import (
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
-	keeperRegistry *keeper.Registry
 	sshClient      *ssh.Client
+	osRegistry     *os.Registry
+	keeperRegistry *keeper.Registry
 	vaultService   *vault.Service
 	certService    *cert.Service
 
@@ -22,14 +24,16 @@ type Service struct {
 }
 
 func NewService(
-	keeperRegistry *keeper.Registry,
 	sshClient *ssh.Client,
+	osRegistry *os.Registry,
+	keeperRegistry *keeper.Registry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *Service {
 	return &Service{
-		keeperRegistry: keeperRegistry,
 		sshClient:      sshClient,
+		osRegistry:     osRegistry,
+		keeperRegistry: keeperRegistry,
 		vaultService:   vaultService,
 		certService:    certService,
 

@@ -2,7 +2,7 @@ package node
 
 import (
 	"ivory/src/clients/keeper"
-	"ivory/src/clients/ssh"
+	"ivory/src/clients/os"
 	"ivory/src/features/cert"
 
 	"github.com/google/uuid"
@@ -36,7 +36,7 @@ type SshRequest struct {
 	Connection Connection `json:"connection" form:"connection" binding:"required"`
 }
 
-type SshResponseMetrics = ssh.Metrics
+type SshResponseMetrics = os.Metrics
 
 type DockerRequest struct {
 	Connection Connection `json:"connection" form:"connection" binding:"required"`

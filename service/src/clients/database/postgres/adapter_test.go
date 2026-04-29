@@ -6,7 +6,7 @@ import (
 )
 
 func TestClient_GetApplicationName(t *testing.T) {
-	client := NewClient("TestApp")
+	client := NewAdapter("TestApp")
 
 	t.Run("should truncate session ID to 7 characters", func(t *testing.T) {
 		result := client.GetApplicationName("1234567890abcdef")
@@ -37,13 +37,13 @@ func TestClient_GetApplicationName(t *testing.T) {
 }
 
 func TestClient_trimQuery(t *testing.T) {
-	client := NewClient("TestApp")
+	client := NewAdapter("TestApp")
 
 	t.Run("should remove single line comment", func(t *testing.T) {
 		query := "SELECT * FROM users -- this is a comment\nWHERE id = 1"
 		result := client.trimQuery(query)
 
-		expected := "SELECT * FROM usersWHERE id = 1"
+		expected := "SELECT * FROM users WHERE id = 1"
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
@@ -53,7 +53,7 @@ func TestClient_trimQuery(t *testing.T) {
 		query := "SELECT * FROM users -- comment 1\nWHERE id = 1 -- comment 2\nLIMIT 10"
 		result := client.trimQuery(query)
 
-		expected := "SELECT * FROM usersWHERE id = 1LIMIT 10"
+		expected := "SELECT * FROM users WHERE id = 1 LIMIT 10"
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}
@@ -90,7 +90,7 @@ func TestClient_trimQuery(t *testing.T) {
 }
 
 func TestClient_parseQuery(t *testing.T) {
-	client := NewClient("TestApp")
+	client := NewAdapter("TestApp")
 
 	t.Run("should parse basic SELECT query", func(t *testing.T) {
 		query := "SELECT * FROM users"
@@ -233,7 +233,7 @@ func TestClient_parseQuery(t *testing.T) {
 }
 
 func TestClient_addLimitToQuery(t *testing.T) {
-	client := NewClient("TestApp")
+	client := NewAdapter("TestApp")
 
 	t.Run("should add LIMIT to SELECT query without semicolon", func(t *testing.T) {
 		query := "SELECT * FROM users"
@@ -404,7 +404,7 @@ func TestClient_addLimitToQuery(t *testing.T) {
 }
 
 func TestClient_normalizeQuery(t *testing.T) {
-	client := NewClient("TestApp")
+	client := NewAdapter("TestApp")
 
 	t.Run("should return original query when trim is nil", func(t *testing.T) {
 		query := "SELECT * FROM users -- comment"
@@ -460,7 +460,7 @@ func TestClient_normalizeQuery(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Expected no error, got: %v", err)
 		}
-		expected := "SELECT * FROM usersWHERE id = 1"
+		expected := "SELECT * FROM users WHERE id = 1"
 		if result != expected {
 			t.Errorf("Expected '%s', got '%s'", expected, result)
 		}

@@ -16,9 +16,6 @@ import (
 
 var ErrCommandEmpty = errors.New("command cannot be empty")
 var ErrHostEmpty = errors.New("vm host cannot be empty")
-var ErrInvalidCpuMetrics = errors.New("invalid cpu metrics output")
-var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
-var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 
 type Client struct {
 	timeout time.Duration
@@ -46,7 +43,7 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 		Timeout:         c.timeout,
 	}
 
-	target, err := getDialAddress(connection)
+	target, err := c.getDialAddress(connection)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +84,7 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 }
 
 func (c *Client) ExecuteDocker(connection Connection, command string) (*CommandResult, error) {
-	return c.Execute(connection, normalizeDockerCommand(command))
+	return c.Execute(connection, c.normalizeDockerCommand(command))
 }
 
 func (c *Client) GenerateKey() (string, string, error) {
@@ -105,15 +102,7 @@ func (c *Client) GenerateKey() (string, string, error) {
 	return sshPubKeyAuthComment, string(prvKey), nil
 }
 
-func (c *Client) Metrics(connection Connection) (*Metrics, error) {
-	result, err := c.Execute(connection, MetricsCommand)
-	if err != nil {
-		return nil, err
-	}
-	return parseMetrics(result.Stdout)
-}
-
-func normalizeDockerCommand(command string) string {
+func (c *Client) normalizeDockerCommand(command string) string {
 	trimmed := strings.TrimSpace(command)
 	if trimmed == "" {
 		return ""
@@ -124,7 +113,7 @@ func normalizeDockerCommand(command string) string {
 	return "docker " + trimmed
 }
 
-func getDialAddress(connection Connection) (string, error) {
+func (c *Client) getDialAddress(connection Connection) (string, error) {
 	host := strings.TrimSpace(connection.Host)
 	if host == "" {
 		return "", ErrHostEmpty
@@ -153,169 +142,4 @@ func getDialAddress(connection Connection) (string, error) {
 	}
 
 	return net.JoinHostPort(host, strconv.Itoa(connection.Port)), nil
-}
-
-func parseMetrics(output string) (*Metrics, error) {
-	sections := splitMetricsOutput(output)
-
-	cpu, err := parseCpuMetrics(sections["__IVORY_CPU_1__"], sections["__IVORY_CPU_2__"])
-	if err != nil {
-		return nil, err
-	}
-	memory, err := parseMemoryMetrics(sections["__IVORY_MEM__"])
-	if err != nil {
-		return nil, err
-	}
-	network, err := parseNetworkMetrics(sections["__IVORY_NET__"])
-	if err != nil {
-		return nil, err
-	}
-
-	return &Metrics{
-		Cpu:     cpu,
-		Memory:  memory,
-		Network: network,
-	}, nil
-}
-
-func splitMetricsOutput(output string) map[string][]string {
-	sections := map[string][]string{}
-	current := ""
-
-	for _, line := range strings.Split(output, "\n") {
-		trimmed := strings.TrimSpace(line)
-		switch trimmed {
-		case "__IVORY_CPU_1__", "__IVORY_CPU_2__", "__IVORY_MEM__", "__IVORY_NET__":
-			current = trimmed
-			continue
-		}
-		if current == "" || trimmed == "" {
-			continue
-		}
-		sections[current] = append(sections[current], trimmed)
-	}
-
-	return sections
-}
-
-func parseCpuMetrics(first []string, second []string) (CpuMetrics, error) {
-	if len(first) == 0 || len(second) == 0 {
-		return CpuMetrics{}, ErrInvalidCpuMetrics
-	}
-
-	prev, prevIdle, err := parseCpuLine(first[0])
-	if err != nil {
-		return CpuMetrics{}, err
-	}
-	next, nextIdle, err := parseCpuLine(second[0])
-	if err != nil {
-		return CpuMetrics{}, err
-	}
-
-	totalDiff := next - prev
-	idleDiff := nextIdle - prevIdle
-	if totalDiff <= 0 {
-		return CpuMetrics{}, ErrInvalidCpuMetrics
-	}
-
-	usagePercent := (float64(totalDiff-idleDiff) / float64(totalDiff)) * 100
-	return CpuMetrics{UsagePercent: usagePercent}, nil
-}
-
-func parseCpuLine(line string) (uint64, uint64, error) {
-	fields := strings.Fields(line)
-	if len(fields) < 5 || fields[0] != "cpu" {
-		return 0, 0, ErrInvalidCpuMetrics
-	}
-
-	var total uint64
-	for _, field := range fields[1:] {
-		value, err := strconv.ParseUint(field, 10, 64)
-		if err != nil {
-			return 0, 0, err
-		}
-		total += value
-	}
-
-	idle, err := strconv.ParseUint(fields[4], 10, 64)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return total, idle, nil
-}
-
-func parseMemoryMetrics(lines []string) (MemoryMetrics, error) {
-	if len(lines) < 2 {
-		return MemoryMetrics{}, ErrInvalidMemoryMetrics
-	}
-
-	values := make(map[string]uint64)
-	for _, line := range lines {
-		fields := strings.Fields(line)
-		if len(fields) < 2 {
-			return MemoryMetrics{}, ErrInvalidMemoryMetrics
-		}
-		value, err := strconv.ParseUint(fields[1], 10, 64)
-		if err != nil {
-			return MemoryMetrics{}, err
-		}
-		values[strings.TrimSuffix(fields[0], ":")] = value * 1024
-	}
-
-	total := values["MemTotal"]
-	available := values["MemAvailable"]
-	if total == 0 {
-		return MemoryMetrics{}, ErrInvalidMemoryMetrics
-	}
-	used := total - available
-
-	return MemoryMetrics{
-		TotalBytes:     total,
-		UsedBytes:      used,
-		AvailableBytes: available,
-		UsagePercent:   (float64(used) / float64(total)) * 100,
-	}, nil
-}
-
-func parseNetworkMetrics(lines []string) (NetworkMetrics, error) {
-	if len(lines) < 3 {
-		return NetworkMetrics{}, ErrInvalidNetworkMetrics
-	}
-
-	var received uint64
-	var transmitted uint64
-	for _, line := range lines[2:] {
-		parts := strings.Split(line, ":")
-		if len(parts) != 2 {
-			return NetworkMetrics{}, ErrInvalidNetworkMetrics
-		}
-
-		iface := strings.TrimSpace(parts[0])
-		if iface == "lo" {
-			continue
-		}
-
-		fields := strings.Fields(parts[1])
-		if len(fields) < 9 {
-			return NetworkMetrics{}, ErrInvalidNetworkMetrics
-		}
-
-		rx, err := strconv.ParseUint(fields[0], 10, 64)
-		if err != nil {
-			return NetworkMetrics{}, err
-		}
-		tx, err := strconv.ParseUint(fields[8], 10, 64)
-		if err != nil {
-			return NetworkMetrics{}, err
-		}
-
-		received += rx
-		transmitted += tx
-	}
-
-	return NetworkMetrics{
-		ReceivedBytes:    received,
-		TransmittedBytes: transmitted,
-	}, nil
 }
