@@ -14,7 +14,7 @@ jobs:
       - name: Set up GO
         uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
+          go-version: '1.26'
           cache-dependency-path: service
       - name: Install & Build binary for service
         working-directory: service
@@ -35,7 +35,7 @@ jobs:
       - name: Set up Node (yarn, npm)
         uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '25'
       - name: Install & Build web
         working-directory: web
         run: |
