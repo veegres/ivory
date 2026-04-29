@@ -9,22 +9,22 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type Type int8
+type Type = database.SystemRequestCategory
 
 const (
-	BLOAT Type = iota
-	ACTIVITY
-	REPLICATION
-	STATISTIC
-	OTHER
+	BLOAT       = database.BLOAT
+	ACTIVITY    = database.ACTIVITY
+	REPLICATION = database.REPLICATION
+	STATISTIC   = database.STATISTIC
+	OTHER       = database.OTHER
 )
 
-type VarietyType int8
+type VarietyType = database.SystemRequestVariety
 
 const (
-	DatabaseSensitive VarietyType = iota
-	MasterOnly
-	ReplicaRecommended
+	DatabaseSensitive  = database.DatabaseSensitive
+	MasterOnly         = database.MasterOnly
+	ReplicaRecommended = database.ReplicaRecommended
 )
 
 type CreationType string
@@ -34,17 +34,17 @@ const (
 	System              = "system"
 )
 
-type ChartType string
+type ChartType = database.SystemChartType
 
 const (
-	Databases      ChartType = "Databases"
-	Connections              = "Connections"
-	DatabaseSize             = "Database Size"
-	DatabaseUptime           = "Database Uptime"
-	Schemas                  = "Schemas"
-	TablesSize               = "Tables Size"
-	IndexesSize              = "Indexes Size"
-	TotalSize                = "Total Size"
+	Databases      = database.Databases
+	Connections    = database.Connections
+	DatabaseSize   = database.DatabaseSize
+	DatabaseUptime = database.DatabaseUptime
+	Schemas        = database.Schemas
+	TablesSize     = database.TablesSize
+	IndexesSize    = database.IndexesSize
+	TotalSize      = database.TotalSize
 )
 
 type Request struct {
@@ -94,7 +94,7 @@ type KillRequest struct {
 
 type ChartRequest struct {
 	Connection Connection `json:"connection"`
-	Type       *ChartType `json:"type"`
+	Type       ChartType  `json:"type"`
 }
 
 type DatabasesRequest struct {

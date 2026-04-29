@@ -3,7 +3,7 @@ package postgres
 const GetAllDatabases = `SELECT datname AS name FROM pg_database WHERE datistemplate = false AND datname LIKE $1 LIMIT 100;`
 const GetAllSchemas = `SELECT nspname AS NAME FROM pg_namespace WHERE nspname LIKE $1 LIMIT 100;`
 const GetAllTables = `SELECT relname AS name FROM pg_stat_all_tables WHERE schemaname = $1 AND relname LIKE $2 LIMIT 100;`
-const GetAllRunningQueriesByApplicationName = `SELECT
+const GetAllActiveQueriesByApplicationName = `SELECT
     pid,
     (now() - pg_stat_activity.query_start)::text AS query_duration,
     query

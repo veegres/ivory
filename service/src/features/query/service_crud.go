@@ -109,6 +109,6 @@ func (s *Service) Delete(key uuid.UUID) error {
 func (s *Service) DeleteAll() error {
 	errLog := s.DeleteAllLogs()
 	errDel := s.repository.DeleteAll()
-	errDefQueries := s.initializeDefaultQueries()
+	errDefQueries := s.initializeSystemQueries()
 	return errors.Join(errLog, errDel, errDefQueries)
 }

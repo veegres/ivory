@@ -80,7 +80,7 @@ func NewContext() *Context {
 
 	// ADAPTERS
 	patroniAdapter := patroni.NewAdapter(httpClient)
-	postgresAdapter := postgres.NewAdapter(appEnv.Version.Label)
+	postgresAdapter := postgres.NewAdapter()
 	linuxAdapter := linux.NewAdapter(sshClient)
 
 	// REGISTRY (we cannot use Factory pattern in clients package because of cycle dependencies)
@@ -105,7 +105,7 @@ func NewContext() *Context {
 	nodeService := node.NewService(sshClient, osRegistry, keeperRegistry, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
 	toolsService := tools.NewService(vaultService)
-	queryService := query.NewService(queryRepo, dbRegistry, vaultService, certService, secretService)
+	queryService := query.NewService(queryRepo, dbRegistry, vaultService, certService, secretService, appEnv.Version.Label)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
