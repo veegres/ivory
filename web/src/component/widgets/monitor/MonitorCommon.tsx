@@ -3,20 +3,20 @@ import {AxiosError} from "axios"
 import {QueryChartType} from "../../../api/database/type"
 import {useRouterQueryChart} from "../../../api/query/hook"
 import {Connection} from "../../../api/query/type"
-import {ChartItem, Color} from "./ChartItem"
+import {Color,MonitorItem} from "./MonitorItem"
 
 type Props = {
     type: QueryChartType,
     connection: Connection,
 }
 
-export function ChartCommon(props: Props) {
+export function MonitorCommon(props: Props) {
     const {type, connection} = props
     const req = {type, connection: {...connection, db: {...connection.db, name: "postgres"}}}
     const chart = useRouterQueryChart(req)
 
     return (
-        <ChartItem
+        <MonitorItem
             label={chart.data?.name ?? type}
             value={chart.data?.value}
             loading={chart.isFetching}

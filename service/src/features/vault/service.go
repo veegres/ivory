@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"ivory/src/clients/ssh"
 	"ivory/src/features/encryption"
 	"ivory/src/features/secret"
 
@@ -9,6 +10,7 @@ import (
 
 type Service struct {
 	vaultRepository *Repository
+	sshClient       *ssh.Client
 	secretService   *secret.Service
 	encryption      *encryption.Service
 
@@ -17,11 +19,13 @@ type Service struct {
 
 func NewService(
 	vaultRepository *Repository,
+	sshClient *ssh.Client,
 	secretService *secret.Service,
 	encryption *encryption.Service,
 ) *Service {
 	return &Service{
 		vaultRepository: vaultRepository,
+		sshClient:       sshClient,
 		secretService:   secretService,
 		encryption:      encryption,
 		hiddenSecret:    "********",
@@ -29,12 +33,11 @@ func NewService(
 }
 
 func (s *Service) Create(vault Vault) (*uuid.UUID, *Vault, error) {
-	encryptedSecret, errEnc := s.encryption.Encrypt(vault.Secret, s.secretService.Get())
-	if errEnc != nil {
-		return nil, nil, errEnc
+	sc, mt, err := s.generateVaultByType(vault)
+	if err != nil {
+		return nil, nil, err
 	}
-
-	encryptedCred := Vault{Username: vault.Username, Secret: encryptedSecret, Type: vault.Type}
+	encryptedCred := Vault{Type: vault.Type, Username: vault.Username, Secret: sc, Metadata: mt}
 	key, errCreate := s.vaultRepository.Create(encryptedCred)
 
 	cred := encryptedCred
@@ -43,12 +46,12 @@ func (s *Service) Create(vault Vault) (*uuid.UUID, *Vault, error) {
 }
 
 func (s *Service) Update(key uuid.UUID, vault Vault) (*uuid.UUID, *Vault, error) {
-	encryptedSecret, errEnc := s.encryption.Encrypt(vault.Secret, s.secretService.Get())
-	if errEnc != nil {
-		return nil, nil, errEnc
+	sc, mt, err := s.generateVaultByType(vault)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	encryptedCred := Vault{Username: vault.Username, Secret: encryptedSecret, Type: vault.Type}
+	encryptedCred := Vault{Username: vault.Username, Secret: sc, Type: vault.Type, Metadata: mt}
 	key, errUpdate := s.vaultRepository.Update(key, encryptedCred)
 
 	cred := encryptedCred
@@ -132,4 +135,25 @@ func (s *Service) hideSecrets(vaultMap VaultMap) VaultMap {
 		vaultMap[key] = vault
 	}
 	return vaultMap
+}
+
+func (s *Service) generateVaultByType(vault Vault) (string, *string, error) {
+	switch vault.Type {
+	case SSH_KEY:
+		pubKey, prvKey, err := s.sshClient.GenerateKey()
+		if err != nil {
+			return "", nil, err
+		}
+		encryptedSecret, errEnc := s.encryption.Encrypt(prvKey, s.secretService.Get())
+		if errEnc != nil {
+			return "", nil, errEnc
+		}
+		return encryptedSecret, &pubKey, nil
+	default:
+		encryptedSecret, errEnc := s.encryption.Encrypt(vault.Secret, s.secretService.Get())
+		if errEnc != nil {
+			return "", nil, errEnc
+		}
+		return encryptedSecret, nil, errEnc
+	}
 }

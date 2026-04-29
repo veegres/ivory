@@ -122,7 +122,6 @@ export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boo
     return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.sshKeyId === c2?.sshKeyId
 }
 
-
 export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
     const vaultId = cluster.vaults.databaseId
     const certs = cluster.tls.database ? cluster.certs : undefined

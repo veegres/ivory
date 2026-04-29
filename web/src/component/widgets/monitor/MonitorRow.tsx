@@ -13,7 +13,7 @@ type Props = {
     children: ReactNode,
 }
 
-export function ChartRow(props: Props) {
+export function MonitorRow(props: Props) {
     const {label, children} = props
 
     return (

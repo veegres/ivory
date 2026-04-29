@@ -24,14 +24,29 @@ func handleParamRequest[T any](context *gin.Context, action func(node KeeperRequ
 		return
 	}
 	body, status, err := action(node)
-	handleResponse(context, body, status, err)
+	if err != nil {
+		context.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(status, gin.H{"response": body})
 }
 
 func handleBodyRequest[T any](context *gin.Context, action func(node KeeperRequest) (T, int, error)) {
-	handleBodyRequestOf(context, action)
+	var request KeeperRequest
+	errBind := context.ShouldBindJSON(&request)
+	if errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+	body, status, err := action(request)
+	if err != nil {
+		context.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(status, gin.H{"response": body})
 }
 
-func handleParamRequestOf[R any, T any](context *gin.Context, action func(request R) (T, int, error)) {
+func handleParamRequestOf[R any, T any](context *gin.Context, action func(request R) (T, error)) {
 	query := context.Query("request")
 	var request R
 	errBind := json.Unmarshal([]byte(query), &request)
@@ -39,25 +54,25 @@ func handleParamRequestOf[R any, T any](context *gin.Context, action func(reques
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	body, status, err := action(request)
-	handleResponse(context, body, status, err)
+	body, err := action(request)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
-func handleBodyRequestOf[R any, T any](context *gin.Context, action func(request R) (T, int, error)) {
+func handleBodyRequestOf[R any, T any](context *gin.Context, action func(request R) (T, error)) {
 	var request R
 	errBind := context.ShouldBindJSON(&request)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	body, status, err := action(request)
-	handleResponse(context, body, status, err)
-}
-
-func handleResponse(context *gin.Context, body any, status int, err error) {
+	body, err := action(request)
 	if err != nil {
-		context.JSON(status, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(status, gin.H{"response": body})
+	context.JSON(http.StatusOK, gin.H{"response": body})
 }

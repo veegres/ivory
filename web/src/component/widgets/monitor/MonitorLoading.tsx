@@ -4,7 +4,7 @@ type Props = {
     count: number
 }
 
-export function ChartLoading(props: Props) {
+export function MonitorLoading(props: Props) {
     return (
         <>
             {[...Array(props.count).keys()].map((key) => (

@@ -92,7 +92,7 @@ func NewContext() *Context {
 	// SERVICES
 	encryptionService := encryption.NewService()
 	secretService := secret.NewService(secretRepo, encryptionService)
-	vaultService := vault.NewService(vaultRepo, secretService, encryptionService)
+	vaultService := vault.NewService(vaultRepo, sshClient, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
 	nodeService := node.NewService(keeperRegistry, sshClient, vaultService, certService)

@@ -5,84 +5,84 @@ import (
 	"strconv"
 )
 
-func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, int, error) {
+func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	result, err := s.sshClient.Metrics(*connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return result, 200, nil
+	return result, nil
 }
 
-func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, int, error) {
+func (s *Service) DockerDeploy(request DockerRequest) (*DockerResult, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	// Pull then run
 	command := fmt.Sprintf("pull %s && run -d %s %s", request.Image, request.Options, request.Image)
 	res, err := s.sshClient.ExecuteDocker(*connection, command)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, 200, nil
+	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
 }
 
-func (s *Service) DockerStop(request DockerRequest) (*DockerResult, int, error) {
+func (s *Service) DockerStop(request DockerRequest) (*DockerResult, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	res, err := s.sshClient.ExecuteDocker(*connection, "stop "+request.Container)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, 200, nil
+	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
 }
 
-func (s *Service) DockerRun(request DockerRequest) (*DockerResult, int, error) {
+func (s *Service) DockerRun(request DockerRequest) (*DockerResult, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	res, err := s.sshClient.ExecuteDocker(*connection, fmt.Sprintf("run -d %s %s", request.Options, request.Image))
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, 200, nil
+	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
 }
 
-func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, int, error) {
+func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	res, err := s.sshClient.ExecuteDocker(*connection, "rm "+request.Container)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, 200, nil
+	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
 }
 
-func (s *Service) DockerList(request SshRequest) (*DockerResult, int, error) {
+func (s *Service) DockerList(request SshRequest) (*DockerResult, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	res, err := s.sshClient.ExecuteDocker(*connection, "ps -a")
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, 200, nil
+	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
 }
 
-func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, int, error) {
+func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, error) {
 	connection, err := s.getSshConnection(request.Connection)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	command := "logs "
 	if request.Tail > 0 {
@@ -91,7 +91,7 @@ func (s *Service) DockerLogs(request DockerLogsRequest) (*DockerResult, int, err
 	command += request.Container
 	res, err := s.sshClient.ExecuteDocker(*connection, command)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, 200, nil
+	return &DockerResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
 }

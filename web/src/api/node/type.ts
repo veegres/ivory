@@ -55,9 +55,9 @@ export interface DockerResult {
 
 // SPECIFIC (WEB)
 
-export enum NodeTabType {QUERY, CHART}
+export enum NodeTabType {QUERY, MONITOR}
 export interface NodeTab {
     label: string,
-    body: (connection: QueryConnection) => ReactNode,
+    body: (queryCon: QueryConnection, sshCon: Connection) => ReactNode,
     info?: ReactNode,
 }
