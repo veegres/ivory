@@ -1,7 +1,7 @@
 import {Box, Divider} from "@mui/material"
 
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
-import {DatabaseType} from "../../../../api/database/type"
+import {Type as DbType} from "../../../../api/database/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -36,7 +36,7 @@ export function Node() {
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
         if (!activeNode.connection.host || !activeNode.connection.dbPort) return <NoDatabaseError/>
 
-        const database = {type: DatabaseType.POSTGRES, host: activeNode.connection.host, port: activeNode.connection.dbPort}
+        const database = {type: DbType.POSTGRES, host: activeNode.connection.host, port: activeNode.connection.dbPort}
         const queryCon = getQueryConnection(activeCluster.cluster, database)
 
         return (

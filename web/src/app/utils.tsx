@@ -14,10 +14,11 @@ import dayjs from "dayjs"
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node, NodeOverview} from "../api/cluster/type"
-import {Database, DatabaseType, QueryVariety} from "../api/database/type"
+import {Config as DbConfig, Type as DbType} from "../api/database/type"
 import {KeeperType, Role, Status as KeeperStatus} from "../api/keeper/type"
 import {Connection as NodeConnection, KeeperRequest} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
+import {VarietyType} from "../api/query/type"
 import {Connection as QueryConnection} from "../api/query/type"
 import {VaultType} from "../api/vault/type"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
@@ -79,10 +80,10 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>, key: "about"},
 }
 
-export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
-    [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900], icon: <></>},
-    [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900], icon: <></>},
-    [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
+export const QueryVarietyOptions: { [key in VarietyType]: EnumOptions } = {
+    [VarietyType.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900], icon: <></>},
+    [VarietyType.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900], icon: <></>},
+    [VarietyType.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
 }
 
 export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
@@ -97,11 +98,11 @@ export const DefaultKeeperPorts = {
 }
 
 export const DefaultDatabasePorts = {
-    [DatabaseType.POSTGRES]: 5432,
-    [DatabaseType.ETCD]: 2379,
+    [DbType.POSTGRES]: 5432,
+    [DbType.ETCD]: 2379,
 }
 
-export const initialNode = (kt: KeeperType, dbt: DatabaseType, domain: string): Node => {
+export const initialNode = (kt: KeeperType, dbt: DbType, domain: string): Node => {
     const connection = getNodeConnection(kt, dbt, domain)
     return ({
         connection: connection,
@@ -122,7 +123,7 @@ export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boo
     return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.sshKeyId === c2?.sshKeyId
 }
 
-export function getQueryConnection(cluster: Cluster, db: Database): QueryConnection {
+export function getQueryConnection(cluster: Cluster, db: DbConfig): QueryConnection {
     const vaultId = cluster.vaults.databaseId
     const certs = cluster.tls.database ? cluster.certs : undefined
     return {db, certs, vaultId}
@@ -147,7 +148,7 @@ export const getDomains = (nodes: NodeConnection[], simple: boolean = true) => {
     return nodes.map(value => getDomain(value, simple))
 }
 
-export const getNodeConnection = (kt: KeeperType, dbt: DatabaseType, domain: string): NodeConnection => {
+export const getNodeConnection = (kt: KeeperType, dbt: DbType, domain: string): NodeConnection => {
     const [host, keeperPort, dbPort, sshPort, sshKeyId] = domain.split(":")
     return {
         host: host.toLowerCase(),
@@ -158,7 +159,7 @@ export const getNodeConnection = (kt: KeeperType, dbt: DatabaseType, domain: str
     }
 }
 
-export const getNodeConnections = (kt: KeeperType, dbt: DatabaseType, domains: string[]): NodeConnection[] => {
+export const getNodeConnections = (kt: KeeperType, dbt: DbType, domains: string[]): NodeConnection[] => {
     return domains.map(value => getNodeConnection(kt, dbt, value))
 }
 

@@ -1,7 +1,7 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {Feature} from "../../../../api/feature"
-import {Connection, QueryType} from "../../../../api/query/type"
+import {Connection as QueryConnection, Type as QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {Access} from "../../../widgets/access/Access"
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: Connection,
+    connection: QueryConnection,
 }
 
 export function NodeMainQueries(props: Props){

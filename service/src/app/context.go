@@ -56,7 +56,7 @@ func NewContext() *Context {
 	secretBucket := db.NewBucket[string](st, "Secret")
 	vaultBucket := db.NewBucket[vault.Vault](st, "Vault")
 	permissionBucket := db.NewBucket[permission.PermissionMap](st, "Permission")
-	queryBucket := db.NewBucket[query.Query](st, "Query")
+	queryBucket := db.NewBucket[query.Response](st, "Query")
 
 	// FILES
 	certFiles := files.NewStorage("cert", ".crt")

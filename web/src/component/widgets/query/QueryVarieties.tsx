@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {QueryVariety} from "../../../api/database/type"
+import {VarietyType} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {QueryVarietyOptions} from "../../../app/utils"
 import {InfoColorBox} from "../../view/box/InfoColorBox"
@@ -10,7 +10,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    varieties: QueryVariety[],
+    varieties: VarietyType[],
 }
 
 export function QueryVarieties(props: Props) {

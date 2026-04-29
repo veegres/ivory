@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {Database} from "../../../api/database/type"
+import {Config as DbConfig} from "../../../api/database/type"
 import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
@@ -11,7 +11,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    db: Database,
+    db: DbConfig,
 }
 
 export function DatabaseBox(props: Props) {

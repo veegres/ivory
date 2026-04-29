@@ -1,9 +1,8 @@
 import {Box} from "@mui/material"
 import {useState} from "react"
 
-import {Query as QueryRequest} from "../../../api/database/type"
 import {Feature} from "../../../api/feature"
-import {Connection, Query, QueryCreation} from "../../../api/query/type"
+import {Connection, CreationType, Request, Response} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {
     CancelIconButton,
@@ -31,14 +30,14 @@ const SX: SxPropsMap = {
 enum ViewToggleType {VIEW, EDIT, RESTORE, LOG}
 
 type Props = {
-    query: Query,
+    query: Response,
     connection: Connection,
 }
 
 export function QueryTemplateView(props: Props) {
     const {query, connection} = props
     const [toggleView, setToggleView] = useState<ViewToggleType>()
-    const initQueryUpdate: QueryRequest = {...query, query: query.custom}
+    const initQueryUpdate: Request = {...query, query: query.custom}
     const [queryUpdate, setUpdateQuery] = useState(initQueryUpdate)
 
     return (
@@ -92,7 +91,7 @@ export function QueryTemplateView(props: Props) {
                     <EditIconButton onClick={handleToggleBody(ViewToggleType.EDIT)}/>
                 </Access>
                 <Access feature={Feature.ManageQueryCrudDelete}>
-                    {query.creation === QueryCreation.Manual && (
+                    {query.creation === CreationType.Manual && (
                         <QueryButtonDelete id={query.id} type={query.type}/>
                     )}
                 </Access>

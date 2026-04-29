@@ -2,7 +2,7 @@ import {InfoOutlined} from "@mui/icons-material"
 import {Alert, Box, Collapse, ToggleButton, Tooltip} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {Database} from "../../../../api/database/type"
+import {Config as DbConfig} from "../../../../api/database/type"
 import {SxPropsMap} from "../../../../app/type"
 import {DatabaseBox} from "../../../view/box/DatabaseBox"
 
@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
 type Props = {
     label: string,
     info: ReactNode,
-    db: Database,
+    db: DbConfig,
     renderActions?: ReactNode,
 }
 

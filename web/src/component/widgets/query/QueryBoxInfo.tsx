@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
-import {QueryType} from "../../../api/database/type"
+import {Type} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {InfoBox, Padding} from "../../view/box/InfoBox"
 import {QueryBoxWrapper} from "./QueryBoxWrapper"
@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    type: QueryType,
+    type: Type,
     editable: boolean,
     renderVarieties: ReactNode,
     renderDescription: ReactNode,
@@ -38,7 +38,7 @@ export function QueryBoxInfo(props: Props) {
                 </QueryBoxWrapper>
                 <QueryBoxWrapper editable={editable}>
                     <InfoBox tooltip={"Type"} padding={Padding.Small}>
-                        <Box sx={SX.type}>{QueryType[type]}</Box>
+                        <Box sx={SX.type}>{Type[type]}</Box>
                     </InfoBox>
                 </QueryBoxWrapper>
             </Box>

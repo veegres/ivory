@@ -1,6 +1,6 @@
 import {InputBase, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
-import {Query} from "../../../api/database/type"
+import {Request} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {QueryVarietyOptions} from "../../../app/utils"
 import {DynamicInputs} from "../../view/input/DynamicInputs"
@@ -14,8 +14,8 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    query: Query,
-    onChange: (query: Query) => void,
+    query: Request,
+    onChange: (query: Request) => void,
 }
 
 export function QueryInfoEdit(props: Props) {
@@ -23,7 +23,7 @@ export function QueryInfoEdit(props: Props) {
 
     return (
         <QueryBoxInfo
-            type={query.type}
+            type={query.type!}
             editable={true}
             renderVarieties={renderVarietiesToggles()}
             renderDescription={renderDescription()}
