@@ -10,18 +10,12 @@ export {KeeperPlugin,KeeperStatus}
 
 export interface Connection {
     host: string,
-    sshKeyId?: string,
     sshPort?: number,
     keeperPort?: number,
     dbPort?: number,
 }
 
-export interface KeeperResponse {
-    connection: Connection,
-    keeper: BaseKeeperResponse,
-}
-
-export interface KeeperRequest {
+export interface KeeperConnection {
     host: string,
     port: number,
     plugin: KeeperPlugin,
@@ -30,19 +24,26 @@ export interface KeeperRequest {
     body?: any,
 }
 
-export interface SshRequest {
+export interface KeeperResponse {
     connection: Connection,
+    keeper: BaseKeeperResponse,
+}
+
+export interface SshConnection {
+    host: string,
+    port: number,
+    vaultId: string,
 }
 
 export interface DockerRequest {
-    connection: Connection,
+    connection: SshConnection,
     image?: string,
     container?: string,
     options?: string,
 }
 
 export interface DockerLogsRequest {
-    connection: Connection,
+    connection: SshConnection,
     container: string,
     tail?: number,
 }
@@ -58,6 +59,6 @@ export interface DockerResult {
 export enum NodeTabType {QUERY, MONITOR}
 export interface NodeTab {
     label: string,
-    body: (queryCon: QueryConnection, sshCon: Connection) => ReactNode,
+    body: (queryCon?: QueryConnection, sshCon?: SshConnection) => ReactNode,
     info?: ReactNode,
 }

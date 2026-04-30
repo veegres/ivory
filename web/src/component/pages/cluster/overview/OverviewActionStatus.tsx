@@ -3,7 +3,7 @@ import {UseMutationResult} from "@tanstack/react-query"
 
 import {Feature} from "../../../../api/feature"
 import {useRouterNodeActivate, useRouterNodePause} from "../../../../api/node/hook"
-import {KeeperRequest, KeeperStatus} from "../../../../api/node/type"
+import {KeeperConnection, KeeperStatus} from "../../../../api/node/type"
 import {EnumOptions, SxPropsMap} from "../../../../app/type"
 import {KeeperStatusOptions} from "../../../../app/utils"
 import {InfoBox, Padding} from "../../../view/box/InfoBox"
@@ -17,17 +17,17 @@ const SX: SxPropsMap = {
 type Props = {
     cluster: string,
     status: KeeperStatus,
-    request: KeeperRequest,
+    con: KeeperConnection,
 }
 
 export function OverviewActionStatus(props: Props) {
-    const {status, cluster, request} = props
+    const {status, cluster, con} = props
 
     const activate = useRouterNodeActivate(cluster)
     const pause = useRouterNodePause(cluster)
 
     const options = KeeperStatusOptions[status]
-    const action: { [key in KeeperStatus]: UseMutationResult<string, any, KeeperRequest, unknown> } = {
+    const action: { [key in KeeperStatus]: UseMutationResult<string, any, KeeperConnection, unknown> } = {
         [KeeperStatus.Active]: pause,
         [KeeperStatus.Paused]: activate
     }
@@ -49,7 +49,7 @@ export function OverviewActionStatus(props: Props) {
                         title={`Are you sure that you want to ${actionButton[status].label}`}
                         description={<>This action either active or pause patroni. More info can be
                             found <a href={"https://patroni.readthedocs.io/en/latest/pause.html"}>here</a>.</>}
-                        onClick={() => {action[status].mutate(request)}}
+                        onClick={() => {action[status].mutate(con)}}
                     />
                 </InfoBox>
             </Access>

@@ -1,13 +1,12 @@
 import {Box, Link} from "@mui/material"
 
-import {Connection as SshConnection, NodeTab, NodeTabType} from "../../../../api/node/type"
+import {NodeTab, NodeTabType, SshConnection} from "../../../../api/node/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../api/query/hook"
 import {Connection as QueryConnection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
 import {Monitor} from "../../../widgets/monitor/Monitor"
-import {ClusterNoPostgresVault, NoDatabaseError} from "../overview/OverviewError"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTitle} from "./NodeMainTitle"
 
@@ -19,7 +18,7 @@ const SX: SxPropsMap = {
 const Tabs: {[key in NodeTabType]: NodeTab} = {
     [NodeTabType.MONITOR]: {
         label: "Monitor",
-        body: (queryCon: QueryConnection, sshCon: SshConnection) => <Monitor queryCon={queryCon} sshCon={sshCon}/>,
+        body: (queryCon?: QueryConnection, sshCon?: SshConnection) => <Monitor queryCon={queryCon} sshCon={sshCon}/>,
         info: <>
             Here you can check some basic charts about your overall database and each database separately
             by specifying database name in the input near by.
@@ -29,7 +28,7 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
     },
     [NodeTabType.QUERY]: {
         label: "Queries",
-        body: (queryCon: QueryConnection) => <NodeMainQueries connection={queryCon}/>,
+        body: (queryCon?: QueryConnection) => <NodeMainQueries connection={queryCon}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres (<b>always use LIMIT in queries
             to reduce number of rows, it will help to render and execute query faster</b>). There are some default queries
@@ -46,36 +45,30 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
 
 type Props = {
     tab: NodeTabType,
-    queryCon: QueryConnection,
-    sshCon: SshConnection,
+    queryCon?: QueryConnection,
+    sshCon?: SshConnection,
 }
 
 export function NodeMain(props: Props) {
-    const {tab, queryCon: qc, sshCon: sc} = props
-    const {dbName, dbSchema} = useStore(s => s.node)
+    const {tab, queryCon, sshCon} = props
+    const {dbName, dbSchema} = useStore(s => s.nodeState)
     const {setDbName, setDbSchema} = useStoreAction
 
     const {label, info, body} = Tabs[tab]
 
-    const db = {...qc.db, name: dbName, schema: dbSchema}
-    const queryCon = {...qc, db}
-    const sshCon = sc
-
     return (
         <Box sx={SX.main}>
-            <NodeMainTitle label={label} info={info} db={db} renderActions={renderActions()}/>
+            <NodeMainTitle label={label} info={info} db={queryCon?.db} renderActions={renderActions()}/>
             {renderBody()}
         </Box>
     )
 
     function renderBody() {
-        if (!queryCon.vaultId) return <ClusterNoPostgresVault/>
-        if (db.host === "-") return <NoDatabaseError/>
         return body(queryCon, sshCon)
     }
 
     function renderActions() {
-        if (!queryCon.vaultId) return null
+        if (!queryCon) return
         return (
             <Box sx={SX.inputs}>
                 <AutocompleteFetch

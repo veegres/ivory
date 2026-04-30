@@ -4,7 +4,7 @@ import {useState} from "react"
 
 import {Feature} from "../../../api/feature"
 import {useRouterNodeRestart} from "../../../api/node/hook"
-import {KeeperRequest} from "../../../api/node/type"
+import {KeeperConnection} from "../../../api/node/type"
 import {SxPropsMap} from "../../../app/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
@@ -16,12 +16,12 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    request: KeeperRequest,
+    con: KeeperConnection,
     cluster: string,
 }
 
 export function RestartButton(props: Props) {
-    const {request, cluster} = props
+    const {con, cluster} = props
 
     const [schedule, setSchedule] = useState<Dayjs>()
     const [pending, setPending] = useState(false)
@@ -35,7 +35,7 @@ export function RestartButton(props: Props) {
             <AlertButton
                 size={"small"}
                 label={"Restart"}
-                title={`Make a restart of ${request.host}?`}
+                title={`Make a restart of ${con.host}?`}
                 description={"It will restart postgres, that will cause some downtime."}
                 loading={restart.isPending}
                 onClick={handleClick}
@@ -64,7 +64,7 @@ export function RestartButton(props: Props) {
     }
 
     function handleClick() {
-        restart.mutate({...request, body})
+        restart.mutate({...con, body})
         setSchedule(undefined)
         setPending(false)
     }

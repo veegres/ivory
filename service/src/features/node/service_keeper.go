@@ -60,7 +60,7 @@ func (s *Service) OverviewAuto(request KeeperAutoRequest) ([]KeeperResponse, int
 	return nodes, statusCode, detectedBy, nil
 }
 
-func (s *Service) Overview(r KeeperRequest) ([]KeeperResponse, int, error) {
+func (s *Service) Overview(r KeeperConnection) ([]KeeperResponse, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -86,7 +86,7 @@ func (s *Service) Overview(r KeeperRequest) ([]KeeperResponse, int, error) {
 	return nodes, status, nil
 }
 
-func (s *Service) Config(r KeeperRequest) (any, int, error) {
+func (s *Service) Config(r KeeperConnection) (any, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -94,7 +94,7 @@ func (s *Service) Config(r KeeperRequest) (any, int, error) {
 	return client.Config(request)
 }
 
-func (s *Service) ConfigUpdate(r KeeperRequest) (any, int, error) {
+func (s *Service) ConfigUpdate(r KeeperConnection) (any, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -102,7 +102,7 @@ func (s *Service) ConfigUpdate(r KeeperRequest) (any, int, error) {
 	return client.ConfigUpdate(request)
 }
 
-func (s *Service) Switchover(r KeeperRequest) (*string, int, error) {
+func (s *Service) Switchover(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -110,7 +110,7 @@ func (s *Service) Switchover(r KeeperRequest) (*string, int, error) {
 	return client.Switchover(request)
 }
 
-func (s *Service) DeleteSwitchover(r KeeperRequest) (*string, int, error) {
+func (s *Service) DeleteSwitchover(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -118,7 +118,7 @@ func (s *Service) DeleteSwitchover(r KeeperRequest) (*string, int, error) {
 	return client.DeleteSwitchover(request)
 }
 
-func (s *Service) Reinitialize(r KeeperRequest) (*string, int, error) {
+func (s *Service) Reinitialize(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -126,7 +126,7 @@ func (s *Service) Reinitialize(r KeeperRequest) (*string, int, error) {
 	return client.Reinitialize(request)
 }
 
-func (s *Service) Restart(r KeeperRequest) (*string, int, error) {
+func (s *Service) Restart(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -134,7 +134,7 @@ func (s *Service) Restart(r KeeperRequest) (*string, int, error) {
 	return client.Restart(request)
 }
 
-func (s *Service) DeleteRestart(r KeeperRequest) (*string, int, error) {
+func (s *Service) DeleteRestart(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -142,7 +142,7 @@ func (s *Service) DeleteRestart(r KeeperRequest) (*string, int, error) {
 	return client.DeleteRestart(request)
 }
 
-func (s *Service) Reload(r KeeperRequest) (*string, int, error) {
+func (s *Service) Reload(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -150,7 +150,7 @@ func (s *Service) Reload(r KeeperRequest) (*string, int, error) {
 	return client.Reload(request)
 }
 
-func (s *Service) Failover(r KeeperRequest) (*string, int, error) {
+func (s *Service) Failover(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -158,7 +158,7 @@ func (s *Service) Failover(r KeeperRequest) (*string, int, error) {
 	return client.Failover(request)
 }
 
-func (s *Service) Activate(r KeeperRequest) (*string, int, error) {
+func (s *Service) Activate(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err
@@ -166,7 +166,7 @@ func (s *Service) Activate(r KeeperRequest) (*string, int, error) {
 	return client.Activate(request)
 }
 
-func (s *Service) Pause(r KeeperRequest) (*string, int, error) {
+func (s *Service) Pause(r KeeperConnection) (*string, int, error) {
 	client, request, err := s.getKeeperAdapter(r)
 	if err != nil {
 		return nil, 0, err

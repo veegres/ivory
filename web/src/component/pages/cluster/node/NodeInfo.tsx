@@ -5,7 +5,7 @@ import {Feature} from "../../../../api/feature"
 import {useRouterInfo} from "../../../../api/management/hook"
 import {NodeTabType} from "../../../../api/node/type"
 import {Status} from "../../../../api/permission/type"
-import {Connection} from "../../../../api/query/type"
+import {Connection as QueryConnection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {Access} from "../../../widgets/access/Access"
@@ -20,13 +20,13 @@ const SX: SxPropsMap = {
 
 type Props = {
     node: Node,
+    queryCon?: QueryConnection,
     tab: NodeTabType,
     onTab: (tab: NodeTabType) => void,
-    connection: Connection,
 }
 
 export function NodeInfo(props: Props) {
-    const {node, tab, onTab, connection} = props
+    const {queryCon, node, tab, onTab} = props
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
     const access = !!permissions && permissions[Feature.ViewQueryDbChart] === Status.GRANTED
@@ -35,7 +35,7 @@ export function NodeInfo(props: Props) {
         <Box sx={SX.info}>
             <ToggleButtonGroup size={"small"} color={"secondary"} fullWidth value={tab}>
                 <ToggleButton value={NodeTabType.MONITOR} onClick={() => onTab(NodeTabType.MONITOR)} disabled={!access}>
-                    Charts
+                    Monitor
                 </ToggleButton>
                 <ToggleButton value={NodeTabType.QUERY} onClick={() => onTab(NodeTabType.QUERY)}>
                     Queries
@@ -45,11 +45,18 @@ export function NodeInfo(props: Props) {
             <Paper sx={SX.paper} variant={"outlined"}>
                 <NodeInfoTable node={node}/>
             </Paper>
-            <Access feature={Feature.ViewQueryDbInfo}>
-                <Paper sx={SX.paper} variant={"outlined"}>
-                    <QueryActivity connection={connection}/>
-                </Paper>
-            </Access>
+            {renderDbActivity()}
         </Box>
     )
+
+    function renderDbActivity() {
+        if (!queryCon) return
+        return (
+            <Access feature={Feature.ViewQueryDbInfo}>
+                <Paper sx={SX.paper} variant={"outlined"}>
+                    <QueryActivity connection={queryCon}/>
+                </Paper>
+            </Access>
+        )
+    }
 }

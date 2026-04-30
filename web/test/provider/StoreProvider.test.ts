@@ -39,11 +39,11 @@ describe("StoreProvider", () => {
             expect(state.activeTags).toEqual(["ALL"])
             expect(state.warnings).toEqual({})
             expect(state.settings).toBe(false)
-            expect(state.node.body).toBe(NodeTabType.MONITOR)
-            expect(state.node.queryTab).toBe(QueryType.CONSOLE)
-            expect(state.node.queryConsole).toBe("")
-            expect(state.node.dbName).toBeUndefined()
-            expect(state.node.dbSchema).toBeUndefined()
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.MONITOR)
+            expect(state.nodeState.queryTab).toBe(QueryType.CONSOLE)
+            expect(state.nodeState.queryConsole).toBe("")
+            expect(state.nodeState.dbName).toBeUndefined()
+            expect(state.nodeState.dbSchema).toBeUndefined()
         })
     })
 
@@ -168,7 +168,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
+                connection: {host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.connection))
@@ -186,7 +186,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
+                connection: {host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.connection))
@@ -246,7 +246,7 @@ describe("StoreProvider", () => {
             useStoreAction.setConsoleQuery("SELECT * FROM users")
 
             const state = useStore.getState()
-            expect(state.node.queryConsole).toBe("SELECT * FROM users")
+            expect(state.nodeState.queryConsole).toBe("SELECT * FROM users")
         })
     })
 
@@ -255,7 +255,7 @@ describe("StoreProvider", () => {
             useStoreAction.setNodeBody(NodeTabType.QUERY)
 
             const state = useStore.getState()
-            expect(state.node.body).toBe(NodeTabType.QUERY)
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.QUERY)
         })
     })
 
@@ -264,7 +264,7 @@ describe("StoreProvider", () => {
             useStoreAction.setQueryTab(QueryType.ACTIVITY)
 
             const state = useStore.getState()
-            expect(state.node.queryTab).toBe(QueryType.ACTIVITY)
+            expect(state.nodeState.queryTab).toBe(QueryType.ACTIVITY)
         })
     })
 
@@ -273,7 +273,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbName("testdb")
 
             const state = useStore.getState()
-            expect(state.node.dbName).toBe("testdb")
+            expect(state.nodeState.dbName).toBe("testdb")
         })
 
         it("should clear database name when undefined", () => {
@@ -281,7 +281,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbName(undefined)
 
             const state = useStore.getState()
-            expect(state.node.dbName).toBeUndefined()
+            expect(state.nodeState.dbName).toBeUndefined()
         })
     })
 
@@ -290,7 +290,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbSchema("public")
 
             const state = useStore.getState()
-            expect(state.node.dbSchema).toBe("public")
+            expect(state.nodeState.dbSchema).toBe("public")
         })
 
         it("should update database schema", () => {
@@ -298,7 +298,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbSchema("private")
 
             const state = useStore.getState()
-            expect(state.node.dbSchema).toBe("private")
+            expect(state.nodeState.dbSchema).toBe("private")
         })
 
         it("should clear database schema when undefined", () => {
@@ -306,7 +306,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbSchema(undefined)
 
             const state = useStore.getState()
-            expect(state.node.dbSchema).toBeUndefined()
+            expect(state.nodeState.dbSchema).toBeUndefined()
         })
     })
 
@@ -359,7 +359,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8009},
+                connection: {host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.connection))

@@ -42,6 +42,7 @@ type ClusterTls struct {
 type Vaults struct {
 	KeeperId   *uuid.UUID `json:"keeperId"`
 	DatabaseId *uuid.UUID `json:"databaseId"`
+	SshKeyId   *uuid.UUID `json:"sshKeyId"`
 }
 
 type ClusterOverview struct {

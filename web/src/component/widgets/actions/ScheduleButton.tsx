@@ -3,7 +3,7 @@ import {Button} from "@mui/material"
 import {Feature} from "../../../api/feature"
 import {ScheduledRestart, ScheduledSwitchover} from "../../../api/keeper/type"
 import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../../api/node/hook"
-import {KeeperRequest} from "../../../api/node/type"
+import {KeeperConnection} from "../../../api/node/type"
 import {DateTimeFormatter} from "../../../app/utils"
 import {List} from "../../view/box/List"
 import {ListItem} from "../../view/box/ListItem"
@@ -12,14 +12,14 @@ import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: KeeperRequest,
+    con: KeeperConnection,
     cluster: string,
     switchover?: ScheduledSwitchover,
     restart?: ScheduledRestart,
 }
 
 export function ScheduleButton(props: Props) {
-    const {request, cluster, switchover, restart} = props
+    const {con, cluster, switchover, restart} = props
 
     const deleteRestart = useRouterNodeRestartDelete(cluster)
     const deleteSwitchover = useRouterNodeSwitchoverDelete(cluster)
@@ -61,7 +61,7 @@ export function ScheduleButton(props: Props) {
                     size={"small"}
                     variant={"outlined"}
                     loading={deleteSwitchover.isPending}
-                    onClick={() => deleteSwitchover.mutate(request)}
+                    onClick={() => deleteSwitchover.mutate(con)}
                 >
                     Delete
                 </Button>
@@ -76,7 +76,7 @@ export function ScheduleButton(props: Props) {
                     size={"small"}
                     variant={"outlined"}
                     loading={deleteRestart.isPending}
-                    onClick={() => deleteRestart.mutate(request)}
+                    onClick={() => deleteRestart.mutate(con)}
                 >
                     Delete
                 </Button>

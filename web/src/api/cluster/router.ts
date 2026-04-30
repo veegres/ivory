@@ -10,7 +10,7 @@ export const ClusterApi = {
             .then((response) => response.data.response.map(v => (
                 {...v, nodesOverview: Object.fromEntries(v.nodes.map(c => {
                     const domain = getDomain(c)
-                    return [domain, initialNode(v.keeperPlugin, v.dbPlugin, domain)]
+                    return [domain, initialNode(domain)]
                 }))} as Cluster
             ))),
     },

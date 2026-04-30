@@ -78,7 +78,8 @@ export function OverviewBloat(props: Props) {
                     <OverviewBloatJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
                 )
             case ListBlock.QUERY:
-                return <Query type={QueryType.BLOAT} connection={getQueryConnection(cluster, db)}/>
+                const queryCon = getQueryConnection(cluster, db.host, db.port)
+                return <Query type={QueryType.BLOAT} connection={{...queryCon, db}}/>
         }
     }
 

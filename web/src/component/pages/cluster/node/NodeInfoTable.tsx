@@ -30,10 +30,7 @@ export function NodeInfoTable(props: Props) {
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>SSH</TableCell>
-                    <TableCell sx={SX.wrap}>
-                        {node.connection.sshPort?.toString() ?? "-"}
-                        {node.connection.sshKeyId ? " (with key)" : " (no key)"}
-                    </TableCell>
+                    <TableCell sx={SX.wrap}>{node.connection.sshPort?.toString() ?? "-"}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Keeper</TableCell>

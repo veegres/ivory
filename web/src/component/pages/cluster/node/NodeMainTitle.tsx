@@ -18,13 +18,15 @@ const SX: SxPropsMap = {
 type Props = {
     label: string,
     info: ReactNode,
-    db: DbConfig,
+    db?: DbConfig,
     renderActions?: ReactNode,
 }
 
 export function NodeMainTitle(props: Props) {
     const {label, info, renderActions, db} = props
     const [alert, setAlert] = useState(false)
+
+    if (!db) return
 
     return (
         <Box sx={SX.box}>

@@ -3,6 +3,7 @@ import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/materi
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster, NodeOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
+import {initialNode} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
 import {RefreshIconButton} from "../../../view/button/IconButtons"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
@@ -73,7 +74,14 @@ export function OverviewNodes(props: Props) {
         if (!activeNode) return
         if (nodes.hasOwnProperty(activeNode)) return
         return (
-            <OverviewNodesRow name={activeNode} checked={true} cluster={cluster} candidates={candidates} error={true}/>
+            <OverviewNodesRow
+                name={activeNode}
+                node={initialNode(activeNode)}
+                checked={true}
+                cluster={cluster}
+                candidates={candidates}
+                error={true}
+            />
         )
     }
 }
