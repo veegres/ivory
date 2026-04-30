@@ -4,6 +4,7 @@ export interface Vault {
     username: string,
     secret: string,
     type: VaultType,
+    metadata?: string,
 }
 
 export enum VaultType {

@@ -8,7 +8,8 @@ import {LinearProgressStateful} from "../../../view/progress/LinearProgressState
 import {Access} from "../../access/Access"
 import {MenuWrapper} from "../menu/MenuWrapper"
 import {VaultList} from "./VaultList"
-import {VaultNew} from "./VaultNew"
+import {VaultNewPassword} from "./VaultNewPassword"
+import {VaultNewSshKey} from "./VaultNewSshKey"
 
 export const TABS: VaultTabs = {
     0: {label: "DATABASE PASS", type: VaultType.DATABASE_PASSWORD},
@@ -26,7 +27,11 @@ export function Vault() {
         <MenuWrapper>
             <TabsButton tabs={TABS} tab={tab} setTab={setTab}/>
             <Access feature={Feature.ManageVaultCreate}>
-                <VaultNew type={type}/>
+                {type === VaultType.SSH_KEY ? (
+                    <VaultNewSshKey/>
+                ) : (
+                    <VaultNewPassword type={type}/>
+                )}
             </Access>
             <LinearProgressStateful color={"inherit"} loading={isFetching} line/>
             <VaultList vaults={data} error={error}/>
