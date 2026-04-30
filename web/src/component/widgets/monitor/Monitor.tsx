@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {Connection as NodeConnection} from "../../../api/node/type"
+import {SshConnection} from "../../../api/node/type"
 import {ChartType, Connection as QueryConnection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {MonitorCommon} from "./MonitorCommon"
@@ -19,28 +19,44 @@ const Charts = {
 }
 
 type Props = {
-    queryCon: QueryConnection,
-    sshCon: NodeConnection,
+    queryCon?: QueryConnection,
+    sshCon?: SshConnection,
 }
 
 export function Monitor(props: Props) {
-    const {queryCon: {db}, sshCon} = props
+    const {queryCon, sshCon} = props
 
     return (
         <Box sx={SX.box}>
+            {renderSshInfo()}
+            {renderDbInfo()}
+        </Box>
+    )
+
+    function renderSshInfo() {
+        if (!sshCon) return
+        return (
             <MonitorRow>
                 <MonitorSystem connection={sshCon}/>
             </MonitorRow>
-            <MonitorRow>
-                {Charts.common.map(t => (
-                    <MonitorCommon key={t} type={t} connection={props.queryCon}/>
-                ))}
-            </MonitorRow>
-            <MonitorRow label={db.name && `${db.name}`}>
-                {Charts.database.map(t => (
-                    <MonitorDatabase key={t} type={t} connection={props.queryCon}/>
-                ))}
-            </MonitorRow>
-        </Box>
-    )
+        )
+    }
+
+    function renderDbInfo() {
+        if (!queryCon) return
+        return (
+            <>
+                <MonitorRow>
+                    {Charts.common.map(t => (
+                        <MonitorCommon key={t} type={t} connection={queryCon}/>
+                    ))}
+                </MonitorRow>
+                <MonitorRow label={queryCon.db.name && `${queryCon.db.name}`}>
+                    {Charts.database.map(t => (
+                        <MonitorDatabase key={t} type={t} connection={queryCon}/>
+                    ))}
+                </MonitorRow>
+            </>
+        )
+    }
 }

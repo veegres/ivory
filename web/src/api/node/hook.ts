@@ -3,22 +3,22 @@ import {useQuery} from "@tanstack/react-query"
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ClusterApi} from "../cluster/router"
 import {NodeApi} from "./router"
-import {Connection, DockerLogsRequest, KeeperRequest, SshRequest} from "./type"
+import {Connection, DockerLogsRequest, KeeperConnection, SshConnection} from "./type"
 
-export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) {
+export function useRouterNodeOverview(c: KeeperConnection, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.overview.key(request.host, request.port),
-        queryFn: () => NodeApi.overview.fn(request),
+        queryKey: NodeApi.overview.key(c.host, c.port),
+        queryFn: () => NodeApi.overview.fn(c),
         enabled,
     })
 }
 
-export function useRouterNodeConfig(request: KeeperRequest, enabled: boolean) {
+export function useRouterNodeConfig(c: KeeperConnection, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.config.key(request.host, request.port),
-        queryFn: () => NodeApi.config.fn(request),
+        queryKey: NodeApi.config.key(c.host, c.port),
+        queryFn: () => NodeApi.config.fn(c),
         enabled,
     })
 }
@@ -104,20 +104,20 @@ export function useRouterNodePause(cluster: string) {
     })
 }
 
-export function useRouterNodeMetrics(request: SshRequest, enabled: boolean) {
+export function useRouterNodeMetrics(c: SshConnection, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.metrics.key(request.connection),
-        queryFn: () => NodeApi.metrics.fn(request),
+        queryKey: NodeApi.metrics.key(c.host),
+        queryFn: () => NodeApi.metrics.fn(c),
         enabled,
     })
 }
 
-export function useRouterNodeDockerList(request: SshRequest, enabled: boolean) {
+export function useRouterNodeDockerList(c: SshConnection, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.docker.list.key(request.connection),
-        queryFn: () => NodeApi.docker.list.fn(request),
+        queryKey: NodeApi.docker.list.key(c.host),
+        queryFn: () => NodeApi.docker.list.fn(c),
         enabled,
     })
 }
@@ -125,7 +125,7 @@ export function useRouterNodeDockerList(request: SshRequest, enabled: boolean) {
 export function useRouterNodeDockerLogs(request: DockerLogsRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.docker.logs.key(request.connection, request.container),
+        queryKey: NodeApi.docker.logs.key(request.connection.host, request.container),
         queryFn: () => NodeApi.docker.logs.fn(request),
         enabled,
     })

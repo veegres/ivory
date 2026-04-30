@@ -37,7 +37,7 @@ export function ListRow(props: Props) {
     const active = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const ref = useRef<HTMLTableRowElement | null>(null)
-    const [stateNodes, setStateNodes] = useState(getDomains(cluster.nodes))
+    const [stateNodes, setStateNodes] = useState(getDomains(cluster.nodes, true))
 
     const overview = useRouterClusterOverview(cluster.name)
     const nodes = overview.data?.nodes ?? cluster.nodesOverview
@@ -93,7 +93,7 @@ export function ListRow(props: Props) {
             <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, nodes: getNodeConnections(cluster.keeperPlugin, cluster.dbPlugin, stateNodes)}}
+                cluster={{...cluster, nodes: getNodeConnections(stateNodes)}}
                 toggle={toggle}
                 onUpdate={overview.refetch}
                 onClose={() => setStateNodes(getDomains(cluster.nodes))}

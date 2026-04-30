@@ -16,8 +16,8 @@ interface Store {
     warnings: { [key: string]: boolean },
     refresh: { [key: string]: [string, number] },
     settings: boolean,
-    node: {
-        body: NodeTabType,
+    nodeState: {
+        nodeTab: NodeTabType,
         queryTab: QueryType,
         queryConsole: string,
         dbName?: string,
@@ -35,8 +35,8 @@ export const useStore = create(persist<Store>(
         warnings: {},
         settings: false,
         refresh: {},
-        node: {
-            body: NodeTabType.MONITOR,
+        nodeState: {
+            nodeTab: NodeTabType.MONITOR,
             queryTab: QueryType.CONSOLE,
             queryConsole: "",
             dbName: undefined,
@@ -114,23 +114,23 @@ function clear() {
 }
 
 function setConsoleQuery(q: string) {
-    useStore.setState(s => ({...s, node: {...s.node, queryConsole: q}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, queryConsole: q}}))
 }
 
 function setNodeBody(t: NodeTabType) {
-    useStore.setState(s => ({...s, node: {...s.node, body: t}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, nodeTab: t}}))
 }
 
 function setQueryTab(t: QueryType) {
-    useStore.setState(s => ({...s, node: {...s.node, queryTab: t}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, queryTab: t}}))
 }
 
 function setDbName(n?: string) {
-    useStore.setState(s => ({...s, node: {...s.node, dbName: n}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, dbName: n}}))
 }
 
 function setDbSchema(n?: string) {
-    useStore.setState(s => ({...s, node: {...s.node, dbSchema: n}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, dbSchema: n}}))
 }
 
 function setRefreshPeriod(key: string, period: [string, number]) {

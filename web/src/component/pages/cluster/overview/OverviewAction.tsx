@@ -3,7 +3,7 @@ import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
 import {ActiveCluster, Node} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getKeeperRequest} from "../../../../app/utils"
+import {getKeeperConnection} from "../../../../app/utils"
 import {OverviewActionInfo} from "./OverviewActionInfo"
 import {OverviewActionStatus} from "./OverviewActionStatus"
 
@@ -34,7 +34,7 @@ export function OverviewAction(props: Props) {
                 <OverviewActionStatus
                     status={status}
                     cluster={name}
-                    request={getKeeperRequest(cluster.cluster, connection.host, connection.keeperPort)}
+                    con={getKeeperConnection(cluster.cluster, connection.host, connection.keeperPort)}
                 />
             )}
             <OverviewActionInfo cluster={cluster.cluster} manualKeeper={mainDomain}/>

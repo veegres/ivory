@@ -12,11 +12,11 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
     return {
         name: "test-cluster",
         dbPlugin: DbPlugin.POSTGRES, keeperPlugin: KeeperPlugin.PATRONI,
-        nodes: [{sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8008}],
+        nodes: [{host: "localhost", keeperPort: 8008}],
         nodesOverview: {},
         tls: {keeper: false, database: false},
         certs: {},
-        vaults: {},
+        vaults: {sshKeyId: "00000000-0000-0000-0000-000000000000"},
         tags: [],
         ...overrides,
     }
@@ -24,7 +24,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
 
 export function createMockNode(overrides: Partial<Node> = {}): Node {
     return {
-        connection: {sshKeyId: "00000000-0000-0000-0000-000000000000", host: "localhost", keeperPort: 8008},
+        connection: {host: "localhost", keeperPort: 8008},
         keeper: {
             state: "running",
             role: "leader",

@@ -233,7 +233,7 @@ func (s *Service) getOverview(host string, port int, cluster ClusterOptions) ([]
 	if cluster.Tls.Keeper {
 		certs = &cluster.Certs
 	}
-	request := node.KeeperRequest{
+	request := node.KeeperConnection{
 		Plugin:  cluster.KeeperPlugin,
 		Host:    host,
 		Port:    port,

@@ -7,6 +7,7 @@ import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {Access} from "../../../widgets/access/Access"
 import {Query} from "../../../widgets/query/Query"
 import {QueryConsole} from "../../../widgets/query/QueryConsole"
+import {NoDatabaseError} from "../overview/OverviewError"
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},
@@ -16,13 +17,15 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: QueryConnection,
+    connection?: QueryConnection,
 }
 
 export function NodeMainQueries(props: Props){
     const {connection} = props
-    const {queryTab} = useStore(s => s.node)
+    const {queryTab} = useStore(s => s.nodeState)
     const {setQueryTab} = useStoreAction
+
+    if (!connection) return <NoDatabaseError/>
 
     return (
         <Box sx={SX.box}>

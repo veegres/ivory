@@ -29,6 +29,7 @@ export function Options(props: Props) {
         <AccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
             <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/>
             <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/>
+            <OptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/>
             <Divider variant={"middle"}/>
             <ToggleButtonGroup size={"small"} fullWidth>
                 <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>

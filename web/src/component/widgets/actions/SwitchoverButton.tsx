@@ -4,20 +4,20 @@ import {useState} from "react"
 
 import {Feature} from "../../../api/feature"
 import {useRouterNodeSwitchover} from "../../../api/node/hook"
-import {Connection, KeeperRequest} from "../../../api/node/type"
+import {Connection, KeeperConnection} from "../../../api/node/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: KeeperRequest,
+    con: KeeperConnection,
     cluster: string,
     candidates: Connection[],
     leaderKey?: string,
 }
 
 export function SwitchoverButton(props: Props) {
-    const {request, candidates, cluster, leaderKey} = props
+    const {con, candidates, cluster, leaderKey} = props
 
     const [candidate, setCandidates] = useState<string>()
     const [schedule, setSchedule] = useState<Dayjs>()
@@ -30,7 +30,7 @@ export function SwitchoverButton(props: Props) {
             <AlertButton
                 color={"secondary"}
                 label={"Switchover"}
-                title={`Make a switchover of ${request.host}?`}
+                title={`Make a switchover of ${con.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
                  candidate, the candidate will be chosen randomly.`}
                 loading={switchover.isPending}
@@ -64,7 +64,7 @@ export function SwitchoverButton(props: Props) {
     }
 
     function handleClick() {
-        switchover.mutate({...request, body})
+        switchover.mutate({...con, body})
         setSchedule(undefined)
         setCandidates(undefined)
     }

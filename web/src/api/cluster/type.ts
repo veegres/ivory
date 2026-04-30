@@ -36,6 +36,7 @@ export interface ClusterTls {
 export interface Vault {
     keeperId?: string,
     databaseId?: string,
+    sshKeyId?: string,
 }
 
 export interface ClusterOverview {

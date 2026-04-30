@@ -1,7 +1,7 @@
 package node
 
-func (s *Service) Metrics(request SshRequest) (*SshResponseMetrics, error) {
-	adapter, conn, err := s.getOSAdapter(request.Connection)
+func (s *Service) Metrics(c SshConnection) (*SshResponseMetrics, error) {
+	adapter, conn, err := s.getOSAdapter(c)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +40,8 @@ func (s *Service) DockerDelete(request DockerRequest) (*DockerResult, error) {
 	return adapter.DockerDelete(*conn, request.Container)
 }
 
-func (s *Service) DockerList(request SshRequest) (*DockerResult, error) {
-	adapter, conn, err := s.getOSAdapter(request.Connection)
+func (s *Service) DockerList(c SshConnection) (*DockerResult, error) {
+	adapter, conn, err := s.getOSAdapter(c)
 	if err != nil {
 		return nil, err
 	}

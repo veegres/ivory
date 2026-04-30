@@ -36,7 +36,8 @@ export function OverviewBloatJobForm(props: Props) {
     if (!node.connection.host || !node.connection.dbPort) return <NoDatabaseError/>
 
     const db = {plugin: DbPlugin.POSTGRES, host: node.connection.host, port: node.connection.dbPort, name: target?.database}
-    const connection = getQueryConnection(cluster, db)
+    const queryCon = getQueryConnection(cluster, db.host, db.port)
+    const connection = {...queryCon, db}
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
@@ -116,8 +117,9 @@ export function OverviewBloatJobForm(props: Props) {
         if (node && vaultId) {
             const dbRun = {...db, schema: target?.schema}
             onClick()
+            const queryCon = getQueryConnection(cluster, dbRun.host, dbRun.port)
             start.mutate({
-                connection: getQueryConnection(cluster, dbRun),
+                connection: {...queryCon, db: dbRun},
                 target, options, cluster: cluster.name,
             })
         }

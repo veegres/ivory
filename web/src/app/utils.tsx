@@ -14,9 +14,8 @@ import dayjs from "dayjs"
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, Node, NodeOverview} from "../api/cluster/type"
-import {Config as DbConfig, Plugin as DbPlugin} from "../api/database/type"
-import {Plugin as KeeperPlugin, Role, Status as KeeperStatus} from "../api/keeper/type"
-import {Connection as NodeConnection, KeeperRequest} from "../api/node/type"
+import {Role, Status as KeeperStatus} from "../api/keeper/type"
+import {Connection as NodeConnection, KeeperConnection, SshConnection} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
 import {VarietyType} from "../api/query/type"
 import {Connection as QueryConnection} from "../api/query/type"
@@ -92,75 +91,64 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const DefaultKeeperPorts = {
-    [KeeperPlugin.PATRONI]: 8008,
-    [KeeperPlugin.POSTGRES]: 5432,
-}
-
-export const DefaultDatabasePorts = {
-    [DbPlugin.POSTGRES]: 5432,
-    [DbPlugin.ETCD]: 2379,
-}
-
-export const initialNode = (kt: KeeperPlugin, dbt: DbPlugin, domain: string): Node => {
-    const connection = getNodeConnection(kt, dbt, domain)
+export const initialNode = (domain: string): Node => {
+    const connection = getNodeConnection(domain)
     return ({
         connection: connection,
         warnings: ["no response from keeper"],
-        keeper: {
-            state: "-",
-            role: "unknown",
-            lag: -1,
-            pendingRestart: false,
-            discoveredHost: connection.host,
-            discoveredKeeperPort: DefaultKeeperPorts[kt],
-            discoveredDbPort: DefaultDatabasePorts[dbt],
-        },
+        keeper: {state: "-", role: "unknown", lag: -1, pendingRestart: false},
     })
 }
 
 export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boolean => {
-    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort && c1?.sshKeyId === c2?.sshKeyId
+    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort
 }
 
-export function getQueryConnection(cluster: Cluster, db: DbConfig): QueryConnection {
+export function getQueryConnection(cluster: Cluster, host: string, port?: number): QueryConnection | undefined {
+    if (!port) return
     const vaultId = cluster.vaults.databaseId
+    const db = {plugin: cluster.dbPlugin, host, port}
     const certs = cluster.tls.database ? cluster.certs : undefined
     return {db, certs, vaultId}
 }
 
-export function getKeeperRequest(cluster: Cluster, host: string, port: number): KeeperRequest {
+export function getSshConnection(cluster: Cluster, host: string, port?: number): SshConnection | undefined {
+    const vaultId = cluster.vaults.sshKeyId
+    if (!port || !vaultId) return
+    return {host, port, vaultId}
+}
+
+export function getKeeperConnection(cluster: Cluster, host: string, port?: number): KeeperConnection | undefined {
+    if (!port) return
     const vaultId = cluster.vaults.keeperId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
     return {host, port, certs, vaultId, plugin: cluster.keeperPlugin}
 }
 
-export const getDomain = (connection: NodeConnection, simple: boolean = true) => {
+export const getDomain = (connection: NodeConnection, simple: boolean = false) => {
     const host = connection.host
     const keeperPort = connection.keeperPort ? `:${connection.keeperPort}` : ""
     const dbPort = !simple && connection.dbPort ? `:${connection.dbPort}` : ""
     const sshPort = !simple && connection.sshPort ? `:${connection.sshPort}` : ""
-    const sshKeyId = !simple && connection.sshKeyId ? `:${connection.sshKeyId}` : ""
-    return `${host.toLowerCase()}${keeperPort}${dbPort}${sshPort}${sshKeyId}`
+    return `${host.toLowerCase()}${keeperPort}${dbPort}${sshPort}`
 }
 
-export const getDomains = (nodes: NodeConnection[], simple: boolean = true) => {
+export const getDomains = (nodes: NodeConnection[], simple: boolean = false) => {
     return nodes.map(value => getDomain(value, simple))
 }
 
-export const getNodeConnection = (kt: KeeperPlugin, dbt: DbPlugin, domain: string): NodeConnection => {
-    const [host, keeperPort, dbPort, sshPort, sshKeyId] = domain.split(":")
+export const getNodeConnection = (domain: string): NodeConnection => {
+    const [host, keeperPort, dbPort, sshPort] = domain.split(":")
     return {
         host: host.toLowerCase(),
-        keeperPort: parseInt(keeperPort) || DefaultKeeperPorts[kt],
-        dbPort: parseInt(dbPort) || DefaultDatabasePorts[dbt],
-        sshPort: parseInt(sshPort) || 22,
-        sshKeyId: sshKeyId,
+        keeperPort: parseInt(keeperPort) || undefined,
+        dbPort: parseInt(dbPort) || undefined,
+        sshPort: parseInt(sshPort) || undefined,
     }
 }
 
-export const getNodeConnections = (kt: KeeperPlugin, dbt: DbPlugin, domains: string[]): NodeConnection[] => {
-    return domains.map(value => getNodeConnection(kt, dbt, value))
+export const getNodeConnections = (domains: string[]): NodeConnection[] => {
+    return domains.map(value => getNodeConnection(value))
 }
 
 export const getMainKeeper = (nodes: NodeOverview = {}, detectedKeeper?: string): [string?, Node?] => {

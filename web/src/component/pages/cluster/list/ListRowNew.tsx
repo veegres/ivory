@@ -53,7 +53,7 @@ export function ListRowNew(props: Props) {
                         name: stateName,
                         dbPlugin: DbPlugin.POSTGRES,
                         keeperPlugin: KeeperPlugin.PATRONI,
-                        nodes: getNodeConnections(KeeperPlugin.PATRONI, DbPlugin.POSTGRES, stateNodes),
+                        nodes: getNodeConnections(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
                         vaults: {},

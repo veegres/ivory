@@ -46,8 +46,8 @@ func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
 	return c.SupportedFeatures()
 }
 
-func (s *Service) getOSAdapter(connection Connection) (os.Adapter, *ssh.Connection, error) {
-	sshConn, err := s.getSshConnection(connection)
+func (s *Service) getOSAdapter(c SshConnection) (os.Adapter, *ssh.Connection, error) {
+	sshConn, err := s.getSshConnection(c)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -55,25 +55,25 @@ func (s *Service) getOSAdapter(connection Connection) (os.Adapter, *ssh.Connecti
 	return adapter, sshConn, err
 }
 
-func (s *Service) getKeeperAdapter(r KeeperRequest) (keeper.Adapter, keeper.Request, error) {
-	client, errClient := s.keeperRegistry.Get(r.Plugin)
+func (s *Service) getKeeperAdapter(c KeeperConnection) (keeper.Adapter, keeper.Request, error) {
+	client, errClient := s.keeperRegistry.Get(c.Plugin)
 	if errClient != nil {
 		return nil, keeper.Request{}, errClient
 	}
-	request, err := s.getKeeperRequest(r)
+	request, err := s.getKeeperRequest(c)
 	return client, request, err
 }
 
-func (s *Service) getKeeperRequest(request KeeperRequest) (keeper.Request, error) {
-	keeperRequest := keeper.Request{Host: request.Host, Port: request.Port, Body: request.Body}
-	if request.Certs != nil {
-		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, request.Certs)
+func (s *Service) getKeeperRequest(c KeeperConnection) (keeper.Request, error) {
+	keeperRequest := keeper.Request{Host: c.Host, Port: c.Port, Body: c.Body}
+	if c.Certs != nil {
+		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, c.Certs)
 		if err != nil {
 			return keeperRequest, err
 		}
 	}
-	if request.VaultId != nil {
-		cred, err := s.vaultService.GetDecrypted(*request.VaultId)
+	if c.VaultId != nil {
+		cred, err := s.vaultService.GetDecrypted(*c.VaultId)
 		if err != nil {
 			return keeperRequest, err
 		}
@@ -82,23 +82,18 @@ func (s *Service) getKeeperRequest(request KeeperRequest) (keeper.Request, error
 	return keeperRequest, nil
 }
 
-func (s *Service) getSshConnection(connection Connection) (*ssh.Connection, error) {
-	if connection.SshKeyId == nil {
+func (s *Service) getSshConnection(c SshConnection) (*ssh.Connection, error) {
+	if c.VaultId == nil {
 		return nil, ErrSshKeyNotSpecified
 	}
-	cred, err := s.vaultService.GetDecrypted(*connection.SshKeyId)
+	cred, err := s.vaultService.GetDecrypted(*c.VaultId)
 	if err != nil {
 		return nil, err
 	}
 
-	sshPort := connection.SshPort
-	if sshPort == 0 {
-		sshPort = 22
-	}
-
 	return &ssh.Connection{
-		Host:       connection.Host,
-		Port:       sshPort,
+		Host:       c.Host,
+		Port:       c.Port,
 		Username:   cred.Username,
 		PrivateKey: ed25519.PrivateKey(cred.Secret),
 	}, nil

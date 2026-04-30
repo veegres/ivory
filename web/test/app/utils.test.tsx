@@ -4,8 +4,6 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {Plugin as DbPlugin} from "../../src/api/database/type"
-import {Plugin as KeeperPlugin} from "../../src/api/keeper/type"
 import {Connection} from "../../src/api/node/type"
 import {
     DateTimeFormatter,
@@ -24,8 +22,6 @@ import {
 // Extend dayjs with UTC plugin for DateTimeFormatter tests
 dayjs.extend(utc)
 
-const mockSshKeyId = "00000000-0000-0000-0000-000000000000"
-
 describe("shortUuid", () => {
   it("should return the first 8 characters of a UUID", () => {
     const uuid = "12345678-90ab-cdef-1234-567890abcdef"
@@ -35,12 +31,12 @@ describe("shortUuid", () => {
 
 describe("getDomain", () => {
   it("should return the domain string from a NodeConnection object", () => {
-    const connection: Connection = {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008}
+    const connection: Connection = {host: "localhost", keeperPort: 8008}
     expect(getDomain(connection)).toBe("localhost:8008")
   })
 
   it("should return the domain string without port if keeperPort is undefined", () => {
-    const connection: Connection = {sshKeyId: mockSshKeyId, host: "localhost"}
+    const connection: Connection = {host: "localhost"}
     expect(getDomain(connection)).toBe("localhost")
   })
 })
@@ -48,8 +44,8 @@ describe("getDomain", () => {
 describe("getDomains", () => {
     it("should return an array of domain strings from an array of NodeConnection objects", () => {
         const connections: Connection[] = [
-            {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008},
-            {sshKeyId: mockSshKeyId, host: "127.0.0.1", keeperPort: 8008},
+            {host: "localhost", keeperPort: 8008},
+            {host: "127.0.0.1", keeperPort: 8008},
         ]
         expect(getDomains(connections)).toEqual(["localhost:8008", "127.0.0.1:8008"])
     })
@@ -58,21 +54,16 @@ describe("getDomains", () => {
 describe("getNodeConnection", () => {
     it("should return a NodeConnection object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getNodeConnection(KeeperPlugin.PATRONI, DbPlugin.POSTGRES, domain)).toEqual({
+        expect(getNodeConnection(domain)).toEqual({
             host: "localhost",
             keeperPort: 8008,
-            dbPort: 5432,
-            sshPort: 22
         })
     })
 
     it("should return a NodeConnection object with default port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getNodeConnection(KeeperPlugin.PATRONI, DbPlugin.POSTGRES, domain)).toEqual({
+        expect(getNodeConnection(domain)).toEqual({
             host: "localhost",
-            keeperPort: 8008,
-            dbPort: 5432,
-            sshPort: 22
         })
     })
 })
@@ -80,29 +71,23 @@ describe("getNodeConnection", () => {
 describe("getNodeConnections", () => {
     it("should return an array of NodeConnection objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
-        expect(getNodeConnections(KeeperPlugin.PATRONI, DbPlugin.POSTGRES, domains)).toEqual([
-            {host: "localhost", keeperPort: 8008, dbPort: 5432, sshPort: 22},
-            {host: "127.0.0.1", keeperPort: 8008, dbPort: 5432, sshPort: 22},
+        expect(getNodeConnections(domains)).toEqual([
+            {host: "localhost", keeperPort: 8008},
+            {host: "127.0.0.1"},
         ])
     })
 })
 
 describe("isConnectionEqual", () => {
     it("should return true if connections are equal", () => {
-        const c1: Connection = {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008}
-        const c2: Connection = {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008}
+        const c1: Connection = {host: "localhost", keeperPort: 8008}
+        const c2: Connection = {host: "localhost", keeperPort: 8008}
         expect(isConnectionEqual(c1, c2)).toBe(true)
     })
 
     it("should return false if connections are not equal", () => {
-        const c1: Connection = {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008}
-        const c2: Connection = {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8009}
-        expect(isConnectionEqual(c1, c2)).toBe(false)
-    })
-
-    it("should return false if sshKeyId is different", () => {
-        const c1: Connection = {sshKeyId: mockSshKeyId, host: "localhost", keeperPort: 8008}
-        const c2: Connection = {sshKeyId: "different-uuid", host: "localhost", keeperPort: 8008}
+        const c1: Connection = {host: "localhost", keeperPort: 8008}
+        const c2: Connection = {host: "localhost", keeperPort: 8009}
         expect(isConnectionEqual(c1, c2)).toBe(false)
     })
 })
