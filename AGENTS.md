@@ -34,6 +34,16 @@ Use `docker/ivory-dev/` for the stack.
 - **Surgical Renaming**: When asked to rename components or fields, ONLY update the terminology. DO NOT refactor implementation logic, move methods to props, or change the component structure unless explicitly directed.
 - **Data Synchronization**: When syncing frontend types with backend changes, perform the MINIMAL necessary updates to ensure compilation. DO NOT redesign or refactor UI components during a data sync task. If a type change appears to require a major UI redesign, ASK for clarification first.
 - **Component Style**: Follow the established pattern of using dedicated helper methods (e.g., `handleAction`, `renderContent`, `handleEffect`) within functional components to keep the JSX clean.
+  - **Hook Convention**: If a React hook (like `useEffect`, `useMemo`, `useCallback`) is not a simple one-liner, move its implementation to a dedicated function below the `return` statement and name it `handleEffect***`, `handleMemo***`, etc.
+  - **JSX in Props**: Never write multi-line JSX directly in component props. Instead, create a dedicated `render***` function (e.g., `renderDescription`) below the `return` statement. One-liner JSX is allowed.
+  - **Styles Naming**: Always name the constant for component-specific styles as `SX`. Do not use descriptive names like `VAULT_NEW_SX`.
+  - **Shared Styles**: Never share `SX` styles between components. Sharing styles is a signal to create a separate reusable component (e.g., instead of sharing a `code` style, create a `Code` component in `view/box`).
+  - **Member Order**: Maintain the following order within functional components:
+    1. `return` (JSX)
+    2. `render***` methods
+    3. `handle***` methods
+    4. `handleEffect***`, `handleMemo***`, etc. (specific React hooks)
+    5. `get***` methods
 - **Cache Management**: Be cautious when updating React Query keys. If a linter warns about a missing dependency that was intentionally omitted to control cache invalidation, use `// eslint-disable-next-line` instead of changing the key signature.
 
 ## Backward Compatibility & Persistence
