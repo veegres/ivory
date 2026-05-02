@@ -2,6 +2,7 @@ import {useRouterNodeMetrics} from "../../../api/node/hook"
 import {NodeMetrics, SshConnection} from "../../../api/node/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../view/chart/HistoryTrackerChart"
+import {MonitorLoading} from "./MonitorLoading"
 import {MonitorRow} from "./MonitorRow"
 
 type Props = {
@@ -13,7 +14,8 @@ export function MonitorSystem(props: Props) {
     const {connection, interval = 1000 * 3} = props
     const metrics = useRouterNodeMetrics(connection, interval)
 
-    if (metrics.error) return <ErrorSmart error={metrics.error}/>
+    if (metrics.isError) return <ErrorSmart error={metrics.error}/>
+    if (metrics.isPending) return <MonitorLoading count={4}/>
 
     return (
         <MonitorRow>

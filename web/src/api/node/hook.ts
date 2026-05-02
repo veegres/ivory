@@ -112,6 +112,7 @@ export function useRouterNodeMetrics(c: SshConnection, refetchInterval?: number)
         queryKey: NodeApi.metrics.key(c.host),
         queryFn: () => NodeApi.metrics.fn(c),
         refetchInterval,
+        retry: false,
     })
 }
 
