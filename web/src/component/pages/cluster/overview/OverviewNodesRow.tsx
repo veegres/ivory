@@ -40,7 +40,7 @@ export function OverviewNodesRow(props: Props) {
     const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
 
     const {setNode} = useStoreAction
-    const con = getKeeperConnection(cluster, connection.host, connection.keeperPort ?? 0)
+    const con = getKeeperConnection(cluster, connection.host, connection.keeperPort)
 
     return (
         <TableRow

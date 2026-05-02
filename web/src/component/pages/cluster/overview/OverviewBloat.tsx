@@ -17,6 +17,7 @@ import {AccessBox} from "../../../widgets/access/Access"
 import {Query} from "../../../widgets/query/Query"
 import {OverviewBloatJob} from "./OverviewBloatJob"
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm"
+import {NoDatabaseError} from "./OverviewError"
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
@@ -41,10 +42,13 @@ export function OverviewBloat(props: Props) {
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
+
+    if (!node.connection.dbPort) return <NoDatabaseError/>
+
     const db: Config = {
         plugin: DbPlugin.POSTGRES,
         host: node.connection.host,
-        port: node.connection.dbPort || node.keeper.discoveredDbPort || 5432,
+        port: node.connection.dbPort,
         name: target?.database,
         schema: target?.schema,
     }

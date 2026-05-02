@@ -91,8 +91,7 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const initialNode = (domain: string): Node => {
-    const connection = getNodeConnection(domain)
+export const initialNode = (connection: NodeConnection): Node => {
     return ({
         connection: connection,
         warnings: ["no response from keeper"],
@@ -127,9 +126,9 @@ export function getKeeperConnection(cluster: Cluster, host: string, port?: numbe
 
 export const getDomain = (connection: NodeConnection, simple: boolean = false) => {
     const host = connection.host
-    const keeperPort = connection.keeperPort ? `:${connection.keeperPort}` : ""
-    const dbPort = !simple && connection.dbPort ? `:${connection.dbPort}` : ""
-    const sshPort = !simple && connection.sshPort ? `:${connection.sshPort}` : ""
+    const keeperPort = connection.keeperPort ? `:${connection.keeperPort}` : simple ? "" : ":"
+    const dbPort = simple ? "" : connection.dbPort ? `:${connection.dbPort}` : ":"
+    const sshPort = simple ? "" : connection.sshPort ? `:${connection.sshPort}` : ":"
     return `${host.toLowerCase()}${keeperPort}${dbPort}${sshPort}`
 }
 
