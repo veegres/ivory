@@ -21,10 +21,6 @@ export function NodeInfoTable(props: Props) {
         <Table size={"small"} sx={SX.table}>
             <TableBody isLoading={false} cellCount={2}>
                 <TableRow>
-                    <TableCell sx={SX.title}>State</TableCell>
-                    <TableCell sx={SX.wrap}>{node.keeper.state}</TableCell>
-                </TableRow>
-                <TableRow>
                     <TableCell sx={SX.title}>Host</TableCell>
                     <TableCell sx={SX.wrap}>{node.connection.host}</TableCell>
                 </TableRow>
@@ -39,6 +35,10 @@ export function NodeInfoTable(props: Props) {
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>
                     <TableCell sx={SX.wrap}>{node.connection.dbPort?.toString() ?? "-"}</TableCell>
+                </TableRow>
+                <TableRow>
+                    <TableCell sx={SX.title}>State</TableCell>
+                    <TableCell sx={SX.wrap}>{node.keeper.state}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>

@@ -26,14 +26,12 @@ export function NodeMainTitle(props: Props) {
     const {label, info, renderActions, db} = props
     const [alert, setAlert] = useState(false)
 
-    if (!db) return
-
     return (
         <Box sx={SX.box}>
             <Box sx={SX.title}>
                 <Box flexGrow={1} sx={SX.info}>
                     <Box sx={SX.label}>{label}</Box>
-                    <DatabaseBox db={db}/>
+                    {db && <DatabaseBox db={db}/>}
                 </Box>
                 <Box flexGrow={1} sx={SX.buttons}>
                     {renderActions}
