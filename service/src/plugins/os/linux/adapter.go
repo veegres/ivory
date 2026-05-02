@@ -79,7 +79,7 @@ func (a *Adapter) normalizeDockerCommand(command string) string {
 func (a *Adapter) parseMetrics(output string) (*os.Metrics, error) {
 	sections := a.splitMetricsOutput(output)
 
-	cpu, err := a.parseCpuMetrics(sections["__IVORY_CPU_1__"], sections["__IVORY_CPU_2__"])
+	cpu, err := a.parseCpuMetrics(sections["__IVORY_CPU__"])
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (a *Adapter) splitMetricsOutput(output string) map[string][]string {
 	for _, line := range strings.Split(output, "\n") {
 		trimmed := strings.TrimSpace(line)
 		switch trimmed {
-		case "__IVORY_CPU_1__", "__IVORY_CPU_2__", "__IVORY_MEM__", "__IVORY_NET__":
+		case "__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__":
 			current = trimmed
 			continue
 		}
@@ -119,28 +119,17 @@ func (a *Adapter) splitMetricsOutput(output string) map[string][]string {
 	return sections
 }
 
-func (a *Adapter) parseCpuMetrics(first []string, second []string) (os.CpuMetrics, error) {
-	if len(first) == 0 || len(second) == 0 {
+func (a *Adapter) parseCpuMetrics(lines []string) (os.CpuMetrics, error) {
+	if len(lines) == 0 {
 		return os.CpuMetrics{}, os.ErrInvalidCpuMetrics
 	}
 
-	prev, prevIdle, err := a.parseCpuLine(first[0])
-	if err != nil {
-		return os.CpuMetrics{}, err
-	}
-	next, nextIdle, err := a.parseCpuLine(second[0])
+	total, idle, err := a.parseCpuLine(lines[0])
 	if err != nil {
 		return os.CpuMetrics{}, err
 	}
 
-	totalDiff := next - prev
-	idleDiff := nextIdle - prevIdle
-	if totalDiff <= 0 {
-		return os.CpuMetrics{}, os.ErrInvalidCpuMetrics
-	}
-
-	usagePercent := (float64(totalDiff-idleDiff) / float64(totalDiff)) * 100
-	return os.CpuMetrics{UsagePercent: usagePercent}, nil
+	return os.CpuMetrics{TotalTicks: total, IdleTicks: idle}, nil
 }
 
 func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
@@ -150,17 +139,24 @@ func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
 	}
 
 	var total uint64
-	for _, field := range fields[1:] {
+	var idle uint64
+	for i, field := range fields {
+		if i == 0 {
+			continue
+		}
 		value, err := strconv.ParseUint(field, 10, 64)
 		if err != nil {
 			return 0, 0, err
 		}
-		total += value
-	}
-
-	idle, err := strconv.ParseUint(fields[4], 10, 64)
-	if err != nil {
-		return 0, 0, err
+		// Sum all fields up to 'steal' (index 8) to avoid double counting guest time
+		// guest (9) and guest_nice (10) are already included in user (1) and nice (2)
+		if i <= 8 {
+			total += value
+		}
+		// idle (4) and iowait (5) are both considered "not working" time
+		if i == 4 || i == 5 {
+			idle += value
+		}
 	}
 
 	return total, idle, nil

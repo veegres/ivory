@@ -36,7 +36,8 @@ export interface SshConnection {
 }
 
 export interface CpuMetrics {
-    usagePercent: number,
+    totalTicks: number,
+    idleTicks: number,
 }
 
 export interface MemoryMetrics {

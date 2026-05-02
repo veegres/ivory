@@ -22,7 +22,7 @@ export function MonitorSystem(props: Props) {
                 label={"CPU Usage"}
                 unit={"%"}
                 data={metrics.data}
-                selector={(m) => m.cpu.usagePercent}
+                selector={getCpuUsageDelta}
                 color={"#3f51b5"}
                 min={0}
                 max={100}
@@ -42,7 +42,7 @@ export function MonitorSystem(props: Props) {
                 label={"Network RX"}
                 unit={"KB/s"}
                 data={metrics.data}
-                selector={getNetRx}
+                selector={getNetRxDelta}
                 color={"#ff9800"}
                 maxLength={historyLength}
             />
@@ -50,22 +50,29 @@ export function MonitorSystem(props: Props) {
                 label={"Network TX"}
                 unit={"KB/s"}
                 data={metrics.data}
-                selector={getNetTx}
+                selector={getNetTxDelta}
                 color={"#9c27b0"}
                 maxLength={historyLength}
             />
         </MonitorRow>
     )
 
-    function getNetRx(data: NodeMetrics, last?: NodeMetrics) {
-        if (!last) return 0
-        const rx = (data.network.receivedBytes - last.network.receivedBytes) / 1024 / (interval / 1000)
+    function getCpuUsageDelta(l: NodeMetrics, p?: NodeMetrics) {
+        if (!p) return undefined
+        const totalDiff = l.cpu.totalTicks - p.cpu.totalTicks
+        const idleDiff = l.cpu.idleTicks - p.cpu.idleTicks
+        return totalDiff > 0 ? (totalDiff - idleDiff) / totalDiff * 100 : 0
+    }
+
+    function getNetRxDelta(l: NodeMetrics, p?: NodeMetrics) {
+        if (!p) return undefined
+        const rx = (l.network.receivedBytes - p.network.receivedBytes) / 1024 / (interval / 1000)
         return rx < 0 ? 0 : rx
     }
 
-    function getNetTx(data: NodeMetrics, last?: NodeMetrics) {
-        if (!last) return 0
-        const tx = (data.network.transmittedBytes - last.network.transmittedBytes) / 1024 / (interval / 1000)
+    function getNetTxDelta(l: NodeMetrics, p?: NodeMetrics) {
+        if (!p) return undefined
+        const tx = (l.network.transmittedBytes - p.network.transmittedBytes) / 1024 / (interval / 1000)
         return tx < 0 ? 0 : tx
     }
 }
