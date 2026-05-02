@@ -6,12 +6,11 @@ import {MonitorRow} from "./MonitorRow"
 
 type Props = {
     connection: SshConnection,
-    historyLength?: number,
     interval?: number,
 }
 
 export function MonitorSystem(props: Props) {
-    const {connection, historyLength, interval = 1000} = props
+    const {connection, interval = 1000} = props
     const metrics = useRouterNodeMetrics(connection, interval)
 
     if (metrics.error) return <ErrorSmart error={metrics.error}/>
@@ -26,7 +25,6 @@ export function MonitorSystem(props: Props) {
                 color={"#3f51b5"}
                 min={0}
                 max={100}
-                maxLength={historyLength}
             />
             <HistoryTrackerChart
                 label={"Memory Usage"}
@@ -36,23 +34,20 @@ export function MonitorSystem(props: Props) {
                 color={"#4caf50"}
                 min={0}
                 max={100}
-                maxLength={historyLength}
             />
             <HistoryTrackerChart
-                label={"Network RX"}
+                label={"Network Download"}
                 unit={"KB/s"}
                 data={metrics.data}
                 selector={getNetRxDelta}
                 color={"#ff9800"}
-                maxLength={historyLength}
             />
             <HistoryTrackerChart
-                label={"Network TX"}
+                label={"Network Upload"}
                 unit={"KB/s"}
                 data={metrics.data}
                 selector={getNetTxDelta}
                 color={"#9c27b0"}
-                maxLength={historyLength}
             />
         </MonitorRow>
     )
