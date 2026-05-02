@@ -4,7 +4,7 @@ import {ReactNode} from "react"
 import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
-    row: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 3},
+    row: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},
     label: {textTransform: "uppercase"},
 }
 

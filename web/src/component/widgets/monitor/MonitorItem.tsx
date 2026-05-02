@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
     box: {
         display: "flex", flexDirection: "column", justifyContent: "center",
         alignItems: "center", color: "common.white", borderRadius: "5px",
-        whiteSpace: "nowrap", flexGrow: 1, minWidth: "150px", height: "100px",
+        whiteSpace: "nowrap", flexGrow: 1, width: "200px", height: "100px",
         cursor: "pointer", padding: "0px 15px"
     },
     label: {
