@@ -45,6 +45,7 @@ Use `docker/ivory-dev/` for the stack.
     4. `handleEffect***`, `handleMemo***`, etc. (specific React hooks)
     5. `get***` methods
 - **Cache Management**: Be cautious when updating React Query keys. If a linter warns about a missing dependency that was intentionally omitted to control cache invalidation, use `// eslint-disable-next-line` instead of changing the key signature.
+- **TypeScript Nullability**: Never use `null` in TypeScript code; always use `undefined` for representing missing or optional values.
 
 ## Backward Compatibility & Persistence
 - **Backup Models are Sacred**: Structs used for backups (e.g., `Backup`, `backupCluster`) must remain unchanged in their nomenclature and JSON tags to ensure long-term compatibility. If changes are necessary, a new backup version must be introduced.
