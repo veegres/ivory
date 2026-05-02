@@ -40,7 +40,7 @@ export function OverviewNodesRow(props: Props) {
     const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
 
     const {setNode} = useStoreAction
-    const request = getKeeperConnection(cluster, connection.host, connection.keeperPort ?? 0)
+    const con = getKeeperConnection(cluster, connection.host, connection.keeperPort ?? 0)
 
     return (
         <TableRow
@@ -126,21 +126,22 @@ export function OverviewNodesRow(props: Props) {
     }
 
     function renderMenuButtons() {
-        if (role === "unknown") return
+        if (role === "unknown" || !con) return
         return (
             <MenuButton>
-                <ScheduleButton con={request} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
-                <FailoverButton con={request} cluster={cluster.name} disabled={role === "leader"}/>
-                <RestartButton con={request} cluster={cluster.name}/>
-                <ReloadButton con={request} cluster={cluster.name}/>
+                <ScheduleButton con={con} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
+                <FailoverButton con={con} cluster={cluster.name} disabled={role === "leader"}/>
+                <RestartButton con={con} cluster={cluster.name}/>
+                <ReloadButton con={con} cluster={cluster.name}/>
             </MenuButton>
         )
     }
 
     function renderRoleButtons() {
+        if (!con) return
         switch (role) {
-            case "replica": return <ReinitButton con={request} cluster={cluster.name}/>
-            case "leader": return <SwitchoverButton con={request} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
+            case "replica": return <ReinitButton con={con} cluster={cluster.name}/>
+            case "leader": return <SwitchoverButton con={con} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
             default: return
         }
     }
