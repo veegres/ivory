@@ -1,19 +1,13 @@
-import {Box} from "@mui/material"
 import {LineChart} from "@mui/x-charts/LineChart"
 import {useEffect, useMemo, useState} from "react"
 
 import {NodeMetrics} from "../../../api/node/type"
-import {SxPropsMap} from "../../../app/type"
 import {ChartBox} from "../box/ChartBox"
-
-const SX: SxPropsMap = {
-    chart: {width: "100%", height: "100%"},
-}
 
 type Props = {
     label: string,
     data: NodeMetrics | undefined,
-    selector: (data: NodeMetrics, lastData?: NodeMetrics) => number,
+    selector: (last: NodeMetrics, penultimate?: NodeMetrics) => number | undefined,
     maxLength?: number,
     color?: string,
     unit?: string,
@@ -23,64 +17,59 @@ type Props = {
 
 export function HistoryTrackerChart(props: Props) {
     const {label, data, selector, maxLength = 60, color, unit, min, max} = props
-    const [history, setHistory] = useState<(number | undefined)[]>([])
+    const [history, setHistory] = useState<(number | undefined)[]>(new Array(maxLength).fill(undefined))
     const [lastRaw, setLastRaw] = useState<NodeMetrics | undefined>()
 
     const latestValue = useMemo(handleMemoLatestValue, [history])
-    const paddedData = useMemo(handleMemoPaddedData, [history, maxLength])
+    const xLabels = useMemo(handleMemoXLabels, [maxLength])
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(handleEffectMetrics, [data, maxLength])
+    useEffect(handleEffectMetrics, [data])
 
     return (
         <ChartBox label={label} value={latestValue} unit={unit}>
-            <Box sx={SX.chart}>
-                <LineChart
-                    series={[{
-                        data: paddedData as (number | null)[],
-                        color,
-                        area: true,
-                        showMark: false,
-                        valueFormatter: (v) => v !== null ? `${v.toFixed(2)} ${unit ?? ""}` : "-",
-                    }]}
-                    xAxis={[{
-                        data: paddedData.map((_, i) => i),
-                        disableLine: true,
-                        disableTicks: true,
-                        hideTooltip: true,
-                        valueFormatter: (v: number) => `${paddedData.length - v}s`,
-                    }]}
-                    yAxis={[{
-                        min,
-                        max,
-                        position: "none",
-                        disableLine: true,
-                        disableTicks: true,
-                    }]}
-                    slotProps={{legend: {hidden: true} as any}}
-                    margin={0}
-                    height={120}
-                />
-            </Box>
+            <LineChart
+                series={[{
+                    data: history.map(x => x ?? null),
+                    color,
+                    area: true,
+                    showMark: false,
+                    valueFormatter: (v) => v !== null ? `${v.toFixed(2)} ${unit ?? ""}` : "-",
+                }]}
+                xAxis={[{
+                    data: xLabels,
+                    disableLine: true,
+                    disableTicks: true,
+                    hideTooltip: true,
+                    valueFormatter: (v: number) => `${xLabels.length - v}s`,
+                }]}
+                yAxis={[{
+                    min,
+                    max,
+                    position: "none",
+                    disableLine: true,
+                    disableTicks: true,
+                }]}
+                slotProps={{legend: {hidden: true} as any}}
+                margin={0}
+                height={120}
+                skipAnimation={true}
+            />
         </ChartBox>
     )
 
     function handleEffectMetrics() {
         if (!data) return
-
-        const value = selector(data, lastRaw)
-        setHistory(prev => {
-            const next = [...prev, value]
-            return next.length > maxLength ? next.slice(next.length - maxLength) : next
-        })
+        setHistory(prev => [...prev.slice(1), selector(data, lastRaw)])
         setLastRaw(data)
     }
 
     function handleMemoLatestValue() {
-        return history.length > 0 ? history[history.length - 1] : undefined
+        const val = history[history.length - 1]
+        return val === null ? undefined : val
     }
 
-    function handleMemoPaddedData() {
-        return [...Array(Math.max(0, maxLength - history.length)).fill(undefined), ...history]
+    function handleMemoXLabels() {
+        return [...Array(maxLength).keys()]
     }
 }

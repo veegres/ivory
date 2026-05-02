@@ -6,10 +6,8 @@ import (
 )
 
 func TestParseMetrics(t *testing.T) {
-	output := `__IVORY_CPU_1__
+	output := `__IVORY_CPU__
 cpu  100 0 100 800 0 0 0 0 0 0
-__IVORY_CPU_2__
-cpu  150 0 150 900 0 0 0 0 0 0
 __IVORY_MEM__
 MemTotal:       1024 kB
 MemAvailable:    256 kB
@@ -26,8 +24,11 @@ eth0: 2048 2 0 0 0 0 0 0 4096 4 0 0 0 0 0 0
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	if metrics.Cpu.UsagePercent != 50 {
-		t.Fatalf("expected cpu usage 50, got %v", metrics.Cpu.UsagePercent)
+	if metrics.Cpu.TotalTicks != 1000 {
+		t.Fatalf("expected total ticks 1000, got %v", metrics.Cpu.TotalTicks)
+	}
+	if metrics.Cpu.IdleTicks != 800 {
+		t.Fatalf("expected idle ticks 800, got %v", metrics.Cpu.IdleTicks)
 	}
 	if metrics.Memory.TotalBytes != 1024*1024 {
 		t.Fatalf("unexpected total memory: %d", metrics.Memory.TotalBytes)

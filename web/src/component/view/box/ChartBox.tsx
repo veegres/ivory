@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    label?: string,
+    label: string,
     value?: number,
     unit?: string,
     children: ReactNode,
@@ -35,7 +35,7 @@ export function ChartBox(props: Props) {
         return (
             <Box sx={SX.head}>
                 <Box sx={SX.label}>{label}</Box>
-                {value && <Box sx={SX.value}>{value.toFixed(2)} {unit}</Box>}
+                {value !== undefined && <Box sx={SX.value}>{value.toFixed(2)} {unit ?? ""}</Box>}
             </Box>
         )
     }

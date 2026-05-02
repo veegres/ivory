@@ -13,7 +13,8 @@ type Metrics struct {
 }
 
 type CpuMetrics struct {
-	UsagePercent float64 `json:"usagePercent"`
+	TotalTicks uint64 `json:"totalTicks"`
+	IdleTicks  uint64 `json:"idleTicks"`
 }
 
 type MemoryMetrics struct {
