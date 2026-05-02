@@ -8,7 +8,7 @@ type Props = {
     label: string,
     data: NodeMetrics | undefined,
     selector: (last: NodeMetrics, penultimate?: NodeMetrics) => number | undefined,
-    maxLength?: number,
+    length?: number,
     color?: string,
     unit?: string,
     min?: number,
@@ -16,12 +16,12 @@ type Props = {
 }
 
 export function HistoryTrackerChart(props: Props) {
-    const {label, data, selector, maxLength = 60, color, unit, min, max} = props
-    const [history, setHistory] = useState<(number | undefined)[]>(new Array(maxLength).fill(undefined))
+    const {label, data, selector, length = 60, color, unit, min, max} = props
+    const [history, setHistory] = useState<(number | undefined)[]>(new Array(length).fill(undefined))
     const [lastRaw, setLastRaw] = useState<NodeMetrics | undefined>()
 
     const latestValue = useMemo(handleMemoLatestValue, [history])
-    const xLabels = useMemo(handleMemoXLabels, [maxLength])
+    const xData = useMemo(handleMemoXLabels, [length])
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(handleEffectMetrics, [data])
@@ -37,15 +37,16 @@ export function HistoryTrackerChart(props: Props) {
                     valueFormatter: (v) => v !== null ? `${v.toFixed(2)} ${unit ?? ""}` : "-",
                 }]}
                 xAxis={[{
-                    data: xLabels,
+                    data: xData,
+                    tickLabelStyle: {fontSize: 10},
                     disableLine: true,
                     disableTicks: true,
                     hideTooltip: true,
-                    valueFormatter: (v: number) => `${xLabels.length - v}s`,
+                    tickMinStep: 10,
+                    valueFormatter: (v: number) => `${length - v}s`,
                 }]}
                 yAxis={[{
-                    min,
-                    max,
+                    min, max,
                     position: "none",
                     disableLine: true,
                     disableTicks: true,
@@ -70,6 +71,6 @@ export function HistoryTrackerChart(props: Props) {
     }
 
     function handleMemoXLabels() {
-        return [...Array(maxLength).keys()]
+        return [...Array(length).keys()]
     }
 }
