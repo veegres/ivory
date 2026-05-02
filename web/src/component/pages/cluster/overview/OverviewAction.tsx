@@ -28,14 +28,11 @@ export function OverviewAction(props: Props) {
     const [mainDomain, mainNode] = m
     const connection = mainNode?.connection
     const status = mainNode?.keeper.status
+    const con = connection && getKeeperConnection(cluster.cluster, connection.host, connection.keeperPort)
     return (
         <Box sx={SX.box}>
-            {connection?.keeperPort && status && (
-                <OverviewActionStatus
-                    status={status}
-                    cluster={name}
-                    con={getKeeperConnection(cluster.cluster, connection.host, connection.keeperPort)}
-                />
+            {con && status && (
+                <OverviewActionStatus status={status} cluster={name} con={con}/>
             )}
             <OverviewActionInfo cluster={cluster.cluster} manualKeeper={mainDomain}/>
             <ToggleButtonGroup size={"small"}>

@@ -31,15 +31,16 @@ export function OverviewConfig(props: Props) {
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const connection = getKeeperConnection(cluster, node.connection.host, node.connection.keeperPort ?? 0)
+    const con = getKeeperConnection(cluster, node.connection.host, node.connection.keeperPort)
 
-    const config = useRouterNodeConfig(connection, !!node.connection)
+    const config = useRouterNodeConfig(con)
     const updateConfig = useRouterNodeConfigUpdate(node.connection, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 
     useEffect(() => setConfigState(stringify(data)), [data])
 
+    if (!con) return <ErrorSmart error={"provide keeper port to work with it"}/>
     if (isError) return <ErrorSmart error={error}/>
     if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
 
@@ -91,8 +92,8 @@ export function OverviewConfig(props: Props) {
     }
 
     function handleUpdate() {
-        if (configState) {
-            updateConfig.mutate({...connection, body: JSON.parse(configState)})
+        if (configState && con) {
+            updateConfig.mutate({...con, body: JSON.parse(configState)})
         }
     }
 
