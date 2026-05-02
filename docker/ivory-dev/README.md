@@ -212,27 +212,16 @@ sudo dnf install openssh-server && sudo systemctl enable --now sshd
 sudo pacman -S openssh && sudo systemctl enable --now sshd
 ```
 
-### 2. Generate a key pair
-
-```bash
-ssh-keygen -t ed25519 -C "local-test-key"
-```
-
-Accept defaults, leave passphrase empty for testing. Creates:
-- `~/.ssh/id_ed25519` — private key
-- `~/.ssh/id_ed25519.pub` — public key
-
-### 3. Authorize the key
-
-```bash
-cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
-chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys
-```
-
-### 4. Connect
+### 2. Try to Connect
 
 ```bash
 ssh localhost
 ```
 
-Type `yes` on first connect. You're in — no password needed.
+Type `yes` on first connect. Enter your local password, and you are in. Your ssh server is working.
+
+
+### 3. Authorize a key pair
+
+Go to Ivory vault, generate a key pair, then add it to `~/.ssh/authorized_keys` and Ivory should
+start working passwordless.
