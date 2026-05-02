@@ -2,6 +2,7 @@ import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ClusterApi} from "../cluster/router"
+import {Plugin} from "../keeper/type"
 import {NodeApi} from "./router"
 import {Connection, DockerLogsRequest, KeeperConnection, SshConnection} from "./type"
 
@@ -14,12 +15,13 @@ export function useRouterNodeOverview(c: KeeperConnection, enabled: boolean) {
     })
 }
 
-export function useRouterNodeConfig(c: KeeperConnection, enabled: boolean) {
+export function useRouterNodeConfig(c?: KeeperConnection) {
+    const con = c ?? {host: "", port: 1, plugin: Plugin.PATRONI}
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.config.key(c.host, c.port),
-        queryFn: () => NodeApi.config.fn(c),
-        enabled,
+        queryKey: NodeApi.config.key(con.host, con.port),
+        queryFn: () => NodeApi.config.fn(con),
+        enabled: !!c,
     })
 }
 
@@ -104,12 +106,12 @@ export function useRouterNodePause(cluster: string) {
     })
 }
 
-export function useRouterNodeMetrics(c: SshConnection, enabled: boolean) {
+export function useRouterNodeMetrics(c: SshConnection, refetchInterval?: number) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.metrics.key(c.host),
         queryFn: () => NodeApi.metrics.fn(c),
-        enabled,
+        refetchInterval,
     })
 }
 

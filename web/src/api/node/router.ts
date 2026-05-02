@@ -1,6 +1,6 @@
 import {api} from "../api"
 import {R} from "../management/type"
-import {DockerLogsRequest, DockerRequest, KeeperConnection, SshConnection} from "./type"
+import {DockerLogsRequest, DockerRequest, KeeperConnection, NodeMetrics, SshConnection} from "./type"
 
 
 export const NodeApi = {
@@ -66,7 +66,7 @@ export const NodeApi = {
     },
     metrics: {
         key: (host: string) => ["node", "ssh", "metrics", host],
-        fn: (request: SshConnection) => api.get<R<any>>("/node/ssh/metrics", {params: {request: JSON.stringify(request)}})
+        fn: (request: SshConnection) => api.get<R<NodeMetrics>>("/node/ssh/metrics", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
     docker: {

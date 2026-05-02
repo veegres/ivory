@@ -29,6 +29,7 @@
     "@lezer/common": "1.2.3",
     "@mui/icons-material": "7.3.2",
     "@mui/material": "7.3.2",
+    "@mui/x-charts": "^9.0.4",
     "@mui/x-date-pickers": "8.11.1",
     "@tanstack/react-query": "5.86.0",
     "@tanstack/react-query-devtools": "5.86.0",

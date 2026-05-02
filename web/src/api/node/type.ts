@@ -35,6 +35,28 @@ export interface SshConnection {
     vaultId: string,
 }
 
+export interface CpuMetrics {
+    usagePercent: number,
+}
+
+export interface MemoryMetrics {
+    totalBytes: number,
+    usedBytes: number,
+    availableBytes: number,
+    usagePercent: number,
+}
+
+export interface NetworkMetrics {
+    receivedBytes: number,
+    transmittedBytes: number,
+}
+
+export interface NodeMetrics {
+    cpu: CpuMetrics,
+    memory: MemoryMetrics,
+    network: NetworkMetrics,
+}
+
 export interface DockerRequest {
     connection: SshConnection,
     image?: string,
