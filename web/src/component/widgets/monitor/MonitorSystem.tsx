@@ -10,7 +10,7 @@ type Props = {
 }
 
 export function MonitorSystem(props: Props) {
-    const {connection, interval = 1000} = props
+    const {connection, interval = 1000 * 3} = props
     const metrics = useRouterNodeMetrics(connection, interval)
 
     if (metrics.error) return <ErrorSmart error={metrics.error}/>

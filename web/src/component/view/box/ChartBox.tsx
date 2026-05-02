@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     box: {
-        display: "flex", flexDirection: "column", borderRadius: 1, padding: "8px 10px 0px 10px",
+        display: "flex", flexDirection: "column", borderRadius: 1, padding: "10px 10px 0px 10px",
         border: "1px solid", borderColor: "divider", width: "200px", flexGrow: 1,
     },
     head: {display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5},

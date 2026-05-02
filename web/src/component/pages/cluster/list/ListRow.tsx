@@ -37,7 +37,7 @@ export function ListRow(props: Props) {
     const active = !!activeCluster && cluster.name === activeCluster.cluster.name
 
     const ref = useRef<HTMLTableRowElement | null>(null)
-    const [stateNodes, setStateNodes] = useState(getDomains(cluster.nodes, true))
+    const [stateNodes, setStateNodes] = useState(getDomains(cluster.nodes, !editable))
 
     const overview = useRouterClusterOverview(cluster.name)
     const nodes = overview.data?.nodes ?? cluster.nodesOverview
