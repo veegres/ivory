@@ -37,9 +37,7 @@ export function Monitor(props: Props) {
     function renderSshInfo() {
         if (!sshCon) return <ErrorSmart error={"provide ssh key and port to see the metrics"}/>
         return (
-            <MonitorRow>
-                <MonitorSystem connection={sshCon}/>
-            </MonitorRow>
+            <MonitorSystem connection={sshCon}/>
         )
     }
 

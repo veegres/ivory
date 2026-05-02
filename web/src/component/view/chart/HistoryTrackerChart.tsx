@@ -7,9 +7,6 @@ import {SxPropsMap} from "../../../app/type"
 import {ChartBox} from "../box/ChartBox"
 
 const SX: SxPropsMap = {
-    head: {display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5},
-    label: {fontSize: "12px", fontFamily: "monospace"},
-    value: {fontSize: "12px", color: "text.secondary"},
     chart: {width: "100%", height: "100%"},
 }
 
@@ -36,11 +33,7 @@ export function HistoryTrackerChart(props: Props) {
     useEffect(handleEffectMetrics, [data, maxLength])
 
     return (
-        <ChartBox>
-            <Box sx={SX.head}>
-                <Box sx={SX.label}>{label}</Box>
-                {latestValue && <Box sx={SX.value}>{latestValue.toFixed(2)} {unit}</Box>}
-            </Box>
+        <ChartBox label={label} value={latestValue} unit={unit}>
             <Box sx={SX.chart}>
                 <LineChart
                     series={[{
