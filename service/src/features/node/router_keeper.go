@@ -3,7 +3,7 @@ package node
 import "github.com/gin-gonic/gin"
 
 func (r *Router) GetNodeOverview(context *gin.Context) {
-	handleParamRequest(context, r.service.Overview)
+	handleParamRequest(context, r.service.List)
 }
 
 func (r *Router) GetNodeConfig(context *gin.Context) {

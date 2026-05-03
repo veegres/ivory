@@ -15,9 +15,9 @@ func NewRouter(service *Service) *Router {
 	return &Router{service: service}
 }
 
-func handleParamRequest[T any](context *gin.Context, action func(node KeeperConnection) (T, int, error)) {
+func handleParamRequest[T any](context *gin.Context, action func(node KeeperRequest) (T, int, error)) {
 	query := context.Query("request")
-	var node KeeperConnection
+	var node KeeperRequest
 	errBind := json.Unmarshal([]byte(query), &node)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -31,8 +31,8 @@ func handleParamRequest[T any](context *gin.Context, action func(node KeeperConn
 	context.JSON(status, gin.H{"response": body})
 }
 
-func handleBodyRequest[T any](context *gin.Context, action func(node KeeperConnection) (T, int, error)) {
-	var request KeeperConnection
+func handleBodyRequest[T any](context *gin.Context, action func(node KeeperRequest) (T, int, error)) {
+	var request KeeperRequest
 	errBind := context.ShouldBindJSON(&request)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})

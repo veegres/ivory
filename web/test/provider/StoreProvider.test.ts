@@ -168,13 +168,13 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {host: "localhost", keeperPort: 8009},
+                config: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setNode(getDomain(node.connection))
+            useStoreAction.setNode(getDomain(node.config))
 
             const state = useStore.getState()
-            expect(state.activeNode["test-cluster"]).toEqual(getDomain(node.connection))
+            expect(state.activeNode["test-cluster"]).toEqual(getDomain(node.config))
         })
 
         it("should remove active node when undefined", () => {
@@ -186,10 +186,10 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {host: "localhost", keeperPort: 8009},
+                config: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setNode(getDomain(node.connection))
+            useStoreAction.setNode(getDomain(node.config))
             useStoreAction.setNode(undefined)
 
             const state = useStore.getState()
@@ -200,7 +200,7 @@ describe("StoreProvider", () => {
             const node = createMockNode()
 
             const stateBefore = useStore.getState()
-            useStoreAction.setNode(getDomain(node.connection))
+            useStoreAction.setNode(getDomain(node.config))
             const stateAfter = useStore.getState()
 
             expect(stateAfter).toEqual(stateBefore)
@@ -359,10 +359,10 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                connection: {host: "localhost", keeperPort: 8009},
+                config: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setNode(getDomain(node.connection))
+            useStoreAction.setNode(getDomain(node.config))
             useStoreAction.clear()
 
             const state = useStore.getState()

@@ -43,12 +43,11 @@ export function OverviewBloat(props: Props) {
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
 
-    if (!node.connection.dbPort) return <NoDatabaseError/>
-
+    if (!node.config.dbPort) return <NoDatabaseError/>
     const db: Config = {
         plugin: DbPlugin.POSTGRES,
-        host: node.connection.host,
-        port: node.connection.dbPort,
+        host: node.config.host,
+        port: node.config.dbPort,
         name: target?.database,
         schema: target?.schema,
     }

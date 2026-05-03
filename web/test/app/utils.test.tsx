@@ -4,7 +4,7 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {Connection} from "../../src/api/node/type"
+import {NodeConfig} from "../../src/api/cluster/type"
 import {
     DateTimeFormatter,
     getDomain,
@@ -30,29 +30,29 @@ describe("shortUuid", () => {
 })
 
 describe("getDomain", () => {
-  it("should return the domain string from a NodeConnection object", () => {
-    const connection: Connection = {host: "localhost", keeperPort: 8008}
-    expect(getDomain(connection)).toBe("localhost:8008::")
+  it("should return the domain string from a NodeConfig object", () => {
+    const config: NodeConfig = {host: "localhost", keeperPort: 8008}
+    expect(getDomain(config)).toBe("localhost:8008::")
   })
 
   it("should return the domain string without port if keeperPort is undefined", () => {
-    const connection: Connection = {host: "localhost"}
-    expect(getDomain(connection)).toBe("localhost:::")
+    const config: NodeConfig = {host: "localhost"}
+    expect(getDomain(config)).toBe("localhost:::")
   })
 })
 
 describe("getDomains", () => {
-    it("should return an array of domain strings from an array of NodeConnection objects", () => {
-        const connections: Connection[] = [
+    it("should return an array of domain strings from an array of NodeConfig objects", () => {
+        const configs: NodeConfig[] = [
             {host: "localhost", keeperPort: 8008},
             {host: "127.0.0.1", keeperPort: 8008},
         ]
-        expect(getDomains(connections)).toEqual(["localhost:8008::", "127.0.0.1:8008::"])
+        expect(getDomains(configs)).toEqual(["localhost:8008::", "127.0.0.1:8008::"])
     })
 })
 
 describe("getNodeConnection", () => {
-    it("should return a NodeConnection object from a domain string", () => {
+    it("should return a NodeConfig object from a domain string", () => {
         const domain = "localhost:8008"
         expect(getNodeConnection(domain)).toEqual({
             host: "localhost",
@@ -60,7 +60,7 @@ describe("getNodeConnection", () => {
         })
     })
 
-    it("should return a NodeConnection object with default port if port is not in domain string", () => {
+    it("should return a NodeConfig object with default port if port is not in domain string", () => {
         const domain = "localhost"
         expect(getNodeConnection(domain)).toEqual({
             host: "localhost",
@@ -69,7 +69,7 @@ describe("getNodeConnection", () => {
 })
 
 describe("getNodeConnections", () => {
-    it("should return an array of NodeConnection objects from an array of domain strings", () => {
+    it("should return an array of NodeConfig objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
         expect(getNodeConnections(domains)).toEqual([
             {host: "localhost", keeperPort: 8008},
@@ -80,14 +80,14 @@ describe("getNodeConnections", () => {
 
 describe("isConnectionEqual", () => {
     it("should return true if connections are equal", () => {
-        const c1: Connection = {host: "localhost", keeperPort: 8008}
-        const c2: Connection = {host: "localhost", keeperPort: 8008}
+        const c1: NodeConfig = {host: "localhost", keeperPort: 8008}
+        const c2: NodeConfig = {host: "localhost", keeperPort: 8008}
         expect(isConnectionEqual(c1, c2)).toBe(true)
     })
 
     it("should return false if connections are not equal", () => {
-        const c1: Connection = {host: "localhost", keeperPort: 8008}
-        const c2: Connection = {host: "localhost", keeperPort: 8009}
+        const c1: NodeConfig = {host: "localhost", keeperPort: 8008}
+        const c2: NodeConfig = {host: "localhost", keeperPort: 8009}
         expect(isConnectionEqual(c1, c2)).toBe(false)
     })
 })

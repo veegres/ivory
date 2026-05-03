@@ -10,33 +10,28 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type Connection struct {
-	Host       string `json:"host" form:"host"`
-	SshPort    int    `json:"sshPort,omitempty" form:"sshPort"`
-	KeeperPort int    `json:"keeperPort,omitempty" form:"keeperPort"`
-	DbPort     int    `json:"dbPort,omitempty" form:"dbPort"`
+type KeeperConnection struct {
+	Host string `json:"host" form:"host"`
+	Port int    `json:"port" form:"port"`
 }
 
-type KeeperConnection struct {
+type KeeperRequest struct {
+	KeeperConnection
 	Plugin  keeper.Plugin `json:"plugin" form:"plugin"`
-	Host    string        `json:"host" form:"host"`
-	Port    int           `json:"port" form:"port"`
 	VaultId *uuid.UUID    `json:"vaultId" form:"vaultId"`
 	Certs   *cert.Certs   `json:"certs" form:"certs"`
 	Body    any           `json:"body" form:"body"`
 }
 
-type KeeperResponse struct {
-	Connection Connection      `json:"connection"`
-	Keeper     keeper.Response `json:"keeper"`
-}
+type KeeperResponse = keeper.Response
+
 type SshConnection struct {
 	Host    string     `json:"host" form:"host"`
 	Port    int        `json:"port" form:"port"`
 	VaultId *uuid.UUID `json:"vaultId" form:"vaultId"`
 }
 
-type SshResponseMetrics = os.Metrics
+type MetricsResponse = os.Metrics
 
 type DockerRequest struct {
 	Connection SshConnection `json:"connection" form:"connection" binding:"required"`
@@ -51,14 +46,14 @@ type DockerLogsRequest struct {
 	Tail       int           `json:"tail" form:"tail"`
 }
 
-type DockerResult = os.DockerResult
+type DockerResponse = os.Docker
 
 // SPECIFIC (SERVER)
 
 type KeeperAutoRequest struct {
-	Connections []Connection  `json:"connections" form:"connections"`
-	Plugin      keeper.Plugin `json:"plugin" form:"plugin"`
-	VaultId     *uuid.UUID    `json:"vaultId" form:"vaultId"`
-	Certs       *cert.Certs   `json:"certs" form:"certs"`
-	Body        any           `json:"body" form:"body"`
+	Connections []KeeperConnection `json:"connections" form:"connections"`
+	Plugin      keeper.Plugin      `json:"plugin" form:"plugin"`
+	VaultId     *uuid.UUID         `json:"vaultId" form:"vaultId"`
+	Certs       *cert.Certs        `json:"certs" form:"certs"`
+	Body        any                `json:"body" form:"body"`
 }

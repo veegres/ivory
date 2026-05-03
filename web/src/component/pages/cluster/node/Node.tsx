@@ -30,7 +30,7 @@ export function Node() {
         if (!activeNodeName || !activeCluster) return <AlertCentered text={"Please, select a node to see the information!"}/>
         const activeNode = activeCluster.cluster.nodesOverview?.[activeNodeName]
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
-        const {host, dbPort, sshPort, keeperPort} = activeNode.connection
+        const {host, dbPort, sshPort, keeperPort} = activeNode.config
         const {cluster} = activeCluster
         if (!dbPort && !keeperPort && !sshPort) return <AlertCentered text={"Specify at least one port to work with Node"} severity={"warning"}/>
 

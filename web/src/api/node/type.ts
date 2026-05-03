@@ -2,32 +2,26 @@ import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
 import {KeeperResponse as BaseKeeperResponse, Plugin as KeeperPlugin, Status as KeeperStatus} from "../keeper/type"
+import {Docker, Metrics} from "../os/type"
 import {Connection as QueryConnection} from "../query/type"
 
 // COMMON (WEB AND SERVER)
 
 export {KeeperPlugin,KeeperStatus}
 
-export interface Connection {
-    host: string,
-    sshPort?: number,
-    keeperPort?: number,
-    dbPort?: number,
-}
-
 export interface KeeperConnection {
     host: string,
     port: number,
+}
+
+export interface KeeperRequest extends KeeperConnection {
     plugin: KeeperPlugin,
     vaultId?: string,
     certs?: Certs,
     body?: any,
 }
 
-export interface KeeperResponse {
-    connection: Connection,
-    keeper: BaseKeeperResponse,
-}
+export type KeeperResponse = BaseKeeperResponse
 
 export interface SshConnection {
     host: string,
@@ -35,26 +29,7 @@ export interface SshConnection {
     vaultId: string,
 }
 
-export interface CpuMetrics {
-    totalTicks: number,
-    idleTicks: number,
-}
-
-export interface MemoryMetrics {
-    totalBytes: number,
-    availableBytes: number,
-}
-
-export interface NetworkMetrics {
-    receivedBytes: number,
-    transmittedBytes: number,
-}
-
-export interface NodeMetrics {
-    cpu: CpuMetrics,
-    memory: MemoryMetrics,
-    network: NetworkMetrics,
-}
+export type MetricsResponse = Metrics
 
 export interface DockerRequest {
     connection: SshConnection,
@@ -69,11 +44,7 @@ export interface DockerLogsRequest {
     tail?: number,
 }
 
-export interface DockerResult {
-    stdout: string,
-    stderr: string,
-    exitCode: number,
-}
+export type DockerResponse = Docker
 
 // SPECIFIC (WEB)
 

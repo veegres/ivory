@@ -16,12 +16,12 @@ type Adapter interface {
 }
 
 type DockerManager interface {
-	DockerList(connection ssh.Connection) (*DockerResult, error)
-	DockerDeploy(connection ssh.Connection, image, options string) (*DockerResult, error)
-	DockerRun(connection ssh.Connection, options, image string) (*DockerResult, error)
-	DockerStop(connection ssh.Connection, container string) (*DockerResult, error)
-	DockerDelete(connection ssh.Connection, container string) (*DockerResult, error)
-	DockerLogs(connection ssh.Connection, container string, tail int) (*DockerResult, error)
+	DockerList(connection ssh.Connection) (*Docker, error)
+	DockerDeploy(connection ssh.Connection, image, options string) (*Docker, error)
+	DockerRun(connection ssh.Connection, options, image string) (*Docker, error)
+	DockerStop(connection ssh.Connection, container string) (*Docker, error)
+	DockerDelete(connection ssh.Connection, container string) (*Docker, error)
+	DockerLogs(connection ssh.Connection, container string, tail int) (*Docker, error)
 }
 
 type PluginRegistry struct {

@@ -2,34 +2,35 @@ import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../hook/QueryCustom"
 import {ClusterApi} from "../cluster/router"
+import {NodeConfig} from "../cluster/type"
 import {Plugin} from "../keeper/type"
 import {NodeApi} from "./router"
-import {Connection, DockerLogsRequest, KeeperConnection, SshConnection} from "./type"
+import {DockerLogsRequest, KeeperRequest, SshConnection} from "./type"
 
-export function useRouterNodeOverview(c: KeeperConnection, enabled: boolean) {
+export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.overview.key(c.host, c.port),
-        queryFn: () => NodeApi.overview.fn(c),
+        queryKey: NodeApi.overview.key(request.host, request.port),
+        queryFn: () => NodeApi.overview.fn(request),
         enabled,
     })
 }
 
-export function useRouterNodeConfig(c?: KeeperConnection) {
-    const con = c ?? {host: "", port: 1, plugin: Plugin.PATRONI}
+export function useRouterNodeConfig(request?: KeeperRequest) {
+    const req = request ?? {host: "", port: 1, plugin: Plugin.PATRONI}
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.config.key(con.host, con.port),
-        queryFn: () => NodeApi.config.fn(con),
-        enabled: !!c,
+        queryKey: NodeApi.config.key(req.host, req.port),
+        queryFn: () => NodeApi.config.fn(req),
+        enabled: !!request,
     })
 }
 
-export function useRouterNodeConfigUpdate(connection: Connection, onSuccess: () => void) {
+export function useRouterNodeConfigUpdate(config: NodeConfig, onSuccess: () => void) {
     return useMutationAdapter({
         mutationFn: NodeApi.updateConfig.fn,
         mutationKey: NodeApi.updateConfig.key(),
-        successKeys: [NodeApi.config.key(connection.host, connection.keeperPort)],
+        successKeys: [NodeApi.config.key(config.host, config.keeperPort)],
         onSuccess: onSuccess,
     })
 }

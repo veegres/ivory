@@ -29,7 +29,7 @@ export function OverviewNodes(props: Props) {
     const candidates = Object.values(nodes ?? {})
         .filter(node => !!node)
         .filter(node => node.keeper.role === "replica")
-        .map(node => node.connection)
+        .map(node => node.config)
 
     return (
         <Box sx={SX.box}>

@@ -3,7 +3,7 @@ import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
 import {ActiveCluster, Node} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getKeeperConnection} from "../../../../app/utils"
+import {getKeeperRequest} from "../../../../app/utils"
 import {OverviewActionInfo} from "./OverviewActionInfo"
 import {OverviewActionStatus} from "./OverviewActionStatus"
 
@@ -26,13 +26,13 @@ export function OverviewAction(props: Props) {
     const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainNode: m} = props
     const {name} = cluster.cluster
     const [mainDomain, mainNode] = m
-    const connection = mainNode?.connection
+    const config = mainNode?.config
     const status = mainNode?.keeper.status
-    const con = connection && getKeeperConnection(cluster.cluster, connection.host, connection.keeperPort)
+    const keeper = config && getKeeperRequest(cluster.cluster, config.host, config.keeperPort)
     return (
         <Box sx={SX.box}>
-            {con && status && (
-                <OverviewActionStatus status={status} cluster={name} con={con}/>
+            {keeper && status && (
+                <OverviewActionStatus status={status} cluster={name} request={keeper}/>
             )}
             <OverviewActionInfo cluster={cluster.cluster} manualKeeper={mainDomain}/>
             <ToggleButtonGroup size={"small"}>

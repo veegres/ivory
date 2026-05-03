@@ -1,7 +1,7 @@
 import {getDomain, initialNode} from "../../app/utils"
 import {api} from "../api"
 import {R} from "../management/type"
-import {Cluster, ClusterAuto, ClusterOverview} from "./type"
+import {AutoRequest, Cluster, Overview} from "./type"
 
 export const ClusterApi = {
     list: {
@@ -17,7 +17,7 @@ export const ClusterApi = {
     overview: {
         key: (name?: string, host?: string, port?: string) => ["cluster", "overview", name, host, port],
         fn: (name: string, host?: string, port?: string) => api
-            .get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {host, port}})
+            .get<R<Overview>>(`/cluster/overview/${name}`, {params: {host, port}})
             .then((response) => response.data.response),
     },
     update: {
@@ -27,7 +27,7 @@ export const ClusterApi = {
     },
     createAuto: {
         key: () => ["cluster", "auto", "creation"],
-        fn: (cluster: ClusterAuto) => api.post<R<Cluster>>("/cluster/auto", cluster)
+        fn: (cluster: AutoRequest) => api.post<R<Cluster>>("/cluster/auto", cluster)
             .then((response) => response.data.response),
     },
     fixAuto: {
