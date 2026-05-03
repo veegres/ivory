@@ -106,7 +106,7 @@ export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boo
 export function getQueryConnection(cluster: Cluster, host: string, port?: number): QueryConnection | undefined {
     if (!port) return
     const vaultId = cluster.vaults.databaseId
-    const db = {plugin: cluster.dbPlugin, host, port}
+    const db = {plugin: cluster.plugins.database, host, port}
     const certs = cluster.tls.database ? cluster.certs : undefined
     return {db, certs, vaultId}
 }
@@ -121,7 +121,7 @@ export function getKeeperConnection(cluster: Cluster, host: string, port?: numbe
     if (!port) return
     const vaultId = cluster.vaults.keeperId
     const certs = cluster.tls.keeper ? cluster.certs : undefined
-    return {host, port, certs, vaultId, plugin: cluster.keeperPlugin}
+    return {host, port, certs, vaultId, plugin: cluster.plugins.keeper}
 }
 
 export const getDomain = (connection: NodeConnection, simple: boolean = false) => {

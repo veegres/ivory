@@ -59,7 +59,7 @@ func (s *Service) exportV1() (*BackupV1, error) {
 	}, nil
 }
 
-func clusterToBackupV1(c cluster.Cluster) backupClusterV1 {
+func clusterToBackupV1(c cluster.Response) backupClusterV1 {
 	sidecars := make([]backupSidecarV1, len(c.Nodes))
 	for i, n := range c.Nodes {
 		sidecars[i] = backupSidecarV1{

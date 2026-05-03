@@ -126,7 +126,7 @@ export function ListRow(props: Props) {
     }
 
     function handleMemoNodes(): [boolean, ColorsMap] {
-        const getColors = () => Object.entries(nodes).reduce(
+        const getColors = () => Object.entries(nodes ?? {}).reduce(
             (map, [_, node]) => {
                 const d = getDomain(node.connection, !editable)
                 map[d] = NodeColor[node.keeper.role].label
@@ -135,8 +135,9 @@ export function ListRow(props: Props) {
             {} as ColorsMap
         )
         const getWarning = () => {
-            for (const key in nodes) {
-                const node = nodes[key]
+            const n = nodes ?? {}
+            for (const key in n) {
+                const node = n[key]
                 if (node.warnings.length > 0) return true
             }
             return false

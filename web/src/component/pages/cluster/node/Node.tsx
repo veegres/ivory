@@ -28,7 +28,7 @@ export function Node() {
 
     function renderContent() {
         if (!activeNodeName || !activeCluster) return <AlertCentered text={"Please, select a node to see the information!"}/>
-        const activeNode = activeCluster.cluster.nodesOverview[activeNodeName]
+        const activeNode = activeCluster.cluster.nodesOverview?.[activeNodeName]
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
         const {host, dbPort, sshPort, keeperPort} = activeNode.connection
         const {cluster} = activeCluster

@@ -41,11 +41,11 @@ func NewService(
 	}
 }
 
-func (s *Service) List() ([]Cluster, error) {
+func (s *Service) List() ([]Response, error) {
 	return s.clusterRepository.List()
 }
 
-func (s *Service) ListByTag(tags []string) ([]Cluster, error) {
+func (s *Service) ListByTag(tags []string) ([]Response, error) {
 	listMap := make(map[string]bool)
 	for _, t := range tags {
 		// NOTE: we shouldn't check the error here, we want to return an empty array if there is no such tag
@@ -65,15 +65,15 @@ func (s *Service) ListByTag(tags []string) ([]Cluster, error) {
 	return s.ListByName(listName)
 }
 
-func (s *Service) ListByName(clusters []string) ([]Cluster, error) {
+func (s *Service) ListByName(clusters []string) ([]Response, error) {
 	return s.clusterRepository.ListByName(clusters)
 }
 
-func (s *Service) Get(cluster string) (Cluster, error) {
+func (s *Service) Get(cluster string) (Response, error) {
 	return s.clusterRepository.Get(cluster)
 }
 
-func (s *Service) Update(cluster Cluster) (*Cluster, error) {
+func (s *Service) Update(cluster Request) (*Response, error) {
 	if cluster.Name == "" {
 		return nil, ErrClusterNameEmpty
 	}
@@ -86,7 +86,7 @@ func (s *Service) Update(cluster Cluster) (*Cluster, error) {
 	}
 	cluster.Tags = tags
 	errCluster := s.clusterRepository.Update(cluster)
-	return &cluster, errCluster
+	return (*Response)(&cluster), errCluster
 }
 
 func (s *Service) Delete(cluster string) error {
@@ -101,7 +101,7 @@ func (s *Service) DeleteAll() error {
 	return s.clusterRepository.DeleteAll()
 }
 
-func (s *Service) Overview(name string, host string, port int) (*ClusterOverview, error) {
+func (s *Service) Overview(name string, host string, port int) (*Overview, error) {
 	cluster, clusterError := s.Get(name)
 	if clusterError != nil {
 		return nil, clusterError
@@ -113,12 +113,12 @@ func (s *Service) Overview(name string, host string, port int) (*ClusterOverview
 	// if host is set, search manually only for this host
 	if host == "" {
 		var detected *node.Connection
-		nodes, detected, err = s.getOverviewAuto(cluster.Nodes, cluster.ClusterOptions)
+		nodes, detected, err = s.getOverviewAuto(cluster.Nodes, cluster.Options)
 		if detected != nil {
 			detectedDomain = s.getKeyDomain(detected.Host, detected.KeeperPort)
 		}
 	} else {
-		nodes, err = s.getOverview(host, port, cluster.ClusterOptions)
+		nodes, err = s.getOverview(host, port, cluster.Options)
 		detectedDomain = s.getKeyDomain(host, port)
 	}
 	if err != nil {
@@ -128,12 +128,13 @@ func (s *Service) Overview(name string, host string, port int) (*ClusterOverview
 	clusterNodeMap := make(map[string]Node)
 	for _, n := range cluster.Nodes {
 		domain := s.getKeyDomain(n.Host, n.KeeperPort)
+		warnings := make([]string, 0)
 		if v, ok := clusterNodeMap[domain]; ok {
-			v.Warnings = append(v.Warnings, "node is declared more than once in the cluster configuration")
+			v.Warnings = append(warnings, "node is declared more than once in the cluster configuration")
 			clusterNodeMap[domain] = v
 		} else {
 			keeperResponse := node.KeeperResponse{Connection: n}
-			clusterNodeMap[domain] = Node{KeeperResponse: keeperResponse}
+			clusterNodeMap[domain] = Node{KeeperResponse: keeperResponse, Warnings: warnings}
 		}
 	}
 
@@ -156,14 +157,14 @@ func (s *Service) Overview(name string, host string, port int) (*ClusterOverview
 		resultNodeMap[domain] = n
 	}
 
-	supportedFeatures := s.getSupportedFeatures(cluster.KeeperPlugin, cluster.DbPlugin)
-	return &ClusterOverview{resultNodeMap, detectedDomain, supportedFeatures}, nil
+	supportedFeatures := s.getSupportedFeatures(cluster.Plugins.Keeper, cluster.Plugins.Database)
+	return &Overview{resultNodeMap, detectedDomain, supportedFeatures}, nil
 }
 
-func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
-	nodes, errOver := s.getOverview(cluster.Host, cluster.Port, cluster.ClusterOptions)
+func (s *Service) CreateAuto(cluster AutoRequest) (Response, error) {
+	nodes, errOver := s.getOverview(cluster.Host, cluster.Port, cluster.Options)
 	if errOver != nil {
-		return Cluster{}, errOver
+		return Response{}, errOver
 	}
 
 	nodesConnections := make([]node.Connection, 0)
@@ -173,32 +174,31 @@ func (s *Service) CreateAuto(cluster ClusterAuto) (Cluster, error) {
 
 	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
 	if errSave != nil {
-		return Cluster{}, errSave
+		return Response{}, errSave
 	}
 	cluster.Tags = tags
 
-	model := Cluster{
+	model := Request{
 		Name:  cluster.Name,
 		Nodes: nodesConnections,
-		ClusterOptions: ClusterOptions{
-			DbPlugin:     cluster.DbPlugin,
-			KeeperPlugin: cluster.KeeperPlugin,
-			Tls:          cluster.Tls,
-			Certs:        cluster.Certs,
-			Vaults:       cluster.Vaults,
-			Tags:         tags,
+		Options: Options{
+			Plugins: cluster.Plugins,
+			Tls:     cluster.Tls,
+			Certs:   cluster.Certs,
+			Vaults:  cluster.Vaults,
+			Tags:    tags,
 		},
 	}
 
 	return s.clusterRepository.Create(model)
 }
 
-func (s *Service) FixAuto(name string) (*Cluster, error) {
+func (s *Service) FixAuto(name string) (*Response, error) {
 	cluster, clusterError := s.Get(name)
 	if clusterError != nil {
 		return nil, clusterError
 	}
-	nodes, _, err := s.getOverviewAuto(cluster.Nodes, cluster.ClusterOptions)
+	nodes, _, err := s.getOverviewAuto(cluster.Nodes, cluster.Options)
 	if err != nil {
 		return nil, err
 	}
@@ -208,33 +208,32 @@ func (s *Service) FixAuto(name string) (*Cluster, error) {
 		nodesConnections = append(nodesConnections, item.Connection)
 	}
 
-	model := Cluster{
+	model := Request{
 		Name:  cluster.Name,
 		Nodes: nodesConnections,
-		ClusterOptions: ClusterOptions{
-			DbPlugin:     cluster.DbPlugin,
-			KeeperPlugin: cluster.KeeperPlugin,
-			Tls:          cluster.Tls,
-			Certs:        cluster.Certs,
-			Vaults:       cluster.Vaults,
-			Tags:         cluster.Tags,
+		Options: Options{
+			Plugins: cluster.Plugins,
+			Tls:     cluster.Tls,
+			Certs:   cluster.Certs,
+			Vaults:  cluster.Vaults,
+			Tags:    cluster.Tags,
 		},
 	}
-	return &model, s.clusterRepository.Update(model)
+	return (*Response)(&model), s.clusterRepository.Update(model)
 }
 
 func (s *Service) getKeyDomain(h string, p int) string {
 	return fmt.Sprintf("%s:%d", h, p)
 }
 
-func (s *Service) getOverview(host string, port int, cluster ClusterOptions) ([]node.KeeperResponse, error) {
+func (s *Service) getOverview(host string, port int, cluster Options) ([]node.KeeperResponse, error) {
 	var certs *cert.Certs
 	// NOTE: we want to rewrite `nil` only if tls is enabled
 	if cluster.Tls.Keeper {
 		certs = &cluster.Certs
 	}
 	request := node.KeeperConnection{
-		Plugin:  cluster.KeeperPlugin,
+		Plugin:  cluster.Plugins.Keeper,
 		Host:    host,
 		Port:    port,
 		VaultId: cluster.Vaults.KeeperId,
@@ -244,7 +243,7 @@ func (s *Service) getOverview(host string, port int, cluster ClusterOptions) ([]
 	return nodes, errOver
 }
 
-func (s *Service) getOverviewAuto(connections []node.Connection, cluster ClusterOptions) ([]node.KeeperResponse, *node.Connection, error) {
+func (s *Service) getOverviewAuto(connections []node.Connection, cluster Options) ([]node.KeeperResponse, *node.Connection, error) {
 	var certs *cert.Certs
 	// NOTE: we want to rewrite `nil` only if tls is enabled
 	if cluster.Tls.Keeper {
@@ -252,7 +251,7 @@ func (s *Service) getOverviewAuto(connections []node.Connection, cluster Cluster
 	}
 	request := node.KeeperAutoRequest{
 		Connections: connections,
-		Plugin:      cluster.KeeperPlugin,
+		Plugin:      cluster.Plugins.Keeper,
 		VaultId:     cluster.Vaults.KeeperId,
 		Certs:       certs,
 	}

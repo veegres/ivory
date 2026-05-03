@@ -11,9 +11,11 @@ import {SnackbarProvide} from "../src/provider/SnackbarProvider"
 export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
     return {
         name: "test-cluster",
-        dbPlugin: DbPlugin.POSTGRES, keeperPlugin: KeeperPlugin.PATRONI,
+        plugins: {
+            database: DbPlugin.POSTGRES,
+            keeper: KeeperPlugin.PATRONI,
+        },
         nodes: [{host: "localhost", keeperPort: 8008}],
-        nodesOverview: {},
         tls: {keeper: false, database: false},
         certs: {},
         vaults: {sshKeyId: "00000000-0000-0000-0000-000000000000"},

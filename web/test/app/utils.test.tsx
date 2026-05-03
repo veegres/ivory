@@ -32,12 +32,12 @@ describe("shortUuid", () => {
 describe("getDomain", () => {
   it("should return the domain string from a NodeConnection object", () => {
     const connection: Connection = {host: "localhost", keeperPort: 8008}
-    expect(getDomain(connection)).toBe("localhost:8008")
+    expect(getDomain(connection)).toBe("localhost:8008::")
   })
 
   it("should return the domain string without port if keeperPort is undefined", () => {
     const connection: Connection = {host: "localhost"}
-    expect(getDomain(connection)).toBe("localhost")
+    expect(getDomain(connection)).toBe("localhost:::")
   })
 })
 
@@ -47,7 +47,7 @@ describe("getDomains", () => {
             {host: "localhost", keeperPort: 8008},
             {host: "127.0.0.1", keeperPort: 8008},
         ]
-        expect(getDomains(connections)).toEqual(["localhost:8008", "127.0.0.1:8008"])
+        expect(getDomains(connections)).toEqual(["localhost:8008::", "127.0.0.1:8008::"])
     })
 })
 

@@ -55,7 +55,7 @@ func (s *Service) importV1(data []byte) error {
 	return err
 }
 
-func backupToClusterV1(bc backupClusterV1) cluster.Cluster {
+func backupToClusterV1(bc backupClusterV1) cluster.Request {
 	nodes := make([]node.Connection, len(bc.Sidecars))
 	for i, k := range bc.Sidecars {
 		nodes[i] = node.Connection{
@@ -63,12 +63,11 @@ func backupToClusterV1(bc backupClusterV1) cluster.Cluster {
 			KeeperPort: k.Port,
 		}
 	}
-	return cluster.Cluster{
+	return cluster.Request{
 		Name: bc.Name,
-		ClusterOptions: cluster.ClusterOptions{
-			DbPlugin:     database.POSTGRES,
-			KeeperPlugin: keeper.PATRONI,
-			Tags:         bc.Tags,
+		Options: cluster.Options{
+			Plugins: cluster.Plugins{Keeper: keeper.PATRONI, Database: database.POSTGRES},
+			Tags:    bc.Tags,
 		},
 		Nodes: nodes,
 	}

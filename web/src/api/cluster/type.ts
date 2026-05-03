@@ -8,24 +8,29 @@ import {Connection, KeeperResponse} from "../node/type"
 
 // COMMON (WEB AND SERVER)
 
+export interface Plugins {
+    keeper: KeeperPlugin,
+    database: DbPlugin,
+}
+
 export interface ClusterOptions {
-    dbPlugin: DbPlugin,
-    keeperPlugin: KeeperPlugin,
+    plugins: Plugins,
     tls: ClusterTls,
     certs: Certs,
     vaults: Vault,
-    tags?: string[],
+    tags: string[],
 }
 
 export interface Cluster extends ClusterOptions {
     name: string,
     nodes: Connection[],
-    nodesOverview: NodeOverview,
+    nodesOverview?: NodeOverview,
 }
 
 export interface ClusterAuto extends ClusterOptions {
     name: string,
-    node: Connection,
+    host: string,
+    port: number,
 }
 
 export interface ClusterTls {
