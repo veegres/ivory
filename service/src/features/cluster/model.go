@@ -12,6 +12,13 @@ import (
 
 // COMMON (WEB AND SERVER)
 
+type NodeConfig struct {
+	Host       string `json:"host" form:"host"`
+	SshPort    *int   `json:"sshPort" form:"sshPort"`
+	KeeperPort *int   `json:"keeperPort" form:"keeperPort"`
+	DbPort     *int   `json:"dbPort" form:"dbPort"`
+}
+
 type Options struct {
 	Plugins Plugins    `json:"plugins"`
 	Tls     Tls        `json:"tls"`
@@ -21,14 +28,14 @@ type Options struct {
 }
 
 type Request struct {
-	Name  string            `json:"name"`
-	Nodes []node.Connection `json:"nodes"`
+	Name  string       `json:"name"`
+	Nodes []NodeConfig `json:"nodes"`
 	Options
 }
 
 type Response struct {
-	Name  string            `json:"name"`
-	Nodes []node.Connection `json:"nodes"`
+	Name  string       `json:"name"`
+	Nodes []NodeConfig `json:"nodes"`
 	Options
 }
 
@@ -55,17 +62,16 @@ type Vaults struct {
 	SshKeyId   *uuid.UUID `json:"sshKeyId"`
 }
 
-type Overview struct {
-	Nodes          NodeMap            `json:"nodes"`
-	DetectedDomain string             `json:"detectedDomain"`
-	Features       []features.Feature `json:"features"`
+type Node struct {
+	Config   NodeConfig          `json:"config"`
+	Keeper   node.KeeperResponse `json:"keeper"`
+	Warnings []string            `json:"warnings"`
 }
 
-type NodeMap = map[string]Node
-
-type Node struct {
-	node.KeeperResponse
-	Warnings []string `json:"warnings"`
+type Overview struct {
+	Nodes          map[string]Node    `json:"nodes"`
+	DetectedDomain string             `json:"detectedDomain"`
+	Features       []features.Feature `json:"features"`
 }
 
 // SPECIFIC (SERVER)

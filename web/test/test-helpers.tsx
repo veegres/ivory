@@ -26,7 +26,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
 
 export function createMockNode(overrides: Partial<Node> = {}): Node {
     return {
-        connection: {host: "localhost", keeperPort: 8008},
+        config: {host: "localhost", keeperPort: 8008},
         keeper: {
             state: "running",
             role: "leader",

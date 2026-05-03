@@ -55,7 +55,7 @@ func (s *Service) getOSAdapter(c SshConnection) (os.Adapter, *ssh.Connection, er
 	return adapter, sshConn, err
 }
 
-func (s *Service) getKeeperAdapter(c KeeperConnection) (keeper.Adapter, keeper.Request, error) {
+func (s *Service) getKeeperAdapter(c KeeperRequest) (keeper.Adapter, keeper.Request, error) {
 	client, errClient := s.keeperRegistry.Get(c.Plugin)
 	if errClient != nil {
 		return nil, keeper.Request{}, errClient
@@ -64,7 +64,7 @@ func (s *Service) getKeeperAdapter(c KeeperConnection) (keeper.Adapter, keeper.R
 	return client, request, err
 }
 
-func (s *Service) getKeeperRequest(c KeeperConnection) (keeper.Request, error) {
+func (s *Service) getKeeperRequest(c KeeperRequest) (keeper.Request, error) {
 	keeperRequest := keeper.Request{Host: c.Host, Port: c.Port, Body: c.Body}
 	if c.Certs != nil {
 		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, c.Certs)

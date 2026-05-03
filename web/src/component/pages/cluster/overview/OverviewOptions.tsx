@@ -1,7 +1,7 @@
 import {Stack} from "@mui/material"
 
 import {useRouterClusterUpdate} from "../../../../api/cluster/hook"
-import {ActiveCluster, ClusterOptions, ClusterOverview} from "../../../../api/cluster/type"
+import {ActiveCluster, Options as ClusterOptions, Overview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Options} from "../../../widgets/options/Options"
@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     info: ActiveCluster,
-    overview?: ClusterOverview,
+    overview?: Overview,
     mainKeeper?: string,
 }
 

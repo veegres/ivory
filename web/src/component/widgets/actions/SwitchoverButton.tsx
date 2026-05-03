@@ -2,22 +2,23 @@ import {FormControl, InputLabel, MenuItem, Select} from "@mui/material"
 import {Dayjs} from "dayjs"
 import {useState} from "react"
 
+import {NodeConfig} from "../../../api/cluster/type"
 import {Feature} from "../../../api/feature"
 import {useRouterNodeSwitchover} from "../../../api/node/hook"
-import {Connection, KeeperConnection} from "../../../api/node/type"
+import {KeeperRequest} from "../../../api/node/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
 import {Access} from "../access/Access"
 
 type Props = {
-    con: KeeperConnection,
+    request: KeeperRequest,
     cluster: string,
-    candidates: Connection[],
+    candidates: NodeConfig[],
     leaderKey?: string,
 }
 
 export function SwitchoverButton(props: Props) {
-    const {con, candidates, cluster, leaderKey} = props
+    const {request, candidates, cluster, leaderKey} = props
 
     const [candidate, setCandidates] = useState<string>()
     const [schedule, setSchedule] = useState<Dayjs>()
@@ -30,7 +31,7 @@ export function SwitchoverButton(props: Props) {
             <AlertButton
                 color={"secondary"}
                 label={"Switchover"}
-                title={`Make a switchover of ${con.host}?`}
+                title={`Make a switchover of ${request.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
                  candidate, the candidate will be chosen randomly.`}
                 loading={switchover.isPending}
@@ -55,8 +56,8 @@ export function SwitchoverButton(props: Props) {
                     variant={"outlined"}
                 >
                     <MenuItem value={undefined}><em>none (will be chosen randomly)</em></MenuItem>
-                    {candidates.map(connection => (
-                        <MenuItem key={connection.host} value={connection.host}>{connection.host}</MenuItem>
+                    {candidates.map(config => (
+                        <MenuItem key={config.host} value={config.host}>{config.host}</MenuItem>
                     ))}
                 </Select>
             </FormControl>
@@ -64,7 +65,7 @@ export function SwitchoverButton(props: Props) {
     }
 
     function handleClick() {
-        switchover.mutate({...con, body})
+        switchover.mutate({...request, body})
         setSchedule(undefined)
         setCandidates(undefined)
     }

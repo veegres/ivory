@@ -33,9 +33,9 @@ export function OverviewBloatJobForm(props: Props) {
     if (node.keeper.role !== "leader") return <ClusterNoLeaderError/>
     const vaultId = cluster.vaults.databaseId
     if (!vaultId) return <ClusterNoPostgresVault/>
-    if (!node.connection.host || !node.connection.dbPort) return <NoDatabaseError/>
+    if (!node.config.host || !node.config.dbPort) return <NoDatabaseError/>
 
-    const db = {plugin: DbPlugin.POSTGRES, host: node.connection.host, port: node.connection.dbPort, name: target?.database}
+    const db = {plugin: DbPlugin.POSTGRES, host: node.config.host, port: node.config.dbPort, name: target?.database}
     const queryCon = getQueryConnection(cluster, db.host, db.port)
     const connection = {...queryCon, db}
     return (

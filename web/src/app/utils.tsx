@@ -13,9 +13,9 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {Cluster, Node, NodeOverview} from "../api/cluster/type"
+import {Cluster, Node, NodeConfig,NodeOverview} from "../api/cluster/type"
 import {Role, Status as KeeperStatus} from "../api/keeper/type"
-import {Connection as NodeConnection, KeeperConnection, SshConnection} from "../api/node/type"
+import {KeeperConnection, KeeperRequest,SshConnection} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
 import {VarietyType} from "../api/query/type"
 import {Connection as QueryConnection} from "../api/query/type"
@@ -91,15 +91,15 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const initialNode = (connection: NodeConnection): Node => {
+export const initialNode = (config: NodeConfig): Node => {
     return ({
-        connection: connection,
+        config: config,
         warnings: ["no response from keeper"],
         keeper: {state: "-", role: "unknown", lag: -1, pendingRestart: false},
     })
 }
 
-export const isConnectionEqual = (c1?: NodeConnection, c2?: NodeConnection): boolean => {
+export const isConnectionEqual = (c1?: NodeConfig, c2?: NodeConfig): boolean => {
     return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort
 }
 
@@ -117,26 +117,32 @@ export function getSshConnection(cluster: Cluster, host: string, port?: number):
     return {host, port, vaultId}
 }
 
-export function getKeeperConnection(cluster: Cluster, host: string, port?: number): KeeperConnection | undefined {
+export function getKeeperConnection(host: string, port?: number): KeeperConnection | undefined {
     if (!port) return
-    const vaultId = cluster.vaults.keeperId
-    const certs = cluster.tls.keeper ? cluster.certs : undefined
-    return {host, port, certs, vaultId, plugin: cluster.plugins.keeper}
+    return {host, port}
 }
 
-export const getDomain = (connection: NodeConnection, simple: boolean = false) => {
-    const host = connection.host
-    const keeperPort = connection.keeperPort ? `:${connection.keeperPort}` : simple ? "" : ":"
-    const dbPort = simple ? "" : connection.dbPort ? `:${connection.dbPort}` : ":"
-    const sshPort = simple ? "" : connection.sshPort ? `:${connection.sshPort}` : ":"
+export function getKeeperRequest(cluster: Cluster, host: string, port?: number): KeeperRequest | undefined {
+    const con = getKeeperConnection(host, port)
+    if (!con) return
+    const vaultId = cluster.vaults.keeperId
+    const certs = cluster.tls.keeper ? cluster.certs : undefined
+    return {...con, certs, vaultId, plugin: cluster.plugins.keeper}
+}
+
+export const getDomain = (config: NodeConfig, simple: boolean = false) => {
+    const host = config.host
+    const keeperPort = config.keeperPort ? `:${config.keeperPort}` : simple ? "" : ":"
+    const dbPort = simple ? "" : config.dbPort ? `:${config.dbPort}` : ":"
+    const sshPort = simple ? "" : config.sshPort ? `:${config.sshPort}` : ":"
     return `${host.toLowerCase()}${keeperPort}${dbPort}${sshPort}`
 }
 
-export const getDomains = (nodes: NodeConnection[], simple: boolean = false) => {
+export const getDomains = (nodes: NodeConfig[], simple: boolean = false) => {
     return nodes.map(value => getDomain(value, simple))
 }
 
-export const getNodeConnection = (domain: string): NodeConnection => {
+export const getNodeConnection = (domain: string): NodeConfig => {
     const [host, keeperPort, dbPort, sshPort] = domain.split(":")
     return {
         host: host.toLowerCase(),
@@ -146,7 +152,7 @@ export const getNodeConnection = (domain: string): NodeConnection => {
     }
 }
 
-export const getNodeConnections = (domains: string[]): NodeConnection[] => {
+export const getNodeConnections = (domains: string[]): NodeConfig[] => {
     return domains.map(value => getNodeConnection(value))
 }
 

@@ -3,7 +3,7 @@ import {useState} from "react"
 
 import {Feature} from "../../../api/feature"
 import {useRouterNodeReinit} from "../../../api/node/hook"
-import {KeeperConnection} from "../../../api/node/type"
+import {KeeperRequest} from "../../../api/node/type"
 import {SxPropsMap} from "../../../app/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
@@ -14,12 +14,12 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    con: KeeperConnection,
+    request: KeeperRequest,
     cluster: string,
 }
 
 export function ReinitButton(props: Props) {
-    const {con, cluster} = props
+    const {request, cluster} = props
     const [force, setForce] = useState(false)
     const reinit = useRouterNodeReinit(cluster)
 
@@ -30,7 +30,7 @@ export function ReinitButton(props: Props) {
             <AlertButton
                 color={"info"}
                 label={"Reinit"}
-                title={`Make a reinit of ${con.host}?`}
+                title={`Make a reinit of ${request.host}?`}
                 description={"It will erase all node data and will download it from scratch."}
                 loading={reinit.isPending}
                 onClick={handleClick}
@@ -57,7 +57,7 @@ export function ReinitButton(props: Props) {
     }
 
     function handleClick() {
-        reinit.mutate({...con, body})
+        reinit.mutate({...request, body})
         setForce(false)
     }
 }

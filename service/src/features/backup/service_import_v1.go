@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"ivory/src/features"
 	"ivory/src/features/cluster"
-	"ivory/src/features/node"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/plugins/database"
@@ -56,11 +55,11 @@ func (s *Service) importV1(data []byte) error {
 }
 
 func backupToClusterV1(bc backupClusterV1) cluster.Request {
-	nodes := make([]node.Connection, len(bc.Sidecars))
+	nodes := make([]cluster.NodeConfig, len(bc.Sidecars))
 	for i, k := range bc.Sidecars {
-		nodes[i] = node.Connection{
+		nodes[i] = cluster.NodeConfig{
 			Host:       k.Host,
-			KeeperPort: k.Port,
+			KeeperPort: &k.Port,
 		}
 	}
 	return cluster.Request{

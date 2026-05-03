@@ -1,7 +1,7 @@
 import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {CertType} from "../../../api/cert/type"
-import {ClusterOptions} from "../../../api/cluster/type"
+import {Options as ClusterOptions} from "../../../api/cluster/type"
 import {Feature} from "../../../api/feature"
 import {VaultType} from "../../../api/vault/type"
 import {SxPropsMap} from "../../../app/type"

@@ -7,7 +7,7 @@ import {Cluster, Node} from "../../../../api/cluster/type"
 import {Feature} from "../../../../api/feature"
 import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../api/node/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {CodeThemes, getKeeperConnection} from "../../../../app/utils"
+import {CodeThemes, getKeeperRequest} from "../../../../app/utils"
 import {useSettings} from "../../../../provider/AppProvider"
 import {useSnackbar} from "../../../../provider/SnackbarProvider"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
@@ -31,16 +31,16 @@ export function OverviewConfig(props: Props) {
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const con = getKeeperConnection(cluster, node.connection.host, node.connection.keeperPort)
+    const req = getKeeperRequest(cluster, node.config.host, node.config.keeperPort)
 
-    const config = useRouterNodeConfig(con)
-    const updateConfig = useRouterNodeConfigUpdate(node.connection, () => setIsEditable(false))
+    const config = useRouterNodeConfig(req)
+    const updateConfig = useRouterNodeConfigUpdate(node.config, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 
     useEffect(() => setConfigState(stringify(data)), [data])
 
-    if (!con) return <ErrorSmart error={"provide keeper port to work with it"}/>
+    if (!req) return <ErrorSmart error={"provide keeper port to work with it"}/>
     if (isError) return <ErrorSmart error={error}/>
     if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
 
@@ -92,8 +92,8 @@ export function OverviewConfig(props: Props) {
     }
 
     function handleUpdate() {
-        if (configState && con) {
-            updateConfig.mutate({...con, body: JSON.parse(configState)})
+        if (configState && req) {
+            updateConfig.mutate({...req, body: JSON.parse(configState)})
         }
     }
 

@@ -2,10 +2,9 @@ import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
 
-import {Cluster, Node} from "../../../../api/cluster/type"
-import {Connection} from "../../../../api/node/type"
+import {Cluster, Node, NodeConfig} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {DateTimeFormatter, getKeeperConnection, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../app/utils"
+import {DateTimeFormatter, getKeeperRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../app/utils"
 import {useStoreAction} from "../../../../provider/StoreProvider"
 import {InfoColorBox} from "../../../view/box/InfoColorBox"
 import {MenuButton} from "../../../view/button/MenuButton"
@@ -29,18 +28,18 @@ type Props = {
     name: string,
     node: Node,
     cluster: Cluster,
-    candidates: Connection[],
+    candidates: NodeConfig[],
     checked: boolean,
     error?: boolean,
 }
 
 export function OverviewNodesRow(props: Props) {
     const {node, cluster, candidates, error = false, name, checked} = props
-    const {connection, warnings, keeper} = node
+    const {config, warnings, keeper} = node
     const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
 
     const {setNode} = useStoreAction
-    const con = getKeeperConnection(cluster, connection.host, connection.keeperPort)
+    const keeperRequest = getKeeperRequest(cluster, config.host, config.keeperPort)
 
     return (
         <TableRow
@@ -50,10 +49,10 @@ export function OverviewNodesRow(props: Props) {
             <TableCell><Radio checked={checked} size={"small"}/></TableCell>
             <TableCell align={"center"}>{renderWarning()}</TableCell>
             <TableCell sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</TableCell>
-            <TableCell sx={SX.nowrap}>{node.connection.host}</TableCell>
-            <TableCell sx={SX.nowrap}>{node.connection.sshPort ?? "-"}</TableCell>
-            <TableCell sx={SX.nowrap}>{node.connection.keeperPort ?? "-"}</TableCell>
-            <TableCell sx={SX.nowrap}>{node.connection.dbPort ?? "-"}</TableCell>
+            <TableCell sx={SX.nowrap}>{config.host}</TableCell>
+            <TableCell sx={SX.nowrap}>{config.sshPort ?? "-"}</TableCell>
+            <TableCell sx={SX.nowrap}>{config.keeperPort ?? "-"}</TableCell>
+            <TableCell sx={SX.nowrap}>{config.dbPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{state ?? "-"}</TableCell>
             <TableCell>
                 <Box sx={SX.last} onClick={(e) => e.stopPropagation()}>
@@ -126,22 +125,22 @@ export function OverviewNodesRow(props: Props) {
     }
 
     function renderMenuButtons() {
-        if (role === "unknown" || !con) return
+        if (role === "unknown" || !keeperRequest) return
         return (
             <MenuButton>
-                <ScheduleButton con={con} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
-                <FailoverButton con={con} cluster={cluster.name} disabled={role === "leader"}/>
-                <RestartButton con={con} cluster={cluster.name}/>
-                <ReloadButton con={con} cluster={cluster.name}/>
+                <ScheduleButton request={keeperRequest} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
+                <FailoverButton request={keeperRequest} cluster={cluster.name} disabled={role === "leader"}/>
+                <RestartButton request={keeperRequest} cluster={cluster.name}/>
+                <ReloadButton request={keeperRequest} cluster={cluster.name}/>
             </MenuButton>
         )
     }
 
     function renderRoleButtons() {
-        if (!con) return
+        if (!keeperRequest) return
         switch (role) {
-            case "replica": return <ReinitButton con={con} cluster={cluster.name}/>
-            case "leader": return <SwitchoverButton con={con} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
+            case "replica": return <ReinitButton request={keeperRequest} cluster={cluster.name}/>
+            case "leader": return <SwitchoverButton request={keeperRequest} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
             default: return
         }
     }

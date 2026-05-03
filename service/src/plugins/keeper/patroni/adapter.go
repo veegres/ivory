@@ -35,7 +35,7 @@ func (a *Adapter) SupportedFeatures() []features.Feature {
 	}
 }
 
-func (a *Adapter) Overview(request keeper.Request) ([]keeper.Response, int, error) {
+func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	var overview []keeper.Response
 
 	response, status, err := http.NewJSONRequest[PatroniCluster](a.httpClient).Get(keeper.Map(request, "/cluster"))

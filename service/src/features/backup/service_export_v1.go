@@ -64,7 +64,7 @@ func clusterToBackupV1(c cluster.Response) backupClusterV1 {
 	for i, n := range c.Nodes {
 		sidecars[i] = backupSidecarV1{
 			Host: n.Host,
-			Port: n.KeeperPort,
+			Port: *n.KeeperPort,
 		}
 	}
 	return backupClusterV1{

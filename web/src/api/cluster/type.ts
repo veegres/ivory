@@ -4,7 +4,7 @@ import {Certs} from "../cert/type"
 import {Plugin as DbPlugin} from "../database/type"
 import {Feature} from "../feature"
 import {Plugin as KeeperPlugin} from "../keeper/type"
-import {Connection, KeeperResponse} from "../node/type"
+import {KeeperResponse} from "../node/type"
 
 // COMMON (WEB AND SERVER)
 
@@ -13,38 +13,45 @@ export interface Plugins {
     database: DbPlugin,
 }
 
-export interface ClusterOptions {
+export interface Options {
     plugins: Plugins,
-    tls: ClusterTls,
+    tls: Tls,
     certs: Certs,
-    vaults: Vault,
+    vaults: Vaults,
     tags: string[],
 }
 
-export interface Cluster extends ClusterOptions {
+export interface NodeConfig {
+    host: string,
+    sshPort?: number,
+    keeperPort?: number,
+    dbPort?: number,
+}
+
+export interface Cluster extends Options {
     name: string,
-    nodes: Connection[],
+    nodes: NodeConfig[],
     nodesOverview?: NodeOverview,
 }
 
-export interface ClusterAuto extends ClusterOptions {
+export interface AutoRequest extends Options {
     name: string,
     host: string,
     port: number,
 }
 
-export interface ClusterTls {
+export interface Tls {
     keeper: boolean,
     database: boolean,
 }
 
-export interface Vault {
+export interface Vaults {
     keeperId?: string,
     databaseId?: string,
     sshKeyId?: string,
 }
 
-export interface ClusterOverview {
+export interface Overview {
     nodes: NodeOverview,
     detectedDomain: string,
     features: Feature[],
@@ -54,7 +61,9 @@ export interface NodeOverview {
     [domain: string]: Node,
 }
 
-export interface Node extends KeeperResponse {
+export interface Node {
+    config: NodeConfig,
+    keeper: KeeperResponse,
     warnings: string[],
 }
 

@@ -10,7 +10,7 @@ var ErrBodyShouldBeEmpty = errors.New("body should be empty")
 var ErrClientNotImplemented = errors.New("client is not implemented")
 
 type Adapter interface {
-	Overview(request Request) ([]Response, int, error)
+	List(request Request) ([]Response, int, error)
 	Config(request Request) (any, int, error)
 	ConfigUpdate(request Request) (any, int, error)
 	Switchover(request Request) (*string, int, error)

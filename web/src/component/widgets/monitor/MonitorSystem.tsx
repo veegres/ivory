@@ -1,5 +1,5 @@
 import {useRouterNodeMetrics} from "../../../api/node/hook"
-import {NodeMetrics, SshConnection} from "../../../api/node/type"
+import {MetricsResponse as NodeMetrics, SshConnection} from "../../../api/node/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../view/chart/HistoryTrackerChart"
 import {MonitorLoading} from "./MonitorLoading"

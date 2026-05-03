@@ -2,7 +2,7 @@ import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider,
 import {useState} from "react"
 
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
-import {ClusterAuto} from "../../../../api/cluster/type"
+import {AutoRequest} from "../../../../api/cluster/type"
 import {Plugin as DbPlugin} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
@@ -19,7 +19,7 @@ const SX: SxPropsMap = {
     node: {display: "flex", gap: 2},
 }
 
-const InitialClusterAuto: ClusterAuto = {
+const InitialRequest: AutoRequest = {
     name: "",
     plugins: {
         database: DbPlugin.POSTGRES,
@@ -39,7 +39,7 @@ type Props = {
 
 export function ListCreateAuto(props: Props) {
     const {size} = props
-    const [cluster, setCluster] = useState(InitialClusterAuto)
+    const [request, setRequest] = useState(InitialRequest)
     const [open, setOpen] = useState(false)
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
@@ -54,7 +54,7 @@ export function ListCreateAuto(props: Props) {
                         size={"small"}
                         label={"Name"}
                         required
-                        value={cluster.name}
+                        value={request.name}
                         onChange={(e) => handleNameUpdate(e.target.value)}
                     />
                     <Box sx={SX.node}>
@@ -63,7 +63,7 @@ export function ListCreateAuto(props: Props) {
                             size={"small"}
                             label={"Domain"}
                             required
-                            value={cluster.host}
+                            value={request.host}
                             onChange={(e) => handleHostUpdate(e.target.value)}
                         />
                         <TextField
@@ -71,20 +71,21 @@ export function ListCreateAuto(props: Props) {
                             size={"small"}
                             label={"Port"}
                             required
-                            value={cluster.port || ""}
+                            value={request.port || ""}
                             onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
                         />
                     </Box>
                     <Divider variant={"middle"}/>
-                    <Options cluster={cluster} onUpdate={(opt) => setCluster({...cluster, ...opt})}/>
+                    <Options cluster={request} onUpdate={(opt) => setRequest({...request, ...opt})}/>
                 </DialogContent>
                 <DialogActions sx={SX.center}>
                     <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
                     <Button
                         loading={updateCluster.isPending}
-                        onClick={() => updateCluster.mutate(cluster)}
+                        onClick={() => updateCluster.mutate(request)}
+                        disabled={!request.name || !request.host || !request.port}
                     >
-                        Save
+                        Create
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -92,19 +93,19 @@ export function ListCreateAuto(props: Props) {
     )
 
     function handleNameUpdate(v: string) {
-        setCluster(c => ({...c, name: v}))
+        setRequest(c => ({...c, name: v}))
     }
 
     function handleHostUpdate(v: string) {
-        setCluster(c => ({...c, host: v}))
+        setRequest(c => ({...c, host: v}))
     }
 
     function handlePortUpdate(v: number) {
-        setCluster(c => ({...c, port: isNaN(v) ? 0 : v}))
+        setRequest(c => ({...c, port: isNaN(v) ? 0 : v}))
     }
 
     function handleSuccessUpdate() {
         setOpen(false)
-        setCluster(InitialClusterAuto)
+        setRequest(InitialRequest)
     }
 }

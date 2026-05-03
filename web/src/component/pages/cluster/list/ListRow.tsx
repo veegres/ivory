@@ -128,7 +128,7 @@ export function ListRow(props: Props) {
     function handleMemoNodes(): [boolean, ColorsMap] {
         const getColors = () => Object.entries(nodes ?? {}).reduce(
             (map, [_, node]) => {
-                const d = getDomain(node.connection, !editable)
+                const d = getDomain(node.config, !editable)
                 map[d] = NodeColor[node.keeper.role].label
                 return map
             },

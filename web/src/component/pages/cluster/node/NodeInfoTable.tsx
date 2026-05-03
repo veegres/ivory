@@ -22,19 +22,19 @@ export function NodeInfoTable(props: Props) {
             <TableBody isLoading={false} cellCount={2}>
                 <TableRow>
                     <TableCell sx={SX.title}>Host</TableCell>
-                    <TableCell sx={SX.wrap}>{node.connection.host}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.config.host}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>SSH</TableCell>
-                    <TableCell sx={SX.wrap}>{node.connection.sshPort?.toString() ?? "-"}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.config.sshPort?.toString() ?? "-"}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Keeper</TableCell>
-                    <TableCell sx={SX.wrap}>{node.connection.keeperPort?.toString() ?? "-"}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.config.keeperPort?.toString() ?? "-"}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>Database</TableCell>
-                    <TableCell sx={SX.wrap}>{node.connection.dbPort?.toString() ?? "-"}</TableCell>
+                    <TableCell sx={SX.wrap}>{node.config.dbPort?.toString() ?? "-"}</TableCell>
                 </TableRow>
                 <TableRow>
                     <TableCell sx={SX.title}>State</TableCell>
