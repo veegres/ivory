@@ -32,7 +32,7 @@ export function MonitorSystem(props: Props) {
                 label={"Memory Usage"}
                 unit={"%"}
                 data={metrics.data}
-                selector={(m) => m.memory.usagePercent}
+                selector={getMemoryUsage}
                 color={"#4caf50"}
                 min={0}
                 max={100}
@@ -61,12 +61,25 @@ export function MonitorSystem(props: Props) {
         return totalDiff > 0 ? (totalDiff - idleDiff) / totalDiff * 100 : 0
     }
 
+    function getMemoryUsage(m: NodeMetrics) {
+        const used = m.memory.totalBytes - m.memory.availableBytes
+        return used / m.memory.totalBytes * 100
+    }
+
+    // We use the configured interval as the elapsed time denominator
+    // rather than measuring actual time between samples. This may
+    // slightly underestimate throughput under jitter or tab
+    // backgrounding, which is acceptable for a low-frequency dashboard.
     function getNetRxDelta(l: NodeMetrics, p?: NodeMetrics) {
         if (!p) return undefined
         const rx = (l.network.receivedBytes - p.network.receivedBytes) / 1024 / (interval / 1000)
         return rx < 0 ? 0 : rx
     }
 
+    // We use the configured interval as the elapsed time denominator
+    // rather than measuring actual time between samples. This may
+    // slightly underestimate throughput under jitter or tab
+    // backgrounding, which is acceptable for a low-frequency dashboard.
     function getNetTxDelta(l: NodeMetrics, p?: NodeMetrics) {
         if (!p) return undefined
         const tx = (l.network.transmittedBytes - p.network.transmittedBytes) / 1024 / (interval / 1000)
