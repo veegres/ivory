@@ -18,10 +18,8 @@ type CpuMetrics struct {
 }
 
 type MemoryMetrics struct {
-	TotalBytes     uint64  `json:"totalBytes"`
-	UsedBytes      uint64  `json:"usedBytes"`
-	AvailableBytes uint64  `json:"availableBytes"`
-	UsagePercent   float64 `json:"usagePercent"`
+	TotalBytes     uint64 `json:"totalBytes"`
+	AvailableBytes uint64 `json:"availableBytes"`
 }
 
 type NetworkMetrics struct {

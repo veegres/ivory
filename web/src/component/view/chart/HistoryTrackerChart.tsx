@@ -1,5 +1,5 @@
 import {LineChart} from "@mui/x-charts/LineChart"
-import {useEffect, useMemo, useState} from "react"
+import {useEffect, useMemo, useRef, useState} from "react"
 
 import {NodeMetrics} from "../../../api/node/type"
 import {ChartBox} from "../box/ChartBox"
@@ -18,7 +18,7 @@ type Props = {
 export function HistoryTrackerChart(props: Props) {
     const {label, data, selector, length = 60, color, unit, min, max} = props
     const [history, setHistory] = useState<(number | undefined)[]>(new Array(length).fill(undefined))
-    const [lastRaw, setLastRaw] = useState<NodeMetrics | undefined>()
+    const lastRawRef = useRef<NodeMetrics | undefined>(undefined)
 
     const latestValue = useMemo(handleMemoLatestValue, [history])
     const xData = useMemo(handleMemoXLabels, [length])
@@ -61,13 +61,12 @@ export function HistoryTrackerChart(props: Props) {
 
     function handleEffectMetrics() {
         if (!data) return
-        setHistory(prev => [...prev.slice(1), selector(data, lastRaw)])
-        setLastRaw(data)
+        setHistory(prev => [...prev.slice(1), selector(data, lastRawRef.current)])
+        lastRawRef.current = data
     }
 
     function handleMemoLatestValue() {
-        const val = history[history.length - 1]
-        return val === null ? undefined : val
+        return history[history.length - 1]
     }
 
     function handleMemoXLabels() {

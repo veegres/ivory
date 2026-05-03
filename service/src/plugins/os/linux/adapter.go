@@ -79,6 +79,12 @@ func (a *Adapter) normalizeDockerCommand(command string) string {
 func (a *Adapter) parseMetrics(output string) (*os.Metrics, error) {
 	sections := a.splitMetricsOutput(output)
 
+	for _, key := range []string{"__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__"} {
+		if _, ok := sections[key]; !ok {
+			return nil, fmt.Errorf("metrics output missing section %q", key)
+		}
+	}
+
 	cpu, err := a.parseCpuMetrics(sections["__IVORY_CPU__"])
 	if err != nil {
 		return nil, err
@@ -185,36 +191,29 @@ func (a *Adapter) parseMemoryMetrics(lines []string) (os.MemoryMetrics, error) {
 	if total == 0 {
 		return os.MemoryMetrics{}, os.ErrInvalidMemoryMetrics
 	}
-	used := total - available
 
 	return os.MemoryMetrics{
 		TotalBytes:     total,
-		UsedBytes:      used,
 		AvailableBytes: available,
-		UsagePercent:   (float64(used) / float64(total)) * 100,
 	}, nil
 }
 
 func (a *Adapter) parseNetworkMetrics(lines []string) (os.NetworkMetrics, error) {
-	if len(lines) < 3 {
-		return os.NetworkMetrics{}, os.ErrInvalidNetworkMetrics
-	}
-
 	var received uint64
 	var transmitted uint64
-	for _, line := range lines[2:] {
+	for _, line := range lines {
 		parts := strings.Split(line, ":")
 		if len(parts) != 2 {
-			return os.NetworkMetrics{}, os.ErrInvalidNetworkMetrics
+			continue
 		}
 
 		iface := strings.TrimSpace(parts[0])
-		if iface == "lo" {
+		if strings.Contains(iface, "|") || iface == "lo" {
 			continue
 		}
 
 		fields := strings.Fields(parts[1])
-		if len(fields) < 9 {
+		if len(fields) < 16 {
 			return os.NetworkMetrics{}, os.ErrInvalidNetworkMetrics
 		}
 

@@ -42,9 +42,7 @@ export interface CpuMetrics {
 
 export interface MemoryMetrics {
     totalBytes: number,
-    usedBytes: number,
     availableBytes: number,
-    usagePercent: number,
 }
 
 export interface NetworkMetrics {
