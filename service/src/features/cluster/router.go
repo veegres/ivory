@@ -18,7 +18,7 @@ func NewRouter(clusterService *Service) *Router {
 func (r *Router) GetClusterList(context *gin.Context) {
 	tags := context.Request.URL.Query()["tags[]"]
 
-	var list []Cluster
+	var list []Response
 	var err error
 	if len(tags) == 0 {
 		list, err = r.clusterService.List()
@@ -65,7 +65,7 @@ func (r *Router) GetClusterByName(context *gin.Context) {
 }
 
 func (r *Router) PutClusterByName(context *gin.Context) {
-	var cluster Cluster
+	var cluster Request
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})
@@ -82,7 +82,7 @@ func (r *Router) PutClusterByName(context *gin.Context) {
 }
 
 func (r *Router) PostClusterAutoCreate(context *gin.Context) {
-	var cluster ClusterAuto
+	var cluster AutoRequest
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})

@@ -26,7 +26,7 @@ export function OverviewNodes(props: Props) {
     const nodes = props.nodes ?? cluster.nodesOverview
     const activeNode = useStore(s => s.activeNode[cluster.name])
     const overview = useRouterClusterOverview(cluster.name, false)
-    const candidates = Object.values(nodes)
+    const candidates = Object.values(nodes ?? {})
         .filter(node => !!node)
         .filter(node => node.keeper.role === "replica")
         .map(node => node.connection)
@@ -55,7 +55,7 @@ export function OverviewNodes(props: Props) {
                 </TableHead>
                 <TableBody>
                     {renderCheckedNode()}
-                    {Object.entries(nodes).map(([key, element]) => (
+                    {Object.entries(nodes ?? {}).map(([key, element]) => (
                         <OverviewNodesRow
                             key={key}
                             name={key}
@@ -72,7 +72,7 @@ export function OverviewNodes(props: Props) {
 
     function renderCheckedNode() {
         if (!activeNode) return
-        if (nodes.hasOwnProperty(activeNode)) return
+        if (nodes?.[activeNode]) return
         return (
             <OverviewNodesRow
                 name={activeNode}

@@ -21,13 +21,16 @@ const SX: SxPropsMap = {
 
 const InitialClusterAuto: ClusterAuto = {
     name: "",
-    dbPlugin: DbPlugin.POSTGRES,
-    keeperPlugin: KeeperPlugin.PATRONI,
+    plugins: {
+        database: DbPlugin.POSTGRES,
+        keeper: KeeperPlugin.PATRONI,
+    },
     tls: {keeper: false, database: false},
     certs: {},
     vaults: {},
     tags: [],
-    node: {host: "", keeperPort: undefined},
+    host: "",
+    port: 8008,
 }
 
 type Props = {
@@ -60,7 +63,7 @@ export function ListCreateAuto(props: Props) {
                             size={"small"}
                             label={"Domain"}
                             required
-                            value={cluster.node.host}
+                            value={cluster.host}
                             onChange={(e) => handleHostUpdate(e.target.value)}
                         />
                         <TextField
@@ -68,7 +71,7 @@ export function ListCreateAuto(props: Props) {
                             size={"small"}
                             label={"Port"}
                             required
-                            value={cluster.node.keeperPort || ""}
+                            value={cluster.port || ""}
                             onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
                         />
                     </Box>
@@ -93,11 +96,11 @@ export function ListCreateAuto(props: Props) {
     }
 
     function handleHostUpdate(v: string) {
-        setCluster(c => ({...c, node: {...c.node, host: v}}))
+        setCluster(c => ({...c, host: v}))
     }
 
     function handlePortUpdate(v: number) {
-        setCluster(c => ({...c, node: {...c.node, keeperPort: isNaN(v) ? undefined : v}}))
+        setCluster(c => ({...c, port: isNaN(v) ? 0 : v}))
     }
 
     function handleSuccessUpdate() {

@@ -12,31 +12,41 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type ClusterOptions struct {
-	DbPlugin     database.Plugin `json:"dbPlugin"`
-	KeeperPlugin keeper.Plugin   `json:"keeperPlugin"`
-	Tls          ClusterTls      `json:"tls"`
-	Certs        cert.Certs      `json:"certs"`
-	Vaults       Vaults          `json:"vaults"`
-	Tags         []string        `json:"tags"`
+type Options struct {
+	Plugins Plugins    `json:"plugins"`
+	Tls     Tls        `json:"tls"`
+	Certs   cert.Certs `json:"certs"`
+	Vaults  Vaults     `json:"vaults"`
+	Tags    []string   `json:"tags"`
 }
 
-type Cluster struct {
-	ClusterOptions
+type Request struct {
 	Name  string            `json:"name"`
 	Nodes []node.Connection `json:"nodes"`
+	Options
 }
 
-type ClusterAuto struct {
-	ClusterOptions
+type Response struct {
+	Name  string            `json:"name"`
+	Nodes []node.Connection `json:"nodes"`
+	Options
+}
+
+type AutoRequest struct {
 	Name string `json:"name"`
 	Host string `json:"host"`
 	Port int    `json:"port"`
+	Options
 }
 
-type ClusterTls struct {
-	Keeper   bool `json:"sidecar"`
+type Tls struct {
+	Keeper   bool `json:"keeper"`
 	Database bool `json:"database"`
+}
+
+type Plugins struct {
+	Keeper   keeper.Plugin   `json:"keeper"`
+	Database database.Plugin `json:"database"`
 }
 
 type Vaults struct {
@@ -45,13 +55,13 @@ type Vaults struct {
 	SshKeyId   *uuid.UUID `json:"sshKeyId"`
 }
 
-type ClusterOverview struct {
-	Nodes          NodeOverview       `json:"nodes"`
+type Overview struct {
+	Nodes          NodeMap            `json:"nodes"`
 	DetectedDomain string             `json:"detectedDomain"`
 	Features       []features.Feature `json:"features"`
 }
 
-type NodeOverview map[string]Node
+type NodeMap = map[string]Node
 
 type Node struct {
 	node.KeeperResponse

@@ -51,14 +51,15 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     cluster={{
                         name: stateName,
-                        dbPlugin: DbPlugin.POSTGRES,
-                        keeperPlugin: KeeperPlugin.PATRONI,
+                        plugins: {
+                            database: DbPlugin.POSTGRES,
+                            keeper: KeeperPlugin.PATRONI,
+                        },
                         nodes: getNodeConnections(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
                         vaults: {},
                         tls: {keeper: false, database: false},
-                        nodesOverview: {},
                     }}
                     toggle={toggle}
                     onUpdate={clean}

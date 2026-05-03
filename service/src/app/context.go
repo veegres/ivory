@@ -52,7 +52,7 @@ func NewContext() *Context {
 
 	// DB
 	st := db.NewStorage("ivory.db")
-	clusterBucket := db.NewBucket[cluster.Cluster](st, "Cluster")
+	clusterBucket := db.NewBucket[cluster.Response](st, "Cluster")
 	certBucket := db.NewBucket[cert.Cert](st, "Cert")
 	tagBucket := db.NewBucket[[]string](st, "Tag")
 	secretBucket := db.NewBucket[string](st, "Secret")
