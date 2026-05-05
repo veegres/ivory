@@ -1,7 +1,7 @@
 import {Stack} from "@mui/material"
 
 import {useRouterClusterUpdate} from "../../../../api/cluster/hook"
-import {ActiveCluster, Options as ClusterOptions, Overview} from "../../../../api/cluster/type"
+import {Cluster, Options as ClusterOptions, Overview as ClusterOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Options} from "../../../widgets/options/Options"
@@ -12,14 +12,14 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    info: ActiveCluster,
-    overview?: Overview,
+    cluster: Cluster,
+    overview?: ClusterOverview,
     mainKeeper?: string,
+    manualKeeper?: string,
 }
 
 export function OverviewOptions(props: Props) {
-    const {info, overview, mainKeeper} = props
-    const {manualKeeper, cluster} = info
+    const {cluster, overview, mainKeeper, manualKeeper} = props
 
     const updateCluster = useRouterClusterUpdate()
 
@@ -31,7 +31,7 @@ export function OverviewOptions(props: Props) {
                 manualKeeper={manualKeeper}
             />
             <LinearProgressStateful loading={updateCluster.isPending} line={true} color={"inherit"}/>
-            <Options cluster={cluster} onUpdate={handleClusterUpdate}/>
+            <Options options={cluster} onUpdate={handleClusterUpdate}/>
         </Stack>
     )
 

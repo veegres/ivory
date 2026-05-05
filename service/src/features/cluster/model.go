@@ -69,9 +69,8 @@ type Node struct {
 }
 
 type Overview struct {
-	Nodes          map[string]Node    `json:"nodes"`
-	DetectedDomain string             `json:"detectedDomain"`
-	Features       []features.Feature `json:"features"`
+	Nodes    map[string]Node    `json:"nodes"`
+	Features []features.Feature `json:"features"`
 }
 
 // SPECIFIC (SERVER)

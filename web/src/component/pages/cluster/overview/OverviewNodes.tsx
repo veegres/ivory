@@ -58,7 +58,7 @@ export function OverviewNodes(props: Props) {
                     {Object.entries(nodes ?? {}).map(([key, element]) => (
                         <OverviewNodesRow
                             key={key}
-                            name={key}
+                            nodeKey={key}
                             checked={key === activeNode}
                             node={element}
                             cluster={cluster}
@@ -75,7 +75,7 @@ export function OverviewNodes(props: Props) {
         if (nodes?.[activeNode]) return
         return (
             <OverviewNodesRow
-                name={activeNode}
+                nodeKey={activeNode}
                 node={initialNode(getNodeConnection(activeNode))}
                 checked={true}
                 cluster={cluster}

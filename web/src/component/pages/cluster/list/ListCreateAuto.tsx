@@ -76,7 +76,7 @@ export function ListCreateAuto(props: Props) {
                         />
                     </Box>
                     <Divider variant={"middle"}/>
-                    <Options cluster={request} onUpdate={(opt) => setRequest({...request, ...opt})}/>
+                    <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})}/>
                 </DialogContent>
                 <DialogActions sx={SX.center}>
                     <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>

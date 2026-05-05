@@ -77,9 +77,9 @@ export function ListTable(props: Props) {
 
     function renderRemovedRow() {
         if (!activeCluster) return
-        if (rows.some(e => e.name === activeCluster.cluster.name)) return
+        if (rows.some(e => e.name === activeCluster.name)) return
         return (
-            <ListRow cluster={activeCluster.cluster} editable={false}/>
+            <ListRow cluster={activeCluster} editable={false}/>
         )
     }
 

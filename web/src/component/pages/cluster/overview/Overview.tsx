@@ -91,21 +91,26 @@ const TABS: ClusterTab[] = [
 ]
 
 export function Overview() {
-    const activeClusterTab = useStore(s => s.activeClusterTab)
+    const {setClusterTab} = useStoreAction
     const activeTags = useStore(s => s.activeTags)
     const activeCluster = useStore(s => s.activeCluster)
-    const {setClusterTab} = useStoreAction
+    const activeClusterTab = useStore(s => s.activeClusterTab)
+    const manualKeeper = useStore(s => s.manualKeeper)
+
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useRouterClusterList(activeTags)
-    const overview = useRouterClusterOverview(activeCluster?.cluster.name, false)
+
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
-    const [mainDomain, mainNode] = useMemo(() => getMainKeeper(overview.data?.nodes, overview.data?.detectedDomain), [overview])
+
+    const clusters = useRouterClusterList(activeTags, false)
+    const overview = useRouterClusterOverview(activeCluster?.name, false)
+
+    const [mainDomain, mainNode] = useMemo(() => getMainKeeper(overview.data?.nodes), [overview.data?.nodes])
     const tab = TABS[activeClusterTab]
 
     return (
-        <PageMainBox withPadding visible={!!clusters.data?.length || !!activeCluster}>
+        <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)} role={"tab"}>
                     {TABS.map((value, i) => permissions && permissions[value.feature] === Status.GRANTED && (
@@ -124,15 +129,16 @@ export function Overview() {
 
     function renderMainBlock() {
         if (!activeCluster) return <AlertCentered text={"Please, select a cluster to see the overview! (click on the name)"}/>
+        if (!activeCluster) return <AlertCentered text={"Selected cluster in not in the list"} severity={"warning"}/>
         if (!tab) return <AlertCentered text={"Coming soon — we're working on it!"}/>
         return <>
             {overview.error && <ErrorSmart error={overview.error}/>}
-            {tab.body(activeCluster.cluster, mainNode, overview.data?.nodes)}
+            {tab.body(activeCluster, mainNode, overview.data?.nodes)}
         </>
     }
 
     function renderActions() {
-        if (!activeCluster) return null
+        if (!activeCluster) return
         return <OverviewAction
             cluster={activeCluster}
             mainNode={[mainDomain, mainNode]}
@@ -145,7 +151,7 @@ export function Overview() {
     }
 
     function renderInfoBlock() {
-        if (!tab?.info) return null
+        if (!tab?.info) return
         return (
             <Collapse in={infoOpen}>
                 <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{tab.info}</Alert>
@@ -155,12 +161,17 @@ export function Overview() {
     }
 
     function renderSettingsBlock() {
-        if (!activeCluster) return null
+        if (!activeCluster) return
         return (
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    <OverviewOptions info={activeCluster} overview={overview.data} mainKeeper={mainDomain}/>
+                    <OverviewOptions
+                        cluster={activeCluster}
+                        overview={overview.data}
+                        mainKeeper={mainDomain}
+                        manualKeeper={manualKeeper}
+                    />
                 </Box>
             </Collapse>
         )

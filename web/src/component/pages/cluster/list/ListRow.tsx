@@ -5,17 +5,13 @@ import {useEffect, useMemo, useRef, useState} from "react"
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster} from "../../../../api/cluster/type"
 import {ColorsMap, SxPropsMap} from "../../../../app/type"
-import {
-    getDetectionItems, getDomain, getDomains, getNodeConnections, NodeColor, SxPropsFormatter,
-} from "../../../../app/utils"
+import {getDomain, getDomains, getNodeConnections, NodeColor, SxPropsFormatter} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
-import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
-import {AutoRefreshIconButton, RefreshIconButton} from "../../../view/button/IconButtons"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {ListCell} from "./ListCell"
-import {ListCellChip} from "./ListCellChip"
 import {ListCellRead} from "./ListCellRead"
 import {ListCellUpdate} from "./ListCellUpdate"
+import {ListRowName} from "./ListRowName"
 
 const SX: SxPropsMap = {
     actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, minHeight: "32px"},
@@ -31,29 +27,25 @@ type Props = {
 
 export function ListRow(props: Props) {
     const {cluster, editable, toggle} = props
-
-    const activeCluster = useStore(s => s.activeCluster)
-    const {setWarnings, setCluster} = useStoreAction
-    const active = !!activeCluster && cluster.name === activeCluster.cluster.name
-
     const ref = useRef<HTMLTableRowElement | null>(null)
+
+    const {setWarnings} = useStoreAction
+    const activeCluster = useStore(s => s.activeCluster)
+    const active = !!activeCluster && cluster.name === activeCluster.name
+
     const [stateNodes, setStateNodes] = useState(getDomains(cluster.nodes, !editable))
 
     const overview = useRouterClusterOverview(cluster.name)
-    const nodes = overview.data?.nodes ?? cluster.nodesOverview
-    const detectedDomain = overview.data?.detectedDomain
-    const [warning, colors] = useMemo(handleMemoNodes, [nodes, editable])
-    const detectionItems = useMemo(() => getDetectionItems(nodes, detectedDomain, activeCluster?.manualKeeper), [nodes, detectedDomain, activeCluster?.manualKeeper])
+    const [warning, colors] = useMemo(handleMemoNodes, [overview.data?.nodes, editable])
 
     useEffect(handleEffectNodesUpdate, [cluster.nodes, editable])
-    useEffect(handleEffectWarningsUpdate, [cluster.name, setWarnings, warning])
+    useEffect(handleEffectWarningsUpdate, [cluster.name, warning, setWarnings])
     useEffect(handleEffectScroll, [active])
-    useEffect(handleEffectActiveClusterUpdate, [active, cluster, setCluster, warning])
 
     return (
         <TableRow sx={[active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]} ref={ref}>
             <ListCell width={"220px"}>
-                <ListCellChip name={cluster.name} active={active} onClick={handleClick} renderRefresh={renderRefresh()}/>
+                <ListRowName cluster={cluster} active={active} loading={overview.isFetching} refresh={overview.refetch}/>
             </ListCell>
             <ListCell>
                 <DynamicInputs
@@ -101,50 +93,19 @@ export function ListRow(props: Props) {
         )
     }
 
-    function renderRefresh() {
-        return !active || !activeCluster?.manualKeeper ? (
-            <AutoRefreshIconButton
-                tooltip={renderChipTooltip()}
-                placement={"right-start"}
-                arrow={true}
-                loading={overview.isFetching}
-                onClick={() => overview.refetch()}
-            />
-        ) : (
-            <RefreshIconButton
-                tooltip={renderChipTooltip()}
-                placement={"right-start"}
-                arrow={true}
-                loading={overview.isFetching}
-                onClick={() => overview.refetch()}
-            />
-        )
-    }
-
-    function renderChipTooltip() {
-        return <InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>
-    }
-
     function handleMemoNodes(): [boolean, ColorsMap] {
-        const getColors = () => Object.entries(nodes ?? {}).reduce(
-            (map, [_, node]) => {
+        let warning = false
+        const colors = Object.values(overview.data?.nodes ?? {}).reduce(
+            (map, node) => {
+                if (node.warnings.length > 0) warning = true
                 const d = getDomain(node.config, !editable)
                 map[d] = NodeColor[node.keeper.role].label
                 return map
             },
             {} as ColorsMap
         )
-        const getWarning = () => {
-            const n = nodes ?? {}
-            for (const key in n) {
-                const node = n[key]
-                if (node.warnings.length > 0) return true
-            }
-            return false
-        }
-        return [getWarning(), getColors()]
+        return [warning, colors]
     }
-
 
     function handleEffectWarningsUpdate() {
         setWarnings(cluster.name, warning)
@@ -153,27 +114,11 @@ export function ListRow(props: Props) {
         }
     }
 
-
-    // NOTE: we could potentially take the data from tanstack.query, but then we couldn't
-    //  see the selected cluster which is not on the list
-    function handleEffectActiveClusterUpdate() {
-        if (!active) return
-        setCluster({cluster, warning})
-    }
-
     function handleEffectScroll() {
         if (active) ref.current?.scrollIntoView({block: "nearest"})
     }
 
     function handleEffectNodesUpdate() {
         setStateNodes(getDomains(cluster.nodes, !editable))
-    }
-
-    function handleClick() {
-        if (active) {
-            setCluster(undefined)
-        } else {
-            setCluster({cluster, warning})
-        }
     }
 }

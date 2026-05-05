@@ -2,6 +2,7 @@ package node
 
 import (
 	"crypto/ed25519"
+	"crypto/tls"
 	"errors"
 	"ivory/src/clients/ssh"
 	"ivory/src/features"
@@ -47,39 +48,35 @@ func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
 }
 
 func (s *Service) getOSAdapter(c SshConnection) (os.Adapter, *ssh.Connection, error) {
+	adapter, err := s.osRegistry.Get(os.Linux)
 	sshConn, err := s.getSshConnection(c)
 	if err != nil {
 		return nil, nil, err
 	}
-	adapter, err := s.osRegistry.Get(os.Linux)
 	return adapter, sshConn, err
 }
 
-func (s *Service) getKeeperAdapter(c KeeperRequest) (keeper.Adapter, keeper.Request, error) {
+func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config, *keeper.Credentials, error) {
 	client, errClient := s.keeperRegistry.Get(c.Plugin)
 	if errClient != nil {
-		return nil, keeper.Request{}, errClient
+		return nil, nil, nil, errClient
 	}
-	request, err := s.getKeeperRequest(c)
-	return client, request, err
-}
-
-func (s *Service) getKeeperRequest(c KeeperRequest) (keeper.Request, error) {
-	keeperRequest := keeper.Request{Host: c.Host, Port: c.Port, Body: c.Body}
+	var tlsConfig *tls.Config
 	if c.Certs != nil {
-		err := s.certService.EnrichTLSConfig(&keeperRequest.TlsConfig, c.Certs)
+		err := s.certService.EnrichTLSConfig(&tlsConfig, c.Certs)
 		if err != nil {
-			return keeperRequest, err
+			return nil, nil, nil, err
 		}
 	}
+	var cred *keeper.Credentials
 	if c.VaultId != nil {
-		cred, err := s.vaultService.GetDecrypted(*c.VaultId)
+		d, err := s.vaultService.GetDecrypted(*c.VaultId)
 		if err != nil {
-			return keeperRequest, err
+			return nil, nil, nil, err
 		}
-		keeperRequest.Credentials = &keeper.Credentials{Username: cred.Username, Password: cred.Secret}
+		cred = &keeper.Credentials{Username: d.Username, Password: d.Secret}
 	}
-	return keeperRequest, nil
+	return client, tlsConfig, cred, nil
 }
 
 func (s *Service) getSshConnection(c SshConnection) (*ssh.Connection, error) {
@@ -90,7 +87,6 @@ func (s *Service) getSshConnection(c SshConnection) (*ssh.Connection, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return &ssh.Connection{
 		Host:       c.Host,
 		Port:       c.Port,

@@ -1,11 +1,11 @@
 import {Box} from "@mui/material"
 
 import {CertType} from "../../../../api/cert/type"
-import {useRouterClusterOverview} from "../../../../api/cluster/hook"
-import {Cluster} from "../../../../api/cluster/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
 import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
 import {CertOptions, getDetectionItems,VaultOptions} from "../../../../app/utils"
+import {useStore} from "../../../../provider/StoreProvider"
 import {InfoBox} from "../../../view/box/InfoBox"
 import {InfoBoxList} from "../../../view/box/InfoBoxList"
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
@@ -16,11 +16,12 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    manualKeeper?: string,
+    mainNode: [string?, Node?],
 }
 
 export function OverviewActionInfo(props: Props) {
-    const {cluster, manualKeeper} = props
+    const {cluster, mainNode} = props
+    const manualKeeper = useStore(s => s.manualKeeper)
 
     const infoItems = [
         {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.databaseId},
@@ -30,9 +31,7 @@ export function OverviewActionInfo(props: Props) {
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
     ]
 
-    const overview = useRouterClusterOverview(cluster.name, false)
-    const {nodes, detectedDomain} = overview.data ?? {}
-    const detectionItems = getDetectionItems(nodes, detectedDomain, manualKeeper)
+    const detectionItems = getDetectionItems(mainNode, manualKeeper)
     const node = detectionItems[1]
 
     return (

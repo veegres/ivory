@@ -1,160 +1,128 @@
 package node
 
 import (
-	"crypto/tls"
-	"errors"
 	"fmt"
 	"ivory/src/plugins/keeper"
+	"sync"
 )
 
-func (s *Service) ListAuto(request KeeperAutoRequest) ([]KeeperResponse, int, *KeeperConnection, error) {
-	client, errClient := s.keeperRegistry.Get(request.Plugin)
-	if errClient != nil {
-		return nil, 0, nil, errClient
-	}
-	var tlsConfig *tls.Config
-	if request.Certs != nil {
-		err := s.certService.EnrichTLSConfig(&tlsConfig, request.Certs)
-		if err != nil {
-			return nil, 0, nil, err
-		}
-	}
-	var cred *keeper.Credentials
-	if request.VaultId != nil {
-		pass, err := s.vaultService.GetDecrypted(*request.VaultId)
-		if err != nil {
-			return nil, 0, nil, err
-		}
-		cred = &keeper.Credentials{Username: pass.Username, Password: pass.Secret}
-	}
-	var keeperResponses []keeper.Response
-	var detectedBy *KeeperConnection
-	var statusCode int
-	var errorChain error
-	for i, connection := range request.Connections {
-		r := keeper.Request{Host: connection.Host, Port: connection.Port, Body: request.Body, TlsConfig: tlsConfig, Credentials: cred}
-		var err error
-		keeperResponses, statusCode, err = client.List(r)
-		if err == nil {
-			detectedBy = &connection
-			break
-		}
-		errorChain = errors.Join(errorChain, fmt.Errorf("#%d failed %d: %w", i, statusCode, err))
-	}
-	if keeperResponses == nil {
-		return nil, statusCode, nil, errorChain
+func (s *Service) ListParallel(r KeeperParallelRequest) ([]KeeperParallelResponse, error) {
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
+	if err != nil {
+		return nil, err
 	}
 
-	nodes := make([]KeeperResponse, 0, len(keeperResponses))
-	for _, kr := range keeperResponses {
-		nodes = append(nodes, kr)
+	keeperAutoResponse := make([]KeeperParallelResponse, len(r.Connections))
+	// NOTE: we do not need mutex, because we save always by index
+	var wg sync.WaitGroup
+	for i, conn := range r.Connections {
+		wg.Add(1)
+		go func(i int, conn KeeperConnection) {
+			defer wg.Done()
+			r := keeper.Request{Host: conn.Host, Port: conn.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred}
+			response, statusCode, err := client.List(r)
+			if err != nil {
+				err = fmt.Errorf("host %q failed with code %d: %w", r.Host, statusCode, err)
+			}
+			keeperAutoResponse[i] = KeeperParallelResponse{Connection: conn, Response: response, Error: err}
+		}(i, conn)
 	}
-
-	return nodes, statusCode, detectedBy, errorChain
+	wg.Wait()
+	return keeperAutoResponse, nil
 }
 
 func (s *Service) List(r KeeperRequest) ([]KeeperResponse, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	keeperResponses, status, err := client.List(request)
-	if err != nil {
-		return nil, status, err
-	}
-
-	nodes := make([]KeeperResponse, 0, len(keeperResponses))
-	for _, kr := range keeperResponses {
-		nodes = append(nodes, kr)
-	}
-
-	return nodes, status, nil
+	return client.List(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Config(r KeeperRequest) (any, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Config(request)
+	return client.Config(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) ConfigUpdate(r KeeperRequest) (any, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.ConfigUpdate(request)
+	return client.ConfigUpdate(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Switchover(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Switchover(request)
+	return client.Switchover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) DeleteSwitchover(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.DeleteSwitchover(request)
+	return client.DeleteSwitchover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Reinitialize(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Reinitialize(request)
+	return client.Reinitialize(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Restart(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Restart(request)
+	return client.Restart(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) DeleteRestart(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.DeleteRestart(request)
+	return client.DeleteRestart(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Reload(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Reload(request)
+	return client.Reload(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Failover(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Failover(request)
+	return client.Failover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Activate(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Activate(request)
+	return client.Activate(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) Pause(r KeeperRequest) (*string, int, error) {
-	client, request, err := s.getKeeperAdapter(r)
+	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.Pause(request)
+	return client.Pause(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }

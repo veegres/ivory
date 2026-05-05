@@ -156,13 +156,17 @@ export const getNodeConnections = (domains: string[]): NodeConfig[] => {
     return domains.map(value => getNodeConnection(value))
 }
 
-export const getMainKeeper = (nodes: NodeOverview = {}, detectedKeeper?: string): [string?, Node?] => {
-    return Object.entries(nodes).find(([_, v]) => v.keeper.role === "leader") ?? [detectedKeeper, nodes[detectedKeeper ?? ""]]
+export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [string?, Node?] => {
+    if (manual) return [manual, nodes[manual ?? ""]]
+    const list = Object.entries(nodes)
+    return list.find(([_, v]) => v.keeper.role === "leader")
+        ?? list.find(([_, v]) => v.keeper.role === "replica")
+        ?? [undefined, undefined]
 }
 
-export const getDetectionItems = (nodes: NodeOverview = {}, detectedKeeper?: string, manualKeeper?: string) => {
+export const getDetectionItems = (mainNode: [string?, Node?], manualKeeper?: string) => {
     const detection = manualKeeper ? "manual" : "auto"
-    const [domain, node] = getMainKeeper(nodes, manualKeeper ?? detectedKeeper)
+    const [domain, node] = mainNode
     const mainLabel = domain ?? "none"
     const mainRole = node?.keeper.role ?? "unknown"
     return [

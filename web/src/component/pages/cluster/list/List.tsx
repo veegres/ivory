@@ -21,7 +21,7 @@ export function List() {
         <PageMainBox withMarginTop={"40px"}>
             <Access feature={Feature.ViewTagList}><ListTags/></Access>
             {clusters.error ? <ErrorSmart error={clusters.error}/> : (
-                <ListTable list={clusters.data ?? []} fetching={clusters.isFetching} pending={clusters.isPending}/>
+                <ListTable list={Object.values(clusters.data ?? [])} fetching={clusters.isFetching} pending={clusters.isPending}/>
             )}
         </PageMainBox>
     )
