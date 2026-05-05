@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from "vitest"
 
-import type {ActiveCluster} from "../../src/api/cluster/type"
+import {Cluster} from "../../src/api/cluster/type"
 import {NodeTabType} from "../../src/api/node/type"
 import {Type as QueryType} from "../../src/api/query/type"
 import {getDomain} from "../../src/app/utils"
@@ -35,6 +35,7 @@ describe("StoreProvider", () => {
             expect(state.searchCluster).toBe("")
             expect(state.activeClusterTab).toBe(0)
             expect(state.activeCluster).toBeUndefined()
+            expect(state.manualKeeper).toBeUndefined()
             expect(state.activeNode).toEqual({})
             expect(state.activeTags).toEqual(["ALL"])
             expect(state.warnings).toEqual({})
@@ -74,10 +75,7 @@ describe("StoreProvider", () => {
 
     describe("setCluster", () => {
         it("should set active cluster", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 
@@ -86,10 +84,7 @@ describe("StoreProvider", () => {
         })
 
         it("should clear active cluster when undefined", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
             useStoreAction.setCluster(undefined)
@@ -101,18 +96,14 @@ describe("StoreProvider", () => {
 
     describe("setClusterDetection", () => {
         it("should update detection node", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
-
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
             useStoreAction.setCluster(cluster)
 
             const manualKeeper = "test-keeper"
-            useStoreAction.setClusterDetection("test-keeper")
+            useStoreAction.setClusterDetection(manualKeeper)
 
             const state = useStore.getState()
-            expect(state.activeCluster?.manualKeeper).toEqual(manualKeeper)
+            expect(state.manualKeeper).toEqual(manualKeeper)
         })
 
         it("should not update if no active cluster", () => {
@@ -160,10 +151,7 @@ describe("StoreProvider", () => {
 
     describe("setNode", () => {
         it("should set active node for cluster", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 
@@ -178,10 +166,7 @@ describe("StoreProvider", () => {
         })
 
         it("should remove active node when undefined", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 
@@ -338,10 +323,7 @@ describe("StoreProvider", () => {
         })
 
         it("should reset activeCluster", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
             useStoreAction.clear()
@@ -351,10 +333,7 @@ describe("StoreProvider", () => {
         })
 
         it("should reset activeNode", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 

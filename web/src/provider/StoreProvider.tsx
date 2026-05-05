@@ -1,7 +1,7 @@
 import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
-import {ActiveCluster} from "../api/cluster/type"
+import {Cluster} from "../api/cluster/type"
 import {NodeTabType} from "../api/node/type"
 import {Type as QueryType} from "../api/query/type"
 import {MainQueryClient} from "./AppProvider"
@@ -10,7 +10,8 @@ import {MainQueryClient} from "./AppProvider"
 interface Store {
     searchCluster: string,
     activeClusterTab: number,
-    activeCluster?: ActiveCluster,
+    activeCluster?: Cluster,
+    manualKeeper?: string,
     activeNode: { [cluster: string]: string | undefined },
     activeTags: string[],
     warnings: { [key: string]: boolean },
@@ -30,6 +31,7 @@ export const useStore = create(persist<Store>(
         searchCluster: "",
         activeClusterTab: 0,
         activeCluster: undefined,
+        manualKeeper: undefined,
         activeNode: {},
         activeTags: ["ALL"],
         warnings: {},
@@ -69,14 +71,14 @@ function setClusterSearch(search: string) {
     useStore.setState(s => ({...s, searchCluster: search}))
 }
 
-function setCluster(cluster?: ActiveCluster) {
-    useStore.setState(s => ({...s, activeCluster: cluster}))
+function setCluster(cluster?: Cluster) {
+    useStore.setState(s => ({...s, activeCluster: cluster, manualKeeper: undefined}))
 }
 
 function setClusterKeeper(manualKeeper?: string) {
     useStore.setState(s => {
         if (!s.activeCluster) return s
-        return {...s, activeCluster: {...s.activeCluster, manualKeeper: manualKeeper}}
+        return {...s, manualKeeper: manualKeeper}
     })
 }
 
@@ -90,7 +92,7 @@ function setWarnings(name: string, warning: boolean) {
 
 function setNode(node?: string) {
     useStore.setState(s => {
-        const clusterName = s.activeCluster?.cluster.name
+        const clusterName = s.activeCluster?.name
         if (!clusterName) return s
         if (node) return {...s, activeNode: {...s.activeNode, [clusterName]: node}}
         if (!s.activeNode[clusterName]) return s

@@ -53,7 +53,6 @@ export interface Vaults {
 
 export interface Overview {
     nodes: NodeOverview,
-    detectedDomain: string,
     features: Feature[],
 }
 
@@ -68,12 +67,6 @@ export interface Node {
 }
 
 // SPECIFIC (WEB)
-
-export interface ActiveCluster {
-    cluster: Cluster,
-    warning: boolean,
-    manualKeeper?: string,
-}
 
 export interface ClusterTab {
     label: string,

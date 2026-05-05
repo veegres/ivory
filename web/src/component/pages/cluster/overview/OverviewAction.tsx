@@ -1,7 +1,7 @@
 import {InfoOutlined, Settings} from "@mui/icons-material"
 import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
-import {ActiveCluster, Node} from "../../../../api/cluster/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getKeeperRequest} from "../../../../app/utils"
 import {OverviewActionInfo} from "./OverviewActionInfo"
@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: ActiveCluster,
+    cluster: Cluster,
     mainNode: [string?, Node?],
     selectInfo: boolean,
     disableInfo: boolean,
@@ -24,17 +24,16 @@ type Props = {
 
 export function OverviewAction(props: Props) {
     const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainNode: m} = props
-    const {name} = cluster.cluster
-    const [mainDomain, mainNode] = m
+    const [_, mainNode] = m
     const config = mainNode?.config
     const status = mainNode?.keeper.status
-    const keeper = config && getKeeperRequest(cluster.cluster, config.host, config.keeperPort)
+    const keeper = config && getKeeperRequest(cluster, config.host, config.keeperPort)
     return (
         <Box sx={SX.box}>
             {keeper && status && (
-                <OverviewActionStatus status={status} cluster={name} request={keeper}/>
+                <OverviewActionStatus status={status} cluster={cluster.name} request={keeper}/>
             )}
-            <OverviewActionInfo cluster={cluster.cluster} manualKeeper={mainDomain}/>
+            <OverviewActionInfo cluster={cluster} mainNode={m}/>
             <ToggleButtonGroup size={"small"}>
                 <ToggleButton
                     sx={SX.toggleButton}

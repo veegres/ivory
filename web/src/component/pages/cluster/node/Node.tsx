@@ -1,5 +1,6 @@
 import {Box, Divider} from "@mui/material"
 
+import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection, getSshConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
@@ -16,7 +17,10 @@ export function Node() {
     const {setNodeBody} = useStoreAction
     const node = useStore(s => s.nodeState)
     const activeCluster = useStore(s => s.activeCluster)
-    const activeNodeName = useStore(s => s.activeNode[activeCluster?.cluster.name ?? ""])
+    const activeClusterName = activeCluster?.name
+    const activeNodeName = useStore(s => s.activeNode[activeClusterName ?? ""])
+
+    const overview = useRouterClusterOverview(activeClusterName, false)
     const activeClusterTab = useStore(s => s.activeClusterTab)
     const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
 
@@ -27,15 +31,14 @@ export function Node() {
     )
 
     function renderContent() {
-        if (!activeNodeName || !activeCluster) return <AlertCentered text={"Please, select a node to see the information!"}/>
-        const activeNode = activeCluster.cluster.nodesOverview?.[activeNodeName]
+        if (!activeNodeName || !activeClusterName) return <AlertCentered text={"Please, select a node to see the information!"}/>
+        const activeNode = overview.data?.nodes[activeNodeName]
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
         const {host, dbPort, sshPort, keeperPort} = activeNode.config
-        const {cluster} = activeCluster
         if (!dbPort && !keeperPort && !sshPort) return <AlertCentered text={"Specify at least one port to work with Node"} severity={"warning"}/>
 
-        const sshCon = getSshConnection(cluster, host, sshPort)
-        const queryCon = getQueryConnection(cluster, host, dbPort)
+        const sshCon = getSshConnection(activeCluster, host, sshPort)
+        const queryCon = getQueryConnection(activeCluster, host, dbPort)
 
         return (
             <Box sx={SX.content}>

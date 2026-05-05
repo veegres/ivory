@@ -25,8 +25,8 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    name: string,
     node: Node,
+    nodeKey: string,
     cluster: Cluster,
     candidates: NodeConfig[],
     checked: boolean,
@@ -34,7 +34,7 @@ type Props = {
 }
 
 export function OverviewNodesRow(props: Props) {
-    const {node, cluster, candidates, error = false, name, checked} = props
+    const {node, cluster, candidates, error = false, nodeKey, checked} = props
     const {config, warnings, keeper} = node
     const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
 
@@ -157,6 +157,6 @@ export function OverviewNodesRow(props: Props) {
     }
 
     function handleCheck() {
-        setNode(checked ? undefined : name)
+        setNode(checked ? undefined : nodeKey)
     }
 }

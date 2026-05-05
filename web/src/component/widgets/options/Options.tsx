@@ -17,13 +17,13 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: ClusterOptions,
-    onUpdate: (cluster: ClusterOptions) => void,
+    options: ClusterOptions,
+    onUpdate: (options: ClusterOptions) => void,
 }
 
 export function Options(props: Props) {
-    const {onUpdate, cluster} = props
-    const {vaults, tags, certs, tls} = cluster
+    const {onUpdate, options} = props
+    const {vaults, tags, certs, tls} = options
 
     return (
         <AccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
@@ -46,22 +46,22 @@ export function Options(props: Props) {
     )
 
     function handleVaultUpdate(t: VaultType, s?: string) {
-        onUpdate({...cluster, vaults: {...cluster.vaults, [VaultOptions[t].key]: s}})
+        onUpdate({...options, vaults: {...options.vaults, [VaultOptions[t].key]: s}})
     }
 
     function handleCertUpdate(t: CertType, s?: string) {
-        onUpdate({...cluster, certs: {...cluster.certs, [CertOptions[t].key]: s}})
+        onUpdate({...options, certs: {...options.certs, [CertOptions[t].key]: s}})
     }
 
     function handleTagsUpdate(tags: string[]) {
-        onUpdate({...cluster, tags})
+        onUpdate({...options, tags})
     }
 
     function handleTlsKeeperUpdate() {
-        onUpdate({...cluster, tls: {...cluster.tls, keeper: !tls.keeper}})
+        onUpdate({...options, tls: {...options.tls, keeper: !tls.keeper}})
     }
 
     function handleTlsDatabaseUpdate() {
-        onUpdate({...cluster, tls: {...cluster.tls, database: !tls.database}})
+        onUpdate({...options, tls: {...options.tls, database: !tls.database}})
     }
 }

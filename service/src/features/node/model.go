@@ -15,15 +15,31 @@ type KeeperConnection struct {
 	Port int    `json:"port" form:"port"`
 }
 
-type KeeperRequest struct {
-	KeeperConnection
+type KeeperOptions struct {
 	Plugin  keeper.Plugin `json:"plugin" form:"plugin"`
 	VaultId *uuid.UUID    `json:"vaultId" form:"vaultId"`
 	Certs   *cert.Certs   `json:"certs" form:"certs"`
-	Body    any           `json:"body" form:"body"`
+}
+
+type KeeperRequest struct {
+	KeeperConnection
+	Body any `json:"body" form:"body"`
+	KeeperOptions
 }
 
 type KeeperResponse = keeper.Response
+
+type KeeperParallelRequest struct {
+	Connections []KeeperConnection `json:"connections" form:"connections"`
+	Body        any                `json:"body" form:"body"`
+	KeeperOptions
+}
+
+type KeeperParallelResponse struct {
+	Connection KeeperConnection  `json:"connection"`
+	Response   []keeper.Response `json:"response"`
+	Error      error             `json:"error"`
+}
 
 type SshConnection struct {
 	Host    string     `json:"host" form:"host"`
@@ -49,11 +65,3 @@ type DockerLogsRequest struct {
 type DockerResponse = os.Docker
 
 // SPECIFIC (SERVER)
-
-type KeeperAutoRequest struct {
-	Connections []KeeperConnection `json:"connections" form:"connections"`
-	Plugin      keeper.Plugin      `json:"plugin" form:"plugin"`
-	VaultId     *uuid.UUID         `json:"vaultId" form:"vaultId"`
-	Certs       *cert.Certs        `json:"certs" form:"certs"`
-	Body        any                `json:"body" form:"body"`
-}
