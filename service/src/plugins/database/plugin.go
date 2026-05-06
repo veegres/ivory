@@ -10,6 +10,13 @@ var ErrDatabaseHostOrPortNotSpecified = errors.New("database host or port are no
 var ErrPasswordNotSet = errors.New("password is not set")
 var ErrClientNotImplemented = errors.New("client is not implemented")
 
+type Adapter interface {
+	QueryExecutor
+	SchemaInquirer
+	SessionManager
+	MetadataProvider
+}
+
 type QueryExecutor interface {
 	GetMany(ctx Context, query string, queryParams []any) ([]string, error)
 	GetOne(ctx Context, query string) (any, error)
@@ -32,13 +39,6 @@ type MetadataProvider interface {
 	SupportedFeatures() []features.Feature
 	SystemRequests() []SystemRequest
 	SystemCharts() map[SystemChartType]string
-}
-
-type Adapter interface {
-	QueryExecutor
-	SchemaInquirer
-	SessionManager
-	MetadataProvider
 }
 
 type PluginRegistry struct {
