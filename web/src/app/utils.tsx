@@ -1,9 +1,9 @@
 import {
-    BackupTwoTone, Block, CheckCircleOutlined,
-    FilePresentOutlined, HeartBroken, HelpOutline,
+    BackupTwoTone, Block, CheckCircleOutlined, DnsTwoTone,
+    FilePresentOutlined, HeartBrokenTwoTone, HelpOutline,
     InfoTwoTone, KeyTwoTone, LockTwoTone,
     MenuOpen, Pause, PlayArrow, RuleTwoTone,
-    SecurityTwoTone, Shield, Storage, UploadFileOutlined,
+    SecurityTwoTone, Shield, UploadFileOutlined,
 } from "@mui/icons-material"
 import {SxProps, Theme} from "@mui/material"
 import {blue, green, indigo, orange, purple, red} from "@mui/material/colors"
@@ -47,8 +47,8 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
 }
 
 export const VaultOptions: { [key in VaultType]: EnumOptions } = {
-    [VaultType.DATABASE_PASSWORD]: {name: "DATABASE_PASSWORD", label: "Database Password", icon: <Storage/>, key: "databaseId"},
-    [VaultType.KEEPER_PASSWORD]: {name: "KEEPER_PASSWORD", label: "Keeper Password", icon: <HeartBroken/>, key: "keeperId"},
+    [VaultType.DATABASE_PASSWORD]: {name: "DATABASE_PASSWORD", label: "Database Password", icon: <DnsTwoTone/>, key: "databaseId"},
+    [VaultType.KEEPER_PASSWORD]: {name: "KEEPER_PASSWORD", label: "Keeper Password", icon: <HeartBrokenTwoTone/>, key: "keeperId"},
     [VaultType.SSH_PASSWORD]: {name: "SSH_PASSWORD", label: "SSH Password", icon: <LockTwoTone/>, key: "sshVaultId"},
     [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
 }
