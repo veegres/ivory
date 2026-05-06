@@ -23,9 +23,10 @@ export function OverviewActionInfo(props: Props) {
     const {cluster, mainNode} = props
     const manualKeeper = useStore(s => s.manualKeeper)
 
-    const infoItems = [
-        {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.databaseId},
+    const clusterItems = [
+        {...VaultOptions[VaultType.SSH_KEY], active: !!cluster.vaults.sshKeyId},
         {...VaultOptions[VaultType.KEEPER_PASSWORD], active: !!cluster.vaults.keeperId},
+        {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.databaseId},
         {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
         {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
         {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
@@ -37,11 +38,9 @@ export function OverviewActionInfo(props: Props) {
     return (
         <Box sx={SX.box}>
             <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>}>
-                <Box sx={{color: node.bgColor}}>
-                    {node.label.toUpperCase()}
-                </Box>
+                <Box sx={{color: node.bgColor}}>{node.label.toUpperCase()}</Box>
             </InfoBox>
-            <InfoBoxList items={infoItems} label={"Configured Cluster Options"}/>
+            <InfoBoxList items={clusterItems} label={"Configured Cluster Options"}/>
         </Box>
     )
 }
