@@ -10,6 +10,7 @@ import {SxPropsMap} from "../../../../app/type"
 import {CodeThemes, getKeeperRequest} from "../../../../app/utils"
 import {useSettings} from "../../../../provider/AppProvider"
 import {useSnackbar} from "../../../../provider/SnackbarProvider"
+import {ErrorKeeperMissing} from "../../../view/box/ErrorManual"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons"
 import {Access} from "../../../widgets/access/Access"
@@ -40,7 +41,7 @@ export function OverviewConfig(props: Props) {
 
     useEffect(() => setConfigState(stringify(data)), [data])
 
-    if (!req) return <ErrorSmart error={"provide keeper port to work with it"}/>
+    if (!req) return <ErrorKeeperMissing/>
     if (isError) return <ErrorSmart error={error}/>
     if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
 

@@ -1,7 +1,6 @@
 package bloat
 
 import (
-	"ivory/src/features/cert"
 	. "ivory/src/features/tools/bloat/job"
 	"ivory/src/plugins/database"
 	"os"
@@ -12,27 +11,22 @@ import (
 // COMMON (WEB AND SERVER)
 
 type Bloat struct {
-	Uuid        uuid.UUID `json:"uuid"`
-	VaultId     uuid.UUID `json:"vaultId"`
-	Cluster     string    `json:"cluster"`
-	Status      JobStatus `json:"status"`
-	Command     string    `json:"command"`
-	CommandArgs []string  `json:"commandArgs"`
-	LogsPath    string    `json:"logsPath"`
-	CreatedAt   int64     `json:"createdAt"`
-}
-
-type Connection struct {
-	Db      database.Config `json:"db"`
-	Certs   *cert.Certs     `json:"certs"`
-	VaultId *uuid.UUID      `json:"vaultId"`
+	Uuid        uuid.UUID  `json:"uuid"`
+	Cluster     string     `json:"cluster"`
+	VaultId     *uuid.UUID `json:"vaultId"`
+	Status      JobStatus  `json:"status"`
+	Command     string     `json:"command"`
+	CommandArgs []string   `json:"commandArgs"`
+	LogsPath    string     `json:"logsPath"`
+	CreatedAt   int64      `json:"createdAt"`
 }
 
 type BloatRequest struct {
-	Cluster    string       `json:"cluster"`
-	Connection Connection   `json:"connection"`
-	Target     *BloatTarget `json:"target"`
-	Options    BloatOptions `json:"options"`
+	Cluster string          `json:"cluster"`
+	Db      database.Config `json:"db"`
+	VaultId *uuid.UUID      `json:"vaultId"`
+	Target  *BloatTarget    `json:"target"`
+	Options BloatOptions    `json:"options"`
 }
 
 type BloatTarget struct {

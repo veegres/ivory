@@ -62,8 +62,8 @@ func (w *Service) Get(uuid uuid.UUID) (Bloat, error) {
 	return w.bloatRepository.Get(uuid)
 }
 
-func (w *Service) Start(vaultId uuid.UUID, cluster string, args []string) (*Bloat, error) {
-	compactTable, err := w.bloatRepository.Create(vaultId, cluster, args)
+func (w *Service) Start(clusterName string, vaultId *uuid.UUID, args []string) (*Bloat, error) {
+	compactTable, err := w.bloatRepository.Create(clusterName, vaultId, args)
 	if err != nil {
 		return nil, err
 	}
@@ -160,14 +160,16 @@ func (w *Service) runner() {
 			w.jobStatusHandler(element, RUNNING, nil)
 
 			// Get vault
-			cred, errCred := w.vaultService.GetDecrypted(model.VaultId)
-			if errCred != nil {
-				w.jobStatusHandler(element, FAILED, fmt.Errorf("vault error: %w", errCred))
-				return
-			}
-			vaultArgs := []string{
-				"--user", cred.Username,
-				"--password", cred.Secret,
+			var vaultArgs []string
+			if model.VaultId == nil {
+				vaultArgs = []string{"--user", "postgres"}
+			} else {
+				cred, errCred := w.vaultService.GetDecrypted(*model.VaultId)
+				if errCred != nil {
+					w.jobStatusHandler(element, FAILED, fmt.Errorf("vault error: %w", errCred))
+					return
+				}
+				vaultArgs = []string{"--user", cred.Username, "--password", cred.Secret}
 			}
 
 			// Run command

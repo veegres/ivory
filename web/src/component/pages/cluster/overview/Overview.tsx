@@ -10,12 +10,12 @@ import {SxPropsMap} from "../../../../app/type"
 import {getMainKeeper} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
+import {ErrorMainNodeMissing} from "../../../view/box/ErrorManual"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {PageMainBox} from "../../../view/box/PageMainBox"
 import {OverviewAction} from "./OverviewAction"
 import {OverviewBloat} from "./OverviewBloat"
 import {OverviewConfig} from "./OverviewConfig"
-import {ClusterNoNodeError} from "./OverviewError"
 import {OverviewNodes} from "./OverviewNodes"
 import {OverviewOptions} from "./OverviewOptions"
 
@@ -48,7 +48,7 @@ const TABS: ClusterTab[] = [
         label: "Config",
         feature: Feature.ViewNodeDbConfig,
         body: (cluster, mainNode) => {
-            if (!mainNode) return <ClusterNoNodeError/>
+            if (!mainNode) return <ErrorMainNodeMissing/>
             return <OverviewConfig cluster={cluster} node={mainNode}/>
         },
         info: <>
@@ -64,7 +64,7 @@ const TABS: ClusterTab[] = [
         label: "Bloat",
         feature: Feature.ViewToolBloatList,
         body: (cluster, mainNode) => {
-            if (!mainNode) return <ClusterNoNodeError/>
+            if (!mainNode) return <ErrorMainNodeMissing/>
             return <OverviewBloat cluster={cluster} node={mainNode}/>
         },
         info: <>
