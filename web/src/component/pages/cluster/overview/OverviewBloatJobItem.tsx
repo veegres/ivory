@@ -74,7 +74,7 @@ export function OverviewBloatJobItem(props: Props) {
                         {command}
                         <Tooltip title={renderVaultTooltip()} placement={"top"}>
                             <Box sx={SX.vault}>
-                                --username {shortUuid(vaultId)} --password {shortUuid(vaultId)}
+                                {vaultId ? `--username ${shortUuid(vaultId)} --password ${shortUuid(vaultId)}` : "--username postgres"}
                             </Box>
                         </Tooltip>
                     </Box>

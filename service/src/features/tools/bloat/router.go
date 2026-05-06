@@ -75,14 +75,9 @@ func (r *Router) PostJobStart(context *gin.Context) {
 		return
 	}
 
-	if cli.Connection.VaultId == nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "credentials are required"})
-		return
-	}
-
 	sb := []string{
-		"--host", cli.Connection.Db.Host,
-		"--port", strconv.Itoa(cli.Connection.Db.Port),
+		"--host", cli.Db.Host,
+		"--port", strconv.Itoa(cli.Db.Port),
 	}
 	isDefaultTarget := true
 	if cli.Target != nil {
@@ -136,7 +131,7 @@ func (r *Router) PostJobStart(context *gin.Context) {
 	}
 	sb = append(sb, "--verbose")
 
-	model, errStart := r.bloatService.Start(*cli.Connection.VaultId, cli.Cluster, sb)
+	model, errStart := r.bloatService.Start(cli.Cluster, cli.VaultId, sb)
 	if errStart != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errStart.Error()})
 		return

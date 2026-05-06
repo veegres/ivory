@@ -1,4 +1,3 @@
-import {Certs} from "../cert/type"
 import {Config} from "../database/type"
 import {JobStatus} from "./job/type"
 
@@ -6,22 +5,19 @@ import {JobStatus} from "./job/type"
 
 export interface Bloat {
     uuid: string,
+    cluster: string,
+    vaultId?: string,
     status: JobStatus,
-    vaultId: string,
     command: string,
     commandArgs: string,
     logsPath: string,
-}
-
-export interface Connection {
-    db: Config,
-    certs?: Certs,
-    vaultId?: string,
+    createdAt: string,
 }
 
 export interface BloatRequest {
     cluster: string,
-    connection: Connection,
+    db: Config,
+    vaultId?: string,
     target?: BloatTarget,
     options: BloatOptions,
 }

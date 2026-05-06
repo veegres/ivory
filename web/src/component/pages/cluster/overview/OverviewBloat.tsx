@@ -11,13 +11,13 @@ import {useRouterQueryList} from "../../../../api/query/hook"
 import {Type as QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection} from "../../../../app/utils"
+import {ErrorDbMissing} from "../../../view/box/ErrorManual"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {AccessBox} from "../../../widgets/access/Access"
 import {Query} from "../../../widgets/query/Query"
 import {OverviewBloatJob} from "./OverviewBloatJob"
 import {OverviewBloatJobForm} from "./OverviewBloatJobForm"
-import {NoDatabaseError} from "./OverviewError"
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
@@ -43,7 +43,7 @@ export function OverviewBloat(props: Props) {
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
 
-    if (!node.config.dbPort) return <NoDatabaseError/>
+    if (!node.config.dbPort) return <ErrorDbMissing/>
     const db: Config = {
         plugin: DbPlugin.POSTGRES,
         host: node.config.host,

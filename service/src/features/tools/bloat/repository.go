@@ -48,7 +48,7 @@ func (r *Repository) GetOpenFile(uuid uuid.UUID) (*os.File, error) {
 	return r.file.OpenByName(uuid.String())
 }
 
-func (r *Repository) Create(vaultId uuid.UUID, cluster string, args []string) (*Bloat, error) {
+func (r *Repository) Create(cluster string, vaultId *uuid.UUID, args []string) (*Bloat, error) {
 	jobUuid := uuid.New()
 	logsPath, errCreate := r.file.CreateByName(jobUuid.String())
 	if errCreate != nil {

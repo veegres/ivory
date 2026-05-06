@@ -9,7 +9,7 @@ import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} fro
 import {SxPropsMap} from "../../../../app/type"
 import {getQueryConnection} from "../../../../app/utils"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
-import {ClusterNoLeaderError, ClusterNoPostgresVault, NoDatabaseError} from "./OverviewError"
+import {ErrorDbMissing,ErrorLeaderMissing} from "../../../view/box/ErrorManual"
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
@@ -30,10 +30,8 @@ export function OverviewBloatJobForm(props: Props) {
 
     const start = useRouterBloatStart(cluster.name)
 
-    if (node.keeper.role !== "leader") return <ClusterNoLeaderError/>
-    const vaultId = cluster.vaults.databaseId
-    if (!vaultId) return <ClusterNoPostgresVault/>
-    if (!node.config.host || !node.config.dbPort) return <NoDatabaseError/>
+    if (node.keeper.role !== "leader") return <ErrorLeaderMissing/>
+    if (!node.config.host || !node.config.dbPort) return <ErrorDbMissing/>
 
     const db = {plugin: DbPlugin.POSTGRES, host: node.config.host, port: node.config.dbPort, name: target?.database}
     const queryCon = getQueryConnection(cluster, db.host, db.port)
@@ -114,7 +112,7 @@ export function OverviewBloatJobForm(props: Props) {
     )
 
     function handleRun() {
-        if (node && vaultId) {
+        if (node) {
             const dbRun = {...db, schema: target?.schema}
             onClick()
             const queryCon = getQueryConnection(cluster, dbRun.host, dbRun.port)

@@ -3,7 +3,7 @@ import {Box} from "@mui/material"
 import {SshConnection} from "../../../api/node/type"
 import {ChartType, Connection as QueryConnection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
-import {ErrorSmart} from "../../view/box/ErrorSmart"
+import {ErrorSshMissing} from "../../view/box/ErrorManual"
 import {MonitorCommon} from "./MonitorCommon"
 import {MonitorDatabase} from "./MonitorDatabase"
 import {MonitorRow} from "./MonitorRow"
@@ -35,7 +35,7 @@ export function Monitor(props: Props) {
     )
 
     function renderSshInfo() {
-        if (!sshCon) return <ErrorSmart error={"provide ssh key and port to see the metrics"}/>
+        if (!sshCon) return <ErrorSshMissing/>
         return (
             <MonitorSystem connection={sshCon}/>
         )

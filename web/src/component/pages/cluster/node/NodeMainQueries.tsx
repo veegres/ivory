@@ -4,10 +4,10 @@ import {Feature} from "../../../../api/feature"
 import {Connection as QueryConnection, Type as QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {ErrorDbMissing} from "../../../view/box/ErrorManual"
 import {Access} from "../../../widgets/access/Access"
 import {Query} from "../../../widgets/query/Query"
 import {QueryConsole} from "../../../widgets/query/QueryConsole"
-import {NoDatabaseError} from "../overview/OverviewError"
 
 const SX: SxPropsMap = {
     box: {display: "flex", gap: 3},
@@ -25,7 +25,7 @@ export function NodeMainQueries(props: Props){
     const {queryTab} = useStore(s => s.nodeState)
     const {setQueryTab} = useStoreAction
 
-    if (!connection) return <NoDatabaseError/>
+    if (!connection) return <ErrorDbMissing/>
 
     return (
         <Box sx={SX.box}>
