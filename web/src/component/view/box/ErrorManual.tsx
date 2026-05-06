@@ -13,7 +13,7 @@ export function ErrorDbMissing() {
 }
 
 export function ErrorSshMissing() {
-    return <ErrorSmart error={"Provide SSH Key and Port to see interact with VM"}/>
+    return <ErrorSmart error={"Provide SSH Key and Port to interact with VM"}/>
 }
 
 export function ErrorKeeperMissing() {
