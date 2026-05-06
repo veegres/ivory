@@ -124,7 +124,7 @@ func TestService_getKeeperListAutoMerge(t *testing.T) {
 
 	t.Run("should return concrete errors when no configured nodes can be requested", func(t *testing.T) {
 		configs := []NodeConfig{{Host: "db1"}}
-		keeperNodes, connectionErrors, err := s.getKeeperListAutoAll(configs, Options{})
+		keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{})
 		nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err)
 
 		if len(nodes) != 1 {
