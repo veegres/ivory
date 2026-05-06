@@ -1,16 +1,16 @@
-import {Query} from "../../../api/postgres"
 import {useRouterQueryCreate} from "../../../api/query/hook"
+import {Request} from "../../../api/query/type"
 import {SaveIconButton} from "../../view/button/IconButtons"
 
 type Props = {
-    query: Query,
+    query: Request,
     onSuccess?: () => void,
 }
 
 export function QueryButtonCreate(props: Props) {
     const {query, name, type} = props.query
 
-    const create = useRouterQueryCreate(type, props.onSuccess)
+    const create = useRouterQueryCreate(type!, props.onSuccess)
 
     return (
         <SaveIconButton

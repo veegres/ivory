@@ -1,11 +1,11 @@
 import {Stack} from "@mui/material"
 
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
 import {SxPropsMap} from "../../../app/type"
 import {Access} from "../../widgets/access/Access"
 import {Menu} from "../../widgets/settings/menu/Menu"
-import {Instance as ClusterInstance} from "./instance/Instance"
 import {List as ClusterList} from "./list/List"
+import {Node as ClusterNode} from "./node/Node"
 import {Overview as ClusterOverview} from "./overview/Overview"
 
 const SX: SxPropsMap = {
@@ -18,9 +18,9 @@ export function ClusterBody() {
             <Menu/>
             <Stack sx={SX.stack}>
                 <ClusterList/>
-                <Access permission={Permission.ViewInstanceOverview}>
+                <Access feature={Feature.ViewNodeDbOverview}>
                     <ClusterOverview/>
-                    <ClusterInstance/>
+                    <ClusterNode/>
                 </Access>
             </Stack>
         </>

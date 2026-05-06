@@ -1,0 +1,78 @@
+package keeper
+
+import (
+	"crypto/tls"
+)
+
+// COMMON (WEB AND SERVER)
+
+type Plugin string
+
+const (
+	PATRONI  Plugin = "patroni"
+	POSTGRES Plugin = "postgres"
+)
+
+type Status string
+
+const (
+	Paused Status = "PAUSED"
+	Active        = "ACTIVE"
+)
+
+type Role string
+
+const (
+	Leader  Role = "leader"
+	Replica      = "replica"
+	Unknown      = "unknown"
+)
+
+type Keeper struct {
+	Host   string  `json:"host"`
+	Port   int     `json:"port"`
+	Name   *string `json:"name"`
+	Status *Status `json:"status"`
+}
+
+type Response struct {
+	Key                 *string              `json:"key"`
+	Status              *Status              `json:"status"`
+	State               string               `json:"state"`
+	Role                Role                 `json:"role"`
+	Lag                 int64                `json:"lag"`
+	PendingRestart      bool                 `json:"pendingRestart"`
+	ScheduledSwitchover *ScheduledSwitchover `json:"scheduledSwitchover"`
+	ScheduledRestart    *ScheduledRestart    `json:"scheduledRestart"`
+	Tags                *map[string]any      `json:"tags"`
+
+	// Discovered Topology (Crucial for Auto-Creation)
+	DiscoveredHost       *string `json:"discoveredHost"`
+	DiscoveredKeeperPort *int    `json:"discoveredKeeperPort"`
+	DiscoveredDbPort     *int    `json:"discoveredDbPort"`
+}
+
+type ScheduledSwitchover struct {
+	At string `json:"at"`
+	To string `json:"to"`
+}
+
+type ScheduledRestart struct {
+	At             string `json:"at"`
+	PendingRestart bool   `json:"pendingRestart"`
+}
+
+// SPECIFIC (SERVER)
+
+type Request struct {
+	Host        string       `json:"host" form:"host"`
+	Port        int          `json:"port" form:"port"`
+	Credentials *Credentials `json:"credentials" form:"credentials"`
+	TlsConfig   *tls.Config  `json:"tlsConfig" form:"tlsConfig"`
+	Body        any          `json:"body" form:"body"`
+}
+
+type Credentials struct {
+	Username string `json:"username" form:"username"`
+	Password string `json:"password" form:"password"`
+}

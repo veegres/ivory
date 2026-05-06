@@ -1,11 +1,12 @@
 import {Box, Button} from "@mui/material"
 
+import {Feature} from "../../../../api/feature"
 import {
     useRouterPermissionApprove,
     useRouterPermissionReject,
     useRouterPermissionRequest,
 } from "../../../../api/permission/hook"
-import {Permission, PermissionStatus} from "../../../../api/permission/type"
+import {Status} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
 import {Access} from "../../access/Access"
 
@@ -16,7 +17,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     username: string,
-    permissions: [Permission, PermissionStatus][],
+    permissions: [Feature, Status][],
     approve?: boolean,
     reject?: boolean,
     request?: boolean,
@@ -32,13 +33,13 @@ export function PermissionsButtons(props: Props) {
     return (
         <Box sx={SX.box}>
             {request && renderRequest()}
-            <Access permission={Permission.ManagePermissionUpdate}>{approve && renderApprove()}</Access>
-            <Access permission={Permission.ManagePermissionUpdate}>{reject && renderReject()}</Access>
+            <Access feature={Feature.ManagePermissionUpdate}>{approve && renderApprove()}</Access>
+            <Access feature={Feature.ManagePermissionUpdate}>{reject && renderReject()}</Access>
         </Box>
     )
 
     function renderApprove() {
-        const predicate = (s: PermissionStatus) => s !== PermissionStatus.GRANTED
+        const predicate = (s: Status) => s !== Status.GRANTED
         const p = getFilteredPermissions(predicate)
         if (count && p.length <= 1) return
         return <Button
@@ -54,7 +55,7 @@ export function PermissionsButtons(props: Props) {
         </Button>
     }
     function renderReject() {
-        const predicate = (s: PermissionStatus) => s !== PermissionStatus.NOT_PERMITTED
+        const predicate = (s: Status) => s !== Status.NOT_PERMITTED
         const p = getFilteredPermissions(predicate)
         if (count && p.length <= 1) return
         return <Button
@@ -70,7 +71,7 @@ export function PermissionsButtons(props: Props) {
         </Button>
     }
     function renderRequest() {
-        const predicate = (s: PermissionStatus) => s === PermissionStatus.NOT_PERMITTED
+        const predicate = (s: Status) => s === Status.NOT_PERMITTED
         const p = getFilteredPermissions(predicate)
         if (count && p.length <= 1) return
         return (
@@ -88,7 +89,7 @@ export function PermissionsButtons(props: Props) {
         )
     }
 
-    function getFilteredPermissions(predicate: (status: PermissionStatus) => boolean) {
+    function getFilteredPermissions(predicate: (status: Status) => boolean) {
         return permissions.filter(([_, status]) => predicate(status)).map(v => v[0])
     }
 }

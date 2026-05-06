@@ -2,7 +2,7 @@ import {KeyboardDoubleArrowRight} from "@mui/icons-material"
 import {Box, Button, Tooltip} from "@mui/material"
 
 import {useRouterQueryUpdate} from "../../../api/query/hook"
-import {Query} from "../../../api/query/type"
+import {Response} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
 import {QueryBoxWrapper} from "./QueryBoxWrapper"
@@ -14,13 +14,12 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    query: Query,
+    query: Response,
     onSuccess: () => void,
 }
 
 export function QueryRestore(props: Props) {
     const {query, onSuccess} = props
-
     const update = useRouterQueryUpdate(query.type, onSuccess)
 
     return (
@@ -49,6 +48,6 @@ export function QueryRestore(props: Props) {
     )
 
     function handleUpdate() {
-        update.mutate({id: query.id, query: {...query, query: query.default}})
+        update.mutate({id: query.id, query: {...query, query: query.default} as any})
     }
 }

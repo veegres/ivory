@@ -2,7 +2,7 @@ import {KeyboardArrowDown} from "@mui/icons-material"
 import {Accordion, AccordionDetails, AccordionSummary, Box} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {QueryFields} from "../../../api/postgres"
+import {DbResponse} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {VirtualizedTable} from "../../view/table/VirtualizedTable"
 import {QueryResponseInfo} from "./QueryResponseInfo"
@@ -19,7 +19,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     index: number,
-    query: QueryFields,
+    query: DbResponse,
 }
 
 export function QueryLogItem(props: Props) {

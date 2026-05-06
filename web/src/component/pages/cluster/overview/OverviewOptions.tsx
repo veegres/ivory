@@ -1,36 +1,37 @@
 import {Stack} from "@mui/material"
 
 import {useRouterClusterUpdate} from "../../../../api/cluster/hook"
-import {ActiveCluster, ClusterOptions, ClusterOverview} from "../../../../api/cluster/type"
+import {Cluster, Options as ClusterOptions, Overview as ClusterOverview} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {Options} from "../../../widgets/options/Options"
-import {OverviewOptionsInstance} from "./OverviewOptionsInstance"
+import {OverviewOptionsNode} from "./OverviewOptionsNode"
 
 const SX: SxPropsMap = {
     settings: {width: "250px", gap: 1, padding: "8px 0"},
 }
 
 type Props = {
-    info: ActiveCluster,
+    cluster: Cluster,
     overview?: ClusterOverview,
+    mainKeeper?: string,
+    manualKeeper?: string,
 }
 
 export function OverviewOptions(props: Props) {
-    const {info, overview} = props
-    const {detectBy, cluster} = info
+    const {cluster, overview, mainKeeper, manualKeeper} = props
 
     const updateCluster = useRouterClusterUpdate()
 
     return (
         <Stack sx={SX.settings}>
-            <OverviewOptionsInstance
-                instances={overview?.instances ?? cluster.sidecarsOverview}
-                mainInstance={overview?.mainInstance}
-                detectBy={detectBy}
+            <OverviewOptionsNode
+                nodes={overview?.nodes ?? cluster.nodesOverview ?? {}}
+                mainKeeper={mainKeeper}
+                manualKeeper={manualKeeper}
             />
             <LinearProgressStateful loading={updateCluster.isPending} line={true} color={"inherit"}/>
-            <Options cluster={cluster} onUpdate={handleClusterUpdate}/>
+            <Options options={cluster} onUpdate={handleClusterUpdate}/>
         </Stack>
     )
 

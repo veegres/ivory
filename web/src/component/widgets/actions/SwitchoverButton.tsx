@@ -2,34 +2,36 @@ import {FormControl, InputLabel, MenuItem, Select} from "@mui/material"
 import {Dayjs} from "dayjs"
 import {useState} from "react"
 
-import {useRouterInstanceSwitchover} from "../../../api/instance/hook"
-import {InstanceRequest, Sidecar} from "../../../api/instance/type"
-import {Permission} from "../../../api/permission/type"
+import {NodeConfig} from "../../../api/cluster/type"
+import {Feature} from "../../../api/feature"
+import {useRouterNodeSwitchover} from "../../../api/node/hook"
+import {KeeperRequest} from "../../../api/node/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {ScheduleInput} from "../../view/input/ScheduleInput"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: InstanceRequest,
+    request: KeeperRequest,
     cluster: string,
-    candidates: Sidecar[],
+    candidates: NodeConfig[],
+    leaderKey?: string,
 }
 
 export function SwitchoverButton(props: Props) {
-    const {request, candidates, cluster} = props
+    const {request, candidates, cluster, leaderKey} = props
 
-    const [candidate, setCandidates] = useState("")
+    const [candidate, setCandidates] = useState<string>()
     const [schedule, setSchedule] = useState<Dayjs>()
-    const switchover = useRouterInstanceSwitchover(cluster)
-    // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name
-    const body = {leader: request.sidecar.name, candidate, scheduled_at: schedule}
+    const switchover = useRouterNodeSwitchover(cluster)
+    // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name (key)
+    const body = {leader: leaderKey, candidate, scheduled_at: schedule}
 
     return (
-        <Access permission={Permission.ManageInstanceSwitchover}>
+        <Access feature={Feature.ManageNodeDbSwitchover}>
             <AlertButton
                 color={"secondary"}
                 label={"Switchover"}
-                title={`Make a switchover of ${request.sidecar.host}?`}
+                title={`Make a switchover of ${request.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
                  candidate, the candidate will be chosen randomly.`}
                 loading={switchover.isPending}
@@ -53,9 +55,9 @@ export function SwitchoverButton(props: Props) {
                     fullWidth={true}
                     variant={"outlined"}
                 >
-                    <MenuItem value={""}><em>none (will be chosen randomly)</em></MenuItem>
-                    {candidates.map(sidecar => (
-                        <MenuItem key={sidecar.host} value={sidecar.name}>{sidecar.host}</MenuItem>
+                    <MenuItem value={undefined}><em>none (will be chosen randomly)</em></MenuItem>
+                    {candidates.map(config => (
+                        <MenuItem key={config.host} value={config.host}>{config.host}</MenuItem>
                     ))}
                 </Select>
             </FormControl>
@@ -65,6 +67,6 @@ export function SwitchoverButton(props: Props) {
     function handleClick() {
         switchover.mutate({...request, body})
         setSchedule(undefined)
-        setCandidates("")
+        setCandidates(undefined)
     }
 }

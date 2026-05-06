@@ -1,8 +1,10 @@
 import {FormControl, OutlinedInput, TableRow} from "@mui/material"
 import {useState} from "react"
 
+import {Plugin as DbPlugin} from "../../../../api/database/type"
+import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getSidecars} from "../../../../app/utils"
+import {getNodeConnections} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {ListCell} from "./ListCell"
@@ -41,7 +43,7 @@ export function ListRowNew(props: Props) {
                 <DynamicInputs
                     inputs={stateNodes}
                     editable={true}
-                    placeholder={"Instance "}
+                    placeholder={"Node "}
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>
@@ -49,12 +51,12 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     cluster={{
                         name: stateName,
-                        sidecars: getSidecars(stateNodes),
+                        plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
+                        nodes: getNodeConnections(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
-                        credentials: {},
-                        tls: {sidecar: false, database: false},
-                        sidecarsOverview: {},
+                        vaults: {},
+                        tls: {keeper: false, database: false},
                     }}
                     toggle={toggle}
                     onUpdate={clean}

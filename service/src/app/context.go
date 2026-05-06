@@ -4,22 +4,28 @@ import (
 	"ivory/src/clients/auth/basic"
 	"ivory/src/clients/auth/ldap"
 	"ivory/src/clients/auth/oidc"
-	"ivory/src/clients/database/postgres"
-	"ivory/src/clients/sidecar"
-	"ivory/src/clients/sidecar/patroni"
+	"ivory/src/clients/http"
+	"ivory/src/clients/ssh"
 	"ivory/src/features/auth"
-	"ivory/src/features/bloat"
+	"ivory/src/features/backup"
 	"ivory/src/features/cert"
 	"ivory/src/features/cluster"
 	"ivory/src/features/config"
 	"ivory/src/features/encryption"
-	"ivory/src/features/instance"
 	"ivory/src/features/management"
-	"ivory/src/features/password"
+	"ivory/src/features/node"
 	"ivory/src/features/permission"
 	"ivory/src/features/query"
 	"ivory/src/features/secret"
 	"ivory/src/features/tag"
+	"ivory/src/features/tools"
+	"ivory/src/features/vault"
+	"ivory/src/plugins/database"
+	"ivory/src/plugins/database/postgres"
+	"ivory/src/plugins/keeper"
+	"ivory/src/plugins/keeper/patroni"
+	"ivory/src/plugins/os"
+	"ivory/src/plugins/os/linux"
 	"ivory/src/storage/db"
 	"ivory/src/storage/env"
 	"ivory/src/storage/files"
@@ -29,13 +35,13 @@ type Context struct {
 	env              *env.AppEnv
 	authRouter       *auth.Router
 	clusterRouter    *cluster.Router
-	bloatRouter      *bloat.Router
+	toolsRouter      *tools.Router
 	certRouter       *cert.Router
 	secretRouter     *secret.Router
-	passwordRouter   *password.Router
+	vaultRouter      *vault.Router
 	permissionRouter *permission.Router
 	tagRouter        *tag.Router
-	instanceRouter   *instance.Router
+	nodeRouter       *node.Router
 	queryRouter      *query.Router
 	managementRouter *management.Router
 	configRouter     *config.Router
@@ -46,36 +52,44 @@ func NewContext() *Context {
 
 	// DB
 	st := db.NewStorage("ivory.db")
-	clusterBucket := db.NewBucket[cluster.Cluster](st, "Cluster")
-	compactTableBucket := db.NewBucket[bloat.Bloat](st, "CompactTable")
+	clusterBucket := db.NewBucket[cluster.Response](st, "Cluster")
 	certBucket := db.NewBucket[cert.Cert](st, "Cert")
 	tagBucket := db.NewBucket[[]string](st, "Tag")
 	secretBucket := db.NewBucket[string](st, "Secret")
-	passwordBucket := db.NewBucket[password.Password](st, "Password")
+	vaultBucket := db.NewBucket[vault.Vault](st, "Vault")
 	permissionBucket := db.NewBucket[permission.PermissionMap](st, "Permission")
-	queryBucket := db.NewBucket[query.Query](st, "Query")
+	queryBucket := db.NewBucket[query.Response](st, "Query")
 
 	// FILES
-	compactTableFiles := files.NewStorage("pgcompacttable", ".log")
 	certFiles := files.NewStorage("cert", ".crt")
 	configFiles := files.NewStorage("config", ".json")
 	queryLogFiles := files.NewStorage("query", ".jsonl")
 
 	// REPOS
 	clusterRepo := cluster.NewRepository(clusterBucket)
-	bloatRepo := bloat.NewRepository(compactTableBucket, compactTableFiles)
 	certRepo := cert.NewRepository(certBucket, certFiles)
 	tagRepo := tag.NewRepository(tagBucket)
 	secretRepo := secret.NewRepository(secretBucket)
-	passwordRepo := password.NewRepository(passwordBucket)
+	vaultRepo := vault.NewRepository(vaultBucket)
 	permissionRepo := permission.NewRepository(permissionBucket)
-	queryLogRepo := query.NewLogRepository(queryLogFiles)
-	queryRepo := query.NewRepository(queryBucket)
+	queryRepo := query.NewRepository(queryBucket, queryLogFiles)
 
 	// CLIENTS
-	sidecarGateway := sidecar.NewGateway()
-	patroniClient := patroni.NewClient(sidecarGateway)
-	postgresClient := postgres.NewClient(appEnv.Version.Label)
+	httpClient := http.NewClient()
+	sshClient := ssh.NewClient()
+
+	// ADAPTERS
+	patroniAdapter := patroni.NewAdapter(httpClient)
+	postgresAdapter := postgres.NewAdapter()
+	linuxAdapter := linux.NewAdapter(sshClient)
+
+	// REGISTRY (we cannot use Factory pattern in clients package because of cycle dependencies)
+	keeperPlugins := keeper.NewPluginRegistry()
+	keeperPlugins.Register(keeper.PATRONI, patroniAdapter)
+	dbPlugins := database.NewPluginRegistry()
+	dbPlugins.Register(database.POSTGRES, postgresAdapter)
+	osPlugins := os.NewPluginRegistry()
+	osPlugins.Register(os.Linux, linuxAdapter)
 
 	// AUTH PROVIDER
 	basicProvider := basic.NewProvider()
@@ -85,45 +99,45 @@ func NewContext() *Context {
 	// SERVICES
 	encryptionService := encryption.NewService()
 	secretService := secret.NewService(secretRepo, encryptionService)
-	passwordService := password.NewService(passwordRepo, secretService, encryptionService)
+	vaultService := vault.NewService(vaultRepo, sshClient, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
-	instanceService := instance.NewService(patroniClient, passwordService, certService)
+	nodeService := node.NewService(osPlugins, keeperPlugins, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
-	clusterService := cluster.NewService(clusterRepo, instanceService, tagService)
-	queryLogService := query.NewLogService(queryLogRepo)
-	queryService := query.NewService(queryRepo, queryLogService, secretService)
-	queryExecuteService := query.NewExecuteService(queryRepo, postgresClient, queryLogService, passwordService, certService)
-	bloatService := bloat.NewService(bloatRepo, passwordService)
+	toolsService := tools.NewService(vaultService)
+	queryService := query.NewService(queryRepo, dbPlugins, vaultService, certService, secretService, appEnv.Version.Label)
+	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
+	backupService := backup.NewService(clusterService, queryService, permissionService)
 	managementService := management.NewService(
 		appEnv,
 		authService,
-		passwordService,
+		vaultService,
 		clusterService,
 		certService,
 		tagService,
-		bloatService,
+		toolsService,
 		queryService,
-		queryLogService,
+		nodeService,
 		secretService,
 		configService,
 		permissionService,
+		backupService,
 	)
 
 	return &Context{
 		env:              appEnv,
 		authRouter:       auth.NewRouter(authService, appEnv.Config.UrlPath, appEnv.Config.TlsEnabled),
 		clusterRouter:    cluster.NewRouter(clusterService),
-		bloatRouter:      bloat.NewRouter(bloatService),
+		toolsRouter:      tools.NewRouter(toolsService),
 		certRouter:       cert.NewRouter(certService),
 		secretRouter:     secret.NewRouter(secretService),
-		passwordRouter:   password.NewRouter(passwordService),
+		vaultRouter:      vault.NewRouter(vaultService),
 		permissionRouter: permission.NewRouter(permissionService),
 		tagRouter:        tag.NewRouter(tagService),
-		instanceRouter:   instance.NewRouter(instanceService),
-		queryRouter:      query.NewRouter(queryService, queryExecuteService, queryLogService, configService),
+		nodeRouter:       node.NewRouter(nodeService),
+		queryRouter:      query.NewRouter(queryService, configService),
 		managementRouter: management.NewRouter(managementService),
 		configRouter:     config.NewRouter(configService),
 	}

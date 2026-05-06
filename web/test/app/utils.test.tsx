@@ -4,15 +4,15 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {Sidecar} from "../../src/api/instance/type"
+import {NodeConfig} from "../../src/api/cluster/type"
 import {
     DateTimeFormatter,
     getDomain,
     getDomains,
     getErrorMessage,
-    getSidecar,
-    getSidecars,
-    isSidecarEqual,
+    getNodeConnection,
+    getNodeConnections,
+    isConnectionEqual,
     randomUnicodeAnimal,
     shortUuid,
     SizeFormatter,
@@ -30,56 +30,65 @@ describe("shortUuid", () => {
 })
 
 describe("getDomain", () => {
-  it("should return the domain string from a Sidecar object", () => {
-    const sidecar: Sidecar = {host: "localhost", port: 8008}
-    expect(getDomain(sidecar)).toBe("localhost:8008")
+  it("should return the domain string from a NodeConfig object", () => {
+    const config: NodeConfig = {host: "localhost", keeperPort: 8008}
+    expect(getDomain(config)).toBe("localhost:8008::")
   })
 
+  it("should return the domain string without port if keeperPort is undefined", () => {
+    const config: NodeConfig = {host: "localhost"}
+    expect(getDomain(config)).toBe("localhost:::")
+  })
 })
 
 describe("getDomains", () => {
-    it("should return an array of domain strings from an array of Sidecar objects", () => {
-        const sidecars: Sidecar[] = [
-            {host: "localhost", port: 8008},
-            {host: "127.0.0.1", port: 8008},
+    it("should return an array of domain strings from an array of NodeConfig objects", () => {
+        const configs: NodeConfig[] = [
+            {host: "localhost", keeperPort: 8008},
+            {host: "127.0.0.1", keeperPort: 8008},
         ]
-        expect(getDomains(sidecars)).toEqual(["localhost:8008", "127.0.0.1:8008"])
+        expect(getDomains(configs)).toEqual(["localhost:8008::", "127.0.0.1:8008::"])
     })
 })
 
-describe("getSidecar", () => {
-    it("should return a Sidecar object from a domain string", () => {
+describe("getNodeConnection", () => {
+    it("should return a NodeConfig object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getSidecar(domain)).toEqual({host: "localhost", port: 8008})
+        expect(getNodeConnection(domain)).toEqual({
+            host: "localhost",
+            keeperPort: 8008,
+        })
     })
 
-    it("should return a Sidecar object with default port if port is not in domain string", () => {
+    it("should return a NodeConfig object with default port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getSidecar(domain)).toEqual({host: "localhost", port: 8008})
+        expect(getNodeConnection(domain)).toEqual({
+            host: "localhost",
+        })
     })
 })
 
-describe("getSidecars", () => {
-    it("should return an array of Sidecar objects from an array of domain strings", () => {
+describe("getNodeConnections", () => {
+    it("should return an array of NodeConfig objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
-        expect(getSidecars(domains)).toEqual([
-            {host: "localhost", port: 8008},
-            {host: "127.0.0.1", port: 8008},
+        expect(getNodeConnections(domains)).toEqual([
+            {host: "localhost", keeperPort: 8008},
+            {host: "127.0.0.1"},
         ])
     })
 })
 
-describe("isSidecarEqual", () => {
-    it("should return true if sidecars are equal", () => {
-        const sidecar1: Sidecar = {host: "localhost", port: 8008}
-        const sidecar2: Sidecar = {host: "localhost", port: 8008}
-        expect(isSidecarEqual(sidecar1, sidecar2)).toBe(true)
+describe("isConnectionEqual", () => {
+    it("should return true if connections are equal", () => {
+        const c1: NodeConfig = {host: "localhost", keeperPort: 8008}
+        const c2: NodeConfig = {host: "localhost", keeperPort: 8008}
+        expect(isConnectionEqual(c1, c2)).toBe(true)
     })
 
-    it("should return false if sidecars are not equal", () => {
-        const sidecar1: Sidecar = {host: "localhost", port: 8008}
-        const sidecar2: Sidecar = {host: "localhost", port: 8009}
-        expect(isSidecarEqual(sidecar1, sidecar2)).toBe(false)
+    it("should return false if connections are not equal", () => {
+        const c1: NodeConfig = {host: "localhost", keeperPort: 8008}
+        const c2: NodeConfig = {host: "localhost", keeperPort: 8009}
+        expect(isConnectionEqual(c1, c2)).toBe(false)
     })
 })
 

@@ -199,3 +199,29 @@ certs
     ├── server.scr -- Server Certificate Signing Request
     └── server.crt -- Server Certificate
 ```
+
+## SSH
+
+If you want test ssh integration on your local VM you need to do these:
+
+### 1. Install SSH server
+
+```bash
+sudo apt install openssh-server && sudo systemctl enable --now ssh
+sudo dnf install openssh-server && sudo systemctl enable --now sshd
+sudo pacman -S openssh && sudo systemctl enable --now sshd
+```
+
+### 2. Try to Connect
+
+```bash
+ssh localhost
+```
+
+Type `yes` on first connect. Enter your local password, and you are in. Your ssh server is working.
+
+
+### 3. Authorize a key pair
+
+Go to Ivory vault, generate a key pair, then add it to `~/.ssh/authorized_keys` and Ivory should
+start working passwordless.

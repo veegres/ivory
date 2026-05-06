@@ -1,12 +1,12 @@
 import {beforeEach, describe, expect, it, vi} from "vitest"
 
-import type {ActiveCluster} from "../../src/api/cluster/type"
-import {InstanceTabType} from "../../src/api/instance/type"
-import {QueryType} from "../../src/api/postgres"
+import {Cluster} from "../../src/api/cluster/type"
+import {NodeTabType} from "../../src/api/node/type"
+import {Type as QueryType} from "../../src/api/query/type"
 import {getDomain} from "../../src/app/utils"
 import {MainQueryClient} from "../../src/provider/AppProvider"
 import {useStore, useStoreAction} from "../../src/provider/StoreProvider"
-import {createMockCluster, createMockInstance} from "../test-helpers"
+import {createMockCluster, createMockNode} from "../test-helpers"
 
 // Mock MainQueryClient from AppProvider
 vi.mock("../../src/provider/AppProvider", async (importOriginal) => {
@@ -35,15 +35,16 @@ describe("StoreProvider", () => {
             expect(state.searchCluster).toBe("")
             expect(state.activeClusterTab).toBe(0)
             expect(state.activeCluster).toBeUndefined()
-            expect(state.activeInstance).toEqual({})
+            expect(state.manualKeeper).toBeUndefined()
+            expect(state.activeNode).toEqual({})
             expect(state.activeTags).toEqual(["ALL"])
             expect(state.warnings).toEqual({})
             expect(state.settings).toBe(false)
-            expect(state.instance.body).toBe(InstanceTabType.CHART)
-            expect(state.instance.queryTab).toBe(QueryType.CONSOLE)
-            expect(state.instance.queryConsole).toBe("")
-            expect(state.instance.dbName).toBeUndefined()
-            expect(state.instance.dbSchema).toBeUndefined()
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.MONITOR)
+            expect(state.nodeState.queryTab).toBe(QueryType.CONSOLE)
+            expect(state.nodeState.queryConsole).toBe("")
+            expect(state.nodeState.dbName).toBeUndefined()
+            expect(state.nodeState.dbSchema).toBeUndefined()
         })
     })
 
@@ -74,10 +75,7 @@ describe("StoreProvider", () => {
 
     describe("setCluster", () => {
         it("should set active cluster", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 
@@ -86,10 +84,7 @@ describe("StoreProvider", () => {
         })
 
         it("should clear active cluster when undefined", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
             useStoreAction.setCluster(undefined)
@@ -100,30 +95,21 @@ describe("StoreProvider", () => {
     })
 
     describe("setClusterDetection", () => {
-        it("should update detection instance", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
-
+        it("should update detection node", () => {
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
             useStoreAction.setCluster(cluster)
 
-            const detectInstance = createMockInstance({
-                sidecar: {host: "localhost", port: 8009},
-            })
-            useStoreAction.setClusterDetection(detectInstance)
+            const manualKeeper = "test-keeper"
+            useStoreAction.setClusterDetection(manualKeeper)
 
             const state = useStore.getState()
-            expect(state.activeCluster?.detectBy).toEqual(detectInstance)
+            expect(state.manualKeeper).toEqual(manualKeeper)
         })
 
         it("should not update if no active cluster", () => {
-            const instance = createMockInstance()
-
             const stateBefore = useStore.getState()
-            useStoreAction.setClusterDetection(instance)
+            useStoreAction.setClusterDetection("test-keeper")
             const stateAfter = useStore.getState()
-
             expect(stateAfter).toEqual(stateBefore)
         })
     })
@@ -163,49 +149,43 @@ describe("StoreProvider", () => {
         })
     })
 
-    describe("setInstance", () => {
-        it("should set active instance for cluster", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+    describe("setNode", () => {
+        it("should set active node for cluster", () => {
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 
-            const instance = createMockInstance({
-                sidecar: {host: "localhost", port: 8009},
+            const node = createMockNode({
+                config: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setInstance(getDomain(instance.sidecar))
+            useStoreAction.setNode(getDomain(node.config))
 
             const state = useStore.getState()
-            expect(state.activeInstance["test-cluster"]).toEqual(getDomain(instance.sidecar))
+            expect(state.activeNode["test-cluster"]).toEqual(getDomain(node.config))
         })
 
-        it("should remove active instance when undefined", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+        it("should remove active node when undefined", () => {
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 
-            const instance = createMockInstance({
-                sidecar: {host: "localhost", port: 8009},
+            const node = createMockNode({
+                config: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setInstance(getDomain(instance.sidecar))
-            useStoreAction.setInstance(undefined)
+            useStoreAction.setNode(getDomain(node.config))
+            useStoreAction.setNode(undefined)
 
             const state = useStore.getState()
-            expect(state.activeInstance["test-cluster"]).toBeUndefined()
+            expect(state.activeNode["test-cluster"]).toBeUndefined()
         })
 
         it("should not update if no active cluster", () => {
-            const instance = createMockInstance()
+            const node = createMockNode()
 
             const stateBefore = useStore.getState()
-            useStoreAction.setInstance(getDomain(instance.sidecar))
+            useStoreAction.setNode(getDomain(node.config))
             const stateAfter = useStore.getState()
 
             expect(stateAfter).toEqual(stateBefore)
@@ -251,16 +231,16 @@ describe("StoreProvider", () => {
             useStoreAction.setConsoleQuery("SELECT * FROM users")
 
             const state = useStore.getState()
-            expect(state.instance.queryConsole).toBe("SELECT * FROM users")
+            expect(state.nodeState.queryConsole).toBe("SELECT * FROM users")
         })
     })
 
-    describe("setInstanceBody", () => {
-        it("should set instance body tab", () => {
-            useStoreAction.setInstanceBody(InstanceTabType.QUERY)
+    describe("setNodeBody", () => {
+        it("should set node body tab", () => {
+            useStoreAction.setNodeBody(NodeTabType.QUERY)
 
             const state = useStore.getState()
-            expect(state.instance.body).toBe(InstanceTabType.QUERY)
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.QUERY)
         })
     })
 
@@ -269,7 +249,7 @@ describe("StoreProvider", () => {
             useStoreAction.setQueryTab(QueryType.ACTIVITY)
 
             const state = useStore.getState()
-            expect(state.instance.queryTab).toBe(QueryType.ACTIVITY)
+            expect(state.nodeState.queryTab).toBe(QueryType.ACTIVITY)
         })
     })
 
@@ -278,7 +258,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbName("testdb")
 
             const state = useStore.getState()
-            expect(state.instance.dbName).toBe("testdb")
+            expect(state.nodeState.dbName).toBe("testdb")
         })
 
         it("should clear database name when undefined", () => {
@@ -286,7 +266,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbName(undefined)
 
             const state = useStore.getState()
-            expect(state.instance.dbName).toBeUndefined()
+            expect(state.nodeState.dbName).toBeUndefined()
         })
     })
 
@@ -295,7 +275,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbSchema("public")
 
             const state = useStore.getState()
-            expect(state.instance.dbSchema).toBe("public")
+            expect(state.nodeState.dbSchema).toBe("public")
         })
 
         it("should update database schema", () => {
@@ -303,7 +283,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbSchema("private")
 
             const state = useStore.getState()
-            expect(state.instance.dbSchema).toBe("private")
+            expect(state.nodeState.dbSchema).toBe("private")
         })
 
         it("should clear database schema when undefined", () => {
@@ -311,7 +291,7 @@ describe("StoreProvider", () => {
             useStoreAction.setDbSchema(undefined)
 
             const state = useStore.getState()
-            expect(state.instance.dbSchema).toBeUndefined()
+            expect(state.nodeState.dbSchema).toBeUndefined()
         })
     })
 
@@ -343,10 +323,7 @@ describe("StoreProvider", () => {
         })
 
         it("should reset activeCluster", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
             useStoreAction.clear()
@@ -355,23 +332,20 @@ describe("StoreProvider", () => {
             expect(state.activeCluster).toBeUndefined()
         })
 
-        it("should reset activeInstance", () => {
-            const cluster: ActiveCluster = {
-                cluster: createMockCluster({name: "test-cluster"}),
-                warning: false,
-            }
+        it("should reset activeNode", () => {
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
 
             useStoreAction.setCluster(cluster)
 
-            const instance = createMockInstance({
-                sidecar: {host: "localhost", port: 8009},
+            const node = createMockNode({
+                config: {host: "localhost", keeperPort: 8009},
             })
 
-            useStoreAction.setInstance(getDomain(instance.sidecar))
+            useStoreAction.setNode(getDomain(node.config))
             useStoreAction.clear()
 
             const state = useStore.getState()
-            expect(state.activeInstance).toEqual({})
+            expect(state.activeNode).toEqual({})
         })
     })
 

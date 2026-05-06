@@ -5,7 +5,10 @@ import {ReactNode} from "react"
 import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
-    label: {display: "flex", alignItems: "center", borderRadius: 2, padding: "2px 10px 0", cursor: "pointer", minHeight: "15px", textWrap: "nowrap"},
+    label: {
+        display: "flex", alignItems: "center", borderRadius: 2, padding: "0px 10px",
+        cursor: "pointer", minHeight: "15px", textWrap: "nowrap",
+    },
 }
 
 type Props = {

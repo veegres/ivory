@@ -1,84 +1,76 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
-import {
-    InstanceScheduledRestart,
-    InstanceScheduledSwitchover, Role,
-    Sidecar,
-} from "../instance/type"
-import {Permission} from "../permission/type"
-import {Database} from "../postgres"
+import {Plugin as DbPlugin} from "../database/type"
+import {Feature} from "../feature"
+import {Plugin as KeeperPlugin} from "../keeper/type"
+import {KeeperResponse} from "../node/type"
 
 // COMMON (WEB AND SERVER)
 
-export interface ClusterOptions {
-    tls: ClusterTls,
+export interface Plugins {
+    keeper: KeeperPlugin,
+    database: DbPlugin,
+}
+
+export interface Options {
+    plugins: Plugins,
+    tls: Tls,
     certs: Certs,
-    credentials: Credentials,
-    tags?: string[],
+    vaults: Vaults,
+    tags: string[],
 }
 
-export interface Cluster extends ClusterOptions {
+export interface NodeConfig {
+    host: string,
+    sshPort?: number,
+    keeperPort?: number,
+    dbPort?: number,
+}
+
+export interface Cluster extends Options {
     name: string,
-    sidecars: Sidecar[],
-    sidecarsOverview: InstanceOverview,
+    nodes: NodeConfig[],
+    nodesOverview?: NodeOverview,
 }
 
-export interface ClusterAuto extends ClusterOptions {
+export interface AutoRequest extends Options {
     name: string,
-    instance: Sidecar,
+    host: string,
+    port: number,
 }
 
-export interface ClusterTls {
-    sidecar: boolean,
+export interface Tls {
+    keeper: boolean,
     database: boolean,
 }
 
-export interface Credentials {
-    patroniId?: string,
-    postgresId?: string,
+export interface Vaults {
+    keeperId?: string,
+    databaseId?: string,
+    sshKeyId?: string,
 }
 
-
-export interface ClusterOverview {
-    instances: InstanceOverview,
-    detectedBy?: Sidecar,
-    mainInstance?: Instance,
+export interface Overview {
+    nodes: NodeOverview,
+    features: Feature[],
 }
 
-export interface InstanceOverview {
-    [sidecar: string]: Instance | undefined
+export interface NodeOverview {
+    [domain: string]: Node,
 }
 
-export interface Instance {
-    state: string,
-    role: Role,
-    lag: number,
-    pendingRestart: boolean,
-    database: Database,
-    sidecar: Sidecar,
-    scheduledSwitchover?: InstanceScheduledSwitchover,
-    scheduledRestart?: InstanceScheduledRestart,
-    tags?: {[key: string]: any},
-    inCluster: boolean,
-    inSidecar: boolean,
+export interface Node {
+    config: NodeConfig,
+    keeper: KeeperResponse,
+    warnings: string[],
 }
 
 // SPECIFIC (WEB)
 
-export interface ActiveCluster {
-    cluster: Cluster,
-    detectBy?: Instance,
-    warning: boolean,
-}
-
-export interface ActiveInstance {
-    [cluster: string]: string | undefined
-}
-
 export interface ClusterTab {
     label: string,
-    body: (cluster: Cluster, overview?: ClusterOverview) => ReactNode,
-    permission: Permission,
+    body: (cluster: Cluster, mainNode?: Node, nodes?: NodeOverview) => ReactNode,
+    feature: Feature,
     info?: ReactNode,
 }

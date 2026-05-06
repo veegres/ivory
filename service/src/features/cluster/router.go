@@ -1,9 +1,8 @@
 package cluster
 
 import (
-	"encoding/json"
-	"ivory/src/clients/sidecar"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +18,7 @@ func NewRouter(clusterService *Service) *Router {
 func (r *Router) GetClusterList(context *gin.Context) {
 	tags := context.Request.URL.Query()["tags[]"]
 
-	var list []Cluster
+	var list []Response
 	var err error
 	if len(tags) == 0 {
 		list, err = r.clusterService.List()
@@ -35,17 +34,19 @@ func (r *Router) GetClusterList(context *gin.Context) {
 
 func (r *Router) GetClusterOverview(context *gin.Context) {
 	name := context.Param("name")
-	query := context.Query("sidecar")
-	var side *sidecar.Sidecar
-	if query != "" {
-		errBind := json.Unmarshal([]byte(query), &side)
-		if errBind != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
-			return
-		}
+	host := context.Query("host")
+	port := context.Query("port")
+
+	if port == "" {
+		port = "0"
+	}
+	parsedPort, err := strconv.Atoi(port)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	overview, err := r.clusterService.Overview(name, side)
+	overview, err := r.clusterService.Overview(name, host, parsedPort)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -64,7 +65,7 @@ func (r *Router) GetClusterByName(context *gin.Context) {
 }
 
 func (r *Router) PutClusterByName(context *gin.Context) {
-	var cluster Cluster
+	var cluster Request
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})
@@ -81,7 +82,7 @@ func (r *Router) PutClusterByName(context *gin.Context) {
 }
 
 func (r *Router) PostClusterAutoCreate(context *gin.Context) {
-	var cluster ClusterAuto
+	var cluster AutoRequest
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})

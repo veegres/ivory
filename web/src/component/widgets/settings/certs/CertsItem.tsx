@@ -2,7 +2,7 @@ import {Box, Tooltip} from "@mui/material"
 
 import {useRouterCertDelete} from "../../../../api/cert/hook"
 import {Cert} from "../../../../api/cert/type"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {StylePropsMap, SxPropsMap} from "../../../../app/type"
 import {FileUsageOptions} from "../../../../app/utils"
 import {DeleteIconButton} from "../../../view/button/IconButtons"
@@ -42,7 +42,7 @@ export function CertsItem(props: Props) {
             <Tooltip placement={"top-start"} title={cert.path}>
                 <Box sx={SX.path} style={style.break}>{cert.path}</Box>
             </Tooltip>
-            <Access permission={Permission.ManageCertDelete}>
+            <Access feature={Feature.ManageCertDelete}>
                 <DeleteIconButton loading={deleteCert.isPending} onClick={() => deleteCert.mutate(uuid)}/>
             </Access>
         </Box>

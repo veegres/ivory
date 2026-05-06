@@ -4,8 +4,8 @@ import {SxPropsMap} from "../../../app/type"
 import {InfoColorBox} from "./InfoColorBox"
 
 const SX: SxPropsMap = {
-    list: {display: "flex", gap: 1, justifyContent: "space-evenly", margin: "3px 0"},
-    label: {textAlign: "center"},
+    list: {display: "flex", gap: 1, justifyContent: "space-between", margin: "6px 0px 3px 0", maxWidth: "200px", flexWrap: "wrap"},
+    label: {textAlign: "center", fontFamily: "monospace"},
 }
 
 type Item = { label: string, title?: string, bgColor?: string }

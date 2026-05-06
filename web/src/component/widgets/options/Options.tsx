@@ -1,15 +1,15 @@
 import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {CertType} from "../../../api/cert/type"
-import {ClusterOptions} from "../../../api/cluster/type"
-import {PasswordType} from "../../../api/password/type"
-import {Permission} from "../../../api/permission/type"
+import {Options as ClusterOptions} from "../../../api/cluster/type"
+import {Feature} from "../../../api/feature"
+import {VaultType} from "../../../api/vault/type"
 import {SxPropsMap} from "../../../app/type"
-import {CertOptions, CredentialOptions} from "../../../app/utils"
+import {CertOptions, VaultOptions} from "../../../app/utils"
 import {AccessBox} from "../access/Access"
 import {OptionsCert} from "./OptionsCert"
-import {OptionsPassword} from "./OptionsPassword"
 import {OptionsTags} from "./OptionsTags"
+import {OptionsVault} from "./OptionsVault"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -17,21 +17,22 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: ClusterOptions,
-    onUpdate: (cluster: ClusterOptions) => void,
+    options: ClusterOptions,
+    onUpdate: (options: ClusterOptions) => void,
 }
 
 export function Options(props: Props) {
-    const {onUpdate, cluster} = props
-    const {credentials, tags, certs, tls} = cluster
+    const {onUpdate, options} = props
+    const {vaults, tags, certs, tls} = options
 
     return (
-        <AccessBox sx={SX.box} permission={Permission.ManageClusterUpdate}>
-            <OptionsPassword type={PasswordType.POSTGRES} selected={credentials.postgresId} onUpdate={handlePasswordUpdate}/>
-            <OptionsPassword type={PasswordType.PATRONI} selected={credentials.patroniId} onUpdate={handlePasswordUpdate}/>
+        <AccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
+            <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/>
+            <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/>
+            <OptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/>
             <Divider variant={"middle"}/>
             <ToggleButtonGroup size={"small"} fullWidth>
-                <ToggleButton onClick={handleTlsSidecarUpdate} selected={tls.sidecar} value={"sidecar"}>Sidecar</ToggleButton>
+                <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
                 <ToggleButton sx={SX.tls} disabled={true} value={"tls"}>TLS</ToggleButton>
                 <ToggleButton onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
             </ToggleButtonGroup>
@@ -44,23 +45,23 @@ export function Options(props: Props) {
         </AccessBox>
     )
 
-    function handlePasswordUpdate(t: PasswordType, s?: string) {
-        onUpdate({...cluster, credentials: {...cluster.credentials, [CredentialOptions[t].key]: s}})
+    function handleVaultUpdate(t: VaultType, s?: string) {
+        onUpdate({...options, vaults: {...options.vaults, [VaultOptions[t].key]: s}})
     }
 
     function handleCertUpdate(t: CertType, s?: string) {
-        onUpdate({...cluster, certs: {...cluster.certs, [CertOptions[t].key]: s}})
+        onUpdate({...options, certs: {...options.certs, [CertOptions[t].key]: s}})
     }
 
     function handleTagsUpdate(tags: string[]) {
-        onUpdate({...cluster, tags})
+        onUpdate({...options, tags})
     }
 
-    function handleTlsSidecarUpdate() {
-        onUpdate({...cluster, tls: {...cluster.tls, sidecar: !tls.sidecar}})
+    function handleTlsKeeperUpdate() {
+        onUpdate({...options, tls: {...options.tls, keeper: !tls.keeper}})
     }
 
     function handleTlsDatabaseUpdate() {
-        onUpdate({...cluster, tls: {...cluster.tls, database: !tls.database}})
+        onUpdate({...options, tls: {...options.tls, database: !tls.database}})
     }
 }

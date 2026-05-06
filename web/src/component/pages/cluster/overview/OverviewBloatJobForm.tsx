@@ -3,12 +3,13 @@ import {useState} from "react"
 
 import {useRouterBloatStart} from "../../../../api/bloat/hook"
 import {BloatOptions, BloatTarget} from "../../../../api/bloat/type"
-import {Cluster, Instance} from "../../../../api/cluster/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
+import {Plugin as DbPlugin} from "../../../../api/database/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../api/query/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnectionRequest} from "../../../../app/utils"
+import {getQueryConnection} from "../../../../app/utils"
 import {AutocompleteFetch} from "../../../view/autocomplete/AutocompleteFetch"
-import {ClusterNoLeaderError, ClusterNoPostgresPassword} from "./OverviewError"
+import {ErrorDbMissing,ErrorLeaderMissing} from "../../../view/box/ErrorManual"
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
@@ -16,7 +17,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    instance: Instance,
+    node: Node,
     cluster: Cluster,
     onClick: () => void,
     target?: BloatTarget,
@@ -24,16 +25,17 @@ type Props = {
 }
 
 export function OverviewBloatJobForm(props: Props) {
-    const {instance, cluster, target, onClick, setTarget} = props
+    const {node, cluster, target, onClick, setTarget} = props
     const [options, setOptions] = useState<BloatOptions>({force: false, noReindex: false, routineVacuum: false, initialReindex: false, noInitialVacuum: false})
 
     const start = useRouterBloatStart(cluster.name)
 
-    if (instance.role !== "leader") return <ClusterNoLeaderError/>
-    if (!cluster.credentials.postgresId) return <ClusterNoPostgresPassword/>
+    if (node.keeper.role !== "leader") return <ErrorLeaderMissing/>
+    if (!node.config.host || !node.config.dbPort) return <ErrorDbMissing/>
 
-    const db = {...instance.database, name: target?.database}
-    const connection = getConnectionRequest(cluster, db)
+    const db = {plugin: DbPlugin.POSTGRES, host: node.config.host, port: node.config.dbPort, name: target?.database}
+    const queryCon = getQueryConnection(cluster, db.host, db.port)
+    const connection = {...queryCon, db}
     return (
         <Box sx={SX.form}>
             <AutocompleteFetch
@@ -110,15 +112,12 @@ export function OverviewBloatJobForm(props: Props) {
     )
 
     function handleRun() {
-        const credentialId = cluster.credentials.postgresId
-        if (instance && credentialId) {
-            const {database: {host, port}} = instance
+        if (node) {
+            const dbRun = {...db, schema: target?.schema}
             onClick()
+            const queryCon = getQueryConnection(cluster, dbRun.host, dbRun.port)
             start.mutate({
-                connection: {
-                    db: {host, port, name: target?.database, schema: target?.schema},
-                    credentialId,
-                },
+                connection: {...queryCon, db: dbRun},
                 target, options, cluster: cluster.name,
             })
         }

@@ -1,20 +1,22 @@
 import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material"
-import {useState} from "react"
+import {useMemo, useState} from "react"
 
 import {useRouterClusterList, useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {ClusterTab} from "../../../../api/cluster/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterInfo} from "../../../../api/management/hook"
-import {Permission, PermissionStatus} from "../../../../api/permission/type"
+import {Status} from "../../../../api/permission/type"
 import {SxPropsMap} from "../../../../app/type"
+import {getMainKeeper} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
+import {ErrorMainNodeMissing} from "../../../view/box/ErrorManual"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {PageMainBox} from "../../../view/box/PageMainBox"
 import {OverviewAction} from "./OverviewAction"
 import {OverviewBloat} from "./OverviewBloat"
 import {OverviewConfig} from "./OverviewConfig"
-import {ClusterNoInstanceError} from "./OverviewError"
-import {OverviewInstances} from "./OverviewInstances"
+import {OverviewNodes} from "./OverviewNodes"
 import {OverviewOptions} from "./OverviewOptions"
 
 const SX: SxPropsMap = {
@@ -32,26 +34,26 @@ const SX: SxPropsMap = {
 const TABS: ClusterTab[] = [
     {
         label: "Overview",
-        permission: Permission.ViewInstanceOverview,
-        body: (cluster, overview) => <OverviewInstances cluster={cluster} instances={overview?.instances}/>,
+        feature: Feature.ViewNodeDbOverview,
+        body: (cluster, _, nodes) => <OverviewNodes cluster={cluster} nodes={nodes}/>,
         info: <>
             The Overview tab offers visibility into the current status of your cluster. From here, you can
             utilize essential features to manage your cluster, including switchover, reinit, restart, reload,
-            failover, and more. The leader node is automatically detected by sending requests to each instance
-            until a successful connection is established. You have the flexibility to change the main instance
+            failover, and more. The leader node is automatically detected by sending requests to each node
+            until a successful connection is established. You have the flexibility to change the main node
             to which Ivory sends requests by accessing the settings in the top right corner.
         </>
     },
     {
         label: "Config",
-        permission: Permission.ViewInstanceConfig,
-        body: (cluster, overview) => {
-            if (!overview?.mainInstance) return <ClusterNoInstanceError/>
-            return <OverviewConfig cluster={cluster} instance={overview.mainInstance}/>
+        feature: Feature.ViewNodeDbConfig,
+        body: (cluster, mainNode) => {
+            if (!mainNode) return <ErrorMainNodeMissing/>
+            return <OverviewConfig cluster={cluster} node={mainNode}/>
         },
         info: <>
             You can adjust your PostgreSQL configurations here, and any changes made will be applied to
-            all cluster instances. Instead of rewriting the entire configuration, it applies a patch
+            all cluster nodes. Instead of rewriting the entire configuration, it applies a patch
             update. If you wish to remove a specific setting, simply set it to <b>null</b>. Keep in mind that
             modifying certain parameters may necessitate restarting PostgreSQL. For further details on how
             this process functions, refer to
@@ -60,10 +62,10 @@ const TABS: ClusterTab[] = [
     },
     {
         label: "Bloat",
-        permission: Permission.ViewBloatList,
-        body: (cluster, overview) => {
-            if (!overview?.mainInstance) return <ClusterNoInstanceError/>
-            return <OverviewBloat cluster={cluster} instance={overview.mainInstance}/>
+        feature: Feature.ViewToolBloatList,
+        body: (cluster, mainNode) => {
+            if (!mainNode) return <ErrorMainNodeMissing/>
+            return <OverviewBloat cluster={cluster} node={mainNode}/>
         },
         info: <>
             Here, you can efficiently decrease the size of bloated tables and indexes without imposing
@@ -89,24 +91,29 @@ const TABS: ClusterTab[] = [
 ]
 
 export function Overview() {
-    const activeClusterTab = useStore(s => s.activeClusterTab)
+    const {setClusterTab} = useStoreAction
     const activeTags = useStore(s => s.activeTags)
     const activeCluster = useStore(s => s.activeCluster)
-    const {setClusterTab} = useStoreAction
+    const activeClusterTab = useStore(s => s.activeClusterTab)
+    const manualKeeper = useStore(s => s.manualKeeper)
+
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const clusters = useRouterClusterList(activeTags)
-    const overview = useRouterClusterOverview(activeCluster?.cluster.name, false)
+
     const info = useRouterInfo(false)
     const permissions = info.data?.auth.user?.permissions
+
+    const clusters = useRouterClusterList(activeTags, false)
+    const overview = useRouterClusterOverview(activeCluster?.name, false)
+
+    const [mainDomain, mainNode] = useMemo(() => getMainKeeper(overview.data?.nodes, manualKeeper), [overview.data?.nodes, manualKeeper])
     const tab = TABS[activeClusterTab]
 
-
     return (
-        <PageMainBox withPadding visible={!!clusters.data?.length || !!activeCluster}>
+        <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
             <Box sx={SX.headBox}>
                 <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)} role={"tab"}>
-                    {TABS.map((value, i) => permissions && permissions[value.permission] === PermissionStatus.GRANTED && (
+                    {TABS.map((value, i) => permissions && permissions[value.feature] === Status.GRANTED && (
                         <Tab key={i} value={i} label={value.label}/>
                     ))}
                 </Tabs>
@@ -122,18 +129,19 @@ export function Overview() {
 
     function renderMainBlock() {
         if (!activeCluster) return <AlertCentered text={"Please, select a cluster to see the overview! (click on the name)"}/>
+        if (!activeCluster) return <AlertCentered text={"Selected cluster in not in the list"} severity={"warning"}/>
         if (!tab) return <AlertCentered text={"Coming soon — we're working on it!"}/>
         return <>
             {overview.error && <ErrorSmart error={overview.error}/>}
-            {tab.body(activeCluster.cluster, overview.data)}
+            {tab.body(activeCluster, mainNode, overview.data?.nodes)}
         </>
     }
 
     function renderActions() {
-        if (!activeCluster) return null
+        if (!activeCluster) return
         return <OverviewAction
             cluster={activeCluster}
-            mainInstance={overview.data?.mainInstance}
+            mainNode={[mainDomain, mainNode]}
             selectInfo={infoOpen}
             disableInfo={!tab.info}
             toggleInfo={() => setInfoOpen(!infoOpen)}
@@ -143,7 +151,7 @@ export function Overview() {
     }
 
     function renderInfoBlock() {
-        if (!tab?.info) return null
+        if (!tab?.info) return
         return (
             <Collapse in={infoOpen}>
                 <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{tab.info}</Alert>
@@ -153,12 +161,17 @@ export function Overview() {
     }
 
     function renderSettingsBlock() {
-        if (!activeCluster) return null
+        if (!activeCluster) return
         return (
             <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
                 <Box sx={SX.settingsBox}>
                     <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
-                    <OverviewOptions info={activeCluster} overview={overview.data}/>
+                    <OverviewOptions
+                        cluster={activeCluster}
+                        overview={overview.data}
+                        mainKeeper={mainDomain}
+                        manualKeeper={manualKeeper}
+                    />
                 </Box>
             </Collapse>
         )

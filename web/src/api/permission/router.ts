@@ -1,6 +1,7 @@
 import {api} from "../api"
+import {Feature} from "../feature"
 import {R} from "../management/type"
-import {Permission, UserPermissions} from "./type"
+import {UserPermissions} from "./type"
 
 export const PermissionApi = {
     list: {
@@ -10,19 +11,19 @@ export const PermissionApi = {
     },
     request: {
         key: () => ["permission", "request"],
-        fn: (permissions: Permission[]) =>
+        fn: (permissions: Feature[]) =>
             api.post("/permission/request", {permissions})
                 .then((response) => response.data.response),
     },
     approve: {
         key: () => ["permission", "approve"],
-        fn: ({username, permissions}: { username: string, permissions: Permission[] }) =>
+        fn: ({username, permissions}: { username: string, permissions: Feature[] }) =>
             api.post(`/permission/users/${username}/approve`, {permissions})
                 .then((response) => response.data.response),
     },
     reject: {
         key: () => ["permission", "reject"],
-        fn: ({username, permissions}: { username: string, permissions: Permission[] }) =>
+        fn: ({username, permissions}: { username: string, permissions: Feature[] }) =>
             api.post(`/permission/users/${username}/reject`, {permissions})
                 .then((response) => response.data.response),
     },

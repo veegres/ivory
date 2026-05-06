@@ -1,10 +1,10 @@
-import {QueryType} from "../../../api/postgres"
 import {useRouterQueryDelete} from "../../../api/query/hook"
+import {Type} from "../../../api/query/type"
 import {DeleteIconButton} from "../../view/button/IconButtons"
 
 type Props = {
     id: string
-    type: QueryType,
+    type: Type,
     onSuccess?: () => void,
 }
 

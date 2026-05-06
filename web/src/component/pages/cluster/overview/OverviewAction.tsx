@@ -1,9 +1,9 @@
 import {InfoOutlined, Settings} from "@mui/icons-material"
 import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
-import {ActiveCluster, Instance} from "../../../../api/cluster/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getSidecarConnection} from "../../../../app/utils"
+import {getKeeperRequest} from "../../../../app/utils"
 import {OverviewActionInfo} from "./OverviewActionInfo"
 import {OverviewActionStatus} from "./OverviewActionStatus"
 
@@ -13,8 +13,8 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: ActiveCluster,
-    mainInstance?: Instance,
+    cluster: Cluster,
+    mainNode: [string?, Node?],
     selectInfo: boolean,
     disableInfo: boolean,
     toggleInfo: () => void,
@@ -23,19 +23,17 @@ type Props = {
 }
 
 export function OverviewAction(props: Props) {
-    const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainInstance} = props
-    const {name} = cluster.cluster
-    const sidecar = mainInstance?.sidecar
+    const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainNode: m} = props
+    const [_, mainNode] = m
+    const config = mainNode?.config
+    const status = mainNode?.keeper.status
+    const keeper = config && getKeeperRequest(cluster, config.host, config.keeperPort)
     return (
         <Box sx={SX.box}>
-            {sidecar && sidecar.status && (
-                <OverviewActionStatus
-                    status={sidecar.status}
-                    cluster={name}
-                    request={getSidecarConnection(cluster.cluster, sidecar)}
-                />
+            {keeper && status && (
+                <OverviewActionStatus status={status} cluster={cluster.name} request={keeper}/>
             )}
-            <OverviewActionInfo cluster={cluster.cluster} detectBy={cluster.detectBy} mainInstance={mainInstance}/>
+            <OverviewActionInfo cluster={cluster} mainNode={m}/>
             <ToggleButtonGroup size={"small"}>
                 <ToggleButton
                     sx={SX.toggleButton}

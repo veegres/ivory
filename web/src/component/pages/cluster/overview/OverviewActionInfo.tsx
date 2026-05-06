@@ -1,10 +1,12 @@
 import {Box} from "@mui/material"
+import {useMemo} from "react"
 
 import {CertType} from "../../../../api/cert/type"
-import {Cluster, Instance} from "../../../../api/cluster/type"
-import {PasswordType} from "../../../../api/password/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
+import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
-import {CertOptions, CredentialOptions, getDetectionItems} from "../../../../app/utils"
+import {CertOptions, getDetectionItems,VaultOptions} from "../../../../app/utils"
+import {useStore} from "../../../../provider/StoreProvider"
 import {InfoBox} from "../../../view/box/InfoBox"
 import {InfoBoxList} from "../../../view/box/InfoBoxList"
 import {InfoColorBoxList} from "../../../view/box/InfoColorBoxList"
@@ -15,32 +17,35 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    detectBy?: Instance,
-    mainInstance?: Instance,
+    mainNode: [string?, Node?],
 }
 
 export function OverviewActionInfo(props: Props) {
-    const {mainInstance, cluster, detectBy} = props
+    const {cluster, mainNode} = props
+    const manualKeeper = useStore(s => s.manualKeeper)
 
-    const infoItems = [
-        {...CredentialOptions[PasswordType.POSTGRES], active: !!cluster.credentials.postgresId},
-        {...CredentialOptions[PasswordType.PATRONI], active: !!cluster.credentials.patroniId},
-        {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
-        {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
-        {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
-    ]
+    const clusterItems = useMemo(handleClusterItemsMemo, [cluster])
 
-    const detectionItems = getDetectionItems(mainInstance, detectBy)
-    const instance = detectionItems[1]
+    const detectionItems = getDetectionItems(mainNode, !!manualKeeper)
+    const node = detectionItems[1]
 
     return (
         <Box sx={SX.box}>
             <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>}>
-                <Box sx={{color: instance.bgColor}}>
-                    {instance.label.toUpperCase()}
-                </Box>
+                <Box sx={{color: node.bgColor}}>{node.label.toUpperCase()}</Box>
             </InfoBox>
-            <InfoBoxList items={infoItems} label={"Configured Cluster Options"}/>
+            <InfoBoxList items={clusterItems} label={"Configured Cluster Options"}/>
         </Box>
     )
+
+    function handleClusterItemsMemo() {
+        return [
+            {...VaultOptions[VaultType.SSH_KEY], active: !!cluster.vaults.sshKeyId},
+            {...VaultOptions[VaultType.KEEPER_PASSWORD], active: !!cluster.vaults.keeperId},
+            {...VaultOptions[VaultType.DATABASE_PASSWORD], active: !!cluster.vaults.databaseId},
+            {...CertOptions[CertType.CLIENT_CA], active: !!cluster.certs.clientCAId},
+            {...CertOptions[CertType.CLIENT_CERT], active: !!cluster.certs.clientCertId},
+            {...CertOptions[CertType.CLIENT_KEY], active: !!cluster.certs.clientKeyId}
+        ]
+    }
 }

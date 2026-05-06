@@ -16,7 +16,7 @@ export function CertsList(props: Props) {
     if (error) return <ErrorSmart error={error}/>
 
     const list = Object.entries<Cert>(certs ?? {})
-    if (list.length === 0) return <NoBox text={"There are no files yet"}/>
+    if (list.length === 0) return <NoBox text={"There are no cert files yet"}/>
 
     return (
         <TransitionGroup appear={false}>

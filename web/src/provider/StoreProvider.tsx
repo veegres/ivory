@@ -1,23 +1,24 @@
 import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
-import {ActiveCluster, Instance} from "../api/cluster/type"
-import {InstanceTabType} from "../api/instance/type"
-import {QueryType} from "../api/postgres"
+import {Cluster} from "../api/cluster/type"
+import {NodeTabType} from "../api/node/type"
+import {Type as QueryType} from "../api/query/type"
 import {MainQueryClient} from "./AppProvider"
 
 // STORE
 interface Store {
     searchCluster: string,
     activeClusterTab: number,
-    activeCluster?: ActiveCluster,
-    activeInstance: { [cluster: string]: string | undefined },
+    activeCluster?: Cluster,
+    manualKeeper?: string,
+    activeNode: { [cluster: string]: string | undefined },
     activeTags: string[],
     warnings: { [key: string]: boolean },
     refresh: { [key: string]: [string, number] },
     settings: boolean,
-    instance: {
-        body: InstanceTabType,
+    nodeState: {
+        nodeTab: NodeTabType,
         queryTab: QueryType,
         queryConsole: string,
         dbName?: string,
@@ -30,13 +31,14 @@ export const useStore = create(persist<Store>(
         searchCluster: "",
         activeClusterTab: 0,
         activeCluster: undefined,
-        activeInstance: {},
+        manualKeeper: undefined,
+        activeNode: {},
         activeTags: ["ALL"],
         warnings: {},
         settings: false,
         refresh: {},
-        instance: {
-            body: InstanceTabType.CHART,
+        nodeState: {
+            nodeTab: NodeTabType.MONITOR,
             queryTab: QueryType.CONSOLE,
             queryConsole: "",
             dbName: undefined,
@@ -48,16 +50,16 @@ export const useStore = create(persist<Store>(
 
 export const useStoreAction = {
     setCluster: setCluster,
-    setSearchCluster: setSearchCluster,
-    setClusterDetection: setClusterDetection,
+    setSearchCluster: setClusterSearch,
+    setClusterDetection: setClusterKeeper,
     setClusterTab: setClusterTab,
     setWarnings: setWarnings,
-    setInstance: setInstance,
+    setNode: setNode,
     setTags: setTags,
     toggleSettingsDialog: toggleSettingsDialog,
     clear: clear,
     setConsoleQuery: setConsoleQuery,
-    setInstanceBody: setInstanceBody,
+    setNodeBody: setNodeBody,
     setQueryTab: setQueryTab,
     setDbName: setDbName,
     setDbSchema: setDbSchema,
@@ -65,18 +67,18 @@ export const useStoreAction = {
 }
 
 // SETTERS
-function setSearchCluster(search: string) {
+function setClusterSearch(search: string) {
     useStore.setState(s => ({...s, searchCluster: search}))
 }
 
-function setCluster(cluster?: ActiveCluster) {
-    useStore.setState(s => ({...s, activeCluster: cluster}))
+function setCluster(cluster?: Cluster) {
+    useStore.setState(s => ({...s, activeCluster: cluster, manualKeeper: undefined}))
 }
 
-function setClusterDetection(detectBy?: Instance) {
+function setClusterKeeper(manualKeeper?: string) {
     useStore.setState(s => {
         if (!s.activeCluster) return s
-        return {...s, activeCluster: {...s.activeCluster, detectBy}}
+        return {...s, manualKeeper: manualKeeper}
     })
 }
 
@@ -88,14 +90,14 @@ function setWarnings(name: string, warning: boolean) {
     useStore.setState(s => ({...s, warnings: {...s.warnings, [name]: warning}}))
 }
 
-function setInstance(instance?: string) {
+function setNode(node?: string) {
     useStore.setState(s => {
-        const clusterName = s.activeCluster?.cluster.name
+        const clusterName = s.activeCluster?.name
         if (!clusterName) return s
-        if (instance) return {...s, activeInstance: {...s.activeInstance, [clusterName]: instance}}
-        if (!s.activeInstance[clusterName]) return s
-        const store = {...s, activeInstance: {...s.activeInstance}}
-        delete store.activeInstance[clusterName]
+        if (node) return {...s, activeNode: {...s.activeNode, [clusterName]: node}}
+        if (!s.activeNode[clusterName]) return s
+        const store = {...s, activeNode: {...s.activeNode}}
+        delete store.activeNode[clusterName]
         return store
     })
 }
@@ -114,23 +116,23 @@ function clear() {
 }
 
 function setConsoleQuery(q: string) {
-    useStore.setState(s => ({...s, instance: {...s.instance, queryConsole: q}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, queryConsole: q}}))
 }
 
-function setInstanceBody(t: InstanceTabType) {
-    useStore.setState(s => ({...s, instance: {...s.instance, body: t}}))
+function setNodeBody(t: NodeTabType) {
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, nodeTab: t}}))
 }
 
 function setQueryTab(t: QueryType) {
-    useStore.setState(s => ({...s, instance: {...s.instance, queryTab: t}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, queryTab: t}}))
 }
 
 function setDbName(n?: string) {
-    useStore.setState(s => ({...s, instance: {...s.instance, dbName: n}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, dbName: n}}))
 }
 
 function setDbSchema(n?: string) {
-    useStore.setState(s => ({...s, instance: {...s.instance, dbSchema: n}}))
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, dbSchema: n}}))
 }
 
 function setRefreshPeriod(key: string, period: [string, number]) {

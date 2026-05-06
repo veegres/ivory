@@ -1,11 +1,10 @@
 import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../hook/QueryCustom"
-import {ConnectionRequest, QueryType} from "../postgres"
 import {QueryApi} from "./router"
-import {QueryChartRequest, QueryRunRequest} from "./type"
+import {ChartRequest, Connection, RunRequest, Type} from "./type"
 
-export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
+export function useRouterQueryList(type: Type, enabled: boolean = true) {
     return useQuery({
         queryKey: QueryApi.list.key(type),
         queryFn: () => QueryApi.list.fn(type),
@@ -13,7 +12,7 @@ export function useRouterQueryList(type: QueryType, enabled: boolean = true) {
     })
 }
 
-export function useRouterQueryUpdate(type: QueryType, onSuccess?: () => void) {
+export function useRouterQueryUpdate(type: Type, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.update.fn,
         mutationKey: QueryApi.update.key(),
@@ -22,7 +21,7 @@ export function useRouterQueryUpdate(type: QueryType, onSuccess?: () => void) {
     })
 }
 
-export function useRouterQueryDelete(type: QueryType, onSuccess?: () => void) {
+export function useRouterQueryDelete(type: Type, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.delete.fn,
         mutationKey: QueryApi.delete.key(),
@@ -31,7 +30,7 @@ export function useRouterQueryDelete(type: QueryType, onSuccess?: () => void) {
     })
 }
 
-export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
+export function useRouterQueryCreate(type: Type, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.create.fn,
         mutationKey: QueryApi.create.key(),
@@ -40,14 +39,14 @@ export function useRouterQueryCreate(type: QueryType, onSuccess?: () => void) {
     })
 }
 
-export function useRouterQueryRun(request: QueryRunRequest) {
-    const {connection, query, queryOptions, queryUuid} = request
+export function useRouterQueryRun(request: RunRequest) {
+    const {connection, query, options, queryUuid} = request
     const [queryKey, queryFn] = queryUuid ? [
         QueryApi.template.key(queryUuid),
-        () => QueryApi.template.fn({connection, queryOptions, queryUuid}),
+        () => QueryApi.template.fn({connection, options, queryUuid}),
     ] : [
         QueryApi.console.key(),
-        () => QueryApi.console.fn({connection, queryOptions, query}),
+        () => QueryApi.console.fn({connection, options, query}),
     ]
 
     return useQuery({
@@ -56,7 +55,7 @@ export function useRouterQueryRun(request: QueryRunRequest) {
     })
 }
 
-export function useRouterActivity(connection: ConnectionRequest) {
+export function useRouterActivity(connection: Connection) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: QueryApi.activity.key(),
@@ -65,7 +64,7 @@ export function useRouterActivity(connection: ConnectionRequest) {
     })
 }
 
-export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean = false) {
+export function useRouterQueryChart(request: ChartRequest, enabled: boolean = false) {
     return useQuery({
         queryKey: QueryApi.chart.key(request),
         queryFn: () => QueryApi.chart.fn(request),
@@ -73,7 +72,7 @@ export function useRouterQueryChart(request: QueryChartRequest, enabled: boolean
     })
 }
 
-export function useRouterQueryDatabase(connection: ConnectionRequest, params: any, enabled: boolean = true) {
+export function useRouterQueryDatabase(connection: Connection, params: any, enabled: boolean = true) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.databases.key(connection), params.name],
@@ -82,7 +81,7 @@ export function useRouterQueryDatabase(connection: ConnectionRequest, params: an
     })
 }
 
-export function useRouterQuerySchemas(connection: ConnectionRequest, params: any, enabled: boolean = true) {
+export function useRouterQuerySchemas(connection: Connection, params: any, enabled: boolean = true) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.schemas.key(connection), params.name],
@@ -91,7 +90,7 @@ export function useRouterQuerySchemas(connection: ConnectionRequest, params: any
     })
 }
 
-export function useRouterQueryTables(connection: ConnectionRequest, params: any, enabled: boolean = true) {
+export function useRouterQueryTables(connection: Connection, params: any, enabled: boolean = true) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.tables.key(connection), params.name],

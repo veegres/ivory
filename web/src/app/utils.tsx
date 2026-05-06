@@ -1,9 +1,9 @@
 import {
-    BackupTwoTone, Block, CheckCircleOutlined,
-    FilePresentOutlined, HeartBroken, HelpOutline,
+    BackupTwoTone, Block, CheckCircleOutlined, DnsTwoTone,
+    FilePresentOutlined, HeartBrokenTwoTone, HelpOutline,
     InfoTwoTone, KeyTwoTone, LockTwoTone,
     MenuOpen, Pause, PlayArrow, RuleTwoTone,
-    SecurityTwoTone, Shield, Storage, UploadFileOutlined,
+    SecurityTwoTone, Shield, UploadFileOutlined,
 } from "@mui/icons-material"
 import {SxProps, Theme} from "@mui/material"
 import {blue, green, indigo, orange, purple, red} from "@mui/material/colors"
@@ -13,11 +13,13 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {Cluster, Instance} from "../api/cluster/type"
-import {InstanceRequest, Role, Sidecar, SidecarStatus} from "../api/instance/type"
-import {PasswordType} from "../api/password/type"
-import {PermissionStatus} from "../api/permission/type"
-import {ConnectionRequest, Database, QueryVariety} from "../api/postgres"
+import {Cluster, Node, NodeConfig,NodeOverview} from "../api/cluster/type"
+import {Role, Status as KeeperStatus} from "../api/keeper/type"
+import {KeeperConnection, KeeperRequest,SshConnection} from "../api/node/type"
+import {Status as PermissionStatus} from "../api/permission/type"
+import {VarietyType} from "../api/query/type"
+import {Connection as QueryConnection} from "../api/query/type"
+import {VaultType} from "../api/vault/type"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {
@@ -29,7 +31,7 @@ export const IvoryLinks: Links = {
     sponsorship: {name: "Sponsorship", link: "https://boosty.to/anselvo/purchase/1454406"}
 }
 
-export const InstanceColor: { [key in Role]: { label: "success" | "primary" | "error" | "warning", color: string } } = {
+export const NodeColor: { [key in Role]: { label: "success" | "primary" | "error" | "warning", color: string } } = {
     leader: {label: "success", color: green[600]},
     replica: {label: "primary", color: blue[500]},
     unknown: {label: "warning", color:  orange[500]},
@@ -44,14 +46,16 @@ export const JobOptions: { [key in JobStatus]: { name: string, color: string, ac
     [JobStatus.STOPPED]: {name: "STOPPED", color: "rgb(185,185,185)", active: false},
 }
 
-export const CredentialOptions: { [key in PasswordType]: EnumOptions } = {
-    [PasswordType.POSTGRES]: {name: "POSTGRES", label: "Postgres Password", icon: <Storage/>, key: "postgresId"},
-    [PasswordType.PATRONI]: {name: "PATRONI", label: "Patroni Password", icon: <HeartBroken/>, key: "patroniId"}
+export const VaultOptions: { [key in VaultType]: EnumOptions } = {
+    [VaultType.DATABASE_PASSWORD]: {name: "DATABASE_PASSWORD", label: "Database Password", icon: <DnsTwoTone/>, key: "databaseId"},
+    [VaultType.KEEPER_PASSWORD]: {name: "KEEPER_PASSWORD", label: "Keeper Password", icon: <HeartBrokenTwoTone/>, key: "keeperId"},
+    [VaultType.SSH_PASSWORD]: {name: "SSH_PASSWORD", label: "SSH Password", icon: <LockTwoTone/>, key: "sshVaultId"},
+    [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
 }
 
-export const SidecarStatusOptions: { [key in SidecarStatus]: EnumOptions } = {
-    [SidecarStatus.Active]: {name: "ACTIVE", label: "Activate Sidecar", icon: <Pause/>, color: green[600], key: "active"},
-    [SidecarStatus.Paused]: {name: "PAUSED", label: "Pause Sidecar", icon: <PlayArrow/>, color: orange[500], key: "paused"}
+export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {
+    [KeeperStatus.Active]: {name: "ACTIVE", label: "Activate Keeper", icon: <Pause/>, color: green[600], key: "active"},
+    [KeeperStatus.Paused]: {name: "PAUSED", label: "Pause Keeper", icon: <PlayArrow/>, color: orange[500], key: "paused"}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {
@@ -67,7 +71,7 @@ export const FileUsageOptions: { [key in FileUsageType]: EnumOptions } = {
 
 export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen/>, key: "menu"},
-    [Settings.PASSWORD]: {name: "PASSWORD", label: "Password Manager", icon: <LockTwoTone/>, key: "password"},
+    [Settings.VAULT]: {name: "VAULT", label: "Vault Manager", icon: <LockTwoTone/>, key: "vault"},
     [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>, key: "cert"},
     [Settings.PERMISSION]: {name: "PERMISSION", label: "Permission Manager", icon: <RuleTwoTone/>, key: "permission"},
     [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <KeyTwoTone/>, key: "secret"},
@@ -75,10 +79,10 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>, key: "about"},
 }
 
-export const QueryVarietyOptions: { [key in QueryVariety]: EnumOptions } = {
-    [QueryVariety.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900], icon: <></>},
-    [QueryVariety.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900], icon: <></>},
-    [QueryVariety.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
+export const QueryVarietyOptions: { [key in VarietyType]: EnumOptions } = {
+    [VarietyType.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900], icon: <></>},
+    [VarietyType.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900], icon: <></>},
+    [VarietyType.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
 }
 
 export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
@@ -87,60 +91,86 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const initialInstance = (domain: string): Instance => {
+export const initialNode = (config: NodeConfig): Node => {
     return ({
-        state: "-",
-        role: "unknown",
-        lag: -1,
-        pendingRestart: false,
-        sidecar: getSidecar(domain),
-        database: {host: "-", port: 0},
-        inCluster: true,
-        inSidecar: false,
+        config: config,
+        warnings: ["no response from keeper"],
+        keeper: {state: "-", role: "unknown", lag: -1, pendingRestart: false},
     })
 }
 
-export const isSidecarEqual = (sidecar1?: Sidecar, sidecar2?: Sidecar): boolean => {
-    return sidecar1?.host === sidecar2?.host && sidecar1?.port === sidecar2?.port
+export const isConnectionEqual = (c1?: NodeConfig, c2?: NodeConfig): boolean => {
+    return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort
 }
 
-export const getDomain = ({host, port}: Sidecar) => {
-    return `${host.toLowerCase()}${port ? `:${port}` : ""}`
-}
-
-export const getDomains = (sidecars: Sidecar[]) => {
-    return sidecars.map(value => getDomain(value))
-}
-
-export function getConnectionRequest(cluster: Cluster, db: Database): ConnectionRequest {
-    const credentialId = cluster.credentials.postgresId
+export function getQueryConnection(cluster: Cluster, host: string, port?: number): QueryConnection | undefined {
+    if (!port) return
+    const vaultId = cluster.vaults.databaseId
+    const db = {plugin: cluster.plugins.database, host, port}
     const certs = cluster.tls.database ? cluster.certs : undefined
-    return {db, certs, credentialId}
+    return {db, certs, vaultId}
 }
 
-export function getSidecarConnection(cluster: Cluster, sidecar: Sidecar): InstanceRequest {
-    const credentialId = cluster.credentials.patroniId
-    const certs = cluster.tls.sidecar ? cluster.certs : undefined
-    return {sidecar, certs, credentialId}
+export function getSshConnection(cluster: Cluster, host: string, port?: number): SshConnection | undefined {
+    const vaultId = cluster.vaults.sshKeyId
+    if (!port || !vaultId) return
+    return {host, port, vaultId}
 }
 
-export const getSidecar = (domain: string): Sidecar => {
-    const [host, port] = domain.split(":")
-    return {host, port: port ? parseInt(port) : 8008}
+export function getKeeperConnection(host: string, port?: number): KeeperConnection | undefined {
+    if (!port) return
+    return {host, port}
 }
 
-export const getSidecars = (domains: string[]): Sidecar[] => {
-    return domains.map(value => getSidecar(value))
+export function getKeeperRequest(cluster: Cluster, host: string, port?: number): KeeperRequest | undefined {
+    const con = getKeeperConnection(host, port)
+    if (!con) return
+    const vaultId = cluster.vaults.keeperId
+    const certs = cluster.tls.keeper ? cluster.certs : undefined
+    return {...con, certs, vaultId, plugin: cluster.plugins.keeper}
 }
 
-export const getDetectionItems = (mainInstance?: Instance, detectBy?: Instance) => {
-    const detection = detectBy ? "manual" : "auto"
-    const instance = detectBy ?? mainInstance
-    const label = instance ? getDomain(instance.sidecar) : "none"
-    const role = instance?.role ?? "unknown"
+export const getDomain = (config: NodeConfig, simple: boolean = false) => {
+    const host = config.host
+    const keeperPort = config.keeperPort ? `:${config.keeperPort}` : simple ? "" : ":"
+    const dbPort = simple ? "" : config.dbPort ? `:${config.dbPort}` : ":"
+    const sshPort = simple ? "" : config.sshPort ? `:${config.sshPort}` : ":"
+    return `${host.toLowerCase()}${keeperPort}${dbPort}${sshPort}`
+}
+
+export const getDomains = (nodes: NodeConfig[], simple: boolean = false) => {
+    return nodes.map(value => getDomain(value, simple))
+}
+
+export const getNodeConnection = (domain: string): NodeConfig => {
+    const [host, keeperPort, dbPort, sshPort] = domain.split(":")
+    return {
+        host: host.toLowerCase(),
+        keeperPort: parseInt(keeperPort) || undefined,
+        dbPort: parseInt(dbPort) || undefined,
+        sshPort: parseInt(sshPort) || undefined,
+    }
+}
+
+export const getNodeConnections = (domains: string[]): NodeConfig[] => {
+    return domains.map(value => getNodeConnection(value))
+}
+
+export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [string?, Node?] => {
+    if (manual) return [manual, nodes[manual ?? ""]]
+    const list = Object.entries(nodes)
+    return list.find(([_, v]) => v.keeper.role === "leader")
+        ?? list.find(([_, v]) => v.keeper.role === "replica")
+        ?? [undefined, undefined]
+}
+
+export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) => {
+    const [domain, node] = mainNode
+    const mainLabel = domain ?? "none"
+    const mainRole = node?.keeper.role ?? "unknown"
     return [
-        {title: "Detection", label: detection, bgColor: purple[400]},
-        {title: "Main Instance", label: label, bgColor: InstanceColor[role].color}
+        {title: "Detection", label: manual ? "manual" : "auto", bgColor: purple[400]},
+        {title: "Main Keeper", label: mainLabel, bgColor: NodeColor[mainRole].color}
     ]
 }
 
@@ -174,7 +204,7 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
-export const getPostgresUrl = (con: ConnectionRequest) => {
+export const getPostgresUrl = (con: QueryConnection) => {
     return `postgres://${con.db.host}:${con.db.port}/${con.db.name ?? "postgres"}`
 }
 
@@ -186,7 +216,7 @@ export const CodeThemes = {
 
 export const SxPropsFormatter = {
     /**
-     * This function is needed to fix typescript issues when
+     * This function is needed to fix TypeScript issues when
      * `sx` can be an array and `SxProps` can be an array type
      *
      * https://github.com/mui/material-ui/issues/29900
@@ -212,4 +242,3 @@ export const SizeFormatter = {
     format: Intl.NumberFormat("en", {notation: "compact", style: "unit", unit: "byte", unitDisplay: "narrow"}),
     pretty: (size: number) => SizeFormatter.format.format(size)
 }
-

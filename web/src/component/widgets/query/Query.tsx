@@ -1,9 +1,9 @@
 import {Box, Collapse, Skeleton} from "@mui/material"
 import {TransitionGroup} from "react-transition-group"
 
-import {Permission} from "../../../api/permission/type"
-import {ConnectionRequest, QueryType} from "../../../api/postgres"
+import {Feature} from "../../../api/feature"
 import {useRouterQueryList} from "../../../api/query/hook"
+import {Connection, Type} from "../../../api/query/type"
 import {StylePropsMap} from "../../../app/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {Access} from "../access/Access"
@@ -15,8 +15,8 @@ const style: StylePropsMap = {
 }
 
 type Props = {
-    type: QueryType,
-    connection: ConnectionRequest,
+    type: Type,
+    connection: Connection,
 }
 
 export function Query(props: Props) {
@@ -25,7 +25,7 @@ export function Query(props: Props) {
 
     return (
         <Box style={style.box}>
-            <Access permission={Permission.ManageQueryCreate}>
+            <Access feature={Feature.ManageQueryCrudCreate}>
                 <QueryTemplateNew type={type} connection={connection}/>
             </Access>
             {renderList()}

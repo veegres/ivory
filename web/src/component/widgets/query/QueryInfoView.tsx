@@ -1,6 +1,6 @@
 import {Avatar, Box, Chip} from "@mui/material"
 
-import {Query} from "../../../api/query/type"
+import {Response} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
 import {QueryBoxInfo} from "./QueryBoxInfo"
@@ -15,7 +15,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    query: Query,
+    query: Response,
 }
 
 export function QueryInfoView(props: Props) {
@@ -50,7 +50,7 @@ export function QueryInfoView(props: Props) {
         if (!params) return renderNoElement("PREPARED PARAMS")
         return (
             <Box sx={SX.params}>
-                {params.map((input, index) => (
+                {params.map((input: string, index: number) => (
                     <Chip
                         key={index}
                         avatar={<Avatar>${index + 1}</Avatar>}

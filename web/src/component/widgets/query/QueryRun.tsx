@@ -2,9 +2,9 @@ import {HealthAndSafety, Wash, WashOutlined} from "@mui/icons-material"
 import {Box, Checkbox, OutlinedInput, Tooltip} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {ConnectionRequest, QueryVariety} from "../../../api/postgres"
 import {useRouterQueryRun} from "../../../api/query/hook"
 import {QueryApi} from "../../../api/query/router"
+import {Connection, VarietyType} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {getPostgresUrl} from "../../../app/utils"
 import {MenuButton} from "../../view/button/MenuButton"
@@ -22,8 +22,8 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    varieties?: QueryVariety[],
-    connection: ConnectionRequest,
+    varieties?: VarietyType[],
+    connection: Connection,
     queryUuid?: string,
     query: string,
     params?: string[],
@@ -35,7 +35,7 @@ export function QueryRun(props: Props) {
     const [trim, setTrim] = useState(true)
 
     const queryRunRequest = useMemo(
-        () => ({queryUuid, query, connection, queryOptions: {params, trim, limit: limit ? limit : undefined}}),
+        () => ({queryUuid, query, connection, options: {params, trim, limit: limit ? limit : undefined}}),
         [connection, limit, params, query, queryUuid, trim]
     )
     const {data, error, isFetching, refetch} = useRouterQueryRun(queryRunRequest)

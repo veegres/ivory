@@ -1,10 +1,10 @@
-import {Query} from "../../../api/postgres"
 import {useRouterQueryUpdate} from "../../../api/query/hook"
+import {Request} from "../../../api/query/type"
 import {SaveIconButton} from "../../view/button/IconButtons"
 
 type Props = {
     id: string
-    query: Query,
+    query: Request,
     onSuccess?: () => void,
 }
 
@@ -12,7 +12,7 @@ export function QueryButtonUpdate(props: Props) {
     const {id, onSuccess} = props
     const {query, name, type} = props.query
 
-    const update = useRouterQueryUpdate(type, onSuccess)
+    const update = useRouterQueryUpdate(type!, onSuccess)
 
     return (
         <SaveIconButton

@@ -1,14 +1,15 @@
 import {useMemo} from "react"
 
-import {ConnectionRequest, QueryFields} from "../../../api/postgres"
+import {DbResponse} from "../../../api/query/type"
+import {Connection} from "../../../api/query/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {VirtualizedTable} from "../../view/table/VirtualizedTable"
 import {QueryTableActions} from "./QueryTableActions"
 
 type Props = {
-    connection: ConnectionRequest,
+    connection: Connection,
     refetch: () => void,
-    data?: QueryFields,
+    data?: DbResponse,
     error?: Error | null,
     loading?: boolean,
     height?: number,

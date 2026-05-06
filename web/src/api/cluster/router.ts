@@ -1,20 +1,23 @@
-import {getDomain} from "../../app/utils"
+import {getDomain, initialNode} from "../../app/utils"
 import {api} from "../api"
-import {Sidecar} from "../instance/type"
 import {R} from "../management/type"
-import {Cluster, ClusterAuto, ClusterOverview} from "./type"
+import {AutoRequest, Cluster, Overview} from "./type"
 
 export const ClusterApi = {
     list: {
         key: () => ["cluster", "list"],
         fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
             .then((response) => response.data.response.map(v => (
-                {...v, sidecarsOverview: Object.fromEntries(v.sidecars.map(i => [getDomain(i), undefined]))} as Cluster
+                {...v, nodesOverview: Object.fromEntries(v.nodes.map(c => {
+                    const domain = getDomain(c)
+                    return [domain, initialNode(c)]
+                }))} as Cluster
             ))),
     },
     overview: {
-        key: (name?: string, sidecar?: Sidecar) => ["cluster", "overview", name, sidecar?.host, sidecar?.port].filter(Boolean),
-        fn: (name: string, sidecar?: Sidecar) => api.get<R<ClusterOverview>>(`/cluster/overview/${name}`, {params: {sidecar: JSON.stringify(sidecar)}})
+        key: (name?: string, host?: string, port?: string) => ["cluster", "overview", name, host, port],
+        fn: (name: string, host?: string, port?: string) => api
+            .get<R<Overview>>(`/cluster/overview/${name}`, {params: {host, port}})
             .then((response) => response.data.response),
     },
     update: {
@@ -24,7 +27,7 @@ export const ClusterApi = {
     },
     createAuto: {
         key: () => ["cluster", "auto", "creation"],
-        fn: (cluster: ClusterAuto) => api.post<R<Cluster>>("/cluster/auto", cluster)
+        fn: (cluster: AutoRequest) => api.post<R<Cluster>>("/cluster/auto", cluster)
             .then((response) => response.data.response),
     },
     fixAuto: {

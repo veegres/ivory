@@ -4,12 +4,14 @@ import {useState} from "react"
 
 import {useRouterBloatList} from "../../../../api/bloat/hook"
 import {BloatTarget} from "../../../../api/bloat/type"
-import {Cluster, Instance} from "../../../../api/cluster/type"
-import {Permission} from "../../../../api/permission/type"
-import {Database, QueryType} from "../../../../api/postgres"
+import {Cluster, Node} from "../../../../api/cluster/type"
+import {Config, Plugin as DbPlugin} from "../../../../api/database/type"
+import {Feature} from "../../../../api/feature"
 import {useRouterQueryList} from "../../../../api/query/hook"
+import {Type as QueryType} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getConnectionRequest} from "../../../../app/utils"
+import {getQueryConnection} from "../../../../app/utils"
+import {ErrorDbMissing} from "../../../view/box/ErrorManual"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {LinearProgressStateful} from "../../../view/progress/LinearProgressStateful"
 import {AccessBox} from "../../../widgets/access/Access"
@@ -29,25 +31,33 @@ enum ListBlock {JOB, QUERY}
 
 type Props = {
     cluster: Cluster,
-    instance: Instance,
+    node: Node,
 }
 
 export function OverviewBloat(props: Props) {
-    const {cluster, instance} = props
+    const {cluster, node} = props
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()
 
     const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
     const jobs = useRouterBloatList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
-    const db = {...instance.database, name: target?.database, schema: target?.schema} as Database
+
+    if (!node.config.dbPort) return <ErrorDbMissing/>
+    const db: Config = {
+        plugin: DbPlugin.POSTGRES,
+        host: node.config.host,
+        port: node.config.dbPort,
+        name: target?.database,
+        schema: target?.schema,
+    }
 
     return (
         <Box>
-            <AccessBox sx={SX.option} permission={Permission.ManageBloatJob}>
+            <AccessBox sx={SX.option} feature={Feature.ManageToolBloatJob}>
                 <Box sx={SX.form}>
                     <OverviewBloatJobForm
-                        instance={instance}
+                        node={node}
                         cluster={cluster}
                         onClick={() => setTab(ListBlock.JOB)}
                         target={target}
@@ -65,9 +75,14 @@ export function OverviewBloat(props: Props) {
     function renderBody() {
         switch (tab) {
             case ListBlock.JOB:
-                return jobs.error ? <ErrorSmart error={jobs.error}/> : <OverviewBloatJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
+                return jobs.error ? (
+                    <ErrorSmart error={jobs.error}/>
+                ) : (
+                    <OverviewBloatJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
+                )
             case ListBlock.QUERY:
-                return <Query type={QueryType.BLOAT} connection={getConnectionRequest(cluster, db)}/>
+                const queryCon = getQueryConnection(cluster, db.host, db.port)
+                return <Query type={QueryType.BLOAT} connection={{...queryCon, db}}/>
         }
     }
 
@@ -78,7 +93,7 @@ export function OverviewBloat(props: Props) {
                     <ToggleButton value={ListBlock.JOB} onClick={handleJobTab}>
                         Jobs
                     </ToggleButton>
-                    <ToggleButton value={ListBlock.QUERY} onClick={handleQueryTab} disabled={!cluster.credentials.postgresId}>
+                    <ToggleButton value={ListBlock.QUERY} onClick={handleQueryTab} disabled={!cluster.vaults.databaseId}>
                         Queries
                     </ToggleButton>
                 </ToggleButtonGroup>

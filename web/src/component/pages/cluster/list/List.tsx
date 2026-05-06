@@ -1,7 +1,7 @@
 import {useEffect} from "react"
 
 import {useRouterClusterList} from "../../../../api/cluster/hook"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {useStore} from "../../../../provider/StoreProvider"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {PageMainBox} from "../../../view/box/PageMainBox"
@@ -19,9 +19,9 @@ export function List() {
 
     return (
         <PageMainBox withMarginTop={"40px"}>
-            <Access permission={Permission.ViewTagList}><ListTags/></Access>
+            <Access feature={Feature.ViewTagList}><ListTags/></Access>
             {clusters.error ? <ErrorSmart error={clusters.error}/> : (
-                <ListTable list={clusters.data ?? []} fetching={clusters.isFetching} pending={clusters.isPending}/>
+                <ListTable list={Object.values(clusters.data ?? [])} fetching={clusters.isFetching} pending={clusters.isPending}/>
             )}
         </PageMainBox>
     )

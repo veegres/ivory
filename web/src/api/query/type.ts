@@ -1,74 +1,137 @@
-import {ConnectionRequest, QueryChartType, QueryOptions, QueryType, QueryVariety} from "../postgres"
+import {Certs} from "../cert/type"
+import {Config} from "../database/type"
 
 // COMMON (WEB AND SERVER)
 
-export enum QueryCreation {
+export enum Type {
+    BLOAT,
+    ACTIVITY,
+    REPLICATION,
+    STATISTIC,
+    OTHER,
+    CONSOLE,
+}
+
+export enum VarietyType {
+    DatabaseSensitive,
+    MasterOnly,
+    ReplicaRecommended,
+}
+
+export enum CreationType {
     Manual = "manual",
     System = "system",
 }
 
-export interface Query {
+export enum ChartType {
+    Databases = "Databases",
+    Connections = "Connections",
+    DatabaseSize = "Database Size",
+    DatabaseUptime = "Database Uptime",
+    Schemas = "Schemas",
+    TablesSize = "Tables Size",
+    IndexesSize = "Indexes Size",
+    TotalSize = "Total Size",
+}
+
+export interface Request {
+    name: string,
+    type?: Type,
+    description?: string,
+    query: string,
+    varieties?: VarietyType[],
+    params?: string[],
+}
+
+export interface Response {
     id: string,
     name: string,
-    type: QueryType,
-    creation: QueryCreation,
-    varieties?: QueryVariety[],
+    type: Type,
+    creation: CreationType,
+    varieties?: VarietyType[],
     params?: string[],
     description?: string,
     default: string,
     custom: string,
-    createAt: number,
+    createdAt: number,
 }
 
-export interface QueryTemplateRequest {
-    connection: ConnectionRequest,
+export interface Connection {
+    db: Config,
+    certs?: Certs,
+    vaultId?: string,
+}
+
+export interface TemplateRequest {
+    connection: Connection,
     queryUuid?: string,
-    queryOptions?: QueryOptions,
+    options?: DbOptions,
 }
 
-export interface QueryConsoleRequest {
-    connection: ConnectionRequest,
+export interface ConsoleRequest {
+    connection: Connection,
     query: string,
-    queryOptions?: QueryOptions,
+    options?: DbOptions,
 }
 
-export interface QueryKillRequest {
-    connection: ConnectionRequest,
+export interface KillRequest {
+    connection: Connection,
     pid: number,
 }
 
-export interface QueryChartRequest {
-    connection: ConnectionRequest,
-    type: QueryChartType,
+export interface ChartRequest {
+    connection: Connection,
+    type: ChartType,
 }
 
 
-export interface QueryDatabasesRequest {
-    connection: ConnectionRequest,
+export interface DatabasesRequest {
+    connection: Connection,
     name: string,
 }
 
-export interface QuerySchemasRequest {
-    connection: ConnectionRequest,
+export interface SchemasRequest {
+    connection: Connection,
     name: string,
 }
 
-export interface QueryTablesRequest {
-    connection: ConnectionRequest,
+export interface TablesRequest {
+    connection: Connection,
     schema: string,
     name: string,
 }
 
-export interface QueryChart {
+export interface Chart {
     name: string,
     value: any,
 }
 
+export interface DbOptions {
+    params?: any[],
+    trim?: boolean,
+    limit?: string,
+}
+
+export interface DbRow {
+    name: string,
+    dataType: string,
+    dataTypeOID: number,
+}
+
+export interface DbResponse {
+    fields: DbRow[],
+    rows: any[][],
+    url: string,
+    startTime: number,
+    endTime: number,
+    options?: DbOptions,
+}
+
 // SPECIFIC (WEB)
 
-export interface QueryRunRequest {
-    connection: ConnectionRequest,
+export interface RunRequest {
+    connection: Connection,
     queryUuid?: string,
     query: string,
-    queryOptions?: QueryOptions,
+    options?: DbOptions,
 }

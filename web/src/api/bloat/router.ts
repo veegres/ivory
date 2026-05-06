@@ -4,34 +4,34 @@ import {Bloat, BloatRequest} from "./type"
 
 export const BloatApi = {
     list: {
-        key: (cluster: string) => ["instance", "bloat", "list", cluster],
-        fn: (cluster: string) => api.get<R<Bloat[]>>(`/cli/bloat/cluster/${cluster}`)
+        key: (cluster: string) => ["node", "bloat", "list", cluster],
+        fn: (cluster: string) => api.get<R<Bloat[]>>(`/tool/bloat/cluster/${cluster}`)
             .then((response) => response.data.response),
     },
     logs: {
-        key: (uuid: string) => ["instance", "bloat", "logs", uuid],
-        fn: (uuid: string) => api.get<string>(`/cli/bloat/${uuid}/logs`, {responseType: "text"})
+        key: (uuid: string) => ["node", "bloat", "logs", uuid],
+        fn: (uuid: string) => api.get<string>(`/tool/bloat/${uuid}/logs`, {responseType: "text"})
             .then(({data}) => data === "" ? [] : data.split("\n")),
     },
 
     start: {
-        key: () => ["instance", "bloat", "job", "start"],
-        fn: (ctr: BloatRequest) => api.post<R<Bloat>>("/cli/bloat/job/start", ctr)
+        key: () => ["node", "bloat", "job", "start"],
+        fn: (ctr: BloatRequest) => api.post<R<Bloat>>("/tool/bloat/job/start", ctr)
             .then((response) => response.data.response),
     },
     stop: {
-        key: () => ["instance", "bloat", "job", "stop"],
-        fn: (uuid: string) => api.post<R<Bloat>>(`/cli/bloat/job/${uuid}/stop`)
+        key: () => ["node", "bloat", "job", "stop"],
+        fn: (uuid: string) => api.post<R<Bloat>>(`/tool/bloat/job/${uuid}/stop`)
             .then((response) => response.data.response),
     },
     delete: {
-        key: () => ["instance", "bloat", "job", "delete"],
-        fn: (uuid: string) => api.delete(`/cli/bloat/job/${uuid}/delete`)
+        key: () => ["node", "bloat", "job", "delete"],
+        fn: (uuid: string) => api.delete(`/tool/bloat/job/${uuid}/delete`)
             .then((response) => response.data.response),
     },
 
     stream: {
-        key: () => ["instance", "bloat", "job", "stream"],
-        fn: (uuid: string) => new EventSource(`/api/cli/bloat/job/${uuid}/stream`)
+        key: () => ["node", "bloat", "job", "stream"],
+        fn: (uuid: string) => new EventSource(`/api/tool/bloat/job/${uuid}/stream`)
     },
 }

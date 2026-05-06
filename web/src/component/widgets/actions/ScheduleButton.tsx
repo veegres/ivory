@@ -1,8 +1,9 @@
 import {Button} from "@mui/material"
 
-import {useRouterInstanceRestartDelete, useRouterInstanceSwitchoverDelete} from "../../../api/instance/hook"
-import {InstanceRequest, InstanceScheduledRestart, InstanceScheduledSwitchover} from "../../../api/instance/type"
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
+import {ScheduledRestart, ScheduledSwitchover} from "../../../api/keeper/type"
+import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../../api/node/hook"
+import {KeeperRequest} from "../../../api/node/type"
 import {DateTimeFormatter} from "../../../app/utils"
 import {List} from "../../view/box/List"
 import {ListItem} from "../../view/box/ListItem"
@@ -11,17 +12,17 @@ import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: InstanceRequest,
+    request: KeeperRequest,
     cluster: string,
-    switchover?: InstanceScheduledSwitchover,
-    restart?: InstanceScheduledRestart,
+    switchover?: ScheduledSwitchover,
+    restart?: ScheduledRestart,
 }
 
 export function ScheduleButton(props: Props) {
     const {request, cluster, switchover, restart} = props
 
-    const deleteRestart = useRouterInstanceRestartDelete(cluster)
-    const deleteSwitchover = useRouterInstanceSwitchoverDelete(cluster)
+    const deleteRestart = useRouterNodeRestartDelete(cluster)
+    const deleteSwitchover = useRouterNodeSwitchoverDelete(cluster)
 
     return (
         <AlertButton
@@ -55,7 +56,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteSwitchoverButton() {
         return (
-            <Access permission={Permission.ManageInstanceSwitchover}>
+            <Access feature={Feature.ManageNodeDbSwitchover}>
                 <Button
                     size={"small"}
                     variant={"outlined"}
@@ -70,7 +71,7 @@ export function ScheduleButton(props: Props) {
 
     function renderDeleteRestartButton() {
         return (
-            <Access permission={Permission.ManageInstanceRestart}>
+            <Access feature={Feature.ManageNodeDbRestart}>
                 <Button
                     size={"small"}
                     variant={"outlined"}

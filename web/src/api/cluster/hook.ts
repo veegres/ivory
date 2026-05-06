@@ -5,7 +5,7 @@ import {useStore} from "../../provider/StoreProvider"
 import {TagApi} from "../tag/router"
 import {ClusterApi} from "./router"
 
-export function useRouterClusterList(tags: string[]) {
+export function useRouterClusterList(tags: string[], enabled: boolean = true) {
     const tagsFn = tags[0] === "ALL" ? undefined : tags
     // NOTE: this query is updated by custom logic with useEffect, without using queryKey change
     // we cannot add `enable: false`, because mutation hooks then couldn't update it by using QueryClient
@@ -13,15 +13,17 @@ export function useRouterClusterList(tags: string[]) {
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ClusterApi.list.key(),
         queryFn: () => ClusterApi.list.fn(tagsFn),
+        enabled: enabled,
     })
 }
 
 export function useRouterClusterOverview(name?: string, enabled: boolean = true) {
     const activeCluster = useStore(s => s.activeCluster)
-    const instance = activeCluster?.cluster.name === name ? activeCluster?.detectBy : undefined
+    const manualKeeper = useStore(s => s.manualKeeper)
+    const [host, port] = activeCluster?.name === name ? manualKeeper?.split(":") ?? [] : []
     return useQuery({
-        queryKey: ClusterApi.overview.key(name, instance?.sidecar),
-        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", instance?.sidecar),
+        queryKey: ClusterApi.overview.key(name, host, port),
+        queryFn: () => ClusterApi.overview.fn(name ?? "disabled", host, port),
         enabled: !!name && enabled, retry: false,
     })
 }
@@ -52,10 +54,10 @@ export function useRouterClusterCreateAuto(onSuccess?: () => void) {
     })
 }
 
-export function useRouterClusterFixAuto(cluster: string) {
+export function useRouterClusterFixAuto(name: string) {
     return useMutationAdapter({
         mutationFn: ClusterApi.fixAuto.fn,
         mutationKey: ClusterApi.fixAuto.key(),
-        successKeys: [ClusterApi.list.key(), ClusterApi.overview.key(cluster)],
+        successKeys: [ClusterApi.list.key(), ClusterApi.overview.key(name)]
     })
 }

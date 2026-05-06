@@ -3,7 +3,7 @@ import {useMemo, useState} from "react"
 
 import {ClusterApi} from "../../../../api/cluster/router"
 import {Cluster} from "../../../../api/cluster/type"
-import {Permission} from "../../../../api/permission/type"
+import {Feature} from "../../../../api/feature"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
@@ -47,7 +47,7 @@ export function ListTable(props: Props) {
                         <TableCell sx={SxPropsFormatter.style.paper} width={"220px"}>Cluster Name</TableCell>
                         <TableCellLoader
                             sx={SxPropsFormatter.style.paper}
-                            label={"Instances"}
+                            label={"Nodes"}
                             colSpan={2}
                             loading={fetching && !pending}
                         >
@@ -55,7 +55,7 @@ export function ListTable(props: Props) {
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
                             <ListCreateAuto/>
-                            <Access permission={Permission.ManageClusterUpdate}>
+                            <Access feature={Feature.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"Add Cluster Manually"}
                                     onClick={() => setShowNewElement(true)}
@@ -77,9 +77,9 @@ export function ListTable(props: Props) {
 
     function renderRemovedRow() {
         if (!activeCluster) return
-        if (rows.some(e => e.name === activeCluster.cluster.name)) return
+        if (rows.some(e => e.name === activeCluster.name)) return
         return (
-            <ListRow cluster={activeCluster.cluster} editable={false}/>
+            <ListRow cluster={activeCluster} editable={false}/>
         )
     }
 

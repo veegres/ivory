@@ -1,4 +1,4 @@
-import {render, screen} from "@testing-library/react"
+import {render, screen, waitFor} from "@testing-library/react"
 import {useState} from "react"
 import {beforeEach, describe, expect, it, vi} from "vitest"
 
@@ -41,15 +41,6 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
     }
 })
 
-// Mock useMediaQuery
-vi.mock("@mui/material", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("@mui/material")>()
-    return {
-        ...actual,
-        useMediaQuery: vi.fn(() => false),
-    }
-})
-
 // Test component that uses the settings
 function TestComponent() {
     const {state, theme, setTheme, toggleRefetchOnWindowsRefocus} = useSettings()
@@ -82,7 +73,18 @@ describe("AppProvider", () => {
         expect(screen.getByText("Test Child")).toBeInTheDocument()
     })
 
-    it("should have correct initial state", () => {
+    it("should have correct initial state", async () => {
+        vi.mocked(window.matchMedia).mockImplementation(query => ({
+            matches: query.includes("dark"),
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        }))
+
         render(
             <AppProvider>
                 <TestComponent />
@@ -90,13 +92,24 @@ describe("AppProvider", () => {
         )
 
         expect(screen.getByTestId("current-mode")).toHaveTextContent("system")
+        await waitFor(() => {
+            expect(screen.getByTestId("current-theme")).toHaveTextContent("dark")
+        })
         expect(screen.getByTestId("refetch-on-focus")).toHaveTextContent("false")
     })
 
 
     it("should use system preference when mode is SYSTEM and prefers light", async () => {
-        const {useMediaQuery} = await import("@mui/material")
-        vi.mocked(useMediaQuery).mockReturnValue(false) // System prefers light
+        vi.mocked(window.matchMedia).mockImplementation(query => ({
+            matches: false,
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        }))
 
         render(
             <AppProvider>
@@ -106,12 +119,22 @@ describe("AppProvider", () => {
 
         // Default mode is system
         expect(screen.getByTestId("current-mode")).toHaveTextContent("system")
-        expect(screen.getByTestId("current-theme")).toHaveTextContent("light")
+        await waitFor(() => {
+            expect(screen.getByTestId("current-theme")).toHaveTextContent("light")
+        })
     })
 
     it("should use system preference when mode is SYSTEM and prefers dark", async () => {
-        const {useMediaQuery} = await import("@mui/material")
-        vi.mocked(useMediaQuery).mockReturnValue(true) // System prefers dark
+        vi.mocked(window.matchMedia).mockImplementation(query => ({
+            matches: true,
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        }))
 
         render(
             <AppProvider>
@@ -121,7 +144,9 @@ describe("AppProvider", () => {
 
         // Default mode is system
         expect(screen.getByTestId("current-mode")).toHaveTextContent("system")
-        expect(screen.getByTestId("current-theme")).toHaveTextContent("dark")
+        await waitFor(() => {
+            expect(screen.getByTestId("current-theme")).toHaveTextContent("dark")
+        })
     })
 
 })

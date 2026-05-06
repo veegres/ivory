@@ -1,9 +1,9 @@
 import {Box, FormControlLabel, Switch} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterInstanceReinit} from "../../../api/instance/hook"
-import {InstanceRequest} from "../../../api/instance/type"
-import {Permission} from "../../../api/permission/type"
+import {Feature} from "../../../api/feature"
+import {useRouterNodeReinit} from "../../../api/node/hook"
+import {KeeperRequest} from "../../../api/node/type"
 import {SxPropsMap} from "../../../app/type"
 import {AlertButton} from "../../view/button/AlertButton"
 import {Access} from "../access/Access"
@@ -14,23 +14,23 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    request: InstanceRequest,
+    request: KeeperRequest,
     cluster: string,
 }
 
 export function ReinitButton(props: Props) {
     const {request, cluster} = props
     const [force, setForce] = useState(false)
-    const reinit = useRouterInstanceReinit(cluster)
+    const reinit = useRouterNodeReinit(cluster)
 
     const body = {force}
 
     return (
-        <Access permission={Permission.ManageInstanceReinitialize}>
+        <Access feature={Feature.ManageNodeDbReinitialize}>
             <AlertButton
                 color={"info"}
                 label={"Reinit"}
-                title={`Make a reinit of ${request.sidecar.host}?`}
+                title={`Make a reinit of ${request.host}?`}
                 description={"It will erase all node data and will download it from scratch."}
                 loading={reinit.isPending}
                 onClick={handleClick}

@@ -3,13 +3,14 @@ import {Box, Skeleton} from "@mui/material"
 import ReactCodeMirror from "@uiw/react-codemirror"
 import {useEffect, useState} from "react"
 
-import {Cluster, Instance} from "../../../../api/cluster/type"
-import {useRouterInstanceConfig, useRouterInstanceConfigUpdate} from "../../../../api/instance/hook"
-import {Permission} from "../../../../api/permission/type"
+import {Cluster, Node} from "../../../../api/cluster/type"
+import {Feature} from "../../../../api/feature"
+import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../api/node/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {CodeThemes, getSidecarConnection} from "../../../../app/utils"
+import {CodeThemes, getKeeperRequest} from "../../../../app/utils"
 import {useSettings} from "../../../../provider/AppProvider"
 import {useSnackbar} from "../../../../provider/SnackbarProvider"
+import {ErrorKeeperMissing} from "../../../view/box/ErrorManual"
 import {ErrorSmart} from "../../../view/box/ErrorSmart"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../view/button/IconButtons"
 import {Access} from "../../../widgets/access/Access"
@@ -22,24 +23,25 @@ const SX: SxPropsMap = {
 
 type Props = {
     cluster: Cluster,
-    instance: Instance,
+    node: Node,
 }
 
 export function OverviewConfig(props: Props) {
-    const {instance, cluster} = props
+    const {node, cluster} = props
     const settings = useSettings()
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const connection = getSidecarConnection(cluster, instance.sidecar)
+    const req = getKeeperRequest(cluster, node.config.host, node.config.keeperPort)
 
-    const config = useRouterInstanceConfig(connection, !!instance.sidecar)
-    const updateConfig = useRouterInstanceConfigUpdate(instance.sidecar, () => setIsEditable(false))
+    const config = useRouterNodeConfig(req)
+    const updateConfig = useRouterNodeConfigUpdate(node.config, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 
     useEffect(() => setConfigState(stringify(data)), [data])
 
+    if (!req) return <ErrorKeeperMissing/>
     if (isError) return <ErrorSmart error={error}/>
     if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
 
@@ -59,7 +61,7 @@ export function OverviewConfig(props: Props) {
                 />
             </Box>
             <Box sx={SX.buttons}>
-                <Access permission={Permission.ManageInstanceConfigUpdate}>
+                <Access feature={Feature.ManageNodeDbConfigUpdate}>
                     {renderUpdateButtons()}
                 </Access>
                 <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
@@ -91,8 +93,8 @@ export function OverviewConfig(props: Props) {
     }
 
     function handleUpdate() {
-        if (configState) {
-            updateConfig.mutate({...connection, body: JSON.parse(configState)})
+        if (configState && req) {
+            updateConfig.mutate({...req, body: JSON.parse(configState)})
         }
     }
 

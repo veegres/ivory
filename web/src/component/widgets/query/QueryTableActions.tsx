@@ -1,9 +1,9 @@
 import {Box, Button} from "@mui/material"
 import {useState} from "react"
 
-import {Permission} from "../../../api/permission/type"
-import {ConnectionRequest} from "../../../api/postgres"
+import {Feature} from "../../../api/feature"
 import {useRouterQueryCancel, useRouterQueryTerminate} from "../../../api/query/hook"
+import {Connection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {MenuButton} from "../../view/button/MenuButton"
 import {Access} from "../access/Access"
@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: ConnectionRequest,
+    connection: Connection,
     refetch: () => void,
     pid: number,
 }
@@ -29,7 +29,7 @@ export function QueryTableActions(props: Props) {
     return (
         <MenuButton open={open} onChange={(v) => setOpen(v)}>
             <Box sx={SX.box}>
-                <Access permission={Permission.ManageQueryExecuteTerminate}>
+                <Access feature={Feature.ManageQueryDbTerminate}>
                     <Button
                         sx={SX.actionButton}
                         size={"small"}
@@ -40,7 +40,7 @@ export function QueryTableActions(props: Props) {
                         Terminate
                     </Button>
                 </Access>
-                <Access permission={Permission.ManageQueryExecuteCancel}>
+                <Access feature={Feature.ManageQueryDbCancel}>
                     <Button
                         sx={SX.actionButton}
                         size={"small"}
