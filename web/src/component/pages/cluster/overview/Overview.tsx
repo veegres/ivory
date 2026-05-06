@@ -106,7 +106,7 @@ export function Overview() {
     const clusters = useRouterClusterList(activeTags, false)
     const overview = useRouterClusterOverview(activeCluster?.name, false)
 
-    const [mainDomain, mainNode] = useMemo(() => getMainKeeper(overview.data?.nodes), [overview.data?.nodes])
+    const [mainDomain, mainNode] = useMemo(() => getMainKeeper(overview.data?.nodes, manualKeeper), [overview.data?.nodes, manualKeeper])
     const tab = TABS[activeClusterTab]
 
     return (

@@ -164,13 +164,12 @@ export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [strin
         ?? [undefined, undefined]
 }
 
-export const getDetectionItems = (mainNode: [string?, Node?], manualKeeper?: string) => {
-    const detection = manualKeeper ? "manual" : "auto"
+export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) => {
     const [domain, node] = mainNode
     const mainLabel = domain ?? "none"
     const mainRole = node?.keeper.role ?? "unknown"
     return [
-        {title: "Detection", label: detection, bgColor: purple[400]},
+        {title: "Detection", label: manual ? "manual" : "auto", bgColor: purple[400]},
         {title: "Main Keeper", label: mainLabel, bgColor: NodeColor[mainRole].color}
     ]
 }
