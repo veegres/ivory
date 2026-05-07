@@ -1,4 +1,5 @@
 import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {memo} from "react"
 
 import {CertType} from "../../../api/cert/type"
 import {Options as ClusterOptions} from "../../../api/cluster/type"
@@ -21,7 +22,7 @@ type Props = {
     onUpdate: (options: ClusterOptions) => void,
 }
 
-export function Options(props: Props) {
+export const Options = memo(function Options(props: Props) {
     const {onUpdate, options} = props
     const {vaults, tags, certs, tls} = options
 
@@ -64,4 +65,4 @@ export function Options(props: Props) {
     function handleTlsDatabaseUpdate() {
         onUpdate({...options, tls: {...options.tls, database: !tls.database}})
     }
-}
+})

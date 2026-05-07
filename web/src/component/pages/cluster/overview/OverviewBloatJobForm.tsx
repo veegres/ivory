@@ -117,7 +117,8 @@ export function OverviewBloatJobForm(props: Props) {
             onClick()
             const queryCon = getQueryConnection(cluster, dbRun.host, dbRun.port)
             start.mutate({
-                connection: {...queryCon, db: dbRun},
+                db: dbRun,
+                vaultId: queryCon?.vaultId,
                 target, options, cluster: cluster.name,
             })
         }

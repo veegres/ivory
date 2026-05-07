@@ -4,6 +4,7 @@ import {useMemo, useState} from "react"
 import {ClusterApi} from "../../../../api/cluster/router"
 import {Cluster} from "../../../../api/cluster/type"
 import {Feature} from "../../../../api/feature"
+import {KeeperPlugin} from "../../../../api/node/type"
 import {SxPropsMap} from "../../../../app/type"
 import {SxPropsFormatter} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
@@ -14,7 +15,8 @@ import {TableBody} from "../../../view/table/TableBody"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
 import {Access} from "../../../widgets/access/Access"
 import {Refresher} from "../../../widgets/refresher/Refresher"
-import {ListCreateAuto} from "./ListCreateAuto"
+import {ListDeployCluster} from "./ListDeployCluster"
+import {ListDetectAutoCluster} from "./ListDetectAutoCluster"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
 
@@ -54,7 +56,8 @@ export function ListTable(props: Props) {
                             <Box sx={SX.refresh}>
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
-                            <ListCreateAuto/>
+                            <ListDeployCluster keeper={KeeperPlugin.PATRONI}/>
+                            <ListDetectAutoCluster/>
                             <Access feature={Feature.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"Add Cluster Manually"}

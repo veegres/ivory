@@ -16,7 +16,7 @@ import {
     PendingActions,
     PlayArrow,
     Receipt,
-    Restore
+    Restore, RocketLaunch
 } from "@mui/icons-material"
 import {Box, IconButton as MuiIconButton, Tooltip} from "@mui/material"
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon"
@@ -140,4 +140,8 @@ export function ClearAllIconButton(props: Props) {
 
 export function MoreIconButton(props: Props) {
     return <IconButton icon={<MoreVert/>} tooltip={""} {...props}/>
+}
+
+export function DeployIconButton(props: Props) {
+    return <IconButton icon={<RocketLaunch/>} tooltip={"Deploy"} {...props}/>
 }

@@ -1,4 +1,5 @@
-import {Box} from "@mui/material"
+import {Box, Theme} from "@mui/material"
+import {SystemStyleObject} from "@mui/system/styleFunctionSx/styleFunctionSx"
 import {ReactNode} from "react"
 
 import {SxPropsMap} from "../../../app/type"
@@ -12,8 +13,9 @@ const SX: SxPropsMap = {
 
 type Props = {
     children: ReactNode,
+    sx?: SystemStyleObject<Theme>,
 }
 
 export function Code(props: Props) {
-    return <Box sx={SX.code}>{props.children}</Box>
+    return <Box sx={[SX.code, props.sx ?? {}]}>{props.children}</Box>
 }

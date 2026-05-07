@@ -67,7 +67,8 @@ export function AutocompleteTags(props: Props) {
     }
 
     function getTagMapWithInput(input: string, map: TagMap) {
-        return input && !map[input] ? {...map, [input]: false} : map
+        if (!input || map[input] !== undefined) return map
+        return {...map, [input]: false}
     }
 
     function getOptions(entries: TagMap) {

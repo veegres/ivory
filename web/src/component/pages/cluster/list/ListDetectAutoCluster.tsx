@@ -20,24 +20,17 @@ const SX: SxPropsMap = {
 }
 
 const InitialRequest: AutoRequest = {
-    name: "",
-    plugins: {
-        database: DbPlugin.POSTGRES,
-        keeper: KeeperPlugin.PATRONI,
-    },
+    name: "", certs: {}, vaults: {}, tags: [],
+    plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
     tls: {keeper: false, database: false},
-    certs: {},
-    vaults: {},
-    tags: [],
-    host: "",
-    port: 8008,
+    host: "", port: 8008,
 }
 
 type Props = {
     size?: number,
 }
 
-export function ListCreateAuto(props: Props) {
+export function ListDetectAutoCluster(props: Props) {
     const {size} = props
     const [request, setRequest] = useState(InitialRequest)
     const [open, setOpen] = useState(false)
