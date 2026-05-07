@@ -3,7 +3,6 @@ import {useState} from "react"
 
 import {useRouterVaultCreate} from "../../../../api/vault/hook"
 import {VaultType} from "../../../../api/vault/type"
-import {VaultOptions} from "../../../../app/utils"
 import {Code} from "../../../view/box/Code"
 import {SimpleButton} from "../../../view/button/SimpleButton"
 import {VaultNewWrapper} from "./VaultNewWrapper"
@@ -12,18 +11,13 @@ import {VaultRowSshKey} from "./VaultRowSshKey"
 export function VaultNewSshKey() {
     const type = VaultType.SSH_KEY
     const initVault = {username: "", secret: "", type}
-    const options = VaultOptions[type]
     const [vault, setVault] = useState(initVault)
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)
     const createVault = useRouterVaultCreate(type, handleCancel)
 
     return (
-        <VaultNewWrapper
-            icon={options.icon}
-            label={options.label}
-            description={renderDescription()}
-        >
+        <VaultNewWrapper description={renderDescription()}>
             <VaultRowSshKey
                 renderButtons={renderButtons()}
                 disabled={false}

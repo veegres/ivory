@@ -3,7 +3,6 @@ import {useEffect, useState} from "react"
 
 import {useRouterVaultCreate} from "../../../../api/vault/hook"
 import {Vault, VaultType} from "../../../../api/vault/type"
-import {VaultOptions} from "../../../../app/utils"
 import {SimpleButton} from "../../../view/button/SimpleButton"
 import {VaultNewWrapper} from "./VaultNewWrapper"
 import {VaultRowPassword} from "./VaultRowPassword"
@@ -15,7 +14,6 @@ type Props = {
 export function VaultNewPassword(props: Props) {
     const {type} = props
     const initVault: Vault = {username: "", secret: "", type}
-    const options = VaultOptions[type]
     const [vault, setVault] = useState(initVault)
     const [empty, setEmpty] = useState(false)
     const [clean, setClean] = useState(false)
@@ -24,11 +22,7 @@ export function VaultNewPassword(props: Props) {
     useEffect(handleEffectTypeChange, [type])
 
     return (
-        <VaultNewWrapper
-            icon={options.icon}
-            label={options.label}
-            description={renderDescription()}
-        >
+        <VaultNewWrapper description={renderDescription()}>
             <VaultRowPassword
                 renderButtons={renderButtons()}
                 disabled={false}

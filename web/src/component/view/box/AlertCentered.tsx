@@ -1,4 +1,5 @@
 import {Alert} from "@mui/material"
+import {ReactNode} from "react"
 
 import {SxPropsMap} from "../../../app/type"
 
@@ -7,7 +8,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    text: string,
+    text: ReactNode,
     severity?: "success" | "info" | "warning" | "error",
 }
 
