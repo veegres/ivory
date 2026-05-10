@@ -29,16 +29,16 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 	return &Overview{resultNodeMap, supportedFeatures}, nil
 }
 
-func (s *Service) CreateAuto(cluster AutoRequest) (Response, error) {
+func (s *Service) CreateAuto(cluster CreateAutoRequest) (*Response, error) {
 	keeperNodeMap, _, errOver := s.getKeeperListByOne(cluster.Host, cluster.Port, cluster.Options)
 	if errOver != nil {
-		return Response{}, errOver
+		return nil, errOver
 	}
 	nodes := s.mapKeeperResponseMap(keeperNodeMap)
 
 	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
 	if errSave != nil {
-		return Response{}, errSave
+		return nil, errSave
 	}
 	cluster.Tags = tags
 
@@ -54,7 +54,9 @@ func (s *Service) CreateAuto(cluster AutoRequest) (Response, error) {
 		},
 	}
 
-	return s.clusterRepository.Create(model)
+	r, err := s.clusterRepository.Create(model)
+
+	return &r, err
 }
 
 func (s *Service) FixAuto(name string) (*Response, error) {

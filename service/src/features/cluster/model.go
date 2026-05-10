@@ -39,13 +39,6 @@ type Response struct {
 	Options
 }
 
-type AutoRequest struct {
-	Name string `json:"name"`
-	Host string `json:"host"`
-	Port int    `json:"port"`
-	Options
-}
-
 type Tls struct {
 	Keeper   bool `json:"keeper"`
 	Database bool `json:"database"`
@@ -71,6 +64,13 @@ type Node struct {
 type Overview struct {
 	Nodes    map[string]Node    `json:"nodes"`
 	Features []features.Feature `json:"features"`
+}
+
+type CreateAutoRequest struct {
+	Name string `json:"name"`
+	Host string `json:"host"`
+	Port int    `json:"port"`
+	Options
 }
 
 // SPECIFIC (SERVER)

@@ -82,7 +82,7 @@ func (r *Router) PutClusterByName(context *gin.Context) {
 }
 
 func (r *Router) PostClusterAutoCreate(context *gin.Context) {
-	var cluster AutoRequest
+	var cluster CreateAutoRequest
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})
