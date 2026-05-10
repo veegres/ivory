@@ -1,16 +1,21 @@
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from "@mui/material"
-import {useCallback, useState} from "react"
+import {
+    Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
+    TextField, ToggleButton, ToggleButtonGroup,
+} from "@mui/material"
+import {useCallback, useMemo, useState} from "react"
 
+import {useRouterClusterDeploy} from "../../../../api/cluster/hook"
 import {Options as ClusterOptions} from "../../../../api/cluster/type"
 import {Plugin as DbPlugin} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
-import {VaultOptions} from "../../../../app/utils"
+import {getInterpolatedString, getNodeConnections, VaultOptions} from "../../../../app/utils"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {Code} from "../../../view/box/Code"
 import {SubContentBox} from "../../../view/box/SubContentBox"
+import {TitledBox} from "../../../view/box/TitledBox"
 import {DeployIconButton} from "../../../view/button/IconButtons"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {Access} from "../../../widgets/access/Access"
@@ -21,11 +26,10 @@ const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {width: "590px", display: "flex", flexDirection: "column", gap: 1, padding: "5px 16px 5px 24px ", overflowY: "scroll"},
     center: {display: "flex", justifyContent: "center", gap: 3},
-    subContent: {display: "flex", flexDirection: "column", gap: 1},
-    inputTitle: {
-        display: "flex", alignItems: "center", gap: 0.5, padding: "3px 8px 0px",
-        color: "text.secondary", letterSpacing: "1px",
-    },
+    note: {display: "flex", justifyContent: "center", color: "text.disabled", fontSize: 12},
+    between: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
+    subContent: {display: "flex", flexDirection: "column"},
+    toggleButton: {padding: "0px 10px"},
     input: {height: "40px"},
 }
 
@@ -34,30 +38,33 @@ const INITIAL_OPTIONS: ClusterOptions = {
     plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
     tls: {keeper: false, database: false},
 }
-const DEFAULT_IMAGES: {[key in KeeperPlugin]: {uri: string, volume: string, dbPort: number, keeperPort: number, restart: string, defaultCommonEnv: (password: string) => string[], defaultUniqueEnv: (node: string) => string[]}} = {
+const DEFAULT_IMAGES: {[key in KeeperPlugin]: {uri: string, optionStr: string, defaultValues: {[key: string]: string}}} = {
     [KeeperPlugin.PATRONI]: {
         uri: "ghcr.io/zalando/spilo-18:4.1-p2",
-        volume: "/data/postgres:/home/postgres/pgdata",
-        restart: "unless-stopped",
-        dbPort: 5432,
-        keeperPort: 8008,
-        defaultCommonEnv: (password: string) => ([
-            "SCOPE=\"pg-cluster\"",
-            "ETCD_HOSTS=\"localhost:2379\"",
-            `PGPASSWORD_SUPERUSER="${password}"`
-        ]),
-        defaultUniqueEnv: (node: string) => ([
-            `PATRONI_NAME="${node}"`
-        ]),
+        defaultValues: {username: "postgres"},
+        optionStr: `
+          --name {{node}}
+          --restart unless-stopped
+          -p {{keeperPort}}:8008
+          -p {{dbPort}}:5432
+          -v /data/postgres:/home/postgres/pgdata
+          -e SCOPE="{{cluster}}"
+          -e PATRONI_NAME="{{node}}"
+          -e ETCD_HOSTS="localhost:2379"
+          -e PGPASSWORD_SUPERUSER="{{password}}"
+        `.replace(/\s{2,}/g, "\n").trim(),
     },
     [KeeperPlugin.POSTGRES]: {
         uri: "postgres:18",
-        volume: "/data/postgres:/var/lib/postgresql/data",
-        restart: "unless-stopped",
-        dbPort: 5432,
-        keeperPort: 5432,
-        defaultCommonEnv: (password: string) => ([`POSTGRES_PASSWORD="${password}"`]),
-        defaultUniqueEnv: (_: string) => ([]),
+        defaultValues: {},
+        optionStr: `
+          --name {{node}}
+          --restart unless-stopped
+          -p {{dbPort}}:5432
+          -v /data/postgres:/var/lib/postgresql/data
+          -e POSTGRES_USER="{{username}}"    
+          -e POSTGRES_PASSWORD="{{password}}"
+        `.replace(/\s{2,}/g, "\n").trim(),
     }
 }
 
@@ -71,16 +78,24 @@ export function ListDeployCluster(props: Props) {
     const [name, setName] = useState("")
     const [image, setImage] = useState(DEFAULT_IMAGES[keeper])
     const [options, setOptions] = useState(INITIAL_OPTIONS)
-    const [commonEnv, setCommonEnv] = useState(image.defaultCommonEnv("SUPERUSER_PASSWORD"))
-    const [uniqueEnv, setUniqueEnv] = useState<{[node: string]: string[]}>({})
-    const [nodes, setNodes] = useState([""])
+    const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
+    const [nodes, setNodes] = useState<string[]>([])
+    const [ssh, setSsh] = useState<"pass" | "key">("pass")
+    const [sshCred, setSshCred] = useState({username: "", password: ""})
+    const [db, setDb] = useState<"new" | "vault">("new")
+    const [dbCred, setDbCred] = useState({username: image.defaultValues["username"] ?? "", password: image.defaultValues["password"] ?? ""})
     const [open, setOpen] = useState(false)
 
-    const handleImageChange = useCallback(handleCallImageUpdate, [])
+    const {mutate, isPending} = useRouterClusterDeploy(() => setOpen(false))
+
+    const handleImageUpdate = useCallback(handleCallImageUpdate, [])
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
     const handleEnvUpdates = useCallback(handleCallEnvUpdates, [])
-    const handleNodesUpdate = useCallback(handleCallNodesUpdate, [image])
+    const handleNodesUpdate = useCallback(handleCallNodesUpdate, [image.optionStr])
+
+    const imageOptionEntries = useMemo(handleMemoImageOptionEntries, [imageOptions])
+    const imageInterpolatedOptions = useMemo(handleMemoImageInterpolatedOptions, [imageOptionEntries, name, dbCred])
 
     return (
         <Access feature={Feature.ManageClusterCreate}>
@@ -96,95 +111,153 @@ export function ListDeployCluster(props: Props) {
                         
                         All is preconfigured for you, but you can always change all configs.
                     `}/>
-                    {renderRequiredFields()}
+                    {renderMandatoryFields()}
                     {renderDockerImage()}
                     {renderClusterOptions()}
                 </DialogContent>
                 <DialogActions sx={SX.center}>
                     <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button loading={false} onClick={() => void 0} disabled={!name}>Deploy</Button>
+                    <Button loading={isPending} onClick={handleDeploy} disabled={!name}>Deploy</Button>
                 </DialogActions>
             </Dialog>
         </Access>
     )
 
-    function renderRequiredFields() {
+    function renderMandatoryFields() {
         return (
-            <SubContentBox label={"Mandatory Fields"} defaultOpen={true}>
-                <Box sx={SX.subContent}>
-                    <TextField
-                        size={"small"}
-                        label={"Name"}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+            <Box sx={SX.subContent} gap={1}>
+                <TextField
+                    fullWidth={true}
+                    size={"small"}
+                    label={"Name"}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+                <DynamicInputs
+                    InputProps={SX.input}
+                    minLength={3}
+                    inputs={nodes}
+                    onChange={handleNodesUpdate}
+                    editable={true}
+                    placeholder={"Node "}
+                />
+                {renderSshInputs()}
+                {renderDbInputs()}
+            </Box>
+        )
+    }
+
+    function renderDbInputs() {
+        return (
+            <TitledBox title={"Database Credentials"} renderActions={renderDbInputActions()} island={true}>
+                {db === "new" ? (
+                    <Box sx={SX.between}>
+                        <TextField
+                            fullWidth
+                            size={"small"}
+                            label={"Username"}
+                            value={dbCred.username}
+                            disabled={!!image.defaultValues["username"]}
+                            onChange={v => setDbCred({...dbCred, username: v.target.value})}
+                        />
+                        <TextField
+                            fullWidth
+                            size={"small"}
+                            type={"password"}
+                            label={"Password"}
+                            value={dbCred.password}
+                            disabled={!!image.defaultValues["password"]}
+                            onChange={v => setDbCred({...dbCred, password: v.target.value})}
+                        />
+                    </Box>
+                ) : (
+                    <OptionsVault
+                        type={VaultType.DATABASE_PASSWORD}
+                        selected={options.vaults.databaseId}
+                        onUpdate={handleVaultUpdate}
                     />
-                    <Box sx={SX.inputTitle}>Nodes</Box>
-                    <DynamicInputs
-                        InputProps={SX.input}
-                        minLength={3}
-                        inputs={nodes}
-                        onChange={handleNodesUpdate}
-                        editable={true}
-                        placeholder={"Node "}
-                    />
+                )}
+            </TitledBox>
+        )
+    }
+
+    function renderDbInputActions() {
+        return (
+            <ToggleButtonGroup size={"small"} exclusive={true} value={db} onChange={(_, v) => setDb(v)}>
+                <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
+                <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
+            </ToggleButtonGroup>
+        )
+    }
+
+    function renderSshInputs() {
+        return (
+            <TitledBox title={"SSH Credentials"} renderActions={renderSshInputActions()} island={true}>
+                {ssh === "pass" ? (
+                    <Box sx={SX.between}>
+                        <TextField
+                            fullWidth
+                            size={"small"}
+                            label={"Username"}
+                            value={sshCred.username}
+                            onChange={v => setSshCred({...sshCred, username: v.target.value})}
+                        />
+                        <TextField
+                            fullWidth
+                            size={"small"}
+                            label={"Password"}
+                            type={"password"}
+                            value={sshCred.password}
+                            onChange={v => setSshCred({...sshCred, password: v.target.value})}
+                        />
+                    </Box>
+                ) : (
                     <OptionsVault
                         type={VaultType.SSH_KEY}
                         selected={options.vaults.sshKeyId}
                         onUpdate={handleVaultUpdate}
                     />
-                </Box>
-            </SubContentBox>
+                )}
+            </TitledBox>
+        )
+    }
+
+    function renderSshInputActions() {
+        return (
+            <ToggleButtonGroup size={"small"} exclusive={true} value={ssh} onChange={(_, v) => setSsh(v)}>
+                <ToggleButton sx={SX.toggleButton} value={"pass"}>PASS</ToggleButton>
+                <ToggleButton sx={SX.toggleButton} value={"key"}>KEY</ToggleButton>
+            </ToggleButtonGroup>
         )
     }
 
     function renderDockerImage() {
         return (
-            <SubContentBox label={"Docker Image"}>
-                <Box sx={SX.subContent}>
+            <SubContentBox label={"Docker Image"} island={true}>
+                <Box sx={SX.subContent} gap={2}>
                     <TextField
                         fullWidth
                         size={"small"}
                         label={"Image"}
                         value={image.uri}
-                        onChange={v => handleImageChange("uri", v.target.value)}
+                        onChange={v => handleImageUpdate(v.target.value)}
                     />
-                    <TextField
-                        fullWidth
-                        size={"small"}
-                        label={"Volume"}
-                        value={image.volume}
-                        onChange={v => handleImageChange("volume", v.target.value)}
-                    />
-                    <TextField
-                        fullWidth
-                        size={"small"}
-                        label={"Restart"}
-                        value={image.restart}
-                        onChange={v => handleImageChange("restart", v.target.value)}
-                    />
-                    <Box sx={SX.inputTitle}>Common environment variables</Box>
-                    <DynamicInputs
-                        InputProps={SX.input}
-                        InputSize={"542px"}
-                        inputs={commonEnv}
-                        onChange={setCommonEnv}
-                        editable={true}
-                        placeholder={"Env "}
-                    />
-                    {Object.entries(uniqueEnv).map(([node, envs]) => (
-                        <>
-                            <Box sx={SX.inputTitle}>Node <Code sx={{fontSize: "13px"}}>{node}</Code> environment variables</Box>
-                            <DynamicInputs
-                                InputProps={SX.input}
-                                InputSize={"266px"}
-                                minLength={2}
-                                inputs={envs}
-                                onChange={v => handleEnvUpdates(node, v)}
-                                editable={true}
-                                placeholder={"Env "}
+                    {imageOptionEntries.length === 0 ? (
+                        <Box sx={SX.note}>Start by adding nodes ? image options will appear here</Box>
+                    ) : imageOptionEntries.map(([nodeFull]) => {
+                        const [node] = nodeFull.split(":")
+                        return (
+                            <TextField
+                                key={nodeFull}
+                                fullWidth
+                                multiline={true}
+                                size={"small"}
+                                label={<Box>Node <Code>{node}</Code> options</Box>}
+                                value={imageInterpolatedOptions[nodeFull]}
+                                onChange={v => handleEnvUpdates(nodeFull, v.target.value)}
                             />
-                        </>
-                    ))}
+                        )
+                    })}
                 </Box>
             </SubContentBox>
         )
@@ -192,26 +265,42 @@ export function ListDeployCluster(props: Props) {
 
     function renderClusterOptions() {
         return (
-            <SubContentBox label={"Cluster Options"}>
+            <SubContentBox label={"Cluster Options"} island={true}>
                 <Options options={options} onUpdate={handleOptionsUpdate}/>
             </SubContentBox>
         )
     }
 
-    function handleCallEnvUpdates(node: string, envs: string[]) {
-        setUniqueEnv(prev => ({...prev, [node]: envs}))
+    function handleMemoImageOptionEntries() {
+        return Object.entries(imageOptions)
+    }
+
+    function handleMemoImageInterpolatedOptions() {
+        return Object.fromEntries(
+            imageOptionEntries.map(([nodeFull, opt]) => {
+                const [node, keeperPort, dbPort] = nodeFull.split(":")
+                return [nodeFull, getInterpolatedString(opt, {
+                    cluster: name, node, keeperPort, dbPort,
+                    username: dbCred.username, password: dbCred.password,
+                })]
+            })
+        )
+    }
+
+    function handleCallEnvUpdates(node: string, opt: string) {
+        setImageOptions(prev => ({...prev, [node]: opt}))
     }
 
     function handleCallNodesUpdate(nodes: string[]) {
         setNodes(nodes)
-        setUniqueEnv(prev => Object.fromEntries(
+        setImageOptions(prev => Object.fromEntries(
             nodes.filter(n => !!n)
-                .map(node => prev[node] !== undefined ? [node, prev[node]] : [node, image.defaultUniqueEnv(node)])
+                .map(node => prev[node] !== undefined ? [node, prev[node]] : [node, image.optionStr])
         ))
     }
 
-    function handleCallImageUpdate(key: string, value: string) {
-        setImage(prev => ({...prev, [key]: value}))
+    function handleCallImageUpdate(uri: string) {
+        setImage(prev => ({...prev, uri}))
     }
 
     function handleCallOptionsUpdate(opt: ClusterOptions) {
@@ -220,5 +309,21 @@ export function ListDeployCluster(props: Props) {
 
     function handleCallVaultUpdate(t: VaultType, s?: string) {
         setOptions(prev => ({...prev, vaults: {...prev.vaults, [VaultOptions[t].key]: s}}))
+    }
+
+    function handleDeploy() {
+        const nodeConfigs = getNodeConnections(nodes)
+        const imageOptionsSmallKeys = Object.fromEntries(
+            Object.entries(imageOptions).map(([nodeFull, opt]) => {
+                const [host, keeperPort] = nodeFull.split(":")
+                const node = `${host}:${keeperPort ?? ""}`
+                return [node, opt]
+            })
+        )
+        mutate({
+            cluster: {...options, name, nodes: nodeConfigs},
+            cred: {ssh: sshCred, db: dbCred},
+            image: {uri: image.uri, options: imageOptionsSmallKeys}
+        })
     }
 }

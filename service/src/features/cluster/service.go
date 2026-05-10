@@ -8,6 +8,7 @@ import (
 	"ivory/src/features/query"
 	"ivory/src/features/tag"
 	"ivory/src/features/tools"
+	"ivory/src/features/vault"
 	"ivory/src/plugins/database"
 	"ivory/src/plugins/keeper"
 	"slices"
@@ -22,6 +23,7 @@ type Service struct {
 	tagService        *tag.Service
 	queryService      *query.Service
 	toolsService      *tools.Service
+	vaultService      *vault.Service
 }
 
 func NewService(
@@ -30,6 +32,7 @@ func NewService(
 	tagService *tag.Service,
 	queryService *query.Service,
 	toolsService *tools.Service,
+	vaultService *vault.Service,
 ) *Service {
 	return &Service{
 		clusterRepository: clusterRepository,
@@ -37,6 +40,7 @@ func NewService(
 		tagService:        tagService,
 		queryService:      queryService,
 		toolsService:      toolsService,
+		vaultService:      vaultService,
 	}
 }
 

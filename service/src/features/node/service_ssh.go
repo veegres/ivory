@@ -8,14 +8,6 @@ func (s *Service) Metrics(c SshConnection) (*MetricsResponse, error) {
 	return adapter.Metrics(*conn)
 }
 
-func (s *Service) DockerDeploy(request DockerRequest) (*DockerResponse, error) {
-	adapter, conn, err := s.getOSAdapter(request.Connection)
-	if err != nil {
-		return nil, err
-	}
-	return adapter.DockerDeploy(*conn, request.Image, request.Options)
-}
-
 func (s *Service) DockerStop(request DockerRequest) (*DockerResponse, error) {
 	adapter, conn, err := s.getOSAdapter(request.Connection)
 	if err != nil {

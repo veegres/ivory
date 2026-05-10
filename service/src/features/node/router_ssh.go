@@ -6,10 +6,6 @@ func (r *Router) GetMetrics(context *gin.Context) {
 	handleParamRequestOf(context, r.service.Metrics)
 }
 
-func (r *Router) PostDockerDeploy(context *gin.Context) {
-	handleBodyRequestOf(context, r.service.DockerDeploy)
-}
-
 func (r *Router) PostDockerStop(context *gin.Context) {
 	handleBodyRequestOf(context, r.service.DockerStop)
 }

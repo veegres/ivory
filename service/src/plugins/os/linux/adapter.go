@@ -31,11 +31,6 @@ func (a *Adapter) DockerList(connection ssh.Connection) (*os.Docker, error) {
 	return a.executeDocker(connection, "ps -a")
 }
 
-func (a *Adapter) DockerDeploy(connection ssh.Connection, image, options string) (*os.Docker, error) {
-	command := fmt.Sprintf("pull %s && run -d %s %s", image, options, image)
-	return a.executeDocker(connection, command)
-}
-
 func (a *Adapter) DockerRun(connection ssh.Connection, options, image string) (*os.Docker, error) {
 	return a.executeDocker(connection, fmt.Sprintf("run -d %s %s", options, image))
 }

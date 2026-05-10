@@ -6,6 +6,7 @@ import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},
+    island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 1},
     label: {
         display: "flex", alignItems: "center", cursor: "pointer", userSelect: "none",
         gap: 0.5, padding: "4px 0", "&:hover": {color: "primary.main"},
@@ -17,20 +18,21 @@ const SX: SxPropsMap = {
         fontSize: "15px", fontWeight: 600, textTransform: "uppercase", color: "text.secondary",
         fontFamily: "monospace", transition: "color 0.2s", lineHeight: 1,
     },
-    content: {marginTop: 2},
+    content: {marginTop: 1},
 }
 
 type Props = {
     label: string,
     defaultOpen?: boolean,
+    island?: boolean,
 }
 
 export const SubContentBox = memo(function SubContentBox(props: PropsWithChildren<Props>) {
-    const {label, children, defaultOpen = false} = props
+    const {label, children, defaultOpen = false, island = false} = props
     const [open, setOpen] = useState(defaultOpen)
     
     return (
-        <Box sx={SX.box}>
+        <Box sx={[SX.box, island && SX.island]}>
             <Box sx={SX.label} onClick={() => setOpen(!open)}>
                 <KeyboardArrowDown sx={[SX.icon, open && SX.iconOpen]}/>
                 <Typography sx={SX.text}>{label}</Typography>

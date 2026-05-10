@@ -56,6 +56,24 @@ export interface Overview {
     features: Feature[],
 }
 
+export interface DeployImage {
+    uri: string,
+    options: {[key: string]: string},
+}
+
+export interface DeployRequest {
+    cluster: Cluster,
+    cred: {
+        ssh: {username: string, password: string},
+        db: {username: string, password: string},
+    },
+    image: DeployImage,
+}
+
+export interface DeployResponse {
+    nodes: {[node: string]: string},
+}
+
 export interface NodeOverview {
     [domain: string]: Node,
 }

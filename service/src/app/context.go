@@ -106,7 +106,7 @@ func NewContext() *Context {
 	tagService := tag.NewService(tagRepo)
 	toolsService := tools.NewService(vaultService)
 	queryService := query.NewService(queryRepo, dbPlugins, vaultService, certService, secretService, appEnv.Version.Label)
-	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService)
+	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService, vaultService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
 	backupService := backup.NewService(clusterService, queryService, permissionService)

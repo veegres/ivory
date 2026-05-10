@@ -109,6 +109,23 @@ func (r *Router) PostClusterAutoFix(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
+func (r *Router) PostClusterDeploy(context *gin.Context) {
+	var request DeployRequest
+	errParse := context.ShouldBindJSON(&request)
+	if errParse != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})
+		return
+	}
+
+	response, errRes := r.clusterService.Deploy(request)
+	if errRes != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": errRes.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": response})
+}
+
 func (r *Router) DeleteClusterByName(context *gin.Context) {
 	name := context.Param("name")
 	err := r.clusterService.Delete(name)

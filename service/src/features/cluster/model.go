@@ -73,4 +73,23 @@ type CreateAutoRequest struct {
 	Options
 }
 
+type DeployImage struct {
+	Uri        string              `json:"uri"`
+	Volume     string              `json:"volume"`
+	Restart    string              `json:"restart"`
+	DbPort     int                 `json:"dbPort"`
+	KeeperPort int                 `json:"keeperPort"`
+	CommonEnvs []string            `json:"commonEnvs"`
+	UniqueEnvs map[string][]string `json:"uniqueEnvs"`
+}
+
+type DeployRequest struct {
+	Cluster Request     `json:"cluster"`
+	Image   DeployImage `json:"image"`
+}
+
+type DeployResponse struct {
+	Nodes map[string]string `json:"nodes"`
+}
+
 // SPECIFIC (SERVER)

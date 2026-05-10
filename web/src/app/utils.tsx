@@ -174,6 +174,13 @@ export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) =
     ]
 }
 
+export const getInterpolatedString = (template: string, values: {[key: string]: string}) => {
+    return template.replace(
+        /{{(\w+)}}/g,
+        (_, key) => values[key] || `{{${key}}}`
+    )
+}
+
 export const shortUuid = (uuid: string) => uuid.substring(0, 8)
 
 export const unicodeAnimal = [

@@ -36,7 +36,7 @@ func (s *Service) Update(cluster Request) (*Response, error) {
 	if cluster.Name == "" {
 		return nil, ErrClusterNameEmpty
 	}
-	if cluster.Nodes == nil {
+	if cluster.Nodes == nil || len(cluster.Nodes) == 0 {
 		return nil, ErrClusterKeepersEmpty
 	}
 	tags, err := s.saveTags(cluster.Name, cluster.Tags)

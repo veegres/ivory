@@ -17,7 +17,6 @@ type Adapter interface {
 
 type DockerManager interface {
 	DockerList(connection ssh.Connection) (*Docker, error)
-	DockerDeploy(connection ssh.Connection, image, options string) (*Docker, error)
 	DockerRun(connection ssh.Connection, options, image string) (*Docker, error)
 	DockerStop(connection ssh.Connection, container string) (*Docker, error)
 	DockerDelete(connection ssh.Connection, container string) (*Docker, error)
