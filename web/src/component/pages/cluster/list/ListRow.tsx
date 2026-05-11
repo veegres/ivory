@@ -5,7 +5,7 @@ import {useEffect, useMemo, useRef, useState} from "react"
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {Cluster} from "../../../../api/cluster/type"
 import {ColorsMap, SxPropsMap} from "../../../../app/type"
-import {getDomain, getDomains, getNodeConnections, NodeColor, SxPropsFormatter} from "../../../../app/utils"
+import {getDomain, getDomains, getNodeConfigs, NodeColor, SxPropsFormatter} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {ListCell} from "./ListCell"
@@ -85,7 +85,7 @@ export function ListRow(props: Props) {
             <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, nodes: getNodeConnections(stateNodes)}}
+                cluster={{...cluster, nodes: getNodeConfigs(stateNodes)}}
                 toggle={toggle}
                 onUpdate={overview.refetch}
                 onClose={() => setStateNodes(getDomains(cluster.nodes))}

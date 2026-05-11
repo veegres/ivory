@@ -142,7 +142,7 @@ export const getDomains = (nodes: NodeConfig[], simple: boolean = false) => {
     return nodes.map(value => getDomain(value, simple))
 }
 
-export const getNodeConnection = (domain: string): NodeConfig => {
+export const getNodeConfig = (domain: string): NodeConfig => {
     const [host, keeperPort, dbPort, sshPort] = domain.split(":")
     return {
         host: host.toLowerCase(),
@@ -152,8 +152,8 @@ export const getNodeConnection = (domain: string): NodeConfig => {
     }
 }
 
-export const getNodeConnections = (domains: string[]): NodeConfig[] => {
-    return domains.map(value => getNodeConnection(value))
+export const getNodeConfigs = (domains: string[]): NodeConfig[] => {
+    return domains.map(value => getNodeConfig(value))
 }
 
 export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [string?, Node?] => {

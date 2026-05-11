@@ -11,7 +11,7 @@ import {Feature} from "../../../../api/feature"
 import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getInterpolatedString, getNodeConnections, VaultOptions} from "../../../../app/utils"
+import {getInterpolatedString, getNodeConfigs, VaultOptions} from "../../../../app/utils"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {Code} from "../../../view/box/Code"
 import {SubContentBox} from "../../../view/box/SubContentBox"
@@ -312,7 +312,7 @@ export function ListDeployCluster(props: Props) {
     }
 
     function handleDeploy() {
-        const nodeConfigs = getNodeConnections(nodes)
+        const nodeConfigs = getNodeConfigs(nodes)
         const imageOptionsSmallKeys = Object.fromEntries(
             Object.entries(imageOptions).map(([nodeFull, opt]) => {
                 const [host, keeperPort] = nodeFull.split(":")

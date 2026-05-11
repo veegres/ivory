@@ -10,8 +10,8 @@ import {
     getDomain,
     getDomains,
     getErrorMessage,
-    getNodeConnection,
-    getNodeConnections,
+    getNodeConfig,
+    getNodeConfigs,
     isConnectionEqual,
     randomUnicodeAnimal,
     shortUuid,
@@ -54,7 +54,7 @@ describe("getDomains", () => {
 describe("getNodeConnection", () => {
     it("should return a NodeConfig object from a domain string", () => {
         const domain = "localhost:8008"
-        expect(getNodeConnection(domain)).toEqual({
+        expect(getNodeConfig(domain)).toEqual({
             host: "localhost",
             keeperPort: 8008,
         })
@@ -62,7 +62,7 @@ describe("getNodeConnection", () => {
 
     it("should return a NodeConfig object with default port if port is not in domain string", () => {
         const domain = "localhost"
-        expect(getNodeConnection(domain)).toEqual({
+        expect(getNodeConfig(domain)).toEqual({
             host: "localhost",
         })
     })
@@ -71,7 +71,7 @@ describe("getNodeConnection", () => {
 describe("getNodeConnections", () => {
     it("should return an array of NodeConfig objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
-        expect(getNodeConnections(domains)).toEqual([
+        expect(getNodeConfigs(domains)).toEqual([
             {host: "localhost", keeperPort: 8008},
             {host: "127.0.0.1"},
         ])

@@ -4,7 +4,7 @@ import {useState} from "react"
 import {Plugin as DbPlugin} from "../../../../api/database/type"
 import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getNodeConnections} from "../../../../app/utils"
+import {getNodeConfigs} from "../../../../app/utils"
 import {useStore} from "../../../../provider/StoreProvider"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {ListCell} from "./ListCell"
@@ -52,7 +52,7 @@ export function ListRowNew(props: Props) {
                     cluster={{
                         name: stateName,
                         plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
-                        nodes: getNodeConnections(stateNodes),
+                        nodes: getNodeConfigs(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
                         vaults: {},
