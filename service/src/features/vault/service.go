@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"fmt"
 	"ivory/src/clients/ssh"
 	"ivory/src/features/encryption"
 	"ivory/src/features/secret"
@@ -138,6 +139,9 @@ func (s *Service) hideSecrets(vaultMap VaultMap) VaultMap {
 }
 
 func (s *Service) generateVaultByType(vault Vault) (string, *string, error) {
+	if vault.Username == "" {
+		return "", nil, fmt.Errorf("vault username is empty")
+	}
 	switch vault.Type {
 	case SSH_KEY:
 		pubKey, prvKey, err := s.sshClient.GenerateKey()
@@ -150,6 +154,9 @@ func (s *Service) generateVaultByType(vault Vault) (string, *string, error) {
 		}
 		return encryptedSecret, &pubKey, nil
 	default:
+		if vault.Username == "" {
+			return "", nil, fmt.Errorf("vault secret is empty")
+		}
 		encryptedSecret, errEnc := s.encryption.Encrypt(vault.Secret, s.secretService.Get())
 		if errEnc != nil {
 			return "", nil, errEnc

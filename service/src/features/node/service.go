@@ -47,9 +47,12 @@ func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
 	return c.SupportedFeatures()
 }
 
-func (s *Service) getOSAdapter(c SshConnection) (os.Adapter, *ssh.Connection, error) {
+func (s *Service) getOSAdapter(c SshVaultConnection) (os.Adapter, *ssh.Connection, error) {
 	adapter, err := s.osRegistry.Get(os.Linux)
-	sshConn, err := s.getSshConnection(c)
+	if err != nil {
+		return nil, nil, err
+	}
+	sshConn, err := s.getSshVaultConnection(c)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -57,9 +60,9 @@ func (s *Service) getOSAdapter(c SshConnection) (os.Adapter, *ssh.Connection, er
 }
 
 func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config, *keeper.Credentials, error) {
-	client, errClient := s.keeperRegistry.Get(c.Plugin)
-	if errClient != nil {
-		return nil, nil, nil, errClient
+	adapter, err := s.keeperRegistry.Get(c.Plugin)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 	var tlsConfig *tls.Config
 	if c.Certs != nil {
@@ -76,10 +79,10 @@ func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config
 		}
 		cred = &keeper.Credentials{Username: d.Username, Password: d.Secret}
 	}
-	return client, tlsConfig, cred, nil
+	return adapter, tlsConfig, cred, nil
 }
 
-func (s *Service) getSshConnection(c SshConnection) (*ssh.Connection, error) {
+func (s *Service) getSshVaultConnection(c SshVaultConnection) (*ssh.Connection, error) {
 	if c.VaultId == nil {
 		return nil, ErrSshKeyNotSpecified
 	}
@@ -87,10 +90,20 @@ func (s *Service) getSshConnection(c SshConnection) (*ssh.Connection, error) {
 	if err != nil {
 		return nil, err
 	}
+	prvKey := ed25519.PrivateKey(cred.Secret)
 	return &ssh.Connection{
 		Host:       c.Host,
 		Port:       c.Port,
 		Username:   cred.Username,
-		PrivateKey: ed25519.PrivateKey(cred.Secret),
+		PrivateKey: &prvKey,
 	}, nil
+}
+
+func (s *Service) getSshCredConnection(c SshCredConnection) *ssh.Connection {
+	return &ssh.Connection{
+		Host:     c.Host,
+		Port:     c.Port,
+		Username: c.Username,
+		Password: c.Password,
+	}
 }

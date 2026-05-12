@@ -137,7 +137,7 @@ func TestGetDialAddress(t *testing.T) {
 func TestExecute_Errors(t *testing.T) {
 	client := NewClient()
 	_, prv, _ := ed25519.GenerateKey(rand.Reader)
-	conn := Connection{Host: "localhost", Port: 22, Username: "test", PrivateKey: []byte(prv)}
+	conn := Connection{Host: "localhost", Port: 22, Username: "test", PrivateKey: &prv}
 
 	t.Run("empty command", func(t *testing.T) {
 		_, err := client.Execute(conn, "")
@@ -148,7 +148,8 @@ func TestExecute_Errors(t *testing.T) {
 
 	t.Run("invalid private key", func(t *testing.T) {
 		invalidConn := conn
-		invalidConn.PrivateKey = make([]byte, 64)
+		invalidKey := ed25519.PrivateKey(make([]byte, 64))
+		invalidConn.PrivateKey = &invalidKey
 		_, err := client.Execute(invalidConn, "ls")
 		if err == nil {
 			t.Error("expected error for invalid private key, got nil")
@@ -252,7 +253,7 @@ func TestExecute_Success(t *testing.T) {
 		Host:       host,
 		Port:       port,
 		Username:   "test",
-		PrivateKey: []byte(clientPrv),
+		PrivateKey: &clientPrv,
 	}
 
 	t.Run("command success", func(t *testing.T) {

@@ -1,7 +1,7 @@
 import {getDomain, initialNode} from "../../app/utils"
 import {api} from "../api"
 import {R} from "../management/type"
-import {AutoRequest, Cluster, DeployRequest, DeployResponse, Overview} from "./type"
+import {AutoRequest, Cluster, DeployRequest, Overview} from "./type"
 
 export const ClusterApi = {
     list: {
@@ -32,7 +32,7 @@ export const ClusterApi = {
     },
     deploy: {
         key: () => ["cluster", "deploy"],
-        fn: (req: DeployRequest) => api.post<R<DeployResponse>>("/cluster/deploy", req)
+        fn: (req: DeployRequest) => api.post<R<string[]>>("/cluster/deploy", req)
             .then((response) => response.data.response),
     },
     fixAuto: {

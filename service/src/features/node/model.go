@@ -41,25 +41,32 @@ type KeeperParallelResponse struct {
 	Error      error             `json:"error"`
 }
 
-type SshConnection struct {
+type SshVaultConnection struct {
 	Host    string     `json:"host" form:"host"`
 	Port    int        `json:"port" form:"port"`
 	VaultId *uuid.UUID `json:"vaultId" form:"vaultId"`
 }
 
+type SshCredConnection struct {
+	Host     string `json:"host" form:"host"`
+	Port     int    `json:"port" form:"port"`
+	Username string `json:"username" form:"username"`
+	Password string `json:"password" form:"password"`
+}
+
 type MetricsResponse = os.Metrics
 
 type DockerRequest struct {
-	Connection SshConnection `json:"connection" form:"connection" binding:"required"`
-	Image      string        `json:"image" form:"image"`
-	Container  string        `json:"container" form:"container"`
-	Options    string        `json:"options" form:"options"`
+	Connection SshVaultConnection `json:"connection" form:"connection" binding:"required"`
+	Image      string             `json:"image" form:"image"`
+	Container  string             `json:"container" form:"container"`
+	Options    string             `json:"options" form:"options"`
 }
 
 type DockerLogsRequest struct {
-	Connection SshConnection `json:"connection" form:"connection" binding:"required"`
-	Container  string        `json:"container" form:"container" binding:"required"`
-	Tail       int           `json:"tail" form:"tail"`
+	Connection SshVaultConnection `json:"connection" form:"connection" binding:"required"`
+	Container  string             `json:"container" form:"container" binding:"required"`
+	Tail       int                `json:"tail" form:"tail"`
 }
 
 type DockerResponse = os.Docker

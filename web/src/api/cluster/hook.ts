@@ -54,12 +54,12 @@ export function useRouterClusterCreateAuto(onSuccess?: () => void) {
     })
 }
 
-export function useRouterClusterDeploy(onSuccess?: () => void) {
+export function useRouterClusterDeploy(onSuccess?: (data: string[]) => void) {
     return useMutationAdapter({
         mutationFn: ClusterApi.deploy.fn,
         mutationKey: ClusterApi.deploy.key(),
         successKeys: [ClusterApi.list.key(), TagApi.list.key()],
-        onSuccess: onSuccess,
+        onSuccess: (_, data) => onSuccess ? onSuccess(data) : void 0,
     })
 }
 

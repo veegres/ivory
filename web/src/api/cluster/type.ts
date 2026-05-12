@@ -70,10 +70,6 @@ export interface DeployRequest {
     image: DeployImage,
 }
 
-export interface DeployResponse {
-    nodes: {[node: string]: string},
-}
-
 export interface NodeOverview {
     [domain: string]: Node,
 }

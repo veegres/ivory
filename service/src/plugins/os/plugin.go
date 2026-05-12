@@ -12,6 +12,7 @@ var ErrClientNotImplemented = errors.New("client is not implemented")
 
 type Adapter interface {
 	Metrics(connection ssh.Connection) (*Metrics, error)
+	SshCopyId(connection ssh.Connection, publicKey string) error
 	DockerManager
 }
 

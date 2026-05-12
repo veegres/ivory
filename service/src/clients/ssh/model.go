@@ -6,7 +6,8 @@ type Connection struct {
 	Host       string
 	Port       int
 	Username   string
-	PrivateKey ed25519.PrivateKey
+	Password   string
+	PrivateKey *ed25519.PrivateKey
 }
 
 type CommandResult struct {

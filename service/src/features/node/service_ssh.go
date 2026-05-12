@@ -1,6 +1,19 @@
 package node
 
-func (s *Service) Metrics(c SshConnection) (*MetricsResponse, error) {
+import (
+	"ivory/src/plugins/os"
+)
+
+func (s *Service) SshCopyId(c SshCredConnection, publicKey string) error {
+	adapter, err := s.osRegistry.Get(os.Linux)
+	if err != nil {
+		return err
+	}
+	con := s.getSshCredConnection(c)
+	return adapter.SshCopyId(*con, publicKey)
+}
+
+func (s *Service) Metrics(c SshVaultConnection) (*MetricsResponse, error) {
 	adapter, conn, err := s.getOSAdapter(c)
 	if err != nil {
 		return nil, err
@@ -32,7 +45,7 @@ func (s *Service) DockerDelete(request DockerRequest) (*DockerResponse, error) {
 	return adapter.DockerDelete(*conn, request.Container)
 }
 
-func (s *Service) DockerList(c SshConnection) (*DockerResponse, error) {
+func (s *Service) DockerList(c SshVaultConnection) (*DockerResponse, error) {
 	adapter, conn, err := s.getOSAdapter(c)
 	if err != nil {
 		return nil, err

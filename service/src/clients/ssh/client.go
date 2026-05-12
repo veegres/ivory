@@ -55,14 +55,21 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 		return nil, ErrCommandEmpty
 	}
 
-	signer, err := ssh.NewSignerFromKey(connection.PrivateKey)
-	if err != nil {
-		return nil, err
+	var auth []ssh.AuthMethod
+	if connection.PrivateKey != nil {
+		signer, err := ssh.NewSignerFromKey(*connection.PrivateKey)
+		if err != nil {
+			return nil, err
+		}
+		auth = append(auth, ssh.PublicKeys(signer))
+	}
+	if connection.Password != "" {
+		auth = append(auth, ssh.Password(connection.Password))
 	}
 
 	config := &ssh.ClientConfig{
 		User:            connection.Username,
-		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		Auth:            auth,
 		HostKeyCallback: c.hostKeyCallback,
 		Timeout:         c.timeout,
 	}
@@ -107,7 +114,19 @@ func (c *Client) Execute(connection Connection, command string) (*CommandResult,
 	return result, nil
 }
 
-func (c *Client) hostKeyCallback(hostname string, remote net.Addr, key ssh.PublicKey) error {
+func (c *Client) CopyId(connection Connection, publicKey string) error {
+	command := fmt.Sprintf(`mkdir -p ~/.ssh && chmod 700 ~/.ssh && (grep -qF "%s" ~/.ssh/authorized_keys 2>/dev/null || echo "%s" >> ~/.ssh/authorized_keys) && chmod 600 ~/.ssh/authorized_keys`, publicKey, publicKey)
+	res, err := c.Execute(connection, command)
+	if err != nil {
+		return err
+	}
+	if res.ExitCode != 0 {
+		return errors.New(res.Stderr)
+	}
+	return nil
+}
+
+func (c *Client) hostKeyCallback(hostname string, _ net.Addr, key ssh.PublicKey) error {
 	marshaledKey := key.Marshal()
 
 	c.mu.RLock()

@@ -74,22 +74,24 @@ type CreateAutoRequest struct {
 }
 
 type DeployImage struct {
-	Uri        string              `json:"uri"`
-	Volume     string              `json:"volume"`
-	Restart    string              `json:"restart"`
-	DbPort     int                 `json:"dbPort"`
-	KeeperPort int                 `json:"keeperPort"`
-	CommonEnvs []string            `json:"commonEnvs"`
-	UniqueEnvs map[string][]string `json:"uniqueEnvs"`
+	Uri     string            `json:"uri"`
+	Options map[string]string `json:"options"`
+}
+
+type Credential struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type Credentials struct {
+	Ssh Credential `json:"ssh"`
+	Db  Credential `json:"db"`
 }
 
 type DeployRequest struct {
 	Cluster Request     `json:"cluster"`
+	Cred    Credentials `json:"cred"`
 	Image   DeployImage `json:"image"`
-}
-
-type DeployResponse struct {
-	Nodes map[string]string `json:"nodes"`
 }
 
 // SPECIFIC (SERVER)

@@ -27,6 +27,10 @@ func (a *Adapter) Metrics(connection ssh.Connection) (*os.Metrics, error) {
 	return a.parseMetrics(result.Stdout)
 }
 
+func (a *Adapter) SshCopyId(connection ssh.Connection, publicKey string) error {
+	return a.sshClient.CopyId(connection, publicKey)
+}
+
 func (a *Adapter) DockerList(connection ssh.Connection) (*os.Docker, error) {
 	return a.executeDocker(connection, "ps -a")
 }
