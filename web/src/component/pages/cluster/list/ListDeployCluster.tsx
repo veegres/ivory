@@ -59,7 +59,7 @@ const DEFAULT_IMAGES: {[key in KeeperPlugin]: {uri: string, optionStr: string, d
           -e APIPORT={{keeperPort}}
           -e PGPASSWORD_SUPERUSER="{{password}}"
           -e RESTAPI_CONNECT_ADDRESS="{{node}}:{{keeperPort}}"
-          -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{node}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":300}}}'
+          -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{node}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
         `.replace(/\s{2,}/g, "\n").trim(),
     },
     [KeeperPlugin.POSTGRES]: {
@@ -104,7 +104,6 @@ export function ListDeployCluster(props: Props) {
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
     const handleEnvUpdates = useCallback(handleCallEnvUpdates, [])
     const handleNodesUpdate = useCallback(handleCallNodesUpdate, [image.optionStr])
-    const handleClose = useCallback(handleCallClose, [])
 
     const imageOptionEntries = useMemo(handleMemoImageOptionEntries, [imageOptions])
     const imageInterpolatedOptions = useMemo(handleMemoImageInterpolatedOptions, [imageOptionEntries, name, dbCred])
@@ -112,7 +111,7 @@ export function ListDeployCluster(props: Props) {
     return (
         <Access feature={Feature.ManageClusterCreate}>
             <DeployIconButton tooltip={"Deploy Cluster"} size={size} onClick={() => setOpen(!open)}/>
-            <Dialog sx={SX.dialog} open={open} onClose={handleClose}>
+            <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Deploy Cluster</DialogTitle>
                 <DialogContent sx={SX.content}>
                     {response ? (
@@ -139,10 +138,13 @@ export function ListDeployCluster(props: Props) {
                 </DialogContent>
                 <DialogActions sx={SX.center}>
                     {response ? (
-                        <Button color={"primary"} onClick={handleClose}>Close</Button>
+                        <>
+                            <Button color={"inherit"} onClick={() => setResponse(undefined)}>Back</Button>
+                            <Button loading={isPending} onClick={() => setOpen(false)} disabled={!name}>Ok</Button>
+                        </>
                     ) : (
                         <>
-                            <Button color={"inherit"} onClick={handleClose}>Cancel</Button>
+                            <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
                             <Button loading={isPending} onClick={handleDeploy} disabled={!name}>Deploy</Button>
                         </>
                     )}
@@ -325,11 +327,6 @@ export function ListDeployCluster(props: Props) {
             nodes.filter(n => !!n)
                 .map(node => prev[node] !== undefined ? [node, prev[node]] : [node, image.optionStr])
         ))
-    }
-
-    function handleCallClose() {
-        setOpen(false)
-        setResponse(undefined)
     }
 
     function handleCallImageUpdate(uri: string) {
