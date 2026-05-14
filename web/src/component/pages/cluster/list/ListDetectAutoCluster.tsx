@@ -7,7 +7,6 @@ import {Plugin as DbPlugin} from "../../../../api/database/type"
 import {Feature} from "../../../../api/feature"
 import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {SxPropsMap} from "../../../../app/type"
-import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AutoIconButton} from "../../../view/button/IconButtons"
 import {Access} from "../../../widgets/access/Access"
 import {Options} from "../../../widgets/options/Options"
@@ -42,7 +41,6 @@ export function ListDetectAutoCluster(props: Props) {
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
                 <DialogContent sx={SX.content}>
-                    <AlertCentered text={"Specify only one node and the others will be detected automatically."}/>
                     <TextField
                         size={"small"}
                         label={"Name"}

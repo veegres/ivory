@@ -14,7 +14,6 @@ import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
 import {getInterpolatedImageOptions, getNodeConfigs, InterpolatedOptionsKeys, VaultOptions} from "../../../../app/utils"
 import scroll from "../../../../style/scroll.module.css"
-import {AlertCentered} from "../../../view/box/AlertCentered"
 import {Code} from "../../../view/box/Code"
 import {SubContentBox} from "../../../view/box/SubContentBox"
 import {TitledBox} from "../../../view/box/TitledBox"
@@ -128,13 +127,6 @@ export function ListDeployCluster(props: Props) {
                         </Box>
                     ) : (
                         <Box sx={SX.subContent} gap={1}>
-                            <AlertCentered text={`
-                                You can deploy the cluster from scratch here, just providing list of virtual machines with
-                                same ssh credentials or generate ssh key in vaults and choose it here. When you provide
-                                ssh credentials Ivory will automatically generate ssh key in vault and add it to authorised
-                                keys in your VMs.
-                                All is preconfigured for you, but you can always change all configs.
-                            `}/>
                             {renderMandatoryFields()}
                             {renderDockerImage()}
                             {renderClusterOptions()}
