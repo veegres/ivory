@@ -12,9 +12,9 @@ import {
     getErrorMessage,
     getNodeConfig,
     getNodeConfigs,
+    getShortUuid,
     isConnectionEqual,
     randomUnicodeAnimal,
-    shortUuid,
     SizeFormatter,
     SxPropsFormatter
 } from "../../src/app/utils"
@@ -25,7 +25,7 @@ dayjs.extend(utc)
 describe("shortUuid", () => {
   it("should return the first 8 characters of a UUID", () => {
     const uuid = "12345678-90ab-cdef-1234-567890abcdef"
-    expect(shortUuid(uuid)).toBe("12345678")
+    expect(getShortUuid(uuid)).toBe("12345678")
   })
 })
 

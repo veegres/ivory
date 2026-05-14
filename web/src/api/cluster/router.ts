@@ -1,4 +1,4 @@
-import {getDomain, initialNode} from "../../app/utils"
+import {getDomain, getInitialNode} from "../../app/utils"
 import {api} from "../api"
 import {R} from "../management/type"
 import {AutoRequest, Cluster, DeployRequest, Overview} from "./type"
@@ -10,7 +10,7 @@ export const ClusterApi = {
             .then((response) => response.data.response.map(v => (
                 {...v, nodesOverview: Object.fromEntries(v.nodes.map(c => {
                     const domain = getDomain(c)
-                    return [domain, initialNode(c)]
+                    return [domain, getInitialNode(c)]
                 }))} as Cluster
             ))),
     },

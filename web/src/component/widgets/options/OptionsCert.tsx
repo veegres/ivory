@@ -2,7 +2,7 @@ import {useMemo} from "react"
 
 import {useRouterCertList} from "../../../api/cert/hook"
 import {CertType} from "../../../api/cert/type"
-import {CertOptions, shortUuid} from "../../../app/utils"
+import {CertOptions, getShortUuid} from "../../../app/utils"
 import {AutocompleteUuid, Option} from "../../view/autocomplete/AutocompleteUuid"
 
 type Props = {
@@ -22,7 +22,7 @@ export function OptionsCert(props: Props) {
     return (
         <AutocompleteUuid
             label={label}
-            selected={{key: certId, short: shortUuid(certId)}}
+            selected={{key: certId, short: getShortUuid(certId)}}
             options={options}
             loading={query.isPending}
             onUpdate={handleUpdate}
@@ -37,7 +37,7 @@ export function OptionsCert(props: Props) {
         return Object.entries(query.data ?? {})
             .map(([key, value]) => ({
                 key,
-                short: shortUuid(key),
+                short: getShortUuid(key),
                 name: value.fileName
             }))
     }

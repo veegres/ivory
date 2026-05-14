@@ -1,6 +1,7 @@
+import {Edit, Preview} from "@mui/icons-material"
 import {
     Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
-    TextField, ToggleButton, ToggleButtonGroup,
+    TextField, ToggleButton, ToggleButtonGroup, Tooltip,
 } from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
@@ -11,7 +12,7 @@ import {Feature} from "../../../../api/feature"
 import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getInterpolatedString, getNodeConfigs, VaultOptions} from "../../../../app/utils"
+import {getInterpolatedImageOptions, getNodeConfigs, InterpolatedOptionsKeys, VaultOptions} from "../../../../app/utils"
 import scroll from "../../../../style/scroll.module.css"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {Code} from "../../../view/box/Code"
@@ -27,7 +28,7 @@ const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {width: "590px", display: "flex", flexDirection: "column", gap: 1, padding: "5px 16px 5px 24px ", overflowY: "scroll"},
     center: {display: "flex", justifyContent: "center", gap: 3},
-    note: {display: "flex", justifyContent: "center", color: "text.disabled", fontSize: 12},
+    note: {display: "flex", justifyContent: "center", alignItems: "center", color: "text.disabled", fontSize: 12, flexWrap: "wrap", gap: 0.5},
     between: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
     subContent: {display: "flex", flexDirection: "column"},
     toggleButton: {padding: "0px 10px"},
@@ -46,28 +47,28 @@ const DEFAULT_IMAGES: {[key in KeeperPlugin]: {uri: string, optionStr: string, d
         uri: "ghcr.io/zalando/spilo-18:4.1-p2",
         defaultValues: {username: "postgres"},
         optionStr: `
-          --name {{node}}
-          --hostname {{node}}
+          --name {{host}}
+          --hostname {{host}}
           --restart unless-stopped
           -p {{keeperPort}}:{{keeperPort}}
           -p {{dbPort}}:{{dbPort}}
           -v /data/postgres:/home/postgres/pgdata
           -e SCOPE="{{cluster}}"
-          -e PATRONI_NAME="{{node}}"
-          -e ETCD3_HOSTS="localhost:2379"
+          -e PATRONI_NAME="{{host}}"
+          -e ETCD3_HOSTS="{{dcs}}"
           -e PGPORT={{dbPort}}
           -e APIPORT={{keeperPort}}
           -e PGPASSWORD_SUPERUSER="{{password}}"
-          -e RESTAPI_CONNECT_ADDRESS="{{node}}:{{keeperPort}}"
-          -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{node}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
+          -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
+          -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
         `.replace(/\s{2,}/g, "\n").trim(),
     },
     [KeeperPlugin.POSTGRES]: {
         uri: "postgres:18",
         defaultValues: {},
         optionStr: `
-          --name {{node}}
-          --hostname {{node}}
+          --name {{host}}
+          --hostname {{host}}
           --restart unless-stopped
           -p {{dbPort}}:{{dbPort}}
           -v /data/postgres:/var/lib/postgresql/data
@@ -85,7 +86,7 @@ type Props = {
 
 export function ListDeployCluster(props: Props) {
     const {size, keeper} = props
-    const [name, setName] = useState("")
+    const [cluster, setCluster] = useState("")
     const [image, setImage] = useState(DEFAULT_IMAGES[keeper])
     const [options, setOptions] = useState(INITIAL_OPTIONS)
     const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
@@ -94,7 +95,9 @@ export function ListDeployCluster(props: Props) {
     const [db, setDb] = useState<"new" | "vault">("vault")
     const [sshCred, setSshCred] = useState({username: "", password: ""})
     const [dbCred, setDbCred] = useState({username: image.defaultValues["username"] ?? "", password: image.defaultValues["password"] ?? ""})
+    const [dcs, setDcs] = useState("")
     const [open, setOpen] = useState(false)
+    const [preview, setPreview] = useState(true)
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
     const {mutate, isPending} = useRouterClusterDeploy(setResponse)
@@ -106,7 +109,10 @@ export function ListDeployCluster(props: Props) {
     const handleNodesUpdate = useCallback(handleCallNodesUpdate, [image.optionStr])
 
     const imageOptionEntries = useMemo(handleMemoImageOptionEntries, [imageOptions])
-    const imageInterpolatedOptions = useMemo(handleMemoImageInterpolatedOptions, [imageOptionEntries, name, dbCred])
+    const imageInterpolatedOptions = useMemo(
+        handleMemoImageInterpolatedOptions,
+        [imageOptionEntries, cluster, dbCred, dcs, sshCred, preview]
+    )
 
     return (
         <Access feature={Feature.ManageClusterCreate}>
@@ -127,7 +133,6 @@ export function ListDeployCluster(props: Props) {
                                 same ssh credentials or generate ssh key in vaults and choose it here. When you provide
                                 ssh credentials Ivory will automatically generate ssh key in vault and add it to authorised
                                 keys in your VMs.
-                                
                                 All is preconfigured for you, but you can always change all configs.
                             `}/>
                             {renderMandatoryFields()}
@@ -140,12 +145,12 @@ export function ListDeployCluster(props: Props) {
                     {response ? (
                         <>
                             <Button color={"inherit"} onClick={() => setResponse(undefined)}>Back</Button>
-                            <Button loading={isPending} onClick={() => setOpen(false)} disabled={!name}>Ok</Button>
+                            <Button loading={isPending} onClick={() => setOpen(false)} disabled={!cluster}>Ok</Button>
                         </>
                     ) : (
                         <>
                             <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
-                            <Button loading={isPending} onClick={handleDeploy} disabled={!name}>Deploy</Button>
+                            <Button loading={isPending} onClick={handleDeploy} disabled={!cluster}>Deploy</Button>
                         </>
                     )}
                 </DialogActions>
@@ -159,9 +164,9 @@ export function ListDeployCluster(props: Props) {
                 <TextField
                     fullWidth={true}
                     size={"small"}
-                    label={"Name"}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    label={"Cluster Name"}
+                    value={cluster}
+                    onChange={(e) => setCluster(e.target.value)}
                 />
                 <DynamicInputs
                     InputProps={SX.input}
@@ -173,7 +178,24 @@ export function ListDeployCluster(props: Props) {
                 />
                 {renderSshInputs()}
                 {renderDbInputs()}
+                {renderImageOptions()}
             </Box>
+        )
+    }
+
+    function renderImageOptions() {
+        if (image.defaultValues["dcs"]) return
+        return (
+            <TitledBox title={"Mandatory Options"} island={true}>
+                <TextField
+                    fullWidth={true}
+                    size={"small"}
+                    label={"DCS (etcd, zookeper, etc)"}
+                    helperText={"Example: etcd1:5432, etcd3:5432, etcd3:5432"}
+                    value={dcs}
+                    onChange={(e) => setDcs(e.target.value)}
+                />
+            </TitledBox>
         )
     }
 
@@ -263,31 +285,45 @@ export function ListDeployCluster(props: Props) {
 
     function renderDockerImage() {
         return (
-            <SubContentBox label={"Docker Image"} island={true}>
+            <SubContentBox label={"Docker Options"} island={true}>
                 <Box sx={SX.subContent} gap={2}>
-                    <TextField
-                        fullWidth
-                        size={"small"}
-                        label={"Image"}
-                        value={image.uri}
-                        onChange={v => handleImageUpdate(v.target.value)}
-                    />
+                    <Box sx={SX.between}>
+                        <TextField
+                            fullWidth
+                            size={"small"}
+                            label={"Image"}
+                            value={image.uri}
+                            onChange={v => handleImageUpdate(v.target.value)}
+                        />
+                        <ToggleButtonGroup value={preview} exclusive={true} size={"small"} onChange={(_, v) => setPreview(v)}>
+                            <Tooltip title={"Preview"} placement={"top"}>
+                                <ToggleButton value={true}><Preview/></ToggleButton>
+                            </Tooltip>
+                            <Tooltip title={"Edit"} placement={"top"}>
+                                <ToggleButton value={false}><Edit/></ToggleButton>
+                            </Tooltip>
+                        </ToggleButtonGroup>
+                    </Box>
+                    <Box sx={SX.note}>
+                        <Box>Use interpolated options to automatically populate values -</Box>
+                        {InterpolatedOptionsKeys.map(k => (
+                            <Code key={k} sx={{fontSize: "11px"}}>{`{{${k}}}`}</Code>
+                        ))}
+                    </Box>
                     {imageOptionEntries.length === 0 ? (
-                        <Box sx={SX.note}>Start by adding nodes ? image options will appear here</Box>
-                    ) : imageOptionEntries.map(([nodeFull]) => {
-                        const [node] = nodeFull.split(":")
-                        return (
-                            <TextField
-                                key={nodeFull}
-                                fullWidth
-                                multiline={true}
-                                size={"small"}
-                                label={<Box>Node <Code>{node}</Code> options</Box>}
-                                value={imageInterpolatedOptions[nodeFull]}
-                                onChange={v => handleEnvUpdates(nodeFull, v.target.value)}
-                            />
-                        )
-                    })}
+                        <Box sx={SX.note}>Start by adding nodes – image options will appear here</Box>
+                    ) : imageOptionEntries.map(([nodeFull]) => (
+                        <TextField
+                            key={nodeFull}
+                            fullWidth={true}
+                            multiline={true}
+                            disabled={preview}
+                            size={"small"}
+                            label={<Box>Node <Code>{nodeFull}</Code> options</Box>}
+                            value={imageInterpolatedOptions[nodeFull]}
+                            onChange={v => handleEnvUpdates(nodeFull, v.target.value)}
+                        />
+                    ))}
                 </Box>
             </SubContentBox>
         )
@@ -306,15 +342,14 @@ export function ListDeployCluster(props: Props) {
     }
 
     function handleMemoImageInterpolatedOptions() {
-        return Object.fromEntries(
-            imageOptionEntries.map(([nodeFull, opt]) => {
-                const [node, keeperPort, dbPort] = nodeFull.split(":")
-                return [nodeFull, getInterpolatedString(opt, {
-                    cluster: name, node, keeperPort, dbPort,
-                    username: dbCred.username, password: dbCred.password,
-                })]
-            })
-        )
+        if (!preview) return Object.fromEntries(imageOptionEntries)
+        return Object.fromEntries(imageOptionEntries.map(([nodeFull, opt]) => {
+            const [host, keeperPort, dbPort] = nodeFull.split(":")
+            return [nodeFull, getInterpolatedImageOptions(opt, {
+                cluster: cluster, host, keeperPort: Number(keeperPort), dbPort: Number(dbPort), dcs,
+                dbUser: dbCred.username, dbPass: dbCred.password, sshPass: sshCred.password, sshUser: sshCred.username
+            })]
+        }))
     }
 
     function handleCallEnvUpdates(node: string, opt: string) {
@@ -351,9 +386,15 @@ export function ListDeployCluster(props: Props) {
             })
         )
         mutate({
-            cluster: {...options, name, nodes: nodeConfigs},
-            cred: {ssh: sshCred, db: dbCred},
-            image: {uri: image.uri, options: imageOptionsSmallKeys}
+            uri: image.uri,
+            nodeRawOptions: imageOptionsSmallKeys,
+            nodeConfig: nodeConfigs,
+            commonConfig: {
+                cluster, dcs,
+                dbUser: dbCred.username, dbPass: dbCred.password,
+                sshUser: sshCred.username, sshPass: sshCred.password,
+            },
+            clusterOptions: options,
         })
     }
 }

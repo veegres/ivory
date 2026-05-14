@@ -13,7 +13,7 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
-import {Cluster, Node, NodeConfig,NodeOverview} from "../api/cluster/type"
+import {Cluster, InterpolatedOptions, Node, NodeConfig, NodeOverview} from "../api/cluster/type"
 import {Role, Status as KeeperStatus} from "../api/keeper/type"
 import {KeeperConnection, KeeperRequest,SshConnection} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
@@ -91,7 +91,7 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const initialNode = (config: NodeConfig): Node => {
+export const getInitialNode = (config: NodeConfig): Node => {
     return ({
         config: config,
         warnings: ["no response from keeper"],
@@ -174,22 +174,26 @@ export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) =
     ]
 }
 
-export const getInterpolatedString = (template: string, values: {[key: string]: string}) => {
+export const InterpolatedOptionsKeys = [
+    "cluster", "dcs", "dbPass", "dbUser", "sshPass", "sshUser",
+    "host", "sshPort", "keeperPort", "dbPort",
+] as const satisfies readonly (keyof InterpolatedOptions)[]
+export const getInterpolatedImageOptions = (template: string, values: InterpolatedOptions) => {
     return template.replace(
         /{{(\w+)}}/g,
-        (_, key) => values[key] || `{{${key}}}`
+        (_, key) => String(values[key as keyof InterpolatedOptions] || `{{${key}}}`)
     )
 }
 
-export const shortUuid = (uuid: string) => uuid.substring(0, 8)
+export const getShortUuid = (uuid: string) => uuid.substring(0, 8)
 
-export const unicodeAnimal = [
+export const UnicodeAnimal = [
     "🐘", "🐇", "🐈", "🐋", "🐒", "🐢", "🐣", "🐬", "🐉",
     "🐩", "🦄", "🦥", "🦫", "🦭", "🦋", "🦉", "🦎", "🦙",
     "🦦", "🦢", "🦤", "🦞", "🦒", "🦕", "🦔", "🦌", "🦜",
 ]
 export const randomUnicodeAnimal = () => {
-    return unicodeAnimal[Math.floor(Math.random() * unicodeAnimal.length)]
+    return UnicodeAnimal[Math.floor(Math.random() * UnicodeAnimal.length)]
 }
 
 export const getErrorMessage = (error: any): string => {

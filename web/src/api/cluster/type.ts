@@ -56,18 +56,18 @@ export interface Overview {
     features: Feature[],
 }
 
-export interface DeployImage {
-    uri: string,
-    options: {[key: string]: string},
-}
 
+export interface ImageConfig {
+    cluster: string, dcs: string,
+    dbPass: string, dbUser: string,
+    sshPass: string, sshUser: string,
+}
 export interface DeployRequest {
-    cluster: Cluster,
-    cred: {
-        ssh: {username: string, password: string},
-        db: {username: string, password: string},
-    },
-    image: DeployImage,
+    uri: string,
+    nodeRawOptions: {[key: string]: string},
+    nodeConfig: NodeConfig[],
+    commonConfig: ImageConfig,
+    clusterOptions: Options
 }
 
 export interface NodeOverview {
@@ -81,6 +81,8 @@ export interface Node {
 }
 
 // SPECIFIC (WEB)
+
+export interface InterpolatedOptions extends ImageConfig, NodeConfig {}
 
 export interface ClusterTab {
     label: string,

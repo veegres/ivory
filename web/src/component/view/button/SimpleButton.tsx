@@ -9,6 +9,6 @@ const SX: SxPropsMap = {
 
 export function SimpleButton(props: ButtonProps) {
     return (
-        <Button sx={SX.button} color={"inherit"} variant={"outlined"} {...props}/>
+        <Button color={"inherit"} variant={"outlined"} {...props} sx={{...SX.button, ...props.sx}}/>
     )
 }

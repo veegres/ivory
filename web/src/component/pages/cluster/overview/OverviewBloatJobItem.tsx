@@ -7,7 +7,7 @@ import {useRouterBloatDelete, useRouterBloatStop} from "../../../../api/bloat/ho
 import {Bloat} from "../../../../api/bloat/type"
 import {Feature} from "../../../../api/feature"
 import {SxPropsMap} from "../../../../app/type"
-import {shortUuid} from "../../../../app/utils"
+import {getShortUuid} from "../../../../app/utils"
 import {useEventJob} from "../../../../hook/EventJob"
 import scroll from "../../../../style/scroll.module.css"
 import select from "../../../../style/select.module.css"
@@ -74,13 +74,13 @@ export function OverviewBloatJobItem(props: Props) {
                         {command}
                         <Tooltip title={renderVaultTooltip()} placement={"top"}>
                             <Box sx={SX.vault}>
-                                {vaultId ? `--username ${shortUuid(vaultId)} --password ${shortUuid(vaultId)}` : "--username postgres"}
+                                {vaultId ? `--username ${getShortUuid(vaultId)} --password ${getShortUuid(vaultId)}` : "--username postgres"}
                             </Box>
                         </Tooltip>
                     </Box>
                     <Box sx={SX.separator}>
                         <Tooltip title={`Job ID: ${uuid}`}>
-                            <Box>{shortUuid(uuid)}</Box>
+                            <Box>{getShortUuid(uuid)}</Box>
                         </Tooltip>
                         <Access feature={Feature.ViewToolBloatLogs}>
                             <Tooltip title={"Open"}>
