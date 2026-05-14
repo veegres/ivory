@@ -39,7 +39,6 @@ describe("StoreProvider", () => {
             expect(state.activeNode).toEqual({})
             expect(state.activeTags).toEqual(["ALL"])
             expect(state.warnings).toEqual({})
-            expect(state.settings).toBe(false)
             expect(state.nodeState.nodeTab).toBe(NodeTabType.MONITOR)
             expect(state.nodeState.queryTab).toBe(QueryType.CONSOLE)
             expect(state.nodeState.queryConsole).toBe("")
@@ -209,23 +208,6 @@ describe("StoreProvider", () => {
         })
     })
 
-    describe("toggleSettingsDialog", () => {
-        it("should toggle settings from false to true", () => {
-            useStoreAction.toggleSettingsDialog()
-
-            const state = useStore.getState()
-            expect(state.settings).toBe(true)
-        })
-
-        it("should toggle settings from true to false", () => {
-            useStoreAction.toggleSettingsDialog()
-            useStoreAction.toggleSettingsDialog()
-
-            const state = useStore.getState()
-            expect(state.settings).toBe(false)
-        })
-    })
-
     describe("setConsoleQuery", () => {
         it("should set console query", () => {
             useStoreAction.setConsoleQuery("SELECT * FROM users")
@@ -302,7 +284,6 @@ describe("StoreProvider", () => {
             useStoreAction.setClusterTab(2)
             useStoreAction.setTags(["tag1", "tag2"])
             useStoreAction.setWarnings("test-warning", true)
-            useStoreAction.toggleSettingsDialog()
             useStoreAction.setConsoleQuery("SELECT * FROM users")
             useStoreAction.setDbName("testdb")
             useStoreAction.setDbSchema("public")

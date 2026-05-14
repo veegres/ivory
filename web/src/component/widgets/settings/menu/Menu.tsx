@@ -1,11 +1,9 @@
-import {Box, Dialog, DialogContent, DialogTitle, IconButton} from "@mui/material"
-import {useEffect, useState} from "react"
+import {Settings} from "@mui/icons-material"
+import {useState} from "react"
 
-import {Settings, SxPropsMap} from "../../../../app/type"
-import {SettingOptions} from "../../../../app/utils"
-import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
+import {Settings as SettingsType} from "../../../../app/type"
 import {AlertCentered} from "../../../view/box/AlertCentered"
-import {BackIconButton, CloseIconButton} from "../../../view/button/IconButtons"
+import {DialogButton} from "../../../view/button/DialogButton"
 import {About} from "../about/About"
 import {Backup} from "../backup/Backup"
 import {Certs} from "../certs/Certs"
@@ -14,61 +12,40 @@ import {Secret} from "../secret/Secret"
 import {Vault} from "../vault/Vault"
 import {MenuContent} from "./MenuContent"
 
-const SX: SxPropsMap = {
-    dialog: {minWidth: "1010px"},
-    content: {minWidth: "600px", height: "600px"},
-    title: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
-    menuIcon: {padding: "8px"},
-}
-
 export function Menu() {
-    const settings = useStore(s => s.settings)
-    const {toggleSettingsDialog} = useStoreAction
-
-    const [page, setPage] = useState(Settings.MENU)
-    const options = SettingOptions[page]
-
-    useEffect(handleEffectSettingsClose, [settings])
+    const [page, setPage] = useState(SettingsType.MENU)
 
     return (
-        <Dialog sx={SX.dialog} open={settings} onClose={toggleSettingsDialog}>
-            <DialogTitle sx={SX.title}>
-                {page === Settings.MENU ? (
-                    <IconButton disableRipple>{options.icon}</IconButton>
-                ): (
-                    <BackIconButton size={40} onClick={() => setPage(Settings.MENU)}/>
-                )}
-                <Box>{options.label}</Box>
-                <CloseIconButton size={40} onClick={toggleSettingsDialog}/>
-            </DialogTitle>
-            <DialogContent sx={SX.content}>
-                {renderContent()}
-            </DialogContent>
-        </Dialog>
+        <DialogButton
+            title={"SETTINGS"}
+            renderActions={""}
+            icon={<Settings/>}
+            back={page !== SettingsType.MENU}
+            onBackClick={() => setPage(SettingsType.MENU)}
+            size={40}
+        >
+            {renderContent()}
+        </DialogButton>
     )
 
     function renderContent() {
         switch (page) {
-            case Settings.MENU:
+            case SettingsType.MENU:
                 return <MenuContent onUpdate={setPage}/>
-            case Settings.VAULT:
+            case SettingsType.VAULT:
                 return <Vault/>
-            case Settings.CERTIFICATE:
+            case SettingsType.CERTIFICATE:
                 return <Certs/>
-            case Settings.SECRET:
+            case SettingsType.SECRET:
                 return <Secret/>
-            case Settings.PERMISSION:
+            case SettingsType.PERMISSION:
                 return <Permissions/>
-            case Settings.BACKUP:
+            case SettingsType.BACKUP:
                 return <Backup/>
-            case Settings.ABOUT:
+            case SettingsType.ABOUT:
                 return <About/>
             default:
                 return <AlertCentered text={"Not implemented yet"}/>
         }
-    }
-
-    function handleEffectSettingsClose() {
-        if (!settings) setPage(Settings.MENU)
     }
 }

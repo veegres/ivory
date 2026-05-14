@@ -9,10 +9,8 @@
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
     "lint": "eslint src test",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage --watnpm i -D @tanstack/eslint-plugin-querych=false"
+    "test": "vitest run"
   },
   "dependencies": {
     "@codemirror/autocomplete": "6.18.7",

@@ -1,40 +1,25 @@
 import {
-    Add,
-    ArrowBack,
-    AutoFixHigh,
-    AutoMode,
-    Cached,
-    Cancel,
-    CheckCircle,
-    ClearAll,
-    Close,
-    CopyAll,
-    Delete,
-    Edit,
-    Info,
-    ManageSearch, MoreVert,
-    PendingActions,
-    PlayArrow,
-    Receipt,
-    Restore, RocketLaunch
+    Add, ArrowBack, AutoFixHigh, AutoMode, Cached, Cancel, CheckCircle, ClearAll,
+    Close, CopyAll, Delete, Edit, Info, ManageSearch, MoreVert, PendingActions,
+    PlayArrow, Receipt, Restore,
 } from "@mui/icons-material"
 import {Box, IconButton as MuiIconButton, Tooltip} from "@mui/material"
+import {IconButtonProps} from "@mui/material/IconButton/IconButton"
 import {SvgIconProps} from "@mui/material/SvgIcon/SvgIcon"
 import {cloneElement, ReactElement, ReactNode, SyntheticEvent} from "react"
 
 type Color = "inherit" | "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"
 type Placement = "bottom-end" | "bottom-start" | "bottom" | "left-end" | "left-start" | "left" | "right-end" | "right-start" | "right" | "top-end" | "top-start" | "top"
 
-type ButtonProps = Props & {
+type ButtonProps = Props & Omit<IconButtonProps, "size" | "children"> & {
     icon: ReactElement<SvgIconProps>,
     tooltip: ReactNode,
-    color?: Color,
     placement?: Placement,
     arrow?: boolean,
 }
 
 export function IconButton(props: ButtonProps) {
-    const {icon, color, placement, arrow, onClick, tooltip, disabled = false, size = 32, loading} = props
+    const {icon, placement, arrow, tooltip, disabled = false, size = 32, loading} = props
     // 0.56 is the ratio for size = 32 and fontSize = 18
     const fontSize = Math.floor(size * 0.56)
 
@@ -43,10 +28,9 @@ export function IconButton(props: ButtonProps) {
             <Box component={"span"}>
                 <MuiIconButton
                     sx={{height: `${size}px`, width: `${size}px`}}
-                    color={color}
-                    loading={loading}
                     disabled={loading || disabled}
-                    onClick={onClick}
+                    {...props}
+                    size={"small"}
                 >
                     {cloneElement(icon, {sx: {fontSize}})}
                 </MuiIconButton>
@@ -57,7 +41,7 @@ export function IconButton(props: ButtonProps) {
 
 type Props = {
     loading?: boolean,
-    onClick: (event: Event | SyntheticEvent, reason?: string) => void,
+    onClick?: (event: Event | SyntheticEvent, reason?: string) => void,
     size?: number,
     disabled?: boolean,
     color?: Color,
@@ -140,8 +124,4 @@ export function ClearAllIconButton(props: Props) {
 
 export function MoreIconButton(props: Props) {
     return <IconButton icon={<MoreVert/>} tooltip={""} {...props}/>
-}
-
-export function DeployIconButton(props: Props) {
-    return <IconButton icon={<RocketLaunch/>} tooltip={"Deploy"} {...props}/>
 }

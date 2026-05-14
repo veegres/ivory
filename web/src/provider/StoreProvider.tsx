@@ -16,7 +16,6 @@ interface Store {
     activeTags: string[],
     warnings: { [key: string]: boolean },
     refresh: { [key: string]: [string, number] },
-    settings: boolean,
     nodeState: {
         nodeTab: NodeTabType,
         queryTab: QueryType,
@@ -35,7 +34,6 @@ export const useStore = create(persist<Store>(
         activeNode: {},
         activeTags: ["ALL"],
         warnings: {},
-        settings: false,
         refresh: {},
         nodeState: {
             nodeTab: NodeTabType.MONITOR,
@@ -56,7 +54,6 @@ export const useStoreAction = {
     setWarnings: setWarnings,
     setNode: setNode,
     setTags: setTags,
-    toggleSettingsDialog: toggleSettingsDialog,
     clear: clear,
     setConsoleQuery: setConsoleQuery,
     setNodeBody: setNodeBody,
@@ -104,10 +101,6 @@ function setNode(node?: string) {
 
 function setTags(tags: string[]) {
     useStore.setState(s => ({...s, activeTags: tags}))
-}
-
-function toggleSettingsDialog() {
-    useStore.setState(s => ({...s, settings: !s.settings}))
 }
 
 function clear() {

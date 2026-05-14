@@ -1,8 +1,5 @@
-import {Edit, Preview} from "@mui/icons-material"
-import {
-    Box, Button, Dialog, DialogActions, DialogTitle,
-    TextField, ToggleButton, ToggleButtonGroup, Tooltip,
-} from "@mui/material"
+import {Edit, Preview, RocketLaunch} from "@mui/icons-material"
+import {Box, Button, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
 import {useRouterClusterDeploy} from "../../../../api/cluster/hook"
@@ -17,16 +14,13 @@ import scroll from "../../../../style/scroll.module.css"
 import {Code} from "../../../view/box/Code"
 import {SubContentBox} from "../../../view/box/SubContentBox"
 import {TitledBox} from "../../../view/box/TitledBox"
-import {DeployIconButton} from "../../../view/button/IconButtons"
+import {DialogButton} from "../../../view/button/DialogButton"
 import {DynamicInputs} from "../../../view/input/DynamicInputs"
 import {Access} from "../../../widgets/access/Access"
 import {Options} from "../../../widgets/options/Options"
 import {OptionsVault} from "../../../widgets/options/OptionsVault"
 
 const SX: SxPropsMap = {
-    dialog: {minWidth: "1010px"},
-    content: {width: "590px", display: "flex", flexDirection: "column", gap: 1, padding: "5px 16px 5px 24px ", overflowY: "scroll"},
-    center: {display: "flex", justifyContent: "center", gap: 3},
     note: {display: "flex", justifyContent: "center", alignItems: "center", color: "text.disabled", fontSize: 12, flexWrap: "wrap", gap: 0.5},
     between: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
     subContent: {display: "flex", flexDirection: "column"},
@@ -79,12 +73,11 @@ const DEFAULT_IMAGES: {[key in KeeperPlugin]: {uri: string, optionStr: string, d
 }
 
 type Props = {
-    size?: number,
     keeper: KeeperPlugin,
 }
 
 export function ListDeployCluster(props: Props) {
-    const {size, keeper} = props
+    const {keeper} = props
     const [cluster, setCluster] = useState("")
     const [image, setImage] = useState(DEFAULT_IMAGES[keeper])
     const [options, setOptions] = useState(INITIAL_OPTIONS)
@@ -95,7 +88,6 @@ export function ListDeployCluster(props: Props) {
     const [sshCred, setSshCred] = useState({username: "", password: ""})
     const [dbCred, setDbCred] = useState({username: image.defaultValues["username"] ?? "", password: image.defaultValues["password"] ?? ""})
     const [dcs, setDcs] = useState("")
-    const [open, setOpen] = useState(false)
     const [preview, setPreview] = useState(true)
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
@@ -115,40 +107,37 @@ export function ListDeployCluster(props: Props) {
 
     return (
         <Access feature={Feature.ManageClusterCreate}>
-            <DeployIconButton tooltip={"Deploy Cluster"} size={size} onClick={() => setOpen(!open)}/>
-            <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
-                <DialogTitle sx={SX.center}>Deploy Cluster</DialogTitle>
-                <Box sx={SX.content}>
-                    {response ? (
-                        <Box sx={SX.logs} className={scroll.small}>
-                            {response.map((log, i) => (
-                                <Box key={i} sx={SX.row}>{log}</Box>
-                            ))}
-                        </Box>
-                    ) : (
-                        <Box sx={SX.subContent} gap={1}>
-                            {renderMandatoryFields()}
-                            {renderDockerImage()}
-                            {renderClusterOptions()}
-                        </Box>
-                    )}
-                </Box>
-                <DialogActions sx={SX.center}>
-                    {response ? (
-                        <>
-                            <Button color={"inherit"} onClick={() => setResponse(undefined)}>Back</Button>
-                            <Button loading={isPending} onClick={() => setOpen(false)} disabled={!cluster}>Ok</Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
-                            <Button loading={isPending} onClick={handleDeploy} disabled={!cluster}>Deploy</Button>
-                        </>
-                    )}
-                </DialogActions>
-            </Dialog>
+            <DialogButton
+                title={"DEPLOY CLUSTER"}
+                renderActions={renderActions()}
+                icon={<RocketLaunch/>}
+                back={!!response}
+                onBackClick={() => setResponse(undefined)}
+            >
+                {response ? (
+                    <Box sx={SX.logs} className={scroll.small}>
+                        {response.map((log, i) => (
+                            <Box key={i} sx={SX.row}>{log}</Box>
+                        ))}
+                    </Box>
+                ) : (
+                    <Box sx={SX.subContent} gap={1}>
+                        {renderMandatoryFields()}
+                        {renderDockerImage()}
+                        {renderClusterOptions()}
+                    </Box>
+                )}
+            </DialogButton>
         </Access>
     )
+    
+    function renderActions() {
+        return (
+            <Button fullWidth={true} loading={isPending} onClick={handleDeploy} disabled={!cluster || !!response}>
+                Deploy
+            </Button>
+        )
+    }
 
     function renderMandatoryFields() {
         return (

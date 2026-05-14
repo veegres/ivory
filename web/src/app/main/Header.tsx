@@ -1,9 +1,9 @@
-import {Logout, Settings} from "@mui/icons-material"
+import {Logout} from "@mui/icons-material"
 import {Box, IconButton, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {useRouterLogout} from "../../api/auth/hook"
-import {useStoreAction} from "../../provider/StoreProvider"
+import {Menu} from "../../component/widgets/settings/menu/Menu"
 import {SxPropsMap} from "../type"
 import {randomUnicodeAnimal} from "../utils"
 
@@ -27,7 +27,6 @@ type Props = {
 
 export function Header(props: Props) {
     const {company, username, show, showLogout} = props
-    const {toggleSettingsDialog} = useStoreAction
     const [animal, setAnimal] = useState("")
 
     const logoutRouter = useRouterLogout()
@@ -57,11 +56,7 @@ export function Header(props: Props) {
                         <Box sx={SX.username}>{username}</Box>
                     </Tooltip>
                 )}
-                <Tooltip title={"Settings"}>
-                    <IconButton onClick={toggleSettingsDialog} color={"inherit"}>
-                        <Settings sx={SX.icon}/>
-                    </IconButton>
-                </Tooltip>
+                <Menu/>
                 {showLogout && (
                     <Tooltip title={"Sign out"}>
                         <IconButton onClick={handleLogout} color={"inherit"}>

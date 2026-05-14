@@ -16,7 +16,7 @@ import {TableCellLoader} from "../../../view/table/TableCellLoader"
 import {Access} from "../../../widgets/access/Access"
 import {Refresher} from "../../../widgets/refresher/Refresher"
 import {ListDeployCluster} from "./ListDeployCluster"
-import {ListDetectAutoCluster} from "./ListDetectAutoCluster"
+import {ListDetectCluster} from "./ListDetectCluster"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
 
@@ -57,10 +57,10 @@ export function ListTable(props: Props) {
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
                             <ListDeployCluster keeper={KeeperPlugin.PATRONI}/>
-                            <ListDetectAutoCluster/>
+                            <ListDetectCluster/>
                             <Access feature={Feature.ManageClusterUpdate}>
                                 <AddIconButton
-                                    tooltip={"Add Cluster Manually"}
+                                    tooltip={"ADD CLUSTER"}
                                     onClick={() => setShowNewElement(true)}
                                     disabled={showNewElement}
                                 />
