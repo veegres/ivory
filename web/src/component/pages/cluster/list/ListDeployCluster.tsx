@@ -183,7 +183,7 @@ export function ListDeployCluster(props: Props) {
                     fullWidth={true}
                     size={"small"}
                     label={"DCS (etcd, zookeper, etc)"}
-                    helperText={"Example: etcd1:5432, etcd3:5432, etcd3:5432"}
+                    helperText={"Example: etcd1:2379, etcd3:2379, etcd3:2379"}
                     value={dcs}
                     onChange={(e) => setDcs(e.target.value)}
                 />
