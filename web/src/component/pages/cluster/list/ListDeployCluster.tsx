@@ -1,6 +1,6 @@
 import {Edit, Preview} from "@mui/icons-material"
 import {
-    Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
+    Box, Button, Dialog, DialogActions, DialogTitle,
     TextField, ToggleButton, ToggleButtonGroup, Tooltip,
 } from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
@@ -118,7 +118,7 @@ export function ListDeployCluster(props: Props) {
             <DeployIconButton tooltip={"Deploy Cluster"} size={size} onClick={() => setOpen(!open)}/>
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Deploy Cluster</DialogTitle>
-                <DialogContent sx={SX.content}>
+                <Box sx={SX.content}>
                     {response ? (
                         <Box sx={SX.logs} className={scroll.small}>
                             {response.map((log, i) => (
@@ -132,7 +132,7 @@ export function ListDeployCluster(props: Props) {
                             {renderClusterOptions()}
                         </Box>
                     )}
-                </DialogContent>
+                </Box>
                 <DialogActions sx={SX.center}>
                     {response ? (
                         <>

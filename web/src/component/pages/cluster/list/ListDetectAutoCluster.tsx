@@ -1,4 +1,4 @@
-import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, TextField} from "@mui/material"
+import {Box, Button, Dialog, DialogActions, DialogTitle, Divider, TextField} from "@mui/material"
 import {useState} from "react"
 
 import {useRouterClusterCreateAuto} from "../../../../api/cluster/hook"
@@ -13,7 +13,7 @@ import {Options} from "../../../widgets/options/Options"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
-    content: {display: "flex", flexDirection: "column", gap: 1, padding: "0 24px"},
+    content: {display: "flex", flexDirection: "column", gap: 1, padding: "0px 24px"},
     center: {display: "flex", justifyContent: "center", gap: 3},
     node: {display: "flex", gap: 2},
 }
@@ -40,7 +40,7 @@ export function ListDetectAutoCluster(props: Props) {
             <AutoIconButton tooltip={"Add Cluster Automatically"} size={size} onClick={() => setOpen(!open)}/>
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.center}>Cluster Auto Detection</DialogTitle>
-                <DialogContent sx={SX.content}>
+                <Box sx={SX.content}>
                     <TextField
                         size={"small"}
                         label={"Name"}
@@ -68,7 +68,7 @@ export function ListDetectAutoCluster(props: Props) {
                     </Box>
                     <Divider variant={"middle"}/>
                     <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})}/>
-                </DialogContent>
+                </Box>
                 <DialogActions sx={SX.center}>
                     <Button color={"inherit"} onClick={() => setOpen(false)}>Cancel</Button>
                     <Button

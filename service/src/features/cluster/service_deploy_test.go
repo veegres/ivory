@@ -42,3 +42,29 @@ func TestService_normalizeDockerOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestService_getInterpolatedStringDeployKeys(t *testing.T) {
+	s := &Service{}
+
+	values := map[string]string{
+		"cluster":    "main",
+		"dcs":        "etcd1:2379",
+		"host":       "db1",
+		"sshPort":    "22",
+		"keeperPort": "8008",
+		"dbPort":     "5432",
+		"dbUser":     "postgres",
+		"dbPass":     "secret",
+		"sshUser":    "root",
+		"sshPass":    "root-secret",
+	}
+
+	got := s.getInterpolatedString(
+		"{{cluster}} {{dcs}} {{host}} {{sshPort}} {{keeperPort}} {{dbPort}} {{dbUser}} {{dbPass}} {{sshUser}} {{sshPass}}",
+		values,
+	)
+	want := "main etcd1:2379 db1 22 8008 5432 postgres secret root root-secret"
+	if got != want {
+		t.Errorf("getInterpolatedString() = %q, want %q", got, want)
+	}
+}

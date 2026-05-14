@@ -15,22 +15,28 @@ import (
 
 func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	// 1. Validation & Preparation
-	if r.Cluster.Name == "" {
+	cluster := Request{
+		Name:    r.CommonConfig.Cluster,
+		Nodes:   r.NodeConfig,
+		Options: r.ClusterOptions,
+	}
+
+	if cluster.Name == "" {
 		return nil, errors.New("cluster name not provided")
 	}
-	if len(r.Cluster.Nodes) == 0 {
+	if len(cluster.Nodes) == 0 {
 		return nil, errors.New("cluster nodes not provided")
 	}
-	if r.Image.Uri == "" {
+	if r.Uri == "" {
 		return nil, errors.New("cluster image not provided")
 	}
-	if r.Cluster.Vaults.SshKeyId == nil && (r.Cred.Ssh.Username == "" || r.Cred.Ssh.Password == "") {
+	if cluster.Vaults.SshKeyId == nil && (r.CommonConfig.SshUser == "" || r.CommonConfig.SshPass == "") {
 		return nil, errors.New("ssh credentials are required")
 	}
-	if r.Cluster.Vaults.DatabaseId == nil && (r.Cred.Db.Username == "" || r.Cred.Db.Password == "") {
+	if cluster.Vaults.DatabaseId == nil && (r.CommonConfig.DbUser == "" || r.CommonConfig.DbPass == "") {
 		return nil, errors.New("database credentials are required")
 	}
-	if _, e := s.Get(r.Cluster.Name); !errors.Is(e, db.ErrNotFound) {
+	if _, e := s.Get(cluster.Name); !errors.Is(e, db.ErrNotFound) {
 		return nil, errors.New("cluster name is already taken")
 	}
 
@@ -45,14 +51,14 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	// 2. Handle SSH Key
 	var sshPubKey string
 	var needSshCopy bool
-	if r.Cluster.Vaults.SshKeyId == nil {
+	if cluster.Vaults.SshKeyId == nil {
 		appendLog("system", "generating ssh key and saving it to vault")
-		sshVault := vault.Vault{Type: vault.SSH_KEY, Username: r.Cred.Ssh.Username}
+		sshVault := vault.Vault{Type: vault.SSH_KEY, Username: r.CommonConfig.SshUser}
 		id, v, err := s.vaultService.Create(sshVault)
 		if err != nil {
 			return nil, err
 		}
-		r.Cluster.Vaults.SshKeyId = id
+		cluster.Vaults.SshKeyId = id
 		if v.Metadata == nil {
 			return nil, errors.New("ssh key from vault is missing metadata (public key)")
 		}
@@ -60,7 +66,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		needSshCopy = true
 	} else {
 		appendLog("system", "using ssh key from vault")
-		v, err := s.vaultService.Get(*r.Cluster.Vaults.SshKeyId)
+		v, err := s.vaultService.Get(*cluster.Vaults.SshKeyId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get ssh key from vault: %w", err)
 		}
@@ -72,34 +78,34 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 
 	// 3. Handle DB Password
-	if r.Cluster.Vaults.DatabaseId == nil {
+	if cluster.Vaults.DatabaseId == nil {
 		appendLog("system", "saving database credentials to vault")
-		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: r.Cred.Db.Username, Secret: r.Cred.Db.Password}
+		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: r.CommonConfig.DbUser, Secret: r.CommonConfig.DbPass}
 		id, _, err := s.vaultService.Create(dbVault)
 		if err != nil {
 			return nil, err
 		}
-		r.Cluster.Vaults.DatabaseId = id
+		cluster.Vaults.DatabaseId = id
 	} else {
 		appendLog("system", "using database credentials from vault")
-		v, err := s.vaultService.GetDecrypted(*r.Cluster.Vaults.DatabaseId)
+		v, err := s.vaultService.GetDecrypted(*cluster.Vaults.DatabaseId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get database credentials from vault: %w", err)
 		}
-		r.Cred.Db.Username = v.Username
-		r.Cred.Db.Password = v.Secret
+		r.CommonConfig.DbUser = v.Username
+		r.CommonConfig.DbPass = v.Secret
 	}
 
 	// 4. Update Cluster
 	appendLog("system", "updating cluster configuration")
-	_, err := s.Update(r.Cluster)
+	_, err := s.Update(cluster)
 	if err != nil {
 		return nil, err
 	}
 
 	// 5. Deploy Docker containers
 	var wg sync.WaitGroup
-	for _, n := range r.Cluster.Nodes {
+	for _, n := range cluster.Nodes {
 		wg.Add(1)
 		go func(n NodeConfig) {
 			defer wg.Done()
@@ -119,8 +125,8 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				conn := node.SshCredConnection{
 					Host:     n.Host,
 					Port:     *n.SshPort,
-					Username: r.Cred.Ssh.Username,
-					Password: r.Cred.Ssh.Password,
+					Username: r.CommonConfig.SshUser,
+					Password: r.CommonConfig.SshPass,
 				}
 				err := s.nodeService.SshCopyId(conn, sshPubKey)
 				if err != nil {
@@ -130,17 +136,24 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 			}
 
 			// Interpolate options
-			template, ok := r.Image.Options[nodeKey]
+			template, ok := r.NodeRawOptions[nodeKey]
 			if !ok {
 				appendLog(nodeKey, "no options provided for node")
 				return
 			}
 
 			values := map[string]string{
-				"cluster":  r.Cluster.Name,
-				"node":     n.Host,
-				"username": r.Cred.Db.Username,
-				"password": r.Cred.Db.Password,
+				"cluster": cluster.Name,
+				"dcs":     r.CommonConfig.Dcs,
+				"host":    n.Host,
+				"node":    n.Host,
+				"dbUser":  r.CommonConfig.DbUser,
+				"dbPass":  r.CommonConfig.DbPass,
+				"sshUser": r.CommonConfig.SshUser,
+				"sshPass": r.CommonConfig.SshPass,
+			}
+			if n.SshPort != nil {
+				values["sshPort"] = strconv.Itoa(*n.SshPort)
 			}
 			if n.KeeperPort != nil {
 				values["keeperPort"] = strconv.Itoa(*n.KeeperPort)
@@ -157,9 +170,9 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				Connection: node.SshVaultConnection{
 					Host:    n.Host,
 					Port:    *n.SshPort,
-					VaultId: r.Cluster.Vaults.SshKeyId,
+					VaultId: cluster.Vaults.SshKeyId,
 				},
-				Image:   r.Image.Uri,
+				Image:   r.Uri,
 				Options: options,
 			}
 
@@ -170,7 +183,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 			} else if resp.ExitCode != 0 {
 				appendLog(nodeKey, resp.Stderr)
 			} else {
-				appendLog(nodeKey, "OK")
+				appendLog(nodeKey, "deployed")
 			}
 		}(n)
 	}

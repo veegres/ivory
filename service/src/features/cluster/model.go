@@ -73,25 +73,21 @@ type CreateAutoRequest struct {
 	Options
 }
 
-type DeployImage struct {
-	Uri     string            `json:"uri"`
-	Options map[string]string `json:"options"`
-}
-
-type Credential struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type Credentials struct {
-	Ssh Credential `json:"ssh"`
-	Db  Credential `json:"db"`
+type ImageConfig struct {
+	Cluster string `json:"cluster"`
+	Dcs     string `json:"dcs"`
+	DbPass  string `json:"dbPass"`
+	DbUser  string `json:"dbUser"`
+	SshPass string `json:"sshPass"`
+	SshUser string `json:"sshUser"`
 }
 
 type DeployRequest struct {
-	Cluster Request     `json:"cluster"`
-	Cred    Credentials `json:"cred"`
-	Image   DeployImage `json:"image"`
+	Uri            string            `json:"uri"`
+	NodeRawOptions map[string]string `json:"nodeRawOptions"`
+	NodeConfig     []NodeConfig      `json:"nodeConfig"`
+	CommonConfig   ImageConfig       `json:"commonConfig"`
+	ClusterOptions Options           `json:"clusterOptions"`
 }
 
 // SPECIFIC (SERVER)
