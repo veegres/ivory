@@ -13,7 +13,7 @@ import {AlertCentered} from "../../../view/box/AlertCentered"
 import {AddIconButton} from "../../../view/button/IconButtons"
 import {TableBody} from "../../../view/table/TableBody"
 import {TableCellLoader} from "../../../view/table/TableCellLoader"
-import {Access} from "../../../widgets/access/Access"
+import {AccessBox} from "../../../widgets/access/Access"
 import {Refresher} from "../../../widgets/refresher/Refresher"
 import {ListDeployCluster} from "./ListDeployCluster"
 import {ListDetectCluster} from "./ListDetectCluster"
@@ -57,14 +57,14 @@ export function ListTable(props: Props) {
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
                             <ListDeployCluster keeper={KeeperPlugin.PATRONI}/>
-                            <ListDetectCluster/>
-                            <Access feature={Feature.ManageClusterUpdate}>
+                            <ListDetectCluster keeper={KeeperPlugin.PATRONI}/>
+                            <AccessBox feature={Feature.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"ADD CLUSTER"}
                                     onClick={() => setShowNewElement(true)}
                                     disabled={showNewElement}
                                 />
-                            </Access>
+                            </AccessBox>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>

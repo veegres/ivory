@@ -26,7 +26,11 @@ const InitialRequest: AutoRequest = {
     host: "", port: 8008,
 }
 
-export function ListDetectCluster() {
+type Props = {
+    keeper: KeeperPlugin,
+}
+
+export function ListDetectCluster(_: Props) {
     const [request, setRequest] = useState(InitialRequest)
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
