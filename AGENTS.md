@@ -21,14 +21,28 @@ Frontend:
 Use `docker/ivory-dev/` for the stack.
 
 ## Architectural Patterns
-- **Vertical Consolidation**: Prefer grouping all management logic for a single entity into one feature. For example, the `node` feature manages both the Host/VM (SSH, Docker, metrics) and the Database/Keeper (HA, config).
+- **Vertical Consolidation**: Prefer grouping all management logic for a single entity into one feature. For example, the `node` feature manages both Platform access (metrics, deployment operations) and the Database/Keeper (HA, config).
 - **Service Splitting**: To keep code manageable, split large services by concern using a `service_<domain>.go` naming convention (e.g., `service_db.go` and `service_host.go`).
 - **Generic Clients**: Centralize transport-level logic in generic clients (like `clients/http` or `clients/ssh`) and keep domain-specific logic in wrappers or consumers.
+- **Platform Integration Boundary**: Keep `plugins/platform` generic. Platform adapters model deployment and troubleshooting primitives for a target platform, not Ivory-specific database behavior. Database-specific interpretation belongs in features such as `features/cluster`.
+
+## Platform Architecture
+- **Platform Package**: `service/src/plugins/platform` is the backend integration point for deployment targets. Existing implementations live under `service/src/plugins/platform/<adapter>/`, for example `onprem/`. Future adapters such as Kubernetes or OpenShift should be added as sibling packages.
+- **Platform vs Transport**: Platform is the product-level abstraction. SSH is only a transport/client detail for the on-prem adapter and credential flow. Keep names like `clients/ssh`, `sshPort`, `SSH_KEY`, and SSH credential UI labels when they describe the actual transport or stored credential type.
+- **On-Prem Adapter**: `platform/onprem` currently implements platform deployment operations by executing Docker commands over SSH. Docker command helpers and tests may still use Docker-specific names internally when they are truly Docker CLI details.
+- **Generic Platform Methods**: Platform adapters expose generic deployment operations: `List`, `Deploy`, `Stop`, `Delete`, and `Logs`, returning `OperationResult`. Do not name these methods after Docker containers, Kubernetes pods, or databases.
+- **OperationResult**: Use `OperationResult` for command/API execution output with `stdout`, `stderr`, and `exitCode`. It is intentionally not called Container, Pod, Workload, or Database because it is only an operation result.
+- **Node Platform Boundary**: The node feature uses prefixed service methods such as `PlatformDeploy`, `PlatformStop`, `PlatformDelete`, `PlatformList`, and `PlatformLogs` to avoid collisions with existing Keeper methods like `List`. Frontend node APIs mirror this as `NodeApi.deployment.*` and `useRouterNodePlatform*`.
+- **Routes and Features**: Platform routes live under `/node/platform/...`, currently `/node/platform/metrics` and `/node/platform/deployment/...`. Permissions use `view.node.platform.*` and `manage.node.platform.*`.
+- **Domain-Specific Logic**: `features/cluster` may keep database-focused names such as `normalizeDatabaseOptions` and cluster `Deploy`, because that feature converts Ivory database cluster configuration into generic platform deployment requests.
+- **Request Naming**: Use neutral platform request/response names at the node/platform boundary, such as `PlatformDeployRequest`, `PlatformLogsRequest`, `PlatformConnection`, and `PlatformResponse`. Request fields like `name` should identify the target deployment generically; adapters map that to a Docker container name, Kubernetes resource name, pod name, etc.
 
 ## Nomenclature
 - **Node**: Refers to a single server entity (Hardware + Software).
 - **Keeper**: Refers to the HA management tool (e.g., Patroni).
 - **VM**: Refers specifically to the virtual machine/host level.
+- **Platform**: Refers to the deployment/troubleshooting target that Ivory integrates with, such as on-prem Docker-over-SSH now and Kubernetes/OpenShift in the future.
+- **Deployment**: Refers to the generic platform-managed thing Ivory deploys, stops, deletes, lists, or reads logs from. Avoid using `Container`, `Pod`, or `Database` for generic platform APIs.
 
 ## Coding & UI Standards
 - **Surgical Renaming**: When asked to rename components or fields, ONLY update the terminology. DO NOT refactor implementation logic, move methods to props, or change the component structure unless explicitly directed.

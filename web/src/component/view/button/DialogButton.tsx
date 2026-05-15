@@ -9,7 +9,7 @@ import {CloseIconButton, IconButton} from "./IconButtons"
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {
-        width: "608px", height: "550px", display: "flex", flexDirection: "column",
+        width: "600px", height: "550px", display: "flex", flexDirection: "column",
         gap: 1, padding: "5px 16px 5px 24px ", overflowY: "scroll",
     },
     title: {

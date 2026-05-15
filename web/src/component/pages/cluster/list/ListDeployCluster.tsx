@@ -142,7 +142,7 @@ export function ListDeployCluster(props: Props) {
                         />
                         <DynamicInputs
                             InputProps={SX.input}
-                            minLength={3}
+                            minLength={4}
                             inputs={nodes}
                             onChange={handleNodesUpdate}
                             editable={true}
