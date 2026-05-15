@@ -5,8 +5,8 @@ import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     wrapper: {
-        borderRadius: "8px", border: "1px solid", borderColor: "divider",
-        "li:not(:last-child)": {borderBottom: "1px solid", borderColor: "divider"}
+        borderRadius: 2, border: 1, borderColor: "divider",
+        "li:not(:last-child)": {borderBottom: 1, borderColor: "divider"}
     },
     container: {display: "flex", flexDirection: "column", gap: 1},
 }

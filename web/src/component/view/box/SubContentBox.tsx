@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../../app/type"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},
-    island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 1},
+    island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 2},
     label: {
         display: "flex", alignItems: "center", cursor: "pointer", userSelect: "none",
         gap: 0.5, padding: "4px 0", "&:hover": {color: "primary.main"},

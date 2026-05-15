@@ -1,5 +1,5 @@
 import {Edit, Preview, RocketLaunch} from "@mui/icons-material"
-import {Box, Button, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
+import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
 import {useRouterClusterDeploy} from "../../../../api/cluster/hook"
@@ -9,9 +9,17 @@ import {Feature} from "../../../../api/feature"
 import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
-import {getInterpolatedImageOptions, getNodeConfigs, InterpolatedOptionsKeys, VaultOptions} from "../../../../app/utils"
+import {
+    DockerImageOptions,
+    getInterpolatedImageOptions,
+    getNodeConfigs,
+    InterpolatedOptionsKeys,
+    VaultOptions,
+} from "../../../../app/utils"
 import scroll from "../../../../style/scroll.module.css"
 import {Code} from "../../../view/box/Code"
+import {List} from "../../../view/box/List"
+import {ListItem} from "../../../view/box/ListItem"
 import {SubContentBox} from "../../../view/box/SubContentBox"
 import {TitledBox} from "../../../view/box/TitledBox"
 import {DialogButton} from "../../../view/button/DialogButton"
@@ -35,42 +43,6 @@ const INITIAL_OPTIONS: ClusterOptions = {
     plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
     tls: {keeper: false, database: false},
 }
-const DEFAULT_IMAGES: {[key in KeeperPlugin]: {uri: string, optionStr: string, defaultValues: {[key: string]: string}}} = {
-    [KeeperPlugin.PATRONI]: {
-        uri: "ghcr.io/zalando/spilo-18:4.1-p2",
-        defaultValues: {username: "postgres"},
-        optionStr: `
-          --name {{host}}
-          --hostname {{host}}
-          --restart unless-stopped
-          -p {{keeperPort}}:{{keeperPort}}
-          -p {{dbPort}}:{{dbPort}}
-          -v /data/postgres:/home/postgres/pgdata
-          -e SCOPE="{{cluster}}"
-          -e PATRONI_NAME="{{host}}"
-          -e ETCD3_HOSTS="{{dcs}}"
-          -e PGPORT={{dbPort}}
-          -e APIPORT={{keeperPort}}
-          -e PGPASSWORD_SUPERUSER="{{password}}"
-          -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
-          -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
-        `.replace(/\s{2,}/g, "\n").trim(),
-    },
-    [KeeperPlugin.POSTGRES]: {
-        uri: "postgres:18",
-        defaultValues: {},
-        optionStr: `
-          --name {{host}}
-          --hostname {{host}}
-          --restart unless-stopped
-          -p {{dbPort}}:{{dbPort}}
-          -v /data/postgres:/var/lib/postgresql/data
-          -e PGPORT="{{dbPort}}"
-          -e POSTGRES_USER="{{username}}"    
-          -e POSTGRES_PASSWORD="{{password}}"
-        `.replace(/\s{2,}/g, "\n").trim(),
-    }
-}
 
 type Props = {
     keeper: KeeperPlugin,
@@ -79,7 +51,7 @@ type Props = {
 export function ListDeployCluster(props: Props) {
     const {keeper} = props
     const [cluster, setCluster] = useState("")
-    const [image, setImage] = useState(DEFAULT_IMAGES[keeper])
+    const [image, setImage] = useState(DockerImageOptions[keeper])
     const [options, setOptions] = useState(INITIAL_OPTIONS)
     const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
     const [nodes, setNodes] = useState<string[]>([])
@@ -89,15 +61,18 @@ export function ListDeployCluster(props: Props) {
     const [dbCred, setDbCred] = useState({username: image.defaultValues["username"] ?? "", password: image.defaultValues["password"] ?? ""})
     const [dcs, setDcs] = useState("")
     const [preview, setPreview] = useState(true)
+    const [dev, setDev] = useState(false)
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
     const {mutate, isPending} = useRouterClusterDeploy(setResponse)
 
+    const imageOptionsStr = useMemo(() => dev ? image.optionDevStr : image.optionStr, [dev, image.optionDevStr, image.optionStr])
     const handleImageUpdate = useCallback(handleCallImageUpdate, [])
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
     const handleEnvUpdates = useCallback(handleCallEnvUpdates, [])
-    const handleNodesUpdate = useCallback(handleCallNodesUpdate, [image.optionStr])
+    const handleSingelHostUpdate = useCallback(handleCallSingelHostUpdate, [])
+    const handleNodesUpdate = useCallback(handleCallNodesUpdate, [imageOptionsStr])
 
     const imageOptionEntries = useMemo(handleMemoImageOptionEntries, [imageOptions])
     const imageInterpolatedOptions = useMemo(
@@ -142,21 +117,39 @@ export function ListDeployCluster(props: Props) {
     function renderMandatoryFields() {
         return (
             <Box sx={SX.subContent} gap={1}>
-                <TextField
-                    fullWidth={true}
-                    size={"small"}
-                    label={"Name"}
-                    value={cluster}
-                    onChange={(e) => setCluster(e.target.value)}
-                />
-                <DynamicInputs
-                    InputProps={SX.input}
-                    minLength={3}
-                    inputs={nodes}
-                    onChange={handleNodesUpdate}
-                    editable={true}
-                    placeholder={"Node "}
-                />
+                <List>
+                    <ListItem
+                        title={"Single-host mode"}
+                        description={`
+                            Services talk via localhost. Nodes filled data will be lost on change.
+                            Designed for development / testing. 
+                        `}
+                        button={<Checkbox
+                            checked={dev}
+                            color={"success"}
+                            onChange={(_, c) => handleSingelHostUpdate(c)}
+                        />}
+                    />
+                </List>
+                <TitledBox title={"Cluster"} island={true}>
+                    <Box sx={SX.subContent} gap={1}>
+                        <TextField
+                            fullWidth={true}
+                            size={"small"}
+                            label={"Name"}
+                            value={cluster}
+                            onChange={(e) => setCluster(e.target.value)}
+                        />
+                        <DynamicInputs
+                            InputProps={SX.input}
+                            minLength={3}
+                            inputs={nodes}
+                            onChange={handleNodesUpdate}
+                            editable={true}
+                            placeholder={"Node "}
+                        />
+                    </Box>
+                </TitledBox>
                 {renderSshInputs()}
                 {renderDbInputs()}
                 {renderImageOptions()}
@@ -341,8 +334,13 @@ export function ListDeployCluster(props: Props) {
         setNodes(nodes)
         setImageOptions(prev => Object.fromEntries(
             nodes.filter(n => !!n)
-                .map(node => prev[node] !== undefined ? [node, prev[node]] : [node, image.optionStr])
+                .map(node => prev[node] !== undefined ? [node, prev[node]] : [node, imageOptionsStr])
         ))
+    }
+
+    function handleCallSingelHostUpdate(checked: boolean) {
+        setNodes([])
+        setDev(checked)
     }
 
     function handleCallImageUpdate(uri: string) {

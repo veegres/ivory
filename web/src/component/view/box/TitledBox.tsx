@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../../app/type"
 const SX: SxPropsMap = {
     title: {fontSize: "15px", fontWeight: 600, color: "text.secondary", fontFamily: "monospace"},
     head: {display: "flex", justifyContent: "space-between", alignItems: "start", gap: 1, padding: "0px 10px 10px"},
-    island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 1},
+    island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 2},
 }
 
 type Props = {
