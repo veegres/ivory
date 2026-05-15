@@ -145,7 +145,7 @@ export function ListDeployCluster(props: Props) {
                 <TextField
                     fullWidth={true}
                     size={"small"}
-                    label={"Cluster Name"}
+                    label={"Name"}
                     value={cluster}
                     onChange={(e) => setCluster(e.target.value)}
                 />

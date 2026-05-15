@@ -46,7 +46,7 @@ export function ListTable(props: Props) {
             <Table size={"small"} sx={SX.table} stickyHeader>
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={SxPropsFormatter.style.paper} width={"220px"}>Cluster Name</TableCell>
+                        <TableCell sx={SxPropsFormatter.style.paper} width={"220px"}>Name</TableCell>
                         <TableCellLoader
                             sx={SxPropsFormatter.style.paper}
                             label={"Nodes"}
