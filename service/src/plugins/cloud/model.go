@@ -1,9 +1,9 @@
-package os
+package cloud
 
 type Plugin string
 
 const (
-	Linux Plugin = "linux"
+	Onprem Plugin = "onprem"
 )
 
 type Metrics struct {
@@ -27,7 +27,7 @@ type NetworkMetrics struct {
 	TransmittedBytes uint64 `json:"transmittedBytes"`
 }
 
-type Docker struct {
+type Container struct {
 	Stdout   string `json:"stdout"`
 	Stderr   string `json:"stderr"`
 	ExitCode int    `json:"exitCode"`

@@ -15,7 +15,7 @@ import {JobStatus} from "../api/bloat/job/type"
 import {CertType, FileUsageType} from "../api/cert/type"
 import {Cluster, InterpolatedOptions, Node, NodeConfig, NodeOverview} from "../api/cluster/type"
 import {Plugin as KeeperPlugin, Role, Status as KeeperStatus} from "../api/keeper/type"
-import {KeeperConnection, KeeperRequest,SshConnection} from "../api/node/type"
+import {CloudConnection, KeeperConnection, KeeperRequest} from "../api/node/type"
 import {Status as PermissionStatus} from "../api/permission/type"
 import {VarietyType} from "../api/query/type"
 import {Connection as QueryConnection} from "../api/query/type"
@@ -91,7 +91,7 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 
-export const DockerImageOptions: {[key in KeeperPlugin]: {uri: string, optionStr: string, optionDevStr: string, defaultValues: {[key: string]: string}}} = {
+export const ContainerImageOptions: {[key in KeeperPlugin]: {uri: string, optionStr: string, optionDevStr: string, defaultValues: {[key: string]: string}}} = {
     [KeeperPlugin.PATRONI]: {
         uri: "ghcr.io/zalando/spilo-18:4.1-p2",
         defaultValues: {username: "postgres"},
@@ -169,7 +169,7 @@ export function getQueryConnection(cluster: Cluster, host: string, port?: number
     return {db, certs, vaultId}
 }
 
-export function getSshConnection(cluster: Cluster, host: string, port?: number): SshConnection | undefined {
+export function getCloudConnection(cluster: Cluster, host: string, port?: number): CloudConnection | undefined {
     const vaultId = cluster.vaults.sshKeyId
     if (!port || !vaultId) return
     return {host, port, vaultId}

@@ -20,12 +20,12 @@ import (
 	"ivory/src/features/tag"
 	"ivory/src/features/tools"
 	"ivory/src/features/vault"
+	"ivory/src/plugins/cloud"
+	"ivory/src/plugins/cloud/onprem"
 	"ivory/src/plugins/database"
 	"ivory/src/plugins/database/postgres"
 	"ivory/src/plugins/keeper"
 	"ivory/src/plugins/keeper/patroni"
-	"ivory/src/plugins/os"
-	"ivory/src/plugins/os/linux"
 	"ivory/src/storage/db"
 	"ivory/src/storage/env"
 	"ivory/src/storage/files"
@@ -81,15 +81,15 @@ func NewContext() *Context {
 	// ADAPTERS
 	patroniAdapter := patroni.NewAdapter(httpClient)
 	postgresAdapter := postgres.NewAdapter()
-	linuxAdapter := linux.NewAdapter(sshClient)
+	onpremAdapter := onprem.NewAdapter(sshClient)
 
 	// REGISTRY (we cannot use Factory pattern in clients package because of cycle dependencies)
 	keeperPlugins := keeper.NewPluginRegistry()
 	keeperPlugins.Register(keeper.PATRONI, patroniAdapter)
 	dbPlugins := database.NewPluginRegistry()
 	dbPlugins.Register(database.POSTGRES, postgresAdapter)
-	osPlugins := os.NewPluginRegistry()
-	osPlugins.Register(os.Linux, linuxAdapter)
+	cloudPlugins := cloud.NewPluginRegistry()
+	cloudPlugins.Register(cloud.Onprem, onpremAdapter)
 
 	// AUTH PROVIDER
 	basicProvider := basic.NewProvider()
@@ -102,7 +102,7 @@ func NewContext() *Context {
 	vaultService := vault.NewService(vaultRepo, sshClient, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
-	nodeService := node.NewService(osPlugins, keeperPlugins, vaultService, certService)
+	nodeService := node.NewService(cloudPlugins, keeperPlugins, vaultService, certService)
 	tagService := tag.NewService(tagRepo)
 	toolsService := tools.NewService(vaultService)
 	queryService := query.NewService(queryRepo, dbPlugins, vaultService, certService, secretService, appEnv.Version.Label)

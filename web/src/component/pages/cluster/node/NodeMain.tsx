@@ -1,6 +1,6 @@
 import {Box, Link} from "@mui/material"
 
-import {NodeTab, NodeTabType, SshConnection} from "../../../../api/node/type"
+import {CloudConnection,NodeTab, NodeTabType} from "../../../../api/node/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../api/query/hook"
 import {Connection as QueryConnection} from "../../../../api/query/type"
 import {SxPropsMap} from "../../../../app/type"
@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
 const Tabs: {[key in NodeTabType]: NodeTab} = {
     [NodeTabType.MONITOR]: {
         label: "Monitor",
-        body: (queryCon?: QueryConnection, sshCon?: SshConnection) => <Monitor queryCon={queryCon} sshCon={sshCon}/>,
+        body: (queryCon?: QueryConnection, cloudCon?: CloudConnection) => <Monitor queryCon={queryCon} cloudCon={cloudCon}/>,
         info: <>
             Here you can check some basic charts about your overall database and each database separately
             by specifying database name in the input near by.
@@ -46,11 +46,11 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
 type Props = {
     tab: NodeTabType,
     queryCon?: QueryConnection,
-    sshCon?: SshConnection,
+    cloudCon?: CloudConnection,
 }
 
 export function NodeMain(props: Props) {
-    const {tab, queryCon, sshCon} = props
+    const {tab, queryCon, cloudCon} = props
     const {dbName, dbSchema} = useStore(s => s.nodeState)
     const {setDbName, setDbSchema} = useStoreAction
 
@@ -64,7 +64,7 @@ export function NodeMain(props: Props) {
     )
 
     function renderBody() {
-        return body(queryCon, sshCon)
+        return body(queryCon, cloudCon)
     }
 
     function renderActions() {

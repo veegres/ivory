@@ -183,15 +183,15 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	dbGroup.POST("/activate", rp.ValidateMethodMiddleware(features.ManageNodeDbActivation), r.PostNodeActivate)
 	dbGroup.POST("/pause", rp.ValidateMethodMiddleware(features.ManageNodeDbActivation), r.PostNodePause)
 
-	sshGroup := group.Group("/ssh")
-	sshGroup.GET("/metrics", rp.ValidateMethodMiddleware(features.ViewNodeSshMetrics), r.GetMetrics)
+	cloudGroup := group.Group("/cloud")
+	cloudGroup.GET("/metrics", rp.ValidateMethodMiddleware(features.ViewNodeCloudMetrics), r.GetMetrics)
 
-	dockerGroup := sshGroup.Group("/docker")
-	dockerGroup.GET("", rp.ValidateMethodMiddleware(features.ViewNodeSshDocker), r.GetDockerList)
-	dockerGroup.GET("/logs", rp.ValidateMethodMiddleware(features.ViewNodeSshDocker), r.GetDockerLogs)
-	dockerGroup.POST("/stop", rp.ValidateMethodMiddleware(features.ManageNodeSshDocker), r.PostDockerStop)
-	dockerGroup.POST("/run", rp.ValidateMethodMiddleware(features.ManageNodeSshDocker), r.PostDockerRun)
-	dockerGroup.POST("/delete", rp.ValidateMethodMiddleware(features.ManageNodeSshDocker), r.PostDockerDelete)
+	containerGroup := cloudGroup.Group("/container")
+	containerGroup.GET("", rp.ValidateMethodMiddleware(features.ViewNodeCloudContainer), r.GetContainerList)
+	containerGroup.GET("/logs", rp.ValidateMethodMiddleware(features.ViewNodeCloudContainer), r.GetContainerLogs)
+	containerGroup.POST("/stop", rp.ValidateMethodMiddleware(features.ManageNodeCloudContainer), r.PostContainerStop)
+	containerGroup.POST("/run", rp.ValidateMethodMiddleware(features.ManageNodeCloudContainer), r.PostContainerRun)
+	containerGroup.POST("/delete", rp.ValidateMethodMiddleware(features.ManageNodeCloudContainer), r.PostContainerDelete)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {

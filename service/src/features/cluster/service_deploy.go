@@ -103,7 +103,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		return nil, err
 	}
 
-	// 5. Deploy Docker containers
+	// 5. Deploy Container containers
 	var wg sync.WaitGroup
 	for _, n := range cluster.Nodes {
 		wg.Add(1)
@@ -122,13 +122,13 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 
 			if needSshCopy {
 				appendLog(nodeKey, "saving ssh key to vm")
-				conn := node.SshCredConnection{
+				conn := node.CloudCredConnection{
 					Host:     n.Host,
 					Port:     *n.SshPort,
 					Username: r.CommonConfig.SshUser,
 					Password: r.CommonConfig.SshPass,
 				}
-				err := s.nodeService.SshCopyId(conn, sshPubKey)
+				err := s.nodeService.CloudCopyId(conn, sshPubKey)
 				if err != nil {
 					appendLog(nodeKey, fmt.Sprintf("failed to copy ssh key: %v", err))
 					return
@@ -162,12 +162,12 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				values["dbPort"] = strconv.Itoa(*n.DbPort)
 			}
 
-			options := s.normalizeDockerOptions(s.getInterpolatedString(template, values))
+			options := s.normalizeContainerOptions(s.getInterpolatedString(template, values))
 
 			appendLog(nodeKey, fmt.Sprintf("deploying with options: %s", options))
 
-			dockerReq := node.DockerRequest{
-				Connection: node.SshVaultConnection{
+			containerReq := node.ContainerRequest{
+				Connection: node.CloudVaultConnection{
 					Host:    n.Host,
 					Port:    *n.SshPort,
 					VaultId: cluster.Vaults.SshKeyId,
@@ -176,7 +176,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				Options: options,
 			}
 
-			resp, err := s.nodeService.DockerRun(dockerReq)
+			resp, err := s.nodeService.ContainerRun(containerReq)
 
 			if err != nil {
 				appendLog(nodeKey, fmt.Sprintf("%v", err))
@@ -192,7 +192,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	return logs, nil
 }
 
-func (s *Service) normalizeDockerOptions(options string) string {
+func (s *Service) normalizeContainerOptions(options string) string {
 	return strings.Join(strings.Fields(options), " ")
 }
 

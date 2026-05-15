@@ -1,4 +1,4 @@
-package os
+package cloud
 
 import (
 	"errors"
@@ -11,17 +11,21 @@ var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 var ErrClientNotImplemented = errors.New("client is not implemented")
 
 type Adapter interface {
-	Metrics(connection ssh.Connection) (*Metrics, error)
-	SshCopyId(connection ssh.Connection, publicKey string) error
-	DockerManager
+	CloudManager
+	ContainerManager
 }
 
-type DockerManager interface {
-	DockerList(connection ssh.Connection) (*Docker, error)
-	DockerRun(connection ssh.Connection, options, image string) (*Docker, error)
-	DockerStop(connection ssh.Connection, container string) (*Docker, error)
-	DockerDelete(connection ssh.Connection, container string) (*Docker, error)
-	DockerLogs(connection ssh.Connection, container string, tail int) (*Docker, error)
+type CloudManager interface {
+	Metrics(connection ssh.Connection) (*Metrics, error)
+	CopyId(connection ssh.Connection, publicKey string) error
+}
+
+type ContainerManager interface {
+	ContainerList(connection ssh.Connection) (*Container, error)
+	ContainerRun(connection ssh.Connection, options, image string) (*Container, error)
+	ContainerStop(connection ssh.Connection, container string) (*Container, error)
+	ContainerDelete(connection ssh.Connection, container string) (*Container, error)
+	ContainerLogs(connection ssh.Connection, container string, tail int) (*Container, error)
 }
 
 type PluginRegistry struct {

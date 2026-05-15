@@ -1,6 +1,6 @@
 import {api} from "../api"
 import {R} from "../management/type"
-import {DockerLogsRequest, DockerRequest, KeeperRequest, MetricsResponse, SshConnection} from "./type"
+import {CloudConnection,ContainerLogsRequest, ContainerRequest, KeeperRequest, MetricsResponse} from "./type"
 
 
 export const NodeApi = {
@@ -65,39 +65,39 @@ export const NodeApi = {
             .then((response) => response.data.response),
     },
     metrics: {
-        key: (host: string) => ["node", "ssh", "metrics", host],
-        fn: (request: SshConnection) => api.get<R<MetricsResponse>>("/node/ssh/metrics", {params: {request: JSON.stringify(request)}})
+        key: (host: string) => ["node", "cloud", "metrics", host],
+        fn: (request: CloudConnection) => api.get<R<MetricsResponse>>("/node/cloud/metrics", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
-    docker: {
+    container: {
         list: {
-            key: (host: string) => ["node", "ssh", "docker", "list", host],
-            fn: (request: SshConnection) => api.get<R<any>>("/node/ssh/docker", {params: {request: JSON.stringify(request)}})
+            key: (host: string) => ["node", "cloud", "container", "list", host],
+            fn: (request: CloudConnection) => api.get<R<any>>("/node/cloud/container", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         logs: {
-            key: (host: string, container: string) => ["node", "ssh", "docker", "logs", host, container],
-            fn: (request: DockerLogsRequest) => api.get<R<any>>("/node/ssh/docker/logs", {params: {request: JSON.stringify(request)}})
+            key: (host: string, container: string) => ["node", "cloud", "container", "logs", host, container],
+            fn: (request: ContainerLogsRequest) => api.get<R<any>>("/node/cloud/container/logs", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         deploy: {
-            key: () => ["node", "ssh", "docker", "deploy"],
-            fn: (request: DockerRequest) => api.post<R<any>>("/node/ssh/docker/deploy", request)
+            key: () => ["node", "cloud", "container", "deploy"],
+            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/deploy", request)
                 .then((response) => response.data.response),
         },
         stop: {
-            key: () => ["node", "ssh", "docker", "stop"],
-            fn: (request: DockerRequest) => api.post<R<any>>("/node/ssh/docker/stop", request)
+            key: () => ["node", "cloud", "container", "stop"],
+            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/stop", request)
                 .then((response) => response.data.response),
         },
         run: {
-            key: () => ["node", "ssh", "docker", "run"],
-            fn: (request: DockerRequest) => api.post<R<any>>("/node/ssh/docker/run", request)
+            key: () => ["node", "cloud", "container", "run"],
+            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/run", request)
                 .then((response) => response.data.response),
         },
         delete: {
-            key: () => ["node", "ssh", "docker", "delete"],
-            fn: (request: DockerRequest) => api.post<R<any>>("/node/ssh/docker/delete", request)
+            key: () => ["node", "cloud", "container", "delete"],
+            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/delete", request)
                 .then((response) => response.data.response),
         }
     }

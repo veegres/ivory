@@ -21,7 +21,7 @@ export interface Metrics {
     network: NetworkMetrics,
 }
 
-export interface Docker {
+export interface Container {
     stdout: string,
     stderr: string,
     exitCode: number,

@@ -1,9 +1,9 @@
-package linux
+package onprem
 
 import (
 	"errors"
 	"ivory/src/clients/ssh"
-	"ivory/src/plugins/os"
+	"ivory/src/plugins/cloud"
 	"testing"
 )
 
@@ -80,7 +80,7 @@ __IVORY_NET__
 eth0: 1 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0
 `
 		_, err := adapter.parseMetrics(output)
-		if !errors.Is(err, os.ErrInvalidCpuMetrics) {
+		if !errors.Is(err, cloud.ErrInvalidCpuMetrics) {
 			t.Errorf("expected ErrInvalidCpuMetrics, got %v", err)
 		}
 	})
@@ -94,7 +94,7 @@ __IVORY_NET__
 eth0: 1 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0
 `
 		_, err := adapter.parseMetrics(output)
-		if !errors.Is(err, os.ErrInvalidMemoryMetrics) {
+		if !errors.Is(err, cloud.ErrInvalidMemoryMetrics) {
 			t.Errorf("expected ErrInvalidMemoryMetrics, got %v", err)
 		}
 	})
@@ -109,7 +109,7 @@ __IVORY_NET__
 eth0: 1 2 3 4 5 6 7 8 9
 `
 		_, err := adapter.parseMetrics(output)
-		if !errors.Is(err, os.ErrInvalidNetworkMetrics) {
+		if !errors.Is(err, cloud.ErrInvalidNetworkMetrics) {
 			t.Errorf("expected ErrInvalidNetworkMetrics, got %v", err)
 		}
 	})

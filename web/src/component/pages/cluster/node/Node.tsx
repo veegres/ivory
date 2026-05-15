@@ -2,7 +2,7 @@ import {Box, Divider} from "@mui/material"
 
 import {useRouterClusterOverview} from "../../../../api/cluster/hook"
 import {SxPropsMap} from "../../../../app/type"
-import {getQueryConnection, getSshConnection} from "../../../../app/utils"
+import {getCloudConnection, getQueryConnection} from "../../../../app/utils"
 import {useStore, useStoreAction} from "../../../../provider/StoreProvider"
 import {AlertCentered} from "../../../view/box/AlertCentered"
 import {PageMainBox} from "../../../view/box/PageMainBox"
@@ -37,14 +37,14 @@ export function Node() {
         const {host, dbPort, sshPort, keeperPort} = activeNode.config
         if (!dbPort && !keeperPort && !sshPort) return <AlertCentered text={"Specify at least one port to work with Node"} severity={"warning"}/>
 
-        const sshCon = getSshConnection(activeCluster, host, sshPort)
+        const cloudCon = getCloudConnection(activeCluster, host, sshPort)
         const queryCon = getQueryConnection(activeCluster, host, dbPort)
 
         return (
             <Box sx={SX.content}>
                 <NodeInfo node={activeNode} queryCon={queryCon} tab={node.nodeTab} onTab={setNodeBody}/>
                 <Divider orientation={"vertical"} flexItem/>
-                <NodeMain sshCon={sshCon} queryCon={queryCon} tab={node.nodeTab}/>
+                <NodeMain cloudCon={cloudCon} queryCon={queryCon} tab={node.nodeTab}/>
             </Box>
         )
     }

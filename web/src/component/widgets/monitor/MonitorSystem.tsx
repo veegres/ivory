@@ -1,12 +1,12 @@
 import {useRouterNodeMetrics} from "../../../api/node/hook"
-import {MetricsResponse as NodeMetrics, SshConnection} from "../../../api/node/type"
+import {CloudConnection,MetricsResponse as NodeMetrics} from "../../../api/node/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../view/chart/HistoryTrackerChart"
 import {MonitorLoading} from "./MonitorLoading"
 import {MonitorRow} from "./MonitorRow"
 
 type Props = {
-    connection: SshConnection,
+    connection: CloudConnection,
     interval?: number,
 }
 

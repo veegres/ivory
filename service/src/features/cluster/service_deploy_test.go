@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestService_normalizeDockerOptions(t *testing.T) {
+func TestService_normalizeContainerOptions(t *testing.T) {
 	s := &Service{}
 	tests := []struct {
 		name     string
@@ -35,9 +35,9 @@ func TestService_normalizeDockerOptions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := s.normalizeDockerOptions(tt.input)
+			got := s.normalizeContainerOptions(tt.input)
 			if got != tt.expected {
-				t.Errorf("normalizeDockerOptions() = %q, want %q", got, tt.expected)
+				t.Errorf("normalizeContainerOptions() = %q, want %q", got, tt.expected)
 			}
 		})
 	}

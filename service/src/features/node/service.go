@@ -8,14 +8,14 @@ import (
 	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/vault"
+	"ivory/src/plugins/cloud"
 	"ivory/src/plugins/keeper"
-	"ivory/src/plugins/os"
 )
 
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
-	osRegistry     *os.PluginRegistry
+	cloudRegistry  *cloud.PluginRegistry
 	keeperRegistry *keeper.PluginRegistry
 	vaultService   *vault.Service
 	certService    *cert.Service
@@ -24,13 +24,13 @@ type Service struct {
 }
 
 func NewService(
-	osRegistry *os.PluginRegistry,
+	cloudRegistry *cloud.PluginRegistry,
 	keeperRegistry *keeper.PluginRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *Service {
 	return &Service{
-		osRegistry:     osRegistry,
+		cloudRegistry:  cloudRegistry,
 		keeperRegistry: keeperRegistry,
 		vaultService:   vaultService,
 		certService:    certService,
@@ -47,16 +47,16 @@ func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
 	return c.SupportedFeatures()
 }
 
-func (s *Service) getOSAdapter(c SshVaultConnection) (os.Adapter, *ssh.Connection, error) {
-	adapter, err := s.osRegistry.Get(os.Linux)
+func (s *Service) getCloudAdapter(c CloudVaultConnection) (cloud.Adapter, *ssh.Connection, error) {
+	adapter, err := s.cloudRegistry.Get(cloud.Onprem)
 	if err != nil {
 		return nil, nil, err
 	}
-	sshConn, err := s.getSshVaultConnection(c)
+	cloudConn, err := s.getCloudVaultConnection(c)
 	if err != nil {
 		return nil, nil, err
 	}
-	return adapter, sshConn, err
+	return adapter, cloudConn, err
 }
 
 func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config, *keeper.Credentials, error) {
@@ -82,7 +82,7 @@ func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config
 	return adapter, tlsConfig, cred, nil
 }
 
-func (s *Service) getSshVaultConnection(c SshVaultConnection) (*ssh.Connection, error) {
+func (s *Service) getCloudVaultConnection(c CloudVaultConnection) (*ssh.Connection, error) {
 	if c.VaultId == nil {
 		return nil, ErrSshKeyNotSpecified
 	}
@@ -99,7 +99,7 @@ func (s *Service) getSshVaultConnection(c SshVaultConnection) (*ssh.Connection, 
 	}, nil
 }
 
-func (s *Service) getSshCredConnection(c SshCredConnection) *ssh.Connection {
+func (s *Service) getCloudCredConnection(c CloudCredConnection) *ssh.Connection {
 	return &ssh.Connection{
 		Host:     c.Host,
 		Port:     c.Port,

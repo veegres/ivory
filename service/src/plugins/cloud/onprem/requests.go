@@ -1,4 +1,4 @@
-package linux
+package onprem
 
 const MetricsCommand = `sh -c '
 echo __IVORY_CPU__; head -n 1 /proc/stat;
