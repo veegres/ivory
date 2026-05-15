@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {CloudConnection} from "../../../api/node/type"
+import {PlatformConnection} from "../../../api/node/type"
 import {ChartType, Connection as QueryConnection} from "../../../api/query/type"
 import {SxPropsMap} from "../../../app/type"
 import {ErrorSshMissing} from "../../view/box/ErrorManual"
@@ -21,23 +21,23 @@ const Charts = {
 
 type Props = {
     queryCon?: QueryConnection,
-    cloudCon?: CloudConnection,
+    platformCon?: PlatformConnection,
 }
 
 export function Monitor(props: Props) {
-    const {queryCon, cloudCon} = props
+    const {queryCon, platformCon} = props
 
     return (
         <Box sx={SX.box}>
-            {renderCloudInfo()}
+            {renderPlatformInfo()}
             {renderDbInfo()}
         </Box>
     )
 
-    function renderCloudInfo() {
-        if (!cloudCon) return <ErrorSshMissing/>
+    function renderPlatformInfo() {
+        if (!platformCon) return <ErrorSshMissing/>
         return (
-            <MonitorSystem connection={cloudCon}/>
+            <MonitorSystem connection={platformCon}/>
         )
     }
 

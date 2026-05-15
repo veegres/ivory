@@ -8,32 +8,32 @@ import (
 	"ivory/src/features"
 	"ivory/src/features/cert"
 	"ivory/src/features/vault"
-	"ivory/src/plugins/cloud"
 	"ivory/src/plugins/keeper"
+	"ivory/src/plugins/platform"
 )
 
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
-	cloudRegistry  *cloud.PluginRegistry
-	keeperRegistry *keeper.PluginRegistry
-	vaultService   *vault.Service
-	certService    *cert.Service
+	platformRegistry *platform.PluginRegistry
+	keeperRegistry   *keeper.PluginRegistry
+	vaultService     *vault.Service
+	certService      *cert.Service
 
 	dbFeatures map[features.Feature]bool
 }
 
 func NewService(
-	cloudRegistry *cloud.PluginRegistry,
+	platformRegistry *platform.PluginRegistry,
 	keeperRegistry *keeper.PluginRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 ) *Service {
 	return &Service{
-		cloudRegistry:  cloudRegistry,
-		keeperRegistry: keeperRegistry,
-		vaultService:   vaultService,
-		certService:    certService,
+		platformRegistry: platformRegistry,
+		keeperRegistry:   keeperRegistry,
+		vaultService:     vaultService,
+		certService:      certService,
 
 		dbFeatures: make(map[features.Feature]bool),
 	}
@@ -47,16 +47,16 @@ func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
 	return c.SupportedFeatures()
 }
 
-func (s *Service) getCloudAdapter(c CloudVaultConnection) (cloud.Adapter, *ssh.Connection, error) {
-	adapter, err := s.cloudRegistry.Get(cloud.Onprem)
+func (s *Service) getPlatformAdapter(c PlatformVaultConnection) (platform.Adapter, *ssh.Connection, error) {
+	adapter, err := s.platformRegistry.Get(platform.Onprem)
 	if err != nil {
 		return nil, nil, err
 	}
-	cloudConn, err := s.getCloudVaultConnection(c)
+	platformConn, err := s.getPlatformVaultConnection(c)
 	if err != nil {
 		return nil, nil, err
 	}
-	return adapter, cloudConn, err
+	return adapter, platformConn, err
 }
 
 func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config, *keeper.Credentials, error) {
@@ -82,7 +82,7 @@ func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config
 	return adapter, tlsConfig, cred, nil
 }
 
-func (s *Service) getCloudVaultConnection(c CloudVaultConnection) (*ssh.Connection, error) {
+func (s *Service) getPlatformVaultConnection(c PlatformVaultConnection) (*ssh.Connection, error) {
 	if c.VaultId == nil {
 		return nil, ErrSshKeyNotSpecified
 	}
@@ -99,7 +99,7 @@ func (s *Service) getCloudVaultConnection(c CloudVaultConnection) (*ssh.Connecti
 	}, nil
 }
 
-func (s *Service) getCloudCredConnection(c CloudCredConnection) *ssh.Connection {
+func (s *Service) getPlatformCredConnection(c PlatformCredConnection) *ssh.Connection {
 	return &ssh.Connection{
 		Host:     c.Host,
 		Port:     c.Port,

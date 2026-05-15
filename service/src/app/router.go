@@ -183,15 +183,15 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	dbGroup.POST("/activate", rp.ValidateMethodMiddleware(features.ManageNodeDbActivation), r.PostNodeActivate)
 	dbGroup.POST("/pause", rp.ValidateMethodMiddleware(features.ManageNodeDbActivation), r.PostNodePause)
 
-	cloudGroup := group.Group("/cloud")
-	cloudGroup.GET("/metrics", rp.ValidateMethodMiddleware(features.ViewNodeCloudMetrics), r.GetMetrics)
+	platformGroup := group.Group("/platform")
+	platformGroup.GET("/metrics", rp.ValidateMethodMiddleware(features.ViewNodePlatformMetrics), r.GetMetrics)
 
-	containerGroup := cloudGroup.Group("/container")
-	containerGroup.GET("", rp.ValidateMethodMiddleware(features.ViewNodeCloudContainer), r.GetContainerList)
-	containerGroup.GET("/logs", rp.ValidateMethodMiddleware(features.ViewNodeCloudContainer), r.GetContainerLogs)
-	containerGroup.POST("/stop", rp.ValidateMethodMiddleware(features.ManageNodeCloudContainer), r.PostContainerStop)
-	containerGroup.POST("/run", rp.ValidateMethodMiddleware(features.ManageNodeCloudContainer), r.PostContainerRun)
-	containerGroup.POST("/delete", rp.ValidateMethodMiddleware(features.ManageNodeCloudContainer), r.PostContainerDelete)
+	deploymentGroup := platformGroup.Group("/deployment")
+	deploymentGroup.GET("", rp.ValidateMethodMiddleware(features.ViewNodePlatformDeployment), r.GetPlatformList)
+	deploymentGroup.GET("/logs", rp.ValidateMethodMiddleware(features.ViewNodePlatformDeployment), r.GetPlatformLogs)
+	deploymentGroup.POST("/stop", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.PostPlatformStop)
+	deploymentGroup.POST("/deploy", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.PostPlatformDeploy)
+	deploymentGroup.POST("/delete", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.PostPlatformDelete)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
@@ -205,7 +205,7 @@ func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
 	executeGroup.POST("/console", rp.ValidateMethodMiddleware(features.ManageQueryDbConsole), r.PostExecuteConsoleQuery)
 	executeGroup.POST("/template", rp.ValidateMethodMiddleware(features.ManageQueryDbTemplate), r.PostExecuteTemplateQuery)
 	executeGroup.POST("/activity", rp.ValidateMethodMiddleware(features.ViewQueryDbInfo), r.PostActivityQuery)
-	executeGroup.POST("/databases", rp.ValidateMethodMiddleware(features.ViewQueryDbInfo), r.PostDatabasesQuery)
+	executeGroup.POST("/deployments", rp.ValidateMethodMiddleware(features.ViewQueryDbInfo), r.PostDatabasesQuery)
 	executeGroup.POST("/schemas", rp.ValidateMethodMiddleware(features.ViewQueryDbInfo), r.PostSchemasQuery)
 	executeGroup.POST("/tables", rp.ValidateMethodMiddleware(features.ViewQueryDbInfo), r.PostTablesQuery)
 	executeGroup.POST("/chart", rp.ValidateMethodMiddleware(features.ViewQueryDbChart), r.PostChartQuery)

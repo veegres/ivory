@@ -3,13 +3,13 @@ package onprem
 import (
 	"fmt"
 	"ivory/src/clients/ssh"
-	"ivory/src/plugins/cloud"
+	"ivory/src/plugins/platform"
 	"strconv"
 	"strings"
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ cloud.Adapter = (*Adapter)(nil)
+var _ platform.Adapter = (*Adapter)(nil)
 
 type Adapter struct {
 	sshClient *ssh.Client
@@ -19,7 +19,7 @@ func NewAdapter(sshClient *ssh.Client) *Adapter {
 	return &Adapter{sshClient}
 }
 
-func (a *Adapter) Metrics(connection ssh.Connection) (*cloud.Metrics, error) {
+func (a *Adapter) Metrics(connection ssh.Connection) (*platform.Metrics, error) {
 	result, err := a.sshClient.Execute(connection, MetricsCommand)
 	if err != nil {
 		return nil, err
@@ -31,37 +31,37 @@ func (a *Adapter) CopyId(connection ssh.Connection, publicKey string) error {
 	return a.sshClient.CopyId(connection, publicKey)
 }
 
-func (a *Adapter) ContainerList(connection ssh.Connection) (*cloud.Container, error) {
+func (a *Adapter) List(connection ssh.Connection) (*platform.OperationResult, error) {
 	return a.executeDocker(connection, "ps -a")
 }
 
-func (a *Adapter) ContainerRun(connection ssh.Connection, options, image string) (*cloud.Container, error) {
+func (a *Adapter) Deploy(connection ssh.Connection, options, image string) (*platform.OperationResult, error) {
 	return a.executeDocker(connection, fmt.Sprintf("run -d %s %s", options, image))
 }
 
-func (a *Adapter) ContainerStop(connection ssh.Connection, container string) (*cloud.Container, error) {
-	return a.executeDocker(connection, "stop "+container)
+func (a *Adapter) Stop(connection ssh.Connection, name string) (*platform.OperationResult, error) {
+	return a.executeDocker(connection, "stop "+name)
 }
 
-func (a *Adapter) ContainerDelete(connection ssh.Connection, container string) (*cloud.Container, error) {
-	return a.executeDocker(connection, "rm "+container)
+func (a *Adapter) Delete(connection ssh.Connection, name string) (*platform.OperationResult, error) {
+	return a.executeDocker(connection, "rm "+name)
 }
 
-func (a *Adapter) ContainerLogs(connection ssh.Connection, container string, tail int) (*cloud.Container, error) {
+func (a *Adapter) Logs(connection ssh.Connection, name string, tail int) (*platform.OperationResult, error) {
 	command := "logs "
 	if tail > 0 {
 		command += "--tail " + strconv.Itoa(tail) + " "
 	}
-	command += container
+	command += name
 	return a.executeDocker(connection, command)
 }
 
-func (a *Adapter) executeDocker(connection ssh.Connection, command string) (*cloud.Container, error) {
+func (a *Adapter) executeDocker(connection ssh.Connection, command string) (*platform.OperationResult, error) {
 	res, err := a.sshClient.Execute(connection, a.normalizeDockerCommand(command))
 	if err != nil {
 		return nil, err
 	}
-	return &cloud.Container{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return &platform.OperationResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
 }
 
 func (a *Adapter) normalizeDockerCommand(command string) string {
@@ -75,7 +75,7 @@ func (a *Adapter) normalizeDockerCommand(command string) string {
 	return "docker " + trimmed
 }
 
-func (a *Adapter) parseMetrics(output string) (*cloud.Metrics, error) {
+func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
 	sections := a.splitMetricsOutput(output)
 
 	for _, key := range []string{"__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__"} {
@@ -97,7 +97,7 @@ func (a *Adapter) parseMetrics(output string) (*cloud.Metrics, error) {
 		return nil, err
 	}
 
-	return &cloud.Metrics{
+	return &platform.Metrics{
 		Cpu:     cpu,
 		Memory:  memory,
 		Network: network,
@@ -124,23 +124,23 @@ func (a *Adapter) splitMetricsOutput(output string) map[string][]string {
 	return sections
 }
 
-func (a *Adapter) parseCpuMetrics(lines []string) (cloud.CpuMetrics, error) {
+func (a *Adapter) parseCpuMetrics(lines []string) (platform.CpuMetrics, error) {
 	if len(lines) == 0 {
-		return cloud.CpuMetrics{}, cloud.ErrInvalidCpuMetrics
+		return platform.CpuMetrics{}, platform.ErrInvalidCpuMetrics
 	}
 
 	total, idle, err := a.parseCpuLine(lines[0])
 	if err != nil {
-		return cloud.CpuMetrics{}, err
+		return platform.CpuMetrics{}, err
 	}
 
-	return cloud.CpuMetrics{TotalTicks: total, IdleTicks: idle}, nil
+	return platform.CpuMetrics{TotalTicks: total, IdleTicks: idle}, nil
 }
 
 func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
 	fields := strings.Fields(line)
 	if len(fields) < 5 || fields[0] != "cpu" {
-		return 0, 0, cloud.ErrInvalidCpuMetrics
+		return 0, 0, platform.ErrInvalidCpuMetrics
 	}
 
 	var total uint64
@@ -167,20 +167,20 @@ func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
 	return total, idle, nil
 }
 
-func (a *Adapter) parseMemoryMetrics(lines []string) (cloud.MemoryMetrics, error) {
+func (a *Adapter) parseMemoryMetrics(lines []string) (platform.MemoryMetrics, error) {
 	if len(lines) < 2 {
-		return cloud.MemoryMetrics{}, cloud.ErrInvalidMemoryMetrics
+		return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 	}
 
 	values := make(map[string]uint64)
 	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) < 2 {
-			return cloud.MemoryMetrics{}, cloud.ErrInvalidMemoryMetrics
+			return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 		}
 		value, err := strconv.ParseUint(fields[1], 10, 64)
 		if err != nil {
-			return cloud.MemoryMetrics{}, err
+			return platform.MemoryMetrics{}, err
 		}
 		values[strings.TrimSuffix(fields[0], ":")] = value * 1024
 	}
@@ -188,16 +188,16 @@ func (a *Adapter) parseMemoryMetrics(lines []string) (cloud.MemoryMetrics, error
 	total := values["MemTotal"]
 	available := values["MemAvailable"]
 	if total == 0 {
-		return cloud.MemoryMetrics{}, cloud.ErrInvalidMemoryMetrics
+		return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 	}
 
-	return cloud.MemoryMetrics{
+	return platform.MemoryMetrics{
 		TotalBytes:     total,
 		AvailableBytes: available,
 	}, nil
 }
 
-func (a *Adapter) parseNetworkMetrics(lines []string) (cloud.NetworkMetrics, error) {
+func (a *Adapter) parseNetworkMetrics(lines []string) (platform.NetworkMetrics, error) {
 	var received uint64
 	var transmitted uint64
 	for _, line := range lines {
@@ -213,23 +213,23 @@ func (a *Adapter) parseNetworkMetrics(lines []string) (cloud.NetworkMetrics, err
 
 		fields := strings.Fields(parts[1])
 		if len(fields) < 16 {
-			return cloud.NetworkMetrics{}, cloud.ErrInvalidNetworkMetrics
+			return platform.NetworkMetrics{}, platform.ErrInvalidNetworkMetrics
 		}
 
 		rx, err := strconv.ParseUint(fields[0], 10, 64)
 		if err != nil {
-			return cloud.NetworkMetrics{}, err
+			return platform.NetworkMetrics{}, err
 		}
 		tx, err := strconv.ParseUint(fields[8], 10, 64)
 		if err != nil {
-			return cloud.NetworkMetrics{}, err
+			return platform.NetworkMetrics{}, err
 		}
 
 		received += rx
 		transmitted += tx
 	}
 
-	return cloud.NetworkMetrics{
+	return platform.NetworkMetrics{
 		ReceivedBytes:    received,
 		TransmittedBytes: transmitted,
 	}, nil

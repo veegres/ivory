@@ -1,4 +1,4 @@
-package cloud
+package platform
 
 type Plugin string
 
@@ -27,7 +27,7 @@ type NetworkMetrics struct {
 	TransmittedBytes uint64 `json:"transmittedBytes"`
 }
 
-type Container struct {
+type OperationResult struct {
 	Stdout   string `json:"stdout"`
 	Stderr   string `json:"stderr"`
 	ExitCode int    `json:"exitCode"`

@@ -10,7 +10,7 @@ import {Plugin as KeeperPlugin} from "../../../../api/keeper/type"
 import {VaultType} from "../../../../api/vault/type"
 import {SxPropsMap} from "../../../../app/type"
 import {
-    ContainerImageOptions,
+    DatabaseImageOptions,
     getInterpolatedImageOptions,
     getNodeConfigs,
     InterpolatedOptionsKeys,
@@ -51,7 +51,7 @@ type Props = {
 export function ListDeployCluster(props: Props) {
     const {keeper} = props
     const [cluster, setCluster] = useState("")
-    const [image, setImage] = useState(ContainerImageOptions[keeper])
+    const [image, setImage] = useState(DatabaseImageOptions[keeper])
     const [options, setOptions] = useState(INITIAL_OPTIONS)
     const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
     const [nodes, setNodes] = useState<string[]>([])
@@ -98,7 +98,7 @@ export function ListDeployCluster(props: Props) {
                 ) : (
                     <Box sx={SX.subContent} gap={1}>
                         {renderMandatoryFields()}
-                        {renderContainerImage()}
+                        {renderDatabaseImage()}
                         {renderClusterOptions()}
                     </Box>
                 )}
@@ -257,9 +257,9 @@ export function ListDeployCluster(props: Props) {
         )
     }
 
-    function renderContainerImage() {
+    function renderDatabaseImage() {
         return (
-            <SubContentBox label={"Container Options"} island={true}>
+            <SubContentBox label={"Database Options"} island={true}>
                 <Box sx={SX.subContent} gap={2}>
                     <Box sx={SX.between}>
                         <TextField

@@ -5,7 +5,7 @@ import {ClusterApi} from "../cluster/router"
 import {NodeConfig} from "../cluster/type"
 import {Plugin} from "../keeper/type"
 import {NodeApi} from "./router"
-import {CloudConnection,ContainerLogsRequest, KeeperRequest} from "./type"
+import {KeeperRequest,PlatformConnection,PlatformLogsRequest} from "./type"
 
 export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) {
     return useQuery({
@@ -107,7 +107,7 @@ export function useRouterNodePause(cluster: string) {
     })
 }
 
-export function useRouterNodeMetrics(c: CloudConnection, refetchInterval?: number) {
+export function useRouterNodeMetrics(c: PlatformConnection, refetchInterval?: number) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.metrics.key(c.host),
@@ -117,48 +117,41 @@ export function useRouterNodeMetrics(c: CloudConnection, refetchInterval?: numbe
     })
 }
 
-export function useRouterNodeContainerList(c: CloudConnection, enabled: boolean) {
+export function useRouterNodePlatformList(c: PlatformConnection, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.container.list.key(c.host),
-        queryFn: () => NodeApi.container.list.fn(c),
+        queryKey: NodeApi.deployment.list.key(c.host),
+        queryFn: () => NodeApi.deployment.list.fn(c),
         enabled,
     })
 }
 
-export function useRouterNodeContainerLogs(request: ContainerLogsRequest, enabled: boolean) {
+export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.container.logs.key(request.connection.host, request.container),
-        queryFn: () => NodeApi.container.logs.fn(request),
+        queryKey: NodeApi.deployment.logs.key(request.connection.host, request.name),
+        queryFn: () => NodeApi.deployment.logs.fn(request),
         enabled,
     })
 }
 
-export function useRouterNodeContainerDeploy() {
+export function useRouterNodePlatformDeploy() {
     return useMutationAdapter({
-        mutationFn: NodeApi.container.deploy.fn,
-        mutationKey: NodeApi.container.deploy.key(),
+        mutationFn: NodeApi.deployment.deploy.fn,
+        mutationKey: NodeApi.deployment.deploy.key(),
     })
 }
 
-export function useRouterNodeContainerStop() {
+export function useRouterNodePlatformStop() {
     return useMutationAdapter({
-        mutationFn: NodeApi.container.stop.fn,
-        mutationKey: NodeApi.container.stop.key(),
+        mutationFn: NodeApi.deployment.stop.fn,
+        mutationKey: NodeApi.deployment.stop.key(),
     })
 }
 
-export function useRouterNodeContainerRun() {
+export function useRouterNodePlatformDelete() {
     return useMutationAdapter({
-        mutationFn: NodeApi.container.run.fn,
-        mutationKey: NodeApi.container.run.key(),
-    })
-}
-
-export function useRouterNodeContainerDelete() {
-    return useMutationAdapter({
-        mutationFn: NodeApi.container.delete.fn,
-        mutationKey: NodeApi.container.delete.key(),
+        mutationFn: NodeApi.deployment.delete.fn,
+        mutationKey: NodeApi.deployment.delete.key(),
     })
 }

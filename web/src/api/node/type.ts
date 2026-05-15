@@ -1,8 +1,8 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
-import {Container, Metrics} from "../cloud/type"
 import {KeeperResponse as BaseKeeperResponse, Plugin as KeeperPlugin, Status as KeeperStatus} from "../keeper/type"
+import {Metrics,OperationResult} from "../platform/type"
 import {Connection as QueryConnection} from "../query/type"
 
 // COMMON (WEB AND SERVER)
@@ -23,7 +23,7 @@ export interface KeeperRequest extends KeeperConnection {
 
 export type KeeperResponse = BaseKeeperResponse
 
-export interface CloudConnection {
+export interface PlatformConnection {
     host: string,
     port: number,
     vaultId: string,
@@ -31,26 +31,26 @@ export interface CloudConnection {
 
 export type MetricsResponse = Metrics
 
-export interface ContainerRequest {
-    connection: CloudConnection,
+export interface PlatformDeployRequest {
+    connection: PlatformConnection,
     image?: string,
-    container?: string,
+    name?: string,
     options?: string,
 }
 
-export interface ContainerLogsRequest {
-    connection: CloudConnection,
-    container: string,
+export interface PlatformLogsRequest {
+    connection: PlatformConnection,
+    name: string,
     tail?: number,
 }
 
-export type ContainerResponse = Container
+export type PlatformResponse = OperationResult
 
 // SPECIFIC (WEB)
 
 export enum NodeTabType {QUERY, MONITOR}
 export interface NodeTab {
     label: string,
-    body: (queryCon?: QueryConnection, cloudCon?: CloudConnection) => ReactNode,
+    body: (queryCon?: QueryConnection, platformCon?: PlatformConnection) => ReactNode,
     info?: ReactNode,
 }

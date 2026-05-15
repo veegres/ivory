@@ -2,8 +2,8 @@ package node
 
 import (
 	"ivory/src/features/cert"
-	"ivory/src/plugins/cloud"
 	"ivory/src/plugins/keeper"
+	"ivory/src/plugins/platform"
 
 	"github.com/google/uuid"
 )
@@ -41,34 +41,34 @@ type KeeperParallelResponse struct {
 	Error      error             `json:"error"`
 }
 
-type CloudVaultConnection struct {
+type PlatformVaultConnection struct {
 	Host    string     `json:"host" form:"host"`
 	Port    int        `json:"port" form:"port"`
 	VaultId *uuid.UUID `json:"vaultId" form:"vaultId"`
 }
 
-type CloudCredConnection struct {
+type PlatformCredConnection struct {
 	Host     string `json:"host" form:"host"`
 	Port     int    `json:"port" form:"port"`
 	Username string `json:"username" form:"username"`
 	Password string `json:"password" form:"password"`
 }
 
-type MetricsResponse = cloud.Metrics
+type MetricsResponse = platform.Metrics
 
-type ContainerRequest struct {
-	Connection CloudVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Image      string               `json:"image" form:"image"`
-	Container  string               `json:"container" form:"container"`
-	Options    string               `json:"options" form:"options"`
+type PlatformDeployRequest struct {
+	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
+	Image      string                  `json:"image" form:"image"`
+	Name       string                  `json:"name" form:"name"`
+	Options    string                  `json:"options" form:"options"`
 }
 
-type ContainerLogsRequest struct {
-	Connection CloudVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Container  string               `json:"container" form:"container" binding:"required"`
-	Tail       int                  `json:"tail" form:"tail"`
+type PlatformLogsRequest struct {
+	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
+	Name       string                  `json:"name" form:"name" binding:"required"`
+	Tail       int                     `json:"tail" form:"tail"`
 }
 
-type ContainerResponse = cloud.Container
+type PlatformResponse = platform.OperationResult
 
 // SPECIFIC (SERVER)

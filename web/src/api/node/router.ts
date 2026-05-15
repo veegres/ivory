@@ -1,6 +1,6 @@
 import {api} from "../api"
 import {R} from "../management/type"
-import {CloudConnection,ContainerLogsRequest, ContainerRequest, KeeperRequest, MetricsResponse} from "./type"
+import {KeeperRequest, MetricsResponse,PlatformConnection,PlatformDeployRequest, PlatformLogsRequest} from "./type"
 
 
 export const NodeApi = {
@@ -65,39 +65,34 @@ export const NodeApi = {
             .then((response) => response.data.response),
     },
     metrics: {
-        key: (host: string) => ["node", "cloud", "metrics", host],
-        fn: (request: CloudConnection) => api.get<R<MetricsResponse>>("/node/cloud/metrics", {params: {request: JSON.stringify(request)}})
+        key: (host: string) => ["node", "platform", "metrics", host],
+        fn: (request: PlatformConnection) => api.get<R<MetricsResponse>>("/node/platform/metrics", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
-    container: {
+    deployment: {
         list: {
-            key: (host: string) => ["node", "cloud", "container", "list", host],
-            fn: (request: CloudConnection) => api.get<R<any>>("/node/cloud/container", {params: {request: JSON.stringify(request)}})
+            key: (host: string) => ["node", "platform", "deployment", "list", host],
+            fn: (request: PlatformConnection) => api.get<R<any>>("/node/platform/deployment", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         logs: {
-            key: (host: string, container: string) => ["node", "cloud", "container", "logs", host, container],
-            fn: (request: ContainerLogsRequest) => api.get<R<any>>("/node/cloud/container/logs", {params: {request: JSON.stringify(request)}})
+            key: (host: string, name: string) => ["node", "platform", "deployment", "logs", host, name],
+            fn: (request: PlatformLogsRequest) => api.get<R<any>>("/node/platform/deployment/logs", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         deploy: {
-            key: () => ["node", "cloud", "container", "deploy"],
-            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/deploy", request)
+            key: () => ["node", "platform", "deployment", "deploy"],
+            fn: (request: PlatformDeployRequest) => api.post<R<any>>("/node/platform/deployment/deploy", request)
                 .then((response) => response.data.response),
         },
         stop: {
-            key: () => ["node", "cloud", "container", "stop"],
-            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/stop", request)
-                .then((response) => response.data.response),
-        },
-        run: {
-            key: () => ["node", "cloud", "container", "run"],
-            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/run", request)
+            key: () => ["node", "platform", "deployment", "stop"],
+            fn: (request: PlatformDeployRequest) => api.post<R<any>>("/node/platform/deployment/stop", request)
                 .then((response) => response.data.response),
         },
         delete: {
-            key: () => ["node", "cloud", "container", "delete"],
-            fn: (request: ContainerRequest) => api.post<R<any>>("/node/cloud/container/delete", request)
+            key: () => ["node", "platform", "deployment", "delete"],
+            fn: (request: PlatformDeployRequest) => api.post<R<any>>("/node/platform/deployment/delete", request)
                 .then((response) => response.data.response),
         }
     }

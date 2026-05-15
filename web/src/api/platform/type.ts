@@ -21,7 +21,7 @@ export interface Metrics {
     network: NetworkMetrics,
 }
 
-export interface Container {
+export interface OperationResult {
     stdout: string,
     stderr: string,
     exitCode: number,

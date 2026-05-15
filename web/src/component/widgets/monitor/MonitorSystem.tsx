@@ -1,12 +1,12 @@
 import {useRouterNodeMetrics} from "../../../api/node/hook"
-import {CloudConnection,MetricsResponse as NodeMetrics} from "../../../api/node/type"
+import {MetricsResponse as NodeMetrics,PlatformConnection} from "../../../api/node/type"
 import {ErrorSmart} from "../../view/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../view/chart/HistoryTrackerChart"
 import {MonitorLoading} from "./MonitorLoading"
 import {MonitorRow} from "./MonitorRow"
 
 type Props = {
-    connection: CloudConnection,
+    connection: PlatformConnection,
     interval?: number,
 }
 
