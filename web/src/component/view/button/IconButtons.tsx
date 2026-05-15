@@ -1,5 +1,5 @@
 import {
-    Add, ArrowBack, AutoFixHigh, AutoMode, Cached, Cancel, CheckCircle, ClearAll,
+    Add, AutoFixHigh, AutoMode, Cached, Cancel, CheckCircle, ClearAll,
     Close, CopyAll, Delete, Edit, Info, ManageSearch, MoreVert, PendingActions,
     PlayArrow, Receipt, Restore,
 } from "@mui/icons-material"
@@ -19,7 +19,7 @@ type ButtonProps = Props & Omit<IconButtonProps, "size" | "children"> & {
 }
 
 export function IconButton(props: ButtonProps) {
-    const {icon, placement, arrow, tooltip, disabled = false, size = 32, loading} = props
+    const {icon, placement, arrow, tooltip, disabled = false, size = 32, loading, ...buttonProps} = props
     // 0.56 is the ratio for size = 32 and fontSize = 18
     const fontSize = Math.floor(size * 0.56)
 
@@ -29,7 +29,7 @@ export function IconButton(props: ButtonProps) {
                 <MuiIconButton
                     sx={{height: `${size}px`, width: `${size}px`}}
                     disabled={loading || disabled}
-                    {...props}
+                    {...buttonProps}
                     size={"small"}
                 >
                     {cloneElement(icon, {sx: {fontSize}})}
@@ -72,10 +72,6 @@ export function RefreshIconButton(props: Props) {
 
 export function AutoRefreshIconButton(props: Props) {
     return <IconButton icon={<AutoMode/>} tooltip={"Auto Detection"} {...props}/>
-}
-
-export function BackIconButton(props: Props) {
-    return <IconButton icon={<ArrowBack/>} tooltip={"Back"} {...props}/>
 }
 
 export function CloseIconButton(props: Props) {

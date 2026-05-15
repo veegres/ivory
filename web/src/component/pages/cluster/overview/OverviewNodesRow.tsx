@@ -79,7 +79,7 @@ export function OverviewNodesRow(props: Props) {
     }
 
     function renderData() {
-        if (role === "unknown") return
+        if (role === "unknown") return <Box/>
         return (
             <HiddenScrolling arrowWidth={"20px"} arrowHeight={"25px"}>
                 <Box sx={SX.data}>
