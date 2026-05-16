@@ -1,0 +1,73 @@
+import {Box} from "@mui/material"
+
+import {Feature} from "../../../../features/feature"
+import {List} from "../../../../shared/component/box/List"
+import {ListButton} from "../../../../shared/component/box/ListButton"
+import {ListItem} from "../../../../shared/component/box/ListItem"
+import {Settings, SxPropsMap} from "../../../../shared/helper/type"
+import {SettingOptions} from "../../../../shared/helper/utils"
+import {Access} from "../../access/Access"
+import {ClearCacheButton} from "../../actions/ClearCacheButton"
+import {EraseButton} from "../../actions/EraseButton"
+import {FreeButton} from "../../actions/FreeButton"
+import {MenuRefetchChanger} from "./MenuRefetchChanger"
+import {MenuThemeChanger} from "./MenuThemeChanger"
+
+const SX: SxPropsMap = {
+    list: {display: "flex", flexDirection: "column", gap: 3},
+}
+
+type Props = {
+    onUpdate: (item: Settings) => void
+}
+
+export function MenuContent(props: Props) {
+    const {onUpdate} = props
+
+    return (
+        <Box sx={SX.list}>
+            <List name={"Appearance"}>
+                <ListItem title={"Theme"} button={<MenuThemeChanger/>}/>
+                <ListItem title={"Refetch on window focus"} button={<MenuRefetchChanger/>}/>
+            </List>
+            <List name={"Privacy and security"}>
+                <Access feature={Feature.ViewVaultList}>{renderButton(Settings.VAULT)}</Access>
+                <Access feature={Feature.ViewCertList}>{renderButton(Settings.CERTIFICATE)}</Access>
+                <Access feature={Feature.ManageManagementSecret}>{renderButton(Settings.SECRET)}</Access>
+                {renderButton(Settings.PERMISSION)}
+            </List>
+            <List name={"Danger Zone"}>
+                <ListItem
+                    title={"Clear cache"}
+                    description={"This clears your local cache. Useful if you experience issues after updates or changes."}
+                    button={<ClearCacheButton />}
+                />
+                <Access feature={Feature.ManageManagementFree}>
+                    <ListItem
+                        title={"Free space"}
+                        description={"If the VM is running out of disk space, this can help free some space."}
+                        button={<FreeButton/>}
+                    />
+                </Access>
+                <Access feature={Feature.ManageManagementErase}>
+                    <ListItem
+                        title={"Erase all data"}
+                        description={"Once you erase all data, there is no going back. Please be certain."}
+                        button={<EraseButton safe={true}/>}
+                    />
+                </Access>
+            </List>
+            <List name={"About"}>
+                <Access feature={Feature.ManageManagementBackup}>{renderButton(Settings.BACKUP)}</Access>
+                {renderButton(Settings.ABOUT)}
+            </List>
+        </Box>
+    )
+
+    function renderButton(setting: Settings) {
+        const {icon, label} = SettingOptions[setting]
+        return (
+            <ListButton label={label} icon={icon} onClick={() => onUpdate(setting)}/>
+        )
+    }
+}

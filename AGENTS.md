@@ -1,24 +1,24 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Ivory is split into a Go backend in `service/` and a Vite/React frontend in `web/`. Backend packages live under `service/src/`, organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `app/` for wiring. Frontend source lives in `web/src/`, with `api/` for client adapters, `component/` for UI, `provider/` and `hook/` for shared state and behavior, and `style/` for CSS modules. Tests live in `service/src/**/_test.go` and `web/test/`. Docs and screenshots are under `doc/`; local Docker setups are under `docker/`.
+Ivory is split into a Go backend in `server/` and a Vite/React frontend in `app/`. Backend packages are organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `core/` for wiring. Frontend source lives in `app/`, with `features/` for domain logic, `core/` for main pages and widgets, `shared/` for shared components, hooks, and providers. Tests live in `server/**/_test.go` and `app/test/`. Docs and screenshots are under `.doc/`; local Docker setups are under `.docker/`.
 
-**Mandatory Check**: When modifying frontend code, always run `cd web && npm run lint` and `cd web && npm run build` to ensure no linting or TypeScript compilation errors were introduced.
+**Mandatory Check**: When modifying frontend code, always run `cd app && npm run lint` and `cd app && npm run build` to ensure no linting or TypeScript compilation errors were introduced.
 
 ## Build, Test, and Development Commands
 Backend:
-- `make -C service build` builds `service/build/ivory`.
-- `make -C service test` runs `go test -C src ./...`.
-- `make -C service start` runs the built backend binary.
+- `make -C server build` builds `server/build/ivory`.
+- `make -C server test` runs `go test ./...`.
+- `make -C server start` runs the built backend binary.
 
 Frontend:
-- `cd web && npm install` installs dependencies.
-- `cd web && npm start` starts the Vite dev server.
-- `cd web && npm run build` runs TypeScript compile plus production build.
-- `cd web && npm run lint` runs ESLint over `src/` and `test/`.
-- `cd web && npm test` starts Vitest; `npm run test:coverage` runs coverage.
+- `cd app && npm install` installs dependencies.
+- `cd app && npm start` starts the Vite dev server.
+- `cd app && npm run build` runs TypeScript compile plus production build.
+- `cd app && npm run lint` runs ESLint over `core/`, `features/`, `shared/` and `test/`.
+- `cd app && npm test` starts Vitest; `npm run test:coverage` runs coverage.
 
-Use `docker/ivory-dev/` for the stack.
+Use `.docker/ivory-dev/` for the stack.
 
 ## Architectural Patterns
 - **Vertical Consolidation**: Prefer grouping all management logic for a single entity into one feature. For example, the `node` feature manages both Platform access (metrics, deployment operations) and the Database/Keeper (HA, config).
@@ -27,7 +27,7 @@ Use `docker/ivory-dev/` for the stack.
 - **Platform Integration Boundary**: Keep `plugins/platform` generic. Platform adapters model deployment and troubleshooting primitives for a target platform, not Ivory-specific database behavior. Database-specific interpretation belongs in features such as `features/cluster`.
 
 ## Platform Architecture
-- **Platform Package**: `service/src/plugins/platform` is the backend integration point for deployment targets. Existing implementations live under `service/src/plugins/platform/<adapter>/`, for example `onprem/`. Future adapters such as Kubernetes or OpenShift should be added as sibling packages.
+- **Platform Package**: `server/plugins/platform` is the backend integration point for deployment targets. Existing implementations live under `server/plugins/platform/<adapter>/`, for example `onprem/`. Future adapters such as Kubernetes or OpenShift should be added as sibling packages.
 - **Platform vs Transport**: Platform is the product-level abstraction. SSH is only a transport/client detail for the on-prem adapter and credential flow. Keep names like `clients/ssh`, `sshPort`, `SSH_KEY`, and SSH credential UI labels when they describe the actual transport or stored credential type.
 - **On-Prem Adapter**: `platform/onprem` currently implements platform deployment operations by executing Docker commands over SSH. Docker command helpers and tests may still use Docker-specific names internally when they are truly Docker CLI details.
 - **Generic Platform Methods**: Platform adapters expose generic deployment operations: `List`, `Deploy`, `Stop`, `Delete`, and `Logs`, returning `OperationResult`. Do not name these methods after Docker containers, Kubernetes pods, or databases.
@@ -69,7 +69,7 @@ Use `docker/ivory-dev/` for the stack.
 ## Testing Guidelines
 - **Zero Deletion Policy**: NEVER delete existing tests during refactoring or type synchronization. If types change, UPDATE the tests to match the new structures. A "refactor" that results in fewer tests is a failure.
 - **Backend Tests**: Backend tests use Go's standard `testing` package with table-driven tests and `t.Run()` subtests. Focus on storage adapters, client mappers, and service logic; avoid thin routers and external network calls.
-- **Frontend Tests**: Frontend tests use Vitest and Testing Library. Mirror `web/src/` inside `web/test/`, for example `web/src/hook/Debounce.ts` -> `web/test/hook/Debounce.test.ts`. No coverage threshold is defined, but new logic should ship with targeted tests.
+- **Frontend Tests**: Frontend tests use Vitest and Testing Library. Tests are colocated with the source files they test, following the pattern `[filename].test.[ext]`. No coverage threshold is defined, but new logic should ship with targeted tests.
 
 ## Commit & Pull Request Guidelines
 Recent commits use short, imperative summaries such as `add tooltips for refresh buttons` and `fix problem with different column widths in list`. Keep commit subjects concise and specific; add a body when the change needs context. Pull requests should describe behavior changes clearly, link relevant issues, and include screenshots or GIFs for UI work. Before opening a PR, run the relevant backend tests, frontend lint, and affected frontend tests.

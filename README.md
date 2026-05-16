@@ -1,5 +1,5 @@
 <div style="text-align: center;" align="center">
-   <img src="web/public/ivory.png" alt="logo" />
+   <img src="app/shared/assets/ivory.png" alt="logo" />
 
    # Ivory
    ### [postgres / patroni cluster management tool]
@@ -18,11 +18,11 @@ But I hope it will help manage and troubleshoot Postgres clusters for both devel
 
 Ivory allows you to use it as a local tool in your personal computer or as a standalone tool
 in a separate virtual machine for collaborative usage and helps you:
-- [keep all of your clusters in one place](doc/clusters.md)
-- [provides UI for all main features of patroni](doc/overview.md)
-- [view and edit cluster config](doc/config.md)
-- [simply execute and save template requests for troubleshooting](doc/instance.md)
-- [check and clean bloat](doc/bloat.md)
+- [keep all of your clusters in one place](.doc/clusters.md)
+- [provides UI for all main features of patroni](.doc/overview.md)
+- [view and edit cluster config](.doc/config.md)
+- [simply execute and save template requests for troubleshooting](.doc/instance.md)
+- [check and clean bloat](.doc/bloat.md)
 
 <div align="center">
   <h2>🌟 Support This Project! 🌟</h2>
@@ -47,7 +47,7 @@ Thank you for being part of this journey! 🚀
 4. Add your first cluster (by providing name and instances)
 5. Start monitoring :)
 
-![Demo](doc/images/demo.gif)
+![Demo](.doc/images/demo.gif)
 
 ## Q&A
 
@@ -105,6 +105,6 @@ If you're interested in contributing to the Ivory project, consider these option
 - [Enhancements](https://github.com/veegres/ivory/issues)
 - [Good for newcomers](https://github.com/veegres/ivory/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 - [Supported versions](SECURITY.md)
-- [Setup Local Environment](docker/ivory-dev/README.md)
-- [Build Frontend](web/README.md)
-- [Build Backend](service/README.md)
+- [Setup Local Environment](.docker/ivory-dev/README.md)
+- [Build Frontend](app/README.md)
+- [Build Backend](server/README.md)

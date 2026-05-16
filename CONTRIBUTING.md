@@ -9,9 +9,9 @@ Here are some important resources:
   * [Enhancements](https://github.com/veegres/ivory/issues)
   * [Good for newcomers](https://github.com/veegres/ivory/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
   * [Supported versions](SECURITY.md)
-  * [Setup Local Environment](docker/ivory-dev/README.md)
-  * [Build Frontend](web/README.md)
-  * [Build Backend](service/README.md)
+  * [Setup Local Environment](.docker/ivory-dev/README.md)
+  * [Build Frontend](app/README.md)
+  * [Build Backend](server/README.md)
 
 ## Testing
 

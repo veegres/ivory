@@ -1,3 +1,7 @@
 /.idea/db-forest-config.xml
-/web/vite.config.mjs
+/app/vite.config.mjs
 /.codex
+/app/node_modules
+/app/build
+/server/build
+/server/data

@@ -21,12 +21,12 @@ ARG IVORY_VERSION_COMMIT=none
 ENV IVORY_VERSION_COMMIT=$IVORY_VERSION_COMMIT
 
 # move build files to container
-COPY web/build /opt/ivory/web
-COPY service/build /opt/ivory/service
+COPY app/build /opt/ivory/web
+COPY server/build /opt/ivory/service
 RUN chmod +x /opt/ivory/service/ivory
 
 # move docker entry file to container
-COPY docker/ivory-prod/entrypoint.sh /usr/local/bin/
+COPY .docker/ivory-prod/entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # set up pgcompacttable

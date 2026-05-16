@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  service:
+  server:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout & fetch repository
@@ -15,19 +15,19 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: '1.26'
-          cache-dependency-path: service
-      - name: Install & Build binary for service
-        working-directory: service
+          cache-dependency-path: server
+      - name: Install & Build binary for server
+        working-directory: server
         run: |
           go version
           make build
       - name: Upload Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: service
-          path: service/build
+          name: server
+          path: server/build
 
-  web:
+  app:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout & fetch repository
@@ -36,8 +36,8 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '25'
-      - name: Install & Build web
-        working-directory: web
+      - name: Install & Build app
+        working-directory: app
         run: |
           node -v
           npm -v
@@ -46,12 +46,12 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: web
-          path: web/build
+          name: app
+          path: app/build
 
   publish:
     runs-on: ubuntu-latest
-    needs: [service, web]
+    needs: [server, app]
     environment: production
     steps:
       - name: Checkout & fetch repository
@@ -59,19 +59,19 @@ jobs:
       - name: Download Service Artifacts
         uses: actions/download-artifact@master
         with:
-          name: service
-          path: service/build
+          name: server
+          path: server/build
       - name: Download Web Artifacts
         uses: actions/download-artifact@master
         with:
-          name: web
-          path: web/build
-      - name: Display structure of service files
+          name: app
+          path: app/build
+      - name: Display structure of server files
         run: ls -l
-        working-directory: service/build
-      - name: Display structure of web files
+        working-directory: server/build
+      - name: Display structure of app files
         run: ls -l
-        working-directory: web/build
+        working-directory: app/build
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx

@@ -1,0 +1,126 @@
+import {Box, Button, Checkbox, FormControlLabel, TextField} from "@mui/material"
+import {useState} from "react"
+
+import {useRouterBloatStart} from "../../../../features/bloat/hook"
+import {BloatOptions, BloatTarget} from "../../../../features/bloat/type"
+import {Cluster, Node} from "../../../../features/cluster/type"
+import {Plugin as DbPlugin} from "../../../../features/database/type"
+import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../features/query/hook"
+import {AutocompleteFetch} from "../../../../shared/component/autocomplete/AutocompleteFetch"
+import {ErrorDbMissing,ErrorLeaderMissing} from "../../../../shared/component/box/ErrorManual"
+import {SxPropsMap} from "../../../../shared/helper/type"
+import {getQueryConnection} from "../../../../shared/helper/utils"
+
+const SX: SxPropsMap = {
+    form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
+    group: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
+}
+
+type Props = {
+    node: Node,
+    cluster: Cluster,
+    onClick: () => void,
+    target?: BloatTarget,
+    setTarget: (target: BloatTarget) => void
+}
+
+export function OverviewBloatJobForm(props: Props) {
+    const {node, cluster, target, onClick, setTarget} = props
+    const [options, setOptions] = useState<BloatOptions>({force: false, noReindex: false, routineVacuum: false, initialReindex: false, noInitialVacuum: false})
+
+    const start = useRouterBloatStart(cluster.name)
+
+    if (node.keeper.role !== "leader") return <ErrorLeaderMissing/>
+    if (!node.config.host || !node.config.dbPort) return <ErrorDbMissing/>
+
+    const db = {plugin: DbPlugin.POSTGRES, host: node.config.host, port: node.config.dbPort, name: target?.database}
+    const queryCon = getQueryConnection(cluster, db.host, db.port)
+    const connection = {...queryCon, db}
+    return (
+        <Box sx={SX.form}>
+            <AutocompleteFetch
+                value={target?.database || null}
+                margin={"dense"} variant={"standard"} size={"small"}
+                label={"Database"}
+                connection={connection}
+                useFetch={useRouterQueryDatabase}
+                onUpdate={(v) => setTarget({database: v || undefined})}
+            />
+            <AutocompleteFetch
+                value={target?.schema || null}
+                margin={"dense"} variant={"standard"} size={"small"}
+                label={"Schema"}
+                connection={connection}
+                useFetch={useRouterQuerySchemas}
+                onUpdate={(v) => setTarget({database: target?.database, schema: v || undefined})}
+                disabled={!target?.database || !!target?.excludeSchema}
+            />
+            <AutocompleteFetch
+                value={target?.table || null}
+                margin={"dense"} variant={"standard"} size={"small"}
+                label={"Table"}
+                connection={connection}
+                params={{schema: target?.schema ?? ""}}
+                useFetch={useRouterQueryTables}
+                onUpdate={(v) => setTarget({...target, table: v || undefined})}
+                disabled={!target?.schema || !!target?.excludeTable}
+            />
+            <Box sx={SX.group}>
+                <TextField
+                    label={"Min table size (MB)"} type={"number"} variant={"standard"} size={"small"}
+                    onChange={(e) => setOptions({...options, minTableSize: parseInt(e.target.value)})}
+                />
+                <TextField
+                    label={"Max table size (MB)"} type={"number"} variant={"standard"} size={"small"}
+                    onChange={(e) => setOptions({...options, maxTableSize: parseInt(e.target.value)})}
+                />
+            </Box>
+            <AutocompleteFetch
+                value={target?.excludeSchema || null}
+                margin={"dense"} variant={"standard"} size={"small"}
+                label={"Exclude Schema"}
+                connection={connection}
+                useFetch={useRouterQuerySchemas}
+                onUpdate={(v) => setTarget({database: target?.database, excludeSchema: v || undefined})}
+                disabled={!target?.database || !!target?.schema}
+            />
+            <AutocompleteFetch
+                value={target?.excludeTable || null}
+                margin={"dense"} variant={"standard"} size={"small"}
+                label={"Exclude Table"}
+                connection={connection}
+                params={{schema: target?.schema ?? ""}}
+                useFetch={useRouterQueryTables}
+                onUpdate={(v) => setTarget({...target, excludeTable: v || undefined})}
+                disabled={!target?.schema || !!target?.table}
+            />
+            <Box sx={SX.group}>
+                <TextField
+                    label={"Delay ratio"} type={"number"} variant={"standard"} size={"small"}
+                    onChange={(e) => setOptions({...options, delayRatio: parseInt(e.target.value)})}
+                />
+            </Box>
+            <Box sx={SX.group}>
+                <FormControlLabel label={"Force"} control={<Checkbox checked={options.force} onChange={(e) => setOptions({...options, force: e.target.checked})}/>}/>
+                <Button variant={"text"} disabled={start.isPending} onClick={handleRun}>Clean</Button>
+            </Box>
+            <FormControlLabel label={"Routing vacuum"} control={<Checkbox checked={options.routineVacuum} onChange={(e) => setOptions({...options, routineVacuum: e.target.checked})}/>}/>
+            <FormControlLabel label={"No initial vacuum"} control={<Checkbox checked={options.noInitialVacuum} onChange={(e) => setOptions({...options, noInitialVacuum: e.target.checked})}/>}/>
+            <FormControlLabel label={"Initial reindex"} disabled={options.noReindex} control={<Checkbox checked={options.initialReindex} onChange={(e) => setOptions({...options, initialReindex: e.target.checked})}/>}/>
+            <FormControlLabel label={"No reindex"} disabled={options.initialReindex} control={<Checkbox checked={options.noReindex} onChange={(e) => setOptions({...options, noReindex: e.target.checked})}/>}/>
+        </Box>
+    )
+
+    function handleRun() {
+        if (node) {
+            const dbRun = {...db, schema: target?.schema}
+            onClick()
+            const queryCon = getQueryConnection(cluster, dbRun.host, dbRun.port)
+            start.mutate({
+                db: dbRun,
+                vaultId: queryCon?.vaultId,
+                target, options, cluster: cluster.name,
+            })
+        }
+    }
+}

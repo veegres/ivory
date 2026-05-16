@@ -1,0 +1,104 @@
+import {json} from "@codemirror/lang-json"
+import {Box, Skeleton} from "@mui/material"
+import ReactCodeMirror from "@uiw/react-codemirror"
+import {useEffect, useState} from "react"
+
+import {Cluster, Node} from "../../../../features/cluster/type"
+import {Feature} from "../../../../features/feature"
+import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../features/node/hook"
+import {ErrorKeeperMissing} from "../../../../shared/component/box/ErrorManual"
+import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
+import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
+import {SxPropsMap} from "../../../../shared/helper/type"
+import {CodeThemes, getKeeperRequest} from "../../../../shared/helper/utils"
+import {useSettings} from "../../../../shared/provider/AppProvider"
+import {useSnackbar} from "../../../../shared/provider/SnackbarProvider"
+import {Access} from "../../../widgets/access/Access"
+
+const SX: SxPropsMap = {
+    box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
+    input: {flexGrow: 1, borderWidth: "1px", borderStyle: "solid", overflowX: "auto", ">div": {height: "100%"}},
+    buttons: {display: "flex", flexDirection: "column"},
+}
+
+type Props = {
+    cluster: Cluster,
+    node: Node,
+}
+
+export function OverviewConfig(props: Props) {
+    const {node, cluster} = props
+    const settings = useSettings()
+    const snackbar = useSnackbar()
+    const [isEditable, setIsEditable] = useState(false)
+    const [configState, setConfigState] = useState("")
+    const req = getKeeperRequest(cluster, node.config.host, node.config.keeperPort)
+
+    const config = useRouterNodeConfig(req)
+    const updateConfig = useRouterNodeConfigUpdate(node.config, () => setIsEditable(false))
+
+    const {data, isPending, isError, error} = config
+
+    useEffect(() => setConfigState(stringify(data)), [data])
+
+    if (!req) return <ErrorKeeperMissing/>
+    if (isError) return <ErrorSmart error={error}/>
+    if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
+
+    return (
+        <Box sx={SX.box}>
+            <Box sx={SX.input} borderColor={isEditable ? "divider" : "transparent"}>
+                <ReactCodeMirror
+                    height={"100%"}
+                    width={"100%"}
+                    value={configState}
+                    editable={isEditable}
+                    autoFocus={isEditable}
+                    basicSetup={{highlightActiveLine: false, highlightActiveLineGutter: isEditable, highlightSelectionMatches: false}}
+                    theme={CodeThemes[settings.theme]}
+                    extensions={[json()]}
+                    onChange={(value) => setConfigState(value)}
+                />
+            </Box>
+            <Box sx={SX.buttons}>
+                <Access feature={Feature.ManageNodeDbConfigUpdate}>
+                    {renderUpdateButtons()}
+                </Access>
+                <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
+            </Box>
+        </Box>
+    )
+
+    function renderUpdateButtons() {
+        if (!isEditable) return <EditIconButton placement={"left"} size={35} onClick={() => setIsEditable(true)}/>
+
+        return (
+            <>
+                <CancelIconButton placement={"left"} size={35} disabled={updateConfig.isPending} onClick={handleCancel}/>
+                <SaveIconButton placement={"left"} size={35} loading={updateConfig.isPending} onClick={handleUpdate}/>
+            </>
+        )
+    }
+
+    function handleCopyAll() {
+        const currentConfig = configState ? configState : stringify(data)
+        navigator.clipboard.writeText(currentConfig).then(() => {
+            snackbar("Config copied to clipboard!", "info")
+        })
+    }
+
+    function handleCancel() {
+        setIsEditable(false)
+        setConfigState(stringify(data))
+    }
+
+    function handleUpdate() {
+        if (configState && req) {
+            updateConfig.mutate({...req, body: JSON.parse(configState)})
+        }
+    }
+
+    function stringify(json?: any) {
+        return JSON.stringify(json, null, 2)
+    }
+}

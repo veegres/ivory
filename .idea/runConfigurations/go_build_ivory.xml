@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build ivory" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="ivory" />
+    <working_directory value="$PROJECT_DIR$/server" />
+    <kind value="PACKAGE" />
+    <package value="ivory" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/service/src/main.go" />
+    <method v="2" />
+  </configuration>
+</component>

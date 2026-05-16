@@ -1,0 +1,127 @@
+import {Box, SxProps, ToggleButton, Tooltip} from "@mui/material"
+import {Theme} from "@mui/material/styles"
+import {cloneElement, MouseEvent, ReactElement, useState} from "react"
+
+import {SxPropsMap} from "../../helper/type"
+import {HiddenScrolling} from "./HiddenScrolling"
+
+const ALL = "ALL"
+const SX: SxPropsMap = {
+    after: {display: "flex", gap: "3px"},
+    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1.1"},
+}
+
+type Props = {
+    tags: string[],
+    selected: string[],
+    renderActions?: ReactElement<{sx?: SxProps<Theme>}>[],
+    onUpdate: (tags: string[]) => void,
+}
+
+export function ToggleButtonScrollable(props: Props) {
+    const {tags, selected, onUpdate, renderActions} = props
+    const tagsSet = new Set(tags)
+    const [selectedSet, setSelectedSet] = useState(new Set(selected))
+
+    const isAll = selectedSet.has(ALL)
+    const count = isAll ? "0" : selectedSet.size.toString()
+
+    return (
+        <HiddenScrolling
+            renderBefore={renderSelectButton(ALL, isAll, handleClickAll)}
+            renderAfter={renderAfter()}
+        >
+            {tags.map(tag => renderSelectButton(tag, selectedSet.has(tag), handleClick))}
+            {selected.map(tag => renderRemovedButton(tag, !tagsSet.has(tag), handleClick))}
+        </HiddenScrolling>
+    )
+
+    function renderAfter() {
+        return (
+            <Box sx={SX.after}>
+                {renderInfo()}
+                <Tooltip title={renderTagsTooltip()} placement={"top"}>
+                    <span>{renderSelectButton(count, !isAll)}</span>
+                </Tooltip>
+            </Box>
+        )
+    }
+
+    function renderTagsTooltip() {
+        return (
+            <Box>
+                <Box><b>Tags Selected</b></Box>
+                <Box>[ use <b>ctrl</b> to pick more than one tag ]</Box>
+            </Box>
+        )
+    }
+
+    function renderInfo() {
+        if (renderActions === undefined) return
+        return renderActions.map(e => cloneElement(e, {sx: SX.element}))
+    }
+
+    function renderSelectButton(tag: string, selected: boolean, onClick?: (e: MouseEvent<HTMLElement>, value: string) => void) {
+        return (
+            <ToggleButton
+                sx={SX.element}
+                color={"secondary"}
+                size={"small"}
+                key={tag}
+                selected={selected}
+                disabled={!onClick}
+                value={tag}
+                onClick={(e) => onClick?.(e, tag)}
+            >
+                {tag}
+            </ToggleButton>
+        )
+    }
+
+    function renderRemovedButton(tag: string, removed: boolean, onClick?: (e: MouseEvent<HTMLElement>, value: string) => void) {
+        if (tag === ALL || !removed) return null
+        return (
+            <ToggleButton
+                sx={SX.element}
+                color={"error"}
+                size={"small"}
+                key={tag}
+                selected={removed}
+                disabled={!onClick}
+                value={tag}
+                onClick={(e) => onClick?.(e, tag)}
+            >
+                {tag}
+            </ToggleButton>
+        )
+    }
+
+    function handleClick(e: MouseEvent, value: string) {
+        const tmp = new Set(selectedSet)
+        if (tmp.has(value)) {
+            if (e.ctrlKey || tmp.size === 1) {
+                tmp.delete(value)
+            } else {
+                tmp.clear()
+                tmp.add(value)
+            }
+            if (tmp.size === 0) tmp.add(ALL)
+        } else {
+            tmp.delete(ALL)
+            if (e.ctrlKey) {
+                tmp.add(value)
+            } else {
+                tmp.clear()
+                tmp.add(value)
+            }
+        }
+        setSelectedSet(tmp)
+        onUpdate([...tmp])
+    }
+
+    function handleClickAll() {
+        const tmp = new Set([ALL])
+        setSelectedSet(tmp)
+        onUpdate([...tmp])
+    }
+}

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="start" type="js.build_tools.npm" nameIsGenerated="true">
-    <package-json value="$PROJECT_DIR$/web/package.json" />
+    <package-json value="$PROJECT_DIR$/app/package.json" />
     <command value="run" />
     <scripts>
       <script value="start" />
