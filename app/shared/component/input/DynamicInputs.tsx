@@ -1,5 +1,5 @@
 import {Box, Chip, FormControl, OutlinedInput, SxProps, Theme} from "@mui/material"
-import {ChangeEvent, memo, useCallback, useMemo} from "react"
+import {ChangeEvent, memo, ReactNode, useCallback, useMemo} from "react"
 
 import {ColorsMap, SxPropsMap} from "../../helper/type"
 import {SxPropsFormatter} from "../../helper/utils"
@@ -9,6 +9,7 @@ const SX: SxPropsMap = {
     chip: {width: "100%"},
     input: {height: "32px"},
     label: {display: "flex", gap: 1},
+    helper: {margin: "2px 14px 0px"},
 }
 
 const EMPTY_COLORS: ColorsMap = {}
@@ -22,10 +23,11 @@ type Props = {
     onChange: (values: string[]) => void,
     InputSize?: string,
     InputProps?: SxProps<Theme>,
+    helper?: ReactNode,
 }
 
 export const DynamicInputs = memo(function DynamicInputs(props: Props) {
-    const {inputs, editable, placeholder, onChange, colors, InputProps, minLength = 1, InputSize = "263px"} = props
+    const {inputs, editable, placeholder, onChange, colors, InputProps, minLength = 1, InputSize = "263px", helper} = props
     const colorsMap = colors ?? EMPTY_COLORS
 
     const mergedSx = useMemo(() => SxPropsFormatter.merge(SX.input, InputProps), [InputProps])
@@ -44,6 +46,7 @@ export const DynamicInputs = memo(function DynamicInputs(props: Props) {
                         mergedSx={mergedSx}
                         color={colorsMap[input.toLowerCase()]}
                         onChange={onChange}
+                        helper={helper}
                     />
                 ))
             ) : (
@@ -72,10 +75,11 @@ type InputItemProps = {
     mergedSx: SxProps<Theme>,
     color: "success" | "primary" | "error" | "warning" | undefined,
     onChange: (values: string[]) => void,
+    helper?: ReactNode,
 }
 
 const InputItem = memo(function InputItem(props: InputItemProps) {
-    const {index, value, inputs, placeholder, mergedSx, color, onChange} = props
+    const {index, value, inputs, placeholder, mergedSx, color, helper, onChange} = props
 
     const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const updated = [...inputs]
@@ -94,6 +98,7 @@ const InputItem = memo(function InputItem(props: InputItemProps) {
                 value={value}
                 onChange={handleChange}
             />
+            {helper && <Box sx={SX.helper}>{helper}</Box>}
         </FormControl>
     )
 })

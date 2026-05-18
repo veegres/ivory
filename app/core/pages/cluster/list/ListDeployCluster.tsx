@@ -14,7 +14,6 @@ import {ListItem} from "../../../../shared/component/box/ListItem"
 import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
-import {DynamicInputs} from "../../../../shared/component/input/DynamicInputs"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {
     DatabaseImageOptions,
@@ -27,6 +26,7 @@ import scroll from "../../../../shared/style/scroll.module.css"
 import {Access} from "../../../widgets/access/Access"
 import {Options} from "../../../widgets/options/Options"
 import {OptionsVault} from "../../../widgets/options/OptionsVault"
+import {ListNodeInput} from "./ListNodeInput"
 
 const SX: SxPropsMap = {
     note: {display: "flex", justifyContent: "center", alignItems: "center", color: "text.disabled", fontSize: 12, flexWrap: "wrap", gap: 0.5},
@@ -71,7 +71,7 @@ export function ListDeployCluster(props: Props) {
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
     const handleEnvUpdates = useCallback(handleCallEnvUpdates, [])
-    const handleSingelHostUpdate = useCallback(handleCallSingelHostUpdate, [])
+    const handleSingleHostUpdate = useCallback(handleCallSingleHostUpdate, [])
     const handleNodesUpdate = useCallback(handleCallNodesUpdate, [imageOptionsStr])
 
     const imageOptionEntries = useMemo(handleMemoImageOptionEntries, [imageOptions])
@@ -127,7 +127,7 @@ export function ListDeployCluster(props: Props) {
                         button={<Checkbox
                             checked={dev}
                             color={"success"}
-                            onChange={(_, c) => handleSingelHostUpdate(c)}
+                            onChange={(_, c) => handleSingleHostUpdate(c)}
                         />}
                     />
                 </List>
@@ -140,13 +140,12 @@ export function ListDeployCluster(props: Props) {
                             value={cluster}
                             onChange={(e) => setCluster(e.target.value)}
                         />
-                        <DynamicInputs
+                        <ListNodeInput
                             InputProps={SX.input}
                             minLength={4}
                             inputs={nodes}
                             onChange={handleNodesUpdate}
                             editable={true}
-                            placeholder={"Node "}
                         />
                     </Box>
                 </TitledBox>
@@ -338,7 +337,7 @@ export function ListDeployCluster(props: Props) {
         ))
     }
 
-    function handleCallSingelHostUpdate(checked: boolean) {
+    function handleCallSingleHostUpdate(checked: boolean) {
         setNodes([])
         setDev(checked)
     }

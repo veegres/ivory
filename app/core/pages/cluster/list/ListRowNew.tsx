@@ -3,12 +3,12 @@ import {useState} from "react"
 
 import {Plugin as DbPlugin} from "../../../../features/database/type"
 import {Plugin as KeeperPlugin} from "../../../../features/keeper/type"
-import {DynamicInputs} from "../../../../shared/component/input/DynamicInputs"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getNodeConfigs} from "../../../../shared/helper/utils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import {ListCell} from "./ListCell"
 import {ListCellUpdate} from "./ListCellUpdate"
+import {ListNodeInput} from "./ListNodeInput"
 
 const SX: SxPropsMap = {
     nodesCellInput: {height: "32px"},
@@ -40,12 +40,7 @@ export function ListRowNew(props: Props) {
                 </FormControl>
             </ListCell>
             <ListCell>
-                <DynamicInputs
-                    inputs={stateNodes}
-                    editable={true}
-                    placeholder={"Node "}
-                    onChange={n => setStateNodes(n)}
-                />
+                <ListNodeInput inputs={stateNodes} editable={true} onChange={n => setStateNodes(n)}/>
             </ListCell>
             <ListCell width={"130px"}>
                 <ListCellUpdate

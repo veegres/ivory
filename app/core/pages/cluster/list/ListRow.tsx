@@ -4,13 +4,13 @@ import {useEffect, useMemo, useRef, useState} from "react"
 
 import {useRouterClusterOverview} from "../../../../features/cluster/hook"
 import {Cluster} from "../../../../features/cluster/type"
-import {DynamicInputs} from "../../../../shared/component/input/DynamicInputs"
 import {ColorsMap, SxPropsMap} from "../../../../shared/helper/type"
 import {getDomain, getDomains, getNodeConfigs, NodeColor, SxPropsFormatter} from "../../../../shared/helper/utils"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {ListCell} from "./ListCell"
 import {ListCellRead} from "./ListCellRead"
 import {ListCellUpdate} from "./ListCellUpdate"
+import {ListNodeInput} from "./ListNodeInput"
 import {ListRowName} from "./ListRowName"
 
 const SX: SxPropsMap = {
@@ -48,11 +48,10 @@ export function ListRow(props: Props) {
                 <ListRowName cluster={cluster} active={active} loading={overview.isFetching} refresh={overview.refetch}/>
             </ListCell>
             <ListCell>
-                <DynamicInputs
+                <ListNodeInput
                     inputs={stateNodes}
                     colors={colors}
                     editable={editable}
-                    placeholder={"Node "}
                     onChange={n => setStateNodes(n)}
                 />
             </ListCell>
