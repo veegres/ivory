@@ -22,8 +22,8 @@ import {
     InterpolatedOptionsKeys,
     VaultOptions,
 } from "../../../../shared/helper/utils"
-import scroll from "../../../../shared/style/scroll.module.css"
 import {Access} from "../../../widgets/access/Access"
+import {Logs} from "../../../widgets/logs/Logs"
 import {Options} from "../../../widgets/options/Options"
 import {OptionsVault} from "../../../widgets/options/OptionsVault"
 import {ListNodeInput} from "./ListNodeInput"
@@ -89,13 +89,7 @@ export function ListDeployCluster(props: Props) {
                 back={!!response}
                 onBackClick={() => setResponse(undefined)}
             >
-                {response ? (
-                    <Box sx={SX.logs} className={scroll.small}>
-                        {response.map((log, i) => (
-                            <Box key={i} sx={SX.row}>{log}</Box>
-                        ))}
-                    </Box>
-                ) : (
+                {response ? <Logs logs={response} height={600} auto={false}/> : (
                     <Box sx={SX.subContent} gap={1}>
                         {renderMandatoryFields()}
                         {renderDatabaseImage()}

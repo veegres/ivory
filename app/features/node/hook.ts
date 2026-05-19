@@ -126,12 +126,11 @@ export function useRouterNodePlatformList(c: PlatformConnection, enabled: boolea
     })
 }
 
-export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
+export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.deployment.logs.key(request.connection.host, request.name),
         queryFn: () => NodeApi.deployment.logs.fn(request),
-        enabled,
     })
 }
 

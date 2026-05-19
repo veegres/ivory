@@ -1,6 +1,13 @@
 import {api} from "../api"
 import {R} from "../management/type"
-import {KeeperRequest, MetricsResponse,PlatformConnection,PlatformDeployRequest, PlatformLogsRequest} from "./type"
+import {
+    KeeperRequest,
+    MetricsResponse,
+    PlatformConnection,
+    PlatformDeployRequest,
+    PlatformLogsRequest,
+    PlatformResponse,
+} from "./type"
 
 
 export const NodeApi = {
@@ -72,27 +79,27 @@ export const NodeApi = {
     deployment: {
         list: {
             key: (host: string) => ["node", "platform", "deployment", "list", host],
-            fn: (request: PlatformConnection) => api.get<R<any>>("/node/platform/deployment", {params: {request: JSON.stringify(request)}})
+            fn: (request: PlatformConnection) => api.get<R<PlatformResponse>>("/node/platform/deployment", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         logs: {
             key: (host: string, name: string) => ["node", "platform", "deployment", "logs", host, name],
-            fn: (request: PlatformLogsRequest) => api.get<R<any>>("/node/platform/deployment/logs", {params: {request: JSON.stringify(request)}})
-                .then((response) => response.data.response),
+            fn: (request: PlatformLogsRequest) => api.get<R<PlatformResponse>>("/node/platform/deployment/logs", {params: {request: JSON.stringify(request)}})
+                .then((response) => response.data.response.stdout.split("\n")),
         },
         deploy: {
             key: () => ["node", "platform", "deployment", "deploy"],
-            fn: (request: PlatformDeployRequest) => api.post<R<any>>("/node/platform/deployment/deploy", request)
+            fn: (request: PlatformDeployRequest) => api.post<R<PlatformResponse>>("/node/platform/deployment/deploy", request)
                 .then((response) => response.data.response),
         },
         stop: {
             key: () => ["node", "platform", "deployment", "stop"],
-            fn: (request: PlatformDeployRequest) => api.post<R<any>>("/node/platform/deployment/stop", request)
+            fn: (request: PlatformDeployRequest) => api.post<R<PlatformResponse>>("/node/platform/deployment/stop", request)
                 .then((response) => response.data.response),
         },
         delete: {
             key: () => ["node", "platform", "deployment", "delete"],
-            fn: (request: PlatformDeployRequest) => api.post<R<any>>("/node/platform/deployment/delete", request)
+            fn: (request: PlatformDeployRequest) => api.post<R<PlatformResponse>>("/node/platform/deployment/delete", request)
                 .then((response) => response.data.response),
         }
     }

@@ -6,6 +6,7 @@ import {ErrorSshMissing} from "../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../shared/helper/type"
 import {MonitorCommon} from "./MonitorCommon"
 import {MonitorDatabase} from "./MonitorDatabase"
+import {MonitorLogs} from "./MonitorLogs"
 import {MonitorRow} from "./MonitorRow"
 import {MonitorSystem} from "./MonitorSystem"
 
@@ -37,7 +38,10 @@ export function Monitor(props: Props) {
     function renderPlatformInfo() {
         if (!platformCon) return <ErrorSshMissing/>
         return (
-            <MonitorSystem connection={platformCon}/>
+            <>
+                <MonitorSystem connection={platformCon}/>
+                <MonitorLogs connection={platformCon}/>
+            </>
         )
     }
 

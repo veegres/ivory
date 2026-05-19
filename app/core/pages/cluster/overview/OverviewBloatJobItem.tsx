@@ -7,29 +7,23 @@ import {useRouterBloatDelete, useRouterBloatStop} from "../../../../features/blo
 import {Bloat} from "../../../../features/bloat/type"
 import {Feature} from "../../../../features/feature"
 import {OpenIcon} from "../../../../shared/component/icon/OpenIcon"
-import {LinearProgressStateful} from "../../../../shared/component/progress/LinearProgressStateful"
-import {DynamicRowVirtualizer} from "../../../../shared/component/scrolling/DynamicRowVirtualizer"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getShortUuid} from "../../../../shared/helper/utils"
 import {useEventJob} from "../../../../shared/hook/EventJob"
-import scroll from "../../../../shared/style/scroll.module.css"
 import select from "../../../../shared/style/select.module.css"
 import {Access} from "../../../widgets/access/Access"
+import {Logs} from "../../../widgets/logs/Logs"
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
-    console: {fontSize: "13px", width: "100%", padding: "8px 15px"},
-    row: {"&:hover": {color: "primary.main"}},
-    emptyLine: {textAlign: "center", textTransform: "uppercase"},
     header: {display: "flex", flexDirection: "column", fontWeight: "bold", cursor: "pointer"},
     headerLine: {display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "nowrap", height: "20px"},
-    loader: {margin: "10px 0 5px"},
-    divider: {margin: "5px 0"},
     logs: {colorScheme: "dark"},
     button: {padding: "1px"},
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
     separator: {display: "flex", alignItems: "start", marginLeft: "10px"},
     vault: {display: "inline", color: "text.secondary", marginLeft: "5px"},
+    divider: {margin: "5px 0", fontFamily: "monospace"},
 }
 
 type Props = {
@@ -53,6 +47,16 @@ export function OverviewBloatJobItem(props: Props) {
             {renderBody()}
         </Paper>
     )
+
+    function renderBody() {
+        if (!open) return
+        return (
+            <>
+                <Divider sx={SX.divider} textAlign={"left"}>LOGS</Divider>
+                <Logs sx={SX.logs} logs={logs} auto={status.active && open} loading={isFetching}/>
+            </>
+        )
+    }
 
     function renderHeader() {
         return (
@@ -94,30 +98,6 @@ export function OverviewBloatJobItem(props: Props) {
                     </Box>
                 </Box>
             </Box>
-        )
-    }
-
-    function renderBody() {
-        if (!open) return
-        return (
-            <>
-                <Divider sx={SX.divider} textAlign={"left"}>LOGS</Divider>
-                {logs.length === 0 ? isFetching ? (
-                    <Box sx={SX.emptyLine}>Waiting for logs</Box>
-                ) : (
-                    <Box sx={SX.emptyLine}>No logs</Box>
-                ) : (
-                    <DynamicRowVirtualizer
-                        sx={SX.logs}
-                        auto={status.active && open}
-                        className={scroll.small}
-                        sxVirtualRow={SX.row}
-                        height={350}
-                        rows={logs}
-                    />
-                )}
-                <LinearProgressStateful sx={SX.loader} loading={isFetching} color={"inherit"} line/>
-            </>
         )
     }
 
