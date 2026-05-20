@@ -14,6 +14,7 @@ export enum EventType {
     STATUS = "status",
     LOG = "log",
     STREAM = "stream",
+    BROWSER = "browser",
 }
 
 export enum EventStreamType {
