@@ -4,12 +4,12 @@ import {SvgIconProps} from "@mui/material"
 import {cloneElement, ReactElement, useState} from "react"
 
 import {useRouterBloatDelete, useRouterBloatStop} from "../../../../features/bloat/hook"
+import {useRouterBloatJob} from "../../../../features/bloat/job/hook"
 import {Bloat} from "../../../../features/bloat/type"
 import {Feature} from "../../../../features/feature"
 import {OpenIcon} from "../../../../shared/component/icon/OpenIcon"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getShortUuid} from "../../../../shared/helper/utils"
-import {useEventJob} from "../../../../shared/hook/EventJob"
 import select from "../../../../shared/style/select.module.css"
 import {Access} from "../../../widgets/access/Access"
 import {Logs} from "../../../widgets/logs/Logs"
@@ -36,7 +36,7 @@ export function OverviewBloatJobItem(props: Props) {
     const {item, cluster, refetchList} = props
     const {uuid, status: initStatus, command, vaultId} = item
     const [open, setOpen] = useState(false)
-    const {isFetching, logs, status} = useEventJob(uuid, initStatus, open, refetchList)
+    const {isFetching, logs, status} = useRouterBloatJob(uuid, initStatus, open, refetchList)
 
     const deleteJob = useRouterBloatDelete(uuid, cluster)
     const stopJob = useRouterBloatStop()

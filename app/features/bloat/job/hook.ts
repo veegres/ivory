@@ -1,17 +1,17 @@
 import {useEffect, useState} from "react"
 
-import {useRouterBloatLogs} from "../../features/bloat/hook"
-import {EventStreamType, EventType, JobStatus} from "../../features/bloat/job/type"
-import {BloatApi} from "../../features/bloat/router"
-import {JobOptions} from "../helper/utils"
+import {JobOptions} from "../../../shared/helper/utils"
+import {useRouterBloatLogs} from "../hook"
+import {BloatApi} from "../router"
+import {EventStreamType, EventType, JobStatus} from "./type"
 
-type EventJob = {
+type Hook = {
     isFetching: boolean;
     logs: string[];
     status: { name: string; color: string; active: boolean }
 }
 
-export function useEventJob(uuid: string, initStatus: JobStatus, isOpen: boolean, refetchList: () => void): EventJob {
+export function useRouterBloatJob(uuid: string, initStatus: JobStatus, isOpen: boolean, refetchList: () => void): Hook {
     const [status, setStatus] = useState(JobOptions[initStatus])
     const [isEventSourceFetching, setEventSourceFetching] = useState<boolean>(false)
 
