@@ -282,6 +282,10 @@ func (s *Client) getConnection(ctx database.Context) (*pgx.Conn, string, error) 
 		// NOTE: verify-ca was chosen because it potentially can protect from machine-in-the-middle attack if
 		// it has the right CA policy. More info can be found here https://www.postgresql.org/docs/16/libpq-ssl.html#LIBPQ-SSL-PROTECTION
 		connUrl += "?sslmode=verify-ca"
+	} else {
+		// NOTE: explicitly set sslmode=disable so pgx does not default to sslmode=require.
+		// This allows connections to PostgreSQL servers without SSL/TLS enabled.
+		connUrl += "?sslmode=disable"
 	}
 
 	conConfig, errConfig := pgx.ParseConfig(connUrl)
