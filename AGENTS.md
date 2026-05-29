@@ -43,6 +43,7 @@ Use `.docker/ivory-dev/` for the stack.
 - **VM**: Refers specifically to the virtual machine/host level.
 - **Platform**: Refers to the deployment/troubleshooting target that Ivory integrates with, such as on-prem Docker-over-SSH now and Kubernetes/OpenShift in the future.
 - **Deployment**: Refers to the generic platform-managed thing Ivory deploys, stops, deletes, lists, or reads logs from. Avoid using `Container`, `Pod`, or `Database` for generic platform APIs.
+- **Job**: Refers to a generic command execution entity managed by a background goroutine, supporting event-driven status updates, console logs persistence, and live streaming.
 
 ## Coding & UI Standards
 - **Surgical Renaming**: When asked to rename components or fields, ONLY update the terminology. DO NOT refactor implementation logic, move methods to props, or change the component structure unless explicitly directed.

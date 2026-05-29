@@ -45,6 +45,7 @@ func (j *Job) Size() int {
 // Intended to be called in its own goroutine by the job.Manager.
 func (j *Job) Run() {
 	j.setStatus(RUNNING)
+	defer j.close()
 
 	var logFile *os.File
 	if j.cmd.Persist() && j.storage != nil {
@@ -53,7 +54,6 @@ func (j *Job) Run() {
 		if err != nil {
 			j.setStatus(FAILED)
 			j.broadcast(SERVER, fmt.Sprintf("failed to create log file: %s", err))
-			j.close()
 			return
 		}
 		defer logFile.Close()
@@ -63,7 +63,6 @@ func (j *Job) Run() {
 	if errStart != nil {
 		j.setStatus(FAILED)
 		j.broadcast(SERVER, errStart.Error())
-		j.close()
 		return
 	}
 
@@ -82,7 +81,7 @@ func (j *Job) Run() {
 			if j.getStatus() == STOPPED {
 				return
 			}
-			if errRead != nil && errRead != io.EOF {
+			if errRead != io.EOF {
 				j.setStatus(FAILED)
 				j.broadcast(SERVER, errRead.Error())
 				return
@@ -93,7 +92,6 @@ func (j *Job) Run() {
 				return
 			}
 			j.setStatus(FINISHED)
-			j.close()
 			return
 		}
 	}

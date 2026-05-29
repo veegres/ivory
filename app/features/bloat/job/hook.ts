@@ -19,7 +19,15 @@ export function useRouterBloatJob(uuid: string, initStatus: JobStatus, isOpen: b
     const [logs, setLogs] = useState<string[]>([])
     const {data, error, isFetching, isError} = useRouterBloatLogs(uuid, fetchFile)
 
-    useEffect(() => {
+    useEffect(handleEffectStream, [uuid, initStatus, refetchList])
+
+    return {
+        isFetching: isEventSourceFetching || isFetching,
+        logs: !fetchFile ? logs : (data ?? (!isError ? [] : [`[browser] streaming error: ${error.message ?? "unknown"}`])),
+        status: status,
+    }
+
+    function handleEffectStream() {
         if (!JobOptions[initStatus].active) return
 
         const es = BloatApi.stream.fn(uuid)
@@ -49,11 +57,5 @@ export function useRouterBloatJob(uuid: string, initStatus: JobStatus, isOpen: b
         }
 
         return () => es.close()
-    }, [uuid, initStatus, refetchList])
-
-    return {
-        isFetching: isEventSourceFetching || isFetching,
-        logs: !fetchFile ? logs : (data ?? (!isError ? [] : [`[browser] streaming error: ${error.message ?? "unknown"}`])),
-        status: status,
     }
 }
