@@ -2,51 +2,47 @@ package tools
 
 import (
 	"errors"
-	"ivory/clients/shell"
 	"ivory/features"
-	"ivory/features/job"
 	"ivory/features/tools/pg_compacttable"
-	"ivory/features/vault"
 	"ivory/plugins/database"
-	"ivory/storage/db"
 )
 
+type Tool interface {
+	SupportedFeatures(t database.Plugin) []features.Feature
+	DeleteAll() error
+}
+
+// NOTE: validate that is matches interface in compile-time
+var _ Tool = (*pg_compacttable.Service)(nil)
+
 type Service struct {
-	bloat *bloat.Service
+	tools          []Tool
+	pgCompactTable *pg_compacttable.Service
 }
 
 func NewService(
-	vaultService *vault.Service,
-	shellClient *shell.Client,
-	jobManager *job.Manager,
+	pgCompactTable *pg_compacttable.Service,
 ) *Service {
-	// DB
-	st := db.NewStorage("ivory_tools.db")
-	compactTableBucket := db.NewBucket[bloat.Response](st, "CompactTable")
-
-	// REPO
-	bloatRepo := bloat.NewRepository(compactTableBucket)
-
 	return &Service{
-		bloat: bloat.NewService(bloatRepo, shellClient, vaultService, jobManager),
+		tools: []Tool{
+			pgCompactTable,
+		},
+		pgCompactTable: pgCompactTable,
 	}
 }
 
 func (s *Service) SupportedFeatures(t database.Plugin) []features.Feature {
-	switch t {
-	case database.POSTGRES:
-		return []features.Feature{
-			features.ViewToolBloatList,
-			features.ViewToolBloatItem,
-			features.ViewToolBloatLogs,
-			features.ManageToolBloatJob,
-		}
-	default:
-		return []features.Feature{}
+	allFeatures := make([]features.Feature, 0)
+	for _, tool := range s.tools {
+		allFeatures = append(allFeatures, tool.SupportedFeatures(t)...)
 	}
+	return allFeatures
 }
 
 func (s *Service) DeleteAll() error {
-	errBloat := s.bloat.DeleteAll()
-	return errors.Join(errBloat)
+	errs := make([]error, 0)
+	for _, tool := range s.tools {
+		errs = append(errs, tool.DeleteAll())
+	}
+	return errors.Join(errs...)
 }

@@ -1,4 +1,4 @@
-package bloat
+package pg_compacttable
 
 import (
 	"ivory/features/job"

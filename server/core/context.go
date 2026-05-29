@@ -22,11 +22,11 @@ import (
 	"ivory/features/tag"
 	"ivory/features/tools"
 	"ivory/features/vault"
-	database2 "ivory/plugins/database"
+	"ivory/plugins/database"
 	"ivory/plugins/database/postgres"
-	keeper2 "ivory/plugins/keeper"
+	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/patroni"
-	platform2 "ivory/plugins/platform"
+	"ivory/plugins/platform"
 	"ivory/plugins/platform/onprem"
 	"ivory/storage/db"
 	"ivory/storage/env"
@@ -91,12 +91,12 @@ func NewContext() *Context {
 	onpremAdapter := onprem.NewAdapter(sshClient)
 
 	// REGISTRY (we cannot use Factory pattern in clients package because of cycle dependencies)
-	keeperPlugins := keeper2.NewPluginRegistry()
-	keeperPlugins.Register(keeper2.PATRONI, patroniAdapter)
-	dbPlugins := database2.NewPluginRegistry()
-	dbPlugins.Register(database2.POSTGRES, postgresAdapter)
-	platformPlugins := platform2.NewPluginRegistry()
-	platformPlugins.Register(platform2.Onprem, onpremAdapter)
+	keeperPlugins := keeper.NewPluginRegistry()
+	keeperPlugins.Register(keeper.PATRONI, patroniAdapter)
+	dbPlugins := database.NewPluginRegistry()
+	dbPlugins.Register(database.POSTGRES, postgresAdapter)
+	platformPlugins := platform.NewPluginRegistry()
+	platformPlugins.Register(platform.Onprem, onpremAdapter)
 
 	// AUTH PROVIDER
 	basicProvider := basic.NewProvider()
@@ -109,11 +109,14 @@ func NewContext() *Context {
 	vaultService := vault.NewService(vaultRepo, sshClient, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
+
+	// CONTEXTS
+	toolsCtx := tools.NewContext(shellClient, vaultService, jobManager)
+
 	nodeService := node.NewService(platformPlugins, keeperPlugins, vaultService, certService, jobManager)
 	tagService := tag.NewService(tagRepo)
-	toolsService := tools.NewService(vaultService, shellClient, jobManager)
 	queryService := query.NewService(queryRepo, dbPlugins, vaultService, certService, secretService, appEnv.Version.Label)
-	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService, vaultService)
+	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsCtx.Service, vaultService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
 	backupService := backup.NewService(clusterService, queryService, permissionService)
@@ -124,7 +127,7 @@ func NewContext() *Context {
 		clusterService,
 		certService,
 		tagService,
-		toolsService,
+		toolsCtx.Service,
 		queryService,
 		nodeService,
 		secretService,
@@ -137,7 +140,7 @@ func NewContext() *Context {
 		env:              appEnv,
 		authRouter:       auth.NewRouter(authService, appEnv.Config.UrlPath, appEnv.Config.TlsEnabled),
 		clusterRouter:    cluster.NewRouter(clusterService),
-		toolsRouter:      tools.NewRouter(toolsService),
+		toolsRouter:      toolsCtx.Router,
 		certRouter:       cert.NewRouter(certService),
 		secretRouter:     secret.NewRouter(secretService),
 		vaultRouter:      vault.NewRouter(vaultService),

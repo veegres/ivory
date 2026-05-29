@@ -126,14 +126,14 @@ func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router)
 
 func toolsRouter(g *gin.RouterGroup, rp *permission.Router, r *tools.Router) {
 	group := g.Group("/tool")
-	group.GET("/bloat", rp.ValidateMethodMiddleware(features.ViewToolBloatList), r.Bloat.GetBloatList)
-	group.GET("/bloat/cluster/:name", rp.ValidateMethodMiddleware(features.ViewToolBloatList), r.Bloat.GetBloatListByCluster)
-	group.GET("/bloat/:uuid", rp.ValidateMethodMiddleware(features.ViewToolBloatItem), r.Bloat.GetBloat)
-	group.GET("/bloat/:uuid/logs", rp.ValidateMethodMiddleware(features.ViewToolBloatLogs), r.Bloat.GetBloatLogs)
-	group.GET("/bloat/job/:uuid/stream", rp.ValidateMethodMiddleware(features.ViewToolBloatLogs), r.Bloat.GetJobStream)
-	group.POST("/bloat/job/start", rp.ValidateMethodMiddleware(features.ManageToolBloatJob), r.Bloat.PostJobStart)
-	group.POST("/bloat/job/:uuid/stop", rp.ValidateMethodMiddleware(features.ManageToolBloatJob), r.Bloat.PostJobStop)
-	group.DELETE("/bloat/job/:uuid/delete", rp.ValidateMethodMiddleware(features.ManageToolBloatJob), r.Bloat.DeleteJob)
+	group.GET("/bloat", rp.ValidateMethodMiddleware(features.ViewToolPgCompactTableList), r.Bloat.GetBloatList)
+	group.GET("/bloat/cluster/:name", rp.ValidateMethodMiddleware(features.ViewToolPgCompactTableList), r.Bloat.GetBloatListByCluster)
+	group.GET("/bloat/:uuid", rp.ValidateMethodMiddleware(features.ViewToolPgCompactTableItem), r.Bloat.GetBloat)
+	group.GET("/bloat/:uuid/logs", rp.ValidateMethodMiddleware(features.ViewToolPgCompactTableLogs), r.Bloat.GetBloatLogs)
+	group.GET("/bloat/job/:uuid/stream", rp.ValidateMethodMiddleware(features.ViewToolPgCompactTableLogs), r.Bloat.GetJobStream)
+	group.POST("/bloat/job/start", rp.ValidateMethodMiddleware(features.ManageToolPgCompactTableJob), r.Bloat.PostJobStart)
+	group.POST("/bloat/job/:uuid/stop", rp.ValidateMethodMiddleware(features.ManageToolPgCompactTableJob), r.Bloat.PostJobStop)
+	group.DELETE("/bloat/job/:uuid/delete", rp.ValidateMethodMiddleware(features.ManageToolPgCompactTableJob), r.Bloat.DeleteJob)
 }
 
 func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {

@@ -6,6 +6,7 @@ import (
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -40,10 +41,38 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 	}
 }
 
+func GetToken(context *gin.Context) (string, error) {
+	authHeader := context.Request.Header.Get("Authorization")
+	if authHeader != "" {
+		return GetTokenFromHeader(authHeader)
+	}
+	cookieToken, errToken := context.Cookie("token")
+	if cookieToken == "" || errToken != nil {
+		cookieTokenError, _ := context.Cookie("token_error")
+		if cookieTokenError != "" {
+			return "", errors.New(cookieTokenError)
+		}
+		return "", ErrNoAuthorizationToken
+	}
+	return cookieToken, nil
+}
+
+func GetTokenFromHeader(str string) (string, error) {
+	if str == "" {
+		return "", ErrNoAuthorizationToken
+	}
+	parts := strings.SplitN(str, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Bearer") {
+		return "", ErrInvalidAuthorizationHeader
+	}
+	return parts[1], nil
+}
+
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		context.Set("auth", true)
-		valid, username, authType, errParse := r.authService.ParseAuthToken(context)
+		token, errToken := GetToken(context)
+		valid, username, authType, errParse := r.authService.ParseAuthToken(token, errToken)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
 			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errParse.Error()})

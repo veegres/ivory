@@ -1,10 +1,12 @@
-package bloat
+package pg_compacttable
 
 import (
 	"errors"
 	"ivory/clients/shell"
+	"ivory/features"
 	"ivory/features/job"
 	"ivory/features/vault"
+	"ivory/plugins/database"
 
 	"github.com/google/uuid"
 )
@@ -34,6 +36,20 @@ func NewService(
 
 	go service.initializer()
 	return service
+}
+
+func (s *Service) SupportedFeatures(t database.Plugin) []features.Feature {
+	switch t {
+	case database.POSTGRES:
+		return []features.Feature{
+			features.ViewToolPgCompactTableList,
+			features.ViewToolPgCompactTableItem,
+			features.ViewToolPgCompactTableLogs,
+			features.ManageToolPgCompactTableJob,
+		}
+	default:
+		return []features.Feature{}
+	}
 }
 
 func (s *Service) List() ([]Response, error) {

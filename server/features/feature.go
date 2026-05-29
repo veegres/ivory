@@ -64,10 +64,10 @@ const (
 	ManagePermissionDelete Feature = "manage.permission.delete"
 
 	// Tool features
-	ViewToolBloatList  Feature = "view.tool.pg_compacttable.list"
-	ViewToolBloatItem  Feature = "view.tool.pg_compacttable.item"
-	ViewToolBloatLogs  Feature = "view.tool.pg_compacttable.logs"
-	ManageToolBloatJob Feature = "manage.tool.pg_compacttable.job"
+	ViewToolPgCompactTableList  Feature = "view.tool.pg_compacttable.list"
+	ViewToolPgCompactTableItem  Feature = "view.tool.pg_compacttable.item"
+	ViewToolPgCompactTableLogs  Feature = "view.tool.pg_compacttable.logs"
+	ManageToolPgCompactTableJob Feature = "manage.tool.pg_compacttable.job"
 
 	// Management features
 	ViewManagementSecret   Feature = "view.management.secret"
@@ -119,10 +119,10 @@ var All = []Feature{
 	ViewPermissionList,
 	ManagePermissionUpdate,
 	ManagePermissionDelete,
-	ViewToolBloatList,
-	ViewToolBloatItem,
-	ViewToolBloatLogs,
-	ManageToolBloatJob,
+	ViewToolPgCompactTableList,
+	ViewToolPgCompactTableItem,
+	ViewToolPgCompactTableLogs,
+	ManageToolPgCompactTableJob,
 	ViewManagementSecret,
 	ManageManagementSecret,
 	ManageManagementErase,

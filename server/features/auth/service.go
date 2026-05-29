@@ -7,10 +7,8 @@ import (
 	"ivory/clients/auth/oidc"
 	"ivory/features/permission"
 	"ivory/features/secret"
-	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -73,13 +71,12 @@ func (s *Service) GetSupportedTypes() []AuthType {
 	return supported
 }
 
-func (s *Service) ParseAuthToken(context *gin.Context) (bool, string, *AuthType, error) {
+func (s *Service) ParseAuthToken(token string, tokenErr error) (bool, string, *AuthType, error) {
 	if len(s.GetSupportedTypes()) == 0 {
 		return true, "", nil, ErrAuthDisabled
 	}
-	token, errToken := s.getToken(context)
-	if errToken != nil {
-		return false, "", nil, errToken
+	if tokenErr != nil {
+		return false, "", nil, tokenErr
 	}
 	tokenParsed, errParse := s.parseToken(token)
 	if errParse != nil {
@@ -166,31 +163,4 @@ func (s *Service) parseToken(rawIDToken string) (*jwt.Token, error) {
 		return token, nil
 	}
 	return nil, ErrInvalidToken
-}
-
-func (s *Service) getToken(context *gin.Context) (string, error) {
-	authHeader := context.Request.Header.Get("Authorization")
-	if authHeader != "" {
-		return s.getTokenFromHeader(authHeader)
-	}
-	cookieToken, errToken := context.Cookie("token")
-	if cookieToken == "" || errToken != nil {
-		cookieTokenError, _ := context.Cookie("token_error")
-		if cookieTokenError != "" {
-			return "", errors.New(cookieTokenError)
-		}
-		return "", ErrNoAuthorizationToken
-	}
-	return cookieToken, nil
-}
-
-func (s *Service) getTokenFromHeader(str string) (string, error) {
-	if str == "" {
-		return "", ErrNoAuthorizationToken
-	}
-	parts := strings.SplitN(str, " ", 2)
-	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		return "", ErrInvalidAuthorizationHeader
-	}
-	return parts[1], nil
 }

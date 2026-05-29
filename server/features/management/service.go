@@ -16,8 +16,6 @@ import (
 	"ivory/features/vault"
 	"ivory/storage/env"
 	"mime/multipart"
-
-	"github.com/gin-gonic/gin"
 )
 
 type Service struct {
@@ -103,7 +101,7 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	return nil
 }
 
-func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
+func (s *Service) GetAppInfo(token string, tokenErr error) *AppInfo {
 	appConfig, errConfig := s.configService.GetAppConfig()
 	configConfigured := s.configService.GetIsConfigured()
 	authSupported := s.authService.GetSupportedTypes()
@@ -126,7 +124,7 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 		}
 	}
 
-	authorised, user, authError := s.getAuthInfo(context)
+	authorised, user, authError := s.getAuthInfo(token, tokenErr)
 	return &AppInfo{
 		Config: ConfigInfo{
 			Configured: configConfigured,
@@ -144,8 +142,8 @@ func (s *Service) GetAppInfo(context *gin.Context) *AppInfo {
 	}
 }
 
-func (s *Service) getAuthInfo(context *gin.Context) (bool, *UserInfo, string) {
-	authorised, username, authType, errParse := s.authService.ParseAuthToken(context)
+func (s *Service) getAuthInfo(token string, tokenErr error) (bool, *UserInfo, string) {
+	authorised, username, authType, errParse := s.authService.ParseAuthToken(token, tokenErr)
 	if errParse != nil && !errors.Is(errParse, auth.ErrAuthDisabled) {
 		return authorised, nil, errParse.Error()
 	}
