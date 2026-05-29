@@ -3,6 +3,7 @@ package cluster
 import (
 	"errors"
 	"fmt"
+	"ivory/features/job"
 	"ivory/features/node"
 	"ivory/features/vault"
 	"ivory/storage/db"
@@ -176,15 +177,12 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				Options: options,
 			}
 
-			resp, err := s.nodeService.PlatformDeploy(platformReq)
-
-			if err != nil {
-				appendLog(nodeKey, fmt.Sprintf("%v", err))
-			} else if resp.ExitCode != 0 {
-				appendLog(nodeKey, resp.Stderr)
-			} else {
-				appendLog(nodeKey, "deployed")
-			}
+			s.nodeService.PlatformDeploy(platformReq, "cluster-deploy", func(event job.Message) {
+				if event.Message != "" && event.Type == job.LOG || event.Type == job.SERVER {
+					appendLog(nodeKey, event.Message)
+				}
+			})
+			appendLog(nodeKey, "deploy stream finished")
 		}(n)
 	}
 	wg.Wait()

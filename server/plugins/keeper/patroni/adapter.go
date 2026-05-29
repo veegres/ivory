@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"ivory/clients/http"
 	"ivory/features"
-	keeper2 "ivory/plugins/keeper"
+	"ivory/plugins/keeper"
 	nethttp "net/http"
 	"strconv"
 	"strings"
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper2.Adapter = (*Adapter)(nil)
+var _ keeper.Adapter = (*Adapter)(nil)
 
 type Adapter struct {
 	httpClient *http.Client
@@ -35,19 +35,19 @@ func (a *Adapter) SupportedFeatures() []features.Feature {
 	}
 }
 
-func (a *Adapter) List(request keeper2.Request) ([]keeper2.Response, int, error) {
-	var overview []keeper2.Response
+func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
+	var overview []keeper.Response
 
-	response, status, err := http.NewJSONRequest[PatroniCluster](a.httpClient).Get(keeper2.Map(request, "/cluster"))
+	response, status, err := http.NewJSONRequest[PatroniCluster](a.httpClient).Get(keeper.Map(request, "/cluster"))
 	if err != nil {
 		return overview, status, err
 	}
 
-	var keeperStatus keeper2.Status
+	var keeperStatus keeper.Status
 	if response.Pause == false {
-		keeperStatus = keeper2.Active
+		keeperStatus = keeper.Active
 	} else {
-		keeperStatus = keeper2.Paused
+		keeperStatus = keeper.Paused
 	}
 
 	for _, patroniInstance := range response.Members {
@@ -59,7 +59,7 @@ func (a *Adapter) List(request keeper2.Request) ([]keeper2.Response, int, error)
 			return nil, nethttp.StatusBadRequest, errCast
 		}
 
-		overview = append(overview, keeper2.Response{
+		overview = append(overview, keeper.Response{
 			Key:                  &patroniInstance.Name,
 			Status:               &keeperStatus,
 			State:                patroniInstance.State,
@@ -85,10 +85,10 @@ func (a *Adapter) mapLag(lag json.RawMessage) int64 {
 	return -1
 }
 
-func (a *Adapter) mapRestart(restart *PatroniScheduledRestart) *keeper2.ScheduledRestart {
-	var scheduledRestart *keeper2.ScheduledRestart
+func (a *Adapter) mapRestart(restart *PatroniScheduledRestart) *keeper.ScheduledRestart {
+	var scheduledRestart *keeper.ScheduledRestart
 	if restart != nil {
-		scheduledRestart = &keeper2.ScheduledRestart{
+		scheduledRestart = &keeper.ScheduledRestart{
 			PendingRestart: restart.RestartPending,
 			At:             restart.Schedule,
 		}
@@ -96,15 +96,15 @@ func (a *Adapter) mapRestart(restart *PatroniScheduledRestart) *keeper2.Schedule
 	return scheduledRestart
 }
 
-func (a *Adapter) mapSwitchover(host string, switchover *PatroniScheduledSwitchover) *keeper2.ScheduledSwitchover {
-	var scheduledSwitchover *keeper2.ScheduledSwitchover
+func (a *Adapter) mapSwitchover(host string, switchover *PatroniScheduledSwitchover) *keeper.ScheduledSwitchover {
+	var scheduledSwitchover *keeper.ScheduledSwitchover
 	if switchover != nil && switchover.From == host {
 		to := switchover.To
 		if to == "" {
 			to = "(random selection)"
 		}
 
-		scheduledSwitchover = &keeper2.ScheduledSwitchover{
+		scheduledSwitchover = &keeper.ScheduledSwitchover{
 			At: switchover.At,
 			To: to,
 		}
@@ -112,65 +112,65 @@ func (a *Adapter) mapSwitchover(host string, switchover *PatroniScheduledSwitcho
 	return scheduledSwitchover
 }
 
-func (a *Adapter) mapRole(role string) keeper2.Role {
+func (a *Adapter) mapRole(role string) keeper.Role {
 	switch role {
 	case "leader", "master":
-		return keeper2.Leader
+		return keeper.Leader
 	case "replica":
-		return keeper2.Replica
+		return keeper.Replica
 	default:
-		return keeper2.Unknown
+		return keeper.Unknown
 	}
 }
 
-func (a *Adapter) Config(request keeper2.Request) (any, int, error) {
-	return http.NewJSONRequest[any](a.httpClient).Get(keeper2.Map(request, "/config"))
+func (a *Adapter) Config(request keeper.Request) (any, int, error) {
+	return http.NewJSONRequest[any](a.httpClient).Get(keeper.Map(request, "/config"))
 }
 
-func (a *Adapter) ConfigUpdate(request keeper2.Request) (any, int, error) {
-	return http.NewJSONRequest[any](a.httpClient).Patch(keeper2.Map(request, "/config"))
+func (a *Adapter) ConfigUpdate(request keeper.Request) (any, int, error) {
+	return http.NewJSONRequest[any](a.httpClient).Patch(keeper.Map(request, "/config"))
 }
 
-func (a *Adapter) Switchover(request keeper2.Request) (*string, int, error) {
-	return http.NewJSONRequest[string](a.httpClient).Post(keeper2.Map(request, "/switchover"))
+func (a *Adapter) Switchover(request keeper.Request) (*string, int, error) {
+	return http.NewJSONRequest[string](a.httpClient).Post(keeper.Map(request, "/switchover"))
 }
 
-func (a *Adapter) DeleteSwitchover(request keeper2.Request) (*string, int, error) {
-	return http.NewJSONRequest[string](a.httpClient).Delete(keeper2.Map(request, "/switchover"))
+func (a *Adapter) DeleteSwitchover(request keeper.Request) (*string, int, error) {
+	return http.NewJSONRequest[string](a.httpClient).Delete(keeper.Map(request, "/switchover"))
 }
 
-func (a *Adapter) Reinitialize(request keeper2.Request) (*string, int, error) {
-	return http.NewJSONRequest[string](a.httpClient).Post(keeper2.Map(request, "/reinitialize"))
+func (a *Adapter) Reinitialize(request keeper.Request) (*string, int, error) {
+	return http.NewJSONRequest[string](a.httpClient).Post(keeper.Map(request, "/reinitialize"))
 }
 
-func (a *Adapter) Restart(request keeper2.Request) (*string, int, error) {
-	return http.NewJSONRequest[string](a.httpClient).Post(keeper2.Map(request, "/restart"))
+func (a *Adapter) Restart(request keeper.Request) (*string, int, error) {
+	return http.NewJSONRequest[string](a.httpClient).Post(keeper.Map(request, "/restart"))
 }
 
-func (a *Adapter) DeleteRestart(request keeper2.Request) (*string, int, error) {
-	return http.NewJSONRequest[string](a.httpClient).Delete(keeper2.Map(request, "/restart"))
+func (a *Adapter) DeleteRestart(request keeper.Request) (*string, int, error) {
+	return http.NewJSONRequest[string](a.httpClient).Delete(keeper.Map(request, "/restart"))
 }
 
-func (a *Adapter) Reload(request keeper2.Request) (*string, int, error) {
-	return http.NewJSONRequest[string](a.httpClient).Post(keeper2.Map(request, "/reload"))
+func (a *Adapter) Reload(request keeper.Request) (*string, int, error) {
+	return http.NewJSONRequest[string](a.httpClient).Post(keeper.Map(request, "/reload"))
 }
 
-func (a *Adapter) Failover(request keeper2.Request) (*string, int, error) {
-	return http.NewJSONRequest[string](a.httpClient).Post(keeper2.Map(request, "/failover"))
+func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
+	return http.NewJSONRequest[string](a.httpClient).Post(keeper.Map(request, "/failover"))
 }
 
-func (a *Adapter) Activate(request keeper2.Request) (*string, int, error) {
+func (a *Adapter) Activate(request keeper.Request) (*string, int, error) {
 	if request.Body != nil {
-		return nil, nethttp.StatusBadRequest, keeper2.ErrBodyShouldBeEmpty
+		return nil, nethttp.StatusBadRequest, keeper.ErrBodyShouldBeEmpty
 	}
 	request.Body = ConfigPause{Pause: false}
-	return http.NewJSONRequest[string](a.httpClient).Patch(keeper2.Map(request, "/config"))
+	return http.NewJSONRequest[string](a.httpClient).Patch(keeper.Map(request, "/config"))
 }
 
-func (a *Adapter) Pause(request keeper2.Request) (*string, int, error) {
+func (a *Adapter) Pause(request keeper.Request) (*string, int, error) {
 	if request.Body != nil {
-		return nil, nethttp.StatusBadRequest, keeper2.ErrBodyShouldBeEmpty
+		return nil, nethttp.StatusBadRequest, keeper.ErrBodyShouldBeEmpty
 	}
 	request.Body = ConfigPause{Pause: true}
-	return http.NewJSONRequest[string](a.httpClient).Patch(keeper2.Map(request, "/config"))
+	return http.NewJSONRequest[string](a.httpClient).Patch(keeper.Map(request, "/config"))
 }

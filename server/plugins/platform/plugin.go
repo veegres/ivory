@@ -2,7 +2,7 @@ package platform
 
 import (
 	"errors"
-	"ivory/clients/ssh"
+	"ivory/features/job"
 )
 
 var ErrInvalidCpuMetrics = errors.New("invalid cpu metrics output")
@@ -10,22 +10,31 @@ var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
 var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 var ErrClientNotImplemented = errors.New("client is not implemented")
 
+// Connection contains the bare minimum details to execute commands on a platform node.
+type Connection struct {
+	Host       string
+	Port       int
+	Username   string
+	Password   string
+	PrivateKey []byte
+}
+
 type Adapter interface {
 	PlatformManager
 	DeploymentManager
 }
 
 type PlatformManager interface {
-	Metrics(connection ssh.Connection) (*Metrics, error)
-	CopyId(connection ssh.Connection, publicKey string) error
+	Metrics(connection Connection) (*Metrics, error)
+	CopyId(connection Connection, publicKey string) error
 }
 
 type DeploymentManager interface {
-	List(connection ssh.Connection) (*OperationResult, error)
-	Deploy(connection ssh.Connection, options, image string) (*OperationResult, error)
-	Stop(connection ssh.Connection, name string) (*OperationResult, error)
-	Delete(connection ssh.Connection, name string) (*OperationResult, error)
-	Logs(connection ssh.Connection, name string, tail int) (*OperationResult, error)
+	ListCommand(connection Connection) job.Command
+	DeployCommand(connection Connection, options, image string) job.Command
+	StopCommand(connection Connection, name string) job.Command
+	DeleteCommand(connection Connection, name string) job.Command
+	LogsCommand(connection Connection, name string, tail int) job.Command
 }
 
 type PluginRegistry struct {

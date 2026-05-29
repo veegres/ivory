@@ -2,12 +2,13 @@ package tools
 
 import (
 	"errors"
+	"ivory/clients/shell"
 	"ivory/features"
-	"ivory/features/tools/bloat"
+	"ivory/features/job"
+	"ivory/features/tools/pg_compacttable"
 	"ivory/features/vault"
 	"ivory/plugins/database"
 	"ivory/storage/db"
-	"ivory/storage/files"
 )
 
 type Service struct {
@@ -16,19 +17,18 @@ type Service struct {
 
 func NewService(
 	vaultService *vault.Service,
+	shellClient *shell.Client,
+	jobManager *job.Manager,
 ) *Service {
 	// DB
 	st := db.NewStorage("ivory_tools.db")
-	compactTableBucket := db.NewBucket[bloat.Bloat](st, "CompactTable")
-
-	// FILES
-	compactTableFiles := files.NewStorage("pgcompacttable", ".log")
+	compactTableBucket := db.NewBucket[bloat.Response](st, "CompactTable")
 
 	// REPO
-	bloatRepo := bloat.NewRepository(compactTableBucket, compactTableFiles)
+	bloatRepo := bloat.NewRepository(compactTableBucket)
 
 	return &Service{
-		bloat: bloat.NewService(bloatRepo, vaultService),
+		bloat: bloat.NewService(bloatRepo, shellClient, vaultService, jobManager),
 	}
 }
 

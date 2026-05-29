@@ -59,6 +59,18 @@ func (r *Storage) OpenByName(name string) (*os.File, error) {
 	return os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0666)
 }
 
+func (r *Storage) OpenOrCreateByName(name string) (*os.File, error) {
+	path, errPath := r.getPath(name)
+	if errPath != nil {
+		return nil, errPath
+	}
+	return os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+}
+
+func (r *Storage) GetPathByName(name string) (string, error) {
+	return r.getPath(name)
+}
+
 func (r *Storage) ReadByName(name string) ([]byte, error) {
 	path, errPath := r.getPath(name)
 	if errPath != nil {

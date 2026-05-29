@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"ivory/features/job"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -75,4 +76,45 @@ func handleBodyRequestOf[R any, T any](context *gin.Context, action func(request
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"response": body})
+}
+
+func handleStreamParamRequestOf[R any](context *gin.Context, action func(request R, subscriberID job.SubscriberID, send func(event job.Message))) {
+	context.Writer.Header().Set("Cache-Control", "no-transform")
+	context.Writer.Header().Set("Content-Type", "text/event-stream")
+	context.Writer.Flush()
+
+	query := context.Query("request")
+	var request R
+	if err := json.Unmarshal([]byte(query), &request); err != nil {
+		context.SSEvent(job.SERVER.String(), "Streaming failed: "+err.Error())
+		return
+	}
+
+	session := context.GetString("session")
+	action(request, job.SubscriberID(session), func(event job.Message) {
+		context.SSEvent(event.Type.String(), event.Message)
+		context.Writer.Flush()
+	})
+
+	context.Writer.Flush()
+}
+
+func handleStreamBodyRequestOf[R any](context *gin.Context, action func(request R, subscriberID job.SubscriberID, send func(event job.Message))) {
+	context.Writer.Header().Set("Cache-Control", "no-transform")
+	context.Writer.Header().Set("Content-Type", "text/event-stream")
+	context.Writer.Flush()
+
+	var request R
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.SSEvent(job.SERVER.String(), "Streaming failed: "+err.Error())
+		return
+	}
+
+	session := context.GetString("session")
+	action(request, job.SubscriberID(session), func(event job.Message) {
+		context.SSEvent(event.Type.String(), event.Message)
+		context.Writer.Flush()
+	})
+
+	context.Writer.Flush()
 }

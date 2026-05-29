@@ -1,7 +1,7 @@
 package bloat
 
 import (
-	. "ivory/features/tools/bloat/job"
+	"ivory/features/job"
 	"net/http"
 	"strconv"
 
@@ -24,14 +24,14 @@ func (r *Router) GetBloatLogs(context *gin.Context) {
 		return
 	}
 
-	model, errModel := r.bloatService.Get(jobUuid)
-	if errModel != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errModel.Error()})
+	path, errPath := r.bloatService.GetLogsPath(jobUuid)
+	if errPath != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errPath.Error()})
 		return
 	}
 
 	context.Writer.Header().Set("Cache-Control", "no-transform")
-	context.File(model.LogsPath)
+	context.File(path)
 }
 
 func (r *Router) GetBloatList(context *gin.Context) {
@@ -68,70 +68,70 @@ func (r *Router) GetBloat(context *gin.Context) {
 }
 
 func (r *Router) PostJobStart(context *gin.Context) {
-	var cli BloatRequest
-	parseErr := context.ShouldBindJSON(&cli)
+	var request RunRequest
+	parseErr := context.ShouldBindJSON(&request)
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
 		return
 	}
 
 	sb := []string{
-		"--host", cli.Db.Host,
-		"--port", strconv.Itoa(cli.Db.Port),
+		"--host", request.Db.Host,
+		"--port", strconv.Itoa(request.Db.Port),
 	}
 	isDefaultTarget := true
-	if cli.Target != nil {
-		if cli.Target.Database != "" {
-			sb = append(sb, "--dbname", cli.Target.Database)
+	if request.Target != nil {
+		if request.Target.Database != "" {
+			sb = append(sb, "--dbname", request.Target.Database)
 			isDefaultTarget = false
 		}
-		if cli.Target.Schema != "" {
-			sb = append(sb, "--schema", cli.Target.Schema)
+		if request.Target.Schema != "" {
+			sb = append(sb, "--schema", request.Target.Schema)
 			isDefaultTarget = false
 		}
-		if cli.Target.Table != "" {
-			sb = append(sb, "--table", cli.Target.Table)
+		if request.Target.Table != "" {
+			sb = append(sb, "--table", request.Target.Table)
 			isDefaultTarget = false
 		}
-		if cli.Target.ExcludeSchema != "" {
-			sb = append(sb, "--exclude-schema", cli.Target.ExcludeSchema)
+		if request.Target.ExcludeSchema != "" {
+			sb = append(sb, "--exclude-schema", request.Target.ExcludeSchema)
 			isDefaultTarget = false
 		}
-		if cli.Target.ExcludeTable != "" && cli.Target.Schema != "" {
-			sb = append(sb, "--exclude-table", cli.Target.Schema+"."+cli.Target.ExcludeTable)
+		if request.Target.ExcludeTable != "" && request.Target.Schema != "" {
+			sb = append(sb, "--exclude-table", request.Target.Schema+"."+request.Target.ExcludeTable)
 			isDefaultTarget = false
 		}
 	}
 	if isDefaultTarget {
 		sb = append(sb, "--all")
 	}
-	if cli.Options.Force {
+	if request.Options.Force {
 		sb = append(sb, "--force")
 	}
-	if cli.Options.NoReindex {
+	if request.Options.NoReindex {
 		sb = append(sb, "--no-reindex")
 	}
-	if cli.Options.NoInitialVacuum {
+	if request.Options.NoInitialVacuum {
 		sb = append(sb, "--no-initial-vacuum")
 	}
-	if cli.Options.InitialReindex {
+	if request.Options.InitialReindex {
 		sb = append(sb, "--initial-reindex")
 	}
-	if cli.Options.RoutineVacuum {
+	if request.Options.RoutineVacuum {
 		sb = append(sb, "--routine-vacuum")
 	}
-	if cli.Options.DelayRatio != 0 {
-		sb = append(sb, "--delay-ratio", strconv.Itoa(cli.Options.DelayRatio))
+	if request.Options.DelayRatio != 0 {
+		sb = append(sb, "--delay-ratio", strconv.Itoa(request.Options.DelayRatio))
 	}
-	if cli.Options.MinTableSize != 0 {
-		sb = append(sb, "--min-table-size", strconv.Itoa(cli.Options.MinTableSize))
+	if request.Options.MinTableSize != 0 {
+		sb = append(sb, "--min-table-size", strconv.Itoa(request.Options.MinTableSize))
 	}
-	if cli.Options.MaxTableSize != 0 {
-		sb = append(sb, "--max-table-size", strconv.Itoa(cli.Options.MaxTableSize))
+	if request.Options.MaxTableSize != 0 {
+		sb = append(sb, "--max-table-size", strconv.Itoa(request.Options.MaxTableSize))
 	}
 	sb = append(sb, "--verbose")
 
-	model, errStart := r.bloatService.Start(cli.Cluster, cli.VaultId, sb)
+	model, errStart := r.bloatService.Start(request.Cluster, request.VaultId, sb)
 	if errStart != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errStart.Error()})
 		return
@@ -173,20 +173,24 @@ func (r *Router) GetJobStream(context *gin.Context) {
 	// force using correct event-stream if there is no proxy
 	context.Writer.Header().Set("Content-Type", "text/event-stream")
 
-	// start and end stream
-	context.SSEvent(STREAM.String(), START.String())
-	defer context.SSEvent(STREAM.String(), END.String())
 	context.Writer.Flush()
 
-	// find stream job
-	jobUuid, err := uuid.Parse(context.Param("uuid"))
-	if err != nil {
-		context.SSEvent(SERVER.String(), "Streaming failed: Cannot parse UUID")
-		context.SSEvent(STATUS.String(), UNKNOWN.String())
+	// find stream
+	jobId := context.Param("uuid")
+	if jobId == "" {
+		context.SSEvent(job.SERVER.String(), "Streaming failed: Cannot parse UUID")
+		context.SSEvent(job.STATUS.String(), job.UNKNOWN.String())
+		return
+	}
+	jobUuid, errUuid := uuid.Parse(jobId)
+	if errUuid != nil {
+		context.SSEvent(job.SERVER.String(), "Streaming failed: Cannot parse UUID")
+		context.SSEvent(job.STATUS.String(), job.UNKNOWN.String())
 		return
 	}
 
-	r.bloatService.Stream(jobUuid, func(event Event) {
+	session := context.GetString("session")
+	r.bloatService.Stream(jobUuid, job.SubscriberID(session), func(event job.Message) {
 		context.SSEvent(event.Type.String(), event.Message)
 		context.Writer.Flush()
 	})

@@ -20,9 +20,3 @@ export interface Metrics {
     memory: MemoryMetrics,
     network: NetworkMetrics,
 }
-
-export interface OperationResult {
-    stdout: string,
-    stderr: string,
-    exitCode: number,
-}

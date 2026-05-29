@@ -1,11 +1,20 @@
 import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../shared/hook/QueryCustom"
+import {useStream} from "../../shared/hook/Stream"
 import {ClusterApi} from "../cluster/router"
 import {NodeConfig} from "../cluster/type"
 import {Plugin} from "../keeper/type"
 import {NodeApi} from "./router"
-import {KeeperRequest,PlatformConnection,PlatformLogsRequest} from "./type"
+import {KeeperRequest, PlatformConnection, PlatformLogsRequest} from "./type"
+
+export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
+    const {loading, response} = useStream(NodeApi.deployment.logs.url(request))
+    const data = response
+        .filter(r => r.type === "log" || r.type === "server" || r.type === "browser")
+        .map(r => r.message)
+    return {isFetching: loading, data}
+}
 
 export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) {
     return useQuery({
@@ -114,43 +123,5 @@ export function useRouterNodeMetrics(c: PlatformConnection, refetchInterval?: nu
         queryFn: () => NodeApi.metrics.fn(c),
         refetchInterval,
         retry: false,
-    })
-}
-
-export function useRouterNodePlatformList(c: PlatformConnection, enabled: boolean) {
-    return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.deployment.list.key(c.host),
-        queryFn: () => NodeApi.deployment.list.fn(c),
-        enabled,
-    })
-}
-
-export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
-    return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.deployment.logs.key(request.connection.host, request.name),
-        queryFn: () => NodeApi.deployment.logs.fn(request),
-    })
-}
-
-export function useRouterNodePlatformDeploy() {
-    return useMutationAdapter({
-        mutationFn: NodeApi.deployment.deploy.fn,
-        mutationKey: NodeApi.deployment.deploy.key(),
-    })
-}
-
-export function useRouterNodePlatformStop() {
-    return useMutationAdapter({
-        mutationFn: NodeApi.deployment.stop.fn,
-        mutationKey: NodeApi.deployment.stop.key(),
-    })
-}
-
-export function useRouterNodePlatformDelete() {
-    return useMutationAdapter({
-        mutationFn: NodeApi.deployment.delete.fn,
-        mutationKey: NodeApi.deployment.delete.key(),
     })
 }

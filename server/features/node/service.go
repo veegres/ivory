@@ -1,45 +1,47 @@
 package node
 
 import (
-	"crypto/ed25519"
 	"crypto/tls"
 	"errors"
-	"ivory/clients/ssh"
 	"ivory/features"
 	"ivory/features/cert"
+	"ivory/features/job"
 	"ivory/features/vault"
-	keeper2 "ivory/plugins/keeper"
-	platform2 "ivory/plugins/platform"
+	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 )
 
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
-	platformRegistry *platform2.PluginRegistry
-	keeperRegistry   *keeper2.PluginRegistry
+	platformRegistry *platform.PluginRegistry
+	keeperRegistry   *keeper.PluginRegistry
 	vaultService     *vault.Service
 	certService      *cert.Service
+	jobManager       *job.Manager
 
 	dbFeatures map[features.Feature]bool
 }
 
 func NewService(
-	platformRegistry *platform2.PluginRegistry,
-	keeperRegistry *keeper2.PluginRegistry,
+	platformRegistry *platform.PluginRegistry,
+	keeperRegistry *keeper.PluginRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
+	jobManager *job.Manager,
 ) *Service {
 	return &Service{
 		platformRegistry: platformRegistry,
 		keeperRegistry:   keeperRegistry,
 		vaultService:     vaultService,
 		certService:      certService,
+		jobManager:       jobManager,
 
 		dbFeatures: make(map[features.Feature]bool),
 	}
 }
 
-func (s *Service) SupportedFeatures(t keeper2.Plugin) []features.Feature {
+func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
 	c, e := s.keeperRegistry.Get(t)
 	if e != nil {
 		return []features.Feature{}
@@ -47,19 +49,19 @@ func (s *Service) SupportedFeatures(t keeper2.Plugin) []features.Feature {
 	return c.SupportedFeatures()
 }
 
-func (s *Service) getPlatformAdapter(c PlatformVaultConnection) (platform2.Adapter, *ssh.Connection, error) {
-	adapter, err := s.platformRegistry.Get(platform2.Onprem)
+func (s *Service) getPlatformAdapter(c PlatformVaultConnection) (platform.Adapter, platform.Connection, error) {
+	adapter, err := s.platformRegistry.Get(platform.Onprem)
 	if err != nil {
-		return nil, nil, err
+		return nil, platform.Connection{}, err
 	}
 	platformConn, err := s.getPlatformVaultConnection(c)
 	if err != nil {
-		return nil, nil, err
+		return nil, platform.Connection{}, err
 	}
 	return adapter, platformConn, err
 }
 
-func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper2.Adapter, *tls.Config, *keeper2.Credentials, error) {
+func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config, *keeper.Credentials, error) {
 	adapter, err := s.keeperRegistry.Get(c.Plugin)
 	if err != nil {
 		return nil, nil, nil, err
@@ -71,36 +73,35 @@ func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper2.Adapter, *tls.Confi
 			return nil, nil, nil, err
 		}
 	}
-	var cred *keeper2.Credentials
+	var cred *keeper.Credentials
 	if c.VaultId != nil {
 		d, err := s.vaultService.GetDecrypted(*c.VaultId)
 		if err != nil {
 			return nil, nil, nil, err
 		}
-		cred = &keeper2.Credentials{Username: d.Username, Password: d.Secret}
+		cred = &keeper.Credentials{Username: d.Username, Password: d.Secret}
 	}
 	return adapter, tlsConfig, cred, nil
 }
 
-func (s *Service) getPlatformVaultConnection(c PlatformVaultConnection) (*ssh.Connection, error) {
+func (s *Service) getPlatformVaultConnection(c PlatformVaultConnection) (platform.Connection, error) {
 	if c.VaultId == nil {
-		return nil, ErrSshKeyNotSpecified
+		return platform.Connection{}, ErrSshKeyNotSpecified
 	}
 	cred, err := s.vaultService.GetDecrypted(*c.VaultId)
 	if err != nil {
-		return nil, err
+		return platform.Connection{}, err
 	}
-	prvKey := ed25519.PrivateKey(cred.Secret)
-	return &ssh.Connection{
+	return platform.Connection{
 		Host:       c.Host,
 		Port:       c.Port,
 		Username:   cred.Username,
-		PrivateKey: &prvKey,
+		PrivateKey: []byte(cred.Secret),
 	}, nil
 }
 
-func (s *Service) getPlatformCredConnection(c PlatformCredConnection) *ssh.Connection {
-	return &ssh.Connection{
+func (s *Service) getPlatformCredConnection(c PlatformCredConnection) platform.Connection {
+	return platform.Connection{
 		Host:     c.Host,
 		Port:     c.Port,
 		Username: c.Username,

@@ -2,7 +2,7 @@ import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
 import {KeeperResponse as BaseKeeperResponse, Plugin as KeeperPlugin, Status as KeeperStatus} from "../keeper/type"
-import {Metrics,OperationResult} from "../platform/type"
+import {Metrics} from "../platform/type"
 import {Connection as QueryConnection} from "../query/type"
 
 // COMMON (WEB AND SERVER)
@@ -43,8 +43,6 @@ export interface PlatformLogsRequest {
     name: string,
     tail?: number,
 }
-
-export type PlatformResponse = OperationResult
 
 // SPECIFIC (WEB)
 

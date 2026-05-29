@@ -4,11 +4,8 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"net"
-	"net/url"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -16,12 +13,9 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var ErrCommandEmpty = errors.New("command cannot be empty")
-var ErrHostEmpty = errors.New("vm host cannot be empty")
-
 type Client struct {
-	timeout    time.Duration
 	mu         sync.RWMutex
+	timeout    time.Duration
 	knownHosts map[string][]byte
 	dial       func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error)
 }
@@ -49,81 +43,22 @@ func (c *Client) GenerateKey() (string, string, error) {
 	return sshPubKeyAuthComment, string(prvKey), nil
 }
 
-func (c *Client) Execute(connection Connection, command string) (*CommandResult, error) {
-	trimmed := strings.TrimSpace(command)
-	if trimmed == "" {
-		return nil, ErrCommandEmpty
-	}
-
-	var auth []ssh.AuthMethod
-	if connection.PrivateKey != nil {
-		signer, err := ssh.NewSignerFromKey(*connection.PrivateKey)
-		if err != nil {
-			return nil, err
-		}
-		auth = append(auth, ssh.PublicKeys(signer))
-	}
-	if connection.Password != "" {
-		auth = append(auth, ssh.Password(connection.Password))
-	}
-
-	config := &ssh.ClientConfig{
-		User:            connection.Username,
-		Auth:            auth,
+func (c *Client) Command(connection Command, command string) *Command {
+	return &Command{
+		Host:            connection.Host,
+		Port:            connection.Port,
+		Username:        connection.Username,
+		Password:        connection.Password,
+		PrivateKey:      connection.PrivateKey,
+		Command:         command,
 		HostKeyCallback: c.hostKeyCallback,
 		Timeout:         c.timeout,
+		dial:            c.dial,
 	}
-
-	target, err := c.getDialAddress(connection)
-	if err != nil {
-		return nil, err
-	}
-
-	conn, err := c.dial("tcp", target, config)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	session, err := conn.NewSession()
-	if err != nil {
-		return nil, err
-	}
-	defer session.Close()
-
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	session.Stdout = &stdout
-	session.Stderr = &stderr
-
-	result := &CommandResult{}
-	err = session.Run(trimmed)
-	result.Stdout = stdout.String()
-	result.Stderr = stderr.String()
-
-	var exitErr *ssh.ExitError
-	if errors.As(err, &exitErr) {
-		result.ExitCode = exitErr.ExitStatus()
-		return result, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	result.ExitCode = 0
-	return result, nil
 }
 
-func (c *Client) CopyId(connection Connection, publicKey string) error {
-	command := fmt.Sprintf(`mkdir -p ~/.ssh && chmod 700 ~/.ssh && (grep -qF "%s" ~/.ssh/authorized_keys 2>/dev/null || echo "%s" >> ~/.ssh/authorized_keys) && chmod 600 ~/.ssh/authorized_keys`, publicKey, publicKey)
-	res, err := c.Execute(connection, command)
-	if err != nil {
-		return err
-	}
-	if res.ExitCode != 0 {
-		return errors.New(res.Stderr)
-	}
-	return nil
+func (c *Client) getDialAddress(connection Command) (string, error) {
+	return connection.getDialAddress()
 }
 
 func (c *Client) hostKeyCallback(hostname string, _ net.Addr, key ssh.PublicKey) error {
@@ -145,35 +80,4 @@ func (c *Client) hostKeyCallback(hostname string, _ net.Addr, key ssh.PublicKey)
 	}
 
 	return nil
-}
-
-func (c *Client) getDialAddress(connection Connection) (string, error) {
-	host := strings.TrimSpace(connection.Host)
-	if host == "" {
-		return "", ErrHostEmpty
-	}
-
-	if strings.Contains(host, "://") {
-		parsed, err := url.Parse(host)
-		if err != nil {
-			return "", err
-		}
-		if parsed.Hostname() != "" {
-			port := connection.Port
-			if parsed.Port() != "" {
-				parsedPort, err := strconv.Atoi(parsed.Port())
-				if err != nil {
-					return "", err
-				}
-				port = parsedPort
-			}
-			return net.JoinHostPort(parsed.Hostname(), strconv.Itoa(port)), nil
-		}
-	}
-
-	if _, _, err := net.SplitHostPort(host); err == nil {
-		return host, nil
-	}
-
-	return net.JoinHostPort(host, strconv.Itoa(connection.Port)), nil
 }

@@ -189,9 +189,9 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	deploymentGroup := platformGroup.Group("/deployment")
 	deploymentGroup.GET("", rp.ValidateMethodMiddleware(features.ViewNodePlatformDeployment), r.GetPlatformList)
 	deploymentGroup.GET("/logs", rp.ValidateMethodMiddleware(features.ViewNodePlatformDeployment), r.GetPlatformLogs)
-	deploymentGroup.POST("/stop", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.PostPlatformStop)
-	deploymentGroup.POST("/deploy", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.PostPlatformDeploy)
-	deploymentGroup.POST("/delete", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.PostPlatformDelete)
+	deploymentGroup.GET("/stop", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.GetPlatformStop)
+	deploymentGroup.GET("/deploy", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.GetPlatformDeploy)
+	deploymentGroup.GET("/delete", rp.ValidateMethodMiddleware(features.ManageNodePlatformDeployment), r.GetPlatformDelete)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {

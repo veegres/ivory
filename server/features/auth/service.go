@@ -2,8 +2,8 @@ package auth
 
 import (
 	"errors"
-	basic2 "ivory/clients/auth/basic"
-	ldap2 "ivory/clients/auth/ldap"
+	"ivory/clients/auth/basic"
+	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
 	"ivory/features/permission"
 	"ivory/features/secret"
@@ -22,8 +22,8 @@ var ErrInvalidAuthorizationHeader = errors.New("invalid authorisation header")
 
 type Service struct {
 	secretService     *secret.Service
-	basicProvider     *basic2.Provider
-	ldapProvider      *ldap2.Provider
+	basicProvider     *basic.Provider
+	ldapProvider      *ldap.Provider
 	oidcProvider      *oidc.Provider
 	permissionService *permission.Service
 
@@ -37,8 +37,8 @@ type Service struct {
 
 func NewService(
 	secretService *secret.Service,
-	basicProvider *basic2.Provider,
-	ldapProvider *ldap2.Provider,
+	basicProvider *basic.Provider,
+	ldapProvider *ldap.Provider,
 	oidcProvider *oidc.Provider,
 	permissionService *permission.Service,
 ) *Service {
@@ -97,7 +97,7 @@ func (s *Service) ParseAuthToken(context *gin.Context) (bool, string, *AuthType,
 	return true, username, &authType, nil
 }
 
-func (s *Service) GenerateBasicAuthToken(login basic2.Login) (string, *time.Time, error) {
+func (s *Service) GenerateBasicAuthToken(login basic.Login) (string, *time.Time, error) {
 	username, err := s.basicProvider.Verify(login)
 	if err != nil {
 		return "", nil, err
@@ -109,7 +109,7 @@ func (s *Service) GenerateBasicAuthToken(login basic2.Login) (string, *time.Time
 	return s.generateToken(username, BASIC)
 }
 
-func (s *Service) GenerateLdapAuthToken(login ldap2.Login) (string, *time.Time, error) {
+func (s *Service) GenerateLdapAuthToken(login ldap.Login) (string, *time.Time, error) {
 	username, err := s.ldapProvider.Verify(login)
 	if err != nil {
 		return "", nil, err

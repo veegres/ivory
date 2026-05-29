@@ -64,10 +64,10 @@ const (
 	ManagePermissionDelete Feature = "manage.permission.delete"
 
 	// Tool features
-	ViewToolBloatList  Feature = "view.tool.bloat.list"
-	ViewToolBloatItem  Feature = "view.tool.bloat.item"
-	ViewToolBloatLogs  Feature = "view.tool.bloat.logs"
-	ManageToolBloatJob Feature = "manage.tool.bloat.job"
+	ViewToolBloatList  Feature = "view.tool.pg_compacttable.list"
+	ViewToolBloatItem  Feature = "view.tool.pg_compacttable.item"
+	ViewToolBloatLogs  Feature = "view.tool.pg_compacttable.logs"
+	ManageToolBloatJob Feature = "manage.tool.pg_compacttable.job"
 
 	// Management features
 	ViewManagementSecret   Feature = "view.management.secret"

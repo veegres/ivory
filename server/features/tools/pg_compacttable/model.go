@@ -1,35 +1,34 @@
 package bloat
 
 import (
-	. "ivory/features/tools/bloat/job"
+	"ivory/features/job"
 	"ivory/plugins/database"
-	"os"
 
 	"github.com/google/uuid"
 )
 
 // COMMON (WEB AND SERVER)
 
-type Bloat struct {
+type Response struct {
 	Uuid        uuid.UUID  `json:"uuid"`
+	JobId       job.JobID  `json:"jobId"`
 	Cluster     string     `json:"cluster"`
 	VaultId     *uuid.UUID `json:"vaultId"`
-	Status      JobStatus  `json:"status"`
+	Status      job.Status `json:"status"`
 	Command     string     `json:"command"`
 	CommandArgs []string   `json:"commandArgs"`
-	LogsPath    string     `json:"logsPath"`
 	CreatedAt   int64      `json:"createdAt"`
 }
 
-type BloatRequest struct {
+type RunRequest struct {
 	Cluster string          `json:"cluster"`
 	Db      database.Config `json:"db"`
 	VaultId *uuid.UUID      `json:"vaultId"`
-	Target  *BloatTarget    `json:"target"`
-	Options BloatOptions    `json:"options"`
+	Target  *Target         `json:"target"`
+	Options Options         `json:"options"`
 }
 
-type BloatTarget struct {
+type Target struct {
 	Database      string `json:"database"`
 	Schema        string `json:"schema"`
 	Table         string `json:"table"`
@@ -37,7 +36,7 @@ type BloatTarget struct {
 	ExcludeTable  string `json:"excludeTable"`
 }
 
-type BloatOptions struct {
+type Options struct {
 	Force           bool `json:"force"`
 	NoReindex       bool `json:"noReindex"`
 	NoInitialVacuum bool `json:"noInitialVacuum"`
@@ -46,12 +45,4 @@ type BloatOptions struct {
 	DelayRatio      int  `json:"delayRatio"`
 	MinTableSize    int  `json:"minTableSize"`
 	MaxTableSize    int  `json:"maxTableSize"`
-}
-
-// SPECIFIC (SERVER)
-
-type element struct {
-	job    *Job
-	model  *Bloat
-	writer *os.File
 }

@@ -6,7 +6,6 @@ import {
     PlatformConnection,
     PlatformDeployRequest,
     PlatformLogsRequest,
-    PlatformResponse,
 } from "./type"
 
 
@@ -78,29 +77,19 @@ export const NodeApi = {
     },
     deployment: {
         list: {
-            key: (host: string) => ["node", "platform", "deployment", "list", host],
-            fn: (request: PlatformConnection) => api.get<R<PlatformResponse>>("/node/platform/deployment", {params: {request: JSON.stringify(request)}})
-                .then((response) => response.data.response),
+            url: (request: PlatformConnection) => `/api/node/platform/deployment?request=${encodeURIComponent(JSON.stringify(request))}`,
         },
         logs: {
-            key: (host: string, name: string) => ["node", "platform", "deployment", "logs", host, name],
-            fn: (request: PlatformLogsRequest) => api.get<R<PlatformResponse>>("/node/platform/deployment/logs", {params: {request: JSON.stringify(request)}})
-                .then((response) => response.data.response.stdout.split("\n")),
+            url: (request: PlatformLogsRequest) => `/api/node/platform/deployment/logs?request=${encodeURIComponent(JSON.stringify(request))}`,
         },
         deploy: {
-            key: () => ["node", "platform", "deployment", "deploy"],
-            fn: (request: PlatformDeployRequest) => api.post<R<PlatformResponse>>("/node/platform/deployment/deploy", request)
-                .then((response) => response.data.response),
+            url: (request: PlatformDeployRequest) => `/api/node/platform/deployment/deploy?request=${encodeURIComponent(JSON.stringify(request))}`,
         },
         stop: {
-            key: () => ["node", "platform", "deployment", "stop"],
-            fn: (request: PlatformDeployRequest) => api.post<R<PlatformResponse>>("/node/platform/deployment/stop", request)
-                .then((response) => response.data.response),
+            url: (request: PlatformDeployRequest) => `/api/node/platform/deployment/stop?request=${encodeURIComponent(JSON.stringify(request))}`,
         },
         delete: {
-            key: () => ["node", "platform", "deployment", "delete"],
-            fn: (request: PlatformDeployRequest) => api.post<R<PlatformResponse>>("/node/platform/deployment/delete", request)
-                .then((response) => response.data.response),
+            url: (request: PlatformDeployRequest) => `/api/node/platform/deployment/delete?request=${encodeURIComponent(JSON.stringify(request))}`,
         }
     }
 }

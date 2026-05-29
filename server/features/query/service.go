@@ -7,7 +7,7 @@ import (
 	"ivory/features/cert"
 	"ivory/features/secret"
 	"ivory/features/vault"
-	database2 "ivory/plugins/database"
+	"ivory/plugins/database"
 )
 
 var ErrQueryEmpty = errors.New("query is empty")
@@ -20,18 +20,18 @@ var ErrDeletionOfSystemQueriesRestricted = errors.New("deletion of system querie
 
 type Service struct {
 	repository       *Repository
-	databaseRegistry *database2.PluginRegistry
+	databaseRegistry *database.PluginRegistry
 	vaultService     *vault.Service
 	certService      *cert.Service
 	secretService    *secret.Service
 
 	appName  string
-	chartMap map[database2.Plugin]map[ChartType]Request
+	chartMap map[database.Plugin]map[ChartType]Request
 }
 
 func NewService(
 	repository *Repository,
-	databaseRegistry *database2.PluginRegistry,
+	databaseRegistry *database.PluginRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 	secretService *secret.Service,
@@ -57,7 +57,7 @@ func (s *Service) GetApplicationName(session string) string {
 	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *Service) SupportedFeatures(t database2.Plugin) []features.Feature {
+func (s *Service) SupportedFeatures(t database.Plugin) []features.Feature {
 	c, e := s.databaseRegistry.Get(t)
 	if e != nil {
 		return []features.Feature{}
@@ -65,17 +65,17 @@ func (s *Service) SupportedFeatures(t database2.Plugin) []features.Feature {
 	return c.SupportedFeatures()
 }
 
-func (s *Service) getDatabaseAdapter(queryCtx Context) (database2.Adapter, database2.Context, error) {
+func (s *Service) getDatabaseAdapter(queryCtx Context) (database.Adapter, database.Context, error) {
 	ctx, err := s.mapContext(queryCtx)
 	if err != nil {
-		return nil, database2.Context{}, err
+		return nil, database.Context{}, err
 	}
 	client, err := s.databaseRegistry.Get(ctx.Connection.Config.Plugin)
 	return client, ctx, err
 }
 
 func (s *Service) initializeSystemCharts() {
-	s.chartMap = make(map[database2.Plugin]map[ChartType]Request)
+	s.chartMap = make(map[database.Plugin]map[ChartType]Request)
 	for t, adapter := range s.databaseRegistry.All() {
 		s.chartMap[t] = make(map[ChartType]Request)
 		for name, query := range adapter.SystemCharts() {
@@ -101,7 +101,7 @@ func (s *Service) initializeSystemQueries() error {
 	return nil
 }
 
-func (s *Service) mapSystemRequest(req database2.SystemRequest) Request {
+func (s *Service) mapSystemRequest(req database.SystemRequest) Request {
 	t := req.Type
 	v := make([]VarietyType, len(req.Varieties))
 	for i, val := range req.Varieties {

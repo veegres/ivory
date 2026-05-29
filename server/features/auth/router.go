@@ -25,15 +25,17 @@ func NewRouter(authService *Service, path string, tlsEnabled bool) *Router {
 
 func (r *Router) SessionMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		_, errCookie := context.Cookie("session")
+		session, errCookie := context.Cookie("session")
 		if errCookie != nil {
-			session, errToken := uuid.NewUUID()
+			id, errToken := uuid.NewUUID()
 			if errToken != nil {
 				context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": errToken.Error()})
 				return
 			}
-			r.setCookieSession(context, session.String())
+			session = id.String()
+			r.setCookieSession(context, session)
 		}
+		context.Set("session", session)
 		context.Next()
 	}
 }

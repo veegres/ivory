@@ -5,6 +5,7 @@ import (
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
 	"ivory/clients/http"
+	"ivory/clients/shell"
 	"ivory/clients/ssh"
 	"ivory/features/auth"
 	"ivory/features/backup"
@@ -12,6 +13,7 @@ import (
 	"ivory/features/cluster"
 	"ivory/features/config"
 	"ivory/features/encryption"
+	"ivory/features/job"
 	"ivory/features/management"
 	"ivory/features/node"
 	"ivory/features/permission"
@@ -64,6 +66,7 @@ func NewContext() *Context {
 	certFiles := files.NewStorage("cert", ".crt")
 	configFiles := files.NewStorage("config", ".json")
 	queryLogFiles := files.NewStorage("query", ".jsonl")
+	jobFiles := files.NewStorage("job", ".log")
 
 	// REPOS
 	clusterRepo := cluster.NewRepository(clusterBucket)
@@ -77,6 +80,10 @@ func NewContext() *Context {
 	// CLIENTS
 	httpClient := http.NewClient()
 	sshClient := ssh.NewClient()
+	shellClient := shell.NewClient()
+
+	// MANAGERS
+	jobManager := job.NewManager(jobFiles)
 
 	// ADAPTERS
 	patroniAdapter := patroni.NewAdapter(httpClient)
@@ -102,9 +109,9 @@ func NewContext() *Context {
 	vaultService := vault.NewService(vaultRepo, sshClient, secretService, encryptionService)
 	permissionService := permission.NewService(permissionRepo)
 	certService := cert.NewService(certRepo)
-	nodeService := node.NewService(platformPlugins, keeperPlugins, vaultService, certService)
+	nodeService := node.NewService(platformPlugins, keeperPlugins, vaultService, certService, jobManager)
 	tagService := tag.NewService(tagRepo)
-	toolsService := tools.NewService(vaultService)
+	toolsService := tools.NewService(vaultService, shellClient, jobManager)
 	queryService := query.NewService(queryRepo, dbPlugins, vaultService, certService, secretService, appEnv.Version.Label)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsService, vaultService)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)

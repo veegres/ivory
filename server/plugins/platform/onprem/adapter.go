@@ -1,67 +1,87 @@
 package onprem
 
 import (
+	"crypto/ed25519"
 	"fmt"
-	ssh2 "ivory/clients/ssh"
-	platform2 "ivory/plugins/platform"
+	"ivory/clients/ssh"
+	"ivory/features/job"
+	"ivory/plugins/platform"
 	"strconv"
 	"strings"
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ platform2.Adapter = (*Adapter)(nil)
+var _ platform.Adapter = (*Adapter)(nil)
 
 type Adapter struct {
-	sshClient *ssh2.Client
+	sshClient *ssh.Client
 }
 
-func NewAdapter(sshClient *ssh2.Client) *Adapter {
+func NewAdapter(sshClient *ssh.Client) *Adapter {
 	return &Adapter{sshClient}
 }
 
-func (a *Adapter) Metrics(connection ssh2.Connection) (*platform2.Metrics, error) {
-	result, err := a.sshClient.Execute(connection, MetricsCommand)
+func (a *Adapter) Metrics(connection platform.Connection) (*platform.Metrics, error) {
+	result, err := a.execute(connection, MetricsCommand)
 	if err != nil {
 		return nil, err
 	}
-	return a.parseMetrics(result.Stdout)
+	return a.parseMetrics(strings.Join(result, "\n"))
 }
 
-func (a *Adapter) CopyId(connection ssh2.Connection, publicKey string) error {
-	return a.sshClient.CopyId(connection, publicKey)
+func (a *Adapter) CopyId(connection platform.Connection, publicKey string) error {
+	command := fmt.Sprintf(`mkdir -p ~/.ssh && chmod 700 ~/.ssh && (grep -qF "%s" ~/.ssh/authorized_keys 2>/dev/null || echo "%s" >> ~/.ssh/authorized_keys) && chmod 600 ~/.ssh/authorized_keys`, publicKey, publicKey)
+	_, err := a.execute(connection, command)
+	return err
 }
 
-func (a *Adapter) List(connection ssh2.Connection) (*platform2.OperationResult, error) {
-	return a.executeDocker(connection, "ps -a")
+func (a *Adapter) ListCommand(connection platform.Connection) job.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
 }
 
-func (a *Adapter) Deploy(connection ssh2.Connection, options, image string) (*platform2.OperationResult, error) {
-	return a.executeDocker(connection, fmt.Sprintf("run -d %s %s", options, image))
+func (a *Adapter) DeployCommand(connection platform.Connection, options, image string) job.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(fmt.Sprintf("run -d %s %s", options, image)))
 }
 
-func (a *Adapter) Stop(connection ssh2.Connection, name string) (*platform2.OperationResult, error) {
-	return a.executeDocker(connection, "stop "+name)
+func (a *Adapter) StopCommand(connection platform.Connection, name string) job.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop "+name))
 }
 
-func (a *Adapter) Delete(connection ssh2.Connection, name string) (*platform2.OperationResult, error) {
-	return a.executeDocker(connection, "rm "+name)
+func (a *Adapter) DeleteCommand(connection platform.Connection, name string) job.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm "+name))
 }
 
-func (a *Adapter) Logs(connection ssh2.Connection, name string, tail int) (*platform2.OperationResult, error) {
+func (a *Adapter) LogsCommand(connection platform.Connection, name string, tail int) job.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(a.getLogsCommand(name, tail)))
+}
+
+func (a *Adapter) getLogsCommand(name string, tail int) string {
 	command := "logs "
 	if tail > 0 {
 		command += "--tail " + strconv.Itoa(tail) + " "
 	}
 	command += name
-	return a.executeDocker(connection, command)
+	return command
 }
 
-func (a *Adapter) executeDocker(connection ssh2.Connection, command string) (*platform2.OperationResult, error) {
-	res, err := a.sshClient.Execute(connection, a.normalizeDockerCommand(command))
-	if err != nil {
-		return nil, err
+func (a *Adapter) execute(connection platform.Connection, command string) ([]string, error) {
+	cmd := a.sshClient.Command(a.mapToSshCommand(connection), command)
+	return cmd.Execute()
+}
+
+func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Command {
+	var prvKey *ed25519.PrivateKey
+	if len(conn.PrivateKey) > 0 {
+		pk := ed25519.PrivateKey(conn.PrivateKey)
+		prvKey = &pk
 	}
-	return &platform2.OperationResult{Stdout: res.Stdout, Stderr: res.Stderr, ExitCode: res.ExitCode}, nil
+	return ssh.Command{
+		Host:       conn.Host,
+		Port:       conn.Port,
+		Username:   conn.Username,
+		Password:   conn.Password,
+		PrivateKey: prvKey,
+	}
 }
 
 func (a *Adapter) normalizeDockerCommand(command string) string {
@@ -75,7 +95,7 @@ func (a *Adapter) normalizeDockerCommand(command string) string {
 	return "docker " + trimmed
 }
 
-func (a *Adapter) parseMetrics(output string) (*platform2.Metrics, error) {
+func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
 	sections := a.splitMetricsOutput(output)
 
 	for _, key := range []string{"__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__"} {
@@ -97,7 +117,7 @@ func (a *Adapter) parseMetrics(output string) (*platform2.Metrics, error) {
 		return nil, err
 	}
 
-	return &platform2.Metrics{
+	return &platform.Metrics{
 		Cpu:     cpu,
 		Memory:  memory,
 		Network: network,
@@ -124,23 +144,23 @@ func (a *Adapter) splitMetricsOutput(output string) map[string][]string {
 	return sections
 }
 
-func (a *Adapter) parseCpuMetrics(lines []string) (platform2.CpuMetrics, error) {
+func (a *Adapter) parseCpuMetrics(lines []string) (platform.CpuMetrics, error) {
 	if len(lines) == 0 {
-		return platform2.CpuMetrics{}, platform2.ErrInvalidCpuMetrics
+		return platform.CpuMetrics{}, platform.ErrInvalidCpuMetrics
 	}
 
 	total, idle, err := a.parseCpuLine(lines[0])
 	if err != nil {
-		return platform2.CpuMetrics{}, err
+		return platform.CpuMetrics{}, err
 	}
 
-	return platform2.CpuMetrics{TotalTicks: total, IdleTicks: idle}, nil
+	return platform.CpuMetrics{TotalTicks: total, IdleTicks: idle}, nil
 }
 
 func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
 	fields := strings.Fields(line)
 	if len(fields) < 5 || fields[0] != "cpu" {
-		return 0, 0, platform2.ErrInvalidCpuMetrics
+		return 0, 0, platform.ErrInvalidCpuMetrics
 	}
 
 	var total uint64
@@ -167,20 +187,20 @@ func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
 	return total, idle, nil
 }
 
-func (a *Adapter) parseMemoryMetrics(lines []string) (platform2.MemoryMetrics, error) {
+func (a *Adapter) parseMemoryMetrics(lines []string) (platform.MemoryMetrics, error) {
 	if len(lines) < 2 {
-		return platform2.MemoryMetrics{}, platform2.ErrInvalidMemoryMetrics
+		return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 	}
 
 	values := make(map[string]uint64)
 	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) < 2 {
-			return platform2.MemoryMetrics{}, platform2.ErrInvalidMemoryMetrics
+			return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 		}
 		value, err := strconv.ParseUint(fields[1], 10, 64)
 		if err != nil {
-			return platform2.MemoryMetrics{}, err
+			return platform.MemoryMetrics{}, err
 		}
 		values[strings.TrimSuffix(fields[0], ":")] = value * 1024
 	}
@@ -188,16 +208,16 @@ func (a *Adapter) parseMemoryMetrics(lines []string) (platform2.MemoryMetrics, e
 	total := values["MemTotal"]
 	available := values["MemAvailable"]
 	if total == 0 {
-		return platform2.MemoryMetrics{}, platform2.ErrInvalidMemoryMetrics
+		return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 	}
 
-	return platform2.MemoryMetrics{
+	return platform.MemoryMetrics{
 		TotalBytes:     total,
 		AvailableBytes: available,
 	}, nil
 }
 
-func (a *Adapter) parseNetworkMetrics(lines []string) (platform2.NetworkMetrics, error) {
+func (a *Adapter) parseNetworkMetrics(lines []string) (platform.NetworkMetrics, error) {
 	var received uint64
 	var transmitted uint64
 	for _, line := range lines {
@@ -213,23 +233,23 @@ func (a *Adapter) parseNetworkMetrics(lines []string) (platform2.NetworkMetrics,
 
 		fields := strings.Fields(parts[1])
 		if len(fields) < 16 {
-			return platform2.NetworkMetrics{}, platform2.ErrInvalidNetworkMetrics
+			return platform.NetworkMetrics{}, platform.ErrInvalidNetworkMetrics
 		}
 
 		rx, err := strconv.ParseUint(fields[0], 10, 64)
 		if err != nil {
-			return platform2.NetworkMetrics{}, err
+			return platform.NetworkMetrics{}, err
 		}
 		tx, err := strconv.ParseUint(fields[8], 10, 64)
 		if err != nil {
-			return platform2.NetworkMetrics{}, err
+			return platform.NetworkMetrics{}, err
 		}
 
 		received += rx
 		transmitted += tx
 	}
 
-	return platform2.NetworkMetrics{
+	return platform.NetworkMetrics{
 		ReceivedBytes:    received,
 		TransmittedBytes: transmitted,
 	}, nil

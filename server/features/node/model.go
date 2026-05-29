@@ -69,6 +69,6 @@ type PlatformLogsRequest struct {
 	Tail       int                     `json:"tail" form:"tail"`
 }
 
-type PlatformResponse = platform.OperationResult
+type PlatformResponse = []string
 
 // SPECIFIC (SERVER)

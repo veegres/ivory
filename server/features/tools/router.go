@@ -1,6 +1,6 @@
 package tools
 
-import "ivory/features/tools/bloat"
+import "ivory/features/tools/pg_compacttable"
 
 type Router struct {
 	Bloat *bloat.Router
