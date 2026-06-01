@@ -11,10 +11,10 @@ import (
 type Service struct {
 	mu      *sync.Mutex
 	jobs    map[JobID]*Job
-	storage *store.Storage
+	storage *store.FileStorage
 }
 
-func NewService(storage *store.Storage) *Service {
+func NewService(storage *store.FileStorage) *Service {
 	return &Service{
 		mu:      &sync.Mutex{},
 		jobs:    make(map[JobID]*Job),

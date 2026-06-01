@@ -18,7 +18,7 @@ var ErrConfigAlreadySet = errors.New("config is already set; to change it, you n
 var ErrCompanyNameEmpty = errors.New("company name cannot be empty")
 
 type Service struct {
-	configFiles       *store.Storage
+	configFiles       *store.FileStorage
 	encryptionService *encryption.Service
 	secretService     *secret.Service
 	authService       *auth.Service
@@ -33,7 +33,7 @@ type Service struct {
 }
 
 func NewService(
-	configFiles *store.Storage,
+	configFiles *store.FileStorage,
 	encryptionService *encryption.Service,
 	secretService *secret.Service,
 	authService *auth.Service,

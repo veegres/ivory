@@ -18,10 +18,10 @@ type Job struct {
 	subscribers map[SubscriberID]chan Message
 	status      Status
 	mu          sync.RWMutex
-	storage     *store.Storage
+	storage     *store.FileStorage
 }
 
-func NewJob(cmd console.Command, storage *store.Storage) *Job {
+func NewJob(cmd console.Command, storage *store.FileStorage) *Job {
 	return &Job{
 		subscribers: make(map[SubscriberID]chan Message),
 		cmd:         cmd,

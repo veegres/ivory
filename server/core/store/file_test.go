@@ -7,7 +7,7 @@ import (
 )
 
 // Helper to create a test storage with cleanup
-func createTestStorage(t *testing.T) *Storage {
+func createTestStorage(t *testing.T) *FileStorage {
 	t.Helper()
 
 	// Create temporary directory for test storage
@@ -22,7 +22,7 @@ func createTestStorage(t *testing.T) *Storage {
 	})
 
 	// Create storage in temporary location
-	storage := &Storage{
+	storage := &FileStorage{
 		path: tmpDir,
 		ext:  ".txt",
 	}
@@ -395,8 +395,8 @@ func TestStorage_MultipleExtensions(t *testing.T) {
 		tmpDir, _ := os.MkdirTemp("", "files-ext-test-*")
 		defer os.RemoveAll(tmpDir)
 
-		storageJson := &Storage{path: tmpDir + "/json", ext: ".json"}
-		storageTxt := &Storage{path: tmpDir + "/txt", ext: ".txt"}
+		storageJson := &FileStorage{path: tmpDir + "/json", ext: ".json"}
+		storageTxt := &FileStorage{path: tmpDir + "/txt", ext: ".txt"}
 
 		os.MkdirAll(storageJson.path, os.ModePerm)
 		os.MkdirAll(storageTxt.path, os.ModePerm)

@@ -9,12 +9,12 @@ import (
 var ErrFileNameEmpty = errors.New("file name cannot be empty")
 var ErrFileNameInvalidChars = errors.New("file name contains invalid characters '/', '.'")
 
-type Storage struct {
+type FileStorage struct {
 	path string
 	ext  string
 }
 
-func NewFileStorage(name string, ext string) *Storage {
+func NewFileStorage(name string, ext string) *FileStorage {
 	path := "data/" + name
 
 	err := os.MkdirAll(path, os.ModePerm)
@@ -22,13 +22,13 @@ func NewFileStorage(name string, ext string) *Storage {
 		panic(err)
 	}
 
-	return &Storage{
+	return &FileStorage{
 		path: path,
 		ext:  ext,
 	}
 }
 
-func (r *Storage) CreateByName(name string) (string, error) {
+func (r *FileStorage) CreateByName(name string) (string, error) {
 	path, err := r.getPath(name)
 	if err != nil {
 		return "", err
@@ -40,7 +40,7 @@ func (r *Storage) CreateByName(name string) (string, error) {
 	return path, nil
 }
 
-func (r *Storage) ExistByName(name string) bool {
+func (r *FileStorage) ExistByName(name string) bool {
 	path, errPath := r.getPath(name)
 	if errPath != nil {
 		return false
@@ -51,7 +51,7 @@ func (r *Storage) ExistByName(name string) bool {
 	return false
 }
 
-func (r *Storage) OpenByName(name string) (*os.File, error) {
+func (r *FileStorage) OpenByName(name string) (*os.File, error) {
 	path, errPath := r.getPath(name)
 	if errPath != nil {
 		return nil, errPath
@@ -59,7 +59,7 @@ func (r *Storage) OpenByName(name string) (*os.File, error) {
 	return os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0666)
 }
 
-func (r *Storage) OpenOrCreateByName(name string) (*os.File, error) {
+func (r *FileStorage) OpenOrCreateByName(name string) (*os.File, error) {
 	path, errPath := r.getPath(name)
 	if errPath != nil {
 		return nil, errPath
@@ -67,11 +67,11 @@ func (r *Storage) OpenOrCreateByName(name string) (*os.File, error) {
 	return os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 }
 
-func (r *Storage) GetPathByName(name string) (string, error) {
+func (r *FileStorage) GetPathByName(name string) (string, error) {
 	return r.getPath(name)
 }
 
-func (r *Storage) ReadByName(name string) ([]byte, error) {
+func (r *FileStorage) ReadByName(name string) ([]byte, error) {
 	path, errPath := r.getPath(name)
 	if errPath != nil {
 		return nil, errPath
@@ -79,7 +79,7 @@ func (r *Storage) ReadByName(name string) ([]byte, error) {
 	return os.ReadFile(path)
 }
 
-func (r *Storage) DeleteByName(name string) error {
+func (r *FileStorage) DeleteByName(name string) error {
 	path, err := r.getPath(name)
 	if err != nil {
 		return err
@@ -87,20 +87,20 @@ func (r *Storage) DeleteByName(name string) error {
 	return os.Remove(path)
 }
 
-func (r *Storage) ExistByPath(path string) bool {
+func (r *FileStorage) ExistByPath(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
 	}
 	return false
 }
 
-func (r *Storage) DeleteAll() error {
+func (r *FileStorage) DeleteAll() error {
 	errRem := os.RemoveAll(r.path + "/")
 	errCreate := os.Mkdir(r.path, os.ModePerm)
 	return errors.Join(errRem, errCreate)
 }
 
-func (r *Storage) getPath(name string) (string, error) {
+func (r *FileStorage) getPath(name string) (string, error) {
 	if name == "" {
 		return "", ErrFileNameEmpty
 	}

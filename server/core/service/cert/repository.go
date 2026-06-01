@@ -14,10 +14,10 @@ var ErrUnknownCertificateType = errors.New("unknown certificate type")
 
 type Repository struct {
 	bucket *store.DbBucket[Cert]
-	file   *store.Storage
+	file   *store.FileStorage
 }
 
-func NewRepository(bucket *store.DbBucket[Cert], file *store.Storage) *Repository {
+func NewRepository(bucket *store.DbBucket[Cert], file *store.FileStorage) *Repository {
 	return &Repository{
 		bucket: bucket,
 		file:   file,
