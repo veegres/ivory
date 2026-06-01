@@ -3,7 +3,7 @@ package patroni
 import (
 	"encoding/json"
 	"ivory/clients/http"
-	"ivory/features"
+	"ivory/core/config"
 	"ivory/plugins/keeper"
 	nethttp "net/http"
 	"strconv"
@@ -21,17 +21,17 @@ func NewAdapter(httpClient *http.Client) *Adapter {
 	return &Adapter{httpClient: httpClient}
 }
 
-func (a *Adapter) SupportedFeatures() []features.Feature {
-	return []features.Feature{
-		features.ViewNodeDbOverview,
-		features.ViewNodeDbConfig,
-		features.ManageNodeDbConfigUpdate,
-		features.ManageNodeDbSwitchover,
-		features.ManageNodeDbReinitialize,
-		features.ManageNodeDbRestart,
-		features.ManageNodeDbReload,
-		features.ManageNodeDbFailover,
-		features.ManageNodeDbActivation,
+func (a *Adapter) SupportedFeatures() []env.Feature {
+	return []env.Feature{
+		env.ViewNodeDbOverview,
+		env.ViewNodeDbConfig,
+		env.ManageNodeDbConfigUpdate,
+		env.ManageNodeDbSwitchover,
+		env.ManageNodeDbReinitialize,
+		env.ManageNodeDbRestart,
+		env.ManageNodeDbReload,
+		env.ManageNodeDbFailover,
+		env.ManageNodeDbActivation,
 	}
 }
 

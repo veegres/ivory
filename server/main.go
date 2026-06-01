@@ -1,10 +1,35 @@
 package main
 
 import (
-	core2 "ivory/core"
+	"ivory/clients/console/shell"
+	"ivory/clients/console/ssh"
+	"ivory/clients/http"
+	"ivory/core"
+	"ivory/core/config"
+	"ivory/core/engine"
+	"ivory/features"
+	"ivory/plugins"
+	"ivory/tools"
 )
 
 func main() {
-	context := core2.NewContext()
-	core2.NewRouter(context)
+	appEnv := env.NewEnvironment()
+
+	httpClient := http.NewClient()
+	sshClient := ssh.NewClient()
+	shellClient := shell.NewClient()
+
+	cc := core.NewContext(sshClient)
+	pc := plugins.NewContext(httpClient, sshClient)
+	tc := tools.NewContext(shellClient, cc.Service)
+	fc := features.NewContext(
+		appEnv,
+		pc.DatabaseRegistry,
+		pc.PlatformRegistry,
+		pc.KeeperRegistry,
+		tc.Registry,
+		cc.Service,
+	)
+
+	engine.NewHttpServer(appEnv, cc.Router, fc.Router, tc.Router)
 }

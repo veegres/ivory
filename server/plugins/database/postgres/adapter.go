@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"ivory/features"
-	database2 "ivory/plugins/database"
+	"ivory/core/config"
+	"ivory/plugins/database"
 	"regexp"
 	"strconv"
 	"strings"
@@ -16,7 +16,7 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ database2.Adapter = (*Adapter)(nil)
+var _ database.Adapter = (*Adapter)(nil)
 
 type Adapter struct{}
 
@@ -24,18 +24,18 @@ func NewAdapter() *Adapter {
 	return &Adapter{}
 }
 
-func (a *Adapter) SupportedFeatures() []features.Feature {
-	return []features.Feature{
-		features.ViewQueryDbInfo,
-		features.ViewQueryDbChart,
-		features.ManageQueryDbTemplate,
-		features.ManageQueryDbConsole,
-		features.ManageQueryDbCancel,
-		features.ManageQueryDbTerminate,
+func (a *Adapter) SupportedFeatures() []env.Feature {
+	return []env.Feature{
+		env.ViewQueryDbInfo,
+		env.ViewQueryDbChart,
+		env.ManageQueryDbTemplate,
+		env.ManageQueryDbConsole,
+		env.ManageQueryDbCancel,
+		env.ManageQueryDbTerminate,
 	}
 }
 
-func (a *Adapter) GetMany(ctx database2.Context, query string, queryParams []any) ([]string, error) {
+func (a *Adapter) GetMany(ctx database.Context, query string, queryParams []any) ([]string, error) {
 	values := make([]string, 0)
 	errReq := a.sendRequest(ctx, query, queryParams, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		for rows.Next() {
@@ -54,7 +54,7 @@ func (a *Adapter) GetMany(ctx database2.Context, query string, queryParams []any
 	return values, nil
 }
 
-func (a *Adapter) GetOne(ctx database2.Context, query string) (any, error) {
+func (a *Adapter) GetOne(ctx database.Context, query string) (any, error) {
 	var value any
 	errReq := a.sendRequest(ctx, query, nil, func(rows pgx.Rows, _ *pgtype.Map, _ string) error {
 		if rows.Next() {
@@ -72,15 +72,15 @@ func (a *Adapter) GetOne(ctx database2.Context, query string) (any, error) {
 	return value, nil
 }
 
-func (a *Adapter) GetFields(ctx database2.Context, query string, options *database2.QueryOptions) (*database2.QueryFields, error) {
+func (a *Adapter) GetFields(ctx database.Context, query string, options *database.QueryOptions) (*database.QueryFields, error) {
 	startTime := time.Now().UnixMilli()
 
-	fields := make([]database2.QueryField, 0)
+	fields := make([]database.QueryField, 0)
 	rowList := make([][]any, 0)
 	url := "-"
 
 	// NOTE: we need this object ot avoid fatal errors when the option variable is `nil`
-	tmpOptions := database2.QueryOptions{}
+	tmpOptions := database.QueryOptions{}
 	if options != nil {
 		tmpOptions.Limit = options.Limit
 		tmpOptions.Trim = options.Trim
@@ -97,9 +97,9 @@ func (a *Adapter) GetFields(ctx database2.Context, query string, options *databa
 		for _, field := range rows.FieldDescriptions() {
 			dataType, ok := typeMap.TypeForOID(field.DataTypeOID)
 			if !ok {
-				fields = append(fields, database2.QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
+				fields = append(fields, database.QueryField{Name: field.Name, DataType: "unknown", DataTypeOID: field.DataTypeOID})
 			} else {
-				fields = append(fields, database2.QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
+				fields = append(fields, database.QueryField{Name: field.Name, DataType: dataType.Name, DataTypeOID: field.DataTypeOID})
 			}
 		}
 		for rows.Next() {
@@ -119,7 +119,7 @@ func (a *Adapter) GetFields(ctx database2.Context, query string, options *databa
 		options.Limit = normLimit
 	}
 	endTime := time.Now().UnixMilli()
-	res := &database2.QueryFields{
+	res := &database.QueryFields{
 		Fields:    fields,
 		Rows:      rowList,
 		Url:       url,
@@ -130,187 +130,187 @@ func (a *Adapter) GetFields(ctx database2.Context, query string, options *databa
 	return res, nil
 }
 
-func (a *Adapter) Cancel(ctx database2.Context, pid int) error {
+func (a *Adapter) Cancel(ctx database.Context, pid int) error {
 	return a.sendRequest(ctx, "SELECT pg_cancel_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
-func (a *Adapter) Terminate(ctx database2.Context, pid int) error {
+func (a *Adapter) Terminate(ctx database.Context, pid int) error {
 	return a.sendRequest(ctx, "SELECT pg_terminate_backend("+strconv.Itoa(pid)+")", nil, nil)
 }
 
-func (a *Adapter) ListDatabases(ctx database2.Context, name string) ([]string, error) {
+func (a *Adapter) ListDatabases(ctx database.Context, name string) ([]string, error) {
 	return a.GetMany(ctx, GetAllDatabases, []any{"%" + name + "%"})
 }
 
-func (a *Adapter) ListSchemas(ctx database2.Context, name string) ([]string, error) {
+func (a *Adapter) ListSchemas(ctx database.Context, name string) ([]string, error) {
 	return a.GetMany(ctx, GetAllSchemas, []any{"%" + name + "%"})
 }
 
-func (a *Adapter) ListTables(ctx database2.Context, schema string, name string) ([]string, error) {
+func (a *Adapter) ListTables(ctx database.Context, schema string, name string) ([]string, error) {
 	return a.GetMany(ctx, GetAllTables, []any{schema, "%" + name + "%"})
 }
 
-func (a *Adapter) ActiveQueries(ctx database2.Context, options *database2.QueryOptions) (*database2.QueryFields, error) {
+func (a *Adapter) ActiveQueries(ctx database.Context, options *database.QueryOptions) (*database.QueryFields, error) {
 	return a.GetFields(ctx, GetAllActiveQueriesByApplicationName, options)
 }
 
-func (a *Adapter) SystemRequests() []database2.SystemRequest {
-	return []database2.SystemRequest{
+func (a *Adapter) SystemRequests() []database.SystemRequest {
+	return []database.SystemRequest{
 		{
-			Name: "Active running queries", Type: database2.ACTIVITY,
+			Name: "Active running queries", Type: database.ACTIVITY,
 			Description: "Shows running queries. It can be useful if you want to check your queries that is long.",
 			Query:       DefaultActiveRunningQueries,
 		},
 		{
-			Name: "All running queries", Type: database2.ACTIVITY,
+			Name: "All running queries", Type: database.ACTIVITY,
 			Description: "Shows all queries. Just can help clarify what is going on postgres side.",
 			Query:       DefaultAllRunningQueries,
 		},
 		{
-			Name: "Active vacuums in progress", Type: database2.ACTIVITY,
+			Name: "Active vacuums in progress", Type: database.ACTIVITY,
 			Description: "Shows list of active vacuums and their progress",
 			Query:       DefaultActiveVacuums,
 		},
 		{
-			Name: "Number of queries by state and database", Type: database2.ACTIVITY,
+			Name: "Number of queries by state and database", Type: database.ACTIVITY,
 			Description: "Shows all queries by state and database",
 			Query:       DefaultAllQueriesByState,
 		},
 		{
-			Name: "All locks", Type: database2.ACTIVITY,
+			Name: "All locks", Type: database.ACTIVITY,
 			Description: "Shows all locks with lock duration, type, it's ids owner, etc",
 			Query:       DefaultAllLocks,
 		},
 		{
-			Name: "Number of locks by lock type", Type: database2.ACTIVITY,
+			Name: "Number of locks by lock type", Type: database.ACTIVITY,
 			Description: "Shows all locks by lock type",
 			Query:       DefaultAllLocksByLock,
 		},
 		{
-			Name: "Config", Type: database2.OTHER,
+			Name: "Config", Type: database.OTHER,
 			Description: "Shows postgres config elements with it's values and information about restart",
 			Query:       DefaultPostgresConfig,
 		},
 		{
-			Name: "Config description", Type: database2.OTHER,
+			Name: "Config description", Type: database.OTHER,
 			Description: "Shows description of postgres config elements",
 			Query:       DefaultPostgresConfigDescription,
 		},
 		{
-			Name: "Users", Type: database2.OTHER,
+			Name: "Users", Type: database.OTHER,
 			Description: "Shows all users",
 			Query:       DefaultPostgresUsers,
 		},
 		{
-			Name: "Simple replication", Type: database2.REPLICATION,
+			Name: "Simple replication", Type: database.REPLICATION,
 			Description: "Shows simple replication table only with lsn info",
-			Varieties:   []database2.SystemRequestVariety{database2.MasterOnly},
+			Varieties:   []database.SystemRequestVariety{database.MasterOnly},
 			Query:       DefaultSimpleReplication,
 		},
 		{
-			Name: "Pretty replication", Type: database2.REPLICATION,
+			Name: "Pretty replication", Type: database.REPLICATION,
 			Description: "Shows pretty replication table with data in mb",
-			Varieties:   []database2.SystemRequestVariety{database2.MasterOnly},
+			Varieties:   []database.SystemRequestVariety{database.MasterOnly},
 			Query:       DefaultPrettyReplication,
 		},
 		{
-			Name: "Pure replication", Type: database2.REPLICATION,
+			Name: "Pure replication", Type: database.REPLICATION,
 			Description: "Shows pure replication table",
-			Varieties:   []database2.SystemRequestVariety{database2.MasterOnly},
+			Varieties:   []database.SystemRequestVariety{database.MasterOnly},
 			Query:       DefaultPureReplication,
 		},
 		{
-			Name: "Database size", Type: database2.STATISTIC,
+			Name: "Database size", Type: database.STATISTIC,
 			Description: "Shows all database sizes",
 			Query:       DefaultDatabaseSize,
 		},
 		{
-			Name: "Table size", Type: database2.STATISTIC,
+			Name: "Table size", Type: database.STATISTIC,
 			Description: "Shows all table sizes, index size and total (index + table)",
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
 			Query:       DefaultTableSize,
 		},
 		{
-			Name: "Indexes in cache", Type: database2.STATISTIC,
+			Name: "Indexes in cache", Type: database.STATISTIC,
 			Description: "Shows ratio indexes in cache",
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
 			Query:       DefaultIndexInCache,
 		},
 		{
-			Name: "Unused indexes", Type: database2.STATISTIC,
+			Name: "Unused indexes", Type: database.STATISTIC,
 			Description: "Shows unused indexes and their size",
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
 			Query:       DefaultIndexUnused,
 		},
 		{
-			Name: "Ratio of dead and live tuples", Type: database2.BLOAT,
+			Name: "Ratio of dead and live tuples", Type: database.BLOAT,
 			Description: "Shows 100 tables with biggest number of dead tuples and ratio of dead tuples divided by total numbers of tuples",
 			Query:       DefaultRatioOfDeadTuples,
 		},
 		{
-			Name: "Dead tuples and live tuples with last vacuum and analyze Time", Type: database2.BLOAT,
+			Name: "Dead tuples and live tuples with last vacuum and analyze Time", Type: database.BLOAT,
 			Description: "Shows 100 tables with biggest number of dead tuples and their last vacuum and analyze time",
 			Query:       DefaultPureNumberOfDeadTuples,
 		},
 		{
-			Name: "Table pg_compacttable approximate", Type: database2.BLOAT,
+			Name: "Table pg_compacttable approximate", Type: database.BLOAT,
 			Description: "This query will read tables using pgstattuple extension and return 20 bloated approximate results and doesn't read whole table (but reads toast tables). WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)",
 			Params:      []string{"schema", "table"},
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive, database2.ReplicaRecommended},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive, database.ReplicaRecommended},
 			Query:       DefaultTableBloatApproximate,
 		},
 		{
-			Name: "Table pg_compacttable", Type: database2.BLOAT,
+			Name: "Table pg_compacttable", Type: database.BLOAT,
 			Description: "This query will read tables using pgstattuple extension and return top 20 bloated tables. WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)",
 			Params:      []string{"schema", "table"},
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive, database2.ReplicaRecommended},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive, database.ReplicaRecommended},
 			Query:       DefaultTableBloat,
 		},
 		{
-			Name: "Index pg_compacttable", Type: database2.BLOAT,
+			Name: "Index pg_compacttable", Type: database.BLOAT,
 			Description: "This query will read indexes with pgstattuple extension and return top 100 bloated indexes. WARNING: without index mask query will read all available indexes which could cause I/O spikes. Please enter mask for index name (check all indexes if nothing is specified)",
 			Params:      []string{"schema", "table", "index"},
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive, database2.ReplicaRecommended},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive, database.ReplicaRecommended},
 			Query:       DefaultIndexBloat,
 		},
 		{
-			Name: "Check specific table pg_compacttable", Type: database2.BLOAT,
+			Name: "Check specific table pg_compacttable", Type: database.BLOAT,
 			Description: "Shows one table pg_compacttable, you need to edit query and provide table name to see information about it",
 			Params:      []string{"schema.table"},
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
 			Query:       DefaultCheckTableBloat,
 		},
 		{
-			Name: "Check specific index pg_compacttable", Type: database2.BLOAT,
+			Name: "Check specific index pg_compacttable", Type: database.BLOAT,
 			Description: "Shows one index pg_compacttable, you need to edit query and provide index name to see information about it",
 			Params:      []string{"schema.index"},
-			Varieties:   []database2.SystemRequestVariety{database2.DatabaseSensitive},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
 			Query:       DefaultCheckIndexBloat,
 		},
 		{
-			Name: "Invalid indexes", Type: database2.STATISTIC,
+			Name: "Invalid indexes", Type: database.STATISTIC,
 			Description: "Shows invalid indexes. It can happen when concurrent index creation failed. It means that postgres doesn't use this index. You need to reindex it concurrently.",
 			Query:       DefaultIndexInvalid,
 		},
 	}
 }
 
-func (a *Adapter) SystemCharts() map[database2.SystemChartType]string {
-	return map[database2.SystemChartType]string{
-		database2.Databases:      "SELECT count(*) FROM pg_database;",
-		database2.Connections:    "SELECT count(*) FROM pg_stat_activity;",
-		database2.DatabaseSize:   "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;",
-		database2.DatabaseUptime: "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;",
-		database2.Schemas:        "SELECT count(*) FROM pg_namespace;",
-		database2.TablesSize:     "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
-		database2.IndexesSize:    "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
-		database2.TotalSize:      "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
+func (a *Adapter) SystemCharts() map[database.SystemChartType]string {
+	return map[database.SystemChartType]string{
+		database.Databases:      "SELECT count(*) FROM pg_database;",
+		database.Connections:    "SELECT count(*) FROM pg_stat_activity;",
+		database.DatabaseSize:   "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;",
+		database.DatabaseUptime: "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;",
+		database.Schemas:        "SELECT count(*) FROM pg_namespace;",
+		database.TablesSize:     "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
+		database.IndexesSize:    "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
+		database.TotalSize:      "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
 	}
 }
 
 type fn func(pgx.Rows, *pgtype.Map, string) error
 
-func (a *Adapter) sendRequest(ctx database2.Context, query string, queryParams []any, parse fn) error {
+func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []any, parse fn) error {
 	conn, connUrl, errConn := a.getConnection(ctx)
 	if errConn != nil {
 		return errConn
@@ -360,7 +360,7 @@ func (a *Adapter) sendRequest(ctx database2.Context, query string, queryParams [
 func (a *Adapter) normalizeQuery(query string, trim *bool, limit *string) (string, *string, error) {
 	if trim == nil || *trim == false {
 		if limit != nil {
-			return "", limit, database2.ErrCannotLimitWithoutTrim
+			return "", limit, database.ErrCannotLimitWithoutTrim
 		}
 		return query, limit, nil
 	}
@@ -373,7 +373,7 @@ func (a *Adapter) normalizeQuery(query string, trim *bool, limit *string) (strin
 	return newQuery, newLimit, nil
 }
 
-func (a *Adapter) addLimitToQuery(query string, queryAnalysis database2.QueryAnalysis, limit string) (string, *string) {
+func (a *Adapter) addLimitToQuery(query string, queryAnalysis database.QueryAnalysis, limit string) (string, *string) {
 	if queryAnalysis.LIMIT == 0 && queryAnalysis.SELECT > 0 && queryAnalysis.FROM > 0 && queryAnalysis.EXPLAIN == 0 &&
 		queryAnalysis.DELETE == 0 && queryAnalysis.UPDATE == 0 && queryAnalysis.INSERT == 0 {
 		replace := " LIMIT " + limit + ";"
@@ -396,10 +396,10 @@ func (a *Adapter) trimQuery(query string) string {
 	return strings.Join(strings.Fields(query), " ")
 }
 
-func (a *Adapter) parseQuery(query string) database2.QueryAnalysis {
+func (a *Adapter) parseQuery(query string) database.QueryAnalysis {
 	lowerQuery := strings.ToLower(query)
 	words := strings.Fields(lowerQuery)
-	parsed := database2.QueryAnalysis{LIMIT: 0, UPDATE: 0, SELECT: 0, INSERT: 0, DELETE: 0, Semicolon: false}
+	parsed := database.QueryAnalysis{LIMIT: 0, UPDATE: 0, SELECT: 0, INSERT: 0, DELETE: 0, Semicolon: false}
 	for i, word := range words {
 		// NOTE: we need this check to avoid params rename confusion
 		if i-1 > 0 && words[i-1] == "as" {
@@ -430,11 +430,11 @@ func (a *Adapter) parseQuery(query string) database2.QueryAnalysis {
 	return parsed
 }
 
-func (a *Adapter) getConnection(ctx database2.Context) (*pgx.Conn, string, error) {
+func (a *Adapter) getConnection(ctx database.Context) (*pgx.Conn, string, error) {
 	connection := ctx.Connection
 	db := connection.Config
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
-		return nil, "unknown", database2.ErrDatabaseHostOrPortNotSpecified
+		return nil, "unknown", database.ErrDatabaseHostOrPortNotSpecified
 	}
 
 	dbName := "postgres"
@@ -444,7 +444,7 @@ func (a *Adapter) getConnection(ctx database2.Context) (*pgx.Conn, string, error
 
 	credentials := connection.Credentials
 	if credentials == nil {
-		return nil, "unknown", database2.ErrPasswordNotSet
+		return nil, "unknown", database.ErrPasswordNotSet
 	}
 
 	connProtocol := "postgres://"

@@ -1,154 +1,62 @@
 package core
 
 import (
-	"ivory/clients/auth/basic"
-	"ivory/clients/auth/ldap"
-	"ivory/clients/auth/oidc"
-	"ivory/clients/http"
-	"ivory/clients/shell"
-	"ivory/clients/ssh"
-	"ivory/features/auth"
-	"ivory/features/backup"
-	"ivory/features/cert"
-	"ivory/features/cluster"
-	"ivory/features/config"
-	"ivory/features/encryption"
-	"ivory/features/job"
-	"ivory/features/management"
-	"ivory/features/node"
-	"ivory/features/permission"
-	"ivory/features/query"
-	"ivory/features/secret"
-	"ivory/features/tag"
-	"ivory/features/tools"
-	"ivory/features/vault"
-	"ivory/plugins/database"
-	"ivory/plugins/database/postgres"
-	"ivory/plugins/keeper"
-	"ivory/plugins/keeper/patroni"
-	"ivory/plugins/platform"
-	"ivory/plugins/platform/onprem"
-	"ivory/storage/db"
-	"ivory/storage/env"
-	"ivory/storage/files"
+	"ivory/clients/console/ssh"
+	"ivory/core/service/cert"
+	"ivory/core/service/encryption"
+	"ivory/core/service/job"
+	"ivory/core/service/secret"
+	"ivory/core/service/vault"
+	"ivory/core/store"
 )
 
-type Context struct {
-	env              *env.AppEnv
-	authRouter       *auth.Router
-	clusterRouter    *cluster.Router
-	toolsRouter      *tools.Router
-	certRouter       *cert.Router
-	secretRouter     *secret.Router
-	vaultRouter      *vault.Router
-	permissionRouter *permission.Router
-	tagRouter        *tag.Router
-	nodeRouter       *node.Router
-	queryRouter      *query.Router
-	managementRouter *management.Router
-	configRouter     *config.Router
+type Service struct {
+	Vault *vault.Service
+	Job   *job.Service
+	Cert  *cert.Service
 }
 
-func NewContext() *Context {
-	appEnv := env.NewAppEnv()
+type Router struct {
+	Vault  *vault.Router
+	Cert   *cert.Router
+	Secret *secret.Router
+}
 
-	// DB
-	st := db.NewStorage("ivory.db")
-	clusterBucket := db.NewBucket[cluster.Response](st, "Cluster")
-	certBucket := db.NewBucket[cert.Cert](st, "Cert")
-	tagBucket := db.NewBucket[[]string](st, "Tag")
-	secretBucket := db.NewBucket[string](st, "Secret")
-	vaultBucket := db.NewBucket[vault.Vault](st, "Vault")
-	permissionBucket := db.NewBucket[permission.PermissionMap](st, "Permission")
-	queryBucket := db.NewBucket[query.Response](st, "Query")
+type Context struct {
+	Service *Service
+	Router  *Router
+}
 
-	// FILES
-	certFiles := files.NewStorage("cert", ".crt")
-	configFiles := files.NewStorage("config", ".json")
-	queryLogFiles := files.NewStorage("query", ".jsonl")
-	jobFiles := files.NewStorage("job", ".log")
+func NewContext(sshClient *ssh.Client) *Context {
+	st := store.NewDbStorage("core.db")
 
-	// REPOS
-	clusterRepo := cluster.NewRepository(clusterBucket)
-	certRepo := cert.NewRepository(certBucket, certFiles)
-	tagRepo := tag.NewRepository(tagBucket)
+	secretBucket := store.NewDbBucket[string](st, "Secret")
+	vaultBucket := store.NewDbBucket[vault.Vault](st, "Vault")
+	certBucket := store.NewDbBucket[cert.Cert](st, "Cert")
+
+	certFiles := store.NewFileStorage("cert", ".crt")
+	jobFiles := store.NewFileStorage("job", ".log")
+
 	secretRepo := secret.NewRepository(secretBucket)
 	vaultRepo := vault.NewRepository(vaultBucket)
-	permissionRepo := permission.NewRepository(permissionBucket)
-	queryRepo := query.NewRepository(queryBucket, queryLogFiles)
+	certRepo := cert.NewRepository(certBucket, certFiles)
 
-	// CLIENTS
-	httpClient := http.NewClient()
-	sshClient := ssh.NewClient()
-	shellClient := shell.NewClient()
-
-	// MANAGERS
-	jobManager := job.NewManager(jobFiles)
-
-	// ADAPTERS
-	patroniAdapter := patroni.NewAdapter(httpClient)
-	postgresAdapter := postgres.NewAdapter()
-	onpremAdapter := onprem.NewAdapter(sshClient)
-
-	// REGISTRY (we cannot use Factory pattern in clients package because of cycle dependencies)
-	keeperPlugins := keeper.NewPluginRegistry()
-	keeperPlugins.Register(keeper.PATRONI, patroniAdapter)
-	dbPlugins := database.NewPluginRegistry()
-	dbPlugins.Register(database.POSTGRES, postgresAdapter)
-	platformPlugins := platform.NewPluginRegistry()
-	platformPlugins.Register(platform.Onprem, onpremAdapter)
-
-	// AUTH PROVIDER
-	basicProvider := basic.NewProvider()
-	ldapProvider := ldap.NewProvider()
-	oidcProvider := oidc.NewProvider()
-
-	// SERVICES
 	encryptionService := encryption.NewService()
 	secretService := secret.NewService(secretRepo, encryptionService)
 	vaultService := vault.NewService(vaultRepo, sshClient, secretService, encryptionService)
-	permissionService := permission.NewService(permissionRepo)
+	jobService := job.NewService(jobFiles)
 	certService := cert.NewService(certRepo)
 
-	// CONTEXTS
-	toolsCtx := tools.NewContext(shellClient, vaultService, jobManager)
-
-	nodeService := node.NewService(platformPlugins, keeperPlugins, vaultService, certService, jobManager)
-	tagService := tag.NewService(tagRepo)
-	queryService := query.NewService(queryRepo, dbPlugins, vaultService, certService, secretService, appEnv.Version.Label)
-	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, toolsCtx.Service, vaultService)
-	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
-	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
-	backupService := backup.NewService(clusterService, queryService, permissionService)
-	managementService := management.NewService(
-		appEnv,
-		authService,
-		vaultService,
-		clusterService,
-		certService,
-		tagService,
-		toolsCtx.Service,
-		queryService,
-		nodeService,
-		secretService,
-		configService,
-		permissionService,
-		backupService,
-	)
-
 	return &Context{
-		env:              appEnv,
-		authRouter:       auth.NewRouter(authService, appEnv.Config.UrlPath, appEnv.Config.TlsEnabled),
-		clusterRouter:    cluster.NewRouter(clusterService),
-		toolsRouter:      toolsCtx.Router,
-		certRouter:       cert.NewRouter(certService),
-		secretRouter:     secret.NewRouter(secretService),
-		vaultRouter:      vault.NewRouter(vaultService),
-		permissionRouter: permission.NewRouter(permissionService),
-		tagRouter:        tag.NewRouter(tagService),
-		nodeRouter:       node.NewRouter(nodeService),
-		queryRouter:      query.NewRouter(queryService, configService),
-		managementRouter: management.NewRouter(managementService),
-		configRouter:     config.NewRouter(configService),
+		Service: &Service{
+			Vault: vaultService,
+			Job:   jobService,
+			Cert:  certService,
+		},
+		Router: &Router{
+			Vault:  vault.NewRouter(vaultService),
+			Cert:   cert.NewRouter(certService),
+			Secret: secret.NewRouter(secretService),
+		},
 	}
 }

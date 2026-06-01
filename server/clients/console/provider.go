@@ -1,0 +1,18 @@
+package console
+
+import "io"
+
+type Command interface {
+	// Id returns a stable string used to identify the job.
+	Id() string
+	// Persist returns true if the job output should be saved to a file.
+	Persist() bool
+	// Start begins the command and returns a reader over its output.
+	Start() (io.Reader, error)
+	// Wait blocks until the command exits and returns its exit error.
+	Wait() error
+	// Abort kills the running command immediately.
+	Abort() error
+	// Execute runs the command synchronously and returns the output as string array.
+	Execute() ([]string, error)
+}

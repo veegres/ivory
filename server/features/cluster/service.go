@@ -3,14 +3,15 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	"ivory/features"
+	"ivory/core/config"
+	"ivory/core/service/vault"
+	"ivory/core/utils"
 	"ivory/features/node"
 	"ivory/features/query"
 	"ivory/features/tag"
-	"ivory/features/tools"
-	"ivory/features/vault"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"ivory/tools"
 	"slices"
 )
 
@@ -22,8 +23,8 @@ type Service struct {
 	nodeService       *node.Service
 	tagService        *tag.Service
 	queryService      *query.Service
-	toolsService      *tools.Service
 	vaultService      *vault.Service
+	toolRegistry      *utils.Registry[tools.Tool, tools.Adapter]
 }
 
 func NewService(
@@ -31,24 +32,32 @@ func NewService(
 	nodeService *node.Service,
 	tagService *tag.Service,
 	queryService *query.Service,
-	toolsService *tools.Service,
 	vaultService *vault.Service,
+	toolRegistry *utils.Registry[tools.Tool, tools.Adapter],
 ) *Service {
 	return &Service{
 		clusterRepository: clusterRepository,
 		nodeService:       nodeService,
 		tagService:        tagService,
 		queryService:      queryService,
-		toolsService:      toolsService,
 		vaultService:      vaultService,
+		toolRegistry:      toolRegistry,
 	}
 }
 
-func (s *Service) getSupportedFeatures(k keeper.Plugin, db database.Plugin) []features.Feature {
+func (s *Service) getSupportedFeatures(k keeper.Plugin, db database.Plugin) []env.Feature {
 	fk := s.nodeService.SupportedFeatures(k)
 	fdb := s.queryService.SupportedFeatures(db)
-	ft := s.toolsService.SupportedFeatures(db)
+	ft := s.getToolSupportedFeatures(db)
 	return slices.Concat(fk, fdb, ft)
+}
+
+func (s *Service) getToolSupportedFeatures(db database.Plugin) []env.Feature {
+	allFeatures := make([]env.Feature, 0)
+	for _, tool := range s.toolRegistry.All() {
+		allFeatures = append(allFeatures, tool.SupportedFeatures(db)...)
+	}
+	return allFeatures
 }
 
 func (s *Service) hasKeeper(k node.KeeperResponse) bool {

@@ -3,10 +3,11 @@ package query
 import (
 	"errors"
 	"fmt"
-	"ivory/features"
-	"ivory/features/cert"
-	"ivory/features/secret"
-	"ivory/features/vault"
+	"ivory/core/config"
+	"ivory/core/service/cert"
+	"ivory/core/service/secret"
+	"ivory/core/service/vault"
+	"ivory/core/utils"
 	"ivory/plugins/database"
 )
 
@@ -20,7 +21,7 @@ var ErrDeletionOfSystemQueriesRestricted = errors.New("deletion of system querie
 
 type Service struct {
 	repository       *Repository
-	databaseRegistry *database.PluginRegistry
+	databaseRegistry *utils.Registry[database.Plugin, database.Adapter]
 	vaultService     *vault.Service
 	certService      *cert.Service
 	secretService    *secret.Service
@@ -31,7 +32,7 @@ type Service struct {
 
 func NewService(
 	repository *Repository,
-	databaseRegistry *database.PluginRegistry,
+	databaseRegistry *utils.Registry[database.Plugin, database.Adapter],
 	vaultService *vault.Service,
 	certService *cert.Service,
 	secretService *secret.Service,
@@ -57,10 +58,10 @@ func (s *Service) GetApplicationName(session string) string {
 	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *Service) SupportedFeatures(t database.Plugin) []features.Feature {
+func (s *Service) SupportedFeatures(t database.Plugin) []env.Feature {
 	c, e := s.databaseRegistry.Get(t)
 	if e != nil {
-		return []features.Feature{}
+		return []env.Feature{}
 	}
 	return c.SupportedFeatures()
 }

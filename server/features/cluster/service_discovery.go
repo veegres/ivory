@@ -3,7 +3,7 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	"ivory/features/cert"
+	"ivory/core/service/cert"
 	"ivory/features/node"
 	"ivory/plugins/keeper"
 )

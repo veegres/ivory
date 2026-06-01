@@ -1,7 +1,7 @@
 package query
 
 import (
-	"ivory/features/cert"
+	"ivory/core/service/cert"
 	"ivory/plugins/database"
 
 	"github.com/google/uuid"

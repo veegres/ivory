@@ -2,7 +2,7 @@ package onprem
 
 import (
 	"errors"
-	"ivory/clients/ssh"
+	"ivory/clients/console/ssh"
 	"ivory/plugins/platform"
 	"testing"
 )

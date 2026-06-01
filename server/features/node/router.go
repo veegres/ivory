@@ -2,7 +2,7 @@ package node
 
 import (
 	"encoding/json"
-	"ivory/features/job"
+	"ivory/core/service/job"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

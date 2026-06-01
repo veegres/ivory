@@ -54,7 +54,7 @@ func (s *Service) GetFileName() string {
 // Callers should treat the returned bytes as an opaque payload and should not
 // depend on any specific versioned backup struct. When the backup schema must
 // change in a backward-incompatible way, this method should switch to exporting
-// the new version while preserving older import handlers for legacy files.
+// the new version while preserving older import handlers for legacy file.
 func (s *Service) Export() ([]byte, error) {
 	switch latestBackupVersion {
 	case "v1":

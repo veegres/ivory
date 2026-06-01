@@ -3,10 +3,11 @@ package node
 import (
 	"crypto/tls"
 	"errors"
-	"ivory/features"
-	"ivory/features/cert"
-	"ivory/features/job"
-	"ivory/features/vault"
+	"ivory/core/config"
+	"ivory/core/service/cert"
+	"ivory/core/service/job"
+	"ivory/core/service/vault"
+	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 )
@@ -14,21 +15,21 @@ import (
 var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
-	platformRegistry *platform.PluginRegistry
-	keeperRegistry   *keeper.PluginRegistry
+	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter]
+	keeperRegistry   *utils.Registry[keeper.Plugin, keeper.Adapter]
 	vaultService     *vault.Service
 	certService      *cert.Service
-	jobManager       *job.Manager
+	jobManager       *job.Service
 
-	dbFeatures map[features.Feature]bool
+	dbFeatures map[env.Feature]bool
 }
 
 func NewService(
-	platformRegistry *platform.PluginRegistry,
-	keeperRegistry *keeper.PluginRegistry,
+	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter],
+	keeperRegistry *utils.Registry[keeper.Plugin, keeper.Adapter],
 	vaultService *vault.Service,
 	certService *cert.Service,
-	jobManager *job.Manager,
+	jobManager *job.Service,
 ) *Service {
 	return &Service{
 		platformRegistry: platformRegistry,
@@ -37,14 +38,14 @@ func NewService(
 		certService:      certService,
 		jobManager:       jobManager,
 
-		dbFeatures: make(map[features.Feature]bool),
+		dbFeatures: make(map[env.Feature]bool),
 	}
 }
 
-func (s *Service) SupportedFeatures(t keeper.Plugin) []features.Feature {
+func (s *Service) SupportedFeatures(t keeper.Plugin) []env.Feature {
 	c, e := s.keeperRegistry.Get(t)
 	if e != nil {
-		return []features.Feature{}
+		return []env.Feature{}
 	}
 	return c.SupportedFeatures()
 }

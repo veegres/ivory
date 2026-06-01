@@ -3,8 +3,8 @@ package onprem
 import (
 	"crypto/ed25519"
 	"fmt"
-	"ivory/clients/ssh"
-	"ivory/features/job"
+	"ivory/clients/console"
+	"ivory/clients/console/ssh"
 	"ivory/plugins/platform"
 	"strconv"
 	"strings"
@@ -35,23 +35,23 @@ func (a *Adapter) CopyId(connection platform.Connection, publicKey string) error
 	return err
 }
 
-func (a *Adapter) ListCommand(connection platform.Connection) job.Command {
+func (a *Adapter) ListCommand(connection platform.Connection) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
 }
 
-func (a *Adapter) DeployCommand(connection platform.Connection, options, image string) job.Command {
+func (a *Adapter) DeployCommand(connection platform.Connection, options, image string) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(fmt.Sprintf("run -d %s %s", options, image)))
 }
 
-func (a *Adapter) StopCommand(connection platform.Connection, name string) job.Command {
+func (a *Adapter) StopCommand(connection platform.Connection, name string) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop "+name))
 }
 
-func (a *Adapter) DeleteCommand(connection platform.Connection, name string) job.Command {
+func (a *Adapter) DeleteCommand(connection platform.Connection, name string) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm "+name))
 }
 
-func (a *Adapter) LogsCommand(connection platform.Connection, name string, tail int) job.Command {
+func (a *Adapter) LogsCommand(connection platform.Connection, name string, tail int) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(a.getLogsCommand(name, tail)))
 }
 

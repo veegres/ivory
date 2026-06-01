@@ -5,8 +5,8 @@ import (
 	"ivory/clients/auth/basic"
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
+	"ivory/core/service/secret"
 	"ivory/features/permission"
-	"ivory/features/secret"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"

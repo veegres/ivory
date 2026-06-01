@@ -6,11 +6,11 @@ import (
 	"ivory/clients/auth/basic"
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
+	"ivory/core/service/encryption"
+	"ivory/core/service/secret"
+	"ivory/core/store"
 	"ivory/features/auth"
-	"ivory/features/encryption"
 	"ivory/features/permission"
-	"ivory/features/secret"
-	"ivory/storage/files"
 )
 
 var ErrConfigNotSpecified = errors.New("config is not specified")
@@ -18,7 +18,7 @@ var ErrConfigAlreadySet = errors.New("config is already set; to change it, you n
 var ErrCompanyNameEmpty = errors.New("company name cannot be empty")
 
 type Service struct {
-	configFiles       *files.Storage
+	configFiles       *store.Storage
 	encryptionService *encryption.Service
 	secretService     *secret.Service
 	authService       *auth.Service
@@ -33,7 +33,7 @@ type Service struct {
 }
 
 func NewService(
-	configFiles *files.Storage,
+	configFiles *store.Storage,
 	encryptionService *encryption.Service,
 	secretService *secret.Service,
 	authService *auth.Service,

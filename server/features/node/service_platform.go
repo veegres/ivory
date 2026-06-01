@@ -1,7 +1,8 @@
 package node
 
 import (
-	"ivory/features/job"
+	"ivory/clients/console"
+	"ivory/core/service/job"
 	"ivory/plugins/platform"
 )
 
@@ -67,7 +68,7 @@ func (s *Service) PlatformLogs(request PlatformLogsRequest, subscriberID job.Sub
 	s.streamCommand(adapter.LogsCommand(conn, request.Name, request.Tail), subscriberID, send)
 }
 
-func (s *Service) streamCommand(cmd job.Command, subscriberID job.SubscriberID, send func(event job.Message)) {
+func (s *Service) streamCommand(cmd console.Command, subscriberID job.SubscriberID, send func(event job.Message)) {
 	jobID, err := s.jobManager.Start(cmd)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})

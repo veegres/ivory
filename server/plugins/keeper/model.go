@@ -13,6 +13,10 @@ const (
 	POSTGRES Plugin = "postgres"
 )
 
+func (p Plugin) String() string {
+	return string(p)
+}
+
 type Status string
 
 const (

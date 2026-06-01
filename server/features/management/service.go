@@ -2,58 +2,60 @@ package management
 
 import (
 	"errors"
+	coreConfig "ivory/core/config"
+	"ivory/core/service/cert"
+	"ivory/core/service/job"
+	"ivory/core/service/secret"
+	"ivory/core/service/vault"
+	"ivory/core/utils"
 	"ivory/features/auth"
 	"ivory/features/backup"
-	"ivory/features/cert"
 	"ivory/features/cluster"
 	"ivory/features/config"
 	"ivory/features/node"
 	"ivory/features/permission"
 	"ivory/features/query"
-	"ivory/features/secret"
 	"ivory/features/tag"
-	"ivory/features/tools"
-	"ivory/features/vault"
-	"ivory/storage/env"
+	"ivory/tools"
 	"mime/multipart"
 )
 
 type Service struct {
-	env               *env.AppEnv
+	env               *coreConfig.Environment
 	authService       *auth.Service
 	vaultService      *vault.Service
 	clusterService    *cluster.Service
 	certService       *cert.Service
 	tagService        *tag.Service
-	toolsService      *tools.Service
 	queryService      *query.Service
 	nodeService       *node.Service
 	secretService     *secret.Service
 	configService     *config.Service
 	permissionService *permission.Service
 	backupService     *backup.Service
+	toolRegistry      *utils.Registry[tools.Tool, tools.Adapter]
 }
 
 func NewService(
-	env *env.AppEnv,
+	env *coreConfig.Environment,
 	authService *auth.Service,
 	vaultService *vault.Service,
 	clusterService *cluster.Service,
 	certService *cert.Service,
 	tagService *tag.Service,
-	toolsService *tools.Service,
+	jobService *job.Service,
 	queryService *query.Service,
 	nodeService *node.Service,
 	secretService *secret.Service,
 	configService *config.Service,
 	permissionService *permission.Service,
 	backupService *backup.Service,
+	toolRegistry *utils.Registry[tools.Tool, tools.Adapter],
 ) *Service {
 	return &Service{
 		env:               env,
 		authService:       authService,
 		vaultService:      vaultService,
-		toolsService:      toolsService,
 		clusterService:    clusterService,
 		certService:       certService,
 		tagService:        tagService,
@@ -63,13 +65,14 @@ func NewService(
 		configService:     configService,
 		permissionService: permissionService,
 		backupService:     backupService,
+		toolRegistry:      toolRegistry,
 	}
 }
 
 func (s *Service) Free() error {
-	errComTable := s.toolsService.DeleteAll()
+	errTools := s.deleteAllTools()
 	errQuery := s.queryService.DeleteAllLogs()
-	return errors.Join(errComTable, errQuery)
+	return errors.Join(errTools, errQuery)
 }
 
 func (s *Service) Erase() error {
@@ -77,12 +80,21 @@ func (s *Service) Erase() error {
 	errCred := s.vaultService.DeleteAll()
 	errCert := s.certService.DeleteAll()
 	errCluster := s.clusterService.DeleteAll()
-	errTools := s.toolsService.DeleteAll()
 	errTag := s.tagService.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
-	return errors.Join(errSecret, errCred, errCert, errCluster, errTools, errTag, errQuery, errConfig, errPerm)
+	errTools := s.deleteAllTools()
+
+	return errors.Join(errSecret, errCred, errCert, errCluster, errTag, errQuery, errConfig, errPerm, errTools)
+}
+
+func (s *Service) deleteAllTools() error {
+	errs := make([]error, 0)
+	for _, tool := range s.toolRegistry.All() {
+		errs = append(errs, tool.DeleteAll())
+	}
+	return errors.Join(errs...)
 }
 
 func (s *Service) ChangeSecret(previousKey string, newKey string) error {

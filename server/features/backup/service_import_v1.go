@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"ivory/features"
+	"ivory/core/config"
 	"ivory/features/cluster"
 	"ivory/features/permission"
 	"ivory/features/query"
@@ -145,8 +145,8 @@ func backupToUserPermissionsV1(bp backupPermissionsV1) permission.UserPermission
 	}
 }
 
-func syncPermissionV1(p string) (features.Feature, error) {
-	for _, validFeature := range features.All {
+func syncPermissionV1(p string) (env.Feature, error) {
+	for _, validFeature := range env.All {
 		if string(validFeature) == p {
 			return validFeature, nil
 		}

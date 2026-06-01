@@ -13,6 +13,10 @@ const (
 	ETCD     Plugin = "etcd"
 )
 
+func (p Plugin) String() string {
+	return string(p)
+}
+
 type Config struct {
 	Plugin Plugin  `json:"plugin"`
 	Host   string  `json:"host"`

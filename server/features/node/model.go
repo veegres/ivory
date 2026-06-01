@@ -1,7 +1,7 @@
 package node
 
 import (
-	"ivory/features/cert"
+	"ivory/core/service/cert"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 

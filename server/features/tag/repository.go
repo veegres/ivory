@@ -1,14 +1,14 @@
 package tag
 
 import (
-	"ivory/storage/db"
+	"ivory/core/store"
 )
 
 type Repository struct {
-	bucket *db.Bucket[[]string]
+	bucket *store.DbBucket[[]string]
 }
 
-func NewRepository(bucket *db.Bucket[[]string]) *Repository {
+func NewRepository(bucket *store.DbBucket[[]string]) *Repository {
 	return &Repository{
 		bucket: bucket,
 	}

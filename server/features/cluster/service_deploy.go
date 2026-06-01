@@ -3,10 +3,10 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	"ivory/features/job"
+	"ivory/core/service/job"
+	"ivory/core/service/vault"
+	"ivory/core/store"
 	"ivory/features/node"
-	"ivory/features/vault"
-	"ivory/storage/db"
 	"regexp"
 	"strconv"
 	"strings"
@@ -37,7 +37,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	if cluster.Vaults.DatabaseId == nil && (r.CommonConfig.DbUser == "" || r.CommonConfig.DbPass == "") {
 		return nil, errors.New("database credentials are required")
 	}
-	if _, e := s.Get(cluster.Name); !errors.Is(e, db.ErrNotFound) {
+	if _, e := s.Get(cluster.Name); !errors.Is(e, store.ErrNotFound) {
 		return nil, errors.New("cluster name is already taken")
 	}
 

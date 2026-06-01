@@ -1,8 +1,8 @@
 package cluster
 
 import (
-	"ivory/features"
-	"ivory/features/cert"
+	"ivory/core/config"
+	"ivory/core/service/cert"
 	"ivory/features/node"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
@@ -62,8 +62,8 @@ type Node struct {
 }
 
 type Overview struct {
-	Nodes    map[string]Node    `json:"nodes"`
-	Features []features.Feature `json:"features"`
+	Nodes    map[string]Node `json:"nodes"`
+	Features []env.Feature   `json:"features"`
 }
 
 type CreateAutoRequest struct {

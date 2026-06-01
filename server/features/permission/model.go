@@ -1,6 +1,8 @@
 package permission
 
-import "ivory/features"
+import (
+	"ivory/core/config"
+)
 
 // COMMON (WEB AND SERVER)
 
@@ -12,7 +14,7 @@ const (
 	GRANTED
 )
 
-type PermissionMap map[features.Feature]Status
+type PermissionMap map[env.Feature]Status
 
 type UserPermissions struct {
 	Username    string        `json:"username"`
@@ -22,7 +24,7 @@ type UserPermissions struct {
 // SPECIFIC (SERVER)
 
 type PermissionRequest struct {
-	Permissions []features.Feature `json:"permissions" binding:"required"`
+	Permissions []env.Feature `json:"permissions" binding:"required"`
 }
 
 // UserPermissionsMap is a map where the key is username/email and value is the permissions map

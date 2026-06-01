@@ -42,7 +42,7 @@ Use `.docker/ivory-dev/` for the stack.
 - **Keeper**: Refers to the HA management tool (e.g., Patroni).
 - **VM**: Refers specifically to the virtual machine/host level.
 - **Platform**: Refers to the deployment/troubleshooting target that Ivory integrates with, such as on-prem Docker-over-SSH now and Kubernetes/OpenShift in the future.
-- **Deployment**: Refers to the generic platform-managed thing Ivory deploys, stops, deletes, lists, or reads logs from. Avoid using `Container`, `Pod`, or `Database` for generic platform APIs.
+- **Deployment**: Refers to the generic platform-managed thing Ivory deploys, stops, deletes, lists, or reads logs from. Avoid using `Container`, `Pod`, or `DatabaseRegistry` for generic platform APIs.
 - **Job**: Refers to a generic command execution entity managed by a background goroutine, supporting event-driven status updates, console logs persistence, and live streaming.
 
 ## Coding & UI Standards

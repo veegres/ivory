@@ -1,7 +1,7 @@
 package permission
 
 import (
-	"ivory/features"
+	"ivory/core/config"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +30,7 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) ValidateMethodMiddleware(feature features.Feature) gin.HandlerFunc {
+func (r *Router) ValidateMethodMiddleware(feature env.Feature) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if val, ok := context.Get("permissions"); ok {
 			permissions := val.(PermissionMap)
