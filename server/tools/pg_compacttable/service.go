@@ -91,10 +91,6 @@ func (s *Service) Stream(jobUuid uuid.UUID, subscriberID job.SubscriberID, send 
 
 	s.jobManager.Stream(model.JobId, subscriberID, send)
 
-	s.sendLatestStatus(jobUuid, send)
-}
-
-func (s *Service) sendLatestStatus(jobUuid uuid.UUID, send func(event job.Message)) {
 	latest, errGet := s.bloatRepository.Get(jobUuid)
 	if errGet == nil {
 		send(job.Message{Type: job.STATUS, Message: latest.Status.String()})
@@ -139,7 +135,6 @@ func (s *Service) initializer() {
 
 	pendingJobs, _ := s.bloatRepository.ListByStatus(job.PENDING)
 	for _, pendingJob := range pendingJobs {
-		pendingJob := pendingJob
 		go s.start(&pendingJob)
 	}
 }
@@ -154,24 +149,22 @@ func (s *Service) start(model *Response) {
 	command.JobID = string(model.JobId)
 	command.Log = true
 
-	subscriberID := job.SubscriberID(uuid.New().String())
 	jobID, errStart := s.jobManager.Start(command)
 	if errStart != nil {
 		_ = s.bloatRepository.UpdateStatus(*model, job.FAILED)
 		return
 	}
 
+	subscriberID := job.SubscriberID("pg_compacttable_updater")
 	channel, errSubscribe := s.jobManager.Subscribe(jobID, subscriberID)
 	if errSubscribe != nil || channel == nil {
 		return
 	}
 
-	go s.handleEvents(model.Uuid, jobID, subscriberID, channel)
+	go s.updateJobStatus(model.Uuid, jobID, subscriberID, channel)
 }
 
-func (s *Service) handleEvents(jobUuid uuid.UUID, jobID job.JobID, subscriberID job.SubscriberID, channel <-chan job.Message) {
-	defer s.jobManager.Unsubscribe(jobID, subscriberID)
-
+func (s *Service) updateJobStatus(jobUuid uuid.UUID, jobID job.JobID, subscriberID job.SubscriberID, channel <-chan job.Message) {
 	for event := range channel {
 		model, errGet := s.bloatRepository.Get(jobUuid)
 		if errGet != nil {
@@ -182,8 +175,11 @@ func (s *Service) handleEvents(jobUuid uuid.UUID, jobID job.JobID, subscriberID 
 		case job.STATUS:
 			status := s.parseStatus(event.Message)
 			_ = s.bloatRepository.UpdateStatus(model, status)
+		default:
 		}
 	}
+
+	s.jobManager.Unsubscribe(jobID, subscriberID)
 }
 
 func (s *Service) parseStatus(value string) job.Status {

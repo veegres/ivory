@@ -35,6 +35,11 @@ func (a *Adapter) CopyId(connection platform.Connection, publicKey string) error
 	return err
 }
 
+func (a *Adapter) execute(connection platform.Connection, command string) ([]string, error) {
+	cmd := a.sshClient.Command(a.mapToSshCommand(connection), command)
+	return cmd.Execute()
+}
+
 func (a *Adapter) ListCommand(connection platform.Connection) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
 }
@@ -62,11 +67,6 @@ func (a *Adapter) getLogsCommand(name string, tail int) string {
 	}
 	command += name
 	return command
-}
-
-func (a *Adapter) execute(connection platform.Connection, command string) ([]string, error) {
-	cmd := a.sshClient.Command(a.mapToSshCommand(connection), command)
-	return cmd.Execute()
 }
 
 func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Command {

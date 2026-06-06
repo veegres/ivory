@@ -1,14 +1,13 @@
 package job
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"ivory/clients/console"
 	"ivory/core/store"
 	"maps"
 	"os"
 	"slices"
-	"strings"
 	"sync"
 	"time"
 )
@@ -67,35 +66,33 @@ func (j *Job) Run() {
 		return
 	}
 
-	buf := make([]byte, 4096)
-	for {
-		n, errRead := reader.Read(buf)
-		if n > 0 {
-			msg := strings.TrimSuffix(string(buf[:n]), "\n")
-			j.broadcast(LOG, msg)
-			if logFile != nil {
-				_, _ = logFile.WriteString(msg + "\n")
-			}
-		}
-		if errRead != nil {
-			errWait := j.cmd.Wait()
-			if j.getStatus() == STOPPED {
-				return
-			}
-			if errRead != io.EOF {
-				j.setStatus(FAILED)
-				j.broadcast(SERVER, errRead.Error())
-				return
-			}
-			if errWait != nil {
-				j.setStatus(FAILED)
-				j.broadcast(SERVER, errWait.Error())
-				return
-			}
-			j.setStatus(FINISHED)
-			return
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		msg := scanner.Text()
+		j.broadcast(LOG, msg)
+		if logFile != nil {
+			_, _ = logFile.WriteString(msg + "\n")
 		}
 	}
+
+	errWait := j.cmd.Wait()
+	if j.getStatus() == STOPPED {
+		return
+	}
+
+	if errRead := scanner.Err(); errRead != nil {
+		j.setStatus(FAILED)
+		j.broadcast(SERVER, errRead.Error())
+		return
+	}
+
+	if errWait != nil {
+		j.setStatus(FAILED)
+		j.broadcast(SERVER, errWait.Error())
+		return
+	}
+
+	j.setStatus(FINISHED)
 }
 
 // Stop marks the job as STOPPED before calling Abort() so that when

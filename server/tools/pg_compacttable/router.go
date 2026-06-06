@@ -178,7 +178,7 @@ func (r *Router) GetJobStream(context *gin.Context) {
 	// find stream
 	jobId := context.Param("uuid")
 	if jobId == "" {
-		context.SSEvent(job.SERVER.String(), "Streaming failed: Cannot parse UUID")
+		context.SSEvent(job.SERVER.String(), "Streaming failed: UUID is empty")
 		context.SSEvent(job.STATUS.String(), job.UNKNOWN.String())
 		return
 	}

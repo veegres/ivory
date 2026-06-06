@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react"
 
-import {EventType} from "../../features/bloat/job/type"
+import {EventStreamType, EventType} from "../../features/bloat/job/type"
 
 type MessageEvent = {
     type: EventType,
@@ -23,6 +23,12 @@ export function useStream(url: string) {
         }
         Object.values(EventType).forEach((type) => {
             es.addEventListener(type, (e) => push(type, e.data))
+        })
+        es.addEventListener(EventType.STREAM, (e) => {
+            if (e.data === EventStreamType.END) {
+                setLoading(false)
+                es.close()
+            }
         })
         es.onerror = () => {
             setLoading(false)
