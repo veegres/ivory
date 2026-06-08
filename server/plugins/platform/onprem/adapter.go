@@ -60,17 +60,16 @@ func (a *Adapter) StopContainer(connection platform.Connection, name string) con
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop "+name))
 }
 
-func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(a.getLogsCommand(name, tail)))
-}
-
-func (a *Adapter) getLogsCommand(name string, tail int) string {
+func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
 	command := "logs "
 	if tail > 0 {
 		command += "--tail " + strconv.Itoa(tail) + " "
 	}
+	if follow {
+		command += "--follow "
+	}
 	command += name
-	return command
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(command))
 }
 
 func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Command {
@@ -132,7 +131,7 @@ func (a *Adapter) splitMetricsOutput(output string) map[string][]string {
 	sections := map[string][]string{}
 	current := ""
 
-	for _, line := range strings.Split(output, "\n") {
+	for line := range strings.SplitSeq(output, "\n") {
 		trimmed := strings.TrimSpace(line)
 		switch trimmed {
 		case "__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__":

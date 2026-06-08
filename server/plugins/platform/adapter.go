@@ -34,5 +34,5 @@ type ContainerManager interface {
 	DownContainer(connection Connection, name string) console.Command
 	StartContainer(connection Connection, name string) console.Command
 	StopContainer(connection Connection, name string) console.Command
-	LogsContainer(connection Connection, name string, tail int) console.Command
+	LogsContainer(connection Connection, name string, tail int, follow bool) console.Command
 }

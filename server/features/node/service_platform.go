@@ -70,7 +70,7 @@ func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	s.streamCommand(adapter.LogsContainer(conn, r.Name, r.Tail), subscriberID, send)
+	s.streamCommand(adapter.LogsContainer(conn, r.Name, r.Tail, r.Follow), subscriberID, send)
 }
 
 func (s *Service) streamCommand(cmd console.Command, subscriberID job.SubscriberID, send func(event job.Message)) {
