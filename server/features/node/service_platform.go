@@ -6,66 +6,71 @@ import (
 	"ivory/plugins/platform"
 )
 
-func (s *Service) PlatformCopyId(c PlatformCredConnection, publicKey string) error {
+func (s *Service) PlatformCopyId(r PlatformCopyIdRequest) (string, error) {
 	adapter, err := s.platformRegistry.Get(platform.Onprem)
 	if err != nil {
-		return err
+		return "", err
 	}
-	con := s.getPlatformCredConnection(c)
-	return adapter.CopyId(con, publicKey)
+	con := s.getPlatformCredConnection(r.PlatformCredConnection)
+	return "ok", adapter.CopyId(con, r.PublicKey)
 }
 
-func (s *Service) PlatformMetrics(request PlatformVaultConnection) (*platform.Metrics, error) {
-	adapter, conn, err := s.getPlatformAdapter(request)
+func (s *Service) PlatformMetrics(r PlatformMetricsRequest) (*PlatformMetricsResponse, error) {
+	adapter, conn, err := s.getPlatformAdapter(r)
 	if err != nil {
 		return nil, err
 	}
 	return adapter.Metrics(conn)
 }
 
-func (s *Service) PlatformStop(request PlatformDeployRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
-	adapter, conn, err := s.getPlatformAdapter(request.Connection)
+func (s *Service) PlatformContainerStop(r PlatformActionRequest) ([]string, error) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	if err != nil {
+		return nil, err
+	}
+	return s.executeCommand(adapter.ListContainer(conn))
+}
+
+func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, error) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	if err != nil {
+		return nil, err
+	}
+	return s.executeCommand(adapter.ListContainer(conn))
+}
+
+func (s *Service) PlatformContainerUp(r PlatformUpRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	s.streamCommand(adapter.StopCommand(conn, request.Name), subscriberID, send)
+	s.streamCommand(adapter.UpContainer(conn, r.Options, r.Image), subscriberID, send)
 }
 
-func (s *Service) PlatformDeploy(request PlatformDeployRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
-	adapter, conn, err := s.getPlatformAdapter(request.Connection)
+func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
-		send(job.Message{Type: job.SERVER, Message: err.Error()})
-		return
+		return nil, err
 	}
-	s.streamCommand(adapter.DeployCommand(conn, request.Options, request.Image), subscriberID, send)
+	return s.executeCommand(adapter.ListContainer(conn))
 }
 
-func (s *Service) PlatformDelete(request PlatformDeployRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
-	adapter, conn, err := s.getPlatformAdapter(request.Connection)
-	if err != nil {
-		send(job.Message{Type: job.SERVER, Message: err.Error()})
-		return
-	}
-	s.streamCommand(adapter.DeleteCommand(conn, request.Name), subscriberID, send)
-}
-
-func (s *Service) PlatformList(c PlatformVaultConnection, subscriberID job.SubscriberID, send func(event job.Message)) {
+func (s *Service) PlatformContainerList(c PlatformVaultConnection) ([]string, error) {
 	adapter, conn, err := s.getPlatformAdapter(c)
 	if err != nil {
-		send(job.Message{Type: job.SERVER, Message: err.Error()})
-		return
+		return nil, err
 	}
-	s.streamCommand(adapter.ListCommand(conn), subscriberID, send)
+	return s.executeCommand(adapter.ListContainer(conn))
 }
 
-func (s *Service) PlatformLogs(request PlatformLogsRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
-	adapter, conn, err := s.getPlatformAdapter(request.Connection)
+func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	s.streamCommand(adapter.LogsCommand(conn, request.Name, request.Tail), subscriberID, send)
+	s.streamCommand(adapter.LogsContainer(conn, r.Name, r.Tail), subscriberID, send)
 }
 
 func (s *Service) streamCommand(cmd console.Command, subscriberID job.SubscriberID, send func(event job.Message)) {
@@ -75,4 +80,8 @@ func (s *Service) streamCommand(cmd console.Command, subscriberID job.Subscriber
 		return
 	}
 	s.jobManager.Stream(jobID, subscriberID, send)
+}
+
+func (s *Service) executeCommand(cmd console.Command) ([]string, error) {
+	return cmd.Execute()
 }

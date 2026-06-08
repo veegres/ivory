@@ -129,7 +129,8 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 					Username: r.CommonConfig.SshUser,
 					Password: r.CommonConfig.SshPass,
 				}
-				err := s.nodeService.PlatformCopyId(conn, sshPubKey)
+				req := node.PlatformCopyIdRequest{PlatformCredConnection: conn, PublicKey: sshPubKey}
+				_, err := s.nodeService.PlatformCopyId(req)
 				if err != nil {
 					appendLog(nodeKey, fmt.Sprintf("failed to copy ssh key: %v", err))
 					return
@@ -167,7 +168,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 
 			appendLog(nodeKey, fmt.Sprintf("deploying with options: %s", options))
 
-			platformReq := node.PlatformDeployRequest{
+			platformReq := node.PlatformUpRequest{
 				Connection: node.PlatformVaultConnection{
 					Host:    n.Host,
 					Port:    *n.SshPort,
@@ -177,7 +178,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				Options: options,
 			}
 
-			s.nodeService.PlatformDeploy(platformReq, "cluster-deploy", func(event job.Message) {
+			s.nodeService.PlatformContainerUp(platformReq, "cluster-deploy", func(event job.Message) {
 				if event.Message != "" && event.Type == job.LOG || event.Type == job.SERVER {
 					appendLog(nodeKey, event.Message)
 				}

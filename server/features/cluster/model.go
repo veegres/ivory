@@ -56,9 +56,9 @@ type Vaults struct {
 }
 
 type Node struct {
-	Config   NodeConfig          `json:"config"`
-	Keeper   node.KeeperResponse `json:"keeper"`
-	Warnings []string            `json:"warnings"`
+	Config   NodeConfig             `json:"config"`
+	Keeper   node.KeeperOneResponse `json:"keeper"`
+	Warnings []string               `json:"warnings"`
 }
 
 type Overview struct {

@@ -27,9 +27,10 @@ const (
 	ManageNodeDbFailover     Feature = "manage.node.db.failover"
 	ManageNodeDbActivation   Feature = "manage.node.db.activation"
 
-	ViewNodePlatformMetrics      Feature = "view.node.platform.metrics"
-	ViewNodePlatformDeployment   Feature = "view.node.platform.deployment"
-	ManageNodePlatformDeployment Feature = "manage.node.platform.deployment"
+	ViewNodePlatform            Feature = "view.node.platform"
+	ManageNodePlatform          Feature = "manage.node.platform"
+	ViewNodePlatformContainer   Feature = "view.node.platform.container"
+	ManageNodePlatformContainer Feature = "manage.node.platform.container"
 
 	// Query features
 	ViewQueryCrudList     Feature = "view.query.crud.list"
@@ -91,7 +92,7 @@ var All = []Feature{
 	ViewTagList,
 	ViewNodeDbOverview,
 	ViewNodeDbConfig,
-	ViewNodePlatformMetrics,
+	ViewNodePlatform,
 	ManageNodeDbConfigUpdate,
 	ManageNodeDbSwitchover,
 	ManageNodeDbReinitialize,
@@ -99,8 +100,8 @@ var All = []Feature{
 	ManageNodeDbReload,
 	ManageNodeDbFailover,
 	ManageNodeDbActivation,
-	ManageNodePlatformDeployment,
-	ViewNodePlatformDeployment,
+	ManageNodePlatformContainer,
+	ViewNodePlatformContainer,
 	ViewQueryCrudList,
 	ManageQueryCrudCreate,
 	ManageQueryCrudUpdate,

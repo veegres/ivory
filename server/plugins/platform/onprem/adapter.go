@@ -40,23 +40,27 @@ func (a *Adapter) execute(connection platform.Connection, command string) ([]str
 	return cmd.Execute()
 }
 
-func (a *Adapter) ListCommand(connection platform.Connection) console.Command {
+func (a *Adapter) ListContainer(connection platform.Connection) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
 }
 
-func (a *Adapter) DeployCommand(connection platform.Connection, options, image string) console.Command {
+func (a *Adapter) UpContainer(connection platform.Connection, options, image string) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(fmt.Sprintf("run -d %s %s", options, image)))
 }
 
-func (a *Adapter) StopCommand(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop "+name))
-}
-
-func (a *Adapter) DeleteCommand(connection platform.Connection, name string) console.Command {
+func (a *Adapter) DownContainer(connection platform.Connection, name string) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm "+name))
 }
 
-func (a *Adapter) LogsCommand(connection platform.Connection, name string, tail int) console.Command {
+func (a *Adapter) StartContainer(connection platform.Connection, name string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("start "+name))
+}
+
+func (a *Adapter) StopContainer(connection platform.Connection, name string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop "+name))
+}
+
+func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(a.getLogsCommand(name, tail)))
 }
 

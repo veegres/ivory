@@ -3,49 +3,49 @@ package node
 import "github.com/gin-gonic/gin"
 
 func (r *Router) GetNodeOverview(context *gin.Context) {
-	handleParamRequest(context, r.service.List)
+	handleKeeperParamRequest(context, r.service.KeeperNodeList)
 }
 
 func (r *Router) GetNodeConfig(context *gin.Context) {
-	handleParamRequest(context, r.service.Config)
+	handleKeeperParamRequest(context, r.service.KeeperConfigGet)
 }
 
 func (r *Router) PatchNodeConfig(context *gin.Context) {
-	handleBodyRequest(context, r.service.ConfigUpdate)
+	handleKeeperBodyRequest(context, r.service.KeeperConfigUpdate)
 }
 
 func (r *Router) PostNodeSwitchover(context *gin.Context) {
-	handleBodyRequest(context, r.service.Switchover)
+	handleKeeperBodyRequest(context, r.service.KeeperSwitchover)
 }
 
 func (r *Router) DeleteNodeSwitchover(context *gin.Context) {
-	handleParamRequest(context, r.service.DeleteSwitchover)
+	handleKeeperParamRequest(context, r.service.KeeperSwitchoverDelete)
 }
 
 func (r *Router) PostNodeReinitialize(context *gin.Context) {
-	handleBodyRequest(context, r.service.Reinitialize)
+	handleKeeperBodyRequest(context, r.service.KeeperReinitialize)
 }
 
 func (r *Router) PostNodeRestart(context *gin.Context) {
-	handleBodyRequest(context, r.service.Restart)
+	handleKeeperBodyRequest(context, r.service.KeeperRestart)
 }
 
 func (r *Router) DeleteNodeRestart(context *gin.Context) {
-	handleParamRequest(context, r.service.DeleteRestart)
+	handleKeeperParamRequest(context, r.service.KeeperRestartDelete)
 }
 
 func (r *Router) PostNodeReload(context *gin.Context) {
-	handleBodyRequest(context, r.service.Reload)
+	handleKeeperBodyRequest(context, r.service.KeeperReload)
 }
 
 func (r *Router) PostNodeFailover(context *gin.Context) {
-	handleBodyRequest(context, r.service.Failover)
+	handleKeeperBodyRequest(context, r.service.KeeperFailover)
 }
 
 func (r *Router) PostNodeActivate(context *gin.Context) {
-	handleBodyRequest(context, r.service.Activate)
+	handleKeeperBodyRequest(context, r.service.KeeperActivate)
 }
 
 func (r *Router) PostNodePause(context *gin.Context) {
-	handleBodyRequest(context, r.service.Pause)
+	handleKeeperBodyRequest(context, r.service.KeeperPause)
 }

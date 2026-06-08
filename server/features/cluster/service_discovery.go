@@ -13,7 +13,7 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 	if clusterError != nil {
 		return nil, clusterError
 	}
-	var keeperNodeMap map[string]node.KeeperResponse
+	var keeperNodeMap map[string]node.KeeperOneResponse
 	var connectionErrors map[string]error
 	var requestError error
 
@@ -84,14 +84,14 @@ func (s *Service) FixAuto(name string) (*Response, error) {
 	return (*Response)(&model), s.clusterRepository.Update(model)
 }
 
-func (s *Service) getKeeperListByOne(host string, port int, cluster Options) (map[string]node.KeeperResponse, map[string]error, error) {
+func (s *Service) getKeeperListByOne(host string, port int, cluster Options) (map[string]node.KeeperOneResponse, map[string]error, error) {
 	var certs *cert.Certs
 	// NOTE: we want to rewrite `nil` only if tls is enabled
 	if cluster.Tls.Keeper {
 		certs = &cluster.Certs
 	}
 	con := node.KeeperConnection{Host: host, Port: port}
-	request := node.KeeperRequest{
+	request := node.KeeperOneRequest{
 		KeeperConnection: con,
 		KeeperOptions: node.KeeperOptions{
 			Plugin:  cluster.Plugins.Keeper,
@@ -99,24 +99,24 @@ func (s *Service) getKeeperListByOne(host string, port int, cluster Options) (ma
 			Certs:   certs,
 		},
 	}
-	nodes, _, errOver := s.nodeService.List(request)
+	nodes, _, errOver := s.nodeService.KeeperNodeList(request)
 	var connectionErrors map[string]error
 	if errOver != nil {
 		connectionErrors = make(map[string]error)
 		connectionErrors[s.getNodeKey(host, &port)] = errOver
 	}
-	nodeMap := make(map[string]node.KeeperResponse)
+	nodeMap := make(map[string]node.KeeperOneResponse)
 	s.addKeeperResponsesToMap(nodeMap, nodes)
 	return nodeMap, connectionErrors, errOver
 }
 
-func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) (map[string]node.KeeperResponse, map[string]error, error) {
+func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) (map[string]node.KeeperOneResponse, map[string]error, error) {
 	responses, connectionErrors, err := s.getKeeperListByManyResponse(configs, cluster)
 	if err != nil {
 		return nil, connectionErrors, err
 	}
 
-	keeperNodeMap := make(map[string]node.KeeperResponse)
+	keeperNodeMap := make(map[string]node.KeeperOneResponse)
 	var requestErrs error
 	for _, response := range responses {
 		connection := response.Connection
@@ -131,7 +131,7 @@ func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) 
 	return keeperNodeMap, connectionErrors, requestErrs
 }
 
-func (s *Service) getKeeperListByManyFirstSuccess(configs []NodeConfig, cluster Options) ([]node.KeeperResponse, error) {
+func (s *Service) getKeeperListByManyFirstSuccess(configs []NodeConfig, cluster Options) ([]node.KeeperOneResponse, error) {
 	responses, _, err := s.getKeeperListByManyResponse(configs, cluster)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func (s *Service) getKeeperListByManyFirstSuccess(configs []NodeConfig, cluster 
 	return nil, requestErrs
 }
 
-func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Options) ([]node.KeeperParallelResponse, map[string]error, error) {
+func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Options) ([]node.KeeperMultiResponse, map[string]error, error) {
 	connections := make([]node.KeeperConnection, 0)
 	connectionErrors := make(map[string]error)
 	for _, config := range configs {
@@ -172,7 +172,7 @@ func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Opti
 		return nil, connectionErrors, errors.New("no configured keeper connections can be requested")
 	}
 
-	request := node.KeeperParallelRequest{
+	request := node.KeeperMultiRequest{
 		Connections: connections,
 		KeeperOptions: node.KeeperOptions{
 			Plugin:  cluster.Plugins.Keeper,
@@ -181,14 +181,14 @@ func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Opti
 		},
 	}
 
-	responses, err := s.nodeService.ListParallel(request)
+	responses, err := s.nodeService.KeeperNodeListMulti(request)
 	if err != nil {
 		return nil, connectionErrors, err
 	}
 	return responses, connectionErrors, nil
 }
 
-func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[string]node.KeeperResponse, connectionErrors map[string]error, requestError error) map[string]Node {
+func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[string]node.KeeperOneResponse, connectionErrors map[string]error, requestError error) map[string]Node {
 	resultNodeMap := s.getConfiguredNodeMap(configs, connectionErrors, requestError)
 	for _, kn := range keeperNodes {
 		s.mergeKeeperNode(resultNodeMap, kn)
@@ -218,7 +218,7 @@ func (s *Service) getConfiguredNodeMap(configs []NodeConfig, connectionErrors ma
 	return nodeMap
 }
 
-func (s *Service) mergeKeeperNode(nodeMap map[string]Node, kn node.KeeperResponse) {
+func (s *Service) mergeKeeperNode(nodeMap map[string]Node, kn node.KeeperOneResponse) {
 	if kn.DiscoveredHost == nil {
 		return
 	}
@@ -240,7 +240,7 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
 		if !s.hasKeeper(cn.Keeper) {
-			cn.Keeper = node.KeeperResponse{Role: keeper.Unknown, State: "-"}
+			cn.Keeper = node.KeeperOneResponse{Role: keeper.Unknown, State: "-"}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
 			nodeMap[nodeKey] = cn
 		}
@@ -261,7 +261,7 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 	}
 }
 
-func (s *Service) addKeeperResponsesToMap(nodeMap map[string]node.KeeperResponse, nodes []node.KeeperResponse) {
+func (s *Service) addKeeperResponsesToMap(nodeMap map[string]node.KeeperOneResponse, nodes []node.KeeperOneResponse) {
 	for _, n := range nodes {
 		if n.DiscoveredHost == nil {
 			continue

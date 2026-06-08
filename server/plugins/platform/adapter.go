@@ -20,7 +20,7 @@ type Connection struct {
 
 type Adapter interface {
 	PlatformManager
-	DeploymentManager
+	ContainerManager
 }
 
 type PlatformManager interface {
@@ -28,10 +28,11 @@ type PlatformManager interface {
 	CopyId(connection Connection, publicKey string) error
 }
 
-type DeploymentManager interface {
-	ListCommand(connection Connection) console.Command
-	DeployCommand(connection Connection, options, image string) console.Command
-	StopCommand(connection Connection, name string) console.Command
-	DeleteCommand(connection Connection, name string) console.Command
-	LogsCommand(connection Connection, name string, tail int) console.Command
+type ContainerManager interface {
+	ListContainer(connection Connection) console.Command
+	UpContainer(connection Connection, options, image string) console.Command
+	DownContainer(connection Connection, name string) console.Command
+	StartContainer(connection Connection, name string) console.Command
+	StopContainer(connection Connection, name string) console.Command
+	LogsContainer(connection Connection, name string, tail int) console.Command
 }

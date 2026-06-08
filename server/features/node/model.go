@@ -21,30 +21,30 @@ type KeeperOptions struct {
 	Certs   *cert.Certs   `json:"certs" form:"certs"`
 }
 
-type KeeperRequest struct {
+type KeeperOneRequest struct {
 	KeeperConnection
 	Body any `json:"body" form:"body"`
 	KeeperOptions
 }
 
-type KeeperResponse = keeper.Response
+type KeeperOneResponse = keeper.Response
 
-type KeeperParallelRequest struct {
+type KeeperMultiRequest struct {
 	Connections []KeeperConnection `json:"connections" form:"connections"`
 	Body        any                `json:"body" form:"body"`
 	KeeperOptions
 }
 
-type KeeperParallelResponse struct {
+type KeeperMultiResponse struct {
 	Connection KeeperConnection  `json:"connection"`
 	Response   []keeper.Response `json:"response"`
 	Error      error             `json:"error"`
 }
 
 type PlatformVaultConnection struct {
-	Host    string     `json:"host" form:"host"`
-	Port    int        `json:"port" form:"port"`
-	VaultId *uuid.UUID `json:"vaultId" form:"vaultId"`
+	Host    string     `json:"host" form:"host" binding:"required"`
+	Port    int        `json:"port" form:"port" binding:"required"`
+	VaultId *uuid.UUID `json:"vaultId" form:"vaultId" binding:"required"`
 }
 
 type PlatformCredConnection struct {
@@ -54,12 +54,19 @@ type PlatformCredConnection struct {
 	Password string `json:"password" form:"password"`
 }
 
-type MetricsResponse = platform.Metrics
+type PlatformMetricsRequest = PlatformVaultConnection
 
-type PlatformDeployRequest struct {
+type PlatformMetricsResponse = platform.Metrics
+
+type PlatformCopyIdRequest struct {
+	PlatformCredConnection
+	PublicKey string
+}
+
+type PlatformUpRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Image      string                  `json:"image" form:"image"`
-	Name       string                  `json:"name" form:"name"`
+	Image      string                  `json:"image" form:"image" binding:"required"`
+	Name       string                  `json:"name" form:"name" binding:"required"`
 	Options    string                  `json:"options" form:"options"`
 }
 
@@ -67,6 +74,12 @@ type PlatformLogsRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
 	Name       string                  `json:"name" form:"name" binding:"required"`
 	Tail       int                     `json:"tail" form:"tail"`
+	Follow     bool                    `json:"follow" form:"follow"`
+}
+
+type PlatformActionRequest struct {
+	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
+	Name       string                  `json:"name" form:"name" binding:"required"`
 }
 
 type PlatformResponse = []string

@@ -41,7 +41,7 @@ func TestService_Overview_Mapping(t *testing.T) {
 		}
 
 		host := "db1"
-		keeperNodes := map[string]node.KeeperResponse{
+		keeperNodes := map[string]node.KeeperOneResponse{
 			"db1:8008": {
 				Role:                 keeper.Leader,
 				State:                "running",
@@ -73,7 +73,7 @@ func TestService_buildOverviewNodes(t *testing.T) {
 	host2 := "db2"
 	host3 := "db3"
 	port := 8008
-	nodes := s.buildOverviewNodes(nil, map[string]node.KeeperResponse{
+	nodes := s.buildOverviewNodes(nil, map[string]node.KeeperOneResponse{
 		"db1:8008": {Role: keeper.Leader, DiscoveredHost: &host1, DiscoveredKeeperPort: &port},
 		"db2:8008": {Role: keeper.Leader, DiscoveredHost: &host2, DiscoveredKeeperPort: &port},
 		"db3:8008": {Role: keeper.Replica, DiscoveredHost: &host3, DiscoveredKeeperPort: &port},
@@ -101,9 +101,9 @@ func TestService_buildOverviewNodes(t *testing.T) {
 func TestService_addOverviewWarnings(t *testing.T) {
 	s := &Service{}
 	nodes := map[string]Node{
-		"db1:8008": {Keeper: node.KeeperResponse{Role: keeper.Leader}},
-		"db2:8008": {Keeper: node.KeeperResponse{Role: keeper.Leader}},
-		"db3:8008": {Keeper: node.KeeperResponse{Role: keeper.Replica}},
+		"db1:8008": {Keeper: node.KeeperOneResponse{Role: keeper.Leader}},
+		"db2:8008": {Keeper: node.KeeperOneResponse{Role: keeper.Leader}},
+		"db3:8008": {Keeper: node.KeeperOneResponse{Role: keeper.Replica}},
 	}
 
 	s.addOverviewWarnings(nodes)

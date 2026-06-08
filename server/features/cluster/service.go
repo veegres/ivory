@@ -60,7 +60,7 @@ func (s *Service) getToolSupportedFeatures(db database.Plugin) []env.Feature {
 	return allFeatures
 }
 
-func (s *Service) hasKeeper(k node.KeeperResponse) bool {
+func (s *Service) hasKeeper(k node.KeeperOneResponse) bool {
 	return k.Role != "" || k.State != "" || k.DiscoveredHost != nil
 }
 
@@ -74,7 +74,7 @@ func (s *Service) isPortEqual(p1 *int, p2 *int) bool {
 	return *p1 == *p2
 }
 
-func (s *Service) mapKeeperResponseList(keeperNodes []node.KeeperResponse) []NodeConfig {
+func (s *Service) mapKeeperResponseList(keeperNodes []node.KeeperOneResponse) []NodeConfig {
 	nodes := make([]NodeConfig, 0)
 	for _, item := range keeperNodes {
 		nodes = append(nodes, s.mapKeeperResponse(item))
@@ -82,7 +82,7 @@ func (s *Service) mapKeeperResponseList(keeperNodes []node.KeeperResponse) []Nod
 	return nodes
 }
 
-func (s *Service) mapKeeperResponseMap(keeperNodes map[string]node.KeeperResponse) []NodeConfig {
+func (s *Service) mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeConfig {
 	nodes := make([]NodeConfig, 0)
 	for _, item := range keeperNodes {
 		nodes = append(nodes, s.mapKeeperResponse(item))
@@ -90,7 +90,7 @@ func (s *Service) mapKeeperResponseMap(keeperNodes map[string]node.KeeperRespons
 	return nodes
 }
 
-func (s *Service) mapKeeperResponse(keeper node.KeeperResponse) NodeConfig {
+func (s *Service) mapKeeperResponse(keeper node.KeeperOneResponse) NodeConfig {
 	return NodeConfig{
 		Host:       *keeper.DiscoveredHost,
 		KeeperPort: keeper.DiscoveredKeeperPort,

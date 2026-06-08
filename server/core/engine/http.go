@@ -188,14 +188,16 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	dbGroup.POST("/pause", rp.ValidateMethodMiddleware(coreConfig.ManageNodeDbActivation), r.PostNodePause)
 
 	platformGroup := group.Group("/platform")
-	platformGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformMetrics), r.GetMetrics)
+	platformGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformMetrics)
+	platformGroup.POST("/copy-id", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatform), r.PostPlatformCopyId)
 
-	deploymentGroup := platformGroup.Group("/deployment")
-	deploymentGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformDeployment), r.GetPlatformList)
-	deploymentGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformDeployment), r.GetPlatformLogs)
-	deploymentGroup.GET("/stop", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformDeployment), r.GetPlatformStop)
-	deploymentGroup.GET("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformDeployment), r.GetPlatformDeploy)
-	deploymentGroup.GET("/delete", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformDeployment), r.GetPlatformDelete)
+	deploymentGroup := platformGroup.Group("/container")
+	deploymentGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerList)
+	deploymentGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.StreamPlatformContainerLogs)
+	deploymentGroup.GET("/start", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStart)
+	deploymentGroup.GET("/stop", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStop)
+	deploymentGroup.GET("/up", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.StreamPlatformContainerUp)
+	deploymentGroup.GET("/down", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerDown)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
