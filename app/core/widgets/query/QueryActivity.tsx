@@ -37,7 +37,7 @@ export function QueryActivity(props: Props) {
     return (
         <Box sx={SX.box}>
             <Box sx={SX.head}>
-                <Box sx={SX.label} flex={1}>Active Queries</Box>
+                <Box sx={SX.label} flex={1}>Active Session Queries</Box>
                 {open && <Box sx={SX.help} flex={1}>[ hold shift for horizontal scrolling ]</Box>}
                 <Box sx={SX.action} flex={1}>
                     <Tooltip title={"COUNT"} placement={"top"}>
