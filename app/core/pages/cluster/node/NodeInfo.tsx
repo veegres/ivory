@@ -11,16 +11,17 @@ const SX: SxPropsMap = {
 
 type Props = {
     node: Node,
+    loading?: boolean,
     onUpdate?: (config: NodeConfig) => void,
 }
 
 export function NodeInfo(props: Props) {
-    const {node, onUpdate} = props
+    const {node, onUpdate, loading} = props
 
     return (
         <Box sx={SX.info}>
             <NodeInfoStatus role={node.keeper.role}/>
-            <NodeInfoForm node={node} onUpdate={onUpdate}/>
+            <NodeInfoForm node={node} onUpdate={onUpdate} loading={loading}/>
         </Box>
     )
 }

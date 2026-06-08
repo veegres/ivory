@@ -39,7 +39,7 @@ export function Node() {
 
         return (
             <Box sx={SX.content}>
-                <NodeInfo node={activeNode} onUpdate={(c) => handleUpdateNode(c, activeNode.config.host)}/>
+                <NodeInfo node={activeNode} loading={updateCluster.isPending} onUpdate={(c) => handleUpdateNode(c, activeNode.config.host)}/>
                 <NodeMain options={activeCluster} config={activeNode.config}/>
             </Box>
         )
