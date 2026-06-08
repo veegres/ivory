@@ -7,7 +7,7 @@ import {NodeColor} from "../../../../shared/helper/utils"
 const SX: SxPropsMap = {
     nodeStatusBlock: {
         display: "flex", alignItems: "center", justifyContent: "center",
-        height: "120px", minWidth: "300px", borderRadius: "4px",
+        minHeight: "95px", minWidth: "300px", borderRadius: "4px",
         color: "white", fontSize: "24px", fontWeight: 900,
     },
 }

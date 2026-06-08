@@ -2,11 +2,11 @@ import {Box} from "@mui/material"
 
 import {Node, NodeConfig} from "../../../../features/cluster/type"
 import {SxPropsMap} from "../../../../shared/helper/type"
+import {NodeInfoForm} from "./NodeInfoForm"
 import {NodeInfoStatus} from "./NodeInfoStatus"
-import {NodeInfoTable} from "./NodeInfoTable"
 
 const SX: SxPropsMap = {
-    info: {display: "flex", gap: 1, margin: "5px 0"},
+    info: {display: "flex", gap: 1, margin: "5px 0", width: "100%"},
 }
 
 type Props = {
@@ -20,7 +20,7 @@ export function NodeInfo(props: Props) {
     return (
         <Box sx={SX.info}>
             <NodeInfoStatus role={node.keeper.role}/>
-            <NodeInfoTable node={node} onUpdate={onUpdate}/>
+            <NodeInfoForm node={node} onUpdate={onUpdate}/>
         </Box>
     )
 }
