@@ -4,8 +4,8 @@ import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
     head: {display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5},
-    label: {fontSize: "12px", fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
-    value: {fontSize: "12px", color: "text.secondary", whiteSpace: "nowrap",},
+    label: {fontSize: "14px", fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"},
+    value: {fontSize: "14px", color: "text.secondary", whiteSpace: "nowrap",},
 }
 
 type Props = {

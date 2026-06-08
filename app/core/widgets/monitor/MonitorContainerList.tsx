@@ -26,7 +26,7 @@ export function MonitorContainerList(props: Props) {
     const list = useRouterNodePlatformList(connection)
 
     if (list.isError) return <ErrorSmart error={list.error}/>
-    if (list.isPending) return <MonitorLoading count={5}/>
+    if (list.isPending) return <MonitorLoading count={1}/>
 
     return (
         <Box sx={SX.list} className={scroll.tiny}>

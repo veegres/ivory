@@ -22,7 +22,7 @@ export function MonitorContainer(props: Props) {
     )
 
     function renderActions() {
-        const tabs = [{label: connection.host}, {label: "list"}]
+        const tabs = [{label: "main"}, {label: "list"}]
         return (
             <TabsButton tabs={tabs} tab={tab} setTab={setTab}/>
         )
