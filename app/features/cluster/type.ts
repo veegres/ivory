@@ -4,7 +4,7 @@ import {Certs} from "../cert/type"
 import {Plugin as DbPlugin} from "../database/type"
 import {Feature} from "../feature"
 import {Plugin as KeeperPlugin} from "../keeper/type"
-import {KeeperResponse} from "../node/type"
+import {KeeperOneResponse} from "../node/type"
 
 // COMMON (WEB AND SERVER)
 
@@ -76,7 +76,7 @@ export interface NodeOverview {
 
 export interface Node {
     config: NodeConfig,
-    keeper: KeeperResponse,
+    keeper: KeeperOneResponse,
     warnings: string[],
 }
 

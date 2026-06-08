@@ -4,7 +4,7 @@ import {useState} from "react"
 
 import {Feature} from "../../../features/feature"
 import {useRouterNodeRestart} from "../../../features/node/hook"
-import {KeeperRequest} from "../../../features/node/type"
+import {KeeperOneRequest} from "../../../features/node/type"
 import {AlertButton} from "../../../shared/component/button/AlertButton"
 import {ScheduleInput} from "../../../shared/component/input/ScheduleInput"
 import {SxPropsMap} from "../../../shared/helper/type"
@@ -16,7 +16,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    request: KeeperRequest,
+    request: KeeperOneRequest,
     cluster: string,
 }
 

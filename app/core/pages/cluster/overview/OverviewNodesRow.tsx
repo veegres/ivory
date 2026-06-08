@@ -7,7 +7,7 @@ import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {MenuButton} from "../../../../shared/component/button/MenuButton"
 import {HiddenScrolling} from "../../../../shared/component/scrolling/HiddenScrolling"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {DateTimeFormatter, getKeeperRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/utils"
+import {DateTimeFormatter, getKeeperOneRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/utils"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {FailoverButton} from "../../../widgets/actions/FailoverButton"
 import {ReinitButton} from "../../../widgets/actions/ReinitButton"
@@ -39,7 +39,7 @@ export function OverviewNodesRow(props: Props) {
     const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
 
     const {setNode} = useStoreAction
-    const keeperRequest = getKeeperRequest(cluster, config.host, config.keeperPort)
+    const keeperRequest = getKeeperOneRequest(cluster, config.host, config.keeperPort)
 
     return (
         <TableRow

@@ -15,7 +15,7 @@ import {JobStatus} from "../../features/bloat/job/type"
 import {CertType, FileUsageType} from "../../features/cert/type"
 import {Cluster, InterpolatedOptions, Node, NodeConfig, NodeOverview} from "../../features/cluster/type"
 import {Plugin as KeeperPlugin, Role, Status as KeeperStatus} from "../../features/keeper/type"
-import {KeeperConnection, KeeperRequest,PlatformConnection} from "../../features/node/type"
+import {KeeperConnection, KeeperOneRequest,PlatformConnection} from "../../features/node/type"
 import {Status as PermissionStatus} from "../../features/permission/type"
 import {VarietyType} from "../../features/query/type"
 import {Connection as QueryConnection} from "../../features/query/type"
@@ -180,7 +180,7 @@ export function getKeeperConnection(host: string, port?: number): KeeperConnecti
     return {host, port}
 }
 
-export function getKeeperRequest(cluster: Cluster, host: string, port?: number): KeeperRequest | undefined {
+export function getKeeperOneRequest(cluster: Cluster, host: string, port?: number): KeeperOneRequest | undefined {
     const con = getKeeperConnection(host, port)
     if (!con) return
     const vaultId = cluster.vaults.keeperId
@@ -225,7 +225,7 @@ export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [strin
 export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) => {
     const [domain, node] = mainNode
     const mainLabel = domain ?? "none"
-    const mainRole = node?.keeper.role ?? "unknown"
+    const mainRole: Role = node?.keeper.role ?? "unknown"
     return [
         {title: "Detection", label: manual ? "manual" : "auto", bgColor: purple[400]},
         {title: "Main Keeper", label: mainLabel, bgColor: NodeColor[mainRole].color}

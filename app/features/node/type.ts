@@ -14,14 +14,25 @@ export interface KeeperConnection {
     port: number,
 }
 
-export interface KeeperRequest extends KeeperConnection {
+export interface KeeperOneRequest extends KeeperConnection {
     plugin: KeeperPlugin,
     vaultId?: string,
     certs?: Certs,
     body?: any,
 }
 
-export type KeeperResponse = BaseKeeperResponse
+export type KeeperOneResponse = BaseKeeperResponse
+
+export interface KeeperMultiRequest {
+    connections: KeeperConnection[],
+    body?: any,
+}
+
+export interface KeeperMultiResponse {
+    connection: KeeperConnection,
+    response: BaseKeeperResponse[],
+    error?: string,
+}
 
 export interface PlatformConnection {
     host: string,
@@ -29,12 +40,33 @@ export interface PlatformConnection {
     vaultId: string,
 }
 
-export type MetricsResponse = Metrics
+export interface PlatformCredConnection {
+    host: string,
+    port: number,
+    username: string,
+    password?: string,
+}
 
-export interface PlatformDeployRequest {
+export type PlatformMetricsResponse = Metrics
+
+export interface PlatformMetricsRequest {
+    host: string,
+    port: number,
+    vaultId: string,
+}
+
+export interface PlatformCopyIdRequest {
+    host: string,
+    port: number,
+    username: string,
+    password?: string,
+    publicKey: string,
+}
+
+export interface PlatformUpRequest {
     connection: PlatformConnection,
-    image?: string,
-    name?: string,
+    image: string,
+    name: string,
     options?: string,
 }
 
@@ -42,6 +74,12 @@ export interface PlatformLogsRequest {
     connection: PlatformConnection,
     name: string,
     tail?: number,
+    follow?: boolean,
+}
+
+export interface PlatformActionRequest {
+    connection: PlatformConnection,
+    name: string,
 }
 
 // SPECIFIC (WEB)

@@ -10,7 +10,7 @@ import {ErrorKeeperMissing} from "../../../../shared/component/box/ErrorManual"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {CodeThemes, getKeeperRequest} from "../../../../shared/helper/utils"
+import {CodeThemes, getKeeperOneRequest} from "../../../../shared/helper/utils"
 import {useSettings} from "../../../../shared/provider/AppProvider"
 import {useSnackbar} from "../../../../shared/provider/SnackbarProvider"
 import {Access} from "../../../widgets/access/Access"
@@ -32,7 +32,7 @@ export function OverviewConfig(props: Props) {
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const req = getKeeperRequest(cluster, node.config.host, node.config.keeperPort)
+    const req = getKeeperOneRequest(cluster, node.config.host, node.config.keeperPort)
 
     const config = useRouterNodeConfig(req)
     const updateConfig = useRouterNodeConfigUpdate(node.config, () => setIsEditable(false))

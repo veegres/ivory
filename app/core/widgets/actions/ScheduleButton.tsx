@@ -3,7 +3,7 @@ import {Button} from "@mui/material"
 import {Feature} from "../../../features/feature"
 import {ScheduledRestart, ScheduledSwitchover} from "../../../features/keeper/type"
 import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../../features/node/hook"
-import {KeeperRequest} from "../../../features/node/type"
+import {KeeperOneRequest} from "../../../features/node/type"
 import {List} from "../../../shared/component/box/List"
 import {ListItem} from "../../../shared/component/box/ListItem"
 import {NoBox} from "../../../shared/component/box/NoBox"
@@ -12,7 +12,7 @@ import {DateTimeFormatter} from "../../../shared/helper/utils"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: KeeperRequest,
+    request: KeeperOneRequest,
     cluster: string,
     switchover?: ScheduledSwitchover,
     restart?: ScheduledRestart,

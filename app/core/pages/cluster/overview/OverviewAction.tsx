@@ -3,7 +3,7 @@ import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
 import {Cluster, Node} from "../../../../features/cluster/type"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {getKeeperRequest} from "../../../../shared/helper/utils"
+import {getKeeperOneRequest} from "../../../../shared/helper/utils"
 import {OverviewActionInfo} from "./OverviewActionInfo"
 import {OverviewActionStatus} from "./OverviewActionStatus"
 
@@ -27,7 +27,7 @@ export function OverviewAction(props: Props) {
     const [_, mainNode] = m
     const config = mainNode?.config
     const status = mainNode?.keeper.status
-    const keeper = config && getKeeperRequest(cluster, config.host, config.keeperPort)
+    const keeper = config && getKeeperOneRequest(cluster, config.host, config.keeperPort)
     return (
         <Box sx={SX.box}>
             {keeper && status && (

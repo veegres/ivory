@@ -9,7 +9,7 @@ type Props = {
 
 export function MonitorLogs(props: Props) {
     const {connection} = props
-    const request = {connection, name: connection.host, tail: 50}
+    const request = {connection, name: connection.host, tail: 50, follow: true}
     const logs = useRouterNodePlatformLogs(request)
 
     return (

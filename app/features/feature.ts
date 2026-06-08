@@ -15,7 +15,6 @@ export enum Feature {
     // Node features
     ViewNodeDbOverview = "view.node.db.overview",
     ViewNodeDbConfig = "view.node.db.config",
-    ViewNodePlatformMetrics = "view.node.platform.metrics",
     ManageNodeDbConfigUpdate = "manage.node.db.config.update",
     ManageNodeDbSwitchover = "manage.node.db.switchover",
     ManageNodeDbReinitialize = "manage.node.db.reinitialize",
@@ -23,8 +22,11 @@ export enum Feature {
     ManageNodeDbReload = "manage.node.db.reload",
     ManageNodeDbFailover = "manage.node.db.failover",
     ManageNodeDbActivation = "manage.node.db.activation",
-    ManageNodePlatformDeployment = "manage.node.platform.deployment",
-    ViewNodePlatformDeployment = "view.node.platform.deployment",
+
+    ViewNodePlatform = "view.node.platform",
+    ManageNodePlatform = "manage.node.platform",
+    ManageNodePlatformContainer = "manage.node.platform.container",
+    ViewNodePlatformContainer = "view.node.platform.container",
 
     // Query features
     ViewQueryCrudList = "view.query.crud.list",

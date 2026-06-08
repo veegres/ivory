@@ -5,13 +5,13 @@ import {useState} from "react"
 import {NodeConfig} from "../../../features/cluster/type"
 import {Feature} from "../../../features/feature"
 import {useRouterNodeSwitchover} from "../../../features/node/hook"
-import {KeeperRequest} from "../../../features/node/type"
+import {KeeperOneRequest} from "../../../features/node/type"
 import {AlertButton} from "../../../shared/component/button/AlertButton"
 import {ScheduleInput} from "../../../shared/component/input/ScheduleInput"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: KeeperRequest,
+    request: KeeperOneRequest,
     cluster: string,
     candidates: NodeConfig[],
     leaderKey?: string,

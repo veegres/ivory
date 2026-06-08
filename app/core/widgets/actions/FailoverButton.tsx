@@ -1,11 +1,11 @@
 import {Feature} from "../../../features/feature"
 import {useRouterNodeFailover} from "../../../features/node/hook"
-import {KeeperRequest} from "../../../features/node/type"
+import {KeeperOneRequest} from "../../../features/node/type"
 import {AlertButton} from "../../../shared/component/button/AlertButton"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: KeeperRequest,
+    request: KeeperOneRequest,
     cluster: string,
     disabled: boolean,
     name?: string,

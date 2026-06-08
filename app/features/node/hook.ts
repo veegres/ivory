@@ -6,7 +6,7 @@ import {ClusterApi} from "../cluster/router"
 import {NodeConfig} from "../cluster/type"
 import {Plugin} from "../keeper/type"
 import {NodeApi} from "./router"
-import {KeeperRequest, PlatformConnection, PlatformLogsRequest} from "./type"
+import {KeeperOneRequest, PlatformConnection, PlatformLogsRequest} from "./type"
 
 export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
     const {loading, response} = useStream(NodeApi.deployment.logs.url(request))
@@ -16,7 +16,7 @@ export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
     return {isFetching: loading, data}
 }
 
-export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) {
+export function useRouterNodeOverview(request: KeeperOneRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.overview.key(request.host, request.port),
@@ -25,7 +25,7 @@ export function useRouterNodeOverview(request: KeeperRequest, enabled: boolean) 
     })
 }
 
-export function useRouterNodeConfig(request?: KeeperRequest) {
+export function useRouterNodeConfig(request?: KeeperOneRequest) {
     const req = request ?? {host: "", port: 1, plugin: Plugin.PATRONI}
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps

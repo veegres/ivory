@@ -1,5 +1,5 @@
 import {useRouterNodeMetrics} from "../../../features/node/hook"
-import {MetricsResponse as NodeMetrics,PlatformConnection} from "../../../features/node/type"
+import {PlatformConnection, PlatformMetricsResponse as NodeMetrics} from "../../../features/node/type"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../../shared/component/chart/HistoryTrackerChart"
 import {MonitorLoading} from "./MonitorLoading"
