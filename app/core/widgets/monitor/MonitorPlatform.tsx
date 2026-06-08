@@ -10,7 +10,7 @@ type Props = {
     interval?: number,
 }
 
-export function MonitorSystem(props: Props) {
+export function MonitorPlatform(props: Props) {
     const {connection, interval = 1000 * 3} = props
     const metrics = useRouterNodeMetrics(connection, interval)
 

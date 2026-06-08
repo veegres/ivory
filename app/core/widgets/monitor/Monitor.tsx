@@ -5,10 +5,10 @@ import {ChartType, Connection as QueryConnection} from "../../../features/query/
 import {ErrorSshMissing} from "../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../shared/helper/type"
 import {MonitorCommon} from "./MonitorCommon"
+import {MonitorContainer} from "./MonitorContainer"
 import {MonitorDatabase} from "./MonitorDatabase"
-import {MonitorLogs} from "./MonitorLogs"
+import {MonitorPlatform} from "./MonitorPlatform"
 import {MonitorRow} from "./MonitorRow"
-import {MonitorSystem} from "./MonitorSystem"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 2},
@@ -39,8 +39,8 @@ export function Monitor(props: Props) {
         if (!platformCon) return <ErrorSshMissing/>
         return (
             <>
-                <MonitorSystem connection={platformCon}/>
-                <MonitorLogs connection={platformCon}/>
+                <MonitorPlatform connection={platformCon}/>
+                <MonitorContainer connection={platformCon}/>
             </>
         )
     }

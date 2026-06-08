@@ -16,6 +16,13 @@ export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
     return {isFetching: loading, data}
 }
 
+export function useRouterNodePlatformList(request: PlatformConnection) {
+    return useQuery({
+        queryKey: NodeApi.deployment.list.key(request),
+        queryFn: () => NodeApi.deployment.list.fn(request),
+    })
+}
+
 export function useRouterNodeOverview(request: KeeperOneRequest, enabled: boolean) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -123,5 +130,29 @@ export function useRouterNodeMetrics(c: PlatformConnection, refetchInterval?: nu
         queryFn: () => NodeApi.metrics.fn(c),
         refetchInterval,
         retry: false,
+    })
+}
+
+export function useRouterNodePlatformStart(connection: PlatformConnection) {
+    return useMutationAdapter({
+        mutationFn: NodeApi.deployment.start.fn,
+        mutationKey: NodeApi.deployment.start.key(),
+        successKeys: [NodeApi.deployment.list.key(connection)],
+    })
+}
+
+export function useRouterNodePlatformStop(connection: PlatformConnection) {
+    return useMutationAdapter({
+        mutationFn: NodeApi.deployment.stop.fn,
+        mutationKey: NodeApi.deployment.stop.key(),
+        successKeys: [NodeApi.deployment.list.key(connection)],
+    })
+}
+
+export function useRouterNodePlatformDown(connection: PlatformConnection) {
+    return useMutationAdapter({
+        mutationFn: NodeApi.deployment.down.fn,
+        mutationKey: NodeApi.deployment.down.key(),
+        successKeys: [NodeApi.deployment.list.key(connection)],
     })
 }

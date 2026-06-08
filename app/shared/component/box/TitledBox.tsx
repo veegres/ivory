@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
     title: {fontSize: "15px", fontWeight: 600, color: "text.secondary", fontFamily: "monospace"},
-    head: {display: "flex", justifyContent: "space-between", alignItems: "start", gap: 1, padding: "0px 10px 10px"},
+    head: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1, padding: "0px 10px 10px"},
     island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 2},
 }
 

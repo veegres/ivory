@@ -56,7 +56,7 @@ export function VaultListItem(props: Props) {
                     )}
                 </Access>
                 <Access feature={Feature.ManageVaultDelete}>
-                    <SimpleButton  loading={deleteVault.isPending} onClick={handleDelete}><Delete/></SimpleButton>
+                    <SimpleButton loading={deleteVault.isPending} onClick={handleDelete}><Delete/></SimpleButton>
                 </Access>
             </>
         )

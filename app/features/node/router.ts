@@ -78,7 +78,9 @@ export const NodeApi = {
     },
     deployment: {
         list: {
-            url: (request: PlatformConnection) => `/api/node/platform/container?request=${encodeURIComponent(JSON.stringify(request))}`,
+            key: (request: PlatformConnection) => ["node", "platform", "container", "list", request.host, request.port, request.vaultId],
+            fn: (request: PlatformConnection) => api.get<R<string[]>>("/node/platform/container", {params: {request: JSON.stringify(request)}})
+                .then((response) => response.data.response),
         },
         logs: {
             url: (request: PlatformLogsRequest) => `/api/node/platform/container/logs?request=${encodeURIComponent(JSON.stringify(request))}`,
@@ -87,14 +89,17 @@ export const NodeApi = {
             url: (request: PlatformUpRequest) => `/api/node/platform/container/up?request=${encodeURIComponent(JSON.stringify(request))}`,
         },
         start: {
+            key: () =>  ["node", "platform", "container", "start"],
             fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/start", request)
                 .then((response) => response.data.response),
         },
         stop: {
+            key: () =>  ["node", "platform", "container", "stop"],
             fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/stop", request)
                 .then((response) => response.data.response),
         },
         down: {
+            key: () =>  ["node", "platform", "container", "down"],
             fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/down", request)
                 .then((response) => response.data.response),
         }

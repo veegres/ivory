@@ -28,7 +28,7 @@ func (s *Service) PlatformContainerStop(r PlatformActionRequest) ([]string, erro
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.ListContainer(conn))
+	return s.executeCommand(adapter.StopContainer(conn, r.Name))
 }
 
 func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, error) {
@@ -36,7 +36,7 @@ func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, err
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.ListContainer(conn))
+	return s.executeCommand(adapter.StartContainer(conn, r.Name))
 }
 
 func (s *Service) PlatformContainerUp(r PlatformUpRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
@@ -53,7 +53,7 @@ func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, erro
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.ListContainer(conn))
+	return s.executeCommand(adapter.DownContainer(conn, r.Name))
 }
 
 func (s *Service) PlatformContainerList(c PlatformVaultConnection) ([]string, error) {
