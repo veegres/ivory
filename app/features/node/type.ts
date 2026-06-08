@@ -1,9 +1,9 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../cert/type"
+import {NodeConfig, Options} from "../cluster/type"
 import {KeeperResponse as BaseKeeperResponse, Plugin as KeeperPlugin, Status as KeeperStatus} from "../keeper/type"
 import {Metrics} from "../platform/type"
-import {Connection as QueryConnection} from "../query/type"
 
 // COMMON (WEB AND SERVER)
 
@@ -86,7 +86,6 @@ export interface PlatformActionRequest {
 
 export enum NodeTabType {QUERY, MONITOR}
 export interface NodeTab {
-    label: string,
-    body: (queryCon?: QueryConnection, platformCon?: PlatformConnection) => ReactNode,
+    body: (options: Options, config: NodeConfig) => ReactNode,
     info?: ReactNode,
 }

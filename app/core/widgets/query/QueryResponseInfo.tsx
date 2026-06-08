@@ -29,10 +29,10 @@ export function QueryResponseInfo(props: Props) {
             </Tooltip>
             <Box sx={SX.right}>
                 <Tooltip title={"LIMIT"} placement={"top"}>
-                    <Box sx={SX.label}>[ {options?.limit ?? "-"} ]</Box>
+                    <Box>[ {options?.limit ?? "-"} ]</Box>
                 </Tooltip>
                 <Tooltip title={"DURATION"} placement={"top"}>
-                    <Box sx={SX.label}>[ {time.end && time.start ? `${(time.end - time.start) / 1000}s` : "-"} ]</Box>
+                    <Box>[ {time.end && time.start ? `${(time.end - time.start) / 1000}s` : "-"} ]</Box>
                 </Tooltip>
             </Box>
         </Box>

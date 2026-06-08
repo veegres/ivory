@@ -10,6 +10,7 @@ export enum Type {
     STATISTIC,
     OTHER,
     CONSOLE,
+    CHARTS,
 }
 
 export enum VarietyType {

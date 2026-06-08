@@ -1,10 +1,11 @@
 import {Box, Link} from "@mui/material"
 
-import {NodeTab, NodeTabType,PlatformConnection} from "../../../../features/node/type"
+import {NodeConfig, Options} from "../../../../features/cluster/type"
+import {NodeTab, NodeTabType} from "../../../../features/node/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../features/query/hook"
-import {Connection as QueryConnection} from "../../../../features/query/type"
 import {AutocompleteFetch} from "../../../../shared/component/autocomplete/AutocompleteFetch"
 import {SxPropsMap} from "../../../../shared/helper/type"
+import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/utils"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {Monitor} from "../../../widgets/monitor/Monitor"
 import {NodeMainQueries} from "./NodeMainQueries"
@@ -17,8 +18,7 @@ const SX: SxPropsMap = {
 
 const Tabs: {[key in NodeTabType]: NodeTab} = {
     [NodeTabType.MONITOR]: {
-        label: "Monitor",
-        body: (queryCon?: QueryConnection, platformCon?: PlatformConnection) => <Monitor queryCon={queryCon} platformCon={platformCon}/>,
+        body: (o: Options, c: NodeConfig) => <Monitor connection={getPlatformConnection(o, c.host, c.sshPort)}/>,
         info: <>
             Here you can check some basic charts about your overall database and each database separately
             by specifying database name in the input near by.
@@ -27,8 +27,7 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
         </>
     },
     [NodeTabType.QUERY]: {
-        label: "Queries",
-        body: (queryCon?: QueryConnection) => <NodeMainQueries connection={queryCon}/>,
+        body: (o: Options, c: NodeConfig) => <NodeMainQueries connection={getQueryConnection(o, c.host, c.dbPort)}/>,
         info: <>
             Here you can run some queries to troubleshoot your postgres (<b>always use LIMIT in queries
             to reduce number of rows, it will help to render and execute query faster</b>). There are some default queries
@@ -44,36 +43,39 @@ const Tabs: {[key in NodeTabType]: NodeTab} = {
 }
 
 type Props = {
-    tab: NodeTabType,
-    queryCon?: QueryConnection,
-    platformCon?: PlatformConnection,
+    options: Options,
+    config: NodeConfig,
 }
 
 export function NodeMain(props: Props) {
-    const {tab, queryCon, platformCon} = props
+    const {options, config} = props
+    const node = useStore(s => s.nodeState)
     const {dbName, dbSchema} = useStore(s => s.nodeState)
     const {setDbName, setDbSchema} = useStoreAction
 
-    const {label, info, body} = Tabs[tab]
+    const tab = node.nodeTab
+    const {info, body} = Tabs[tab]
 
     return (
         <Box sx={SX.main}>
-            <NodeMainTitle label={label} info={info} db={queryCon?.db} renderActions={renderActions()}/>
+            <NodeMainTitle info={info} tab={tab} renderActions={renderActions()}/>
             {renderBody()}
         </Box>
     )
 
     function renderBody() {
-        return body(queryCon, platformCon)
+        return body(options, config)
     }
 
     function renderActions() {
-        if (!queryCon) return
+        if (tab !== NodeTabType.QUERY) return
+        const con = getQueryConnection(options, config.host, config.dbPort)
+        if (!con) return
         return (
             <Box sx={SX.inputs}>
                 <AutocompleteFetch
                     value={dbSchema || null}
-                    connection={queryCon}
+                    connection={con}
                     useFetch={useRouterQuerySchemas}
                     placeholder={"Schema"}
                     variant={"outlined"}
@@ -83,7 +85,7 @@ export function NodeMain(props: Props) {
                 />
                 <AutocompleteFetch
                     value={dbName || null}
-                    connection={queryCon}
+                    connection={con}
                     useFetch={useRouterQueryDatabase}
                     placeholder={"Database"}
                     variant={"outlined"}

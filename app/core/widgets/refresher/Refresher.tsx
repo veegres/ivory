@@ -26,7 +26,7 @@ const SX: SxPropsMap = {
 }
 
 const group = (size: number): SxProps<Theme> => ({"& .MuiButtonGroup-grouped": {
-    width: size + 8, height: size, fontSize: "12px", padding: "0px", minWidth: "unset", color: "divider",
+    width: size + 4, height: size, fontSize: "12px", padding: "0px", minWidth: "unset", color: "divider",
 }})
 
 const periods: [string, number][] = [

@@ -1,26 +1,26 @@
-import {Box, Divider} from "@mui/material"
+import {Box} from "@mui/material"
 
+import {useRouterClusterUpdate} from "../../../../features/cluster/hook"
 import {useRouterClusterOverview} from "../../../../features/cluster/hook"
+import {NodeConfig} from "../../../../features/cluster/type"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/utils"
-import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
+import {useStore} from "../../../../shared/provider/StoreProvider"
 import {NodeInfo} from "./NodeInfo"
 import {NodeMain} from "./NodeMain"
 
 const SX: SxPropsMap = {
-    content: {display: "flex", gap: 3},
+    content: {display: "flex", flexDirection: "column"},
 }
 
 export function Node() {
-    const {setNodeBody} = useStoreAction
-    const node = useStore(s => s.nodeState)
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterName = activeCluster?.name
     const activeNodeName = useStore(s => s.activeNode[activeClusterName ?? ""])
 
     const overview = useRouterClusterOverview(activeClusterName, false)
+    const updateCluster = useRouterClusterUpdate()
     const activeClusterTab = useStore(s => s.activeClusterTab)
     const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
 
@@ -34,18 +34,20 @@ export function Node() {
         if (!activeNodeName || !activeClusterName) return <AlertCentered text={"Please, select a node to see the information!"}/>
         const activeNode = overview.data?.nodes[activeNodeName]
         if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
-        const {host, dbPort, sshPort, keeperPort} = activeNode.config
+        const {dbPort, sshPort, keeperPort} = activeNode.config
         if (!dbPort && !keeperPort && !sshPort) return <AlertCentered text={"Specify at least one port to work with Node"} severity={"warning"}/>
-
-        const platformCon = getPlatformConnection(activeCluster, host, sshPort)
-        const queryCon = getQueryConnection(activeCluster, host, dbPort)
 
         return (
             <Box sx={SX.content}>
-                <NodeInfo node={activeNode} queryCon={queryCon} tab={node.nodeTab} onTab={setNodeBody}/>
-                <Divider orientation={"vertical"} flexItem/>
-                <NodeMain platformCon={platformCon} queryCon={queryCon} tab={node.nodeTab}/>
+                <NodeInfo node={activeNode} onUpdate={(c) => handleUpdateNode(c, activeNode.config.host)}/>
+                <NodeMain options={activeCluster} config={activeNode.config}/>
             </Box>
         )
+    }
+
+    function handleUpdateNode(config: NodeConfig, host: string) {
+        if (!activeCluster) return
+        const nodes = activeCluster.nodes.map(n => n.host === host ? config : n)
+        updateCluster.mutate({...activeCluster, nodes})
     }
 }

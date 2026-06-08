@@ -1,38 +1,36 @@
 import {InfoOutlined} from "@mui/icons-material"
-import {Alert, Box, Collapse, ToggleButton, Tooltip} from "@mui/material"
+import {Alert, Box, Collapse, Tab, Tabs, ToggleButton, Tooltip} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {Config as DbConfig} from "../../../../features/database/type"
-import {DatabaseBox} from "../../../../shared/component/box/DatabaseBox"
+import {NodeTabType} from "../../../../features/node/type"
 import {SxPropsMap} from "../../../../shared/helper/type"
+import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},
     title: {display: "flex", justifyContent: "space-between", alignItems: "center", columnGap: 3, flexWrap: "wrap", alignContent: "stretch"},
-    label: {fontWeight: "bold", fontSize: "30px", width: "125px"},
     toggle: {padding: "3px"},
     buttons: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, height: "45px"},
-    info: {display: "flex", alignItems: "center", gap: 2},
 }
 
 type Props = {
-    label: string,
     info: ReactNode,
-    db?: DbConfig,
+    tab: NodeTabType,
     renderActions?: ReactNode,
 }
 
 export function NodeMainTitle(props: Props) {
-    const {label, info, renderActions, db} = props
+    const {tab, info, renderActions} = props
     const [alert, setAlert] = useState(false)
+    const {setNodeBody} = useStoreAction
 
     return (
         <Box sx={SX.box}>
             <Box sx={SX.title}>
-                <Box flexGrow={1} sx={SX.info}>
-                    <Box sx={SX.label}>{label}</Box>
-                    {db && <DatabaseBox db={db}/>}
-                </Box>
+                <Tabs value={tab} onChange={(_, e) => setNodeBody(e)}>
+                    <Tab value={NodeTabType.MONITOR} label={"Monitor"}/>
+                    <Tab value={NodeTabType.QUERY} label={"Queries"}/>
+                </Tabs>
                 <Box flexGrow={1} sx={SX.buttons}>
                     {renderActions}
                     <ToggleButton sx={SX.toggle} value={"info"} size={"small"} selected={alert} onClick={() => setAlert(!alert)}>

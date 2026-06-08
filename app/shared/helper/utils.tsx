@@ -13,7 +13,7 @@ import dayjs from "dayjs"
 
 import {JobStatus} from "../../features/bloat/job/type"
 import {CertType, FileUsageType} from "../../features/cert/type"
-import {Cluster, InterpolatedOptions, Node, NodeConfig, NodeOverview} from "../../features/cluster/type"
+import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/type"
 import {Plugin as KeeperPlugin, Role, Status as KeeperStatus} from "../../features/keeper/type"
 import {KeeperConnection, KeeperOneRequest,PlatformConnection} from "../../features/node/type"
 import {Status as PermissionStatus} from "../../features/permission/type"
@@ -161,16 +161,16 @@ export const isConnectionEqual = (c1?: NodeConfig, c2?: NodeConfig): boolean => 
     return c1?.host === c2?.host && c1?.keeperPort === c2?.keeperPort
 }
 
-export function getQueryConnection(cluster: Cluster, host: string, port?: number): QueryConnection | undefined {
+export function getQueryConnection(options: Options, host: string, port?: number): QueryConnection | undefined {
     if (!port) return
-    const vaultId = cluster.vaults.databaseId
-    const db = {plugin: cluster.plugins.database, host, port}
-    const certs = cluster.tls.database ? cluster.certs : undefined
+    const vaultId = options.vaults.databaseId
+    const db = {plugin: options.plugins.database, host, port}
+    const certs = options.tls.database ? options.certs : undefined
     return {db, certs, vaultId}
 }
 
-export function getPlatformConnection(cluster: Cluster, host: string, port?: number): PlatformConnection | undefined {
-    const vaultId = cluster.vaults.sshKeyId
+export function getPlatformConnection(options: Options, host: string, port?: number): PlatformConnection | undefined {
+    const vaultId = options.vaults.sshKeyId
     if (!port || !vaultId) return
     return {host, port, vaultId}
 }
@@ -180,12 +180,12 @@ export function getKeeperConnection(host: string, port?: number): KeeperConnecti
     return {host, port}
 }
 
-export function getKeeperOneRequest(cluster: Cluster, host: string, port?: number): KeeperOneRequest | undefined {
+export function getKeeperOneRequest(options: Options, host: string, port?: number): KeeperOneRequest | undefined {
     const con = getKeeperConnection(host, port)
     if (!con) return
-    const vaultId = cluster.vaults.keeperId
-    const certs = cluster.tls.keeper ? cluster.certs : undefined
-    return {...con, certs, vaultId, plugin: cluster.plugins.keeper}
+    const vaultId = options.vaults.keeperId
+    const certs = options.tls.keeper ? options.certs : undefined
+    return {...con, certs, vaultId, plugin: options.plugins.keeper}
 }
 
 export const getDomain = (config: NodeConfig, simple: boolean = false) => {
