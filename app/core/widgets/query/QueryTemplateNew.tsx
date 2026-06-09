@@ -48,7 +48,7 @@ export function QueryTemplateNew(props: Props) {
                 sx={SX.input}
                 fullWidth
                 required
-                placeholder={"Type query name"}
+                placeholder={"Type new query name"}
                 value={queryCreate.name}
                 onChange={(e) => setQueryCreate({...queryCreate, name: e.target.value})}
             />

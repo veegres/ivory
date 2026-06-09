@@ -9,9 +9,7 @@ const SX: SxPropsMap = {
         fontSize: "0.8125rem", cursor: "pointer", minWidth: "30px", border: 1, borderColor: "divider",
     },
     tooltip: {
-        [`& .${tooltipClasses.tooltip}`]: {
-            maxWidth: "none",
-        }
+        [`& .${tooltipClasses.tooltip}`]: {maxWidth: "none"}
     }
 }
 
@@ -32,12 +30,7 @@ export function InfoBox(props: Props) {
     const borderRadius = withRadius ? "15px" : "4px"
 
     return (
-        <Tooltip
-            title={tooltip}
-            placement={"top"}
-            arrow={true}
-            slotProps={{popper: {sx: SX.tooltip}}}
-        >
+        <Tooltip title={tooltip} placement={"top"} arrow={true} slotProps={{popper: {sx: SX.tooltip}}}>
             <Box sx={{...SX.box, padding, borderRadius}}>
                 {children}
             </Box>

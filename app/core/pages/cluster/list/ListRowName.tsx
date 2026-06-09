@@ -40,14 +40,14 @@ export function ListRowName(props: Props) {
     function renderRefresh() {
         return !active || !manualKeeper ? (
             <AutoRefreshIconButton
-                placement={"right-start"}
+                placement={"right"}
                 arrow={true}
                 loading={loading}
                 onClick={refresh}
             />
         ) : (
             <RefreshIconButton
-                placement={"right-start"}
+                placement={"right"}
                 arrow={true}
                 loading={loading}
                 onClick={refresh}

@@ -53,7 +53,7 @@ type Props = {
     onClick: () => void,
 }
 
-export function MonitorItem(props: Props) {
+export function QueryChartItem(props: Props) {
     const {value, label, color, loading, error, onClick} = props
 
     const bg = useMemo(handleMemoBackground, [color])
@@ -65,18 +65,19 @@ export function MonitorItem(props: Props) {
                 <Box>{renderIcon()}</Box>
             </Box>
             <Box sx={SX.value}>
-                {!loading ? renderValue() : <CircularProgress size={30}/>}
+                {!loading ? renderValue() : <CircularProgress color={"inherit"} size={30}/>}
             </Box>
         </Box>
     )
 
     function renderIcon() {
-        if (value || error) return <RefreshIconButton onClick={onClick} disabled={loading} size={25} />
+        if (value || error) return <RefreshIconButton color={"inherit"} onClick={onClick} disabled={loading} size={25} />
 
         return (
             <IconButton
+                color={"inherit"}
                 size={25}
-                icon={<InfoOutlined />}
+                icon={<InfoOutlined color={"inherit"}/>}
                 tooltip={"These charts can create some load on the database!"}
                 placement={"top"}
                 onClick={() => void 0}
@@ -85,7 +86,7 @@ export function MonitorItem(props: Props) {
     }
 
     function renderValue() {
-        if (!value && !error) return <PlayIconButton onClick={onClick} size={50}/>
+        if (!value && !error) return <PlayIconButton color={"inherit"} onClick={onClick} size={50}/>
 
         return (
             <Tooltip title={value ?? error?.response?.data.error ?? error?.message} placement={"top"} arrow={true}>

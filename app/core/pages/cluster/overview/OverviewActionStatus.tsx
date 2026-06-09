@@ -12,6 +12,7 @@ import {Access} from "../../../widgets/access/Access"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},
+    tooltip: {fontFamily: "monospace"},
 }
 
 type Props = {
@@ -43,7 +44,7 @@ export function OverviewActionStatus(props: Props) {
                     <AlertButton
                         size={"small"}
                         color={"inherit"}
-                        tooltip={actionButton[status].label}
+                        tooltip={<Box sx={SX.tooltip}>{actionButton[status].label}</Box>}
                         label={options.icon}
                         loading={action[status].isPending}
                         title={`Are you sure that you want to ${actionButton[status].label}`}
@@ -53,7 +54,7 @@ export function OverviewActionStatus(props: Props) {
                     />
                 </InfoBox>
             </Access>
-            <InfoBox tooltip={"Keeper Status"}>
+            <InfoBox tooltip={<Box sx={SX.tooltip}>Keeper Status</Box>}>
                 <Box sx={{color: options.color}}>{options.name}</Box>
             </InfoBox>
         </Box>

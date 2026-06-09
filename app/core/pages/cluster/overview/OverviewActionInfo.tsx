@@ -32,7 +32,7 @@ export function OverviewActionInfo(props: Props) {
     return (
         <Box sx={SX.box}>
             <InfoBox tooltip={<InfoColorBoxList items={detectionItems} label={"Cluster Detection"}/>}>
-                <Box sx={{color: node.bgColor}}>{node.label.toUpperCase()}</Box>
+                <Box sx={{color: `${node.color}.main`}}>{node.label.toUpperCase()}</Box>
             </InfoBox>
             <InfoBoxList items={clusterItems} label={"Configured Cluster Options"}/>
         </Box>

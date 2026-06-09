@@ -6,7 +6,6 @@ import {
     SecurityTwoTone, Shield, UploadFileOutlined,
 } from "@mui/icons-material"
 import {SxProps, Theme} from "@mui/material"
-import {blue, green, indigo, orange, purple, red} from "@mui/material/colors"
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material"
 import {AxiosError} from "axios"
 import dayjs from "dayjs"
@@ -31,10 +30,10 @@ export const IvoryLinks: Links = {
     sponsorship: {name: "Sponsorship", link: "https://boosty.to/anselvo/purchase/1454406"}
 }
 
-export const NodeColor: { [key in Role]: { label: "success" | "primary" | "error" | "warning", color: string } } = {
-    leader: {label: "success", color: green[600]},
-    replica: {label: "primary", color: blue[500]},
-    unknown: {label: "warning", color:  orange[500]},
+export const NodeColor: { [key in Role]: { label: "success" | "primary" | "error" | "info" | "warning", color: string } } = {
+    leader: {label: "success", color: "success.main"},
+    replica: {label: "info", color: "info.main"},
+    unknown: {label: "warning", color:  "warning.main"},
 }
 
 export const JobOptions: { [key in JobStatus]: { name: string, color: string, active: boolean } } = {
@@ -54,8 +53,8 @@ export const VaultOptions: { [key in VaultType]: EnumOptions } = {
 }
 
 export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {
-    [KeeperStatus.Active]: {name: "ACTIVE", label: "Activate Keeper", icon: <Pause/>, color: green[600], key: "active"},
-    [KeeperStatus.Paused]: {name: "PAUSED", label: "Pause Keeper", icon: <PlayArrow/>, color: orange[500], key: "paused"}
+    [KeeperStatus.Active]: {name: "ACTIVE", label: "Activate Keeper", icon: <Pause/>, color: "success.main", key: "active"},
+    [KeeperStatus.Paused]: {name: "PAUSED", label: "Pause Keeper", icon: <PlayArrow/>, color: "warning.main", key: "paused"}
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {
@@ -65,12 +64,12 @@ export const CertOptions: { [key in CertType]: EnumOptions } = {
 }
 
 export const FileUsageOptions: { [key in FileUsageType]: EnumOptions } = {
-    [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: indigo[300], icon: <UploadFileOutlined/>, key: "upload"},
-    [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: indigo[300], icon: <FilePresentOutlined/>, key: "path"},
+    [FileUsageType.UPLOAD]: {name: "UPLOAD", label: "Cert Upload", color: "secondary.main", icon: <UploadFileOutlined/>, key: "upload"},
+    [FileUsageType.PATH]: {name: "PATH", label: "Cert Path", color: "secondary.main", icon: <FilePresentOutlined/>, key: "path"},
 }
 
 export const SettingOptions: { [key in Settings]: EnumOptions } = {
-    [Settings.MENU]: {name: "MENU", label: "Settings", icon: <MenuOpen/>, key: "menu"},
+    [Settings.MENU]: {name: "MENU", label: "SETTINGS", icon: <MenuOpen/>, key: "menu"},
     [Settings.VAULT]: {name: "VAULT", label: "Vault Manager", icon: <LockTwoTone/>, key: "vault"},
     [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>, key: "cert"},
     [Settings.PERMISSION]: {name: "PERMISSION", label: "Permission Manager", icon: <RuleTwoTone/>, key: "permission"},
@@ -80,9 +79,9 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
 }
 
 export const QueryVarietyOptions: { [key in VarietyType]: EnumOptions } = {
-    [VarietyType.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: red[900], icon: <></>},
-    [VarietyType.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: green[900], icon: <></>},
-    [VarietyType.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: blue[900], icon: <></>},
+    [VarietyType.DatabaseSensitive]: {key: "DatabaseSensitive", label: "Database Sensitive", badge: "DS", color: "error", icon: <></>},
+    [VarietyType.MasterOnly]: {key: "MasterOnly", label: "Master Only", badge: "MO", color: "success", icon: <></>},
+    [VarietyType.ReplicaRecommended]: {key: "ReplicaRecommended", label: "Replica Recommended", badge: "RR", color: "info", icon: <></>},
 }
 
 export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
@@ -227,8 +226,8 @@ export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) =
     const mainLabel = domain ?? "none"
     const mainRole: Role = node?.keeper.role ?? "unknown"
     return [
-        {title: "Detection", label: manual ? "manual" : "auto", bgColor: purple[400]},
-        {title: "Main Keeper", label: mainLabel, bgColor: NodeColor[mainRole].color}
+        {title: "Detection", label: manual ? "manual" : "auto", color: "secondary"},
+        {title: "Main Keeper", label: mainLabel, color: NodeColor[mainRole].label}
     ]
 }
 

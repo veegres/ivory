@@ -9,12 +9,12 @@ import {CloseIconButton, IconButton} from "./IconButtons"
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
     content: {
-        width: "600px", height: "550px", display: "flex", flexDirection: "column",
-        gap: 1, padding: "5px 16px 5px 24px ", overflowY: "scroll",
+        width: "600px", height: "600px", display: "flex", flexDirection: "column",
+        gap: 1, padding: "0px 10px 0px 18px ", overflowY: "scroll",
     },
     title: {
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1,
-        fontFamily: "monospace", padding: "12px 24px"
+        fontFamily: "monospace", padding: "15px 20px 10px"
     },
     action: {display: "flex", justifyContent: "center", gap: 1, padding: "12px 24px"},
 }

@@ -19,13 +19,7 @@ export function QueryVarieties(props: Props) {
             {props.varieties.map(v => {
                 const {badge, label, color} = QueryVarietyOptions[v]
                 return (
-                    <InfoColorBox
-                        key={v}
-                        label={badge ?? "UNKNOWN"}
-                        title={label}
-                        bgColor={color}
-                        opacity={0.8}
-                    />
+                    <InfoColorBox key={v} label={badge ?? "UNKNOWN"} title={label} color={color}/>
                 )
             })}
         </Box>

@@ -4,11 +4,15 @@ import {SxPropsMap} from "../../helper/type"
 import {InfoColorBox} from "./InfoColorBox"
 
 const SX: SxPropsMap = {
-    list: {display: "flex", gap: 1, justifyContent: "space-between", margin: "6px 0px 3px 0", maxWidth: "200px", flexWrap: "wrap"},
+    list: {
+        display: "flex", gap: 1, margin: "6px 0px 3px 0", padding: "5px", borderRadius: 1,
+        maxWidth: "230px", flexWrap: "wrap", bgcolor: "background.default", textTransform: "uppercase",
+        opacity: 0.9,
+    },
     label: {textAlign: "center", fontFamily: "monospace"},
 }
 
-type Item = { label: string, title?: string, bgColor?: string }
+type Item = { label: string, title?: string, color?: string }
 type Props = {
     items: Item[],
     label?: string,
@@ -21,8 +25,8 @@ export function InfoColorBoxList(props: Props) {
         <Box>
             {label && <Box sx={SX.label}>{label}</Box>}
             <Box sx={SX.list}>
-                {items.map(({label, title, bgColor}, index) => (
-                    <InfoColorBox key={index} label={label} title={title} bgColor={bgColor} opacity={0.9}/>
+                {items.map(({label, title, color}, index) => (
+                    <InfoColorBox key={index} label={label} title={title} color={color}/>
                 ))}
             </Box>
         </Box>

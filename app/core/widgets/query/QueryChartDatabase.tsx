@@ -2,24 +2,24 @@ import {AxiosError} from "axios"
 
 import {useRouterQueryChart} from "../../../features/query/hook"
 import {ChartType, Connection} from "../../../features/query/type"
-import {Color, MonitorItem} from "./MonitorItem"
+import {Color, QueryChartItem} from "./QueryChartItem"
 
 type Props = {
     type: ChartType,
     connection: Connection,
 }
 
-export function MonitorCommon(props: Props) {
-    const {type, connection} = props
-    const req = {type, connection: {...connection, db: {...connection.db, name: "postgres"}}}
-    const chart = useRouterQueryChart(req)
+export function QueryChartDatabase(props: Props) {
+    const {connection: {db}, type} = props
+    const chart = useRouterQueryChart(props)
 
+    if (!db.name) return
     return (
-        <MonitorItem
+        <QueryChartItem
             label={chart.data?.name ?? type}
             value={chart.data?.value}
             loading={chart.isFetching}
-            color={Color.INDIGO}
+            color={Color.DEEP_PURPLE}
             error={chart.error as AxiosError}
             onClick={() => chart.refetch()}
         />

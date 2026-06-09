@@ -4,6 +4,7 @@ import {useState} from "react"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
 import {Settings as SettingsType} from "../../../../shared/helper/type"
+import {SettingOptions} from "../../../../shared/helper/utils"
 import {About} from "../about/About"
 import {Backup} from "../backup/Backup"
 import {Certs} from "../certs/Certs"
@@ -17,7 +18,7 @@ export function Menu() {
 
     return (
         <DialogButton
-            title={"SETTINGS"}
+            title={SettingOptions[page].label}
             renderActions={""}
             icon={<Settings/>}
             back={page !== SettingsType.MENU}

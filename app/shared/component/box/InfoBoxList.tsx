@@ -26,7 +26,7 @@ export function InfoBoxList(props: Props) {
     const {items, label} = props
     const titleItems = items.map(item => ({
         label: item.label,
-        bgColor: item.active ? green[600] : grey[800],
+        color: item.active ? "success" : "default",
     }))
 
     return (

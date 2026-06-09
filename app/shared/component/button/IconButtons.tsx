@@ -71,7 +71,7 @@ export function RefreshIconButton(props: Props) {
 }
 
 export function AutoRefreshIconButton(props: Props) {
-    return <IconButton icon={<AutoMode/>} tooltip={"Auto Detection"} {...props}/>
+    return <IconButton icon={<AutoMode/>} tooltip={"Auto Detect"} {...props}/>
 }
 
 export function CloseIconButton(props: Props) {

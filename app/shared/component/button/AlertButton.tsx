@@ -14,7 +14,7 @@ type Props = {
     title: string,
     description: ReactNode | string,
     onClick?: () => void,
-    tooltip?: string,
+    tooltip?: ReactNode,
     loading?: boolean,
     disabled?: boolean,
     size?: "small" | "medium" | "large",
@@ -28,7 +28,7 @@ export function AlertButton(props: Props) {
     const [open, setOpen] = useState(false)
 
     return (
-        <Box>
+        <>
             <AlertDialog
                 open={open}
                 title={title}
@@ -53,6 +53,6 @@ export function AlertButton(props: Props) {
                     </Button>
                 </Box>
             </Tooltip>
-        </Box>
+        </>
     )
 }

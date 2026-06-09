@@ -5,7 +5,6 @@ import {useRouterSecretChange} from "../../../../features/management/hook"
 import {AlertInformative} from "../../../../shared/component/box/AlertInformative"
 import {KeyEnterInput} from "../../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {MenuWrapperScroll} from "../menu/MenuWrapperScroll"
 
 const SX: SxPropsMap = {
     form: {display: "flex", flexDirection: "column", gap: 2, margin: "20px 0px"},
@@ -17,7 +16,7 @@ export function Secret() {
     const changeReq = useRouterSecretChange()
 
     return (
-        <MenuWrapperScroll>
+        <Box>
             <AlertInformative
                 title={"You can change your secret here"}
                 subtitle={"This is useful if your secret has been compromised or if someone gained access to Ivory and you want to force all users to log out"}
@@ -51,6 +50,6 @@ export function Secret() {
                     Change
                 </Button>
             </Box>
-        </MenuWrapperScroll>
+        </Box>
     )
 }

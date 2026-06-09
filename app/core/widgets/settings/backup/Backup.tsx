@@ -1,3 +1,4 @@
+import {Box} from "@mui/material"
 import {AxiosProgressEvent} from "axios"
 import {useState} from "react"
 
@@ -8,7 +9,6 @@ import {DownloadButton} from "../../../../shared/component/button/DownloadButton
 import {UploadButton} from "../../../../shared/component/button/UploadButton"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getErrorMessage} from "../../../../shared/helper/utils"
-import {MenuWrapperScroll} from "../menu/MenuWrapperScroll"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
@@ -29,7 +29,7 @@ export function Backup() {
     const error = imp.isError ? getErrorMessage(imp.error) : undefined
 
     return (
-        <MenuWrapperScroll sx={SX.box}>
+        <Box sx={SX.box}>
             <AlertInformative
                 title={"Backup and Restore Your Data"}
                 subtitle={`
@@ -58,7 +58,7 @@ export function Backup() {
                     onUpload={handleOnUpload}
                 />
             </List>
-        </MenuWrapperScroll>
+        </Box>
     )
 
     function handleOnUpload(file: File) {

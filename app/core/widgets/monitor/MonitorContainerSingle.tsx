@@ -16,6 +16,7 @@ import {Logs} from "../logs/Logs"
 const SX: SxPropsMap = {
     single: {display: "flex", flexDirection: "column", gap: 0.5, padding: "0px 5px"},
     action: {display: "flex", gap: 0.5},
+    logs: {padding: "0px 5px"},
     head: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
     name: {
         fontFamily: "monospace", fontSize: "13px", border: 1, borderRadius: 1,
@@ -76,8 +77,10 @@ export function MonitorContainerSingle(props: Props) {
                 </Box>
             </Box>
             <Divider/>
-            <UnitBox label={"Logs"} value={logs.data.length} unit={"rows"} fixed={true}/>
-            <Logs logs={logs.data} loading={logs.isFetching}/>
+            <Box sx={SX.logs}>
+                <UnitBox label={"Logs"} value={logs.data.length} unit={"rows"} fixed={false}/>
+                <Logs logs={logs.data} loading={logs.isFetching}/>
+            </Box>
         </Box>
     )
 }

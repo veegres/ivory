@@ -11,7 +11,7 @@ import {Refresher} from "../refresher/Refresher"
 import {QueryTable} from "./QueryTable"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", border: 1, borderRadius: 1, borderColor: "divider", padding: "8px"},
+    box: {display: "flex", flexDirection: "column", border: 1, borderRadius: 1, borderColor: "divider", padding: "5px 10px"},
     head: {display: "flex", alignItems: "center", gap: 1},
     label: {display: "flex", justifyContent: "start", fontSize: "14px", fontFamily: "monospace", color: "text.secondary", padding: "0px 3px"},
     help: {fontSize: "9px", fontWeight: "normal", color: "text.disabled", textAlign: "center"},
@@ -23,6 +23,10 @@ const SX: SxPropsMap = {
     icon: {fontSize: "16px", color: "text.secondary"},
     error: {color: "error.light"},
     collapse: {marginTop: "10px", display: "flex", flexDirection: "column", gap: 1},
+    count: {
+        display: "flex", fontSize: "14px", color: "info.main", border: 1, borderRadius: 1, bgcolor: "rgb(2 131 237 / 0.10)",
+        borderColor: "divider", width: "28px", height: "28px", alignItems: "center", justifyContent: "center",
+    },
 }
 
 type Props = {
@@ -37,11 +41,11 @@ export function QueryActivity(props: Props) {
     return (
         <Box sx={SX.box}>
             <Box sx={SX.head}>
-                <Box sx={SX.label} flex={1}>Active Session Queries</Box>
+                <Box sx={SX.label} flex={1}>Session Active Queries</Box>
                 {open && <Box sx={SX.help} flex={1}>[ hold shift for horizontal scrolling ]</Box>}
                 <Box sx={SX.action} flex={1}>
                     <Tooltip title={"COUNT"} placement={"top"}>
-                        <Box>[ {error || !data ? "-" : data.rows.length - 1} ]</Box>
+                        <Box sx={SX.count}>{error || !data ? "-" : data.rows.length - 1}</Box>
                     </Tooltip>
                     <Refresher queryKeys={[QueryApi.activity.key()]} defaultPeriod={["5s", 5000]}/>
                     <Tooltip title={!open ? "Show Queries" : "Hide Queries"} placement={"top"} disableInteractive>

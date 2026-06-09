@@ -59,13 +59,9 @@ export function NodeMain(props: Props) {
     return (
         <Box sx={SX.main}>
             <NodeMainTitle info={info} tab={tab} renderActions={renderActions()}/>
-            {renderBody()}
+            {body(options, config)}
         </Box>
     )
-
-    function renderBody() {
-        return body(options, config)
-    }
 
     function renderActions() {
         if (tab !== NodeTabType.QUERY) return

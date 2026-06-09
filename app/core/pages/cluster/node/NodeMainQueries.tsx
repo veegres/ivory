@@ -6,11 +6,11 @@ import {ErrorDbMissing} from "../../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {Access} from "../../../widgets/access/Access"
-import {MonitorCommon} from "../../../widgets/monitor/MonitorCommon"
-import {MonitorDatabase} from "../../../widgets/monitor/MonitorDatabase"
 import {MonitorRow} from "../../../widgets/monitor/MonitorRow"
 import {Query} from "../../../widgets/query/Query"
 import {QueryActivity} from "../../../widgets/query/QueryActivity"
+import {QueryChartDatabase} from "../../../widgets/query/QueryChartDatabase"
+import {QueryChartGeneral} from "../../../widgets/query/QueryChartGeneral"
 import {QueryConsole} from "../../../widgets/query/QueryConsole"
 
 const SX: SxPropsMap = {
@@ -21,7 +21,7 @@ const SX: SxPropsMap = {
     group: {margin: "0px 5px", width: "100%"},
 }
 
-const Charts = {
+const CHARTS = {
     common: [ChartType.Databases, ChartType.Connections, ChartType.DatabaseSize, ChartType.DatabaseUptime],
     database: [ChartType.Schemas, ChartType.TablesSize, ChartType.IndexesSize, ChartType.TotalSize],
 }
@@ -94,13 +94,13 @@ export function NodeMainQueries(props: Props){
                     ) : queryTab === QueryType.CHARTS ? (
                         <Box>
                             <MonitorRow>
-                                {Charts.common.map(t => (
-                                    <MonitorCommon key={t} type={t} connection={connection}/>
+                                {CHARTS.common.map(t => (
+                                    <QueryChartGeneral key={t} type={t} connection={connection}/>
                                 ))}
                             </MonitorRow>
                             <MonitorRow label={connection.db.name && `${connection.db.name}`}>
-                                {Charts.database.map(t => (
-                                    <MonitorDatabase key={t} type={t} connection={connection}/>
+                                {CHARTS.database.map(t => (
+                                    <QueryChartDatabase key={t} type={t} connection={connection}/>
                                 ))}
                             </MonitorRow>
                         </Box>

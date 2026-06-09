@@ -8,6 +8,7 @@ const SX: SxPropsMap = {
         borderRadius: 2, border: 1, borderColor: "divider",
         "li:not(:last-child)": {borderBottom: 1, borderColor: "divider"}
     },
+    name: {padding: "0px 12px", fontFamily: "monospace", fontWeight: "500"},
     container: {display: "flex", flexDirection: "column", gap: 1},
 }
 
@@ -21,7 +22,7 @@ export function List(props: Props) {
 
     return (
         <Box sx={SX.container}>
-            {name && <Box>{name}</Box>}
+            {name && <Box sx={SX.name}>{name}</Box>}
             <Box sx={SX.wrapper}>{children}</Box>
         </Box>
     )

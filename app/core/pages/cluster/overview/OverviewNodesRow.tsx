@@ -1,6 +1,5 @@
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
-import {blueGrey, green, grey, pink, red} from "@mui/material/colors"
 
 import {Cluster, Node, NodeConfig} from "../../../../features/cluster/type"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
@@ -19,9 +18,10 @@ import {SwitchoverButton} from "../../../widgets/actions/SwitchoverButton"
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
     nowrap: {whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
-    buttons: {display: "flex", alignItems: "center"},
-    data: {display: "flex", columnGap: 1, rowGap: "2px", fontSize: "12px"},
+    buttons: {display: "flex", alignItems: "center", width: "max-content"},
+    data: {display: "flex", gap: 0.5, fontSize: "12px"},
     last: {display: "flex", justifyContent: "space-between", alignItems: "center", height: "100%"},
+    title: {fontFamily: "monospace", textTransform: "uppercase"},
 }
 
 type Props = {
@@ -83,10 +83,10 @@ export function OverviewNodesRow(props: Props) {
         return (
             <HiddenScrolling arrowWidth={"20px"} arrowHeight={"25px"}>
                 <Box sx={SX.data}>
-                    <InfoColorBox label={"Restart"} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} bgColor={pendingRestart ? green[600] : grey[600]} opacity={0.9}/>
-                    {role === "replica" && <InfoColorBox label={"Lag"} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} bgColor={lag > 100 ? red[500] : grey[600]} opacity={0.9}/>}
-                    {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} bgColor={pink[900]} opacity={0.9}/>}
-                    {scheduledSwitchover && <InfoColorBox label={"Scheduled Switchover"} title={renderScheduledSwitchoverTitle()} bgColor={pink[900]} opacity={0.9}/>}
+                    {pendingRestart && <InfoColorBox label={"Restart"} dot={true} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} color={"warning"}/>}
+                    {role === "replica" && <InfoColorBox label={"Lag"} dot={true} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} color={lag > 100 ? "error" : "default"}/>}
+                    {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} color={"secondary"}/>}
+                    {scheduledSwitchover && <InfoColorBox label={"Scheduled Switchover"} title={renderScheduledSwitchoverTitle()} color={"secondary"}/>}
                     {renderTags()}
                 </Box>
             </HiddenScrolling>
@@ -96,12 +96,12 @@ export function OverviewNodesRow(props: Props) {
     function renderTags() {
         if (!tags) return
         return Object.entries(tags).map(([key, value]) => (
-            <InfoColorBox key={key} label={`${key}: ${value}`} bgColor={blueGrey[600]} opacity={0.9}/>
+            <InfoColorBox key={key} label={`${key}: ${value}`} color={"info"}/>
         ))
     }
 
     function renderSimpleTitle(name: string, value: string) {
-        return <Box><b>{name.toUpperCase()}:</b> {value}</Box>
+        return <Box sx={SX.title}>{name.toUpperCase()}: <b>{value}</b></Box>
     }
 
     function renderScheduledSwitchoverTitle() {

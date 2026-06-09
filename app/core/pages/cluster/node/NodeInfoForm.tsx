@@ -2,30 +2,33 @@ import {Box, TextField} from "@mui/material"
 import {useState} from "react"
 
 import {Node, NodeConfig} from "../../../../features/cluster/type"
+import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {CancelIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {SizeFormatter} from "../../../../shared/helper/utils"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", width: "100%", padding: "6px 8px", gap: 1.5, alignItems: "center"},
+    box: {display: "flex", width: "100%", padding: "6px 8px", gap: 1.5, alignItems: "center", flex: "11 1 700px"},
     body: {display: "flex", flexDirection: "column", width: "100%", gap: 1.5},
     container: {
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 1.5,
         alignItems: "center", flex: 1,
     },
     statusContainer: {
-        display: "flex", flexWrap: "wrap", gap: "8px 20px", alignItems: "center", width: "100%",
+        display: "flex", flexWrap: "wrap", gap: "8px 20px", alignItems: "center",
+        width: "100%", padding: "0px 10px"
     },
     actions: {display: "flex", flexDirection: "column", height: "100%"},
-    item: {display: "flex", flexDirection: "column", gap: 0.25},
+    item: {display: "flex", flexDirection: "column", gap: 0.25, minWidth: "70px"},
     title: {
         color: "text.disabled", fontWeight: "bold", fontSize: "0.7rem", textTransform: "uppercase",
         letterSpacing: "0.05em", whiteSpace: "nowrap",
     },
     badge: {
-        display: "inline-flex", alignItems: "center", gap: 0.75, px: 1, borderRadius: "6px",
+        display: "inline-flex", alignItems: "center", gap: 0.75, padding: "0px 5px", borderRadius: 1,
         fontWeight: 600, fontSize: "0.75rem", width: "fit-content", whiteSpace: "nowrap",
     },
+    tags: {display: "flex", flexWrap: "wrap", gap: 0.5, fontSize: "0.75rem",},
     dot: {width: 5, height: 5, borderRadius: "50%"},
 }
 
@@ -42,7 +45,7 @@ export function NodeInfoForm(props: Props) {
     const [config, setConfig] = useState<NodeConfig>(node.config)
 
     const stateStr = node.keeper.state ?? "unknown"
-    const isRunning = stateStr.toLowerCase() === "running"
+    const isRunning = stateStr.toLowerCase() === "running" || stateStr.toLowerCase() === "streaming"
     const isPaused = stateStr.toLowerCase() === "paused"
     const isUnknown = stateStr.toLowerCase() === "unknown"
     const stateColor = isRunning ? "success" : (isPaused ? "warning" : (isUnknown ? "default" : "error"))
@@ -119,26 +122,11 @@ export function NodeInfoForm(props: Props) {
             <Box sx={SX.item}>
                 <Box sx={SX.title}>Tags</Box>
                 {tagsEntries.length === 0 ? (
-                    renderBadge("None", "default")
+                    <InfoColorBox label={"None"}/>
                 ) : (
-                    <Box sx={{display: "flex", flexWrap: "wrap", gap: 0.5}}>
+                    <Box sx={SX.tags}>
                         {tagsEntries.map(([key, value]) => (
-                            <Box
-                                key={key}
-                                sx={{
-                                    px: 1,
-                                    py: 0.25,
-                                    borderRadius: "8px",
-                                    bgcolor: "action.hover",
-                                    fontSize: "0.75rem",
-                                    fontWeight: 500,
-                                    color: "text.secondary",
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                }}
-                            >
-                                {key}: {value}
-                            </Box>
+                            <InfoColorBox key={key} label={`${key}: ${value}`} color={"info"}/>
                         ))}
                     </Box>
                 )}

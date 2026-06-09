@@ -6,7 +6,7 @@ import {NodeInfoForm} from "./NodeInfoForm"
 import {NodeInfoStatus} from "./NodeInfoStatus"
 
 const SX: SxPropsMap = {
-    info: {display: "flex", gap: 1, margin: "5px 0", width: "100%"},
+    info: {display: "flex", flexWrap: "wrap", columnGap: 1, rowGap: 2, margin: "5px 0", width: "100%"},
 }
 
 type Props = {

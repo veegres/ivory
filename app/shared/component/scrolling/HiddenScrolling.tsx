@@ -8,7 +8,7 @@ const SCROLL_OFFSET = 100
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", whiteSpace: "nowrap", minWidth: "0px"},
     arrow: {borderRadius: "5px", margin: "0 3px"},
-    group: {display: "flex", flexGrow: 1, padding: "0 5px", overflow: "hidden", scrollBehavior: "smooth", gap: 1},
+    group: {display: "flex", flexGrow: 1, overflow: "auto", scrollbarWidth: "none", scrollBehavior: "smooth", gap: 0.5},
     before: {display: "flex", alignItems: "center", marginRight: "5px", lineHeight: "1.1"},
     after: {display: "flex", alignItems: "center", marginLeft: "5px", lineHeight: "1.1"},
 }
