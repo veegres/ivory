@@ -4,7 +4,7 @@ networks:
 services:
   haproxy:
     image: haproxy
-    container_name: dev-patroni-haproxy
+    container_name: patroni-haproxy
     networks: [ dev-patroni ]
     ports:
       - "8008:8008" # patroni general port
@@ -17,7 +17,7 @@ services:
   patroni1:
     build: .
     image: dev-patroni
-    container_name: dev-patroni1
+    container_name: patroni1
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni1"
@@ -29,7 +29,7 @@ services:
 
   patroni2:
     image: dev-patroni
-    container_name: dev-patroni2
+    container_name: patroni2
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni2"
@@ -41,7 +41,7 @@ services:
 
   patroni3:
     image: dev-patroni
-    container_name: dev-patroni3
+    container_name: patroni3
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni3"
@@ -53,7 +53,7 @@ services:
 
   patroni-cert:
     image: dev-patroni
-    container_name: dev-patroni-cert
+    container_name: patroni-cert
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni-cert"
@@ -68,7 +68,7 @@ services:
 
   patroni-pass:
     image: dev-patroni
-    container_name: dev-patroni-pass
+    container_name: patroni-pass
     networks: [ dev-patroni ]
     environment:
       PATRONI_NAME: "patroni-pass"
