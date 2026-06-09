@@ -5,9 +5,10 @@ import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
     label: {
-        display: "flex", alignItems: "center", borderRadius: 1, padding: "3px 8px",
-        cursor: "pointer", minHeight: "15px", textWrap: "nowrap", lineHeight: 1,
+        display: "inline-flex", alignItems: "center", borderRadius: 1, padding: "3px 8px", width: "fit-content",
+        cursor: "pointer", textWrap: "nowrap", lineHeight: 1, gap: 0.75,
     },
+    dot: {width: 5, height: 5, borderRadius: "50%"},
 }
 
 const COLORS: {[k: string]: {dot: string, bg: string, text: string}} = {

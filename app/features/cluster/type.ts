@@ -64,6 +64,7 @@ export interface ImageConfig {
 }
 export interface DeployRequest {
     uri: string,
+    parallel: boolean
     nodeRawOptions: {[key: string]: string},
     nodeConfig: NodeConfig[],
     commonConfig: ImageConfig,

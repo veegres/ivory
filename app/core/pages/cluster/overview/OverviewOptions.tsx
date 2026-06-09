@@ -21,7 +21,7 @@ type Props = {
 export function OverviewOptions(props: Props) {
     const {cluster, overview, mainKeeper, manualKeeper} = props
 
-    const updateCluster = useRouterClusterUpdate()
+    const updateCluster = useRouterClusterUpdate(cluster.name)
 
     return (
         <Stack sx={SX.settings}>

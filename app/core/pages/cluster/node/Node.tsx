@@ -6,7 +6,8 @@ import {NodeConfig} from "../../../../features/cluster/type"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {useStore} from "../../../../shared/provider/StoreProvider"
+import {getDomain} from "../../../../shared/helper/utils"
+import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {NodeInfo} from "./NodeInfo"
 import {NodeMain} from "./NodeMain"
 
@@ -20,7 +21,7 @@ export function Node() {
     const activeNodeName = useStore(s => s.activeNode[activeClusterName ?? ""])
 
     const overview = useRouterClusterOverview(activeClusterName, false)
-    const updateCluster = useRouterClusterUpdate()
+    const updateCluster = useRouterClusterUpdate(activeCluster?.name!)
     const activeClusterTab = useStore(s => s.activeClusterTab)
     const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
 
@@ -49,5 +50,7 @@ export function Node() {
         if (!activeCluster) return
         const nodes = activeCluster.nodes.map(n => n.host === host ? config : n)
         updateCluster.mutate({...activeCluster, nodes})
+        // NOTE: this should be done only on success, but it is ok for now, can be improved later
+        useStoreAction.setNode(getDomain(config, true))
     }
 }

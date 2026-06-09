@@ -62,6 +62,7 @@ export function ListDeployCluster(props: Props) {
     const [dcs, setDcs] = useState("")
     const [preview, setPreview] = useState(true)
     const [dev, setDev] = useState(false)
+    const [parallel, setParallel] = useState(false)
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
     const {mutate, isPending} = useRouterClusterDeploy(setResponse)
@@ -113,15 +114,29 @@ export function ListDeployCluster(props: Props) {
             <Box sx={SX.subContent} gap={1}>
                 <List>
                     <ListItem
-                        title={"Single-host mode"}
+                        title={"Parallel Deployment"}
                         description={`
-                            Services talk via localhost. Nodes filled data will be lost on change.
-                            Designed for development / testing. 
+                            Some services, such as Patroni, require sequential deployment to establish a cluster
+                            correctly and allow all nodes to connect to each other. Be cautious.
                         `}
                         button={<Checkbox
+                            size={"small"}
                             checked={dev}
-                            color={"success"}
+                            color={"default"}
                             onChange={(_, c) => handleSingleHostUpdate(c)}
+                        />}
+                    />
+                    <ListItem
+                        title={"Single-host mode"}
+                        description={`
+                            Single-VM setup: services communicate via localhost. Local DNS resolution may 
+                            require additional /etc/hosts entries. Designed for development and testing. 
+                        `}
+                        button={<Checkbox
+                            size={"small"}
+                            checked={parallel}
+                            color={"default"}
+                            onChange={(_, c) => setParallel(c)}
                         />}
                     />
                 </List>
@@ -332,7 +347,6 @@ export function ListDeployCluster(props: Props) {
     }
 
     function handleCallSingleHostUpdate(checked: boolean) {
-        setNodes([])
         setDev(checked)
     }
 
@@ -359,6 +373,7 @@ export function ListDeployCluster(props: Props) {
         )
         mutate({
             uri: image.uri,
+            parallel: parallel,
             nodeRawOptions: imageOptionsSmallKeys,
             nodeConfig: nodeConfigs,
             commonConfig: {

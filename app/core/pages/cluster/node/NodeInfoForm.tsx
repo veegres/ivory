@@ -15,21 +15,16 @@ const SX: SxPropsMap = {
         alignItems: "center", flex: 1,
     },
     statusContainer: {
-        display: "flex", flexWrap: "wrap", gap: "8px 20px", alignItems: "center",
+        display: "flex", flexWrap: "wrap", gap: "8px 30px", alignItems: "center",
         width: "100%", padding: "0px 10px"
     },
     actions: {display: "flex", flexDirection: "column", height: "100%"},
-    item: {display: "flex", flexDirection: "column", gap: 0.25, minWidth: "70px"},
+    item: {display: "flex", flexDirection: "column", gap: 0.25, fontSize: "0.75rem", fontWeight: "bold", flex: "1 0 70px"},
     title: {
-        color: "text.disabled", fontWeight: "bold", fontSize: "0.7rem", textTransform: "uppercase",
+        color: "text.disabled", fontSize: "0.7rem", textTransform: "uppercase",
         letterSpacing: "0.05em", whiteSpace: "nowrap",
     },
-    badge: {
-        display: "inline-flex", alignItems: "center", gap: 0.75, padding: "0px 5px", borderRadius: 1,
-        fontWeight: 600, fontSize: "0.75rem", width: "fit-content", whiteSpace: "nowrap",
-    },
-    tags: {display: "flex", flexWrap: "wrap", gap: 0.5, fontSize: "0.75rem",},
-    dot: {width: 5, height: 5, borderRadius: "50%"},
+    tags: {display: "flex", gap: 0.5},
 }
 
 type Props = {
@@ -40,9 +35,8 @@ type Props = {
 
 export function NodeInfoForm(props: Props) {
     const {node, onUpdate, loading} = props
-
     const [edit, setEdit] = useState(false)
-    const [config, setConfig] = useState<NodeConfig>(node.config)
+    const [config, setConfig] = useState(node.config)
 
     const stateStr = node.keeper.state ?? "unknown"
     const isRunning = stateStr.toLowerCase() === "running" || stateStr.toLowerCase() === "streaming"
@@ -71,9 +65,9 @@ export function NodeInfoForm(props: Props) {
             <Box sx={SX.body}>
                 <Box sx={SX.container}>
                     {renderItem("Host", node.config.host, "host", "text")}
-                    {renderItem("SSH", node.config.sshPort, "sshPort", "number")}
                     {renderItem("Keeper", node.config.keeperPort, "keeperPort", "number")}
                     {renderItem("Database", node.config.dbPort, "dbPort", "number")}
+                    {renderItem("SSH", node.config.sshPort, "sshPort", "number")}
                 </Box>
                 <Box sx={SX.statusContainer}>
                     {renderStatusItem("State", stateStr, stateColor)}
@@ -106,11 +100,11 @@ export function NodeInfoForm(props: Props) {
         )
     }
 
-    function renderStatusItem(label: string, text: string, colorType: "success" | "warning" | "error" | "info" | "secondary" | "default") {
+    function renderStatusItem(label: string, text: string, color: "success" | "warning" | "error" | "info" | "secondary" | "default") {
         return (
             <Box sx={SX.item}>
                 <Box sx={SX.title}>{label}</Box>
-                {renderBadge(text, colorType)}
+                <InfoColorBox label={text} color={color} dot={true}/>
             </Box>
         )
     }
@@ -121,56 +115,19 @@ export function NodeInfoForm(props: Props) {
         return (
             <Box sx={SX.item}>
                 <Box sx={SX.title}>Tags</Box>
-                {tagsEntries.length === 0 ? (
-                    <InfoColorBox label={"None"}/>
-                ) : (
-                    <Box sx={SX.tags}>
-                        {tagsEntries.map(([key, value]) => (
-                            <InfoColorBox key={key} label={`${key}: ${value}`} color={"info"}/>
-                        ))}
-                    </Box>
-                )}
-            </Box>
-        )
-    }
-
-    function renderBadge(text: string, colorType: "success" | "warning" | "error" | "info" | "secondary" | "default") {
-        let dotColor = "text.disabled"
-        let bgColor = "action.hover"
-        let textColor = "text.secondary"
-
-        if (colorType === "success") {
-            dotColor = "success.main"
-            bgColor = "rgba(46, 125, 50, 0.1)"
-            textColor = "success.main"
-        } else if (colorType === "warning") {
-            dotColor = "warning.main"
-            bgColor = "rgba(237, 108, 2, 0.1)"
-            textColor = "warning.main"
-        } else if (colorType === "error") {
-            dotColor = "error.main"
-            bgColor = "rgba(211, 47, 47, 0.1)"
-            textColor = "error.main"
-        } else if (colorType === "info") {
-            dotColor = "info.main"
-            bgColor = "rgba(2, 136, 209, 0.1)"
-            textColor = "info.main"
-        } else if (colorType === "secondary") {
-            dotColor = "secondary.main"
-            bgColor = "rgba(156, 39, 176, 0.1)"
-            textColor = "secondary.main"
-        }
-
-        return (
-            <Box sx={{...SX.badge, bgcolor: bgColor, color: textColor}}>
-                <Box sx={{...SX.dot, bgcolor: dotColor}}/>
-                {text}
+                <Box sx={SX.tags}>
+                    {tagsEntries.length === 0 ? (
+                        <InfoColorBox label={"None"} dot={true}/>
+                    ) : tagsEntries.map(([key, value]) => (
+                        <InfoColorBox key={key} label={`${key}: ${value}`} color={"info"}/>
+                    ))}
+                </Box>
             </Box>
         )
     }
 
     function renderActions() {
-        if (!onUpdate) return undefined
+        if (!onUpdate) return
         return (
             <Box sx={SX.actions}>
                 {edit ? (
@@ -185,7 +142,7 @@ export function NodeInfoForm(props: Props) {
         )
     }
 
-    async function handleSave() {
+    function handleSave() {
         onUpdate?.(config)
         setEdit(false)
     }

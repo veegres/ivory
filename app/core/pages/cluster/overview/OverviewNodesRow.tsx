@@ -50,9 +50,9 @@ export function OverviewNodesRow(props: Props) {
             <TableCell align={"center"}>{renderWarning()}</TableCell>
             <TableCell sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</TableCell>
             <TableCell sx={SX.nowrap}>{config.host}</TableCell>
-            <TableCell sx={SX.nowrap}>{config.sshPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{config.keeperPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{config.dbPort ?? "-"}</TableCell>
+            <TableCell sx={SX.nowrap}>{config.sshPort ?? "-"}</TableCell>
             <TableCell sx={SX.nowrap}>{state ?? "-"}</TableCell>
             <TableCell>
                 <Box sx={SX.last} onClick={(e) => e.stopPropagation()}>

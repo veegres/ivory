@@ -9,7 +9,7 @@ export const ClusterApi = {
         fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
             .then((response) => response.data.response.map(v => (
                 {...v, nodesOverview: Object.fromEntries(v.nodes.map(c => {
-                    const domain = getDomain(c)
+                    const domain = getDomain(c, true)
                     return [domain, getInitialNode(c)]
                 }))} as Cluster
             ))),

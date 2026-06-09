@@ -106,7 +106,7 @@ export const DatabaseImageOptions: {[key in KeeperPlugin]: {uri: string, optionS
           -e ETCD3_HOSTS="{{dcs}}"
           -e PGPORT={{dbPort}}
           -e APIPORT={{keeperPort}}
-          -e PGPASSWORD_SUPERUSER="{{password}}"
+          -e PGPASSWORD_SUPERUSER="{{dbPass}}"
           -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
           -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
         `.replace(/\s{2,}/g, "\n").trim(),
@@ -119,7 +119,7 @@ export const DatabaseImageOptions: {[key in KeeperPlugin]: {uri: string, optionS
           -e ETCD3_HOSTS="{{dcs}}"
           -e PGPORT={{dbPort}}
           -e APIPORT={{keeperPort}}
-          -e PGPASSWORD_SUPERUSER="{{password}}"
+          -e PGPASSWORD_SUPERUSER="{{dbPass}}"
           -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
           -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
         `.replace(/\s{2,}/g, "\n").trim(),

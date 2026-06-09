@@ -40,9 +40,9 @@ export function OverviewNodes(props: Props) {
                         <TableCell sx={{width: "40px"}}/>
                         <TableCell sx={{width: "110px"}}>Role</TableCell>
                         <TableCell sx={{width: "25%"}}>Host</TableCell>
-                        <TableCell sx={{width: "80px"}}>SSH</TableCell>
                         <TableCell sx={{width: "80px"}}>Keeper</TableCell>
                         <TableCell sx={{width: "80px"}}>Database</TableCell>
+                        <TableCell sx={{width: "80px"}}>SSH</TableCell>
                         <TableCell sx={{width: "100px"}}>State</TableCell>
                         <TableCellLoader sx={{width: "75%"}} loading={false}>
                             <OverviewNodesFixAuto name={cluster.name}/>

@@ -2,6 +2,7 @@ import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../shared/hook/QueryCustom"
 import {useStream} from "../../shared/hook/Stream"
+import {useStore} from "../../shared/provider/StoreProvider"
 import {ClusterApi} from "../cluster/router"
 import {NodeConfig} from "../cluster/type"
 import {Plugin} from "../keeper/type"
@@ -20,15 +21,6 @@ export function useRouterNodePlatformList(request: PlatformConnection) {
     return useQuery({
         queryKey: NodeApi.deployment.list.key(request),
         queryFn: () => NodeApi.deployment.list.fn(request),
-    })
-}
-
-export function useRouterNodeOverview(request: KeeperOneRequest, enabled: boolean) {
-    return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.overview.key(request.host, request.port),
-        queryFn: () => NodeApi.overview.fn(request),
-        enabled,
     })
 }
 
@@ -134,25 +126,31 @@ export function useRouterNodeMetrics(c: PlatformConnection, refetchInterval?: nu
 }
 
 export function useRouterNodePlatformStart(connection: PlatformConnection) {
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.deployment.start.fn,
         mutationKey: NodeApi.deployment.start.key(),
-        successKeys: [NodeApi.deployment.list.key(connection)],
+        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
     })
 }
 
 export function useRouterNodePlatformStop(connection: PlatformConnection) {
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.deployment.stop.fn,
         mutationKey: NodeApi.deployment.stop.key(),
-        successKeys: [NodeApi.deployment.list.key(connection)],
+        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
     })
 }
 
 export function useRouterNodePlatformDown(connection: PlatformConnection) {
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.deployment.down.fn,
         mutationKey: NodeApi.deployment.down.key(),
-        successKeys: [NodeApi.deployment.list.key(connection)],
+        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
     })
 }

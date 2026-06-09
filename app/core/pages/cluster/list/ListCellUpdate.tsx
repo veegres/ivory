@@ -20,7 +20,7 @@ export function ListCellUpdate(props: Props) {
     const {cluster} = props
     const {toggle, onUpdate, onClose} = props
 
-    const updateCluster = useRouterClusterUpdate(handleSuccess)
+    const updateCluster = useRouterClusterUpdate(cluster.name, handleSuccess)
 
     return (
         <Box sx={SX.box}>

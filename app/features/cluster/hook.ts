@@ -36,11 +36,11 @@ export function useRouterClusterDelete() {
     })
 }
 
-export function useRouterClusterUpdate(onSuccess?: () => void) {
+export function useRouterClusterUpdate(name: string, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: ClusterApi.update.fn,
         mutationKey: ClusterApi.update.key(),
-        successKeys: [ClusterApi.list.key(), TagApi.list.key()],
+        successKeys: [ClusterApi.list.key(), TagApi.list.key(), ClusterApi.overview.key(name)],
         onSuccess: onSuccess,
     })
 }
