@@ -4,7 +4,7 @@ import {useVirtualizer} from "@tanstack/react-virtual"
 import {useRef} from "react"
 
 import {SxPropsMap} from "../../helper/type"
-import {SxPropsFormatter} from "../../helper/utils"
+import {printLogs, SxPropsFormatter} from "../../helper/utils"
 import {AutoScrolling} from "./AutoScrolling"
 
 const SX: SxPropsMap = {
@@ -14,8 +14,8 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    height: number;
-    auto: boolean;
+    height: number,
+    auto: boolean,
     rows: string[],
     sx?: SxProps<Theme>,
     className?: string,
@@ -41,7 +41,7 @@ export function DynamicRowVirtualizer(props: Props) {
 
     const items = virtualizer.getVirtualItems()
     return (
-        <AutoScrolling auto={auto} length={rows.length} scroll={virtualizer.scrollToIndex}>
+        <AutoScrolling auto={auto} length={rows.length} scroll={virtualizer.scrollToIndex} print={() => printLogs(`LOGS: ${new Date()}`, rows)}>
             <Box ref={parentRef} sx={SxPropsFormatter.merge(sx, SX.container)} className={className} style={{height: `${height}px`}}>
                 <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
                     <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0]?.start ?? 0}px)`}}>

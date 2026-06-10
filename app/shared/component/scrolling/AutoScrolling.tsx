@@ -1,27 +1,27 @@
-import {ArrowDownward, ArrowUpward, Pause, PlayArrow} from "@mui/icons-material"
-import {Box, Button} from "@mui/material"
+import {ArrowDownward, ArrowUpward, Print, VerticalAlignBottom} from "@mui/icons-material"
+import {Box, ToggleButton, Tooltip} from "@mui/material"
 import {ReactElement, ReactNode, useEffect, useState} from "react"
 
 import {SxPropsMap} from "../../helper/type"
-import {SxPropsFormatter} from "../../helper/utils"
+import {SimpleButton} from "../button/SimpleButton"
 
 const SX: SxPropsMap = {
-    wrapper: {display: "flex"},
-    buttons: {position: "relative"},
-    button: {position: "absolute", right: "15px", zIndex: 1, minWidth: 0},
-    top: {top: "10px"},
-    bottom: {bottom: "10px"},
+    wrapper: {display: "flex", gap: 0.5},
+    buttons: {display: "flex", flexDirection: "column", gap: 0.5},
+    button: {padding: "4px", minWidth: 0},
+    icon: {fontSize: "14px"},
 }
 
 type Props = {
     auto: boolean,
     length: number,
     scroll: (index: number) => void,
+    print?: () => void,
     children: ReactNode,
 }
 
 export function AutoScrolling(props: Props) {
-    const {auto, scroll, children, length} = props
+    const {auto, scroll, children, length, print} = props
     const [autoScrolling, setAutoScrolling] = useState(auto)
 
     useEffect(handleEffectAutoScrolling, [autoScrolling, length, scroll])
@@ -37,24 +37,33 @@ export function AutoScrolling(props: Props) {
     )
 
     function renderButtons() {
-        if (auto) {
-            const icon = autoScrolling ? <Pause/> : <PlayArrow/>
-            return renderButton("top", icon, () => setAutoScrolling(!autoScrolling))
-        }
-
         return (
             <>
-                {renderButton("top", <ArrowUpward/>, () => scroll(0))}
-                {renderButton("bottom", <ArrowDownward/>, () => scroll(length - 1))}
+                {renderButton("Up the Logs", <ArrowUpward sx={SX.icon}/>, () => {scroll(0); setAutoScrolling(false)})}
+                {renderButton("Down the Logs", <ArrowDownward sx={SX.icon}/>, () => {scroll(length - 1); setAutoScrolling(false)})}
+                {renderToggleButton("Scroll to End", <VerticalAlignBottom sx={SX.icon}/>, () => setAutoScrolling(!autoScrolling))}
+                {print && renderButton("Print, Save as PDF", <Print sx={SX.icon}/>, print)}
             </>
         )
     }
 
-    function renderButton(alignment: "bottom" | "top", icon: ReactElement, onClick: () => void) {
+    function renderButton(title: string, icon: ReactElement, onClick: () => void) {
         return (
-            <Button sx={SxPropsFormatter.merge(SX.button, SX[alignment])} size={"small"} onClick={onClick}>
-                {icon}
-            </Button>
+            <Tooltip title={title} placement={"left"} arrow={true}>
+                <SimpleButton sx={SX.button} color={"inherit"} variant={"outlined"} size={"small"} onClick={onClick}>
+                    {icon}
+                </SimpleButton>
+            </Tooltip>
+        )
+    }
+
+    function renderToggleButton(title: string, icon: ReactElement, onClick: () => void) {
+        return (
+            <Tooltip title={title} placement={"left"} arrow={true}>
+                <ToggleButton sx={SX.button} size={"small"} onClick={onClick} value={"check"} selected={autoScrolling}>
+                    {icon}
+                </ToggleButton>
+            </Tooltip>
         )
     }
 

@@ -1,9 +1,21 @@
 import {
-    BackupTwoTone, Block, CheckCircleOutlined, DnsTwoTone,
-    FilePresentOutlined, HeartBrokenTwoTone, HelpOutline,
-    InfoTwoTone, KeyTwoTone, LockTwoTone,
-    MenuOpen, Pause, PlayArrow, RuleTwoTone,
-    SecurityTwoTone, Shield, UploadFileOutlined,
+    BackupTwoTone,
+    Block,
+    CheckCircleOutlined,
+    DnsTwoTone,
+    FilePresentOutlined,
+    HeartBrokenTwoTone,
+    HelpOutline,
+    InfoTwoTone,
+    KeyTwoTone,
+    LockTwoTone,
+    MenuOpen,
+    Pause,
+    PlayArrow,
+    RuleTwoTone,
+    SecurityTwoTone,
+    Shield,
+    UploadFileOutlined,
 } from "@mui/icons-material"
 import {SxProps, Theme} from "@mui/material"
 import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-material"
@@ -14,10 +26,9 @@ import {JobStatus} from "../../features/bloat/job/type"
 import {CertType, FileUsageType} from "../../features/cert/type"
 import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/type"
 import {Plugin as KeeperPlugin, Role, Status as KeeperStatus} from "../../features/keeper/type"
-import {KeeperConnection, KeeperOneRequest,PlatformConnection} from "../../features/node/type"
+import {KeeperConnection, KeeperOneRequest, PlatformConnection} from "../../features/node/type"
 import {Status as PermissionStatus} from "../../features/permission/type"
-import {VarietyType} from "../../features/query/type"
-import {Connection as QueryConnection} from "../../features/query/type"
+import {Connection as QueryConnection, VarietyType} from "../../features/query/type"
 import {VaultType} from "../../features/vault/type"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
@@ -309,4 +320,56 @@ export const DateTimeFormatter = {
 export const SizeFormatter = {
     format: Intl.NumberFormat("en", {notation: "compact", style: "unit", unit: "byte", unitDisplay: "narrow"}),
     pretty: (size: number) => SizeFormatter.format.format(size)
+}
+
+export const printLogs = (title: string, logs: string[]) => {
+    // 1. Convert the array into HTML list items safely
+    const listItemsHTML = logs
+        .map(item => `<div>${item}</div>`)
+        .join("")
+
+    // 2. Create the hidden iframe
+    const iframe = document.createElement("iframe")
+    iframe.style.position = "fixed"
+    iframe.style.width = "0"
+    iframe.style.height = "0"
+    iframe.style.border = "0"
+
+    // Build the complete HTML document string
+    // 3. Use srcdoc instead of document.write()
+    iframe.srcdoc = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <title>${title}</title>
+            <style>
+                body { font-family: monospace; }
+                h3 { color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px }
+            </style>
+        </head>
+        <body>
+            <h3>${title}</h3>
+            <div>
+                ${listItemsHTML}
+            </div>
+        </body>
+        </html>
+    `
+
+    // Append it to the document
+    document.body.appendChild(iframe)
+
+    // 4. Wait for the iframe to load before executing window functions
+    iframe.onload = () => {
+        const contentWindow = iframe.contentWindow
+
+        // Explicit type guard check eliminates the 'possibly null' warning
+        if (contentWindow) {
+            contentWindow.focus()
+            contentWindow.print()
+        }
+
+        // Cleanup DOM after a short timeout
+        setTimeout(() => document.body.removeChild(iframe), 1000)
+    }
 }
