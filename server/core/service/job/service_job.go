@@ -114,6 +114,9 @@ func (j *Job) Stop() error {
 func (j *Job) killer() {
 	for {
 		j.mu.Lock()
+		if j.status != RUNNING {
+			return
+		}
 		if len(j.subscribers) == 0 {
 			now := time.Now()
 			if j.keepAliveBegin.IsZero() {
