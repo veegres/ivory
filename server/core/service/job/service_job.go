@@ -18,14 +18,18 @@ type Job struct {
 	status      Status
 	mu          sync.RWMutex
 	storage     *store.FileStorage
+
+	keepAliveDuration time.Duration
+	keepAliveBegin    time.Time
 }
 
 func NewJob(cmd console.Command, storage *store.FileStorage) *Job {
 	return &Job{
-		subscribers: make(map[SubscriberID]chan Message),
-		cmd:         cmd,
-		status:      PENDING,
-		storage:     storage,
+		subscribers:       make(map[SubscriberID]chan Message),
+		cmd:               cmd,
+		status:            PENDING,
+		storage:           storage,
+		keepAliveDuration: time.Second * 5,
 	}
 }
 
@@ -66,6 +70,9 @@ func (j *Job) Run() {
 		return
 	}
 
+	// NOTE: run killer which will kill stale jobs
+	go j.killer()
+
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		msg := scanner.Text()
@@ -75,20 +82,19 @@ func (j *Job) Run() {
 		}
 	}
 
-	errWait := j.cmd.Wait()
 	if j.getStatus() == STOPPED {
 		return
 	}
 
-	if errRead := scanner.Err(); errRead != nil {
+	if err := scanner.Err(); err != nil {
 		j.setStatus(FAILED)
-		j.broadcast(SERVER, errRead.Error())
+		j.broadcast(SERVER, err.Error())
 		return
 	}
 
-	if errWait != nil {
+	if err := j.cmd.Wait(); err != nil {
 		j.setStatus(FAILED)
-		j.broadcast(SERVER, errWait.Error())
+		j.broadcast(SERVER, err.Error())
 		return
 	}
 
@@ -103,13 +109,35 @@ func (j *Job) Stop() error {
 	return j.cmd.Abort()
 }
 
+func (j *Job) killer() {
+	for {
+		j.mu.Lock()
+		if len(j.subscribers) == 0 {
+			now := time.Now()
+			if j.keepAliveBegin.IsZero() {
+				j.keepAliveBegin = now
+			}
+			if now.Sub(j.keepAliveBegin) > j.keepAliveDuration {
+				j.mu.Unlock()
+				_ = j.Stop()
+				return
+			}
+		} else {
+			j.keepAliveBegin = time.Time{}
+		}
+		j.mu.Unlock()
+		time.Sleep(time.Second)
+	}
+}
+
 func (j *Job) broadcast(t EventType, m string) {
 	j.mu.RLock()
 	defer j.mu.RUnlock()
-	for _, ch := range j.subscribers {
+	for id, ch := range j.subscribers {
 		select {
 		case ch <- Message{Type: t, Timestamp: time.Now(), Message: m}:
-		default: // slow subscriber: drop rather than block broadcast
+		default: // slow subscriber: remove it
+			j.removeSubscriber(id)
 		}
 	}
 }

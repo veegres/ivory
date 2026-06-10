@@ -14,8 +14,9 @@ type Command struct {
 	Name string
 	Args []string
 
-	JobID string
-	Log   bool
+	JobID        string
+	JobPersist   bool
+	JobKeepAlive bool
 
 	cmd *exec.Cmd
 }
@@ -24,12 +25,16 @@ func (c *Command) Id() string {
 	if c.JobID != "" {
 		return c.JobID
 	}
-	h := sha256.Sum256([]byte(fmt.Sprintf("shell|%s|%s", c.Name, strings.Join(c.Args, "\x00"))))
+	h := sha256.Sum256(fmt.Appendf(nil, "shell|%s|%s", c.Name, strings.Join(c.Args, "\x00")))
 	return hex.EncodeToString(h[:])
 }
 
 func (c *Command) Persist() bool {
-	return c.Log
+	return c.JobPersist
+}
+
+func (c *Command) KeepAlive() bool {
+	return c.JobKeepAlive
 }
 
 func (c *Command) Start() (io.Reader, error) {

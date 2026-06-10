@@ -37,6 +37,17 @@ func NewService(
 	return service
 }
 
+func (s *Service) initializer() {
+	runningJobs, _ := s.bloatRepository.ListByStatus(job.RUNNING)
+	for _, runningJob := range runningJobs {
+		_ = s.bloatRepository.UpdateStatus(runningJob, job.FAILED)
+	}
+	pendingJobs, _ := s.bloatRepository.ListByStatus(job.PENDING)
+	for _, pendingJob := range pendingJobs {
+		go s.start(&pendingJob)
+	}
+}
+
 func (s *Service) SupportedFeatures(_ env.Plugin) []env.Feature {
 	return []env.Feature{
 		env.ViewToolPgCompactTableList,
@@ -79,7 +90,7 @@ func (s *Service) Start(clusterName string, vaultId *uuid.UUID, args []string) (
 	return compactTable, nil
 }
 
-func (s *Service) Stream(jobUuid uuid.UUID, subscriberID job.SubscriberID, send func(event job.Message)) {
+func (s *Service) Stream(jobUuid uuid.UUID, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	model, errModel := s.bloatRepository.Get(jobUuid)
 	if errModel != nil {
 		send(job.Message{Type: job.SERVER, Message: "Streaming failed: Stream Not Found"})
@@ -89,7 +100,7 @@ func (s *Service) Stream(jobUuid uuid.UUID, subscriberID job.SubscriberID, send 
 
 	send(job.Message{Type: job.STATUS, Message: model.Status.String()})
 
-	s.jobManager.Stream(model.JobId, subscriberID, send)
+	s.jobManager.Stream(model.JobId, subscriberID, close, send)
 
 	latest, errGet := s.bloatRepository.Get(jobUuid)
 	if errGet == nil {
@@ -127,18 +138,6 @@ func (s *Service) Stop(jobUuid uuid.UUID) error {
 	return s.jobManager.Stop(model.JobId)
 }
 
-func (s *Service) initializer() {
-	runningJobs, _ := s.bloatRepository.ListByStatus(job.RUNNING)
-	for _, runningJob := range runningJobs {
-		_ = s.bloatRepository.UpdateStatus(runningJob, job.FAILED)
-	}
-
-	pendingJobs, _ := s.bloatRepository.ListByStatus(job.PENDING)
-	for _, pendingJob := range pendingJobs {
-		go s.start(&pendingJob)
-	}
-}
-
 func (s *Service) start(model *Response) {
 	args, errArgs := s.getArgs(model)
 	if errArgs != nil {
@@ -147,7 +146,8 @@ func (s *Service) start(model *Response) {
 	}
 	command := s.shellClient.Command("pgcompacttable", args)
 	command.JobID = string(model.JobId)
-	command.Log = true
+	command.JobPersist = true
+	command.JobKeepAlive = true
 
 	jobID, errStart := s.jobManager.Start(command)
 	if errStart != nil {
@@ -155,16 +155,17 @@ func (s *Service) start(model *Response) {
 		return
 	}
 
+	go s.updateJobStatus(model.Uuid, jobID)
+}
+
+func (s *Service) updateJobStatus(jobUuid uuid.UUID, jobID job.JobID) {
 	subscriberID := job.SubscriberID("pg_compacttable_updater")
+
 	channel, errSubscribe := s.jobManager.Subscribe(jobID, subscriberID)
 	if errSubscribe != nil || channel == nil {
 		return
 	}
 
-	go s.updateJobStatus(model.Uuid, jobID, subscriberID, channel)
-}
-
-func (s *Service) updateJobStatus(jobUuid uuid.UUID, jobID job.JobID, subscriberID job.SubscriberID, channel <-chan job.Message) {
 	for event := range channel {
 		model, errGet := s.bloatRepository.Get(jobUuid)
 		if errGet != nil {

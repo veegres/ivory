@@ -7,5 +7,10 @@ func NewClient() *Client {
 }
 
 func (c *Client) Command(name string, args []string) *Command {
-	return &Command{Name: name, Args: args}
+	return &Command{
+		Name:         name,
+		Args:         args,
+		JobPersist:   false,
+		JobKeepAlive: true,
+	}
 }

@@ -39,13 +39,13 @@ func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, err
 	return s.executeCommand(adapter.StartContainer(conn, r.Name))
 }
 
-func (s *Service) PlatformContainerUp(r PlatformUpRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
+func (s *Service) PlatformContainerUp(r PlatformUpRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	s.streamCommand(adapter.UpContainer(conn, r.Options, r.Image), subscriberID, send)
+	s.streamCommand(adapter.UpContainer(conn, r.Options, r.Image), subscriberID, close, send)
 }
 
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {
@@ -64,22 +64,22 @@ func (s *Service) PlatformContainerList(c PlatformVaultConnection) ([]string, er
 	return s.executeCommand(adapter.ListContainer(conn))
 }
 
-func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, send func(event job.Message)) {
+func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	s.streamCommand(adapter.LogsContainer(conn, r.Name, r.Tail, r.Follow), subscriberID, send)
+	s.streamCommand(adapter.LogsContainer(conn, r.Name, r.Tail, r.Follow), subscriberID, close, send)
 }
 
-func (s *Service) streamCommand(cmd console.Command, subscriberID job.SubscriberID, send func(event job.Message)) {
+func (s *Service) streamCommand(cmd console.Command, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	jobID, err := s.jobManager.Start(cmd)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	s.jobManager.Stream(jobID, subscriberID, send)
+	s.jobManager.Stream(jobID, subscriberID, close, send)
 }
 
 func (s *Service) executeCommand(cmd console.Command) ([]string, error) {

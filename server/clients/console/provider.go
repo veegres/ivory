@@ -5,6 +5,8 @@ import "io"
 type Command interface {
 	// Id returns a stable string used to identify the job.
 	Id() string
+	// KeepAlive keeps job alive even if there is no subscribers.
+	KeepAlive() bool
 	// Persist returns true if the job output should be saved to a file.
 	Persist() bool
 	// Start begins the command and returns a reader over its output.

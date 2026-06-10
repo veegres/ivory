@@ -47,7 +47,7 @@ func (s *Service) Start(cmd console.Command) (JobID, error) {
 
 // Stream orchestrates the streaming of job events.
 // It handles START/END events, historical logs from file, and live updates.
-func (s *Service) Stream(id JobID, subID SubscriberID, send func(Message)) {
+func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, send func(Message)) {
 	send(Message{Type: STREAM, Message: START.String()})
 	defer send(Message{Type: STREAM, Message: END.String()})
 
@@ -55,24 +55,36 @@ func (s *Service) Stream(id JobID, subID SubscriberID, send func(Message)) {
 	if s.storage != nil {
 		if file, err := s.storage.OpenByName(string(id)); err == nil {
 			defer file.Close()
-			send(Message{Type: SERVER, Message: "Streaming from the file started"})
+			send(Message{Type: SERVER, Message: "streaming from the file started"})
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
 				send(Message{Type: LOG, Message: scanner.Text()})
 			}
-			send(Message{Type: SERVER, Message: "Streaming from the file finished"})
+			send(Message{Type: SERVER, Message: "streaming from the file finished"})
 		}
 	}
 
 	// 2. Subscribe to live job if it's running
-	liveChan, err := s.Subscribe(id, subID)
-	if err == nil && liveChan != nil {
-		send(Message{Type: SERVER, Message: "Streaming from the console started"})
-		for event := range liveChan {
+	live, err := s.Subscribe(id, subID)
+	if err != nil {
+		send(Message{Type: SERVER, Message: "cannot subscribe to the stream: " + err.Error()})
+		return
+	}
+	defer s.Unsubscribe(id, subID)
+	send(Message{Type: SERVER, Message: "streaming from the console started"})
+loop:
+	for {
+		select {
+		case <-close:
+			break loop
+		case event, ok := <-live:
+			if !ok {
+				break loop
+			}
 			send(event)
 		}
-		send(Message{Type: SERVER, Message: "Streaming from the console finished"})
 	}
+	send(Message{Type: SERVER, Message: "streaming from the console finished"})
 }
 
 // Stop cancels the job with the given ID.

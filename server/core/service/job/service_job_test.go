@@ -11,13 +11,14 @@ import (
 )
 
 type MockCommand struct {
-	id       string
-	persist  bool
-	output   []string
-	delay    time.Duration
-	startErr error
-	waitErr  error
-	abortErr error
+	id        string
+	persist   bool
+	keepAlive bool
+	output    []string
+	delay     time.Duration
+	startErr  error
+	waitErr   error
+	abortErr  error
 
 	// Internals
 	r       *io.PipeReader
@@ -26,8 +27,9 @@ type MockCommand struct {
 	mu      sync.Mutex
 }
 
-func (c *MockCommand) Id() string    { return c.id }
-func (c *MockCommand) Persist() bool { return c.persist }
+func (c *MockCommand) Id() string      { return c.id }
+func (c *MockCommand) KeepAlive() bool { return c.keepAlive }
+func (c *MockCommand) Persist() bool   { return c.persist }
 func (c *MockCommand) Start() (io.Reader, error) {
 	if c.startErr != nil {
 		return nil, c.startErr
@@ -274,7 +276,7 @@ func TestManager(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		mgr.Stream(jobID, "stream-sub", func(msg Message) {
+		mgr.Stream(jobID, "stream-sub", make(<-chan struct{}), func(msg Message) {
 			streamedMsgs = append(streamedMsgs, msg)
 		})
 	}()

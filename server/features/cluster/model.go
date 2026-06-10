@@ -84,6 +84,7 @@ type ImageConfig struct {
 
 type DeployRequest struct {
 	Uri            string            `json:"uri"`
+	Parallel       bool              `json:"parallel"`
 	NodeRawOptions map[string]string `json:"nodeRawOptions"`
 	NodeConfig     []NodeConfig      `json:"nodeConfig"`
 	CommonConfig   ImageConfig       `json:"commonConfig"`

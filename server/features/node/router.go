@@ -78,7 +78,7 @@ func handlePlatformBodyRequest[R any, T any](context *gin.Context, action func(r
 	context.JSON(http.StatusOK, gin.H{"response": body})
 }
 
-func handleStreamRequest[R any](context *gin.Context, action func(request R, subscriberID job.SubscriberID, send func(event job.Message))) {
+func handleStreamRequest[R any](context *gin.Context, action func(request R, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message))) {
 	context.Writer.Header().Set("Cache-Control", "no-transform")
 	context.Writer.Header().Set("Content-Type", "text/event-stream")
 	context.Writer.Flush()
@@ -90,8 +90,9 @@ func handleStreamRequest[R any](context *gin.Context, action func(request R, sub
 		return
 	}
 
+	ctx := context.Request.Context()
 	session := context.GetString("session")
-	action(request, job.SubscriberID(session), func(event job.Message) {
+	action(request, job.SubscriberID(session), ctx.Done(), func(event job.Message) {
 		context.SSEvent(event.Type.String(), event.Message)
 		context.Writer.Flush()
 	})

@@ -11,10 +11,7 @@ import {KeeperOneRequest, PlatformConnection, PlatformLogsRequest} from "./type"
 
 export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
     const {loading, response} = useStream(NodeApi.deployment.logs.url(request))
-    const data = response
-        .filter(r => r.type === "log" || r.type === "server" || r.type === "browser")
-        .map(r => r.message)
-    return {isFetching: loading, data}
+    return {isFetching: loading, data: response}
 }
 
 export function useRouterNodePlatformList(request: PlatformConnection) {

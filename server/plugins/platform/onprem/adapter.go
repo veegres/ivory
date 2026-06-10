@@ -61,24 +61,26 @@ func (a *Adapter) StopContainer(connection platform.Connection, name string) con
 }
 
 func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
-	command := "logs "
+	commandStr := "logs "
 	if tail > 0 {
-		command += "--tail " + strconv.Itoa(tail) + " "
+		commandStr += "--tail " + strconv.Itoa(tail) + " "
 	}
 	if follow {
-		command += "--follow "
+		commandStr += "--follow "
 	}
-	command += name
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(command))
+	commandStr += name
+	command := a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(commandStr))
+	command.JobKeepAlive = false
+	return command
 }
 
-func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Command {
+func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Connection {
 	var prvKey *ed25519.PrivateKey
 	if len(conn.PrivateKey) > 0 {
 		pk := ed25519.PrivateKey(conn.PrivateKey)
 		prvKey = &pk
 	}
-	return ssh.Command{
+	return ssh.Connection{
 		Host:       conn.Host,
 		Port:       conn.Port,
 		Username:   conn.Username,

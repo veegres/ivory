@@ -1,15 +1,15 @@
-import {Box, SxProps, Theme} from "@mui/material"
+import {Box, CircularProgress, SxProps, Theme} from "@mui/material"
 
-import {LinearProgressStateful} from "../../../shared/component/progress/LinearProgressStateful"
 import {DynamicRowVirtualizer} from "../../../shared/component/scrolling/DynamicRowVirtualizer"
 import {SxPropsMap} from "../../../shared/helper/type"
 import scroll from "../../../shared/style/scroll.module.css"
 
 const SX: SxPropsMap = {
-    box: {fontSize: "12px"},
-    row: {"&:hover": {color: "primary.main"}},
+    box: {fontSize: "11px"},
+    row: {fontFamily: "monospace", "&:hover": {color: "primary.main"}},
     emptyLine: {textAlign: "center", textTransform: "uppercase"},
-    loader: {margin: "10px 0 5px"},
+    footer: {display: "flex", justifyContent: "space-between", padding: "5px 0px", color: "text.secondary"},
+    loader: {display: "flex", gap: 1, alignItems: "center"},
 }
 
 type Props = {
@@ -38,7 +38,13 @@ export function Logs(props: Props) {
                     rows={logs}
                 />
             )}
-            <LinearProgressStateful sx={SX.loader} loading={loading} color={"inherit"} line/>
+            <Box sx={SX.footer}>
+                <Box sx={SX.loader}>
+                    {loading && <CircularProgress sx={SX.loader} size={"10px"} color={"inherit"}/>}
+                    {loading ? "Loading" : "Finished"}
+                </Box>
+                <Box>{logs.length} rows</Box>
+            </Box>
         </Box>
     )
 }

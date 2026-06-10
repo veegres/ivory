@@ -30,8 +30,9 @@ type Command struct {
 	HostKeyCallback ssh.HostKeyCallback
 	Timeout         time.Duration
 
-	JobID string
-	Log   bool
+	JobID        string
+	JobPersist   bool
+	JobKeepAlive bool
 
 	client  *ssh.Client
 	session *ssh.Session
@@ -42,13 +43,14 @@ func (c *Command) Id() string {
 	if c.JobID != "" {
 		return c.JobID
 	}
-	return fmt.Sprintf("ssh|%s@%s|%s",
-		c.Username, c.Host, c.Command,
-	)
+	return fmt.Sprintf("ssh|%s@%s|%s", c.Username, c.Host, c.Command)
+}
+func (c *Command) Persist() bool {
+	return c.JobPersist
 }
 
-func (c *Command) Persist() bool {
-	return c.Log
+func (c *Command) KeepAlive() bool {
+	return c.JobKeepAlive
 }
 
 func (c *Command) Start() (io.Reader, error) {

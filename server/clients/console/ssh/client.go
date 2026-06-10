@@ -28,6 +28,22 @@ func NewClient() *Client {
 	}
 }
 
+func (c *Client) Command(con Connection, command string) *Command {
+	return &Command{
+		Host:            con.Host,
+		Port:            con.Port,
+		Username:        con.Username,
+		Password:        con.Password,
+		PrivateKey:      con.PrivateKey,
+		JobPersist:      false,
+		JobKeepAlive:    true,
+		Command:         command,
+		HostKeyCallback: c.hostKeyCallback,
+		Timeout:         c.timeout,
+		dial:            c.dial,
+	}
+}
+
 func (c *Client) GenerateKey() (string, string, error) {
 	pubKey, prvKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
@@ -41,24 +57,6 @@ func (c *Client) GenerateKey() (string, string, error) {
 	sshPubKeyAuth := strings.TrimSuffix(string(ssh.MarshalAuthorizedKey(sshPubKey)), "\n")
 	sshPubKeyAuthComment := sshPubKeyAuth + " " + "ivory"
 	return sshPubKeyAuthComment, string(prvKey), nil
-}
-
-func (c *Client) Command(connection Command, command string) *Command {
-	return &Command{
-		Host:            connection.Host,
-		Port:            connection.Port,
-		Username:        connection.Username,
-		Password:        connection.Password,
-		PrivateKey:      connection.PrivateKey,
-		Command:         command,
-		HostKeyCallback: c.hostKeyCallback,
-		Timeout:         c.timeout,
-		dial:            c.dial,
-	}
-}
-
-func (c *Client) getDialAddress(connection Command) (string, error) {
-	return connection.getDialAddress()
 }
 
 func (c *Client) hostKeyCallback(hostname string, _ net.Addr, key ssh.PublicKey) error {

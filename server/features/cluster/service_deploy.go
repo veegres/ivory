@@ -43,7 +43,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 
 	var mu sync.Mutex
 	logs := make([]string, 0)
-	appendLog := func(ctx string, msg string) {
+	send := func(ctx string, msg string) {
 		mu.Lock()
 		logs = append(logs, fmt.Sprintf("%s | %s | %s", time.Now().Format("2006-01-02 15:04:05"), ctx, msg))
 		mu.Unlock()
@@ -53,7 +53,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	var sshPubKey string
 	var needSshCopy bool
 	if cluster.Vaults.SshKeyId == nil {
-		appendLog("system", "generating ssh key and saving it to vault")
+		send("system", "generating ssh key and saving it to vault")
 		sshVault := vault.Vault{Type: vault.SSH_KEY, Username: r.CommonConfig.SshUser}
 		id, v, err := s.vaultService.Create(sshVault)
 		if err != nil {
@@ -66,7 +66,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		sshPubKey = *v.Metadata
 		needSshCopy = true
 	} else {
-		appendLog("system", "using ssh key from vault")
+		send("system", "using ssh key from vault")
 		v, err := s.vaultService.Get(*cluster.Vaults.SshKeyId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get ssh key from vault: %w", err)
@@ -80,7 +80,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 
 	// 3. Handle DB Password
 	if cluster.Vaults.DatabaseId == nil {
-		appendLog("system", "saving database credentials to vault")
+		send("system", "saving database credentials to vault")
 		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: r.CommonConfig.DbUser, Secret: r.CommonConfig.DbPass}
 		id, _, err := s.vaultService.Create(dbVault)
 		if err != nil {
@@ -88,7 +88,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		}
 		cluster.Vaults.DatabaseId = id
 	} else {
-		appendLog("system", "using database credentials from vault")
+		send("system", "using database credentials from vault")
 		v, err := s.vaultService.GetDecrypted(*cluster.Vaults.DatabaseId)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get database credentials from vault: %w", err)
@@ -98,7 +98,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 
 	// 4. Update Cluster
-	appendLog("system", "updating cluster configuration")
+	send("system", "updating cluster configuration")
 	_, err := s.Update(cluster)
 	if err != nil {
 		return nil, err
@@ -113,16 +113,16 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 			nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 
 			if n.Host == "" {
-				appendLog(nodeKey, "host is empty, skipping node")
+				send(nodeKey, "host is empty, skipping node")
 				return
 			}
 			if n.SshPort == nil {
-				appendLog(nodeKey, "ssh port is empty, skipping node")
+				send(nodeKey, "ssh port is empty, skipping node")
 				return
 			}
 
 			if needSshCopy {
-				appendLog(nodeKey, "saving ssh key to vm")
+				send(nodeKey, "saving ssh key to vm")
 				conn := node.PlatformCredConnection{
 					Host:     n.Host,
 					Port:     *n.SshPort,
@@ -132,7 +132,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				req := node.PlatformCopyIdRequest{PlatformCredConnection: conn, PublicKey: sshPubKey}
 				_, err := s.nodeService.PlatformCopyId(req)
 				if err != nil {
-					appendLog(nodeKey, fmt.Sprintf("failed to copy ssh key: %v", err))
+					send(nodeKey, fmt.Sprintf("failed to copy ssh key: %v", err))
 					return
 				}
 			}
@@ -140,7 +140,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 			// Interpolate options
 			template, ok := r.NodeRawOptions[nodeKey]
 			if !ok {
-				appendLog(nodeKey, "no options provided for node")
+				send(nodeKey, "no options provided for node")
 				return
 			}
 
@@ -166,7 +166,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 
 			options := s.normalizeDatabaseOptions(s.getInterpolatedString(template, values))
 
-			appendLog(nodeKey, fmt.Sprintf("deploying with options: %s", options))
+			send(nodeKey, fmt.Sprintf("deploying with options: %s", options))
 
 			platformReq := node.PlatformUpRequest{
 				Connection: node.PlatformVaultConnection{
@@ -178,12 +178,12 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				Options: options,
 			}
 
-			s.nodeService.PlatformContainerUp(platformReq, "cluster-deploy", func(event job.Message) {
-				if event.Message != "" && event.Type == job.LOG || event.Type == job.SERVER {
-					appendLog(nodeKey, event.Message)
-				}
+			// NOTE: even if connection was closed we do not want to stop deployment
+			mockClose := make(<-chan struct{})
+			s.nodeService.PlatformContainerUp(platformReq, "cluster-deploy", mockClose, func(event job.Message) {
+				send(nodeKey, event.Message)
 			})
-			appendLog(nodeKey, "deploy stream finished")
+			send(nodeKey, "deploy stream finished")
 		}(n)
 	}
 	wg.Wait()

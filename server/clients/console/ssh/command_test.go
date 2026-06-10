@@ -36,7 +36,7 @@ func TestCommand_Id(t *testing.T) {
 func TestCommand_Errors(t *testing.T) {
 	client := NewClient()
 	_, prv, _ := ed25519.GenerateKey(rand.Reader)
-	conn := Command{Host: "localhost", Port: 22, Username: "test", PrivateKey: &prv}
+	conn := Connection{Host: "localhost", Port: 22, Username: "test", PrivateKey: &prv}
 
 	t.Run("empty command", func(t *testing.T) {
 		_, err := client.Command(conn, "").Execute()
@@ -153,7 +153,7 @@ func TestCommand_Execute(t *testing.T) {
 
 	_, clientPrv, _ := ed25519.GenerateKey(rand.Reader)
 	client := NewClient()
-	conn := Command{
+	conn := Connection{
 		Host:       host,
 		Port:       port,
 		Username:   "test",
@@ -247,7 +247,7 @@ func TestCommand_Abort(t *testing.T) {
 
 	_, clientPrv, _ := ed25519.GenerateKey(rand.Reader)
 	client := NewClient()
-	conn := Command{
+	conn := Connection{
 		Host:       host,
 		Port:       port,
 		Username:   "test",
