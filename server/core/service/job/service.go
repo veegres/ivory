@@ -52,9 +52,13 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 	defer send(Message{Type: STREAM, Message: END.String()})
 
 	// 1. Stream from file if it exists
-	if s.storage != nil {
-		if file, err := s.storage.OpenByName(string(id)); err == nil {
-			defer file.Close()
+	job, ok := s.getJob(id)
+	if ok && job.cmd.Persist() && s.storage != nil {
+		file, err := s.storage.OpenByName(string(id))
+		defer file.Close()
+		if err != nil {
+			send(Message{Type: SERVER, Message: "streaming from the file error: " + err.Error()})
+		} else {
 			send(Message{Type: SERVER, Message: "streaming from the file started"})
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
@@ -67,7 +71,7 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 	// 2. Subscribe to live job if it's running
 	live, err := s.Subscribe(id, subID)
 	if err != nil {
-		send(Message{Type: SERVER, Message: "cannot subscribe to the stream: " + err.Error()})
+		send(Message{Type: SERVER, Message: "streaming from the console error: " + err.Error()})
 		return
 	}
 	defer s.Unsubscribe(id, subID)
@@ -101,10 +105,7 @@ func (s *Service) Stop(id JobID) error {
 
 // Subscribe attaches a subscriber to a running job.
 func (s *Service) Subscribe(id JobID, subscriberID SubscriberID) (<-chan Message, error) {
-	s.mu.Lock()
-	job, ok := s.jobs[id]
-	s.mu.Unlock()
-
+	job, ok := s.getJob(id)
 	if !ok {
 		return nil, fmt.Errorf("job %s not found", id)
 	}
@@ -113,10 +114,7 @@ func (s *Service) Subscribe(id JobID, subscriberID SubscriberID) (<-chan Message
 
 // Unsubscribe detaches a subscriber from a job without stopping it.
 func (s *Service) Unsubscribe(id JobID, subscriberID SubscriberID) {
-	s.mu.Lock()
-	job, ok := s.jobs[id]
-	s.mu.Unlock()
-
+	job, ok := s.getJob(id)
 	if !ok {
 		return
 	}
@@ -124,10 +122,7 @@ func (s *Service) Unsubscribe(id JobID, subscriberID SubscriberID) {
 }
 
 func (s *Service) Status(id JobID) Status {
-	s.mu.Lock()
-	job, ok := s.jobs[id]
-	s.mu.Unlock()
-
+	job, ok := s.getJob(id)
 	if !ok {
 		return UNKNOWN
 	}
@@ -139,6 +134,13 @@ func (s *Service) GetLogsPath(id JobID) (string, error) {
 		return "", fmt.Errorf("storage not initialized")
 	}
 	return s.storage.GetPathByName(string(id))
+}
+
+func (s *Service) getJob(id JobID) (*Job, bool) {
+	s.mu.Lock()
+	job, ok := s.jobs[id]
+	s.mu.Unlock()
+	return job, ok
 }
 
 func (s *Service) unsafeAddJob(id JobID, job *Job) {

@@ -49,6 +49,7 @@ func (j *Job) Size() int {
 // Intended to be called in its own goroutine by the job.Service.
 func (j *Job) Run() {
 	j.setStatus(RUNNING)
+	j.broadcast(SERVER, fmt.Sprintf("running the job: %s", j.cmd.Id()))
 	defer j.close()
 
 	var logFile *os.File
@@ -98,6 +99,7 @@ func (j *Job) Run() {
 		return
 	}
 
+	j.broadcast(SERVER, fmt.Sprintf("finished the job: %s", j.cmd.Id()))
 	j.setStatus(FINISHED)
 }
 

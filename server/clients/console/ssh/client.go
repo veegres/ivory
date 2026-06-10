@@ -24,7 +24,6 @@ func NewClient() *Client {
 	return &Client{
 		timeout:    10 * time.Second,
 		knownHosts: make(map[string][]byte),
-		dial:       ssh.Dial,
 	}
 }
 
@@ -40,7 +39,6 @@ func (c *Client) Command(con Connection, command string) *Command {
 		Command:         command,
 		HostKeyCallback: c.hostKeyCallback,
 		Timeout:         c.timeout,
-		dial:            c.dial,
 	}
 }
 

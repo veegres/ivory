@@ -1,7 +1,7 @@
 import {Box, Chip, Divider} from "@mui/material"
 import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
     row: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},
@@ -13,7 +13,7 @@ type Props = {
     children: ReactNode,
 }
 
-export function MonitorRow(props: Props) {
+export function DividerBox(props: Props) {
     const {label, children} = props
 
     return (

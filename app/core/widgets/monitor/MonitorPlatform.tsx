@@ -1,9 +1,16 @@
+import {Box} from "@mui/material"
+import {useEffect, useState} from "react"
+
 import {useRouterNodeMetrics} from "../../../features/node/hook"
 import {PlatformConnection, PlatformMetricsResponse as NodeMetrics} from "../../../features/node/type"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../../shared/component/chart/HistoryTrackerChart"
+import {SxPropsMap} from "../../../shared/helper/type"
 import {MonitorLoading} from "./MonitorLoading"
-import {MonitorRow} from "./MonitorRow"
+
+const SX: SxPropsMap = {
+    box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},
+}
 
 type Props = {
     connection: PlatformConnection,
@@ -12,47 +19,62 @@ type Props = {
 
 export function MonitorPlatform(props: Props) {
     const {connection, interval = 1000 * 3} = props
+    const [cachedError, setCachedError] = useState<Error>()
     const metrics = useRouterNodeMetrics(connection, interval)
 
-    if (metrics.isError) return <ErrorSmart error={metrics.error}/>
-    if (metrics.isPending) return <MonitorLoading count={4}/>
+    useEffect(() => {
+        if (metrics.data) setCachedError(undefined)
+        if (metrics.error) setCachedError(metrics.error)
+    }, [metrics.error, metrics.data])
+
+    if (cachedError) return <ErrorSmart error={cachedError}/>
 
     return (
-        <MonitorRow>
-            <HistoryTrackerChart
-                label={"CPU Usage"}
-                unit={"%"}
-                data={metrics.data}
-                selector={getCpuUsageDelta}
-                color={"#3f51b5"}
-                min={0}
-                max={100}
-            />
-            <HistoryTrackerChart
-                label={"Memory Usage"}
-                unit={"%"}
-                data={metrics.data}
-                selector={getMemoryUsage}
-                color={"#4caf50"}
-                min={0}
-                max={100}
-            />
-            <HistoryTrackerChart
-                label={"Network Download"}
-                unit={"KB/s"}
-                data={metrics.data}
-                selector={getNetRxDelta}
-                color={"#ff9800"}
-            />
-            <HistoryTrackerChart
-                label={"Network Upload"}
-                unit={"KB/s"}
-                data={metrics.data}
-                selector={getNetTxDelta}
-                color={"#9c27b0"}
-            />
-        </MonitorRow>
+        <Box sx={SX.box}>
+            {renderBody()}
+        </Box>
     )
+    
+    function renderBody() {
+        if (metrics.isLoading) return <MonitorLoading count={4}/>
+
+        return (
+            <>
+                <HistoryTrackerChart
+                    label={"CPU Usage"}
+                    unit={"%"}
+                    data={metrics.data}
+                    selector={getCpuUsageDelta}
+                    color={"#3f51b5"}
+                    min={0}
+                    max={100}
+                />
+                <HistoryTrackerChart
+                    label={"Memory Usage"}
+                    unit={"%"}
+                    data={metrics.data}
+                    selector={getMemoryUsage}
+                    color={"#4caf50"}
+                    min={0}
+                    max={100}
+                />
+                <HistoryTrackerChart
+                    label={"Network Download"}
+                    unit={"KB/s"}
+                    data={metrics.data}
+                    selector={getNetRxDelta}
+                    color={"#ff9800"}
+                />
+                <HistoryTrackerChart
+                    label={"Network Upload"}
+                    unit={"KB/s"}
+                    data={metrics.data}
+                    selector={getNetTxDelta}
+                    color={"#9c27b0"}
+                />
+            </>
+        )
+    }
 
     function getCpuUsageDelta(l: NodeMetrics, p?: NodeMetrics) {
         if (!p) return undefined

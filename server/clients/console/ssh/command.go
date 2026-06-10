@@ -36,7 +36,6 @@ type Command struct {
 
 	client  *ssh.Client
 	session *ssh.Session
-	dial    func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error)
 }
 
 func (c *Command) Id() string {
@@ -86,11 +85,7 @@ func (c *Command) Start() (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	dial := c.dial
-	if dial == nil {
-		dial = ssh.Dial
-	}
-	client, err := dial("tcp", target, config)
+	client, err := ssh.Dial("tcp", target, config)
 	if err != nil {
 		return nil, fmt.Errorf("dial: %w", err)
 	}

@@ -2,11 +2,11 @@ import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {Feature} from "../../../../features/feature"
 import {ChartType, Connection as QueryConnection, Type as QueryType} from "../../../../features/query/type"
+import {DividerBox} from "../../../../shared/component/box/DividerBox"
 import {ErrorDbMissing} from "../../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {Access} from "../../../widgets/access/Access"
-import {MonitorRow} from "../../../widgets/monitor/MonitorRow"
 import {Query} from "../../../widgets/query/Query"
 import {QueryActivity} from "../../../widgets/query/QueryActivity"
 import {QueryChartDatabase} from "../../../widgets/query/QueryChartDatabase"
@@ -93,16 +93,16 @@ export function NodeMainQueries(props: Props){
                         <QueryConsole connection={connection}/>
                     ) : queryTab === QueryType.CHARTS ? (
                         <Box>
-                            <MonitorRow>
+                            <DividerBox>
                                 {CHARTS.common.map(t => (
                                     <QueryChartGeneral key={t} type={t} connection={connection}/>
                                 ))}
-                            </MonitorRow>
-                            <MonitorRow label={connection.db.name && `${connection.db.name}`}>
+                            </DividerBox>
+                            <DividerBox label={connection.db.name && `${connection.db.name}`}>
                                 {CHARTS.database.map(t => (
                                     <QueryChartDatabase key={t} type={t} connection={connection}/>
                                 ))}
-                            </MonitorRow>
+                            </DividerBox>
                         </Box>
                     ) : (
                         <Query type={queryTab} connection={connection}/>
