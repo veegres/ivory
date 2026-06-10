@@ -4,10 +4,13 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os/exec"
 	"strings"
+
+	"github.com/creack/pty"
 )
 
 type Command struct {
@@ -40,13 +43,11 @@ func (c *Command) KeepAlive() bool {
 func (c *Command) Start() (io.Reader, error) {
 	cmd := exec.Command(c.Name, c.Args...)
 
-	stdout, err := cmd.StdoutPipe()
+	// Allocate a PTY — this makes Docker think it's writing to a real terminal,
+	// which disables the internal stdio buffering that can delaying logs.
+	stdout, err := pty.Start(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("stdout: %w", err)
-	}
-	cmd.Stderr = cmd.Stdout
-	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("start: %w", err)
 	}
 
 	c.cmd = cmd
@@ -81,7 +82,8 @@ func (c *Command) Execute() ([]string, error) {
 
 	errWait := c.Wait()
 	if errWait != nil {
-		if exitErr, ok := errWait.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(errWait, &exitErr) {
 			return output, fmt.Errorf("exit code %d: %s", exitErr.ExitCode(), strings.Join(output, "\n"))
 		}
 		return output, errWait

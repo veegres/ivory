@@ -96,6 +96,20 @@ func (c *Command) Start() (io.Reader, error) {
 		return nil, fmt.Errorf("session: %w", err)
 	}
 
+	// NOTE: SSH HACK - Explicitly request a PTY from the remote server
+	// This forces Docker on the remote machine to treat Go like an interactive user terminal.
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          0,     // Disable echo so you don't read your own command back
+		ssh.TTY_OP_ISPEED: 14400, // Input speed
+		ssh.TTY_OP_OSPEED: 14400, // Output speed
+	}
+	// NOTE: "xterm" simulates a standard linux terminal window (50000 columns, 40 rows)
+	if err := session.RequestPty("xterm", 40, 50000, modes); err != nil {
+		session.Close()
+		client.Close()
+		return nil, fmt.Errorf("request for PTY failed: %v", err)
+	}
+
 	stdout, err := session.StdoutPipe()
 	if err != nil {
 		session.Close()

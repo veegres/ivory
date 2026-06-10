@@ -14,6 +14,7 @@ require (
 	golang.org/x/crypto v0.45.0
 	golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b
 	golang.org/x/oauth2 v0.32.0
+	github.com/creack/pty v1.1.24
 )
 
 require (
