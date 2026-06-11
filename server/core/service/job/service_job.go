@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 )
@@ -88,9 +89,12 @@ func (j *Job) Run() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		j.setStatus(FAILED)
-		j.broadcast(SERVER, err.Error())
-		return
+		// NOTE: Ignore PTY EIO error on process exit
+		if !strings.Contains(err.Error(), "input/output error") {
+			j.setStatus(FAILED)
+			j.broadcast(SERVER, err.Error())
+			return
+		}
 	}
 
 	if err := j.cmd.Wait(); err != nil {
@@ -113,36 +117,37 @@ func (j *Job) Stop() error {
 
 func (j *Job) killer() {
 	for {
-		j.mu.Lock()
-		if j.status != RUNNING {
-			return
-		}
-		if len(j.subscribers) == 0 {
-			now := time.Now()
-			if j.keepAliveBegin.IsZero() {
-				j.keepAliveBegin = now
-			}
-			if now.Sub(j.keepAliveBegin) > j.keepAliveDuration {
-				j.mu.Unlock()
-				_ = j.Stop()
+		time.Sleep(time.Second)
+		// NOTE: we use func here for defer
+		func() {
+			j.mu.Lock()
+			defer j.mu.Unlock()
+			if j.status != RUNNING {
 				return
 			}
-		} else {
-			j.keepAliveBegin = time.Time{}
-		}
-		j.mu.Unlock()
-		time.Sleep(time.Second)
+			if len(j.subscribers) == 0 {
+				now := time.Now()
+				if j.keepAliveBegin.IsZero() {
+					j.keepAliveBegin = now
+				}
+				if now.Sub(j.keepAliveBegin) > j.keepAliveDuration {
+					_ = j.Stop()
+					return
+				}
+			} else {
+				j.keepAliveBegin = time.Time{}
+			}
+		}()
 	}
 }
 
 func (j *Job) broadcast(t EventType, m string) {
 	j.mu.RLock()
 	defer j.mu.RUnlock()
-	for id, ch := range j.subscribers {
+	for _, ch := range j.subscribers {
 		select {
 		case ch <- Message{Type: t, Timestamp: time.Now(), Message: m}:
-		default: // slow subscriber: remove it
-			j.removeSubscriber(id)
+		default: // slow subscriber: skip it
 		}
 	}
 }

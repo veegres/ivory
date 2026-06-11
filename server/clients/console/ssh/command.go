@@ -36,6 +36,7 @@ type Command struct {
 
 	client  *ssh.Client
 	session *ssh.Session
+	Dial    func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error)
 }
 
 func (c *Command) Id() string {
@@ -85,14 +86,22 @@ func (c *Command) Start() (io.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := ssh.Dial("tcp", target, config)
+
+	var client *ssh.Client
+	if c.Dial != nil {
+		client, err = c.Dial("tcp", target, config)
+	} else {
+		client, err = ssh.Dial("tcp", target, config)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("dial: %w", err)
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
-		client.Close()
+		if c.Dial == nil {
+			client.Close()
+		}
 		return nil, fmt.Errorf("session: %w", err)
 	}
 
@@ -106,19 +115,25 @@ func (c *Command) Start() (io.Reader, error) {
 	// NOTE: "xterm" simulates a standard linux terminal window (50000 columns, 40 rows)
 	if err := session.RequestPty("xterm", 40, 50000, modes); err != nil {
 		session.Close()
-		client.Close()
+		if c.Dial == nil {
+			client.Close()
+		}
 		return nil, fmt.Errorf("request for PTY failed: %v", err)
 	}
 
 	stdout, err := session.StdoutPipe()
 	if err != nil {
 		session.Close()
-		client.Close()
+		if c.Dial == nil {
+			client.Close()
+		}
 		return nil, fmt.Errorf("stdout pipe: %w", err)
 	}
 	if err := session.Start(c.Command); err != nil {
 		session.Close()
-		client.Close()
+		if c.Dial == nil {
+			client.Close()
+		}
 		return nil, fmt.Errorf("start command: %w", err)
 	}
 
@@ -132,7 +147,7 @@ func (c *Command) Wait() error {
 		return nil
 	}
 	errWait := c.session.Wait()
-	if c.client != nil {
+	if c.client != nil && c.Dial == nil {
 		errClose := c.client.Close()
 		if errWait == nil {
 			return errClose
@@ -145,7 +160,7 @@ func (c *Command) Abort() error {
 	if c.session != nil {
 		_ = c.session.Close()
 	}
-	if c.client != nil {
+	if c.client != nil && c.Dial == nil {
 		return c.client.Close()
 	}
 	return nil
@@ -170,6 +185,14 @@ func (c *Command) Execute() ([]string, error) {
 			return output, fmt.Errorf("exit code %d: %s", exitErr.ExitStatus(), strings.Join(output, "\n"))
 		}
 		return output, errWait
+	}
+
+	errScanner := scanner.Err()
+	if errScanner != nil {
+		// NOTE: Reading from a PTY might return an EIO error when the process exits.
+		if !strings.Contains(errScanner.Error(), "input/output error") {
+			return output, errScanner
+		}
 	}
 
 	return output, nil

@@ -2,6 +2,8 @@ package console
 
 import "io"
 
+// Command is a generic interface for executing commands on a remote or local console.
+// NOTE: Implementations of this interface are not guaranteed to be thread-safe.
 type Command interface {
 	// Id returns a stable string used to identify the job.
 	Id() string

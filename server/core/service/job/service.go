@@ -2,9 +2,11 @@ package job
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"ivory/clients/console"
 	"ivory/core/store"
+	"os"
 	"sync"
 )
 
@@ -52,12 +54,15 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 	defer send(Message{Type: STREAM, Message: END.String()})
 
 	// 1. Stream from file if it exists
-	job, ok := s.getJob(id)
-	if ok && job.cmd.Persist() && s.storage != nil {
+	if s.storage != nil {
 		file, err := s.storage.OpenByName(string(id))
 		defer file.Close()
 		if err != nil {
-			send(Message{Type: SERVER, Message: "streaming from the file error: " + err.Error()})
+			if errors.Is(err, os.ErrNotExist) {
+				send(Message{Type: SERVER, Message: "streaming from the file skipped (because the file does not exist)"})
+			} else {
+				send(Message{Type: SERVER, Message: "streaming from the file error: " + err.Error()})
+			}
 		} else {
 			send(Message{Type: SERVER, Message: "streaming from the file started"})
 			scanner := bufio.NewScanner(file)
@@ -67,6 +72,11 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 			send(Message{Type: SERVER, Message: "streaming from the file finished"})
 		}
 	}
+
+	// NOTE: Race Condition: Streaming Gap --- it is expected behavior
+	//  There is a temporal gap finishing the read of the log file and subscribing to the live job. Logs
+	//  produced by the command in this tiny window may be neither in the file yet nor captured by the
+	//  new subscription, leading to missing log lines for the user.
 
 	// 2. Subscribe to live job if it's running
 	live, err := s.Subscribe(id, subID)

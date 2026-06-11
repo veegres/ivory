@@ -13,7 +13,7 @@ export interface SxPropsMap {
 }
 
 export interface ColorsMap {
-    [name: string]: "success" | "primary" | "error" | "warning",
+    [name: string]: "success" | "primary" | "error" | "warning" | "info",
 }
 
 export interface EnumOptions {

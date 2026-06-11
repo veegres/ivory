@@ -110,7 +110,10 @@ func TestCommand_Execute(t *testing.T) {
 					go func(in <-chan *ssh.Request) {
 						defer channel.Close()
 						for req := range in {
-							if req.Type == "exec" {
+							switch req.Type {
+							case "pty-req":
+								req.Reply(true, nil)
+							case "exec":
 								payload := req.Payload
 								if len(payload) < 4 {
 									req.Reply(false, nil)
@@ -129,15 +132,10 @@ func TestCommand_Execute(t *testing.T) {
 									io.WriteString(channel, "error\n")
 									channel.SendRequest("exit-status", false, ssh.Marshal(struct{ Status uint32 }{1}))
 									return
-								} else if cmd == "sleep 10" {
-									req.Reply(true, nil)
-									time.Sleep(10 * time.Second)
-									channel.SendRequest("exit-status", false, ssh.Marshal(struct{ Status uint32 }{0}))
-									return
 								} else {
 									req.Reply(false, nil)
 								}
-							} else {
+							default:
 								req.Reply(false, nil)
 							}
 						}
@@ -225,14 +223,19 @@ func TestCommand_Abort(t *testing.T) {
 					channel, requests, _ := newChannel.Accept()
 					go func(in <-chan *ssh.Request) {
 						for req := range in {
-							if req.Type == "exec" {
+							switch req.Type {
+							case "pty-req":
+								req.Reply(true, nil)
+							case "exec":
 								req.Reply(true, nil)
 								go func() {
-									time.Sleep(10 * time.Second) // Block to simulate a long running command
+									time.Sleep(5 * time.Second) // Block to simulate a long running command
 									if channel != nil {
 										channel.Close()
 									}
 								}()
+							default:
+								req.Reply(false, nil)
 							}
 						}
 					}(requests)

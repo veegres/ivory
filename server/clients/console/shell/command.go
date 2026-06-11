@@ -89,5 +89,14 @@ func (c *Command) Execute() ([]string, error) {
 		return output, errWait
 	}
 
+	errScanner := scanner.Err()
+	if errScanner != nil {
+		// NOTE: On Linux, reading from a PTY master after the slave is closed
+		// returns an EIO error. This is expected behavior and should be ignored.
+		if !strings.Contains(errScanner.Error(), "input/output error") {
+			return output, errScanner
+		}
+	}
+
 	return output, nil
 }

@@ -14,16 +14,18 @@ import (
 )
 
 type Client struct {
-	mu         sync.RWMutex
-	timeout    time.Duration
-	knownHosts map[string][]byte
-	dial       func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error)
+	mu            sync.RWMutex
+	timeout       time.Duration
+	knownHosts    map[string][]byte
+	cachedClients map[string]*ssh.Client
+	dial          func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error)
 }
 
 func NewClient() *Client {
 	return &Client{
-		timeout:    10 * time.Second,
-		knownHosts: make(map[string][]byte),
+		timeout:       10 * time.Second,
+		knownHosts:    make(map[string][]byte),
+		cachedClients: make(map[string]*ssh.Client),
 	}
 }
 
@@ -39,7 +41,45 @@ func (c *Client) Command(con Connection, command string) *Command {
 		Command:         command,
 		HostKeyCallback: c.hostKeyCallback,
 		Timeout:         c.timeout,
+		Dial:            c.Dial,
 	}
+}
+
+func (c *Client) Dial(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
+	key := fmt.Sprintf("%s|%s|%s", addr, config.User, network)
+
+	c.mu.RLock()
+	client, ok := c.cachedClients[key]
+	c.mu.RUnlock()
+
+	if ok {
+		// Check if the connection is still alive by opening a temporary session
+		// or sending a keepalive. Opening a session is the most reliable check.
+		if session, err := client.NewSession(); err == nil {
+			_ = session.Close()
+			return client, nil
+		}
+		// Connection is dead, remove it
+		c.mu.Lock()
+		delete(c.cachedClients, key)
+		c.mu.Unlock()
+	}
+
+	// Dial a new one
+	dial := c.dial
+	if dial == nil {
+		dial = ssh.Dial
+	}
+	client, err := dial(network, addr, config)
+	if err != nil {
+		return nil, err
+	}
+
+	c.mu.Lock()
+	c.cachedClients[key] = client
+	c.mu.Unlock()
+
+	return client, nil
 }
 
 func (c *Client) GenerateKey() (string, string, error) {
@@ -49,7 +89,7 @@ func (c *Client) GenerateKey() (string, string, error) {
 	}
 	sshPubKey, err := ssh.NewPublicKey(pubKey)
 	if err != nil {
-		return "", "'", err
+		return "", "", err
 	}
 	// NOTE: it always adds `\n` at the end, so we need to trim it
 	sshPubKeyAuth := strings.TrimSuffix(string(ssh.MarshalAuthorizedKey(sshPubKey)), "\n")

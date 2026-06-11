@@ -41,7 +41,7 @@ export function Logs(props: Props) {
             <Box sx={SX.footer}>
                 <Box sx={SX.loader}>
                     {loading && <CircularProgress sx={SX.loader} size={"9px"} color={"inherit"}/>}
-                    <Box>{loading ? "Loading" : logs.length === 0 ? "None" : "Done"}</Box>
+                    <Box>{loading ? "Streaming" : logs.length === 0 ? "None" : "Done"}</Box>
                 </Box>
                 <Box>{logs.length} rows</Box>
             </Box>

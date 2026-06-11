@@ -73,7 +73,7 @@ type InputItemProps = {
     inputs: string[],
     placeholder: string,
     mergedSx: SxProps<Theme>,
-    color: "success" | "primary" | "error" | "warning" | undefined,
+    color: "success" | "primary" | "error" | "warning" | "info" | undefined,
     onChange: (values: string[]) => void,
     helper?: ReactNode,
 }
@@ -105,7 +105,7 @@ const InputItem = memo(function InputItem(props: InputItemProps) {
 
 type ChipItemProps = {
     input: string,
-    color: "success" | "primary" | "error" | "warning" | undefined,
+    color: "success" | "primary" | "error" | "warning" | "info" | undefined,
 }
 
 const ChipItem = memo(function ChipItem(props: ChipItemProps) {
