@@ -4,7 +4,7 @@ import {ButtonProps} from "@mui/material"
 import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
-    button: {padding: "5px", minWidth: 0, borderColor: "divider"},
+    button: {padding: "3px", minWidth: 0, borderColor: "divider"},
 }
 
 export function SimpleButton(props: ButtonProps) {

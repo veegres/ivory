@@ -4,7 +4,7 @@ import {SystemStyleObject} from "@mui/system"
 import {SxPropsMap} from "../../../../shared/helper/type"
 
 const SX: SxPropsMap = {
-    input: {height: "36px"},
+    input: {height: "32px"},
 }
 
 type Props = {

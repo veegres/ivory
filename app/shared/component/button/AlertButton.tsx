@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../helper/type"
 import {AlertDialog} from "../dialog/AlertDialog"
 
 const SX: SxPropsMap = {
-    button: {minWidth: "10px", textWrap: "nowrap"},
+    button: {padding: "3px", minWidth: 0, textWrap: "nowrap"},
 }
 
 type Props = {
@@ -26,6 +26,7 @@ export function AlertButton(props: Props) {
     const {children, title, description, label, variant, onClick} = props
     const {loading, disabled, size, color, tooltip} = props
     const [open, setOpen] = useState(false)
+    const borderColor = color === "inherit" ? "divider" : undefined
 
     return (
         <>
@@ -41,7 +42,7 @@ export function AlertButton(props: Props) {
             <Tooltip title={tooltip} placement={"top"} arrow={true}>
                 <Box component={"span"}>
                     <Button
-                        sx={SX.button}
+                        sx={[SX.button, {borderColor}]}
                         size={size}
                         color={color}
                         variant={variant}

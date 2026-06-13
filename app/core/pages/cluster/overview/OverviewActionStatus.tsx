@@ -4,7 +4,7 @@ import {UseMutationResult} from "@tanstack/react-query"
 import {Feature} from "../../../../features/feature"
 import {useRouterNodeActivate, useRouterNodePause} from "../../../../features/node/hook"
 import {KeeperOneRequest, KeeperStatus} from "../../../../features/node/type"
-import {InfoBox, Padding} from "../../../../shared/component/box/InfoBox"
+import {InfoBox} from "../../../../shared/component/box/InfoBox"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
 import {EnumOptions, SxPropsMap} from "../../../../shared/helper/type"
 import {KeeperStatusOptions} from "../../../../shared/helper/utils"
@@ -40,19 +40,18 @@ export function OverviewActionStatus(props: Props) {
     return (
         <Box sx={SX.box}>
             <Access feature={Feature.ManageNodeDbActivation}>
-                <InfoBox padding={Padding.No}>
-                    <AlertButton
-                        size={"small"}
-                        color={"inherit"}
-                        tooltip={<Box sx={SX.tooltip}>{actionButton[status].label}</Box>}
-                        label={options.icon}
-                        loading={action[status].isPending}
-                        title={`Are you sure that you want to ${actionButton[status].label}`}
-                        description={<>This action either active or pause patroni. More info can be
-                            found <a href={"https://patroni.readthedocs.io/en/latest/pause.html"}>here</a>.</>}
-                        onClick={() => {action[status].mutate(request)}}
-                    />
-                </InfoBox>
+                <AlertButton
+                    size={"small"}
+                    color={"inherit"}
+                    variant={"outlined"}
+                    tooltip={<Box sx={SX.tooltip}>{actionButton[status].label}</Box>}
+                    label={options.icon}
+                    loading={action[status].isPending}
+                    title={`Are you sure that you want to ${actionButton[status].label}?`}
+                    description={<>This action either active or pause patroni. More info can be
+                        found <a href={"https://patroni.readthedocs.io/en/latest/pause.html"}>here</a>.</>}
+                    onClick={() => {action[status].mutate(request)}}
+                />
             </Access>
             <InfoBox tooltip={<Box sx={SX.tooltip}>Keeper Status</Box>}>
                 <Box sx={{color: options.color}}>{options.name}</Box>

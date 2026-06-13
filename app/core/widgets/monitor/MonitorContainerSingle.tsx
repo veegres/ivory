@@ -8,6 +8,7 @@ import {
     useRouterNodePlatformStop,
 } from "../../../features/node/hook"
 import {PlatformConnection} from "../../../features/node/type"
+import {AlertButton} from "../../../shared/component/button/AlertButton"
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
 import {SxPropsMap} from "../../../shared/helper/type"
 import {Logs} from "../logs/Logs"
@@ -18,7 +19,7 @@ const SX: SxPropsMap = {
     head: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
     name: {
         fontFamily: "monospace", fontSize: "13px", border: 1, borderRadius: 1,
-        borderColor: "divider", padding: "5px 10px",
+        borderColor: "divider", padding: "4px 10px",
     },
 }
 
@@ -51,27 +52,36 @@ export function MonitorContainerSingle(props: Props) {
                     >
                         <Rocket fontSize={"small"}/>
                     </SimpleButton>
-                    <SimpleButton
-                        size={"small"}
+                    <AlertButton
+                        color={"inherit"}
+                        variant={"outlined"}
+                        label={<PlayArrow fontSize={"small"}/>}
+                        title={"Start container"}
+                        tooltip={"Start container"}
                         loading={start.isPending}
                         onClick={() => start.mutate({connection, name})}
-                    >
-                        <PlayArrow fontSize={"small"}/>
-                    </SimpleButton>
-                    <SimpleButton
-                        size={"small"}
+                        description={"This will start the container."}
+                    />
+                    <AlertButton
+                        color={"inherit"}
+                        variant={"outlined"}
+                        label={<Stop fontSize={"small"}/>}
+                        title={"Stop container"}
+                        tooltip={"Stop container"}
                         loading={stop.isPending}
                         onClick={() => stop.mutate({connection, name})}
-                    >
-                        <Stop fontSize={"small"}/>
-                    </SimpleButton>
-                    <SimpleButton
-                        size={"small"}
+                        description={"This will stop the container."}
+                    />
+                    <AlertButton
+                        color={"inherit"}
+                        variant={"outlined"}
+                        label={<Close fontSize={"small"}/>}
+                        title={"Remove container"}
+                        tooltip={"Stop container"}
                         loading={down.isPending}
                         onClick={() => down.mutate({connection, name})}
-                    >
-                        <Close fontSize={"small"}/>
-                    </SimpleButton>
+                        description={"This will remove container service. But you need first to stop it."}
+                    />
                 </Box>
             </Box>
             <Divider/>

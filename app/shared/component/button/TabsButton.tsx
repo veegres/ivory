@@ -3,7 +3,7 @@ import {ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
-    group: {gap: 1, ".MuiToggleButtonGroup-grouped": {border: 1, borderColor: "divider", borderRadius: 1, padding: "2px 10px"}},
+    group: {gap: 1, ".MuiToggleButtonGroup-grouped": {border: 1, borderColor: "divider", borderRadius: 1, padding: "0px 10px"}},
 }
 
 export interface Tabs {
