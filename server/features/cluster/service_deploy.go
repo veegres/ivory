@@ -23,22 +23,22 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 
 	if cluster.Name == "" {
-		return nil, errors.New("cluster name not provided")
+		return nil, ErrClusterNameNotProvided
 	}
 	if len(cluster.Nodes) == 0 {
-		return nil, errors.New("cluster nodes not provided")
+		return nil, ErrClusterNodesNotProvided
 	}
 	if r.Uri == "" {
-		return nil, errors.New("cluster image not provided")
+		return nil, ErrClusterImageNotProvided
 	}
 	if cluster.Vaults.SshKeyId == nil && (r.CommonConfig.SshUser == "" || r.CommonConfig.SshPass == "") {
-		return nil, errors.New("ssh credentials are required")
+		return nil, ErrSshCredentialsRequired
 	}
 	if cluster.Vaults.DatabaseId == nil && (r.CommonConfig.DbUser == "" || r.CommonConfig.DbPass == "") {
-		return nil, errors.New("database credentials are required")
+		return nil, ErrDatabaseCredentialsRequired
 	}
 	if _, e := s.Get(cluster.Name); !errors.Is(e, store.ErrNotFound) {
-		return nil, errors.New("cluster name is already taken")
+		return nil, ErrClusterNameTaken
 	}
 
 	var mu sync.Mutex
@@ -61,7 +61,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		}
 		cluster.Vaults.SshKeyId = id
 		if v.Metadata == nil {
-			return nil, errors.New("ssh key from vault is missing metadata (public key)")
+			return nil, ErrSshKeyVaultMissingMetadata
 		}
 		sshPubKey = *v.Metadata
 		needSshCopy = true
@@ -72,7 +72,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 			return nil, fmt.Errorf("failed to get ssh key from vault: %w", err)
 		}
 		if v.Metadata == nil {
-			return nil, errors.New("ssh key from vault is missing metadata (public key)")
+			return nil, ErrSshKeyVaultMissingMetadata
 		}
 		sshPubKey = *v.Metadata
 		needSshCopy = false

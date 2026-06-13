@@ -82,11 +82,11 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 			context.Set("auth", false)
 		} else {
 			if username == "" {
-				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "username cannot be empty"})
+				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrUsernameEmpty.Error()})
 				return
 			}
 			if authType == nil {
-				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid auth type"})
+				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidAuthType.Error()})
 				return
 			}
 			context.Set("username", username)
@@ -199,12 +199,12 @@ func (r *Router) OidcCallback(context *gin.Context) {
 
 	state, errState := context.Cookie("state")
 	if errState != nil {
-		r.handleTokenError(context, "state cookie not found")
+		r.handleTokenError(context, ErrStateCookieNotFound.Error())
 		return
 	}
 
 	if context.Query("state") != state {
-		r.handleTokenError(context, "invalid state parameter")
+		r.handleTokenError(context, ErrInvalidStateParameter.Error())
 		return
 	}
 

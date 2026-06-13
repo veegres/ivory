@@ -17,6 +17,10 @@ var ErrInvalidTokenCannotParseAuthType = errors.New("invalid token: cannot parse
 var ErrInvalidToken = errors.New("invalid token")
 var ErrNoAuthorizationToken = errors.New("no authorization token")
 var ErrInvalidAuthorizationHeader = errors.New("invalid authorisation header")
+var ErrUsernameEmpty = errors.New("username cannot be empty")
+var ErrInvalidAuthType = errors.New("invalid auth type")
+var ErrStateCookieNotFound = errors.New("state cookie not found")
+var ErrInvalidStateParameter = errors.New("invalid state parameter")
 
 type Service struct {
 	secretService     *secret.Service

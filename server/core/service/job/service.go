@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"ivory/clients/console"
 	"ivory/core/store"
+	"log/slog"
 	"os"
 	"sync"
 )
+
+var ErrStorageNotInitialized = errors.New("storage not initialized")
 
 type Service struct {
 	mu      *sync.Mutex
@@ -56,7 +59,6 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 	// 1. Stream from file if it exists
 	if s.storage != nil {
 		file, err := s.storage.OpenByName(string(id))
-		defer file.Close()
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
 				send(Message{Type: SERVER, Message: "streaming from the file skipped (because the file does not exist)"})
@@ -64,6 +66,11 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 				send(Message{Type: SERVER, Message: "streaming from the file error: " + err.Error()})
 			}
 		} else {
+			defer func() {
+				if err := file.Close(); err != nil {
+					slog.Error("failed to close file", "error", err)
+				}
+			}()
 			send(Message{Type: SERVER, Message: "streaming from the file started"})
 			scanner := bufio.NewScanner(file)
 			for scanner.Scan() {
@@ -141,7 +148,7 @@ func (s *Service) Status(id JobID) Status {
 
 func (s *Service) GetLogsPath(id JobID) (string, error) {
 	if s.storage == nil {
-		return "", fmt.Errorf("storage not initialized")
+		return "", ErrStorageNotInitialized
 	}
 	return s.storage.GetPathByName(string(id))
 }

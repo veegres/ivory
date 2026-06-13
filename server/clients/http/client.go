@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	nethttp "net/http"
 	"reflect"
 	"strconv"
@@ -123,7 +124,12 @@ func (p *JSONRequest[R]) parseResponse(res *nethttp.Response) (*R, int, error) {
 	var body R
 	status := nethttp.StatusBadRequest
 	if res != nil {
-		defer res.Body.Close()
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				slog.Error("failed to close response body", "error", err)
+			}
+		}(res.Body)
 		status = res.StatusCode
 		bytesBody, errRead := io.ReadAll(res.Body)
 		if errRead != nil {

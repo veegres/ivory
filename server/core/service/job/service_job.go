@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ivory/clients/console"
 	"ivory/core/store"
+	"log/slog"
 	"maps"
 	"os"
 	"slices"
@@ -62,7 +63,11 @@ func (j *Job) Run() {
 			j.broadcast(SERVER, fmt.Sprintf("failed to create log file: %s", err))
 			return
 		}
-		defer logFile.Close()
+		defer func() {
+			if err := logFile.Close(); err != nil {
+				slog.Error("failed to close log file", "error", err)
+			}
+		}()
 	}
 
 	reader, errStart := j.cmd.Start()
@@ -131,7 +136,9 @@ func (j *Job) killer() {
 					j.keepAliveBegin = now
 				}
 				if now.Sub(j.keepAliveBegin) > j.keepAliveDuration {
-					_ = j.Stop()
+					if err := j.Stop(); err != nil {
+						slog.Error("failed to stop job", "error", err)
+					}
 					return
 				}
 			} else {

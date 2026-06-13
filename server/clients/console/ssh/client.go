@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"fmt"
+	"log/slog"
 	"net"
 	"strings"
 	"sync"
@@ -56,7 +57,9 @@ func (c *Client) Dial(network, addr string, config *ssh.ClientConfig) (*ssh.Clie
 		// Check if the connection is still alive by opening a temporary session
 		// or sending a keepalive. Opening a session is the most reliable check.
 		if session, err := client.NewSession(); err == nil {
-			_ = session.Close()
+			if err := session.Close(); err != nil {
+				slog.Error("failed to close temporary ssh session", "error", err)
+			}
 			return client, nil
 		}
 		// Connection is dead, remove it

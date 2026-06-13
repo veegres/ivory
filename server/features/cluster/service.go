@@ -17,6 +17,14 @@ import (
 
 var ErrClusterNameEmpty = errors.New("cluster name cannot be empty")
 var ErrClusterKeepersEmpty = errors.New("cluster keepers cannot be empty")
+var ErrClusterNameNotProvided = errors.New("cluster name not provided")
+var ErrClusterNodesNotProvided = errors.New("cluster nodes not provided")
+var ErrClusterImageNotProvided = errors.New("cluster image not provided")
+var ErrSshCredentialsRequired = errors.New("ssh credentials are required")
+var ErrDatabaseCredentialsRequired = errors.New("database credentials are required")
+var ErrClusterNameTaken = errors.New("cluster name is already taken")
+var ErrSshKeyVaultMissingMetadata = errors.New("ssh key from vault is missing metadata (public key)")
+var ErrNoKeeperConnections = errors.New("no configured keeper connections can be requested")
 
 type Service struct {
 	clusterRepository *Repository

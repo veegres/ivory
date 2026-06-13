@@ -3,6 +3,7 @@ package query
 import (
 	"fmt"
 	"ivory/plugins/database"
+	"log/slog"
 
 	"github.com/google/uuid"
 )
@@ -26,7 +27,9 @@ func (s *Service) TemplateQuery(ctx Context, uuid uuid.UUID, options *DbOptions)
 	response, errRun := s.ConsoleQuery(ctx, query.Custom, options)
 	if errRun == nil && len(response.Rows) > 0 {
 		// NOTE: we don't want fail request if there is some problem with writing to the file
-		_ = s.AddLog(uuid, response)
+		if err := s.AddLog(uuid, response); err != nil {
+			slog.Error("failed to add query log", "error", err)
+		}
 	}
 	return response, errRun
 }

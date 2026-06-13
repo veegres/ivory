@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"ivory/core/service/encryption"
+	"log/slog"
 	"sync"
 )
 
@@ -44,7 +45,9 @@ func NewService(
 
 	if !s.IsRefEmpty() {
 		encryptedKey := md5.Sum([]byte(decryptedRef))
-		_ = s.checkRef(encryptedKey)
+		if err := s.checkRef(encryptedKey); err != nil {
+			slog.Error("failed to check reference secret", "error", err)
+		}
 	}
 
 	return s

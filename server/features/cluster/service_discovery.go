@@ -169,7 +169,7 @@ func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Opti
 		certs = &cluster.Certs
 	}
 	if len(connections) == 0 {
-		return nil, connectionErrors, errors.New("no configured keeper connections can be requested")
+		return nil, connectionErrors, ErrNoKeeperConnections
 	}
 
 	request := node.KeeperMultiRequest{

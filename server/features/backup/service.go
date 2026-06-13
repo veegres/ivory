@@ -8,6 +8,7 @@ import (
 	"ivory/features/cluster"
 	"ivory/features/permission"
 	"ivory/features/query"
+	"log/slog"
 	"mime/multipart"
 	"strings"
 )
@@ -76,7 +77,11 @@ func (s *Service) Import(file *multipart.FileHeader) error {
 	if errOpen != nil {
 		return errOpen
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			slog.Error("failed to close backup file", "error", err)
+		}
+	}()
 
 	data, errRead := io.ReadAll(f)
 	if errRead != nil {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/url"
 	"strconv"
@@ -18,6 +19,11 @@ import (
 var ErrCommandEmpty = errors.New("command cannot be empty")
 var ErrHostEmpty = errors.New("vm host cannot be empty")
 var ErrPasswordOrKey = errors.New("cannot use both private key and password")
+var ErrRequestPtyFailed = errors.New("request for PTY failed")
+var ErrStdoutPipeFailed = errors.New("stdout pipe failed")
+var ErrStartCommandFailed = errors.New("start command failed")
+var ErrDialFailed = errors.New("dial failed")
+var ErrSessionFailed = errors.New("session failed")
 
 type Command struct {
 	Host       string
@@ -94,15 +100,17 @@ func (c *Command) Start() (io.Reader, error) {
 		client, err = ssh.Dial("tcp", target, config)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("dial: %w", err)
+		return nil, errors.Join(ErrDialFailed, err)
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
 		if c.Dial == nil {
-			client.Close()
+			if err := client.Close(); err != nil {
+				slog.Error("failed to close ssh client", "error", err)
+			}
 		}
-		return nil, fmt.Errorf("session: %w", err)
+		return nil, errors.Join(ErrSessionFailed, err)
 	}
 
 	// NOTE: SSH HACK - Explicitly request a PTY from the remote server
@@ -114,27 +122,39 @@ func (c *Command) Start() (io.Reader, error) {
 	}
 	// NOTE: "xterm" simulates a standard linux terminal window (50000 columns, 40 rows)
 	if err := session.RequestPty("xterm", 40, 50000, modes); err != nil {
-		session.Close()
-		if c.Dial == nil {
-			client.Close()
+		if err := session.Close(); err != nil {
+			slog.Error("failed to close ssh session", "error", err)
 		}
-		return nil, fmt.Errorf("request for PTY failed: %v", err)
+		if c.Dial == nil {
+			if err := client.Close(); err != nil {
+				slog.Error("failed to close ssh client", "error", err)
+			}
+		}
+		return nil, errors.Join(ErrRequestPtyFailed, err)
 	}
 
 	stdout, err := session.StdoutPipe()
 	if err != nil {
-		session.Close()
-		if c.Dial == nil {
-			client.Close()
+		if err := session.Close(); err != nil {
+			slog.Error("failed to close ssh session", "error", err)
 		}
-		return nil, fmt.Errorf("stdout pipe: %w", err)
+		if c.Dial == nil {
+			if err := client.Close(); err != nil {
+				slog.Error("failed to close ssh client", "error", err)
+			}
+		}
+		return nil, errors.Join(ErrStdoutPipeFailed, err)
 	}
 	if err := session.Start(c.Command); err != nil {
-		session.Close()
-		if c.Dial == nil {
-			client.Close()
+		if err := session.Close(); err != nil {
+			slog.Error("failed to close ssh session", "error", err)
 		}
-		return nil, fmt.Errorf("start command: %w", err)
+		if c.Dial == nil {
+			if err := client.Close(); err != nil {
+				slog.Error("failed to close ssh client", "error", err)
+			}
+		}
+		return nil, errors.Join(ErrStartCommandFailed, err)
 	}
 
 	c.client = client
@@ -149,6 +169,9 @@ func (c *Command) Wait() error {
 	errWait := c.session.Wait()
 	if c.client != nil && c.Dial == nil {
 		errClose := c.client.Close()
+		if errClose != nil {
+			slog.Error("failed to close ssh client during wait", "error", errClose)
+		}
 		if errWait == nil {
 			return errClose
 		}
@@ -158,7 +181,9 @@ func (c *Command) Wait() error {
 
 func (c *Command) Abort() error {
 	if c.session != nil {
-		_ = c.session.Close()
+		if err := c.session.Close(); err != nil {
+			slog.Error("failed to close ssh session during abort", "error", err)
+		}
 	}
 	if c.client != nil && c.Dial == nil {
 		return c.client.Close()

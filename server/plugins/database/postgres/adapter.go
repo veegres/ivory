@@ -12,7 +12,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -343,7 +343,9 @@ func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []
 		return err
 	}
 
-	defer rows.Close()
+	defer func() {
+		rows.Close()
+	}()
 	if parse != nil {
 		errParse := parse(rows, conn.TypeMap(), connUrl)
 		if errParse != nil {

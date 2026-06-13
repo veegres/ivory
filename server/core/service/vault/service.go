@@ -1,13 +1,16 @@
 package vault
 
 import (
-	"fmt"
+	"errors"
 	"ivory/clients/console/ssh"
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
 
 	"github.com/google/uuid"
 )
+
+var ErrVaultUsernameIsEmpty = errors.New("vault username is empty")
+var ErrVaultSecretIsEmpty = errors.New("vault secret is empty")
 
 type Service struct {
 	vaultRepository *Repository
@@ -144,7 +147,7 @@ func (s *Service) hideSecrets(vaultMap VaultMap) VaultMap {
 
 func (s *Service) generateVaultByType(vault Vault) (string, *string, error) {
 	if vault.Username == "" {
-		return "", nil, fmt.Errorf("vault username is empty")
+		return "", nil, ErrVaultUsernameIsEmpty
 	}
 	switch vault.Type {
 	case SSH_KEY:
@@ -158,8 +161,8 @@ func (s *Service) generateVaultByType(vault Vault) (string, *string, error) {
 		}
 		return encryptedSecret, &pubKey, nil
 	default:
-		if vault.Username == "" {
-			return "", nil, fmt.Errorf("vault secret is empty")
+		if vault.Secret == "" {
+			return "", nil, ErrVaultSecretIsEmpty
 		}
 		encryptedSecret, errEnc := s.encryption.Encrypt(vault.Secret, s.secretService.Get())
 		if errEnc != nil {
