@@ -3,7 +3,7 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	"ivory/core/config"
+	env "ivory/core/config"
 	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/features/node"

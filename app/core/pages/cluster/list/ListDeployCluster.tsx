@@ -65,9 +65,10 @@ export function ListDeployCluster(props: Props) {
     const [parallel, setParallel] = useState(false)
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
-    const {mutate, isPending} = useRouterClusterDeploy(setResponse)
+    const deploy = useRouterClusterDeploy(setResponse)
 
     const imageOptionsStr = useMemo(() => dev ? image.optionDevStr : image.optionStr, [dev, image.optionDevStr, image.optionStr])
+
     const handleImageUpdate = useCallback(handleCallImageUpdate, [])
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
@@ -100,10 +101,10 @@ export function ListDeployCluster(props: Props) {
             </DialogButton>
         </Access>
     )
-    
+
     function renderActions() {
         return (
-            <Button fullWidth={true} loading={isPending} onClick={handleDeploy} disabled={!cluster || !!response}>
+            <Button fullWidth={true} loading={deploy.isPending} onClick={handleDeploy} disabled={!cluster || !!response}>
                 Deploy
             </Button>
         )
@@ -121,9 +122,9 @@ export function ListDeployCluster(props: Props) {
                         `}
                         button={<Checkbox
                             size={"small"}
-                            checked={dev}
+                            checked={parallel}
                             color={"default"}
-                            onChange={(_, c) => handleSingleHostUpdate(c)}
+                            onChange={(_, c) => setParallel(c)}
                         />}
                     />
                     <ListItem
@@ -134,9 +135,9 @@ export function ListDeployCluster(props: Props) {
                         `}
                         button={<Checkbox
                             size={"small"}
-                            checked={parallel}
+                            checked={dev}
                             color={"default"}
-                            onChange={(_, c) => setParallel(c)}
+                            onChange={(_, c) => handleSingleHostUpdate(c)}
                         />}
                     />
                 </List>
@@ -371,7 +372,7 @@ export function ListDeployCluster(props: Props) {
                 return [node, opt]
             })
         )
-        mutate({
+        deploy.mutate({
             uri: image.uri,
             parallel: parallel,
             nodeRawOptions: imageOptionsSmallKeys,
