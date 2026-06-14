@@ -98,6 +98,11 @@ export const NodeApi = {
             fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/stop", request)
                 .then((response) => response.data.response),
         },
+        restart: {
+            key: () =>  ["node", "platform", "container", "restart"],
+            fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/restart", request)
+                .then((response) => response.data.response),
+        },
         down: {
             key: () =>  ["node", "platform", "container", "down"],
             fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/down", request)

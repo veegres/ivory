@@ -26,6 +26,10 @@ func (r *Router) PostPlatformContainerStop(context *gin.Context) {
 	handlePlatformBodyRequest(context, r.service.PlatformContainerStop)
 }
 
+func (r *Router) PostPlatformContainerRestart(context *gin.Context) {
+	handlePlatformBodyRequest(context, r.service.PlatformContainerRestart)
+}
+
 func (r *Router) GetPlatformContainerList(context *gin.Context) {
 	handlePlatformParamRequest(context, r.service.PlatformContainerList)
 }

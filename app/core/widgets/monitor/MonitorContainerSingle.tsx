@@ -1,9 +1,10 @@
-import {Close, PlayArrow, Rocket, Stop} from "@mui/icons-material"
+import {Close, PlayArrow, Replay, Stop} from "@mui/icons-material"
 import {Box, Divider} from "@mui/material"
 
 import {
     useRouterNodePlatformDown,
     useRouterNodePlatformLogs,
+    useRouterNodePlatformRestart,
     useRouterNodePlatformStart,
     useRouterNodePlatformStop,
 } from "../../../features/node/hook"
@@ -36,6 +37,7 @@ export function MonitorContainerSingle(props: Props) {
 
     const start = useRouterNodePlatformStart(connection)
     const stop = useRouterNodePlatformStop(connection)
+    const restart = useRouterNodePlatformRestart(connection)
     const down = useRouterNodePlatformDown(connection)
 
     return (
@@ -71,6 +73,16 @@ export function MonitorContainerSingle(props: Props) {
                         loading={stop.isPending}
                         onClick={() => stop.mutate({connection, name})}
                         description={"This will stop the container."}
+                    />
+                    <AlertButton
+                        color={"inherit"}
+                        variant={"outlined"}
+                        label={<Replay fontSize={"small"}/>}
+                        title={"Restart container"}
+                        tooltip={"Restart container"}
+                        loading={restart.isPending}
+                        onClick={() => restart.mutate({connection, name})}
+                        description={"This will restart the container."}
                     />
                     <AlertButton
                         color={"inherit"}

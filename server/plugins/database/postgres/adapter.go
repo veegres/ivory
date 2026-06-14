@@ -484,13 +484,13 @@ func (a *Adapter) getConnection(ctx database.Context) (*pgx.Conn, string, error)
 func (a *Adapter) closeConnection(conn *pgx.Conn, ctx context.Context) {
 	err := conn.Close(ctx)
 	if err != nil {
-		slog.Warn("postgres close connection", err)
+		slog.Warn("postgres close connection", "error", err)
 	}
 }
 
 func (a *Adapter) closeTransaction(tx pgx.Tx, txCtx context.Context) {
 	err := tx.Rollback(txCtx)
 	if err != nil {
-		slog.Warn("postgres rollback", err)
+		slog.Warn("postgres rollback", "error", err)
 	}
 }

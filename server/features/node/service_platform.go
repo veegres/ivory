@@ -31,6 +31,14 @@ func (s *Service) PlatformContainerStop(r PlatformActionRequest) ([]string, erro
 	return s.executeCommand(adapter.StopContainer(conn, r.Name))
 }
 
+func (s *Service) PlatformContainerRestart(r PlatformActionRequest) ([]string, error) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	if err != nil {
+		return nil, err
+	}
+	return s.executeCommand(adapter.RestartContainer(conn, r.Name))
+}
+
 func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, error) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {

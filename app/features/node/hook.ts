@@ -142,6 +142,16 @@ export function useRouterNodePlatformStop(connection: PlatformConnection) {
     })
 }
 
+export function useRouterNodePlatformRestart(connection: PlatformConnection) {
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    return useMutationAdapter({
+        mutationFn: NodeApi.deployment.restart.fn,
+        mutationKey: NodeApi.deployment.restart.key(),
+        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
+    })
+}
+
 export function useRouterNodePlatformDown(connection: PlatformConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []

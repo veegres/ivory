@@ -60,6 +60,10 @@ func (a *Adapter) StopContainer(connection platform.Connection, name string) con
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop "+name))
 }
 
+func (a *Adapter) RestartContainer(connection platform.Connection, name string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("restart "+name))
+}
+
 func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
 	commandStr := "logs "
 	if tail > 0 {
