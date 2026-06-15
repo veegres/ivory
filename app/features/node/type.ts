@@ -59,15 +59,28 @@ export interface PlatformCopyIdRequest {
     host: string,
     port: number,
     username: string,
-    password?: string,
+    password: string,
     publicKey: string,
 }
 
 export interface PlatformUpRequest {
-    connection: PlatformConnection,
-    image: string,
     name: string,
-    options?: string,
+    image: string,
+    connection: PlatformConnection,
+    vaults: {
+        databaseId: string,
+        sshKeyId: string,
+    },
+    imageOptions: ImageOptions,
+    rawImageOptions: string,
+}
+
+export interface ImageOptions {
+    cluster: string,
+    dcs: string,
+    host: string,
+    keeperPort: number,
+    dbPort: number,
 }
 
 export interface PlatformLogsRequest {

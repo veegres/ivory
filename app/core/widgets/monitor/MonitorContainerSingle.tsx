@@ -10,9 +10,10 @@ import {
 } from "../../../features/node/hook"
 import {PlatformConnection} from "../../../features/node/type"
 import {AlertButton} from "../../../shared/component/button/AlertButton"
-import {SimpleButton} from "../../../shared/component/button/SimpleButton"
 import {SxPropsMap} from "../../../shared/helper/type"
+import {useStore} from "../../../shared/provider/StoreProvider"
 import {Logs} from "../logs/Logs"
+import {MonitorContainerDeploy} from "./MonitorContainerDeploy"
 
 const SX: SxPropsMap = {
     single: {display: "flex", flexDirection: "column", gap: 0.5, padding: "0px 5px"},
@@ -32,6 +33,8 @@ export function MonitorContainerSingle(props: Props) {
     const {connection} = props
     const name = connection.host
 
+    const activeCluster = useStore(s => s.activeCluster)
+
     const request = {connection, name, tail: 50, follow: true}
     const logs = useRouterNodePlatformLogs(request)
 
@@ -46,20 +49,13 @@ export function MonitorContainerSingle(props: Props) {
             <Box sx={SX.head}>
                 <Box sx={SX.name}>{connection.host}</Box>
                 <Box sx={SX.action}>
-                    <SimpleButton
-                        size={"small"}
-                        loading={false}
-                        onClick={() => {}}
-                        disabled={true}
-                    >
-                        <Rocket fontSize={"small"}/>
-                    </SimpleButton>
+                    {activeCluster && <MonitorContainerDeploy connection={connection} cluster={activeCluster}/>}
                     <AlertButton
                         color={"inherit"}
                         variant={"outlined"}
                         label={<PlayArrow fontSize={"small"}/>}
                         title={"Start container"}
-                        tooltip={"Start container"}
+                        tooltip={"START CONTAINER"}
                         loading={start.isPending}
                         onClick={() => start.mutate({connection, name})}
                         description={"This will start the container."}
@@ -67,19 +63,9 @@ export function MonitorContainerSingle(props: Props) {
                     <AlertButton
                         color={"inherit"}
                         variant={"outlined"}
-                        label={<Stop fontSize={"small"}/>}
-                        title={"Stop container"}
-                        tooltip={"Stop container"}
-                        loading={stop.isPending}
-                        onClick={() => stop.mutate({connection, name})}
-                        description={"This will stop the container."}
-                    />
-                    <AlertButton
-                        color={"inherit"}
-                        variant={"outlined"}
                         label={<Replay fontSize={"small"}/>}
                         title={"Restart container"}
-                        tooltip={"Restart container"}
+                        tooltip={"RESTART CONTAINER"}
                         loading={restart.isPending}
                         onClick={() => restart.mutate({connection, name})}
                         description={"This will restart the container."}
@@ -87,9 +73,19 @@ export function MonitorContainerSingle(props: Props) {
                     <AlertButton
                         color={"inherit"}
                         variant={"outlined"}
+                        label={<Stop fontSize={"small"}/>}
+                        title={"Stop container"}
+                        tooltip={"STOP CONTAINER"}
+                        loading={stop.isPending}
+                        onClick={() => stop.mutate({connection, name})}
+                        description={"This will stop the container."}
+                    />
+                    <AlertButton
+                        color={"inherit"}
+                        variant={"outlined"}
                         label={<Close fontSize={"small"}/>}
                         title={"Remove container"}
-                        tooltip={"Stop container"}
+                        tooltip={"REMOVE CONTAINER"}
                         loading={down.isPending}
                         onClick={() => down.mutate({connection, name})}
                         description={"This will remove container service. But you need first to stop it."}

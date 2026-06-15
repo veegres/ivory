@@ -56,12 +56,13 @@ export interface Overview {
     features: Feature[],
 }
 
-
 export interface ImageConfig {
-    cluster: string, dcs: string,
-    dbPass: string, dbUser: string,
-    sshPass: string, sshUser: string,
+    cluster: string,
+    dcs: string,
+    dbPass: string,
+    dbUser: string,
 }
+
 export interface DeployRequest {
     uri: string,
     parallel: boolean

@@ -2,7 +2,6 @@ package node
 
 import (
 	"crypto/tls"
-	"errors"
 	"ivory/core/config"
 	"ivory/core/service/cert"
 	"ivory/core/service/job"
@@ -11,8 +10,6 @@ import (
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 )
-
-var ErrSshKeyNotSpecified = errors.New("ssh key is not specified")
 
 type Service struct {
 	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter]
@@ -86,10 +83,7 @@ func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config
 }
 
 func (s *Service) getPlatformVaultConnection(c PlatformVaultConnection) (platform.Connection, error) {
-	if c.VaultId == nil {
-		return platform.Connection{}, ErrSshKeyNotSpecified
-	}
-	cred, err := s.vaultService.GetDecrypted(*c.VaultId)
+	cred, err := s.vaultService.GetDecrypted(c.VaultId)
 	if err != nil {
 		return platform.Connection{}, err
 	}

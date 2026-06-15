@@ -243,8 +243,7 @@ export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) =
 }
 
 export const InterpolatedOptionsKeys = [
-    "cluster", "dcs", "dbPass", "dbUser", "sshPass", "sshUser",
-    "host", "sshPort", "keeperPort", "dbPort",
+    "cluster", "host", "keeperPort", "dbPort", "dbUser", "dbPass", "dcs",
 ] as const satisfies readonly (keyof InterpolatedOptions)[]
 export const getInterpolatedImageOptions = (template: string, values: InterpolatedOptions) => {
     return template.replace(

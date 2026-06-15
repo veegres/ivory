@@ -14,6 +14,16 @@ export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
     return {isFetching: loading, data: response}
 }
 
+export function useRouterNodePlatformUp(connection: PlatformConnection) {
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    return useMutationAdapter({
+        mutationFn: NodeApi.deployment.up.fn,
+        mutationKey: NodeApi.deployment.up.key(),
+        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
+    })
+}
+
 export function useRouterNodePlatformList(request: PlatformConnection) {
     return useQuery({
         queryKey: NodeApi.deployment.list.key(request),

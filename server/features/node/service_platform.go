@@ -1,12 +1,18 @@
 package node
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
 	"ivory/clients/console"
 	"ivory/core/service/job"
 	"ivory/plugins/platform"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
-func (s *Service) PlatformCopyId(r PlatformCopyIdRequest) (string, error) {
+func (s *Service) PlatformVmCopyId(r PlatformCopyIdRequest) (string, error) {
 	adapter, err := s.platformRegistry.Get(platform.Onprem)
 	if err != nil {
 		return "", err
@@ -15,7 +21,7 @@ func (s *Service) PlatformCopyId(r PlatformCopyIdRequest) (string, error) {
 	return "ok", adapter.CopyId(con, r.PublicKey)
 }
 
-func (s *Service) PlatformMetrics(r PlatformMetricsRequest) (*PlatformMetricsResponse, error) {
+func (s *Service) PlatformVmMetrics(r PlatformMetricsRequest) (*PlatformMetricsResponse, error) {
 	adapter, conn, err := s.getPlatformAdapter(r)
 	if err != nil {
 		return nil, err
@@ -47,13 +53,60 @@ func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, err
 	return s.executeCommand(adapter.StartContainer(conn, r.Name))
 }
 
-func (s *Service) PlatformContainerUp(r PlatformUpRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
+func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
+	if r.Connection.Host == "" {
+		return nil, errors.New("host is empty")
+	}
+
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
-		send(job.Message{Type: job.SERVER, Message: err.Error()})
-		return
+		return nil, err
 	}
-	s.streamCommand(adapter.UpContainer(conn, r.Options, r.Image), subscriberID, close, send)
+
+	values := ImageOptions{}
+	values.Host = r.Connection.Host
+	values.Cluster = r.ImageOptions.Cluster
+	values.Dcs = r.ImageOptions.Dcs
+	values.KeeperPort = strconv.Itoa(r.ImageOptions.KeeperPort)
+	values.DbPort = strconv.Itoa(r.ImageOptions.DbPort)
+
+	// 1. Handle DB Password
+	dbCred, errDb := s.vaultService.GetDecrypted(r.Vaults.DatabaseId)
+	if errDb != nil {
+		return nil, fmt.Errorf("failed to get database credentials from vault: %v", errDb)
+	}
+	values.DbUser = dbCred.Username
+	values.DbPass = dbCred.Secret
+
+	interpolatedString, errString := s.getInterpolatedString(r.RawImageOptions, values)
+	if errString != nil {
+		return nil, errString
+	}
+	options := s.normalizeDatabaseOptions(interpolatedString)
+
+	return s.executeCommand(adapter.UpContainer(conn, options, r.Image))
+}
+
+func (s *Service) normalizeDatabaseOptions(options string) string {
+	return strings.Join(strings.Fields(options), " ")
+}
+
+func (s *Service) getInterpolatedString(template string, values ImageOptions) (string, error) {
+	// 1. Convert struct to JSON bytes
+	bytes, _ := json.Marshal(values)
+	// 2. Unmarshal bytes into a map
+	var resultMap map[string]string
+	err := json.Unmarshal(bytes, &resultMap)
+	if err != nil {
+		return "", err
+	}
+	return regexp.MustCompile(`{{(\w+)}}`).ReplaceAllStringFunc(template, func(match string) string {
+		key := match[2 : len(match)-2]
+		if val, ok := resultMap[key]; ok {
+			return val
+		}
+		return match
+	}), nil
 }
 
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {

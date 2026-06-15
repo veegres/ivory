@@ -1,4 +1,4 @@
-package cluster
+package node
 
 import (
 	"testing"
@@ -46,24 +46,24 @@ func TestService_normalizeDatabaseOptions(t *testing.T) {
 func TestService_getInterpolatedStringDeployKeys(t *testing.T) {
 	s := &Service{}
 
-	values := map[string]string{
-		"cluster":    "main",
-		"dcs":        "etcd1:2379",
-		"host":       "db1",
-		"sshPort":    "22",
-		"keeperPort": "8008",
-		"dbPort":     "5432",
-		"dbUser":     "postgres",
-		"dbPass":     "secret",
-		"sshUser":    "root",
-		"sshPass":    "root-secret",
+	values := ImageOptions{
+		Cluster:    "main",
+		Dcs:        "etcd1:2379",
+		Host:       "db1",
+		DbUser:     "postgres",
+		DbPass:     "secret",
+		KeeperPort: "8008",
+		DbPort:     "5432",
 	}
 
-	got := s.getInterpolatedString(
-		"{{cluster}} {{dcs}} {{host}} {{sshPort}} {{keeperPort}} {{dbPort}} {{dbUser}} {{dbPass}} {{sshUser}} {{sshPass}}",
+	got, err := s.getInterpolatedString(
+		"{{cluster}} {{dcs}} {{host}} {{keeperPort}} {{dbPort}} {{dbUser}} {{dbPass}}",
 		values,
 	)
-	want := "main etcd1:2379 db1 22 8008 5432 postgres secret root root-secret"
+	if err != nil {
+		t.Fatalf("getInterpolatedString failed: %v", err)
+	}
+	want := "main etcd1:2379 db1 8008 5432 postgres secret"
 	if got != want {
 		t.Errorf("getInterpolatedString() = %q, want %q", got, want)
 	}

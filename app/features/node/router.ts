@@ -86,8 +86,11 @@ export const NodeApi = {
             url: (request: PlatformLogsRequest) => `/api/node/platform/container/logs?request=${encodeURIComponent(JSON.stringify(request))}`,
         },
         up: {
-            url: (request: PlatformUpRequest) => `/api/node/platform/container/up?request=${encodeURIComponent(JSON.stringify(request))}`,
+            key: () => ["node", "platform", "container", "up"],
+            fn: (request: PlatformUpRequest) => api.post<R<string[]>>("/node/platform/container/up", request)
+                .then((response) => response.data.response),
         },
+
         start: {
             key: () =>  ["node", "platform", "container", "start"],
             fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/start", request)

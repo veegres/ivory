@@ -19,11 +19,11 @@ type Connection struct {
 }
 
 type Adapter interface {
-	PlatformManager
+	VmManager
 	ContainerManager
 }
 
-type PlatformManager interface {
+type VmManager interface {
 	Metrics(connection Connection) (*Metrics, error)
 	CopyId(connection Connection, publicKey string) error
 }

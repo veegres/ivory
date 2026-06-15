@@ -3,15 +3,15 @@ package node
 import "github.com/gin-gonic/gin"
 
 func (r *Router) GetPlatformMetrics(context *gin.Context) {
-	handlePlatformParamRequest(context, r.service.PlatformMetrics)
+	handlePlatformParamRequest(context, r.service.PlatformVmMetrics)
 }
 
 func (r *Router) PostPlatformCopyId(context *gin.Context) {
-	handlePlatformBodyRequest(context, r.service.PlatformCopyId)
+	handlePlatformBodyRequest(context, r.service.PlatformVmCopyId)
 }
 
-func (r *Router) StreamPlatformContainerUp(context *gin.Context) {
-	handleStreamRequest(context, r.service.PlatformContainerUp)
+func (r *Router) PostPlatformContainerUp(context *gin.Context) {
+	handlePlatformBodyRequest(context, r.service.PlatformContainerUp)
 }
 
 func (r *Router) PostPlatformContainerDown(context *gin.Context) {

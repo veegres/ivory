@@ -42,9 +42,9 @@ type KeeperMultiResponse struct {
 }
 
 type PlatformVaultConnection struct {
-	Host    string     `json:"host" form:"host" binding:"required"`
-	Port    int        `json:"port" form:"port" binding:"required"`
-	VaultId *uuid.UUID `json:"vaultId" form:"vaultId" binding:"required"`
+	Host    string    `json:"host" form:"host" binding:"required"`
+	Port    int       `json:"port" form:"port" binding:"required"`
+	VaultId uuid.UUID `json:"vaultId" form:"vaultId" binding:"required"`
 }
 
 type PlatformCredConnection struct {
@@ -64,10 +64,35 @@ type PlatformCopyIdRequest struct {
 }
 
 type PlatformUpRequest struct {
-	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Image      string                  `json:"image" form:"image" binding:"required"`
-	Name       string                  `json:"name" form:"name" binding:"required"`
-	Options    string                  `json:"options" form:"options"`
+	Name            string                  `json:"name" form:"name" binding:"required"`
+	Image           string                  `json:"image" form:"image" binding:"required"`
+	Connection      PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
+	Vaults          Vaults                  `json:"vaults" form:"vaults" binding:"required"`
+	ImageOptions    ImageOptionsRequest     `json:"imageOptions" form:"imageOptions" binding:"required"`
+	RawImageOptions string                  `json:"rawImageOptions" form:"rawImageOptions" binding:"required"`
+}
+
+type Vaults struct {
+	DatabaseId uuid.UUID `json:"databaseId" binding:"required"`
+	SshKeyId   uuid.UUID `json:"sshKeyId" binding:"required"`
+}
+
+type ImageOptionsRequest struct {
+	Host       string `json:"host" binding:"required"`
+	Cluster    string `json:"cluster" binding:"required"`
+	Dcs        string `json:"dcs" binding:"required"`
+	KeeperPort int    `json:"keeperPort" binding:"required"`
+	DbPort     int    `json:"dbPort" binding:"required"`
+}
+
+type ImageOptions struct {
+	Host       string `json:"host"`
+	Cluster    string `json:"cluster"`
+	Dcs        string `json:"dcs"`
+	DbPass     string `json:"dbPass"`
+	DbUser     string `json:"dbUser"`
+	KeeperPort string `json:"keeperPort"`
+	DbPort     string `json:"dbPort"`
 }
 
 type PlatformLogsRequest struct {

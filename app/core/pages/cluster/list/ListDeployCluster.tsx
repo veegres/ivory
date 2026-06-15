@@ -29,7 +29,10 @@ import {OptionsVault} from "../../../widgets/options/OptionsVault"
 import {ListNodeInput} from "./ListNodeInput"
 
 const SX: SxPropsMap = {
-    note: {display: "flex", justifyContent: "center", alignItems: "center", color: "text.disabled", fontSize: 12, flexWrap: "wrap", gap: 0.5},
+    note: {
+        display: "flex", justifyContent: "center", alignItems: "center",
+        color: "text.disabled", fontSize: 12, flexWrap: "wrap", gap: 0.5,
+    },
     between: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
     subContent: {display: "flex", flexDirection: "column"},
     toggleButton: {padding: "0px 10px"},
@@ -79,7 +82,7 @@ export function ListDeployCluster(props: Props) {
     const imageOptionEntries = useMemo(handleMemoImageOptionEntries, [imageOptions])
     const imageInterpolatedOptions = useMemo(
         handleMemoImageInterpolatedOptions,
-        [imageOptionEntries, cluster, dbCred, dcs, sshCred, preview]
+        [imageOptionEntries, cluster, dbCred, dcs, preview]
     )
 
     return (
@@ -94,7 +97,7 @@ export function ListDeployCluster(props: Props) {
                 {response ? <Logs logs={response} height={600} auto={false}/> : (
                     <Box sx={SX.subContent} gap={1}>
                         {renderMandatoryFields()}
-                        {renderDatabaseImage()}
+                        {renderImageOptions()}
                         {renderClusterOptions()}
                     </Box>
                 )}
@@ -161,12 +164,12 @@ export function ListDeployCluster(props: Props) {
                 </TitledBox>
                 {renderSshInputs()}
                 {renderDbInputs()}
-                {renderImageOptions()}
+                {renderMandatoryOptions()}
             </Box>
         )
     }
 
-    function renderImageOptions() {
+    function renderMandatoryOptions() {
         if (image.defaultValues["dcs"]) return
         return (
             <TitledBox title={"Mandatory Options"} island={true}>
@@ -266,13 +269,13 @@ export function ListDeployCluster(props: Props) {
         )
     }
 
-    function renderDatabaseImage() {
+    function renderImageOptions() {
         return (
-            <SubContentBox label={"Database Options"} island={true}>
+            <SubContentBox label={"Image Options"} island={true}>
                 <Box sx={SX.subContent} gap={2}>
                     <Box sx={SX.between}>
                         <TextField
-                            fullWidth
+                            fullWidth={true}
                             size={"small"}
                             label={"Image"}
                             value={image.uri}
@@ -288,10 +291,12 @@ export function ListDeployCluster(props: Props) {
                         </ToggleButtonGroup>
                     </Box>
                     <Box sx={SX.note}>
-                        <Box>Use interpolated options to automatically populate values -</Box>
-                        {InterpolatedOptionsKeys.map(k => (
-                            <Code key={k} sx={{fontSize: "11px"}}>{`{{${k}}}`}</Code>
-                        ))}
+                        <Box>Use interpolated options to automatically populate values</Box>
+                        <Box sx={SX.note}>
+                            {InterpolatedOptionsKeys.map(k => (
+                                <Code key={k} sx={{fontSize: "11px"}}>{`{{${k}}}`}</Code>
+                            ))}
+                        </Box>
                     </Box>
                     {imageOptionEntries.length === 0 ? (
                         <Box sx={SX.note}>Start by adding nodes – image options will appear here</Box>
@@ -329,8 +334,8 @@ export function ListDeployCluster(props: Props) {
         return Object.fromEntries(imageOptionEntries.map(([nodeFull, opt]) => {
             const [host, keeperPort, dbPort] = nodeFull.split(":")
             return [nodeFull, getInterpolatedImageOptions(opt, {
-                cluster: cluster, host, keeperPort: Number(keeperPort), dbPort: Number(dbPort), dcs,
-                dbUser: dbCred.username, dbPass: dbCred.password, sshPass: sshCred.password, sshUser: sshCred.username
+                cluster: cluster, host: host, keeperPort: Number(keeperPort), dcs,
+                dbPort: Number(dbPort), dbUser: dbCred.username, dbPass: dbCred.password,
             })]
         }))
     }
@@ -380,7 +385,6 @@ export function ListDeployCluster(props: Props) {
             commonConfig: {
                 cluster, dcs,
                 dbUser: dbCred.username, dbPass: dbCred.password,
-                sshUser: sshCred.username, sshPass: sshCred.password,
             },
             clusterOptions: options,
         })

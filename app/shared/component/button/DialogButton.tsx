@@ -1,10 +1,11 @@
 import {ArrowBack} from "@mui/icons-material"
-import {Box, Dialog, DialogActions, DialogTitle, IconButton as MuiIconButton} from "@mui/material"
+import {Box, Dialog, DialogActions, DialogTitle, IconButton as MuiIconButton, Tooltip} from "@mui/material"
 import {SvgIconProps} from "@mui/material"
 import {ReactElement, ReactNode, useEffect, useState} from "react"
 
 import {SxPropsMap} from "../../helper/type"
 import {CloseIconButton, IconButton} from "./IconButtons"
+import {SimpleButton} from "./SimpleButton"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
@@ -27,17 +28,27 @@ type Props = {
     size?: number,
     back?: boolean,
     onBackClick?: () => void,
+    variant?: "outlined" | "icon",
 }
 
 export function DialogButton(props: Props) {
-    const {children, renderActions, title, icon, size, back, onBackClick} = props
+    const {children, renderActions, title, icon, size, back, onBackClick, variant = "icon"} = props
     const [open, setOpen] = useState(false)
 
     useEffect(handleEffectClose, [onBackClick, open])
     
     return (
         <Box>
-            <IconButton tooltip={title} icon={icon} size={size} onClick={() => setOpen(true)}/>
+            {variant === "outlined" ? (
+                <Tooltip title={title} arrow={true} placement={"top"}>
+                    <SimpleButton
+                        sx={{height: `${size}px`, width: `${size}px`}}
+                        onClick={() => setOpen(true)}
+                    >{icon}</SimpleButton>
+                </Tooltip>
+            ) : (
+                <IconButton tooltip={title} icon={icon} size={size} onClick={() => setOpen(true)}/>
+            )}
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.title}>
                     <MuiIconButton disableRipple={!back} onClick={onBackClick}>

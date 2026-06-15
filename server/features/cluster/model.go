@@ -73,22 +73,21 @@ type CreateAutoRequest struct {
 	Options
 }
 
-type ImageConfig struct {
-	Cluster string `json:"cluster"`
-	Dcs     string `json:"dcs"`
-	DbPass  string `json:"dbPass"`
-	DbUser  string `json:"dbUser"`
-	SshPass string `json:"sshPass"`
-	SshUser string `json:"sshUser"`
+type DeployRequest struct {
+	Uri                 string            `json:"uri"`
+	Parallel            bool              `json:"parallel"`
+	NodeConfig          []NodeConfig      `json:"nodeConfig"`
+	CommonConfig        CommonConfig      `json:"commonConfig"`
+	NodeRawImageOptions map[string]string `json:"nodeRawImageOptions"`
+	ClusterOptions      Options           `json:"clusterOptions"`
 }
 
-type DeployRequest struct {
-	Uri            string            `json:"uri"`
-	Parallel       bool              `json:"parallel"`
-	NodeRawOptions map[string]string `json:"nodeRawOptions"`
-	NodeConfig     []NodeConfig      `json:"nodeConfig"`
-	CommonConfig   ImageConfig       `json:"commonConfig"`
-	ClusterOptions Options           `json:"clusterOptions"`
+type CommonConfig struct {
+	node.ImageOptionsRequest
+	SshUser string `json:"sshUser"`
+	SshPass string `json:"sshPass"`
+	DbUser  string `json:"dbUser"`
+	DbPass  string `json:"dbPass"`
 }
 
 // SPECIFIC (SERVER)
