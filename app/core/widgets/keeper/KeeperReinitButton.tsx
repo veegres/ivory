@@ -18,7 +18,7 @@ type Props = {
     cluster: string,
 }
 
-export function ReinitButton(props: Props) {
+export function KeeperReinitButton(props: Props) {
     const {request, cluster} = props
     const [force, setForce] = useState(false)
     const reinit = useRouterNodeReinit(cluster)

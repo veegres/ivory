@@ -1,21 +1,16 @@
-import {Alert, Box, Collapse, Divider, Link, Tab, Tabs} from "@mui/material"
+import {Alert, Box, Collapse, Divider, Tab, Tabs} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {useRouterClusterList, useRouterClusterOverview} from "../../../../features/cluster/hook"
-import {ClusterTab} from "../../../../features/cluster/type"
 import {Feature} from "../../../../features/feature"
-import {useRouterInfo} from "../../../../features/management/hook"
-import {Status} from "../../../../features/permission/type"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
-import {ErrorMainNodeMissing} from "../../../../shared/component/box/ErrorManual"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getMainKeeper} from "../../../../shared/helper/utils"
-import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
+import {useStore} from "../../../../shared/provider/StoreProvider"
+import {Access} from "../../../widgets/access/Access"
 import {OverviewAction} from "./OverviewAction"
-import {OverviewBloat} from "./OverviewBloat"
-import {OverviewConfig} from "./OverviewConfig"
 import {OverviewNodes} from "./OverviewNodes"
 import {OverviewOptions} from "./OverviewOptions"
 
@@ -31,109 +26,46 @@ const SX: SxPropsMap = {
     collapse: {height: "100%"},
 }
 
-const TABS: ClusterTab[] = [
-    {
-        label: "Overview",
-        feature: Feature.ViewNodeDbOverview,
-        body: (cluster, _, nodes) => <OverviewNodes cluster={cluster} nodes={nodes}/>,
-        info: <>
-            The Overview tab offers visibility into the current status of your cluster. From here, you can
-            utilize essential features to manage your cluster, including switchover, reinit, restart, reload,
-            failover, and more. The leader node is automatically detected by sending requests to each node
-            until a successful connection is established. You have the flexibility to change the main node
-            to which Ivory sends requests by accessing the settings in the top right corner.
-        </>
-    },
-    {
-        label: "Config",
-        feature: Feature.ViewNodeDbConfig,
-        body: (cluster, mainNode) => {
-            if (!mainNode) return <ErrorMainNodeMissing/>
-            return <OverviewConfig cluster={cluster} node={mainNode}/>
-        },
-        info: <>
-            You can adjust your PostgreSQL configurations here, and any changes made will be applied to
-            all cluster nodes. Instead of rewriting the entire configuration, it applies a patch
-            update. If you wish to remove a specific setting, simply set it to <b>null</b>. Keep in mind that
-            modifying certain parameters may necessitate restarting PostgreSQL. For further details on how
-            this process functions, refer to
-            the <Link href={"https://patroni.readthedocs.io/en/latest/rest_api.html#config-endpoint"} target={"_blank"}>documentation</Link>.
-        </>
-    },
-    {
-        label: "Bloat",
-        feature: Feature.ViewToolBloatList,
-        body: (cluster, mainNode) => {
-            if (!mainNode) return <ErrorMainNodeMissing/>
-            return <OverviewBloat cluster={cluster} node={mainNode}/>
-        },
-        info: <>
-            Here, you can efficiently decrease the size of bloated tables and indexes without imposing
-            heavy locks. This functionality is powered by
-            the <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link> tool,
-            which is seamlessly integrated with Ivory for streamlined usage. Ivory simplifies visualization
-            and centralizes information about jobs and logs within each cluster, ensuring convenient access when
-            needed. It's important to note that this tool can only be executed on the master node, and
-            in the target database, the contrib module pgstattuple must be installed using the command
-            "<b>CREATE EXTENSION IF NOT EXISTS pgstattuple;</b>". Ivory supports such features as:
-            <ul>
-                <li><b>Delay ratio</b> - A dynamic part of the delay between rounds is calculated as previous-round-time * delay-ratio. By default 2.</li>
-                <li><b>Min table size</b> - Tables smaller than the specified size (in megabytes) will be excluded from processing.</li>
-                <li><b>Max table size</b> - Tables larger than the specified size (in megabytes) will be excluded from processing.</li>
-                <li><b>Force</b> - Try to compact even those tables and indexes that do not meet minimal bloat requirements.</li>
-                <li><b>Routing vacuum</b> - Turn on the routine vacuum. By default all the vacuums are off.</li>
-                <li><b>No initial vacuum</b> - Turn off initial vacuum before table processing.</li>
-                <li><b>Initial reindex</b> - Perform an initial reindex of tables before processing.</li>
-                <li><b>No reindex</b> - Turn off reindexing of tables after processing.</li>
-            </ul>
-        </>
-    },
-]
-
 export function Overview() {
-    const {setClusterTab} = useStoreAction
     const activeTags = useStore(s => s.activeTags)
     const activeCluster = useStore(s => s.activeCluster)
-    const activeClusterTab = useStore(s => s.activeClusterTab)
     const manualKeeper = useStore(s => s.manualKeeper)
 
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
 
-    const info = useRouterInfo(false)
-    const permissions = info.data?.auth.user?.permissions
-
     const clusters = useRouterClusterList(activeTags, false)
     const overview = useRouterClusterOverview(activeCluster?.name, false)
 
-    const [mainDomain, mainNode] = useMemo(() => getMainKeeper(overview.data?.nodes, manualKeeper), [overview.data?.nodes, manualKeeper])
-    const tab = TABS[activeClusterTab]
+    const [mainDomain, mainNode] = useMemo(
+        () => getMainKeeper(overview.data?.nodes, manualKeeper),
+        [overview.data?.nodes, manualKeeper],
+    )
 
     return (
-        <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
-            <Box sx={SX.headBox}>
-                <Tabs value={activeClusterTab} onChange={(_, value) => setClusterTab(value)} role={"tab"}>
-                    {TABS.map((value, i) => permissions && permissions[value.feature] === Status.GRANTED && (
-                        <Tab key={i} value={i} label={value.label}/>
-                    ))}
-                </Tabs>
-                {renderActions()}
-            </Box>
-            <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
-            <Box sx={SX.mainBox}>
-                <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
-                <Box>{renderSettingsBlock()}</Box>
-            </Box>
-        </PageMainBox>
+        <Access feature={Feature.ViewNodeDbOverview}>
+            <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
+                <Box sx={SX.headBox}>
+                    <Tabs value={0} role={"tab"}>
+                        <Tab value={0} label={"Overview"}/>
+                    </Tabs>
+                    {renderActions()}
+                </Box>
+                <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
+                <Box sx={SX.mainBox}>
+                    <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
+                    <Box>{renderSettingsBlock()}</Box>
+                </Box>
+            </PageMainBox>
+        </Access>
     )
 
     function renderMainBlock() {
         if (!activeCluster) return <AlertCentered text={"Please, select a cluster to see the overview! (click on the name)"}/>
         if (!activeCluster) return <AlertCentered text={"Selected cluster in not in the list"} severity={"warning"}/>
-        if (!tab) return <AlertCentered text={"Coming soon — we're working on it!"}/>
         return <>
             {overview.error && <ErrorSmart error={overview.error}/>}
-            {tab.body(activeCluster, mainNode, overview.data?.nodes)}
+            <OverviewNodes cluster={activeCluster} nodes={overview.data?.nodes}/>
         </>
     }
 
@@ -143,7 +75,6 @@ export function Overview() {
             cluster={activeCluster}
             mainNode={[mainDomain, mainNode]}
             selectInfo={infoOpen}
-            disableInfo={!tab.info}
             toggleInfo={() => setInfoOpen(!infoOpen)}
             selectOptions={settingsOpen}
             toggleOptions={() => setSettingsOpen(!settingsOpen)}
@@ -151,12 +82,23 @@ export function Overview() {
     }
 
     function renderInfoBlock() {
-        if (!tab?.info) return
         return (
             <Collapse in={infoOpen}>
-                <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{tab.info}</Alert>
+                <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{renderInfo()}</Alert>
                 <Divider sx={SX.dividerHorizontal} orientation={"horizontal"} flexItem/>
             </Collapse>
+        )
+    }
+
+    function renderInfo() {
+        return (
+            <>
+                The Overview tab offers visibility into the current status of your cluster. From here, you can
+                utilize essential features to manage your cluster, including switchover, reinit, restart, reload,
+                failover, and more. The leader node is automatically detected by sending requests to each node
+                until a successful connection is established. You have the flexibility to change the main node
+                to which Ivory sends requests by accessing the settings in the top right corner.
+            </>
         )
     }
 

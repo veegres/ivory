@@ -5,6 +5,7 @@ import {ReactNode, useState} from "react"
 import {NodeTabType} from "../../../../features/node/type"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
+import {NODE_TABS} from "./NodeMainTabs"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},
@@ -28,8 +29,11 @@ export function NodeMainTitle(props: Props) {
         <Box sx={SX.box}>
             <Box sx={SX.title}>
                 <Tabs value={tab} onChange={(_, e) => setNodeBody(e)}>
-                    <Tab value={NodeTabType.MONITOR} label={"Monitor"}/>
-                    <Tab value={NodeTabType.QUERY} label={"Queries"}/>
+                    <Tab value={NodeTabType.PLATFORM} label={NODE_TABS[NodeTabType.PLATFORM].label}/>
+                    <Tab value={NodeTabType.CONTAINER} label={NODE_TABS[NodeTabType.CONTAINER].label}/>
+                    <Tab value={NodeTabType.KEEPER} label={NODE_TABS[NodeTabType.KEEPER].label}/>
+                    <Tab value={NodeTabType.DATABASE} label={NODE_TABS[NodeTabType.DATABASE].label}/>
+                    <Tab value={NodeTabType.TOOLS} label={NODE_TABS[NodeTabType.TOOLS].label}/>
                 </Tabs>
                 <Box flexGrow={1} sx={SX.buttons}>
                     {renderActions}

@@ -20,6 +20,10 @@ export function ErrorKeeperMissing() {
     return <ErrorSmart error={"Provide Keeper Port to work with it"}/>
 }
 
+export function ErrorKeeperRequestMissing() {
+    return <ErrorSmart error={"Cannot parse Keeper Request"}/>
+}
+
 export function ErrorUserInfoMissing() {
     return <ErrorSmart error={"Can't get user info"}/>
 }

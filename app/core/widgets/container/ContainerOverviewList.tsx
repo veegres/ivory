@@ -3,9 +3,9 @@ import {Box} from "@mui/material"
 import {useRouterNodePlatformList} from "../../../features/node/hook"
 import {PlatformConnection} from "../../../features/node/type"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
+import {SkeletonGroup} from "../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../shared/helper/type"
 import scroll from "../../../shared/style/scroll.module.css"
-import {MonitorLoading} from "./MonitorLoading"
 
 const SX: SxPropsMap = {
     list: {
@@ -21,12 +21,12 @@ type Props = {
     connection: PlatformConnection,
 }
 
-export function MonitorContainerList(props: Props) {
+export function ContainerOverviewList(props: Props) {
     const {connection} = props
     const list = useRouterNodePlatformList(connection)
 
     if (list.isError) return <ErrorSmart error={list.error}/>
-    if (list.isPending) return <MonitorLoading count={1}/>
+    if (list.isPending) return <SkeletonGroup count={1}/>
 
     return (
         <Box sx={SX.list} className={scroll.tiny}>

@@ -11,13 +11,13 @@ import {ScheduleInput} from "../../../shared/component/input/ScheduleInput"
 import {Access} from "../access/Access"
 
 type Props = {
-    request: KeeperOneRequest,
     cluster: string,
+    request: KeeperOneRequest,
     candidates: NodeConfig[],
     leaderKey?: string,
 }
 
-export function SwitchoverButton(props: Props) {
+export function KeeperSwitchoverButton(props: Props) {
     const {request, candidates, cluster, leaderKey} = props
 
     const [candidate, setCandidates] = useState<string>()

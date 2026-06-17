@@ -3,16 +3,16 @@ import {Box, CircularProgress, Divider, IconButton, Paper, Tooltip} from "@mui/m
 import {SvgIconProps} from "@mui/material"
 import {cloneElement, ReactElement, useState} from "react"
 
-import {useRouterBloatDelete, useRouterBloatStop} from "../../../../features/bloat/hook"
-import {useRouterBloatJob} from "../../../../features/bloat/job/hook"
-import {Bloat} from "../../../../features/bloat/type"
-import {Feature} from "../../../../features/feature"
-import {OpenIcon} from "../../../../shared/component/icon/OpenIcon"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {getShortUuid} from "../../../../shared/helper/utils"
-import select from "../../../../shared/style/select.module.css"
-import {Access} from "../../../widgets/access/Access"
-import {Logs} from "../../../widgets/logs/Logs"
+import {Feature} from "../../../features/feature"
+import {useRouterBloatDelete, useRouterBloatStop} from "../../../features/pg_compacttable/hook"
+import {useRouterBloatJob} from "../../../features/pg_compacttable/job/hook"
+import {Bloat} from "../../../features/pg_compacttable/type"
+import {OpenIcon} from "../../../shared/component/icon/OpenIcon"
+import {SxPropsMap} from "../../../shared/helper/type"
+import {getShortUuid} from "../../../shared/helper/utils"
+import select from "../../../shared/style/select.module.css"
+import {Access} from "../access/Access"
+import {Logs} from "../logs/Logs"
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
@@ -32,7 +32,7 @@ type Props = {
     refetchList: () => void,
 }
 
-export function OverviewBloatJobItem(props: Props) {
+export function PgCompactTableJobItem(props: Props) {
     const {item, cluster, refetchList} = props
     const {uuid, status: initStatus, command, vaultId} = item
     const [open, setOpen] = useState(false)
@@ -65,7 +65,7 @@ export function OverviewBloatJobItem(props: Props) {
                     <Box>Command</Box>
                     <Box sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>
-                        <Access feature={Feature.ManageToolBloatJob}>
+                        <Access feature={Feature.ManageToolPgCompactTableJob}>
                             {status.active ?
                                 renderJobButton("Stop", <Stop/>, () => stopJob.mutate(uuid), stopJob.isPending) :
                                 renderJobButton("Delete", <Clear/>, () => deleteJob.mutate(uuid), deleteJob.isPending)
@@ -86,7 +86,7 @@ export function OverviewBloatJobItem(props: Props) {
                         <Tooltip title={`Job ID: ${uuid}`}>
                             <Box>{getShortUuid(uuid)}</Box>
                         </Tooltip>
-                        <Access feature={Feature.ViewToolBloatLogs}>
+                        <Access feature={Feature.ViewToolPgCompactTableLogs}>
                             <Tooltip title={"Open"}>
                                 <Box sx={SX.tooltipBox}>
                                     <IconButton sx={SX.button} size={"small"}>

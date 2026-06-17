@@ -36,7 +36,7 @@ type Props = {
     cluster: Cluster,
 }
 
-export function MonitorContainerDeploy(props: Props) {
+export function ContainerOverviewDeploy(props: Props) {
     const {connection, cluster} = props
 
     const [image, setImage] = useState(DatabaseImageOptions[cluster.plugins.keeper])

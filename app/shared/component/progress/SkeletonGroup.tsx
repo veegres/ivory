@@ -1,6 +1,6 @@
 import {Skeleton} from "@mui/material"
 
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
     skeleton: {transform: "unset", flexGrow: 1},
@@ -10,7 +10,7 @@ type Props = {
     count: number
 }
 
-export function MonitorLoading(props: Props) {
+export function SkeletonGroup(props: Props) {
     return (
         <>
             {[...Array(props.count).keys()].map((key) => (

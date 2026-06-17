@@ -13,7 +13,7 @@ import {AlertButton} from "../../../shared/component/button/AlertButton"
 import {SxPropsMap} from "../../../shared/helper/type"
 import {useStore} from "../../../shared/provider/StoreProvider"
 import {Logs} from "../logs/Logs"
-import {MonitorContainerDeploy} from "./MonitorContainerDeploy"
+import {ContainerOverviewDeploy} from "./ContainerOverviewDeploy"
 
 const SX: SxPropsMap = {
     single: {display: "flex", flexDirection: "column", gap: 0.5, padding: "0px 5px"},
@@ -29,7 +29,7 @@ type Props = {
     connection: PlatformConnection,
 }
 
-export function MonitorContainerSingle(props: Props) {
+export function ContainerOverviewMain(props: Props) {
     const {connection} = props
     const name = connection.host
 
@@ -49,7 +49,7 @@ export function MonitorContainerSingle(props: Props) {
             <Box sx={SX.head}>
                 <Box sx={SX.name}>{connection.host}</Box>
                 <Box sx={SX.action}>
-                    {activeCluster && <MonitorContainerDeploy connection={connection} cluster={activeCluster}/>}
+                    {activeCluster && <ContainerOverviewDeploy connection={connection} cluster={activeCluster}/>}
                     <AlertButton
                         color={"inherit"}
                         variant={"outlined"}

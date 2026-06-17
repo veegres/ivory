@@ -53,16 +53,16 @@ export enum Feature {
     ManageCertCreate = "manage.cert.create",
     ManageCertDelete = "manage.cert.delete",
 
-    // Feature management features
+    // Permission management features
     ViewPermissionList = "view.permission.list",
     ManagePermissionUpdate = "manage.permission.update",
     ManagePermissionDelete = "manage.permission.delete",
 
-    // Bloat features
-    ViewToolBloatList = "view.tool.bloat.list",
-    ViewToolBloatItem = "view.tool.bloat.item",
-    ViewToolBloatLogs = "view.tool.bloat.logs",
-    ManageToolBloatJob = "manage.tool.bloat.job",
+    // Tool features
+    ViewToolPgCompactTableList = "view.tool.pg_compacttable.list",
+    ViewToolPgCompactTableItem = "view.tool.pg_compacttable.item",
+    ViewToolPgCompactTableLogs = "view.tool.pg_compacttable.logs",
+    ManageToolPgCompactTableJob = "manage.tool.pg_compacttable.job",
 
     // Management features
     ViewManagementSecret = "view.management.secret",

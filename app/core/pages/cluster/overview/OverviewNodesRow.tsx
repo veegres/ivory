@@ -8,12 +8,12 @@ import {HiddenScrolling} from "../../../../shared/component/scrolling/HiddenScro
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {DateTimeFormatter, getKeeperOneRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/utils"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {FailoverButton} from "../../../widgets/actions/FailoverButton"
-import {ReinitButton} from "../../../widgets/actions/ReinitButton"
-import {ReloadButton} from "../../../widgets/actions/ReloadButton"
-import {RestartButton} from "../../../widgets/actions/RestartButton"
-import {ScheduleButton} from "../../../widgets/actions/ScheduleButton"
-import {SwitchoverButton} from "../../../widgets/actions/SwitchoverButton"
+import {KeeperFailoverButton} from "../../../widgets/keeper/KeeperFailoverButton"
+import {KeeperReinitButton} from "../../../widgets/keeper/KeeperReinitButton"
+import {KeeperReloadButton} from "../../../widgets/keeper/KeeperReloadButton"
+import {KeeperRestartButton} from "../../../widgets/keeper/KeeperRestartButton"
+import {KeeperScheduleButton} from "../../../widgets/keeper/KeeperScheduleButton"
+import {KeeperSwitchoverButton} from "../../../widgets/keeper/KeeperSwitchoverButton"
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},
@@ -128,10 +128,10 @@ export function OverviewNodesRow(props: Props) {
         if (role === "unknown" || !keeperRequest) return
         return (
             <MenuButton>
-                <ScheduleButton request={keeperRequest} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
-                <FailoverButton request={keeperRequest} cluster={cluster.name} disabled={role === "leader"}/>
-                <RestartButton request={keeperRequest} cluster={cluster.name}/>
-                <ReloadButton request={keeperRequest} cluster={cluster.name}/>
+                <KeeperScheduleButton request={keeperRequest} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
+                <KeeperFailoverButton request={keeperRequest} cluster={cluster.name} role={role}/>
+                <KeeperRestartButton request={keeperRequest} cluster={cluster.name}/>
+                <KeeperReloadButton request={keeperRequest} cluster={cluster.name}/>
             </MenuButton>
         )
     }
@@ -139,8 +139,8 @@ export function OverviewNodesRow(props: Props) {
     function renderRoleButtons() {
         if (!keeperRequest) return
         switch (role) {
-            case "replica": return <ReinitButton request={keeperRequest} cluster={cluster.name}/>
-            case "leader": return <SwitchoverButton request={keeperRequest} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
+            case "replica": return <KeeperReinitButton request={keeperRequest} cluster={cluster.name}/>
+            case "leader": return <KeeperSwitchoverButton request={keeperRequest} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
             default: return
         }
     }

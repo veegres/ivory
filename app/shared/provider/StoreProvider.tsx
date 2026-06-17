@@ -9,7 +9,6 @@ import {MainQueryClient} from "./AppProvider"
 // STORE
 interface Store {
     searchCluster: string,
-    activeClusterTab: number,
     activeCluster?: Cluster,
     manualKeeper?: string,
     activeNode: { [cluster: string]: string | undefined },
@@ -28,7 +27,6 @@ interface Store {
 export const useStore = create(persist<Store>(
     () => ({
         searchCluster: "",
-        activeClusterTab: 0,
         activeCluster: undefined,
         manualKeeper: undefined,
         activeNode: {},
@@ -36,7 +34,7 @@ export const useStore = create(persist<Store>(
         warnings: {},
         refresh: {},
         nodeState: {
-            nodeTab: NodeTabType.MONITOR,
+            nodeTab: NodeTabType.CONTAINER,
             queryTab: QueryType.CONSOLE,
             queryConsole: "",
             dbName: undefined,
@@ -50,7 +48,6 @@ export const useStoreAction = {
     setCluster: setCluster,
     setSearchCluster: setClusterSearch,
     setClusterDetection: setClusterKeeper,
-    setClusterTab: setClusterTab,
     setWarnings: setWarnings,
     setNode: setNode,
     setTags: setTags,
@@ -77,10 +74,6 @@ function setClusterKeeper(manualKeeper?: string) {
         if (!s.activeCluster) return s
         return {...s, manualKeeper: manualKeeper}
     })
-}
-
-function setClusterTab(tab: number) {
-    useStore.setState(s => ({...s, activeClusterTab: tab}))
 }
 
 function setWarnings(name: string, warning: boolean) {

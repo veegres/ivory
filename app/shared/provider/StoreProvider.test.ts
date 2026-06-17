@@ -39,7 +39,7 @@ describe("StoreProvider", () => {
             expect(state.activeNode).toEqual({})
             expect(state.activeTags).toEqual(["ALL"])
             expect(state.warnings).toEqual({})
-            expect(state.nodeState.nodeTab).toBe(NodeTabType.MONITOR)
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.CONTAINER)
             expect(state.nodeState.queryTab).toBe(QueryType.CONSOLE)
             expect(state.nodeState.queryConsole).toBe("")
             expect(state.nodeState.dbName).toBeUndefined()
@@ -219,10 +219,10 @@ describe("StoreProvider", () => {
 
     describe("setNodeBody", () => {
         it("should set node body tab", () => {
-            useStoreAction.setNodeBody(NodeTabType.QUERY)
+            useStoreAction.setNodeBody(NodeTabType.DATABASE)
 
             const state = useStore.getState()
-            expect(state.nodeState.nodeTab).toBe(NodeTabType.QUERY)
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.DATABASE)
         })
     })
 

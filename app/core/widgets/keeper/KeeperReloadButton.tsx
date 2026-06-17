@@ -9,7 +9,7 @@ type Props = {
     cluster: string,
 }
 
-export function ReloadButton(props: Props) {
+export function KeeperReloadButton(props: Props) {
     const {request, cluster} = props
     const reload = useRouterNodeReload(cluster)
 

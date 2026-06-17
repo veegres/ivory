@@ -5,8 +5,8 @@ import {useRouterNodeMetrics} from "../../../features/node/hook"
 import {PlatformConnection, PlatformMetricsResponse as NodeMetrics} from "../../../features/node/type"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../../shared/component/chart/HistoryTrackerChart"
+import {SkeletonGroup} from "../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../shared/helper/type"
-import {MonitorLoading} from "./MonitorLoading"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},
@@ -17,7 +17,7 @@ type Props = {
     interval?: number,
 }
 
-export function MonitorPlatform(props: Props) {
+export function PlatformMetrics(props: Props) {
     const {connection, interval = 1000 * 3} = props
     const [cachedError, setCachedError] = useState<Error>()
     const metrics = useRouterNodeMetrics(connection, interval)
@@ -36,7 +36,7 @@ export function MonitorPlatform(props: Props) {
     )
     
     function renderBody() {
-        if (metrics.isLoading) return <MonitorLoading count={4}/>
+        if (metrics.isLoading) return <SkeletonGroup count={4}/>
 
         return (
             <>

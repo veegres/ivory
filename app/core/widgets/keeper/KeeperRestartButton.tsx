@@ -20,7 +20,7 @@ type Props = {
     cluster: string,
 }
 
-export function RestartButton(props: Props) {
+export function KeeperRestartButton(props: Props) {
     const {request, cluster} = props
 
     const [schedule, setSchedule] = useState<Dayjs>()

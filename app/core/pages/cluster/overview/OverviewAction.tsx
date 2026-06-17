@@ -16,14 +16,14 @@ type Props = {
     cluster: Cluster,
     mainNode: [string?, Node?],
     selectInfo: boolean,
-    disableInfo: boolean,
+    disableInfo?: boolean,
     toggleInfo: () => void,
     selectOptions: boolean,
     toggleOptions: () => void,
 }
 
 export function OverviewAction(props: Props) {
-    const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo, mainNode: m} = props
+    const {cluster, toggleOptions, selectOptions, selectInfo, toggleInfo, disableInfo = false, mainNode: m} = props
     const [_, mainNode] = m
     const config = mainNode?.config
     const status = mainNode?.keeper.status

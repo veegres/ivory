@@ -3,21 +3,21 @@ import {useState} from "react"
 import {PlatformConnection} from "../../../features/node/type"
 import {TitledBox} from "../../../shared/component/box/TitledBox"
 import {TabsButton} from "../../../shared/component/button/TabsButton"
-import {MonitorContainerList} from "./MonitorContainerList"
-import {MonitorContainerSingle} from "./MonitorContainerSingle"
+import {ContainerOverviewList} from "./ContainerOverviewList"
+import {ContainerOverviewMain} from "./ContainerOverviewMain"
 
 type Props = {
     connection: PlatformConnection,
 }
 
-export function MonitorContainer(props: Props) {
+export function ContainerOverview(props: Props) {
     const {connection} = props
     const [tab, setTab] = useState(0)
 
     return (
         <TitledBox title={"Container"} renderActions={renderActions()} island={true}>
-            {tab === 0 && <MonitorContainerSingle connection={connection}/>}
-            {tab === 1 && <MonitorContainerList connection={connection}/>}
+            {tab === 0 && <ContainerOverviewMain connection={connection}/>}
+            {tab === 1 && <ContainerOverviewList connection={connection}/>}
         </TitledBox>
     )
 

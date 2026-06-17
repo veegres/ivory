@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react"
 
-import {EventStreamType, EventType} from "../../features/bloat/job/type"
+import {EventStreamType, EventType} from "../../features/pg_compacttable/job/type"
 
 export function useStream(url: string) {
     const [loading, setLoading] = useState(false)

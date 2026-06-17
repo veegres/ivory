@@ -3,17 +3,17 @@ import {Box, Skeleton} from "@mui/material"
 import ReactCodeMirror from "@uiw/react-codemirror"
 import {useEffect, useState} from "react"
 
-import {Cluster, Node} from "../../../../features/cluster/type"
-import {Feature} from "../../../../features/feature"
-import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../../features/node/hook"
-import {ErrorKeeperMissing} from "../../../../shared/component/box/ErrorManual"
-import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
-import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {CodeThemes, getKeeperOneRequest} from "../../../../shared/helper/utils"
-import {useSettings} from "../../../../shared/provider/AppProvider"
-import {useSnackbar} from "../../../../shared/provider/SnackbarProvider"
-import {Access} from "../../../widgets/access/Access"
+import {Node, Options} from "../../../features/cluster/type"
+import {Feature} from "../../../features/feature"
+import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../features/node/hook"
+import {ErrorKeeperMissing} from "../../../shared/component/box/ErrorManual"
+import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
+import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../shared/component/button/IconButtons"
+import {SxPropsMap} from "../../../shared/helper/type"
+import {CodeThemes, getKeeperOneRequest} from "../../../shared/helper/utils"
+import {useSettings} from "../../../shared/provider/AppProvider"
+import {useSnackbar} from "../../../shared/provider/SnackbarProvider"
+import {Access} from "../access/Access"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
@@ -22,17 +22,17 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    cluster: Cluster,
     node: Node,
+    options: Options,
 }
 
-export function OverviewConfig(props: Props) {
-    const {node, cluster} = props
+export function KeeperConfig(props: Props) {
+    const {node, options} = props
     const settings = useSettings()
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const req = getKeeperOneRequest(cluster, node.config.host, node.config.keeperPort)
+    const req = getKeeperOneRequest(options, node.config.host, node.config.keeperPort)
 
     const config = useRouterNodeConfig(req)
     const updateConfig = useRouterNodeConfigUpdate(node.config, () => setIsEditable(false))

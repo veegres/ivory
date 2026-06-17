@@ -18,7 +18,7 @@ type Props = {
     restart?: ScheduledRestart,
 }
 
-export function ScheduleButton(props: Props) {
+export function KeeperScheduleButton(props: Props) {
     const {request, cluster, switchover, restart} = props
 
     const deleteRestart = useRouterNodeRestartDelete(cluster)

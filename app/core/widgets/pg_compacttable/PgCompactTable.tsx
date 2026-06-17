@@ -2,22 +2,22 @@ import {Cached} from "@mui/icons-material"
 import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterBloatList} from "../../../../features/bloat/hook"
-import {BloatTarget} from "../../../../features/bloat/type"
-import {Cluster, Node} from "../../../../features/cluster/type"
-import {Config, Plugin as DbPlugin} from "../../../../features/database/type"
-import {Feature} from "../../../../features/feature"
-import {useRouterQueryList} from "../../../../features/query/hook"
-import {Type as QueryType} from "../../../../features/query/type"
-import {ErrorDbMissing} from "../../../../shared/component/box/ErrorManual"
-import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
-import {LinearProgressStateful} from "../../../../shared/component/progress/LinearProgressStateful"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {getQueryConnection} from "../../../../shared/helper/utils"
-import {AccessBox} from "../../../widgets/access/Access"
-import {Query} from "../../../widgets/query/Query"
-import {OverviewBloatJob} from "./OverviewBloatJob"
-import {OverviewBloatJobForm} from "./OverviewBloatJobForm"
+import {Cluster, Node} from "../../../features/cluster/type"
+import {Config, Plugin as DbPlugin} from "../../../features/database/type"
+import {Feature} from "../../../features/feature"
+import {useRouterBloatList} from "../../../features/pg_compacttable/hook"
+import {BloatTarget} from "../../../features/pg_compacttable/type"
+import {useRouterQueryList} from "../../../features/query/hook"
+import {Type as QueryType} from "../../../features/query/type"
+import {ErrorDbMissing} from "../../../shared/component/box/ErrorManual"
+import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
+import {LinearProgressStateful} from "../../../shared/component/progress/LinearProgressStateful"
+import {SxPropsMap} from "../../../shared/helper/type"
+import {getQueryConnection} from "../../../shared/helper/utils"
+import {AccessBox} from "../access/Access"
+import {Query} from "../query/Query"
+import {PgCompactTableJob} from "./PgCompactTableJob"
+import {PgCompactTableJobForm} from "./PgCompactTableJobForm"
 
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
@@ -30,11 +30,11 @@ const SX: SxPropsMap = {
 enum ListBlock {JOB, QUERY}
 
 type Props = {
-    cluster: Cluster,
     node: Node,
+    cluster: Cluster,
 }
 
-export function OverviewBloat(props: Props) {
+export function PgCompactTable(props: Props) {
     const {cluster, node} = props
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<BloatTarget>()
@@ -54,9 +54,9 @@ export function OverviewBloat(props: Props) {
 
     return (
         <Box>
-            <AccessBox sx={SX.option} feature={Feature.ManageToolBloatJob}>
+            <AccessBox sx={SX.option} feature={Feature.ManageToolPgCompactTableJob}>
                 <Box sx={SX.form}>
-                    <OverviewBloatJobForm
+                    <PgCompactTableJobForm
                         node={node}
                         cluster={cluster}
                         onClick={() => setTab(ListBlock.JOB)}
@@ -78,7 +78,7 @@ export function OverviewBloat(props: Props) {
                 return jobs.error ? (
                     <ErrorSmart error={jobs.error}/>
                 ) : (
-                    <OverviewBloatJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
+                    <PgCompactTableJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
                 )
             case ListBlock.QUERY:
                 const queryCon = getQueryConnection(cluster, db.host, db.port)

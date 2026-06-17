@@ -1,15 +1,15 @@
 import {Box, Button, Checkbox, FormControlLabel, TextField} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterBloatStart} from "../../../../features/bloat/hook"
-import {BloatOptions, BloatTarget} from "../../../../features/bloat/type"
-import {Cluster, Node} from "../../../../features/cluster/type"
-import {Plugin as DbPlugin} from "../../../../features/database/type"
-import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../../features/query/hook"
-import {AutocompleteFetch} from "../../../../shared/component/autocomplete/AutocompleteFetch"
-import {ErrorDbMissing,ErrorLeaderMissing} from "../../../../shared/component/box/ErrorManual"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {getQueryConnection} from "../../../../shared/helper/utils"
+import {Cluster, Node} from "../../../features/cluster/type"
+import {Plugin as DbPlugin} from "../../../features/database/type"
+import {useRouterBloatStart} from "../../../features/pg_compacttable/hook"
+import {BloatOptions, BloatTarget} from "../../../features/pg_compacttable/type"
+import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../features/query/hook"
+import {AutocompleteFetch} from "../../../shared/component/autocomplete/AutocompleteFetch"
+import {ErrorDbMissing,ErrorLeaderMissing} from "../../../shared/component/box/ErrorManual"
+import {SxPropsMap} from "../../../shared/helper/type"
+import {getQueryConnection} from "../../../shared/helper/utils"
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
@@ -24,7 +24,7 @@ type Props = {
     setTarget: (target: BloatTarget) => void
 }
 
-export function OverviewBloatJobForm(props: Props) {
+export function PgCompactTableJobForm(props: Props) {
     const {node, cluster, target, onClick, setTarget} = props
     const [options, setOptions] = useState<BloatOptions>({force: false, noReindex: false, routineVacuum: false, initialReindex: false, noInitialVacuum: false})
 
