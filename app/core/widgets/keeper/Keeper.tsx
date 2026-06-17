@@ -32,9 +32,7 @@ export function Keeper(props: Props) {
             <TitledBox title={"Actions"} island={true} renderActions={renderActions()}>
                 {!keeperRequest && <ErrorKeeperRequestMissing/>}
             </TitledBox>
-            <TitledBox title={"Config"} island={true}>
-                <KeeperConfig options={cluster} node={node}/>
-            </TitledBox>
+            <KeeperConfig options={cluster} node={node}/>
         </Box>
     )
 

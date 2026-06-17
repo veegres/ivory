@@ -8,6 +8,7 @@ import {Feature} from "../../../features/feature"
 import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../../features/node/hook"
 import {ErrorKeeperMissing} from "../../../shared/component/box/ErrorManual"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
+import {TitledBox} from "../../../shared/component/box/TitledBox"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../shared/helper/type"
 import {CodeThemes, getKeeperOneRequest} from "../../../shared/helper/utils"
@@ -16,9 +17,8 @@ import {useSnackbar} from "../../../shared/provider/SnackbarProvider"
 import {Access} from "../access/Access"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexWrap: "nowrap", gap: 1, height: "100%"},
     input: {flexGrow: 1, borderWidth: "1px", borderStyle: "solid", overflowX: "auto", ">div": {height: "100%"}},
-    buttons: {display: "flex", flexDirection: "column"},
+    buttons: {display: "flex"},
 }
 
 type Props = {
@@ -46,7 +46,7 @@ export function KeeperConfig(props: Props) {
     if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
 
     return (
-        <Box sx={SX.box}>
+        <TitledBox title={"Config"} island={true} renderActions={renderActions()}>
             <Box sx={SX.input} borderColor={isEditable ? "divider" : "transparent"}>
                 <ReactCodeMirror
                     height={"100%"}
@@ -60,22 +60,27 @@ export function KeeperConfig(props: Props) {
                     onChange={(value) => setConfigState(value)}
                 />
             </Box>
+        </TitledBox>
+    )
+
+    function renderActions() {
+        return (
             <Box sx={SX.buttons}>
                 <Access feature={Feature.ManageNodeDbConfigUpdate}>
                     {renderUpdateButtons()}
                 </Access>
-                <CopyIconButton placement={"left"} size={35} onClick={handleCopyAll}/>
+                <CopyIconButton placement={"left"} size={30} onClick={handleCopyAll}/>
             </Box>
-        </Box>
-    )
+        )
+    }
 
     function renderUpdateButtons() {
-        if (!isEditable) return <EditIconButton placement={"left"} size={35} onClick={() => setIsEditable(true)}/>
+        if (!isEditable) return <EditIconButton placement={"left"} size={30} onClick={() => setIsEditable(true)}/>
 
         return (
             <>
-                <CancelIconButton placement={"left"} size={35} disabled={updateConfig.isPending} onClick={handleCancel}/>
-                <SaveIconButton placement={"left"} size={35} loading={updateConfig.isPending} onClick={handleUpdate}/>
+                <SaveIconButton placement={"left"} size={30} loading={updateConfig.isPending} onClick={handleUpdate}/>
+                <CancelIconButton placement={"left"} size={30} disabled={updateConfig.isPending} onClick={handleCancel}/>
             </>
         )
     }

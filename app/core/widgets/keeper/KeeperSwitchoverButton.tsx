@@ -30,6 +30,7 @@ export function KeeperSwitchoverButton(props: Props) {
         <Access feature={Feature.ManageNodeDbSwitchover}>
             <AlertButton
                 color={"secondary"}
+                size={"small"}
                 label={"Switchover"}
                 title={`Make a switchover of ${request.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose

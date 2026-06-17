@@ -29,6 +29,7 @@ export function KeeperReinitButton(props: Props) {
         <Access feature={Feature.ManageNodeDbReinitialize}>
             <AlertButton
                 color={"info"}
+                size={"small"}
                 label={"Reinit"}
                 title={`Make a reinit of ${request.host}?`}
                 description={"It will erase all node data and will download it from scratch."}

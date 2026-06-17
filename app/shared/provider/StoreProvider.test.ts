@@ -33,7 +33,6 @@ describe("StoreProvider", () => {
             const state = useStore.getState()
 
             expect(state.searchCluster).toBe("")
-            expect(state.activeClusterTab).toBe(0)
             expect(state.activeCluster).toBeUndefined()
             expect(state.manualKeeper).toBeUndefined()
             expect(state.activeNode).toEqual({})
@@ -99,7 +98,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const manualKeeper = "test-keeper"
-            useStoreAction.setClusterDetection(manualKeeper)
+            useStoreAction.setClusterKeeper(manualKeeper)
 
             const state = useStore.getState()
             expect(state.manualKeeper).toEqual(manualKeeper)
@@ -107,18 +106,9 @@ describe("StoreProvider", () => {
 
         it("should not update if no active cluster", () => {
             const stateBefore = useStore.getState()
-            useStoreAction.setClusterDetection("test-keeper")
+            useStoreAction.setClusterKeeper("test-keeper")
             const stateAfter = useStore.getState()
             expect(stateAfter).toEqual(stateBefore)
-        })
-    })
-
-    describe("setClusterTab", () => {
-        it("should set active cluster tab", () => {
-            useStoreAction.setClusterTab(2)
-
-            const state = useStore.getState()
-            expect(state.activeClusterTab).toBe(2)
         })
     })
 
@@ -281,7 +271,6 @@ describe("StoreProvider", () => {
         it("should reset store to initial state", () => {
             // Set various values
             useStoreAction.setSearchCluster("test-search")
-            useStoreAction.setClusterTab(2)
             useStoreAction.setTags(["tag1", "tag2"])
             useStoreAction.setWarnings("test-warning", true)
             useStoreAction.setConsoleQuery("SELECT * FROM users")

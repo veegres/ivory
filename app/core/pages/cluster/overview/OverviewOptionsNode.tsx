@@ -21,7 +21,7 @@ type Props = {
 }
 
 export function OverviewOptionsNode(props: Props) {
-    const {setClusterDetection} = useStoreAction
+    const {setClusterKeeper} = useStoreAction
     const {manualKeeper, nodes, mainKeeper} = props
 
     const value = manualKeeper ?? mainKeeper ?? "-"
@@ -49,7 +49,7 @@ export function OverviewOptionsNode(props: Props) {
                         sx={SX.toggle}
                         value={"auto"}
                         selected={!manualKeeper}
-                        onClick={() => setClusterDetection(undefined)}
+                        onClick={() => setClusterKeeper(undefined)}
                     >
                         A
                     </ToggleButton>
@@ -59,7 +59,7 @@ export function OverviewOptionsNode(props: Props) {
                         sx={SX.toggle}
                         value={"manual"}
                         selected={!!manualKeeper}
-                        onClick={() => setClusterDetection(mainKeeper ?? options[0])}
+                        onClick={() => setClusterKeeper(mainKeeper ?? options[0])}
                     >
                         M
                     </ToggleButton>
@@ -69,6 +69,6 @@ export function OverviewOptionsNode(props: Props) {
     )
 
     function handleOnChange(value: string, reason: AutocompleteChangeReason) {
-        if (value && reason === "selectOption") setClusterDetection(value)
+        if (value && reason === "selectOption") setClusterKeeper(value)
     }
 }

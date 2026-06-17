@@ -7,7 +7,7 @@ import {MoreIconButton} from "./IconButtons"
 const SX: SxPropsMap = {
     box: {position: "relative"},
     collapse: {position: "absolute", top: "50%", transform: "translate(calc(-100% + -2px), -50%)"},
-    paper: {display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px", boxShadow: "none", border: 1, borderColor: "divider"},
+    paper: {display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px", boxShadow: "none", border: 0.5, borderColor: "divider"},
 }
 
 type Props = {

@@ -33,7 +33,7 @@ export function OverviewAction(props: Props) {
             {keeper && status && (
                 <OverviewActionStatus status={status} cluster={cluster.name} request={keeper}/>
             )}
-            <OverviewActionInfo cluster={cluster} mainNode={m}/>
+            <OverviewActionInfo cluster={cluster}/>
             <ToggleButtonGroup size={"small"}>
                 <ToggleButton
                     sx={SX.toggleButton}

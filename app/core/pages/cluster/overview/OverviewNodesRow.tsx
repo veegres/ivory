@@ -127,7 +127,7 @@ export function OverviewNodesRow(props: Props) {
     function renderMenuButtons() {
         if (role === "unknown" || !keeperRequest) return
         return (
-            <MenuButton>
+            <MenuButton size={27}>
                 <KeeperScheduleButton request={keeperRequest} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
                 <KeeperFailoverButton request={keeperRequest} cluster={cluster.name} role={role}/>
                 <KeeperRestartButton request={keeperRequest} cluster={cluster.name}/>
