@@ -22,14 +22,19 @@ import {materialDarkInit, materialLightInit} from "@uiw/codemirror-theme-materia
 import {AxiosError} from "axios"
 import dayjs from "dayjs"
 
-import {CertType, FileUsageType} from "../../features/cert/type"
-import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/type"
-import {Plugin as KeeperPlugin, Role, Status as KeeperStatus} from "../../features/keeper/type"
-import {KeeperConnection, KeeperOneRequest, PlatformConnection} from "../../features/node/type"
-import {Status as PermissionStatus} from "../../features/permission/type"
-import {JobStatus} from "../../features/pg_compacttable/job/type"
-import {Connection as QueryConnection, VarietyType} from "../../features/query/type"
-import {VaultType} from "../../features/vault/type"
+import {CertType, FileUsageType} from "../../features/cert/api/type"
+import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/api/type"
+import {
+    KeeperConnection,
+    KeeperOneRequest,
+KeeperPlugin,
+    KeeperStatus,
+    PlatformConnection,     Role,
+} from "../../features/node/api/type"
+import {Status as PermissionStatus} from "../../features/permission/api/type"
+import {Connection as QueryConnection, VarietyType} from "../../features/query/api/type"
+import {VaultType} from "../../features/vault/api/type"
+import {JobStatus} from "../../tools/pg_compacttable/api/job/type"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./type"
 
 export const IvoryLinks: Links = {

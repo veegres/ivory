@@ -1,7 +1,7 @@
 import {Box, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material"
 
-import {useRouterClusterOverview} from "../../../../features/cluster/hook"
-import {Cluster, NodeOverview} from "../../../../features/cluster/type"
+import {useRouterClusterOverview} from "../../../../features/cluster/api/hook"
+import {Cluster, NodeOverview} from "../../../../features/cluster/api/type"
 import {RefreshIconButton} from "../../../../shared/component/button/IconButtons"
 import {TableCellLoader} from "../../../../shared/component/table/TableCellLoader"
 import {SxPropsMap} from "../../../../shared/helper/type"

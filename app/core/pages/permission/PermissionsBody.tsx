@@ -1,9 +1,9 @@
 import {Typography} from "@mui/material"
 
-import {PermissionMap} from "../../../features/permission/type"
+import {PermissionMap} from "../../../features/permission/api/type"
+import {PermissionsList} from "../../../features/permission/component/PermissionsList"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
-import {PermissionsList} from "../../widgets/settings/permissions/PermissionsList"
 
 type Props = {
     username: string,

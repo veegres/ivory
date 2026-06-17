@@ -1,13 +1,13 @@
 import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {memo} from "react"
 
-import {CertType} from "../../../features/cert/type"
-import {Options as ClusterOptions} from "../../../features/cluster/type"
+import {CertType} from "../../../features/cert/api/type"
+import {Options as ClusterOptions} from "../../../features/cluster/api/type"
 import {Feature} from "../../../features/feature"
-import {VaultType} from "../../../features/vault/type"
+import {ManageAccessBox} from "../../../features/management/component/ManageAccess"
+import {VaultType} from "../../../features/vault/api/type"
 import {SxPropsMap} from "../../../shared/helper/type"
 import {CertOptions, VaultOptions} from "../../../shared/helper/utils"
-import {AccessBox} from "../access/Access"
 import {OptionsCert} from "./OptionsCert"
 import {OptionsTags} from "./OptionsTags"
 import {OptionsVault} from "./OptionsVault"
@@ -27,7 +27,7 @@ export const Options = memo(function Options(props: Props) {
     const {vaults, tags, certs, tls} = options
 
     return (
-        <AccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
+        <ManageAccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
             <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/>
             <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/>
             <OptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/>
@@ -43,7 +43,7 @@ export const Options = memo(function Options(props: Props) {
             <OptionsCert type={CertType.CLIENT_KEY} selected={certs.clientKeyId} onUpdate={handleCertUpdate}/>
             <Divider variant={"middle"}/>
             <OptionsTags selected={tags} onUpdate={handleTagsUpdate}/>
-        </AccessBox>
+        </ManageAccessBox>
     )
 
     function handleVaultUpdate(t: VaultType, s?: string) {

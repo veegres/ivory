@@ -4,7 +4,7 @@ import {
 } from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {NodeOverview} from "../../../../features/cluster/type"
+import {NodeOverview} from "../../../../features/cluster/api/type"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 

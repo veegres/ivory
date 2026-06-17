@@ -2,13 +2,13 @@ import {Box} from "@mui/material"
 import {UseMutationResult} from "@tanstack/react-query"
 
 import {Feature} from "../../../../features/feature"
-import {useRouterNodeActivate, useRouterNodePause} from "../../../../features/node/hook"
-import {KeeperOneRequest, KeeperStatus} from "../../../../features/node/type"
+import {ManageAccess} from "../../../../features/management/component/ManageAccess"
+import {useRouterNodeActivate, useRouterNodePause} from "../../../../features/node/api/hook"
+import {KeeperOneRequest, KeeperStatus} from "../../../../features/node/api/type"
 import {InfoBox} from "../../../../shared/component/box/InfoBox"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
 import {EnumOptions, SxPropsMap} from "../../../../shared/helper/type"
 import {KeeperStatusOptions} from "../../../../shared/helper/utils"
-import {Access} from "../../../widgets/access/Access"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},
@@ -33,13 +33,13 @@ export function OverviewActionStatus(props: Props) {
         [KeeperStatus.Paused]: activate
     }
     const actionButton: { [key in KeeperStatus]: EnumOptions } = {
-        [KeeperStatus.Active]: KeeperStatusOptions.PAUSED,
-        [KeeperStatus.Paused]: KeeperStatusOptions.ACTIVE
+        [KeeperStatus.Active]: KeeperStatusOptions[KeeperStatus.Paused],
+        [KeeperStatus.Paused]: KeeperStatusOptions[KeeperStatus.Active]
     }
 
     return (
         <Box sx={SX.box}>
-            <Access feature={Feature.ManageNodeDbActivation}>
+            <ManageAccess feature={Feature.ManageNodeDbActivation}>
                 <AlertButton
                     size={"small"}
                     color={"inherit"}
@@ -52,7 +52,7 @@ export function OverviewActionStatus(props: Props) {
                         found <a href={"https://patroni.readthedocs.io/en/latest/pause.html"}>here</a>.</>}
                     onClick={() => {action[status].mutate(request)}}
                 />
-            </Access>
+            </ManageAccess>
             <InfoBox tooltip={<Box sx={SX.tooltip}>Keeper Status</Box>}>
                 <Box sx={{color: options.color}}>{options.name}</Box>
             </InfoBox>

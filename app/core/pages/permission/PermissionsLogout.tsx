@@ -1,8 +1,8 @@
 import {Typography} from "@mui/material"
 
+import {LogoutButton} from "../../../features/auth/component/LogoutButton"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
-import {LogoutButton} from "../../widgets/actions/LogoutButton"
 
 type Props = {
     username?: string,

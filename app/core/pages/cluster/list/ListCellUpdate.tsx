@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 
-import {useRouterClusterUpdate} from "../../../../features/cluster/hook"
-import {Cluster} from "../../../../features/cluster/type"
+import {useRouterClusterUpdate} from "../../../../features/cluster/api/hook"
+import {Cluster} from "../../../../features/cluster/api/type"
 import {CancelIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/type"
 

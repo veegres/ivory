@@ -1,8 +1,8 @@
 import {Box, Paper, Switch, Tab, Tabs} from "@mui/material"
 import {ChangeEvent, useState} from "react"
 
-import {AuthType} from "../../../../features/auth/type"
-import {BasicConfig, LdapConfig, OidcConfig} from "../../../../features/config/type"
+import {AuthType} from "../../../../features/auth/api/type"
+import {BasicConfig, LdapConfig, OidcConfig} from "../../../../features/config/api/type"
 import {ConfigBox} from "../../../../shared/component/box/ConfigBox"
 import {KeyEnterInput} from "../../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../../shared/helper/type"

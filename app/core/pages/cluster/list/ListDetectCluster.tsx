@@ -2,14 +2,14 @@ import {AutoFixHigh} from "@mui/icons-material"
 import {Box, Button, Divider, TextField} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterClusterCreateAuto} from "../../../../features/cluster/hook"
-import {AutoRequest} from "../../../../features/cluster/type"
-import {Plugin as DbPlugin} from "../../../../features/database/type"
+import {useRouterClusterCreateAuto} from "../../../../features/cluster/api/hook"
+import {AutoRequest} from "../../../../features/cluster/api/type"
 import {Feature} from "../../../../features/feature"
-import {Plugin as KeeperPlugin} from "../../../../features/keeper/type"
+import {ManageAccess} from "../../../../features/management/component/ManageAccess"
+import {KeeperPlugin} from "../../../../features/node/api/type"
+import {Plugin as DbPlugin} from "../../../../features/plugins/api/type"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {Access} from "../../../widgets/access/Access"
 import {Options} from "../../../widgets/options/Options"
 
 const SX: SxPropsMap = {
@@ -35,7 +35,7 @@ export function ListDetectCluster(_: Props) {
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
     return (
-        <Access feature={Feature.ManageClusterCreate}>
+        <ManageAccess feature={Feature.ManageClusterCreate}>
             <DialogButton title={"DETECT CLUSTER"} renderActions={renderActions()} icon={<AutoFixHigh/>}>
                 <TextField
                     size={"small"}
@@ -65,7 +65,7 @@ export function ListDetectCluster(_: Props) {
                 <Divider variant={"middle"}/>
                 <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})}/>
             </DialogButton>
-        </Access>
+        </ManageAccess>
     )
 
     function renderActions() {

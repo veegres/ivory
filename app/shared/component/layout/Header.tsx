@@ -2,8 +2,8 @@ import {Logout} from "@mui/icons-material"
 import {Box, IconButton, Tooltip} from "@mui/material"
 import {useState} from "react"
 
-import {Menu} from "../../../core/widgets/settings/menu/Menu"
-import {useRouterLogout} from "../../../features/auth/hook"
+import {Settings} from "../../../core/widgets/settings/Settings"
+import {useRouterLogout} from "../../../features/auth/api/hook"
 import {SxPropsMap} from "../../helper/type"
 import {randomUnicodeAnimal} from "../../helper/utils"
 
@@ -56,7 +56,7 @@ export function Header(props: Props) {
                         <Box sx={SX.username}>{username}</Box>
                     </Tooltip>
                 )}
-                <Menu/>
+                <Settings/>
                 {showLogout && (
                     <Tooltip title={"Sign out"}>
                         <IconButton onClick={handleLogout} color={"inherit"}>

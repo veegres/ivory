@@ -1,7 +1,7 @@
 import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/material"
 import React, {useState} from "react"
 
-import {ClearCacheButton} from "../../../core/widgets/actions/ClearCacheButton"
+import {ClearCache} from "../../../core/widgets/browser/ClearCache"
 import {SxPropsMap} from "../../helper/type"
 import {OpenIcon} from "../icon/OpenIcon"
 
@@ -42,7 +42,7 @@ export function Error(props: Props) {
                         </Box>
                     )}
                 </Box>
-                {clear && <ClearCacheButton/>}
+                {clear && <ClearCache/>}
             </Box>
             <Collapse in={isStacktrace && isOpen}>
                 <Box sx={SX.collapse} onClick={handleDisable}>

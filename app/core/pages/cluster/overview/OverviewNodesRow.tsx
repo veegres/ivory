@@ -1,19 +1,19 @@
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 
-import {Cluster, Node, NodeConfig} from "../../../../features/cluster/type"
+import {Cluster, Node, NodeConfig} from "../../../../features/cluster/api/type"
+import {KeeperFailoverButton} from "../../../../features/node/component/keeper/KeeperFailoverButton"
+import {KeeperReinitButton} from "../../../../features/node/component/keeper/KeeperReinitButton"
+import {KeeperReloadButton} from "../../../../features/node/component/keeper/KeeperReloadButton"
+import {KeeperRestartButton} from "../../../../features/node/component/keeper/KeeperRestartButton"
+import {KeeperScheduleButton} from "../../../../features/node/component/keeper/KeeperScheduleButton"
+import {KeeperSwitchoverButton} from "../../../../features/node/component/keeper/KeeperSwitchoverButton"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {MenuButton} from "../../../../shared/component/button/MenuButton"
 import {HiddenScrolling} from "../../../../shared/component/scrolling/HiddenScrolling"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {DateTimeFormatter, getKeeperOneRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/utils"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {KeeperFailoverButton} from "../../../widgets/keeper/KeeperFailoverButton"
-import {KeeperReinitButton} from "../../../widgets/keeper/KeeperReinitButton"
-import {KeeperReloadButton} from "../../../widgets/keeper/KeeperReloadButton"
-import {KeeperRestartButton} from "../../../widgets/keeper/KeeperRestartButton"
-import {KeeperScheduleButton} from "../../../widgets/keeper/KeeperScheduleButton"
-import {KeeperSwitchoverButton} from "../../../widgets/keeper/KeeperSwitchoverButton"
 
 const SX: SxPropsMap = {
     row: {cursor: "pointer"},

@@ -1,7 +1,7 @@
 import {LineChart} from "@mui/x-charts/LineChart"
 import {useEffect, useMemo, useRef, useState} from "react"
 
-import {PlatformMetricsResponse as NodeMetrics} from "../../../features/node/type"
+import {PlatformMetricsResponse as NodeMetrics} from "../../../features/node/api/type"
 import {ChartBox} from "../box/ChartBox"
 
 type Props = {

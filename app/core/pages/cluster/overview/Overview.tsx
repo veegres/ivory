@@ -1,15 +1,15 @@
 import {Alert, Box, Collapse, Divider, Tab, Tabs} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {useRouterClusterList, useRouterClusterOverview} from "../../../../features/cluster/hook"
+import {useRouterClusterList, useRouterClusterOverview} from "../../../../features/cluster/api/hook"
 import {Feature} from "../../../../features/feature"
+import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getMainKeeper} from "../../../../shared/helper/utils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
-import {Access} from "../../../widgets/access/Access"
 import {OverviewAction} from "./OverviewAction"
 import {OverviewNodes} from "./OverviewNodes"
 import {OverviewOptions} from "./OverviewOptions"
@@ -43,7 +43,7 @@ export function Overview() {
     )
 
     return (
-        <Access feature={Feature.ViewNodeDbOverview}>
+        <ManageAccess feature={Feature.ViewNodeDbOverview}>
             <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
                 <Box sx={SX.headBox}>
                     <Tabs value={0} role={"tab"}>
@@ -57,7 +57,7 @@ export function Overview() {
                     <Box>{renderSettingsBlock()}</Box>
                 </Box>
             </PageMainBox>
-        </Access>
+        </ManageAccess>
     )
 
     function renderMainBlock() {

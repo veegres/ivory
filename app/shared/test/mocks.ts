@@ -1,8 +1,8 @@
 import {vi} from "vitest"
 
-import type {Cluster, Node} from "../../features/cluster/type"
-import {Plugin as DbPlugin} from "../../features/database/type"
-import {Plugin as KeeperPlugin} from "../../features/keeper/type"
+import type {Cluster, Node} from "../../features/cluster/api/type"
+import {KeeperPlugin} from "../../features/node/api/type"
+import {Plugin as DbPlugin} from "../../features/plugins/api/type"
 
 /**
  * Mock localStorage

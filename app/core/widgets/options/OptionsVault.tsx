@@ -1,7 +1,7 @@
 import {useMemo} from "react"
 
-import {useRouterVault} from "../../../features/vault/hook"
-import {VaultType} from "../../../features/vault/type"
+import {useRouterVault} from "../../../features/vault/api/hook"
+import {VaultType} from "../../../features/vault/api/type"
 import {AutocompleteUuid, Option} from "../../../shared/component/autocomplete/AutocompleteUuid"
 import {getShortUuid,VaultOptions} from "../../../shared/helper/utils"
 

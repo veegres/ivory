@@ -1,10 +1,10 @@
 import {useState} from "react"
 
-import {useRouterClusterFixAuto} from "../../../../features/cluster/hook"
+import {useRouterClusterFixAuto} from "../../../../features/cluster/api/hook"
 import {Feature} from "../../../../features/feature"
+import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {AutoIconButton} from "../../../../shared/component/button/IconButtons"
 import {AlertDialog} from "../../../../shared/component/dialog/AlertDialog"
-import {Access} from "../../../widgets/access/Access"
 
 type Props = {
     name: string,
@@ -16,7 +16,7 @@ export function OverviewNodesFixAuto(props: Props) {
     const [open, setOpen] = useState(false)
 
     return (
-        <Access feature={Feature.ManageClusterUpdate}>
+        <ManageAccess feature={Feature.ManageClusterUpdate}>
             <AutoIconButton
                 tooltip={"Auto Fix"}
                 onClick={() => setOpen(true)}
@@ -29,6 +29,6 @@ export function OverviewNodesFixAuto(props: Props) {
                 onClose={() => setOpen(false)}
                 onAgree={() => autoFix.mutate(name)}
             />
-        </Access>
+        </ManageAccess>
     )
 }

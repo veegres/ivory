@@ -1,13 +1,13 @@
 import {Link} from "@mui/material"
 
-import {Cluster, Node} from "../../../../features/cluster/type"
-import {NodeTab, NodeTabType} from "../../../../features/node/type"
+import {Cluster, Node} from "../../../../features/cluster/api/type"
+import {NodeTab, NodeTabType} from "../../../../features/node/api/type"
+import {Container} from "../../../../features/node/component/container/Container"
+import {Keeper} from "../../../../features/node/component/keeper/Keeper"
+import {Platform} from "../../../../features/node/component/platform/Platform"
 import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/utils"
-import {Container} from "../../../widgets/container/Container"
-import {Keeper} from "../../../widgets/keeper/Keeper"
-import {Platform} from "../../../widgets/platform/Platform"
-import {Tools} from "../../../widgets/tools/Tools"
 import {NodeMainQueries} from "./NodeMainQueries"
+import {NodeMainTools} from "./NodeMainTools"
 
 export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
     [NodeTabType.CONTAINER]: {
@@ -52,7 +52,7 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
     },
     [NodeTabType.TOOLS]: {
         label: "Tools",
-        body: (c: Cluster, n: Node) => <Tools node={n} cluster={c}/>,
+        body: (c: Cluster, n: Node) => <NodeMainTools node={n} cluster={c}/>,
         info: <>
             Here, you can efficiently decrease the size of bloated tables and indexes without imposing
             heavy locks. This functionality is powered by

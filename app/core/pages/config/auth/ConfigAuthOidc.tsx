@@ -1,9 +1,9 @@
 import {Box, Button} from "@mui/material"
 import {ChangeEvent} from "react"
 
-import {useRouterConnect} from "../../../../features/auth/hook"
-import {AuthType} from "../../../../features/auth/type"
-import {OidcConfig} from "../../../../features/config/type"
+import {useRouterConnect} from "../../../../features/auth/api/hook"
+import {AuthType} from "../../../../features/auth/api/type"
+import {OidcConfig} from "../../../../features/config/api/type"
 import {KeyEnterInput} from "../../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../../shared/helper/type"
 

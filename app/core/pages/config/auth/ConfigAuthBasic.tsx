@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {ChangeEvent} from "react"
 
-import {BasicConfig} from "../../../../features/config/type"
+import {BasicConfig} from "../../../../features/config/api/type"
 import {KeyEnterInput} from "../../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../../shared/helper/type"
 

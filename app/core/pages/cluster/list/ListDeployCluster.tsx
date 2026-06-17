@@ -2,15 +2,17 @@ import {Edit, Preview, RocketLaunch} from "@mui/icons-material"
 import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
-import {useRouterClusterDeploy} from "../../../../features/cluster/hook"
-import {Options as ClusterOptions} from "../../../../features/cluster/type"
-import {Plugin as DbPlugin} from "../../../../features/database/type"
+import {useRouterClusterDeploy} from "../../../../features/cluster/api/hook"
+import {Options as ClusterOptions} from "../../../../features/cluster/api/type"
 import {Feature} from "../../../../features/feature"
-import {Plugin as KeeperPlugin} from "../../../../features/keeper/type"
-import {VaultType} from "../../../../features/vault/type"
+import {ManageAccess} from "../../../../features/management/component/ManageAccess"
+import {KeeperPlugin} from "../../../../features/node/api/type"
+import {Plugin as DbPlugin} from "../../../../features/plugins/api/type"
+import {VaultType} from "../../../../features/vault/api/type"
 import {Code} from "../../../../shared/component/box/Code"
 import {List} from "../../../../shared/component/box/List"
 import {ListItem} from "../../../../shared/component/box/ListItem"
+import {Logs} from "../../../../shared/component/box/Logs"
 import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
@@ -22,8 +24,6 @@ import {
     InterpolatedOptionsKeys,
     VaultOptions,
 } from "../../../../shared/helper/utils"
-import {Access} from "../../../widgets/access/Access"
-import {Logs} from "../../../widgets/logs/Logs"
 import {Options} from "../../../widgets/options/Options"
 import {OptionsVault} from "../../../widgets/options/OptionsVault"
 import {ListNodeInput} from "./ListNodeInput"
@@ -86,7 +86,7 @@ export function ListDeployCluster(props: Props) {
     )
 
     return (
-        <Access feature={Feature.ManageClusterCreate}>
+        <ManageAccess feature={Feature.ManageClusterCreate}>
             <DialogButton
                 title={"DEPLOY CLUSTER"}
                 renderActions={renderActions()}
@@ -102,7 +102,7 @@ export function ListDeployCluster(props: Props) {
                     </Box>
                 )}
             </DialogButton>
-        </Access>
+        </ManageAccess>
     )
 
     function renderActions() {

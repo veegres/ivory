@@ -4,7 +4,7 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
-import {NodeConfig} from "../../features/cluster/type"
+import {NodeConfig} from "../../features/cluster/api/type"
 import {
     DateTimeFormatter,
     getDomain,

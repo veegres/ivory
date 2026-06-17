@@ -1,4 +1,4 @@
-import {useRouterTagList} from "../../../features/tag/hook"
+import {useRouterTagList} from "../../../features/tag/api/hook"
 import {AutocompleteTags} from "../../../shared/component/autocomplete/AutocompleteTags"
 
 type Props = {

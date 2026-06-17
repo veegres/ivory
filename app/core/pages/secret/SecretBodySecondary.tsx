@@ -1,11 +1,11 @@
 import {Typography} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterSecretSet} from "../../../features/secret/hook"
+import {ManageEraseButton} from "../../../features/management/component/ManageEraseButton"
+import {useRouterSecretSet} from "../../../features/secret/api/hook"
+import {SecretButton} from "../../../features/secret/component/SecretButton"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
-import {EraseButton} from "../../widgets/actions/EraseButton"
-import {SecretButton} from "../../widgets/actions/SecretButton"
 
 
 export function SecretBodySecondary() {
@@ -30,7 +30,7 @@ export function SecretBodySecondary() {
     function renderButtons() {
         return (
             <>
-                <EraseButton safe={false}/>
+                <ManageEraseButton safe={false}/>
                 <SecretButton keyWord={key}/>
             </>
         )

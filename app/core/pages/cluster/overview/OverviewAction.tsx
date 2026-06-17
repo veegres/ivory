@@ -1,7 +1,7 @@
 import {InfoOutlined, Settings} from "@mui/icons-material"
 import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
-import {Cluster, Node} from "../../../../features/cluster/type"
+import {Cluster, Node} from "../../../../features/cluster/api/type"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getKeeperOneRequest} from "../../../../shared/helper/utils"
 import {OverviewActionInfo} from "./OverviewActionInfo"

@@ -1,12 +1,12 @@
 import {Alert, Button, Chip, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterLogin} from "../../../features/auth/hook"
-import {AuthType} from "../../../features/auth/type"
+import {useRouterLogin} from "../../../features/auth/api/hook"
+import {AuthType} from "../../../features/auth/api/type"
+import {LogoutButton} from "../../../features/auth/component/LogoutButton"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../shared/helper/type"
-import {LogoutButton} from "../../widgets/actions/LogoutButton"
 
 const SX: SxPropsMap = {
     alert: {width: "100%", padding: "0 20px", justifyContent: "center"},

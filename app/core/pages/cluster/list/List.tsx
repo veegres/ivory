@@ -1,11 +1,11 @@
 import {useEffect} from "react"
 
-import {useRouterClusterList} from "../../../../features/cluster/hook"
+import {useRouterClusterList} from "../../../../features/cluster/api/hook"
 import {Feature} from "../../../../features/feature"
+import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {useStore} from "../../../../shared/provider/StoreProvider"
-import {Access} from "../../../widgets/access/Access"
 import {ListTable} from "./ListTable"
 import {ListTags} from "./ListTags"
 
@@ -19,7 +19,7 @@ export function List() {
 
     return (
         <PageMainBox withMarginTop={"40px"}>
-            <Access feature={Feature.ViewTagList}><ListTags/></Access>
+            <ManageAccess feature={Feature.ViewTagList}><ListTags/></ManageAccess>
             {clusters.error ? <ErrorSmart error={clusters.error}/> : (
                 <ListTable list={Object.values(clusters.data ?? [])} fetching={clusters.isFetching} pending={clusters.isPending}/>
             )}

@@ -1,9 +1,9 @@
 import {Box} from "@mui/material"
 import {useMemo} from "react"
 
-import {CertType} from "../../../../features/cert/type"
-import {Cluster} from "../../../../features/cluster/type"
-import {VaultType} from "../../../../features/vault/type"
+import {CertType} from "../../../../features/cert/api/type"
+import {Cluster} from "../../../../features/cluster/api/type"
+import {VaultType} from "../../../../features/vault/api/type"
 import {InfoBoxList} from "../../../../shared/component/box/InfoBoxList"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {CertOptions, VaultOptions} from "../../../../shared/helper/utils"

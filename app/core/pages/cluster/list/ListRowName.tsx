@@ -1,7 +1,7 @@
 import {Box, Chip} from "@mui/material"
 import {useEffect} from "react"
 
-import {Cluster} from "../../../../features/cluster/type"
+import {Cluster} from "../../../../features/cluster/api/type"
 import {AutoRefreshIconButton, RefreshIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"

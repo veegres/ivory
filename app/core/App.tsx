@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
-import {useRouterInfo} from "../features/management/hook"
+import {useRouterInfo} from "../features/management/api/hook"
 import {Body} from "../shared/component/layout/Body"
 import {Footer} from "../shared/component/layout/Footer"
 import {Header} from "../shared/component/layout/Header"

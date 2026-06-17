@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {useRouterInfo} from "../../../features/management/hook"
+import {useRouterInfo} from "../../../features/management/api/hook"
 import select from "../../../shared/style/select.module.css"
 import {SxPropsMap} from "../../helper/type"
 import {randomUnicodeAnimal} from "../../helper/utils"

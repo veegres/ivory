@@ -1,8 +1,8 @@
 import {Stack} from "@mui/material"
 
 import {Feature} from "../../../features/feature"
+import {ManageAccess} from "../../../features/management/component/ManageAccess"
 import {SxPropsMap} from "../../../shared/helper/type"
-import {Access} from "../../widgets/access/Access"
 import {List as ClusterList} from "./list/List"
 import {Node as ClusterNode} from "./node/Node"
 import {Overview as ClusterOverview} from "./overview/Overview"
@@ -15,10 +15,10 @@ export function ClusterBody() {
     return (
         <Stack sx={SX.stack}>
             <ClusterList/>
-            <Access feature={Feature.ViewNodeDbOverview}>
+            <ManageAccess feature={Feature.ViewNodeDbOverview}>
                 <ClusterOverview/>
                 <ClusterNode/>
-            </Access>
+            </ManageAccess>
         </Stack>
     )
 }

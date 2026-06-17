@@ -1,8 +1,8 @@
 import {Box} from "@mui/material"
 
-import {Cluster, Node} from "../../../../features/cluster/type"
-import {NodeTabType} from "../../../../features/node/type"
-import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../features/query/hook"
+import {Cluster, Node} from "../../../../features/cluster/api/type"
+import {NodeTabType} from "../../../../features/node/api/type"
+import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../features/query/api/hook"
 import {AutocompleteFetch} from "../../../../shared/component/autocomplete/AutocompleteFetch"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getQueryConnection} from "../../../../shared/helper/utils"

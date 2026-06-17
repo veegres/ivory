@@ -1,10 +1,11 @@
 import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {ClusterApi} from "../../../../features/cluster/router"
-import {Cluster} from "../../../../features/cluster/type"
+import {ClusterApi} from "../../../../features/cluster/api/router"
+import {Cluster} from "../../../../features/cluster/api/type"
 import {Feature} from "../../../../features/feature"
-import {KeeperPlugin} from "../../../../features/node/type"
+import {ManageAccessBox} from "../../../../features/management/component/ManageAccess"
+import {KeeperPlugin} from "../../../../features/node/api/type"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {AddIconButton} from "../../../../shared/component/button/IconButtons"
 import {TableBody} from "../../../../shared/component/table/TableBody"
@@ -13,8 +14,7 @@ import {SxPropsMap} from "../../../../shared/helper/type"
 import {SxPropsFormatter} from "../../../../shared/helper/utils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import scroll from "../../../../shared/style/scroll.module.css"
-import {AccessBox} from "../../../widgets/access/Access"
-import {Refresher} from "../../../widgets/refresher/Refresher"
+import {Refresher} from "../../../widgets/browser/Refresher"
 import {ListDeployCluster} from "./ListDeployCluster"
 import {ListDetectCluster} from "./ListDetectCluster"
 import {ListRow} from "./ListRow"
@@ -58,13 +58,13 @@ export function ListTable(props: Props) {
                             </Box>
                             <ListDeployCluster keeper={KeeperPlugin.PATRONI}/>
                             <ListDetectCluster keeper={KeeperPlugin.PATRONI}/>
-                            <AccessBox feature={Feature.ManageClusterUpdate}>
+                            <ManageAccessBox feature={Feature.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"ADD CLUSTER"}
                                     onClick={() => setShowNewElement(true)}
                                     disabled={showNewElement}
                                 />
-                            </AccessBox>
+                            </ManageAccessBox>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>

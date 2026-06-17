@@ -1,7 +1,7 @@
 import {Stack} from "@mui/material"
 
-import {useRouterClusterUpdate} from "../../../../features/cluster/hook"
-import {Cluster, Options as ClusterOptions, Overview as ClusterOverview} from "../../../../features/cluster/type"
+import {useRouterClusterUpdate} from "../../../../features/cluster/api/hook"
+import {Cluster, Options as ClusterOptions, Overview as ClusterOverview} from "../../../../features/cluster/api/type"
 import {LinearProgressStateful} from "../../../../shared/component/progress/LinearProgressStateful"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {Options} from "../../../widgets/options/Options"

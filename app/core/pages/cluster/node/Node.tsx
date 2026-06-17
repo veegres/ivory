@@ -1,14 +1,14 @@
 import {Box} from "@mui/material"
 
-import {useRouterClusterUpdate} from "../../../../features/cluster/hook"
-import {useRouterClusterOverview} from "../../../../features/cluster/hook"
-import {NodeConfig} from "../../../../features/cluster/type"
+import {useRouterClusterUpdate} from "../../../../features/cluster/api/hook"
+import {useRouterClusterOverview} from "../../../../features/cluster/api/hook"
+import {NodeConfig} from "../../../../features/cluster/api/type"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getDomain} from "../../../../shared/helper/utils"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {NodeInfo} from "./NodeInfo"
+import {NodeHead} from "./NodeHead"
 import {NodeMain} from "./NodeMain"
 
 const SX: SxPropsMap = {
@@ -22,11 +22,9 @@ export function Node() {
 
     const overview = useRouterClusterOverview(activeClusterName, false)
     const updateCluster = useRouterClusterUpdate(activeCluster?.name!)
-    const activeClusterTab = useStore(s => s.activeClusterTab)
-    const isClusterOverviewOpen = !!activeCluster && activeClusterTab === 0
 
     return (
-        <PageMainBox withPadding visible={isClusterOverviewOpen}>
+        <PageMainBox withPadding visible={!!activeCluster}>
             {renderContent()}
         </PageMainBox>
     )
@@ -40,7 +38,7 @@ export function Node() {
 
         return (
             <Box sx={SX.content}>
-                <NodeInfo node={activeNode} loading={updateCluster.isPending} onUpdate={(c) => handleUpdateNode(c, activeNode.config.host)}/>
+                <NodeHead node={activeNode} loading={updateCluster.isPending} onUpdate={(c) => handleUpdateNode(c, activeNode.config.host)}/>
                 <NodeMain cluster={activeCluster} node={activeNode}/>
             </Box>
         )

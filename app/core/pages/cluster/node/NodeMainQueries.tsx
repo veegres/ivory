@@ -1,17 +1,17 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {Feature} from "../../../../features/feature"
-import {ChartType, Connection as QueryConnection, Type as QueryType} from "../../../../features/query/type"
+import {ManageAccess} from "../../../../features/management/component/ManageAccess"
+import {ChartType, Connection as QueryConnection, Type as QueryType} from "../../../../features/query/api/type"
+import {Query} from "../../../../features/query/component/Query"
+import {QueryActivity} from "../../../../features/query/component/QueryActivity"
+import {QueryChartDatabase} from "../../../../features/query/component/QueryChartDatabase"
+import {QueryChartGeneral} from "../../../../features/query/component/QueryChartGeneral"
+import {QueryConsole} from "../../../../features/query/component/QueryConsole"
 import {DividerBox} from "../../../../shared/component/box/DividerBox"
 import {ErrorDbMissing} from "../../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {Access} from "../../../widgets/access/Access"
-import {Query} from "../../../widgets/query/Query"
-import {QueryActivity} from "../../../widgets/query/QueryActivity"
-import {QueryChartDatabase} from "../../../widgets/query/QueryChartDatabase"
-import {QueryChartGeneral} from "../../../widgets/query/QueryChartGeneral"
-import {QueryConsole} from "../../../widgets/query/QueryConsole"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
@@ -39,12 +39,12 @@ export function NodeMainQueries(props: Props){
 
     return (
         <Box sx={SX.box}>
-            <Access feature={Feature.ViewQueryDbInfo}>
+            <ManageAccess feature={Feature.ViewQueryDbInfo}>
                 <QueryActivity connection={connection}/>
-            </Access>
+            </ManageAccess>
             <Box sx={SX.main}>
                 <Box sx={SX.filters}>
-                    <Access feature={Feature.ManageQueryDbConsole}>
+                    <ManageAccess feature={Feature.ManageQueryDbConsole}>
                         <ToggleButton
                             sx={SX.group}
                             size={"small"}
@@ -55,9 +55,9 @@ export function NodeMainQueries(props: Props){
                         >
                             CONSOLE
                         </ToggleButton>
-                    </Access>
+                    </ManageAccess>
 
-                    <Access feature={Feature.ViewQueryDbChart}>
+                    <ManageAccess feature={Feature.ViewQueryDbChart}>
                         <ToggleButton
                             sx={SX.group}
                             size={"small"}
@@ -68,7 +68,7 @@ export function NodeMainQueries(props: Props){
                         >
                             CHARTS
                         </ToggleButton>
-                    </Access>
+                    </ManageAccess>
 
                     <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={queryTab} orientation={"vertical"}>
                         <ToggleButton value={QueryType.ACTIVITY} onClick={() => setQueryTab(QueryType.ACTIVITY)}>

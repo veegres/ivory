@@ -1,8 +1,8 @@
 import {Alert, Box, Button} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterConfigSet} from "../../../features/config/hook"
-import {BasicConfig, LdapConfig, OidcConfig} from "../../../features/config/type"
+import {useRouterConfigSet} from "../../../features/config/api/hook"
+import {BasicConfig, LdapConfig, OidcConfig} from "../../../features/config/api/type"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../shared/helper/type"

@@ -3,7 +3,7 @@ import {AxiosError, HttpStatusCode} from "axios"
 import {ReactNode, useEffect} from "react"
 
 import {api} from "../../features/api"
-import {ManagementApi} from "../../features/management/router"
+import {ManagementApi} from "../../features/management/api/router"
 
 export function AuthProvider(props: {children: ReactNode}) {
     const queryClient = useQueryClient()
