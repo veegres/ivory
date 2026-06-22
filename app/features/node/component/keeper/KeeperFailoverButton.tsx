@@ -19,7 +19,7 @@ export function KeeperFailoverButton(props: Props) {
     const body = {candidate: name}
 
     return (
-        <ManageAccess feature={Feature.ManageNodeDbFailover}>
+        <ManageAccess feature={Feature.ManageNodeKeeperFailover}>
             <AlertButton
                 color={"error"}
                 size={"small"}

@@ -27,7 +27,7 @@ export function KeeperSwitchoverButton(props: Props) {
     const body = {leader: leaderKey, candidate, scheduled_at: schedule}
 
     return (
-        <ManageAccess feature={Feature.ManageNodeDbSwitchover}>
+        <ManageAccess feature={Feature.ManageNodeKeeperSwitchover}>
             <AlertButton
                 color={"secondary"}
                 size={"small"}

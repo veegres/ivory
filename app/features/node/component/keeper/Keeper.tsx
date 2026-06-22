@@ -5,6 +5,8 @@ import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getKeeperOneRequest} from "../../../../shared/helper/utils"
 import {Cluster, Node} from "../../../cluster/api/type"
+import {Feature} from "../../../feature"
+import {ManageAccess} from "../../../management/component/ManageAccess"
 import {KeeperConfig} from "./KeeperConfig"
 import {KeeperFailoverButton} from "./KeeperFailoverButton"
 import {KeeperReinitButton} from "./KeeperReinitButton"
@@ -32,7 +34,9 @@ export function Keeper(props: Props) {
             <TitledBox title={"Actions"} island={true} renderActions={renderActions()}>
                 {!keeperRequest && <ErrorKeeperRequestMissing/>}
             </TitledBox>
-            <KeeperConfig options={cluster} node={node}/>
+            <ManageAccess feature={Feature.ViewNodeKeeperConfig} displayError={true}>
+                <KeeperConfig options={cluster} node={node}/>
+            </ManageAccess>
         </Box>
     )
 

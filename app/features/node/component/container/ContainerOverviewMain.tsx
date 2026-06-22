@@ -1,10 +1,12 @@
 import {Close, PlayArrow, Replay, Stop} from "@mui/icons-material"
-import {Box, Divider} from "@mui/material"
+import {Box} from "@mui/material"
 
 import {Logs} from "../../../../shared/component/box/Logs"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useStore} from "../../../../shared/provider/StoreProvider"
+import {Feature} from "../../../feature"
+import {ManageAccessBox} from "../../../management/component/ManageAccess"
 import {
     useRouterNodePlatformDown,
     useRouterNodePlatformLogs,
@@ -18,7 +20,10 @@ import {ContainerOverviewDeploy} from "./ContainerOverviewDeploy"
 const SX: SxPropsMap = {
     single: {display: "flex", flexDirection: "column", gap: 0.5, padding: "0px 5px"},
     action: {display: "flex", gap: 0.5},
-    head: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
+    head: {
+        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1,
+        padding: "4px 0px", borderBottom: 1, borderTop: 1, borderColor: "divider",
+    },
     name: {
         fontFamily: "monospace", fontSize: "13px", border: 1, borderRadius: 1,
         borderColor: "divider", padding: "4px 10px",
@@ -45,10 +50,9 @@ export function ContainerOverviewMain(props: Props) {
 
     return (
         <Box sx={SX.single}>
-            <Divider/>
             <Box sx={SX.head}>
                 <Box sx={SX.name}>{connection.host}</Box>
-                <Box sx={SX.action}>
+                <ManageAccessBox sx={SX.action} feature={Feature.ManageNodePlatformContainer}>
                     {activeCluster && <ContainerOverviewDeploy connection={connection} cluster={activeCluster}/>}
                     <AlertButton
                         color={"inherit"}
@@ -90,9 +94,8 @@ export function ContainerOverviewMain(props: Props) {
                         onClick={() => down.mutate({connection, name})}
                         description={"This will remove container service. But you need first to stop it."}
                     />
-                </Box>
+                </ManageAccessBox>
             </Box>
-            <Divider/>
             <Logs logs={logs.data} loading={logs.isFetching}/>
         </Box>
     )

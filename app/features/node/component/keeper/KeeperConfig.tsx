@@ -66,7 +66,7 @@ export function KeeperConfig(props: Props) {
     function renderActions() {
         return (
             <Box sx={SX.buttons}>
-                <ManageAccess feature={Feature.ManageNodeDbConfigUpdate}>
+                <ManageAccess feature={Feature.ManageNodeKeeperConfigUpdate}>
                     {renderUpdateButtons()}
                 </ManageAccess>
                 <CopyIconButton placement={"left"} size={30} onClick={handleCopyAll}/>

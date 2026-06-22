@@ -17,15 +17,15 @@ const (
 	ViewTagList Feature = "view.tag.list"
 
 	// Node features
-	ViewNodeDbOverview       Feature = "view.node.db.overview"
-	ViewNodeDbConfig         Feature = "view.node.db.config"
-	ManageNodeDbConfigUpdate Feature = "manage.node.db.config.update"
-	ManageNodeDbSwitchover   Feature = "manage.node.db.switchover"
-	ManageNodeDbReinitialize Feature = "manage.node.db.reinitialize"
-	ManageNodeDbRestart      Feature = "manage.node.db.restart"
-	ManageNodeDbReload       Feature = "manage.node.db.reload"
-	ManageNodeDbFailover     Feature = "manage.node.db.failover"
-	ManageNodeDbActivation   Feature = "manage.node.db.activation"
+	ViewNodeKeeperOverview       Feature = "view.node.keeper.overview"
+	ViewNodeKeeperConfig         Feature = "view.node.keeper.config"
+	ManageNodeKeeperConfigUpdate Feature = "manage.node.keeper.config.update"
+	ManageNodeKeeperSwitchover   Feature = "manage.node.keeper.switchover"
+	ManageNodeKeeperReinitialize Feature = "manage.node.keeper.reinitialize"
+	ManageNodeKeeperRestart      Feature = "manage.node.keeper.restart"
+	ManageNodeKeeperReload       Feature = "manage.node.keeper.reload"
+	ManageNodeKeeperFailover     Feature = "manage.node.keeper.failover"
+	ManageNodeKeeperActivation   Feature = "manage.node.keeper.activation"
 
 	ViewNodePlatform            Feature = "view.node.platform"
 	ManageNodePlatform          Feature = "manage.node.platform"
@@ -90,16 +90,16 @@ var All = []Feature{
 	ManageClusterUpdate,
 	ManageClusterDelete,
 	ViewTagList,
-	ViewNodeDbOverview,
-	ViewNodeDbConfig,
+	ViewNodeKeeperOverview,
+	ViewNodeKeeperConfig,
 	ViewNodePlatform,
-	ManageNodeDbConfigUpdate,
-	ManageNodeDbSwitchover,
-	ManageNodeDbReinitialize,
-	ManageNodeDbRestart,
-	ManageNodeDbReload,
-	ManageNodeDbFailover,
-	ManageNodeDbActivation,
+	ManageNodeKeeperConfigUpdate,
+	ManageNodeKeeperSwitchover,
+	ManageNodeKeeperReinitialize,
+	ManageNodeKeeperRestart,
+	ManageNodeKeeperReload,
+	ManageNodeKeeperFailover,
+	ManageNodeKeeperActivation,
 	ManageNodePlatformContainer,
 	ViewNodePlatformContainer,
 	ViewQueryCrudList,

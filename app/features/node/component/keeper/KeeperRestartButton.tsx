@@ -31,7 +31,7 @@ export function KeeperRestartButton(props: Props) {
     const body = {schedule, restart_pending: pending || undefined}
 
     return (
-        <ManageAccess feature={Feature.ManageNodeDbRestart}>
+        <ManageAccess feature={Feature.ManageNodeKeeperRestart}>
             <AlertButton
                 size={"small"}
                 label={"Restart"}

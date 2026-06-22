@@ -55,7 +55,7 @@ export function KeeperScheduleButton(props: Props) {
 
     function renderDeleteSwitchoverButton() {
         return (
-            <ManageAccess feature={Feature.ManageNodeDbSwitchover}>
+            <ManageAccess feature={Feature.ManageNodeKeeperSwitchover}>
                 <Button
                     size={"small"}
                     variant={"outlined"}
@@ -70,7 +70,7 @@ export function KeeperScheduleButton(props: Props) {
 
     function renderDeleteRestartButton() {
         return (
-            <ManageAccess feature={Feature.ManageNodeDbRestart}>
+            <ManageAccess feature={Feature.ManageNodeKeeperRestart}>
                 <Button
                     size={"small"}
                     variant={"outlined"}

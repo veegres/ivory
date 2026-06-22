@@ -4,7 +4,7 @@ import {useState} from "react"
 
 import {Cluster, Node} from "../../../features/cluster/api/type"
 import {Feature} from "../../../features/feature"
-import {ManageAccessBox} from "../../../features/management/component/ManageAccess"
+import {ManageAccess, ManageAccessBox} from "../../../features/management/component/ManageAccess"
 import {Config, Plugin as DbPlugin} from "../../../features/plugins/api/type"
 import {useRouterQueryList} from "../../../features/query/api/hook"
 import {Type as QueryType} from "../../../features/query/api/type"
@@ -54,7 +54,7 @@ export function PgCompactTable(props: Props) {
 
     return (
         <Box>
-            <ManageAccessBox sx={SX.option} feature={Feature.ManageToolPgCompactTableJob}>
+            <ManageAccessBox sx={SX.option} feature={Feature.ManageToolPgCompactTableJob} displayError={true}>
                 <Box sx={SX.form}>
                     <PgCompactTableJobForm
                         node={node}
@@ -82,7 +82,11 @@ export function PgCompactTable(props: Props) {
                 )
             case ListBlock.QUERY:
                 const queryCon = getQueryConnection(cluster, db.host, db.port)
-                return <Query type={QueryType.BLOAT} connection={{...queryCon, db}}/>
+                return (
+                    <ManageAccess feature={Feature.ViewQueryCrudList} displayError={true}>
+                        <Query type={QueryType.BLOAT} connection={{...queryCon, db}}/>
+                    </ManageAccess>
+                )
         }
     }
 

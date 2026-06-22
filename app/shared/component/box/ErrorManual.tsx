@@ -27,3 +27,7 @@ export function ErrorKeeperRequestMissing() {
 export function ErrorUserInfoMissing() {
     return <ErrorSmart error={"Can't get user info"}/>
 }
+
+export function ErrorNoAccess({name}: {name: string}) {
+    return <ErrorSmart error={`No access for ${name} feature, you can request permission in the settings`}/>
+}

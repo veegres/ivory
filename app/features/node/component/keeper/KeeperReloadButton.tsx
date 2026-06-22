@@ -14,7 +14,7 @@ export function KeeperReloadButton(props: Props) {
     const reload = useRouterNodeReload(cluster)
 
     return (
-        <ManageAccess feature={Feature.ManageNodeDbReload}>
+        <ManageAccess feature={Feature.ManageNodeKeeperReload}>
             <AlertButton
                 size={"small"}
                 label={"Reload"}

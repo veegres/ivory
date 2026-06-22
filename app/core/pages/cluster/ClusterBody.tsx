@@ -14,8 +14,10 @@ const SX: SxPropsMap = {
 export function ClusterBody() {
     return (
         <Stack sx={SX.stack}>
-            <ClusterList/>
-            <ManageAccess feature={Feature.ViewNodeDbOverview}>
+            <ManageAccess feature={Feature.ViewClusterList} displayError={true}>
+                <ClusterList/>
+            </ManageAccess>
+            <ManageAccess feature={Feature.ViewClusterOverview} displayError={true}>
                 <ClusterOverview/>
                 <ClusterNode/>
             </ManageAccess>

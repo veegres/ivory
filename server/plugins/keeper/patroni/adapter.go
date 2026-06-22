@@ -23,15 +23,15 @@ func NewAdapter(httpClient *http.Client) *Adapter {
 
 func (a *Adapter) SupportedFeatures() []env.Feature {
 	return []env.Feature{
-		env.ViewNodeDbOverview,
-		env.ViewNodeDbConfig,
-		env.ManageNodeDbConfigUpdate,
-		env.ManageNodeDbSwitchover,
-		env.ManageNodeDbReinitialize,
-		env.ManageNodeDbRestart,
-		env.ManageNodeDbReload,
-		env.ManageNodeDbFailover,
-		env.ManageNodeDbActivation,
+		env.ViewNodeKeeperOverview,
+		env.ViewNodeKeeperConfig,
+		env.ManageNodeKeeperConfigUpdate,
+		env.ManageNodeKeeperSwitchover,
+		env.ManageNodeKeeperReinitialize,
+		env.ManageNodeKeeperRestart,
+		env.ManageNodeKeeperReload,
+		env.ManageNodeKeeperFailover,
+		env.ManageNodeKeeperActivation,
 	}
 }
 

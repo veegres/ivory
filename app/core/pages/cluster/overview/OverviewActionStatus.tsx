@@ -39,7 +39,7 @@ export function OverviewActionStatus(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <ManageAccess feature={Feature.ManageNodeDbActivation}>
+            <ManageAccess feature={Feature.ManageNodeKeeperActivation}>
                 <AlertButton
                     size={"small"}
                     color={"inherit"}

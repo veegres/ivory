@@ -14,15 +14,16 @@ type Props = {
     tabs: Tabs,
     tab: number,
     setTab: (index: number) => void,
+    fullWidth?: boolean,
 }
 
 export function TabsButton(props: Props) {
-    const {tabs, tab, setTab} = props
+    const {tabs, tab, setTab, fullWidth = true} = props
     return (
         <ToggleButtonGroup
             sx={SX.group}
             value={tab}
-            fullWidth
+            fullWidth={fullWidth}
             exclusive
             onChange={(_, value) => setTab(value ?? tab)}
         >

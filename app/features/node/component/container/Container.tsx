@@ -1,7 +1,7 @@
-import {Box} from "@mui/material"
-
 import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../../shared/helper/type"
+import {Feature} from "../../../feature"
+import {ManageAccessBox} from "../../../management/component/ManageAccess"
 import {PlatformConnection} from "../../api/type"
 import {ContainerOverview} from "./ContainerOverview"
 
@@ -17,8 +17,8 @@ export function Container(props: Props) {
     const {connection} = props
     if (!connection) return <ErrorSshMissing/>
     return (
-        <Box sx={SX.box}>
+        <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} displayError={true}>
             <ContainerOverview connection={connection}/>
-        </Box>
+        </ManageAccessBox>
     )
 }

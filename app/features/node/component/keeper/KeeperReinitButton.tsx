@@ -26,7 +26,7 @@ export function KeeperReinitButton(props: Props) {
     const body = {force}
 
     return (
-        <ManageAccess feature={Feature.ManageNodeDbReinitialize}>
+        <ManageAccess feature={Feature.ManageNodeKeeperReinitialize}>
             <AlertButton
                 color={"info"}
                 size={"small"}

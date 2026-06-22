@@ -2,8 +2,6 @@ import {Alert, Box, Collapse, Divider, Tab, Tabs} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {useRouterClusterList, useRouterClusterOverview} from "../../../../features/cluster/api/hook"
-import {Feature} from "../../../../features/feature"
-import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
@@ -43,21 +41,19 @@ export function Overview() {
     )
 
     return (
-        <ManageAccess feature={Feature.ViewNodeDbOverview}>
-            <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
-                <Box sx={SX.headBox}>
-                    <Tabs value={0} role={"tab"}>
-                        <Tab value={0} label={"Overview"}/>
-                    </Tabs>
-                    {renderActions()}
-                </Box>
-                <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
-                <Box sx={SX.mainBox}>
-                    <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
-                    <Box>{renderSettingsBlock()}</Box>
-                </Box>
-            </PageMainBox>
-        </ManageAccess>
+        <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
+            <Box sx={SX.headBox}>
+                <Tabs value={0} role={"tab"}>
+                    <Tab value={0} label={"Overview"}/>
+                </Tabs>
+                {renderActions()}
+            </Box>
+            <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
+            <Box sx={SX.mainBox}>
+                <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
+                <Box>{renderSettingsBlock()}</Box>
+            </Box>
+        </PageMainBox>
     )
 
     function renderMainBlock() {
