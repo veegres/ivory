@@ -4,10 +4,10 @@ import (
 	"ivory/clients/auth/basic"
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
+	"ivory/clients/storage"
 	"ivory/core"
 	coreConfig "ivory/core/config"
 	"ivory/core/service/encryption"
-	"ivory/core/store"
 	"ivory/core/utils"
 	"ivory/features/auth"
 	"ivory/features/backup"
@@ -48,15 +48,15 @@ func NewContext(
 	coreService *core.Service,
 ) *Context {
 	// DB
-	st := store.NewDbStorage("feature.db")
-	clusterBucket := store.NewDbBucket[cluster.Response](st, "Cluster")
-	tagBucket := store.NewDbBucket[[]string](st, "Tag")
-	permissionBucket := store.NewDbBucket[permission.PermissionMap](st, "Permission")
-	queryBucket := store.NewDbBucket[query.Response](st, "Query")
+	st := storage.NewDbStorage("feature.db")
+	clusterBucket := storage.NewDbBucket[cluster.Response](st, "Cluster")
+	tagBucket := storage.NewDbBucket[[]string](st, "Tag")
+	permissionBucket := storage.NewDbBucket[permission.PermissionMap](st, "Permission")
+	queryBucket := storage.NewDbBucket[query.Response](st, "Query")
 
 	// FILES
-	configFiles := store.NewFileStorage("config", ".json")
-	queryLogFiles := store.NewFileStorage("query", ".jsonl")
+	configFiles := storage.NewFileStorage("config", ".json")
+	queryLogFiles := storage.NewFileStorage("query", ".jsonl")
 
 	// REPOS
 	clusterRepo := cluster.NewRepository(clusterBucket)

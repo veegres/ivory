@@ -2,12 +2,12 @@ package core
 
 import (
 	"ivory/clients/console/ssh"
+	"ivory/clients/storage"
 	"ivory/core/service/cert"
 	"ivory/core/service/encryption"
 	"ivory/core/service/job"
 	"ivory/core/service/secret"
 	"ivory/core/service/vault"
-	"ivory/core/store"
 )
 
 type Service struct {
@@ -28,14 +28,14 @@ type Context struct {
 }
 
 func NewContext(sshClient *ssh.Client) *Context {
-	st := store.NewDbStorage("core.db")
+	st := storage.NewDbStorage("core.db")
 
-	secretBucket := store.NewDbBucket[string](st, "Secret")
-	vaultBucket := store.NewDbBucket[vault.Vault](st, "Vault")
-	certBucket := store.NewDbBucket[cert.Cert](st, "Cert")
+	secretBucket := storage.NewDbBucket[string](st, "Secret")
+	vaultBucket := storage.NewDbBucket[vault.Vault](st, "Vault")
+	certBucket := storage.NewDbBucket[cert.Cert](st, "Cert")
 
-	certFiles := store.NewFileStorage("cert", ".crt")
-	jobFiles := store.NewFileStorage("job", ".log")
+	certFiles := storage.NewFileStorage("cert", ".crt")
+	jobFiles := storage.NewFileStorage("job", ".log")
 
 	secretRepo := secret.NewRepository(secretBucket)
 	vaultRepo := vault.NewRepository(vaultBucket)

@@ -1,8 +1,8 @@
 package pg_compacttable
 
 import (
+	"ivory/clients/storage"
 	"ivory/core/service/job"
-	"ivory/core/store"
 	"strings"
 	"time"
 
@@ -10,10 +10,10 @@ import (
 )
 
 type Repository struct {
-	bucket *store.DbBucket[Response]
+	bucket *storage.DbBucket[Response]
 }
 
-func NewRepository(bucket *store.DbBucket[Response]) *Repository {
+func NewRepository(bucket *storage.DbBucket[Response]) *Repository {
 	return &Repository{
 		bucket: bucket,
 	}

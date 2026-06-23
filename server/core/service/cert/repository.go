@@ -2,7 +2,7 @@ package cert
 
 import (
 	"errors"
-	"ivory/core/store"
+	"ivory/clients/storage"
 	"strings"
 
 	"github.com/google/uuid"
@@ -13,11 +13,11 @@ var ErrFileInIvoryPackage = errors.New("the file shouldn't be located in Ivory w
 var ErrUnknownCertificateType = errors.New("unknown certificate type")
 
 type Repository struct {
-	bucket *store.DbBucket[Cert]
-	file   *store.FileStorage
+	bucket *storage.DbBucket[Cert]
+	file   *storage.FileStorage
 }
 
-func NewRepository(bucket *store.DbBucket[Cert], file *store.FileStorage) *Repository {
+func NewRepository(bucket *storage.DbBucket[Cert], file *storage.FileStorage) *Repository {
 	return &Repository{
 		bucket: bucket,
 		file:   file,

@@ -1,16 +1,16 @@
 package vault
 
 import (
-	"ivory/core/store"
+	"ivory/clients/storage"
 
 	"github.com/google/uuid"
 )
 
 type Repository struct {
-	bucket *store.DbBucket[Vault]
+	bucket *storage.DbBucket[Vault]
 }
 
-func NewRepository(bucket *store.DbBucket[Vault]) *Repository {
+func NewRepository(bucket *storage.DbBucket[Vault]) *Repository {
 	return &Repository{
 		bucket: bucket,
 	}

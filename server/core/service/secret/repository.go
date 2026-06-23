@@ -1,15 +1,13 @@
 package secret
 
-import (
-	"ivory/core/store"
-)
+import "ivory/clients/storage"
 
 type Repository struct {
-	bucket          *store.DbBucket[string]
+	bucket          *storage.DbBucket[string]
 	encryptedRefKey string
 }
 
-func NewRepository(bucket *store.DbBucket[string]) *Repository {
+func NewRepository(bucket *storage.DbBucket[string]) *Repository {
 	encryptedRefKey := "encryptedRef"
 	if _, err := bucket.Get(encryptedRefKey); err != nil {
 		err := bucket.Update(encryptedRefKey, "")

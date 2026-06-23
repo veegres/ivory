@@ -3,8 +3,8 @@ package cluster
 import (
 	"errors"
 	"fmt"
+	"ivory/clients/storage"
 	"ivory/core/service/vault"
-	"ivory/core/store"
 	"ivory/features/node"
 	"sync"
 	"time"
@@ -33,7 +33,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	if cluster.Vaults.DatabaseId == nil && (r.CommonConfig.DbUser == "" || r.CommonConfig.DbPass == "") {
 		return nil, ErrDatabaseCredentialsRequired
 	}
-	if _, e := s.Get(cluster.Name); !errors.Is(e, store.ErrNotFound) {
+	if _, e := s.Get(cluster.Name); !errors.Is(e, storage.ErrNotFound) {
 		return nil, ErrClusterNameTaken
 	}
 

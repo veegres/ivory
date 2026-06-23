@@ -2,21 +2,21 @@ package query
 
 import (
 	"errors"
-	"ivory/core/store"
+	"ivory/clients/storage"
 )
 
 var ErrCannotParseFileCorrupted = errors.New("cannot parse file, it is corrupted")
 
 type Repository struct {
-	bucket            *store.DbBucket[Response]
-	queryLogFiles     *store.FileStorage
+	bucket            *storage.DbBucket[Response]
+	queryLogFiles     *storage.FileStorage
 	maxBufferCapacity int
 	maxLogElements    int
 }
 
 func NewRepository(
-	bucket *store.DbBucket[Response],
-	queryLogFiles *store.FileStorage,
+	bucket *storage.DbBucket[Response],
+	queryLogFiles *storage.FileStorage,
 ) *Repository {
 	return &Repository{
 		bucket:            bucket,

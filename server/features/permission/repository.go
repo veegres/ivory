@@ -1,14 +1,12 @@
 package permission
 
-import (
-	"ivory/core/store"
-)
+import "ivory/clients/storage"
 
 type Repository struct {
-	bucket *store.DbBucket[PermissionMap]
+	bucket *storage.DbBucket[PermissionMap]
 }
 
-func NewRepository(bucket *store.DbBucket[PermissionMap]) *Repository {
+func NewRepository(bucket *storage.DbBucket[PermissionMap]) *Repository {
 	return &Repository{
 		bucket: bucket,
 	}

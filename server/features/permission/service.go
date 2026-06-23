@@ -3,8 +3,8 @@ package permission
 import (
 	"errors"
 	"fmt"
+	"ivory/clients/storage"
 	"ivory/core/config"
-	"ivory/core/store"
 	"slices"
 	"sort"
 	"strings"
@@ -84,7 +84,7 @@ func (s *Service) CreateUserPermissions(prefix string, username string) (Permiss
 		return nil, errName
 	}
 	existingPermissions, err := s.permissionRepository.Get(permUsername)
-	if err != nil && !errors.Is(err, store.ErrNotFound) {
+	if err != nil && !errors.Is(err, storage.ErrNotFound) {
 		return nil, err
 	}
 	if existingPermissions != nil {

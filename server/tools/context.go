@@ -2,8 +2,8 @@ package tools
 
 import (
 	"ivory/clients/console/shell"
+	"ivory/clients/storage"
 	"ivory/core"
-	"ivory/core/store"
 	"ivory/core/utils"
 	"ivory/tools/pg_compacttable"
 )
@@ -22,10 +22,10 @@ func NewContext(
 	coreService *core.Service,
 ) *Context {
 	// DB
-	st := store.NewDbStorage("tools.db")
+	st := storage.NewDbStorage("tools.db")
 
 	// PG COMPACT TABLE
-	pgCompactTableBucket := store.NewDbBucket[pg_compacttable.Response](st, "PgCompactTable")
+	pgCompactTableBucket := storage.NewDbBucket[pg_compacttable.Response](st, "PgCompactTable")
 	pgCompactTableRepo := pg_compacttable.NewRepository(pgCompactTableBucket)
 	pgCompactTableService := pg_compacttable.NewService(pgCompactTableRepo, shellClient, coreService.Vault, coreService.Job)
 

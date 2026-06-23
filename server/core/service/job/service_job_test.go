@@ -3,7 +3,7 @@ package job
 import (
 	"fmt"
 	"io"
-	"ivory/core/store"
+	"ivory/clients/storage"
 	"os"
 	"sync"
 	"testing"
@@ -84,7 +84,7 @@ func TestJob_Run_Success(t *testing.T) {
 	_ = os.Chdir(tmpDir)
 	defer os.Chdir(oldWd)
 
-	storage := store.NewFileStorage("job-tests", ".log")
+	storage := storage.NewFileStorage("job-tests", ".log")
 	cmd := &MockCommand{
 		id:      "test-job-success",
 		persist: true,
@@ -237,7 +237,7 @@ func TestManager(t *testing.T) {
 	_ = os.Chdir(tmpDir)
 	defer os.Chdir(oldWd)
 
-	storage := store.NewFileStorage("manager-tests", ".log")
+	storage := storage.NewFileStorage("manager-tests", ".log")
 	mgr := NewService(storage)
 
 	cmd := &MockCommand{

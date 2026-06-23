@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"ivory/clients/console"
-	"ivory/core/store"
+	"ivory/clients/storage"
 	"log/slog"
 	"os"
 	"sync"
@@ -16,10 +16,10 @@ var ErrStorageNotInitialized = errors.New("storage not initialized")
 type Service struct {
 	mu      *sync.Mutex
 	jobs    map[JobID]*Job
-	storage *store.FileStorage
+	storage *storage.FileStorage
 }
 
-func NewService(storage *store.FileStorage) *Service {
+func NewService(storage *storage.FileStorage) *Service {
 	return &Service{
 		mu:      &sync.Mutex{},
 		jobs:    make(map[JobID]*Job),

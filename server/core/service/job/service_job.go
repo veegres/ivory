@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"ivory/clients/console"
-	"ivory/core/store"
+	"ivory/clients/storage"
 	"log/slog"
 	"maps"
 	"os"
@@ -19,13 +19,13 @@ type Job struct {
 	subscribers map[SubscriberID]chan Message
 	status      Status
 	mu          sync.RWMutex
-	storage     *store.FileStorage
+	storage     *storage.FileStorage
 
 	keepAliveDuration time.Duration
 	keepAliveBegin    time.Time
 }
 
-func NewJob(cmd console.Command, storage *store.FileStorage) *Job {
+func NewJob(cmd console.Command, storage *storage.FileStorage) *Job {
 	return &Job{
 		subscribers:       make(map[SubscriberID]chan Message),
 		cmd:               cmd,

@@ -87,7 +87,7 @@ function setNode(node?: string) {
         if (node) return {...s, activeNode: {...s.activeNode, [clusterName]: node}}
         if (!s.activeNode[clusterName]) return s
         const store = {...s, activeNode: {...s.activeNode}}
-        delete store.activeNode[clusterName]
+        delete storage.activeNode[clusterName]
         return store
     })
 }

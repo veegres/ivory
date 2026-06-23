@@ -1,14 +1,12 @@
 package cluster
 
-import (
-	"ivory/core/store"
-)
+import "ivory/clients/storage"
 
 type Repository struct {
-	bucket *store.DbBucket[Response]
+	bucket *storage.DbBucket[Response]
 }
 
-func NewRepository(bucket *store.DbBucket[Response]) *Repository {
+func NewRepository(bucket *storage.DbBucket[Response]) *Repository {
 	return &Repository{
 		bucket: bucket,
 	}
