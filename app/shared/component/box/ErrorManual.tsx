@@ -5,7 +5,7 @@ export function ErrorMainNodeMissing() {
 }
 
 export function ErrorLeaderMissing() {
-    return <ErrorSmart error={"Main node is not a leader, probably something has happened or you've change it"}/>
+    return <ErrorSmart error={"Node is not a leader, can be used only on leader"}/>
 }
 
 export function ErrorDbMissing() {
