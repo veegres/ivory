@@ -97,7 +97,7 @@ type ImageOptions struct {
 
 type PlatformLogsRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Name       string                  `json:"name" form:"name" binding:"required"`
+	Path       string                  `json:"path" form:"path" binding:"required"`
 	Tail       int                     `json:"tail" form:"tail"`
 	Follow     bool                    `json:"follow" form:"follow"`
 }

@@ -8,8 +8,8 @@ import {useStore} from "../../../../shared/provider/StoreProvider"
 import {Feature} from "../../../feature"
 import {ManageAccessBox} from "../../../management/component/ManageAccess"
 import {
+    useRouterNodePlatformContainerLogs,
     useRouterNodePlatformDown,
-    useRouterNodePlatformLogs,
     useRouterNodePlatformRestart,
     useRouterNodePlatformStart,
     useRouterNodePlatformStop,
@@ -40,8 +40,8 @@ export function ContainerOverviewMain(props: Props) {
 
     const activeCluster = useStore(s => s.activeCluster)
 
-    const request = {connection, name, tail: 50, follow: true}
-    const logs = useRouterNodePlatformLogs(request)
+    const request = {connection, path: name, tail: 50, follow: true}
+    const logs = useRouterNodePlatformContainerLogs(request)
 
     const start = useRouterNodePlatformStart(connection)
     const stop = useRouterNodePlatformStop(connection)

@@ -29,6 +29,19 @@ func (s *Service) PlatformVmMetrics(r PlatformMetricsRequest) (*PlatformMetricsR
 	return adapter.Metrics(conn)
 }
 
+func (s *Service) PlatformLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	if err != nil {
+		send(job.Message{Type: job.SERVER, Message: err.Error()})
+		return
+	}
+	if r.Path == "" {
+		send(job.Message{Type: job.SERVER, Message: "path cannot be empty"})
+		return
+	}
+	s.streamCommand(adapter.Logs(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)
+}
+
 func (s *Service) PlatformContainerStop(r PlatformActionRequest) ([]string, error) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
@@ -131,7 +144,11 @@ func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	s.streamCommand(adapter.LogsContainer(conn, r.Name, r.Tail, r.Follow), subscriberID, close, send)
+	if r.Path == "" {
+		send(job.Message{Type: job.SERVER, Message: "container name cannot be empty"})
+		return
+	}
+	s.streamCommand(adapter.LogsContainer(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)
 }
 
 func (s *Service) streamCommand(cmd console.Command, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {

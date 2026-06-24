@@ -77,6 +77,9 @@ export const NodeApi = {
         fn: (request: PlatformConnection) => api.get<R<PlatformMetricsResponse>>("/node/platform/metrics", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
+    logs: {
+        url: (request: PlatformLogsRequest) => `/api/node/platform/logs?request=${encodeURIComponent(JSON.stringify(request))}`,
+    },
     deployment: {
         list: {
             key: (request: PlatformConnection) => ["node", "platform", "container", "list", request.host, request.port, request.vaultId],
@@ -91,7 +94,6 @@ export const NodeApi = {
             fn: (request: PlatformUpRequest) => api.post<R<string[]>>("/node/platform/container/up", request)
                 .then((response) => response.data.response),
         },
-
         start: {
             key: () =>  ["node", "platform", "container", "start"],
             fn: (request: PlatformActionRequest) => api.post<R<string[]>>("/node/platform/container/start", request)

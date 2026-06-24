@@ -26,6 +26,7 @@ type Adapter interface {
 type VmManager interface {
 	Metrics(connection Connection) (*Metrics, error)
 	CopyId(connection Connection, publicKey string) error
+	Logs(connection Connection, path string, tail int, follow bool) console.Command
 }
 
 type ContainerManager interface {

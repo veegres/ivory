@@ -2,6 +2,7 @@ import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
 import {Feature} from "../../../feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
 import {PlatformConnection} from "../../api/type"
+import {PlatformLogs} from "./PlatformLogs"
 import {PlatformMetrics} from "./PlatformMetrics"
 
 type Props = {
@@ -14,6 +15,7 @@ export function Platform(props: Props) {
     return (
         <ManageAccess feature={Feature.ViewNodePlatform} error={true}>
             <PlatformMetrics connection={connection}/>
+            <PlatformLogs connection={connection}/>
         </ManageAccess>
     )
 }

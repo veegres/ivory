@@ -10,6 +10,10 @@ func (r *Router) PostPlatformCopyId(context *gin.Context) {
 	handlePlatformBodyRequest(context, r.service.PlatformVmCopyId)
 }
 
+func (r *Router) StreamPlatformLogs(context *gin.Context) {
+	handleStreamRequest(context, r.service.PlatformLogs)
+}
+
 func (r *Router) PostPlatformContainerUp(context *gin.Context) {
 	handlePlatformBodyRequest(context, r.service.PlatformContainerUp)
 }

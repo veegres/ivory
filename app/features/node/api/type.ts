@@ -147,7 +147,7 @@ export interface ImageOptions {
 
 export interface PlatformLogsRequest {
     connection: PlatformConnection,
-    name: string,
+    path: string,
     tail?: number,
     follow?: boolean,
 }

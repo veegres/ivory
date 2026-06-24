@@ -35,6 +35,20 @@ func (a *Adapter) CopyId(connection platform.Connection, publicKey string) error
 	return err
 }
 
+func (a *Adapter) Logs(connection platform.Connection, path string, tail int, follow bool) console.Command {
+	commandStr := "tail "
+	if tail > 0 {
+		commandStr += "-n " + strconv.Itoa(tail) + " "
+	}
+	if follow {
+		commandStr += "-f "
+	}
+	commandStr += path
+	command := a.sshClient.Command(a.mapToSshCommand(connection), commandStr)
+	command.JobKeepAlive = false
+	return command
+}
+
 func (a *Adapter) execute(connection platform.Connection, command string) ([]string, error) {
 	cmd := a.sshClient.Command(a.mapToSshCommand(connection), command)
 	return cmd.Execute()

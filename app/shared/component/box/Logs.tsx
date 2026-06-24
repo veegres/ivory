@@ -25,9 +25,9 @@ export function Logs(props: Props) {
     return (
         <Box sx={SX.box}>
             {logs.length === 0 ? loading ? (
-                <Box sx={SX.emptyLine}>Waiting for logs</Box>
+                <Box sx={SX.emptyLine} height={height}>Waiting for logs</Box>
             ) : (
-                <Box sx={SX.emptyLine}>No logs</Box>
+                <Box sx={SX.emptyLine} height={height}>No logs</Box>
             ) : (
                 <DynamicRowVirtualizer
                     sx={sx}
