@@ -12,7 +12,7 @@ export function Platform(props: Props) {
     const {connection} = props
     if (!connection) return <ErrorSshMissing/>
     return (
-        <ManageAccess feature={Feature.ViewNodePlatform} displayError={true}>
+        <ManageAccess feature={Feature.ViewNodePlatform} error={true}>
             <PlatformMetrics connection={connection}/>
         </ManageAccess>
     )

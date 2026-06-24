@@ -28,7 +28,7 @@ export function NodeMainTools(props: Props) {
                 <TabsButton tabs={tabs} tab={tab} setTab={setTab} fullWidth={false}/>
             </Box>
             {tab === 0 && (
-                <ManageAccess feature={Feature.ViewToolPgCompactTableList} displayError={true}>
+                <ManageAccess feature={Feature.ViewToolPgCompactTableList} error={true}>
                     <PgCompactTable node={node} cluster={cluster}/>
                 </ManageAccess>
             )}

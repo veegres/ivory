@@ -21,7 +21,7 @@ type Props = {
 export function AlertDialog(props: Props) {
     const {open, children, description, title, onAgree, onClose} = props
     return (
-        <Dialog sx={SX.dialog} open={open} onClose={onClose}>
+        <Dialog sx={SX.dialog} open={open} onClose={onClose} disableRestoreFocus={true}>
             <DialogTitle sx={SX.title}>
                 {title}
             </DialogTitle>

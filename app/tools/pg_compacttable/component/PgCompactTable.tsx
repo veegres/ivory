@@ -54,7 +54,7 @@ export function PgCompactTable(props: Props) {
 
     return (
         <Box>
-            <ManageAccessBox sx={SX.option} feature={Feature.ManageToolPgCompactTableJob} displayError={true}>
+            <ManageAccessBox sx={SX.option} feature={Feature.ManageToolPgCompactTableJob} error={true}>
                 <Box sx={SX.form}>
                     <PgCompactTableJobForm
                         node={node}
@@ -83,7 +83,7 @@ export function PgCompactTable(props: Props) {
             case ListBlock.QUERY:
                 const queryCon = getQueryConnection(cluster, db.host, db.port)
                 return (
-                    <ManageAccess feature={Feature.ViewQueryCrudList} displayError={true}>
+                    <ManageAccess feature={Feature.ViewQueryCrudList} error={true}>
                         <Query type={QueryType.BLOAT} connection={{...queryCon, db}}/>
                     </ManageAccess>
                 )

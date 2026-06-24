@@ -17,7 +17,7 @@ export function Container(props: Props) {
     const {connection} = props
     if (!connection) return <ErrorSshMissing/>
     return (
-        <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} displayError={true}>
+        <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} error={true}>
             <ContainerOverview connection={connection}/>
         </ManageAccessBox>
     )

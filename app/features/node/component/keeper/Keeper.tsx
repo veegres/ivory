@@ -34,7 +34,7 @@ export function Keeper(props: Props) {
             <TitledBox title={"Actions"} island={true} renderActions={renderActions()}>
                 {!keeperRequest && <ErrorKeeperRequestMissing/>}
             </TitledBox>
-            <ManageAccess feature={Feature.ViewNodeKeeperConfig} displayError={true}>
+            <ManageAccess feature={Feature.ViewNodeKeeperConfig} error={true}>
                 <KeeperConfig options={cluster} node={node}/>
             </ManageAccess>
         </Box>
