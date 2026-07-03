@@ -6,8 +6,8 @@ import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
 	nethttp "net/http"
+	"net/url"
 	"strconv"
-	"strings"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -51,10 +51,12 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	}
 
 	for _, patroniInstance := range response.Members {
-		domainString := strings.Split(patroniInstance.ApiUrl, "/")[2]
-		domain := strings.Split(domainString, ":")
-		host := domain[0]
-		port, errCast := strconv.Atoi(domain[1])
+		parsed, errParse := url.Parse(patroniInstance.ApiUrl)
+		if errParse != nil {
+			return nil, nethttp.StatusBadRequest, errParse
+		}
+		host := parsed.Hostname()
+		port, errCast := strconv.Atoi(parsed.Port())
 		if errCast != nil {
 			return nil, nethttp.StatusBadRequest, errCast
 		}

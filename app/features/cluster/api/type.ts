@@ -62,12 +62,17 @@ export interface ImageConfig {
     dbUser: string,
 }
 
+export interface DeployCommonConfig extends ImageConfig {
+    sshPass: string,
+    sshUser: string,
+}
+
 export interface DeployRequest {
     uri: string,
     parallel: boolean
-    nodeRawOptions: {[key: string]: string},
+    nodeRawImageOptions: {[key: string]: string},
     nodeConfig: NodeConfig[],
-    commonConfig: ImageConfig,
+    commonConfig: DeployCommonConfig,
     clusterOptions: Options
 }
 

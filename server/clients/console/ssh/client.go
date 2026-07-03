@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"log/slog"
 	"net"
@@ -42,12 +44,23 @@ func (c *Client) Command(con Connection, command string) *Command {
 		Command:         command,
 		HostKeyCallback: c.hostKeyCallback,
 		Timeout:         c.timeout,
-		Dial:            c.Dial,
+		Dial: func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
+			return c.dialCached(network, addr, con.Password, con.PrivateKey, config)
+		},
 	}
 }
 
-func (c *Client) Dial(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
-	key := fmt.Sprintf("%s|%s|%s", addr, config.User, network)
+func credentialHash(password string, privateKey *ed25519.PrivateKey) string {
+	h := sha256.New()
+	h.Write([]byte(password))
+	if privateKey != nil {
+		h.Write(*privateKey)
+	}
+	return hex.EncodeToString(h.Sum(nil)[:8])
+}
+
+func (c *Client) dialCached(network, addr, password string, privateKey *ed25519.PrivateKey, config *ssh.ClientConfig) (*ssh.Client, error) {
+	key := fmt.Sprintf("%s|%s|%s|%s", addr, config.User, network, credentialHash(password, privateKey))
 
 	c.mu.RLock()
 	client, ok := c.cachedClients[key]

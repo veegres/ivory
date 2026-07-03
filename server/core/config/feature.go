@@ -93,6 +93,7 @@ var All = []Feature{
 	ViewNodeKeeperOverview,
 	ViewNodeKeeperConfig,
 	ViewNodePlatform,
+	ManageNodePlatform,
 	ManageNodeKeeperConfigUpdate,
 	ManageNodeKeeperSwitchover,
 	ManageNodeKeeperReinitialize,

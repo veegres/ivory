@@ -380,11 +380,12 @@ export function ListDeployCluster(props: Props) {
         deploy.mutate({
             uri: image.uri,
             parallel: parallel,
-            nodeRawOptions: imageOptionsSmallKeys,
+            nodeRawImageOptions: imageOptionsSmallKeys,
             nodeConfig: nodeConfigs,
             commonConfig: {
                 cluster, dcs,
                 dbUser: dbCred.username, dbPass: dbCred.password,
+                sshUser: sshCred.username, sshPass: sshCred.password,
             },
             clusterOptions: options,
         })
