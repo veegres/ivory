@@ -121,9 +121,10 @@ func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) 
 	for _, response := range responses {
 		connection := response.Connection
 		connectionKey := s.getNodeKey(connection.Host, &connection.Port)
-		if response.Error != nil {
-			connectionErrors[connectionKey] = response.Error
-			requestErrs = errors.Join(requestErrs, response.Error)
+		if response.Error != "" {
+			errResponse := errors.New(response.Error)
+			connectionErrors[connectionKey] = errResponse
+			requestErrs = errors.Join(requestErrs, errResponse)
 			continue
 		}
 		s.addKeeperResponsesToMap(keeperNodeMap, response.Response)
@@ -139,8 +140,8 @@ func (s *Service) getKeeperListByManyFirstSuccess(configs []NodeConfig, cluster 
 
 	var requestErrs error
 	for _, response := range responses {
-		if response.Error != nil {
-			requestErrs = errors.Join(requestErrs, response.Error)
+		if response.Error != "" {
+			requestErrs = errors.Join(requestErrs, errors.New(response.Error))
 			continue
 		}
 		return response.Response, nil

@@ -38,7 +38,7 @@ type KeeperMultiRequest struct {
 type KeeperMultiResponse struct {
 	Connection KeeperConnection  `json:"connection"`
 	Response   []keeper.Response `json:"response"`
-	Error      error             `json:"error"`
+	Error      string            `json:"error,omitempty"`
 }
 
 type PlatformVaultConnection struct {

@@ -21,10 +21,12 @@ func (s *Service) KeeperNodeListMulti(r KeeperMultiRequest) ([]KeeperMultiRespon
 			defer wg.Done()
 			r := keeper.Request{Host: conn.Host, Port: conn.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred}
 			response, statusCode, err := client.List(r)
+			var errorMessage string
 			if err != nil {
 				err = fmt.Errorf("host %q failed with code %d: %w", r.Host, statusCode, err)
+				errorMessage = err.Error()
 			}
-			keeperAutoResponse[i] = KeeperMultiResponse{Connection: conn, Response: response, Error: err}
+			keeperAutoResponse[i] = KeeperMultiResponse{Connection: conn, Response: response, Error: errorMessage}
 		}(i, conn)
 	}
 	wg.Wait()
