@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/clients/console/ssh"
 	"ivory/plugins/platform"
+	"strings"
 	"testing"
 )
 
@@ -154,5 +155,80 @@ func TestNormalizeDockerCommand(t *testing.T) {
 				t.Fatalf("expected %q, got %q", test.expected, actual)
 			}
 		})
+	}
+}
+
+func TestAdapterDockerCommandsQuoteShellArguments(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	connection := platform.Connection{}
+	name := "foo; rm -rf /"
+
+	tests := []struct {
+		name     string
+		command  string
+		expected string
+	}{
+		{
+			name:     "up quotes options and image",
+			command:  adapter.UpContainer(connection, `--name foo;rm -rf / -e POSTGRES_PASSWORD=p'ass`, `postgres:16; reboot`).(*ssh.Command).Command,
+			expected: `docker run -d '--name' 'foo;rm' '-rf' '/' '-e' 'POSTGRES_PASSWORD=p'\''ass' -- 'postgres:16; reboot'`,
+		},
+		{
+			name:     "down quotes name",
+			command:  adapter.DownContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker rm -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "start quotes name",
+			command:  adapter.StartContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker start -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "stop quotes name",
+			command:  adapter.StopContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker stop -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "restart quotes name",
+			command:  adapter.RestartContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker restart -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "container logs quotes name",
+			command:  adapter.LogsContainer(connection, name, 50, true).(*ssh.Command).Command,
+			expected: `docker logs --tail 50 --follow -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "file logs quotes path",
+			command:  adapter.Logs(connection, `/tmp/app; rm -rf /`, 10, false).(*ssh.Command).Command,
+			expected: `tail -n 10 -- '/tmp/app; rm -rf /'`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.command != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, test.command)
+			}
+		})
+	}
+}
+
+func TestCopyIdRejectsNewlinePublicKey(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+
+	err := adapter.CopyId(platform.Connection{}, "ssh-ed25519 AAAA attacker\nssh-ed25519 BBBB")
+	if !errors.Is(err, ErrInvalidPublicKey) {
+		t.Fatalf("expected ErrInvalidPublicKey, got %v", err)
+	}
+}
+
+func TestShellQuote(t *testing.T) {
+	got := shellQuote("foo'$(touch /tmp/pwned);bar")
+	if got != `'foo'\''$(touch /tmp/pwned);bar'` {
+		t.Fatalf("unexpected quote result: %q", got)
+	}
+	if strings.Contains(got[1:len(got)-1], "';") {
+		t.Fatalf("expected semicolon to remain inside quoted argument: %q", got)
 	}
 }

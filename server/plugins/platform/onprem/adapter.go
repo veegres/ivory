@@ -2,6 +2,7 @@ package onprem
 
 import (
 	"crypto/ed25519"
+	"errors"
 	"fmt"
 	"ivory/clients/console"
 	"ivory/clients/console/ssh"
@@ -9,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 )
+
+var ErrInvalidPublicKey = errors.New("public key cannot be empty or contain newlines")
 
 // NOTE: validate that is matches interface in compile-time
 var _ platform.Adapter = (*Adapter)(nil)
@@ -30,7 +33,11 @@ func (a *Adapter) Metrics(connection platform.Connection) (*platform.Metrics, er
 }
 
 func (a *Adapter) CopyId(connection platform.Connection, publicKey string) error {
-	command := fmt.Sprintf(`mkdir -p ~/.ssh && chmod 700 ~/.ssh && (grep -qF "%s" ~/.ssh/authorized_keys 2>/dev/null || echo "%s" >> ~/.ssh/authorized_keys) && chmod 600 ~/.ssh/authorized_keys`, publicKey, publicKey)
+	if strings.TrimSpace(publicKey) == "" || strings.ContainsAny(publicKey, "\r\n") {
+		return ErrInvalidPublicKey
+	}
+	key := shellQuote(publicKey)
+	command := fmt.Sprintf(`umask 077 && mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys && (grep -qxF -- %s ~/.ssh/authorized_keys || printf '%%s\n' %s >> ~/.ssh/authorized_keys)`, key, key)
 	_, err := a.execute(connection, command)
 	return err
 }
@@ -43,7 +50,7 @@ func (a *Adapter) Logs(connection platform.Connection, path string, tail int, fo
 	if follow {
 		commandStr += "-f "
 	}
-	commandStr += path
+	commandStr += "-- " + shellQuote(path)
 	command := a.sshClient.Command(a.mapToSshCommand(connection), commandStr)
 	command.JobKeepAlive = false
 	return command
@@ -59,23 +66,27 @@ func (a *Adapter) ListContainer(connection platform.Connection) console.Command 
 }
 
 func (a *Adapter) UpContainer(connection platform.Connection, options, image string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(fmt.Sprintf("run -d %s %s", options, image)))
+	parts := []string{"run", "-d"}
+	parts = append(parts, shellQuoteFields(options)...)
+	parts = append(parts, "--")
+	parts = append(parts, shellQuote(image))
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(parts, " ")))
 }
 
 func (a *Adapter) DownContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm "+name))
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm -- "+shellQuote(name)))
 }
 
 func (a *Adapter) StartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("start "+name))
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("start -- "+shellQuote(name)))
 }
 
 func (a *Adapter) StopContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop "+name))
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop -- "+shellQuote(name)))
 }
 
 func (a *Adapter) RestartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("restart "+name))
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("restart -- "+shellQuote(name)))
 }
 
 func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
@@ -86,7 +97,7 @@ func (a *Adapter) LogsContainer(connection platform.Connection, name string, tai
 	if follow {
 		commandStr += "--follow "
 	}
-	commandStr += name
+	commandStr += "-- " + shellQuote(name)
 	command := a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(commandStr))
 	command.JobKeepAlive = false
 	return command
@@ -116,6 +127,22 @@ func (a *Adapter) normalizeDockerCommand(command string) string {
 		return trimmed
 	}
 	return "docker " + trimmed
+}
+
+func shellQuoteFields(value string) []string {
+	fields := strings.Fields(value)
+	quoted := make([]string, 0, len(fields))
+	for _, field := range fields {
+		quoted = append(quoted, shellQuote(field))
+	}
+	return quoted
+}
+
+func shellQuote(value string) string {
+	if value == "" {
+		return "''"
+	}
+	return "'" + strings.ReplaceAll(value, "'", `'\''`) + "'"
 }
 
 func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
