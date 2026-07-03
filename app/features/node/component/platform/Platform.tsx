@@ -1,12 +1,12 @@
 import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
 import {Feature} from "../../../feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {PlatformConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/type"
 import {PlatformLogs} from "./PlatformLogs"
 import {PlatformMetrics} from "./PlatformMetrics"
 
 type Props = {
-    connection?: PlatformConnection,
+    connection?: PlatformVaultConnection,
 }
 
 export function Platform(props: Props) {

@@ -1,5 +1,14 @@
 package backup
 
+import (
+	env "ivory/core/config"
+	"ivory/features/cluster"
+	"ivory/features/permission"
+	"ivory/features/query"
+	"ivory/plugins/database"
+	"ivory/plugins/keeper"
+)
+
 // BackupV1 represents the legacy backup format used in Ivory v1.
 //
 // SACRED RULE: This structure and all its subtypes MUST NOT be changed.
@@ -63,3 +72,202 @@ const (
 	PENDING_V1
 	GRANTED_V1
 )
+
+// Export mappers: domain → backup V1 schema
+
+func clusterToBackupV1(c cluster.Response) backupClusterV1 {
+	sidecars := make([]backupSidecarV1, len(c.Nodes))
+	for i, n := range c.Nodes {
+		sidecars[i] = backupSidecarV1{Host: n.Host, Port: *n.KeeperPort}
+	}
+	return backupClusterV1{Name: c.Name, Tags: c.Tags, Sidecars: sidecars}
+}
+
+func queryToBackupV1(q query.Response) (*backupQueryV1, error) {
+	if q.Creation == query.System {
+		return nil, nil
+	}
+	varieties := make([]backupQueryVarietyV1, len(q.Varieties))
+	for i, v := range q.Varieties {
+		variety, err := queryVarietyToBackupV1(v)
+		if err != nil {
+			return nil, err
+		}
+		varieties[i] = variety
+	}
+	queryType, err := queryTypeToBackupV1(q.Type)
+	if err != nil {
+		return nil, err
+	}
+	return &backupQueryV1{
+		Name:        q.Name,
+		Type:        queryType,
+		Varieties:   varieties,
+		Params:      q.Params,
+		Description: q.Description,
+		Default:     q.Default,
+		Custom:      q.Custom,
+	}, nil
+}
+
+func queryTypeToBackupV1(qt query.Type) (backupQueryTypeV1, error) {
+	switch qt {
+	case query.BLOAT:
+		return BLOAT_V1, nil
+	case query.ACTIVITY:
+		return ACTIVITY_V1, nil
+	case query.REPLICATION:
+		return REPLICATION_V1, nil
+	case query.STATISTIC:
+		return STATISTIC_V1, nil
+	case query.OTHER:
+		return OTHER_V1, nil
+	default:
+		return 0, ErrInvalidQueryType
+	}
+}
+
+func queryVarietyToBackupV1(qv query.VarietyType) (backupQueryVarietyV1, error) {
+	switch qv {
+	case query.DatabaseSensitive:
+		return DatabaseSensitiveV1, nil
+	case query.MasterOnly:
+		return MasterOnlyV1, nil
+	case query.ReplicaRecommended:
+		return ReplicaRecommendedV1, nil
+	default:
+		return 0, ErrInvalidQueryVariety
+	}
+}
+
+func userPermissionsToBackupV1(up permission.UserPermissions) (*backupPermissionsV1, error) {
+	perms := make(map[string]backupPermissionTypeV1)
+	for k, v := range up.Permissions {
+		status, err := permissionStatusToBackupV1(v)
+		if err != nil {
+			return nil, err
+		}
+		perms[string(k)] = status
+	}
+	return &backupPermissionsV1{Username: up.Username, Permissions: perms}, nil
+}
+
+func permissionStatusToBackupV1(ps permission.Status) (backupPermissionTypeV1, error) {
+	switch ps {
+	case permission.NOT_PERMITTED:
+		return NOT_PERMITTED_V1, nil
+	case permission.PENDING:
+		return PENDING_V1, nil
+	case permission.GRANTED:
+		return GRANTED_V1, nil
+	default:
+		return 0, ErrInvalidStatus
+	}
+}
+
+// Import mappers: backup V1 schema → domain
+
+func backupToClusterV1(bc backupClusterV1) cluster.Request {
+	nodes := make([]cluster.NodeConfig, len(bc.Sidecars))
+	for i, k := range bc.Sidecars {
+		nodes[i] = cluster.NodeConfig{Host: k.Host, KeeperPort: &k.Port}
+	}
+	return cluster.Request{
+		Name: bc.Name,
+		Options: cluster.Options{
+			Plugins: cluster.Plugins{Keeper: keeper.PATRONI, Database: database.POSTGRES},
+			Tags:    bc.Tags,
+		},
+		Nodes: nodes,
+	}
+}
+
+func backupToQueryV1(bq backupQueryV1) (query.Request, error) {
+	varieties := make([]query.VarietyType, 0, len(bq.Varieties))
+	for _, v := range bq.Varieties {
+		variety, err := syncQueryVarietyV1(v)
+		if err == nil {
+			varieties = append(varieties, variety)
+		}
+	}
+	queryType, err := syncQueryTypeV1(bq.Type)
+	if err != nil {
+		return query.Request{}, err
+	}
+	return query.Request{
+		Name:        bq.Name,
+		Type:        &queryType,
+		Description: bq.Description,
+		Query:       bq.Default,
+		Varieties:   varieties,
+		Params:      bq.Params,
+	}, nil
+}
+
+func syncQueryTypeV1(bqt backupQueryTypeV1) (query.Type, error) {
+	switch bqt {
+	case BLOAT_V1:
+		return query.BLOAT, nil
+	case ACTIVITY_V1:
+		return query.ACTIVITY, nil
+	case REPLICATION_V1:
+		return query.REPLICATION, nil
+	case STATISTIC_V1:
+		return query.STATISTIC, nil
+	case OTHER_V1:
+		return query.OTHER, nil
+	default:
+		return 0, ErrInvalidQueryType
+	}
+}
+
+func syncQueryVarietyV1(bqv backupQueryVarietyV1) (query.VarietyType, error) {
+	switch bqv {
+	case DatabaseSensitiveV1:
+		return query.DatabaseSensitive, nil
+	case MasterOnlyV1:
+		return query.MasterOnly, nil
+	case ReplicaRecommendedV1:
+		return query.ReplicaRecommended, nil
+	default:
+		return 0, ErrInvalidQueryVariety
+	}
+}
+
+func backupToUserPermissionsV1(bp backupPermissionsV1) permission.UserPermissions {
+	perms := make(permission.PermissionMap)
+	for k, v := range bp.Permissions {
+		perm, err := syncPermissionV1(k)
+		if err != nil {
+			continue
+		}
+		status, err := syncPermissionStatusV1(v)
+		if err != nil {
+			continue
+		}
+		perms[perm] = status
+	}
+	return permission.UserPermissions{Username: bp.Username, Permissions: perms}
+}
+
+func syncPermissionV1(p string) (env.Feature, error) {
+	for _, validFeature := range env.All {
+		if string(validFeature) == p {
+			return validFeature, nil
+		}
+	}
+	return "", ErrInvalidFeature
+}
+
+func syncPermissionStatusV1(bpt backupPermissionTypeV1) (permission.Status, error) {
+	switch bpt {
+	case NOT_PERMITTED_V1:
+		return permission.NOT_PERMITTED, nil
+	case PENDING_V1:
+		return permission.PENDING, nil
+	case GRANTED_V1:
+		return permission.GRANTED, nil
+	default:
+		return 0, ErrInvalidStatus
+	}
+}

@@ -2,7 +2,7 @@ import {FormControl, OutlinedInput, TableRow} from "@mui/material"
 import {useState} from "react"
 
 import {KeeperPlugin} from "../../../../features/node/api/type"
-import {Plugin as DbPlugin} from "../../../../features/plugins/api/type"
+import {DbPlugin} from "../../../../features/query/api/type"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {getNodeConfigs} from "../../../../shared/helper/utils"
 import {useStore} from "../../../../shared/provider/StoreProvider"

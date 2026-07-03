@@ -6,7 +6,7 @@ import {useStore} from "../../../shared/provider/StoreProvider"
 import {ClusterApi} from "../../cluster/api/router"
 import {NodeConfig} from "../../cluster/api/type"
 import {NodeApi} from "./router"
-import {KeeperOneRequest, KeeperPlugin,PlatformConnection, PlatformLogsRequest} from "./type"
+import {KeeperOneRequest, KeeperPlugin, PlatformLogsRequest, PlatformVaultConnection} from "./type"
 
 export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
     const {loading, response} = useStream(NodeApi.logs.url(request), {enabled})
@@ -18,7 +18,7 @@ export function useRouterNodePlatformContainerLogs(request: PlatformLogsRequest)
     return {isFetching: loading, data: response}
 }
 
-export function useRouterNodePlatformUp(connection: PlatformConnection) {
+export function useRouterNodePlatformUp(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
@@ -28,7 +28,7 @@ export function useRouterNodePlatformUp(connection: PlatformConnection) {
     })
 }
 
-export function useRouterNodePlatformList(request: PlatformConnection) {
+export function useRouterNodePlatformList(request: PlatformVaultConnection) {
     return useQuery({
         queryKey: NodeApi.deployment.list.key(request),
         queryFn: () => NodeApi.deployment.list.fn(request),
@@ -126,7 +126,7 @@ export function useRouterNodePause(cluster: string) {
     })
 }
 
-export function useRouterNodeMetrics(c: PlatformConnection, refetchInterval?: number) {
+export function useRouterNodeMetrics(c: PlatformVaultConnection, refetchInterval?: number) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.metrics.key(c.host),
@@ -136,7 +136,7 @@ export function useRouterNodeMetrics(c: PlatformConnection, refetchInterval?: nu
     })
 }
 
-export function useRouterNodePlatformStart(connection: PlatformConnection) {
+export function useRouterNodePlatformStart(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
@@ -146,7 +146,7 @@ export function useRouterNodePlatformStart(connection: PlatformConnection) {
     })
 }
 
-export function useRouterNodePlatformStop(connection: PlatformConnection) {
+export function useRouterNodePlatformStop(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
@@ -156,7 +156,7 @@ export function useRouterNodePlatformStop(connection: PlatformConnection) {
     })
 }
 
-export function useRouterNodePlatformRestart(connection: PlatformConnection) {
+export function useRouterNodePlatformRestart(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
@@ -166,7 +166,7 @@ export function useRouterNodePlatformRestart(connection: PlatformConnection) {
     })
 }
 
-export function useRouterNodePlatformDown(connection: PlatformConnection) {
+export function useRouterNodePlatformDown(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({

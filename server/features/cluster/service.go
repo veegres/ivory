@@ -9,8 +9,6 @@ import (
 	"ivory/features/node"
 	"ivory/features/query"
 	"ivory/features/tag"
-	"ivory/plugins/database"
-	"ivory/plugins/keeper"
 	"ivory/tools"
 	"slices"
 )
@@ -53,14 +51,14 @@ func NewService(
 	}
 }
 
-func (s *Service) getSupportedFeatures(k keeper.Plugin, db database.Plugin) []env.Feature {
+func (s *Service) getSupportedFeatures(k node.KeeperPlugin, db query.DbPlugin) []env.Feature {
 	fk := s.nodeService.SupportedFeatures(k)
 	fdb := s.queryService.SupportedFeatures(db)
 	ft := s.getToolSupportedFeatures(db)
 	return slices.Concat(fk, fdb, ft)
 }
 
-func (s *Service) getToolSupportedFeatures(db database.Plugin) []env.Feature {
+func (s *Service) getToolSupportedFeatures(db query.DbPlugin) []env.Feature {
 	allFeatures := make([]env.Feature, 0)
 	for _, tool := range s.toolRegistry.All() {
 		allFeatures = append(allFeatures, tool.SupportedFeatures(db)...)
@@ -80,30 +78,6 @@ func (s *Service) isPortEqual(p1 *int, p2 *int) bool {
 		return false
 	}
 	return *p1 == *p2
-}
-
-func (s *Service) mapKeeperResponseList(keeperNodes []node.KeeperOneResponse) []NodeConfig {
-	nodes := make([]NodeConfig, 0)
-	for _, item := range keeperNodes {
-		nodes = append(nodes, s.mapKeeperResponse(item))
-	}
-	return nodes
-}
-
-func (s *Service) mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeConfig {
-	nodes := make([]NodeConfig, 0)
-	for _, item := range keeperNodes {
-		nodes = append(nodes, s.mapKeeperResponse(item))
-	}
-	return nodes
-}
-
-func (s *Service) mapKeeperResponse(keeper node.KeeperOneResponse) NodeConfig {
-	return NodeConfig{
-		Host:       *keeper.DiscoveredHost,
-		KeeperPort: keeper.DiscoveredKeeperPort,
-		DbPort:     keeper.DiscoveredDbPort,
-	}
 }
 
 func (s *Service) getNodeKey(h string, kp *int) string {

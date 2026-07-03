@@ -4,10 +4,10 @@ import {
     KeeperOneRequest,
     KeeperOneResponse,
     PlatformActionRequest,
-    PlatformConnection,
     PlatformLogsRequest,
     PlatformMetricsResponse,
     PlatformUpRequest,
+    PlatformVaultConnection,
 } from "./type"
 
 
@@ -74,7 +74,7 @@ export const NodeApi = {
     },
     metrics: {
         key: (host: string) => ["node", "platform", "metrics", host],
-        fn: (request: PlatformConnection) => api.get<R<PlatformMetricsResponse>>("/node/platform/metrics", {params: {request: JSON.stringify(request)}})
+        fn: (request: PlatformVaultConnection) => api.get<R<PlatformMetricsResponse>>("/node/platform/metrics", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
     logs: {
@@ -82,8 +82,8 @@ export const NodeApi = {
     },
     deployment: {
         list: {
-            key: (request: PlatformConnection) => ["node", "platform", "container", "list", request.host, request.port, request.vaultId],
-            fn: (request: PlatformConnection) => api.get<R<string[]>>("/node/platform/container", {params: {request: JSON.stringify(request)}})
+            key: (request: PlatformVaultConnection) => ["node", "platform", "container", "list", request.host, request.port, request.vaultId],
+            fn: (request: PlatformVaultConnection) => api.get<R<string[]>>("/node/platform/container", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         logs: {

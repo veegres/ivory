@@ -26,7 +26,11 @@ func (s *Service) PlatformVmMetrics(r PlatformMetricsRequest) (*PlatformMetricsR
 	if err != nil {
 		return nil, err
 	}
-	return adapter.Metrics(conn)
+	metrics, err := adapter.Metrics(conn)
+	if err != nil {
+		return nil, err
+	}
+	return mapPlatformMetrics(metrics), nil
 }
 
 func (s *Service) PlatformLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
@@ -145,7 +149,7 @@ func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.
 		return
 	}
 	if r.Path == "" {
-		send(job.Message{Type: job.SERVER, Message: "container name cannot be empty"})
+		send(job.Message{Type: job.SERVER, Message: "path cannot be empty"})
 		return
 	}
 	s.streamCommand(adapter.LogsContainer(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)

@@ -1,4 +1,4 @@
-import {Config} from "../../../features/plugins/api/type"
+import {DbConfig} from "../../../features/query/api/type"
 import {JobStatus} from "./job/type"
 
 // COMMON (WEB AND SERVER)
@@ -16,7 +16,7 @@ export interface PgCompactTable {
 
 export interface PgCompactTableRequest {
     cluster: string,
-    db: Config,
+    db: DbConfig,
     vaultId?: string,
     target?: PgCompactTableTarget,
     options: PgCompactTableOptions,

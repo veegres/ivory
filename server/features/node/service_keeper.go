@@ -26,7 +26,11 @@ func (s *Service) KeeperNodeListMulti(r KeeperMultiRequest) ([]KeeperMultiRespon
 				err = fmt.Errorf("host %q failed with code %d: %w", r.Host, statusCode, err)
 				errorMessage = err.Error()
 			}
-			keeperAutoResponse[i] = KeeperMultiResponse{Connection: conn, Response: response, Error: errorMessage}
+			mapped := make([]KeeperResponse, len(response))
+			for j, resp := range response {
+				mapped[j] = mapKeeperResponse(resp)
+			}
+			keeperAutoResponse[i] = KeeperMultiResponse{Connection: conn, Response: mapped, Error: errorMessage}
 		}(i, conn)
 	}
 	wg.Wait()
@@ -38,7 +42,15 @@ func (s *Service) KeeperNodeList(r KeeperOneRequest) ([]KeeperOneResponse, int, 
 	if err != nil {
 		return nil, 0, err
 	}
-	return client.List(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	responses, status, err := client.List(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	if err != nil {
+		return nil, status, err
+	}
+	result := make([]KeeperOneResponse, len(responses))
+	for i, resp := range responses {
+		result[i] = mapKeeperResponse(resp)
+	}
+	return result, status, nil
 }
 
 func (s *Service) KeeperConfigGet(r KeeperOneRequest) (any, int, error) {

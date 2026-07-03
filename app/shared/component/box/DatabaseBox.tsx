@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {Config as DbConfig} from "../../../features/plugins/api/type"
+import {DbConfig} from "../../../features/query/api/type"
 import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {

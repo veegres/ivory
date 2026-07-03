@@ -2,7 +2,7 @@ import {Box, Button, Checkbox, FormControlLabel, TextField} from "@mui/material"
 import {useState} from "react"
 
 import {Cluster, Node} from "../../../features/cluster/api/type"
-import {Plugin as DbPlugin} from "../../../features/plugins/api/type"
+import {DbPlugin} from "../../../features/query/api/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../features/query/api/hook"
 import {AutocompleteFetch} from "../../../shared/component/autocomplete/AutocompleteFetch"
 import {ErrorDbMissing,ErrorLeaderMissing} from "../../../shared/component/box/ErrorManual"

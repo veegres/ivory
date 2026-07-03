@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"ivory/core/service/cert"
 	"ivory/features/node"
-	"ivory/plugins/keeper"
 )
 
 func (s *Service) Overview(name string, host string, port int) (*Overview, error) {
@@ -34,7 +33,7 @@ func (s *Service) CreateAuto(cluster CreateAutoRequest) (*Response, error) {
 	if errOver != nil {
 		return nil, errOver
 	}
-	nodes := s.mapKeeperResponseMap(keeperNodeMap)
+	nodes := mapKeeperResponseMap(keeperNodeMap)
 
 	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
 	if errSave != nil {
@@ -68,7 +67,7 @@ func (s *Service) FixAuto(name string) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodes := s.mapKeeperResponseList(keeperNodes)
+	nodes := mapKeeperResponseList(keeperNodes)
 
 	model := Request{
 		Name:  cluster.Name,
@@ -241,14 +240,14 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
 		if !s.hasKeeper(cn.Keeper) {
-			cn.Keeper = node.KeeperOneResponse{Role: keeper.Unknown, State: "-"}
+			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: "-"}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
 			nodeMap[nodeKey] = cn
 		}
 		if !s.isPortEqual(cn.Config.DbPort, cn.Keeper.DiscoveredDbPort) {
 			cn.Warnings = append(cn.Warnings, "database port in keeper response and cluster configuration mismatch")
 		}
-		if cn.Keeper.Role == keeper.Leader {
+		if cn.Keeper.Role == node.KeeperRoleLeader {
 			leaderKeys = append(leaderKeys, nodeKey)
 		}
 	}

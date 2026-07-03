@@ -2,7 +2,7 @@ import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {Feature} from "../../../feature"
 import {ManageAccessBox} from "../../../management/component/ManageAccess"
-import {PlatformConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/type"
 import {ContainerOverview} from "./ContainerOverview"
 
 const SX: SxPropsMap = {
@@ -10,7 +10,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection?: PlatformConnection,
+    connection?: PlatformVaultConnection,
 }
 
 export function Container(props: Props) {

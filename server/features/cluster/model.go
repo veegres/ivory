@@ -4,8 +4,7 @@ import (
 	"ivory/core/config"
 	"ivory/core/service/cert"
 	"ivory/features/node"
-	"ivory/plugins/database"
-	"ivory/plugins/keeper"
+	"ivory/features/query"
 
 	"github.com/google/uuid"
 )
@@ -45,8 +44,8 @@ type Tls struct {
 }
 
 type Plugins struct {
-	Keeper   keeper.Plugin   `json:"keeper"`
-	Database database.Plugin `json:"database"`
+	Keeper   node.KeeperPlugin `json:"keeper"`
+	Database query.DbPlugin    `json:"database"`
 }
 
 type Vaults struct {
@@ -83,7 +82,8 @@ type DeployRequest struct {
 }
 
 type CommonConfig struct {
-	node.ImageOptionsRequest
+	Cluster string `json:"cluster"`
+	Dcs     string `json:"dcs"`
 	SshUser string `json:"sshUser"`
 	SshPass string `json:"sshPass"`
 	DbUser  string `json:"dbUser"`
@@ -91,3 +91,27 @@ type CommonConfig struct {
 }
 
 // SPECIFIC (SERVER)
+
+func mapKeeperResponse(r node.KeeperOneResponse) NodeConfig {
+	return NodeConfig{
+		Host:       *r.DiscoveredHost,
+		KeeperPort: r.DiscoveredKeeperPort,
+		DbPort:     r.DiscoveredDbPort,
+	}
+}
+
+func mapKeeperResponseList(keeperNodes []node.KeeperOneResponse) []NodeConfig {
+	nodes := make([]NodeConfig, 0, len(keeperNodes))
+	for _, item := range keeperNodes {
+		nodes = append(nodes, mapKeeperResponse(item))
+	}
+	return nodes
+}
+
+func mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeConfig {
+	nodes := make([]NodeConfig, 0, len(keeperNodes))
+	for _, item := range keeperNodes {
+		nodes = append(nodes, mapKeeperResponse(item))
+	}
+	return nodes
+}

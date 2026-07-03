@@ -13,7 +13,8 @@ func (s *Service) ConsoleQuery(queryCtx Context, query string, options *DbOption
 	if err != nil {
 		return nil, err
 	}
-	return client.GetFields(ctx, query, options)
+	result, err := client.GetFields(ctx, query, mapDbOptions(options))
+	return mapDbResponse(result), err
 }
 
 func (s *Service) TemplateQuery(ctx Context, uuid uuid.UUID, options *DbOptions) (*DbResponse, error) {
@@ -56,7 +57,8 @@ func (s *Service) RunningQueriesByApplicationName(queryCtx Context) (*DbResponse
 		return nil, err
 	}
 	options := &database.QueryOptions{Params: []any{ctx.Application}}
-	return client.ActiveQueries(ctx, options)
+	result, err := client.ActiveQueries(ctx, options)
+	return mapDbResponse(result), err
 }
 
 func (s *Service) DatabasesQuery(queryCtx Context, name string) ([]string, error) {
@@ -114,7 +116,7 @@ func (s *Service) ChartQuery(queryCtx Context, chartType ChartType) (*Chart, err
 }
 
 func (s *Service) mapContext(queryCtx Context) (database.Context, error) {
-	con := database.Connection{Config: queryCtx.Connection.Db}
+	con := database.Connection{Config: mapDbConfig(queryCtx.Connection.Db)}
 	ctx := database.Context{Connection: &con, Application: s.GetApplicationName(queryCtx.Session)}
 	if queryCtx.Connection.VaultId != nil {
 		cred, errCred := s.vaultService.GetDecrypted(*queryCtx.Connection.VaultId)

@@ -1,13 +1,21 @@
 import {Link} from "@mui/material"
+import {ReactNode} from "react"
 
 import {Cluster, Node} from "../../../../features/cluster/api/type"
-import {NodeTab, NodeTabType} from "../../../../features/node/api/type"
+import {NodeTabType} from "../../../../features/node/api/type"
 import {Container} from "../../../../features/node/component/container/Container"
 import {Keeper} from "../../../../features/node/component/keeper/Keeper"
 import {Platform} from "../../../../features/node/component/platform/Platform"
 import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/utils"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTools} from "./NodeMainTools"
+
+interface NodeTab {
+    label: string,
+    body: (cluster: Cluster, node: Node) => ReactNode,
+    info?: ReactNode,
+    actions?: ReactNode,
+}
 
 export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
     [NodeTabType.CONTAINER]: {

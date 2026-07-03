@@ -1,7 +1,19 @@
 import {Certs} from "../../cert/api/type"
-import {Config} from "../../plugins/api/type"
 
 // COMMON (WEB AND SERVER)
+
+export enum DbPlugin {
+    POSTGRES = "postgres",
+    ETCD = "etcd",
+}
+
+export interface DbConfig {
+    plugin: DbPlugin,
+    host: string,
+    port: number,
+    name?: string,
+    schema?: string,
+}
 
 export enum Type {
     BLOAT,
@@ -58,7 +70,7 @@ export interface Response {
 }
 
 export interface Connection {
-    db: Config,
+    db: DbConfig,
     certs?: Certs,
     vaultId?: string,
 }

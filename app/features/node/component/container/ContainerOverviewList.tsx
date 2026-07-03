@@ -5,7 +5,7 @@ import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup
 import {SxPropsMap} from "../../../../shared/helper/type"
 import scroll from "../../../../shared/style/scroll.module.css"
 import {useRouterNodePlatformList} from "../../api/hook"
-import {PlatformConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/type"
 
 const SX: SxPropsMap = {
     box: {
@@ -20,7 +20,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
 }
 
 export function ContainerOverviewList(props: Props) {

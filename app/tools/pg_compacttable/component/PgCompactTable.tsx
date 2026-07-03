@@ -5,7 +5,7 @@ import {useState} from "react"
 import {Cluster, Node} from "../../../features/cluster/api/type"
 import {Feature} from "../../../features/feature"
 import {ManageAccess, ManageAccessBox} from "../../../features/management/component/ManageAccess"
-import {Config, Plugin as DbPlugin} from "../../../features/plugins/api/type"
+import {DbConfig, DbPlugin} from "../../../features/query/api/type"
 import {useRouterQueryList} from "../../../features/query/api/hook"
 import {Type as QueryType} from "../../../features/query/api/type"
 import {Query} from "../../../features/query/component/Query"
@@ -44,7 +44,7 @@ export function PgCompactTable(props: Props) {
     const loading = jobs.isFetching || query.isFetching
 
     if (!node.config.dbPort) return <ErrorDbMissing/>
-    const db: Config = {
+    const db: DbConfig = {
         plugin: DbPlugin.POSTGRES,
         host: node.config.host,
         port: node.config.dbPort,

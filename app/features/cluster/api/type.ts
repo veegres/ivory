@@ -3,7 +3,7 @@ import {ReactNode} from "react"
 import {Certs} from "../../cert/api/type"
 import {Feature} from "../../feature"
 import {KeeperOneResponse, KeeperPlugin} from "../../node/api/type"
-import {Plugin as DbPlugin} from "../../plugins/api/type"
+import {DbPlugin} from "../../query/api/type"
 
 // COMMON (WEB AND SERVER)
 

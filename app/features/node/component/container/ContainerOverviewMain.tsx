@@ -14,7 +14,7 @@ import {
     useRouterNodePlatformStart,
     useRouterNodePlatformStop,
 } from "../../api/hook"
-import {PlatformConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/type"
 import {ContainerOverviewDeploy} from "./ContainerOverviewDeploy"
 
 const SX: SxPropsMap = {
@@ -31,7 +31,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
 }
 
 export function ContainerOverviewMain(props: Props) {

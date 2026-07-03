@@ -92,7 +92,7 @@ func (s *Service) initializeSystemQueries() error {
 
 	for _, adapter := range s.databaseRegistry.All() {
 		for _, req := range adapter.SystemRequests() {
-			_, _, err := s.Create(System, s.mapSystemRequest(req))
+			_, _, err := s.Create(System, mapSystemRequest(req))
 			if err != nil {
 				return err
 			}
@@ -100,20 +100,4 @@ func (s *Service) initializeSystemQueries() error {
 	}
 
 	return nil
-}
-
-func (s *Service) mapSystemRequest(req database.SystemRequest) Request {
-	t := req.Type
-	v := make([]VarietyType, len(req.Varieties))
-	for i, val := range req.Varieties {
-		v[i] = val
-	}
-	return Request{
-		Name:        req.Name,
-		Type:        &t,
-		Description: &req.Description,
-		Query:       req.Query,
-		Varieties:   v,
-		Params:      req.Params,
-	}
 }

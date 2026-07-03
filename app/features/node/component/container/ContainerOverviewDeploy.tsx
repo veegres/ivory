@@ -15,7 +15,7 @@ import {
 } from "../../../../shared/helper/utils"
 import {Cluster} from "../../../cluster/api/type"
 import {useRouterNodePlatformUp} from "../../api/hook"
-import {PlatformConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/type"
 
 const SX: SxPropsMap = {
     note: {
@@ -32,7 +32,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
     cluster: Cluster,
 }
 
@@ -211,7 +211,6 @@ export function ContainerOverviewDeploy(props: Props) {
             },
             imageOptions: {
                 cluster: cluster.name,
-                host: connection.host,
                 dcs: dcs,
                 keeperPort: Number(keeperPort),
                 dbPort: Number(dbPort),

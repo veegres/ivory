@@ -1,19 +1,15 @@
-import {ReactNode} from "react"
-
 import {Certs} from "../../cert/api/type"
-import {Cluster, Node} from "../../cluster/api/type"
-import {Feature} from "../../feature"
 
 // COMMON (WEB AND SERVER)
-
-export interface KeeperConnection {
-    host: string,
-    port: number,
-}
 
 export enum KeeperPlugin {
     PATRONI = "patroni",
     POSTGRES = "postgres",
+}
+
+export interface KeeperConnection {
+    host: string,
+    port: number,
 }
 
 export enum KeeperStatus {
@@ -75,7 +71,7 @@ export interface KeeperMultiResponse {
     error?: string,
 }
 
-export interface PlatformConnection {
+export interface PlatformVaultConnection {
     host: string,
     port: number,
     vaultId: string,
@@ -111,11 +107,7 @@ export interface Metrics {
 
 export type PlatformMetricsResponse = Metrics
 
-export interface PlatformMetricsRequest {
-    host: string,
-    port: number,
-    vaultId: string,
-}
+export type PlatformMetricsRequest = PlatformVaultConnection
 
 export interface PlatformCopyIdRequest {
     host: string,
@@ -128,7 +120,7 @@ export interface PlatformCopyIdRequest {
 export interface PlatformUpRequest {
     name: string,
     image: string,
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
     vaults: {
         databaseId: string,
         sshKeyId: string,
@@ -140,30 +132,22 @@ export interface PlatformUpRequest {
 export interface ImageOptions {
     cluster: string,
     dcs: string,
-    host: string,
     keeperPort: number,
     dbPort: number,
 }
 
 export interface PlatformLogsRequest {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
     path: string,
     tail?: number,
     follow?: boolean,
 }
 
 export interface PlatformActionRequest {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
     name: string,
 }
 
 // SPECIFIC (WEB)
 
 export enum NodeTabType {DATABASE, CONTAINER, KEEPER, TOOLS, PLATFORM}
-export interface NodeTab {
-    label: string,
-    feature?: Feature,
-    body: (cluster: Cluster, node: Node) => ReactNode,
-    info?: ReactNode,
-    actions?: ReactNode,
-}

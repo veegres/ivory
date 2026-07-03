@@ -1,12 +1,10 @@
 package query
 
 import (
-	"ivory/plugins/database"
-
 	"github.com/google/uuid"
 )
 
-func (s *Service) GetLog(queryUuid uuid.UUID) ([]database.QueryFields, error) {
+func (s *Service) GetLog(queryUuid uuid.UUID) ([]DbResponse, error) {
 	return s.repository.getLog(queryUuid)
 }
 

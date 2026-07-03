@@ -213,7 +213,7 @@ func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
 	executeGroup.POST("/console", rp.ValidateMethodMiddleware(coreConfig.ManageQueryDbConsole), r.PostExecuteConsoleQuery)
 	executeGroup.POST("/template", rp.ValidateMethodMiddleware(coreConfig.ManageQueryDbTemplate), r.PostExecuteTemplateQuery)
 	executeGroup.POST("/activity", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbInfo), r.PostActivityQuery)
-	executeGroup.POST("/deployments", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbInfo), r.PostDatabasesQuery)
+	executeGroup.POST("/databases", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbInfo), r.PostDatabasesQuery)
 	executeGroup.POST("/schemas", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbInfo), r.PostSchemasQuery)
 	executeGroup.POST("/tables", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbInfo), r.PostTablesQuery)
 	executeGroup.POST("/chart", rp.ValidateMethodMiddleware(coreConfig.ViewQueryDbChart), r.PostChartQuery)

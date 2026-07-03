@@ -7,7 +7,7 @@ import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useDebounce} from "../../../../shared/hook/Debounce"
 import {useRouterNodePlatformLogs} from "../../api/hook"
-import {PlatformConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/type"
 
 const SX: SxPropsMap = {
     head: {
@@ -20,7 +20,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
 }
 
 export function PlatformLogs(props: Props) {

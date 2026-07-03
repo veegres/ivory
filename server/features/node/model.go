@@ -15,10 +15,46 @@ type KeeperConnection struct {
 	Port int    `json:"port" form:"port"`
 }
 
+// KeeperPlugin and KeeperStatus/KeeperRole are kept as aliases so request binding and
+// keeperRegistry.Get() don't need explicit conversions at the call site.
+type KeeperPlugin = keeper.Plugin
+type KeeperStatus = keeper.Status
+type KeeperRole = keeper.Role
+
+const (
+	KeeperRoleLeader  KeeperRole = "leader"
+	KeeperRoleUnknown KeeperRole = "unknown"
+)
+
+type KeeperScheduledSwitchover struct {
+	At string `json:"at"`
+	To string `json:"to"`
+}
+
+type KeeperScheduledRestart struct {
+	At             string `json:"at"`
+	PendingRestart bool   `json:"pendingRestart"`
+}
+
+type KeeperResponse struct {
+	Key                  *string                    `json:"key"`
+	Status               *KeeperStatus              `json:"status"`
+	State                string                     `json:"state"`
+	Role                 KeeperRole                 `json:"role"`
+	Lag                  int64                      `json:"lag"`
+	PendingRestart       bool                       `json:"pendingRestart"`
+	ScheduledSwitchover  *KeeperScheduledSwitchover `json:"scheduledSwitchover"`
+	ScheduledRestart     *KeeperScheduledRestart    `json:"scheduledRestart"`
+	Tags                 *map[string]any            `json:"tags"`
+	DiscoveredHost       *string                    `json:"discoveredHost"`
+	DiscoveredKeeperPort *int                       `json:"discoveredKeeperPort"`
+	DiscoveredDbPort     *int                       `json:"discoveredDbPort"`
+}
+
 type KeeperOptions struct {
-	Plugin  keeper.Plugin `json:"plugin" form:"plugin"`
-	VaultId *uuid.UUID    `json:"vaultId" form:"vaultId"`
-	Certs   *cert.Certs   `json:"certs" form:"certs"`
+	Plugin  KeeperPlugin `json:"plugin" form:"plugin"`
+	VaultId *uuid.UUID   `json:"vaultId" form:"vaultId"`
+	Certs   *cert.Certs  `json:"certs" form:"certs"`
 }
 
 type KeeperOneRequest struct {
@@ -27,7 +63,7 @@ type KeeperOneRequest struct {
 	KeeperOptions
 }
 
-type KeeperOneResponse = keeper.Response
+type KeeperOneResponse = KeeperResponse
 
 type KeeperMultiRequest struct {
 	Connections []KeeperConnection `json:"connections" form:"connections"`
@@ -36,9 +72,30 @@ type KeeperMultiRequest struct {
 }
 
 type KeeperMultiResponse struct {
-	Connection KeeperConnection  `json:"connection"`
-	Response   []keeper.Response `json:"response"`
-	Error      string            `json:"error,omitempty"`
+	Connection KeeperConnection `json:"connection"`
+	Response   []KeeperResponse `json:"response"`
+	Error      string           `json:"error,omitempty"`
+}
+
+type CpuMetrics struct {
+	TotalTicks uint64 `json:"totalTicks"`
+	IdleTicks  uint64 `json:"idleTicks"`
+}
+
+type MemoryMetrics struct {
+	TotalBytes     uint64 `json:"totalBytes"`
+	AvailableBytes uint64 `json:"availableBytes"`
+}
+
+type NetworkMetrics struct {
+	ReceivedBytes    uint64 `json:"receivedBytes"`
+	TransmittedBytes uint64 `json:"transmittedBytes"`
+}
+
+type PlatformMetrics struct {
+	Cpu     CpuMetrics     `json:"cpu"`
+	Memory  MemoryMetrics  `json:"memory"`
+	Network NetworkMetrics `json:"network"`
 }
 
 type PlatformVaultConnection struct {
@@ -56,11 +113,11 @@ type PlatformCredConnection struct {
 
 type PlatformMetricsRequest = PlatformVaultConnection
 
-type PlatformMetricsResponse = platform.Metrics
+type PlatformMetricsResponse = PlatformMetrics
 
 type PlatformCopyIdRequest struct {
 	PlatformCredConnection
-	PublicKey string
+	PublicKey string `json:"publicKey"`
 }
 
 type PlatformUpRequest struct {
@@ -78,7 +135,6 @@ type Vaults struct {
 }
 
 type ImageOptionsRequest struct {
-	Host       string `json:"host" binding:"required"`
 	Cluster    string `json:"cluster" binding:"required"`
 	Dcs        string `json:"dcs" binding:"required"`
 	KeeperPort int    `json:"keeperPort" binding:"required"`
@@ -110,3 +166,39 @@ type PlatformActionRequest struct {
 type PlatformResponse = []string
 
 // SPECIFIC (SERVER)
+
+func mapKeeperResponse(r keeper.Response) KeeperResponse {
+	var switchover *KeeperScheduledSwitchover
+	if r.ScheduledSwitchover != nil {
+		switchover = &KeeperScheduledSwitchover{At: r.ScheduledSwitchover.At, To: r.ScheduledSwitchover.To}
+	}
+	var restart *KeeperScheduledRestart
+	if r.ScheduledRestart != nil {
+		restart = &KeeperScheduledRestart{At: r.ScheduledRestart.At, PendingRestart: r.ScheduledRestart.PendingRestart}
+	}
+	return KeeperResponse{
+		Key:                  r.Key,
+		Status:               r.Status,
+		State:                r.State,
+		Role:                 r.Role,
+		Lag:                  r.Lag,
+		PendingRestart:       r.PendingRestart,
+		ScheduledSwitchover:  switchover,
+		ScheduledRestart:     restart,
+		Tags:                 r.Tags,
+		DiscoveredHost:       r.DiscoveredHost,
+		DiscoveredKeeperPort: r.DiscoveredKeeperPort,
+		DiscoveredDbPort:     r.DiscoveredDbPort,
+	}
+}
+
+func mapPlatformMetrics(m *platform.Metrics) *PlatformMetrics {
+	if m == nil {
+		return nil
+	}
+	return &PlatformMetrics{
+		Cpu:     CpuMetrics{TotalTicks: m.Cpu.TotalTicks, IdleTicks: m.Cpu.IdleTicks},
+		Memory:  MemoryMetrics{TotalBytes: m.Memory.TotalBytes, AvailableBytes: m.Memory.AvailableBytes},
+		Network: NetworkMetrics{ReceivedBytes: m.Network.ReceivedBytes, TransmittedBytes: m.Network.TransmittedBytes},
+	}
+}

@@ -27,9 +27,10 @@ import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../.
 import {
     KeeperConnection,
     KeeperOneRequest,
-KeeperPlugin,
+    KeeperPlugin,
     KeeperStatus,
-    PlatformConnection,     Role,
+    PlatformVaultConnection,
+    Role,
 } from "../../features/node/api/type"
 import {Status as PermissionStatus} from "../../features/permission/api/type"
 import {Connection as QueryConnection, VarietyType} from "../../features/query/api/type"
@@ -184,7 +185,7 @@ export function getQueryConnection(options: Options, host: string, port?: number
     return {db, certs, vaultId}
 }
 
-export function getPlatformConnection(options: Options, host: string, port?: number): PlatformConnection | undefined {
+export function getPlatformConnection(options: Options, host: string, port?: number): PlatformVaultConnection | undefined {
     const vaultId = options.vaults.sshKeyId
     if (!port || !vaultId) return
     return {host, port, vaultId}

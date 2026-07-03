@@ -6,14 +6,14 @@ import {HistoryTrackerChart} from "../../../../shared/component/chart/HistoryTra
 import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {useRouterNodeMetrics} from "../../api/hook"
-import {PlatformConnection, PlatformMetricsResponse as NodeMetrics} from "../../api/type"
+import {PlatformMetricsResponse as NodeMetrics,PlatformVaultConnection} from "../../api/type"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},
 }
 
 type Props = {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
     interval?: number,
 }
 

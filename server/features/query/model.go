@@ -69,10 +69,20 @@ type Response struct {
 	CreatedAt   int64         `json:"createdAt"`
 }
 
+type DbPlugin = database.Plugin
+
+type DbConfig struct {
+	Plugin DbPlugin `json:"plugin"`
+	Host   string   `json:"host"`
+	Port   int      `json:"port"`
+	Name   *string  `json:"name"`
+	Schema *string  `json:"schema"`
+}
+
 type Connection struct {
-	Db      database.Config `json:"db"`
-	Certs   *cert.Certs     `json:"certs"`
-	VaultId *uuid.UUID      `json:"vaultId"`
+	Db      DbConfig    `json:"db"`
+	Certs   *cert.Certs `json:"certs"`
+	VaultId *uuid.UUID  `json:"vaultId"`
 }
 
 type TemplateRequest struct {
@@ -118,13 +128,89 @@ type Chart struct {
 	Value any    `json:"value"`
 }
 
-type DbOptions = database.QueryOptions
-type DbRow = database.QueryField
-type DbResponse = database.QueryFields
+type DbOptions struct {
+	Params []any   `json:"params"`
+	Limit  *string `json:"limit"`
+	Trim   *bool   `json:"trim"`
+}
+
+type DbRow struct {
+	Name        string `json:"name"`
+	DataType    string `json:"dataType"`
+	DataTypeOID uint32 `json:"dataTypeOID"`
+}
+
+type DbResponse struct {
+	Fields    []DbRow    `json:"fields"`
+	Rows      [][]any    `json:"rows"`
+	StartTime int64      `json:"startTime"`
+	EndTime   int64      `json:"endTime"`
+	Url       string     `json:"url"`
+	Options   *DbOptions `json:"options"`
+}
 
 // SPECIFIC (SERVER)
 
 type Context struct {
 	Connection Connection
 	Session    string
+}
+
+func mapSystemRequest(req database.SystemRequest) Request {
+	t := req.Type
+	v := make([]VarietyType, len(req.Varieties))
+	for i, val := range req.Varieties {
+		v[i] = val
+	}
+	return Request{
+		Name:        req.Name,
+		Type:        &t,
+		Description: &req.Description,
+		Query:       req.Query,
+		Varieties:   v,
+		Params:      req.Params,
+	}
+}
+
+func mapDbConfig(c DbConfig) database.Config {
+	return database.Config{
+		Plugin: c.Plugin,
+		Host:   c.Host,
+		Port:   c.Port,
+		Name:   c.Name,
+		Schema: c.Schema,
+	}
+}
+
+func mapDbOptions(o *DbOptions) *database.QueryOptions {
+	if o == nil {
+		return nil
+	}
+	return &database.QueryOptions{
+		Params: o.Params,
+		Limit:  o.Limit,
+		Trim:   o.Trim,
+	}
+}
+
+func mapDbResponse(r *database.QueryFields) *DbResponse {
+	if r == nil {
+		return nil
+	}
+	fields := make([]DbRow, len(r.Fields))
+	for i, f := range r.Fields {
+		fields[i] = DbRow{Name: f.Name, DataType: f.DataType, DataTypeOID: f.DataTypeOID}
+	}
+	var opts *DbOptions
+	if r.Options != nil {
+		opts = &DbOptions{Params: r.Options.Params, Limit: r.Options.Limit, Trim: r.Options.Trim}
+	}
+	return &DbResponse{
+		Fields:    fields,
+		Rows:      r.Rows,
+		StartTime: r.StartTime,
+		EndTime:   r.EndTime,
+		Url:       r.Url,
+		Options:   opts,
+	}
 }

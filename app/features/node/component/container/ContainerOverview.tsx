@@ -2,12 +2,12 @@ import {useState} from "react"
 
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {TabsButton} from "../../../../shared/component/button/TabsButton"
-import {PlatformConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/type"
 import {ContainerOverviewList} from "./ContainerOverviewList"
 import {ContainerOverviewMain} from "./ContainerOverviewMain"
 
 type Props = {
-    connection: PlatformConnection,
+    connection: PlatformVaultConnection,
 }
 
 export function ContainerOverview(props: Props) {

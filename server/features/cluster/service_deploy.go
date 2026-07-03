@@ -135,7 +135,6 @@ func (s *Service) deployNode(r DeployRequest, cluster Request, n NodeConfig, log
 		},
 		ImageOptions: node.ImageOptionsRequest{
 			Cluster:    cluster.Name,
-			Host:       n.Host,
 			Dcs:        r.CommonConfig.Dcs,
 			KeeperPort: *n.KeeperPort,
 			DbPort:     *n.DbPort,
