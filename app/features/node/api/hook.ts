@@ -8,8 +8,8 @@ import {NodeConfig} from "../../cluster/api/type"
 import {NodeApi} from "./router"
 import {KeeperOneRequest, KeeperPlugin,PlatformConnection, PlatformLogsRequest} from "./type"
 
-export function useRouterNodePlatformLogs(request: PlatformLogsRequest) {
-    const {loading, response} = useStream(NodeApi.logs.url(request))
+export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
+    const {loading, response} = useStream(NodeApi.logs.url(request), {enabled})
     return {isFetching: loading, data: response}
 }
 

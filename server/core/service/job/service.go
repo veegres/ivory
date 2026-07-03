@@ -7,7 +7,6 @@ import (
 	"ivory/clients/console"
 	"ivory/clients/storage"
 	"log/slog"
-	"os"
 	"sync"
 )
 
@@ -58,13 +57,10 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 
 	// 1. Stream from file if it exists
 	if s.storage != nil {
+		send(Message{Type: SERVER, Message: "streaming from the file, tries to established connection"})
 		file, err := s.storage.OpenByName(string(id))
 		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				send(Message{Type: SERVER, Message: "streaming from the file skipped (because the file does not exist)"})
-			} else {
-				send(Message{Type: SERVER, Message: "streaming from the file error: " + err.Error()})
-			}
+			send(Message{Type: SERVER, Message: "streaming from the file skipped, error: " + err.Error()})
 		} else {
 			defer func() {
 				if err := file.Close(); err != nil {
@@ -126,7 +122,11 @@ func (s *Service) Subscribe(id JobID, subscriberID SubscriberID) (<-chan Message
 	if !ok {
 		return nil, fmt.Errorf("job %s not found", id)
 	}
-	return job.addSubscriber(subscriberID), nil
+	ch, ok := job.addSubscriber(subscriberID)
+	if !ok {
+		return nil, fmt.Errorf("job %s is not running", id)
+	}
+	return ch, nil
 }
 
 // Unsubscribe detaches a subscriber from a job without stopping it.

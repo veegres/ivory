@@ -2,7 +2,12 @@ import {useCallback, useEffect, useState} from "react"
 
 import {EventStreamType, EventType} from "../../tools/pg_compacttable/api/job/type"
 
-export function useStream(url: string) {
+type Options = {
+    enabled?: boolean,
+}
+
+export function useStream(url: string, options?: Options) {
+    const {enabled = true} = options ?? {}
     const [loading, setLoading] = useState(false)
     const [response, setResponse] = useState<string[]>([])
 
@@ -10,7 +15,7 @@ export function useStream(url: string) {
         setResponse((prev) => [...prev, `[${type}] ${message}`]), [])
 
     useEffect(() => {
-        if (!url) return
+        if (!url || !enabled) return
         const es = new EventSource(url)
         es.onopen = () => {
             setLoading(true)
@@ -34,7 +39,7 @@ export function useStream(url: string) {
             setLoading(false)
             setResponse([])
         }
-    }, [push, url])
+    }, [push, url, enabled])
 
     return {loading, response}
 }

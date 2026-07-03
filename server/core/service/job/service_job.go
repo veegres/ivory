@@ -21,17 +21,19 @@ type Job struct {
 	mu          sync.RWMutex
 	storage     *storage.FileStorage
 
-	keepAliveDuration time.Duration
-	keepAliveBegin    time.Time
+	keepAliveDuration      time.Duration
+	keepAliveCheckInterval time.Duration
+	keepAliveBegin         time.Time
 }
 
 func NewJob(cmd console.Command, storage *storage.FileStorage) *Job {
 	return &Job{
-		subscribers:       make(map[SubscriberID]chan Message),
-		cmd:               cmd,
-		status:            PENDING,
-		storage:           storage,
-		keepAliveDuration: time.Second * 5,
+		subscribers:            make(map[SubscriberID]chan Message),
+		cmd:                    cmd,
+		status:                 PENDING,
+		storage:                storage,
+		keepAliveDuration:      time.Second * 5,
+		keepAliveCheckInterval: time.Second,
 	}
 }
 
@@ -78,7 +80,9 @@ func (j *Job) Run() {
 	}
 
 	// NOTE: run killer which will kill stale jobs
-	go j.killer()
+	if !j.cmd.KeepAlive() {
+		go j.killer()
+	}
 
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
@@ -121,30 +125,35 @@ func (j *Job) Stop() error {
 }
 
 func (j *Job) killer() {
+	ticker := time.NewTicker(j.keepAliveCheckInterval)
+	defer ticker.Stop()
+
 	for {
-		time.Sleep(time.Second)
-		// NOTE: we use func here for defer
-		func() {
-			j.mu.Lock()
-			defer j.mu.Unlock()
-			if j.status != RUNNING {
-				return
+		<-ticker.C
+
+		shouldStop := false
+		j.mu.Lock()
+		if j.status != RUNNING {
+			j.mu.Unlock()
+			return
+		}
+		if len(j.subscribers) == 0 {
+			now := time.Now()
+			if j.keepAliveBegin.IsZero() {
+				j.keepAliveBegin = now
 			}
-			if len(j.subscribers) == 0 {
-				now := time.Now()
-				if j.keepAliveBegin.IsZero() {
-					j.keepAliveBegin = now
-				}
-				if now.Sub(j.keepAliveBegin) > j.keepAliveDuration {
-					if err := j.Stop(); err != nil {
-						slog.Error("failed to stop job", "error", err)
-					}
-					return
-				}
-			} else {
-				j.keepAliveBegin = time.Time{}
+			shouldStop = now.Sub(j.keepAliveBegin) > j.keepAliveDuration
+		} else {
+			j.keepAliveBegin = time.Time{}
+		}
+		j.mu.Unlock()
+
+		if shouldStop {
+			if err := j.Stop(); err != nil {
+				slog.Error("failed to stop job", "error", err)
 			}
-		}()
+			return
+		}
 	}
 }
 
@@ -168,15 +177,16 @@ func (j *Job) close() {
 	}
 }
 
-func (j *Job) addSubscriber(id SubscriberID) chan Message {
-	var channel chan Message
+func (j *Job) addSubscriber(id SubscriberID) (chan Message, bool) {
 	j.mu.Lock()
-	if j.status == PENDING || j.status == RUNNING {
-		channel = make(chan Message, 256)
-		j.subscribers[id] = channel
+	defer j.mu.Unlock()
+	if j.status != PENDING && j.status != RUNNING {
+		return nil, false
 	}
-	j.mu.Unlock()
-	return channel
+
+	channel := make(chan Message, 256)
+	j.subscribers[id] = channel
+	return channel, true
 }
 
 func (j *Job) removeSubscriber(id SubscriberID) {

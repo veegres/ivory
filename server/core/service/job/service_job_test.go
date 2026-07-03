@@ -92,7 +92,10 @@ func TestJob_Run_Success(t *testing.T) {
 	}
 
 	job := NewJob(cmd, storage)
-	ch := job.addSubscriber("sub-1")
+	ch, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected subscriber to be added")
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -155,7 +158,10 @@ func TestJob_Run_StartError(t *testing.T) {
 	}
 
 	job := NewJob(cmd, nil)
-	ch := job.addSubscriber("sub-1")
+	ch, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected subscriber to be added")
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -197,7 +203,10 @@ func TestJob_Run_Stop(t *testing.T) {
 	}
 
 	job := NewJob(cmd, nil)
-	ch := job.addSubscriber("sub-1")
+	ch, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected subscriber to be added")
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -228,6 +237,48 @@ func TestJob_Run_Stop(t *testing.T) {
 
 	if !hasStopped {
 		t.Error("Expected status to become STOPPED")
+	}
+}
+
+func TestJob_Run_KillerStopsJobWithoutSubscribers(t *testing.T) {
+	cmd := &MockCommand{
+		id:     "test-job-killer-stop",
+		output: []string{"line 1", "line 2", "line 3"},
+		delay:  50 * time.Millisecond,
+	}
+
+	job := NewJob(cmd, nil)
+	job.keepAliveDuration = time.Millisecond
+	job.keepAliveCheckInterval = time.Millisecond
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		job.Run()
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("expected killer to stop job without deadlocking")
+	}
+
+	if status := job.getStatus(); status != STOPPED {
+		t.Fatalf("expected status %s, got %s", STOPPED, status)
+	}
+}
+
+func TestJob_AddSubscriber_FailsWhenJobFinished(t *testing.T) {
+	cmd := &MockCommand{id: "test-job-finished"}
+	job := NewJob(cmd, nil)
+	job.setStatus(FINISHED)
+
+	ch, ok := job.addSubscriber("sub-1")
+	if ok {
+		t.Fatal("expected subscriber add to fail for finished job")
+	}
+	if ch != nil {
+		t.Fatal("expected nil channel for failed subscriber add")
 	}
 }
 
