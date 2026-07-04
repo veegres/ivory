@@ -9,7 +9,7 @@ import (
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/patroni"
 	"ivory/plugins/platform"
-	"ivory/plugins/platform/onprem"
+	"ivory/plugins/platform/linux"
 )
 
 type Context struct {
@@ -22,7 +22,7 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	// ADAPTERS
 	patroniAdapter := patroni.NewAdapter(httpClient)
 	postgresAdapter := postgres.NewAdapter()
-	onpremAdapter := onprem.NewAdapter(sshClient)
+	linuxAdapter := linux.NewAdapter(sshClient)
 
 	// REGISTRY
 	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
@@ -30,7 +30,7 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	databaseRegistry := utils.NewRegistry[database.Plugin, database.Adapter]()
 	databaseRegistry.Register(database.POSTGRES, postgresAdapter)
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Onprem, onpremAdapter)
+	platformRegistry.Register(platform.Linux, linuxAdapter)
 
 	return &Context{
 		KeeperRegistry:   keeperRegistry,

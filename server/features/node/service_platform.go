@@ -13,7 +13,7 @@ import (
 )
 
 func (s *Service) PlatformVmCopyId(r PlatformCopyIdRequest) (string, error) {
-	adapter, err := s.platformRegistry.Get(platform.Onprem)
+	adapter, err := s.platformRegistry.Get(platform.Linux)
 	if err != nil {
 		return "", err
 	}

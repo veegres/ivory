@@ -3,7 +3,7 @@ package platform
 type Plugin string
 
 const (
-	Onprem Plugin = "onprem"
+	Linux Plugin = "linux"
 )
 
 type Metrics struct {

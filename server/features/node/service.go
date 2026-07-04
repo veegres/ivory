@@ -48,7 +48,7 @@ func (s *Service) SupportedFeatures(t keeper.Plugin) []env.Feature {
 }
 
 func (s *Service) getPlatformAdapter(c PlatformVaultConnection) (platform.Adapter, platform.Connection, error) {
-	adapter, err := s.platformRegistry.Get(platform.Onprem)
+	adapter, err := s.platformRegistry.Get(platform.Linux)
 	if err != nil {
 		return nil, platform.Connection{}, err
 	}

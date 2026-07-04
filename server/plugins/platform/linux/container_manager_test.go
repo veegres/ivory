@@ -1,4 +1,4 @@
-package onprem
+package linux
 
 import (
 	"errors"
@@ -7,6 +7,92 @@ import (
 	"math"
 	"testing"
 )
+
+func TestNormalizeDockerCommand(t *testing.T) {
+	tests := []struct {
+		name     string
+		command  string
+		expected string
+	}{
+		{name: "prefix plain command", command: "ps", expected: "docker ps"},
+		{name: "keep docker command", command: "docker ps", expected: "docker ps"},
+		{name: "keep sudo docker command", command: "sudo docker ps", expected: "sudo docker ps"},
+		{name: "trim spaces", command: "  images  ", expected: "docker images"},
+	}
+
+	adapter := &Adapter{}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actual := adapter.normalizeDockerCommand(test.command)
+			if actual != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, actual)
+			}
+		})
+	}
+}
+
+func TestContainerCommandsQuoteShellArguments(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	connection := platform.Connection{}
+	name := "foo; rm -rf /"
+
+	tests := []struct {
+		name     string
+		command  string
+		expected string
+	}{
+		{
+			name:     "up quotes options and image",
+			command:  adapter.UpContainer(connection, `--name foo;rm -rf / -e POSTGRES_PASSWORD=p'ass`, `postgres:16; reboot`).(*ssh.Command).Command,
+			expected: `docker run -d '--name' 'foo;rm' '-rf' '/' '-e' 'POSTGRES_PASSWORD=p'\''ass' -- 'postgres:16; reboot'`,
+		},
+		{
+			name:     "down quotes name",
+			command:  adapter.DownContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker rm -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "start quotes name",
+			command:  adapter.StartContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker start -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "stop quotes name",
+			command:  adapter.StopContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker stop -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "restart quotes name",
+			command:  adapter.RestartContainer(connection, name).(*ssh.Command).Command,
+			expected: `docker restart -- 'foo; rm -rf /'`,
+		},
+		{
+			name:     "container logs quotes name",
+			command:  adapter.LogsContainer(connection, name, 50, true).(*ssh.Command).Command,
+			expected: `docker logs --tail 50 --follow -- 'foo; rm -rf /'`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if test.command != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, test.command)
+			}
+		})
+	}
+}
+
+func TestMetricsContainerQuotesShellArguments(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	name := "foo; rm -rf /"
+
+	command := adapter.normalizeDockerCommand("stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name))
+	expected := `docker stats --no-stream --format '{{json .}}' -- 'foo; rm -rf /'`
+	if command != expected {
+		t.Fatalf("expected %q, got %q", expected, command)
+	}
+}
 
 func TestParseContainerMetrics(t *testing.T) {
 	output := `{"CPUPerc":"12.34%","MemUsage":"20.5MiB / 1.952GiB","NetIO":"1.2kB / 648B"}`
@@ -98,15 +184,4 @@ func TestParseContainerMetricsErrorsAndEdgeCases(t *testing.T) {
 			t.Errorf("expected ErrInvalidContainerMetrics, got %v", err)
 		}
 	})
-}
-
-func TestMetricsContainerQuotesShellArguments(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
-	name := "foo; rm -rf /"
-
-	command := adapter.normalizeDockerCommand("stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name))
-	expected := `docker stats --no-stream --format '{{json .}}' -- 'foo; rm -rf /'`
-	if command != expected {
-		t.Fatalf("expected %q, got %q", expected, command)
-	}
 }

@@ -1,4 +1,4 @@
-package onprem
+package linux
 
 import (
 	"errors"
@@ -134,86 +134,6 @@ lo: 100 1 0 0 0 0 0 0 100 1 0 0 0 0 0 0
 	})
 }
 
-func TestNormalizeDockerCommand(t *testing.T) {
-	tests := []struct {
-		name     string
-		command  string
-		expected string
-	}{
-		{name: "prefix plain command", command: "ps", expected: "docker ps"},
-		{name: "keep docker command", command: "docker ps", expected: "docker ps"},
-		{name: "keep sudo docker command", command: "sudo docker ps", expected: "sudo docker ps"},
-		{name: "trim spaces", command: "  images  ", expected: "docker images"},
-	}
-
-	adapter := &Adapter{}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			actual := adapter.normalizeDockerCommand(test.command)
-			if actual != test.expected {
-				t.Fatalf("expected %q, got %q", test.expected, actual)
-			}
-		})
-	}
-}
-
-func TestAdapterDockerCommandsQuoteShellArguments(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
-	connection := platform.Connection{}
-	name := "foo; rm -rf /"
-
-	tests := []struct {
-		name     string
-		command  string
-		expected string
-	}{
-		{
-			name:     "up quotes options and image",
-			command:  adapter.UpContainer(connection, `--name foo;rm -rf / -e POSTGRES_PASSWORD=p'ass`, `postgres:16; reboot`).(*ssh.Command).Command,
-			expected: `docker run -d '--name' 'foo;rm' '-rf' '/' '-e' 'POSTGRES_PASSWORD=p'\''ass' -- 'postgres:16; reboot'`,
-		},
-		{
-			name:     "down quotes name",
-			command:  adapter.DownContainer(connection, name).(*ssh.Command).Command,
-			expected: `docker rm -- 'foo; rm -rf /'`,
-		},
-		{
-			name:     "start quotes name",
-			command:  adapter.StartContainer(connection, name).(*ssh.Command).Command,
-			expected: `docker start -- 'foo; rm -rf /'`,
-		},
-		{
-			name:     "stop quotes name",
-			command:  adapter.StopContainer(connection, name).(*ssh.Command).Command,
-			expected: `docker stop -- 'foo; rm -rf /'`,
-		},
-		{
-			name:     "restart quotes name",
-			command:  adapter.RestartContainer(connection, name).(*ssh.Command).Command,
-			expected: `docker restart -- 'foo; rm -rf /'`,
-		},
-		{
-			name:     "container logs quotes name",
-			command:  adapter.LogsContainer(connection, name, 50, true).(*ssh.Command).Command,
-			expected: `docker logs --tail 50 --follow -- 'foo; rm -rf /'`,
-		},
-		{
-			name:     "file logs quotes path",
-			command:  adapter.Logs(connection, `/tmp/app; rm -rf /`, 10, false).(*ssh.Command).Command,
-			expected: `tail -n 10 -- '/tmp/app; rm -rf /'`,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			if test.command != test.expected {
-				t.Fatalf("expected %q, got %q", test.expected, test.command)
-			}
-		})
-	}
-}
-
 func TestCopyIdRejectsNewlinePublicKey(t *testing.T) {
 	adapter := NewAdapter(ssh.NewClient())
 
@@ -230,5 +150,104 @@ func TestShellQuote(t *testing.T) {
 	}
 	if strings.Contains(got[1:len(got)-1], "';") {
 		t.Fatalf("expected semicolon to remain inside quoted argument: %q", got)
+	}
+}
+
+func TestLogsQuotesShellArguments(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	connection := platform.Connection{}
+
+	command := adapter.Logs(connection, `/tmp/app; rm -rf /`, 10, false).(*ssh.Command).Command
+	expected := `tail -n 10 -- '/tmp/app; rm -rf /'`
+	if command != expected {
+		t.Fatalf("expected %q, got %q", expected, command)
+	}
+}
+
+func TestParseProcesses(t *testing.T) {
+	lines := []string{
+		"1234 postgres 12.3 4.5 102400 4 /usr/lib/postgresql/16/bin/postgres postgres: main process",
+		"   1 root      0.0  0.1   1024 1 init init",
+	}
+
+	adapter := NewAdapter(ssh.NewClient())
+	processes, err := adapter.parseProcesses(lines)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(processes) != 2 {
+		t.Fatalf("expected 2 processes, got %d", len(processes))
+	}
+
+	first := processes[0]
+	if first.Pid != 1234 || first.User != "postgres" || first.CpuPercent != 12.3 || first.MemPercent != 4.5 {
+		t.Fatalf("unexpected first process: %+v", first)
+	}
+	if first.MemoryBytes != 102400*1024 {
+		t.Fatalf("expected memory bytes %d, got %d", 102400*1024, first.MemoryBytes)
+	}
+	if first.Threads != 4 {
+		t.Fatalf("expected 4 threads, got %d", first.Threads)
+	}
+	if first.Program != "postgres" {
+		t.Fatalf("expected program basename %q, got %q", "postgres", first.Program)
+	}
+	if first.Command != "postgres: main process" {
+		t.Fatalf("unexpected command: %q", first.Command)
+	}
+}
+
+func TestParseProcessesProgramStripsPath(t *testing.T) {
+	lines := []string{"1 root 0.0 0.1 1024 1 /usr/lib/postgresql/16/bin/postgres /usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/data"}
+
+	adapter := NewAdapter(ssh.NewClient())
+	processes, err := adapter.parseProcesses(lines)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if processes[0].Program != "postgres" {
+		t.Fatalf("expected program basename %q, got %q", "postgres", processes[0].Program)
+	}
+	if processes[0].Command != "/usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/data" {
+		t.Fatalf("expected full command line, got %q", processes[0].Command)
+	}
+}
+
+func TestParseProcessesSkipsMalformedLines(t *testing.T) {
+	lines := []string{
+		"1234 postgres 12.3 4.5 102400 4 postgres postgres",
+		"garbage line that is too short",
+		"",
+		"   ",
+	}
+
+	adapter := NewAdapter(ssh.NewClient())
+	processes, err := adapter.parseProcesses(lines)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(processes) != 1 {
+		t.Fatalf("expected 1 process after skipping malformed lines, got %d", len(processes))
+	}
+}
+
+func TestParseProcessesAllMalformedReturnsError(t *testing.T) {
+	lines := []string{"not a valid ps line"}
+
+	adapter := NewAdapter(ssh.NewClient())
+	_, err := adapter.parseProcesses(lines)
+	if !errors.Is(err, platform.ErrInvalidProcesses) {
+		t.Fatalf("expected ErrInvalidProcesses, got %v", err)
+	}
+}
+
+func TestParseProcessesEmptyInput(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	processes, err := adapter.parseProcesses([]string{})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(processes) != 0 {
+		t.Fatalf("expected 0 processes, got %d", len(processes))
 	}
 }

@@ -1,4 +1,4 @@
-package onprem
+package linux
 
 import (
 	"crypto/ed25519"
@@ -7,9 +7,17 @@ import (
 	"ivory/clients/console"
 	"ivory/clients/console/ssh"
 	"ivory/plugins/platform"
+	"path"
 	"strconv"
 	"strings"
 )
+
+const MetricsCommand = `sh -c '
+echo __IVORY_CPU__; head -n 1 /proc/stat;
+echo __IVORY_MEM__; grep -E "MemTotal|MemAvailable" /proc/meminfo;
+echo __IVORY_NET__; cat /proc/net/dev'`
+
+const ProcessesCommand = `ps -eo pid,user,pcpu,pmem,rss,nlwp,comm,args --no-headers --sort=-pcpu | head -n 100`
 
 var ErrInvalidPublicKey = errors.New("public key cannot be empty or contain newlines")
 
@@ -42,7 +50,7 @@ func (a *Adapter) CopyId(connection platform.Connection, publicKey string) error
 	return err
 }
 
-func (a *Adapter) Logs(connection platform.Connection, path string, tail int, follow bool) console.Command {
+func (a *Adapter) Logs(connection platform.Connection, filePath string, tail int, follow bool) console.Command {
 	commandStr := "tail "
 	if tail > 0 {
 		commandStr += "-n " + strconv.Itoa(tail) + " "
@@ -50,57 +58,23 @@ func (a *Adapter) Logs(connection platform.Connection, path string, tail int, fo
 	if follow {
 		commandStr += "-f "
 	}
-	commandStr += "-- " + shellQuote(path)
+	commandStr += "-- " + shellQuote(filePath)
 	command := a.sshClient.Command(a.mapToSshCommand(connection), commandStr)
 	command.JobKeepAlive = false
 	return command
 }
 
+func (a *Adapter) Processes(connection platform.Connection) ([]platform.Process, error) {
+	result, err := a.execute(connection, ProcessesCommand)
+	if err != nil {
+		return nil, err
+	}
+	return a.parseProcesses(result)
+}
+
 func (a *Adapter) execute(connection platform.Connection, command string) ([]string, error) {
 	cmd := a.sshClient.Command(a.mapToSshCommand(connection), command)
 	return cmd.Execute()
-}
-
-func (a *Adapter) ListContainer(connection platform.Connection) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
-}
-
-func (a *Adapter) UpContainer(connection platform.Connection, options, image string) console.Command {
-	parts := []string{"run", "-d"}
-	parts = append(parts, shellQuoteFields(options)...)
-	parts = append(parts, "--")
-	parts = append(parts, shellQuote(image))
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(parts, " ")))
-}
-
-func (a *Adapter) DownContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm -- "+shellQuote(name)))
-}
-
-func (a *Adapter) StartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("start -- "+shellQuote(name)))
-}
-
-func (a *Adapter) StopContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop -- "+shellQuote(name)))
-}
-
-func (a *Adapter) RestartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("restart -- "+shellQuote(name)))
-}
-
-func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
-	commandStr := "logs "
-	if tail > 0 {
-		commandStr += "--tail " + strconv.Itoa(tail) + " "
-	}
-	if follow {
-		commandStr += "--follow "
-	}
-	commandStr += "-- " + shellQuote(name)
-	command := a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(commandStr))
-	command.JobKeepAlive = false
-	return command
 }
 
 func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Connection {
@@ -116,26 +90,6 @@ func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Connection {
 		Password:   conn.Password,
 		PrivateKey: prvKey,
 	}
-}
-
-func (a *Adapter) normalizeDockerCommand(command string) string {
-	trimmed := strings.TrimSpace(command)
-	if trimmed == "" {
-		return ""
-	}
-	if strings.HasPrefix(trimmed, "docker ") || trimmed == "docker" || strings.HasPrefix(trimmed, "sudo docker ") {
-		return trimmed
-	}
-	return "docker " + trimmed
-}
-
-func shellQuoteFields(value string) []string {
-	fields := strings.Fields(value)
-	quoted := make([]string, 0, len(fields))
-	for _, field := range fields {
-		quoted = append(quoted, shellQuote(field))
-	}
-	return quoted
 }
 
 func shellQuote(value string) string {
@@ -303,4 +257,59 @@ func (a *Adapter) parseNetworkMetrics(lines []string) (platform.NetworkMetrics, 
 		ReceivedBytes:    received,
 		TransmittedBytes: transmitted,
 	}, nil
+}
+
+// parseProcesses is lenient: a single malformed row (e.g. a command name with
+// an unexpected shape) is skipped rather than failing the whole listing.
+func (a *Adapter) parseProcesses(lines []string) ([]platform.Process, error) {
+	processes := make([]platform.Process, 0, len(lines))
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+
+		fields := strings.Fields(trimmed)
+		if len(fields) < 8 {
+			continue
+		}
+
+		pid, err := strconv.Atoi(fields[0])
+		if err != nil {
+			continue
+		}
+		cpuPercent, err := strconv.ParseFloat(fields[2], 64)
+		if err != nil {
+			continue
+		}
+		memPercent, err := strconv.ParseFloat(fields[3], 64)
+		if err != nil {
+			continue
+		}
+		rssKb, err := strconv.ParseUint(fields[4], 10, 64)
+		if err != nil {
+			continue
+		}
+		threads, err := strconv.Atoi(fields[5])
+		if err != nil {
+			continue
+		}
+
+		processes = append(processes, platform.Process{
+			Pid:         pid,
+			Program:     path.Base(fields[6]),
+			Command:     strings.Join(fields[7:], " "),
+			Threads:     threads,
+			User:        fields[1],
+			MemoryBytes: rssKb * 1024,
+			MemPercent:  memPercent,
+			CpuPercent:  cpuPercent,
+		})
+	}
+
+	if len(processes) == 0 && len(lines) > 0 {
+		return nil, platform.ErrInvalidProcesses
+	}
+
+	return processes, nil
 }

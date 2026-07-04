@@ -1,7 +1,8 @@
-package onprem
+package linux
 
 import (
 	"encoding/json"
+	"ivory/clients/console"
 	"ivory/plugins/platform"
 	"math"
 	"strconv"
@@ -31,6 +32,48 @@ var byteSizeUnits = map[string]float64{
 	"TIB": 1024 * 1024 * 1024 * 1024,
 }
 
+func (a *Adapter) ListContainer(connection platform.Connection) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
+}
+
+func (a *Adapter) UpContainer(connection platform.Connection, options, image string) console.Command {
+	parts := []string{"run", "-d"}
+	parts = append(parts, shellQuoteFields(options)...)
+	parts = append(parts, "--")
+	parts = append(parts, shellQuote(image))
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(parts, " ")))
+}
+
+func (a *Adapter) DownContainer(connection platform.Connection, name string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm -- "+shellQuote(name)))
+}
+
+func (a *Adapter) StartContainer(connection platform.Connection, name string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("start -- "+shellQuote(name)))
+}
+
+func (a *Adapter) StopContainer(connection platform.Connection, name string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop -- "+shellQuote(name)))
+}
+
+func (a *Adapter) RestartContainer(connection platform.Connection, name string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("restart -- "+shellQuote(name)))
+}
+
+func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
+	commandStr := "logs "
+	if tail > 0 {
+		commandStr += "--tail " + strconv.Itoa(tail) + " "
+	}
+	if follow {
+		commandStr += "--follow "
+	}
+	commandStr += "-- " + shellQuote(name)
+	command := a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(commandStr))
+	command.JobKeepAlive = false
+	return command
+}
+
 func (a *Adapter) MetricsContainer(connection platform.Connection, name string) (*platform.Metrics, error) {
 	command := a.normalizeDockerCommand("stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name))
 	result, err := a.execute(connection, command)
@@ -38,6 +81,26 @@ func (a *Adapter) MetricsContainer(connection platform.Connection, name string) 
 		return nil, err
 	}
 	return a.parseContainerMetrics(strings.Join(result, "\n"))
+}
+
+func (a *Adapter) normalizeDockerCommand(command string) string {
+	trimmed := strings.TrimSpace(command)
+	if trimmed == "" {
+		return ""
+	}
+	if strings.HasPrefix(trimmed, "docker ") || trimmed == "docker" || strings.HasPrefix(trimmed, "sudo docker ") {
+		return trimmed
+	}
+	return "docker " + trimmed
+}
+
+func shellQuoteFields(value string) []string {
+	fields := strings.Fields(value)
+	quoted := make([]string, 0, len(fields))
+	for _, field := range fields {
+		quoted = append(quoted, shellQuote(field))
+	}
+	return quoted
 }
 
 func (a *Adapter) parseContainerMetrics(output string) (*platform.Metrics, error) {
