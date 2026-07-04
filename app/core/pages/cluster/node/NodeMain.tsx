@@ -1,17 +1,22 @@
 import {Box} from "@mui/material"
 
 import {Cluster, Node} from "../../../../features/cluster/api/type"
+import {NodeApi} from "../../../../features/node/api/router"
 import {NodeTabType} from "../../../../features/node/api/type"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../features/query/api/hook"
 import {AutocompleteFetch} from "../../../../shared/component/autocomplete/AutocompleteFetch"
 import {SxPropsMap} from "../../../../shared/helper/type"
-import {getQueryConnection} from "../../../../shared/helper/utils"
+import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/utils"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
+import {Refresher} from "../../../widgets/browser/Refresher"
 import {NODE_TABS} from "./NodeMainTabs"
 import {NodeMainTitle} from "./NodeMainTitle"
 
 const SX: SxPropsMap = {
-    main: {flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 1},
+    main: {
+        flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column",
+        gap: 1, backgroundImage: "inherit", backgroundColor: "inherit",
+    },
     inputs: {display: "flex", alignItems: "center", gap: 1, width: "300px"},
 }
 
@@ -37,7 +42,13 @@ export function NodeMain(props: Props) {
     )
 
     function renderActions() {
-        if (tab !== NodeTabType.DATABASE) return
+        if (tab === NodeTabType.DATABASE) return renderDatabaseActions()
+        if (tab === NodeTabType.PLATFORM) return renderPlatformActions()
+        if (tab === NodeTabType.CONTAINER) return renderContainerActions()
+        return
+    }
+
+    function renderDatabaseActions() {
         const con = getQueryConnection(cluster, node.config.host, node.config.dbPort)
         if (!con) return
         return (
@@ -63,5 +74,19 @@ export function NodeMain(props: Props) {
                 />
             </Box>
         )
+    }
+
+    function renderPlatformActions() {
+        const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
+        if (!con) return
+        const queryKeys = [NodeApi.metrics.key(con.host), NodeApi.processes.key(con.host)]
+        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]}/>
+    }
+
+    function renderContainerActions() {
+        const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
+        if (!con) return
+        const queryKeys = [NodeApi.deployment.metrics.key({connection: con, name: con.host})]
+        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]}/>
     }
 }

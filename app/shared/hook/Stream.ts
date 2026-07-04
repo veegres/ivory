@@ -10,6 +10,7 @@ export function useStream(url: string, options?: Options) {
     const {enabled = true} = options ?? {}
     const [loading, setLoading] = useState(false)
     const [response, setResponse] = useState<string[]>([])
+    const [nonce, setNonce] = useState(0)
 
     const push = useCallback((type: EventType, message: string) =>
         setResponse((prev) => [...prev, `[${type}] ${message}`]), [])
@@ -39,7 +40,9 @@ export function useStream(url: string, options?: Options) {
             setLoading(false)
             setResponse([])
         }
-    }, [push, url, enabled])
+        // NOTE: nonce is not read, it only exists to let `reconnect` force this effect
+        //  to tear down the current EventSource and open a fresh one from scratch.
+    }, [push, url, enabled, nonce])
 
-    return {loading, response}
+    return {loading, response, reconnect: () => setNonce(n => n + 1)}
 }

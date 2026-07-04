@@ -5,7 +5,7 @@ import {
     DnsTwoTone,
     FilePresentOutlined,
     HeartBrokenTwoTone,
-    HelpOutline,
+    HelpOutlined,
     InfoTwoTone,
     KeyTwoTone,
     LockTwoTone,
@@ -103,7 +103,7 @@ export const QueryVarietyOptions: { [key in VarietyType]: EnumOptions } = {
 
 export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: "success.main"},
-    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutline/>, color: "secondary.main"},
+    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutlined/>, color: "secondary.main"},
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 

@@ -95,7 +95,7 @@ export function ListDeployCluster(props: Props) {
                 onBackClick={() => setResponse(undefined)}
             >
                 {response ? <Logs logs={response} height={600} auto={false}/> : (
-                    <Box sx={SX.subContent} gap={1}>
+                    <Box sx={[SX.subContent, {gap: 1}]}>
                         {renderMandatoryFields()}
                         {renderImageOptions()}
                         {renderClusterOptions()}
@@ -115,7 +115,7 @@ export function ListDeployCluster(props: Props) {
 
     function renderMandatoryFields() {
         return (
-            <Box sx={SX.subContent} gap={1}>
+            <Box sx={[SX.subContent, {gap: 1}]}>
                 <List>
                     <ListItem
                         title={"Parallel Deployment"}
@@ -145,7 +145,7 @@ export function ListDeployCluster(props: Props) {
                     />
                 </List>
                 <TitledBox title={"Cluster"} island={true}>
-                    <Box sx={SX.subContent} gap={1}>
+                    <Box sx={[SX.subContent, {gap: 1}]}>
                         <TextField
                             fullWidth={true}
                             size={"small"}
@@ -272,7 +272,7 @@ export function ListDeployCluster(props: Props) {
     function renderImageOptions() {
         return (
             <SubContentBox label={"Image Options"} island={true}>
-                <Box sx={SX.subContent} gap={2}>
+                <Box sx={[SX.subContent, {gap: 2}]}>
                     <Box sx={SX.between}>
                         <TextField
                             fullWidth={true}

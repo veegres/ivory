@@ -1,4 +1,4 @@
-import {ArrowDownward, ArrowUpward, Print, VerticalAlignBottom} from "@mui/icons-material"
+import {ArrowDownward, ArrowUpward, Print, RestartAlt, VerticalAlignBottom} from "@mui/icons-material"
 import {Box, ToggleButton, Tooltip} from "@mui/material"
 import {ReactElement, ReactNode, useEffect, useState} from "react"
 
@@ -17,11 +17,12 @@ type Props = {
     length: number,
     scroll: (index: number) => void,
     print?: () => void,
+    reconnect?: () => void,
     children: ReactNode,
 }
 
 export function AutoScrolling(props: Props) {
-    const {auto, scroll, children, length, print} = props
+    const {auto, scroll, children, length, print, reconnect} = props
     const [autoScrolling, setAutoScrolling] = useState(auto)
 
     useEffect(handleEffectAutoScrolling, [autoScrolling, length, scroll])
@@ -39,8 +40,9 @@ export function AutoScrolling(props: Props) {
     function renderButtons() {
         return (
             <>
-                {renderButton("Up the Logs", <ArrowUpward sx={SX.icon}/>, () => {scroll(0); setAutoScrolling(false)})}
-                {renderButton("Down the Logs", <ArrowDownward sx={SX.icon}/>, () => {scroll(length - 1); setAutoScrolling(false)})}
+                {renderButton("Up the Logs", <ArrowUpward sx={SX.icon}/>, () => {if (length > 0) scroll(0); setAutoScrolling(false)})}
+                {renderButton("Down the Logs", <ArrowDownward sx={SX.icon}/>, () => {if (length > 0) scroll(length - 1); setAutoScrolling(false)})}
+                {reconnect && renderButton("Reconnect", <RestartAlt sx={SX.icon}/>, reconnect)}
                 {renderToggleButton("Scroll to End", <VerticalAlignBottom sx={SX.icon}/>, () => setAutoScrolling(!autoScrolling))}
                 {print && renderButton("Print, Save as PDF", <Print sx={SX.icon}/>, print)}
             </>
@@ -72,6 +74,6 @@ export function AutoScrolling(props: Props) {
     }
 
     function handleEffectAutoScrolling() {
-        if (autoScrolling) scroll(length - 1)
+        if (autoScrolling && length > 0) scroll(length - 1)
     }
 }

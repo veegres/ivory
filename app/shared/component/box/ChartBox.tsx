@@ -24,7 +24,7 @@ export function ChartBox(props: Props) {
     const {children, label, value, unit, width = "200px", fixed = true} = props
 
     return (
-        <Box sx={SX.box} width={width}>
+        <Box sx={[SX.box, {width}]}>
             <UnitBox label={label} value={value} unit={unit} fixed={fixed}/>
             {children}
         </Box>

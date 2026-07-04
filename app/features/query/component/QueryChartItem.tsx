@@ -59,7 +59,7 @@ export function QueryChartItem(props: Props) {
     const bg = useMemo(handleMemoBackground, [color])
 
     return (
-        <Box sx={SX.box} bgcolor={!error ? bg : colors[Color.RED]}>
+        <Box sx={[SX.box, {bgcolor: !error ? bg : colors[Color.RED]}]}>
             <Box sx={SX.label}>
                 <Box>{label}</Box>
                 <Box>{renderIcon()}</Box>

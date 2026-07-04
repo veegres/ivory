@@ -42,7 +42,7 @@ export function ListTable(props: Props) {
     const rows = useMemo(() => list.filter((c) => c.name.includes(search)), [list, search])
 
     return (
-        <Box sx={SX.box} className={scroll.tiny} maxHeight={activeCluster ? "25vh" : "60vh"}>
+        <Box sx={[SX.box, {maxHeight: activeCluster ? "25vh" : "60vh"}]} className={scroll.tiny}>
             <Table size={"small"} sx={SX.table} stickyHeader>
                 <TableHead>
                     <TableRow>

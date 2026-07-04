@@ -1,13 +1,16 @@
 import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
+import {TitledBox} from "../../../../shared/component/box/TitledBox"
+import {TabsButton} from "../../../../shared/component/button/TabsButton"
 import {SxPropsMap} from "../../../../shared/helper/type"
+import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {Feature} from "../../../feature"
 import {ManageAccessBox} from "../../../management/component/ManageAccess"
 import {PlatformVaultConnection} from "../../api/type"
-import {ContainerMetrics} from "./ContainerMetrics"
+import {ContainerList} from "./ContainerList"
 import {ContainerOverview} from "./ContainerOverview"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 2},
+    box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 1},
 }
 
 type Props = {
@@ -16,11 +19,23 @@ type Props = {
 
 export function Container(props: Props) {
     const {connection} = props
+    const tab = useStore(s => s.nodeState.containerTab)
+    const {setContainerTab} = useStoreAction
+
     if (!connection) return <ErrorSshMissing/>
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} error={true}>
-            <ContainerMetrics connection={connection} name={connection.host}/>
-            <ContainerOverview connection={connection}/>
+            <TitledBox title={"Container"} renderActions={renderActions()}>
+                {tab === 0 && <ContainerOverview connection={connection} name={connection.host}/>}
+                {tab === 1 && <ContainerList connection={connection}/>}
+            </TitledBox>
         </ManageAccessBox>
     )
+
+    function renderActions() {
+        const tabs = [{label: "overview"}, {label: "list"}]
+        return (
+            <TabsButton tabs={tabs} tab={tab} setTab={setContainerTab}/>
+        )
+    }
 }

@@ -1,4 +1,4 @@
-import {HelpOutline} from "@mui/icons-material"
+import {HelpOutlined} from "@mui/icons-material"
 import {Alert, AlertColor, Box, Collapse, FormControl, FormLabel} from "@mui/material"
 import {ReactNode, useState} from "react"
 
@@ -44,7 +44,7 @@ export function ConfigBox(props: Props) {
             <FormControl sx={SX.form}>
                 <FormLabel sx={SX.formLabel} onClick={() => setOpen(!open)}>
                     <Box>{label}</Box>
-                    {description && <HelpOutline fontSize={"small"}/>}
+                    {description && <HelpOutlined fontSize={"small"}/>}
                 </FormLabel>
                 <Box sx={SX.formAction}>
                     {renderAction}

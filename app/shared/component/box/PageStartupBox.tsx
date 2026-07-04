@@ -31,7 +31,7 @@ export function PageStartupBox(props: Props) {
     const info = useRouterInfo()
 
     return (
-        <Box sx={SX.box} justifyContent={position} padding={padding}>
+        <Box sx={[SX.box, {justifyContent: position, padding}]}>
             <Box sx={SX.header} className={select.none} onClick={() => setAnimal(randomUnicodeAnimal())}>
                 {header} {animal}
             </Box>

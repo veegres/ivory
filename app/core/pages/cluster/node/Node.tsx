@@ -12,7 +12,7 @@ import {NodeHead} from "./NodeHead"
 import {NodeMain} from "./NodeMain"
 
 const SX: SxPropsMap = {
-    content: {display: "flex", flexDirection: "column"},
+    content: {display: "flex", flexDirection: "column", backgroundImage: "inherit", backgroundColor: "inherit"},
 }
 
 export function Node() {

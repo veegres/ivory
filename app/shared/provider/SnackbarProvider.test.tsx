@@ -74,7 +74,7 @@ describe("SnackbarProvider", () => {
 
         // Check that the alert has the error severity
         const alert = screen.getByRole("alert")
-        expect(alert).toHaveClass("MuiAlert-filledError")
+        expect(alert).toHaveClass("MuiAlert-colorError", "MuiAlert-filled")
     })
 
     it("should show warning message with correct severity", async () => {
@@ -95,7 +95,7 @@ describe("SnackbarProvider", () => {
         )
 
         const alert = screen.getByRole("alert")
-        expect(alert).toHaveClass("MuiAlert-filledWarning")
+        expect(alert).toHaveClass("MuiAlert-colorWarning", "MuiAlert-filled")
     })
 
     it("should show info message with correct severity", async () => {
@@ -116,6 +116,6 @@ describe("SnackbarProvider", () => {
         )
 
         const alert = screen.getByRole("alert")
-        expect(alert).toHaveClass("MuiAlert-filledInfo")
+        expect(alert).toHaveClass("MuiAlert-colorInfo", "MuiAlert-filled")
     })
 })

@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     header: {display: "flex", justifyContent: "space-between", alignItems: "center"},
     label: {color: "text.secondary", fontSize: "13.5px"},
-    info: {display: "flex", alignItems: "center", gap: 1}
+    info: {display: "flex", alignItems: "center", gap: 1},
 }
 
 type Props = {

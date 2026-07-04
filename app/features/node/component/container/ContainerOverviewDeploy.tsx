@@ -58,7 +58,7 @@ export function ContainerOverviewDeploy(props: Props) {
             back={!!up.data}
         >
             {up.data ? <Logs logs={up.data} height={600} auto={false}/> : (
-                <Box sx={SX.subContent} gap={2}>
+                <Box sx={[SX.subContent, {gap: 2}]}>
                     {renderClusterInfo()}
                     {renderMandatoryFields()}
                     {renderImageOptions()}
@@ -78,7 +78,7 @@ export function ContainerOverviewDeploy(props: Props) {
     function renderClusterInfo() {
         return (
             <TitledBox title={"Cluster"} island={true}>
-                <Box sx={SX.subContent} gap={1}>
+                <Box sx={[SX.subContent, {gap: 1}]}>
                     <Box sx={SX.between}>
                         <TextField
                             fullWidth
@@ -112,7 +112,7 @@ export function ContainerOverviewDeploy(props: Props) {
     function renderMandatoryFields() {
         return (
             <TitledBox title={"Mandatory Options"} island={true}>
-                <Box sx={SX.subContent} gap={1}>
+                <Box sx={[SX.subContent, {gap: 1}]}>
                     <Box sx={SX.between}>
                         <TextField
                             fullWidth
@@ -159,7 +159,7 @@ export function ContainerOverviewDeploy(props: Props) {
 
         return (
             <TitledBox title={"Image Options"} island={true}>
-                <Box sx={SX.subContent} gap={2}>
+                <Box sx={[SX.subContent, {gap: 2}]}>
                     <Box sx={SX.between}>
                         <TextField
                             fullWidth={true}

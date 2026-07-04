@@ -8,8 +8,11 @@ import {useDragger} from "../../hook/Dragger"
 import {NoBox} from "../box/NoBox"
 
 const SX: SxPropsMap = {
-    box: {position: "relative"},
-    body: {overflow: "auto", width: "100%", height: "100%", fontSize: "12px"},
+    box: {position: "relative", backgroundImage: "inherit", backgroundColor: "inherit"},
+    body: {
+        overflow: "auto", width: "100%", height: "100%", fontSize: "12px",
+        backgroundImage: "inherit", backgroundColor: "inherit",
+    },
     loader: {
         position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 5,
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -17,7 +20,7 @@ const SX: SxPropsMap = {
     },
     cell: {
         position: "absolute", top: 0, left: 0, zIndex: 0, padding: "5px 10px",
-        bgcolor: "background.paper", border: 1, borderColor: "divider",
+        border: 1, borderColor: "divider", backgroundImage: "inherit", backgroundColor: "inherit",
         "&:hover": {
             overflow: "auto", zIndex: 1,
             width: "auto!important", height: "auto!important",
@@ -32,7 +35,8 @@ const SX: SxPropsMap = {
     cellFixed: {
         position: "absolute", top: 0, left: 0, padding: "5px 10px",
         display: "flex", alignItems: "center", justifyContent: "center",
-        color: "text.disabled", bgcolor: "background.paper", border: 1, borderColor: "divider",
+        color: "text.disabled", border: 1, borderColor: "divider",
+        backgroundImage: "inherit", backgroundColor: "inherit",
     },
     columnSeparator: {
         position: "absolute", top: 0, left: 0, zIndex: 4,
@@ -42,10 +46,11 @@ const SX: SxPropsMap = {
     },
     headTitle: {display: "flex", fontFamily: "monospace", gap: "4px"},
     empty: {padding: "10px"},
+    inherit: {backgroundImage: "inherit", backgroundColor: "inherit"},
 }
 
 type Props = {
-    columns: { name: string, description?: string }[],
+    columns: { name: string, description?: string, width?: number }[],
     rows: any[][],
     loading?: boolean,
     showIndexColumn?: boolean,
@@ -53,11 +58,17 @@ type Props = {
     renderRowActions?: (row: any[]) => ReactNode,
     width?: number,
     height?: number,
+    backgroundColor?: string,
 }
 
 export function VirtualizedTable(props: Props) {
     const {columns, rows, renderRowActions, showIndexColumn = true} = props
-    const {loading = false, width, height = 306} = props
+    // NOTE: "inherit" does not work here - it only copies the parent DOM node's own
+    //  computed background-color, and none of the surrounding Boxes (TitledBox, etc.)
+    //  set one explicitly, so it silently resolved to transparent again. The sticky
+    //  cells need a real opaque color to occlude rows scrolling underneath them, so
+    //  default to the actual page background rendered behind non-Paper containers.
+    const {loading = false, width, height = 306, backgroundColor = "inherit"} = props
     const [ref, setRef] = useState<Element | null>(null)
 
     const columnSize = columns.length
@@ -90,17 +101,25 @@ export function VirtualizedTable(props: Props) {
     const paddingXSize = isScrollYAppear ? paddingDefaultSize + scrollDefaultSize : (renderRowActions ? 0 : dragOffset)
     const scrollXOffset = cellWidthStickyIndex + cellWidthStickyAction + paddingXSize
     const rowWidth = useMemo(() => (ref?.clientWidth ?? -1) - scrollXOffset, [ref?.clientWidth, scrollXOffset])
+    // NOTE: columns without an explicit width share whatever space is left after
+    //  fixed-width columns are subtracted, so e.g. a "command" column can be left
+    //  without a width to grow into the remaining space while others stay compact.
+    const fixedColumnsWidth = useMemo(() => columns.reduce((sum, c) => sum + (c.width ?? 0), 0), [columns])
+    const autoColumnsCount = useMemo(() => columns.filter(c => c.width === undefined).length, [columns])
     // NOTE: calculate dynamic cell width, the component should be rendered from scratch to change the size,
     //  this is how useVirtualizer work. Nuances:
     //  - -1 is needed to always choose 100 if width is unknown
     //  - if someone provided column value we want to make column smaller that is why cellMinWidth is used
-    const cellCalcWidth = useMemo(() => Math.max((rowWidth / columnSize), width ? cellMinWidth : cellDefaultWidth), [rowWidth, columnSize, width])
+    const cellCalcWidth = useMemo(() => {
+        const share = autoColumnsCount > 0 ? (rowWidth - fixedColumnsWidth) / autoColumnsCount : 0
+        return Math.max(share, width ? cellMinWidth : cellDefaultWidth)
+    }, [rowWidth, fixedColumnsWidth, autoColumnsCount, width])
 
     const columnVirtualizer = useVirtualizer({
         horizontal: true,
         count: columnSize,
         getScrollElement: () => ref,
-        estimateSize: () => cellCalcWidth,
+        estimateSize: (index) => columns[index].width ?? cellCalcWidth,
         scrollPaddingStart: cellWidthStickyIndex,
         scrollPaddingEnd: cellWidthStickyAction,
         overscan: 3,
@@ -126,7 +145,7 @@ export function VirtualizedTable(props: Props) {
     const cellHeightPx = `${cellHeight}px`
 
     return (
-        <Box sx={SX.box} width={boxWidthPx} height={boxHeightPx}>
+        <Box sx={[SX.box, {width: boxWidthPx, height: boxHeightPx}]}>
             {renderLoader()}
             {columns.length > 0 ? renderTable() : renderEmpty()}
         </Box>
@@ -154,29 +173,30 @@ export function VirtualizedTable(props: Props) {
         return (
             <Box
                 ref={setRef}
-                sx={SX.body}
-                paddingBottom={`${paddingYSize}px`}
-                display={"grid"}
-                gridTemplateColumns={`${cellWidthStickyIndexPx} ${bodyWidthPx} ${cellWidthStickyActionPx}`}
-                gridTemplateRows={`${cellHeightStickyHeadPx} ${bodyHeightPx}`}
+                sx={[SX.body, {
+                    paddingBottom: `${paddingYSize}px`,
+                    display: "grid",
+                    gridTemplateColumns: `${cellWidthStickyIndexPx} ${bodyWidthPx} ${cellWidthStickyActionPx}`,
+                    gridTemplateRows: `${cellHeightStickyHeadPx} ${bodyHeightPx}`,
+                }]}
                 className={scroll.small}
             >
-                <Box position={"sticky"} zIndex={4} top={0} left={0}>
+                <Box sx={[SX.inherit, {position: "sticky", zIndex: 4, top: 0, left: 0}]}>
                     {showIndexColumn && renderCorner(cellWidthStickyIndexPx)}
                 </Box>
-                <Box position={"sticky"} zIndex={3} top={0}>
+                <Box sx={[SX.inherit, {position: "sticky", zIndex: 3, top: 0}]}>
                     {renderHead()}
                 </Box>
-                <Box position={"sticky"} zIndex={2} top={0}>
+                <Box sx={[SX.inherit, {position: "sticky", zIndex: 2, top: 0}]}>
                     {renderRowActions && renderCorner(cellWidthStickyActionPx)}
                 </Box>
-                <Box position={"sticky"} zIndex={3} left={0}>
+                <Box sx={[SX.inherit, {position: "sticky", zIndex: 3, left: 0}]}>
                     {renderIndex()}
                 </Box>
-                <Box position={"relative"}>
+                <Box sx={[SX.inherit, {position: "relative"}]}>
                     {renderBody()}
                 </Box>
-                <Box position={"relative"}>
+                <Box sx={[SX.inherit, {position: "relative"}]}>
                     {renderActions()}
                 </Box>
             </Box>
@@ -185,7 +205,7 @@ export function VirtualizedTable(props: Props) {
 
     function renderCorner(width: string) {
         return (
-            <Box sx={SX.cellFixed} style={{width, height: cellHeightStickyHeadPx}}/>
+            <Box sx={[SX.cellFixed, {bgcolor: backgroundColor}]} style={{width, height: cellHeightStickyHeadPx}}/>
         )
     }
 
@@ -199,7 +219,7 @@ export function VirtualizedTable(props: Props) {
             const dragTransform = `translateX(${virtualColumn.end - dragOffset}px)`
             return (
                 <Fragment key={virtualColumn.key}>
-                    <Box sx={SX.cellFixed} style={{width, height: cellHeightStickyHeadPx, transform}}>
+                    <Box sx={[SX.cellFixed, {bgcolor: backgroundColor}]} style={{width, height: cellHeightStickyHeadPx, transform}}>
                         <Tooltip title={renderHeadTitle(column.name, column.description)} placement={"top"}>
                             <Box sx={SX.noWrap}>{column.name}</Box>
                         </Tooltip>
@@ -219,7 +239,7 @@ export function VirtualizedTable(props: Props) {
         return rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const transform = `translateY(${virtualRow.start}px)`
             return (
-                <Box key={virtualRow.key} sx={SX.cellFixed} style={{width: cellWidthStickyIndexPx, height: cellHeightPx, transform}}>
+                <Box key={virtualRow.key} sx={[SX.cellFixed, {bgcolor: backgroundColor}]} style={{width: cellWidthStickyIndexPx, height: cellHeightPx, transform}}>
                     {virtualRow.index + 1}
                 </Box>
             )
@@ -232,7 +252,7 @@ export function VirtualizedTable(props: Props) {
             const row = rows[virtualRow.index]
             const transform = `translateY(${virtualRow.start}px)`
             return (
-                <Box key={virtualRow.key} sx={SX.cellFixed} style={{width: cellWidthStickyActionPx, height: cellHeightPx, transform}}>
+                <Box key={virtualRow.key} sx={[SX.cellFixed, {bgcolor: backgroundColor}]} style={{width: cellWidthStickyActionPx, height: cellHeightPx, transform}}>
                     {renderRowActions(row)}
                 </Box>
             )
@@ -254,7 +274,7 @@ export function VirtualizedTable(props: Props) {
                         return (
                             <Box
                                 key={virtualColumn.key}
-                                sx={SX.cell}
+                                sx={[SX.cell, {bgcolor: backgroundColor}]}
                                 className={scroll.tiny}
                                 style={{minWidth: width, minHeight: height, width, height, transform}}
                             >

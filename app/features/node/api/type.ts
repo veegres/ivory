@@ -148,6 +148,19 @@ export interface PlatformActionRequest {
     name: string,
 }
 
+export interface Process {
+    pid: number,
+    program: string,
+    command: string,
+    threads: number,
+    user: string,
+    memoryBytes: number,
+    memPercent: number,
+    cpuPercent: number,
+}
+
+export type PlatformProcessesResponse = Process[]
+
 // SPECIFIC (WEB)
 
 export enum NodeTabType {DATABASE, CONTAINER, KEEPER, TOOLS, PLATFORM}

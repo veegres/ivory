@@ -8,12 +8,15 @@ import {DbResponse} from "../api/type"
 import {QueryResponseInfo} from "./QueryResponseInfo"
 
 const SX: SxPropsMap = {
-    box: {borderBottom: 1, borderColor: "divider", "&::before": {display: "none"}, "&:last-child": {borderBottom: 0}},
-    summary: {
-        minHeight: "auto", padding: "2px 10px", gap: 2,
-        "& .MuiAccordionSummary-content": {margin: "5px 0", gap: 1, alignItems: "center"}
+    box: {
+        border: 1, borderColor: "divider", backgroundColor: "background.default", backgroundImage: "none",
+        "&::before": {display: "none"}, "&:not(:last-child)": {borderBottom: 0}, boxShadow: "none",
     },
-    details: {padding: "0 5px 5px"},
+    summary: {
+        display: "flex", alignItems: "center", minHeight: "auto", padding: "2px 10px", gap: 2,
+        "& .MuiAccordionSummary-content": {margin: "5px 0", gap: 1, alignItems: "center"},
+    },
+    details: {padding: "0px 5px 5px", backgroundColor: "background.default", backgroundImage: "none"},
     number: {color: "text.secondary", width: "20px", textAlign: "center"},
 }
 
@@ -35,7 +38,7 @@ export function QueryLogItem(props: Props) {
         <Accordion
             sx={SX.box}
             expanded={open}
-            slotProps={{transition: {unmountOnExit: true}}}
+            slotProps={{transition: {unmountOnExit: true}, region: {sx: SX.inherit}}}
             onChange={() => setOpen(!open)}
             disableGutters={true}
             onMouseOut={() => setShow(false)}

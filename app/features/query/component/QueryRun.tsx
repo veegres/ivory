@@ -14,7 +14,7 @@ import {QueryTable} from "./QueryTable"
 import {QueryVarieties} from "./QueryVarieties"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1},
+    box: {display: "flex", flexDirection: "column", gap: 1, backgroundImage: "inherit", backgroundColor: "inherit"},
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, fontSize: "13.5px"},
     buttons: {display: "flex", alignItems: "center", fontSize: "10px", gap: "4px"},
     limit: {height: "26px", width: "90px", fontSize: "14px"},

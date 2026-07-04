@@ -33,6 +33,18 @@ func (s *Service) PlatformVmMetrics(r PlatformMetricsRequest) (*PlatformMetricsR
 	return mapPlatformMetrics(metrics), nil
 }
 
+func (s *Service) PlatformVmProcesses(r PlatformProcessesRequest) (PlatformProcessesResponse, error) {
+	adapter, conn, err := s.getPlatformAdapter(r)
+	if err != nil {
+		return nil, err
+	}
+	processes, err := adapter.Processes(conn)
+	if err != nil {
+		return nil, err
+	}
+	return mapPlatformProcesses(processes), nil
+}
+
 func (s *Service) PlatformLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {

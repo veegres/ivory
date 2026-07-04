@@ -4,7 +4,7 @@ import {PropsWithChildren, ReactNode} from "react"
 import {SxPropsMap} from "../../helper/type"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1},
+    box: {display: "flex", flexDirection: "column", gap: 1, backgroundImage: "inherit", backgroundColor: "inherit"},
     title: {fontSize: "1rem", fontWeight: 500, fontFamily: "monospace"},
     head: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1, padding: "0px 10px"},
     island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 2},

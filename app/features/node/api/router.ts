@@ -6,6 +6,7 @@ import {
     PlatformActionRequest,
     PlatformLogsRequest,
     PlatformMetricsResponse,
+    PlatformProcessesResponse,
     PlatformUpRequest,
     PlatformVaultConnection,
 } from "./type"
@@ -79,6 +80,11 @@ export const NodeApi = {
     },
     logs: {
         url: (request: PlatformLogsRequest) => `/api/node/platform/logs?request=${encodeURIComponent(JSON.stringify(request))}`,
+    },
+    processes: {
+        key: (host: string) => ["node", "platform", "processes", host],
+        fn: (request: PlatformVaultConnection) => api.get<R<PlatformProcessesResponse>>("/node/platform/processes", {params: {request: JSON.stringify(request)}})
+            .then((response) => response.data.response),
     },
     deployment: {
         list: {

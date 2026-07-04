@@ -22,7 +22,10 @@ const SX: SxPropsMap = {
     },
     icon: {fontSize: "16px", color: "text.secondary"},
     error: {color: "error.light"},
-    collapse: {marginTop: "10px", display: "flex", flexDirection: "column", gap: 1},
+    collapse: {
+        marginTop: "10px", display: "flex", flexDirection: "column", gap: 1, backgroundColor: "background.paper",
+        backgroundImage: "var(--Paper-overlay)",
+    },
     count: {
         display: "flex", fontSize: "14px", color: "info.main", border: 1, borderRadius: 1, bgcolor: "rgb(2 131 237 / 0.10)",
         borderColor: "divider", width: "28px", height: "28px", alignItems: "center", justifyContent: "center",
@@ -41,9 +44,9 @@ export function QueryActivity(props: Props) {
     return (
         <Box sx={SX.box}>
             <Box sx={SX.head}>
-                <Box sx={SX.label} flex={1}>Session Active Queries</Box>
-                {open && <Box sx={SX.help} flex={1}>[ hold shift for horizontal scrolling ]</Box>}
-                <Box sx={SX.action} flex={1}>
+                <Box sx={[SX.label, {flex: 1}]}>Session Active Queries</Box>
+                {open && <Box sx={[SX.help, {flex: 1}]}>[ hold shift for horizontal scrolling ]</Box>}
+                <Box sx={[SX.action, {flex: 1}]}>
                     <Tooltip title={"COUNT"} placement={"top"}>
                         <Box sx={SX.count}>{error || !data ? "-" : data.rows.length - 1}</Box>
                     </Tooltip>

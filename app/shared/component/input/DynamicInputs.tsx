@@ -34,7 +34,7 @@ export const DynamicInputs = memo(function DynamicInputs(props: Props) {
     const nodesWithEmptyElement = useMemo(handleMemoEmptyNodes, [inputs, minLength])
 
     return (
-        <Box sx={SX.box} gridTemplateColumns={`repeat(auto-fill, ${InputSize})`}>
+        <Box sx={[SX.box, {gridTemplateColumns: `repeat(auto-fill, ${InputSize})`}]}>
             {editable ? (
                 nodesWithEmptyElement.map((input, index) => (
                     <InputItem

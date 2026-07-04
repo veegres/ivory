@@ -47,7 +47,7 @@ export function KeeperConfig(props: Props) {
 
     return (
         <TitledBox title={"Config"} island={true} renderActions={renderActions()}>
-            <Box sx={SX.input} borderColor={isEditable ? "divider" : "transparent"}>
+            <Box sx={[SX.input, {borderColor: isEditable ? "divider" : "transparent"}]}>
                 <ReactCodeMirror
                     height={"100%"}
                     width={"100%"}

@@ -47,7 +47,7 @@ export function AutocompleteFetch(props: Props) {
     )
 
     function renderInput(params: AutocompleteRenderInputParams) {
-        const inputProps = padding ? {...params.InputProps, style: {padding}} : params.InputProps
+        const inputProps = padding ? {...params.slotProps.input, style: {padding}} : params.slotProps.input
         return (
             <TextField
                 {...params}
@@ -56,7 +56,7 @@ export function AutocompleteFetch(props: Props) {
                 variant={variant}
                 margin={margin}
                 placeholder={placeholder}
-                slotProps={{input: inputProps}}
+                slotProps={{...params.slotProps, input: inputProps}}
             />
         )
     }

@@ -7,7 +7,7 @@ import {ChartBox} from "../box/ChartBox"
 type Props = {
     label: string,
     data: NodeMetrics | undefined,
-    selector: (last: NodeMetrics, penultimate?: NodeMetrics) => number | undefined,
+    selector: (last: NodeMetrics, penultimate?: NodeMetrics, elapsedMs?: number) => number | undefined,
     length?: number,
     color?: string,
     unit?: string,
@@ -19,6 +19,7 @@ export function HistoryTrackerChart(props: Props) {
     const {label, data, selector, length = 60, color, unit, min, max} = props
     const [history, setHistory] = useState<(number | undefined)[]>(new Array(length).fill(undefined))
     const lastRawRef = useRef<NodeMetrics | undefined>(undefined)
+    const lastTimeRef = useRef<number | undefined>(undefined)
 
     const latestValue = useMemo(handleMemoLatestValue, [history])
     const xData = useMemo(handleMemoXLabels, [length])
@@ -61,8 +62,14 @@ export function HistoryTrackerChart(props: Props) {
 
     function handleEffectMetrics() {
         if (!data) return
-        setHistory(prev => [...prev.slice(1), selector(data, lastRawRef.current)])
+        const now = Date.now()
+        // NOTE: the polling interval can change at any time (the user controls it via
+        //  Refresher), so rate-based selectors are given the real elapsed time between
+        //  samples rather than assuming a fixed cadence.
+        const elapsedMs = lastTimeRef.current !== undefined ? now - lastTimeRef.current : undefined
+        setHistory(prev => [...prev.slice(1), selector(data, lastRawRef.current, elapsedMs)])
         lastRawRef.current = data
+        lastTimeRef.current = now
     }
 
     function handleMemoLatestValue() {

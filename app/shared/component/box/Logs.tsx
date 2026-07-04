@@ -18,26 +18,23 @@ type Props = {
     auto?: boolean,
     sx?: SxProps<Theme>,
     height?: number,
+    reconnect?: () => void,
 }
 
 export function Logs(props: Props) {
-    const {logs, loading = false, auto = true, height = 350, sx} = props
+    const {logs, loading = false, auto = true, height = 350, sx, reconnect} = props
     return (
         <Box sx={SX.box}>
-            {logs.length === 0 ? loading ? (
-                <Box sx={SX.emptyLine} height={height}>Waiting for logs</Box>
-            ) : (
-                <Box sx={SX.emptyLine} height={height}>No logs</Box>
-            ) : (
-                <DynamicRowVirtualizer
-                    sx={sx}
-                    sxVirtualRow={SX.row}
-                    auto={auto}
-                    className={scroll.small}
-                    height={height}
-                    rows={logs}
-                />
-            )}
+            <DynamicRowVirtualizer
+                sx={sx}
+                sxVirtualRow={SX.row}
+                auto={auto}
+                className={scroll.small}
+                height={height}
+                rows={logs}
+                reconnect={reconnect}
+                empty={<Box sx={[SX.emptyLine, {height}]}>{loading ? "Waiting for logs" : "No logs"}</Box>}
+            />
             <Box sx={SX.footer}>
                 <Box sx={SX.loader}>
                     {loading && <CircularProgress sx={SX.loader} size={"9px"} color={"inherit"}/>}

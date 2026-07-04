@@ -23,7 +23,7 @@ type Props = {
     connection: PlatformVaultConnection,
 }
 
-export function ContainerOverviewList(props: Props) {
+export function ContainerList(props: Props) {
     const {connection} = props
     const list = useRouterNodePlatformList(connection)
 

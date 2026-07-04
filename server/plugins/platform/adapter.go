@@ -9,6 +9,7 @@ var ErrInvalidCpuMetrics = errors.New("invalid cpu metrics output")
 var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
 var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 var ErrInvalidContainerMetrics = errors.New("invalid container metrics output")
+var ErrInvalidProcesses = errors.New("invalid processes output")
 
 // Connection contains the bare minimum details to execute commands on a platform node.
 type Connection struct {
@@ -28,6 +29,7 @@ type VmManager interface {
 	Metrics(connection Connection) (*Metrics, error)
 	CopyId(connection Connection, publicKey string) error
 	Logs(connection Connection, path string, tail int, follow bool) console.Command
+	Processes(connection Connection) ([]Process, error)
 }
 
 type ContainerManager interface {

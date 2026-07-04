@@ -9,13 +9,13 @@ import {NodeApi} from "./router"
 import {KeeperOneRequest, KeeperPlugin, PlatformActionRequest, PlatformLogsRequest, PlatformVaultConnection} from "./type"
 
 export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
-    const {loading, response} = useStream(NodeApi.logs.url(request), {enabled})
-    return {isFetching: loading, data: response}
+    const {loading, response, reconnect} = useStream(NodeApi.logs.url(request), {enabled})
+    return {isFetching: loading, data: response, reconnect}
 }
 
 export function useRouterNodePlatformContainerLogs(request: PlatformLogsRequest) {
-    const {loading, response} = useStream(NodeApi.deployment.logs.url(request))
-    return {isFetching: loading, data: response}
+    const {loading, response, reconnect} = useStream(NodeApi.deployment.logs.url(request))
+    return {isFetching: loading, data: response, reconnect}
 }
 
 export function useRouterNodePlatformUp(connection: PlatformVaultConnection) {
@@ -126,21 +126,31 @@ export function useRouterNodePause(cluster: string) {
     })
 }
 
-export function useRouterNodeMetrics(c: PlatformVaultConnection, refetchInterval?: number) {
+// NOTE: refetchInterval is intentionally not passed here - it is controlled by
+//  <Refresher/> via queryClient.setQueryDefaults for this query key. Passing an
+//  explicit value (even undefined) here would always win over that default.
+export function useRouterNodeMetrics(c: PlatformVaultConnection) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.metrics.key(c.host),
         queryFn: () => NodeApi.metrics.fn(c),
-        refetchInterval,
         retry: false,
     })
 }
 
-export function useRouterNodePlatformContainerMetrics(request: PlatformActionRequest, refetchInterval?: number) {
+export function useRouterNodePlatformContainerMetrics(request: PlatformActionRequest) {
     return useQuery({
         queryKey: NodeApi.deployment.metrics.key(request),
         queryFn: () => NodeApi.deployment.metrics.fn(request),
-        refetchInterval,
+        retry: false,
+    })
+}
+
+export function useRouterNodePlatformProcesses(c: PlatformVaultConnection) {
+    return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: NodeApi.processes.key(c.host),
+        queryFn: () => NodeApi.processes.fn(c),
         retry: false,
     })
 }

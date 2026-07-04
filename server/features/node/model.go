@@ -165,6 +165,21 @@ type PlatformActionRequest struct {
 
 type PlatformResponse = []string
 
+type Process struct {
+	Pid         int     `json:"pid"`
+	Program     string  `json:"program"`
+	Command     string  `json:"command"`
+	Threads     int     `json:"threads"`
+	User        string  `json:"user"`
+	MemoryBytes uint64  `json:"memoryBytes"`
+	MemPercent  float64 `json:"memPercent"`
+	CpuPercent  float64 `json:"cpuPercent"`
+}
+
+type PlatformProcessesRequest = PlatformVaultConnection
+
+type PlatformProcessesResponse = []Process
+
 // SPECIFIC (SERVER)
 
 func mapKeeperResponse(r keeper.Response) KeeperResponse {
@@ -201,4 +216,21 @@ func mapPlatformMetrics(m *platform.Metrics) *PlatformMetrics {
 		Memory:  MemoryMetrics{TotalBytes: m.Memory.TotalBytes, AvailableBytes: m.Memory.AvailableBytes},
 		Network: NetworkMetrics{ReceivedBytes: m.Network.ReceivedBytes, TransmittedBytes: m.Network.TransmittedBytes},
 	}
+}
+
+func mapPlatformProcesses(processes []platform.Process) PlatformProcessesResponse {
+	response := make(PlatformProcessesResponse, 0, len(processes))
+	for _, p := range processes {
+		response = append(response, Process{
+			Pid:         p.Pid,
+			Program:     p.Program,
+			Command:     p.Command,
+			Threads:     p.Threads,
+			User:        p.User,
+			MemoryBytes: p.MemoryBytes,
+			MemPercent:  p.MemPercent,
+			CpuPercent:  p.CpuPercent,
+		})
+	}
+	return response
 }

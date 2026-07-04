@@ -65,8 +65,8 @@ export function UploadButton(props: Props) {
                 <input hidden accept={accept} multiple type={"file"} onChange={handleChange}/>
                 <FileUploadOutlined fontSize={"large"}/>
                 <Box sx={SX.label}>Drag and drop a file or click to browse</Box>
-                {maxSize && !error && <Box textTransform={"none"} fontSize={"small"}>Maximum file size is {maxSize}</Box>}
-                {error && <Box sx={SX.error} textTransform={"none"} fontSize={"small"}>{error}</Box>}
+                {maxSize && !error && <Box sx={{textTransform: "none", fontSize: "small"}}>Maximum file size is {maxSize}</Box>}
+                {error && <Box sx={[SX.error, {textTransform: "none", fontSize: "small"}]}>{error}</Box>}
             </Button>
         )
     }
@@ -86,7 +86,7 @@ export function UploadButton(props: Props) {
         return (
             <Box sx={[SX.upload, SX.active]}>
                 <CircularProgress variant={variant} value={value}/>
-                <Box fontSize={"small"}>Loading {value === 100 ? "is finished" : `in process ${value}%`}</Box>
+                <Box sx={{fontSize: "small"}}>Loading {value === 100 ? "is finished" : `in process ${value}%`}</Box>
             </Box>
         )
     }

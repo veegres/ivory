@@ -33,7 +33,7 @@ export function Header(props: Props) {
 
     return (
         <Box sx={SX.box} >
-            <Box sx={SX.side} justifyContent={"start"}>
+            <Box sx={[SX.side, {justifyContent: "start"}]}>
                {show && (<Box sx={SX.emblem}>{company.toUpperCase()}</Box>)}
             </Box>
             <Box sx={SX.main}>
@@ -42,7 +42,7 @@ export function Header(props: Props) {
                 </Box>
                 <Box sx={SX.caption}>[postgres cluster management]</Box>
             </Box>
-            <Box sx={SX.side} justifyContent={"end"}>
+            <Box sx={[SX.side, {justifyContent: "end"}]}>
                 {show && renderRightSide()}
             </Box>
         </Box>

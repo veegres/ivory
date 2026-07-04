@@ -35,7 +35,7 @@ export function NodeMainTitle(props: Props) {
                     <Tab value={NodeTabType.DATABASE} label={NODE_TABS[NodeTabType.DATABASE].label}/>
                     <Tab value={NodeTabType.TOOLS} label={NODE_TABS[NodeTabType.TOOLS].label}/>
                 </Tabs>
-                <Box flexGrow={1} sx={SX.buttons}>
+                <Box sx={[SX.buttons, {flexGrow: 1}]}>
                     {renderActions}
                     <ToggleButton sx={SX.toggle} value={"info"} size={"small"} selected={alert} onClick={() => setAlert(!alert)}>
                         <Tooltip title={"Description"} placement={"top"}>

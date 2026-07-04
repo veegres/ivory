@@ -21,6 +21,10 @@ interface Store {
         queryConsole: string,
         dbName?: string,
         dbSchema?: string,
+        containerTab: number,
+        platformTab: number,
+        platformLogsPath: string,
+        toolsTab: number,
     },
 }
 
@@ -39,9 +43,22 @@ export const useStore = create(persist<Store>(
             queryConsole: "",
             dbName: undefined,
             dbSchema: undefined,
+            containerTab: 0,
+            platformTab: 0,
+            platformLogsPath: "",
+            toolsTab: 0,
         },
     }),
-    {name: "store", version: 1},
+    {
+        name: "store",
+        version: 1,
+        // NOTE: nodeState is nested, so the default shallow merge would drop any
+        //  field added to it later that is missing from an older persisted blob.
+        merge: (persisted, current) => {
+            const state = persisted as Partial<Store> | undefined
+            return {...current, ...state, nodeState: {...current.nodeState, ...state?.nodeState}}
+        },
+    },
 ))
 
 export const useStoreAction = {
@@ -58,6 +75,10 @@ export const useStoreAction = {
     setDbName: setDbName,
     setDbSchema: setDbSchema,
     setRefreshPeriod: setRefreshPeriod,
+    setContainerTab: setContainerTab,
+    setPlatformTab: setPlatformTab,
+    setPlatformLogsPath: setPlatformLogsPath,
+    setToolsTab: setToolsTab,
 }
 
 // SETTERS
@@ -123,6 +144,22 @@ function setDbSchema(n?: string) {
 
 function setRefreshPeriod(key: string, period: [string, number]) {
     useStore.setState(s => ({...s, refresh: {...s.refresh, [key]: period}}))
+}
+
+function setContainerTab(t: number) {
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, containerTab: t}}))
+}
+
+function setPlatformTab(t: number) {
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, platformTab: t}}))
+}
+
+function setPlatformLogsPath(path: string) {
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, platformLogsPath: path}}))
+}
+
+function setToolsTab(t: number) {
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, toolsTab: t}}))
 }
 
 

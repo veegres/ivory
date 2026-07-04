@@ -9,18 +9,17 @@ import {useRouterNodeMetrics} from "../../api/hook"
 import {PlatformMetricsResponse as NodeMetrics,PlatformVaultConnection} from "../../api/type"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},
+    box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 1},
 }
 
 type Props = {
     connection: PlatformVaultConnection,
-    interval?: number,
 }
 
 export function PlatformMetrics(props: Props) {
-    const {connection, interval = 1000 * 3} = props
+    const {connection} = props
     const [cachedError, setCachedError] = useState<Error>()
-    const metrics = useRouterNodeMetrics(connection, interval)
+    const metrics = useRouterNodeMetrics(connection)
 
     useEffect(() => {
         if (metrics.data) setCachedError(undefined)
@@ -88,23 +87,15 @@ export function PlatformMetrics(props: Props) {
         return used / m.memory.totalBytes * 100
     }
 
-    // We use the configured interval as the elapsed time denominator
-    // rather than measuring actual time between samples. This may
-    // slightly underestimate throughput under jitter or tab
-    // backgrounding, which is acceptable for a low-frequency dashboard.
-    function getNetRxDelta(l: NodeMetrics, p?: NodeMetrics) {
-        if (!p) return undefined
-        const rx = (l.network.receivedBytes - p.network.receivedBytes) / 1024 / (interval / 1000)
+    function getNetRxDelta(l: NodeMetrics, p?: NodeMetrics, elapsedMs?: number) {
+        if (!p || !elapsedMs) return undefined
+        const rx = (l.network.receivedBytes - p.network.receivedBytes) / 1024 / (elapsedMs / 1000)
         return rx < 0 ? 0 : rx
     }
 
-    // We use the configured interval as the elapsed time denominator
-    // rather than measuring actual time between samples. This may
-    // slightly underestimate throughput under jitter or tab
-    // backgrounding, which is acceptable for a low-frequency dashboard.
-    function getNetTxDelta(l: NodeMetrics, p?: NodeMetrics) {
-        if (!p) return undefined
-        const tx = (l.network.transmittedBytes - p.network.transmittedBytes) / 1024 / (interval / 1000)
+    function getNetTxDelta(l: NodeMetrics, p?: NodeMetrics, elapsedMs?: number) {
+        if (!p || !elapsedMs) return undefined
+        const tx = (l.network.transmittedBytes - p.network.transmittedBytes) / 1024 / (elapsedMs / 1000)
         return tx < 0 ? 0 : tx
     }
 }

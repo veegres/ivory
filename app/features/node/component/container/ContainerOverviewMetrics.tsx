@@ -9,19 +9,18 @@ import {useRouterNodePlatformContainerMetrics} from "../../api/hook"
 import {Metrics as ContainerMetricsData, PlatformVaultConnection} from "../../api/type"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},
+    box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 1},
 }
 
 type Props = {
     connection: PlatformVaultConnection,
     name: string,
-    interval?: number,
 }
 
-export function ContainerMetrics(props: Props) {
-    const {connection, name, interval = 1000 * 3} = props
+export function ContainerOverviewMetrics(props: Props) {
+    const {connection, name} = props
     const [cachedError, setCachedError] = useState<Error>()
-    const metrics = useRouterNodePlatformContainerMetrics({connection, name}, interval)
+    const metrics = useRouterNodePlatformContainerMetrics({connection, name})
 
     useEffect(() => {
         if (metrics.data) setCachedError(undefined)
@@ -89,23 +88,15 @@ export function ContainerMetrics(props: Props) {
         return used / m.memory.totalBytes * 100
     }
 
-    // We use the configured interval as the elapsed time denominator
-    // rather than measuring actual time between samples. This may
-    // slightly underestimate throughput under jitter or tab
-    // backgrounding, which is acceptable for a low-frequency dashboard.
-    function getNetRxDelta(l: ContainerMetricsData, p?: ContainerMetricsData) {
-        if (!p) return undefined
-        const rx = (l.network.receivedBytes - p.network.receivedBytes) / 1024 / (interval / 1000)
+    function getNetRxDelta(l: ContainerMetricsData, p?: ContainerMetricsData, elapsedMs?: number) {
+        if (!p || !elapsedMs) return undefined
+        const rx = (l.network.receivedBytes - p.network.receivedBytes) / 1024 / (elapsedMs / 1000)
         return rx < 0 ? 0 : rx
     }
 
-    // We use the configured interval as the elapsed time denominator
-    // rather than measuring actual time between samples. This may
-    // slightly underestimate throughput under jitter or tab
-    // backgrounding, which is acceptable for a low-frequency dashboard.
-    function getNetTxDelta(l: ContainerMetricsData, p?: ContainerMetricsData) {
-        if (!p) return undefined
-        const tx = (l.network.transmittedBytes - p.network.transmittedBytes) / 1024 / (interval / 1000)
+    function getNetTxDelta(l: ContainerMetricsData, p?: ContainerMetricsData, elapsedMs?: number) {
+        if (!p || !elapsedMs) return undefined
+        const tx = (l.network.transmittedBytes - p.network.transmittedBytes) / 1024 / (elapsedMs / 1000)
         return tx < 0 ? 0 : tx
     }
 }

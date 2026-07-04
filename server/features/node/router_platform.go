@@ -14,6 +14,10 @@ func (r *Router) StreamPlatformLogs(context *gin.Context) {
 	handleStreamRequest(context, r.service.PlatformLogs)
 }
 
+func (r *Router) GetPlatformProcesses(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformVmProcesses)
+}
+
 func (r *Router) PostPlatformContainerUp(context *gin.Context) {
 	handlePlatformBodyRequest(context, r.service.PlatformContainerUp)
 }

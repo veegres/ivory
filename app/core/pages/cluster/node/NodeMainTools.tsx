@@ -1,11 +1,11 @@
 import {Box} from "@mui/material"
-import {useState} from "react"
 
 import {Cluster, Node} from "../../../../features/cluster/api/type"
 import {Feature} from "../../../../features/feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {TabsButton} from "../../../../shared/component/button/TabsButton"
 import {SxPropsMap} from "../../../../shared/helper/type"
+import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {PgCompactTable} from "../../../../tools/pg_compacttable/component/PgCompactTable"
 
 const SX: SxPropsMap = {
@@ -20,12 +20,13 @@ type Props = {
 
 export function NodeMainTools(props: Props) {
     const {node, cluster} = props
-    const [tab, setTab] = useState(0)
+    const tab = useStore(s => s.nodeState.toolsTab)
+    const {setToolsTab} = useStoreAction
     const tabs = [{label: "pg_compacttable"}]
     return (
         <Box sx={SX.box}>
             <Box sx={SX.tabs}>
-                <TabsButton tabs={tabs} tab={tab} setTab={setTab} fullWidth={false}/>
+                <TabsButton tabs={tabs} tab={tab} setTab={setToolsTab} fullWidth={false}/>
             </Box>
             {tab === 0 && (
                 <ManageAccess feature={Feature.ViewToolPgCompactTableList} error={true}>

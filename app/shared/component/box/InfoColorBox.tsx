@@ -33,8 +33,8 @@ export function InfoColorBox(props: Props) {
     const c = COLORS[color] ?? COLORS["default"]
     return (
         <Tooltip title={title} placement={"top"} disableInteractive={!!title}>
-            <Box sx={SX.label} bgcolor={c.bg} color={c.text}>
-                {dot && <Box sx={SX.dot} bgcolor={c.dot}/>}
+            <Box sx={[SX.label, {bgcolor: c.bg, color: c.text}]}>
+                {dot && <Box sx={[SX.dot, {bgcolor: c.dot}]}/>}
                 {label}
             </Box>
         </Tooltip>

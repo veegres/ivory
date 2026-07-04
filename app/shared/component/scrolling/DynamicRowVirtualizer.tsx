@@ -1,7 +1,7 @@
 import {Box, SxProps} from "@mui/material"
 import {Theme} from "@mui/material/styles"
 import {useVirtualizer} from "@tanstack/react-virtual"
-import {useRef} from "react"
+import {ReactNode, useRef} from "react"
 
 import {SxPropsMap} from "../../helper/type"
 import {printLogs, SxPropsFormatter} from "../../helper/utils"
@@ -21,6 +21,8 @@ type Props = {
     className?: string,
     sxVirtualRow?: SxProps<Theme>,
     classNameVirtualRow?: string,
+    reconnect?: () => void,
+    empty?: ReactNode,
 }
 
 /**
@@ -29,7 +31,7 @@ type Props = {
  *  Guide https://tanstack.com/virtual/v3/docs/examples/react/dynamic
  */
 export function DynamicRowVirtualizer(props: Props) {
-    const {rows, height, sx, className, sxVirtualRow, classNameVirtualRow, auto} = props
+    const {rows, height, sx, className, sxVirtualRow, classNameVirtualRow, auto, reconnect, empty} = props
     const parentRef = useRef<Element>(null)
 
     // eslint-disable-next-line react-hooks/incompatible-library
@@ -41,23 +43,35 @@ export function DynamicRowVirtualizer(props: Props) {
 
     const items = virtualizer.getVirtualItems()
     return (
-        <AutoScrolling auto={auto} length={rows.length} scroll={virtualizer.scrollToIndex} print={() => printLogs(`LOGS: ${new Date()}`, rows)}>
+        // NOTE: AutoScrolling (and its buttons, e.g. print/reconnect) stays mounted regardless
+        //  of whether rows is currently empty, so it does not flicker/remount whenever a stream
+        //  reconnect briefly clears the rows before new ones arrive. print is always passed
+        //  (even for an empty array) rather than toggled to undefined, for the same reason.
+        <AutoScrolling
+            auto={auto}
+            length={rows.length}
+            scroll={virtualizer.scrollToIndex}
+            print={() => printLogs(`LOGS: ${new Date()}`, rows)}
+            reconnect={reconnect}
+        >
             <Box ref={parentRef} sx={SxPropsFormatter.merge(sx, SX.container)} className={className} style={{height: `${height}px`}}>
-                <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
-                    <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0]?.start ?? 0}px)`}}>
-                        {items.map((virtualRow) => (
-                            <Box
-                                ref={virtualizer.measureElement}
-                                key={virtualRow.key}
-                                data-index={virtualRow.index}
-                            >
-                                <Box sx={sxVirtualRow} className={classNameVirtualRow}>
-                                    {rows[virtualRow.index]}
+                {rows.length === 0 && empty ? empty : (
+                    <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
+                        <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0]?.start ?? 0}px)`}}>
+                            {items.map((virtualRow) => (
+                                <Box
+                                    ref={virtualizer.measureElement}
+                                    key={virtualRow.key}
+                                    data-index={virtualRow.index}
+                                >
+                                    <Box sx={sxVirtualRow} className={classNameVirtualRow}>
+                                        {rows[virtualRow.index]}
+                                    </Box>
                                 </Box>
-                            </Box>
-                        ))}
+                            ))}
+                        </Box>
                     </Box>
-                </Box>
+                )}
             </Box>
         </AutoScrolling>
     )

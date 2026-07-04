@@ -30,7 +30,7 @@ const group = (size: number): SxProps<Theme> => ({"& .MuiButtonGroup-grouped": {
 }})
 
 const periods: [string, number][] = [
-    ["Off", 0], ["1s", 1000], ["5s", 5000], ["10s", 10000],
+    ["Off", 0], ["1s", 1000], ["3s", 3000], ["5s", 5000], ["10s", 10000],
     ["30s", 30000], ["1m", 60000], ["5m", 50000], ["10m", 100000],
 ]
 

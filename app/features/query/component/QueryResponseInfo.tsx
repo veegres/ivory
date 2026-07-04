@@ -23,9 +23,7 @@ export function QueryResponseInfo(props: Props) {
     return (
         <Box sx={SX.box}>
             <Tooltip title={"SENT TO"} placement={"right"} arrow={true}>
-                <Box sx={SX.wrap}>
-                    [ {url} ]
-                </Box>
+                <Box sx={SX.wrap}>[ {url} ]</Box>
             </Tooltip>
             <Box sx={SX.right}>
                 <Tooltip title={"LIMIT"} placement={"top"}>
