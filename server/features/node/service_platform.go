@@ -82,6 +82,24 @@ func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, err
 	return s.executeCommand(adapter.StartContainer(conn, r.Name))
 }
 
+func (s *Service) PlatformContainerDeployOptions(r PlatformDeployOptionsRequest) (*PlatformDeployOptionsResponse, error) {
+	metadata, err := s.keeperMetadataRegistry.Get(r.Plugin)
+	if err != nil {
+		return nil, err
+	}
+	adapter, err := s.platformRegistry.Get(platform.Linux)
+	if err != nil {
+		return nil, err
+	}
+	spec := metadata.DeploymentSpec()
+	return &PlatformDeployOptionsResponse{
+		Uri:               spec.DefaultImage,
+		DefaultValues:     spec.DefaultValues,
+		Options:           adapter.RenderOptions(mapKeeperDeploymentToPlatformSpec(spec, false)),
+		OptionsSingleHost: adapter.RenderOptions(mapKeeperDeploymentToPlatformSpec(spec, true)),
+	}, nil
+}
+
 func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 	if r.Connection.Host == "" {
 		return nil, errors.New("host is empty")

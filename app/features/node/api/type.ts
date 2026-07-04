@@ -136,6 +136,17 @@ export interface ImageOptions {
     dbPort: number,
 }
 
+export interface PlatformDeployOptionsRequest {
+    plugin: KeeperPlugin,
+}
+
+export interface PlatformDeployOptions {
+    uri: string,
+    defaultValues: {[key: string]: string},
+    options: string,
+    optionsSingleHost: string,
+}
+
 export interface PlatformLogsRequest {
     connection: PlatformVaultConnection,
     path: string,

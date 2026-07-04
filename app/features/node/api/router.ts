@@ -3,7 +3,10 @@ import {R} from "../../management/api/type"
 import {
     KeeperOneRequest,
     KeeperOneResponse,
+    KeeperPlugin,
     PlatformActionRequest,
+    PlatformDeployOptions,
+    PlatformDeployOptionsRequest,
     PlatformLogsRequest,
     PlatformMetricsResponse,
     PlatformProcessesResponse,
@@ -87,6 +90,11 @@ export const NodeApi = {
             .then((response) => response.data.response),
     },
     deployment: {
+        deployOptions: {
+            key: (plugin: KeeperPlugin) => ["node", "platform", "container", "deploy-options", plugin],
+            fn: (request: PlatformDeployOptionsRequest) => api.get<R<PlatformDeployOptions>>("/node/platform/container/deploy-options", {params: {request: JSON.stringify(request)}})
+                .then((response) => response.data.response),
+        },
         list: {
             key: (request: PlatformVaultConnection) => ["node", "platform", "container", "list", request.host, request.port, request.vaultId],
             fn: (request: PlatformVaultConnection) => api.get<R<string[]>>("/node/platform/container", {params: {request: JSON.stringify(request)}})

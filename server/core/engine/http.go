@@ -194,6 +194,10 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	platformGroup.POST("/copy-id", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatform), r.PostPlatformCopyId)
 
 	deploymentGroup := platformGroup.Group("/container")
+	// NOTE: deploy-options serves static deployment defaults (previously bundled in the web app);
+	// it is used by both cluster deploy (manage.cluster.create) and container deploy
+	// (manage.node.platform.container) dialogs, so it is not tied to either feature.
+	deploymentGroup.GET("/deploy-options", r.GetPlatformContainerDeployOptions)
 	deploymentGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerList)
 	deploymentGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.StreamPlatformContainerLogs)
 	deploymentGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerMetrics)

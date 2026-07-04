@@ -1,21 +1,22 @@
 import {Edit, Preview, Rocket} from "@mui/icons-material"
 import {Box, Button, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 
 import {Code} from "../../../../shared/component/box/Code"
+import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {Logs} from "../../../../shared/component/box/Logs"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
+import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {
-    DatabaseImageOptions,
     getInterpolatedImageOptions,
     getShortUuid,
     InterpolatedOptionsKeys,
 } from "../../../../shared/helper/utils"
 import {Cluster} from "../../../cluster/api/type"
-import {useRouterNodePlatformUp} from "../../api/hook"
-import {PlatformVaultConnection} from "../../api/type"
+import {useRouterNodePlatformDeployOptions, useRouterNodePlatformUp} from "../../api/hook"
+import {PlatformDeployOptions, PlatformVaultConnection} from "../../api/type"
 
 const SX: SxPropsMap = {
     note: {
@@ -39,8 +40,8 @@ type Props = {
 export function ContainerOverviewDeploy(props: Props) {
     const {connection, cluster} = props
 
-    const [image, setImage] = useState(DatabaseImageOptions[cluster.plugins.keeper])
-    const [options, setOptions] = useState(image.optionStr)
+    const [image, setImage] = useState<PlatformDeployOptions>()
+    const [options, setOptions] = useState("")
     const [preview, setPreview] = useState(true)
 
     const [dcs, setDcs] = useState<string>("")
@@ -48,6 +49,9 @@ export function ContainerOverviewDeploy(props: Props) {
     const [dbPort, setDbPort] = useState<string>("")
 
     const up = useRouterNodePlatformUp(connection)
+    const deployOptions = useRouterNodePlatformDeployOptions(cluster.plugins.keeper)
+
+    useEffect(handleEffectDeployOptions, [deployOptions.data, image])
 
     return (
         <DialogButton
@@ -57,19 +61,25 @@ export function ContainerOverviewDeploy(props: Props) {
             icon={<Rocket fontSize={"small"}/>}
             back={!!up.data}
         >
-            {up.data ? <Logs logs={up.data} height={600} auto={false}/> : (
-                <Box sx={[SX.subContent, {gap: 2}]}>
-                    {renderClusterInfo()}
-                    {renderMandatoryFields()}
-                    {renderImageOptions()}
-                </Box>
-            )}
+            {up.data ? <Logs logs={up.data} height={600} auto={false}/> : renderBody()}
         </DialogButton>
     )
 
+    function renderBody() {
+        if (deployOptions.isError) return <ErrorSmart error={deployOptions.error}/>
+        if (deployOptions.isPending || !image) return <SkeletonGroup count={3}/>
+        return (
+            <Box sx={[SX.subContent, {gap: 2}]}>
+                {renderClusterInfo()}
+                {renderMandatoryFields()}
+                {renderImageOptions()}
+            </Box>
+        )
+    }
+
     function renderActions() {
         return (
-            <Button loading={up.isPending} onClick={handleAction}>
+            <Button loading={up.isPending} onClick={handleAction} disabled={!image}>
                 Deploy
             </Button>
         )
@@ -165,8 +175,8 @@ export function ContainerOverviewDeploy(props: Props) {
                             fullWidth={true}
                             size={"small"}
                             label={"Image"}
-                            value={image.uri}
-                            onChange={v => setImage(prev => ({...prev, uri: v.target.value}))}
+                            value={image?.uri ?? ""}
+                            onChange={v => setImage(prev => prev && ({...prev, uri: v.target.value}))}
                         />
                         <ToggleButtonGroup value={preview} exclusive={true} size={"small"} onChange={(_, v) => setPreview(v)}>
                             <Tooltip title={"Preview"} placement={"top"}>
@@ -201,6 +211,7 @@ export function ContainerOverviewDeploy(props: Props) {
     }
 
     function handleAction() {
+        if (!image) return
         up.mutate({
             connection,
             name: connection.host,
@@ -217,5 +228,12 @@ export function ContainerOverviewDeploy(props: Props) {
             },
             rawImageOptions: options,
         })
+    }
+
+    function handleEffectDeployOptions() {
+        const data = deployOptions.data
+        if (!data || image) return
+        setImage(data)
+        setOptions(data.options)
     }
 }

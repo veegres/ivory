@@ -8,6 +8,57 @@ import (
 	"testing"
 )
 
+func TestRenderOptions(t *testing.T) {
+	adapter := &Adapter{}
+
+	t.Run("full spec renders docker flags in order", func(t *testing.T) {
+		spec := platform.DeploySpec{
+			Name:          "{{host}}",
+			Hostname:      "{{host}}",
+			RestartPolicy: "unless-stopped",
+			Ports:         []string{"{{keeperPort}}", "{{dbPort}}"},
+			Volumes:       []platform.VolumeMount{{HostPath: "/data/postgres", ContainerPath: "/home/postgres/pgdata"}},
+			Env: []platform.EnvVar{
+				{Name: "SCOPE", Value: `"{{cluster}}"`},
+				{Name: "PGPORT", Value: `{{dbPort}}`},
+			},
+		}
+		expected := "--name {{host}}\n" +
+			"--hostname {{host}}\n" +
+			"--restart unless-stopped\n" +
+			"-p {{keeperPort}}:{{keeperPort}}\n" +
+			"-p {{dbPort}}:{{dbPort}}\n" +
+			"-v /data/postgres:/home/postgres/pgdata\n" +
+			`-e SCOPE="{{cluster}}"` + "\n" +
+			"-e PGPORT={{dbPort}}"
+		if got := adapter.RenderOptions(spec); got != expected {
+			t.Fatalf("expected:\n%s\ngot:\n%s", expected, got)
+		}
+	})
+
+	t.Run("host network renders without ports, volumes and restart policy", func(t *testing.T) {
+		spec := platform.DeploySpec{
+			Name:        "{{host}}",
+			Hostname:    "{{host}}",
+			HostNetwork: true,
+			Env:         []platform.EnvVar{{Name: "SCOPE", Value: `"{{cluster}}"`}},
+		}
+		expected := "--name {{host}}\n" +
+			"--hostname {{host}}\n" +
+			"--network host\n" +
+			`-e SCOPE="{{cluster}}"`
+		if got := adapter.RenderOptions(spec); got != expected {
+			t.Fatalf("expected:\n%s\ngot:\n%s", expected, got)
+		}
+	})
+
+	t.Run("empty spec renders empty string", func(t *testing.T) {
+		if got := adapter.RenderOptions(platform.DeploySpec{}); got != "" {
+			t.Fatalf("expected empty string, got %q", got)
+		}
+	})
+}
+
 func TestNormalizeDockerCommand(t *testing.T) {
 	tests := []struct {
 		name     string

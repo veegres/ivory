@@ -3,7 +3,6 @@ package patroni
 import (
 	"encoding/json"
 	"ivory/clients/http"
-	"ivory/core/config"
 	"ivory/plugins/keeper"
 	nethttp "net/http"
 	"net/url"
@@ -19,20 +18,6 @@ type Adapter struct {
 
 func NewAdapter(httpClient *http.Client) *Adapter {
 	return &Adapter{httpClient: httpClient}
-}
-
-func (a *Adapter) SupportedFeatures() []env.Feature {
-	return []env.Feature{
-		env.ViewNodeKeeperOverview,
-		env.ViewNodeKeeperConfig,
-		env.ManageNodeKeeperConfigUpdate,
-		env.ManageNodeKeeperSwitchover,
-		env.ManageNodeKeeperReinitialize,
-		env.ManageNodeKeeperRestart,
-		env.ManageNodeKeeperReload,
-		env.ManageNodeKeeperFailover,
-		env.ManageNodeKeeperActivation,
-	}
 }
 
 func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {

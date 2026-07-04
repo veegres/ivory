@@ -27,6 +27,7 @@ func main() {
 		pc.DatabaseRegistry,
 		pc.PlatformRegistry,
 		pc.KeeperRegistry,
+		pc.KeeperMetadataRegistry,
 		tc.Registry,
 		cc.Service,
 	)

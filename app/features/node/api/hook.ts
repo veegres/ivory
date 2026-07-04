@@ -28,6 +28,13 @@ export function useRouterNodePlatformUp(connection: PlatformVaultConnection) {
     })
 }
 
+export function useRouterNodePlatformDeployOptions(plugin: KeeperPlugin) {
+    return useQuery({
+        queryKey: NodeApi.deployment.deployOptions.key(plugin),
+        queryFn: () => NodeApi.deployment.deployOptions.fn({plugin}),
+    })
+}
+
 export function useRouterNodePlatformList(request: PlatformVaultConnection) {
     return useQuery({
         queryKey: NodeApi.deployment.list.key(request),

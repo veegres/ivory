@@ -3,11 +3,12 @@ package keeper
 import (
 	"errors"
 	"ivory/clients/http"
-	"ivory/core/config"
 )
 
 var ErrBodyShouldBeEmpty = errors.New("body should be empty")
 
+// Adapter covers operations against a running keeper; plugin self-description
+// (supported features, deployment defaults) lives in Metadata.
 type Adapter interface {
 	List(request Request) ([]Response, int, error)
 	Config(request Request) (any, int, error)
@@ -21,7 +22,6 @@ type Adapter interface {
 	Failover(request Request) (*string, int, error)
 	Activate(request Request) (*string, int, error)
 	Pause(request Request) (*string, int, error)
-	SupportedFeatures() []env.Feature
 }
 
 func Map(request Request, path string) http.Request {

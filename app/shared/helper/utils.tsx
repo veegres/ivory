@@ -27,7 +27,6 @@ import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../.
 import {
     KeeperConnection,
     KeeperOneRequest,
-    KeeperPlugin,
     KeeperStatus,
     PlatformVaultConnection,
     Role,
@@ -105,64 +104,6 @@ export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: "success.main"},
     [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutlined/>, color: "secondary.main"},
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
-}
-
-export const DatabaseImageOptions: {[key in KeeperPlugin]: {uri: string, optionStr: string, optionDevStr: string, defaultValues: {[key: string]: string}}} = {
-    [KeeperPlugin.PATRONI]: {
-        uri: "ghcr.io/zalando/spilo-18:4.1-p2",
-        defaultValues: {username: "postgres"},
-        optionStr: `
-          --name {{host}}
-          --hostname {{host}}
-          --restart unless-stopped
-          -p {{keeperPort}}:{{keeperPort}}
-          -p {{dbPort}}:{{dbPort}}
-          -v /data/postgres:/home/postgres/pgdata
-          -e SCOPE="{{cluster}}"
-          -e PATRONI_NAME="{{host}}"
-          -e ETCD3_HOSTS="{{dcs}}"
-          -e PGPORT={{dbPort}}
-          -e APIPORT={{keeperPort}}
-          -e PGPASSWORD_SUPERUSER="{{dbPass}}"
-          -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
-          -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
-        `.replace(/\s{2,}/g, "\n").trim(),
-        optionDevStr: `
-          --name {{host}}
-          --hostname {{host}}
-          --network host
-          -e SCOPE="{{cluster}}"
-          -e PATRONI_NAME="{{host}}"
-          -e ETCD3_HOSTS="{{dcs}}"
-          -e PGPORT={{dbPort}}
-          -e APIPORT={{keeperPort}}
-          -e PGPASSWORD_SUPERUSER="{{dbPass}}"
-          -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
-          -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
-        `.replace(/\s{2,}/g, "\n").trim(),
-    },
-    [KeeperPlugin.POSTGRES]: {
-        uri: "postgres:18",
-        defaultValues: {dcs: "empty"},
-        optionStr: `
-          --name {{host}}
-          --hostname {{host}}
-          --restart unless-stopped
-          -p {{dbPort}}:{{dbPort}}
-          -v /data/postgres:/var/lib/postgresql/data
-          -e PGPORT="{{dbPort}}"
-          -e POSTGRES_USER="{{username}}"    
-          -e POSTGRES_PASSWORD="{{password}}"
-        `.replace(/\s{2,}/g, "\n").trim(),
-        optionDevStr: `
-          --name {{host}}
-          --hostname {{host}}
-          --network host
-          -e PGPORT="{{dbPort}}"
-          -e POSTGRES_USER="{{username}}"    
-          -e POSTGRES_PASSWORD="{{password}}"
-        `.replace(/\s{2,}/g, "\n").trim(),
-    }
 }
 
 export const getInitialNode = (config: NodeConfig): Node => {

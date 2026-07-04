@@ -12,11 +12,12 @@ import (
 )
 
 type Service struct {
-	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter]
-	keeperRegistry   *utils.Registry[keeper.Plugin, keeper.Adapter]
-	vaultService     *vault.Service
-	certService      *cert.Service
-	jobManager       *job.Service
+	platformRegistry       *utils.Registry[platform.Plugin, platform.Adapter]
+	keeperRegistry         *utils.Registry[keeper.Plugin, keeper.Adapter]
+	keeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata]
+	vaultService           *vault.Service
+	certService            *cert.Service
+	jobManager             *job.Service
 
 	dbFeatures map[env.Feature]bool
 }
@@ -24,23 +25,25 @@ type Service struct {
 func NewService(
 	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter],
 	keeperRegistry *utils.Registry[keeper.Plugin, keeper.Adapter],
+	keeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata],
 	vaultService *vault.Service,
 	certService *cert.Service,
 	jobManager *job.Service,
 ) *Service {
 	return &Service{
-		platformRegistry: platformRegistry,
-		keeperRegistry:   keeperRegistry,
-		vaultService:     vaultService,
-		certService:      certService,
-		jobManager:       jobManager,
+		platformRegistry:       platformRegistry,
+		keeperRegistry:         keeperRegistry,
+		keeperMetadataRegistry: keeperMetadataRegistry,
+		vaultService:           vaultService,
+		certService:            certService,
+		jobManager:             jobManager,
 
 		dbFeatures: make(map[env.Feature]bool),
 	}
 }
 
 func (s *Service) SupportedFeatures(t keeper.Plugin) []env.Feature {
-	c, e := s.keeperRegistry.Get(t)
+	c, e := s.keeperMetadataRegistry.Get(t)
 	if e != nil {
 		return []env.Feature{}
 	}

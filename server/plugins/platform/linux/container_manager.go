@@ -32,6 +32,34 @@ var byteSizeUnits = map[string]float64{
 	"TIB": 1024 * 1024 * 1024 * 1024,
 }
 
+// RenderOptions renders the deploy spec into docker run flags, one per line,
+// keeping {{placeholder}} templates intact for later interpolation.
+func (a *Adapter) RenderOptions(spec platform.DeploySpec) string {
+	lines := make([]string, 0)
+	if spec.Name != "" {
+		lines = append(lines, "--name "+spec.Name)
+	}
+	if spec.Hostname != "" {
+		lines = append(lines, "--hostname "+spec.Hostname)
+	}
+	if spec.HostNetwork {
+		lines = append(lines, "--network host")
+	}
+	if spec.RestartPolicy != "" {
+		lines = append(lines, "--restart "+spec.RestartPolicy)
+	}
+	for _, port := range spec.Ports {
+		lines = append(lines, "-p "+port+":"+port)
+	}
+	for _, volume := range spec.Volumes {
+		lines = append(lines, "-v "+volume.HostPath+":"+volume.ContainerPath)
+	}
+	for _, env := range spec.Env {
+		lines = append(lines, "-e "+env.Name+"="+env.Value)
+	}
+	return strings.Join(lines, "\n")
+}
+
 func (a *Adapter) ListContainer(connection platform.Connection) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
 }

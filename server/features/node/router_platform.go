@@ -18,6 +18,10 @@ func (r *Router) GetPlatformProcesses(context *gin.Context) {
 	handlePlatformParamRequest(context, r.service.PlatformVmProcesses)
 }
 
+func (r *Router) GetPlatformContainerDeployOptions(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformContainerDeployOptions)
+}
+
 func (r *Router) PostPlatformContainerUp(context *gin.Context) {
 	handlePlatformBodyRequest(context, r.service.PlatformContainerUp)
 }

@@ -33,6 +33,9 @@ type VmManager interface {
 }
 
 type ContainerManager interface {
+	// RenderOptions renders a deploy spec into the adapter's native, still
+	// user-editable options text (docker run flags, a manifest, etc).
+	RenderOptions(spec DeploySpec) string
 	ListContainer(connection Connection) console.Command
 	UpContainer(connection Connection, options, image string) console.Command
 	DownContainer(connection Connection, name string) console.Command

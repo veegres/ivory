@@ -6,6 +6,29 @@ const (
 	Linux Plugin = "linux"
 )
 
+// DeploySpec describes a single deployment in platform-neutral terms. Field
+// values may contain {{placeholder}} templates; adapters render them as-is
+// and interpolation happens later, right before deployment.
+type DeploySpec struct {
+	Name          string
+	Hostname      string
+	RestartPolicy string
+	HostNetwork   bool
+	Ports         []string
+	Volumes       []VolumeMount
+	Env           []EnvVar
+}
+
+type EnvVar struct {
+	Name  string
+	Value string
+}
+
+type VolumeMount struct {
+	HostPath      string
+	ContainerPath string
+}
+
 type Metrics struct {
 	Cpu     CpuMetrics     `json:"cpu"`
 	Memory  MemoryMetrics  `json:"memory"`

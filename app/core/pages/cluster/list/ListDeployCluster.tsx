@@ -1,24 +1,26 @@
 import {Edit, Preview, RocketLaunch} from "@mui/icons-material"
 import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
-import {useCallback, useMemo, useState} from "react"
+import {useCallback, useEffect, useMemo, useState} from "react"
 
 import {useRouterClusterDeploy} from "../../../../features/cluster/api/hook"
 import {Options as ClusterOptions} from "../../../../features/cluster/api/type"
 import {Feature} from "../../../../features/feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
-import {KeeperPlugin} from "../../../../features/node/api/type"
+import {useRouterNodePlatformDeployOptions} from "../../../../features/node/api/hook"
+import {KeeperPlugin, PlatformDeployOptions} from "../../../../features/node/api/type"
 import {DbPlugin} from "../../../../features/query/api/type"
 import {VaultType} from "../../../../features/vault/api/type"
 import {Code} from "../../../../shared/component/box/Code"
+import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {List} from "../../../../shared/component/box/List"
 import {ListItem} from "../../../../shared/component/box/ListItem"
 import {Logs} from "../../../../shared/component/box/Logs"
 import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
+import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../../shared/helper/type"
 import {
-    DatabaseImageOptions,
     getInterpolatedImageOptions,
     getNodeConfigs,
     InterpolatedOptionsKeys,
@@ -54,14 +56,14 @@ type Props = {
 export function ListDeployCluster(props: Props) {
     const {keeper} = props
     const [cluster, setCluster] = useState("")
-    const [image, setImage] = useState(DatabaseImageOptions[keeper])
+    const [image, setImage] = useState<PlatformDeployOptions>()
     const [options, setOptions] = useState(INITIAL_OPTIONS)
     const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
     const [nodes, setNodes] = useState<string[]>([])
     const [ssh, setSsh] = useState<"new" | "vault">("vault")
     const [db, setDb] = useState<"new" | "vault">("vault")
     const [sshCred, setSshCred] = useState({username: "", password: ""})
-    const [dbCred, setDbCred] = useState({username: image.defaultValues["username"] ?? "", password: image.defaultValues["password"] ?? ""})
+    const [dbCred, setDbCred] = useState({username: "", password: ""})
     const [dcs, setDcs] = useState("")
     const [preview, setPreview] = useState(true)
     const [dev, setDev] = useState(false)
@@ -69,8 +71,11 @@ export function ListDeployCluster(props: Props) {
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
     const deploy = useRouterClusterDeploy(setResponse)
+    const deployOptions = useRouterNodePlatformDeployOptions(keeper)
 
-    const imageOptionsStr = useMemo(() => dev ? image.optionDevStr : image.optionStr, [dev, image.optionDevStr, image.optionStr])
+    useEffect(handleEffectDeployOptions, [deployOptions.data, image])
+
+    const imageOptionsStr = useMemo(() => (dev ? image?.optionsSingleHost : image?.options) ?? "", [dev, image])
 
     const handleImageUpdate = useCallback(handleCallImageUpdate, [])
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
@@ -94,20 +99,26 @@ export function ListDeployCluster(props: Props) {
                 back={!!response}
                 onBackClick={() => setResponse(undefined)}
             >
-                {response ? <Logs logs={response} height={600} auto={false}/> : (
-                    <Box sx={[SX.subContent, {gap: 1}]}>
-                        {renderMandatoryFields()}
-                        {renderImageOptions()}
-                        {renderClusterOptions()}
-                    </Box>
-                )}
+                {response ? <Logs logs={response} height={600} auto={false}/> : renderBody()}
             </DialogButton>
         </ManageAccess>
     )
 
+    function renderBody() {
+        if (deployOptions.isError) return <ErrorSmart error={deployOptions.error}/>
+        if (deployOptions.isPending || !image) return <SkeletonGroup count={3}/>
+        return (
+            <Box sx={[SX.subContent, {gap: 1}]}>
+                {renderMandatoryFields()}
+                {renderImageOptions()}
+                {renderClusterOptions()}
+            </Box>
+        )
+    }
+
     function renderActions() {
         return (
-            <Button fullWidth={true} loading={deploy.isPending} onClick={handleDeploy} disabled={!cluster || !!response}>
+            <Button fullWidth={true} loading={deploy.isPending} onClick={handleDeploy} disabled={!cluster || !image || !!response}>
                 Deploy
             </Button>
         )
@@ -170,7 +181,7 @@ export function ListDeployCluster(props: Props) {
     }
 
     function renderMandatoryOptions() {
-        if (image.defaultValues["dcs"]) return
+        if (image?.defaultValues["dcs"]) return
         return (
             <TitledBox title={"Mandatory Options"} island={true}>
                 <TextField
@@ -195,7 +206,7 @@ export function ListDeployCluster(props: Props) {
                             size={"small"}
                             label={"Username"}
                             value={dbCred.username}
-                            disabled={!!image.defaultValues["username"]}
+                            disabled={!!image?.defaultValues["username"]}
                             onChange={v => setDbCred({...dbCred, username: v.target.value})}
                         />
                         <TextField
@@ -204,7 +215,7 @@ export function ListDeployCluster(props: Props) {
                             type={"password"}
                             label={"Password"}
                             value={dbCred.password}
-                            disabled={!!image.defaultValues["password"]}
+                            disabled={!!image?.defaultValues["password"]}
                             onChange={v => setDbCred({...dbCred, password: v.target.value})}
                         />
                     </Box>
@@ -278,7 +289,7 @@ export function ListDeployCluster(props: Props) {
                             fullWidth={true}
                             size={"small"}
                             label={"Image"}
-                            value={image.uri}
+                            value={image?.uri ?? ""}
                             onChange={v => handleImageUpdate(v.target.value)}
                         />
                         <ToggleButtonGroup value={preview} exclusive={true} size={"small"} onChange={(_, v) => setPreview(v)}>
@@ -357,7 +368,7 @@ export function ListDeployCluster(props: Props) {
     }
 
     function handleCallImageUpdate(uri: string) {
-        setImage(prev => ({...prev, uri}))
+        setImage(prev => prev && ({...prev, uri}))
     }
 
     function handleCallOptionsUpdate(opt: ClusterOptions) {
@@ -369,6 +380,7 @@ export function ListDeployCluster(props: Props) {
     }
 
     function handleDeploy() {
+        if (!image) return
         const nodeConfigs = getNodeConfigs(nodes)
         const imageOptionsSmallKeys = Object.fromEntries(
             Object.entries(imageOptions).map(([nodeFull, opt]) => {
@@ -389,5 +401,12 @@ export function ListDeployCluster(props: Props) {
             },
             clusterOptions: options,
         })
+    }
+
+    function handleEffectDeployOptions() {
+        const data = deployOptions.data
+        if (!data || image) return
+        setImage(data)
+        setDbCred({username: data.defaultValues["username"] ?? "", password: data.defaultValues["password"] ?? ""})
     }
 }

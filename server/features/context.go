@@ -44,6 +44,7 @@ func NewContext(
 	databaseRegistry *utils.Registry[database.Plugin, database.Adapter],
 	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter],
 	keeperRegistry *utils.Registry[keeper.Plugin, keeper.Adapter],
+	keeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata],
 	toolRegistry *utils.Registry[tools.Tool, tools.Adapter],
 	coreService *core.Service,
 ) *Context {
@@ -78,7 +79,7 @@ func NewContext(
 	secretService := vaultService.SecretService()
 	permissionService := permission.NewService(permissionRepo)
 
-	nodeService := node.NewService(platformRegistry, keeperRegistry, vaultService, certService, jobService)
+	nodeService := node.NewService(platformRegistry, keeperRegistry, keeperMetadataRegistry, vaultService, certService, jobService)
 	tagService := tag.NewService(tagRepo)
 	queryService := query.NewService(queryRepo, databaseRegistry, vaultService, certService, secretService, env.Version.Label)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, vaultService, toolRegistry)

@@ -151,6 +151,17 @@ type ImageOptions struct {
 	DbPort     string `json:"dbPort"`
 }
 
+type PlatformDeployOptionsRequest struct {
+	Plugin KeeperPlugin `json:"plugin" form:"plugin" binding:"required"`
+}
+
+type PlatformDeployOptionsResponse struct {
+	Uri               string            `json:"uri"`
+	DefaultValues     map[string]string `json:"defaultValues"`
+	Options           string            `json:"options"`
+	OptionsSingleHost string            `json:"optionsSingleHost"`
+}
+
 type PlatformLogsRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
 	Path       string                  `json:"path" form:"path" binding:"required"`
@@ -205,6 +216,30 @@ func mapKeeperResponse(r keeper.Response) KeeperResponse {
 		DiscoveredKeeperPort: r.DiscoveredKeeperPort,
 		DiscoveredDbPort:     r.DiscoveredDbPort,
 	}
+}
+
+// mapKeeperDeploymentToPlatformSpec converts keeper deployment requirements
+// into a platform deploy spec. Name, hostname and restart policy are Ivory
+// deployment policy rather than keeper knowledge. Single-host mode uses host
+// networking and drops port mappings, volumes and the restart policy because
+// it targets development and testing setups.
+func mapKeeperDeploymentToPlatformSpec(s keeper.DeploymentSpec, singleHost bool) platform.DeploySpec {
+	spec := platform.DeploySpec{
+		Name:        "{{host}}",
+		Hostname:    "{{host}}",
+		HostNetwork: singleHost,
+	}
+	if !singleHost {
+		spec.RestartPolicy = "unless-stopped"
+		spec.Ports = s.Ports
+		for _, v := range s.Volumes {
+			spec.Volumes = append(spec.Volumes, platform.VolumeMount{HostPath: v.HostPath, ContainerPath: v.ContainerPath})
+		}
+	}
+	for _, e := range s.Env {
+		spec.Env = append(spec.Env, platform.EnvVar{Name: e.Name, Value: e.Value})
+	}
+	return spec
 }
 
 func mapPlatformMetrics(m *platform.Metrics) *PlatformMetrics {
