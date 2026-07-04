@@ -2,7 +2,7 @@
    <img src="app/shared/assets/ivory.png" alt="logo" />
 
    # Ivory
-   ### [postgres / patroni cluster management tool]
+   ### [database cluster management tool]
 
    <img src="https://img.shields.io/github/deployments/veegres/ivory/production?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fproduction" alt="deployment" />
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
@@ -12,20 +12,40 @@
 
 <br>
 
-Ivory is an open-source project designed to simplify and visualize work with Postgres clusters.
-Initially, this tool was developed to ease the life of developers who maintain Postgres.
-But I hope it will help manage and troubleshoot Postgres clusters for both developers and database administrators.
+Ivory is an open-source database cluster management tool built around the concept of a **Keeper** —
+a generic HA management layer responsible for leader election, automatic failover, and cluster
+coordination. A Keeper can be a standalone agent running beside the database or a management system
+embedded directly in the database engine. As an example - [Patroni](https://patroni.readthedocs.io/)
+the Keeper implementation for PostgreSQL.
 
-Ivory allows you to use it as a local tool in your personal computer or as a standalone tool
-in a separate virtual machine for collaborative usage and helps you:
-- [keep all of your clusters in one place](.doc/clusters.md)
-- [provides UI for all main features of patroni](.doc/overview.md)
-- [view and edit cluster config](.doc/config.md)
-- [simply execute and save template requests for troubleshooting](.doc/instance.md)
-- [check and clean bloat](.doc/bloat.md)
+It is designed for developers and DBAs who want a single UI to operate, troubleshoot, and deploy 
+high-availability database clusters — without dropping into the CLI for every 
+task.
+
+Ivory can run as a local tool on your laptop or as a shared service on a VM for team use. It provides
+such things as:
+
+**Cluster management**
+- [Keep all clusters in one place — register by hand, auto-detect from a single node address, or deploy fresh](.doc/clusters.md)
+- [Monitor real-time cluster health: node roles, replication lag, pending restarts, warnings](.doc/overview.md)
+- [Perform HA operations: switchover, failover, reinitialise, restart, reload, pause/resume](.doc/overview.md#ha-operations)
+- [View and patch database configuration per node](.doc/node.md#configuration)
+
+**Node operations**
+- [Deploy new database containers on remote hosts over SSH — no agent needed](.doc/node.md#container)
+- [Control the full container lifecycle: up, start, stop, restart, down, logs](.doc/node.md#container)
+- [Manage Keeper directly per node: switchover, failover, reinitialise, restart, pause, configure](.doc/node.md#keeper)
+- [Monitor real-time VM metrics (CPU, memory, network) per node](.doc/node.md#platform)
+- [Stream live logs from any file on the remote host or from a container](.doc/node.md#logs)
+
+**Database troubleshooting**
+- [Run and save template SQL queries for database monitoring](.doc/node.md#database)
+- [Manage Postgres bloat with pgcompacttable](.doc/pg_compacttable.md)
+
+---
 
 <div align="center">
-  <h2>🌟 Support This Project! 🌟</h2>
+  <h3>🌟 Support This Project! 🌟</h3>
 </div>
 
 If you found this project helpful, interesting, or inspiring, please consider giving it a **star** ⭐! Your support helps:
@@ -36,20 +56,23 @@ If you found this project helpful, interesting, or inspiring, please consider gi
 
 Thank you for being part of this journey! 🚀
 
-> *"Alone we can do so little; together we can do so much."* — Helen Keller
+---
 
 ## Get started
 1. Start the docker container
    - Docker Hub `docker run -p 80:80 --restart always veegres/ivory`
-   - GitHub Container repository `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
+   - GitHub Container registry `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
 2. Go to http://localhost:80
-3. Do the initial configuration (Ivory will guide you)
-4. Add your first cluster (by providing name and instances)
-5. Start monitoring :)
+3. Complete the initial setup wizard (authentication, secret key)
+4. Add your first cluster — three options:
+   - **Manual** — provide all node addresses yourself
+   - **Auto-detect** — give one node address and Ivory discovers the rest
+   - **Deploy** — provision a brand-new cluster on remote hosts
+5. Start monitoring
 
-![Demo](.doc/images/demo.gif)
+![Demo](.doc/images/demo.png)
 
-## Q&A
+## FAQ
 
 ### How to update to a new version?
 Ivory now provides Backup/Restore functionality for migrating your data between versions. You can backup your

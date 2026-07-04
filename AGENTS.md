@@ -26,6 +26,16 @@ Use `.docker/ivory-dev/` for the stack.
 - **Generic Clients**: Centralize transport-level logic in generic clients (like `clients/http` or `clients/ssh`) and keep domain-specific logic in wrappers or consumers.
 - **Platform Integration Boundary**: Keep `plugins/platform` generic. Platform adapters model deployment and troubleshooting primitives for a target platform, not Ivory-specific database behavior. Database-specific interpretation belongs in features such as `features/cluster`.
 
+## Feature API Boundary (Frontend)
+Each frontend feature exposes its own types in `features/<name>/api/type.ts`. Types must live in the feature that owns them — never in a shared "plugins" or "common" file. Cross-feature imports are allowed only in the consuming direction (e.g., `cluster` may import from `node` and `query`; `query` and `node` must not import from `cluster`).
+
+Current ownership:
+- `KeeperPlugin` enum → `features/node/api/type.ts` (keeper plugin selector is a node-level concept)
+- `DbPlugin` enum → `features/query/api/type.ts` (database engine type is part of the DB connection config)
+- `DbConfig` interface → `features/query/api/type.ts` (database connection config belongs to the query feature)
+
+Backend mirrors this: `server/features/node/model.go` defines `KeeperPlugin = keeper.Plugin` (alias); `server/features/query/model.go` defines `DbPlugin = database.Plugin` (alias) and `DbConfig` struct. Plugin packages (`server/plugins/*`) are internal implementation details — features expose their own types and use mapper functions to translate to/from plugin types at the boundary.
+
 ## Platform Architecture
 - **Platform Package**: `server/plugins/platform` is the backend integration point for deployment targets. Existing implementations live under `server/plugins/platform/<adapter>/`, for example `onprem/`. Future adapters such as Kubernetes or OpenShift should be added as sibling packages.
 - **Platform vs Transport**: Platform is the product-level abstraction. SSH is only a transport/client detail for the on-prem adapter and credential flow. Keep names like `clients/ssh`, `sshPort`, `SSH_KEY`, and SSH credential UI labels when they describe the actual transport or stored credential type.
@@ -33,9 +43,9 @@ Use `.docker/ivory-dev/` for the stack.
 - **Generic Platform Methods**: Platform adapters expose generic deployment operations: `KeeperNodeList`, `KeeperDeploy`, `KeeperStop`, `KeeperDelete`, and `KeeperLogs`, returning `OperationResult`. Do not name these methods after Docker containers, Kubernetes pods, or databases.
 - **OperationResult**: Use `OperationResult` for command/API execution output with `stdout`, `stderr`, and `exitCode`. It is intentionally not called Container, Pod, Workload, or Database because it is only an operation result.
 - **Node Platform Boundary**: The node feature uses prefixed service methods such as `PlatformContainerUp`, `PlatformContainerStop`, `PlatformContainerStart`, `PlatformContainerDown`, `PlatformContainerList`, and `PlatformContainerLogs` to avoid collisions with existing Keeper methods like `KeeperNodeList`. Frontend node APIs mirror this as `NodeApi.deployment.*` and `useRouterNodePlatform*`.
-- **Routes and Features**: Platform routes live under `/node/platform/...`, currently `/node/platform/metrics` and `/node/platform/deployment/...`. Permissions use `view.node.platform.*` and `manage.node.platform.*`.
+- **Routes and Features**: Platform routes live under `/node/platform/...`, currently `/node/platform/metrics`, `/node/platform/logs`, `/node/platform/copy-id`, and `/node/platform/container/...`. Permissions use `view.node.platform.*` and `manage.node.platform.*`.
 - **Domain-Specific Logic**: `features/cluster` may keep database-focused names such as `normalizeDatabaseOptions` and cluster `Deploy`, because that feature converts Ivory database cluster configuration into generic platform deployment requests.
-- **Request Naming**: Use neutral platform request/response names at the node/platform boundary, such as `PlatformDeployRequest`, `PlatformLogsRequest`, `PlatformConnection`, and `PlatformResponse`. Request fields like `name` should identify the target deployment generically; adapters map that to a Docker container name, Kubernetes resource name, pod name, etc.
+- **Request Naming**: Use neutral platform request/response names at the node/platform boundary, such as `PlatformUpRequest`, `PlatformLogsRequest`, `PlatformVaultConnection`, and `PlatformResponse`. Request fields like `name` should identify the target deployment generically; adapters map that to a Docker container name, Kubernetes resource name, pod name, etc.
 
 ## Nomenclature
 - **Node**: Refers to a single server entity (Hardware + Software).
