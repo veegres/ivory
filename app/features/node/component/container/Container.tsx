@@ -3,6 +3,7 @@ import {SxPropsMap} from "../../../../shared/helper/type"
 import {Feature} from "../../../feature"
 import {ManageAccessBox} from "../../../management/component/ManageAccess"
 import {PlatformVaultConnection} from "../../api/type"
+import {ContainerMetrics} from "./ContainerMetrics"
 import {ContainerOverview} from "./ContainerOverview"
 
 const SX: SxPropsMap = {
@@ -18,6 +19,7 @@ export function Container(props: Props) {
     if (!connection) return <ErrorSshMissing/>
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} error={true}>
+            <ContainerMetrics connection={connection} name={connection.host}/>
             <ContainerOverview connection={connection}/>
         </ManageAccessBox>
     )

@@ -8,6 +8,7 @@ import (
 var ErrInvalidCpuMetrics = errors.New("invalid cpu metrics output")
 var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
 var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
+var ErrInvalidContainerMetrics = errors.New("invalid container metrics output")
 
 // Connection contains the bare minimum details to execute commands on a platform node.
 type Connection struct {
@@ -37,4 +38,5 @@ type ContainerManager interface {
 	StopContainer(connection Connection, name string) console.Command
 	RestartContainer(connection Connection, name string) console.Command
 	LogsContainer(connection Connection, name string, tail int, follow bool) console.Command
+	MetricsContainer(connection Connection, name string) (*Metrics, error)
 }

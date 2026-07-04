@@ -41,3 +41,7 @@ func (r *Router) GetPlatformContainerList(context *gin.Context) {
 func (r *Router) StreamPlatformContainerLogs(context *gin.Context) {
 	handleStreamRequest(context, r.service.PlatformContainerLogs)
 }
+
+func (r *Router) GetPlatformContainerMetrics(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformContainerMetrics)
+}

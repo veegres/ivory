@@ -6,7 +6,7 @@ import {useStore} from "../../../shared/provider/StoreProvider"
 import {ClusterApi} from "../../cluster/api/router"
 import {NodeConfig} from "../../cluster/api/type"
 import {NodeApi} from "./router"
-import {KeeperOneRequest, KeeperPlugin, PlatformLogsRequest, PlatformVaultConnection} from "./type"
+import {KeeperOneRequest, KeeperPlugin, PlatformActionRequest, PlatformLogsRequest, PlatformVaultConnection} from "./type"
 
 export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
     const {loading, response} = useStream(NodeApi.logs.url(request), {enabled})
@@ -131,6 +131,15 @@ export function useRouterNodeMetrics(c: PlatformVaultConnection, refetchInterval
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.metrics.key(c.host),
         queryFn: () => NodeApi.metrics.fn(c),
+        refetchInterval,
+        retry: false,
+    })
+}
+
+export function useRouterNodePlatformContainerMetrics(request: PlatformActionRequest, refetchInterval?: number) {
+    return useQuery({
+        queryKey: NodeApi.deployment.metrics.key(request),
+        queryFn: () => NodeApi.deployment.metrics.fn(request),
         refetchInterval,
         retry: false,
     })

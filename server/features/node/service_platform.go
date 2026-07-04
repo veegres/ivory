@@ -142,6 +142,18 @@ func (s *Service) PlatformContainerList(c PlatformVaultConnection) ([]string, er
 	return s.executeCommand(adapter.ListContainer(conn))
 }
 
+func (s *Service) PlatformContainerMetrics(r PlatformActionRequest) (*PlatformMetricsResponse, error) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	if err != nil {
+		return nil, err
+	}
+	metrics, err := adapter.MetricsContainer(conn, r.Name)
+	if err != nil {
+		return nil, err
+	}
+	return mapPlatformMetrics(metrics), nil
+}
+
 func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {

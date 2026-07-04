@@ -195,6 +195,7 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	deploymentGroup := platformGroup.Group("/container")
 	deploymentGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerList)
 	deploymentGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.StreamPlatformContainerLogs)
+	deploymentGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerMetrics)
 	deploymentGroup.POST("/start", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStart)
 	deploymentGroup.POST("/stop", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStop)
 	deploymentGroup.POST("/restart", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerRestart)
