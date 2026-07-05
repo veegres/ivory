@@ -172,7 +172,7 @@ export const getNodeConfigs = (domains: string[]): NodeConfig[] => {
 }
 
 export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [string?, Node?] => {
-    if (manual) return [manual, nodes[manual ?? ""]]
+    if (manual) return [manual, nodes[manual]]
     const list = Object.entries(nodes)
     return list.find(([_, v]) => v.keeper.role === "leader")
         ?? list.find(([_, v]) => v.keeper.role === "replica")
