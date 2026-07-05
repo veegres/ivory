@@ -1,9 +1,9 @@
 import {fireEvent, render, screen} from "@testing-library/react"
 import {describe, expect, it, vi} from "vitest"
 
-import {Plugins} from "../../../features/cluster/api/type"
-import {KeeperPlugin} from "../../../features/node/api/type"
-import {DbPlugin} from "../../../features/query/api/type"
+import {Plugins} from "../../../features/cluster/api/ClusterType"
+import {KeeperPlugin} from "../../../features/node/api/NodeType"
+import {DbPlugin} from "../../../features/query/api/QueryType"
 import {OptionsPlugins} from "./OptionsPlugins"
 
 const PLUGINS: Plugins = {keeper: KeeperPlugin.PATRONI_POSTGRES, database: DbPlugin.POSTGRES}

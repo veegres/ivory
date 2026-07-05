@@ -1,6 +1,6 @@
 import {SaveIconButton} from "../../../shared/component/button/IconButtons"
-import {useRouterQueryUpdate} from "../api/hook"
-import {Request} from "../api/type"
+import {useRouterQueryUpdate} from "../api/QueryHook"
+import {Request} from "../api/QueryType"
 
 type Props = {
     id: string

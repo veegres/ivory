@@ -4,10 +4,10 @@ import {useEffect, useState} from "react"
 
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
 import {useSnackbar} from "../../../shared/provider/SnackbarProvider"
-import {Feature} from "../../feature"
+import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
-import {useRouterVaultDelete, useRouterVaultUpdate} from "../api/hook"
-import {Vault, VaultType} from "../api/type"
+import {useRouterVaultDelete, useRouterVaultUpdate} from "../api/VaultHook"
+import {Vault, VaultType} from "../api/VaultType"
 import {VaultRowPassword} from "./VaultRowPassword"
 import {VaultRowSshKey} from "./VaultRowSshKey"
 

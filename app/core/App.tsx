@@ -1,11 +1,11 @@
 import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
-import {useRouterInfo} from "../features/management/api/hook"
+import {useRouterInfo} from "../features/management/api/ManagementHook"
 import {Body} from "../shared/component/layout/Body"
 import {Footer} from "../shared/component/layout/Footer"
 import {Header} from "../shared/component/layout/Header"
-import {SxPropsMap} from "../shared/helper/type"
+import {SxPropsMap} from "../shared/helper/HelperType"
 import {useQueryParamErrorHandler} from "../shared/hook/QueryParamErrorHandler"
 
 const SX: SxPropsMap = {

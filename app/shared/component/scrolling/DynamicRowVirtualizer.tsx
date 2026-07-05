@@ -3,8 +3,8 @@ import {Theme} from "@mui/material/styles"
 import {useVirtualizer} from "@tanstack/react-virtual"
 import {ReactNode, useRef} from "react"
 
-import {SxPropsMap} from "../../helper/type"
-import {printLogs, SxPropsFormatter} from "../../helper/utils"
+import {SxPropsMap} from "../../helper/HelperType"
+import {printLogs, SxPropsFormatter} from "../../helper/HelperUtils"
 import {AutoScrolling} from "./AutoScrolling"
 
 const SX: SxPropsMap = {

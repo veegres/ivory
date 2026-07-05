@@ -1,7 +1,7 @@
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {TabsButton} from "../../../../shared/component/button/TabsButton"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {PlatformVaultConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/NodeType"
 import {PlatformLogs} from "./PlatformLogs"
 import {PlatformProcesses} from "./PlatformProcesses"
 

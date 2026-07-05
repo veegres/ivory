@@ -2,8 +2,8 @@ import {useMemo} from "react"
 
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {VirtualizedTable} from "../../../shared/component/table/VirtualizedTable"
-import {DbResponse} from "../api/type"
-import {Connection} from "../api/type"
+import {DbResponse} from "../api/QueryType"
+import {Connection} from "../api/QueryType"
 import {QueryTableActions} from "./QueryTableActions"
 
 type Props = {

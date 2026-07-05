@@ -3,7 +3,7 @@ import {TransitionGroup} from "react-transition-group"
 
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {NoBox} from "../../../shared/component/box/NoBox"
-import {Cert, CertMap} from "../api/type"
+import {Cert, CertMap} from "../api/CertType"
 import {CertsItem} from "./CertsItem"
 
 type Props = {

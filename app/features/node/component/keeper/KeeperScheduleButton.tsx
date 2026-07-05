@@ -4,11 +4,11 @@ import {List} from "../../../../shared/component/box/List"
 import {ListItem} from "../../../../shared/component/box/ListItem"
 import {NoBox} from "../../../../shared/component/box/NoBox"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
-import {DateTimeFormatter} from "../../../../shared/helper/utils"
-import {Feature} from "../../../feature"
+import {DateTimeFormatter} from "../../../../shared/helper/HelperUtils"
+import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../api/hook"
-import {KeeperOneRequest, ScheduledRestart, ScheduledSwitchover} from "../../api/type"
+import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../api/NodeHook"
+import {KeeperOneRequest, ScheduledRestart, ScheduledSwitchover} from "../../api/NodeType"
 
 type Props = {
     request: KeeperOneRequest,

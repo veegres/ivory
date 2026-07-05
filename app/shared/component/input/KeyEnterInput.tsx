@@ -3,7 +3,7 @@ import {FormControl, FormHelperText, IconButton, InputAdornment, InputLabel, Out
 import {InputProps as StandardInputProps} from "@mui/material"
 import {useState} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     margin: {margin: "0px"},

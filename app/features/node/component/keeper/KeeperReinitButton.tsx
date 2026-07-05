@@ -2,11 +2,11 @@ import {Box, FormControlLabel, Switch} from "@mui/material"
 import {useState} from "react"
 
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {Feature} from "../../../feature"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
+import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {useRouterNodeReinit} from "../../api/hook"
-import {KeeperOneRequest} from "../../api/type"
+import {useRouterNodeReinit} from "../../api/NodeHook"
+import {KeeperOneRequest} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     force: {margin: "0px"},

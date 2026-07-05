@@ -6,9 +6,9 @@ import {AlertInformative} from "../../../shared/component/box/AlertInformative"
 import {List} from "../../../shared/component/box/List"
 import {DownloadButton} from "../../../shared/component/button/DownloadButton"
 import {UploadButton} from "../../../shared/component/button/UploadButton"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {getErrorMessage} from "../../../shared/helper/utils"
-import {useRouterExport, useRouterImport} from "../api/hook"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {getErrorMessage} from "../../../shared/helper/HelperUtils"
+import {useRouterExport, useRouterImport} from "../api/ManagementHook"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},

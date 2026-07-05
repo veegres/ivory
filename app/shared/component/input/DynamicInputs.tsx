@@ -1,8 +1,8 @@
 import {Box, Chip, FormControl, OutlinedInput, SxProps, Theme} from "@mui/material"
 import {ChangeEvent, memo, ReactNode, useCallback, useMemo} from "react"
 
-import {ColorsMap, SxPropsMap} from "../../helper/type"
-import {SxPropsFormatter} from "../../helper/utils"
+import {ColorsMap, SxPropsMap} from "../../helper/HelperType"
+import {SxPropsFormatter} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "grid", gap: 1},

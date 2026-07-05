@@ -1,15 +1,15 @@
 import {Box, Button, Checkbox, FormControlLabel, TextField} from "@mui/material"
 import {useState} from "react"
 
-import {Cluster, Node} from "../../../features/cluster/api/type"
-import {DbPlugin} from "../../../features/query/api/type"
-import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../features/query/api/hook"
+import {Cluster, Node} from "../../../features/cluster/api/ClusterType"
+import {DbPlugin} from "../../../features/query/api/QueryType"
+import {useRouterQueryDatabase, useRouterQuerySchemas, useRouterQueryTables} from "../../../features/query/api/QueryHook"
 import {AutocompleteFetch} from "../../../shared/component/autocomplete/AutocompleteFetch"
 import {ErrorDbMissing,ErrorLeaderMissing} from "../../../shared/component/box/ErrorManual"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {getQueryConnection} from "../../../shared/helper/utils"
-import {useRouterPgCompactTableStart} from "../api/hook"
-import {PgCompactTableOptions, PgCompactTableTarget} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {getQueryConnection} from "../../../shared/helper/HelperUtils"
+import {useRouterPgCompactTableStart} from "../api/PgCompactTableHook"
+import {PgCompactTableOptions, PgCompactTableTarget} from "../api/PgCompactTableType"
 
 const SX: SxPropsMap = {
     form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},

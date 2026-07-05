@@ -1,7 +1,7 @@
 import {useState} from "react"
 
-import {useRouterClusterFixAuto} from "../../../../features/cluster/api/hook"
-import {Feature} from "../../../../features/feature"
+import {useRouterClusterFixAuto} from "../../../../features/cluster/api/ClusterHook"
+import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {AutoIconButton} from "../../../../shared/component/button/IconButtons"
 import {AlertDialog} from "../../../../shared/component/dialog/AlertDialog"

@@ -3,8 +3,8 @@ import {useState} from "react"
 
 import {AlertInformative} from "../../../shared/component/box/AlertInformative"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {useRouterSecretChange} from "../api/hook"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {useRouterSecretChange} from "../api/ManagementHook"
 
 const SX: SxPropsMap = {
     form: {display: "flex", flexDirection: "column", gap: 2, margin: "20px 0px"},

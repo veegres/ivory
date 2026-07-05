@@ -2,7 +2,7 @@ import {Box, Tab, Tabs} from "@mui/material"
 import {useState} from "react"
 
 import {LastElementScrolling} from "../../../shared/component/scrolling/LastElementScrolling"
-import {Feature} from "../../feature"
+import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
 import {PermissionsSelfList} from "./PermissionsSelfList"
 import {PermissionsUserList} from "./PermissionsUserList"

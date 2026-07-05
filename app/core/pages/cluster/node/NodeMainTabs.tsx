@@ -1,12 +1,12 @@
 import {Link} from "@mui/material"
 import {ReactNode} from "react"
 
-import {Cluster, Node} from "../../../../features/cluster/api/type"
-import {NodeTabType} from "../../../../features/node/api/type"
+import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
+import {NodeTabType} from "../../../../features/node/api/NodeType"
 import {Container} from "../../../../features/node/component/container/Container"
 import {Keeper} from "../../../../features/node/component/keeper/Keeper"
 import {Platform} from "../../../../features/node/component/platform/Platform"
-import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/utils"
+import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/HelperUtils"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTools} from "./NodeMainTools"
 

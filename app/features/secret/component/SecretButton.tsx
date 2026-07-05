@@ -1,6 +1,6 @@
 import {Button} from "@mui/material"
 
-import {useRouterSecretSet} from "../api/hook"
+import {useRouterSecretSet} from "../api/SecretHook"
 
 type Props = {
     keyWord: string,

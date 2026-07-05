@@ -3,8 +3,8 @@ import {Accordion, AccordionDetails, AccordionSummary, Box} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {VirtualizedTable} from "../../../shared/component/table/VirtualizedTable"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {DbResponse} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {DbResponse} from "../api/QueryType"
 import {QueryResponseInfo} from "./QueryResponseInfo"
 
 const SX: SxPropsMap = {

@@ -3,16 +3,16 @@ import {Box, CircularProgress, Divider, IconButton, Paper, Tooltip} from "@mui/m
 import {SvgIconProps} from "@mui/material"
 import {cloneElement, ReactElement, useState} from "react"
 
-import {Feature} from "../../../features/feature"
+import {Feature} from "../../../features/Feature"
 import {ManageAccess} from "../../../features/management/component/ManageAccess"
 import {Logs} from "../../../shared/component/box/Logs"
 import {OpenIcon} from "../../../shared/component/icon/OpenIcon"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {getShortUuid} from "../../../shared/helper/utils"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {getShortUuid} from "../../../shared/helper/HelperUtils"
 import select from "../../../shared/style/select.module.css"
-import {useRouterPgCompactTableDelete, useRouterPgCompactTableStop} from "../api/hook"
-import {useRouterPgCompactTableJob} from "../api/job/hook"
-import {PgCompactTable} from "../api/type"
+import {useRouterPgCompactTableDelete, useRouterPgCompactTableStop} from "../api/PgCompactTableHook"
+import {useRouterPgCompactTableJob} from "../api/job/PgCompactTableJobHook"
+import {PgCompactTable} from "../api/PgCompactTableType"
 
 const SX: SxPropsMap = {
     paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},

@@ -1,7 +1,7 @@
 import {Box, LinearProgress, SxProps, Theme} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
-import {SxPropsFormatter} from "../../helper/utils"
+import {SxPropsMap} from "../../helper/HelperType"
+import {SxPropsFormatter} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {minHeight: "4px", margin: "5px 0", width: "100%"},

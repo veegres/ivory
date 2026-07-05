@@ -1,9 +1,9 @@
 import {useMemo} from "react"
 
-import {useRouterVault} from "../../../features/vault/api/hook"
-import {VaultType} from "../../../features/vault/api/type"
+import {useRouterVault} from "../../../features/vault/api/VaultHook"
+import {VaultType} from "../../../features/vault/api/VaultType"
 import {AutocompleteUuid, Option} from "../../../shared/component/autocomplete/AutocompleteUuid"
-import {getShortUuid,VaultOptions} from "../../../shared/helper/utils"
+import {getShortUuid,VaultOptions} from "../../../shared/helper/HelperUtils"
 
 type Props = {
     type: VaultType,

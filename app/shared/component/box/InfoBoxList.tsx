@@ -3,7 +3,7 @@ import {SvgIconProps} from "@mui/material"
 import {green, grey} from "@mui/material/colors"
 import {cloneElement, ReactElement} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {InfoBox, Padding} from "./InfoBox"
 import {InfoColorBoxList} from "./InfoColorBoxList"
 

@@ -1,8 +1,8 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {Feature} from "../../../../features/feature"
+import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
-import {ChartType, Connection as QueryConnection, Type as QueryType} from "../../../../features/query/api/type"
+import {ChartType, Connection as QueryConnection, Type as QueryType} from "../../../../features/query/api/QueryType"
 import {Query} from "../../../../features/query/component/Query"
 import {QueryActivity} from "../../../../features/query/component/QueryActivity"
 import {QueryChartDatabase} from "../../../../features/query/component/QueryChartDatabase"
@@ -10,7 +10,7 @@ import {QueryChartGeneral} from "../../../../features/query/component/QueryChart
 import {QueryConsole} from "../../../../features/query/component/QueryConsole"
 import {DividerBox} from "../../../../shared/component/box/DividerBox"
 import {ErrorDbMissing} from "../../../../shared/component/box/ErrorManual"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {

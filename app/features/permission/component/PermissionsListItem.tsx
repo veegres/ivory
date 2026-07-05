@@ -1,10 +1,10 @@
 import {Box, Button} from "@mui/material"
 import {cloneElement} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {PermissionOptions} from "../../../shared/helper/utils"
-import {Feature} from "../../feature"
-import {Status} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {PermissionOptions} from "../../../shared/helper/HelperUtils"
+import {Feature} from "../../Feature"
+import {Status} from "../api/PermissionType"
 import {PermissionsButtons} from "./PermissionsButtons"
 
 const SX: SxPropsMap = {

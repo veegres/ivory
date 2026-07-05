@@ -1,8 +1,8 @@
 import {Box} from "@mui/material"
 import {ReactElement, useEffect, useRef, useState} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Vault} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Vault} from "../api/VaultType"
 import {VaultInput} from "./VaultInput"
 
 const SX: SxPropsMap = {

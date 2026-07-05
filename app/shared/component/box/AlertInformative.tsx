@@ -1,7 +1,7 @@
 import {Alert, Box} from "@mui/material"
 import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     text: {display: "flex", flexDirection: "column", gap: 1, textAlign: "center"},

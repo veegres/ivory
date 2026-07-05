@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     no: {

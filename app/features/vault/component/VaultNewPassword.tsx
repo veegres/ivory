@@ -2,8 +2,8 @@ import {Cancel, CheckCircle} from "@mui/icons-material"
 import {useEffect, useState} from "react"
 
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
-import {useRouterVaultCreate} from "../api/hook"
-import {Vault, VaultType} from "../api/type"
+import {useRouterVaultCreate} from "../api/VaultHook"
+import {Vault, VaultType} from "../api/VaultType"
 import {VaultNewWrapper} from "./VaultNewWrapper"
 import {VaultRowPassword} from "./VaultRowPassword"
 

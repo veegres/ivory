@@ -2,7 +2,7 @@ import {Box, SxProps, Theme} from "@mui/material"
 
 import {Code} from "../../../../shared/component/box/Code"
 import {DynamicInputs} from "../../../../shared/component/input/DynamicInputs"
-import {ColorsMap, SxPropsMap} from "../../../../shared/helper/type"
+import {ColorsMap, SxPropsMap} from "../../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 0.5},

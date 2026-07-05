@@ -3,8 +3,8 @@ import {Box, IconButton} from "@mui/material"
 
 import {List} from "../../../shared/component/box/List"
 import {ListItem} from "../../../shared/component/box/ListItem"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {IvoryLinks} from "../../../shared/helper/utils"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {IvoryLinks} from "../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0 15px", gap: 3},

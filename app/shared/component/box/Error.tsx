@@ -2,7 +2,7 @@ import {Alert, AlertColor, AlertTitle, Box, Collapse, InputLabel} from "@mui/mat
 import React, {useState} from "react"
 
 import {ClearCache} from "../../../core/widgets/browser/ClearCache"
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {OpenIcon} from "../icon/OpenIcon"
 
 const SX: SxPropsMap = {

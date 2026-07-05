@@ -7,7 +7,7 @@ import {AxiosError} from "axios"
 import {useMemo} from "react"
 
 import {IconButton, PlayIconButton, RefreshIconButton} from "../../../shared/component/button/IconButtons"
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {

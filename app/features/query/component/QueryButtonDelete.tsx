@@ -1,6 +1,6 @@
 import {DeleteIconButton} from "../../../shared/component/button/IconButtons"
-import {useRouterQueryDelete} from "../api/hook"
-import {DbPlugin, Type} from "../api/type"
+import {useRouterQueryDelete} from "../api/QueryHook"
+import {DbPlugin, Type} from "../api/QueryType"
 
 type Props = {
     id: string

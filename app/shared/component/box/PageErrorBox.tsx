@@ -1,6 +1,6 @@
 import {Stack} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {ErrorSmart} from "./ErrorSmart"
 import {PageMainBox} from "./PageMainBox"
 

@@ -1,7 +1,7 @@
 import {Box, Tooltip} from "@mui/material"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {DbOptions} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {DbOptions} from "../api/QueryType"
 
 const SX: SxPropsMap = {
     box: {

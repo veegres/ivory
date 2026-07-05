@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 
-import {Node, NodeConfig} from "../../../../features/cluster/api/type"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {NodeHeadForm} from "./NodeHeadForm"
 import {NodeHeadStatus} from "./NodeHeadStatus"
 

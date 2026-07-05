@@ -1,5 +1,5 @@
 import {AlertButton} from "../../../shared/component/button/AlertButton"
-import {useRouterFree} from "../api/hook"
+import {useRouterFree} from "../api/ManagementHook"
 
 export function ManageFreeButton() {
     const free = useRouterFree()

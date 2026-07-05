@@ -4,10 +4,10 @@ import {useState} from "react"
 
 import {Refresher} from "../../../core/widgets/browser/Refresher"
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {useRouterActivity} from "../api/hook"
-import {QueryApi} from "../api/router"
-import {Connection} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {useRouterActivity} from "../api/QueryHook"
+import {QueryApi} from "../api/QueryRouter"
+import {Connection} from "../api/QueryType"
 import {QueryTable} from "./QueryTable"
 
 const SX: SxPropsMap = {

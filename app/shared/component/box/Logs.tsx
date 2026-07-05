@@ -1,6 +1,6 @@
 import {Box, CircularProgress, SxProps, Theme} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import scroll from "../../style/scroll.module.css"
 import {DynamicRowVirtualizer} from "../scrolling/DynamicRowVirtualizer"
 

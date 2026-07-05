@@ -2,8 +2,8 @@ import {InfoOutlined} from "@mui/icons-material"
 import {Alert, Box, Collapse, Tab, Tabs, ToggleButton, Tooltip} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {NodeTabType} from "../../../../features/node/api/type"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {NodeTabType} from "../../../../features/node/api/NodeType"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {NODE_TABS} from "./NodeMainTabs"
 

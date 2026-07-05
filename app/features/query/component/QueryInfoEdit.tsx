@@ -1,9 +1,9 @@
 import {InputBase, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
 import {DynamicInputs} from "../../../shared/component/input/DynamicInputs"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {QueryVarietyOptions} from "../../../shared/helper/utils"
-import {Request} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {QueryVarietyOptions} from "../../../shared/helper/HelperUtils"
+import {Request} from "../api/QueryType"
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
 import {QueryBoxInfo} from "./QueryBoxInfo"
 

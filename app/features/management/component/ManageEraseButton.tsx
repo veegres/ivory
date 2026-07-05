@@ -1,6 +1,6 @@
 import {AlertButton} from "../../../shared/component/button/AlertButton"
 import {useStoreAction} from "../../../shared/provider/StoreProvider"
-import {useRouterEraseInitial, useRouterEraseSafe} from "../api/hook"
+import {useRouterEraseInitial, useRouterEraseSafe} from "../api/ManagementHook"
 
 type Props = {
     safe: boolean,

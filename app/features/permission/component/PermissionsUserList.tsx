@@ -3,8 +3,8 @@ import {Accordion, AccordionDetails, AccordionSummary, Skeleton} from "@mui/mate
 
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {NoBox} from "../../../shared/component/box/NoBox"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {useRouterPermissions} from "../api/hook"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {useRouterPermissions} from "../api/PermissionHook"
 import {PermissionsList} from "./PermissionsList"
 
 const SX: SxPropsMap = {

@@ -2,7 +2,7 @@ import {HelpOutlined} from "@mui/icons-material"
 import {Alert, AlertColor, Box, Collapse, FormControl, FormLabel} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {border: 1, borderColor: "divider", borderRadius: 1, width: "100%"},

@@ -3,11 +3,11 @@ import {useState} from "react"
 
 import {Logs} from "../../../../shared/component/box/Logs"
 import {NoBox} from "../../../../shared/component/box/NoBox"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useDebounce} from "../../../../shared/hook/Debounce"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {useRouterNodePlatformLogs} from "../../api/hook"
-import {PlatformVaultConnection} from "../../api/type"
+import {useRouterNodePlatformLogs} from "../../api/NodeHook"
+import {PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     head: {

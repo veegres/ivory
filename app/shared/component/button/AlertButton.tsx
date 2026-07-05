@@ -1,7 +1,7 @@
 import {Box, Button, Tooltip} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {AlertDialog} from "../dialog/AlertDialog"
 
 const SX: SxPropsMap = {

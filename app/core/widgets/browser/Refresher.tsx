@@ -14,7 +14,7 @@ import {
 import {QueryKey, useQueryClient} from "@tanstack/react-query"
 import {useEffect, useRef, useState} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {

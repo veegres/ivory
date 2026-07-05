@@ -2,8 +2,8 @@ import {Collapse} from "@mui/material"
 import {TransitionGroup} from "react-transition-group"
 
 import {NoBox} from "../../../shared/component/box/NoBox"
-import {StylePropsMap} from "../../../shared/helper/type"
-import {PgCompactTable} from "../api/type"
+import {StylePropsMap} from "../../../shared/helper/HelperType"
+import {PgCompactTable} from "../api/PgCompactTableType"
 import {PgCompactTableJobItem} from "./PgCompactTableJobItem"
 
 const style: StylePropsMap = {

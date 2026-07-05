@@ -2,8 +2,8 @@ import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
 import {InfoBox, Padding} from "../../../shared/component/box/InfoBox"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Type} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Type} from "../api/QueryType"
 import {QueryBoxWrapper} from "./QueryBoxWrapper"
 
 const SX: SxPropsMap = {

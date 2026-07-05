@@ -3,10 +3,10 @@ import {Box} from "@mui/material"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {NoBox} from "../../../shared/component/box/NoBox"
 import {ClearAllIconButton, RefreshIconButton} from "../../../shared/component/button/IconButtons"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Feature} from "../../feature"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
-import {useRouterQueryLog, useRouterQueryLogDelete} from "../api/hook"
+import {useRouterQueryLog, useRouterQueryLogDelete} from "../api/QueryHook"
 import {QueryLogItem} from "./QueryLogItem"
 
 const SX: SxPropsMap = {

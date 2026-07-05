@@ -2,8 +2,8 @@ import {useMemo} from "react"
 
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {VirtualizedTable} from "../../../../shared/component/table/VirtualizedTable"
-import {useRouterNodePlatformProcesses} from "../../api/hook"
-import {PlatformVaultConnection, Process} from "../../api/type"
+import {useRouterNodePlatformProcesses} from "../../api/NodeHook"
+import {PlatformVaultConnection, Process} from "../../api/NodeType"
 
 const COLUMNS = [
     {name: "PID", width: 70},

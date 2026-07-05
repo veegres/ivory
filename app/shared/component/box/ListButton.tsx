@@ -2,7 +2,7 @@ import {NavigateNext} from "@mui/icons-material"
 import {ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material"
 import {ReactElement} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     button: {borderRadius: "2px", padding: "12px 16px"},

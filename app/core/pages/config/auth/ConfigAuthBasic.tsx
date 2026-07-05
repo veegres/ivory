@@ -1,9 +1,9 @@
 import {Box} from "@mui/material"
 import {ChangeEvent} from "react"
 
-import {BasicConfig} from "../../../../features/config/api/type"
+import {BasicConfig} from "../../../../features/config/api/ConfigType"
 import {KeyEnterInput} from "../../../../shared/component/input/KeyEnterInput"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex",  gap: 1},

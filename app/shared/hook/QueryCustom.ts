@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query"
 import {AxiosError} from "axios"
 
-import {getErrorMessage} from "../helper/utils"
+import {getErrorMessage} from "../helper/HelperUtils"
 import {useSnackbar} from "../provider/SnackbarProvider"
 
 interface MutationAdapterOptions<TData, TError, TVariables, TContext>

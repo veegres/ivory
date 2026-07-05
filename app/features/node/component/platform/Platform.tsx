@@ -1,7 +1,7 @@
 import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
-import {Feature} from "../../../feature"
+import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {PlatformVaultConnection} from "../../api/type"
+import {PlatformVaultConnection} from "../../api/NodeType"
 import {PlatformMetrics} from "./PlatformMetrics"
 import {PlatformOverview} from "./PlatformOverview"
 

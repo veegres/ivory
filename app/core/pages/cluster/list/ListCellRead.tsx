@@ -1,10 +1,10 @@
 import {Box} from "@mui/material"
 
-import {useRouterClusterDelete} from "../../../../features/cluster/api/hook"
-import {Feature} from "../../../../features/feature"
+import {useRouterClusterDelete} from "../../../../features/cluster/api/ClusterHook"
+import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {DeleteIconButton, EditIconButton} from "../../../../shared/component/button/IconButtons"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},

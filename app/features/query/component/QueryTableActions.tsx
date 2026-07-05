@@ -2,11 +2,11 @@ import {Box, Button} from "@mui/material"
 import {useState} from "react"
 
 import {MenuButton} from "../../../shared/component/button/MenuButton"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Feature} from "../../feature"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
-import {useRouterQueryCancel, useRouterQueryTerminate} from "../api/hook"
-import {Connection} from "../api/type"
+import {useRouterQueryCancel, useRouterQueryTerminate} from "../api/QueryHook"
+import {Connection} from "../api/QueryType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-evenly", alignItems: "center", color: "text.secondary", padding: "0 3px", height: "22px"},

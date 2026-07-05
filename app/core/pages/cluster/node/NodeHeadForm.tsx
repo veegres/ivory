@@ -1,11 +1,11 @@
 import {Box, TextField} from "@mui/material"
 import {useState} from "react"
 
-import {Node, NodeConfig} from "../../../../features/cluster/api/type"
+import {Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {CancelIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {SizeFormatter} from "../../../../shared/helper/utils"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
+import {SizeFormatter} from "../../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", width: "100%", padding: "6px 8px", gap: 1.5, alignItems: "center", flex: "11 1 700px"},

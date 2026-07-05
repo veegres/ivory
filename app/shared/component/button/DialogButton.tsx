@@ -3,7 +3,7 @@ import {Box, Dialog, DialogActions, DialogTitle, IconButton as MuiIconButton, To
 import {SvgIconProps} from "@mui/material"
 import {ReactElement, ReactNode, useEffect, useState} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {CloseIconButton, IconButton} from "./IconButtons"
 import {SimpleButton} from "./SimpleButton"
 

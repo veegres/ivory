@@ -1,7 +1,7 @@
 import {AxiosError} from "axios"
 
-import {useRouterQueryChart} from "../api/hook"
-import {ChartType, Connection} from "../api/type"
+import {useRouterQueryChart} from "../api/QueryHook"
+import {ChartType, Connection} from "../api/QueryType"
 import {Color, QueryChartItem} from "./QueryChartItem"
 
 type Props = {

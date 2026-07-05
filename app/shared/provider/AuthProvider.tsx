@@ -2,8 +2,8 @@ import {useQueryClient} from "@tanstack/react-query"
 import {AxiosError, HttpStatusCode} from "axios"
 import {ReactNode, useEffect} from "react"
 
-import {api} from "../../features/api"
-import {ManagementApi} from "../../features/management/api/router"
+import {api} from "../../features/Api"
+import {ManagementApi} from "../../features/management/api/ManagementRouter"
 
 export function AuthProvider(props: {children: ReactNode}) {
     const queryClient = useQueryClient()

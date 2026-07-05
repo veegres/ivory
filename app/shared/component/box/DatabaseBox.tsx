@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 
-import {DbConfig} from "../../../features/query/api/type"
-import {SxPropsMap} from "../../helper/type"
+import {DbConfig} from "../../../features/query/api/QueryType"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", columnGap: 2, justifyContent: "space-evenly", flexWrap: "wrap"},

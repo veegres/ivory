@@ -1,8 +1,8 @@
 import {Box, Skeleton} from "@mui/material"
 
-import {Role} from "../../../../features/node/api/type"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {NodeColor} from "../../../../shared/helper/utils"
+import {Role} from "../../../../features/node/api/NodeType"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
+import {NodeColor} from "../../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     nodeStatusBlock: {

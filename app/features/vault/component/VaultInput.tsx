@@ -1,7 +1,7 @@
 import {FormControl, InputLabel, OutlinedInput, Theme} from "@mui/material"
 import {SystemStyleObject} from "@mui/system"
 
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     input: {height: "32px"},

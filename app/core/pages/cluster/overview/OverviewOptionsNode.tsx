@@ -4,8 +4,8 @@ import {
 } from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {NodeOverview} from "../../../../features/cluster/api/type"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {NodeOverview} from "../../../../features/cluster/api/ClusterType"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {

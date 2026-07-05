@@ -2,7 +2,7 @@ import {Typography} from "@mui/material"
 import {useState} from "react"
 
 import {ManageEraseButton} from "../../../features/management/component/ManageEraseButton"
-import {useRouterSecretSet} from "../../../features/secret/api/hook"
+import {useRouterSecretSet} from "../../../features/secret/api/SecretHook"
 import {SecretButton} from "../../../features/secret/component/SecretButton"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"

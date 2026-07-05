@@ -1,7 +1,7 @@
 import {Box, Chip, Divider} from "@mui/material"
 import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     row: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 2},

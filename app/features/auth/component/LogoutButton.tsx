@@ -1,6 +1,6 @@
 import {Button} from "@mui/material"
 
-import {useRouterLogout} from "../api/hook"
+import {useRouterLogout} from "../api/AuthHook"
 
 export function LogoutButton() {
     const logoutRouter = useRouterLogout()

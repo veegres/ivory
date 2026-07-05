@@ -4,9 +4,9 @@ import {useEffect, useState} from "react"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../../../shared/component/chart/HistoryTrackerChart"
 import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {useRouterNodePlatformContainerMetrics} from "../../api/hook"
-import {Metrics as ContainerMetricsData, PlatformVaultConnection} from "../../api/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
+import {useRouterNodePlatformContainerMetrics} from "../../api/NodeHook"
+import {Metrics as ContainerMetricsData, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 1},

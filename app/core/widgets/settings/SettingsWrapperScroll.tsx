@@ -1,8 +1,8 @@
 import {Box, SxProps, Theme} from "@mui/material"
 import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {SxPropsFormatter} from "../../../shared/helper/utils"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {SxPropsFormatter} from "../../../shared/helper/HelperUtils"
 import scroll from "../../../shared/style/scroll.module.css"
 
 const SX: SxPropsMap = {

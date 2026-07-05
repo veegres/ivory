@@ -1,9 +1,9 @@
 import {KeyboardDoubleArrowRight} from "@mui/icons-material"
 import {Box, Button, Tooltip} from "@mui/material"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {useRouterQueryUpdate} from "../api/hook"
-import {Response} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {useRouterQueryUpdate} from "../api/QueryHook"
+import {Response} from "../api/QueryType"
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
 import {QueryBoxWrapper} from "./QueryBoxWrapper"
 

@@ -3,9 +3,9 @@ import {Box} from "@mui/material"
 
 import {Logs} from "../../../../shared/component/box/Logs"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore} from "../../../../shared/provider/StoreProvider"
-import {Feature} from "../../../feature"
+import {Feature} from "../../../Feature"
 import {ManageAccessBox} from "../../../management/component/ManageAccess"
 import {
     useRouterNodePlatformContainerLogs,
@@ -13,8 +13,8 @@ import {
     useRouterNodePlatformRestart,
     useRouterNodePlatformStart,
     useRouterNodePlatformStop,
-} from "../../api/hook"
-import {PlatformVaultConnection} from "../../api/type"
+} from "../../api/NodeHook"
+import {PlatformVaultConnection} from "../../api/NodeType"
 import {ContainerOverviewDeploy} from "./ContainerOverviewDeploy"
 import {ContainerOverviewMetrics} from "./ContainerOverviewMetrics"
 

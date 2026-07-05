@@ -1,12 +1,12 @@
 import {Box, Tooltip} from "@mui/material"
 
 import {DeleteIconButton} from "../../../shared/component/button/IconButtons"
-import {StylePropsMap, SxPropsMap} from "../../../shared/helper/type"
-import {FileUsageOptions} from "../../../shared/helper/utils"
-import {Feature} from "../../feature"
+import {StylePropsMap, SxPropsMap} from "../../../shared/helper/HelperType"
+import {FileUsageOptions} from "../../../shared/helper/HelperUtils"
+import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
-import {useRouterCertDelete} from "../api/hook"
-import {Cert} from "../api/type"
+import {useRouterCertDelete} from "../api/CertHook"
+import {Cert} from "../api/CertType"
 
 const SX: SxPropsMap = {
     item: {

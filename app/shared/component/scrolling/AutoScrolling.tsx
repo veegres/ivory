@@ -2,7 +2,7 @@ import {ArrowDownward, ArrowUpward, Print, RestartAlt, VerticalAlignBottom} from
 import {Box, ToggleButton, Tooltip} from "@mui/material"
 import {ReactElement, ReactNode, useEffect, useState} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {SimpleButton} from "../button/SimpleButton"
 
 const SX: SxPropsMap = {

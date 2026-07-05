@@ -1,7 +1,7 @@
 import {Box, Link} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
-import {IvoryLinks} from "../../helper/utils"
+import {SxPropsMap} from "../../helper/HelperType"
+import {IvoryLinks} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", fontFamily: "monospace", margin: "5px 20px 5px", gap: "5px"},

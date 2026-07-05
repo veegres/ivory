@@ -3,7 +3,7 @@ import {useVirtualizer} from "@tanstack/react-virtual"
 import {Fragment, ReactNode, useMemo, useState} from "react"
 
 import scroll from "../../../shared/style/scroll.module.css"
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {useDragger} from "../../hook/Dragger"
 import {NoBox} from "../box/NoBox"
 

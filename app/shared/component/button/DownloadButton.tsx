@@ -1,7 +1,7 @@
 import {FileDownloadOutlined} from "@mui/icons-material"
 import {Box, Button} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     wrap: {padding: "5px", height: "100%"},

@@ -1,9 +1,9 @@
 import {Box, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 import {useState} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {FileUsageOptions} from "../../../shared/helper/utils"
-import {CertType, FileUsageType} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {FileUsageOptions} from "../../../shared/helper/HelperUtils"
+import {CertType, FileUsageType} from "../api/CertType"
 import {CertsTabPath} from "./CertsTabPath"
 import {CertsTabUpload} from "./CertsTabUpload"
 

@@ -1,10 +1,10 @@
 import {Box} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {useRouterInfo} from "../../../features/management/api/hook"
+import {useRouterInfo} from "../../../features/management/api/ManagementHook"
 import select from "../../../shared/style/select.module.css"
-import {SxPropsMap} from "../../helper/type"
-import {randomUnicodeAnimal} from "../../helper/utils"
+import {SxPropsMap} from "../../helper/HelperType"
+import {randomUnicodeAnimal} from "../../helper/HelperUtils"
 import {LinearProgressStateful} from "../progress/LinearProgressStateful"
 
 const SX: SxPropsMap = {

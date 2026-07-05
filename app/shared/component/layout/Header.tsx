@@ -3,9 +3,9 @@ import {Box, IconButton, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {Settings} from "../../../core/widgets/settings/Settings"
-import {useRouterLogout} from "../../../features/auth/api/hook"
-import {SxPropsMap} from "../../helper/type"
-import {randomUnicodeAnimal} from "../../helper/utils"
+import {useRouterLogout} from "../../../features/auth/api/AuthHook"
+import {SxPropsMap} from "../../helper/HelperType"
+import {randomUnicodeAnimal} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},

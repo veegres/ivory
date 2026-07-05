@@ -1,6 +1,6 @@
 import {ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     group: {gap: 1, ".MuiToggleButtonGroup-grouped": {border: 1, borderColor: "divider", borderRadius: 1, padding: "0px 10px"}},

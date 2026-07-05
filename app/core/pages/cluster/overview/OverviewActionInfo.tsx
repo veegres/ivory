@@ -1,12 +1,12 @@
 import {Box} from "@mui/material"
 import {useMemo} from "react"
 
-import {CertType} from "../../../../features/cert/api/type"
-import {Cluster} from "../../../../features/cluster/api/type"
-import {VaultType} from "../../../../features/vault/api/type"
+import {CertType} from "../../../../features/cert/api/CertType"
+import {Cluster} from "../../../../features/cluster/api/ClusterType"
+import {VaultType} from "../../../../features/vault/api/VaultType"
 import {InfoBoxList} from "../../../../shared/component/box/InfoBoxList"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {CertOptions, VaultOptions} from "../../../../shared/helper/utils"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
+import {CertOptions, VaultOptions} from "../../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},

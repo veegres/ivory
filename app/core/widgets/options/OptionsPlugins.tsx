@@ -1,9 +1,9 @@
 import {Box, FormControl, InputLabel, MenuItem, Select} from "@mui/material"
 
-import {Plugins} from "../../../features/cluster/api/type"
-import {KeeperPlugin} from "../../../features/node/api/type"
-import {DbPlugin} from "../../../features/query/api/type"
-import {SxPropsMap} from "../../../shared/helper/type"
+import {Plugins} from "../../../features/cluster/api/ClusterType"
+import {KeeperPlugin} from "../../../features/node/api/NodeType"
+import {DbPlugin} from "../../../features/query/api/QueryType"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1.5},

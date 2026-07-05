@@ -1,14 +1,14 @@
 import {Box} from "@mui/material"
 import {UseMutationResult} from "@tanstack/react-query"
 
-import {Feature} from "../../../../features/feature"
+import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
-import {useRouterNodeActivate, useRouterNodePause} from "../../../../features/node/api/hook"
-import {KeeperOneRequest, KeeperStatus} from "../../../../features/node/api/type"
+import {useRouterNodeActivate, useRouterNodePause} from "../../../../features/node/api/NodeHook"
+import {KeeperOneRequest, KeeperStatus} from "../../../../features/node/api/NodeType"
 import {InfoBox} from "../../../../shared/component/box/InfoBox"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
-import {EnumOptions, SxPropsMap} from "../../../../shared/helper/type"
-import {KeeperStatusOptions} from "../../../../shared/helper/utils"
+import {EnumOptions, SxPropsMap} from "../../../../shared/helper/HelperType"
+import {KeeperStatusOptions} from "../../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 1},

@@ -1,8 +1,8 @@
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
-import {Feature} from "../../../feature"
+import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {useRouterNodeFailover} from "../../api/hook"
-import {KeeperOneRequest, Role} from "../../api/type"
+import {useRouterNodeFailover} from "../../api/NodeHook"
+import {KeeperOneRequest, Role} from "../../api/NodeType"
 
 type Props = {
     name?: string,

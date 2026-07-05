@@ -1,14 +1,14 @@
 import {Box, Button} from "@mui/material"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Feature} from "../../feature"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
 import {
     useRouterPermissionApprove,
     useRouterPermissionReject,
     useRouterPermissionRequest,
-} from "../api/hook"
-import {Status} from "../api/type"
+} from "../api/PermissionHook"
+import {Status} from "../api/PermissionType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center"},

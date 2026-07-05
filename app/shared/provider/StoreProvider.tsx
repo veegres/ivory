@@ -1,9 +1,9 @@
 import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
-import {Cluster} from "../../features/cluster/api/type"
-import {NodeTabType} from "../../features/node/api/type"
-import {Type as QueryType} from "../../features/query/api/type"
+import {Cluster} from "../../features/cluster/api/ClusterType"
+import {NodeTabType} from "../../features/node/api/NodeType"
+import {Type as QueryType} from "../../features/query/api/QueryType"
 import {MainQueryClient} from "./AppProvider"
 
 // STORE

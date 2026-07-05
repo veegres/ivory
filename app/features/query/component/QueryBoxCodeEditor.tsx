@@ -1,7 +1,7 @@
 import {PostgreSQL, sql} from "@codemirror/lang-sql"
 import ReactCodeMirror from "@uiw/react-codemirror"
 
-import {CodeThemes} from "../../../shared/helper/utils"
+import {CodeThemes} from "../../../shared/helper/HelperUtils"
 import {useSettings} from "../../../shared/provider/AppProvider"
 import code from "../../../shared/style/codemirror.module.css"
 

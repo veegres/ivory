@@ -2,9 +2,9 @@ import {Box, BoxProps} from "@mui/material"
 import {cloneElement, Fragment, FragmentProps} from "react"
 
 import {ErrorNoAccess} from "../../../shared/component/box/ErrorManual"
-import {Feature} from "../../feature"
-import {Status} from "../../permission/api/type"
-import {useRouterInfo} from "../api/hook"
+import {Feature} from "../../Feature"
+import {Status} from "../../permission/api/PermissionType"
+import {useRouterInfo} from "../api/ManagementHook"
 
 type Props = FragmentProps & {
     feature: Feature,

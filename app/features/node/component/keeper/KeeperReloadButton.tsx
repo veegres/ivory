@@ -1,8 +1,8 @@
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
-import {Feature} from "../../../feature"
+import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {useRouterNodeReload} from "../../api/hook"
-import {KeeperOneRequest} from "../../api/type"
+import {useRouterNodeReload} from "../../api/NodeHook"
+import {KeeperOneRequest} from "../../api/NodeType"
 
 type Props = {
     request: KeeperOneRequest,

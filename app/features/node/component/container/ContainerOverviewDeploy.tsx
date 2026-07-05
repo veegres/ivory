@@ -8,15 +8,15 @@ import {Logs} from "../../../../shared/component/box/Logs"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
 import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {
     getInterpolatedImageOptions,
     getShortUuid,
     InterpolatedOptionsKeys,
-} from "../../../../shared/helper/utils"
-import {Cluster} from "../../../cluster/api/type"
-import {useRouterNodePlatformDeployOptions, useRouterNodePlatformUp} from "../../api/hook"
-import {PlatformDeployOptions, PlatformVaultConnection} from "../../api/type"
+} from "../../../../shared/helper/HelperUtils"
+import {Cluster} from "../../../cluster/api/ClusterType"
+import {useRouterNodePlatformDeployOptions, useRouterNodePlatformUp} from "../../api/NodeHook"
+import {PlatformDeployOptions, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     note: {

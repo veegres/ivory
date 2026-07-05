@@ -1,7 +1,7 @@
 import {Button, Typography} from "@mui/material"
 import {useState} from "react"
 
-import {useRouterSecretSet, useRouterSecretSkip} from "../../../features/secret/api/hook"
+import {useRouterSecretSet, useRouterSecretSkip} from "../../../features/secret/api/SecretHook"
 import {SecretButton} from "../../../features/secret/component/SecretButton"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"

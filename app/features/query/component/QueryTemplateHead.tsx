@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 import select from "../../../shared/style/select.module.css"
 
 const SX: SxPropsMap = {

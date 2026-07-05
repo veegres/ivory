@@ -1,7 +1,7 @@
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Radio, TableCell, TableRow, Tooltip} from "@mui/material"
 
-import {Cluster, Node, NodeConfig} from "../../../../features/cluster/api/type"
+import {Cluster, Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
 import {KeeperFailoverButton} from "../../../../features/node/component/keeper/KeeperFailoverButton"
 import {KeeperReinitButton} from "../../../../features/node/component/keeper/KeeperReinitButton"
 import {KeeperReloadButton} from "../../../../features/node/component/keeper/KeeperReloadButton"
@@ -11,8 +11,8 @@ import {KeeperSwitchoverButton} from "../../../../features/node/component/keeper
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {MenuButton} from "../../../../shared/component/button/MenuButton"
 import {HiddenScrolling} from "../../../../shared/component/scrolling/HiddenScrolling"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {DateTimeFormatter, getKeeperOneRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/utils"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
+import {DateTimeFormatter, getKeeperOneRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {

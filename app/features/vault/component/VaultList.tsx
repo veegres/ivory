@@ -3,7 +3,7 @@ import {TransitionGroup} from "react-transition-group"
 
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {NoBox} from "../../../shared/component/box/NoBox"
-import {Vault, VaultMap} from "../api/type"
+import {Vault, VaultMap} from "../api/VaultType"
 import {VaultListItem} from "./VaultListItem"
 
 type Props = {

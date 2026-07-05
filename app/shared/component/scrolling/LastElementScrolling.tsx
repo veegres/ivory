@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 import {Children, ReactNode} from "react"
 
 import {SettingsWrapperScroll} from "../../../core/widgets/settings/SettingsWrapperScroll"
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1, height: "100%", overflow: "hidden"},

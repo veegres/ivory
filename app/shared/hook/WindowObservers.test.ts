@@ -1,7 +1,7 @@
 import {renderHook} from "@testing-library/react"
 import {describe, expect, it, vi} from "vitest"
 
-import {MutationObserverMock, ResizeObserverMock} from "../test/mocks"
+import {MutationObserverMock, ResizeObserverMock} from "../test/TestMocks"
 import {useWindowChildCount, useWindowScrolled, useWindowSize} from "./WindowObservers"
 
 describe("useWindowSize", () => {

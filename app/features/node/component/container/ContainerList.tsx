@@ -2,10 +2,10 @@ import {Box} from "@mui/material"
 
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import scroll from "../../../../shared/style/scroll.module.css"
-import {useRouterNodePlatformList} from "../../api/hook"
-import {PlatformVaultConnection} from "../../api/type"
+import {useRouterNodePlatformList} from "../../api/NodeHook"
+import {PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     box: {

@@ -3,9 +3,9 @@ import {Box, InputBase} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {NoBox} from "../../../shared/component/box/NoBox"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Feature} from "../../feature"
-import {PermissionMap, Status} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Feature} from "../../Feature"
+import {PermissionMap, Status} from "../api/PermissionType"
 import {PermissionsButtons} from "./PermissionsButtons"
 import {PermissionsListItem} from "./PermissionsListItem"
 

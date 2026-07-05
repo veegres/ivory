@@ -3,8 +3,8 @@ import {useState} from "react"
 
 import {Code} from "../../../shared/component/box/Code"
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
-import {useRouterVaultCreate} from "../api/hook"
-import {VaultType} from "../api/type"
+import {useRouterVaultCreate} from "../api/VaultHook"
+import {VaultType} from "../api/VaultType"
 import {VaultNewWrapper} from "./VaultNewWrapper"
 import {VaultRowSshKey} from "./VaultRowSshKey"
 

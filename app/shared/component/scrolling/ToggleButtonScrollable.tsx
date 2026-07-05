@@ -2,7 +2,7 @@ import {Box, SxProps, ToggleButton, Tooltip} from "@mui/material"
 import {Theme} from "@mui/material/styles"
 import {cloneElement, MouseEvent, ReactElement, useState} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 import {HiddenScrolling} from "./HiddenScrolling"
 
 const ALL = "ALL"

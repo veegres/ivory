@@ -1,8 +1,8 @@
 import {Box, SxProps, Theme} from "@mui/material"
 import {ReactNode, useState} from "react"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {SxPropsFormatter} from "../../../shared/helper/utils"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {SxPropsFormatter} from "../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px", minHeight: "40px"},

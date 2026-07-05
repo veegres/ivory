@@ -2,7 +2,7 @@ import {Box, Theme} from "@mui/material"
 import {SystemStyleObject} from "@mui/system"
 import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     code: {

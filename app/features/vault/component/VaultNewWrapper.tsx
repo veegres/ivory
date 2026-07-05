@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {padding: "5px 10px 0px 0px", display: "flex", flexDirection: "column", gap: 2},

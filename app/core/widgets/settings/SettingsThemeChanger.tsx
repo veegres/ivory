@@ -1,7 +1,7 @@
 import {BrightnessMediumTwoTone, DarkModeTwoTone, LightModeTwoTone} from "@mui/icons-material"
 import {ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {Mode, useSettings} from "../../../shared/provider/AppProvider"
 
 const SX: SxPropsMap = {

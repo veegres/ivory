@@ -8,10 +8,10 @@ import {
     QueryViewIconButton,
     RestoreIconButton,
 } from "../../../shared/component/button/IconButtons"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Feature} from "../../feature"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
-import {Connection, CreationType, Request, Response} from "../api/type"
+import {Connection, CreationType, Request, Response} from "../api/QueryType"
 import {QueryBoxBody} from "./QueryBoxBody"
 import {QueryButtonDelete} from "./QueryButtonDelete"
 import {QueryButtonUpdate} from "./QueryButtonUpdate"

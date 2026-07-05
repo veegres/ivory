@@ -2,7 +2,7 @@ import {KeyboardArrowDown} from "@mui/icons-material"
 import {Box, Collapse, Typography} from "@mui/material"
 import {memo, PropsWithChildren, useState} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},

@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     head: {display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5},

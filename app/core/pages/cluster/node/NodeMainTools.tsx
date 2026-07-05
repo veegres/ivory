@@ -1,10 +1,10 @@
 import {Box} from "@mui/material"
 
-import {Cluster, Node} from "../../../../features/cluster/api/type"
-import {Feature} from "../../../../features/feature"
+import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
+import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {TabsButton} from "../../../../shared/component/button/TabsButton"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {PgCompactTable} from "../../../../tools/pg_compacttable/component/PgCompactTable"
 

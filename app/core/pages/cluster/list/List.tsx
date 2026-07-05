@@ -1,7 +1,7 @@
 import {useEffect} from "react"
 
-import {useRouterClusterList} from "../../../../features/cluster/api/hook"
-import {Feature} from "../../../../features/feature"
+import {useRouterClusterList} from "../../../../features/cluster/api/ClusterHook"
+import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"

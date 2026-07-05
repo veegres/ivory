@@ -4,11 +4,11 @@ import {useState} from "react"
 
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
 import {ScheduleInput} from "../../../../shared/component/input/ScheduleInput"
-import {SxPropsMap} from "../../../../shared/helper/type"
-import {Feature} from "../../../feature"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
+import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {useRouterNodeRestart} from "../../api/hook"
-import {KeeperOneRequest} from "../../api/type"
+import {useRouterNodeRestart} from "../../api/NodeHook"
+import {KeeperOneRequest} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     pending: {margin: "0px"},

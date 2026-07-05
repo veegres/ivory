@@ -26,15 +26,19 @@ Use `.docker/ivory-dev/` for the stack.
 - **Generic Clients**: Centralize transport-level logic in generic clients (like `clients/http` or `clients/ssh`) and keep domain-specific logic in wrappers or consumers.
 - **Platform Integration Boundary**: Keep `plugins/platform` generic. Platform adapters model deployment and troubleshooting primitives for a target platform, not Ivory-specific database behavior. Database-specific interpretation belongs in features such as `features/cluster`.
 
+## File Naming Conventions
+- **Go — Package Prefix**: Every Go source file (including `_test.go` files) is prefixed with its own package/directory name, e.g. `auth/model.go` → `auth/auth_model.go`, `node/service_keeper.go` → `node/node_service_keeper.go`. This applies uniformly, including files that already follow the `service_<domain>.go` split-by-concern pattern — the domain suffix and the package prefix serve different purposes (one disambiguates concerns within a package, the other disambiguates the file across the whole repo). Exceptions: `main.go` (standard Go entrypoint, always unique) and `server/plugins/platform/linux/vm_manager.go` / `container_manager.go`, which are explicitly named after the `VmManager` / `ContainerManager` interfaces they implement (see Platform Architecture above).
+- **Frontend — PascalCase Everywhere**: All frontend files, `.ts` and `.tsx` alike, use PascalCase, matching the convention already used for components. Generic API filenames (`hook.ts`, `router.ts`, `type.ts`) are prefixed with their owning feature/module name, e.g. `features/auth/api/hook.ts` → `features/auth/api/AuthHook.ts`, `tools/pg_compacttable/api/job/hook.ts` → `tools/pg_compacttable/api/job/PgCompactTableJobHook.ts`. Root-level, non-colliding files just get PascalCased (`features/api.ts` → `features/Api.ts`, `shared/test/setup.ts` → `shared/test/TestSetup.ts`).
+
 ## Feature API Boundary (Frontend)
-Each frontend feature exposes its own types in `features/<name>/api/type.ts`. Types must live in the feature that owns them — never in a shared "plugins" or "common" file. Cross-feature imports are allowed only in the consuming direction (e.g., `cluster` may import from `node` and `query`; `query` and `node` must not import from `cluster`).
+Each frontend feature exposes its own types in `features/<name>/api/<Name>Type.ts`. Types must live in the feature that owns them — never in a shared "plugins" or "common" file. Cross-feature imports are allowed only in the consuming direction (e.g., `cluster` may import from `node` and `query`; `query` and `node` must not import from `cluster`).
 
 Current ownership:
-- `KeeperPlugin` enum → `features/node/api/type.ts` (keeper plugin selector is a node-level concept)
-- `DbPlugin` enum → `features/query/api/type.ts` (database engine type is part of the DB connection config)
-- `DbConfig` interface → `features/query/api/type.ts` (database connection config belongs to the query feature)
+- `KeeperPlugin` enum → `features/node/api/NodeType.ts` (keeper plugin selector is a node-level concept)
+- `DbPlugin` enum → `features/query/api/QueryType.ts` (database engine type is part of the DB connection config)
+- `DbConfig` interface → `features/query/api/QueryType.ts` (database connection config belongs to the query feature)
 
-Backend mirrors this: `server/features/node/model.go` defines `KeeperPlugin = keeper.Plugin` (alias); `server/features/query/model.go` defines `DbPlugin = database.Plugin` (alias) and `DbConfig` struct. Plugin packages (`server/plugins/*`) are internal implementation details — features expose their own types and use mapper functions to translate to/from plugin types at the boundary.
+Backend mirrors this: `server/features/node/node_model.go` defines `KeeperPlugin = keeper.Plugin` (alias); `server/features/query/query_model.go` defines `DbPlugin = database.Plugin` (alias) and `DbConfig` struct. Plugin packages (`server/plugins/*`) are internal implementation details — features expose their own types and use mapper functions to translate to/from plugin types at the boundary.
 
 ## Platform Architecture
 - **Platform Package**: `server/plugins/platform` is the backend integration point for deployment targets. Existing implementations live under `server/plugins/platform/<adapter>/`, for example `linux/`. Future adapters such as Kubernetes or OpenShift should be added as sibling packages.
@@ -58,7 +62,7 @@ Backend mirrors this: `server/features/node/model.go` defines `KeeperPlugin = ke
 - **Job**: Refers to a generic command execution entity managed by a background goroutine, supporting event-driven status updates, console logs persistence, and live streaming.
 
 ## Coding & UI Standards
-- **Go Import Aliases**: Do not alias imports unless the name actually conflicts. An import of a package with the same name as the enclosing package is NOT a conflict (e.g. `plugins/database/postgres` imports `ivory/clients/postgres` plainly and references `postgres.Connect`). Aliases are justified only when: (1) two imports in the same file share a package name (e.g. `pgkeeper`/`etcddb` in `plugins/context.go`), (2) the import name collides with a local identifier (e.g. `coreConfig "ivory/core/config"` in files that declare an `env` variable — that package is named `env`), or (3) the plain name would be genuinely misleading next to same-named local types (`nethttp` inside `clients/http`). Spelling out a package's real declared name when it differs from the path's last element (`env "ivory/core/config"`, `clientv3 "go.etcd.io/etcd/client/v3"`) is not an alias and should be kept.
+- **Go Import Aliases**: Do not alias imports unless the name actually conflicts. An import of a package with the same name as the enclosing package is NOT a conflict (e.g. `plugins/database/postgres` imports `ivory/clients/postgres` plainly and references `postgres.Connect`). Aliases are justified only when: (1) two imports in the same file share a package name (e.g. `pgkeeper`/`etcddb` in `plugins/plugins_context.go`), (2) the import name collides with a local identifier (e.g. `coreConfig "ivory/core/config"` in files that declare an `env` variable — that package is named `env`), or (3) the plain name would be genuinely misleading next to same-named local types (`nethttp` inside `clients/http`). Spelling out a package's real declared name when it differs from the path's last element (`env "ivory/core/config"`, `clientv3 "go.etcd.io/etcd/client/v3"`) is not an alias and should be kept.
 - **Surgical Renaming**: When asked to rename components or fields, ONLY update the terminology. DO NOT refactor implementation logic, move methods to props, or change the component structure unless explicitly directed.
 - **Data Synchronization**: When syncing frontend types with backend changes, perform the MINIMAL necessary updates to ensure compilation. DO NOT redesign or refactor UI components during a data sync task. If a type change appears to require a major UI redesign, ASK for clarification first.
 - **Component Style**: Follow the established pattern of using dedicated helper methods (e.g., `handleAction`, `renderContent`, `handleEffect`) within functional components to keep the JSX clean.
@@ -77,7 +81,7 @@ Backend mirrors this: `server/features/node/model.go` defines `KeeperPlugin = ke
 
 ## Backward Compatibility & Persistence
 - **Backup Models are Sacred**: Structs used for backups (e.g., `Backup`, `backupCluster`) must remain unchanged in their nomenclature and JSON tags to ensure long-term compatibility. If changes are necessary, a new backup version must be introduced.
-- **Internal DB Migration**: Internal database models (e.g., `Cluster` in `features/cluster/model.go`) can be refactored and their JSON tags updated. The backup tool is the primary mechanism for users to migrate data between versions if the internal schema breaks.
+- **Internal DB Migration**: Internal database models (e.g., `Cluster` in `features/cluster/cluster_model.go`) can be refactored and their JSON tags updated. The backup tool is the primary mechanism for users to migrate data between versions if the internal schema breaks.
 - **Data Integrity**: When renaming internal models, always verify if they are part of the backup/export logic before changing their JSON representation.
 
 ## Testing Guidelines

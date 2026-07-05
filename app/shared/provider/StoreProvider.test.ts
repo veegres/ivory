@@ -1,10 +1,10 @@
 import {beforeEach, describe, expect, it, vi} from "vitest"
 
-import {Cluster} from "../../features/cluster/api/type"
-import {NodeTabType} from "../../features/node/api/type"
-import {Type as QueryType} from "../../features/query/api/type"
-import {getDomain} from "../helper/utils"
-import {createMockCluster, createMockNode} from "../test/mocks"
+import {Cluster} from "../../features/cluster/api/ClusterType"
+import {NodeTabType} from "../../features/node/api/NodeType"
+import {Type as QueryType} from "../../features/query/api/QueryType"
+import {getDomain} from "../helper/HelperUtils"
+import {createMockCluster, createMockNode} from "../test/TestMocks"
 import {MainQueryClient} from "./AppProvider"
 import {useStore, useStoreAction} from "./StoreProvider"
 

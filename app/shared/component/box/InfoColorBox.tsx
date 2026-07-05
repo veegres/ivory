@@ -1,7 +1,7 @@
 import {Box, Tooltip} from "@mui/material"
 import {ReactNode} from "react"
 
-import {SxPropsMap} from "../../helper/type"
+import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     label: {

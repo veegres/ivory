@@ -2,7 +2,7 @@ import {Paper} from "@mui/material"
 
 import {ErrorUserInfoMissing} from "../../../shared/component/box/ErrorManual"
 import {NoBox} from "../../../shared/component/box/NoBox"
-import {useRouterInfo} from "../../management/api/hook"
+import {useRouterInfo} from "../../management/api/ManagementHook"
 import {PermissionsList} from "./PermissionsList"
 
 export function PermissionsSelfList() {

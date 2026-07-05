@@ -1,7 +1,7 @@
 import {Avatar, Box, Chip} from "@mui/material"
 
-import {SxPropsMap} from "../../../shared/helper/type"
-import {Response} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {Response} from "../api/QueryType"
 import {QueryBoxCodeEditor} from "./QueryBoxCodeEditor"
 import {QueryBoxInfo} from "./QueryBoxInfo"
 import {QueryVarieties} from "./QueryVarieties"

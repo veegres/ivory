@@ -2,9 +2,9 @@ import {AxiosProgressEvent} from "axios"
 import {useState} from "react"
 
 import {UploadButton} from "../../../shared/component/button/UploadButton"
-import {getErrorMessage} from "../../../shared/helper/utils"
-import {useRouterCertUpload} from "../api/hook"
-import {CertType} from "../api/type"
+import {getErrorMessage} from "../../../shared/helper/HelperUtils"
+import {useRouterCertUpload} from "../api/CertHook"
+import {CertType} from "../api/CertType"
 
 type Props = {
     type: CertType,

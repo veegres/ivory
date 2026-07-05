@@ -1,9 +1,9 @@
 import {Box} from "@mui/material"
 
-import {useRouterClusterUpdate} from "../../../../features/cluster/api/hook"
-import {Cluster} from "../../../../features/cluster/api/type"
+import {useRouterClusterUpdate} from "../../../../features/cluster/api/ClusterHook"
+import {Cluster} from "../../../../features/cluster/api/ClusterType"
 import {CancelIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
-import {SxPropsMap} from "../../../../shared/helper/type"
+import {SxPropsMap} from "../../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", justifyContent: "flex-end"},

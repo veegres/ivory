@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react"
 
-import {EventStreamType, EventType} from "../../tools/pg_compacttable/api/job/type"
+import {EventStreamType, EventType} from "../../tools/pg_compacttable/api/job/PgCompactTableJobType"
 
 type Options = {
     enabled?: boolean,

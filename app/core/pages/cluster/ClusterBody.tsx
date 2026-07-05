@@ -1,8 +1,8 @@
 import {Stack} from "@mui/material"
 
-import {Feature} from "../../../features/feature"
+import {Feature} from "../../../features/Feature"
 import {ManageAccess} from "../../../features/management/component/ManageAccess"
-import {SxPropsMap} from "../../../shared/helper/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {List as ClusterList} from "./list/List"
 import {Node as ClusterNode} from "./node/Node"
 import {Overview as ClusterOverview} from "./overview/Overview"

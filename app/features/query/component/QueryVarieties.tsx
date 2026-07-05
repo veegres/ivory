@@ -1,9 +1,9 @@
 import {Box} from "@mui/material"
 
 import {InfoColorBox} from "../../../shared/component/box/InfoColorBox"
-import {SxPropsMap} from "../../../shared/helper/type"
-import {QueryVarietyOptions} from "../../../shared/helper/utils"
-import {VarietyType} from "../api/type"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {QueryVarietyOptions} from "../../../shared/helper/HelperUtils"
+import {VarietyType} from "../api/QueryType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: "4px", padding: "0px 5px", height: "100%"},
