@@ -1,17 +1,18 @@
 import {DeleteIconButton} from "../../../shared/component/button/IconButtons"
 import {useRouterQueryDelete} from "../api/hook"
-import {Type} from "../api/type"
+import {DbPlugin, Type} from "../api/type"
 
 type Props = {
     id: string
     type: Type,
+    plugin: DbPlugin,
     onSuccess?: () => void,
 }
 
 export function QueryButtonDelete(props: Props) {
-    const {id, type, onSuccess} = props
+    const {id, type, plugin, onSuccess} = props
 
-    const remove = useRouterQueryDelete(type, onSuccess)
+    const remove = useRouterQueryDelete(type, plugin, onSuccess)
 
     return (
         <DeleteIconButton loading={remove.isPending} onClick={handleClick}/>

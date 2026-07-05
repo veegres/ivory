@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"ivory/core/config"
 	"ivory/core/service/cert"
-	"ivory/core/service/secret"
 	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/plugins/database"
@@ -24,7 +23,6 @@ type Service struct {
 	databaseRegistry *utils.Registry[database.Plugin, database.Adapter]
 	vaultService     *vault.Service
 	certService      *cert.Service
-	secretService    *secret.Service
 
 	appName  string
 	chartMap map[database.Plugin]map[ChartType]Request
@@ -35,7 +33,6 @@ func NewService(
 	databaseRegistry *utils.Registry[database.Plugin, database.Adapter],
 	vaultService *vault.Service,
 	certService *cert.Service,
-	secretService *secret.Service,
 	appName string,
 ) *Service {
 	queryService := &Service{
@@ -43,7 +40,6 @@ func NewService(
 		databaseRegistry: databaseRegistry,
 		vaultService:     vaultService,
 		certService:      certService,
-		secretService:    secretService,
 		appName:          appName,
 	}
 	queryService.initializeSystemCharts()
@@ -85,14 +81,20 @@ func (s *Service) initializeSystemCharts() {
 	}
 }
 
+// initializeSystemQueries seeds each plugin's system queries only when that
+// plugin has none yet, so new plugins get their templates on upgrade without
+// duplicating existing ones on restart.
 func (s *Service) initializeSystemQueries() error {
-	if !s.secretService.IsRefEmpty() {
-		return nil
-	}
-
-	for _, adapter := range s.databaseRegistry.All() {
+	for plugin, adapter := range s.databaseRegistry.All() {
+		exists, errExists := s.repository.HasSystemQueriesForPlugin(plugin)
+		if errExists != nil {
+			return errExists
+		}
+		if exists {
+			continue
+		}
 		for _, req := range adapter.SystemRequests() {
-			_, _, err := s.Create(System, mapSystemRequest(req))
+			_, _, err := s.Create(System, mapSystemRequest(plugin, req))
 			if err != nil {
 				return err
 			}

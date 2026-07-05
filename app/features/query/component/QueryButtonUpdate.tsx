@@ -10,9 +10,9 @@ type Props = {
 
 export function QueryButtonUpdate(props: Props) {
     const {id, onSuccess} = props
-    const {query, name, type} = props.query
+    const {query, name, type, plugin} = props.query
 
-    const update = useRouterQueryUpdate(type!, onSuccess)
+    const update = useRouterQueryUpdate(type, plugin, onSuccess)
 
     return (
         <SaveIconButton

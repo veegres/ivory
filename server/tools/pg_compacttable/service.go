@@ -6,6 +6,7 @@ import (
 	"ivory/core/config"
 	"ivory/core/service/job"
 	"ivory/core/service/vault"
+	"ivory/plugins/database"
 
 	"github.com/google/uuid"
 )
@@ -48,7 +49,11 @@ func (s *Service) initializer() {
 	}
 }
 
-func (s *Service) SupportedFeatures(_ env.Plugin) []env.Feature {
+func (s *Service) SupportedFeatures(plugin env.Plugin) []env.Feature {
+	// NOTE: pgcompacttable works only with postgres (pgstattuple based)
+	if plugin.String() != database.POSTGRES.String() {
+		return []env.Feature{}
+	}
 	return []env.Feature{
 		env.ViewToolPgCompactTableList,
 		env.ViewToolPgCompactTableItem,

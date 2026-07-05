@@ -21,7 +21,7 @@ type Props = {
 export function QueryTemplateNew(props: Props) {
     const {type, connection} = props
     const [body, setBody] = useState(false)
-    const [queryCreate, setQueryCreate] = useState<Request>({name: "", query: "", type})
+    const [queryCreate, setQueryCreate] = useState<Request>({name: "", query: "", type, plugin: connection.db.plugin})
 
     useEffect(handleEffectClose, [queryCreate.name, setBody])
 
@@ -70,6 +70,6 @@ export function QueryTemplateNew(props: Props) {
     }
 
     function handleSuccess() {
-        setQueryCreate({name: "", query: "", type})
+        setQueryCreate({name: "", query: "", type, plugin: connection.db.plugin})
     }
 }

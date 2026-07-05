@@ -39,7 +39,7 @@ export function PgCompactTable(props: Props) {
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<PgCompactTableTarget>()
 
-    const query = useRouterQueryList(QueryType.BLOAT, tab === ListBlock.QUERY)
+    const query = useRouterQueryList(QueryType.BLOAT, DbPlugin.POSTGRES, tab === ListBlock.QUERY)
     const jobs = useRouterPgCompactTableList(cluster.name, tab === ListBlock.JOB)
     const loading = jobs.isFetching || query.isFetching
 

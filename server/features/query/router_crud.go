@@ -1,6 +1,7 @@
 package query
 
 import (
+	"ivory/plugins/database"
 	"net/http"
 	"strconv"
 
@@ -45,28 +46,32 @@ func (r *Router) PostQuery(context *gin.Context) {
 
 func (r *Router) GetQueryList(context *gin.Context) {
 	queryTypeStr := context.Request.URL.Query().Get("type")
+	pluginStr := context.Request.URL.Query().Get("plugin")
 
+	var queryType *Type
 	if queryTypeStr != "" {
 		number, errParse := strconv.ParseInt(queryTypeStr, 10, 8)
 		if errParse != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
 			return
 		}
-		queryType := Type(number)
-		queryList, err := r.service.GetList(&queryType)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		context.JSON(http.StatusOK, gin.H{"response": queryList})
-	} else {
-		queryList, err := r.service.GetList(nil)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		context.JSON(http.StatusOK, gin.H{"response": queryList})
+		t := Type(number)
+		queryType = &t
 	}
+
+	// NOTE: when the plugin is not provided, filter to postgres so clients
+	// that predate multi-plugin queries keep seeing exactly what they saw
+	plugin := database.POSTGRES
+	if pluginStr != "" {
+		plugin = DbPlugin(pluginStr)
+	}
+
+	queryList, err := r.service.GetList(queryType, &plugin)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": queryList})
 }
 
 func (r *Router) DeleteQuery(context *gin.Context) {

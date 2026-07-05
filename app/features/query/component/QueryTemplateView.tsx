@@ -92,7 +92,7 @@ export function QueryTemplateView(props: Props) {
                 </ManageAccess>
                 <ManageAccess feature={Feature.ManageQueryCrudDelete}>
                     {query.creation === CreationType.Manual && (
-                        <QueryButtonDelete id={query.id} type={query.type}/>
+                        <QueryButtonDelete id={query.id} type={query.type} plugin={query.plugin}/>
                     )}
                 </ManageAccess>
             </>

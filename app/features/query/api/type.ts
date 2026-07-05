@@ -49,7 +49,8 @@ export enum ChartType {
 
 export interface Request {
     name: string,
-    type?: Type,
+    type: Type,
+    plugin: DbPlugin,
     description?: string,
     query: string,
     varieties?: VarietyType[],
@@ -60,6 +61,7 @@ export interface Response {
     id: string,
     name: string,
     type: Type,
+    plugin: DbPlugin,
     creation: CreationType,
     varieties?: VarietyType[],
     params?: string[],

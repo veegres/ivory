@@ -56,8 +56,8 @@ export function ListTable(props: Props) {
                             <Box sx={SX.refresh}>
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
-                            <ListDeployCluster keeper={KeeperPlugin.PATRONI}/>
-                            <ListDetectCluster keeper={KeeperPlugin.PATRONI}/>
+                            <ListDeployCluster keeper={KeeperPlugin.PATRONI_POSTGRES}/>
+                            <ListDetectCluster keeper={KeeperPlugin.PATRONI_POSTGRES}/>
                             <ManageAccessBox feature={Feature.ManageClusterUpdate}>
                                 <AddIconButton
                                     tooltip={"ADD CLUSTER"}

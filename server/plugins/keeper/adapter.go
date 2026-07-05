@@ -6,6 +6,7 @@ import (
 )
 
 var ErrBodyShouldBeEmpty = errors.New("body should be empty")
+var ErrNotSupported = errors.New("operation is not supported by this keeper plugin")
 
 // Adapter covers operations against a running keeper; plugin self-description
 // (supported features, deployment defaults) lives in Metadata.

@@ -50,6 +50,7 @@ const (
 type Request struct {
 	Name        string        `json:"name"`
 	Type        *Type         `json:"type"`
+	Plugin      DbPlugin      `json:"plugin"`
 	Description *string       `json:"description"`
 	Query       string        `json:"query"`
 	Varieties   []VarietyType `json:"varieties"`
@@ -60,6 +61,7 @@ type Response struct {
 	Id          uuid.UUID     `json:"id"`
 	Name        string        `json:"name"`
 	Type        Type          `json:"type"`
+	Plugin      DbPlugin      `json:"plugin"`
 	Creation    CreationType  `json:"creation"`
 	Varieties   []VarietyType `json:"varieties"`
 	Params      []string      `json:"params"`
@@ -156,7 +158,7 @@ type Context struct {
 	Session    string
 }
 
-func mapSystemRequest(req database.SystemRequest) Request {
+func mapSystemRequest(plugin DbPlugin, req database.SystemRequest) Request {
 	t := req.Type
 	v := make([]VarietyType, len(req.Varieties))
 	for i, val := range req.Varieties {
@@ -165,6 +167,7 @@ func mapSystemRequest(req database.SystemRequest) Request {
 	return Request{
 		Name:        req.Name,
 		Type:        &t,
+		Plugin:      plugin,
 		Description: &req.Description,
 		Query:       req.Query,
 		Varieties:   v,

@@ -2,39 +2,39 @@ import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
 import {QueryApi} from "./router"
-import {ChartRequest, Connection, RunRequest, Type} from "./type"
+import {ChartRequest, Connection, DbPlugin, RunRequest, Type} from "./type"
 
-export function useRouterQueryList(type: Type, enabled: boolean = true) {
+export function useRouterQueryList(type: Type, plugin: DbPlugin, enabled: boolean = true) {
     return useQuery({
-        queryKey: QueryApi.list.key(type),
-        queryFn: () => QueryApi.list.fn(type),
+        queryKey: QueryApi.list.key(type, plugin),
+        queryFn: () => QueryApi.list.fn(type, plugin),
         enabled,
     })
 }
 
-export function useRouterQueryUpdate(type: Type, onSuccess?: () => void) {
+export function useRouterQueryUpdate(type: Type, plugin: DbPlugin, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.update.fn,
         mutationKey: QueryApi.update.key(),
-        successKeys: [QueryApi.list.key(type)],
+        successKeys: [QueryApi.list.key(type, plugin)],
         onSuccess: onSuccess,
     })
 }
 
-export function useRouterQueryDelete(type: Type, onSuccess?: () => void) {
+export function useRouterQueryDelete(type: Type, plugin: DbPlugin, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.delete.fn,
         mutationKey: QueryApi.delete.key(),
-        successKeys: [QueryApi.list.key(type)],
+        successKeys: [QueryApi.list.key(type, plugin)],
         onSuccess: onSuccess,
     })
 }
 
-export function useRouterQueryCreate(type: Type, onSuccess?: () => void) {
+export function useRouterQueryCreate(type: Type, plugin: DbPlugin, onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: QueryApi.create.fn,
         mutationKey: QueryApi.create.key(),
-        successKeys: [QueryApi.list.key(type)],
+        successKeys: [QueryApi.list.key(type, plugin)],
         onSuccess: onSuccess,
     })
 }

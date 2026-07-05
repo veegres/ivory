@@ -21,7 +21,7 @@ const SX: SxPropsMap = {
 
 const InitialRequest: AutoRequest = {
     name: "", certs: {}, vaults: {}, tags: [],
-    plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
+    plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI_POSTGRES},
     tls: {keeper: false, database: false},
     host: "", port: 8008,
 }

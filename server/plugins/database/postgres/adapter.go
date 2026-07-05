@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"ivory/clients/postgres"
 	"ivory/core/config"
 	"ivory/plugins/database"
 	"regexp"
@@ -315,7 +316,7 @@ func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []
 	if errConn != nil {
 		return errConn
 	}
-	defer a.closeConnection(conn, context.Background())
+	defer postgres.Close(conn)
 
 	txCtx := context.Background()
 	tx, errTx := conn.Begin(txCtx)
@@ -439,8 +440,8 @@ func (a *Adapter) getConnection(ctx database.Context) (*pgx.Conn, string, error)
 		return nil, "unknown", database.ErrDatabaseHostOrPortNotSpecified
 	}
 
-	dbName := "postgres"
-	if db.Name != nil && *db.Name != "" {
+	dbName := ""
+	if db.Name != nil {
 		dbName = *db.Name
 	}
 
@@ -449,43 +450,15 @@ func (a *Adapter) getConnection(ctx database.Context) (*pgx.Conn, string, error)
 		return nil, "unknown", database.ErrPasswordNotSet
 	}
 
-	connProtocol := "postgres://"
-	connHost := db.Host + ":" + strconv.Itoa(db.Port) + "/" + dbName
-	connUrl := connProtocol + connHost
-
-	tlsConfig := connection.TlsConfig
-	if tlsConfig != nil {
-		// NOTE: verify-ca was chosen because it potentially can protect from machine-in-the-middle attack if
-		// it has the right CA policy. More info can be found here https://www.postgresql.org/docs/16/libpq-ssl.html#LIBPQ-SSL-PROTECTION
-		connUrl += "?sslmode=verify-ca"
-	}
-
-	conConfig, errConfig := pgx.ParseConfig(connUrl)
-	if errConfig != nil {
-		return nil, connUrl, errConfig
-	}
-	conConfig.User = credentials.Username
-	conConfig.Password = credentials.Password
-	conConfig.RuntimeParams = map[string]string{
-		"application_name": ctx.Application,
-	}
-	if tlsConfig != nil {
-		// NOTE: we rewrite only RootCAs and Certificates, because pgx.ParseConfig creates proper
-		//  tlsConfig for different `sslmode`. For example `verify-ca` should mark `InsecureSkipVerify=true`
-		//  and it always sets `ServerName` it required for `verify-full` mode.
-		conConfig.TLSConfig.RootCAs = tlsConfig.RootCAs
-		conConfig.TLSConfig.Certificates = tlsConfig.Certificates
-	}
-
-	conn, err := pgx.ConnectConfig(context.Background(), conConfig)
-	return conn, connUrl, err
-}
-
-func (a *Adapter) closeConnection(conn *pgx.Conn, ctx context.Context) {
-	err := conn.Close(ctx)
-	if err != nil {
-		slog.Warn("postgres close connection", "error", err)
-	}
+	return postgres.Connect(context.Background(), postgres.Config{
+		Host:     db.Host,
+		Port:     db.Port,
+		Database: dbName,
+		Username: credentials.Username,
+		Password: credentials.Password,
+		AppName:  ctx.Application,
+		TLS:      connection.TlsConfig,
+	})
 }
 
 func (a *Adapter) closeTransaction(tx pgx.Tx, txCtx context.Context) {

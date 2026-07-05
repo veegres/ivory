@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 	"ivory/plugins/keeper"
+	"net/http"
 	"sync"
 )
 
@@ -40,7 +41,7 @@ func (s *Service) KeeperNodeListMulti(r KeeperMultiRequest) ([]KeeperMultiRespon
 func (s *Service) KeeperNodeList(r KeeperOneRequest) ([]KeeperOneResponse, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	responses, status, err := client.List(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 	if err != nil {
@@ -56,7 +57,7 @@ func (s *Service) KeeperNodeList(r KeeperOneRequest) ([]KeeperOneResponse, int, 
 func (s *Service) KeeperConfigGet(r KeeperOneRequest) (any, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Config(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -64,7 +65,7 @@ func (s *Service) KeeperConfigGet(r KeeperOneRequest) (any, int, error) {
 func (s *Service) KeeperConfigUpdate(r KeeperOneRequest) (any, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.ConfigUpdate(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -72,7 +73,7 @@ func (s *Service) KeeperConfigUpdate(r KeeperOneRequest) (any, int, error) {
 func (s *Service) KeeperSwitchover(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Switchover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -80,7 +81,7 @@ func (s *Service) KeeperSwitchover(r KeeperOneRequest) (*string, int, error) {
 func (s *Service) KeeperSwitchoverDelete(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.DeleteSwitchover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -88,7 +89,7 @@ func (s *Service) KeeperSwitchoverDelete(r KeeperOneRequest) (*string, int, erro
 func (s *Service) KeeperReinitialize(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Reinitialize(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -96,7 +97,7 @@ func (s *Service) KeeperReinitialize(r KeeperOneRequest) (*string, int, error) {
 func (s *Service) KeeperRestart(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Restart(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -104,7 +105,7 @@ func (s *Service) KeeperRestart(r KeeperOneRequest) (*string, int, error) {
 func (s *Service) KeeperRestartDelete(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.DeleteRestart(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -112,7 +113,7 @@ func (s *Service) KeeperRestartDelete(r KeeperOneRequest) (*string, int, error) 
 func (s *Service) KeeperReload(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Reload(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -120,7 +121,7 @@ func (s *Service) KeeperReload(r KeeperOneRequest) (*string, int, error) {
 func (s *Service) KeeperFailover(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Failover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -128,7 +129,7 @@ func (s *Service) KeeperFailover(r KeeperOneRequest) (*string, int, error) {
 func (s *Service) KeeperActivate(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Activate(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
@@ -136,7 +137,7 @@ func (s *Service) KeeperActivate(r KeeperOneRequest) (*string, int, error) {
 func (s *Service) KeeperPause(r KeeperOneRequest) (*string, int, error) {
 	client, tlsConfig, cred, err := s.getKeeperAdapter(r.KeeperOptions)
 	if err != nil {
-		return nil, 0, err
+		return nil, http.StatusBadRequest, err
 	}
 	return client.Pause(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }

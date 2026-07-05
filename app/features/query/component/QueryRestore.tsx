@@ -20,7 +20,7 @@ type Props = {
 
 export function QueryRestore(props: Props) {
     const {query, onSuccess} = props
-    const update = useRouterQueryUpdate(query.type, onSuccess)
+    const update = useRouterQueryUpdate(query.type, query.plugin, onSuccess)
 
     return (
         <Box sx={SX.box}>

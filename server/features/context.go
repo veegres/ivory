@@ -81,7 +81,7 @@ func NewContext(
 
 	nodeService := node.NewService(platformRegistry, keeperRegistry, keeperMetadataRegistry, vaultService, certService, jobService)
 	tagService := tag.NewService(tagRepo)
-	queryService := query.NewService(queryRepo, databaseRegistry, vaultService, certService, secretService, env.Version.Label)
+	queryService := query.NewService(queryRepo, databaseRegistry, vaultService, certService, env.Version.Label)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, vaultService, toolRegistry)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)

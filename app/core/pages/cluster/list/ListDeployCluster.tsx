@@ -45,7 +45,7 @@ const SX: SxPropsMap = {
 
 const INITIAL_OPTIONS: ClusterOptions = {
     certs: {}, vaults: {}, tags: [],
-    plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
+    plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI_POSTGRES},
     tls: {keeper: false, database: false},
 }
 
@@ -57,7 +57,10 @@ export function ListDeployCluster(props: Props) {
     const {keeper} = props
     const [cluster, setCluster] = useState("")
     const [image, setImage] = useState<PlatformDeployOptions>()
-    const [options, setOptions] = useState(INITIAL_OPTIONS)
+    const [imagePlugin, setImagePlugin] = useState<KeeperPlugin>()
+    const [options, setOptions] = useState<ClusterOptions>(() => (
+        {...INITIAL_OPTIONS, plugins: {...INITIAL_OPTIONS.plugins, keeper}}
+    ))
     const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
     const [nodes, setNodes] = useState<string[]>([])
     const [ssh, setSsh] = useState<"new" | "vault">("vault")
@@ -71,9 +74,9 @@ export function ListDeployCluster(props: Props) {
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
     const deploy = useRouterClusterDeploy(setResponse)
-    const deployOptions = useRouterNodePlatformDeployOptions(keeper)
+    const deployOptions = useRouterNodePlatformDeployOptions(options.plugins.keeper)
 
-    useEffect(handleEffectDeployOptions, [deployOptions.data, image])
+    useEffect(handleEffectDeployOptions, [deployOptions.data, imagePlugin, options.plugins.keeper, dev])
 
     const imageOptionsStr = useMemo(() => (dev ? image?.optionsSingleHost : image?.options) ?? "", [dev, image])
 
@@ -106,7 +109,7 @@ export function ListDeployCluster(props: Props) {
 
     function renderBody() {
         if (deployOptions.isError) return <ErrorSmart error={deployOptions.error}/>
-        if (deployOptions.isPending || !image) return <SkeletonGroup count={3}/>
+        if (deployOptions.isPending || !image || imagePlugin !== options.plugins.keeper) return <SkeletonGroup count={3}/>
         return (
             <Box sx={[SX.subContent, {gap: 1}]}>
                 {renderMandatoryFields()}
@@ -403,10 +406,15 @@ export function ListDeployCluster(props: Props) {
         })
     }
 
+    // NOTE: applies fetched defaults once per selected keeper plugin, so user
+    // edits are kept until the plugin changes and per-node options are reseeded
     function handleEffectDeployOptions() {
         const data = deployOptions.data
-        if (!data || image) return
+        if (!data || imagePlugin === options.plugins.keeper) return
+        setImagePlugin(options.plugins.keeper)
         setImage(data)
         setDbCred({username: data.defaultValues["username"] ?? "", password: data.defaultValues["password"] ?? ""})
+        const template = dev ? data.optionsSingleHost : data.options
+        setImageOptions(prev => Object.fromEntries(Object.keys(prev).map(node => [node, template])))
     }
 }

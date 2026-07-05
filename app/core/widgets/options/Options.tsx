@@ -2,13 +2,14 @@ import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {memo} from "react"
 
 import {CertType} from "../../../features/cert/api/type"
-import {Options as ClusterOptions} from "../../../features/cluster/api/type"
+import {Options as ClusterOptions, Plugins} from "../../../features/cluster/api/type"
 import {Feature} from "../../../features/feature"
 import {ManageAccessBox} from "../../../features/management/component/ManageAccess"
 import {VaultType} from "../../../features/vault/api/type"
 import {SxPropsMap} from "../../../shared/helper/type"
 import {CertOptions, VaultOptions} from "../../../shared/helper/utils"
 import {OptionsCert} from "./OptionsCert"
+import {OptionsPlugins} from "./OptionsPlugins"
 import {OptionsTags} from "./OptionsTags"
 import {OptionsVault} from "./OptionsVault"
 
@@ -24,10 +25,12 @@ type Props = {
 
 export const Options = memo(function Options(props: Props) {
     const {onUpdate, options} = props
-    const {vaults, tags, certs, tls} = options
+    const {vaults, tags, certs, tls, plugins} = options
 
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
+            <OptionsPlugins plugins={plugins} onUpdate={handlePluginsUpdate}/>
+            <Divider variant={"middle"}/>
             <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/>
             <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/>
             <OptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/>
@@ -45,6 +48,10 @@ export const Options = memo(function Options(props: Props) {
             <OptionsTags selected={tags} onUpdate={handleTagsUpdate}/>
         </ManageAccessBox>
     )
+
+    function handlePluginsUpdate(plugins: Plugins) {
+        onUpdate({...options, plugins})
+    }
 
     function handleVaultUpdate(t: VaultType, s?: string) {
         onUpdate({...options, vaults: {...options.vaults, [VaultOptions[t].key]: s}})

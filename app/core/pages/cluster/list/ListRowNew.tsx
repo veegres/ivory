@@ -46,7 +46,7 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     cluster={{
                         name: stateName,
-                        plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI},
+                        plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI_POSTGRES},
                         nodes: getNodeConfigs(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},

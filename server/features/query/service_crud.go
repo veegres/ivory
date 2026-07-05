@@ -2,16 +2,25 @@ package query
 
 import (
 	"errors"
+	"ivory/plugins/database"
 
 	"github.com/google/uuid"
 )
 
-func (s *Service) GetList(queryType *Type) ([]Response, error) {
-	if queryType == nil {
-		return s.repository.List()
+// GetList filters by type and plugin when provided; nil means no filtering
+// for that dimension. Records stored before the plugin field existed are
+// returned as postgres queries.
+func (s *Service) GetList(queryType *Type, plugin *DbPlugin) ([]Response, error) {
+	list, err := s.repository.ListByFilter(queryType, plugin)
+	if err != nil {
+		return nil, err
 	}
-
-	return s.repository.ListByType(*queryType)
+	for i := range list {
+		if list[i].Plugin == "" {
+			list[i].Plugin = database.POSTGRES
+		}
+	}
+	return list, nil
 }
 
 func (s *Service) Create(creation CreationType, query Request) (*uuid.UUID, *Response, error) {
@@ -19,9 +28,15 @@ func (s *Service) Create(creation CreationType, query Request) (*uuid.UUID, *Res
 		return nil, nil, ErrAllFieldsRequired
 	}
 
+	plugin := query.Plugin
+	if plugin == "" {
+		plugin = database.POSTGRES
+	}
+
 	return s.repository.Create(Response{
 		Name:        query.Name,
 		Type:        *query.Type,
+		Plugin:      plugin,
 		Creation:    creation,
 		Description: query.Description,
 		Default:     query.Query,
@@ -51,6 +66,7 @@ func (s *Service) Update(key uuid.UUID, query Request) (*uuid.UUID, *Response, e
 			Id:          key,
 			Name:        currentQuery.Name,
 			Type:        currentQuery.Type,
+			Plugin:      currentQuery.Plugin,
 			Creation:    currentQuery.Creation,
 			Description: currentQuery.Description,
 			Default:     currentQuery.Default,
@@ -75,10 +91,12 @@ func (s *Service) Update(key uuid.UUID, query Request) (*uuid.UUID, *Response, e
 		d = query.Description
 	}
 
+	// NOTE: plugin is immutable, it always stays as it was on creation
 	return s.repository.Update(key, Response{
 		Id:          key,
 		Name:        n,
 		Type:        t,
+		Plugin:      currentQuery.Plugin,
 		Creation:    currentQuery.Creation,
 		Description: d,
 		Default:     currentQuery.Default,

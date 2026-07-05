@@ -9,8 +9,9 @@ import (
 type Plugin string
 
 const (
-	PATRONI  Plugin = "patroni"
-	POSTGRES Plugin = "postgres"
+	PATRONI_POSTGRES Plugin = "patroni_postgres"
+	NATIVE_POSTGRES  Plugin = "native_postgres"
+	NATIVE_ETCD      Plugin = "native_etcd"
 )
 
 func (p Plugin) String() string {

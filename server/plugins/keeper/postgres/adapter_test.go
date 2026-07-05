@@ -1,0 +1,94 @@
+package postgres
+
+import (
+	"errors"
+	"ivory/plugins/keeper"
+	"net/http"
+	"testing"
+)
+
+func TestMapNode(t *testing.T) {
+	tests := []struct {
+		name         string
+		host         string
+		port         int
+		inRecovery   bool
+		lag          int64
+		expectedRole keeper.Role
+		expectedLag  int64
+		expectedKey  string
+	}{
+		{
+			name: "primary is leader with zero lag",
+			host: "db1", port: 5432, inRecovery: false, lag: 123,
+			expectedRole: keeper.Leader, expectedLag: 0, expectedKey: "db1:5432",
+		},
+		{
+			name: "replica keeps lag",
+			host: "db2", port: 5433, inRecovery: true, lag: 456,
+			expectedRole: keeper.Replica, expectedLag: 456, expectedKey: "db2:5433",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := mapNode(tt.host, tt.port, tt.inRecovery, tt.lag)
+			if response.Role != tt.expectedRole {
+				t.Errorf("expected role %v, got %v", tt.expectedRole, response.Role)
+			}
+			if response.Lag != tt.expectedLag {
+				t.Errorf("expected lag %d, got %d", tt.expectedLag, response.Lag)
+			}
+			if response.Key == nil || *response.Key != tt.expectedKey {
+				t.Errorf("expected key %q, got %v", tt.expectedKey, response.Key)
+			}
+			if response.State != "running" {
+				t.Errorf("expected state running, got %q", response.State)
+			}
+			if response.Status == nil || *response.Status != keeper.Active {
+				t.Errorf("expected active status, got %v", response.Status)
+			}
+			if response.DiscoveredHost == nil || *response.DiscoveredHost != tt.host {
+				t.Errorf("expected discovered host %q, got %v", tt.host, response.DiscoveredHost)
+			}
+			if response.DiscoveredKeeperPort == nil || *response.DiscoveredKeeperPort != tt.port {
+				t.Errorf("expected discovered keeper port %d, got %v", tt.port, response.DiscoveredKeeperPort)
+			}
+			if response.DiscoveredDbPort == nil || *response.DiscoveredDbPort != tt.port {
+				t.Errorf("expected discovered db port %d, got %v", tt.port, response.DiscoveredDbPort)
+			}
+		})
+	}
+}
+
+func TestUnsupportedOperations(t *testing.T) {
+	adapter := NewAdapter()
+	request := keeper.Request{}
+
+	type op struct {
+		name string
+		call func() (int, error)
+	}
+	ops := []op{
+		{"ConfigUpdate", func() (int, error) { _, s, e := adapter.ConfigUpdate(request); return s, e }},
+		{"Switchover", func() (int, error) { _, s, e := adapter.Switchover(request); return s, e }},
+		{"DeleteSwitchover", func() (int, error) { _, s, e := adapter.DeleteSwitchover(request); return s, e }},
+		{"Reinitialize", func() (int, error) { _, s, e := adapter.Reinitialize(request); return s, e }},
+		{"Restart", func() (int, error) { _, s, e := adapter.Restart(request); return s, e }},
+		{"DeleteRestart", func() (int, error) { _, s, e := adapter.DeleteRestart(request); return s, e }},
+		{"Activate", func() (int, error) { _, s, e := adapter.Activate(request); return s, e }},
+		{"Pause", func() (int, error) { _, s, e := adapter.Pause(request); return s, e }},
+	}
+
+	for _, o := range ops {
+		t.Run(o.name, func(t *testing.T) {
+			status, err := o.call()
+			if status != http.StatusNotImplemented {
+				t.Errorf("expected status 501, got %d", status)
+			}
+			if !errors.Is(err, keeper.ErrNotSupported) {
+				t.Errorf("expected ErrNotSupported, got %v", err)
+			}
+		})
+	}
+}

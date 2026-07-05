@@ -21,7 +21,7 @@ type Props = {
 
 export function Query(props: Props) {
     const {type, connection} = props
-    const query = useRouterQueryList(type)
+    const query = useRouterQueryList(type, connection.db.plugin)
 
     return (
         <Box style={style.box}>

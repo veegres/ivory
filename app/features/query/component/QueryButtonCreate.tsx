@@ -8,9 +8,9 @@ type Props = {
 }
 
 export function QueryButtonCreate(props: Props) {
-    const {query, name, type} = props.query
+    const {query, name, type, plugin} = props.query
 
-    const create = useRouterQueryCreate(type!, props.onSuccess)
+    const create = useRouterQueryCreate(type, plugin, props.onSuccess)
 
     return (
         <SaveIconButton

@@ -95,7 +95,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
         name: "test-cluster",
         plugins: {
             database: DbPlugin.POSTGRES,
-            keeper: KeeperPlugin.PATRONI,
+            keeper: KeeperPlugin.PATRONI_POSTGRES,
         },
         nodes: [{host: "localhost", keeperPort: 8008}],
         tls: {keeper: false, database: false},

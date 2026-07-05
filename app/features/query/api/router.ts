@@ -6,6 +6,7 @@ import {
     Connection,
     ConsoleRequest,
     DatabasesRequest,
+    DbPlugin,
     DbResponse,
     KillRequest,
     Request,
@@ -18,8 +19,8 @@ import {
 
 export const QueryApi = {
     list: {
-        key: (type?: Type) => ["query", "list", type],
-        fn: (type?: Type) => api.get<R<Response[]>>("/query", {params: {type}})
+        key: (type?: Type, plugin?: DbPlugin) => ["query", "list", type, plugin],
+        fn: (type?: Type, plugin?: DbPlugin) => api.get<R<Response[]>>("/query", {params: {type, plugin}})
             .then((response) => response.data.response),
     },
     update: {

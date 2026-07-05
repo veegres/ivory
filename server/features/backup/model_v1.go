@@ -175,7 +175,7 @@ func backupToClusterV1(bc backupClusterV1) cluster.Request {
 	return cluster.Request{
 		Name: bc.Name,
 		Options: cluster.Options{
-			Plugins: cluster.Plugins{Keeper: keeper.PATRONI, Database: database.POSTGRES},
+			Plugins: cluster.Plugins{Keeper: keeper.PATRONI_POSTGRES, Database: database.POSTGRES},
 			Tags:    bc.Tags,
 		},
 		Nodes: nodes,

@@ -1,5 +1,7 @@
 package backup
 
+import "ivory/plugins/database"
+
 // exportV1 builds the fixed V1 backup representation from current internal
 // models.
 //
@@ -12,7 +14,7 @@ func (s *Service) exportV1() (*BackupV1, error) {
 	if errCluster != nil {
 		return nil, errCluster
 	}
-	queries, errQuery := s.queryService.GetList(nil)
+	queries, errQuery := s.queryService.GetList(nil, nil)
 	if errQuery != nil {
 		return nil, errQuery
 	}
@@ -28,6 +30,11 @@ func (s *Service) exportV1() (*BackupV1, error) {
 
 	backupQueries := make([]backupQueryV1, 0)
 	for _, q := range queries {
+		// NOTE: the V1 schema has no plugin field; non-postgres queries are
+		// skipped because an import would silently turn them into postgres ones
+		if q.Plugin != database.POSTGRES {
+			continue
+		}
 		bq, err := queryToBackupV1(q)
 		if err != nil {
 			return nil, err

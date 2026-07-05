@@ -3,8 +3,9 @@ import {Certs} from "../../cert/api/type"
 // COMMON (WEB AND SERVER)
 
 export enum KeeperPlugin {
-    PATRONI = "patroni",
-    POSTGRES = "postgres",
+    PATRONI_POSTGRES = "patroni_postgres",
+    NATIVE_POSTGRES = "native_postgres",
+    NATIVE_ETCD = "native_etcd",
 }
 
 export interface KeeperConnection {

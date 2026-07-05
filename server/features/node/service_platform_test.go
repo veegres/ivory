@@ -5,7 +5,7 @@ import (
 	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/patroni"
-	pgkeeper "ivory/plugins/keeper/postgres"
+	"ivory/plugins/keeper/postgres"
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/linux"
 	"reflect"
@@ -59,8 +59,8 @@ func TestService_PlatformContainerDeployOptions(t *testing.T) {
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
 	platformRegistry.Register(platform.Linux, linux.NewAdapter(ssh.NewClient()))
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.PATRONI, patroni.NewAdapter(nil))
-	keeperMetadataRegistry.Register(keeper.POSTGRES, pgkeeper.NewAdapter())
+	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
+	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
 
 	s := &Service{
 		platformRegistry:       platformRegistry,
@@ -74,7 +74,7 @@ func TestService_PlatformContainerDeployOptions(t *testing.T) {
 	}{
 		{
 			name:   "patroni",
-			plugin: keeper.PATRONI,
+			plugin: keeper.PATRONI_POSTGRES,
 			expected: PlatformDeployOptionsResponse{
 				Uri:           "ghcr.io/zalando/spilo-18:4.1-p2",
 				DefaultValues: map[string]string{"username": "postgres"},
@@ -107,7 +107,7 @@ func TestService_PlatformContainerDeployOptions(t *testing.T) {
 		},
 		{
 			name:   "postgres",
-			plugin: keeper.POSTGRES,
+			plugin: keeper.NATIVE_POSTGRES,
 			expected: PlatformDeployOptionsResponse{
 				Uri:           "postgres:18",
 				DefaultValues: map[string]string{"dcs": "empty"},

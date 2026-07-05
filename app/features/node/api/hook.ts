@@ -43,7 +43,7 @@ export function useRouterNodePlatformList(request: PlatformVaultConnection) {
 }
 
 export function useRouterNodeConfig(request?: KeeperOneRequest) {
-    const req = request ?? {host: "", port: 1, plugin: KeeperPlugin.PATRONI}
+    const req = request ?? {host: "", port: 1, plugin: KeeperPlugin.PATRONI_POSTGRES}
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.config.key(req.host, req.port),
