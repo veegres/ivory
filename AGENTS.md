@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Ivory is split into a Go backend in `server/` and a Vite/React frontend in `app/`. Backend packages are organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `core/` for wiring. Frontend source lives in `app/`, with `features/` for domain logic, `core/` for main pages and widgets, `shared/` for shared components, hooks, and providers. Tests live in `server/**/_test.go` and `app/test/`. Docs and screenshots are under `.doc/`; local Docker setups are under `.docker/`.
+Ivory is split into a Go backend in `server/` and a Vite/React frontend in `app/`. Backend packages are organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `core/` for wiring. Frontend source lives in `app/`, with `features/` for domain logic, `core/` for main pages and widgets, `shared/` for shared components, hooks, and providers, and `tools/` for standalone utilities (e.g. `pg_compacttable`). Tests live in `server/**/_test.go`, and on the frontend are colocated with the source they test (`[filename].test.[ext]`). Docs and screenshots are under `.doc/`; local Docker setups are under `.docker/`.
 
 **Mandatory Check**: When modifying frontend code, always run `cd app && npm run lint` and `cd app && npm run build` to ensure no linting or TypeScript compilation errors were introduced.
 
@@ -15,10 +15,12 @@ Frontend:
 - `cd app && npm install` installs dependencies.
 - `cd app && npm start` starts the Vite dev server.
 - `cd app && npm run build` runs TypeScript compile plus production build.
-- `cd app && npm run lint` runs ESLint over `core/`, `features/`, `shared/` and `test/`.
+- `cd app && npm run lint` runs ESLint over `core/`, `features/`, `shared/` and `tools/`.
 - `cd app && npm test` starts Vitest; `npm run test:coverage` runs coverage.
 
 Use `.docker/ivory-dev/` for the stack.
+
+**Keep the lint script's directory list in sync**: `lint`/`lint:fix` in `app/package.json` explicitly list which top-level directories ESLint scans. Any new top-level frontend directory (like `tools/`) must be added to both scripts, or its files are silently unlinted — CI's `npm run lint` step will report success even with real errors (e.g. unsorted imports) inside the missing directory.
 
 ## Architectural Patterns
 - **Vertical Consolidation**: Prefer grouping all management logic for a single entity into one feature. For example, the `node` feature manages both Platform access (metrics, deployment operations) and the Database/Keeper (HA, config).

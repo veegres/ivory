@@ -9,8 +9,8 @@
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint core features shared",
-    "lint:fix": "eslint --fix core features shared",
+    "lint": "eslint core features shared tools",
+    "lint:fix": "eslint --fix core features shared tools",
     "test": "vitest run"
   },
   "dependencies": {

@@ -10,8 +10,8 @@ import {OpenIcon} from "../../../shared/component/icon/OpenIcon"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {getShortUuid} from "../../../shared/helper/HelperUtils"
 import select from "../../../shared/style/select.module.css"
-import {useRouterPgCompactTableDelete, useRouterPgCompactTableStop} from "../api/PgCompactTableHook"
 import {useRouterPgCompactTableJob} from "../api/job/PgCompactTableJobHook"
+import {useRouterPgCompactTableDelete, useRouterPgCompactTableStop} from "../api/PgCompactTableHook"
 import {PgCompactTable} from "../api/PgCompactTableType"
 
 const SX: SxPropsMap = {
