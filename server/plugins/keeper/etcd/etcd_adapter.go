@@ -43,6 +43,10 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 
 	members := make([]member, 0, len(memberList.Members))
 	statuses := make(map[uint64]endpointStatus, len(memberList.Members))
+	// NOTE: a single unreachable member must not fail the whole overview, but
+	// its error must still make it back to the caller (not just the
+	// "unreachable" state) so it ends up in the node's warnings.
+	var errs error
 	for _, m := range memberList.Members {
 		members = append(members, member{ID: m.ID, Name: m.Name, ClientURLs: m.ClientURLs, IsLearner: m.IsLearner})
 		if len(m.ClientURLs) == 0 {
@@ -51,12 +55,17 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 		status, errStatus := client.Status(ctx, m.ClientURLs[0])
 		if errStatus != nil {
 			statuses[m.ID] = endpointStatus{Err: errStatus}
+			errs = errors.Join(errs, fmt.Errorf("member %q is unreachable: %w", m.Name, errStatus))
 			continue
 		}
 		statuses[m.ID] = endpointStatus{Leader: status.Leader, RaftIndex: status.RaftIndex}
 	}
 
-	return mapMembers(members, statuses), http.StatusOK, nil
+	status := http.StatusOK
+	if errs != nil {
+		status = http.StatusServiceUnavailable
+	}
+	return mapMembers(members, statuses), status, errs
 }
 
 func (a *Adapter) Switchover(request keeper.Request) (*string, int, error) {
@@ -230,15 +239,15 @@ func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex
 	name := m.Name
 	var keeperStatus keeper.Status = keeper.Active
 
-	state := "running"
+	state := keeper.StateRunning
 	var role keeper.Role = keeper.Unknown
 	// NOTE: lag is the raft index difference to the leader, unlike patroni's lag value
 	lag := int64(-1)
 	switch {
 	case len(m.ClientURLs) == 0:
-		state = "starting"
+		state = keeper.StateStarting
 	case status.Err != nil:
-		state = "unreachable"
+		state = keeper.StateUnreachable
 	case m.ID == leaderID:
 		role = keeper.Leader
 		lag = 0

@@ -124,8 +124,11 @@ func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) 
 			errResponse := errors.New(response.Error)
 			connectionErrors[connectionKey] = errResponse
 			requestErrs = errors.Join(requestErrs, errResponse)
-			continue
 		}
+		// NOTE: still merge in whatever the adapter could report even when
+		// there was also an error (e.g. postgres starting up), so the node
+		// gets a real state instead of losing its data just because the
+		// error is also recorded above.
 		s.addKeeperResponsesToMap(keeperNodeMap, response.Response)
 	}
 	return keeperNodeMap, connectionErrors, requestErrs
@@ -240,7 +243,7 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
 		if !s.hasKeeper(cn.Keeper) {
-			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: "-"}
+			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnknown}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
 			nodeMap[nodeKey] = cn
 		}

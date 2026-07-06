@@ -5,6 +5,8 @@ import (
 	"ivory/plugins/keeper"
 	"net/http"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func TestMapNode(t *testing.T) {
@@ -42,7 +44,7 @@ func TestMapNode(t *testing.T) {
 			if response.Key == nil || *response.Key != tt.expectedKey {
 				t.Errorf("expected key %q, got %v", tt.expectedKey, response.Key)
 			}
-			if response.State != "running" {
+			if response.State != keeper.StateRunning {
 				t.Errorf("expected state running, got %q", response.State)
 			}
 			if response.Status == nil || *response.Status != keeper.Active {
@@ -56,6 +58,71 @@ func TestMapNode(t *testing.T) {
 			}
 			if response.DiscoveredDbPort == nil || *response.DiscoveredDbPort != tt.port {
 				t.Errorf("expected discovered db port %d, got %v", tt.port, response.DiscoveredDbPort)
+			}
+		})
+	}
+}
+
+func TestMapUnavailableNode(t *testing.T) {
+	response := mapUnavailableNode("db1", 5432, keeper.StateStarting)
+
+	if response.State != keeper.StateStarting {
+		t.Errorf("expected state %q, got %q", keeper.StateStarting, response.State)
+	}
+	if response.Role != keeper.Unknown {
+		t.Errorf("expected role unknown, got %v", response.Role)
+	}
+	if response.Status == nil || *response.Status != keeper.Active {
+		t.Errorf("expected active status, got %v", response.Status)
+	}
+	if response.DiscoveredHost == nil || *response.DiscoveredHost != "db1" {
+		t.Errorf("expected discovered host db1, got %v", response.DiscoveredHost)
+	}
+	if response.DiscoveredKeeperPort == nil || *response.DiscoveredKeeperPort != 5432 {
+		t.Errorf("expected discovered keeper port 5432, got %v", response.DiscoveredKeeperPort)
+	}
+}
+
+func TestMapUnavailableState(t *testing.T) {
+	tests := []struct {
+		name          string
+		err           error
+		expectedState keeper.State
+		expectedOk    bool
+	}{
+		{"nil error", nil, "", false},
+		{"unrelated error", errors.New("boom"), "", false},
+		{"wrong sqlstate", &pgconn.PgError{Code: "28000"}, "", false},
+		{
+			"starting up sqlstate",
+			&pgconn.PgError{Code: sqlStateCannotConnectNow, Message: "the database system is starting up"},
+			keeper.StateStarting, true,
+		},
+		{
+			"shutting down sqlstate",
+			&pgconn.PgError{Code: sqlStateCannotConnectNow, Message: "the database system is shutting down"},
+			keeper.StateStopping, true,
+		},
+		{
+			"recovery mode sqlstate defaults to starting",
+			&pgconn.PgError{Code: sqlStateCannotConnectNow, Message: "the database system is in recovery mode"},
+			keeper.StateStarting, true,
+		},
+		{
+			"wrapped starting up sqlstate",
+			errors.Join(errors.New("failed to connect"), &pgconn.PgError{Code: sqlStateCannotConnectNow, Message: "the database system is starting up"}),
+			keeper.StateStarting, true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			state, ok := mapUnavailableState(tt.err)
+			if ok != tt.expectedOk {
+				t.Errorf("expected ok %v, got %v", tt.expectedOk, ok)
+			}
+			if state != tt.expectedState {
+				t.Errorf("expected state %q, got %q", tt.expectedState, state)
 			}
 		})
 	}

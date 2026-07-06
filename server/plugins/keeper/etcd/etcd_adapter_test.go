@@ -53,7 +53,7 @@ func TestMapMembers(t *testing.T) {
 	if unreachable.Role != keeper.Unknown {
 		t.Errorf("expected unknown role, got %v", unreachable.Role)
 	}
-	if unreachable.State != "unreachable" {
+	if unreachable.State != keeper.StateUnreachable {
 		t.Errorf("expected unreachable state, got %q", unreachable.State)
 	}
 	if unreachable.Lag != -1 {
@@ -65,7 +65,7 @@ func TestMapMembersEdgeCases(t *testing.T) {
 	t.Run("member without client urls is starting", func(t *testing.T) {
 		members := []member{{ID: 1, Name: "etcd1"}}
 		responses := mapMembers(members, map[uint64]endpointStatus{})
-		if responses[0].State != "starting" {
+		if responses[0].State != keeper.StateStarting {
 			t.Errorf("expected starting state, got %q", responses[0].State)
 		}
 		if responses[0].DiscoveredHost != nil {

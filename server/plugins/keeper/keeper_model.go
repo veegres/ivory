@@ -33,6 +33,23 @@ const (
 	Unknown      = "unknown"
 )
 
+// State is Ivory's normalized view of what the keeper's postgres process is
+// doing right now. Every adapter maps its own plugin-specific and
+// version-specific vocabulary onto this fixed set, so callers (the cluster
+// overview, the frontend) only ever need to understand these values.
+type State string
+
+const (
+	StateRunning     State = "running"
+	StateStarting    State = "starting"
+	StateRestarting  State = "restarting"
+	StateStopping    State = "stopping"
+	StateStopped     State = "stopped"
+	StateFailed      State = "failed"
+	StateUnreachable State = "unreachable"
+	StateUnknown     State = "unknown"
+)
+
 type Keeper struct {
 	Host   string  `json:"host"`
 	Port   int     `json:"port"`
@@ -43,7 +60,7 @@ type Keeper struct {
 type Response struct {
 	Key                 *string              `json:"key"`
 	Status              *Status              `json:"status"`
-	State               string               `json:"state"`
+	State               State                `json:"state"`
 	Role                Role                 `json:"role"`
 	Lag                 int64                `json:"lag"`
 	PendingRestart      bool                 `json:"pendingRestart"`

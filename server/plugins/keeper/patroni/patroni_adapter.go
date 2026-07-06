@@ -49,7 +49,7 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 		overview = append(overview, keeper.Response{
 			Key:                  &patroniInstance.Name,
 			Status:               &keeperStatus,
-			State:                patroniInstance.State,
+			State:                a.mapState(patroniInstance.State),
 			Role:                 a.mapRole(patroniInstance.Role),
 			Lag:                  a.mapLag(patroniInstance.Lag),
 			PendingRestart:       patroniInstance.PendingRestart,
@@ -97,6 +97,32 @@ func (a *Adapter) mapSwitchover(host string, switchover *PatroniScheduledSwitcho
 		}
 	}
 	return scheduledSwitchover
+}
+
+// mapState normalizes Patroni's member "state" string onto keeper.State.
+// Patroni has renamed/added state names across releases without preserving
+// backward compatibility (e.g. older releases report a streaming replica as
+// "running", newer ones report "streaming"), so any state Ivory hasn't seen
+// before must fall back to StateUnknown rather than being passed through
+// verbatim. Values taken from patroni/postgresql/__init__.py's STATE_*
+// constants.
+func (a *Adapter) mapState(state string) keeper.State {
+	switch state {
+	case "running", "streaming":
+		return keeper.StateRunning
+	case "starting", "initializing new cluster", "running custom bootstrap script", "creating replica":
+		return keeper.StateStarting
+	case "restarting":
+		return keeper.StateRestarting
+	case "stopping":
+		return keeper.StateStopping
+	case "stopped":
+		return keeper.StateStopped
+	case "stop failed", "start failed", "restart failed", "crashed", "initdb failed", "custom bootstrap failed":
+		return keeper.StateFailed
+	default:
+		return keeper.StateUnknown
+	}
 }
 
 func (a *Adapter) mapRole(role string) keeper.Role {

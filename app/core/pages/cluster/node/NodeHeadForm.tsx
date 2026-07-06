@@ -2,6 +2,7 @@ import {Box, TextField} from "@mui/material"
 import {useState} from "react"
 
 import {Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
+import {KeeperState, KeeperStatus} from "../../../../features/node/api/NodeType"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {CancelIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
@@ -39,10 +40,8 @@ export function NodeHeadForm(props: Props) {
     const [config, setConfig] = useState(node.config)
 
     const stateStr = node.keeper.state ?? "unknown"
-    const isRunning = stateStr.toLowerCase() === "running" || stateStr.toLowerCase() === "streaming"
-    const isPaused = stateStr.toLowerCase() === "paused"
-    const isUnknown = stateStr.toLowerCase() === "unknown"
-    const stateColor = isRunning ? "success" : (isPaused ? "warning" : (isUnknown ? "default" : "error"))
+    const isPaused = node.keeper.status === KeeperStatus.Paused
+    const stateColor = isPaused ? "warning" : getStateColor(stateStr)
 
     const isReplica = node.keeper.role === "replica"
     const lagValue = isReplica ? SizeFormatter.pretty(node.keeper.lag) : "N/A"
@@ -155,5 +154,22 @@ export function NodeHeadForm(props: Props) {
     function handleEdit() {
         setEdit(true)
         setConfig(node.config)
+    }
+
+    function getStateColor(state: KeeperState): "success" | "warning" | "error" | "default" {
+        switch (state) {
+            case "running":
+                return "success"
+            case "starting":
+            case "restarting":
+            case "stopping":
+                return "warning"
+            case "stopped":
+            case "failed":
+            case "unreachable":
+                return "error"
+            default:
+                return "default"
+        }
     }
 }

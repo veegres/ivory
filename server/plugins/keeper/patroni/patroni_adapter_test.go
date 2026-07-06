@@ -125,6 +125,40 @@ func TestClient_mapRole(t *testing.T) {
 	}
 }
 
+func TestClient_mapState(t *testing.T) {
+	client := &Adapter{}
+
+	testCases := []struct {
+		input    string
+		expected keeper.State
+	}{
+		{"running", keeper.StateRunning},
+		{"streaming", keeper.StateRunning}, // newer Patroni reports replicas as "streaming" instead of "running"
+		{"starting", keeper.StateStarting},
+		{"creating replica", keeper.StateStarting},
+		{"initializing new cluster", keeper.StateStarting},
+		{"running custom bootstrap script", keeper.StateStarting},
+		{"restarting", keeper.StateRestarting},
+		{"stopping", keeper.StateStopping},
+		{"stopped", keeper.StateStopped},
+		{"crashed", keeper.StateFailed},
+		{"start failed", keeper.StateFailed},
+		{"restart failed", keeper.StateFailed},
+		{"stop failed", keeper.StateFailed},
+		{"initdb failed", keeper.StateFailed},
+		{"custom bootstrap failed", keeper.StateFailed},
+		{"some future patroni state", keeper.StateUnknown},
+		{"", keeper.StateUnknown},
+	}
+
+	for _, tc := range testCases {
+		state := client.mapState(tc.input)
+		if state != tc.expected {
+			t.Errorf("for input %q, expected state %q, got %q", tc.input, tc.expected, state)
+		}
+	}
+}
+
 func TestClient_mapRestart(t *testing.T) {
 	client := &Adapter{}
 

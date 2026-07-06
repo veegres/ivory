@@ -7,9 +7,11 @@ import (
 	"ivory/plugins/keeper"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 var ErrNodeIsPrimary = errors.New("failover target must be a replica; this node is the primary")
@@ -30,6 +32,14 @@ const listQuery = `SELECT pg_is_in_recovery(),
             ELSE 0 END`
 
 const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
+
+// sqlStateCannotConnectNow is postgres' ERRCODE_CANNOT_CONNECT_NOW, returned
+// for a new connection attempt while the database is starting up, shutting
+// down, or still in crash/archive recovery. All three cases share this one
+// SQLSTATE and are only distinguished by the FATAL message text, so this is
+// a normal transient condition (e.g. right after a container restart), not a
+// connectivity failure, and List reports it as a node state instead of an error.
+const sqlStateCannotConnectNow = "57P03"
 
 // NOTE: validate that is matches interface in compile-time
 var _ keeper.Adapter = (*Adapter)(nil)
@@ -52,9 +62,31 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 		return row.Scan(&inRecovery, &lag)
 	})
 	if err != nil {
+		if state, ok := mapUnavailableState(err); ok {
+			// NOTE: err is still returned alongside the mapped response so
+			// the caller keeps the reason as a warning instead of it being
+			// silently discarded just because we could still report a state.
+			return []keeper.Response{mapUnavailableNode(request.Host, request.Port, state)}, http.StatusServiceUnavailable, err
+		}
 		return nil, http.StatusBadRequest, err
 	}
 	return []keeper.Response{mapNode(request.Host, request.Port, inRecovery, lag)}, http.StatusOK, nil
+}
+
+// mapUnavailableState reports the keeper.State represented by a "cannot
+// connect now" postgres error, disambiguating "starting up" from "shutting
+// down" by message text since both share sqlStateCannotConnectNow. The
+// second return value is false for any other error, including genuine
+// connectivity failures (host unreachable, wrong port, auth failure).
+func mapUnavailableState(err error) (keeper.State, bool) {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) || pgErr.Code != sqlStateCannotConnectNow {
+		return "", false
+	}
+	if strings.Contains(pgErr.Message, "shutting down") {
+		return keeper.StateStopping, true
+	}
+	return keeper.StateStarting, true
 }
 
 func (a *Adapter) Config(request keeper.Request) (any, int, error) {
@@ -192,6 +224,26 @@ func (a *Adapter) withConnection(request keeper.Request, action func(ctx context
 	return action(ctx, conn)
 }
 
+// mapUnavailableNode reports a reachable node whose postgres is not
+// currently accepting queries (starting up or shutting down), so the
+// cluster overview can show its real state instead of flagging it as
+// unreachable while its role/lag are not yet knowable. List still returns
+// the triggering error alongside this response so callers surface it as a
+// warning instead of discarding it.
+func mapUnavailableNode(host string, port int, state keeper.State) keeper.Response {
+	var status keeper.Status = keeper.Active
+	key := host + ":" + strconv.Itoa(port)
+	return keeper.Response{
+		Key:                  &key,
+		Status:               &status,
+		State:                state,
+		Role:                 keeper.Unknown,
+		DiscoveredHost:       &host,
+		DiscoveredKeeperPort: &port,
+		DiscoveredDbPort:     &port,
+	}
+}
+
 func mapNode(host string, port int, inRecovery bool, lag int64) keeper.Response {
 	role := keeper.Leader
 	if inRecovery {
@@ -204,7 +256,7 @@ func mapNode(host string, port int, inRecovery bool, lag int64) keeper.Response 
 	return keeper.Response{
 		Key:                  &key,
 		Status:               &status,
-		State:                "running",
+		State:                keeper.StateRunning,
 		Role:                 role,
 		Lag:                  lag,
 		DiscoveredHost:       &host,

@@ -20,6 +20,11 @@ export enum KeeperStatus {
 
 export type Role = "leader"|"replica"|"unknown";
 
+// KeeperState is Ivory's normalized keeper state: every adapter maps its own
+// plugin-specific and version-specific vocabulary (e.g. Patroni renamed
+// state names across releases) onto this fixed set on the backend.
+export type KeeperState = "running"|"starting"|"restarting"|"stopping"|"stopped"|"failed"|"unreachable"|"unknown";
+
 export interface Keeper {
     host: string,
     port: number,
@@ -30,7 +35,7 @@ export interface Keeper {
 export interface KeeperResponse {
     key?: string,
     status?: KeeperStatus,
-    state: string,
+    state: KeeperState,
     role: Role,
     lag: number,
     pendingRestart: boolean,

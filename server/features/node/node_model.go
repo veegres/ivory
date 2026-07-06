@@ -15,16 +15,20 @@ type KeeperConnection struct {
 	Port int    `json:"port" form:"port"`
 }
 
-// KeeperPlugin and KeeperStatus/KeeperRole are kept as aliases so request binding and
-// keeperRegistry.Get() don't need explicit conversions at the call site.
+// KeeperPlugin and KeeperStatus/KeeperRole/KeeperState are kept as aliases so
+// request binding and keeperRegistry.Get() don't need explicit conversions
+// at the call site.
 type KeeperPlugin = keeper.Plugin
 type KeeperStatus = keeper.Status
 type KeeperRole = keeper.Role
+type KeeperState = keeper.State
 
 const (
 	KeeperRoleLeader  KeeperRole = "leader"
 	KeeperRoleUnknown KeeperRole = "unknown"
 )
+
+const KeeperStateUnknown = keeper.StateUnknown
 
 type KeeperScheduledSwitchover struct {
 	At string `json:"at"`
@@ -39,7 +43,7 @@ type KeeperScheduledRestart struct {
 type KeeperResponse struct {
 	Key                  *string                    `json:"key"`
 	Status               *KeeperStatus              `json:"status"`
-	State                string                     `json:"state"`
+	State                KeeperState                `json:"state"`
 	Role                 KeeperRole                 `json:"role"`
 	Lag                  int64                      `json:"lag"`
 	PendingRestart       bool                       `json:"pendingRestart"`

@@ -1,9 +1,12 @@
 package cluster
 
 import (
+	"errors"
 	"fmt"
+	"ivory/core/utils"
 	"ivory/features/node"
 	"ivory/plugins/keeper"
+	"net/http"
 	"strings"
 	"testing"
 )
@@ -65,6 +68,62 @@ func TestService_Overview_Mapping(t *testing.T) {
 			t.Errorf("Expected keeper role 'leader', got '%s'", mappedNode.Keeper.Role)
 		}
 	})
+}
+
+// fakeKeeperAdapter lets tests control exactly what List() reports, in
+// particular returning a usable Response alongside a non-nil error the way
+// a real adapter does when it can still describe a node's state despite a
+// connection problem (e.g. postgres starting up).
+type fakeKeeperAdapter struct {
+	keeper.Adapter
+	listResponse []keeper.Response
+	listStatus   int
+	listErr      error
+}
+
+func (f *fakeKeeperAdapter) List(request keeper.Request) ([]keeper.Response, int, error) {
+	return f.listResponse, f.listStatus, f.listErr
+}
+
+func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T) {
+	host := "db1"
+	port := 8008
+	errMessage := "the database system is starting up"
+
+	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+	keeperRegistry.Register("fake", &fakeKeeperAdapter{
+		listResponse: []keeper.Response{{
+			State:                keeper.StateStarting,
+			Role:                 keeper.Unknown,
+			DiscoveredHost:       &host,
+			DiscoveredKeeperPort: &port,
+		}},
+		listStatus: http.StatusServiceUnavailable,
+		listErr:    errors.New(errMessage),
+	})
+	s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil, nil)}
+
+	configs := []NodeConfig{{Host: host, KeeperPort: &port}}
+	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{Plugins: Plugins{Keeper: "fake"}})
+	nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err)
+
+	nodeKey := "db1:8008"
+	if err == nil || !strings.Contains(err.Error(), errMessage) {
+		t.Fatalf("expected returned error to contain %q, got %v", errMessage, err)
+	}
+	if nodes[nodeKey].Keeper.State != keeper.StateStarting {
+		t.Fatalf("expected the degraded response to still be merged in, got state %q", nodes[nodeKey].Keeper.State)
+	}
+	warnings := nodes[nodeKey].Warnings
+	found := false
+	for _, w := range warnings {
+		if strings.Contains(w, errMessage) {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("expected the handled error to still be surfaced as a warning, got %v", warnings)
+	}
 }
 
 func TestService_buildOverviewNodes(t *testing.T) {

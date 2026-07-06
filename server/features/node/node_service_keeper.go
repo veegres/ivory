@@ -43,15 +43,16 @@ func (s *Service) KeeperNodeList(r KeeperOneRequest) ([]KeeperOneResponse, int, 
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
+	// NOTE: responses is still mapped even when err != nil, since an adapter
+	// can report a degraded-but-useful response (e.g. postgres starting up)
+	// alongside the error that caused it; callers rely on getting both so the
+	// error still ends up in the node's warnings instead of being discarded.
 	responses, status, err := client.List(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
-	if err != nil {
-		return nil, status, err
-	}
 	result := make([]KeeperOneResponse, len(responses))
 	for i, resp := range responses {
 		result[i] = mapKeeperResponse(resp)
 	}
-	return result, status, nil
+	return result, status, err
 }
 
 func (s *Service) KeeperConfigGet(r KeeperOneRequest) (any, int, error) {
