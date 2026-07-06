@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"ivory/features/node"
+	"ivory/features/query"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,15 +19,17 @@ func NewRouter(clusterService *Service) *Router {
 }
 
 func (r *Router) GetClusterList(context *gin.Context) {
-	tags := context.Request.URL.Query()["tags[]"]
-
-	var list []Response
-	var err error
-	if len(tags) == 0 {
-		list, err = r.clusterService.List()
-	} else {
-		list, err = r.clusterService.ListByTag(tags)
+	request := SearchRequest{Tags: context.Request.URL.Query()["tags[]"]}
+	if keeper := context.Query("keeper"); keeper != "" {
+		plugin := node.KeeperPlugin(keeper)
+		request.Keeper = &plugin
 	}
+	if database := context.Query("database"); database != "" {
+		plugin := query.DbPlugin(database)
+		request.Database = &plugin
+	}
+
+	list, err := r.clusterService.Search(request)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return

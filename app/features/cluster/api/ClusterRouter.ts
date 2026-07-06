@@ -1,12 +1,15 @@
 import {getDomain, getInitialNode} from "../../../shared/helper/HelperUtils"
 import {api} from "../../Api"
 import {R} from "../../management/api/ManagementType"
+import {KeeperPlugin} from "../../node/api/NodeType"
+import {DbPlugin} from "../../query/api/QueryType"
 import {AutoRequest, Cluster, DeployRequest, Overview} from "./ClusterType"
 
 export const ClusterApi = {
     list: {
         key: () => ["cluster", "list"],
-        fn: (tags?: string[]) => api.get<R<Cluster[]>>("/cluster", {params: {tags}})
+        fn: (tags?: string[], keeper?: KeeperPlugin, database?: DbPlugin) => api
+            .get<R<Cluster[]>>("/cluster", {params: {tags, keeper, database}})
             .then((response) => response.data.response.map(v => (
                 {...v, nodesOverview: Object.fromEntries(v.nodes.map(c => {
                     const domain = getDomain(c, true)

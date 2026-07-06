@@ -1,6 +1,10 @@
 package cluster
 
-import "ivory/clients/storage"
+import (
+	"ivory/clients/storage"
+	"ivory/features/node"
+	"ivory/features/query"
+)
 
 type Repository struct {
 	bucket *storage.DbBucket[Response]
@@ -16,13 +20,35 @@ func (r *Repository) List() ([]Response, error) {
 	return r.bucket.GetList(nil, nil)
 }
 
-func (r *Repository) ListByName(clusters []string) ([]Response, error) {
-	clusterMap := make(map[string]bool)
-	for _, c := range clusters {
-		clusterMap[c] = true
+// SearchCriteria narrows List down to matching clusters. A nil field is
+// skipped; Names is nil-vs-empty sensitive so a resolved-but-empty tag
+// search (no cluster has the requested tags) still returns no results
+// instead of falling back to an unfiltered list.
+type SearchCriteria struct {
+	Names    []string
+	Keeper   *node.KeeperPlugin
+	Database *query.DbPlugin
+}
+
+func (r *Repository) Search(criteria SearchCriteria) ([]Response, error) {
+	var names map[string]bool
+	if criteria.Names != nil {
+		names = make(map[string]bool, len(criteria.Names))
+		for _, name := range criteria.Names {
+			names[name] = true
+		}
 	}
-	return r.bucket.GetList(func(cert Response) bool {
-		return clusterMap[cert.Name]
+	return r.bucket.GetList(func(c Response) bool {
+		if names != nil && !names[c.Name] {
+			return false
+		}
+		if criteria.Keeper != nil && c.Plugins.Keeper != *criteria.Keeper {
+			return false
+		}
+		if criteria.Database != nil && c.Plugins.Database != *criteria.Database {
+			return false
+		}
+		return true
 	}, nil)
 }
 

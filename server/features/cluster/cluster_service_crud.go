@@ -1,31 +1,46 @@
 package cluster
 
+import (
+	"ivory/features/node"
+	"ivory/features/query"
+)
+
 func (s *Service) List() ([]Response, error) {
 	return s.clusterRepository.List()
 }
 
-func (s *Service) ListByTag(tags []string) ([]Response, error) {
+// SearchRequest narrows Search down to matching clusters. Tags is resolved
+// to cluster names before hitting the repository; Keeper and Database are
+// passed through as-is. A nil/empty field is skipped (no restriction).
+type SearchRequest struct {
+	Tags     []string
+	Keeper   *node.KeeperPlugin
+	Database *query.DbPlugin
+}
+
+func (s *Service) Search(request SearchRequest) ([]Response, error) {
+	criteria := SearchCriteria{Keeper: request.Keeper, Database: request.Database}
+	if len(request.Tags) > 0 {
+		criteria.Names = s.resolveTagNames(request.Tags)
+	}
+	return s.clusterRepository.Search(criteria)
+}
+
+func (s *Service) resolveTagNames(tags []string) []string {
 	listMap := make(map[string]bool)
 	for _, t := range tags {
 		// NOTE: we shouldn't check the error here, we want to return an empty array if there is no such tag
 		clusters, _ := s.tagService.Get(t)
 		for _, c := range clusters {
-			if !listMap[c] {
-				listMap[c] = true
-			}
+			listMap[c] = true
 		}
 	}
 
-	listName := make([]string, 0)
+	listName := make([]string, 0, len(listMap))
 	for k := range listMap {
 		listName = append(listName, k)
 	}
-
-	return s.ListByName(listName)
-}
-
-func (s *Service) ListByName(clusters []string) ([]Response, error) {
-	return s.clusterRepository.ListByName(clusters)
+	return listName
 }
 
 func (s *Service) Get(cluster string) (Response, error) {
