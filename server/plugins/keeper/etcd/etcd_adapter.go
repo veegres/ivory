@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"ivory/clients/etcd"
 	"ivory/plugins/keeper"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -101,43 +102,43 @@ func (a *Adapter) Switchover(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) Config(request keeper.Request) (any, int, error) {
+func (a *Adapter) Config(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) ConfigUpdate(request keeper.Request) (any, int, error) {
+func (a *Adapter) ConfigUpdate(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteSwitchover(request keeper.Request) (*string, int, error) {
+func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(request keeper.Request) (*string, int, error) {
+func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reload(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Reload(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Failover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Activate(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
@@ -151,7 +152,10 @@ type connection struct {
 
 func (c *connection) Close() {
 	c.cancel()
-	c.Client.Close()
+	err := c.Client.Close()
+	if err != nil {
+		slog.Error("failed to close ssh client", "error", err)
+	}
 }
 
 // connect opens an etcd client for the request's endpoint and returns a
