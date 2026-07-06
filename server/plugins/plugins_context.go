@@ -1,3 +1,5 @@
+// Package plugins wires up every keeper/database/platform plugin adapter
+// into the registries the rest of Ivory looks them up from by Plugin type.
 package plugins
 
 import (
@@ -15,6 +17,8 @@ import (
 	"ivory/plugins/platform/linux"
 )
 
+// Context holds every plugin registry, keyed by each plugin family's own
+// Plugin type, that the rest of Ivory resolves adapters through.
 type Context struct {
 	KeeperRegistry         *utils.Registry[keeper.Plugin, keeper.Adapter]
 	KeeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata]

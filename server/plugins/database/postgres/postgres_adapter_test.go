@@ -1,9 +1,42 @@
 package postgres
 
 import (
+	"errors"
 	"ivory/plugins/database"
 	"testing"
 )
+
+func TestGetConnectionRequiresHostAndPort(t *testing.T) {
+	client := NewAdapter()
+
+	tests := []struct {
+		name string
+		ctx  database.Context
+	}{
+		{name: "missing host", ctx: database.Context{Connection: &database.Connection{Config: database.Config{Port: 5432}}}},
+		{name: "missing port", ctx: database.Context{Connection: &database.Connection{Config: database.Config{Host: "localhost"}}}},
+		{name: "placeholder host", ctx: database.Context{Connection: &database.Connection{Config: database.Config{Host: "-", Port: 5432}}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, _, err := client.getConnection(tt.ctx)
+			if !errors.Is(err, database.ErrDatabaseHostOrPortNotSpecified) {
+				t.Errorf("expected ErrDatabaseHostOrPortNotSpecified, got %v", err)
+			}
+		})
+	}
+}
+
+func TestGetConnectionRequiresCredentials(t *testing.T) {
+	client := NewAdapter()
+	ctx := database.Context{Connection: &database.Connection{Config: database.Config{Host: "localhost", Port: 5432}}}
+
+	_, _, err := client.getConnection(ctx)
+	if !errors.Is(err, database.ErrPasswordNotSet) {
+		t.Errorf("expected ErrPasswordNotSet, got %v", err)
+	}
+}
 
 func TestClient_trimQuery(t *testing.T) {
 	client := NewAdapter()

@@ -6,6 +6,7 @@ import (
 
 // COMMON (WEB AND SERVER)
 
+// Plugin identifies which keeper (HA management tool) manages a node.
 type Plugin string
 
 const (
@@ -18,6 +19,8 @@ func (p Plugin) String() string {
 	return string(p)
 }
 
+// Status reports whether a keeper is actively managing failover/switchover
+// or has been Paused (see Adapter.Pause/Activate).
 type Status string
 
 const (
@@ -25,6 +28,7 @@ const (
 	Active        = "ACTIVE"
 )
 
+// Role is a member's position within the cluster as seen by its keeper.
 type Role string
 
 const (
@@ -50,6 +54,8 @@ const (
 	StateUnknown     State = "unknown"
 )
 
+// Keeper is the persisted, user-facing keeper connection configuration for a
+// node.
 type Keeper struct {
 	Host   string  `json:"host"`
 	Port   int     `json:"port"`
@@ -57,6 +63,9 @@ type Keeper struct {
 	Status *Status `json:"status"`
 }
 
+// Response is a single cluster member as reported by Adapter.List, combining
+// the keeper's own state with database/keeper endpoints it discovered so
+// Ivory can auto-create the corresponding node.
 type Response struct {
 	Key                 *string              `json:"key"`
 	Status              *Status              `json:"status"`
@@ -74,11 +83,13 @@ type Response struct {
 	DiscoveredDbPort     *int    `json:"discoveredDbPort"`
 }
 
+// ScheduledSwitchover describes a pending, not-yet-performed switchover.
 type ScheduledSwitchover struct {
 	At string `json:"at"`
 	To string `json:"to"`
 }
 
+// ScheduledRestart describes a pending, not-yet-performed restart.
 type ScheduledRestart struct {
 	At             string `json:"at"`
 	PendingRestart bool   `json:"pendingRestart"`
@@ -86,6 +97,8 @@ type ScheduledRestart struct {
 
 // SPECIFIC (SERVER)
 
+// Request is the input to every Adapter method: the keeper's endpoint,
+// optional credentials/TLS to reach it, and an operation-specific body.
 type Request struct {
 	Host        string       `json:"host" form:"host"`
 	Port        int          `json:"port" form:"port"`
@@ -94,6 +107,7 @@ type Request struct {
 	Body        any          `json:"body" form:"body"`
 }
 
+// Credentials authenticates a Request against its keeper.
 type Credentials struct {
 	Username string `json:"username" form:"username"`
 	Password string `json:"password" form:"password"`

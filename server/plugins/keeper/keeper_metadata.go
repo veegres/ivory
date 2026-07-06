@@ -26,11 +26,14 @@ type DeploymentSpec struct {
 	DefaultValues map[string]string
 }
 
+// EnvVar is a single environment variable to set on the deployed container.
 type EnvVar struct {
 	Name  string
 	Value string
 }
 
+// VolumeSpec is a single host-path-to-container-path volume mount required
+// by the deployed container.
 type VolumeSpec struct {
 	HostPath      string
 	ContainerPath string

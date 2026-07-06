@@ -142,6 +142,34 @@ func TestListRequiresCredentials(t *testing.T) {
 	}
 }
 
+func TestReloadRequiresCredentials(t *testing.T) {
+	adapter := NewAdapter()
+	request := keeper.Request{Host: "localhost", Port: 5432}
+
+	_, status, err := adapter.Reload(request)
+
+	if status != http.StatusBadRequest {
+		t.Errorf("expected status 400, got %d", status)
+	}
+	if !errors.Is(err, ErrCredentialsRequired) {
+		t.Errorf("expected ErrCredentialsRequired, got %v", err)
+	}
+}
+
+func TestFailoverRequiresCredentials(t *testing.T) {
+	adapter := NewAdapter()
+	request := keeper.Request{Host: "localhost", Port: 5432}
+
+	_, status, err := adapter.Failover(request)
+
+	if status != http.StatusBadRequest {
+		t.Errorf("expected status 400, got %d", status)
+	}
+	if !errors.Is(err, ErrCredentialsRequired) {
+		t.Errorf("expected ErrCredentialsRequired, got %v", err)
+	}
+}
+
 func TestUnsupportedOperations(t *testing.T) {
 	adapter := NewAdapter()
 	request := keeper.Request{}

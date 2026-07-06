@@ -1,5 +1,175 @@
 package postgres
 
+import (
+	"ivory/core/config"
+	"ivory/plugins/database"
+)
+
+func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
+	return map[env.Feature]bool{
+		env.ViewQueryDbInfo:        true,
+		env.ViewQueryDbChart:       true,
+		env.ManageQueryDbTemplate:  true,
+		env.ManageQueryDbConsole:   true,
+		env.ManageQueryDbCancel:    true,
+		env.ManageQueryDbTerminate: true,
+	}
+}
+
+func (a *Adapter) SystemCharts() map[database.SystemChartType]string {
+	return map[database.SystemChartType]string{
+		database.Databases:      "SELECT count(*) FROM pg_database;",
+		database.Connections:    "SELECT count(*) FROM pg_stat_activity;",
+		database.DatabaseSize:   "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_database_size(datname) AS size FROM pg_database) AS sizes;",
+		database.DatabaseUptime: "SELECT date_trunc('seconds', now() - pg_postmaster_start_time())::text;",
+		database.Schemas:        "SELECT count(*) FROM pg_namespace;",
+		database.TablesSize:     "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_table_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
+		database.IndexesSize:    "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_indexes_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
+		database.TotalSize:      "SELECT pg_size_pretty(sum(size)) FROM (SELECT pg_total_relation_size(relid) AS size FROM pg_stat_all_tables) AS sizes;",
+	}
+}
+
+func (a *Adapter) SystemRequests() []database.SystemRequest {
+	return []database.SystemRequest{
+		{
+			Name: "Active running queries", Type: database.ACTIVITY,
+			Description: "Shows running queries. It can be useful if you want to check your queries that is long.",
+			Query:       DefaultActiveRunningQueries,
+		},
+		{
+			Name: "All running queries", Type: database.ACTIVITY,
+			Description: "Shows all queries. Just can help clarify what is going on postgres side.",
+			Query:       DefaultAllRunningQueries,
+		},
+		{
+			Name: "Active vacuums in progress", Type: database.ACTIVITY,
+			Description: "Shows list of active vacuums and their progress",
+			Query:       DefaultActiveVacuums,
+		},
+		{
+			Name: "Number of queries by state and database", Type: database.ACTIVITY,
+			Description: "Shows all queries by state and database",
+			Query:       DefaultAllQueriesByState,
+		},
+		{
+			Name: "All locks", Type: database.ACTIVITY,
+			Description: "Shows all locks with lock duration, type, it's ids owner, etc",
+			Query:       DefaultAllLocks,
+		},
+		{
+			Name: "Number of locks by lock type", Type: database.ACTIVITY,
+			Description: "Shows all locks by lock type",
+			Query:       DefaultAllLocksByLock,
+		},
+		{
+			Name: "Config", Type: database.OTHER,
+			Description: "Shows postgres config elements with it's values and information about restart",
+			Query:       DefaultPostgresConfig,
+		},
+		{
+			Name: "Config description", Type: database.OTHER,
+			Description: "Shows description of postgres config elements",
+			Query:       DefaultPostgresConfigDescription,
+		},
+		{
+			Name: "Users", Type: database.OTHER,
+			Description: "Shows all users",
+			Query:       DefaultPostgresUsers,
+		},
+		{
+			Name: "Simple replication", Type: database.REPLICATION,
+			Description: "Shows simple replication table only with lsn info",
+			Varieties:   []database.SystemRequestVariety{database.MasterOnly},
+			Query:       DefaultSimpleReplication,
+		},
+		{
+			Name: "Pretty replication", Type: database.REPLICATION,
+			Description: "Shows pretty replication table with data in mb",
+			Varieties:   []database.SystemRequestVariety{database.MasterOnly},
+			Query:       DefaultPrettyReplication,
+		},
+		{
+			Name: "Pure replication", Type: database.REPLICATION,
+			Description: "Shows pure replication table",
+			Varieties:   []database.SystemRequestVariety{database.MasterOnly},
+			Query:       DefaultPureReplication,
+		},
+		{
+			Name: "Database size", Type: database.STATISTIC,
+			Description: "Shows all database sizes",
+			Query:       DefaultDatabaseSize,
+		},
+		{
+			Name: "Table size", Type: database.STATISTIC,
+			Description: "Shows all table sizes, index size and total (index + table)",
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultTableSize,
+		},
+		{
+			Name: "Indexes in cache", Type: database.STATISTIC,
+			Description: "Shows ratio indexes in cache",
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultIndexInCache,
+		},
+		{
+			Name: "Unused indexes", Type: database.STATISTIC,
+			Description: "Shows unused indexes and their size",
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultIndexUnused,
+		},
+		{
+			Name: "Ratio of dead and live tuples", Type: database.BLOAT,
+			Description: "Shows 100 tables with biggest number of dead tuples and ratio of dead tuples divided by total numbers of tuples",
+			Query:       DefaultRatioOfDeadTuples,
+		},
+		{
+			Name: "Dead tuples and live tuples with last vacuum and analyze Time", Type: database.BLOAT,
+			Description: "Shows 100 tables with biggest number of dead tuples and their last vacuum and analyze time",
+			Query:       DefaultPureNumberOfDeadTuples,
+		},
+		{
+			Name: "Table pg_compacttable approximate", Type: database.BLOAT,
+			Description: "This query will read tables using pgstattuple extension and return 20 bloated approximate results and doesn't read whole table (but reads toast tables). WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)",
+			Params:      []string{"schema", "table"},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive, database.ReplicaRecommended},
+			Query:       DefaultTableBloatApproximate,
+		},
+		{
+			Name: "Table pg_compacttable", Type: database.BLOAT,
+			Description: "This query will read tables using pgstattuple extension and return top 20 bloated tables. WARNING: without table mask/name, query will read all available tables which could cause I/O spikes. Please enter mask for table name (check all tables if nothing is specified)",
+			Params:      []string{"schema", "table"},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive, database.ReplicaRecommended},
+			Query:       DefaultTableBloat,
+		},
+		{
+			Name: "Index pg_compacttable", Type: database.BLOAT,
+			Description: "This query will read indexes with pgstattuple extension and return top 100 bloated indexes. WARNING: without index mask query will read all available indexes which could cause I/O spikes. Please enter mask for index name (check all indexes if nothing is specified)",
+			Params:      []string{"schema", "table", "index"},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive, database.ReplicaRecommended},
+			Query:       DefaultIndexBloat,
+		},
+		{
+			Name: "Check specific table pg_compacttable", Type: database.BLOAT,
+			Description: "Shows one table pg_compacttable, you need to edit query and provide table name to see information about it",
+			Params:      []string{"schema.table"},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultCheckTableBloat,
+		},
+		{
+			Name: "Check specific index pg_compacttable", Type: database.BLOAT,
+			Description: "Shows one index pg_compacttable, you need to edit query and provide index name to see information about it",
+			Params:      []string{"schema.index"},
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultCheckIndexBloat,
+		},
+		{
+			Name: "Invalid indexes", Type: database.STATISTIC,
+			Description: "Shows invalid indexes. It can happen when concurrent index creation failed. It means that postgres doesn't use this index. You need to reindex it concurrently.",
+			Query:       DefaultIndexInvalid,
+		},
+	}
+}
+
 const GetAllDatabases = `SELECT datname AS name FROM pg_database WHERE datistemplate = false AND datname LIKE $1 LIMIT 100;`
 const GetAllSchemas = `SELECT nspname AS NAME FROM pg_namespace WHERE nspname LIKE $1 LIMIT 100;`
 const GetAllTables = `SELECT relname AS name FROM pg_stat_all_tables WHERE schemaname = $1 AND relname LIKE $2 LIMIT 100;`

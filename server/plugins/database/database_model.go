@@ -6,6 +6,7 @@ import (
 
 // COMMON (WEB AND SERVER)
 
+// Plugin identifies which database engine a Config connects to.
 type Plugin string
 
 const (
@@ -17,6 +18,7 @@ func (p Plugin) String() string {
 	return string(p)
 }
 
+// Config is the persisted, user-facing database connection configuration.
 type Config struct {
 	Plugin Plugin  `json:"plugin"`
 	Host   string  `json:"host"`
@@ -27,22 +29,29 @@ type Config struct {
 
 // SPECIFIC (SERVER)
 
+// Connection is Config plus the runtime credentials and TLS settings needed
+// to actually open a connection.
 type Connection struct {
 	Config      Config       `json:"config" form:"config"`
 	Credentials *Credentials `json:"credentials" form:"credentials"`
 	TlsConfig   *tls.Config  `json:"tlsConfig" form:"tlsConfig"`
 }
 
+// Context carries a Connection and the calling application's name through an
+// Adapter call, e.g. so ActiveQueries can filter by application_name.
 type Context struct {
 	Connection  *Connection `json:"connection"`
 	Application string      `json:"application"`
 }
 
+// Credentials authenticates a database Connection.
 type Credentials struct {
 	Username string `json:"username" form:"username"`
 	Password string `json:"password" form:"password"`
 }
 
+// QueryAnalysis is a shallow keyword-count analysis of a query, used to decide
+// whether it is safe to append a LIMIT clause (see postgres addLimitToQuery).
 type QueryAnalysis struct {
 	LIMIT     int
 	UPDATE    int
@@ -54,18 +63,22 @@ type QueryAnalysis struct {
 	Semicolon bool
 }
 
+// QueryOptions controls how GetFields runs and post-processes a query.
 type QueryOptions struct {
 	Params []any   `json:"params"`
 	Limit  *string `json:"limit"`
 	Trim   *bool   `json:"trim"`
 }
 
+// QueryField describes a single result column.
 type QueryField struct {
 	Name        string `json:"name"`
 	DataType    string `json:"dataType"`
 	DataTypeOID uint32 `json:"dataTypeOID"`
 }
 
+// QueryFields is the full result of a GetFields/ActiveQueries call: the
+// columns, the rows, and metadata about how/where the query ran.
 type QueryFields struct {
 	Fields    []QueryField  `json:"fields"`
 	Rows      [][]any       `json:"rows"`
@@ -75,6 +88,7 @@ type QueryFields struct {
 	Options   *QueryOptions `json:"options"`
 }
 
+// SystemRequestCategory groups a SystemRequest for display purposes.
 type SystemRequestCategory int8
 
 const (
@@ -85,6 +99,8 @@ const (
 	OTHER
 )
 
+// SystemRequestVariety flags a SystemRequest's applicability, e.g. whether it
+// only makes sense on the primary or needs a specific database selected.
 type SystemRequestVariety int8
 
 const (
@@ -93,6 +109,7 @@ const (
 	ReplicaRecommended
 )
 
+// SystemChartType identifies one of the built-in dashboard charts.
 type SystemChartType string
 
 const (
@@ -106,6 +123,8 @@ const (
 	TotalSize                      = "Total Size"
 )
 
+// SystemRequest is one built-in, ready-made query a database plugin ships,
+// shown to the user as a shortcut instead of writing the query by hand.
 type SystemRequest struct {
 	Name        string
 	Type        SystemRequestCategory

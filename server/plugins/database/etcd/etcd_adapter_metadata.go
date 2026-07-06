@@ -1,11 +1,29 @@
 package etcd
 
-import "ivory/plugins/database"
+import (
+	"ivory/core/config"
+	"ivory/plugins/database"
+)
 
 const DefaultAllKeys = `get "" --prefix --keys-only --limit 500`
 const DefaultMembers = `member list`
 const DefaultEndpointStatus = `endpoint status`
 const DefaultAlarms = `alarm list`
+
+func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
+	return map[env.Feature]bool{
+		env.ViewQueryDbInfo:        false,
+		env.ViewQueryDbChart:       false,
+		env.ManageQueryDbTemplate:  true,
+		env.ManageQueryDbConsole:   true,
+		env.ManageQueryDbCancel:    false,
+		env.ManageQueryDbTerminate: false,
+	}
+}
+
+func (a *Adapter) SystemCharts() map[database.SystemChartType]string {
+	return map[database.SystemChartType]string{}
+}
 
 func (a *Adapter) SystemRequests() []database.SystemRequest {
 	return []database.SystemRequest{
