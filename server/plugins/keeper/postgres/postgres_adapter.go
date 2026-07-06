@@ -15,6 +15,7 @@ import (
 var ErrNodeIsPrimary = errors.New("failover target must be a replica; this node is the primary")
 var ErrReloadFailed = errors.New("postgres refused to reload the configuration")
 var ErrPromoteRefused = errors.New("postgres refused to start the promotion")
+var ErrCredentialsRequired = errors.New("native postgres requires keeper credentials; add database password to keeper vault and configure it in your cluster")
 
 // requestTimeout bounds every keeper operation (connect + query), so an
 // unreachable node or a non-postgres port cannot hang the cluster overview.
@@ -170,6 +171,9 @@ func (a *Adapter) withConnection(request keeper.Request, action func(ctx context
 	if request.Credentials != nil {
 		username = request.Credentials.Username
 		password = request.Credentials.Password
+	}
+	if username == "" {
+		return ErrCredentialsRequired
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()

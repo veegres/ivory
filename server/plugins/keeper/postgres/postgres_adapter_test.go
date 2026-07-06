@@ -61,6 +61,20 @@ func TestMapNode(t *testing.T) {
 	}
 }
 
+func TestListRequiresCredentials(t *testing.T) {
+	adapter := NewAdapter()
+	request := keeper.Request{Host: "localhost", Port: 5432}
+
+	_, status, err := adapter.List(request)
+
+	if status != http.StatusBadRequest {
+		t.Errorf("expected status 400, got %d", status)
+	}
+	if !errors.Is(err, ErrCredentialsRequired) {
+		t.Errorf("expected ErrCredentialsRequired, got %v", err)
+	}
+}
+
 func TestUnsupportedOperations(t *testing.T) {
 	adapter := NewAdapter()
 	request := keeper.Request{}
