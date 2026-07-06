@@ -10,7 +10,7 @@ import (
 	"ivory/features/query"
 	"ivory/features/tag"
 	"ivory/tools"
-	"slices"
+	"maps"
 )
 
 var ErrClusterNameEmpty = errors.New("cluster name cannot be empty")
@@ -51,19 +51,20 @@ func NewService(
 	}
 }
 
-func (s *Service) getSupportedFeatures(k node.KeeperPlugin, db query.DbPlugin) []env.Feature {
-	fk := s.nodeService.SupportedFeatures(k)
-	fdb := s.queryService.SupportedFeatures(db)
-	ft := s.getToolSupportedFeatures(db)
-	return slices.Concat(fk, fdb, ft)
+func (s *Service) getSupportedFeatures(k node.KeeperPlugin, db query.DbPlugin) map[env.Feature]bool {
+	features := make(map[env.Feature]bool)
+	maps.Copy(features, s.nodeService.SupportedFeatures(k))
+	maps.Copy(features, s.queryService.SupportedFeatures(db))
+	maps.Copy(features, s.getToolSupportedFeatures(db))
+	return features
 }
 
-func (s *Service) getToolSupportedFeatures(db query.DbPlugin) []env.Feature {
-	allFeatures := make([]env.Feature, 0)
+func (s *Service) getToolSupportedFeatures(db query.DbPlugin) map[env.Feature]bool {
+	features := make(map[env.Feature]bool)
 	for _, tool := range s.toolRegistry.All() {
-		allFeatures = append(allFeatures, tool.SupportedFeatures(db)...)
+		maps.Copy(features, tool.SupportedFeatures(db))
 	}
-	return allFeatures
+	return features
 }
 
 func (s *Service) hasKeeper(k node.KeeperOneResponse) bool {

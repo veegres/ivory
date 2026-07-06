@@ -42,10 +42,10 @@ func NewService(
 	}
 }
 
-func (s *Service) SupportedFeatures(t keeper.Plugin) []env.Feature {
+func (s *Service) SupportedFeatures(t keeper.Plugin) map[env.Feature]bool {
 	c, e := s.keeperMetadataRegistry.Get(t)
 	if e != nil {
-		return []env.Feature{}
+		return map[env.Feature]bool{}
 	}
 	return c.SupportedFeatures()
 }

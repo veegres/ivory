@@ -7,7 +7,10 @@ import "ivory/core/config"
 // should be deployed. It is intentionally separate from Adapter so a plugin
 // without a management API yet (plain postgres) can still declare metadata.
 type Metadata interface {
-	SupportedFeatures() []env.Feature
+	// SupportedFeatures reports, for every keeper-related env.Feature this
+	// plugin knows about, whether it supports it. A feature absent from the
+	// map is not a keeper capability at all and is left unrestricted.
+	SupportedFeatures() map[env.Feature]bool
 	DeploymentSpec() DeploymentSpec
 }
 

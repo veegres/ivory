@@ -31,3 +31,7 @@ export function ErrorUserInfoMissing() {
 export function ErrorNoAccess({name}: {name: string}) {
     return <ErrorSmart error={`No access for ${name} feature, you can request permission in the settings`}/>
 }
+
+export function ErrorNotSupported({name}: {name: string}) {
+    return <ErrorSmart error={`The ${name} feature is not supported by the current cluster's plugins`}/>
+}

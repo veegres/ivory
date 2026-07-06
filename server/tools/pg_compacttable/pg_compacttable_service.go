@@ -49,16 +49,14 @@ func (s *Service) initializer() {
 	}
 }
 
-func (s *Service) SupportedFeatures(plugin env.Plugin) []env.Feature {
+func (s *Service) SupportedFeatures(plugin env.Plugin) map[env.Feature]bool {
 	// NOTE: pgcompacttable works only with postgres (pgstattuple based)
-	if plugin.String() != database.POSTGRES.String() {
-		return []env.Feature{}
-	}
-	return []env.Feature{
-		env.ViewToolPgCompactTableList,
-		env.ViewToolPgCompactTableItem,
-		env.ViewToolPgCompactTableLogs,
-		env.ManageToolPgCompactTableJob,
+	supported := plugin.String() == database.POSTGRES.String()
+	return map[env.Feature]bool{
+		env.ViewToolPgCompactTableList:  supported,
+		env.ViewToolPgCompactTableItem:  supported,
+		env.ViewToolPgCompactTableLogs:  supported,
+		env.ManageToolPgCompactTableJob: supported,
 	}
 }
 

@@ -35,7 +35,10 @@ type SessionManager interface {
 }
 
 type MetadataProvider interface {
-	SupportedFeatures() []env.Feature
+	// SupportedFeatures reports, for every db-related env.Feature this plugin
+	// knows about, whether it supports it. A feature absent from the map is
+	// not a database capability at all and is left unrestricted.
+	SupportedFeatures() map[env.Feature]bool
 	SystemRequests() []SystemRequest
 	SystemCharts() map[SystemChartType]string
 }

@@ -52,7 +52,9 @@ export interface Vaults {
 
 export interface Overview {
     nodes: NodeOverview,
-    features: Feature[],
+    // NOTE: a feature absent from the map is not a plugin capability at all
+    // and should be treated as unrestricted, only `false` means unsupported
+    features: Partial<Record<Feature, boolean>>,
 }
 
 export interface ImageConfig {

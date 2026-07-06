@@ -61,8 +61,8 @@ type Node struct {
 }
 
 type Overview struct {
-	Nodes    map[string]Node `json:"nodes"`
-	Features []env.Feature   `json:"features"`
+	Nodes    map[string]Node      `json:"nodes"`
+	Features map[env.Feature]bool `json:"features"`
 }
 
 type CreateAutoRequest struct {

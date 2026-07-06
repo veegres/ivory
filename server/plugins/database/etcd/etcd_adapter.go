@@ -31,10 +31,14 @@ func NewAdapter() *Adapter {
 	return &Adapter{}
 }
 
-func (a *Adapter) SupportedFeatures() []env.Feature {
-	return []env.Feature{
-		env.ManageQueryDbConsole,
-		env.ManageQueryDbTemplate,
+func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
+	return map[env.Feature]bool{
+		env.ViewQueryDbInfo:        false,
+		env.ViewQueryDbChart:       false,
+		env.ManageQueryDbTemplate:  true,
+		env.ManageQueryDbConsole:   true,
+		env.ManageQueryDbCancel:    false,
+		env.ManageQueryDbTerminate: false,
 	}
 }
 

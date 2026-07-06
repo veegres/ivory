@@ -161,14 +161,16 @@ func TestNotSupportedOperations(t *testing.T) {
 func TestSupportedFeaturesExclusions(t *testing.T) {
 	features := NewAdapter().SupportedFeatures()
 
-	expected := []env.Feature{env.ManageQueryDbConsole, env.ManageQueryDbTemplate}
-	if !slices.Equal(features, expected) {
-		t.Fatalf("expected features %v, got %v", expected, features)
+	supported := []env.Feature{env.ManageQueryDbConsole, env.ManageQueryDbTemplate}
+	for _, feature := range supported {
+		if !features[feature] {
+			t.Errorf("feature %v must be supported for etcd", feature)
+		}
 	}
 
 	excluded := []env.Feature{env.ViewQueryDbInfo, env.ViewQueryDbChart, env.ManageQueryDbCancel, env.ManageQueryDbTerminate}
 	for _, feature := range excluded {
-		if slices.Contains(features, feature) {
+		if features[feature] {
 			t.Errorf("feature %v must not be supported for etcd", feature)
 		}
 	}

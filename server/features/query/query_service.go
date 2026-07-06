@@ -54,10 +54,10 @@ func (s *Service) GetApplicationName(session string) string {
 	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *Service) SupportedFeatures(t database.Plugin) []env.Feature {
+func (s *Service) SupportedFeatures(t database.Plugin) map[env.Feature]bool {
 	c, e := s.databaseRegistry.Get(t)
 	if e != nil {
-		return []env.Feature{}
+		return map[env.Feature]bool{}
 	}
 	return c.SupportedFeatures()
 }
