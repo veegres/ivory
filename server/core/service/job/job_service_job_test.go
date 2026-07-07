@@ -92,7 +92,7 @@ func TestJob_Run_Success(t *testing.T) {
 	}
 
 	job := NewJob(cmd, storage)
-	ch, ok := job.addSubscriber("sub-1")
+	sub, ok := job.addSubscriber("sub-1")
 	if !ok {
 		t.Fatal("expected subscriber to be added")
 	}
@@ -105,7 +105,7 @@ func TestJob_Run_Success(t *testing.T) {
 	}()
 
 	var received []Message
-	for msg := range ch {
+	for msg := range sub.Messages {
 		received = append(received, msg)
 	}
 
@@ -158,7 +158,7 @@ func TestJob_Run_StartError(t *testing.T) {
 	}
 
 	job := NewJob(cmd, nil)
-	ch, ok := job.addSubscriber("sub-1")
+	sub, ok := job.addSubscriber("sub-1")
 	if !ok {
 		t.Fatal("expected subscriber to be added")
 	}
@@ -171,7 +171,7 @@ func TestJob_Run_StartError(t *testing.T) {
 	}()
 
 	var received []Message
-	for msg := range ch {
+	for msg := range sub.Messages {
 		received = append(received, msg)
 	}
 	wg.Wait()
@@ -203,7 +203,7 @@ func TestJob_Run_Stop(t *testing.T) {
 	}
 
 	job := NewJob(cmd, nil)
-	ch, ok := job.addSubscriber("sub-1")
+	sub, ok := job.addSubscriber("sub-1")
 	if !ok {
 		t.Fatal("expected subscriber to be added")
 	}
@@ -223,7 +223,7 @@ func TestJob_Run_Stop(t *testing.T) {
 	}
 
 	var received []Message
-	for msg := range ch {
+	for msg := range sub.Messages {
 		received = append(received, msg)
 	}
 	wg.Wait()
@@ -273,12 +273,85 @@ func TestJob_AddSubscriber_FailsWhenJobFinished(t *testing.T) {
 	job := NewJob(cmd, nil)
 	job.setStatus(FINISHED)
 
-	ch, ok := job.addSubscriber("sub-1")
+	sub, ok := job.addSubscriber("sub-1")
 	if ok {
 		t.Fatal("expected subscriber add to fail for finished job")
 	}
-	if ch != nil {
-		t.Fatal("expected nil channel for failed subscriber add")
+	if sub != nil {
+		t.Fatal("expected nil subscription for failed subscriber add")
+	}
+}
+
+func TestJob_AddSubscriber_ReplacesAndClosesSupersededChannel(t *testing.T) {
+	cmd := &MockCommand{id: "test-job-resubscribe"}
+	job := NewJob(cmd, nil)
+	job.setStatus(RUNNING)
+
+	first, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected first subscribe to succeed")
+	}
+
+	second, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected second subscribe under the same id to succeed")
+	}
+
+	if _, open := <-first.Messages; open {
+		t.Fatal("expected the superseded channel to be closed")
+	}
+	if job.subscribers["sub-1"] != second.ch {
+		t.Fatal("expected the registered channel to be the newest one")
+	}
+}
+
+func TestSubscription_Close_IgnoresSupersededSubscription(t *testing.T) {
+	cmd := &MockCommand{id: "test-job-remove-superseded"}
+	job := NewJob(cmd, nil)
+	job.setStatus(RUNNING)
+
+	first, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected first subscribe to succeed")
+	}
+	second, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected second subscribe to succeed")
+	}
+
+	// The first subscription's Close must not tear down the newer,
+	// still-active subscription that replaced it under the same id.
+	first.Close()
+
+	if job.subscribers["sub-1"] != second.ch {
+		t.Fatal("expected the current subscriber channel to remain registered")
+	}
+	select {
+	case _, open := <-second.Messages:
+		if !open {
+			t.Fatal("expected the current subscriber channel to still be open")
+		}
+	default:
+	}
+}
+
+func TestSubscription_Close_RemovesOwnSubscription(t *testing.T) {
+	cmd := &MockCommand{id: "test-job-unsubscribe-own"}
+	job := NewJob(cmd, nil)
+	job.setStatus(RUNNING)
+
+	sub, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected subscribe to succeed")
+	}
+
+	sub.Close()
+
+	if _, exists := job.subscribers["sub-1"]; exists {
+		t.Fatal("expected the subscriber entry to be removed")
+	}
+	if _, open := <-sub.Messages; open {
+		t.Fatal("expected the channel to be closed")
 	}
 }
 

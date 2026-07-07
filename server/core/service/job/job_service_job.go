@@ -177,22 +177,26 @@ func (j *Job) close() {
 	}
 }
 
-func (j *Job) addSubscriber(id SubscriberID) (chan Message, bool) {
+func (j *Job) addSubscriber(id SubscriberID) (*Subscription, bool) {
 	j.mu.Lock()
 	defer j.mu.Unlock()
 	if j.status != PENDING && j.status != RUNNING {
 		return nil, false
 	}
 
+	if old, exists := j.subscribers[id]; exists {
+		close(old)
+	}
+
 	channel := make(chan Message, 256)
 	j.subscribers[id] = channel
-	return channel, true
+	return &Subscription{Messages: channel, job: j, id: id, ch: channel}, true
 }
 
-func (j *Job) removeSubscriber(id SubscriberID) {
+func (j *Job) removeSubscriber(id SubscriberID, ch chan Message) {
 	j.mu.Lock()
-	if ch, ok := j.subscribers[id]; ok {
-		close(ch)
+	if current, exists := j.subscribers[id]; exists && current == ch {
+		close(current)
 		delete(j.subscribers, id)
 	}
 	j.mu.Unlock()

@@ -82,19 +82,19 @@ func (s *Service) Stream(id JobID, subID SubscriberID, close <-chan struct{}, se
 	//  new subscription, leading to missing log lines for the user.
 
 	// 2. Subscribe to live job if it's running
-	live, err := s.Subscribe(id, subID)
+	sub, err := s.Subscribe(id, subID)
 	if err != nil {
 		send(Message{Type: SERVER, Message: "streaming from the console error: " + err.Error()})
 		return
 	}
-	defer s.Unsubscribe(id, subID)
+	defer sub.Close()
 	send(Message{Type: SERVER, Message: "streaming from the console started"})
 loop:
 	for {
 		select {
 		case <-close:
 			break loop
-		case event, ok := <-live:
+		case event, ok := <-sub.Messages:
 			if !ok {
 				break loop
 			}
@@ -116,26 +116,18 @@ func (s *Service) Stop(id JobID) error {
 	return job.Stop()
 }
 
-// Subscribe attaches a subscriber to a running job.
-func (s *Service) Subscribe(id JobID, subscriberID SubscriberID) (<-chan Message, error) {
+// Subscribe attaches a subscriber to a running job. Call sub.Close() (typically
+// via defer) once the caller is done reading from sub.Messages.
+func (s *Service) Subscribe(id JobID, subscriberID SubscriberID) (*Subscription, error) {
 	job, ok := s.getJob(id)
 	if !ok {
 		return nil, fmt.Errorf("job %s not found", id)
 	}
-	ch, ok := job.addSubscriber(subscriberID)
+	sub, ok := job.addSubscriber(subscriberID)
 	if !ok {
 		return nil, fmt.Errorf("job %s is not running", id)
 	}
-	return ch, nil
-}
-
-// Unsubscribe detaches a subscriber from a job without stopping it.
-func (s *Service) Unsubscribe(id JobID, subscriberID SubscriberID) {
-	job, ok := s.getJob(id)
-	if !ok {
-		return
-	}
-	job.removeSubscriber(subscriberID)
+	return sub, nil
 }
 
 func (s *Service) Status(id JobID) Status {

@@ -7,6 +7,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // containerCpuScale is an arbitrary fixed-point scale used to encode docker's
@@ -123,12 +124,50 @@ func (a *Adapter) normalizeDockerCommand(command string) string {
 }
 
 func shellQuoteFields(value string) []string {
-	fields := strings.Fields(value)
+	fields := splitShellFields(value)
 	quoted := make([]string, 0, len(fields))
 	for _, field := range fields {
 		quoted = append(quoted, shellQuote(field))
 	}
 	return quoted
+}
+
+// splitShellFields splits a docker options string into individual arguments,
+// honoring single/double-quoted spans the way a real shell would, so a flag
+// value like `-e SCOPE="my cluster"` (as produced by RenderOptions for an env
+// value) stays one argument instead of being broken apart at the space inside
+// the quotes.
+func splitShellFields(value string) []string {
+	fields := make([]string, 0)
+	var current strings.Builder
+	hasToken := false
+	var quote rune
+	for _, r := range value {
+		switch {
+		case quote != 0:
+			if r == quote {
+				quote = 0
+			} else {
+				current.WriteRune(r)
+			}
+		case r == '\'' || r == '"':
+			quote = r
+			hasToken = true
+		case unicode.IsSpace(r):
+			if hasToken {
+				fields = append(fields, current.String())
+				current.Reset()
+				hasToken = false
+			}
+		default:
+			current.WriteRune(r)
+			hasToken = true
+		}
+	}
+	if hasToken {
+		fields = append(fields, current.String())
+	}
+	return fields
 }
 
 func (a *Adapter) parseContainerMetrics(output string) (*platform.Metrics, error) {

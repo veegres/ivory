@@ -94,6 +94,45 @@ describe("useStream", () => {
         expect(result.current.response).toContain("[browser] trying to reestablish connection")
     })
 
+    it("should give up and close the connection after repeated consecutive errors", () => {
+        const {result} = renderHook(() => useStream("/stream"))
+        const source = MockEventSource.instances[0]
+
+        act(() => source.onopen?.())
+        act(() => source.onerror?.())
+        act(() => source.onerror?.())
+        act(() => source.onerror?.())
+
+        expect(source.closed).toBe(true)
+        expect(result.current.response).toContain("[browser] connection failed repeatedly, giving up")
+    })
+
+    it("should reset the error count after a successful reconnect", () => {
+        const {result} = renderHook(() => useStream("/stream"))
+        const source = MockEventSource.instances[0]
+
+        act(() => source.onopen?.())
+        act(() => source.onerror?.())
+        act(() => source.onerror?.())
+        act(() => source.onopen?.())
+        act(() => source.onerror?.())
+
+        expect(source.closed).toBe(false)
+        expect(result.current.response).not.toContain("[browser] connection failed repeatedly, giving up")
+    })
+
+    it("should respect a custom maxConsecutiveErrors option", () => {
+        const {result} = renderHook(() => useStream("/stream", {maxConsecutiveErrors: 2}))
+        const source = MockEventSource.instances[0]
+
+        act(() => source.onopen?.())
+        act(() => source.onerror?.())
+        act(() => source.onerror?.())
+
+        expect(source.closed).toBe(true)
+        expect(result.current.response).toContain("[browser] connection failed repeatedly, giving up")
+    })
+
     it("should open a fresh connection when reconnect is called", async () => {
         const {result} = renderHook(() => useStream("/stream"))
 

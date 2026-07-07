@@ -164,12 +164,13 @@ func (s *Service) start(model *Response) {
 func (s *Service) updateJobStatus(jobUuid uuid.UUID, jobID job.JobID) {
 	subscriberID := job.SubscriberID("pg_compacttable_updater")
 
-	channel, errSubscribe := s.jobManager.Subscribe(jobID, subscriberID)
-	if errSubscribe != nil || channel == nil {
+	sub, errSubscribe := s.jobManager.Subscribe(jobID, subscriberID)
+	if errSubscribe != nil {
 		return
 	}
+	defer sub.Close()
 
-	for event := range channel {
+	for event := range sub.Messages {
 		model, errGet := s.bloatRepository.Get(jobUuid)
 		if errGet != nil {
 			continue
@@ -182,8 +183,6 @@ func (s *Service) updateJobStatus(jobUuid uuid.UUID, jobID job.JobID) {
 		default:
 		}
 	}
-
-	s.jobManager.Unsubscribe(jobID, subscriberID)
 }
 
 func (s *Service) parseStatus(value string) job.Status {

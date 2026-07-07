@@ -161,6 +161,9 @@ func parseKeyCommand(v verb, args []string, positional int, flags []string) (*co
 	if len(positionals) > positional {
 		return nil, fmt.Errorf("%w: %q", ErrUnexpectedArgument, positionals[positional])
 	}
+	if len(positionals) == 0 {
+		return nil, fmt.Errorf("%w: %s expects at least 1 argument(s)", ErrMissingArgument, v)
+	}
 
 	cmd.Key = positionals[0]
 	if positional > 1 {

@@ -50,6 +50,8 @@ func (c *Client) Command(con Connection, command string) *Command {
 	}
 }
 
+// credentialHash is a cache-key fingerprint for cachedClients, not a password store,
+// so a fast hash is fine here; it only needs to avoid keying the map on a raw secret.
 func credentialHash(password string, privateKey *ed25519.PrivateKey) string {
 	h := sha256.New()
 	h.Write([]byte(password))

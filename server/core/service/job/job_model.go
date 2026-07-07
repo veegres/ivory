@@ -57,3 +57,18 @@ type Message struct {
 	Timestamp time.Time
 	Message   string
 }
+
+// Subscription is a live attachment to a Job's message stream. Close detaches
+// it; safe to call even if a newer subscription has since replaced this one
+// under the same SubscriberID (e.g. a reconnect), in which case it's a no-op.
+type Subscription struct {
+	Messages <-chan Message
+
+	job *Job
+	id  SubscriberID
+	ch  chan Message
+}
+
+func (s *Subscription) Close() {
+	s.job.removeSubscriber(s.id, s.ch)
+}

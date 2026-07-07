@@ -79,7 +79,7 @@ export function ContainerOverviewDeploy(props: Props) {
 
     function renderActions() {
         return (
-            <Button loading={up.isPending} onClick={handleAction} disabled={!image}>
+            <Button loading={up.isPending} onClick={handleAction} disabled={!image || !cluster.vaults.databaseId || !cluster.vaults.sshKeyId}>
                 Deploy
             </Button>
         )
@@ -211,14 +211,14 @@ export function ContainerOverviewDeploy(props: Props) {
     }
 
     function handleAction() {
-        if (!image) return
+        if (!image || !cluster.vaults.databaseId || !cluster.vaults.sshKeyId) return
         up.mutate({
             connection,
             name: connection.host,
             image: image.uri,
             vaults: {
-                databaseId: cluster.vaults.databaseId ?? "",
-                sshKeyId: cluster.vaults.sshKeyId ?? "",
+                databaseId: cluster.vaults.databaseId,
+                sshKeyId: cluster.vaults.sshKeyId,
             },
             imageOptions: {
                 cluster: cluster.name,

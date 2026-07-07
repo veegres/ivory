@@ -100,16 +100,16 @@ func (s *Service) deployNode(r DeployRequest, cluster Request, n NodeConfig, log
 	nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 	options := r.NodeRawImageOptions[nodeKey]
 
+	if n.Host == "" {
+		logsSend(nodeKey, fmt.Sprintf("deployment failed: host not provided for node"))
+		return
+	}
 	if n.SshPort == nil {
 		logsSend(nodeKey, fmt.Sprintf("deployment failed: ssh port not provided for node"))
 		return
 	}
 	if cluster.Vaults.SshKeyId == nil {
 		logsSend(nodeKey, fmt.Sprintf("deployment failed: ssh key id not provided for node"))
-		return
-	}
-	if n.KeeperPort == nil {
-		logsSend(nodeKey, fmt.Sprintf("deployment failed: keeper port not provided for node"))
 		return
 	}
 	if n.KeeperPort == nil {
