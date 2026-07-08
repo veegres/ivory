@@ -42,6 +42,10 @@ func (r *Router) GetClusterOverview(context *gin.Context) {
 	host := context.Query("host")
 	port := context.Query("port")
 
+	// NOTE: we need here default value because it is the same as empty string
+	if port == "" {
+		port = "0"
+	}
 	parsedPort, err := strconv.Atoi(port)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
