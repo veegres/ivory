@@ -5,6 +5,7 @@ import {
     ButtonGroup,
     ClickAwayListener,
     MenuItem,
+    MenuList,
     Paper,
     Popper,
     SxProps,
@@ -68,13 +69,13 @@ export function Refresher(props: Props) {
             <Popper sx={SX.popper} open={open} anchorEl={anchorRef.current} placement={"bottom"}>
                 <Paper>
                     <ClickAwayListener onClickAway={() => setOpen(false)}>
-                        <Box sx={SX.select} onClick={() => setOpen(false)}>
+                        <MenuList sx={SX.select} onClick={() => setOpen(false)}>
                             {periods.map(([label, ms]) => (
                                 <MenuItem key={label} sx={SX.item} onClick={() => handleClick(label, ms)}>
                                     {label}
                                 </MenuItem>
                             ))}
-                        </Box>
+                        </MenuList>
                     </ClickAwayListener>
                 </Paper>
             </Popper>
