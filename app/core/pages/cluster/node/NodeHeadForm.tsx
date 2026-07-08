@@ -4,6 +4,7 @@ import {useState} from "react"
 import {Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
 import {KeeperState, KeeperStatus} from "../../../../features/node/api/NodeType"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
+import {InfoStatusItem, InfoStatusList} from "../../../../shared/component/box/InfoStatusList"
 import {CancelIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {SizeFormatter} from "../../../../shared/helper/HelperUtils"
@@ -15,16 +16,7 @@ const SX: SxPropsMap = {
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 1.5,
         alignItems: "center", flex: 1,
     },
-    statusContainer: {
-        display: "flex", flexWrap: "wrap", gap: "8px 30px", alignItems: "center",
-        width: "100%", padding: "0px 10px"
-    },
     actions: {display: "flex", flexDirection: "column", height: "100%"},
-    item: {display: "flex", flexDirection: "column", gap: 0.25, fontSize: "0.75rem", fontWeight: "bold", flex: "1 0 70px"},
-    title: {
-        color: "text.disabled", fontSize: "0.7rem", textTransform: "uppercase",
-        letterSpacing: "0.05em", whiteSpace: "nowrap",
-    },
     tags: {display: "flex", gap: 0.5},
 }
 
@@ -68,14 +60,14 @@ export function NodeHeadForm(props: Props) {
                     {renderItem("Database", node.config.dbPort, "dbPort", "number")}
                     {renderItem("SSH", node.config.sshPort, "sshPort", "number")}
                 </Box>
-                <Box sx={SX.statusContainer}>
+                <InfoStatusList>
                     {renderStatusItem("State", stateStr, stateColor)}
                     {renderStatusItem("Lag", lagValue, lagColor)}
                     {renderStatusItem("Pending Restart", pendingText, pendingColor)}
                     {renderStatusItem("Scheduled Restart", restartText, restartColor)}
                     {renderStatusItem("Scheduled Switchover", switchText, switchColor)}
                     {renderTagsItem()}
-                </Box>
+                </InfoStatusList>
             </Box>
             {renderActions()}
         </Box>
@@ -101,10 +93,9 @@ export function NodeHeadForm(props: Props) {
 
     function renderStatusItem(label: string, text: string, color: "success" | "warning" | "error" | "info" | "secondary" | "default") {
         return (
-            <Box sx={SX.item}>
-                <Box sx={SX.title}>{label}</Box>
+            <InfoStatusItem label={label}>
                 <InfoColorBox label={text} color={color} dot={true}/>
-            </Box>
+            </InfoStatusItem>
         )
     }
 
@@ -112,8 +103,7 @@ export function NodeHeadForm(props: Props) {
         const tagsEntries = node.keeper.tags ? Object.entries(node.keeper.tags) : []
 
         return (
-            <Box sx={SX.item}>
-                <Box sx={SX.title}>Tags</Box>
+            <InfoStatusItem label={"Tags"}>
                 <Box sx={SX.tags}>
                     {tagsEntries.length === 0 ? (
                         <InfoColorBox label={"None"} dot={true}/>
@@ -121,7 +111,7 @@ export function NodeHeadForm(props: Props) {
                         <InfoColorBox key={key} label={`${key}: ${value}`} color={"info"}/>
                     ))}
                 </Box>
-            </Box>
+            </InfoStatusItem>
         )
     }
 

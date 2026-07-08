@@ -10,7 +10,7 @@ import {getPlatformConnection, getQueryConnection} from "../../../../shared/help
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {Refresher} from "../../../widgets/browser/Refresher"
 import {NODE_TABS} from "./NodeMainTabs"
-import {NodeMainTitle} from "./NodeMainTitle"
+import {NodeMainTabsHead} from "./NodeMainTabsHead"
 
 const SX: SxPropsMap = {
     main: {
@@ -36,7 +36,7 @@ export function NodeMain(props: Props) {
 
     return (
         <Box sx={SX.main}>
-            <NodeMainTitle info={info} tab={tab} renderActions={renderActions()}/>
+            <NodeMainTabsHead info={info} tab={tab} renderActions={renderActions()}/>
             {body(cluster, node)}
         </Box>
     )

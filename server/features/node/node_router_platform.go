@@ -18,6 +18,10 @@ func (r *Router) GetPlatformProcesses(context *gin.Context) {
 	handlePlatformParamRequest(context, r.service.PlatformVmProcesses)
 }
 
+func (r *Router) GetPlatformInfo(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformVmInfo)
+}
+
 func (r *Router) GetPlatformContainerDeployOptions(context *gin.Context) {
 	handlePlatformParamRequest(context, r.service.PlatformContainerDeployOptions)
 }

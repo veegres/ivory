@@ -7,6 +7,7 @@ import {
     PlatformActionRequest,
     PlatformDeployOptions,
     PlatformDeployOptionsRequest,
+    PlatformInfoResponse,
     PlatformLogsRequest,
     PlatformMetricsResponse,
     PlatformProcessesResponse,
@@ -87,6 +88,11 @@ export const NodeApi = {
     processes: {
         key: (host: string) => ["node", "platform", "processes", host],
         fn: (request: PlatformVaultConnection) => api.get<R<PlatformProcessesResponse>>("/node/platform/processes", {params: {request: JSON.stringify(request)}})
+            .then((response) => response.data.response),
+    },
+    info: {
+        key: (host: string) => ["node", "platform", "info", host],
+        fn: (request: PlatformVaultConnection) => api.get<R<PlatformInfoResponse>>("/node/platform/info", {params: {request: JSON.stringify(request)}})
             .then((response) => response.data.response),
     },
     deployment: {

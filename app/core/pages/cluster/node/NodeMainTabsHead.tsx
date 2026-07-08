@@ -20,7 +20,7 @@ type Props = {
     renderActions?: ReactNode,
 }
 
-export function NodeMainTitle(props: Props) {
+export function NodeMainTabsHead(props: Props) {
     const {tab, info, renderActions} = props
     const [alert, setAlert] = useState(false)
     const {setNodeBody} = useStoreAction

@@ -178,6 +178,15 @@ export interface Process {
 
 export type PlatformProcessesResponse = Process[]
 
+export interface InfoItem {
+    key: string,
+    value: string,
+}
+
+export type PlatformInfoResponse = InfoItem[]
+
+export type PlatformInfoRequest = PlatformVaultConnection
+
 // SPECIFIC (WEB)
 
 export enum NodeTabType {DATABASE, CONTAINER, KEEPER, TOOLS, PLATFORM}

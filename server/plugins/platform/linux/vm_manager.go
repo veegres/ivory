@@ -10,6 +10,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const MetricsCommand = `sh -c '
@@ -18,6 +19,38 @@ echo __IVORY_MEM__; grep -E "MemTotal|MemAvailable" /proc/meminfo;
 echo __IVORY_NET__; cat /proc/net/dev'`
 
 const ProcessesCommand = `ps -eo pid,user,pcpu,pmem,rss,nlwp,comm,args --no-headers --sort=-pcpu | head -n 100`
+
+const InfoCommand = `sh -c '
+echo __IVORY_HOST__;
+printf "product_name=%s\n" "$(cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null)";
+printf "product_family=%s\n" "$(cat /sys/devices/virtual/dmi/id/product_family 2>/dev/null)";
+printf "hostname=%s\n" "$(hostname)";
+echo __IVORY_OS__; cat /etc/os-release 2>/dev/null;
+echo __IVORY_KERNEL__; uname -sr;
+echo __IVORY_UPTIME__; cat /proc/uptime;
+echo __IVORY_CPU__; grep -m1 "model name" /proc/cpuinfo; grep -c ^processor /proc/cpuinfo;
+echo __IVORY_GPU__;
+gpu_line="$(lspci -D 2>/dev/null | grep -i vga | head -n1)";
+printf "name=%s\n" "$gpu_line";
+gpu_addr="${gpu_line%% *}";
+printf "addr=%s\n" "$gpu_addr";
+gpu_dir="/sys/bus/pci/devices/$gpu_addr";
+freq="$(cat "$gpu_dir/tile0/gt0/freq0/max_freq" 2>/dev/null)";
+if [ -z "$freq" ]; then drm_card="$(ls "$gpu_dir/drm" 2>/dev/null | grep "^card" | head -n1)"; freq="$(cat "$gpu_dir/drm/$drm_card/gt_max_freq_mhz" 2>/dev/null)"; fi;
+printf "freq_mhz=%s\n" "$freq";
+echo __IVORY_MEM__; grep MemTotal /proc/meminfo;
+echo __IVORY_SWAP__; grep SwapTotal /proc/meminfo;
+echo __IVORY_DISK__; df -Pk / | tail -n 1;
+echo __IVORY_IP__; hostname -I 2>/dev/null;
+echo __IVORY_LOCALE__; locale 2>/dev/null | grep ^LANG='`
+
+var metricsSectionKeys = []string{"__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__"}
+
+var infoSectionKeys = []string{
+	"__IVORY_HOST__", "__IVORY_OS__", "__IVORY_KERNEL__", "__IVORY_UPTIME__",
+	"__IVORY_CPU__", "__IVORY_GPU__", "__IVORY_MEM__", "__IVORY_SWAP__",
+	"__IVORY_DISK__", "__IVORY_IP__", "__IVORY_LOCALE__",
+}
 
 var ErrInvalidPublicKey = errors.New("public key cannot be empty or contain newlines")
 
@@ -72,6 +105,14 @@ func (a *Adapter) Processes(connection platform.Connection) ([]platform.Process,
 	return a.parseProcesses(result)
 }
 
+func (a *Adapter) Info(connection platform.Connection) ([]platform.InfoItem, error) {
+	result, err := a.execute(connection, InfoCommand)
+	if err != nil {
+		return nil, err
+	}
+	return a.parseInfo(strings.Join(result, "\n")), nil
+}
+
 func (a *Adapter) execute(connection platform.Connection, command string) ([]string, error) {
 	cmd := a.sshClient.Command(a.mapToSshCommand(connection), command)
 	return cmd.Execute()
@@ -100,9 +141,9 @@ func shellQuote(value string) string {
 }
 
 func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
-	sections := a.splitMetricsOutput(output)
+	sections := a.splitSections(output, metricsSectionKeys)
 
-	for _, key := range []string{"__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__"} {
+	for _, key := range metricsSectionKeys {
 		if _, ok := sections[key]; !ok {
 			return nil, fmt.Errorf("metrics output missing section %q", key)
 		}
@@ -128,14 +169,20 @@ func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
 	}, nil
 }
 
-func (a *Adapter) splitMetricsOutput(output string) map[string][]string {
+// splitSections splits sentinel-marked command output (each section preceded
+// by one of keys on its own line) into per-section lines.
+func (a *Adapter) splitSections(output string, keys []string) map[string][]string {
+	markers := make(map[string]bool, len(keys))
+	for _, key := range keys {
+		markers[key] = true
+	}
+
 	sections := map[string][]string{}
 	current := ""
 
 	for line := range strings.SplitSeq(output, "\n") {
 		trimmed := strings.TrimSpace(line)
-		switch trimmed {
-		case "__IVORY_CPU__", "__IVORY_MEM__", "__IVORY_NET__":
+		if markers[trimmed] {
 			current = trimmed
 			continue
 		}
@@ -196,19 +243,7 @@ func (a *Adapter) parseMemoryMetrics(lines []string) (platform.MemoryMetrics, er
 		return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 	}
 
-	values := make(map[string]uint64)
-	for _, line := range lines {
-		fields := strings.Fields(line)
-		if len(fields) < 2 {
-			return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
-		}
-		value, err := strconv.ParseUint(fields[1], 10, 64)
-		if err != nil {
-			return platform.MemoryMetrics{}, err
-		}
-		values[strings.TrimSuffix(fields[0], ":")] = value * 1024
-	}
-
+	values := a.parseMeminfoFields(lines)
 	total := values["MemTotal"]
 	available := values["MemAvailable"]
 	if total == 0 {
@@ -219,6 +254,25 @@ func (a *Adapter) parseMemoryMetrics(lines []string) (platform.MemoryMetrics, er
 		TotalBytes:     total,
 		AvailableBytes: available,
 	}, nil
+}
+
+// parseMeminfoFields extracts numeric fields (in bytes) from /proc/meminfo-style
+// "Key: value kB" lines. Unparsable lines are skipped rather than failing,
+// since callers apply their own strictness on top (e.g. requiring MemTotal).
+func (a *Adapter) parseMeminfoFields(lines []string) map[string]uint64 {
+	values := make(map[string]uint64, len(lines))
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+		value, err := strconv.ParseUint(fields[1], 10, 64)
+		if err != nil {
+			continue
+		}
+		values[strings.TrimSuffix(fields[0], ":")] = value * 1024
+	}
+	return values
 }
 
 func (a *Adapter) parseNetworkMetrics(lines []string) (platform.NetworkMetrics, error) {
@@ -312,4 +366,270 @@ func (a *Adapter) parseProcesses(lines []string) ([]platform.Process, error) {
 	}
 
 	return processes, nil
+}
+
+// parseInfo is best-effort: it is a display-only inventory, so a missing or
+// unparsable section is simply omitted rather than failing the whole call.
+func (a *Adapter) parseInfo(output string) []platform.InfoItem {
+	sections := a.splitSections(output, infoSectionKeys)
+
+	items := make([]platform.InfoItem, 0, len(infoSectionKeys))
+	add := func(key, value string) {
+		if value == "" {
+			return
+		}
+		items = append(items, platform.InfoItem{Key: key, Value: value})
+	}
+
+	add("Host", a.parseHost(sections["__IVORY_HOST__"]))
+	add("OS", a.parseOsRelease(sections["__IVORY_OS__"]))
+	add("Kernel", a.firstLine(sections["__IVORY_KERNEL__"]))
+	add("Uptime", a.parseUptime(sections["__IVORY_UPTIME__"]))
+	cpu, cores := a.parseCpuInfo(sections["__IVORY_CPU__"])
+	add("CPU", cpu)
+	add("CPU Cores", cores)
+	add("GPU", a.parseGpu(sections["__IVORY_GPU__"]))
+	add("Memory", a.parseMeminfoTotal(sections["__IVORY_MEM__"], "MemTotal"))
+	add("Swap", a.parseMeminfoTotal(sections["__IVORY_SWAP__"], "SwapTotal"))
+	add("Disk", a.parseDiskSummary(sections["__IVORY_DISK__"]))
+	add("Local IP", a.parseLocalIp(sections["__IVORY_IP__"]))
+	add("Locale", a.parseLocale(sections["__IVORY_LOCALE__"]))
+
+	return items
+}
+
+func (a *Adapter) firstLine(lines []string) string {
+	if len(lines) == 0 {
+		return ""
+	}
+	return lines[0]
+}
+
+// parseHost prefers the DMI-reported hardware model ("<product_name>
+// (<product_family>)", e.g. "21KDA04PCD (ThinkPad X1 Carbon Gen 12)") and
+// falls back to the network hostname when DMI data isn't available (e.g.
+// inside a VM/container without access to /sys/devices/virtual/dmi).
+func (a *Adapter) parseHost(lines []string) string {
+	var productName, productFamily, hostname string
+	for _, line := range lines {
+		if value, ok := strings.CutPrefix(line, "product_name="); ok {
+			productName = strings.TrimSpace(value)
+			continue
+		}
+		if value, ok := strings.CutPrefix(line, "product_family="); ok {
+			productFamily = strings.TrimSpace(value)
+			continue
+		}
+		if value, ok := strings.CutPrefix(line, "hostname="); ok {
+			hostname = strings.TrimSpace(value)
+		}
+	}
+
+	if productName == "" {
+		return hostname
+	}
+	if productFamily == "" || productFamily == productName {
+		return productName
+	}
+	return fmt.Sprintf("%s (%s)", productName, productFamily)
+}
+
+func (a *Adapter) parseOsRelease(lines []string) string {
+	for _, line := range lines {
+		if name, ok := strings.CutPrefix(line, "PRETTY_NAME="); ok {
+			return strings.Trim(name, `"`)
+		}
+	}
+	return ""
+}
+
+func (a *Adapter) parseUptime(lines []string) string {
+	if len(lines) == 0 {
+		return ""
+	}
+	fields := strings.Fields(lines[0])
+	if len(fields) == 0 {
+		return ""
+	}
+	seconds, err := strconv.ParseFloat(fields[0], 64)
+	if err != nil {
+		return ""
+	}
+
+	d := time.Duration(seconds) * time.Second
+	days := int(d.Hours()) / 24
+	hours := int(d.Hours()) % 24
+	minutes := int(d.Minutes()) % 60
+	switch {
+	case days > 0:
+		return fmt.Sprintf("%dd %dh %dm", days, hours, minutes)
+	case hours > 0:
+		return fmt.Sprintf("%dh %dm", hours, minutes)
+	default:
+		return fmt.Sprintf("%dm", minutes)
+	}
+}
+
+// parseCpuInfo reads the two lines produced by `grep -m1 "model name"` and
+// `grep -c ^processor` against /proc/cpuinfo.
+func (a *Adapter) parseCpuInfo(lines []string) (model string, cores string) {
+	for _, line := range lines {
+		if _, value, found := strings.Cut(line, ":"); found && strings.HasPrefix(line, "model name") {
+			model = strings.TrimSpace(value)
+			continue
+		}
+		if _, err := strconv.Atoi(line); err == nil {
+			cores = line + " cores"
+		}
+	}
+	return model, cores
+}
+
+// intelIntegratedPciAddr is the PCI bus address conventionally reserved for
+// the CPU's integrated graphics on x86 platforms - the same heuristic
+// fastfetch uses (comparing against domain 0, bus 0, device 2, function 0)
+// to classify a GPU as integrated vs discrete.
+const intelIntegratedPciAddr = "0000:00:02.0"
+
+// parseGpu reports "<model> @ <freq> GHz [Integrated|Discrete]", omitting
+// whichever pieces aren't available (a discrete/multi-GPU or headless setup
+// may not expose the max-frequency sysfs files this reads, and the
+// Integrated/Discrete tag is only added when it can be determined with
+// confidence - see the addr/vendor checks below).
+func (a *Adapter) parseGpu(lines []string) string {
+	var name, addr, freqMhz string
+	for _, line := range lines {
+		if value, ok := strings.CutPrefix(line, "name="); ok {
+			name = strings.TrimSpace(value)
+			continue
+		}
+		if value, ok := strings.CutPrefix(line, "addr="); ok {
+			addr = strings.TrimSpace(value)
+			continue
+		}
+		if value, ok := strings.CutPrefix(line, "freq_mhz="); ok {
+			freqMhz = strings.TrimSpace(value)
+		}
+	}
+
+	model := a.parseGpuModel(name)
+	if model == "" {
+		return ""
+	}
+
+	result := model
+	if freq, err := strconv.ParseFloat(freqMhz, 64); err == nil && freq > 0 {
+		result += fmt.Sprintf(" @ %.2f GHz", freq/1000)
+	}
+	switch {
+	case addr == intelIntegratedPciAddr:
+		result += " [Integrated]"
+	case strings.Contains(strings.ToUpper(model), "NVIDIA"):
+		// NVIDIA has never shipped an integrated GPU, so this is always safe.
+		result += " [Discrete]"
+	}
+	return result
+}
+
+// parseGpuModel cleans up a `lspci | grep -i vga` line (e.g. "00:02.0 VGA
+// compatible controller: Intel Corporation Meteor Lake-P [Intel Arc
+// Graphics] (rev 08)") into a short vendor+model string ("Intel Arc
+// Graphics"): it prefers the bracketed marketing name lspci reports over the
+// raw PCI device string, and re-adds the vendor prefix if the bracketed name
+// dropped it (e.g. NVIDIA's bracket omits "NVIDIA").
+func (a *Adapter) parseGpuModel(line string) string {
+	if line == "" {
+		return ""
+	}
+	description := line
+	if _, value, found := strings.Cut(line, ": "); found {
+		description = value
+	}
+	description = strings.TrimSpace(description)
+
+	vendor := ""
+	if fields := strings.Fields(description); len(fields) > 0 {
+		vendor = fields[0]
+	}
+
+	model := description
+	if start := strings.LastIndex(description, "["); start != -1 {
+		if end := strings.Index(description[start:], "]"); end != -1 {
+			model = description[start+1 : start+end]
+		}
+	} else {
+		if idx := strings.Index(description, " (rev "); idx != -1 {
+			model = description[:idx]
+		}
+		model = strings.NewReplacer(" Corporation", "", " Inc.", "", " Co., Ltd.", "").Replace(model)
+	}
+	model = strings.TrimSpace(model)
+
+	if vendor != "" && !strings.HasPrefix(model, vendor) {
+		model = vendor + " " + model
+	}
+	return model
+}
+
+// parseMeminfoTotal reports the total capacity for a /proc/meminfo key (e.g.
+// MemTotal, SwapTotal).
+func (a *Adapter) parseMeminfoTotal(lines []string, totalKey string) string {
+	total := a.parseMeminfoFields(lines)[totalKey]
+	if total == 0 {
+		return ""
+	}
+	return formatBytes(total)
+}
+
+// parseDiskSummary reports the total capacity of the root filesystem.
+func (a *Adapter) parseDiskSummary(lines []string) string {
+	if len(lines) == 0 {
+		return ""
+	}
+	fields := strings.Fields(lines[0])
+	if len(fields) < 2 {
+		return ""
+	}
+	totalKb, err := strconv.ParseUint(fields[1], 10, 64)
+	if err != nil || totalKb == 0 {
+		return ""
+	}
+	return formatBytes(totalKb * 1024)
+}
+
+// parseLocalIp reports every address `hostname -I` returns (a node may have
+// several, e.g. a LAN address plus a docker bridge address).
+func (a *Adapter) parseLocalIp(lines []string) string {
+	if len(lines) == 0 {
+		return ""
+	}
+	fields := strings.Fields(lines[0])
+	if len(fields) == 0 {
+		return ""
+	}
+	return strings.Join(fields, ", ")
+}
+
+func (a *Adapter) parseLocale(lines []string) string {
+	for _, line := range lines {
+		if value, ok := strings.CutPrefix(line, "LANG="); ok {
+			return value
+		}
+	}
+	return ""
+}
+
+// formatBytes renders a byte count as a human-readable binary-unit string
+// (e.g. "1.5 GiB").
+func formatBytes(bytes uint64) string {
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := uint64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }

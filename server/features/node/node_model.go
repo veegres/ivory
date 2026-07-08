@@ -195,6 +195,15 @@ type PlatformProcessesRequest = PlatformVaultConnection
 
 type PlatformProcessesResponse = []Process
 
+type InfoItem struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type PlatformInfoRequest = PlatformVaultConnection
+
+type PlatformInfoResponse = []InfoItem
+
 // SPECIFIC (SERVER)
 
 func mapKeeperResponse(r keeper.Response) KeeperResponse {
@@ -270,6 +279,14 @@ func mapPlatformProcesses(processes []platform.Process) PlatformProcessesRespons
 			MemPercent:  p.MemPercent,
 			CpuPercent:  p.CpuPercent,
 		})
+	}
+	return response
+}
+
+func mapPlatformInfo(items []platform.InfoItem) PlatformInfoResponse {
+	response := make(PlatformInfoResponse, 0, len(items))
+	for _, i := range items {
+		response = append(response, InfoItem{Key: i.Key, Value: i.Value})
 	}
 	return response
 }

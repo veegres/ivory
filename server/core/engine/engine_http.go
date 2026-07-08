@@ -191,6 +191,7 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	platformGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformMetrics)
 	platformGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.StreamPlatformLogs)
 	platformGroup.GET("/processes", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformProcesses)
+	platformGroup.GET("/info", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformInfo)
 	platformGroup.POST("/copy-id", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatform), r.PostPlatformCopyId)
 
 	deploymentGroup := platformGroup.Group("/container")

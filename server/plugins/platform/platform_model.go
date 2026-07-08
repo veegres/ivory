@@ -59,6 +59,13 @@ type NetworkMetrics struct {
 	TransmittedBytes uint64 `json:"transmittedBytes"`
 }
 
+// InfoItem is a single arbitrary platform-reported detail about a node (e.g.
+// "OS": "Ubuntu 22.04"). Content and order are entirely up to each adapter.
+type InfoItem struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 // Process is a single row from a host-level process listing, analogous to
 // what tools like btop/top display: identity, resource usage and the command.
 type Process struct {

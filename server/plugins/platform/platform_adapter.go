@@ -46,6 +46,10 @@ type VmManager interface {
 	Logs(connection Connection, path string, tail int, follow bool) console.Command
 	// Processes lists the node's running processes.
 	Processes(connection Connection) ([]Process, error)
+	// Info returns a list of arbitrary platform-reported details about the
+	// node (OS, kernel, uptime, hardware...). Content and order are entirely
+	// up to each adapter.
+	Info(connection Connection) ([]InfoItem, error)
 }
 
 // ContainerManager covers the lifecycle and inspection of a single deployed

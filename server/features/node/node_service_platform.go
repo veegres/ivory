@@ -45,6 +45,18 @@ func (s *Service) PlatformVmProcesses(r PlatformProcessesRequest) (PlatformProce
 	return mapPlatformProcesses(processes), nil
 }
 
+func (s *Service) PlatformVmInfo(r PlatformInfoRequest) (PlatformInfoResponse, error) {
+	adapter, conn, err := s.getPlatformAdapter(r)
+	if err != nil {
+		return nil, err
+	}
+	info, err := adapter.Info(conn)
+	if err != nil {
+		return nil, err
+	}
+	return mapPlatformInfo(info), nil
+}
+
 func (s *Service) PlatformLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {

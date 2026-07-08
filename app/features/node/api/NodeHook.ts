@@ -162,6 +162,15 @@ export function useRouterNodePlatformProcesses(c: PlatformVaultConnection) {
     })
 }
 
+export function useRouterNodePlatformInfo(c: PlatformVaultConnection) {
+    return useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: NodeApi.info.key(c.host),
+        queryFn: () => NodeApi.info.fn(c),
+        retry: false,
+    })
+}
+
 export function useRouterNodePlatformStart(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
