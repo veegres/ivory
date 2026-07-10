@@ -40,7 +40,7 @@ export function Header(props: Props) {
                 <Box sx={SX.title} onClick={handleAnimal}>
                     {animal} Ivory {animal}
                 </Box>
-                <Box sx={SX.caption}>[postgres cluster management]</Box>
+                <Box sx={SX.caption}>[database cluster management]</Box>
             </Box>
             <Box sx={[SX.side, {justifyContent: "end"}]}>
                 {show && renderRightSide()}

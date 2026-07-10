@@ -8,19 +8,19 @@ import {HiddenScrolling} from "./HiddenScrolling"
 const ALL = "ALL"
 const SX: SxPropsMap = {
     after: {display: "flex", gap: "3px"},
-    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1.1"},
+    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1"},
 }
 
 type Props = {
-    tags: string[],
+    items: string[],
     selected: string[],
     renderActions?: ReactElement<{sx?: SxProps<Theme>}>[],
     onUpdate: (tags: string[]) => void,
 }
 
 export function ToggleButtonScrollable(props: Props) {
-    const {tags, selected, onUpdate, renderActions} = props
-    const tagsSet = new Set(tags)
+    const {items, selected, onUpdate, renderActions} = props
+    const tagsSet = new Set(items)
     const [selectedSet, setSelectedSet] = useState(new Set(selected))
 
     const isAll = selectedSet.has(ALL)
@@ -28,10 +28,11 @@ export function ToggleButtonScrollable(props: Props) {
 
     return (
         <HiddenScrolling
+            arrowHeight={"23px"}
             renderBefore={renderSelectButton(ALL, isAll, handleClickAll)}
             renderAfter={renderAfter()}
         >
-            {tags.map(tag => renderSelectButton(tag, selectedSet.has(tag), handleClick))}
+            {items.map(tag => renderSelectButton(tag, selectedSet.has(tag), handleClick))}
             {selected.map(tag => renderRemovedButton(tag, !tagsSet.has(tag), handleClick))}
         </HiddenScrolling>
     )

@@ -19,10 +19,11 @@ type Props = {
     renderAfter?: ReactNode,
     arrowWidth?: string,
     arrowHeight?: string,
+    position?: "start" | "end" | "center",
 }
 
 export function HiddenScrolling(props: Props) {
-    const {children, renderBefore, renderAfter, arrowWidth = "30px", arrowHeight = "35px"} = props
+    const {children, renderBefore, renderAfter, arrowWidth = "30px", arrowHeight = "35px", position = "start"} = props
     const [ref, setRef] = useState<Element>()
     const [scrolled] = useWindowScrolled(ref)
 
@@ -35,9 +36,11 @@ export function HiddenScrolling(props: Props) {
                 disabled={!scrolled}
                 onClick={() => handleScroll(-SCROLL_OFFSET)}
             />
-            <Box sx={SX.before}>{renderBefore}</Box>
-            <Box ref={(ref) => setRef(ref as Element)} sx={SX.group}>{children}</Box>
-            <Box sx={SX.after}>{renderAfter}</Box>
+            {renderBefore && <Box sx={SX.before}>{renderBefore}</Box>}
+            <Box ref={(ref) => setRef(ref as Element)} sx={{...SX.group, justifyContent: position}}>
+                {children}
+            </Box>
+            {renderAfter && <Box sx={SX.after}>{renderAfter}</Box>}
             <TabScrollButton
                 sx={{...SX.arrow, width: arrowWidth, height: arrowHeight}}
                 direction={"right"}

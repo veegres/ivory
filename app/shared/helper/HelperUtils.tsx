@@ -27,12 +27,13 @@ import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../.
 import {
     KeeperConnection,
     KeeperOneRequest,
+    KeeperPlugin,
     KeeperStatus,
     PlatformVaultConnection,
     Role,
 } from "../../features/node/api/NodeType"
 import {Status as PermissionStatus} from "../../features/permission/api/PermissionType"
-import {Connection as QueryConnection, VarietyType} from "../../features/query/api/QueryType"
+import {Connection as QueryConnection, DbPlugin, VarietyType} from "../../features/query/api/QueryType"
 import {VaultType} from "../../features/vault/api/VaultType"
 import {JobStatus} from "../../tools/pg_compacttable/api/job/PgCompactTableJobType"
 import {EnumOptions, Links, Settings, SxPropsMap} from "./HelperType"
@@ -66,6 +67,17 @@ export const VaultOptions: { [key in VaultType]: EnumOptions } = {
     [VaultType.KEEPER_PASSWORD]: {name: "KEEPER_PASSWORD", label: "Keeper Password", icon: <HeartBrokenTwoTone/>, key: "keeperId"},
     [VaultType.SSH_PASSWORD]: {name: "SSH_PASSWORD", label: "SSH Password", icon: <LockTwoTone/>, key: "sshVaultId"},
     [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
+}
+
+export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions } = {
+    [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres"},
+    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Native Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres"},
+    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Native Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd"},
+}
+
+export const DbPluginOptions: { [key in DbPlugin]: EnumOptions } = {
+    [DbPlugin.POSTGRES]: {name: "POSTGRES", label: "Postgres", icon: <DnsTwoTone/>, key: "postgres"},
+    [DbPlugin.ETCD]: {name: "ETCD", label: "Etcd", icon: <DnsTwoTone/>, key: "etcd"},
 }
 
 export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {

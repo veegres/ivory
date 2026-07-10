@@ -11,24 +11,20 @@ const SX: SxPropsMap = {
 type Props = {
     children: ReactNode,
     withPadding?: boolean,
-    withMarginTop?: string,
-    withMarginBottom?: string,
     visible?: boolean,
     elevation?: number,
 }
 
 export function PageMainBox(props: Props) {
-    const {withMarginTop, withMarginBottom} = props
     const elevation = props.elevation ?? 4
     const visible = props.visible ?? true
     const padding = props.withPadding ? "10px 20px" : "0"
-    const margin = `${withMarginTop ?? 0} 5% ${withMarginBottom ?? 0}`
 
     if (!visible) return null
 
     return (
         <Box sx={SX.box}>
-            <Paper elevation={elevation} sx={{...SX.paper, padding, margin}}>
+            <Paper elevation={elevation} sx={{...SX.paper, padding}}>
                 {props.children}
             </Paper>
         </Box>

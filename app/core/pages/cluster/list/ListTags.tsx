@@ -1,4 +1,4 @@
-import {Box, InputBase, ToggleButton} from "@mui/material"
+import {InputBase, ToggleButton} from "@mui/material"
 
 import {useRouterTagList} from "../../../../features/tag/api/TagHook"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
@@ -7,7 +7,6 @@ import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {
-    tags: {position: "relative", height: 0, top: "-37px"},
     input: {padding: "0px", width: "100px", height: "14px", fontSize: "14px"},
 }
 
@@ -22,14 +21,12 @@ export function ListTags() {
     if (tags.error) return <ErrorSmart error={tags.error}/>
 
     return (
-        <Box sx={SX.tags}>
-            <ToggleButtonScrollable
-                tags={tags.data ?? []}
-                selected={activeTags}
-                onUpdate={setTags}
-                renderActions={renderActions()}
-            />
-        </Box>
+        <ToggleButtonScrollable
+            items={tags.data ?? []}
+            selected={activeTags}
+            onUpdate={setTags}
+            renderActions={renderActions()}
+        />
     )
 
     function renderActions() {

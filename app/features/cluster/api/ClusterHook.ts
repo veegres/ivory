@@ -1,22 +1,30 @@
 import {useQuery} from "@tanstack/react-query"
+import {useEffect} from "react"
 
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
 import {useStore} from "../../../shared/provider/StoreProvider"
-import {KeeperPlugin} from "../../node/api/NodeType"
-import {DbPlugin} from "../../query/api/QueryType"
 import {TagApi} from "../../tag/api/TagRouter"
 import {ClusterApi} from "./ClusterRouter"
 
-export function useRouterClusterList(tags: string[], enabled: boolean = true, keeper?: KeeperPlugin, database?: DbPlugin) {
-    const tagsFn = tags[0] === "ALL" ? undefined : tags
+export function useRouterClusterList(enabled: boolean = true) {
+    const tags = useStore(s => s.activeTags)
+    const keeper = useStore(s => s.activeClusterKeeperPlugin)
+    const database = undefined
+    const tagsTmp = tags[0] === "ALL" ? undefined : tags
     // NOTE: this query is updated by custom logic with useEffect, without using queryKey change
     // we cannot add `enable: false`, because mutation hooks then couldn't update it by using QueryClient
-    return useQuery({
+    const response = useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ClusterApi.list.key(),
-        queryFn: () => ClusterApi.list.fn(tagsFn, keeper, database),
+        queryFn: () => ClusterApi.list.fn(tagsTmp, keeper, database),
         enabled: enabled,
     })
+
+    // NOTE: we don't use queryKey to update it, because it will create a separate request and cause new fetching
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {response.refetch().then()}, [tags, keeper])
+
+    return response
 }
 
 export function useRouterClusterOverview(name?: string, enabled: boolean = true) {

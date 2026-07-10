@@ -2,13 +2,14 @@ import {persist} from "zustand/middleware"
 import {create} from "zustand/react"
 
 import {Cluster} from "../../features/cluster/api/ClusterType"
-import {NodeTabType} from "../../features/node/api/NodeType"
+import {KeeperPlugin, NodeTabType} from "../../features/node/api/NodeType"
 import {Type as QueryType} from "../../features/query/api/QueryType"
 import {MainQueryClient} from "./AppProvider"
 
 // STORE
 interface Store {
     searchCluster: string,
+    activeClusterKeeperPlugin: KeeperPlugin,
     activeCluster?: Cluster,
     manualKeeper?: string,
     activeNode: { [cluster: string]: string | undefined },
@@ -31,6 +32,7 @@ interface Store {
 export const useStore = create(persist<Store>(
     () => ({
         searchCluster: "",
+        activeClusterKeeperPlugin: KeeperPlugin.PATRONI_POSTGRES,
         activeCluster: undefined,
         manualKeeper: undefined,
         activeNode: {},
@@ -63,6 +65,7 @@ export const useStore = create(persist<Store>(
 
 export const useStoreAction = {
     setCluster: setCluster,
+    setClusterKeeperPlugin: setClusterKeeperPlugin,
     setSearchCluster: setClusterSearch,
     setClusterKeeper: setClusterKeeper,
     setWarnings: setWarnings,
@@ -84,6 +87,10 @@ export const useStoreAction = {
 // SETTERS
 function setClusterSearch(search: string) {
     useStore.setState(s => ({...s, searchCluster: search}))
+}
+
+function setClusterKeeperPlugin(plugin: KeeperPlugin) {
+    useStore.setState(s => ({...s, activeClusterKeeperPlugin: plugin}))
 }
 
 function setCluster(cluster?: Cluster) {

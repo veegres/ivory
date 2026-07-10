@@ -25,14 +25,13 @@ const SX: SxPropsMap = {
 }
 
 export function Overview() {
-    const activeTags = useStore(s => s.activeTags)
     const activeCluster = useStore(s => s.activeCluster)
     const manualKeeper = useStore(s => s.manualKeeper)
 
     const [infoOpen, setInfoOpen] = useState(false)
     const [settingsOpen, setSettingsOpen] = useState(false)
 
-    const clusters = useRouterClusterList(activeTags, false)
+    const clusters = useRouterClusterList(false)
     const overview = useRouterClusterOverview(activeCluster?.name, false)
 
     const [mainDomain, mainNode] = useMemo(

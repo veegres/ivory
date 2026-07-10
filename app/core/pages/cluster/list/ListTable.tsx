@@ -101,7 +101,7 @@ export function ListTable(props: Props) {
         const text = search ? (
             "There are no clusters that match your filter"
         ) : (
-            "There are no clusters yet. You can add them manually or use auto detection"
+            "There are no clusters yet. Use the Deploy or Auto Detection buttons above, or click + to add one manually — a host and keeper port are the minimum required."
         )
         return (
             <TableRow>
