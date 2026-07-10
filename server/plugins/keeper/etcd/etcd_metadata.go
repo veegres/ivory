@@ -27,8 +27,9 @@ func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
 // field carries the initial cluster string (name=http://host:2380,...).
 func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
 	return keeper.DeploymentSpec{
-		DefaultImage: "quay.io/coreos/etcd:v3.6.5",
-		Ports:        []string{"{{dbPort}}", "2380"},
+		DefaultImage:  "quay.io/coreos/etcd:v3.6.5",
+		DefaultValues: map[string]string{},
+		Ports:         []string{"{{dbPort}}", "2380"},
 		Volumes: []keeper.VolumeSpec{
 			{HostPath: "/data/etcd", ContainerPath: "/data/etcd"},
 		},

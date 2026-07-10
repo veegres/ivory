@@ -8,6 +8,7 @@ import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvide
 
 const SX: SxPropsMap = {
     input: {padding: "0px", width: "100px", height: "14px", fontSize: "14px"},
+    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1"},
 }
 
 export function ListTags() {
@@ -33,6 +34,7 @@ export function ListTags() {
         return [
             <InputBase
                 key={"search"}
+                sx={SX.element}
                 type={"text"}
                 size={"small"}
                 slotProps={{input: {sx: SX.input}}}
@@ -40,7 +42,7 @@ export function ListTags() {
                 value={search}
                 onChange={e => setSearchCluster(e.target.value)}
             />,
-            <Tooltip key={"warnings"} title={"Detected Problems"} placement={"top"}>
+            <Tooltip key={"warnings"} title={renderTooltip()} placement={"top"}>
                 <Box component={"span"}>
                     <ToggleButton
                         key={"warnings"}
@@ -56,5 +58,14 @@ export function ListTags() {
                 </Box>
             </Tooltip>
         ]
+    }
+
+    function renderTooltip() {
+        return (
+            <Box>
+                <Box><b>Problems Detected</b></Box>
+                <Box>[ shows number of clusters with problems ]</Box>
+            </Box>
+        )
     }
 }

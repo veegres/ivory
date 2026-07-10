@@ -25,7 +25,7 @@ func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
 func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
 	return keeper.DeploymentSpec{
 		DefaultImage:  "postgres:18",
-		DefaultValues: map[string]string{"dcs": "empty"},
+		DefaultValues: map[string]string{},
 		Ports:         []string{"{{dbPort}}"},
 		Volumes: []keeper.VolumeSpec{
 			{HostPath: "/data/postgres", ContainerPath: "/var/lib/postgresql/data"},

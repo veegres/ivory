@@ -1,6 +1,6 @@
 import {Box, SxProps, ToggleButton, Tooltip} from "@mui/material"
 import {Theme} from "@mui/material/styles"
-import {cloneElement, MouseEvent, ReactElement, useState} from "react"
+import {MouseEvent, ReactElement, useState} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
 import {HiddenScrolling} from "./HiddenScrolling"
@@ -59,7 +59,7 @@ export function ToggleButtonScrollable(props: Props) {
 
     function renderInfo() {
         if (renderActions === undefined) return
-        return renderActions.map(e => cloneElement(e, {sx: SX.element}))
+        return renderActions
     }
 
     function renderSelectButton(tag: string, selected: boolean, onClick?: (e: MouseEvent<HTMLElement>, value: string) => void) {
