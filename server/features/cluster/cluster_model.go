@@ -72,18 +72,28 @@ type CreateAutoRequest struct {
 	Options
 }
 
+// DeployRequest describes a deployment intent: node ports, the image, aux
+// ports, the DCS value and the per-node options are resolved server-side from
+// the keeper plugin's DeploymentSpec unless explicitly provided. Values
+// carries plugin-required inputs (e.g. "dcs" for patroni).
 type DeployRequest struct {
-	Uri                 string            `json:"uri"`
-	Parallel            bool              `json:"parallel"`
-	NodeConfig          []NodeConfig      `json:"nodeConfig"`
-	CommonConfig        CommonConfig      `json:"commonConfig"`
-	NodeRawImageOptions map[string]string `json:"nodeRawImageOptions"`
-	ClusterOptions      Options           `json:"clusterOptions"`
+	Parallel       bool              `json:"parallel"`
+	SingleHost     bool              `json:"singleHost"`
+	Image          string            `json:"image"`
+	Nodes          []DeployNode      `json:"nodes"`
+	Values         map[string]string `json:"values"`
+	CommonConfig   CommonConfig      `json:"commonConfig"`
+	ClusterOptions Options           `json:"clusterOptions"`
+}
+
+type DeployNode struct {
+	NodeConfig
+	// Options overrides the rendered options template for this node.
+	Options string `json:"options"`
 }
 
 type CommonConfig struct {
 	Cluster string `json:"cluster"`
-	Dcs     string `json:"dcs"`
 	SshUser string `json:"sshUser"`
 	SshPass string `json:"sshPass"`
 	DbUser  string `json:"dbUser"`

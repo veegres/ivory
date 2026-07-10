@@ -135,9 +135,9 @@ func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router)
 	group.PUT("", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PutClusterByName)
 	group.DELETE("/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterDelete), r.DeleteClusterByName)
 	group.GET("/overview/:name", rp.ValidateMethodMiddleware(coreConfig.ViewClusterOverview), r.GetClusterOverview)
-	group.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterDeploy)
 	group.POST("/auto", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterAutoCreate)
 	group.POST("/auto/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PostClusterAutoFix)
+	group.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterDeploy)
 }
 
 func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {
@@ -173,19 +173,19 @@ func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {
 func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	group := g.Group("/node")
 
-	dbGroup := group.Group("/db")
-	dbGroup.GET("/overview", rp.ValidateMethodMiddleware(coreConfig.ViewNodeKeeperOverview), r.GetNodeOverview)
-	dbGroup.GET("/config", rp.ValidateMethodMiddleware(coreConfig.ViewNodeKeeperConfig), r.GetNodeConfig)
-	dbGroup.PATCH("/config", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperConfigUpdate), r.PatchNodeConfig)
-	dbGroup.POST("/switchover", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperSwitchover), r.PostNodeSwitchover)
-	dbGroup.DELETE("/switchover", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperSwitchover), r.DeleteNodeSwitchover)
-	dbGroup.POST("/reinitialize", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperReinitialize), r.PostNodeReinitialize)
-	dbGroup.POST("/restart", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperRestart), r.PostNodeRestart)
-	dbGroup.DELETE("/restart", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperRestart), r.DeleteNodeRestart)
-	dbGroup.POST("/reload", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperReload), r.PostNodeReload)
-	dbGroup.POST("/failover", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperFailover), r.PostNodeFailover)
-	dbGroup.POST("/activate", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperActivation), r.PostNodeActivate)
-	dbGroup.POST("/pause", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperActivation), r.PostNodePause)
+	keeperGroup := group.Group("/keeper")
+	keeperGroup.GET("/overview", rp.ValidateMethodMiddleware(coreConfig.ViewNodeKeeperOverview), r.GetNodeOverview)
+	keeperGroup.GET("/config", rp.ValidateMethodMiddleware(coreConfig.ViewNodeKeeperConfig), r.GetNodeConfig)
+	keeperGroup.PATCH("/config", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperConfigUpdate), r.PatchNodeConfig)
+	keeperGroup.POST("/switchover", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperSwitchover), r.PostNodeSwitchover)
+	keeperGroup.DELETE("/switchover", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperSwitchover), r.DeleteNodeSwitchover)
+	keeperGroup.POST("/reinitialize", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperReinitialize), r.PostNodeReinitialize)
+	keeperGroup.POST("/restart", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperRestart), r.PostNodeRestart)
+	keeperGroup.DELETE("/restart", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperRestart), r.DeleteNodeRestart)
+	keeperGroup.POST("/reload", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperReload), r.PostNodeReload)
+	keeperGroup.POST("/failover", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperFailover), r.PostNodeFailover)
+	keeperGroup.POST("/activate", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperActivation), r.PostNodeActivate)
+	keeperGroup.POST("/pause", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperActivation), r.PostNodePause)
 
 	platformGroup := group.Group("/platform")
 	platformGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformMetrics)
@@ -194,19 +194,20 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	platformGroup.GET("/info", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformInfo)
 	platformGroup.POST("/copy-id", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatform), r.PostPlatformCopyId)
 
-	deploymentGroup := platformGroup.Group("/container")
-	// NOTE: deploy-options serves static deployment defaults (previously bundled in the web app);
-	// it is used by both cluster deploy (manage.cluster.create) and container deploy
-	// (manage.node.platform.container) dialogs, so it is not tied to either feature.
-	deploymentGroup.GET("/deploy-options", r.GetPlatformContainerDeployOptions)
-	deploymentGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerList)
-	deploymentGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.StreamPlatformContainerLogs)
-	deploymentGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerMetrics)
-	deploymentGroup.POST("/start", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStart)
-	deploymentGroup.POST("/stop", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStop)
-	deploymentGroup.POST("/restart", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerRestart)
-	deploymentGroup.POST("/up", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerUp)
-	deploymentGroup.POST("/down", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerDown)
+	containerGroup := platformGroup.Group("/container")
+	containerGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerList)
+	containerGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.StreamPlatformContainerLogs)
+	containerGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerMetrics)
+	containerGroup.POST("/start", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStart)
+	containerGroup.POST("/stop", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerStop)
+	containerGroup.POST("/restart", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerRestart)
+	containerGroup.POST("/up", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerUp)
+	containerGroup.POST("/down", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostPlatformContainerDown)
+
+	containerKeeperGroup := containerGroup.Group("/keeper")
+	containerKeeperGroup.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostNodeKeeperDeploy)
+	containerKeeperGroup.GET("/deploy/spec", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.GetNodeKeeperDeploySpec)
+	containerKeeperGroup.POST("/deploy/plan", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostNodeKeeperDeployPlan)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {

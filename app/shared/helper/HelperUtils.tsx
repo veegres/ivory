@@ -23,8 +23,11 @@ import {AxiosError} from "axios"
 import dayjs from "dayjs"
 
 import {CertType, FileUsageType} from "../../features/cert/api/CertType"
-import {InterpolatedOptions, Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/api/ClusterType"
+import {Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/api/ClusterType"
 import {
+    DeployFieldResponse,
+    DeployFieldsResponse,
+    InterpolationVar,
     KeeperConnection,
     KeeperOneRequest,
     KeeperPlugin,
@@ -169,18 +172,77 @@ export const getDomains = (nodes: NodeConfig[], simple: boolean = false) => {
     return nodes.map(value => getDomain(value, simple))
 }
 
-export const getNodeConfig = (domain: string): NodeConfig => {
-    const [host, keeperPort, dbPort, sshPort] = domain.split(":")
-    return {
-        host: host.toLowerCase(),
-        keeperPort: parseInt(keeperPort) || undefined,
-        dbPort: parseInt(dbPort) || undefined,
-        sshPort: parseInt(sshPort) || undefined,
-    }
+// NodeInputFormat declares how a node domain string is parsed: without a
+// keeper port the format degrades to host:dbPort:sshPort and the keeper port
+// mirrors the db port (plugins with no separate keeper API port); missing
+// segments fall back to the provided defaults
+export interface NodeInputFormat {
+    withKeeperPort: boolean,
+    defaults: {keeperPort?: number, dbPort?: number, sshPort?: number},
 }
 
-export const getNodeConfigs = (domains: string[]): NodeConfig[] => {
-    return domains.map(value => getNodeConfig(value))
+export const getNodeConfig = (domain: string, format?: NodeInputFormat): NodeConfig => {
+    const [host, second, third, fourth] = domain.split(":")
+    if (!format) {
+        return {
+            host: host.toLowerCase(),
+            keeperPort: parseInt(second) || undefined,
+            dbPort: parseInt(third) || undefined,
+            sshPort: parseInt(fourth) || undefined,
+        }
+    }
+    const {withKeeperPort, defaults} = format
+    const dbPort = parseInt(withKeeperPort ? third : second) || defaults.dbPort
+    const sshPort = parseInt(withKeeperPort ? fourth : third) || defaults.sshPort
+    const keeperPort = withKeeperPort ? parseInt(second) || defaults.keeperPort : dbPort
+    return {host: host.toLowerCase(), keeperPort, dbPort, sshPort}
+}
+
+export const getNodeConfigs = (domains: string[], format?: NodeInputFormat): NodeConfig[] => {
+    return domains.map(value => getNodeConfig(value, format))
+}
+
+export const getKeeperDefaultPort = (fields: DeployFieldsResponse): number => {
+    return Number(fields.defaults[InterpolationVar.KeeperPort] ?? fields.defaults[InterpolationVar.DbPort])
+}
+
+export interface DeployFieldGroups {
+    // whether the plugin has a separate keeper endpoint (else it is the database)
+    withKeeperPort: boolean,
+    // whether the plugin consumes database credentials
+    withDbCredentials: boolean,
+    // fields nobody but the user can know (no default, not derived)
+    mandatoryFields: DeployFieldResponse[],
+    // fields the system fills itself (derived from the node list or defaulted)
+    autoFields: DeployFieldResponse[],
+}
+
+export const getDeployFieldGroups = (fields?: DeployFieldsResponse): DeployFieldGroups => ({
+    withKeeperPort: fields?.defaults[InterpolationVar.KeeperPort] !== undefined,
+    withDbCredentials: !fields || fields.defaults[InterpolationVar.DbUser] !== undefined,
+    mandatoryFields: fields?.fields.filter(f => !f.derived && !f.default) ?? [],
+    autoFields: fields?.fields.filter(f => f.derived || !!f.default) ?? [],
+})
+
+// getDeployPlaceholderKeys lists the interpolation variables shown in the
+// image-options legend: the built-ins the plugin actually uses plus its own
+// declared field names.
+export const getDeployPlaceholderKeys = (fields: DeployFieldsResponse | undefined, withKeeperPort: boolean, withDbCredentials: boolean): string[] => {
+    const keys = InterpolatedOptionsKeys.filter(key => {
+        if (key === InterpolationVar.KeeperPort) return withKeeperPort
+        if (key === InterpolationVar.DbUser || key === InterpolationVar.DbPass) return withDbCredentials
+        return true
+    })
+    return [...keys, ...(fields?.fields.map(f => f.name) ?? [])]
+}
+
+// getUpdatedInputs applies a field edit; clearing a field drops it so it
+// returns to its computed value on the next plan.
+export const getUpdatedInputs = (inputs: {[name: string]: string}, name: string, value: string): {[name: string]: string} => {
+    const next = {...inputs}
+    if (value === "") delete next[name]
+    else next[name] = value
+    return next
 }
 
 export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [string?, Node?] => {
@@ -201,15 +263,10 @@ export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) =
     ]
 }
 
-export const InterpolatedOptionsKeys = [
-    "cluster", "host", "keeperPort", "dbPort", "dbUser", "dbPass", "dcs",
-] as const satisfies readonly (keyof InterpolatedOptions)[]
-export const getInterpolatedImageOptions = (template: string, values: InterpolatedOptions) => {
-    return template.replace(
-        /{{(\w+)}}/g,
-        (_, key) => String(values[key as keyof InterpolatedOptions] || `{{${key}}}`)
-    )
-}
+// NOTE: interpolation itself happens server-side (deploy plan); this list
+// only feeds the placeholder legend in the deploy dialogs — plugin-declared
+// field names extend it there
+export const InterpolatedOptionsKeys: readonly string[] = Object.values(InterpolationVar)
 
 export const getShortUuid = (uuid: string) => uuid.substring(0, 8)
 

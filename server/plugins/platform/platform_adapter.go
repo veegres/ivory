@@ -71,6 +71,8 @@ type ContainerManager interface {
 	StopContainer(connection Connection, name string) console.Command
 	// RestartContainer restarts a container.
 	RestartContainer(connection Connection, name string) console.Command
+	// ExecContainer runs a command inside the named running container.
+	ExecContainer(connection Connection, name string, command string) console.Command
 	// LogsContainer streams (or dumps, if follow is false) the named
 	// container's logs.
 	LogsContainer(connection Connection, name string, tail int, follow bool) console.Command

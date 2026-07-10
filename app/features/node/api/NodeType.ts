@@ -123,34 +123,128 @@ export interface PlatformCopyIdRequest {
     publicKey: string,
 }
 
+// PlatformUpRequest is the low-level deployment primitive: options is the
+// user-editable options template and values holds the {{placeholder}}
+// interpolation values (cluster, dcs, ports, aux ports, ...).
 export interface PlatformUpRequest {
     name: string,
     image: string,
     connection: PlatformVaultConnection,
     vaults: {
-        databaseId: string,
+        // NOTE: optional for keeper plugins that consume no database
+        // credentials (no {{dbUser}} in the keeper plugin's spec defaults)
+        databaseId?: string,
         sshKeyId: string,
     },
-    imageOptions: ImageOptions,
-    rawImageOptions: string,
+    options: string,
+    values: {[key: string]: string},
 }
 
-export interface ImageOptions {
+// KeeperDeployNode is the single-node shape for KeeperDeployRequest: it
+// mirrors the server's KeeperDeployPlanNodeRequest rather than reusing the
+// cluster feature's DeployNode, since node must not import from cluster.
+export interface KeeperDeployNode {
+    host: string,
+    sshPort?: number,
+    keeperPort?: number,
+    dbPort?: number,
+    // options overrides the rendered options template for this node
+    options?: string,
+}
+
+// KeeperDeployRequest deploys a single keeper node end-to-end: plugin and
+// values resolve the deployment plan for this one node (ports, options,
+// interpolation), connection and vaults are resolved by the caller (e.g. a
+// stored cluster's vaults) since node has no access to cluster storage.
+export interface KeeperDeployRequest {
+    plugin: KeeperPlugin,
     cluster: string,
-    dcs: string,
-    keeperPort: number,
-    dbPort: number,
+    image?: string,
+    values: {[key: string]: string},
+    node: KeeperDeployNode,
+    connection: PlatformVaultConnection,
+    vaults: {
+        databaseId?: string,
+        sshKeyId: string,
+    },
 }
 
-export interface PlatformDeployOptionsRequest {
+export interface KeeperDeploySpecRequest {
     plugin: KeeperPlugin,
 }
 
-export interface PlatformDeployOptions {
+// DeployFieldResponse describes one editable image-level field: its value
+// interpolates as {{name}}, the plan prefills it (a user edit wins), derived
+// marks values computed from the node list.
+export interface DeployFieldResponse {
+    name: string,
+    label: string,
+    example?: string,
+    type: "text" | "port",
+    default?: string,
+    derived: boolean,
+}
+
+// InterpolationVar is a built-in {{placeholder}} variable Ivory provides to
+// every deployment, in its interpolated form; plugin-declared field names
+// extend this set. Mirrors the server's keeper.Var constants.
+export enum InterpolationVar {
+    Cluster = "{{cluster}}",
+    Host = "{{host}}",
+    KeeperPort = "{{keeperPort}}",
+    DbPort = "{{dbPort}}",
+    DbUser = "{{dbUser}}",
+    DbPass = "{{dbPass}}",
+}
+
+// DeployFieldsResponse tells the form which fields the keeper plugin needs.
+// defaults mirrors the spec's built-in variable defaults keyed by the
+// variable's interpolated form: an absent {{keeperPort}} hides the keeper
+// port inputs (the keeper endpoint is the database itself), an absent
+// {{dbUser}} hides the credential inputs (a non-empty value is the
+// engine-required username, prefilled and locked).
+export interface DeployFieldsResponse {
+    defaults: {[name: string]: string},
+    fields: DeployFieldResponse[],
+}
+
+export interface KeeperDeploySpecResponse {
     uri: string,
-    defaultValues: {[key: string]: string},
+    fields: DeployFieldsResponse,
+}
+
+// KeeperDeployPlanRequest describes a deployment intent: everything except the
+// node hosts is optional and falls back to the keeper plugin's spec.
+export interface KeeperDeployPlanRequest {
+    plugin: KeeperPlugin,
+    cluster: string,
+    singleHost: boolean,
+    image?: string,
+    values: {[key: string]: string},
+    nodes: KeeperDeployNode[],
+}
+
+// KeeperDeployPlanResponse is the resolved deployment: concrete ports and options
+// per node, the effective field values (user-provided or computed), the
+// post-deploy command templates, and advisory warnings. Previews mask
+// credentials.
+export interface KeeperDeployPlanResponse {
+    image: string,
+    values: {[name: string]: string},
+    postDeploy: string[],
+    fields: DeployFieldsResponse,
+    nodes: KeeperDeployPlanNode[],
+    warnings: string[],
+}
+
+export interface KeeperDeployPlanNode {
+    host: string,
+    sshPort: number,
+    keeperPort: number,
+    dbPort: number,
+    ports: {[name: string]: number},
     options: string,
-    optionsSingleHost: string,
+    preview: string,
 }
 
 export interface PlatformLogsRequest {

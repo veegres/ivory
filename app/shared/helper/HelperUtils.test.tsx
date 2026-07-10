@@ -5,15 +5,21 @@ import utc from "dayjs/plugin/utc"
 import {describe, expect, it} from "vitest"
 
 import {NodeConfig} from "../../features/cluster/api/ClusterType"
+import {DeployFieldsResponse, InterpolationVar} from "../../features/node/api/NodeType"
 import {
     DateTimeFormatter,
+    getDeployFieldGroups,
+    getDeployPlaceholderKeys,
     getDomain,
     getDomains,
     getErrorMessage,
+    getKeeperDefaultPort,
     getNodeConfig,
     getNodeConfigs,
     getShortUuid,
+    getUpdatedInputs,
     isConnectionEqual,
+    NodeInputFormat,
     randomUnicodeAnimal,
     SizeFormatter,
     SxPropsFormatter
@@ -75,6 +81,149 @@ describe("getNodeConnections", () => {
             {host: "localhost", keeperPort: 8008},
             {host: "127.0.0.1"},
         ])
+    })
+})
+
+describe("getNodeConfig with format", () => {
+    const withKeeperPort: NodeInputFormat = {
+        withKeeperPort: true,
+        defaults: {keeperPort: 8008, dbPort: 5432, sshPort: 22},
+    }
+    const withoutKeeperPort: NodeInputFormat = {
+        withKeeperPort: false,
+        defaults: {dbPort: 2379, sshPort: 22},
+    }
+
+    it("should fill missing segments from defaults", () => {
+        expect(getNodeConfig("node1", withKeeperPort)).toEqual({
+            host: "node1", keeperPort: 8008, dbPort: 5432, sshPort: 22,
+        })
+    })
+
+    it("should keep provided segments over defaults", () => {
+        expect(getNodeConfig("node1:8009:5433:2222", withKeeperPort)).toEqual({
+            host: "node1", keeperPort: 8009, dbPort: 5433, sshPort: 2222,
+        })
+    })
+
+    it("should parse host:dbPort:sshPort and mirror keeperPort from dbPort", () => {
+        expect(getNodeConfig("node1:2381:2222", withoutKeeperPort)).toEqual({
+            host: "node1", keeperPort: 2381, dbPort: 2381, sshPort: 2222,
+        })
+    })
+
+    it("should mirror the default dbPort into keeperPort when only host is given", () => {
+        expect(getNodeConfig("node1", withoutKeeperPort)).toEqual({
+            host: "node1", keeperPort: 2379, dbPort: 2379, sshPort: 22,
+        })
+    })
+})
+
+describe("getKeeperDefaultPort", () => {
+    it("should return the keeper port when the plugin has a separate one", () => {
+        const fields: DeployFieldsResponse = {
+            defaults: {
+                [InterpolationVar.KeeperPort]: "8008",
+                [InterpolationVar.DbPort]: "5432",
+                [InterpolationVar.DbUser]: "postgres",
+            },
+            fields: [{name: "{{dcs}}", label: "DCS", type: "text", derived: false}],
+        }
+        expect(getKeeperDefaultPort(fields)).toBe(8008)
+    })
+
+    it("should fall back to the db port when there is no separate keeper endpoint", () => {
+        const fields: DeployFieldsResponse = {
+            defaults: {
+                [InterpolationVar.DbPort]: "2379",
+                [InterpolationVar.DbUser]: "root",
+            },
+            fields: [
+                {name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false},
+                {name: "{{initialCluster}}", label: "Initial Cluster", type: "text", derived: true},
+            ],
+        }
+        expect(getKeeperDefaultPort(fields)).toBe(2379)
+    })
+})
+
+describe("getDeployFieldGroups", () => {
+    const patroni: DeployFieldsResponse = {
+        defaults: {
+            [InterpolationVar.KeeperPort]: "8008",
+            [InterpolationVar.DbPort]: "5432",
+            [InterpolationVar.DbUser]: "postgres",
+        },
+        fields: [{name: "{{dcs}}", label: "DCS", type: "text", derived: false}],
+    }
+    const etcd: DeployFieldsResponse = {
+        defaults: {[InterpolationVar.DbPort]: "2379", [InterpolationVar.DbUser]: "root"},
+        fields: [
+            {name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false},
+            {name: "{{initialCluster}}", label: "Initial Cluster", type: "text", derived: true},
+        ],
+    }
+
+    it("should treat a present keeper port and db user as enabled", () => {
+        const groups = getDeployFieldGroups(patroni)
+        expect(groups.withKeeperPort).toBe(true)
+        expect(groups.withDbCredentials).toBe(true)
+        expect(groups.mandatoryFields.map(f => f.name)).toEqual(["{{dcs}}"])
+        expect(groups.autoFields).toEqual([])
+    })
+
+    it("should classify derived and defaulted fields as auto", () => {
+        const groups = getDeployFieldGroups(etcd)
+        expect(groups.withKeeperPort).toBe(false)
+        expect(groups.mandatoryFields).toEqual([])
+        expect(groups.autoFields.map(f => f.name)).toEqual(["{{peerPort}}", "{{initialCluster}}"])
+    })
+
+    it("should default to no fields and credentials required when fields are absent", () => {
+        const groups = getDeployFieldGroups(undefined)
+        expect(groups.withKeeperPort).toBe(false)
+        expect(groups.withDbCredentials).toBe(true)
+        expect(groups.mandatoryFields).toEqual([])
+        expect(groups.autoFields).toEqual([])
+    })
+})
+
+describe("getDeployPlaceholderKeys", () => {
+    const fields: DeployFieldsResponse = {
+        defaults: {[InterpolationVar.DbPort]: "2379"},
+        fields: [{name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false}],
+    }
+
+    it("should drop keeper-port and credential variables when unused and append field names", () => {
+        const keys = getDeployPlaceholderKeys(fields, false, false)
+        expect(keys).not.toContain(InterpolationVar.KeeperPort)
+        expect(keys).not.toContain(InterpolationVar.DbUser)
+        expect(keys).not.toContain(InterpolationVar.DbPass)
+        expect(keys).toContain(InterpolationVar.Host)
+        expect(keys).toContain("{{peerPort}}")
+    })
+
+    it("should keep keeper-port and credentials when used", () => {
+        const keys = getDeployPlaceholderKeys(fields, true, true)
+        expect(keys).toContain(InterpolationVar.KeeperPort)
+        expect(keys).toContain(InterpolationVar.DbUser)
+        expect(keys).toContain(InterpolationVar.DbPass)
+    })
+})
+
+describe("getUpdatedInputs", () => {
+    it("should set a value", () => {
+        expect(getUpdatedInputs({}, "{{dcs}}", "etcd1:2379")).toEqual({"{{dcs}}": "etcd1:2379"})
+    })
+
+    it("should drop a field when cleared so it returns to its computed value", () => {
+        expect(getUpdatedInputs({"{{dcs}}": "x"}, "{{dcs}}", "")).toEqual({})
+    })
+
+    it("should not mutate the input", () => {
+        const inputs = {"{{dcs}}": "x"}
+        getUpdatedInputs(inputs, "{{dcs}}", "y")
+        expect(inputs).toEqual({"{{dcs}}": "x"})
     })
 })
 

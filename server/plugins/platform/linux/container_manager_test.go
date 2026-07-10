@@ -128,6 +128,11 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 			command:  adapter.LogsContainer(connection, name, 50, true).(*ssh.Command).Command,
 			expected: `docker logs --tail 50 --follow -- 'foo; rm -rf /'`,
 		},
+		{
+			name:     "exec quotes name and command fields",
+			command:  adapter.ExecContainer(connection, name, `etcdctl user add 'root:se cret'`).(*ssh.Command).Command,
+			expected: `docker exec -- 'foo; rm -rf /' 'etcdctl' 'user' 'add' 'root:se cret'`,
+		},
 	}
 
 	for _, test := range tests {

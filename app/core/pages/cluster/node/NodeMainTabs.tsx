@@ -6,7 +6,7 @@ import {NodeTabType} from "../../../../features/node/api/NodeType"
 import {Container} from "../../../../features/node/component/container/Container"
 import {Keeper} from "../../../../features/node/component/keeper/Keeper"
 import {Platform} from "../../../../features/node/component/platform/Platform"
-import {getPlatformConnection, getQueryConnection} from "../../../../shared/helper/HelperUtils"
+import {getKeeperOneRequest, getPlatformConnection, getQueryConnection} from "../../../../shared/helper/HelperUtils"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTools} from "./NodeMainTools"
 
@@ -46,7 +46,14 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
     },
     [NodeTabType.KEEPER]: {
         label: "Keeper",
-        body: (c: Cluster, n: Node) => <Keeper node={n} cluster={c}/>,
+        body: (c: Cluster, n: Node) => (
+            <Keeper
+                request={getKeeperOneRequest(c, n.config.host, n.config.keeperPort)}
+                cluster={c.name}
+                candidates={c.nodes.map(node => node.host)}
+                role={n.keeper.role}
+            />
+        ),
         info: <>
             Here you can manipulate with your cluster management systems. Ivory calls it keeper.
             You can adjust your PostgreSQL configurations here, and any changes made will be applied to

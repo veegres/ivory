@@ -3,6 +3,8 @@ import {useMemo, useState} from "react"
 
 import {ClusterApi} from "../../../../features/cluster/api/ClusterRouter"
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
+import {ClusterDeploy} from "../../../../features/cluster/component/ClusterDeploy"
+import {ClusterDetect} from "../../../../features/cluster/component/ClusterDetect"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {TableBody} from "../../../../shared/component/table/TableBody"
 import {TableCellLoader} from "../../../../shared/component/table/TableCellLoader"
@@ -11,9 +13,7 @@ import {KeeperPluginOptions, SxPropsFormatter} from "../../../../shared/helper/H
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import scroll from "../../../../shared/style/scroll.module.css"
 import {Refresher} from "../../../widgets/browser/Refresher"
-import {ListAddCluster} from "./ListAddCluster"
-import {ListDeployCluster} from "./ListDeployCluster"
-import {ListDetectCluster} from "./ListDetectCluster"
+import {ListClusterAdd} from "./ListClusterAdd"
 import {ListEmptyInfo} from "./ListEmptyInfo"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
@@ -55,9 +55,9 @@ export function ListTable(props: Props) {
                             <Box sx={SX.refresh}>
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
-                            <ListDeployCluster keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
-                            <ListDetectCluster keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
-                            <ListAddCluster onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
+                            <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
+                            <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
+                            <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>

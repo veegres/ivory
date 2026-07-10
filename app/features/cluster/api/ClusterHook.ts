@@ -20,6 +20,7 @@ export function useRouterClusterList(enabled: boolean = true) {
         enabled: enabled,
     })
 
+    // TODO this request executes twice when we change keeper type, we need to remove hack and make proper loading logic
     // NOTE: we don't use queryKey to update it, because it will create a separate request and cause new fetching
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {response.refetch().then()}, [tags, keeper])

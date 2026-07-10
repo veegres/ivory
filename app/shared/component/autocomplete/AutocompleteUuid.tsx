@@ -1,5 +1,5 @@
 import {Autocomplete as MuiAutocomplete, AutocompleteRenderInputParams, Box, TextField} from "@mui/material"
-import {HTMLAttributes, useMemo, useState} from "react"
+import {HTMLAttributes, useEffect, useMemo, useState} from "react"
 
 const defaultName = "***"
 
@@ -13,12 +13,20 @@ type Props = {
     loading: boolean,
     onUpdate: (option: Option | null) => void,
     label: string,
+    // search is a persistent baseline query kept in the input while nothing
+    // is selected (e.g. a plugin-locked vault username), so it stays visible
+    // after blur instead of being cleared
+    search?: string,
 }
 
 export function AutocompleteUuid(props: Props) {
-    const {onUpdate, loading, label, selected} = props
-    const [inputValue, setInputValue] = useState("")
+    const {onUpdate, loading, label, selected, search = ""} = props
+    const [inputValue, setInputValue] = useState(search)
     const {value, options, isOptionNotFound} = useMemo(handleMemoOptions, [selected, props.options])
+
+    // NOTE: the search baseline can arrive after mount (options load async);
+    // sync it into the input while nothing is selected
+    useEffect(handleEffectSearch, [search, selected.key])
 
     return (
         <MuiAutocomplete
@@ -29,7 +37,7 @@ export function AutocompleteUuid(props: Props) {
             value={value}
             onChange={(_, v) => onUpdate(v)}
             inputValue={inputValue}
-            onInputChange={(_, v) => setInputValue(v)}
+            onInputChange={handleInputChange}
             loading={loading}
             getOptionLabel={(o) => getLabel(o.short, o.name)}
             getOptionDisabled={(o) => o.name === defaultName}
@@ -56,6 +64,17 @@ export function AutocompleteUuid(props: Props) {
                 {getLabel(option.short, option.name)}
             </Box>
         )
+    }
+
+    function handleInputChange(_: unknown, v: string, reason: string) {
+        // NOTE: on selection/blur MUI resets the input; when nothing stays
+        // selected fall back to the search baseline so it remains visible
+        if (reason === "input") setInputValue(v)
+        else setInputValue(v || search)
+    }
+
+    function handleEffectSearch() {
+        if (search && !selected.key) setInputValue(search)
     }
 
     function getLabel(shortKey: string, name: string) {

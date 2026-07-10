@@ -3,10 +3,9 @@ import {Box} from "@mui/material"
 import {ErrorKeeperRequestMissing} from "../../../../shared/component/box/ErrorManual"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {getKeeperOneRequest} from "../../../../shared/helper/HelperUtils"
-import {Cluster, Node} from "../../../cluster/api/ClusterType"
 import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
+import {KeeperOneRequest, Role} from "../../api/NodeType"
 import {KeeperConfig} from "./KeeperConfig"
 import {KeeperFailoverButton} from "./KeeperFailoverButton"
 import {KeeperReinitButton} from "./KeeperReinitButton"
@@ -21,35 +20,36 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    node: Node,
-    cluster: Cluster,
+    request?: KeeperOneRequest,
+    cluster: string,
+    candidates: string[],
+    role: Role,
 }
 
 export function Keeper(props: Props) {
-    const {node, cluster} = props
-    const keeperRequest = getKeeperOneRequest(cluster, node.config.host, node.config.keeperPort)
+    const {request, cluster, candidates, role} = props
 
     return (
         <Box sx={SX.box}>
             <TitledBox title={"Actions"} island={true} renderActions={renderActions()}>
-                {!keeperRequest && <ErrorKeeperRequestMissing/>}
+                {!request && <ErrorKeeperRequestMissing/>}
             </TitledBox>
             <ManageAccess feature={Feature.ViewNodeKeeperConfig} error={true}>
-                <KeeperConfig options={cluster} node={node}/>
+                <KeeperConfig req={request}/>
             </ManageAccess>
         </Box>
     )
 
     function renderActions() {
-        if (!keeperRequest) return
+        if (!request) return
         return (
             <Box sx={SX.actions}>
-                <KeeperReloadButton request={keeperRequest} cluster={cluster.name}/>
-                <KeeperRestartButton request={keeperRequest} cluster={cluster.name}/>
-                <KeeperReinitButton request={keeperRequest} cluster={cluster.name}/>
-                <KeeperSwitchoverButton request={keeperRequest} cluster={cluster.name} candidates={cluster.nodes}/>
-                <KeeperFailoverButton request={keeperRequest} cluster={cluster.name} role={node.keeper.role}/>
-                <KeeperScheduleButton request={keeperRequest} cluster={cluster.name}/>
+                <KeeperReloadButton request={request} cluster={cluster}/>
+                <KeeperRestartButton request={request} cluster={cluster}/>
+                <KeeperReinitButton request={request} cluster={cluster}/>
+                <KeeperSwitchoverButton request={request} cluster={cluster} candidates={candidates}/>
+                <KeeperFailoverButton request={request} cluster={cluster} role={role}/>
+                <KeeperScheduleButton request={request} cluster={cluster}/>
             </Box>
         )
     }

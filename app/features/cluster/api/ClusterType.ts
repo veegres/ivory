@@ -57,23 +57,28 @@ export interface Overview {
     features: Partial<Record<Feature, boolean>>,
 }
 
-export interface ImageConfig {
+export interface DeployCommonConfig {
     cluster: string,
-    dcs: string,
-    dbPass: string,
-    dbUser: string,
-}
-
-export interface DeployCommonConfig extends ImageConfig {
-    sshPass: string,
     sshUser: string,
+    sshPass: string,
+    dbUser: string,
+    dbPass: string,
 }
 
+export interface DeployNode extends NodeConfig {
+    // options overrides the rendered options template for this node
+    options?: string,
+}
+
+// DeployRequest describes a deployment intent: node ports, the image, aux
+// ports, the DCS value and the per-node options are resolved server-side
+// from the keeper plugin's spec unless explicitly provided.
 export interface DeployRequest {
-    uri: string,
-    parallel: boolean
-    nodeRawImageOptions: {[key: string]: string},
-    nodeConfig: NodeConfig[],
+    parallel: boolean,
+    singleHost: boolean,
+    image?: string,
+    nodes: DeployNode[],
+    values: {[key: string]: string},
     commonConfig: DeployCommonConfig,
     clusterOptions: Options
 }
@@ -89,8 +94,6 @@ export interface Node {
 }
 
 // SPECIFIC (WEB)
-
-export interface InterpolatedOptions extends ImageConfig, NodeConfig {}
 
 export interface ClusterTab {
     label: string,

@@ -13,10 +13,11 @@ const SX: SxPropsMap = {
 type Props = {
     plugins: Plugins,
     onUpdate: (plugins: Plugins) => void,
+    disabled?: boolean,
 }
 
 export function OptionsPlugins(props: Props) {
-    const {plugins, onUpdate} = props
+    const {plugins, onUpdate, disabled = false} = props
 
     return (
         <Box sx={SX.box}>
@@ -26,6 +27,7 @@ export function OptionsPlugins(props: Props) {
                     labelId={"keeper-plugin"}
                     label={"Keeper Plugin"}
                     value={plugins.keeper}
+                    disabled={disabled}
                     onChange={(e) => handleKeeperUpdate(e.target.value as KeeperPlugin)}
                 >
                     <MenuItem value={KeeperPlugin.PATRONI_POSTGRES}>{KeeperPluginOptions[KeeperPlugin.PATRONI_POSTGRES].label}</MenuItem>
@@ -39,6 +41,7 @@ export function OptionsPlugins(props: Props) {
                     labelId={"database-plugin"}
                     label={"Database Plugin"}
                     value={plugins.database}
+                    disabled={disabled}
                     onChange={(e) => handleDatabaseUpdate(e.target.value as DbPlugin)}
                 >
                     <MenuItem value={DbPlugin.POSTGRES}>{DbPluginOptions[DbPlugin.POSTGRES].label}</MenuItem>

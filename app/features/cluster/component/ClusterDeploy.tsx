@@ -2,33 +2,31 @@ import {Edit, Preview, RocketLaunch} from "@mui/icons-material"
 import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 import {useCallback, useEffect, useMemo, useState} from "react"
 
-import {useRouterClusterDeploy} from "../../../../features/cluster/api/ClusterHook"
-import {Options as ClusterOptions} from "../../../../features/cluster/api/ClusterType"
-import {Feature} from "../../../../features/Feature"
-import {ManageAccess} from "../../../../features/management/component/ManageAccess"
-import {useRouterNodePlatformDeployOptions} from "../../../../features/node/api/NodeHook"
-import {KeeperPlugin, PlatformDeployOptions} from "../../../../features/node/api/NodeType"
-import {DbPlugin} from "../../../../features/query/api/QueryType"
-import {VaultType} from "../../../../features/vault/api/VaultType"
-import {Code} from "../../../../shared/component/box/Code"
-import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
-import {List} from "../../../../shared/component/box/List"
-import {ListItem} from "../../../../shared/component/box/ListItem"
-import {Logs} from "../../../../shared/component/box/Logs"
-import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
-import {TitledBox} from "../../../../shared/component/box/TitledBox"
-import {DialogButton} from "../../../../shared/component/button/DialogButton"
-import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
-import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {
-    getInterpolatedImageOptions,
-    getNodeConfigs,
-    InterpolatedOptionsKeys,
-    VaultOptions,
-} from "../../../../shared/helper/HelperUtils"
-import {Options} from "../../../widgets/options/Options"
-import {OptionsVault} from "../../../widgets/options/OptionsVault"
-import {ListNodeInput} from "./ListNodeInput"
+import {ListNodeInput} from "../../../core/pages/cluster/list/ListNodeInput"
+import {Options} from "../../../core/widgets/options/Options"
+import {OptionsVault} from "../../../core/widgets/options/OptionsVault"
+import {Code} from "../../../shared/component/box/Code"
+import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
+import {List} from "../../../shared/component/box/List"
+import {ListItem} from "../../../shared/component/box/ListItem"
+import {Logs} from "../../../shared/component/box/Logs"
+import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitledBox} from "../../../shared/component/box/TitledBox"
+import {WarningList} from "../../../shared/component/box/WarningList"
+import {DialogButton} from "../../../shared/component/button/DialogButton"
+import {TypedField} from "../../../shared/component/input/TypedField"
+import {SkeletonGroup} from "../../../shared/component/progress/SkeletonGroup"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {getDeployPlaceholderKeys, getNodeConfigs, NodeInputFormat, VaultOptions} from "../../../shared/helper/HelperUtils"
+import {useDebounce} from "../../../shared/hook/Debounce"
+import {Feature} from "../../Feature"
+import {ManageAccess} from "../../management/component/ManageAccess"
+import {useKeeperDeployForm, useRouterNodeKeeperDeployPlan} from "../../node/api/NodeHook"
+import {DeployFieldResponse, InterpolationVar, KeeperDeployPlanRequest, KeeperPlugin} from "../../node/api/NodeType"
+import {DbPlugin} from "../../query/api/QueryType"
+import {VaultType} from "../../vault/api/VaultType"
+import {useRouterClusterDeploy} from "../api/ClusterHook"
+import {Options as ClusterOptions} from "../api/ClusterType"
 
 const SX: SxPropsMap = {
     note: {
@@ -55,43 +53,52 @@ type Props = {
     withLabel?: boolean,
 }
 
-export function ListDeployCluster(props: Props) {
+export function ClusterDeploy(props: Props) {
     const {keeper, database, withLabel = false} = props
     const [cluster, setCluster] = useState("")
-    const [image, setImage] = useState<PlatformDeployOptions>()
-    const [imagePlugin, setImagePlugin] = useState<KeeperPlugin>()
     const [options, setOptions] = useState<ClusterOptions>(InitialRequest(keeper, database))
-    const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
+    const [overrides, setOverrides] = useState<{[node: string]: string}>({})
     const [nodes, setNodes] = useState<string[]>([])
     const [ssh, setSsh] = useState<"new" | "vault">("vault")
     const [db, setDb] = useState<"new" | "vault">("vault")
     const [sshCred, setSshCred] = useState({username: "", password: ""})
     const [dbCred, setDbCred] = useState({username: "", password: ""})
-    const [dcs, setDcs] = useState("")
-    const [preview, setPreview] = useState(true)
     const [dev, setDev] = useState(false)
     const [parallel, setParallel] = useState(false)
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
     const deploy = useRouterClusterDeploy(setResponse)
-    const deployOptions = useRouterNodePlatformDeployOptions(options.plugins.keeper)
+    const {
+        deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, updateInput,
+        withKeeperPort, withDbCredentials, mandatoryFields, autoFields,
+    } = useKeeperDeployForm(options.plugins.keeper)
 
-    useEffect(handleEffectDeployOptions, [deployOptions.data, imagePlugin, options.plugins.keeper, dev])
+    useEffect(handleEffectPluginProps, [keeper, database])
+    useEffect(handleEffectImage, [image])
 
-    const imageOptionsStr = useMemo(() => (dev ? image?.optionsSingleHost : image?.options) ?? "", [dev, image])
+    const fields = image?.fields
 
-    const handleImageUpdate = useCallback(handleCallImageUpdate, [])
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
-    const handleEnvUpdates = useCallback(handleCallEnvUpdates, [])
+    const handleNodesUpdate = useCallback(handleCallNodesUpdate, [])
     const handleSingleHostUpdate = useCallback(handleCallSingleHostUpdate, [])
-    const handleNodesUpdate = useCallback(handleCallNodesUpdate, [imageOptionsStr])
 
-    const imageOptionEntries = useMemo(handleMemoImageOptionEntries, [imageOptions])
-    const imageInterpolatedOptions = useMemo(
-        handleMemoImageInterpolatedOptions,
-        [imageOptionEntries, cluster, dbCred, dcs, preview]
+    const nodeFormat = useMemo(handleMemoNodeFormat, [fields, withKeeperPort])
+    const placeholderKeys = getDeployPlaceholderKeys(fields, withKeeperPort, withDbCredentials)
+    const planRequest = useMemo(
+        handleMemoPlanRequest,
+        // NOTE: getValues is intentionally not a dependency, its input
+        // (inputs) is listed instead
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [image, imageUri, options.plugins.keeper, cluster, dev, nodes, nodeFormat, inputs, overrides, fields]
     )
+    const plan = useRouterNodeKeeperDeployPlan(useDebounce(planRequest, 300))
+    // NOTE: the plan query keeps the previous response while a new one is
+    // fetching (and when it is disabled), so removed nodes are filtered out
+    // by the current request instead of waiting for the next response
+    const planNodes = useMemo(handleMemoPlanNodes, [plan.data, planRequest])
+    const planWarnings = planRequest ? plan.data?.warnings ?? [] : []
+    const planValues = planRequest ? plan.data?.values ?? {} : {}
 
     return (
         <ManageAccess feature={Feature.ManageClusterCreate}>
@@ -110,8 +117,8 @@ export function ListDeployCluster(props: Props) {
     )
 
     function renderBody() {
-        if (deployOptions.isError) return <ErrorSmart error={deployOptions.error}/>
-        if (deployOptions.isPending || !image || imagePlugin !== options.plugins.keeper) return <SkeletonGroup count={3}/>
+        if (deploySpec.isError) return <ErrorSmart error={deploySpec.error}/>
+        if (deploySpec.isPending || !ready) return <SkeletonGroup count={3}/>
         return (
             <Box sx={[SX.subContent, {gap: 1}]}>
                 {renderMandatoryFields()}
@@ -122,8 +129,9 @@ export function ListDeployCluster(props: Props) {
     }
 
     function renderActions() {
+        const planReady = !!planRequest && !!plan.data && planWarnings.length === 0
         return (
-            <Button fullWidth={true} loading={deploy.isPending} onClick={handleDeploy} disabled={!cluster || !image || !!response}>
+            <Button fullWidth={true} loading={deploy.isPending} onClick={handleDeploy} disabled={!cluster || !planReady || !!response}>
                 Deploy
             </Button>
         )
@@ -149,8 +157,8 @@ export function ListDeployCluster(props: Props) {
                     <ListItem
                         title={"Single-host mode"}
                         description={`
-                            Single-VM setup: services communicate via localhost. Local DNS resolution may 
-                            require additional /etc/hosts entries. Designed for development and testing. 
+                            Single-VM setup: services communicate via localhost. Local DNS resolution may
+                            require additional /etc/hosts entries. Designed for development and testing.
                         `}
                         button={<Checkbox
                             size={"small"}
@@ -175,6 +183,7 @@ export function ListDeployCluster(props: Props) {
                             inputs={nodes}
                             onChange={handleNodesUpdate}
                             editable={true}
+                            withKeeperPort={withKeeperPort}
                         />
                     </Box>
                 </TitledBox>
@@ -186,22 +195,32 @@ export function ListDeployCluster(props: Props) {
     }
 
     function renderMandatoryOptions() {
-        if (image?.defaultValues["dcs"]) return
+        if (mandatoryFields.length === 0) return
         return (
             <TitledBox title={"Mandatory Options"} island={true}>
-                <TextField
-                    fullWidth={true}
-                    size={"small"}
-                    label={"DCS (etcd, zookeper, etc)"}
-                    helperText={"Example: etcd1:2379, etcd3:2379, etcd3:2379"}
-                    value={dcs}
-                    onChange={(e) => setDcs(e.target.value)}
-                />
+                <Box sx={[SX.subContent, {gap: 1}]}>
+                    {mandatoryFields.map(renderField)}
+                </Box>
             </TitledBox>
         )
     }
 
+    function renderField(field: DeployFieldResponse) {
+        return (
+            <TypedField
+                key={field.name}
+                label={field.label}
+                example={field.example}
+                type={field.type}
+                value={inputs[field.name] ?? planValues[field.name] ?? field.default ?? ""}
+                disabled={autoFields.includes(field) && preview}
+                onChange={(v) => updateInput(field.name, v)}
+            />
+        )
+    }
+
     function renderDbInputs() {
+        if (!withDbCredentials) return
         return (
             <TitledBox title={"Database Credentials"} renderActions={renderDbInputActions()} island={true}>
                 {db === "new" ? (
@@ -211,7 +230,7 @@ export function ListDeployCluster(props: Props) {
                             size={"small"}
                             label={"Username"}
                             value={dbCred.username}
-                            disabled={!!image?.defaultValues["username"]}
+                            disabled={!!fields?.defaults[InterpolationVar.DbUser]}
                             onChange={v => setDbCred({...dbCred, username: v.target.value})}
                         />
                         <TextField
@@ -220,7 +239,6 @@ export function ListDeployCluster(props: Props) {
                             type={"password"}
                             label={"Password"}
                             value={dbCred.password}
-                            disabled={!!image?.defaultValues["password"]}
                             onChange={v => setDbCred({...dbCred, password: v.target.value})}
                         />
                     </Box>
@@ -229,6 +247,7 @@ export function ListDeployCluster(props: Props) {
                         type={VaultType.DATABASE_PASSWORD}
                         selected={options.vaults.databaseId}
                         onUpdate={handleVaultUpdate}
+                        username={fields?.defaults[InterpolationVar.DbUser] || undefined}
                     />
                 )}
             </TitledBox>
@@ -294,8 +313,8 @@ export function ListDeployCluster(props: Props) {
                             fullWidth={true}
                             size={"small"}
                             label={"Image"}
-                            value={image?.uri ?? ""}
-                            onChange={v => handleImageUpdate(v.target.value)}
+                            value={imageUri}
+                            onChange={v => setImageUri(v.target.value)}
                         />
                         <ToggleButtonGroup value={preview} exclusive={true} size={"small"} onChange={(_, v) => setPreview(v)}>
                             <Tooltip title={"Preview"} placement={"top"}>
@@ -309,25 +328,34 @@ export function ListDeployCluster(props: Props) {
                     <Box sx={SX.note}>
                         <Box>Use interpolated options to automatically populate values</Box>
                         <Box sx={SX.note}>
-                            {InterpolatedOptionsKeys.map(k => (
-                                <Code key={k} sx={{fontSize: "11px"}}>{`{{${k}}}`}</Code>
+                            {placeholderKeys.map(k => (
+                                <Code key={k} sx={{fontSize: "11px"}}>{k}</Code>
                             ))}
                         </Box>
                     </Box>
-                    {imageOptionEntries.length === 0 ? (
+                    <WarningList warnings={planWarnings}/>
+                    {autoFields.length > 0 && planNodes.length > 0 && (
+                        <Box sx={[SX.subContent, {gap: 1}]}>
+                            {autoFields.map(renderField)}
+                        </Box>
+                    )}
+                    {planNodes.length === 0 ? (
                         <Box sx={SX.note}>Start by adding nodes – image options will appear here</Box>
-                    ) : imageOptionEntries.map(([nodeFull]) => (
-                        <TextField
-                            key={nodeFull}
-                            fullWidth={true}
-                            multiline={true}
-                            disabled={preview}
-                            size={"small"}
-                            label={<Box>Node <Code>{nodeFull}</Code> options</Box>}
-                            value={imageInterpolatedOptions[nodeFull]}
-                            onChange={v => handleEnvUpdates(nodeFull, v.target.value)}
-                        />
-                    ))}
+                    ) : planNodes.map(node => {
+                        const key = `${node.host}:${node.keeperPort}`
+                        return (
+                            <TextField
+                                key={key}
+                                fullWidth={true}
+                                multiline={true}
+                                disabled={preview}
+                                size={"small"}
+                                label={<Box>Node <Code>{getNodeLabel(node.host, node.keeperPort, node.dbPort, node.sshPort)}</Code> options</Box>}
+                                value={preview ? node.preview : overrides[key] ?? node.options}
+                                onChange={v => handleOverrideUpdate(key, v.target.value)}
+                            />
+                        )
+                    })}
                 </Box>
             </SubContentBox>
         )
@@ -336,44 +364,58 @@ export function ListDeployCluster(props: Props) {
     function renderClusterOptions() {
         return (
             <SubContentBox label={"Cluster Options"} island={true}>
-                <Options options={options} onUpdate={handleOptionsUpdate}/>
+                <Options options={options} onUpdate={handleOptionsUpdate} disablePlugins={true}/>
             </SubContentBox>
         )
     }
 
-    function handleMemoImageOptionEntries() {
-        return Object.entries(imageOptions)
+    function handleMemoPlanNodes() {
+        if (!planRequest) return []
+        const keys = new Set(planRequest.nodes.map(n => `${n.host}:${n.keeperPort}`))
+        return (plan.data?.nodes ?? []).filter(n => keys.has(`${n.host}:${n.keeperPort}`))
     }
 
-    function handleMemoImageInterpolatedOptions() {
-        if (!preview) return Object.fromEntries(imageOptionEntries)
-        return Object.fromEntries(imageOptionEntries.map(([nodeFull, opt]) => {
-            const [host, keeperPort, dbPort] = nodeFull.split(":")
-            return [nodeFull, getInterpolatedImageOptions(opt, {
-                cluster: cluster, host: host, keeperPort: Number(keeperPort), dcs,
-                dbPort: Number(dbPort), dbUser: dbCred.username, dbPass: dbCred.password,
-            })]
-        }))
+    function handleMemoNodeFormat(): NodeInputFormat | undefined {
+        if (!fields) return undefined
+        return {
+            withKeeperPort,
+            defaults: {
+                keeperPort: Number(fields.defaults[InterpolationVar.KeeperPort]) || undefined,
+                dbPort: Number(fields.defaults[InterpolationVar.DbPort]) || undefined,
+                sshPort: 22,
+            },
+        }
     }
 
-    function handleCallEnvUpdates(node: string, opt: string) {
-        setImageOptions(prev => ({...prev, [node]: opt}))
+    function handleMemoPlanRequest(): KeeperDeployPlanRequest | undefined {
+        if (!image || !nodeFormat) return undefined
+        const activeNodes = nodes.filter(n => !!n)
+        if (activeNodes.length === 0) return undefined
+        return {
+            plugin: options.plugins.keeper,
+            cluster,
+            singleHost: dev,
+            image: imageUri,
+            values: getValues(),
+            nodes: getNodeConfigs(activeNodes, nodeFormat).map(config => (
+                {...config, options: overrides[`${config.host}:${config.keeperPort}`]}
+            )),
+        }
+    }
+
+    function handleOverrideUpdate(node: string, opt: string) {
+        setOverrides(prev => ({...prev, [node]: opt}))
     }
 
     function handleCallNodesUpdate(nodes: string[]) {
         setNodes(nodes)
-        setImageOptions(prev => Object.fromEntries(
-            nodes.filter(n => !!n)
-                .map(node => prev[node] !== undefined ? [node, prev[node]] : [node, imageOptionsStr])
-        ))
     }
 
     function handleCallSingleHostUpdate(checked: boolean) {
         setDev(checked)
-    }
-
-    function handleCallImageUpdate(uri: string) {
-        setImage(prev => prev && ({...prev, uri}))
+        // NOTE: the rendered template differs between the modes, edits made
+        // for one mode don't apply to the other
+        setOverrides({})
     }
 
     function handleCallOptionsUpdate(opt: ClusterOptions) {
@@ -385,22 +427,15 @@ export function ListDeployCluster(props: Props) {
     }
 
     function handleDeploy() {
-        if (!image) return
-        const nodeConfigs = getNodeConfigs(nodes)
-        const imageOptionsSmallKeys = Object.fromEntries(
-            Object.entries(imageOptions).map(([nodeFull, opt]) => {
-                const [host, keeperPort] = nodeFull.split(":")
-                const node = keeperPort ? `${host}:${keeperPort}` : host
-                return [node, opt]
-            })
-        )
+        if (!planRequest) return
         deploy.mutate({
-            uri: image.uri,
             parallel: parallel,
-            nodeRawImageOptions: imageOptionsSmallKeys,
-            nodeConfig: nodeConfigs,
+            singleHost: dev,
+            image: imageUri,
+            nodes: planRequest.nodes,
+            values: getValues(),
             commonConfig: {
-                cluster, dcs,
+                cluster,
                 dbUser: dbCred.username, dbPass: dbCred.password,
                 sshUser: sshCred.username, sshPass: sshCred.password,
             },
@@ -408,15 +443,32 @@ export function ListDeployCluster(props: Props) {
         })
     }
 
-    // NOTE: applies fetched defaults once per selected keeper plugin, so user
-    // edits are kept until the plugin changes and per-node options are reseeded
-    function handleEffectDeployOptions() {
-        const data = deployOptions.data
-        if (!data || imagePlugin === options.plugins.keeper) return
-        setImagePlugin(options.plugins.keeper)
-        setImage(data)
-        setDbCred({username: data.defaultValues["username"] ?? "", password: data.defaultValues["password"] ?? ""})
-        const template = dev ? data.optionsSingleHost : data.options
-        setImageOptions(prev => Object.fromEntries(Object.keys(prev).map(node => [node, template])))
+    // NOTE: the plugin selectors are disabled inside the dialog, so the plugins
+    // can only change through the cluster list filter; the filter also changes
+    // the node input format, hence the entered nodes are reset (the mandatory
+    // field inputs are reset by useKeeperDeployForm itself once the new
+    // plugin's spec loads)
+    function handleEffectPluginProps() {
+        setOptions(prev => ({...prev, plugins: {keeper, database}}))
+        setNodes([])
+        setOverrides({})
+    }
+
+    // NOTE: applies the fetched default database username once per selected
+    // keeper plugin, so a user edit is kept until the plugin changes
+    function handleEffectImage() {
+        if (!image) return
+        setDbCred({username: image.fields.defaults[InterpolationVar.DbUser] ?? "", password: ""})
+    }
+
+    // NOTE: credentials are never part of the values — they are resolved
+    // from the vault at execution time and stay visible as {{dbUser}}/
+    // {{dbPass}} in the preview
+    function getValues() {
+        return {...inputs}
+    }
+
+    function getNodeLabel(host: string, keeperPort: number, dbPort: number, sshPort: number) {
+        return withKeeperPort ? `${host}:${keeperPort}:${dbPort}:${sshPort}` : `${host}:${dbPort}:${sshPort}`
     }
 }

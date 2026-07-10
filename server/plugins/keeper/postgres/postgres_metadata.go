@@ -24,16 +24,21 @@ func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
 
 func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
 	return keeper.DeploymentSpec{
-		DefaultImage:  "postgres:18",
-		DefaultValues: map[string]string{},
-		Ports:         []string{"{{dbPort}}"},
+		DefaultImage: "postgres:18",
+		// NOTE: the empty username means credentials are consumed but the
+		// username is the user's choice
+		Defaults: map[keeper.Var]string{
+			keeper.VarDbPort: "5432",
+			keeper.VarDbUser: "",
+		},
+		Ports: []string{keeper.VarDbPort},
 		Volumes: []keeper.VolumeSpec{
 			{HostPath: "/data/postgres", ContainerPath: "/var/lib/postgresql/data"},
 		},
 		Env: []keeper.EnvVar{
-			{Name: "PGPORT", Value: `"{{dbPort}}"`},
-			{Name: "POSTGRES_USER", Value: `"{{dbUser}}"`},
-			{Name: "POSTGRES_PASSWORD", Value: `"{{dbPass}}"`},
+			{Name: "PGPORT", Value: `"` + keeper.VarDbPort + `"`},
+			{Name: "POSTGRES_USER", Value: `"` + keeper.VarDbUser + `"`},
+			{Name: "POSTGRES_PASSWORD", Value: `"` + keeper.VarDbPass + `"`},
 		},
 	}
 }

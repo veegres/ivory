@@ -140,7 +140,7 @@ export function OverviewNodesRow(props: Props) {
         if (!keeperRequest) return
         switch (role) {
             case "replica": return <KeeperReinitButton request={keeperRequest} cluster={cluster.name}/>
-            case "leader": return <KeeperSwitchoverButton request={keeperRequest} cluster={cluster.name} candidates={candidates} leaderKey={node.keeper.key}/>
+            case "leader": return <KeeperSwitchoverButton request={keeperRequest} cluster={cluster.name} candidates={candidates.map(c => c.host)} leaderKey={node.keeper.key}/>
             default: return
         }
     }

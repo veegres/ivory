@@ -10,7 +10,7 @@ type Props = {
     withLabel?: boolean,
 }
 
-export function ListAddCluster(props: Props) {
+export function ListClusterAdd(props: Props) {
     const {onClick, disabled = false, withLabel = false} = props
 
     return (

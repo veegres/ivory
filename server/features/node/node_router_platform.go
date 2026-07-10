@@ -22,10 +22,6 @@ func (r *Router) GetPlatformInfo(context *gin.Context) {
 	handlePlatformParamRequest(context, r.service.PlatformVmInfo)
 }
 
-func (r *Router) GetPlatformContainerDeployOptions(context *gin.Context) {
-	handlePlatformParamRequest(context, r.service.PlatformContainerDeployOptions)
-}
-
 func (r *Router) PostPlatformContainerUp(context *gin.Context) {
 	handlePlatformBodyRequest(context, r.service.PlatformContainerUp)
 }

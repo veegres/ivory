@@ -1,12 +1,12 @@
 import {Alert, Box} from "@mui/material"
 
+import {ClusterDeploy} from "../../../../features/cluster/component/ClusterDeploy"
+import {ClusterDetect} from "../../../../features/cluster/component/ClusterDetect"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {KeeperPluginOptions} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
-import {ListAddCluster} from "./ListAddCluster"
+import {ListClusterAdd} from "./ListClusterAdd"
 import {ListClusterConcepts} from "./ListClusterConcepts"
-import {ListDeployCluster} from "./ListDeployCluster"
-import {ListDetectCluster} from "./ListDetectCluster"
 
 const SX: SxPropsMap = {
     alert: {"& .MuiAlert-message": {width: "100%"}},
@@ -34,13 +34,13 @@ export function ListEmptyInfo(props: Props) {
                 <Box>{getHeadline()}</Box>
                 <Box sx={SX.buttons}>
                     <Box sx={SX.button}>
-                        <ListDeployCluster keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin} withLabel={true}/>
+                        <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin} withLabel={true}/>
                     </Box>
                     <Box sx={SX.button}>
-                        <ListDetectCluster keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin} withLabel={true}/>
+                        <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin} withLabel={true}/>
                     </Box>
                     <Box sx={SX.button}>
-                        <ListAddCluster onClick={onAddManually} disabled={disabledAddManually} withLabel={true}/>
+                        <ListClusterAdd onClick={onAddManually} disabled={disabledAddManually} withLabel={true}/>
                     </Box>
                 </Box>
                 <ListClusterConcepts/>

@@ -79,14 +79,14 @@ export function NodeMain(props: Props) {
     function renderPlatformActions() {
         const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
         if (!con) return
-        const queryKeys = [NodeApi.metrics.key(con.host), NodeApi.processes.key(con.host)]
+        const queryKeys = [NodeApi.platform.metrics.key(con.host), NodeApi.platform.processes.key(con.host)]
         return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]} size={32}/>
     }
 
     function renderContainerActions() {
         const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
         if (!con) return
-        const queryKeys = [NodeApi.deployment.metrics.key({connection: con, name: con.host})]
+        const queryKeys = [NodeApi.container.metrics.key({connection: con, name: con.host})]
         return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]} size={32}/>
     }
 }

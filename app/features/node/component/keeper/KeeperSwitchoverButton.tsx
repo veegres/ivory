@@ -4,7 +4,6 @@ import {useState} from "react"
 
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
 import {ScheduleInput} from "../../../../shared/component/input/ScheduleInput"
-import {NodeConfig} from "../../../cluster/api/ClusterType"
 import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
 import {useRouterNodeSwitchover} from "../../api/NodeHook"
@@ -13,7 +12,7 @@ import {KeeperOneRequest} from "../../api/NodeType"
 type Props = {
     cluster: string,
     request: KeeperOneRequest,
-    candidates: NodeConfig[],
+    candidates: string[],
     leaderKey?: string,
 }
 
@@ -57,8 +56,8 @@ export function KeeperSwitchoverButton(props: Props) {
                     variant={"outlined"}
                 >
                     <MenuItem value={undefined}><em>none (will be chosen randomly)</em></MenuItem>
-                    {candidates.map(config => (
-                        <MenuItem key={config.host} value={config.host}>{config.host}</MenuItem>
+                    {candidates.map(host => (
+                        <MenuItem key={host} value={host}>{host}</MenuItem>
                     ))}
                 </Select>
             </FormControl>

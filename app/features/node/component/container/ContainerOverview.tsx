@@ -15,7 +15,7 @@ import {
     useRouterNodePlatformStop,
 } from "../../api/NodeHook"
 import {PlatformVaultConnection} from "../../api/NodeType"
-import {ContainerOverviewDeploy} from "./ContainerOverviewDeploy"
+import {ContainerKeeperDeploy} from "./ContainerKeeperDeploy"
 import {ContainerOverviewMetrics} from "./ContainerOverviewMetrics"
 
 const SX: SxPropsMap = {
@@ -57,7 +57,15 @@ export function ContainerOverview(props: Props) {
             <Box sx={SX.head}>
                 <Box sx={SX.name}>{connection.host}</Box>
                 <ManageAccessBox sx={SX.action} feature={Feature.ManageNodePlatformContainer}>
-                    {activeCluster && <ContainerOverviewDeploy connection={connection} cluster={activeCluster}/>}
+                    {activeCluster && (
+                        <ContainerKeeperDeploy
+                            connection={connection}
+                            plugin={activeCluster.plugins.keeper}
+                            cluster={activeCluster.name}
+                            databaseId={activeCluster.vaults.databaseId}
+                            sshKeyId={activeCluster.vaults.sshKeyId}
+                        />
+                    )}
                     <AlertButton
                         color={"inherit"}
                         variant={"outlined"}

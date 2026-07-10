@@ -1,16 +1,18 @@
 import {AutoFixHigh} from "@mui/icons-material"
 import {Box, Button, Divider, TextField} from "@mui/material"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 
-import {useRouterClusterCreateAuto} from "../../../../features/cluster/api/ClusterHook"
-import {AutoRequest} from "../../../../features/cluster/api/ClusterType"
-import {Feature} from "../../../../features/Feature"
-import {ManageAccess} from "../../../../features/management/component/ManageAccess"
-import {KeeperPlugin} from "../../../../features/node/api/NodeType"
-import {DbPlugin} from "../../../../features/query/api/QueryType"
-import {DialogButton} from "../../../../shared/component/button/DialogButton"
-import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {Options} from "../../../widgets/options/Options"
+import {Options} from "../../../core/widgets/options/Options"
+import {DialogButton} from "../../../shared/component/button/DialogButton"
+import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {getKeeperDefaultPort} from "../../../shared/helper/HelperUtils"
+import {Feature} from "../../Feature"
+import {ManageAccess} from "../../management/component/ManageAccess"
+import {useRouterNodeKeeperDeploySpec} from "../../node/api/NodeHook"
+import {KeeperPlugin} from "../../node/api/NodeType"
+import {DbPlugin} from "../../query/api/QueryType"
+import {useRouterClusterCreateAuto} from "../api/ClusterHook"
+import {AutoRequest} from "../api/ClusterType"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
@@ -23,7 +25,7 @@ const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     name: "", certs: {}, vaults: {}, tags: [],
     plugins: {database, keeper},
     tls: {keeper: false, database: false},
-    host: "", port: 8008,
+    host: "", port: 0,
 }) as AutoRequest
 
 type Props = {
@@ -32,10 +34,14 @@ type Props = {
     withLabel?: boolean,
 }
 
-export function ListDetectCluster(props: Props) {
+export function ClusterDetect(props: Props) {
     const {keeper, database, withLabel = false} = props
     const [request, setRequest] = useState(InitialRequest(keeper, database))
+    const [portPlugin, setPortPlugin] = useState<KeeperPlugin>()
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
+    const deploySpec = useRouterNodeKeeperDeploySpec(keeper)
+
+    useEffect(handleEffectDeploySpec, [deploySpec.data, portPlugin, keeper, database])
 
     return (
         <ManageAccess feature={Feature.ManageClusterCreate}>
@@ -72,7 +78,7 @@ export function ListDetectCluster(props: Props) {
                     />
                 </Box>
                 <Divider variant={"middle"}/>
-                <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})}/>
+                <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})} disablePlugins={true}/>
             </DialogButton>
         </ManageAccess>
     )
@@ -103,5 +109,16 @@ export function ListDetectCluster(props: Props) {
 
     function handleSuccessUpdate() {
         setRequest(InitialRequest(keeper, database))
+        setPortPlugin(undefined)
+    }
+
+    // NOTE: seeds the keeper API port default once per selected keeper plugin,
+    // the plugin selectors are disabled inside the dialog, so the plugins can
+    // only change through the cluster list filter
+    function handleEffectDeploySpec() {
+        const data = deploySpec.data
+        if (!data || portPlugin === keeper) return
+        setPortPlugin(keeper)
+        setRequest(prev => ({...prev, plugins: {keeper, database}, port: getKeeperDefaultPort(data.fields)}))
     }
 }

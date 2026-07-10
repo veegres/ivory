@@ -21,15 +21,16 @@ const SX: SxPropsMap = {
 type Props = {
     options: ClusterOptions,
     onUpdate: (options: ClusterOptions) => void,
+    disablePlugins?: boolean,
 }
 
 export const Options = memo(function Options(props: Props) {
-    const {onUpdate, options} = props
+    const {onUpdate, options, disablePlugins = false} = props
     const {vaults, tags, certs, tls, plugins} = options
 
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
-            <OptionsPlugins plugins={plugins} onUpdate={handlePluginsUpdate}/>
+            <OptionsPlugins plugins={plugins} onUpdate={handlePluginsUpdate} disabled={disablePlugins}/>
             <Divider variant={"middle"}/>
             <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/>
             <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/>

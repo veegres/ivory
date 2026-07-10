@@ -89,6 +89,12 @@ func (a *Adapter) RestartContainer(connection platform.Connection, name string) 
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("restart -- "+shellQuote(name)))
 }
 
+func (a *Adapter) ExecContainer(connection platform.Connection, name string, command string) console.Command {
+	parts := []string{"exec", "--", shellQuote(name)}
+	parts = append(parts, shellQuoteFields(command)...)
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(parts, " ")))
+}
+
 func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
 	commandStr := "logs "
 	if tail > 0 {

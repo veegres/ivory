@@ -1,44 +1,36 @@
-import {useQuery} from "@tanstack/react-query"
+import {keepPreviousData, useQuery} from "@tanstack/react-query"
+import {useEffect, useState} from "react"
 
+import {getDeployFieldGroups, getUpdatedInputs} from "../../../shared/helper/HelperUtils"
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
 import {useStream} from "../../../shared/hook/Stream"
 import {useStore} from "../../../shared/provider/StoreProvider"
 import {ClusterApi} from "../../cluster/api/ClusterRouter"
-import {NodeConfig} from "../../cluster/api/ClusterType"
 import {NodeApi} from "./NodeRouter"
-import {KeeperOneRequest, KeeperPlugin, PlatformActionRequest, PlatformLogsRequest, PlatformVaultConnection} from "./NodeType"
+import {
+    KeeperDeployPlanRequest,
+    KeeperDeploySpecResponse,
+    KeeperOneRequest,
+    KeeperPlugin,
+    PlatformActionRequest,
+    PlatformLogsRequest,
+    PlatformVaultConnection,
+} from "./NodeType"
 
 export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
-    const {loading, response, reconnect} = useStream(NodeApi.logs.url(request), {enabled})
+    const {loading, response, reconnect} = useStream(NodeApi.platform.logs.url(request), {enabled})
     return {isFetching: loading, data: response, reconnect}
 }
 
 export function useRouterNodePlatformContainerLogs(request: PlatformLogsRequest) {
-    const {loading, response, reconnect} = useStream(NodeApi.deployment.logs.url(request))
+    const {loading, response, reconnect} = useStream(NodeApi.container.logs.url(request))
     return {isFetching: loading, data: response, reconnect}
-}
-
-export function useRouterNodePlatformUp(connection: PlatformVaultConnection) {
-    const activeCluster = useStore(s => s.activeCluster)
-    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
-    return useMutationAdapter({
-        mutationFn: NodeApi.deployment.up.fn,
-        mutationKey: NodeApi.deployment.up.key(),
-        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
-    })
-}
-
-export function useRouterNodePlatformDeployOptions(plugin: KeeperPlugin) {
-    return useQuery({
-        queryKey: NodeApi.deployment.deployOptions.key(plugin),
-        queryFn: () => NodeApi.deployment.deployOptions.fn({plugin}),
-    })
 }
 
 export function useRouterNodePlatformList(request: PlatformVaultConnection) {
     return useQuery({
-        queryKey: NodeApi.deployment.list.key(request),
-        queryFn: () => NodeApi.deployment.list.fn(request),
+        queryKey: NodeApi.container.list.key(request),
+        queryFn: () => NodeApi.container.list.fn(request),
     })
 }
 
@@ -46,89 +38,90 @@ export function useRouterNodeConfig(request?: KeeperOneRequest) {
     const req = request ?? {host: "", port: 1, plugin: KeeperPlugin.PATRONI_POSTGRES}
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.config.key(req.host, req.port),
-        queryFn: () => NodeApi.config.fn(req),
+        queryKey: NodeApi.keeper.config.key(req.host, req.port),
+        queryFn: () => NodeApi.keeper.config.fn(req),
         enabled: !!request,
     })
 }
 
-export function useRouterNodeConfigUpdate(config: NodeConfig, onSuccess: () => void) {
+export function useRouterNodeConfigUpdate(request: KeeperOneRequest | undefined, onSuccess: () => void) {
+    const req = request ?? {host: "", port: 1, plugin: KeeperPlugin.PATRONI_POSTGRES}
     return useMutationAdapter({
-        mutationFn: NodeApi.updateConfig.fn,
-        mutationKey: NodeApi.updateConfig.key(),
-        successKeys: [NodeApi.config.key(config.host, config.keeperPort)],
+        mutationFn: NodeApi.keeper.updateConfig.fn,
+        mutationKey: NodeApi.keeper.updateConfig.key(),
+        successKeys: [NodeApi.keeper.config.key(req.host, req.port)],
         onSuccess: onSuccess,
     })
 }
 
 export function useRouterNodeSwitchoverDelete(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.deleteSwitchover.fn,
-        mutationKey: NodeApi.deleteSwitchover.key(),
+        mutationFn: NodeApi.keeper.deleteSwitchover.fn,
+        mutationKey: NodeApi.keeper.deleteSwitchover.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodeRestartDelete(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.deleteRestart.fn,
-        mutationKey: NodeApi.deleteRestart.key(),
+        mutationFn: NodeApi.keeper.deleteRestart.fn,
+        mutationKey: NodeApi.keeper.deleteRestart.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodeRestart(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.restart.fn,
-        mutationKey: NodeApi.restart.key(),
+        mutationFn: NodeApi.keeper.restart.fn,
+        mutationKey: NodeApi.keeper.restart.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodeReload(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.reload.fn,
-        mutationKey: NodeApi.reload.key(),
+        mutationFn: NodeApi.keeper.reload.fn,
+        mutationKey: NodeApi.keeper.reload.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodeReinit(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.reinitialize.fn,
-        mutationKey: NodeApi.reinitialize.key(),
+        mutationFn: NodeApi.keeper.reinitialize.fn,
+        mutationKey: NodeApi.keeper.reinitialize.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodeSwitchover(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.switchover.fn,
-        mutationKey: NodeApi.switchover.key(),
+        mutationFn: NodeApi.keeper.switchover.fn,
+        mutationKey: NodeApi.keeper.switchover.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodeFailover(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.failover.fn,
-        mutationKey: NodeApi.failover.key(),
+        mutationFn: NodeApi.keeper.failover.fn,
+        mutationKey: NodeApi.keeper.failover.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodeActivate(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.activate.fn,
-        mutationKey: NodeApi.activate.key(),
+        mutationFn: NodeApi.keeper.activate.fn,
+        mutationKey: NodeApi.keeper.activate.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
 
 export function useRouterNodePause(cluster: string) {
     return useMutationAdapter({
-        mutationFn: NodeApi.pause.fn,
-        mutationKey: NodeApi.pause.key(),
+        mutationFn: NodeApi.keeper.pause.fn,
+        mutationKey: NodeApi.keeper.pause.key(),
         successKeys: [ClusterApi.overview.key(cluster)]
     })
 }
@@ -139,16 +132,16 @@ export function useRouterNodePause(cluster: string) {
 export function useRouterNodeMetrics(c: PlatformVaultConnection) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.metrics.key(c.host),
-        queryFn: () => NodeApi.metrics.fn(c),
+        queryKey: NodeApi.platform.metrics.key(c.host),
+        queryFn: () => NodeApi.platform.metrics.fn(c),
         retry: false,
     })
 }
 
 export function useRouterNodePlatformContainerMetrics(request: PlatformActionRequest) {
     return useQuery({
-        queryKey: NodeApi.deployment.metrics.key(request),
-        queryFn: () => NodeApi.deployment.metrics.fn(request),
+        queryKey: NodeApi.container.metrics.key(request),
+        queryFn: () => NodeApi.container.metrics.fn(request),
         retry: false,
     })
 }
@@ -156,8 +149,8 @@ export function useRouterNodePlatformContainerMetrics(request: PlatformActionReq
 export function useRouterNodePlatformProcesses(c: PlatformVaultConnection) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.processes.key(c.host),
-        queryFn: () => NodeApi.processes.fn(c),
+        queryKey: NodeApi.platform.processes.key(c.host),
+        queryFn: () => NodeApi.platform.processes.fn(c),
         retry: false,
     })
 }
@@ -165,8 +158,8 @@ export function useRouterNodePlatformProcesses(c: PlatformVaultConnection) {
 export function useRouterNodePlatformInfo(c: PlatformVaultConnection) {
     return useQuery({
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: NodeApi.info.key(c.host),
-        queryFn: () => NodeApi.info.fn(c),
+        queryKey: NodeApi.platform.info.key(c.host),
+        queryFn: () => NodeApi.platform.info.fn(c),
         retry: false,
     })
 }
@@ -175,9 +168,9 @@ export function useRouterNodePlatformStart(connection: PlatformVaultConnection) 
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
-        mutationFn: NodeApi.deployment.start.fn,
-        mutationKey: NodeApi.deployment.start.key(),
-        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
+        mutationFn: NodeApi.container.start.fn,
+        mutationKey: NodeApi.container.start.key(),
+        successKeys: [NodeApi.container.list.key(connection), activeClusterKey],
     })
 }
 
@@ -185,9 +178,9 @@ export function useRouterNodePlatformStop(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
-        mutationFn: NodeApi.deployment.stop.fn,
-        mutationKey: NodeApi.deployment.stop.key(),
-        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
+        mutationFn: NodeApi.container.stop.fn,
+        mutationKey: NodeApi.container.stop.key(),
+        successKeys: [NodeApi.container.list.key(connection), activeClusterKey],
     })
 }
 
@@ -195,9 +188,9 @@ export function useRouterNodePlatformRestart(connection: PlatformVaultConnection
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
-        mutationFn: NodeApi.deployment.restart.fn,
-        mutationKey: NodeApi.deployment.restart.key(),
-        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
+        mutationFn: NodeApi.container.restart.fn,
+        mutationKey: NodeApi.container.restart.key(),
+        successKeys: [NodeApi.container.list.key(connection), activeClusterKey],
     })
 }
 
@@ -205,8 +198,76 @@ export function useRouterNodePlatformDown(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
     return useMutationAdapter({
-        mutationFn: NodeApi.deployment.down.fn,
-        mutationKey: NodeApi.deployment.down.key(),
-        successKeys: [NodeApi.deployment.list.key(connection), activeClusterKey],
+        mutationFn: NodeApi.container.down.fn,
+        mutationKey: NodeApi.container.down.key(),
+        successKeys: [NodeApi.container.list.key(connection), activeClusterKey],
     })
+}
+
+export function useRouterNodeKeeperDeploy(connection: PlatformVaultConnection) {
+    const activeCluster = useStore(s => s.activeCluster)
+    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    return useMutationAdapter({
+        mutationFn: NodeApi.container.keeper.deploy.fn,
+        mutationKey: NodeApi.container.keeper.deploy.key(),
+        successKeys: [NodeApi.container.list.key(connection), activeClusterKey],
+    })
+}
+
+export function useRouterNodeKeeperDeploySpec(plugin: KeeperPlugin) {
+    return useQuery({
+        queryKey: NodeApi.container.keeper.deploySpec.key(plugin),
+        queryFn: () => NodeApi.container.keeper.deploySpec.fn({plugin}),
+    })
+}
+
+// NOTE: the plan is a pure server-side computation of the deployment (ports,
+// aux ports, dcs, per-node options and credential-masked previews); callers
+// debounce the request themselves, previous data is kept while refetching to
+// avoid preview flicker
+export function useRouterNodeKeeperDeployPlan(request?: KeeperDeployPlanRequest) {
+    return useQuery({
+        queryKey: NodeApi.container.keeper.deployPlan.key(request),
+        queryFn: () => NodeApi.container.keeper.deployPlan.fn(request ?? {} as KeeperDeployPlanRequest),
+        enabled: !!request,
+        placeholderData: keepPreviousData,
+    })
+}
+
+// useKeeperDeployForm is the business logic shared by every keeper deploy
+// dialog (cluster's whole-cluster ClusterDeploy and node's single-container
+// ContainerKeeperDeploy): it seeds the image/URI once per plugin from the
+// deploy spec, derives the field groups, and owns the mandatory-field inputs
+// map. Node owns this because it owns the deploy spec/plan computation
+// itself; cluster only reuses it (the same direction as the API layer).
+export function useKeeperDeployForm(plugin: KeeperPlugin) {
+    const [image, setImage] = useState<KeeperDeploySpecResponse>()
+    const [imageUri, setImageUri] = useState("")
+    const [imagePlugin, setImagePlugin] = useState<KeeperPlugin>()
+    const [inputs, setInputs] = useState<{[name: string]: string}>({})
+    const [preview, setPreview] = useState(true)
+
+    const deploySpec = useRouterNodeKeeperDeploySpec(plugin)
+
+    useEffect(handleEffectDeploySpec, [deploySpec.data, imagePlugin, plugin])
+
+    // NOTE: false while a newly selected plugin's spec hasn't loaded yet, so
+    // callers can keep showing a skeleton instead of the previous plugin's fields
+    const ready = !!image && imagePlugin === plugin
+    const groups = getDeployFieldGroups(image?.fields)
+
+    return {deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, updateInput, ...groups}
+
+    function handleEffectDeploySpec() {
+        const data = deploySpec.data
+        if (!data || imagePlugin === plugin) return
+        setImagePlugin(plugin)
+        setImage(data)
+        setImageUri(data.uri)
+        setInputs({})
+    }
+
+    function updateInput(name: string, value: string) {
+        setInputs(prev => getUpdatedInputs(prev, name, value))
+    }
 }

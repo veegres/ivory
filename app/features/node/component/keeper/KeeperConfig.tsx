@@ -8,13 +8,13 @@ import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {CodeThemes, getKeeperOneRequest} from "../../../../shared/helper/HelperUtils"
+import {CodeThemes} from "../../../../shared/helper/HelperUtils"
 import {useSettings} from "../../../../shared/provider/AppProvider"
 import {useSnackbar} from "../../../../shared/provider/SnackbarProvider"
-import {Node, Options} from "../../../cluster/api/ClusterType"
 import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
 import {useRouterNodeConfig, useRouterNodeConfigUpdate} from "../../api/NodeHook"
+import {KeeperOneRequest} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     input: {flexGrow: 1, borderWidth: "1px", borderStyle: "solid", overflowX: "auto", ">div": {height: "100%"}},
@@ -22,20 +22,18 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    node: Node,
-    options: Options,
+    req?: KeeperOneRequest,
 }
 
 export function KeeperConfig(props: Props) {
-    const {node, options} = props
+    const {req} = props
     const settings = useSettings()
     const snackbar = useSnackbar()
     const [isEditable, setIsEditable] = useState(false)
     const [configState, setConfigState] = useState("")
-    const req = getKeeperOneRequest(options, node.config.host, node.config.keeperPort)
 
     const config = useRouterNodeConfig(req)
-    const updateConfig = useRouterNodeConfigUpdate(node.config, () => setIsEditable(false))
+    const updateConfig = useRouterNodeConfigUpdate(req, () => setIsEditable(false))
 
     const {data, isPending, isError, error} = config
 

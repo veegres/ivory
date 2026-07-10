@@ -1,15 +1,16 @@
 package node
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"ivory/clients/console"
 	"ivory/core/service/job"
+	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
-	"regexp"
-	"strconv"
+	"maps"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func (s *Service) PlatformVmCopyId(r PlatformCopyIdRequest) (string, error) {
@@ -94,24 +95,6 @@ func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, err
 	return s.executeCommand(adapter.StartContainer(conn, r.Name))
 }
 
-func (s *Service) PlatformContainerDeployOptions(r PlatformDeployOptionsRequest) (*PlatformDeployOptionsResponse, error) {
-	metadata, err := s.keeperMetadataRegistry.Get(r.Plugin)
-	if err != nil {
-		return nil, err
-	}
-	adapter, err := s.platformRegistry.Get(platform.Linux)
-	if err != nil {
-		return nil, err
-	}
-	spec := metadata.DeploymentSpec()
-	return &PlatformDeployOptionsResponse{
-		Uri:               spec.DefaultImage,
-		DefaultValues:     spec.DefaultValues,
-		Options:           adapter.RenderOptions(mapKeeperDeploymentToPlatformSpec(spec, false)),
-		OptionsSingleHost: adapter.RenderOptions(mapKeeperDeploymentToPlatformSpec(spec, true)),
-	}, nil
-}
-
 func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 	if r.Connection.Host == "" {
 		return nil, errors.New("host is empty")
@@ -122,50 +105,64 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 		return nil, err
 	}
 
-	values := ImageOptions{}
-	values.Host = r.Connection.Host
-	values.Cluster = r.ImageOptions.Cluster
-	values.Dcs = r.ImageOptions.Dcs
-	values.KeeperPort = strconv.Itoa(r.ImageOptions.KeeperPort)
-	values.DbPort = strconv.Itoa(r.ImageOptions.DbPort)
-
-	// 1. Handle DB Password
-	dbCred, errDb := s.vaultService.GetDecrypted(r.Vaults.DatabaseId)
-	if errDb != nil {
-		return nil, fmt.Errorf("failed to get database credentials from vault: %v", errDb)
+	values, err := s.getExecutionValues(r.Connection.Host, r.Vaults, r.Values)
+	if err != nil {
+		return nil, err
 	}
-	values.DbUser = dbCred.Username
-	values.DbPass = dbCred.Secret
 
-	interpolatedString, errString := s.getInterpolatedString(r.RawImageOptions, values)
-	if errString != nil {
-		return nil, errString
+	options := s.normalizeDatabaseOptions(keeper.Interpolate(r.Options, values))
+	if unresolved := keeper.UnresolvedPlaceholders(options); len(unresolved) > 0 {
+		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
 	}
-	options := s.normalizeDatabaseOptions(interpolatedString)
 
 	return s.executeCommand(adapter.UpContainer(conn, options, r.Image))
 }
 
-func (s *Service) normalizeDatabaseOptions(options string) string {
-	return strings.Join(strings.Fields(options), " ")
+// PlatformContainerExec runs one command inside the named deployment,
+// interpolating the command template exactly like PlatformContainerUp does
+// for options (host and vault credentials are injected server-side).
+func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error) {
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	if err != nil {
+		return nil, err
+	}
+
+	values, err := s.getExecutionValues(r.Connection.Host, r.Vaults, r.Values)
+	if err != nil {
+		return nil, err
+	}
+
+	command := keeper.Interpolate(r.Command, values)
+	if unresolved := keeper.UnresolvedPlaceholders(command); len(unresolved) > 0 {
+		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
+	}
+
+	return s.executeCommand(adapter.ExecContainer(conn, r.Name, command))
 }
 
-func (s *Service) getInterpolatedString(template string, values ImageOptions) (string, error) {
-	// 1. Convert struct to JSON bytes
-	bytes, _ := json.Marshal(values)
-	// 2. Unmarshal bytes into a map
-	var resultMap map[string]string
-	err := json.Unmarshal(bytes, &resultMap)
-	if err != nil {
-		return "", err
-	}
-	return regexp.MustCompile(`{{(\w+)}}`).ReplaceAllStringFunc(template, func(match string) string {
-		key := match[2 : len(match)-2]
-		if val, ok := resultMap[key]; ok {
-			return val
+// getExecutionValues finalizes interpolation values for execution: the host
+// comes from the connection and the database credentials from the vault, so
+// they cannot be spoofed through request values.
+func (s *Service) getExecutionValues(host string, vaults Vaults, requestValues map[string]string) (map[string]string, error) {
+	values := make(map[string]string, len(requestValues)+3)
+	maps.Copy(values, requestValues)
+	values[keeper.VarHost] = host
+
+	// NOTE: the vault is optional for keeper plugins that consume no database
+	// credentials, unused values just keep their placeholders unresolved
+	if vaults.DatabaseId != uuid.Nil {
+		dbCred, err := s.vaultService.GetDecrypted(vaults.DatabaseId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get database credentials from vault: %v", err)
 		}
-		return match
-	}), nil
+		values[keeper.VarDbUser] = dbCred.Username
+		values[keeper.VarDbPass] = dbCred.Secret
+	}
+	return values, nil
+}
+
+func (s *Service) normalizeDatabaseOptions(options string) string {
+	return strings.Join(strings.Fields(options), " ")
 }
 
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {
