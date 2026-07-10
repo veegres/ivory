@@ -8,7 +8,7 @@ const SX: SxPropsMap = {
     title: {color: "text.disabled", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.2em"},
     concepts: {
         display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "baseline",
-        columnGap: 2, rowGap: 1, maxWidth: 420, width: "100%", fontSize: "0.8rem",
+        columnGap: 2, rowGap: 1, maxWidth: 430, width: "100%", fontSize: "0.8rem",
     },
     term: {color: "text.primary", whiteSpace: "nowrap"},
     description: {color: "text.secondary", textAlign: "left"},

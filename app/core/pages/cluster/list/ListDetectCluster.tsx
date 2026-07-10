@@ -19,21 +19,22 @@ const SX: SxPropsMap = {
     node: {display: "flex", gap: 2},
 }
 
-const InitialRequest: AutoRequest = {
+const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     name: "", certs: {}, vaults: {}, tags: [],
-    plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI_POSTGRES},
+    plugins: {database, keeper},
     tls: {keeper: false, database: false},
     host: "", port: 8008,
-}
+}) as AutoRequest
 
 type Props = {
     keeper: KeeperPlugin,
+    database: DbPlugin,
     withLabel?: boolean,
 }
 
 export function ListDetectCluster(props: Props) {
-    const {withLabel = false} = props
-    const [request, setRequest] = useState(InitialRequest)
+    const {keeper, database, withLabel = false} = props
+    const [request, setRequest] = useState(InitialRequest(keeper, database))
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
     return (
@@ -101,6 +102,6 @@ export function ListDetectCluster(props: Props) {
     }
 
     function handleSuccessUpdate() {
-        setRequest(InitialRequest)
+        setRequest(InitialRequest(keeper, database))
     }
 }

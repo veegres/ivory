@@ -43,25 +43,24 @@ const SX: SxPropsMap = {
     row: {"&:hover": {color: "primary.main"}},
 }
 
-const INITIAL_OPTIONS: ClusterOptions = {
+const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     certs: {}, vaults: {}, tags: [],
-    plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI_POSTGRES},
+    plugins: {database, keeper},
     tls: {keeper: false, database: false},
-}
+}) as ClusterOptions
 
 type Props = {
     keeper: KeeperPlugin,
+    database: DbPlugin,
     withLabel?: boolean,
 }
 
 export function ListDeployCluster(props: Props) {
-    const {keeper, withLabel = false} = props
+    const {keeper, database, withLabel = false} = props
     const [cluster, setCluster] = useState("")
     const [image, setImage] = useState<PlatformDeployOptions>()
     const [imagePlugin, setImagePlugin] = useState<KeeperPlugin>()
-    const [options, setOptions] = useState<ClusterOptions>(() => (
-        {...INITIAL_OPTIONS, plugins: {...INITIAL_OPTIONS.plugins, keeper}}
-    ))
+    const [options, setOptions] = useState<ClusterOptions>(InitialRequest(keeper, database))
     const [imageOptions, setImageOptions] = useState<{[node: string]: string}>({})
     const [nodes, setNodes] = useState<string[]>([])
     const [ssh, setSsh] = useState<"new" | "vault">("vault")

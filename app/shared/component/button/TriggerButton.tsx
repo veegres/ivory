@@ -36,7 +36,7 @@ export function TriggerButton(props: Props) {
                 variant={"text"}
                 startIcon={icon}
                 disabled={disabled}
-                sx={{height: `${size}px`, width: `${size}px`, padding: "5px 8px 5px 13px", lineHeight: 1}}
+                sx={{height: `${size}px`, padding: "5px 8px 5px 13px", lineHeight: 1}}
                 onClick={onClick}
             >
                 {label}

@@ -3,12 +3,11 @@ import {useMemo, useState} from "react"
 
 import {ClusterApi} from "../../../../features/cluster/api/ClusterRouter"
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
-import {KeeperPlugin} from "../../../../features/node/api/NodeType"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {TableBody} from "../../../../shared/component/table/TableBody"
 import {TableCellLoader} from "../../../../shared/component/table/TableCellLoader"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
+import {KeeperPluginOptions, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import scroll from "../../../../shared/style/scroll.module.css"
 import {Refresher} from "../../../widgets/browser/Refresher"
@@ -32,6 +31,7 @@ type Props = {
 }
 
 export function ListTable(props: Props) {
+    const keeper = useStore(s => s.activeClusterKeeperPlugin)
     const activeCluster = useStore(s => s.activeCluster)
     const search = useStore(s => s.searchCluster)
     const {list, fetching, pending} = props
@@ -55,8 +55,8 @@ export function ListTable(props: Props) {
                             <Box sx={SX.refresh}>
                                 <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
                             </Box>
-                            <ListDeployCluster keeper={KeeperPlugin.PATRONI_POSTGRES}/>
-                            <ListDetectCluster keeper={KeeperPlugin.PATRONI_POSTGRES}/>
+                            <ListDeployCluster keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
+                            <ListDetectCluster keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
                             <ListAddCluster onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>
                     </TableRow>

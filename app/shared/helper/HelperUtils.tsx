@@ -69,10 +69,10 @@ export const VaultOptions: { [key in VaultType]: EnumOptions } = {
     [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
 }
 
-export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions } = {
-    [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres"},
-    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Native Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres"},
-    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Native Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd"},
+export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlugin: DbPlugin} } = {
+    [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres", dbPlugin: DbPlugin.POSTGRES},
+    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Native Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES},
+    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Native Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD},
 }
 
 export const DbPluginOptions: { [key in DbPlugin]: EnumOptions } = {

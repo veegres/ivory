@@ -1,10 +1,8 @@
 import {FormControl, OutlinedInput, TableRow} from "@mui/material"
 import {useState} from "react"
 
-import {KeeperPlugin} from "../../../../features/node/api/NodeType"
-import {DbPlugin} from "../../../../features/query/api/QueryType"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {getNodeConfigs} from "../../../../shared/helper/HelperUtils"
+import {getNodeConfigs, KeeperPluginOptions} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import {ListCell} from "./ListCell"
 import {ListCellUpdate} from "./ListCellUpdate"
@@ -22,6 +20,8 @@ type Props = {
 export function ListRowNew(props: Props) {
     const {show, close} = props
     const activeTags = useStore(s => s.activeTags)
+    const keeper = useStore(s => s.activeClusterKeeperPlugin)
+    const database = KeeperPluginOptions[keeper].dbPlugin
     const [stateName, setStateName] = useState("")
     const [stateNodes, setStateNodes] = useState([""])
 
@@ -46,7 +46,7 @@ export function ListRowNew(props: Props) {
                 <ListCellUpdate
                     cluster={{
                         name: stateName,
-                        plugins: {database: DbPlugin.POSTGRES, keeper: KeeperPlugin.PATRONI_POSTGRES},
+                        plugins: {database, keeper},
                         nodes: getNodeConfigs(stateNodes),
                         tags: activeTags.filter(t => t !== "ALL"),
                         certs: {},
