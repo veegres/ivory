@@ -28,15 +28,23 @@ const InitialRequest: AutoRequest = {
 
 type Props = {
     keeper: KeeperPlugin,
+    withLabel?: boolean,
 }
 
-export function ListDetectCluster(_: Props) {
+export function ListDetectCluster(props: Props) {
+    const {withLabel = false} = props
     const [request, setRequest] = useState(InitialRequest)
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
 
     return (
         <ManageAccess feature={Feature.ManageClusterCreate}>
-            <DialogButton title={"DETECT CLUSTER"} renderActions={renderActions()} icon={<AutoFixHigh/>}>
+            <DialogButton
+                title={"DETECT CLUSTER"}
+                renderActions={renderActions()}
+                icon={<AutoFixHigh/>}
+                variant={withLabel ? "button_label" : "icon"}
+                label={"Detect"}
+            >
                 <TextField
                     size={"small"}
                     label={"Name"}

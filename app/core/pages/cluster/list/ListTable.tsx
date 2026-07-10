@@ -3,11 +3,8 @@ import {useMemo, useState} from "react"
 
 import {ClusterApi} from "../../../../features/cluster/api/ClusterRouter"
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
-import {Feature} from "../../../../features/Feature"
-import {ManageAccessBox} from "../../../../features/management/component/ManageAccess"
 import {KeeperPlugin} from "../../../../features/node/api/NodeType"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
-import {AddIconButton} from "../../../../shared/component/button/IconButtons"
 import {TableBody} from "../../../../shared/component/table/TableBody"
 import {TableCellLoader} from "../../../../shared/component/table/TableCellLoader"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
@@ -15,8 +12,10 @@ import {SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import scroll from "../../../../shared/style/scroll.module.css"
 import {Refresher} from "../../../widgets/browser/Refresher"
+import {ListAddCluster} from "./ListAddCluster"
 import {ListDeployCluster} from "./ListDeployCluster"
 import {ListDetectCluster} from "./ListDetectCluster"
+import {ListEmptyInfo} from "./ListEmptyInfo"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
 
@@ -58,13 +57,7 @@ export function ListTable(props: Props) {
                             </Box>
                             <ListDeployCluster keeper={KeeperPlugin.PATRONI_POSTGRES}/>
                             <ListDetectCluster keeper={KeeperPlugin.PATRONI_POSTGRES}/>
-                            <ManageAccessBox feature={Feature.ManageClusterUpdate}>
-                                <AddIconButton
-                                    tooltip={"ADD CLUSTER"}
-                                    onClick={() => setShowNewElement(true)}
-                                    disabled={showNewElement}
-                                />
-                            </ManageAccessBox>
+                            <ListAddCluster onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                         </TableCellLoader>
                     </TableRow>
                 </TableHead>
@@ -98,15 +91,17 @@ export function ListTable(props: Props) {
 
     function renderEmpty() {
         if (pending || showNewElement || rows.length || activeCluster) return
-        const text = search ? (
-            "There are no clusters that match your filter"
-        ) : (
-            "There are no clusters yet. Use the Deploy or Auto Detection buttons above, or click + to add one manually — a host and keeper port are the minimum required."
-        )
         return (
             <TableRow>
                 <TableCell colSpan={3}>
-                    <AlertCentered text={text}/>
+                    {search ? (
+                        <AlertCentered text={"There are no clusters that match your filter"}/>
+                    ) : (
+                        <ListEmptyInfo
+                            onAddManually={() => setShowNewElement(true)}
+                            disabledAddManually={showNewElement}
+                        />
+                    )}
                 </TableCell>
             </TableRow>
         )

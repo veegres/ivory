@@ -1,4 +1,4 @@
-import {InputBase, ToggleButton} from "@mui/material"
+import {Box, InputBase, ToggleButton, Tooltip} from "@mui/material"
 
 import {useRouterTagList} from "../../../../features/tag/api/TagHook"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
@@ -40,17 +40,21 @@ export function ListTags() {
                 value={search}
                 onChange={e => setSearchCluster(e.target.value)}
             />,
-            <ToggleButton
-                key={"warnings"}
-                sx={SX.element}
-                color={"warning"}
-                size={"small"}
-                selected={warningsCount > 0}
-                disabled
-                value={warnings}
-            >
-                {warningsCount}
-            </ToggleButton>
+            <Tooltip key={"warnings"} title={"Detected Problems"} placement={"top"}>
+                <Box component={"span"}>
+                    <ToggleButton
+                        key={"warnings"}
+                        sx={SX.element}
+                        color={"warning"}
+                        size={"small"}
+                        selected={warningsCount > 0}
+                        disabled={true}
+                        value={warnings}
+                    >
+                        {warningsCount}
+                    </ToggleButton>
+                </Box>
+            </Tooltip>
         ]
     }
 }

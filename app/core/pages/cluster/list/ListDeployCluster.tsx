@@ -51,10 +51,11 @@ const INITIAL_OPTIONS: ClusterOptions = {
 
 type Props = {
     keeper: KeeperPlugin,
+    withLabel?: boolean,
 }
 
 export function ListDeployCluster(props: Props) {
-    const {keeper} = props
+    const {keeper, withLabel = false} = props
     const [cluster, setCluster] = useState("")
     const [image, setImage] = useState<PlatformDeployOptions>()
     const [imagePlugin, setImagePlugin] = useState<KeeperPlugin>()
@@ -99,6 +100,8 @@ export function ListDeployCluster(props: Props) {
                 title={"DEPLOY CLUSTER"}
                 renderActions={renderActions()}
                 icon={<RocketLaunch/>}
+                variant={withLabel ? "button_label" : "icon"}
+                label={"Deploy"}
                 back={!!response}
                 onBackClick={() => setResponse(undefined)}
             >

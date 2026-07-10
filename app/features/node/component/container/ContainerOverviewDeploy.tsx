@@ -56,7 +56,7 @@ export function ContainerOverviewDeploy(props: Props) {
     return (
         <DialogButton
             title={"DEPLOY CONTAINER"}
-            variant={"outlined"}
+            variant={"button"}
             renderActions={renderActions()}
             icon={<Rocket fontSize={"small"}/>}
             back={!!up.data}

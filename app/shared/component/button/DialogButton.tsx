@@ -1,11 +1,11 @@
 import {ArrowBack} from "@mui/icons-material"
-import {Box, Dialog, DialogActions, DialogTitle, IconButton as MuiIconButton, Tooltip} from "@mui/material"
+import {Box, Dialog, DialogActions, DialogTitle, IconButton as MuiIconButton} from "@mui/material"
 import {SvgIconProps} from "@mui/material"
 import {ReactElement, ReactNode, useEffect, useState} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
-import {CloseIconButton, IconButton} from "./IconButtons"
-import {SimpleButton} from "./SimpleButton"
+import {CloseIconButton} from "./IconButtons"
+import {TriggerButton} from "./TriggerButton"
 
 const SX: SxPropsMap = {
     dialog: {minWidth: "1010px"},
@@ -22,33 +22,25 @@ const SX: SxPropsMap = {
 
 type Props = {
     title: string
+    label?: string,
     children: ReactNode,
-    renderActions: ReactNode,
+    renderActions?: ReactNode,
     icon: ReactElement<SvgIconProps>,
     size?: number,
     back?: boolean,
     onBackClick?: () => void,
-    variant?: "outlined" | "icon",
+    variant?: "button" | "icon" | "button_label",
 }
 
 export function DialogButton(props: Props) {
-    const {children, renderActions, title, icon, size, back, onBackClick, variant = "icon"} = props
+    const {children, renderActions, title, icon, size, back, onBackClick, variant = "icon", label} = props
     const [open, setOpen] = useState(false)
 
     useEffect(handleEffectClose, [onBackClick, open])
-    
+
     return (
         <Box>
-            {variant === "outlined" ? (
-                <Tooltip title={title} arrow={true} placement={"top"}>
-                    <SimpleButton
-                        sx={{height: `${size}px`, width: `${size}px`}}
-                        onClick={() => setOpen(true)}
-                    >{icon}</SimpleButton>
-                </Tooltip>
-            ) : (
-                <IconButton tooltip={title} icon={icon} size={size} onClick={() => setOpen(true)}/>
-            )}
+            {renderTrigger()}
             <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.title}>
                     <MuiIconButton disableRipple={!back} onClick={onBackClick}>
@@ -66,6 +58,19 @@ export function DialogButton(props: Props) {
             </Dialog>
         </Box>
     )
+
+    function renderTrigger() {
+        return (
+            <TriggerButton
+                variant={variant}
+                title={title}
+                label={label}
+                icon={icon}
+                size={size}
+                onClick={() => setOpen(true)}
+            />
+        )
+    }
 
     function handleEffectClose() {
         if (!open && onBackClick) onBackClick()

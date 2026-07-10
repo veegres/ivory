@@ -19,7 +19,6 @@ export function Settings() {
     return (
         <DialogButton
             title={SettingOptions[page].label}
-            renderActions={""}
             icon={<MuiSettings/>}
             back={page !== SettingsType.MENU}
             onBackClick={() => setPage(SettingsType.MENU)}
