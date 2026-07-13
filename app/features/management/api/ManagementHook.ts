@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query"
 
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
-import {ClusterApi} from "../../cluster/api/ClusterRouter"
+import {useRouterClusterListKey} from "../../cluster/api/ClusterHook"
 import {ManagementApi} from "./ManagementRouter"
 
 export function useRouterInfo(enabled: boolean = true) {
@@ -53,10 +53,11 @@ export function useRouterExport() {
 }
 
 export function useRouterImport() {
+    const clusterListKeys = useRouterClusterListKey()
     return useMutationAdapter({
         mutationFn: ManagementApi.import.fn,
         mutationKey: ManagementApi.import.key(),
         // NOTE: raw prefix invalidates all query lists regardless of type/plugin filters
-        successKeys: [ClusterApi.list.key(), ["query", "list"]],
+        successKeys: [clusterListKeys, ["query", "list"]],
     })
 }

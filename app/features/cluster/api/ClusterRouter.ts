@@ -7,7 +7,7 @@ import {AutoRequest, Cluster, DeployRequest, Overview} from "./ClusterType"
 
 export const ClusterApi = {
     list: {
-        key: () => ["cluster", "list"],
+        key: (tags: string[] = [], keeper?: KeeperPlugin, database?: DbPlugin) => ["cluster", "list", keeper, database, ...tags],
         fn: (tags?: string[], keeper?: KeeperPlugin, database?: DbPlugin) => api
             .get<R<Cluster[]>>("/cluster", {params: {tags, keeper, database}})
             .then((response) => response.data.response.map(v => (

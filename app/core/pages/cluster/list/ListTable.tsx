@@ -1,7 +1,6 @@
 import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material"
 import {useMemo, useState} from "react"
 
-import {ClusterApi} from "../../../../features/cluster/api/ClusterRouter"
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
 import {ClusterDeploy} from "../../../../features/cluster/component/ClusterDeploy"
 import {ClusterDetect} from "../../../../features/cluster/component/ClusterDetect"
@@ -12,11 +11,11 @@ import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {KeeperPluginOptions, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import scroll from "../../../../shared/style/scroll.module.css"
-import {Refresher} from "../../../widgets/browser/Refresher"
 import {ListClusterAdd} from "./ListClusterAdd"
 import {ListEmptyInfo} from "./ListEmptyInfo"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
+import {ListTableRefresher} from "./ListTableRefresher"
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
@@ -52,9 +51,7 @@ export function ListTable(props: Props) {
                             colSpan={2}
                             loading={fetching && !pending}
                         >
-                            <Box sx={SX.refresh}>
-                                <Refresher queryKeys={[ClusterApi.list.key(), ClusterApi.overview.key()]}/>
-                            </Box>
+                            <ListTableRefresher/>
                             <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
                             <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
                             <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
