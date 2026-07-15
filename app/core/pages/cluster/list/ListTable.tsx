@@ -51,7 +51,7 @@ export function ListTable(props: Props) {
                             colSpan={2}
                             loading={fetching && !pending}
                         >
-                            <ListTableRefresher/>
+                            <ListTableRefresher clusters={rows.map(s => s.name)}/>
                             <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
                             <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
                             <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>

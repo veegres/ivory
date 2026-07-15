@@ -9,12 +9,17 @@ const SX: SxPropsMap = {
     box: {padding: "0px 5px"},
 }
 
-// TODO it updates only current overview, probably it is not correct and we should update all of them...
-export function ListTableRefresher() {
+type Props = {
+    clusters: string[],
+}
+
+export function ListTableRefresher(props: Props) {
+    const {clusters} = props
     const clusterListKeys = useRouterClusterListKey()
+    const clusterListOverviewKeys = clusters.map(c => ClusterApi.overview.key(c))
     return (
         <Box sx={SX.box}>
-            <Refresher queryKeys={[clusterListKeys, ClusterApi.overview.key()]}/>
+            <Refresher queryKeys={[clusterListKeys, ...clusterListOverviewKeys]}/>
         </Box>
     )
 }

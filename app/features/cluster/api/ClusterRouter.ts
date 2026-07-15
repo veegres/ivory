@@ -18,7 +18,7 @@ export const ClusterApi = {
             ))),
     },
     overview: {
-        key: (name?: string, host?: string, port?: string) => ["cluster", "overview", name, host, port],
+        key: (name: string, host?: string, port?: string) => ["cluster", "overview", name, host, port],
         fn: (name: string, host?: string, port?: string) => api
             .get<R<Overview>>(`/cluster/overview/${name}`, {params: {host, port}})
             .then((response) => response.data.response),

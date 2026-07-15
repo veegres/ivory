@@ -32,7 +32,7 @@ const group = (size: number): SxProps<Theme> => ({"& .MuiButtonGroup-grouped": {
 
 const periods: [string, number][] = [
     ["Off", 0], ["1s", 1000], ["3s", 3000], ["5s", 5000], ["10s", 10000],
-    ["30s", 30000], ["1m", 60000], ["5m", 50000], ["10m", 100000],
+    ["30s", 30000], ["1m", 60000], ["5m", 500000], ["10m", 1000000],
 ]
 
 type Props = {
@@ -47,12 +47,12 @@ export function Refresher(props: Props) {
     const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
     const period = useStore(s => s.refresh[queryKeysStr]) ?? defaultPeriod ?? periods[0]
-    const {setRefreshPeriod} = useStoreAction
     const [label, ms] = period
+    const {setRefreshPeriod} = useStoreAction
     const anchorRef = useRef(null)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(handleEffect, [])
+    useEffect(handleEffect, [ms])
 
     return (
         <>
@@ -83,7 +83,7 @@ export function Refresher(props: Props) {
     )
     
     function handleEffect() {
-        if (period[1] !== 0) handleInterval(period[1]).then()
+        if (ms !== 0) handleInterval(ms).then()
         return () => handleClear(periods[0][1])
     }
 
@@ -95,7 +95,6 @@ export function Refresher(props: Props) {
 
     function handleClick(label: string, ms: number) {
         setRefreshPeriod(queryKeysStr, [label, ms])
-        handleInterval(ms).then()
     }
 
     async function handleInterval(ms: number) {

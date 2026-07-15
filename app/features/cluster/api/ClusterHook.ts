@@ -32,7 +32,7 @@ export function useRouterClusterOverview(name?: string, enabled: boolean = true)
     const manualKeeper = useStore(s => s.manualKeeper)
     const [host, port] = activeCluster?.name === name ? manualKeeper?.split(":") ?? [] : []
     return useQuery({
-        queryKey: ClusterApi.overview.key(name, host, port),
+        queryKey: ClusterApi.overview.key(name ?? "disabled", host, port),
         queryFn: () => ClusterApi.overview.fn(name ?? "disabled", host, port),
         enabled: !!name && enabled, retry: false,
     })
