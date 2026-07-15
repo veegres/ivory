@@ -58,7 +58,7 @@ export function useRouterNodeSwitchoverDelete(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.deleteSwitchover.fn,
         mutationKey: NodeApi.keeper.deleteSwitchover.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -66,7 +66,7 @@ export function useRouterNodeRestartDelete(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.deleteRestart.fn,
         mutationKey: NodeApi.keeper.deleteRestart.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -74,7 +74,7 @@ export function useRouterNodeRestart(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.restart.fn,
         mutationKey: NodeApi.keeper.restart.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -82,7 +82,7 @@ export function useRouterNodeReload(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.reload.fn,
         mutationKey: NodeApi.keeper.reload.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -90,7 +90,7 @@ export function useRouterNodeReinit(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.reinitialize.fn,
         mutationKey: NodeApi.keeper.reinitialize.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -98,7 +98,7 @@ export function useRouterNodeSwitchover(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.switchover.fn,
         mutationKey: NodeApi.keeper.switchover.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -106,7 +106,7 @@ export function useRouterNodeFailover(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.failover.fn,
         mutationKey: NodeApi.keeper.failover.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -114,7 +114,7 @@ export function useRouterNodeActivate(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.activate.fn,
         mutationKey: NodeApi.keeper.activate.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -122,7 +122,7 @@ export function useRouterNodePause(cluster: string) {
     return useMutationAdapter({
         mutationFn: NodeApi.keeper.pause.fn,
         mutationKey: NodeApi.keeper.pause.key(),
-        successKeys: [ClusterApi.overview.key(cluster)]
+        successKeys: [ClusterApi.overview.keyCommon(cluster)]
     })
 }
 
@@ -166,7 +166,7 @@ export function useRouterNodePlatformInfo(c: PlatformVaultConnection) {
 
 export function useRouterNodePlatformStart(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
-    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    const activeClusterKey = activeCluster ? ClusterApi.overview.keyCommon(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.container.start.fn,
         mutationKey: NodeApi.container.start.key(),
@@ -176,7 +176,7 @@ export function useRouterNodePlatformStart(connection: PlatformVaultConnection) 
 
 export function useRouterNodePlatformStop(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
-    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    const activeClusterKey = activeCluster ? ClusterApi.overview.keyCommon(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.container.stop.fn,
         mutationKey: NodeApi.container.stop.key(),
@@ -186,7 +186,7 @@ export function useRouterNodePlatformStop(connection: PlatformVaultConnection) {
 
 export function useRouterNodePlatformRestart(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
-    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    const activeClusterKey = activeCluster ? ClusterApi.overview.keyCommon(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.container.restart.fn,
         mutationKey: NodeApi.container.restart.key(),
@@ -196,7 +196,7 @@ export function useRouterNodePlatformRestart(connection: PlatformVaultConnection
 
 export function useRouterNodePlatformDown(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
-    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    const activeClusterKey = activeCluster ? ClusterApi.overview.keyCommon(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.container.down.fn,
         mutationKey: NodeApi.container.down.key(),
@@ -206,7 +206,7 @@ export function useRouterNodePlatformDown(connection: PlatformVaultConnection) {
 
 export function useRouterNodeKeeperDeploy(connection: PlatformVaultConnection) {
     const activeCluster = useStore(s => s.activeCluster)
-    const activeClusterKey = activeCluster ? ClusterApi.overview.key(activeCluster.name) : []
+    const activeClusterKey = activeCluster ? ClusterApi.overview.keyCommon(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.container.keeper.deploy.fn,
         mutationKey: NodeApi.container.keeper.deploy.key(),

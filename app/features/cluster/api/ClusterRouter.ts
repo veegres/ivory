@@ -8,6 +8,7 @@ import {AutoRequest, Cluster, DeployRequest, Overview} from "./ClusterType"
 export const ClusterApi = {
     list: {
         key: (tags: string[] = [], keeper?: KeeperPlugin, database?: DbPlugin) => ["cluster", "list", keeper, database, ...tags],
+        keyCommon: () => ["cluster", "list"],
         fn: (tags?: string[], keeper?: KeeperPlugin, database?: DbPlugin) => api
             .get<R<Cluster[]>>("/cluster", {params: {tags, keeper, database}})
             .then((response) => response.data.response.map(v => (
@@ -19,6 +20,8 @@ export const ClusterApi = {
     },
     overview: {
         key: (name: string, host?: string, port?: string) => ["cluster", "overview", name, host, port],
+        // NOTE: omit name to match every active overview query regardless of cluster
+        keyCommon: (name?: string) => name ? ["cluster", "overview", name] : ["cluster", "overview"],
         fn: (name: string, host?: string, port?: string) => api
             .get<R<Overview>>(`/cluster/overview/${name}`, {params: {host, port}})
             .then((response) => response.data.response),

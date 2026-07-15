@@ -43,8 +43,10 @@ export function useMutationAdapter<TData = unknown, TError = AxiosError, TVariab
         if (mutationKey) snackbar(`${mutationKey.join(" ").toUpperCase()} - DONE`, "success")
         if (successKeys) {
             for (const key of successKeys) {
-                // NOTE: this doesn't refetch disabled queries
-                await queryClient.refetchQueries({queryKey: key, exact: true})
+                // NOTE: this doesn't refetch disabled queries. Not exact: a shorter, common-prefix
+                //  key (e.g. ["cluster", "list"]) matches and refetches any active query whose key
+                //  starts with it, regardless of filter params appended to the cached key
+                await queryClient.refetchQueries({queryKey: key})
             }
         }
         if (onSuccess) onSuccess(queryClient, data)

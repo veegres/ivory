@@ -20,6 +20,7 @@ import {
 export const QueryApi = {
     list: {
         key: (type?: Type, plugin?: DbPlugin) => ["query", "list", type, plugin],
+        keyCommon: () => ["query", "list"],
         fn: (type?: Type, plugin?: DbPlugin) => api.get<R<Response[]>>("/query", {params: {type, plugin}})
             .then((response) => response.data.response),
     },
