@@ -1,7 +1,8 @@
-import {Alert, Box} from "@mui/material"
+import {Box} from "@mui/material"
 
 import {ClusterDeploy} from "../../../../features/cluster/component/ClusterDeploy"
 import {ClusterDetect} from "../../../../features/cluster/component/ClusterDetect"
+import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {KeeperPluginOptions} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
@@ -9,8 +10,8 @@ import {ListClusterAdd} from "./ListClusterAdd"
 import {ListClusterConcepts} from "./ListClusterConcepts"
 
 const SX: SxPropsMap = {
-    alert: {"& .MuiAlert-message": {width: "100%"}},
-    box: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1},
+    box: {width: "100%", display: "flex", flexDirection: "column"},
+    info: {display: "flex", flexDirection: "column", alignItems: "center", gap: 5},
     buttons: {
         display: "flex", alignItems: "center", justifyContent: "space-evenly", gap: 1, flexWrap: "wrap",
         color: "text.primary", width: "100%", maxWidth: 430,
@@ -29,9 +30,10 @@ export function ListEmptyInfo(props: Props) {
     const tags = useStore(s => s.activeTags)
 
     return (
-        <Alert sx={SX.alert} severity={"info"} variant={"outlined"} icon={false}>
-            <Box sx={SX.box}>
-                <Box>{getHeadline()}</Box>
+        <Box sx={SX.box}>
+            <AlertCentered text={getHeadline()}/>
+            <Box sx={SX.info}>
+                <Box/>
                 <Box sx={SX.buttons}>
                     <Box sx={SX.button}>
                         <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin} withLabel={true}/>
@@ -44,8 +46,9 @@ export function ListEmptyInfo(props: Props) {
                     </Box>
                 </Box>
                 <ListClusterConcepts/>
+                <Box/>
             </Box>
-        </Alert>
+        </Box>
     )
 
     function getHeadline() {
