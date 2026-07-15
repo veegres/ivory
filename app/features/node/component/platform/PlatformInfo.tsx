@@ -1,9 +1,8 @@
-import {Box, Tooltip} from "@mui/material"
+import {Box, Skeleton, Tooltip} from "@mui/material"
 import {useEffect, useState} from "react"
 
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {InfoStatusItem, InfoStatusList} from "../../../../shared/component/box/InfoStatusList"
-import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useRouterNodePlatformInfo} from "../../api/NodeHook"
 import {PlatformVaultConnection} from "../../api/NodeType"
@@ -40,7 +39,7 @@ export function PlatformInfo(props: Props) {
     return renderBody()
 
     function renderBody() {
-        if (info.isLoading) return <SkeletonGroup count={4}/>
+        if (info.isLoading) return <Skeleton variant={"rounded"} width={"100%"} height={40}/>
         if (!info.data || info.data.length === 0) return undefined
 
         return (

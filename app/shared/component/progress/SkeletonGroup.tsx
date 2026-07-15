@@ -3,7 +3,7 @@ import {Skeleton} from "@mui/material"
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
-    skeleton: {transform: "unset", flexGrow: 1},
+    skeleton: {flexGrow: 1},
 }
 
 type Props = {
@@ -14,7 +14,7 @@ export function SkeletonGroup(props: Props) {
     return (
         <>
             {[...Array(props.count).keys()].map((key) => (
-                <Skeleton sx={SX.skeleton} key={key} width={200} height={150}/>
+                <Skeleton variant={"rounded"} sx={SX.skeleton} key={key} width={200} height={150}/>
             ))}
         </>
     )

@@ -20,7 +20,7 @@ type Props = {
 
 export function NodeHeadStatus(props: Props) {
     const {role, loading} = props
-    if (loading) return <Skeleton variant={"rectangular"} sx={SX.nodeStatusBlock}/>
+    if (loading) return <Skeleton variant={"rounded"} sx={SX.nodeStatusBlock}/>
     const backgroundColor = role && NodeColor[role].color
     return (
         <Box sx={[SX.nodeStatusBlock, {backgroundColor}]}>

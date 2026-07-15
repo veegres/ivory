@@ -43,9 +43,9 @@ export function PermissionsUserList() {
     function renderLoading() {
         return (
             <>
-                <Skeleton width={"100%"} height={"40px"}/>
-                <Skeleton width={"100%"} height={"40px"}/>
-                <Skeleton width={"100%"} height={"40px"}/>
+                <Skeleton variant={"rounded"} width={"100%"} height={"40px"}/>
+                <Skeleton variant={"rounded"} width={"100%"} height={"40px"}/>
+                <Skeleton variant={"rounded"} width={"100%"} height={"40px"}/>
             </>
         )
     }

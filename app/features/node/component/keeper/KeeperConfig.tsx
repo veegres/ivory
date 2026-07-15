@@ -41,7 +41,7 @@ export function KeeperConfig(props: Props) {
 
     if (!req) return <ErrorKeeperMissing/>
     if (isError) return <ErrorSmart error={error}/>
-    if (isPending) return <Skeleton variant={"rectangular"} height={300}/>
+    if (isPending) return <Skeleton variant={"rounded"} height={300}/>
 
     return (
         <TitledBox title={"Config"} island={true} renderActions={renderActions()}>
