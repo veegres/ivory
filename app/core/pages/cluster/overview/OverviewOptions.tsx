@@ -8,7 +8,10 @@ import {OverviewOptionsNode} from "./OverviewOptionsNode"
 
 const SX: SxPropsMap = {
     settings: {display: "flex", flexDirection: "column", gap: 1, padding: "8px 0"},
-    saving: {display: "flex", alignItems: "center", gap: 1, minHeight: "20px", fontSize: "12px", color: "text.secondary"},
+    saving: {
+        display: "flex", alignItems: "center", gap: 1, minHeight: "26px", fontSize: "12px",
+        color: "text.secondary", padding: "0px 5px",
+    },
 }
 
 type Props = {
