@@ -16,11 +16,10 @@ const SX: SxPropsMap = {
     headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
     infoBox: {padding: "5px 0"},
     chip: {margin: "auto 0", borderRadius: "4px"},
-    settingsBox: {height: "100%", display: "flex", flexDirection: "row"},
-    mainBox: {display: "flex", flexDirection: "row"},
+    settingsBox: {height: "100%", display: "flex", flexDirection: "column"},
+    mainBox: {display: "flex", flexDirection: "column"},
     leftMainBlock: {flexGrow: 1, overflowX: "auto"},
-    dividerVertical: {margin: "0 10px"},
-    dividerHorizontal: {margin: "10px 0"},
+    dividerHorizontal: {margin: "5px 0"},
     collapse: {height: "100%"},
 }
 
@@ -40,7 +39,7 @@ export function Overview() {
     )
 
     return (
-        <PageMainBox withPadding visible={!!activeCluster || !!clusters.data?.length}>
+        <PageMainBox withPadding={true} visible={!!activeCluster || !!clusters.data?.length}>
             <Box sx={SX.headBox}>
                 <Tabs value={0} role={"tab"}>
                     <Tab value={0} label={"Overview"}/>
@@ -100,9 +99,9 @@ export function Overview() {
     function renderSettingsBlock() {
         if (!activeCluster) return
         return (
-            <Collapse sx={SX.collapse} in={settingsOpen} orientation={"horizontal"} unmountOnExit>
+            <Collapse sx={SX.collapse} in={settingsOpen} unmountOnExit={true}>
                 <Box sx={SX.settingsBox}>
-                    <Divider sx={SX.dividerVertical} orientation={"vertical"} flexItem/>
+                    <Divider sx={SX.dividerHorizontal} />
                     <OverviewOptions
                         cluster={activeCluster}
                         overview={overview.data}

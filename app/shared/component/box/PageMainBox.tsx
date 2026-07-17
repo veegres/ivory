@@ -18,7 +18,7 @@ type Props = {
 export function PageMainBox(props: Props) {
     const elevation = props.elevation ?? 4
     const visible = props.visible ?? true
-    const padding = props.withPadding ? "10px 20px" : "0"
+    const padding = props.withPadding ? "5px 10px" : "0"
 
     if (!visible) return null
 

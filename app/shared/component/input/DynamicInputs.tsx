@@ -6,7 +6,7 @@ import {SxPropsFormatter} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "grid", gap: 1},
-    chip: {width: "100%"},
+    chip: {width: "100%", borderRadius: 2},
     input: {height: "32px"},
     label: {display: "flex", gap: 1},
     helper: {margin: "2px 14px 0px"},

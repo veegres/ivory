@@ -1,4 +1,4 @@
-import {Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Box, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {memo} from "react"
 
 import {CertType} from "../../../features/cert/api/CertType"
@@ -13,8 +13,14 @@ import {OptionsPlugins} from "./OptionsPlugins"
 import {OptionsTags} from "./OptionsTags"
 import {OptionsVault} from "./OptionsVault"
 
+// NOTE: each field is a wrap item with a min width, so the widget lays fields
+// out in a dynamic grid when its container is wide (e.g. the overview page)
+// but collapses to a single, wider column when the container is narrow
+// (e.g. the deploy/detect dialogs)
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1},
+    box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1.5, alignItems: "flex-start"},
+    divider: {flexBasis: "100%"},
+    field: {flex: "1 1 300px", minWidth: "300px"},
     tls: {width: "50%", fontWeight: "bold"},
 }
 
@@ -31,22 +37,22 @@ export const Options = memo(function Options(props: Props) {
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
             <OptionsPlugins plugins={plugins} onUpdate={handlePluginsUpdate} disabled={disablePlugins}/>
-            <Divider variant={"middle"}/>
-            <OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/>
-            <OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/>
-            <OptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/>
-            <Divider variant={"middle"}/>
-            <ToggleButtonGroup size={"small"} fullWidth>
+            <Divider sx={SX.divider}/>
+            <Box sx={SX.field}><OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/></Box>
+            <Box sx={SX.field}><OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/></Box>
+            <Box sx={SX.field}><OptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/></Box>
+            <Divider sx={SX.divider}/>
+            <ToggleButtonGroup sx={SX.field} size={"small"} fullWidth>
                 <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
                 <ToggleButton sx={SX.tls} disabled={true} value={"tls"}>TLS</ToggleButton>
                 <ToggleButton onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
             </ToggleButtonGroup>
-            <Divider variant={"middle"}/>
-            <OptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/>
-            <OptionsCert type={CertType.CLIENT_CERT} selected={certs.clientCertId} onUpdate={handleCertUpdate}/>
-            <OptionsCert type={CertType.CLIENT_KEY} selected={certs.clientKeyId} onUpdate={handleCertUpdate}/>
-            <Divider variant={"middle"}/>
-            <OptionsTags selected={tags} onUpdate={handleTagsUpdate}/>
+            <Divider sx={SX.divider}/>
+            <Box sx={SX.field}><OptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/></Box>
+            <Box sx={SX.field}><OptionsCert type={CertType.CLIENT_CERT} selected={certs.clientCertId} onUpdate={handleCertUpdate}/></Box>
+            <Box sx={SX.field}><OptionsCert type={CertType.CLIENT_KEY} selected={certs.clientKeyId} onUpdate={handleCertUpdate}/></Box>
+            <Divider sx={SX.divider}/>
+            <Box sx={SX.field}><OptionsTags selected={tags} onUpdate={handleTagsUpdate}/></Box>
         </ManageAccessBox>
     )
 

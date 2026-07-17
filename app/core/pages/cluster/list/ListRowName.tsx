@@ -7,8 +7,8 @@ import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {
-    chip: {width: "100%"},
-    clusterName: {display: "flex", justifyContent: "center", alignItems: "center", gap: "3px"}
+    chip: {width: "100%", borderRadius: 2},
+    clusterName: {display: "flex", justifyContent: "center", alignItems: "center", gap: "3px"},
 }
 
 type Props = {

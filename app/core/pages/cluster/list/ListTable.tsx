@@ -19,7 +19,10 @@ import {ListTableRefresher} from "./ListTableRefresher"
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
-    table: {"tr:last-child td": {border: 0}, "tr td, th": {padding: "5px 10px"}},
+    table: {
+        "tr:last-child td": {border: 0}, "tr td": {padding: "5px"},
+        "tr th": {padding: "3px 10px", fontFamily: "monospace", letterSpacing: 1},
+    },
     refresh: {padding: "0px 5px"},
 }
 

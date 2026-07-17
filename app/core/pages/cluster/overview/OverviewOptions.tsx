@@ -1,14 +1,14 @@
-import {Stack} from "@mui/material"
+import {Box, CircularProgress} from "@mui/material"
 
 import {useRouterClusterUpdate} from "../../../../features/cluster/api/ClusterHook"
 import {Cluster, Options as ClusterOptions, Overview as ClusterOverview} from "../../../../features/cluster/api/ClusterType"
-import {LinearProgressStateful} from "../../../../shared/component/progress/LinearProgressStateful"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {Options} from "../../../widgets/options/Options"
 import {OverviewOptionsNode} from "./OverviewOptionsNode"
 
 const SX: SxPropsMap = {
-    settings: {width: "250px", gap: 1, padding: "8px 0"},
+    settings: {display: "flex", flexDirection: "column", gap: 1, padding: "8px 0"},
+    saving: {display: "flex", alignItems: "center", gap: 1, minHeight: "20px", fontSize: "12px", color: "text.secondary"},
 }
 
 type Props = {
@@ -24,16 +24,26 @@ export function OverviewOptions(props: Props) {
     const updateCluster = useRouterClusterUpdate(cluster.name)
 
     return (
-        <Stack sx={SX.settings}>
+        <Box sx={SX.settings}>
             <OverviewOptionsNode
                 nodes={overview?.nodes ?? cluster.nodesOverview ?? {}}
                 mainKeeper={mainKeeper}
                 manualKeeper={manualKeeper}
             />
-            <LinearProgressStateful loading={updateCluster.isPending} line={true} color={"inherit"}/>
+            {renderSaving()}
             <Options options={cluster} onUpdate={handleClusterUpdate}/>
-        </Stack>
+        </Box>
     )
+
+    function renderSaving() {
+        if (!updateCluster.isPending) return <Box sx={SX.saving}/>
+        return (
+            <Box sx={SX.saving}>
+                <CircularProgress size={12} color={"inherit"}/>
+                Saving changes...
+            </Box>
+        )
+    }
 
     function handleClusterUpdate(opt: ClusterOptions) {
         updateCluster.mutate({...cluster, ...opt})

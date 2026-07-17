@@ -1,4 +1,4 @@
-import {Box, FormControl, InputLabel, MenuItem, Select} from "@mui/material"
+import {FormControl, InputLabel, MenuItem, Select} from "@mui/material"
 
 import {Plugins} from "../../../features/cluster/api/ClusterType"
 import {KeeperPlugin} from "../../../features/node/api/NodeType"
@@ -7,7 +7,7 @@ import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DbPluginOptions, KeeperPluginOptions} from "../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1.5},
+    field: {flex: "1 1 300px", minWidth: "300px"},
 }
 
 type Props = {
@@ -20,8 +20,8 @@ export function OptionsPlugins(props: Props) {
     const {plugins, onUpdate, disabled = false} = props
 
     return (
-        <Box sx={SX.box}>
-            <FormControl fullWidth size={"small"}>
+        <>
+            <FormControl sx={SX.field} fullWidth size={"small"}>
                 <InputLabel id={"keeper-plugin"}>Keeper Plugin</InputLabel>
                 <Select
                     labelId={"keeper-plugin"}
@@ -35,7 +35,7 @@ export function OptionsPlugins(props: Props) {
                     <MenuItem value={KeeperPlugin.NATIVE_ETCD}>{KeeperPluginOptions[KeeperPlugin.NATIVE_ETCD].label}</MenuItem>
                 </Select>
             </FormControl>
-            <FormControl fullWidth size={"small"}>
+            <FormControl sx={SX.field} fullWidth size={"small"}>
                 <InputLabel id={"database-plugin"}>Database Plugin</InputLabel>
                 <Select
                     labelId={"database-plugin"}
@@ -48,7 +48,7 @@ export function OptionsPlugins(props: Props) {
                     <MenuItem value={DbPlugin.ETCD}>{DbPluginOptions[DbPlugin.ETCD].label}</MenuItem>
                 </Select>
             </FormControl>
-        </Box>
+        </>
     )
 
     function handleKeeperUpdate(keeper: KeeperPlugin) {
