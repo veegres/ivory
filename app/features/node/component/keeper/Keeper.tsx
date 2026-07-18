@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 
 import {ErrorKeeperRequestMissing} from "../../../../shared/component/box/ErrorManual"
-import {TitledBox} from "../../../../shared/component/box/TitledBox"
+import {HeadBox} from "../../../../shared/component/box/HeadBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
@@ -15,8 +15,8 @@ import {KeeperScheduleButton} from "./KeeperScheduleButton"
 import {KeeperSwitchoverButton} from "./KeeperSwitchoverButton"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 2},
-    actions: {display: "flex", gap: 1, alignItems: "center"},
+    box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 1},
+    actions: {display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap"},
 }
 
 type Props = {
@@ -31,17 +31,17 @@ export function Keeper(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <TitledBox title={"Actions"} island={true} renderActions={renderActions()}>
-                {!request && <ErrorKeeperRequestMissing/>}
-            </TitledBox>
+            <HeadBox title={"Actions"}>
+                {request && renderActions(request)}
+            </HeadBox>
+            {!request && <ErrorKeeperRequestMissing/>}
             <ManageAccess feature={Feature.ViewNodeKeeperConfig} error={true}>
                 <KeeperConfig req={request}/>
             </ManageAccess>
         </Box>
     )
 
-    function renderActions() {
-        if (!request) return
+    function renderActions(request: KeeperOneRequest) {
         return (
             <Box sx={SX.actions}>
                 <KeeperReloadButton request={request} cluster={cluster}/>

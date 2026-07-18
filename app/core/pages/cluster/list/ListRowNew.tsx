@@ -1,12 +1,12 @@
-import {FormControl, OutlinedInput, TableRow} from "@mui/material"
+import {FormControl, OutlinedInput} from "@mui/material"
 import {useState} from "react"
 
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getNodeConfigs, KeeperPluginOptions} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
-import {ListCell} from "./ListCell"
 import {ListCellUpdate} from "./ListCellUpdate"
 import {ListNodeInput} from "./ListNodeInput"
+import {ListRowLayout} from "./ListRowLayout"
 
 const SX: SxPropsMap = {
     nodesCellInput: {height: "32px"},
@@ -28,37 +28,49 @@ export function ListRowNew(props: Props) {
     if (!show) return null
 
     return (
-        <TableRow>
-            <ListCell width={"220px"}>
-                <FormControl fullWidth>
-                    <OutlinedInput
-                        sx={SX.nodesCellInput}
-                        placeholder={"Name"}
-                        value={stateName}
-                        onChange={(event) => setStateName(event.target.value)}
-                    />
-                </FormControl>
-            </ListCell>
-            <ListCell>
-                <ListNodeInput inputs={stateNodes} editable={true} onChange={n => setStateNodes(n)}/>
-            </ListCell>
-            <ListCell width={"130px"}>
-                <ListCellUpdate
-                    cluster={{
-                        name: stateName,
-                        plugins: {database, keeper},
-                        nodes: getNodeConfigs(stateNodes),
-                        tags: activeTags.filter(t => t !== "ALL"),
-                        certs: {},
-                        vaults: {},
-                        tls: {keeper: false, database: false},
-                    }}
-                    toggle={toggle}
-                    onUpdate={clean}
-                />
-            </ListCell>
-        </TableRow>
+        <ListRowLayout
+            renderName={renderName()}
+            renderNodes={renderNodes()}
+            renderActions={renderActions()}
+        />
     )
+
+    function renderName() {
+        return (
+            <FormControl fullWidth>
+                <OutlinedInput
+                    sx={SX.nodesCellInput}
+                    placeholder={"Name"}
+                    value={stateName}
+                    onChange={(event) => setStateName(event.target.value)}
+                />
+            </FormControl>
+        )
+    }
+
+    function renderNodes() {
+        return (
+            <ListNodeInput inputs={stateNodes} editable={true} onChange={n => setStateNodes(n)}/>
+        )
+    }
+
+    function renderActions() {
+        return (
+            <ListCellUpdate
+                cluster={{
+                    name: stateName,
+                    plugins: {database, keeper},
+                    nodes: getNodeConfigs(stateNodes),
+                    tags: activeTags.filter(t => t !== "ALL"),
+                    certs: {},
+                    vaults: {},
+                    tls: {keeper: false, database: false},
+                }}
+                toggle={toggle}
+                onUpdate={clean}
+            />
+        )
+    }
 
     function toggle() {
         close()

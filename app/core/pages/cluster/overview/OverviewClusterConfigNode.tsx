@@ -20,7 +20,7 @@ type Props = {
     manualKeeper?: string,
 }
 
-export function OverviewOptionsNode(props: Props) {
+export function OverviewClusterConfigNode(props: Props) {
     const {setClusterKeeper} = useStoreAction
     const {manualKeeper, nodes, mainKeeper} = props
 

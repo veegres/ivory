@@ -22,21 +22,22 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
         label: "Container",
         body: (c: Cluster, n: Node) => <Container connection={getPlatformConnection(c, n.config.host, n.config.sshPort)}/>,
         info: <>
-            Here you can check some basic charts about your overall database and each database separately
-            by specifying database name in the input near by.
-            If you have some proposal what can be added here, please, suggest
-            it <Link href={"https://github.com/veegres/ivory/issues"} target={"_blank"}>here</Link>
+            Everything about the container this node runs in. The <i>overview</i> shows live
+            resource usage and recent logs, and lets you start, restart, stop or remove the container,
+            as well as deploy a new keeper container to this host. The <i>list</i> shows all
+            containers that currently exist on the host, so you can check what else is running there.
         </>
     },
     [NodeTabType.DATABASE]: {
         label: "Database",
         body: (c: Cluster, n: Node) => <NodeMainQueries connection={getQueryConnection(c, n.config.host, n.config.dbPort)}/>,
         info: <>
-            Here you can run some queries to troubleshoot your postgres (<b>always use LIMIT in queries
-            to reduce number of rows, it will help to render and execute query faster</b>). There are some default
-            queries
-            which are provided by the <i>system</i>. If manual queries are enabled, you can do such
-            things as:
+            This tab is your window into PostgreSQL itself. The <i>console</i> lets you run arbitrary SQL,
+            the <i>charts</i> section shows basic charts for the whole instance and for a particular
+            database, and the remaining sections group ready-made queries by concern: activity,
+            statistics, bloat, replication and other (<b>always use LIMIT in your queries to reduce the
+            number of rows, it will help to render and execute the query faster</b>). Default queries are
+            provided by the <i>system</i>. If manual queries are enabled, you can also:
             <ul style={{margin: "0"}}>
                 <li>create your own <i>custom</i> queries</li>
                 <li>edit <i>system</i> or <i>custom</i> queries</li>
@@ -55,12 +56,13 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
             />
         ),
         info: <>
-            Here you can manipulate with your cluster management systems. Ivory calls it keeper.
-            You can adjust your PostgreSQL configurations here, and any changes made will be applied to
-            all cluster nodes. Instead of rewriting the entire configuration, it applies a patch
-            update. If you wish to remove a specific setting, simply set it to <b>null</b>. Keep in mind that
-            modifying certain parameters may necessitate restarting PostgreSQL. For further details on how
-            this process functions, refer to
+            Control over your cluster management system (e.g. Patroni) — Ivory calls it keeper.
+            The actions let you reload or restart the keeper, reinitialise a replica, perform a switchover
+            or failover, and schedule such operations for a later time. Below the actions you can adjust
+            the cluster configuration: any change is applied to all cluster nodes as a patch update —
+            instead of rewriting the entire configuration only the settings you provide are changed, and
+            setting one to <b>null</b> removes it. Keep in mind that modifying certain parameters may
+            necessitate restarting PostgreSQL. For further details on how this process functions, refer to
             the <Link href={"https://patroni.readthedocs.io/en/latest/rest_api.html#config-endpoint"}
                       target={"_blank"}>documentation</Link>.
         </>
@@ -69,8 +71,11 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
         label: "Tools",
         body: (c: Cluster, n: Node) => <NodeMainTools node={n} cluster={c}/>,
         info: <>
-            Here, you can efficiently decrease the size of bloated tables and indexes without imposing
-            heavy locks. This functionality is powered by
+            External tools integrated into Ivory. Currently the only one
+            is <i>pg_compacttable</i>: it efficiently decreases the size of bloated tables and indexes
+            without imposing heavy locks (if you have a proposal for another tool, please, suggest
+            it <Link href={"https://github.com/veegres/ivory/issues"} target={"_blank"}>here</Link>).
+            This functionality is powered by
             the <Link href={"https://github.com/dataegret/pgcompacttable"} target={"_blank"}>pgcompacttable</Link> tool,
             which is seamlessly integrated with Ivory for streamlined usage. Ivory simplifies visualization
             and centralizes information about jobs and logs within each cluster, ensuring convenient access when
@@ -101,7 +106,10 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
         label: "Platform",
         body: (c: Cluster, n: Node) => <Platform connection={getPlatformConnection(c, n.config.host, n.config.sshPort)}/>,
         info: <>
-            Here you can use see what is going on with your Platform, like Linux
+            A health view of the host (virtual machine) this node runs on. Ivory connects to it
+            through the platform credentials and shows general host information, live CPU, memory and
+            network usage charts, the list of running processes and system logs. It helps to spot
+            problems at the host level — before digging into the container or the database itself.
         </>
     },
 }

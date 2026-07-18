@@ -8,13 +8,13 @@ import {SxPropsMap} from "../../helper/HelperType"
 import {randomUnicodeAnimal} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "0 20px"},
+    box: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: {xs: 2, md: 8}, padding: "0 20px"},
     main: {display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"},
     title: {fontSize: "35px", fontWeight: 900, fontFamily: "monospace", cursor: "pointer", color: "primary.main", userSelect: "none"},
     caption: {fontSize: "12px", fontWeight: 500, fontFamily: "monospace"},
-    emblem: {padding: "5px 8px", fontWeight: "bold", fontSize: "20px"},
-    side: {display: "flex", flex: "1 1 0", alignItems: "center", gap: 1},
-    username: {color: "text.secondary", padding: "5px"},
+    emblem: {padding: "5px 8px", fontWeight: "bold", fontSize: "20px", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
+    side: {display: "flex", flex: "1 1 0", alignItems: "center", gap: 1, minWidth: 0},
+    username: {color: "text.secondary", padding: "5px", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"},
     icon: {fontSize: "22px"},
 }
 

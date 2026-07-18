@@ -1,5 +1,5 @@
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
-import {Box, TableRow, Tooltip} from "@mui/material"
+import {Box, Tooltip} from "@mui/material"
 import {useEffect, useMemo, useRef, useState} from "react"
 
 import {useRouterClusterOverview} from "../../../../features/cluster/api/ClusterHook"
@@ -7,16 +7,20 @@ import {Cluster} from "../../../../features/cluster/api/ClusterType"
 import {ColorsMap, SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getDomain, getDomains, getNodeConfigs, NodeColor, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {ListCell} from "./ListCell"
 import {ListCellRead} from "./ListCellRead"
 import {ListCellUpdate} from "./ListCellUpdate"
 import {ListNodeInput} from "./ListNodeInput"
+import {ListRowLayout} from "./ListRowLayout"
 import {ListRowName} from "./ListRowName"
 
+// NOTE: status mirrors the 32px footprint of IconButton so the warning/error
+// icons line up with the edit/delete buttons next to them; the glyph is a bit
+// bigger than the buttons' 18px because these outline icons read smaller at
+// the same font size
 const SX: SxPropsMap = {
-    actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, minHeight: "32px"},
-    warning: {padding: "3px 0"},
-    removed: {color: "text.secondary", fontSize: "12px", textAlign: "center", marginTop: "5px"},
+    actions: {display: "flex", justifyContent: "flex-end", alignItems: "center", minHeight: "32px"},
+    status: {width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer"},
+    statusIcon: {fontSize: 23},
 }
 
 type Props = {
@@ -27,7 +31,7 @@ type Props = {
 
 export function ListRow(props: Props) {
     const {cluster, editable, toggle} = props
-    const ref = useRef<HTMLTableRowElement | null>(null)
+    const ref = useRef<HTMLDivElement | null>(null)
 
     const {setWarnings} = useStoreAction
     const activeCluster = useStore(s => s.activeCluster)
@@ -43,40 +47,54 @@ export function ListRow(props: Props) {
     useEffect(handleEffectScroll, [active])
 
     return (
-        <TableRow sx={[active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]} ref={ref}>
-            <ListCell width={"220px"}>
-                <ListRowName cluster={cluster} active={active} loading={overview.isFetching} refresh={overview.refetch}/>
-            </ListCell>
-            <ListCell>
-                <ListNodeInput
-                    inputs={stateNodes}
-                    colors={colors}
-                    editable={editable}
-                    onChange={n => setStateNodes(n)}
-                />
-            </ListCell>
-            <ListCell width={"130px"}>
-                <Box sx={SX.actions}>
-                    {warning && !overview.error && !overview.isFetching && (
-                        <Tooltip title={"Issues detected — select a cluster to view details"} placement={"top"}>
-                            <WarningAmberRounded color={"warning"}/>
-                        </Tooltip>
-                    )}
-                    {overview.error && (
-                        <Tooltip title={overview.error.message} placement={"top"}>
-                            <ErrorOutlineRounded color={"error"}/>
-                        </Tooltip>
-                    )}
-                    {!toggle && (
-                        <Tooltip title={"This cluster isn't in the list — it appears here because it was manually selected. Uncheck it to remove it."} placement={"top"}>
-                            <ErrorOutlineRounded color={"secondary"}/>
-                        </Tooltip>
-                    )}
-                    {renderButtons()}
-                </Box>
-            </ListCell>
-        </TableRow>
+        <ListRowLayout
+            sx={[active && SxPropsFormatter.style.bgImageSelected, !toggle && SxPropsFormatter.style.bgImageError]}
+            ref={ref}
+            renderName={renderName()}
+            renderNodes={renderNodes()}
+            renderActions={renderActions()}
+        />
     )
+
+    function renderName() {
+        return (
+            <ListRowName cluster={cluster} active={active} loading={overview.isFetching} refresh={overview.refetch}/>
+        )
+    }
+
+    function renderNodes() {
+        return (
+            <ListNodeInput
+                inputs={stateNodes}
+                colors={colors}
+                editable={editable}
+                onChange={n => setStateNodes(n)}
+            />
+        )
+    }
+
+    function renderActions() {
+        return (
+            <Box sx={SX.actions}>
+                {warning && !overview.error && !overview.isFetching && (
+                    <Tooltip title={"Issues detected — select a cluster to view details"} placement={"top"}>
+                        <Box sx={SX.status}><WarningAmberRounded sx={SX.statusIcon} color={"warning"}/></Box>
+                    </Tooltip>
+                )}
+                {overview.error && (
+                    <Tooltip title={overview.error.message} placement={"top"}>
+                        <Box sx={SX.status}><ErrorOutlineRounded sx={SX.statusIcon} color={"error"}/></Box>
+                    </Tooltip>
+                )}
+                {!toggle && (
+                    <Tooltip title={"This cluster isn't in the list — it appears here because it was manually selected. Uncheck it to remove it."} placement={"top"}>
+                        <Box sx={SX.status}><ErrorOutlineRounded sx={SX.statusIcon} color={"secondary"}/></Box>
+                    </Tooltip>
+                )}
+                {renderButtons()}
+            </Box>
+        )
+    }
 
     function renderButtons() {
         if (!toggle) return

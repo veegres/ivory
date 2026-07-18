@@ -1,5 +1,5 @@
 import {SvgIconProps, Tooltip} from "@mui/material"
-import {ReactElement} from "react"
+import {cloneElement, ReactElement} from "react"
 
 import {IconButton} from "./IconButtons"
 import {SimpleButton} from "./SimpleButton"
@@ -18,14 +18,17 @@ export function TriggerButton(props: Props) {
     const {title, label, icon, size, disabled = false, variant = "icon", onClick} = props
 
     if (variant === "button") {
+        // NOTE: mirrors the Refresher button dimensions (28px high, +4px wide,
+        // 16px glyph) so the outlined buttons in a toolbar all match
+        const side = size ?? 28
         return (
             <Tooltip title={title} arrow={true} placement={"top"}>
                 <SimpleButton
-                    sx={{height: `${size}px`, width: `${size}px`}}
+                    sx={{height: `${side}px`, width: `${side + 4}px`}}
                     disabled={disabled}
                     onClick={onClick}
                 >
-                    {icon}
+                    {cloneElement(icon, {sx: {fontSize: "16px"}})}
                 </SimpleButton>
             </Tooltip>
         )

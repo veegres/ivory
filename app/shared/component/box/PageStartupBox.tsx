@@ -10,7 +10,7 @@ import {LinearProgressStateful} from "../progress/LinearProgressStateful"
 const SX: SxPropsMap = {
     box: {
         display: "flex", flexDirection: "column", alignItems: "center",
-        width: "30%", minWidth: "500px", gap: 2
+        width: {xs: "92%", md: "30%"}, minWidth: {xs: 0, md: "500px"}, gap: 2
     },
     header: {fontSize: "35px", fontWeight: 900, fontFamily: "monospace", margin: "20px 0", cursor: "pointer"},
     buttons: {display: "flex", gap: 2, width: "100%", justifyContent: "center", alignItems: "center"},

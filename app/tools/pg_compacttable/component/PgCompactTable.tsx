@@ -1,5 +1,5 @@
 import {Cached} from "@mui/icons-material"
-import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
+import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip, useMediaQuery, useTheme} from "@mui/material"
 import {useState} from "react"
 
 import {Cluster, Node} from "../../../features/cluster/api/ClusterType"
@@ -19,12 +19,15 @@ import {PgCompactTableTarget} from "../api/PgCompactTableType"
 import {PgCompactTableJob} from "./PgCompactTableJob"
 import {PgCompactTableJobForm} from "./PgCompactTableJobForm"
 
+// NOTE: below md the form and the jobs/queries selector stack vertically and
+// the selector itself turns into a horizontal row without the divider
 const SX: SxPropsMap = {
     loader: {margin: "15px 0"},
-    toggle: {display: "flex", flexDirection: "column", alignItems: "center", gap: 1},
-    option: {display: "flex", padding: "0 15px", gap: 3},
+    toggle: {display: "flex", flexDirection: {xs: "row", md: "column"}, alignItems: "center", justifyContent: "space-between", gap: 1},
+    option: {display: "flex", flexDirection: {xs: "column", md: "row"}, padding: "0 5px", gap: 2},
+    divider: {display: {xs: "none", md: "block"}},
     form: {flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center"},
-    refresh: {width: "100%"},
+    refresh: {width: {xs: "auto", md: "100%"}},
 }
 
 enum ListBlock {JOB, QUERY}
@@ -38,6 +41,7 @@ export function PgCompactTable(props: Props) {
     const {cluster, node} = props
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<PgCompactTableTarget>()
+    const narrow = useMediaQuery(useTheme().breakpoints.down("md"))
 
     const query = useRouterQueryList(QueryType.BLOAT, DbPlugin.POSTGRES, tab === ListBlock.QUERY)
     const jobs = useRouterPgCompactTableList(cluster.name, tab === ListBlock.JOB)
@@ -64,7 +68,7 @@ export function PgCompactTable(props: Props) {
                         setTarget={setTarget}
                     />
                 </Box>
-                <Divider orientation={"vertical"} flexItem/>
+                <Divider sx={SX.divider} orientation={"vertical"} flexItem={true}/>
                 {renderToggle()}
             </ManageAccessBox>
             <LinearProgressStateful sx={SX.loader} loading={loading} color={"inherit"}/>
@@ -93,7 +97,7 @@ export function PgCompactTable(props: Props) {
     function renderToggle() {
         return (
             <Box sx={SX.toggle}>
-                <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
+                <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={narrow ? "horizontal" : "vertical"}>
                     <ToggleButton value={ListBlock.JOB} onClick={handleJobTab}>
                         Jobs
                     </ToggleButton>

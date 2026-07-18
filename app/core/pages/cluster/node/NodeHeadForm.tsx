@@ -10,14 +10,14 @@ import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {SizeFormatter} from "../../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", width: "100%", padding: "6px 8px", gap: 1.5, alignItems: "center", flex: "11 1 700px"},
+    box: {display: "flex", width: "100%", padding: "4px", gap: 1.5, alignItems: "center", flex: "11 1 min(700px, 100%)"},
     body: {display: "flex", flexDirection: "column", width: "100%", gap: 1.5},
     container: {
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 1.5,
         alignItems: "center", flex: 1,
     },
-    actions: {display: "flex", flexDirection: "column", height: "100%"},
-    tags: {display: "flex", gap: 0.5},
+    actions: {display: "flex", flexDirection: "column", height: "100%", flexShrink: 0},
+    tags: {display: "flex", flexWrap: "wrap", gap: 0.5},
 }
 
 type Props = {

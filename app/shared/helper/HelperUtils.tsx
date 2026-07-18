@@ -310,17 +310,16 @@ export const CodeThemes = {
 
 export const SxPropsFormatter = {
     /**
-     * This function is needed to fix TypeScript issues when
-     * `sx` can be an array and `SxProps` can be an array type
-     *
-     * https://github.com/mui/material-ui/issues/29900
-     *
-     * @param sx1
-     * @param sx2
+     * Merges two `SxProps` values into a flat sx array. A plain `sx={[a, b]}`
+     * doesn't compile when an element is itself typed `SxProps<Theme>` (it may
+     * be an array, and `SxProps` doesn't allow nested arrays). MUI closed
+     * https://github.com/mui/material-ui/issues/29900 without changing the
+     * type — the docs officially recommend this `Array.isArray` spread instead.
      */
     merge: (sx1?: SxProps<Theme>, sx2?: SxProps<Theme>) => [...(Array.isArray(sx1) ? sx1 : [sx1]), ...(Array.isArray(sx2) ? sx2 : [sx2])],
     style: {
         paper: {backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.09))"},
+        pageMargin: {margin: {xs: "0 8px", sm: "0 5%"}},
         bgImageError: (theme) => ({backgroundImage: `linear-gradient(${theme.palette.error.dark}12, ${theme.palette.error.dark}12)`}),
         bgImageSelected: (theme) => ({backgroundImage: `linear-gradient(${theme.palette.action.hover}, ${theme.palette.action.hover})`}),
     } as SxPropsMap

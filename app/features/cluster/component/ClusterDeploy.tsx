@@ -106,7 +106,7 @@ export function ClusterDeploy(props: Props) {
                 title={"DEPLOY CLUSTER"}
                 renderActions={renderActions()}
                 icon={<RocketLaunch/>}
-                variant={withLabel ? "button_label" : "icon"}
+                variant={withLabel ? "button_label" : "button"}
                 label={"Deploy"}
                 back={!!response}
                 onBackClick={() => setResponse(undefined)}

@@ -37,7 +37,9 @@ export function HiddenScrolling(props: Props) {
                 onClick={() => handleScroll(-SCROLL_OFFSET)}
             />
             {renderBefore && <Box sx={SX.before}>{renderBefore}</Box>}
-            <Box ref={(ref) => setRef(ref as Element)} sx={{...SX.group, justifyContent: position}}>
+            {/* NOTE: "safe" keeps the start of centered content reachable when
+            it overflows instead of clipping it behind the left arrow */}
+            <Box ref={(ref) => setRef(ref as Element)} sx={{...SX.group, justifyContent: position === "start" ? position : `safe ${position}`}}>
                 {children}
             </Box>
             {renderAfter && <Box sx={SX.after}>{renderAfter}</Box>}

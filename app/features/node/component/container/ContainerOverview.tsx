@@ -1,6 +1,7 @@
 import {Close, PlayArrow, Replay, Stop} from "@mui/icons-material"
 import {Box} from "@mui/material"
 
+import {HeadBox} from "../../../../shared/component/box/HeadBox"
 import {Logs} from "../../../../shared/component/box/Logs"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
@@ -21,14 +22,6 @@ import {ContainerOverviewMetrics} from "./ContainerOverviewMetrics"
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1, padding: "0px 5px"},
     action: {display: "flex", gap: 0.5},
-    head: {
-        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1,
-        padding: "4px 0px", borderBottom: 1, borderTop: 1, borderColor: "divider",
-    },
-    name: {
-        fontFamily: "monospace", fontSize: "13px", border: 1, borderRadius: 1,
-        borderColor: "divider", padding: "4px 10px",
-    },
     logs: {
         display: "flex", flexDirection: "column", gap: 0.5, padding: "5px",
         border: 1, borderRadius: 1, borderColor: "divider",
@@ -54,8 +47,7 @@ export function ContainerOverview(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <Box sx={SX.head}>
-                <Box sx={SX.name}>{connection.host}</Box>
+            <HeadBox title={connection.host}>
                 <ManageAccessBox sx={SX.action} feature={Feature.ManageNodePlatformContainer}>
                     {activeCluster && (
                         <ContainerKeeperDeploy
@@ -107,7 +99,7 @@ export function ContainerOverview(props: Props) {
                         description={"This will remove container service. But you need first to stop it."}
                     />
                 </ManageAccessBox>
-            </Box>
+            </HeadBox>
             <ContainerOverviewMetrics connection={connection} name={name}/>
             <Box sx={SX.logs}>
                 <Logs logs={logs.data} loading={logs.isFetching} reconnect={logs.reconnect}/>

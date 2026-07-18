@@ -17,6 +17,7 @@ const SX: SxPropsMap = {
         flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column",
         gap: 1, backgroundImage: "inherit", backgroundColor: "inherit",
     },
+    body: {minWidth: 0, overflowX: "auto"},
     inputs: {display: "flex", alignItems: "center", gap: 1, width: "300px"},
 }
 
@@ -37,7 +38,7 @@ export function NodeMain(props: Props) {
     return (
         <Box sx={SX.main}>
             <NodeMainTabsHead info={info} tab={tab} renderActions={renderActions()}/>
-            {body(cluster, node)}
+            <Box sx={SX.body}>{body(cluster, node)}</Box>
         </Box>
     )
 

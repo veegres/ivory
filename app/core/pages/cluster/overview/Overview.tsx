@@ -9,17 +9,18 @@ import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getMainKeeper} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import {OverviewAction} from "./OverviewAction"
+import {OverviewClusterConfig} from "./OverviewClusterConfig"
 import {OverviewNodes} from "./OverviewNodes"
-import {OverviewOptions} from "./OverviewOptions"
 
 const SX: SxPropsMap = {
-    headBox: {display: "flex", justifyContent: "space-between", alignItems: "center"},
-    infoBox: {padding: "5px 0"},
+    box: {display: "flex", flexDirection: "column", gap: 1},
+    headBox: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1},
+    tabs: {flexGrow: 1},
     chip: {margin: "auto 0", borderRadius: "4px"},
     settingsBox: {height: "100%", display: "flex", flexDirection: "column"},
     mainBox: {display: "flex", flexDirection: "column"},
     leftMainBlock: {flexGrow: 1, overflowX: "auto"},
-    dividerHorizontal: {margin: "5px 0"},
+    divider: {margin: "10px 0", fontSize: "15px", color: "text.secondary"},
     collapse: {height: "100%"},
 }
 
@@ -28,7 +29,7 @@ export function Overview() {
     const manualKeeper = useStore(s => s.manualKeeper)
 
     const [infoOpen, setInfoOpen] = useState(false)
-    const [settingsOpen, setSettingsOpen] = useState(false)
+    const [configOpen, setConfigOpen] = useState(false)
 
     const clusters = useRouterClusterList(false)
     const overview = useRouterClusterOverview(activeCluster?.name, false)
@@ -40,16 +41,20 @@ export function Overview() {
 
     return (
         <PageMainBox withPadding={true} visible={!!activeCluster || !!clusters.data?.length}>
-            <Box sx={SX.headBox}>
-                <Tabs value={0} role={"tab"}>
-                    <Tab value={0} label={"Overview"}/>
-                </Tabs>
-                {renderActions()}
-            </Box>
-            <Box sx={SX.infoBox}>{renderInfoBlock()}</Box>
-            <Box sx={SX.mainBox}>
-                <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
-                <Box>{renderSettingsBlock()}</Box>
+            <Box sx={SX.box}>
+                <Box sx={SX.headBox}>
+                    <Tabs sx={SX.tabs} value={0} role={"tab"}>
+                        <Tab value={0} label={"Overview"}/>
+                    </Tabs>
+                    {renderActions()}
+                </Box>
+                <Collapse in={infoOpen}>
+                    <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{renderInfo()}</Alert>
+                </Collapse>
+                <Box sx={SX.mainBox}>
+                    <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
+                    <Box>{renderConfigBlock()}</Box>
+                </Box>
             </Box>
         </PageMainBox>
     )
@@ -70,18 +75,9 @@ export function Overview() {
             mainNode={[mainDomain, mainNode]}
             selectInfo={infoOpen}
             toggleInfo={() => setInfoOpen(!infoOpen)}
-            selectOptions={settingsOpen}
-            toggleOptions={() => setSettingsOpen(!settingsOpen)}
+            selectConfig={configOpen}
+            toggleConfig={() => setConfigOpen(!configOpen)}
         />
-    }
-
-    function renderInfoBlock() {
-        return (
-            <Collapse in={infoOpen}>
-                <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{renderInfo()}</Alert>
-                <Divider sx={SX.dividerHorizontal} orientation={"horizontal"} flexItem/>
-            </Collapse>
-        )
     }
 
     function renderInfo() {
@@ -96,13 +92,13 @@ export function Overview() {
         )
     }
 
-    function renderSettingsBlock() {
+    function renderConfigBlock() {
         if (!activeCluster) return
         return (
-            <Collapse sx={SX.collapse} in={settingsOpen} unmountOnExit={true}>
+            <Collapse sx={SX.collapse} in={configOpen} unmountOnExit={true}>
                 <Box sx={SX.settingsBox}>
-                    <Divider sx={SX.dividerHorizontal} />
-                    <OverviewOptions
+                    <Divider sx={SX.divider} textAlign={"left"} flexItem={true}>CONFIGURATION</Divider>
+                    <OverviewClusterConfig
                         cluster={activeCluster}
                         overview={overview.data}
                         mainKeeper={mainDomain}

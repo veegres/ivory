@@ -1,9 +1,11 @@
+import {AutoFixHigh} from "@mui/icons-material"
+import {Box, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {useRouterClusterFixAuto} from "../../../../features/cluster/api/ClusterHook"
 import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
-import {AutoIconButton} from "../../../../shared/component/button/IconButtons"
+import {SimpleButton} from "../../../../shared/component/button/SimpleButton"
 import {AlertDialog} from "../../../../shared/component/dialog/AlertDialog"
 
 type Props = {
@@ -17,11 +19,13 @@ export function OverviewNodesFixAuto(props: Props) {
 
     return (
         <ManageAccess feature={Feature.ManageClusterUpdate}>
-            <AutoIconButton
-                tooltip={"Auto Fix"}
-                onClick={() => setOpen(true)}
-                loading={autoFix.isPending}
-            />
+            <Tooltip title={"Auto Fix"} placement={"top"} arrow={true}>
+                <Box component={"span"}>
+                    <SimpleButton loading={autoFix.isPending} onClick={() => setOpen(true)}>
+                        <AutoFixHigh/>
+                    </SimpleButton>
+                </Box>
+            </Tooltip>
             <AlertDialog
                 open={open}
                 title={"Auto Fix"}

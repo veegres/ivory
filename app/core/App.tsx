@@ -10,7 +10,7 @@ import {useQueryParamErrorHandler} from "../shared/hook/QueryParamErrorHandler"
 
 const SX: SxPropsMap = {
     // NOTE: we need -8px for the bottom scroll, right scroll is always shown that is why we don't need calc
-    box: {display: "flex", flexDirection: "column", gap: 2, flexWrap: "nowrap", minHeight: "calc(100vh - 8px)", minWidth: "1010px"},
+    box: {display: "flex", flexDirection: "column", gap: 2, flexWrap: "nowrap", minHeight: "calc(100vh - 8px)", minWidth: "320px"},
     body: {display: "flex", justifyContent: "center", alignItems: "stretch", flexGrow: 1},
 }
 

@@ -12,7 +12,7 @@ import {useRouterPgCompactTableStart} from "../api/PgCompactTableHook"
 import {PgCompactTableOptions, PgCompactTableTarget} from "../api/PgCompactTableType"
 
 const SX: SxPropsMap = {
-    form: {display: "grid", gridTemplateColumns: "repeat(4, 1fr)", columnGap: "30px"},
+    form: {display: "grid", gridTemplateColumns: {xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)"}, columnGap: "30px"},
     group: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
 }
 

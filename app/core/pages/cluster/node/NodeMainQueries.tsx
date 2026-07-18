@@ -1,4 +1,4 @@
-import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Box, ToggleButton, ToggleButtonGroup, useMediaQuery, useTheme} from "@mui/material"
 
 import {Feature} from "../../../../features/Feature"
 import {ManageAccess} from "../../../../features/management/component/ManageAccess"
@@ -13,12 +13,23 @@ import {ErrorDbMissing} from "../../../../shared/component/box/ErrorManual"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 
+// NOTE: below md the query-type filters move from a vertical column on the
+// left to a horizontal wrapping row above the query area
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 2},
-    main: {display: "flex", gap: 3},
-    filters: {display: "flex", flexDirection: "column", alignItems: "center", gap: 2},
+    box: {display: "flex", flexDirection: "column", gap: 1},
+    main: {display: "flex", flexDirection: {xs: "column", md: "row"}, gap: {xs: 2, md: 3}},
+    filters: {
+        display: "flex", flexDirection: {xs: "row", md: "column"}, flexWrap: {xs: "wrap", md: "nowrap"},
+        alignItems: "center", gap: {xs: 1, md: 2},
+    },
     query: {flexGrow: 1, overflow: "hidden"},
-    group: {margin: "0px 5px", width: "100%"},
+    group: {margin: {xs: 0, md: "0px 5px"}, width: {xs: "auto", md: "100%"}, flexGrow: {xs: 1, md: 0}, flexWrap: {xs: "wrap", md: "nowrap"}},
+    groupNarrow: {
+        gap: 1, flexGrow: 5,
+        "&& .MuiToggleButtonGroup-firstButton, && .MuiToggleButtonGroup-middleButton, && .MuiToggleButtonGroup-lastButton": {
+            flexGrow: 1, marginLeft: 0, border: "1px solid", borderColor: "divider", borderRadius: 1,
+        },
+    },
 }
 
 const CHARTS = {
@@ -34,6 +45,7 @@ export function NodeMainQueries(props: Props){
     const {connection} = props
     const {queryTab} = useStore(s => s.nodeState)
     const {setQueryTab} = useStoreAction
+    const narrow = useMediaQuery(useTheme().breakpoints.down("md"))
 
     if (!connection) return <ErrorDbMissing/>
 
@@ -70,7 +82,7 @@ export function NodeMainQueries(props: Props){
                         </ToggleButton>
                     </ManageAccess>
 
-                    <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={queryTab} orientation={"vertical"}>
+                    <ToggleButtonGroup sx={[SX.group, narrow && SX.groupNarrow]} size={"small"} color={"secondary"} value={queryTab} orientation={narrow ? "horizontal" : "vertical"}>
                         <ToggleButton value={QueryType.ACTIVITY} onClick={() => setQueryTab(QueryType.ACTIVITY)}>
                             ACTIVITY
                         </ToggleButton>

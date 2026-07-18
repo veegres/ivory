@@ -1,12 +1,12 @@
-import {Box, Table, TableCell, TableHead, TableRow} from "@mui/material"
+import {Box} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
 import {ClusterDeploy} from "../../../../features/cluster/component/ClusterDeploy"
 import {ClusterDetect} from "../../../../features/cluster/component/ClusterDetect"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
-import {TableBody} from "../../../../shared/component/table/TableBody"
-import {TableCellLoader} from "../../../../shared/component/table/TableCellLoader"
+import {ActionsLoader} from "../../../../shared/component/progress/ActionsLoader"
+import {SkeletonRows} from "../../../../shared/component/progress/SkeletonRows"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {KeeperPluginOptions, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
@@ -19,11 +19,15 @@ import {ListTableRefresher} from "./ListTableRefresher"
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
-    table: {
-        "tr:last-child td": {border: 0}, "tr td": {padding: "5px"},
-        "tr th": {padding: "3px 10px", fontFamily: "monospace", letterSpacing: 1},
+    head: {
+        position: "sticky", top: 0, zIndex: 2, display: "flex", alignItems: "center", gap: 1,
+        padding: "5px", fontFamily: "monospace", letterSpacing: 1,
+        bgcolor: "background.paper", borderBottom: 1, borderColor: "divider",
     },
-    refresh: {padding: "0px 5px"},
+    headName: {display: {xs: "none", md: "block"}, flex: {md: "0 0 206px"}, padding: "0px 5px"},
+    headClusters: {display: {xs: "block", md: "none"}, padding: "0px 5px"},
+    headNodes: {display: {xs: "none", md: "block"}, padding: "0px 5px"},
+    empty: {padding: "5px"},
 }
 
 type Props = {
@@ -44,30 +48,22 @@ export function ListTable(props: Props) {
 
     return (
         <Box sx={[SX.box, {maxHeight: activeCluster ? "25vh" : "60vh"}]} className={scroll.tiny}>
-            <Table size={"small"} sx={SX.table} stickyHeader>
-                <TableHead>
-                    <TableRow>
-                        <TableCell sx={SxPropsFormatter.style.paper} width={"220px"}>Name</TableCell>
-                        <TableCellLoader
-                            sx={SxPropsFormatter.style.paper}
-                            label={"Nodes"}
-                            colSpan={2}
-                            loading={fetching && !pending}
-                        >
-                            <ListTableRefresher/>
-                            <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
-                            <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
-                            <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
-                        </TableCellLoader>
-                    </TableRow>
-                </TableHead>
-                <TableBody isLoading={pending} cellCount={3} height={32}>
-                    <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
-                    {renderRemovedRow()}
-                    {renderRows()}
-                    {renderEmpty()}
-                </TableBody>
-            </Table>
+            <Box sx={[SX.head, SxPropsFormatter.style.paper]}>
+                <Box sx={SX.headName}>Name</Box>
+                <Box sx={SX.headClusters}>Clusters</Box>
+                <ActionsLoader label={<Box sx={SX.headNodes}>Nodes</Box>} loading={fetching && !pending}>
+                    <ListTableRefresher/>
+                    <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
+                    <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
+                    <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
+                </ActionsLoader>
+            </Box>
+            <SkeletonRows isLoading={pending} height={42}>
+                <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
+                {renderRemovedRow()}
+                {renderRows()}
+                {renderEmpty()}
+            </SkeletonRows>
         </Box>
     )
 
@@ -92,18 +88,16 @@ export function ListTable(props: Props) {
     function renderEmpty() {
         if (pending || showNewElement || rows.length || activeCluster) return
         return (
-            <TableRow>
-                <TableCell colSpan={3}>
-                    {search ? (
-                        <AlertCentered text={"There are no clusters that match your filter"}/>
-                    ) : (
-                        <ListEmptyInfo
-                            onAddManually={() => setShowNewElement(true)}
-                            disabledAddManually={showNewElement}
-                        />
-                    )}
-                </TableCell>
-            </TableRow>
+            <Box sx={SX.empty}>
+                {search ? (
+                    <AlertCentered text={"There are no clusters that match your filter"}/>
+                ) : (
+                    <ListEmptyInfo
+                        onAddManually={() => setShowNewElement(true)}
+                        disabledAddManually={showNewElement}
+                    />
+                )}
+            </Box>
         )
     }
 }

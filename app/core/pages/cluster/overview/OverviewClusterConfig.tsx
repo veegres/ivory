@@ -4,7 +4,7 @@ import {useRouterClusterUpdate} from "../../../../features/cluster/api/ClusterHo
 import {Cluster, Options as ClusterOptions, Overview as ClusterOverview} from "../../../../features/cluster/api/ClusterType"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {Options} from "../../../widgets/options/Options"
-import {OverviewOptionsNode} from "./OverviewOptionsNode"
+import {OverviewClusterConfigNode} from "./OverviewClusterConfigNode"
 
 const SX: SxPropsMap = {
     settings: {display: "flex", flexDirection: "column", gap: 1, padding: "8px 0"},
@@ -21,14 +21,14 @@ type Props = {
     manualKeeper?: string,
 }
 
-export function OverviewOptions(props: Props) {
+export function OverviewClusterConfig(props: Props) {
     const {cluster, overview, mainKeeper, manualKeeper} = props
 
     const updateCluster = useRouterClusterUpdate(cluster.name)
 
     return (
         <Box sx={SX.settings}>
-            <OverviewOptionsNode
+            <OverviewClusterConfigNode
                 nodes={overview?.nodes ?? cluster.nodesOverview ?? {}}
                 mainKeeper={mainKeeper}
                 manualKeeper={manualKeeper}

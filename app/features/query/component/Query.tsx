@@ -49,12 +49,12 @@ export function Query(props: Props) {
 
     function renderLoading() {
         return (
-            <Box>
-                <Skeleton variant={"rounded"} width={"100%"} height={42}/>
-                <Skeleton variant={"rounded"} width={"100%"} height={42}/>
-                <Skeleton variant={"rounded"} width={"100%"} height={42}/>
-                <Skeleton variant={"rounded"} width={"100%"} height={42}/>
-                <Skeleton variant={"rounded"} width={"100%"} height={42}/>
+            <Box style={style.box}>
+                <Skeleton variant={"rounded"} width={"100%"} height={44}/>
+                <Skeleton variant={"rounded"} width={"100%"} height={44}/>
+                <Skeleton variant={"rounded"} width={"100%"} height={44}/>
+                <Skeleton variant={"rounded"} width={"100%"} height={44}/>
+                <Skeleton variant={"rounded"} width={"100%"} height={44}/>
             </Box>
         )
     }

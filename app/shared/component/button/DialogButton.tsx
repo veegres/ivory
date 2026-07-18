@@ -1,5 +1,5 @@
 import {ArrowBack} from "@mui/icons-material"
-import {Box, Dialog, DialogActions, DialogTitle, IconButton as MuiIconButton} from "@mui/material"
+import {Box, Dialog, DialogActions, DialogTitle, IconButton as MuiIconButton, useMediaQuery, useTheme} from "@mui/material"
 import {SvgIconProps} from "@mui/material"
 import {ReactElement, ReactNode, useEffect, useState} from "react"
 
@@ -8,9 +8,9 @@ import {CloseIconButton} from "./IconButtons"
 import {TriggerButton} from "./TriggerButton"
 
 const SX: SxPropsMap = {
-    dialog: {minWidth: "1010px"},
     content: {
-        width: "600px", height: "600px", display: "flex", flexDirection: "column",
+        width: {xs: "100%", sm: "600px"}, height: {xs: "auto", sm: "600px"}, flexGrow: {xs: 1, sm: 0},
+        display: "flex", flexDirection: "column",
         gap: 1, padding: "0px 10px 0px 18px ", overflowY: "scroll",
     },
     title: {
@@ -35,13 +35,14 @@ type Props = {
 export function DialogButton(props: Props) {
     const {children, renderActions, title, icon, size, back, onBackClick, variant = "icon", label} = props
     const [open, setOpen] = useState(false)
+    const fullScreen = useMediaQuery(useTheme().breakpoints.down("sm"))
 
     useEffect(handleEffectClose, [onBackClick, open])
 
     return (
         <Box>
             {renderTrigger()}
-            <Dialog sx={SX.dialog} open={open} onClose={() => setOpen(false)}>
+            <Dialog fullScreen={fullScreen} open={open} onClose={() => setOpen(false)}>
                 <DialogTitle sx={SX.title}>
                     <MuiIconButton disableRipple={!back} onClick={onBackClick}>
                         {back ? <ArrowBack/> : icon}

@@ -16,7 +16,7 @@ export function ListClusterAdd(props: Props) {
     return (
         <ManageAccessBox feature={Feature.ManageClusterUpdate}>
             <TriggerButton
-                variant={withLabel ? "button_label" : "icon"}
+                variant={withLabel ? "button_label" : "button"}
                 title={"ADD CLUSTER"}
                 label={"Add"}
                 icon={<Add/>}

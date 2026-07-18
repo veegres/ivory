@@ -4,9 +4,8 @@ import {ReactNode} from "react"
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
-    dialog: {minWidth: "1010px"},
-    content: {width: "500px", display: "flex", gap: 2, flexDirection: "column"},
-    title: {width: "500px", wordBreak: "break-all"},
+    content: {width: "500px", maxWidth: "100%", display: "flex", gap: 2, flexDirection: "column"},
+    title: {width: "500px", maxWidth: "100%", wordBreak: "break-all"},
 }
 
 type Props = {
@@ -21,7 +20,7 @@ type Props = {
 export function AlertDialog(props: Props) {
     const {open, children, description, title, onAgree, onClose} = props
     return (
-        <Dialog sx={SX.dialog} open={open} onClose={onClose} disableRestoreFocus={true}>
+        <Dialog open={open} onClose={onClose} disableRestoreFocus={true}>
             <DialogTitle sx={SX.title}>
                 {title}
             </DialogTitle>

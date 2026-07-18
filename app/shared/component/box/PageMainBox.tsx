@@ -2,10 +2,11 @@ import {Box, Paper} from "@mui/material"
 import {ReactNode} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
+import {SxPropsFormatter} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex"},
-    paper: {width: "100%", margin: "0 5%", minWidth: "750px"},
+    paper: {width: "100%", minWidth: 0, overflowX: "auto"},
 }
 
 type Props = {
@@ -24,7 +25,7 @@ export function PageMainBox(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <Paper elevation={elevation} sx={{...SX.paper, padding}}>
+            <Paper elevation={elevation} sx={[SX.paper, SxPropsFormatter.style.pageMargin, {padding}]}>
                 {props.children}
             </Paper>
         </Box>

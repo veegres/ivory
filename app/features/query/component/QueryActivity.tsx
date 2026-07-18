@@ -3,6 +3,7 @@ import {Box, Collapse, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {Refresher} from "../../../core/widgets/browser/Refresher"
+import {HeadBox} from "../../../shared/component/box/HeadBox"
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {useRouterActivity} from "../api/QueryHook"
@@ -11,9 +12,7 @@ import {Connection} from "../api/QueryType"
 import {QueryTable} from "./QueryTable"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", border: 1, borderRadius: 1, borderColor: "divider", padding: "5px 10px"},
-    head: {display: "flex", alignItems: "center", gap: 1},
-    label: {display: "flex", justifyContent: "start", fontSize: "14px", fontFamily: "monospace", color: "text.secondary", padding: "0px 3px"},
+    box: {display: "flex", flexDirection: "column"},
     help: {fontSize: "9px", fontWeight: "normal", color: "text.disabled", textAlign: "center"},
     action: {display: "flex", justifyContent: "end", gap: 1, color: "text.secondary", cursor: "pointer"},
     info: {
@@ -43,8 +42,7 @@ export function QueryActivity(props: Props) {
     const table = isError ? undefined : data
     return (
         <Box sx={SX.box}>
-            <Box sx={SX.head}>
-                <Box sx={[SX.label, {flex: 1}]}>Session Active Queries</Box>
+            <HeadBox title={"Session Active Queries"}>
                 {open && <Box sx={[SX.help, {flex: 1}]}>[ hold shift for horizontal scrolling ]</Box>}
                 <Box sx={[SX.action, {flex: 1}]}>
                     <Tooltip title={"COUNT"} placement={"top"}>
@@ -57,7 +55,7 @@ export function QueryActivity(props: Props) {
                         </SimpleButton>
                     </Tooltip>
                 </Box>
-            </Box>
+            </HeadBox>
             <Collapse in={open}>
                 <Box sx={SX.collapse}>
                     <QueryTable

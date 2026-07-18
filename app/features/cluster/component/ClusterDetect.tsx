@@ -15,10 +15,7 @@ import {useRouterClusterCreateAuto} from "../api/ClusterHook"
 import {AutoRequest} from "../api/ClusterType"
 
 const SX: SxPropsMap = {
-    dialog: {minWidth: "1010px"},
-    content: {display: "flex", flexDirection: "column", gap: 1, padding: "0px 24px"},
-    center: {display: "flex", justifyContent: "center", gap: 3},
-    node: {display: "flex", gap: 2},
+    node: {display: "flex", flexWrap: "wrap", gap: 2},
 }
 
 const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
@@ -49,7 +46,7 @@ export function ClusterDetect(props: Props) {
                 title={"DETECT CLUSTER"}
                 renderActions={renderActions()}
                 icon={<AutoFixHigh/>}
-                variant={withLabel ? "button_label" : "icon"}
+                variant={withLabel ? "button_label" : "button"}
                 label={"Detect"}
             >
                 <TextField
