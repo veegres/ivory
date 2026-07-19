@@ -24,26 +24,14 @@ const SX: SxPropsMap = {
     },
     checked: {borderLeftColor: "primary.main"},
     group: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 0.5, flexGrow: 1},
-    // NOTE: the warning slot is always rendered (empty when there are no
-    // warnings) so rows keep the same layout either way
     warning: {flex: "0 0 28px", display: "flex", justifyContent: "center"},
-    // NOTE: the host shrinks with ellipsis when long but doesn't grow when
-    // short, so the leftover space goes to the data/actions segment; the min
-    // width and right padding keep the segment a bit wider than the name
     host: {flex: "0 1 auto", minWidth: "120px", maxWidth: "100%", paddingRight: "16px"},
     hostValue: {whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden", maxWidth: "100%"},
     info: {display: "flex", flexDirection: "column", alignItems: "flex-start", whiteSpace: "nowrap", lineHeight: 1.2, minWidth: 0, padding: "0 6px"},
     infoLabel: {fontSize: "8px", textTransform: "uppercase", color: "text.secondary"},
     buttons: {display: "flex", alignItems: "center", width: "max-content"},
     data: {display: "flex", gap: 0.5, fontSize: "12px"},
-    // NOTE: the grow factor dwarfs the groups' 1, so on a shared line the
-    // status/actions segment takes practically all the free space while the
-    // groups stay at content size; a group only stretches when it wraps to a
-    // line of its own
-    last: {
-        flex: "1000 1 260px", minWidth: 0, display: "flex",
-        justifyContent: "space-between", alignItems: "center",
-    },
+    last: {flex: "1000 1 260px", minWidth: 0, display: "flex", justifyContent: "space-between", alignItems: "center"},
     title: {fontFamily: "monospace", textTransform: "uppercase"},
 }
 
