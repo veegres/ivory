@@ -1,5 +1,5 @@
 import {Cached} from "@mui/icons-material"
-import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip, useMediaQuery, useTheme} from "@mui/material"
+import {Box, Button, Divider, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {Cluster, Node} from "../../../features/cluster/api/ClusterType"
@@ -28,6 +28,19 @@ const SX: SxPropsMap = {
     divider: {display: {xs: "none", md: "block"}},
     form: {flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center"},
     refresh: {width: {xs: "auto", md: "100%"}},
+    // NOTE: the group keeps the vertical orientation prop and pure css turns it
+    // into a row of standalone chips below md, since a connected group cannot
+    // change direction gracefully; the doubled && selector outranks the group's
+    // per-corner radius and negative margin rules
+    group: (theme) => ({
+        flexDirection: {xs: "row", md: "column"},
+        [theme.breakpoints.down("md")]: {
+            gap: 1,
+            "&& .MuiToggleButtonGroup-firstButton, && .MuiToggleButtonGroup-middleButton, && .MuiToggleButtonGroup-lastButton": {
+                margin: 0, border: "1px solid", borderColor: "divider", borderRadius: 1,
+            },
+        },
+    }),
 }
 
 enum ListBlock {JOB, QUERY}
@@ -41,7 +54,6 @@ export function PgCompactTable(props: Props) {
     const {cluster, node} = props
     const [tab, setTab] = useState(ListBlock.JOB)
     const [target, setTarget] = useState<PgCompactTableTarget>()
-    const narrow = useMediaQuery(useTheme().breakpoints.down("md"))
 
     const query = useRouterQueryList(QueryType.BLOAT, DbPlugin.POSTGRES, tab === ListBlock.QUERY)
     const jobs = useRouterPgCompactTableList(cluster.name, tab === ListBlock.JOB)
@@ -97,7 +109,7 @@ export function PgCompactTable(props: Props) {
     function renderToggle() {
         return (
             <Box sx={SX.toggle}>
-                <ToggleButtonGroup size={"small"} color={"secondary"} value={tab} orientation={narrow ? "horizontal" : "vertical"}>
+                <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
                     <ToggleButton value={ListBlock.JOB} onClick={handleJobTab}>
                         Jobs
                     </ToggleButton>

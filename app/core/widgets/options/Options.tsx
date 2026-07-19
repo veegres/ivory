@@ -20,7 +20,7 @@ import {OptionsVault} from "./OptionsVault"
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1.5, alignItems: "flex-start"},
     divider: {flexBasis: "100%"},
-    field: {flex: "1 1 300px", minWidth: "300px"},
+    field: {flex: "1 1 var(--size-field)", minWidth: "var(--size-field)"},
     tls: {width: "50%", fontWeight: "bold"},
 }
 

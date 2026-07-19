@@ -7,7 +7,7 @@ import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DbPluginOptions, KeeperPluginOptions} from "../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
-    field: {flex: "1 1 300px", minWidth: "300px"},
+    field: {flex: "1 1 var(--size-field)", minWidth: "var(--size-field)"},
 }
 
 type Props = {

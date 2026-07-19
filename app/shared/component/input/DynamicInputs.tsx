@@ -27,7 +27,7 @@ type Props = {
 }
 
 export const DynamicInputs = memo(function DynamicInputs(props: Props) {
-    const {inputs, editable, placeholder, onChange, colors, InputProps, minLength = 1, InputSize = "263px", helper} = props
+    const {inputs, editable, placeholder, onChange, colors, InputProps, minLength = 1, InputSize = "var(--size-input)", helper} = props
     const colorsMap = colors ?? EMPTY_COLORS
 
     const mergedSx = useMemo(() => SxPropsFormatter.merge(SX.input, InputProps), [InputProps])

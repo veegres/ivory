@@ -18,7 +18,7 @@ const SX: SxPropsMap = {
         gap: 1, backgroundImage: "inherit", backgroundColor: "inherit",
     },
     body: {minWidth: 0, overflowX: "auto"},
-    inputs: {display: "flex", alignItems: "center", gap: 1, width: "300px"},
+    inputs: {display: "flex", alignItems: "center", gap: 1, width: "var(--size-field)"},
 }
 
 type Props = {

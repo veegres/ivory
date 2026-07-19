@@ -31,6 +31,7 @@ import {
     KeeperConnection,
     KeeperOneRequest,
     KeeperPlugin,
+    KeeperState,
     KeeperStatus,
     PlatformVaultConnection,
     Role,
@@ -86,6 +87,17 @@ export const DbPluginOptions: { [key in DbPlugin]: EnumOptions } = {
 export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {
     [KeeperStatus.Active]: {name: "ACTIVE", label: "Activate Keeper", icon: <Pause/>, color: "success.main", key: "active"},
     [KeeperStatus.Paused]: {name: "PAUSED", label: "Pause Keeper", icon: <PlayArrow/>, color: "warning.main", key: "paused"}
+}
+
+export const KeeperStateOptions: { [key in KeeperState]: { color: "success" | "warning" | "error" | "default" } } = {
+    running: {color: "success"},
+    starting: {color: "warning"},
+    restarting: {color: "warning"},
+    stopping: {color: "warning"},
+    stopped: {color: "error"},
+    failed: {color: "error"},
+    unreachable: {color: "error"},
+    unknown: {color: "default"},
 }
 
 export const CertOptions: { [key in CertType]: EnumOptions } = {

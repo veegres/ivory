@@ -6,7 +6,7 @@ import {SxPropsMap} from "../../helper/HelperType"
 const SX: SxPropsMap = {
     wrap: {padding: "5px", height: "100%"},
     button: {
-        minHeight: "120px", minWidth: "min(350px, 100%)", width: "100%", height: "100%", display: "flex",
+        minHeight: "var(--size-tile-height)", minWidth: "min(var(--size-tile), 100%)", width: "100%", height: "100%", display: "flex",
         alignItems: "center", flexDirection: "column", justifyContent: "space-evenly",
         padding: "10px 20px", border: "2px dashed", borderRadius: "15px", gap: 1,
     },

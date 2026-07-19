@@ -9,10 +9,11 @@ import {KeeperRestartButton} from "../../../../features/node/component/keeper/Ke
 import {KeeperScheduleButton} from "../../../../features/node/component/keeper/KeeperScheduleButton"
 import {KeeperSwitchoverButton} from "../../../../features/node/component/keeper/KeeperSwitchoverButton"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
+import {InfoLabelBox} from "../../../../shared/component/box/InfoLabelBox"
 import {MenuButton} from "../../../../shared/component/button/MenuButton"
 import {HiddenScrolling} from "../../../../shared/component/scrolling/HiddenScrolling"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {DateTimeFormatter, getKeeperOneRequest, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
+import {DateTimeFormatter, getKeeperOneRequest, KeeperStateOptions, NodeColor, SizeFormatter, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {
@@ -27,8 +28,11 @@ const SX: SxPropsMap = {
     warning: {flex: "0 0 28px", display: "flex", justifyContent: "center"},
     host: {flex: "0 1 auto", minWidth: "120px", maxWidth: "100%", paddingRight: "16px"},
     hostValue: {whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden", maxWidth: "100%"},
-    info: {display: "flex", flexDirection: "column", alignItems: "flex-start", whiteSpace: "nowrap", lineHeight: 1.2, minWidth: 0, padding: "0 6px"},
-    infoLabel: {fontSize: "8px", textTransform: "uppercase", color: "text.secondary"},
+    // NOTE: the fixed min widths keep the segments the same size whatever
+    // value they show (LEADER vs REPLICA, a port vs "-")
+    role: {minWidth: "100px"},
+    state: {minWidth: "100px", fontSize: "12px"},
+    port: {minWidth: "70px"},
     buttons: {display: "flex", alignItems: "center", width: "max-content"},
     data: {display: "flex", gap: 0.5, fontSize: "12px"},
     last: {flex: "1000 1 260px", minWidth: 0, display: "flex", justifyContent: "space-between", alignItems: "center"},
@@ -62,9 +66,9 @@ export function OverviewNodesRow(props: Props) {
                 {renderRole()}
             </Box>
             <Box sx={SX.group}>
-                {renderInfo("keeper", config.keeperPort, "70px")}
-                {renderInfo("db", config.dbPort, "70px")}
-                {renderInfo("ssh", config.sshPort, "70px")}
+                <InfoLabelBox label={"keeper"} sx={SX.port}>{config.keeperPort}</InfoLabelBox>
+                <InfoLabelBox label={"db"} sx={SX.port}>{config.dbPort}</InfoLabelBox>
+                <InfoLabelBox label={"ssh"} sx={SX.port}>{config.sshPort}</InfoLabelBox>
             </Box>
             <Box sx={SX.group}>
                 {renderState()}
@@ -79,40 +83,25 @@ export function OverviewNodesRow(props: Props) {
 
     function renderHost() {
         return (
-            <Box sx={[SX.info, SX.host]}>
-                <Box sx={SX.infoLabel}>host</Box>
+            <InfoLabelBox label={"host"} sx={SX.host}>
                 <Box sx={SX.hostValue}>{config.host}</Box>
-            </Box>
+            </InfoLabelBox>
         )
     }
 
-    // NOTE: the fixed min width keeps LEADER and REPLICA the same size
     function renderRole() {
         return (
-            <Box sx={[SX.info, {minWidth: "100px"}]}>
-                <Box sx={SX.infoLabel}>role</Box>
+            <InfoLabelBox label={"role"} sx={SX.role}>
                 <Box sx={{color: NodeColor[role].color}}>{role.toUpperCase()}</Box>
-            </Box>
+            </InfoLabelBox>
         )
     }
 
     function renderState() {
         return (
-            <Box sx={[SX.info, {minWidth: "100px", fontSize: "12px"}]}>
-                <Box sx={SX.infoLabel}>state</Box>
-                <InfoColorBox label={state ?? "unknown"} color={getStateColor()}/>
-            </Box>
-        )
-    }
-
-    // NOTE: the min width applies at every breakpoint so a port segment keeps
-    // the same size whether it has a value or shows "-"
-    function renderInfo(label: string, value?: string | number, width?: string) {
-        return (
-            <Box sx={[SX.info, {minWidth: width}]}>
-                <Box sx={SX.infoLabel}>{label}</Box>
-                <Box>{value ?? "-"}</Box>
-            </Box>
+            <InfoLabelBox label={"state"} sx={SX.state}>
+                <InfoColorBox label={state ?? "unknown"} color={KeeperStateOptions[state ?? "unknown"].color}/>
+            </InfoLabelBox>
         )
     }
 
@@ -209,22 +198,5 @@ export function OverviewNodesRow(props: Props) {
 
     function handleCheck() {
         setNode(checked ? undefined : nodeKey)
-    }
-
-    function getStateColor(): "success" | "warning" | "error" | "default" {
-        switch (state) {
-            case "running":
-                return "success"
-            case "starting":
-            case "restarting":
-            case "stopping":
-                return "warning"
-            case "stopped":
-            case "failed":
-            case "unreachable":
-                return "error"
-            default:
-                return "default"
-        }
     }
 }

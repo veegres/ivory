@@ -13,7 +13,7 @@ const SX: SxPropsMap = {
         borderBottom: 1, borderColor: "divider", "&:last-child": {borderBottom: 0},
     },
     name: {flex: {xs: "1 1 auto", md: "0 0 210px"}, minWidth: 0, order: 1},
-    nodes: {flex: {xs: "1 1 100%", md: "1 1 min(263px, 100%)"}, minWidth: 0, order: {xs: 3, md: 2}},
+    nodes: {flex: {xs: "1 1 100%", md: "1 1 min(var(--size-input), 100%)"}, minWidth: 0, order: {xs: 3, md: 2}},
     actions: {flex: "0 0 auto", marginLeft: "auto", order: {xs: 2, md: 3}},
 }
 

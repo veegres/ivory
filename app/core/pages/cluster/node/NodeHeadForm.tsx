@@ -2,12 +2,12 @@ import {Box, TextField} from "@mui/material"
 import {useState} from "react"
 
 import {Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
-import {KeeperState, KeeperStatus} from "../../../../features/node/api/NodeType"
+import {KeeperStatus} from "../../../../features/node/api/NodeType"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {InfoStatusItem, InfoStatusList} from "../../../../shared/component/box/InfoStatusList"
 import {CancelIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {SizeFormatter} from "../../../../shared/helper/HelperUtils"
+import {KeeperStateOptions, SizeFormatter} from "../../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", width: "100%", padding: "4px", gap: 1.5, alignItems: "center", flex: "11 1 min(700px, 100%)"},
@@ -33,7 +33,7 @@ export function NodeHeadForm(props: Props) {
 
     const stateStr = node.keeper.state ?? "unknown"
     const isPaused = node.keeper.status === KeeperStatus.Paused
-    const stateColor = isPaused ? "warning" : getStateColor(stateStr)
+    const stateColor = isPaused ? "warning" : KeeperStateOptions[stateStr].color
 
     const isReplica = node.keeper.role === "replica"
     const lagValue = isReplica ? SizeFormatter.pretty(node.keeper.lag) : "N/A"
@@ -144,22 +144,5 @@ export function NodeHeadForm(props: Props) {
     function handleEdit() {
         setEdit(true)
         setConfig(node.config)
-    }
-
-    function getStateColor(state: KeeperState): "success" | "warning" | "error" | "default" {
-        switch (state) {
-            case "running":
-                return "success"
-            case "starting":
-            case "restarting":
-            case "stopping":
-                return "warning"
-            case "stopped":
-            case "failed":
-            case "unreachable":
-                return "error"
-            default:
-                return "default"
-        }
     }
 }

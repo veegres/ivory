@@ -9,7 +9,7 @@ import {TriggerButton} from "./TriggerButton"
 
 const SX: SxPropsMap = {
     content: {
-        width: {xs: "100%", sm: "600px"}, height: {xs: "auto", sm: "600px"}, flexGrow: {xs: 1, sm: 0},
+        width: {xs: "100%", sm: "var(--size-dialog)"}, height: {xs: "auto", sm: "var(--size-dialog)"}, flexGrow: {xs: 1, sm: 0},
         display: "flex", flexDirection: "column",
         gap: 1, padding: "0px 10px 0px 18px ", overflowY: "scroll",
     },

@@ -15,7 +15,7 @@ const SX: SxPropsMap = {
     export: {
         display: "flex", justifyContent: "center", padding: "10px 20px", alignItems: "center",
         width: "100%", height: "100%", flexDirection: "column", gap: 1, border: "2px dashed",
-        borderRadius: "15px", minHeight: "120px", minWidth: "min(350px, 100%)",
+        borderRadius: "15px", minHeight: "var(--size-tile-height)", minWidth: "min(var(--size-tile), 100%)",
     },
     exportText: {fontSize: "12px"},
     wrap: {padding: "5px", height: "100%"},
