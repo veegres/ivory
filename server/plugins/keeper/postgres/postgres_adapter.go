@@ -23,6 +23,8 @@ var ErrCredentialsRequired = errors.New("native postgres requires keeper credent
 // unreachable node or a non-postgres port cannot hang the cluster overview.
 const requestTimeout = 5 * time.Second
 
+const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
+
 // listQuery detects the node role and, for replicas, the replication lag as
 // the difference between received and replayed wal in bytes. NOTE: the lag
 // unit differs from patroni, which reports its own /cluster lag value.
@@ -31,7 +33,14 @@ const listQuery = `SELECT pg_is_in_recovery(),
             THEN GREATEST(COALESCE(pg_wal_lsn_diff(pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn()), 0), 0)::bigint
             ELSE 0 END`
 
-const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
+// syncStandbyQuery reads the primary's live view of connected standbys.
+// sync_state is only ever populated on the primary's own connection - a
+// standby has no way to determine its own synchronous status by querying
+// itself - so this is only run once listQuery has established the connected
+// node is not in recovery (i.e. it is the cluster's primary). client_addr is
+// null for a standby connecting over a unix socket, which can't be matched
+// back to a configured node, so those rows are skipped.
+const syncStandbyQuery = `SELECT client_addr::text, sync_state FROM pg_stat_replication WHERE client_addr IS NOT NULL`
 
 // sqlStateCannotConnectNow is postgres' ERRCODE_CANNOT_CONNECT_NOW, returned
 // for a new connection attempt while the database is starting up, shutting
@@ -70,7 +79,43 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 		}
 		return nil, http.StatusBadRequest, err
 	}
-	return []keeper.Response{mapNode(request.Host, request.Port, inRecovery, lag)}, http.StatusOK, nil
+	responses := []keeper.Response{mapNode(request.Host, request.Port, inRecovery, lag)}
+	if !inRecovery {
+		responses = append(responses, a.listSyncStandbys(request)...)
+	}
+	return responses, http.StatusOK, nil
+}
+
+// listSyncStandbys reports every standby currently connected to this
+// primary, so replicas queried independently (see List) can be told apart as
+// synchronous vs asynchronous - something they cannot determine about
+// themselves. It is best-effort: pg_stat_replication may be restricted for
+// the configured credentials, or briefly fail during a topology change, in
+// which case the primary's own List response above is still returned as-is.
+func (a *Adapter) listSyncStandbys(request keeper.Request) []keeper.Response {
+	var standbys []keeper.Response
+	err := a.query(request, syncStandbyQuery, func(rows pgx.Rows) error {
+		for rows.Next() {
+			var clientAddr, syncState string
+			if errScan := rows.Scan(&clientAddr, &syncState); errScan != nil {
+				return errScan
+			}
+			// NOTE: pg_stat_replication only has the standby's ephemeral
+			// replication client_port, not its listening port, so this
+			// reuses request.Port - the port Ivory already dialed *this*
+			// primary on - as the standby's port too, since every node in a
+			// native postgres cluster shares one port by convention (see
+			// Adapter's doc comment). This is data the adapter itself
+			// legitimately possesses, not a value borrowed from Ivory's own
+			// cluster configuration.
+			standbys = append(standbys, mapSyncStandby(clientAddr, request.Port, syncState))
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil
+	}
+	return standbys
 }
 
 // mapUnavailableState reports the keeper.State represented by a "cannot
@@ -149,35 +194,35 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) ConfigUpdate(request keeper.Request) (any, int, error) {
+func (a *Adapter) ConfigUpdate(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Switchover(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Switchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteSwitchover(request keeper.Request) (*string, int, error) {
+func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(request keeper.Request) (*string, int, error) {
+func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Activate(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(request keeper.Request) (*string, int, error) {
+func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
@@ -238,6 +283,25 @@ func mapUnavailableNode(host string, port int, state keeper.State) keeper.Respon
 		Status:               &status,
 		State:                state,
 		Role:                 keeper.Unknown,
+		DiscoveredHost:       &host,
+		DiscoveredKeeperPort: &port,
+		DiscoveredDbPort:     &port,
+	}
+}
+
+// mapSyncStandby builds a Response for a standby discovered via the
+// primary's pg_stat_replication. port is the primary's own connection port,
+// reused for the standby too since native postgres has no separate keeper
+// port - every node's keeper port and db port are the same port it's dialed
+// on (see Adapter's doc comment), and by convention every node in the
+// cluster shares that same port number.
+func mapSyncStandby(host string, port int, syncState string) keeper.Response {
+	var status keeper.Status = keeper.Active
+	return keeper.Response{
+		Status:               &status,
+		State:                keeper.StateRunning,
+		Role:                 keeper.Replica,
+		Sync:                 syncState == "sync" || syncState == "quorum",
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,

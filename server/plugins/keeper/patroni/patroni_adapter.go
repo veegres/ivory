@@ -23,7 +23,7 @@ func NewAdapter(httpClient *http.Client) *Adapter {
 func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	var overview []keeper.Response
 
-	response, status, err := http.NewJSONRequest[PatroniCluster](a.httpClient).Get(keeper.Map(request, "/cluster"))
+	response, status, err := http.NewJSONRequest[cluster](a.httpClient).Get(keeper.Map(request, "/cluster"))
 	if err != nil {
 		return overview, status, err
 	}
@@ -51,6 +51,7 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 			Status:               &keeperStatus,
 			State:                a.mapState(patroniInstance.State),
 			Role:                 a.mapRole(patroniInstance.Role),
+			Sync:                 a.mapSync(patroniInstance.Role),
 			Lag:                  a.mapLag(patroniInstance.Lag),
 			PendingRestart:       patroniInstance.PendingRestart,
 			ScheduledRestart:     a.mapRestart(patroniInstance.ScheduledRestart),
@@ -72,7 +73,7 @@ func (a *Adapter) mapLag(lag json.RawMessage) int64 {
 	return -1
 }
 
-func (a *Adapter) mapRestart(restart *PatroniScheduledRestart) *keeper.ScheduledRestart {
+func (a *Adapter) mapRestart(restart *scheduledRestart) *keeper.ScheduledRestart {
 	var scheduledRestart *keeper.ScheduledRestart
 	if restart != nil {
 		scheduledRestart = &keeper.ScheduledRestart{
@@ -83,7 +84,7 @@ func (a *Adapter) mapRestart(restart *PatroniScheduledRestart) *keeper.Scheduled
 	return scheduledRestart
 }
 
-func (a *Adapter) mapSwitchover(host string, switchover *PatroniScheduledSwitchover) *keeper.ScheduledSwitchover {
+func (a *Adapter) mapSwitchover(host string, switchover *scheduledSwitchover) *keeper.ScheduledSwitchover {
 	var scheduledSwitchover *keeper.ScheduledSwitchover
 	if switchover != nil && switchover.From == host {
 		to := switchover.To
@@ -108,7 +109,7 @@ func (a *Adapter) mapSwitchover(host string, switchover *PatroniScheduledSwitcho
 // constants.
 func (a *Adapter) mapState(state string) keeper.State {
 	switch state {
-	case "running", "streaming":
+	case "running", "streaming", "in archive recovery":
 		return keeper.StateRunning
 	case "starting", "initializing new cluster", "running custom bootstrap script", "creating replica":
 		return keeper.StateStarting
@@ -125,14 +126,31 @@ func (a *Adapter) mapState(state string) keeper.State {
 	}
 }
 
+// mapRole normalizes Patroni's member "role" string onto keeper.Role.
+// standby_leader is the local leader of a standby cluster (cascading from an
+// external primary), so it maps to Leader like a regular primary. sync_standby
+// and quorum_standby are still replicas from a role standpoint - whether they
+// belong to the synchronous replication set is reported separately by mapSync.
 func (a *Adapter) mapRole(role string) keeper.Role {
 	switch role {
-	case "leader", "master":
+	case "leader", "master", "standby_leader":
 		return keeper.Leader
-	case "replica":
+	case "replica", "sync_standby", "quorum_standby":
 		return keeper.Replica
 	default:
 		return keeper.Unknown
+	}
+}
+
+// mapSync reports whether a replica currently belongs to Patroni's
+// synchronous replication set (synchronous_mode / synchronous_mode: quorum),
+// as opposed to a plain asynchronous replica.
+func (a *Adapter) mapSync(role string) bool {
+	switch role {
+	case "sync_standby", "quorum_standby":
+		return true
+	default:
+		return false
 	}
 }
 
@@ -176,7 +194,7 @@ func (a *Adapter) Activate(request keeper.Request) (*string, int, error) {
 	if request.Body != nil {
 		return nil, nethttp.StatusBadRequest, keeper.ErrBodyShouldBeEmpty
 	}
-	request.Body = ConfigPause{Pause: false}
+	request.Body = configPause{Pause: false}
 	return http.NewJSONRequest[string](a.httpClient).Patch(keeper.Map(request, "/config"))
 }
 
@@ -184,6 +202,6 @@ func (a *Adapter) Pause(request keeper.Request) (*string, int, error) {
 	if request.Body != nil {
 		return nil, nethttp.StatusBadRequest, keeper.ErrBodyShouldBeEmpty
 	}
-	request.Body = ConfigPause{Pause: true}
+	request.Body = configPause{Pause: true}
 	return http.NewJSONRequest[string](a.httpClient).Patch(keeper.Map(request, "/config"))
 }

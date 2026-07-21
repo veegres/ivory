@@ -17,7 +17,7 @@ const SX: SxPropsMap = {
         flexGrow: 1, overflow: "auto", display: "flex", flexDirection: "column",
         gap: 1, backgroundImage: "inherit", backgroundColor: "inherit",
     },
-    body: {minWidth: 0, overflowX: "auto"},
+    body: {minWidth: 0, overflowX: "auto", backgroundImage: "inherit", backgroundColor: "inherit"},
     inputs: {display: "flex", alignItems: "center", gap: 1, width: "var(--size-field)"},
 }
 

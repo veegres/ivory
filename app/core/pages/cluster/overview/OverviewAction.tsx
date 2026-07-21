@@ -8,12 +8,8 @@ import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getKeeperOneRequest} from "../../../../shared/helper/HelperUtils"
 import {OverviewActionInfo} from "./OverviewActionInfo"
 import {OverviewActionStatus} from "./OverviewActionStatus"
-import {OverviewNodesFixAuto} from "./OverviewNodesFixAuto"
+import {OverviewNodesClusterFix} from "./OverviewNodesClusterFix"
 
-// NOTE: the component renders two siblings straight into the wrapping head
-// row: on mobile the status block takes a full-width line ordered after the
-// fixed buttons, so the tab and the buttons stay together on the first line
-// while the status drops below them with its space-between spreading it
 const SX: SxPropsMap = {
     status: {
         order: {xs: 3, sm: 2}, flexBasis: {xs: "100%", sm: "auto"},
@@ -49,7 +45,7 @@ export function OverviewAction(props: Props) {
                 <OverviewActionInfo cluster={cluster}/>
             </Box>
             <Box sx={SX.fixed}>
-                <OverviewNodesFixAuto name={cluster.name}/>
+                <OverviewNodesClusterFix name={cluster.name}/>
                 {renderRefresh()}
                 <ToggleButtonGroup size={"small"}>
                     <ToggleButton

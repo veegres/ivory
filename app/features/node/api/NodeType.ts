@@ -37,6 +37,7 @@ export interface KeeperResponse {
     status?: KeeperStatus,
     state: KeeperState,
     role: Role,
+    sync: boolean,
     lag: number,
     pendingRestart: boolean,
     scheduledSwitchover?: ScheduledSwitchover,

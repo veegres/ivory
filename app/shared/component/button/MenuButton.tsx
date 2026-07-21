@@ -1,4 +1,4 @@
-import {Box, Collapse, Paper} from "@mui/material"
+import {Box, Collapse} from "@mui/material"
 import {ReactNode, useState} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
@@ -7,7 +7,10 @@ import {MoreIconButton} from "./IconButtons"
 const SX: SxPropsMap = {
     box: {position: "relative"},
     collapse: {position: "absolute", top: "50%", transform: "translate(calc(-100% + -2px), -50%)"},
-    paper: {display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px", boxShadow: "none", border: 0.5, borderColor: "divider"},
+    paper: {
+        display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px",
+        border: 1, borderRadius: 1, borderColor: "divider", backgroundColor: "background.default",
+    },
 }
 
 type Props = {
@@ -26,9 +29,7 @@ export function MenuButton(props: Props) {
     return (
         <Box sx={SX.box}>
             <Collapse sx={SX.collapse} in={realOpen} orientation={"horizontal"}>
-                <Paper sx={SX.paper}>
-                    {children}
-                </Paper>
+                <Box sx={SX.paper}>{children}</Box>
             </Collapse>
             <MoreIconButton size={size} onClick={() =>  onClick(!realOpen)}/>
         </Box>

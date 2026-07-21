@@ -135,8 +135,8 @@ func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router)
 	group.PUT("", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PutClusterByName)
 	group.DELETE("/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterDelete), r.DeleteClusterByName)
 	group.GET("/overview/:name", rp.ValidateMethodMiddleware(coreConfig.ViewClusterOverview), r.GetClusterOverview)
-	group.POST("/auto", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterAutoCreate)
-	group.POST("/auto/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PostClusterAutoFix)
+	group.POST("/fix/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PostClusterFix)
+	group.POST("/detect", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterDetect)
 	group.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterDeploy)
 }
 

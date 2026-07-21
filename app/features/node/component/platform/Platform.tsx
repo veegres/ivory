@@ -8,7 +8,7 @@ import {PlatformMetrics} from "./PlatformMetrics"
 import {PlatformOverview} from "./PlatformOverview"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1},
+    box: {display: "flex", flexDirection: "column", gap: 1, backgroundImage: "inherit", backgroundColor: "inherit"},
 }
 
 type Props = {

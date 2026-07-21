@@ -28,6 +28,7 @@ export function AlertButton(props: Props) {
     const {loading, disabled, size, color, tooltip} = props
     const [open, setOpen] = useState(false)
     const borderColor = color === "inherit" ? "divider" : undefined
+    const padding =  typeof label === "string" ? "5px 8px" : "3px"
 
     return (
         <>
@@ -43,7 +44,7 @@ export function AlertButton(props: Props) {
             <Tooltip title={tooltip} placement={"top"} arrow={true}>
                 <Box sx={SX.box}>
                     <Button
-                        sx={[SX.button, {borderColor}]}
+                        sx={[SX.button, {borderColor, padding}]}
                         size={size}
                         color={color}
                         variant={variant}

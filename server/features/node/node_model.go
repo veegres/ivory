@@ -58,6 +58,7 @@ type KeeperResponse struct {
 	Status               *KeeperStatus              `json:"status"`
 	State                KeeperState                `json:"state"`
 	Role                 KeeperRole                 `json:"role"`
+	Sync                 bool                       `json:"sync"`
 	Lag                  int64                      `json:"lag"`
 	PendingRestart       bool                       `json:"pendingRestart"`
 	ScheduledSwitchover  *KeeperScheduledSwitchover `json:"scheduledSwitchover"`
@@ -342,6 +343,7 @@ func mapKeeperResponse(r keeper.Response) KeeperResponse {
 		Status:               r.Status,
 		State:                r.State,
 		Role:                 r.Role,
+		Sync:                 r.Sync,
 		Lag:                  r.Lag,
 		PendingRestart:       r.PendingRestart,
 		ScheduledSwitchover:  switchover,

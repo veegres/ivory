@@ -4,7 +4,7 @@ import {PropsWithChildren} from "react"
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
-    list: {display: "flex", flexWrap: "wrap", gap: "8px 30px", alignItems: "center", width: "100%", padding: "0px 4px"},
+    list: {display: "flex", flexWrap: "wrap", gap: "8px 30px", alignItems: "start", width: "100%", padding: "0px 4px"},
     listColumns: {
         display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, max-content))",
         gap: "8px 20px", alignItems: "start", width: "100%", padding: "0px 4px",

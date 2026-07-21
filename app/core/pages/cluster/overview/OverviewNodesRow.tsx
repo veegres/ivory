@@ -51,7 +51,7 @@ type Props = {
 export function OverviewNodesRow(props: Props) {
     const {node, cluster, candidates, error = false, nodeKey, checked} = props
     const {config, warnings, keeper} = node
-    const {role, state, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
+    const {role, state, sync, lag, pendingRestart, scheduledRestart, scheduledSwitchover, tags} = keeper
 
     const {setNode} = useStoreAction
     const keeperRequest = getKeeperOneRequest(cluster, config.host, config.keeperPort)
@@ -125,8 +125,9 @@ export function OverviewNodesRow(props: Props) {
         return (
             <HiddenScrolling arrowWidth={"20px"} arrowHeight={"25px"}>
                 <Box sx={SX.data}>
-                    {pendingRestart && <InfoColorBox label={"Restart"} dot={true} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} color={"warning"}/>}
-                    {role === "replica" && <InfoColorBox label={"Lag"} dot={true} title={renderSimpleTitle("Lag", SizeFormatter.pretty(lag))} color={lag > 100 ? "error" : "default"}/>}
+                    {role === "replica" && <InfoColorBox label={"LAG"} title={renderSimpleTitle("Replication Lag", SizeFormatter.pretty(lag))} color={lag > 100 ? "error" : "default"}/>}
+                    {role === "replica" && sync && <InfoColorBox label={"SYNC"} color={"secondary"} title={renderSimpleTitle("Replication Type", "SYNC")}/>}
+                    {pendingRestart && <InfoColorBox label={"RESTART"} title={renderSimpleTitle("Pending Restart", String(pendingRestart))} color={"warning"}/>}
                     {scheduledRestart && <InfoColorBox label={"Scheduled Restart"} title={renderScheduledRestartTitle()} color={"secondary"}/>}
                     {scheduledSwitchover && <InfoColorBox label={"Scheduled Switchover"} title={renderScheduledSwitchoverTitle()} color={"secondary"}/>}
                     {renderTags()}

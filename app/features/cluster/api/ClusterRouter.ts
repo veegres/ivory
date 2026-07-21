@@ -31,9 +31,9 @@ export const ClusterApi = {
         fn: (cluster: Cluster) => api.put<R<Cluster>>("/cluster", cluster)
             .then((response) => response.data.response),
     },
-    createAuto: {
-        key: () => ["cluster", "auto", "creation"],
-        fn: (cluster: AutoRequest) => api.post<R<Cluster>>("/cluster/auto", cluster)
+    detect: {
+        key: () => ["cluster", "detect"],
+        fn: (cluster: AutoRequest) => api.post<R<Cluster>>("/cluster/detect", cluster)
             .then((response) => response.data.response),
     },
     deploy: {
@@ -41,9 +41,9 @@ export const ClusterApi = {
         fn: (req: DeployRequest) => api.post<R<string[]>>("/cluster/deploy", req)
             .then((response) => response.data.response),
     },
-    fixAuto: {
-        key: () => ["cluster", "auto", "fix"],
-        fn: (name: string) => api.post<R<Cluster>>(`/cluster/auto/${name}`)
+    fix: {
+        key: () => ["cluster", "fix"],
+        fn: (name: string) => api.post<R<Cluster>>(`/cluster/fix/${name}`)
             .then((response) => response.data.response),
     },
     delete: {

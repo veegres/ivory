@@ -87,7 +87,7 @@ func (r *Router) PutClusterByName(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *Router) PostClusterAutoCreate(context *gin.Context) {
+func (r *Router) PostClusterDetect(context *gin.Context) {
 	var cluster CreateAutoRequest
 	errParse := context.ShouldBindJSON(&cluster)
 	if errParse != nil {
@@ -95,7 +95,7 @@ func (r *Router) PostClusterAutoCreate(context *gin.Context) {
 		return
 	}
 
-	response, errRes := r.clusterService.CreateAuto(cluster)
+	response, errRes := r.clusterService.Detect(cluster)
 	if errRes != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errRes.Error()})
 		return
@@ -104,9 +104,9 @@ func (r *Router) PostClusterAutoCreate(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *Router) PostClusterAutoFix(context *gin.Context) {
+func (r *Router) PostClusterFix(context *gin.Context) {
 	name := context.Param("name")
-	response, errRes := r.clusterService.FixAuto(name)
+	response, errRes := r.clusterService.Fix(name)
 	if errRes != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errRes.Error()})
 		return

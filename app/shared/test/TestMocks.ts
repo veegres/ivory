@@ -115,6 +115,7 @@ export function createMockNode(overrides: Partial<Node> = {}): Node {
         keeper: {
             state: "running",
             role: "leader",
+            sync: false,
             lag: 0,
             pendingRestart: false,
             discoveredHost: "localhost",

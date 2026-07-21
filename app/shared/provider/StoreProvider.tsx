@@ -25,7 +25,7 @@ interface Store {
         containerTab: number,
         platformTab: number,
         platformLogsPath: string,
-        toolsTab: number,
+        toolsTab?: number,
     },
 }
 
@@ -48,7 +48,7 @@ export const useStore = create(persist<Store>(
             containerTab: 0,
             platformTab: 0,
             platformLogsPath: "",
-            toolsTab: 0,
+            toolsTab: undefined,
         },
     }),
     {

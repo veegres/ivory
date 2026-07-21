@@ -26,7 +26,7 @@ const SX: SxPropsMap = {
     toggle: {display: "flex", flexDirection: {xs: "row", md: "column"}, alignItems: "center", justifyContent: "space-between", gap: 1},
     option: {display: "flex", flexDirection: {xs: "column", md: "row"}, padding: "0 5px", gap: 2},
     divider: {display: {xs: "none", md: "block"}},
-    form: {flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "center"},
+    form: {flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "start"},
     refresh: {width: {xs: "auto", md: "100%"}},
     // NOTE: the group keeps the vertical orientation prop and pure css turns it
     // into a row of standalone chips below md, since a connected group cannot

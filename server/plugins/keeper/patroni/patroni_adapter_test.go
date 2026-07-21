@@ -12,8 +12,8 @@ import (
 func TestClient_Overview_Mapping(t *testing.T) {
 	t.Run("should map basic Patroni cluster to internal model", func(t *testing.T) {
 		// Mock Patroni response
-		patroniResponse := PatroniCluster{
-			Members: []PatroniInstance{
+		patroniResponse := cluster{
+			Members: []instance{
 				{
 					Name:   "db1",
 					Host:   "db1.example.com",
@@ -52,7 +52,7 @@ func TestClient_Overview_Mapping(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
-				patroniInstance := PatroniInstance{
+				patroniInstance := instance{
 					ApiUrl: tc.apiUrl,
 				}
 
@@ -73,7 +73,7 @@ func TestClient_mapLag(t *testing.T) {
 	client := &Adapter{}
 
 	t.Run("valid lag", func(t *testing.T) {
-		patroniInstance := PatroniInstance{
+		patroniInstance := instance{
 			Lag: json.RawMessage("12345"),
 		}
 		lag := client.mapLag(patroniInstance.Lag)
@@ -83,7 +83,7 @@ func TestClient_mapLag(t *testing.T) {
 	})
 
 	t.Run("invalid lag string", func(t *testing.T) {
-		patroniInstance := PatroniInstance{
+		patroniInstance := instance{
 			Lag: json.RawMessage("\"invalid\""),
 		}
 		lag := client.mapLag(patroniInstance.Lag)
@@ -93,7 +93,7 @@ func TestClient_mapLag(t *testing.T) {
 	})
 
 	t.Run("null lag", func(t *testing.T) {
-		patroniInstance := PatroniInstance{
+		patroniInstance := instance{
 			Lag: json.RawMessage("null"),
 		}
 		lag := client.mapLag(patroniInstance.Lag)
@@ -112,7 +112,10 @@ func TestClient_mapRole(t *testing.T) {
 	}{
 		{"leader", keeper.Leader},
 		{"master", keeper.Leader},
+		{"standby_leader", keeper.Leader},
 		{"replica", keeper.Replica},
+		{"sync_standby", keeper.Replica},
+		{"quorum_standby", keeper.Replica},
 		{"unknown", keeper.Unknown},
 		{"", keeper.Unknown},
 	}
@@ -121,6 +124,31 @@ func TestClient_mapRole(t *testing.T) {
 		role := client.mapRole(tc.input)
 		if role != tc.expected {
 			t.Errorf("For input '%s', expected role '%s', got '%s'", tc.input, tc.expected, role)
+		}
+	}
+}
+
+func TestClient_mapSync(t *testing.T) {
+	client := &Adapter{}
+
+	testCases := []struct {
+		input    string
+		expected bool
+	}{
+		{"sync_standby", true},
+		{"quorum_standby", true},
+		{"replica", false},
+		{"leader", false},
+		{"master", false},
+		{"standby_leader", false},
+		{"unknown", false},
+		{"", false},
+	}
+
+	for _, tc := range testCases {
+		sync := client.mapSync(tc.input)
+		if sync != tc.expected {
+			t.Errorf("For input '%s', expected sync '%v', got '%v'", tc.input, tc.expected, sync)
 		}
 	}
 }
@@ -134,6 +162,7 @@ func TestClient_mapState(t *testing.T) {
 	}{
 		{"running", keeper.StateRunning},
 		{"streaming", keeper.StateRunning}, // newer Patroni reports replicas as "streaming" instead of "running"
+		{"in archive recovery", keeper.StateRunning},
 		{"starting", keeper.StateStarting},
 		{"creating replica", keeper.StateStarting},
 		{"initializing new cluster", keeper.StateStarting},
@@ -163,7 +192,7 @@ func TestClient_mapRestart(t *testing.T) {
 	client := &Adapter{}
 
 	t.Run("valid restart", func(t *testing.T) {
-		patroniRestart := &PatroniScheduledRestart{
+		patroniRestart := &scheduledRestart{
 			RestartPending: true,
 			Schedule:       "2024-10-26T12:00:00Z",
 		}

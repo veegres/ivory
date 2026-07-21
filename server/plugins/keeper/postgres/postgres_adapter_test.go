@@ -63,6 +63,43 @@ func TestMapNode(t *testing.T) {
 	}
 }
 
+func TestMapSyncStandby(t *testing.T) {
+	tests := []struct {
+		name         string
+		syncState    string
+		expectedSync bool
+	}{
+		{"sync standby", "sync", true},
+		{"quorum standby", "quorum", true},
+		{"async standby", "async", false},
+		{"potential standby", "potential", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			response := mapSyncStandby("10.0.0.2", 5432, tt.syncState)
+			if response.Role != keeper.Replica {
+				t.Errorf("expected role replica, got %v", response.Role)
+			}
+			if response.Sync != tt.expectedSync {
+				t.Errorf("expected sync %v, got %v", tt.expectedSync, response.Sync)
+			}
+			if response.State != keeper.StateRunning {
+				t.Errorf("expected state running, got %q", response.State)
+			}
+			if response.DiscoveredHost == nil || *response.DiscoveredHost != "10.0.0.2" {
+				t.Errorf("expected discovered host 10.0.0.2, got %v", response.DiscoveredHost)
+			}
+			if response.DiscoveredKeeperPort == nil || *response.DiscoveredKeeperPort != 5432 {
+				t.Errorf("expected discovered keeper port 5432 (reused from the primary's own connection port), got %v", response.DiscoveredKeeperPort)
+			}
+			if response.DiscoveredDbPort == nil || *response.DiscoveredDbPort != 5432 {
+				t.Errorf("expected discovered db port 5432, got %v", response.DiscoveredDbPort)
+			}
+		})
+	}
+}
+
 func TestMapUnavailableNode(t *testing.T) {
 	response := mapUnavailableNode("db1", 5432, keeper.StateStarting)
 

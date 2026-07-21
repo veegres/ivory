@@ -39,6 +39,9 @@ export function NodeHeadForm(props: Props) {
     const lagValue = isReplica ? SizeFormatter.pretty(node.keeper.lag) : "N/A"
     const lagColor = !isReplica ? "default" : (node.keeper.lag > 100 * 1024 * 1024 ? "error" : (node.keeper.lag > 0 ? "warning" : "success"))
 
+    const syncText = isReplica && node.keeper.sync ? "sync" : "async"
+    const syncColor = "secondary"
+
     const pending = node.keeper.pendingRestart
     const pendingText = pending ? "Pending" : "No"
     const pendingColor = pending ? "warning" : "success"
@@ -62,6 +65,7 @@ export function NodeHeadForm(props: Props) {
                 </Box>
                 <InfoStatusList>
                     {renderStatusItem("State", stateStr, stateColor)}
+                    {renderStatusItem("Replication", syncText, syncColor)}
                     {renderStatusItem("Lag", lagValue, lagColor)}
                     {renderStatusItem("Pending Restart", pendingText, pendingColor)}
                     {renderStatusItem("Scheduled Restart", restartText, restartColor)}

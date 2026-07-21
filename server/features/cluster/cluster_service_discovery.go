@@ -28,7 +28,7 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 	return &Overview{resultNodeMap, supportedFeatures}, nil
 }
 
-func (s *Service) CreateAuto(cluster CreateAutoRequest) (*Response, error) {
+func (s *Service) Detect(cluster CreateAutoRequest) (*Response, error) {
 	keeperNodeMap, _, errOver := s.getKeeperListByOne(cluster.Host, cluster.Port, cluster.Options)
 	if errOver != nil {
 		return nil, errOver
@@ -58,12 +58,12 @@ func (s *Service) CreateAuto(cluster CreateAutoRequest) (*Response, error) {
 	return &r, err
 }
 
-func (s *Service) FixAuto(name string) (*Response, error) {
+func (s *Service) Fix(name string) (*Response, error) {
 	cluster, clusterError := s.Get(name)
 	if clusterError != nil {
 		return nil, clusterError
 	}
-	keeperNodes, err := s.getKeeperListByManyFirstSuccess(cluster.Nodes, cluster.Options)
+	keeperNodes, err := s.getKeeperListByLeader(cluster.Nodes, cluster.Options)
 	if err != nil {
 		return nil, err
 	}
@@ -115,26 +115,29 @@ func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) 
 		return nil, connectionErrors, err
 	}
 
-	keeperNodeMap := make(map[string]node.KeeperOneResponse)
 	var requestErrs error
 	for _, response := range responses {
-		connection := response.Connection
-		connectionKey := s.getNodeKey(connection.Host, &connection.Port)
 		if response.Error != "" {
 			errResponse := errors.New(response.Error)
+			connectionKey := s.getNodeKey(response.Connection.Host, &response.Connection.Port)
 			connectionErrors[connectionKey] = errResponse
 			requestErrs = errors.Join(requestErrs, errResponse)
 		}
-		// NOTE: still merge in whatever the adapter could report even when
-		// there was also an error (e.g. postgres starting up), so the node
-		// gets a real state instead of losing its data just because the
-		// error is also recorded above.
+	}
+
+	keeperNodeMap := make(map[string]node.KeeperOneResponse)
+	for _, response := range responses {
+		if hasLeaderEntry(response.Response) {
+			s.addKeeperResponsesToMap(keeperNodeMap, response.Response)
+		}
+	}
+	for _, response := range responses {
 		s.addKeeperResponsesToMap(keeperNodeMap, response.Response)
 	}
 	return keeperNodeMap, connectionErrors, requestErrs
 }
 
-func (s *Service) getKeeperListByManyFirstSuccess(configs []NodeConfig, cluster Options) ([]node.KeeperOneResponse, error) {
+func (s *Service) getKeeperListByLeader(configs []NodeConfig, cluster Options) ([]node.KeeperOneResponse, error) {
 	responses, _, err := s.getKeeperListByManyResponse(configs, cluster)
 	if err != nil {
 		return nil, err
@@ -146,9 +149,20 @@ func (s *Service) getKeeperListByManyFirstSuccess(configs []NodeConfig, cluster 
 			requestErrs = errors.Join(requestErrs, errors.New(response.Error))
 			continue
 		}
-		return response.Response, nil
+		if hasLeaderEntry(response.Response) {
+			return response.Response, nil
+		}
 	}
-	return nil, requestErrs
+	return nil, errors.Join(requestErrs, ErrNoLeaderFound)
+}
+
+func hasLeaderEntry(responses []node.KeeperOneResponse) bool {
+	for _, r := range responses {
+		if r.Role == node.KeeperRoleLeader {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Options) ([]node.KeeperMultiResponse, map[string]error, error) {
