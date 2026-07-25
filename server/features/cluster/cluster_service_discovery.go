@@ -257,7 +257,7 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
 		if !s.hasKeeper(cn.Keeper) {
-			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnknown}
+			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
 			nodeMap[nodeKey] = cn
 		}

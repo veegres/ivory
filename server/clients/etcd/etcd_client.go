@@ -2,12 +2,11 @@ package etcd
 
 import (
 	"crypto/tls"
+	"ivory/clients"
 	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
-
-const defaultTimeout = 5 * time.Second
 
 // Config contains the bare minimum details to open an etcd client connection.
 type Config struct {
@@ -15,7 +14,7 @@ type Config struct {
 	Username  string
 	Password  string
 	TLS       *tls.Config
-	Timeout   time.Duration // dial and request timeout, defaults to 5s
+	Timeout   time.Duration
 }
 
 type Client struct {
@@ -26,7 +25,7 @@ type Client struct {
 func Connect(c Config) (*Client, error) {
 	timeout := c.Timeout
 	if timeout == 0 {
-		timeout = defaultTimeout
+		timeout = clients.IntegrationTimeout
 	}
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   c.Endpoints,

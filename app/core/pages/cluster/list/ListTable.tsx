@@ -58,7 +58,7 @@ export function ListTable(props: Props) {
                     <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                 </ActionsLoader>
             </Box>
-            <SkeletonRows isLoading={pending} height={42}>
+            <SkeletonRows isLoading={pending} height={32}>
                 <ListRowNew show={showNewElement} close={() => setShowNewElement(false)}/>
                 {renderRemovedRow()}
                 {renderRows()}

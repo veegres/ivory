@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"ivory/clients"
 	"log/slog"
 	"strconv"
 	"time"
@@ -13,8 +14,6 @@ import (
 
 var ErrHostOrPortNotSpecified = errors.New("host or port are not specified")
 
-const defaultConnectTimeout = 5 * time.Second
-
 // Config contains the bare minimum details to open a postgres connection.
 type Config struct {
 	Host           string
@@ -22,9 +21,9 @@ type Config struct {
 	Database       string // defaults to "postgres" when empty
 	Username       string
 	Password       string
-	AppName        string        // application_name runtime param
-	TLS            *tls.Config   // nil = no ssl; non-nil = verify-ca with RootCAs/Certificates override
-	ConnectTimeout time.Duration // connection establishment timeout, defaults to 5s
+	AppName        string
+	TLS            *tls.Config
+	ConnectTimeout time.Duration
 }
 
 // Connect opens a connection and returns it together with the connection
@@ -73,7 +72,7 @@ func Parse(c Config) (*pgx.ConnConfig, string, error) {
 	// hang the caller forever
 	conConfig.ConnectTimeout = c.ConnectTimeout
 	if conConfig.ConnectTimeout == 0 {
-		conConfig.ConnectTimeout = defaultConnectTimeout
+		conConfig.ConnectTimeout = clients.IntegrationTimeout
 	}
 	if c.TLS != nil {
 		// NOTE: we rewrite only RootCAs and Certificates, because pgx.ParseConfig creates proper

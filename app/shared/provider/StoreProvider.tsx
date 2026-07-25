@@ -90,7 +90,7 @@ function setClusterSearch(search: string) {
 }
 
 function setClusterKeeperPlugin(plugin: KeeperPlugin) {
-    useStore.setState(s => ({...s, activeClusterKeeperPlugin: plugin}))
+    useStore.setState(s => ({...s, activeClusterKeeperPlugin: plugin, activeCluster: undefined, manualKeeper: undefined}))
 }
 
 function setCluster(cluster?: Cluster) {

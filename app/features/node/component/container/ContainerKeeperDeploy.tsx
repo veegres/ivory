@@ -76,7 +76,7 @@ export function ContainerKeeperDeploy(props: Props) {
             icon={<Rocket fontSize={"small"}/>}
             back={!!nodeDeploy.data}
         >
-            {nodeDeploy.data ? <Logs logs={nodeDeploy.data} height={600} auto={false}/> : renderBody()}
+            {nodeDeploy.data ? <Logs logs={nodeDeploy.data} height={570} auto={false}/> : renderBody()}
         </DialogButton>
     )
 

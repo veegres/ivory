@@ -76,7 +76,7 @@ export function ListRow(props: Props) {
     function renderActions() {
         return (
             <Box sx={SX.actions}>
-                {warning && !overview.error && !overview.isFetching && (
+                {warning && !overview.error && (
                     <Tooltip title={"Issues detected — select a cluster to view details"} placement={"top"}>
                         <Box sx={SX.status}><WarningAmberRounded sx={SX.statusIcon} color={"warning"}/></Box>
                     </Tooltip>

@@ -5,11 +5,11 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"ivory/clients"
 	"ivory/clients/auth"
 	"log/slog"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/go-ldap/ldap/v3"
 )
@@ -125,7 +125,7 @@ func (p *Provider) Verify(subject Login) (string, error) {
 }
 
 func (p *Provider) getConnection(config Config) (*ldap.Conn, error) {
-	dialer := &net.Dialer{Timeout: 3 * time.Second}
+	dialer := &net.Dialer{Timeout: clients.ExternalTimeout}
 
 	tlsConfig := &tls.Config{}
 	if config.Tls != nil && config.Tls.CaCert != "" {
@@ -147,7 +147,7 @@ func (p *Provider) getConnection(config Config) (*ldap.Conn, error) {
 	if err != nil {
 		return conn, err
 	}
-	conn.SetTimeout(3 * time.Second)
+	conn.SetTimeout(clients.ExternalTimeout)
 	err = conn.Bind(config.BindDN, config.BindPass)
 	if err != nil {
 		return conn, err

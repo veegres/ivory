@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from "vitest"
 
 import {Cluster} from "../../features/cluster/api/ClusterType"
-import {NodeTabType} from "../../features/node/api/NodeType"
+import {KeeperPlugin, NodeTabType} from "../../features/node/api/NodeType"
 import {Type as QueryType} from "../../features/query/api/QueryType"
 import {getDomain} from "../helper/HelperUtils"
 import {createMockCluster, createMockNode} from "../test/TestMocks"
@@ -89,6 +89,27 @@ describe("StoreProvider", () => {
 
             const state = useStore.getState()
             expect(state.activeCluster).toBeUndefined()
+        })
+    })
+
+    describe("setClusterKeeperPlugin", () => {
+        it("should set active cluster keeper plugin", () => {
+            useStoreAction.setClusterKeeperPlugin(KeeperPlugin.NATIVE_ETCD)
+
+            const state = useStore.getState()
+            expect(state.activeClusterKeeperPlugin).toBe(KeeperPlugin.NATIVE_ETCD)
+        })
+
+        it("should clear active cluster and manual keeper when plugin changes", () => {
+            const cluster: Cluster = createMockCluster({name: "test-cluster"})
+            useStoreAction.setCluster(cluster)
+            useStoreAction.setClusterKeeper("test-keeper")
+
+            useStoreAction.setClusterKeeperPlugin(KeeperPlugin.NATIVE_ETCD)
+
+            const state = useStore.getState()
+            expect(state.activeCluster).toBeUndefined()
+            expect(state.manualKeeper).toBeUndefined()
         })
     })
 

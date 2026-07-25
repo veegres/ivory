@@ -182,7 +182,7 @@ func splitShellFields(value string) []string {
 func (a *Adapter) parseContainerMetrics(output string) (*platform.Metrics, error) {
 	line := strings.TrimSpace(output)
 	if line == "" {
-		return nil, platform.ErrInvalidContainerMetrics
+		return nil, platform.ErrContainerNotRunning
 	}
 
 	var entry dockerStatsEntry

@@ -14,6 +14,7 @@ var ErrInvalidCpuMetrics = errors.New("invalid cpu metrics output")
 var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
 var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 var ErrInvalidContainerMetrics = errors.New("invalid container metrics output")
+var ErrContainerNotRunning = errors.New("container is stopped or does not exist")
 var ErrInvalidProcesses = errors.New("invalid processes output")
 
 // Connection contains the bare minimum details to execute commands on a

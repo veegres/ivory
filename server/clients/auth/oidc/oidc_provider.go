@@ -3,6 +3,7 @@ package oidc
 import (
 	"context"
 	"errors"
+	"ivory/clients"
 	"ivory/clients/auth"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -72,7 +73,9 @@ func (p *Provider) Verify(subject string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	oauthToken, errExchange := p.oauthConfig.Exchange(context.Background(), subject)
+	exchangeCtx, exchangeCancel := context.WithTimeout(context.Background(), clients.ExternalTimeout)
+	defer exchangeCancel()
+	oauthToken, errExchange := p.oauthConfig.Exchange(exchangeCtx, subject)
 	if errExchange != nil {
 		return "", errors.Join(ErrFailedToExchangeToken, errExchange)
 	}
@@ -82,7 +85,9 @@ func (p *Provider) Verify(subject string) (string, error) {
 		return "", ErrNoIDTokenField
 	}
 
-	idToken, errVerify := p.oauthVerifier.Verify(context.Background(), rawIDToken)
+	verifyCtx, verifyCancel := context.WithTimeout(context.Background(), clients.ExternalTimeout)
+	defer verifyCancel()
+	idToken, errVerify := p.oauthVerifier.Verify(verifyCtx, rawIDToken)
 	if errVerify != nil {
 		return "", errors.Join(ErrFailedToVerifyIDToken, errVerify)
 	}
@@ -116,7 +121,9 @@ func (p *Provider) Connect(config Config) error {
 }
 
 func (p *Provider) getConnection(config Config) (*oidc.Provider, error) {
-	provider, errProvider := oidc.NewProvider(context.Background(), config.IssuerURL)
+	ctx, cancel := context.WithTimeout(context.Background(), clients.ExternalTimeout)
+	defer cancel()
+	provider, errProvider := oidc.NewProvider(ctx, config.IssuerURL)
 	if errProvider != nil {
 		return nil, errProvider
 	}

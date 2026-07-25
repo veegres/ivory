@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"ivory/clients"
 	"log/slog"
 	"net"
 	"strings"
@@ -26,7 +27,7 @@ type Client struct {
 
 func NewClient() *Client {
 	return &Client{
-		timeout:       10 * time.Second,
+		timeout:       clients.IntegrationTimeout,
 		knownHosts:    make(map[string][]byte),
 		cachedClients: make(map[string]*ssh.Client),
 	}

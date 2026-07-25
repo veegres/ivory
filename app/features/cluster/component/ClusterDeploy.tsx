@@ -111,7 +111,7 @@ export function ClusterDeploy(props: Props) {
                 back={!!response}
                 onBackClick={() => setResponse(undefined)}
             >
-                {response ? <Logs logs={response} height={600} auto={false}/> : renderBody()}
+                {response ? <Logs logs={response} height={570} auto={false}/> : renderBody()}
             </DialogButton>
         </ManageAccess>
     )

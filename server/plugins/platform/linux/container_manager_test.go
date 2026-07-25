@@ -211,8 +211,8 @@ func TestParseContainerMetricsErrorsAndEdgeCases(t *testing.T) {
 
 	t.Run("empty output", func(t *testing.T) {
 		_, err := adapter.parseContainerMetrics("   ")
-		if !errors.Is(err, platform.ErrInvalidContainerMetrics) {
-			t.Errorf("expected ErrInvalidContainerMetrics, got %v", err)
+		if !errors.Is(err, platform.ErrContainerNotRunning) {
+			t.Errorf("expected ErrContainerNotRunning, got %v", err)
 		}
 	})
 

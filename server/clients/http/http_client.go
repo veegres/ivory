@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"ivory/clients"
 	"log/slog"
 	nethttp "net/http"
 	"reflect"
@@ -88,9 +89,6 @@ func NewJSONRequest[R any](client *Client) *JSONRequest[R] {
 
 func (p *JSONRequest[R]) Get(request Request) (*R, int, error) {
 	request.Method = nethttp.MethodGet
-	if request.Timeout == 0 {
-		request.Timeout = 1 * time.Second
-	}
 	return p.Do(request)
 }
 
@@ -115,6 +113,9 @@ func (p *JSONRequest[R]) Delete(request Request) (*R, int, error) {
 }
 
 func (p *JSONRequest[R]) Do(req Request) (*R, int, error) {
+	if req.Timeout == 0 {
+		req.Timeout = clients.IntegrationTimeout
+	}
 	response, errRes := p.client.Send(req)
 	body, status, errParse := p.parseResponse(response)
 	return body, status, errors.Join(errRes, errParse)

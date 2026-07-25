@@ -42,6 +42,7 @@ const (
 )
 
 const KeeperStateUnknown = keeper.StateUnknown
+const KeeperStateUnreachable = keeper.StateUnreachable
 
 type KeeperScheduledSwitchover struct {
 	At string `json:"at"`

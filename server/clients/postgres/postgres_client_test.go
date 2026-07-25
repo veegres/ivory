@@ -3,6 +3,7 @@ package postgres
 import (
 	"crypto/tls"
 	"errors"
+	"ivory/clients"
 	"testing"
 )
 
@@ -69,8 +70,8 @@ func TestParse(t *testing.T) {
 			if conConfig.RuntimeParams["application_name"] != tt.config.AppName {
 				t.Errorf("expected application_name %q, got %q", tt.config.AppName, conConfig.RuntimeParams["application_name"])
 			}
-			if conConfig.ConnectTimeout != defaultConnectTimeout {
-				t.Errorf("expected default connect timeout %v, got %v", defaultConnectTimeout, conConfig.ConnectTimeout)
+			if conConfig.ConnectTimeout != clients.IntegrationTimeout {
+				t.Errorf("expected default connect timeout %v, got %v", clients.IntegrationTimeout, conConfig.ConnectTimeout)
 			}
 		})
 	}
