@@ -225,13 +225,34 @@ func mapMembers(members []member, statuses map[uint64]endpointStatus) []keeper.R
 	return responses
 }
 
+// findLeader only designates a leader when a strict majority of the
+// responding members agree on the same leader ID. During an election or a
+// network partition, reachable members can briefly disagree (some still
+// reporting a stale leader, others none yet); without this check, whichever
+// member's status happened to be read first (map iteration order is
+// randomized) would arbitrarily decide the reported leader, causing it to
+// flicker between candidates across polls even though nothing in the
+// cluster actually changed. Requiring majority agreement makes the result
+// deterministic: either the members agree and the winner is unambiguous, or
+// they don't and no leader is reported (surfacing the cluster's "no leader
+// found" warning instead of a guess).
 func findLeader(statuses map[uint64]endpointStatus) (uint64, uint64) {
-	var leaderID uint64
+	votes := make(map[uint64]int)
 	for _, status := range statuses {
 		if status.Err == nil && status.Leader != 0 {
-			leaderID = status.Leader
-			break
+			votes[status.Leader]++
 		}
+	}
+	var leaderID uint64
+	var leaderVotes int
+	for id, count := range votes {
+		if count > leaderVotes {
+			leaderID = id
+			leaderVotes = count
+		}
+	}
+	if leaderVotes*2 <= len(statuses) {
+		return 0, 0
 	}
 	if leader, ok := statuses[leaderID]; ok && leader.Err == nil {
 		return leaderID, leader.RaftIndex

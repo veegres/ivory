@@ -98,6 +98,49 @@ func TestMapMembersEdgeCases(t *testing.T) {
 	})
 }
 
+func TestFindLeader(t *testing.T) {
+	t.Run("majority agreement designates the leader", func(t *testing.T) {
+		statuses := map[uint64]endpointStatus{
+			1: {Leader: 1, RaftIndex: 100},
+			2: {Leader: 1, RaftIndex: 95},
+			3: {Err: errors.New("connection refused")},
+		}
+		leaderID, raftIndex := findLeader(statuses)
+		if leaderID != 1 {
+			t.Errorf("expected leader 1, got %d", leaderID)
+		}
+		if raftIndex != 100 {
+			t.Errorf("expected raft index 100, got %d", raftIndex)
+		}
+	})
+
+	t.Run("split members disagreeing on the leader report no leader", func(t *testing.T) {
+		statuses := map[uint64]endpointStatus{
+			1: {Leader: 1, RaftIndex: 100},
+			2: {Leader: 2, RaftIndex: 95},
+		}
+		leaderID, raftIndex := findLeader(statuses)
+		if leaderID != 0 {
+			t.Errorf("expected no leader (0), got %d", leaderID)
+		}
+		if raftIndex != 0 {
+			t.Errorf("expected raft index 0, got %d", raftIndex)
+		}
+	})
+
+	t.Run("minority report is not enough to designate a leader", func(t *testing.T) {
+		statuses := map[uint64]endpointStatus{
+			1: {Leader: 1, RaftIndex: 100},
+			2: {Err: errors.New("connection refused")},
+			3: {Err: errors.New("connection refused")},
+		}
+		leaderID, _ := findLeader(statuses)
+		if leaderID != 0 {
+			t.Errorf("expected no leader (0), got %d", leaderID)
+		}
+	})
+}
+
 func TestParseSwitchoverBody(t *testing.T) {
 	candidate := "etcd2"
 	schedule := "2026-07-04T10:00:00"

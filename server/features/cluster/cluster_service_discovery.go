@@ -239,6 +239,20 @@ func (s *Service) mergeKeeperNode(nodeMap map[string]Node, kn node.KeeperOneResp
 	if kn.DiscoveredHost == nil {
 		return
 	}
+	// NOTE: a response that couldn't determine its own port (e.g. native
+	// postgres reporting a standby's sync status from the primary's
+	// pg_stat_replication - see postgres.mapSyncStandby) leaves
+	// DiscoveredKeeperPort nil rather than guessing it. Resolve it to the
+	// configured node with a matching host instead, but only when that
+	// host is unambiguous (exactly one configured node), otherwise fall
+	// through to the generic host-only key below rather than risk
+	// attributing it to the wrong node.
+	if kn.DiscoveredKeeperPort == nil {
+		if resolved, ok := s.resolveConfigByHost(nodeMap, *kn.DiscoveredHost); ok {
+			kn.DiscoveredKeeperPort = resolved.KeeperPort
+			kn.DiscoveredDbPort = resolved.DbPort
+		}
+	}
 	nodeKey := s.getNodeKey(*kn.DiscoveredHost, kn.DiscoveredKeeperPort)
 	if s.hasKeeper(nodeMap[nodeKey].Keeper) {
 		return
@@ -253,13 +267,29 @@ func (s *Service) mergeKeeperNode(nodeMap map[string]Node, kn node.KeeperOneResp
 	}
 }
 
+// resolveConfigByHost finds the configured node matching host, only when
+// unambiguous (exactly one configured node has that host).
+func (s *Service) resolveConfigByHost(nodeMap map[string]Node, host string) (NodeConfig, bool) {
+	var match NodeConfig
+	count := 0
+	for _, n := range nodeMap {
+		if n.Config.Host == host {
+			match = n.Config
+			count++
+		}
+	}
+	if count == 1 {
+		return match, true
+	}
+	return NodeConfig{}, false
+}
+
 func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
 		if !s.hasKeeper(cn.Keeper) {
 			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
-			nodeMap[nodeKey] = cn
 		}
 		if !s.isPortEqual(cn.Config.DbPort, cn.Keeper.DiscoveredDbPort) {
 			cn.Warnings = append(cn.Warnings, "database port in keeper response and cluster configuration mismatch")
@@ -267,14 +297,20 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 		if cn.Keeper.Role == node.KeeperRoleLeader {
 			leaderKeys = append(leaderKeys, nodeKey)
 		}
+		nodeMap[nodeKey] = cn
 	}
-	if len(leaderKeys) < 2 {
-		return
-	}
-	for _, nodeKey := range leaderKeys {
-		n := nodeMap[nodeKey]
-		n.Warnings = append(n.Warnings, "multiple leader nodes were found in Keeper response")
-		nodeMap[nodeKey] = n
+	switch {
+	case len(leaderKeys) == 0:
+		for nodeKey, n := range nodeMap {
+			n.Warnings = append(n.Warnings, "no leader node was found in Keeper response")
+			nodeMap[nodeKey] = n
+		}
+	case len(leaderKeys) > 1:
+		for _, nodeKey := range leaderKeys {
+			n := nodeMap[nodeKey]
+			n.Warnings = append(n.Warnings, "multiple leader nodes were found in Keeper response")
+			nodeMap[nodeKey] = n
+		}
 	}
 }
 

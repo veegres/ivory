@@ -81,7 +81,7 @@ type fakeKeeperAdapter struct {
 	listErr      error
 }
 
-func (f *fakeKeeperAdapter) List(request keeper.Request) ([]keeper.Response, int, error) {
+func (f *fakeKeeperAdapter) List(keeper.Request) ([]keeper.Response, int, error) {
 	return f.listResponse, f.listStatus, f.listErr
 }
 
@@ -304,6 +304,50 @@ func TestService_buildOverviewNodes(t *testing.T) {
 	})
 }
 
+func TestService_mergeKeeperNode_ResolvesUnknownPortByHost(t *testing.T) {
+	s := &Service{}
+	port1, port2, port3 := 5001, 5002, 5003
+	configs := []NodeConfig{
+		{Host: "patroni1", KeeperPort: &port1, DbPort: &port1},
+		{Host: "patroni2", KeeperPort: &port2, DbPort: &port2},
+		{Host: "patroni3", KeeperPort: &port3, DbPort: &port3},
+	}
+
+	t.Run("standby response without a discovered port merges into its configured node instead of a phantom one", func(t *testing.T) {
+		host1 := "patroni1"
+		nodeMap := s.getConfiguredNodeMap(configs, nil, nil)
+		// NOTE: mirrors postgres.mapSyncStandby - Sync reported from the
+		// primary's pg_stat_replication, with the host known (application_name)
+		// but the port deliberately left unknown.
+		s.mergeKeeperNode(nodeMap, node.KeeperOneResponse{Role: keeper.Replica, Sync: true, DiscoveredHost: &host1})
+
+		if len(nodeMap) != 3 {
+			t.Fatalf("expected exactly 3 nodes (no phantom entry), got %d: %v", len(nodeMap), nodeMap)
+		}
+		merged, ok := nodeMap["patroni1:5001"]
+		if !ok {
+			t.Fatalf("expected patroni1 to be resolved to its configured node, got %v", nodeMap)
+		}
+		if !merged.Keeper.Sync {
+			t.Fatalf("expected the resolved response's Sync=true to be applied")
+		}
+		if len(merged.Warnings) != 0 {
+			t.Fatalf("expected no warnings, got %v", merged.Warnings)
+		}
+	})
+
+	t.Run("ambiguous host (declared more than once) falls back to a phantom entry instead of guessing", func(t *testing.T) {
+		duplicateConfigs := append(configs, NodeConfig{Host: "patroni1", KeeperPort: &port2, DbPort: &port2})
+		nodeMap := s.getConfiguredNodeMap(duplicateConfigs, nil, nil)
+		host1 := "patroni1"
+		s.mergeKeeperNode(nodeMap, node.KeeperOneResponse{Role: keeper.Replica, DiscoveredHost: &host1})
+
+		if _, ok := nodeMap["patroni1"]; !ok {
+			t.Fatalf("expected a fallback host-only entry when the host is ambiguous, got %v", nodeMap)
+		}
+	})
+}
+
 func TestService_addOverviewWarnings(t *testing.T) {
 	s := &Service{}
 	nodes := map[string]Node{
@@ -322,6 +366,47 @@ func TestService_addOverviewWarnings(t *testing.T) {
 	}
 	if len(nodes["db3:8008"].Warnings) != 0 {
 		t.Fatalf("Expected db3 without leader warning, got %v", nodes["db3:8008"].Warnings)
+	}
+}
+
+func TestService_addOverviewWarnings_DbPortMismatch(t *testing.T) {
+	s := &Service{}
+	configuredPort := 5002
+	discoveredPort := 5001
+	nodes := map[string]Node{
+		"patroni1:5001": {
+			Config: NodeConfig{DbPort: &discoveredPort},
+			Keeper: node.KeeperOneResponse{Role: keeper.Leader, DiscoveredDbPort: &discoveredPort},
+		},
+		"patroni2:5001": {
+			Config: NodeConfig{DbPort: &configuredPort},
+			Keeper: node.KeeperOneResponse{Role: keeper.Replica, DiscoveredDbPort: &discoveredPort},
+		},
+	}
+
+	s.addOverviewWarnings(nodes)
+
+	if len(nodes["patroni1:5001"].Warnings) != 0 {
+		t.Fatalf("Expected patroni1 without warnings, got %v", nodes["patroni1:5001"].Warnings)
+	}
+	if len(nodes["patroni2:5001"].Warnings) != 1 || nodes["patroni2:5001"].Warnings[0] != "database port in keeper response and cluster configuration mismatch" {
+		t.Fatalf("Expected patroni2 to have a db port mismatch warning, got %v", nodes["patroni2:5001"].Warnings)
+	}
+}
+
+func TestService_addOverviewWarnings_NoLeaderFound(t *testing.T) {
+	s := &Service{}
+	nodes := map[string]Node{
+		"db1:8008": {Keeper: node.KeeperOneResponse{Role: keeper.Replica}},
+		"db2:8008": {Keeper: node.KeeperOneResponse{Role: keeper.Replica}},
+	}
+
+	s.addOverviewWarnings(nodes)
+
+	for key, n := range nodes {
+		if len(n.Warnings) != 1 || n.Warnings[0] != "no leader node was found in Keeper response" {
+			t.Fatalf("Expected %s to have a no-leader warning, got %v", key, n.Warnings)
+		}
 	}
 }
 

@@ -108,14 +108,12 @@ func (a *Adapter) listSyncStandbys(request keeper.Request) []keeper.Response {
 				return errScan
 			}
 			// NOTE: pg_stat_replication only has the standby's ephemeral
-			// replication client_port, not its listening port, so this
-			// reuses request.Port - the port Ivory already dialed *this*
-			// primary on - as the standby's port too, since every node in a
-			// native postgres cluster shares one port by convention (see
-			// Adapter's doc comment). This is data the adapter itself
-			// legitimately possesses, not a value borrowed from Ivory's own
-			// cluster configuration.
-			standbys = append(standbys, mapSyncStandby(applicationName, request.Port, syncState))
+			// replication client_port, not its listening port, so the
+			// standby's real keeper/db port is left undiscovered here rather
+			// than guessed - the discovery layer resolves this response to
+			// the right configured node by host instead (see
+			// cluster.mergeKeeperNode).
+			standbys = append(standbys, mapSyncStandby(applicationName, syncState))
 		}
 		return rows.Err()
 	})
@@ -316,21 +314,23 @@ func mapUnavailableNode(host string, port int, state keeper.State) keeper.Respon
 // follow this convention are simply skipped by syncStandbyQuery, same as if
 // they weren't connected at all.
 //
-// port is the primary's own connection port, reused for the standby too
-// since native postgres has no separate keeper port - every node's keeper
-// port and db port are the same port it's dialed on (see Adapter's doc
-// comment), and by convention every node in the cluster shares that same
-// port number.
-func mapSyncStandby(host string, port int, syncState string) keeper.Response {
+// DiscoveredKeeperPort/DiscoveredDbPort are deliberately left nil: unlike
+// the primary's own connection, this adapter has no legitimate way to learn
+// a standby's real port from pg_stat_replication (only its ephemeral
+// replication client_port is visible, not its listening port), and nodes
+// aren't guaranteed to share one port across the cluster - so guessing
+// (e.g. reusing the primary's own port) would misattribute this response to
+// the wrong node whenever ports differ per node. Leaving them nil signals
+// the discovery layer to resolve this response to the right configured node
+// by host instead (see cluster.mergeKeeperNode).
+func mapSyncStandby(host string, syncState string) keeper.Response {
 	var status keeper.Status = keeper.Active
 	return keeper.Response{
-		Status:               &status,
-		State:                keeper.StateRunning,
-		Role:                 keeper.Replica,
-		Sync:                 syncState == "sync" || syncState == "quorum",
-		DiscoveredHost:       &host,
-		DiscoveredKeeperPort: &port,
-		DiscoveredDbPort:     &port,
+		Status:         &status,
+		State:          keeper.StateRunning,
+		Role:           keeper.Replica,
+		Sync:           syncState == "sync" || syncState == "quorum",
+		DiscoveredHost: &host,
 	}
 }
 
