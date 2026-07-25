@@ -115,7 +115,16 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
 	}
 
-	return s.executeCommand(adapter.UpContainer(conn, options, r.Image))
+	// NOTE: unlike options, entryScript is not run through
+	// normalizeDatabaseOptions - it can be a multi-line shell script (see
+	// keeper.DeploymentSpec.EntryScript) whose newlines are meaningful
+	// statement separators (e.g. before "then"/"fi"), not just formatting.
+	entryScript := keeper.Interpolate(r.EntryScript, values)
+	if unresolved := keeper.UnresolvedPlaceholders(entryScript); len(unresolved) > 0 {
+		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
+	}
+
+	return s.executeCommand(adapter.UpContainer(conn, options, r.Image, entryScript))
 }
 
 // PlatformContainerExec runs one command inside the named deployment,
@@ -146,7 +155,7 @@ func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error)
 func (s *Service) getExecutionValues(host string, vaults Vaults, requestValues map[string]string) (map[string]string, error) {
 	values := make(map[string]string, len(requestValues)+3)
 	maps.Copy(values, requestValues)
-	values[keeper.VarHost] = host
+	values[string(keeper.VarHost)] = host
 
 	// NOTE: the vault is optional for keeper plugins that consume no database
 	// credentials, unused values just keep their placeholders unresolved
@@ -155,8 +164,8 @@ func (s *Service) getExecutionValues(host string, vaults Vaults, requestValues m
 		if err != nil {
 			return nil, fmt.Errorf("failed to get database credentials from vault: %v", err)
 		}
-		values[keeper.VarDbUser] = dbCred.Username
-		values[keeper.VarDbPass] = dbCred.Secret
+		values[string(keeper.VarDbUser)] = dbCred.Username
+		values[string(keeper.VarDbPass)] = dbCred.Secret
 	}
 	return values, nil
 }

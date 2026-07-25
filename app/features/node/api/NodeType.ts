@@ -186,9 +186,12 @@ export interface DeployFieldResponse {
     derived: boolean,
 }
 
-// InterpolationVar is a built-in {{placeholder}} variable Ivory provides to
-// every deployment, in its interpolated form; plugin-declared field names
-// extend this set. Mirrors the server's keeper.Var constants.
+// InterpolationVar is a built-in {{placeholder}} variable usable in the
+// user-editable Options text, in its interpolated form; plugin-declared
+// field names extend this set. Mirrors the subset of the server's
+// keeper.Var constants that can appear in Options - keeper.VarPrimaryHost
+// is deliberately not included here, since it only ever appears in
+// EntryScript, which is never shown or editable in the UI.
 export enum InterpolationVar {
     Cluster = "{{cluster}}",
     Host = "{{host}}",
@@ -245,7 +248,9 @@ export interface KeeperDeployPlanNode {
     dbPort: number,
     ports: {[name: string]: number},
     options: string,
-    preview: string,
+    optionsPreview: string,
+    entryScript: string,
+    entryScriptPreview: string,
 }
 
 export interface PlatformLogsRequest {

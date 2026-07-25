@@ -43,24 +43,43 @@ type DeploymentSpec struct {
 	// Commands are interpolated with the same {{placeholder}} vocabulary,
 	// including credentials.
 	PostDeploy []string
+	// EntryScript, if set, replaces the image's own default startup command
+	// for every node except the deploy's first (which is always the primary
+	// and always gets the image's normal command; see KeeperDeployPlan).
+	// Unlike PostDeploy, this isn't exec'd into an already-running container
+	// after the fact - it IS the container's own command, so it must itself
+	// end by starting the plugin's actual server process (e.g. native
+	// postgres rebases via pg_basebackup before postgres itself ever
+	// starts, since streaming replication needs a real base backup - a
+	// fresh initdb can't be turned into a replica by just pointing it at a
+	// primary). It uses the regular {{placeholder}} vocabulary, including
+	// VarPrimaryHost, interpolated by KeeperDeployPlan the same way as
+	// Options.
+	EntryScript string
 }
 
 // Var is a built-in {{placeholder}} variable that Ivory provides to every
 // deployment, in its interpolated form; plugin-declared FieldSpec names
 // extend this set. Templates are built from these values, so a misspelled
-// variable cannot exist in a template.
-type Var = string
+// variable cannot exist in a template. It is a distinct type from string so
+// a Var constant can't be passed where any plain string would do (and vice
+// versa) without an explicit conversion - the interpolation machinery
+// (Interpolate, UnresolvedPlaceholders, and the values maps built around
+// them) still works in plain strings, since a rendered template mixes Var
+// values with arbitrary literal text.
+type Var string
 
 // NOTE: every variable lives in this single block — built-ins provided by
 // Ivory first, then the plugin field variables (declared by plugins as
 // FieldSpec names), so names are all visible at a glance and never collide.
 const (
-	VarCluster    Var = "{{cluster}}"    // cluster name
-	VarHost       Var = "{{host}}"       // node host
-	VarKeeperPort Var = "{{keeperPort}}" // keeper endpoint port (the database port when there is no separate keeper endpoint)
-	VarDbPort     Var = "{{dbPort}}"     // database endpoint port
-	VarDbUser     Var = "{{dbUser}}"     // database endpoint credentials username, resolved from the vault
-	VarDbPass     Var = "{{dbPass}}"     // database endpoint credentials password, resolved from the vault
+	VarCluster     Var = "{{cluster}}"     // cluster name
+	VarHost        Var = "{{host}}"        // node host
+	VarKeeperPort  Var = "{{keeperPort}}"  // keeper endpoint port (the database port when there is no separate keeper endpoint)
+	VarDbPort      Var = "{{dbPort}}"      // database endpoint port
+	VarDbUser      Var = "{{dbUser}}"      // database endpoint credentials username, resolved from the vault
+	VarDbPass      Var = "{{dbPass}}"      // database endpoint credentials password, resolved from the vault
+	VarPrimaryHost Var = "{{primaryHost}}" // the deploy request's first node's host (see keeper.DeploymentSpec.EntryScript and KeeperDeployPlan)
 
 	VarDcs            Var = "{{dcs}}"            // patroni: address of the external DCS it coordinates through
 	VarPeerPort       Var = "{{peerPort}}"       // etcd: peer listener port, unique per node in single-host mode
@@ -69,7 +88,7 @@ const (
 
 // Vars lists the built-in variables Ivory provides to every deployment;
 // plugin field variables count as known only when the spec declares them.
-var Vars = []Var{VarCluster, VarHost, VarKeeperPort, VarDbPort, VarDbUser, VarDbPass}
+var Vars = []Var{VarCluster, VarHost, VarKeeperPort, VarDbPort, VarDbUser, VarDbPass, VarPrimaryHost}
 
 var placeholderPattern = regexp.MustCompile(`{{\w+}}`)
 
@@ -107,13 +126,13 @@ func UnresolvedPlaceholders(text string) []string {
 func (s DeploymentSpec) UnknownVariables() []string {
 	known := make(map[string]bool, len(Vars)+len(s.Fields))
 	for _, v := range Vars {
-		known[v] = true
+		known[string(v)] = true
 	}
 	for _, f := range s.Fields {
-		known[f.Name] = true
+		known[string(f.Name)] = true
 	}
 
-	texts := []string{s.DefaultImage}
+	texts := []string{s.DefaultImage, s.EntryScript}
 	texts = append(texts, s.Ports...)
 	texts = append(texts, s.PostDeploy...)
 	for _, e := range s.Env {

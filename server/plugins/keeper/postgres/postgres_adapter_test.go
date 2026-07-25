@@ -77,7 +77,10 @@ func TestMapSyncStandby(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := mapSyncStandby("10.0.0.2", 5432, tt.syncState)
+			// NOTE: the first arg is application_name, not client_addr - see
+			// mapSyncStandby's doc - so it looks like the node's configured
+			// Host (a domain here), not an IP.
+			response := mapSyncStandby("db2.example.com", 5432, tt.syncState)
 			if response.Role != keeper.Replica {
 				t.Errorf("expected role replica, got %v", response.Role)
 			}
@@ -87,8 +90,8 @@ func TestMapSyncStandby(t *testing.T) {
 			if response.State != keeper.StateRunning {
 				t.Errorf("expected state running, got %q", response.State)
 			}
-			if response.DiscoveredHost == nil || *response.DiscoveredHost != "10.0.0.2" {
-				t.Errorf("expected discovered host 10.0.0.2, got %v", response.DiscoveredHost)
+			if response.DiscoveredHost == nil || *response.DiscoveredHost != "db2.example.com" {
+				t.Errorf("expected discovered host db2.example.com, got %v", response.DiscoveredHost)
 			}
 			if response.DiscoveredKeeperPort == nil || *response.DiscoveredKeeperPort != 5432 {
 				t.Errorf("expected discovered keeper port 5432 (reused from the primary's own connection port), got %v", response.DiscoveredKeeperPort)

@@ -24,9 +24,9 @@ func TestMapKeeperDeploymentFields(t *testing.T) {
 			},
 			expected: DeployFieldsResponse{
 				Defaults: map[string]string{
-					keeper.VarKeeperPort: "8008",
-					keeper.VarDbPort:     "5432",
-					keeper.VarDbUser:     "postgres",
+					string(keeper.VarKeeperPort): "8008",
+					string(keeper.VarDbPort):     "5432",
+					string(keeper.VarDbUser):     "postgres",
 				},
 				Fields: []DeployFieldResponse{{Name: "{{dcs}}", Label: "DCS", Example: "etcd1:2379", Type: "text"}},
 			},
@@ -37,7 +37,7 @@ func TestMapKeeperDeploymentFields(t *testing.T) {
 				Defaults: map[keeper.Var]string{keeper.VarDbPort: "5432", keeper.VarDbUser: ""},
 			},
 			expected: DeployFieldsResponse{
-				Defaults: map[string]string{keeper.VarDbPort: "5432", keeper.VarDbUser: ""},
+				Defaults: map[string]string{string(keeper.VarDbPort): "5432", string(keeper.VarDbUser): ""},
 				Fields:   []DeployFieldResponse{},
 			},
 		},
@@ -51,7 +51,7 @@ func TestMapKeeperDeploymentFields(t *testing.T) {
 				},
 			},
 			expected: DeployFieldsResponse{
-				Defaults: map[string]string{keeper.VarDbPort: "2379"},
+				Defaults: map[string]string{string(keeper.VarDbPort): "2379"},
 				Fields: []DeployFieldResponse{
 					{Name: "{{peerPort}}", Label: "Peer Port", Type: "port", Default: "2380"},
 					{Name: "{{initialCluster}}", Label: "Initial Cluster", Type: "text", Derived: true},

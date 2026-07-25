@@ -95,13 +95,18 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 	}{
 		{
 			name:     "up quotes options and image",
-			command:  adapter.UpContainer(connection, `--name foo;rm -rf / -e POSTGRES_PASSWORD=pass`, `postgres:16; reboot`).(*ssh.Command).Command,
+			command:  adapter.UpContainer(connection, `--name foo;rm -rf / -e POSTGRES_PASSWORD=pass`, `postgres:16; reboot`, "").(*ssh.Command).Command,
 			expected: `docker run -d '--name' 'foo;rm' '-rf' '/' '-e' 'POSTGRES_PASSWORD=pass' -- 'postgres:16; reboot'`,
 		},
 		{
 			name:     "up keeps a quoted value with a space as a single argument",
-			command:  adapter.UpContainer(connection, `-e SCOPE="my cluster" -e NAME=test`, `postgres:16`).(*ssh.Command).Command,
+			command:  adapter.UpContainer(connection, `-e SCOPE="my cluster" -e NAME=test`, `postgres:16`, "").(*ssh.Command).Command,
 			expected: `docker run -d '-e' 'SCOPE=my cluster' '-e' 'NAME=test' -- 'postgres:16'`,
+		},
+		{
+			name:     "up appends a non-empty command after the image",
+			command:  adapter.UpContainer(connection, `--name foo`, `postgres:18`, `sh -c 'echo "hi"'`).(*ssh.Command).Command,
+			expected: `docker run -d '--name' 'foo' -- 'postgres:18' 'sh' '-c' 'echo "hi"'`,
 		},
 		{
 			name:     "down quotes name",

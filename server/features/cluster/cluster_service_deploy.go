@@ -42,7 +42,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	// locked: changing it is rejected instead of silently overridden, an
 	// empty one is prefilled
 	dbUser := r.CommonConfig.DbUser
-	requiredUser, dbCredentials := plan.Fields.Defaults[node.VarDbUser]
+	requiredUser, dbCredentials := plan.Fields.Defaults[string(node.VarDbUser)]
 	if requiredUser != "" {
 		if dbUser != "" && dbUser != requiredUser {
 			return nil, fmt.Errorf("database username %q is not allowed: the keeper plugin locks it to %q", dbUser, requiredUser)
@@ -96,7 +96,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 	// NOTE: when the plugin has no separate keeper port its keeper endpoint
 	// is the database itself, so the same credentials authenticate both
-	if _, hasKeeperEndpoint := plan.Fields.Defaults[node.VarKeeperPort]; !hasKeeperEndpoint && cluster.Vaults.KeeperId == nil {
+	if _, hasKeeperEndpoint := plan.Fields.Defaults[string(node.VarKeeperPort)]; !hasKeeperEndpoint && cluster.Vaults.KeeperId == nil {
 		cluster.Vaults.KeeperId = cluster.Vaults.DatabaseId
 	}
 

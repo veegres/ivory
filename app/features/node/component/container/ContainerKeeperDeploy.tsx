@@ -212,7 +212,7 @@ export function ContainerKeeperDeploy(props: Props) {
                         disabled={preview}
                         size={"small"}
                         label={"Options"}
-                        value={preview ? planNode?.preview ?? "" : override ?? planNode?.options ?? ""}
+                        value={preview ? planNode?.optionsPreview ?? "" : override ?? planNode?.options ?? ""}
                         onChange={v => setOverride(v.target.value)}
                     />
                 </Box>

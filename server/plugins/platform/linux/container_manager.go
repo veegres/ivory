@@ -65,11 +65,14 @@ func (a *Adapter) ListContainer(connection platform.Connection) console.Command 
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
 }
 
-func (a *Adapter) UpContainer(connection platform.Connection, options, image string) console.Command {
+func (a *Adapter) UpContainer(connection platform.Connection, options, image, entryScript string) console.Command {
 	parts := []string{"run", "-d"}
 	parts = append(parts, shellQuoteFields(options)...)
 	parts = append(parts, "--")
 	parts = append(parts, shellQuote(image))
+	if entryScript != "" {
+		parts = append(parts, shellQuoteFields(entryScript)...)
+	}
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(parts, " ")))
 }
 

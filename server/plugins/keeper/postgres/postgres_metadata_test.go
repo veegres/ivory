@@ -3,6 +3,7 @@ package postgres
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"strings"
 	"testing"
 )
 
@@ -56,6 +57,15 @@ func TestDeploymentSpec(t *testing.T) {
 	}
 	if len(spec.PostDeploy) != 0 {
 		t.Errorf("expected no post-deploy commands, got %+v", spec.PostDeploy)
+	}
+	if spec.EntryScript == "" {
+		t.Error("expected an entry script to rebase replicas via pg_basebackup")
+	}
+	if !strings.Contains(spec.EntryScript, string(keeper.VarPrimaryHost)) {
+		t.Errorf("expected the entry script to reference %s, got %q", keeper.VarPrimaryHost, spec.EntryScript)
+	}
+	if !strings.Contains(spec.EntryScript, "pg_basebackup") {
+		t.Errorf("expected the entry script to run pg_basebackup, got %q", spec.EntryScript)
 	}
 	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
 		t.Errorf("spec references unknown variables: %v", unknown)

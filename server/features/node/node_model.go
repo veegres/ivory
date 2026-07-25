@@ -4,7 +4,6 @@ import (
 	"ivory/core/service/cert"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
-	"maps"
 
 	"github.com/google/uuid"
 )
@@ -24,12 +23,13 @@ type KeeperPlugin = keeper.Plugin
 // Built-in interpolation variable names, re-exported so other features never
 // import the plugin package directly.
 const (
-	VarCluster    = keeper.VarCluster
-	VarHost       = keeper.VarHost
-	VarKeeperPort = keeper.VarKeeperPort
-	VarDbPort     = keeper.VarDbPort
-	VarDbUser     = keeper.VarDbUser
-	VarDbPass     = keeper.VarDbPass
+	VarCluster     = keeper.VarCluster
+	VarHost        = keeper.VarHost
+	VarKeeperPort  = keeper.VarKeeperPort
+	VarDbPort      = keeper.VarDbPort
+	VarDbUser      = keeper.VarDbUser
+	VarDbPass      = keeper.VarDbPass
+	VarPrimaryHost = keeper.VarPrimaryHost
 )
 
 type KeeperStatus = keeper.Status
@@ -149,7 +149,10 @@ type PlatformUpRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
 	Vaults     Vaults                  `json:"vaults" form:"vaults" binding:"required"`
 	Options    string                  `json:"options" form:"options" binding:"required"`
-	Values     map[string]string       `json:"values" form:"values"`
+	// EntryScript, if set, replaces the image's own default startup command
+	// (see keeper.DeploymentSpec.EntryScript).
+	EntryScript string            `json:"entryScript" form:"entryScript"`
+	Values      map[string]string `json:"values" form:"values"`
 }
 
 type Vaults struct {
@@ -215,13 +218,19 @@ type KeeperDeployPlanResponse struct {
 }
 
 type KeeperDeployPlanNode struct {
-	Host       string         `json:"host"`
-	SshPort    int            `json:"sshPort"`
-	KeeperPort int            `json:"keeperPort"`
-	DbPort     int            `json:"dbPort"`
-	Ports      map[string]int `json:"ports"`
-	Options    string         `json:"options"`
-	Preview    string         `json:"preview"`
+	Host           string         `json:"host"`
+	SshPort        int            `json:"sshPort"`
+	KeeperPort     int            `json:"keeperPort"`
+	DbPort         int            `json:"dbPort"`
+	Ports          map[string]int `json:"ports"`
+	Options        string         `json:"options"`
+	OptionsPreview string         `json:"optionsPreview"`
+	// EntryScript and EntryScriptPreview mirror Options/OptionsPreview, but
+	// for the container's startup command (keeper.DeploymentSpec.EntryScript)
+	// instead of its flags; empty for the primary and for any plugin that
+	// declares no EntryScript.
+	EntryScript        string `json:"entryScript"`
+	EntryScriptPreview string `json:"entryScriptPreview"`
 }
 
 // DeployFieldResponse describes one editable image-level field: its value
@@ -362,8 +371,8 @@ func mapKeeperResponse(r keeper.Response) KeeperResponse {
 // it targets development and testing setups.
 func mapKeeperDeploymentToPlatformSpec(s keeper.DeploymentSpec, singleHost bool) platform.DeploySpec {
 	spec := platform.DeploySpec{
-		Name:        keeper.VarHost,
-		Hostname:    keeper.VarHost,
+		Name:        string(keeper.VarHost),
+		Hostname:    string(keeper.VarHost),
 		HostNetwork: singleHost,
 	}
 	if !singleHost {
@@ -381,11 +390,13 @@ func mapKeeperDeploymentToPlatformSpec(s keeper.DeploymentSpec, singleHost bool)
 
 func mapKeeperDeploymentFields(s keeper.DeploymentSpec) DeployFieldsResponse {
 	defaults := make(map[string]string, len(s.Defaults))
-	maps.Copy(defaults, s.Defaults)
+	for k, v := range s.Defaults {
+		defaults[string(k)] = v
+	}
 	fields := make([]DeployFieldResponse, 0, len(s.Fields))
 	for _, f := range s.Fields {
 		fields = append(fields, DeployFieldResponse{
-			Name:    f.Name,
+			Name:    string(f.Name),
 			Label:   f.Label,
 			Example: f.Example,
 			Type:    string(f.Type),

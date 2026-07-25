@@ -351,7 +351,7 @@ export function ClusterDeploy(props: Props) {
                                 disabled={preview}
                                 size={"small"}
                                 label={<Box>Node <Code>{getNodeLabel(node.host, node.keeperPort, node.dbPort, node.sshPort)}</Code> options</Box>}
-                                value={preview ? node.preview : overrides[key] ?? node.options}
+                                value={preview ? node.optionsPreview : overrides[key] ?? node.options}
                                 onChange={v => handleOverrideUpdate(key, v.target.value)}
                             />
                         )

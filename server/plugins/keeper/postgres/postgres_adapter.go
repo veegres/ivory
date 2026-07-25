@@ -37,10 +37,12 @@ const listQuery = `SELECT pg_is_in_recovery(),
 // sync_state is only ever populated on the primary's own connection - a
 // standby has no way to determine its own synchronous status by querying
 // itself - so this is only run once listQuery has established the connected
-// node is not in recovery (i.e. it is the cluster's primary). client_addr is
-// null for a standby connecting over a unix socket, which can't be matched
-// back to a configured node, so those rows are skipped.
-const syncStandbyQuery = `SELECT client_addr::text, sync_state FROM pg_stat_replication WHERE client_addr IS NOT NULL`
+// node is not in recovery (i.e. it is the cluster's primary).
+//
+// application_name, not client_addr, is used to identify which standby a row
+// belongs to (see mapSyncStandby's doc for why), so rows with no
+// application_name set can't be attributed to any node and are skipped.
+const syncStandbyQuery = `SELECT application_name, sync_state FROM pg_stat_replication WHERE application_name IS NOT NULL AND application_name != ''`
 
 // sqlStateCannotConnectNow is postgres' ERRCODE_CANNOT_CONNECT_NOW, returned
 // for a new connection attempt while the database is starting up, shutting
@@ -57,7 +59,12 @@ var _ keeper.Adapter = (*Adapter)(nil)
 // talking to postgres directly. The keeper connection host/port is the
 // postgres host/port (keeperPort == dbPort convention) and the keeper vault
 // holds database credentials. Operations that require orchestration or OS
-// access are not supported and excluded from SupportedFeatures.
+// access are not supported and excluded from SupportedFeatures - in
+// particular, Ivory never configures streaming replication for native
+// postgres (DeploymentSpec only deploys a bare postgres image), so
+// identifying a connected standby's Sync status (see mapSyncStandby) depends
+// entirely on the operator manually setting each standby's primary_conninfo
+// application_name to match the Host Ivory has configured for it.
 type Adapter struct{}
 
 func NewAdapter() *Adapter {
@@ -96,8 +103,8 @@ func (a *Adapter) listSyncStandbys(request keeper.Request) []keeper.Response {
 	var standbys []keeper.Response
 	err := a.query(request, syncStandbyQuery, func(rows pgx.Rows) error {
 		for rows.Next() {
-			var clientAddr, syncState string
-			if errScan := rows.Scan(&clientAddr, &syncState); errScan != nil {
+			var applicationName, syncState string
+			if errScan := rows.Scan(&applicationName, &syncState); errScan != nil {
 				return errScan
 			}
 			// NOTE: pg_stat_replication only has the standby's ephemeral
@@ -108,7 +115,7 @@ func (a *Adapter) listSyncStandbys(request keeper.Request) []keeper.Response {
 			// Adapter's doc comment). This is data the adapter itself
 			// legitimately possesses, not a value borrowed from Ivory's own
 			// cluster configuration.
-			standbys = append(standbys, mapSyncStandby(clientAddr, request.Port, syncState))
+			standbys = append(standbys, mapSyncStandby(applicationName, request.Port, syncState))
 		}
 		return rows.Err()
 	})
@@ -290,11 +297,30 @@ func mapUnavailableNode(host string, port int, state keeper.State) keeper.Respon
 }
 
 // mapSyncStandby builds a Response for a standby discovered via the
-// primary's pg_stat_replication. port is the primary's own connection port,
-// reused for the standby too since native postgres has no separate keeper
-// port - every node's keeper port and db port are the same port it's dialed
-// on (see Adapter's doc comment), and by convention every node in the
-// cluster shares that same port number.
+// primary's pg_stat_replication.
+//
+// host comes from application_name, not client_addr. client_addr is the
+// network-observed source address of the replication TCP connection - it's
+// never a domain name, and in Ivory's own Docker-over-SSH deployments it can
+// be a container-internal address that doesn't correspond to the node's
+// configured Host at all (an external network hop can rewrite it, or a
+// single-host cluster's containers can share one docker network). That
+// makes it fundamentally unlike Patroni's or etcd's discovered host, which
+// is self-declared by the same operator who configured Ivory. application_name
+// is also self-declared (by the standby's own primary_conninfo), so it's the
+// right kind of value in principle - but Ivory has no orchestration for
+// native postgres (see Adapter's doc comment) and never sets it itself, even
+// for clusters it deployed, so this only resolves to the right node if the
+// operator manually sets each standby's primary_conninfo application_name to
+// exactly the Host configured for that node in Ivory. Standbys that don't
+// follow this convention are simply skipped by syncStandbyQuery, same as if
+// they weren't connected at all.
+//
+// port is the primary's own connection port, reused for the standby too
+// since native postgres has no separate keeper port - every node's keeper
+// port and db port are the same port it's dialed on (see Adapter's doc
+// comment), and by convention every node in the cluster shares that same
+// port number.
 func mapSyncStandby(host string, port int, syncState string) keeper.Response {
 	var status keeper.Status = keeper.Active
 	return keeper.Response{

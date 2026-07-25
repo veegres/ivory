@@ -58,8 +58,18 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 	dbPortDefault, _ := strconv.Atoi(spec.Defaults[keeper.VarDbPort])
 	keeperPortDefault, hasKeeperEndpoint := spec.Defaults[keeper.VarKeeperPort]
 
+	// NOTE: the first node in the list is always the primary (see
+	// keeper.DeploymentSpec.EntryScript's doc for why) and always gets the
+	// image's normal command; every other node gets EntryScript with
+	// VarPrimaryHost resolved to the primary's real host, already known
+	// from the request itself.
+	var primaryHost string
+	if len(r.Nodes) > 0 {
+		primaryHost = r.Nodes[0].Host
+	}
+
 	nodes := make([]KeeperDeployPlanNode, 0, len(r.Nodes))
-	for _, n := range r.Nodes {
+	for i, n := range r.Nodes {
 		dbPort := dbPortDefault
 		if n.DbPort != nil && *n.DbPort > 0 {
 			dbPort = *n.DbPort
@@ -85,24 +95,30 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 		if options == "" {
 			options = template
 		}
+		var entryScript string
+		if i > 0 && spec.EntryScript != "" {
+			entryScript = strings.ReplaceAll(spec.EntryScript, string(keeper.VarPrimaryHost), primaryHost)
+		}
 		nodes = append(nodes, KeeperDeployPlanNode{
-			Host:       n.Host,
-			SshPort:    sshPort,
-			KeeperPort: keeperPort,
-			DbPort:     dbPort,
-			Ports:      make(map[string]int, 1),
-			Options:    options,
+			Host:        n.Host,
+			SshPort:     sshPort,
+			KeeperPort:  keeperPort,
+			DbPort:      dbPort,
+			Ports:       make(map[string]int, 1),
+			Options:     options,
+			EntryScript: entryScript,
 		})
 	}
 
+	effective := make(map[string]string, len(spec.Fields))
+
 	// 1. port fields: the effective value is the base, every node gets its
 	// own value in single-host mode so the listeners don't collide
-	effective := make(map[string]string, len(spec.Fields))
 	for _, f := range spec.Fields {
 		if f.Type != keeper.FieldPort {
 			continue
 		}
-		raw := r.Values[f.Name]
+		raw := r.Values[string(f.Name)]
 		if raw == "" {
 			raw = f.Default
 		}
@@ -111,12 +127,12 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 			warnings = append(warnings, fmt.Sprintf("field %q: invalid port %q, using the default %s", f.Name, raw, f.Default))
 			base, _ = strconv.Atoi(f.Default)
 		}
-		effective[f.Name] = strconv.Itoa(base)
+		effective[string(f.Name)] = strconv.Itoa(base)
 		for i := range nodes {
 			if r.SingleHost {
-				nodes[i].Ports[f.Name] = base + i
+				nodes[i].Ports[string(f.Name)] = base + i
 			} else {
-				nodes[i].Ports[f.Name] = base
+				nodes[i].Ports[string(f.Name)] = base
 			}
 		}
 	}
@@ -127,8 +143,8 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 		if f.Type == keeper.FieldPort {
 			continue
 		}
-		if value := r.Values[f.Name]; value != "" {
-			effective[f.Name] = value
+		if value := r.Values[string(f.Name)]; value != "" {
+			effective[string(f.Name)] = value
 			continue
 		}
 		if f.Template != "" {
@@ -136,23 +152,26 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 			for i := range nodes {
 				entries = append(entries, keeper.Interpolate(f.Template, s.getPlanValues(r, nodes[i], effective)))
 			}
-			effective[f.Name] = strings.Join(entries, f.Separator)
+			effective[string(f.Name)] = strings.Join(entries, f.Separator)
 			continue
 		}
-		effective[f.Name] = f.Default
+		effective[string(f.Name)] = f.Default
 	}
 
 	_, hasCredentials := spec.Defaults[keeper.VarDbUser]
 	for i := range nodes {
-		nodes[i].Preview = keeper.Interpolate(nodes[i].Options, s.getPlanValues(r, nodes[i], effective))
-		for _, unresolved := range keeper.UnresolvedPlaceholders(nodes[i].Preview) {
+		nodes[i].OptionsPreview = keeper.Interpolate(nodes[i].Options, s.getPlanValues(r, nodes[i], effective))
+		nodes[i].EntryScriptPreview = keeper.Interpolate(nodes[i].EntryScript, s.getPlanValues(r, nodes[i], effective))
+		unresolved := keeper.UnresolvedPlaceholders(nodes[i].OptionsPreview)
+		unresolved = append(unresolved, keeper.UnresolvedPlaceholders(nodes[i].EntryScriptPreview)...)
+		for _, u := range unresolved {
 			// NOTE: credentials are resolved from the vault only at execution
 			// time, so the preview intentionally keeps their variables
 			// visible instead of faking values, and they are not missing
-			if hasCredentials && (unresolved == keeper.VarDbUser || unresolved == keeper.VarDbPass) {
+			if hasCredentials && (u == string(keeper.VarDbUser) || u == string(keeper.VarDbPass)) {
 				continue
 			}
-			warning := fmt.Sprintf("missing value for placeholder %s", unresolved)
+			warning := fmt.Sprintf("missing value for placeholder %s", u)
 			if !slices.Contains(warnings, warning) {
 				warnings = append(warnings, warning)
 			}
@@ -177,10 +196,10 @@ func (s *Service) getPlanValues(r KeeperDeployPlanRequest, n KeeperDeployPlanNod
 	values := make(map[string]string, len(r.Values)+len(effective)+len(n.Ports)+4)
 	maps.Copy(values, r.Values)
 	maps.Copy(values, effective)
-	values[keeper.VarCluster] = r.Cluster
-	values[keeper.VarHost] = n.Host
-	values[keeper.VarKeeperPort] = strconv.Itoa(n.KeeperPort)
-	values[keeper.VarDbPort] = strconv.Itoa(n.DbPort)
+	values[string(keeper.VarCluster)] = r.Cluster
+	values[string(keeper.VarHost)] = n.Host
+	values[string(keeper.VarKeeperPort)] = strconv.Itoa(n.KeeperPort)
+	values[string(keeper.VarDbPort)] = strconv.Itoa(n.DbPort)
 	for name, port := range n.Ports {
 		values[name] = strconv.Itoa(port)
 	}
@@ -196,11 +215,11 @@ func buildNodeValues(name string, requestValues map[string]string, planValues ma
 	values := make(map[string]string, len(requestValues)+len(planValues)+len(pn.Ports)+3)
 	maps.Copy(values, requestValues)
 	maps.Copy(values, planValues)
-	delete(values, keeper.VarDbUser)
-	delete(values, keeper.VarDbPass)
-	values[keeper.VarCluster] = name
-	values[keeper.VarKeeperPort] = strconv.Itoa(pn.KeeperPort)
-	values[keeper.VarDbPort] = strconv.Itoa(pn.DbPort)
+	delete(values, string(keeper.VarDbUser))
+	delete(values, string(keeper.VarDbPass))
+	values[string(keeper.VarCluster)] = name
+	values[string(keeper.VarKeeperPort)] = strconv.Itoa(pn.KeeperPort)
+	values[string(keeper.VarDbPort)] = strconv.Itoa(pn.DbPort)
 	for portName, port := range pn.Ports {
 		values[portName] = strconv.Itoa(port)
 	}
@@ -216,12 +235,13 @@ func (s *Service) KeeperDeployUp(r KeeperDeployUpRequest) ([]string, error) {
 	}
 	values := buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
 	return s.PlatformContainerUp(PlatformUpRequest{
-		Name:       r.Cluster,
-		Image:      r.Image,
-		Connection: r.Connection,
-		Vaults:     r.Vaults,
-		Options:    r.Node.Options,
-		Values:     values,
+		Name:        r.Cluster,
+		Image:       r.Image,
+		Connection:  r.Connection,
+		Vaults:      r.Vaults,
+		Options:     r.Node.Options,
+		EntryScript: r.Node.EntryScript,
+		Values:      values,
 	})
 }
 
@@ -270,10 +290,10 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 	if plan.Image == "" {
 		return nil, ErrKeeperDeployImageNotProvided
 	}
-	if _, dbCredentials := plan.Fields.Defaults[keeper.VarDbUser]; dbCredentials && r.Vaults.DatabaseId == uuid.Nil {
+	if _, dbCredentials := plan.Fields.Defaults[string(keeper.VarDbUser)]; dbCredentials && r.Vaults.DatabaseId == uuid.Nil {
 		return nil, ErrKeeperDeployDatabaseCredentialsRequired
 	}
-	if err := s.ValidateKeeperLockedCredentials(plan.Fields.Defaults[keeper.VarDbUser], r.Vaults.DatabaseId); err != nil {
+	if err := s.ValidateKeeperLockedCredentials(plan.Fields.Defaults[string(keeper.VarDbUser)], r.Vaults.DatabaseId); err != nil {
 		return nil, err
 	}
 

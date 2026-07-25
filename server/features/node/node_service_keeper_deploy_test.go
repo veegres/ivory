@@ -50,9 +50,9 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 				Uri: "ghcr.io/zalando/spilo-18:4.1-p2",
 				Fields: DeployFieldsResponse{
 					Defaults: map[string]string{
-						keeper.VarKeeperPort: "8008",
-						keeper.VarDbPort:     "5432",
-						keeper.VarDbUser:     "postgres",
+						string(keeper.VarKeeperPort): "8008",
+						string(keeper.VarDbPort):     "5432",
+						string(keeper.VarDbUser):     "postgres",
 					},
 					Fields: []DeployFieldResponse{
 						{Name: "{{dcs}}", Label: "DCS (etcd, zookeper, etc)", Example: "etcd1:2379, etcd2:2379, etcd3:2379", Type: "text"},
@@ -66,7 +66,7 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 			expected: KeeperDeploySpecResponse{
 				Uri: "postgres:18",
 				Fields: DeployFieldsResponse{
-					Defaults: map[string]string{keeper.VarDbPort: "5432", keeper.VarDbUser: ""},
+					Defaults: map[string]string{string(keeper.VarDbPort): "5432", string(keeper.VarDbUser): ""},
 					Fields:   []DeployFieldResponse{},
 				},
 			},
@@ -77,7 +77,7 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 			expected: KeeperDeploySpecResponse{
 				Uri: "quay.io/coreos/etcd:v3.6.5",
 				Fields: DeployFieldsResponse{
-					Defaults: map[string]string{keeper.VarDbPort: "2379", keeper.VarDbUser: "root"},
+					Defaults: map[string]string{string(keeper.VarDbPort): "2379", string(keeper.VarDbUser): "root"},
 					Fields: []DeployFieldResponse{
 						{Name: "{{peerPort}}", Label: "Peer Port", Type: "port", Default: "2380"},
 						{Name: "{{initialCluster}}", Label: "Initial Cluster", Type: "text", Derived: true},
@@ -229,14 +229,14 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		if node.SshPort != 22 || node.KeeperPort != 8008 || node.DbPort != 5432 {
 			t.Errorf("ports = %d/%d/%d, want 22/8008/5432", node.SshPort, node.KeeperPort, node.DbPort)
 		}
-		if !strings.Contains(node.Preview, `-e ETCD3_HOSTS="etcd1:2379"`) {
-			t.Errorf("preview misses interpolated dcs:\n%s", node.Preview)
+		if !strings.Contains(node.OptionsPreview, `-e ETCD3_HOSTS="etcd1:2379"`) {
+			t.Errorf("preview misses interpolated dcs:\n%s", node.OptionsPreview)
 		}
-		if !strings.Contains(node.Preview, `-e PGPASSWORD_SUPERUSER="{{dbPass}}"`) {
-			t.Errorf("preview must keep the credential variable visible, not fake a value:\n%s", node.Preview)
+		if !strings.Contains(node.OptionsPreview, `-e PGPASSWORD_SUPERUSER="{{dbPass}}"`) {
+			t.Errorf("preview must keep the credential variable visible, not fake a value:\n%s", node.OptionsPreview)
 		}
-		if !strings.Contains(node.Preview, "-e APIPORT=8008") || !strings.Contains(node.Preview, "-e PGPORT=5432") {
-			t.Errorf("preview misses interpolated ports:\n%s", node.Preview)
+		if !strings.Contains(node.OptionsPreview, "-e APIPORT=8008") || !strings.Contains(node.OptionsPreview, "-e PGPORT=5432") {
+			t.Errorf("preview misses interpolated ports:\n%s", node.OptionsPreview)
 		}
 		if len(plan.Warnings) != 0 {
 			t.Errorf("expected no warnings, got %v", plan.Warnings)
@@ -285,8 +285,8 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 			if node.KeeperPort != node.DbPort {
 				t.Errorf("node %d keeperPort = %d, want dbPort %d", i, node.KeeperPort, node.DbPort)
 			}
-			if !strings.Contains(node.Preview, fmt.Sprintf("-e ETCD_INITIAL_CLUSTER=%q", expectedMembers)) {
-				t.Errorf("node %d preview misses the derived member list:\n%s", i, node.Preview)
+			if !strings.Contains(node.OptionsPreview, fmt.Sprintf("-e ETCD_INITIAL_CLUSTER=%q", expectedMembers)) {
+				t.Errorf("node %d preview misses the derived member list:\n%s", i, node.OptionsPreview)
 			}
 		}
 		if len(plan.Warnings) != 0 {
@@ -337,12 +337,47 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(plan.Values) != 0 {
-			t.Errorf("Values = %v, want empty", plan.Values)
+		if plan.Nodes[0].EntryScript != "" {
+			t.Errorf("expected the primary (only node) to get an empty EntryScript, got:\n%s", plan.Nodes[0].EntryScript)
 		}
-		if !strings.Contains(plan.Nodes[0].Preview, `-e POSTGRES_USER="{{dbUser}}"`) ||
-			!strings.Contains(plan.Nodes[0].Preview, `-e POSTGRES_PASSWORD="{{dbPass}}"`) {
-			t.Errorf("preview must keep the credential variables visible, not fake values:\n%s", plan.Nodes[0].Preview)
+		if !strings.Contains(plan.Nodes[0].OptionsPreview, `-e POSTGRES_USER="{{dbUser}}"`) ||
+			!strings.Contains(plan.Nodes[0].OptionsPreview, `-e POSTGRES_PASSWORD="{{dbPass}}"`) {
+			t.Errorf("preview must keep the credential variables visible, not fake values:\n%s", plan.Nodes[0].OptionsPreview)
+		}
+		if len(plan.Warnings) != 0 {
+			t.Errorf("expected no warnings, got %v", plan.Warnings)
+		}
+	})
+
+	t.Run("postgres rebases every node but the first from the primary's real host", func(t *testing.T) {
+		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
+			Plugin:  keeper.NATIVE_POSTGRES,
+			Cluster: "pg",
+			Nodes:   []KeeperDeployPlanNodeRequest{{Host: "pg1"}, {Host: "pg2"}, {Host: "pg3"}},
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if plan.Nodes[0].EntryScript != "" {
+			t.Errorf("expected the primary (pg1) to get an empty EntryScript, got:\n%s", plan.Nodes[0].EntryScript)
+		}
+		for i, host := range []string{"pg2", "pg3"} {
+			node := plan.Nodes[i+1]
+			if node.EntryScript == "" {
+				t.Fatalf("node %q: expected a non-empty EntryScript", host)
+			}
+			// NOTE: the primary's host is resolved via primaryHostMarker
+			// directly into EntryScript at plan time - {{host}} itself
+			// stays unresolved until EntryScriptPreview.
+			if !strings.Contains(node.EntryScript, `host=pg1`) {
+				t.Errorf("node %q: expected EntryScript to already reference the primary's real host pg1, got:\n%s", host, node.EntryScript)
+			}
+			if !strings.Contains(node.EntryScriptPreview, "application_name="+host) {
+				t.Errorf("node %q: expected EntryScriptPreview to resolve its own host into application_name, got:\n%s", host, node.EntryScriptPreview)
+			}
+			if !strings.Contains(node.EntryScriptPreview, "pg_basebackup") || !strings.Contains(node.EntryScriptPreview, "docker-entrypoint.sh postgres") {
+				t.Errorf("node %q: expected EntryScriptPreview to still contain the rebase and the real entrypoint, got:\n%s", host, node.EntryScriptPreview)
+			}
 		}
 		if len(plan.Warnings) != 0 {
 			t.Errorf("expected no warnings, got %v", plan.Warnings)
@@ -384,8 +419,8 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		if plan.Values["{{initialCluster}}"] != "custom=http://elsewhere:2380" {
 			t.Errorf("Values[initialCluster] = %q, want the edited value", plan.Values["{{initialCluster}}"])
 		}
-		if !strings.Contains(plan.Nodes[0].Preview, `-e ETCD_INITIAL_CLUSTER="custom=http://elsewhere:2380"`) {
-			t.Errorf("preview misses the edited member list:\n%s", plan.Nodes[0].Preview)
+		if !strings.Contains(plan.Nodes[0].OptionsPreview, `-e ETCD_INITIAL_CLUSTER="custom=http://elsewhere:2380"`) {
+			t.Errorf("preview misses the edited member list:\n%s", plan.Nodes[0].OptionsPreview)
 		}
 	})
 
@@ -421,8 +456,8 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		if plan.Nodes[0].Options != "--name {{host}} -p {{dbPort}}:{{dbPort}}" {
 			t.Errorf("Options = %q, want the override", plan.Nodes[0].Options)
 		}
-		if plan.Nodes[0].Preview != "--name pg1 -p 5432:5432" {
-			t.Errorf("Preview = %q", plan.Nodes[0].Preview)
+		if plan.Nodes[0].OptionsPreview != "--name pg1 -p 5432:5432" {
+			t.Errorf("Preview = %q", plan.Nodes[0].OptionsPreview)
 		}
 	})
 
@@ -515,13 +550,13 @@ func TestBuildNodeValues(t *testing.T) {
 	}
 
 	t.Run("strips credentials and fills built-ins", func(t *testing.T) {
-		got := buildNodeValues("main", map[string]string{keeper.VarDbUser: "postgres", keeper.VarDbPass: "secret", "{{dcs}}": "etcd1:2379"}, map[string]string{"{{dcs}}": "etcd1:2379"}, pn)
+		got := buildNodeValues("main", map[string]string{string(keeper.VarDbUser): "postgres", string(keeper.VarDbPass): "secret", "{{dcs}}": "etcd1:2379"}, map[string]string{"{{dcs}}": "etcd1:2379"}, pn)
 		want := map[string]string{
-			keeper.VarCluster:    "main",
-			keeper.VarKeeperPort: "8008",
-			keeper.VarDbPort:     "5432",
-			"{{dcs}}":            "etcd1:2379",
-			"{{peerPort}}":       "2380",
+			string(keeper.VarCluster):    "main",
+			string(keeper.VarKeeperPort): "8008",
+			string(keeper.VarDbPort):     "5432",
+			"{{dcs}}":                    "etcd1:2379",
+			"{{peerPort}}":               "2380",
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("buildNodeValues() = %+v, want %+v", got, want)
