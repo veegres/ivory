@@ -1,20 +1,19 @@
-import {Edit, Preview, Rocket} from "@mui/icons-material"
-import {Box, Button, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
+import {Rocket} from "@mui/icons-material"
+import {Box, Button, TextField} from "@mui/material"
 import {useEffect, useMemo, useState} from "react"
 
-import {Code} from "../../../../shared/component/box/Code"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {Logs} from "../../../../shared/component/box/Logs"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
 import {WarningList} from "../../../../shared/component/box/WarningList"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
-import {TypedField} from "../../../../shared/component/input/TypedField"
+import {DeployImageHeader} from "../../../../shared/component/input/DeployImageHeader"
 import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getDeployPlaceholderKeys, getShortUuid} from "../../../../shared/helper/HelperUtils"
 import {useDebounce} from "../../../../shared/hook/Debounce"
 import {useKeeperDeployForm, useRouterNodeKeeperDeploy, useRouterNodeKeeperDeployPlan} from "../../api/NodeHook"
-import {DeployFieldResponse, InterpolationVar, KeeperDeployPlanRequest, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
+import {InterpolationVar, KeeperDeployPlanRequest, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     note: {
@@ -34,6 +33,7 @@ type Props = {
     connection: PlatformVaultConnection,
     plugin: KeeperPlugin,
     cluster: string,
+    singleHost: boolean,
     databaseId?: string,
     sshKeyId?: string,
 }
@@ -44,7 +44,7 @@ type Props = {
 // feature rather than cluster - unlike ClusterDeploy, which batches nodes
 // through cluster's own /cluster/deploy action.
 export function ContainerKeeperDeploy(props: Props) {
-    const {connection, plugin, cluster, databaseId, sshKeyId} = props
+    const {connection, plugin, cluster, singleHost, databaseId, sshKeyId} = props
 
     const [override, setOverride] = useState<string | undefined>(undefined)
     const [keeperPort, setKeeperPort] = useState<string>("")
@@ -52,7 +52,7 @@ export function ContainerKeeperDeploy(props: Props) {
 
     const nodeDeploy = useRouterNodeKeeperDeploy(connection)
     const {
-        deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, updateInput,
+        deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, renderField,
         withKeeperPort, withDbCredentials, mandatoryFields, autoFields,
     } = useKeeperDeployForm(plugin)
 
@@ -61,7 +61,7 @@ export function ContainerKeeperDeploy(props: Props) {
     const planRequest = useMemo(
         handleMemoPlanRequest,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [image, imageUri, plugin, cluster, connection.host, keeperPort, dbPort, inputs, override]
+        [image, imageUri, plugin, cluster, singleHost, connection.host, keeperPort, dbPort, inputs, override]
     )
     const plan = useRouterNodeKeeperDeployPlan(useDebounce(planRequest, 300))
     const planNode = plan.data?.nodes[0]
@@ -162,7 +162,7 @@ export function ContainerKeeperDeploy(props: Props) {
                             onChange={e => setDbPort(e.target.value)}
                         />
                     </Box>
-                    {mandatoryFields.map(renderField)}
+                    {mandatoryFields.map(f => renderField(f, planValues))}
                     {image?.fields.fields.some(f => f.derived) && (
                         <Box sx={SX.note}>
                             The configuration is derived for a new cluster on this node,
@@ -178,33 +178,15 @@ export function ContainerKeeperDeploy(props: Props) {
         return (
             <TitledBox title={"Image Options"} island={true}>
                 <Box sx={[SX.subContent, {gap: 2}]}>
-                    <Box sx={SX.between}>
-                        <TextField
-                            fullWidth={true}
-                            size={"small"}
-                            label={"Image"}
-                            value={imageUri}
-                            onChange={v => setImageUri(v.target.value)}
-                        />
-                        <ToggleButtonGroup value={preview} exclusive={true} size={"small"} onChange={(_, v) => setPreview(v)}>
-                            <Tooltip title={"Preview"} placement={"top"}>
-                                <ToggleButton value={true}><Preview/></ToggleButton>
-                            </Tooltip>
-                            <Tooltip title={"Edit"} placement={"top"}>
-                                <ToggleButton value={false}><Edit/></ToggleButton>
-                            </Tooltip>
-                        </ToggleButtonGroup>
-                    </Box>
-                    <Box sx={SX.note}>
-                        <Box>Use interpolated options to automatically populate values</Box>
-                        <Box sx={SX.note}>
-                            {getPlaceholderKeys().map(k => (
-                                <Code key={k} sx={{fontSize: "11px"}}>{k}</Code>
-                            ))}
-                        </Box>
-                    </Box>
+                    <DeployImageHeader
+                        imageUri={imageUri}
+                        onImageUriChange={setImageUri}
+                        preview={preview}
+                        onPreviewChange={setPreview}
+                        placeholderKeys={getPlaceholderKeys()}
+                    />
                     <WarningList warnings={planWarnings}/>
-                    {autoFields.map(renderField)}
+                    {autoFields.map(f => renderField(f, planValues))}
                     <TextField
                         fullWidth
                         multiline
@@ -220,26 +202,12 @@ export function ContainerKeeperDeploy(props: Props) {
         )
     }
 
-    function renderField(field: DeployFieldResponse) {
-        return (
-            <TypedField
-                key={field.name}
-                label={field.label}
-                example={field.example}
-                type={field.type}
-                value={inputs[field.name] ?? planValues[field.name] ?? field.default ?? ""}
-                disabled={autoFields.includes(field) && preview}
-                onChange={(v) => updateInput(field.name, v)}
-            />
-        )
-    }
-
     function handleMemoPlanRequest(): KeeperDeployPlanRequest | undefined {
         if (!image) return undefined
         return {
             plugin,
             cluster,
-            singleHost: false,
+            singleHost,
             image: imageUri,
             values: getValues(),
             nodes: [getNode()],
@@ -251,6 +219,7 @@ export function ContainerKeeperDeploy(props: Props) {
         nodeDeploy.mutate({
             plugin,
             cluster,
+            singleHost,
             connection,
             node: getNode(),
             image: imageUri,

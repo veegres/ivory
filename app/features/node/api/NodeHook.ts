@@ -1,6 +1,7 @@
 import {keepPreviousData, useQuery} from "@tanstack/react-query"
-import {useEffect, useState} from "react"
+import {createElement, useEffect, useMemo, useState} from "react"
 
+import {TypedField} from "../../../shared/component/input/TypedField"
 import {getDeployFieldGroups, getUpdatedInputs} from "../../../shared/helper/HelperUtils"
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
 import {useStream} from "../../../shared/hook/Stream"
@@ -8,6 +9,7 @@ import {useStore} from "../../../shared/provider/StoreProvider"
 import {ClusterApi} from "../../cluster/api/ClusterRouter"
 import {NodeApi} from "./NodeRouter"
 import {
+    DeployFieldResponse,
     KeeperDeployPlanRequest,
     KeeperDeploySpecResponse,
     KeeperOneRequest,
@@ -254,9 +256,9 @@ export function useKeeperDeployForm(plugin: KeeperPlugin) {
     // NOTE: false while a newly selected plugin's spec hasn't loaded yet, so
     // callers can keep showing a skeleton instead of the previous plugin's fields
     const ready = !!image && imagePlugin === plugin
-    const groups = getDeployFieldGroups(image?.fields)
+    const groups = useMemo(() => getDeployFieldGroups(image?.fields), [image?.fields])
 
-    return {deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, updateInput, ...groups}
+    return {deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, updateInput, renderField, ...groups}
 
     function handleEffectDeploySpec() {
         const data = deploySpec.data
@@ -269,5 +271,17 @@ export function useKeeperDeployForm(plugin: KeeperPlugin) {
 
     function updateInput(name: string, value: string) {
         setInputs(prev => getUpdatedInputs(prev, name, value))
+    }
+
+    function renderField(field: DeployFieldResponse, planValues: {[name: string]: string} = {}) {
+        return createElement(TypedField, {
+            key: field.name,
+            label: field.label,
+            example: field.example,
+            type: field.type,
+            value: inputs[field.name] ?? planValues[field.name] ?? field.default ?? "",
+            disabled: groups.autoFields.includes(field) && preview,
+            onChange: (value: string) => updateInput(field.name, value),
+        })
     }
 }

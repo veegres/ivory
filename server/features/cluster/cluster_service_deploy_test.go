@@ -14,6 +14,7 @@ import (
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/linux"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/boltdb/bolt"
@@ -59,6 +60,11 @@ func newDeployTestService(t *testing.T) *Service {
 func validDeployRequest() DeployRequest {
 	return DeployRequest{
 		Nodes: []DeployNode{{NodeConfig: NodeConfig{Host: "db1"}}},
+		// NOTE: patroni's only plan warning is a missing {{dcs}} value, so it
+		// must be supplied here - otherwise Deploy would refuse every one of
+		// these requests for having plan warnings before ever reaching the
+		// specific validation each subtest means to exercise.
+		Values: map[string]string{"{{dcs}}": "etcd1:2379"},
 		CommonConfig: CommonConfig{
 			Cluster: "test-cluster",
 			SshUser: "root",
@@ -147,6 +153,22 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		_, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNameTaken) {
 			t.Fatalf("expected ErrClusterNameTaken, got %v", err)
+		}
+	})
+
+	t.Run("plan warnings block the deploy", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := validDeployRequest()
+		// NOTE: dropping the {{dcs}} value reintroduces patroni's only plan
+		// warning, which Deploy must now refuse rather than silently deploy.
+		r.Values = nil
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrClusterDeployPlanHasWarnings) {
+			t.Fatalf("expected ErrClusterDeployPlanHasWarnings, got %v", err)
+		}
+		if !strings.Contains(err.Error(), "{{dcs}}") {
+			t.Fatalf("expected the error to name the missing placeholder, got %v", err)
 		}
 	})
 }

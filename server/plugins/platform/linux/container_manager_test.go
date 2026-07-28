@@ -95,18 +95,18 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 	}{
 		{
 			name:     "up quotes options and image",
-			command:  adapter.UpContainer(connection, `--name foo;rm -rf / -e POSTGRES_PASSWORD=pass`, `postgres:16; reboot`, "").(*ssh.Command).Command,
-			expected: `docker run -d '--name' 'foo;rm' '-rf' '/' '-e' 'POSTGRES_PASSWORD=pass' -- 'postgres:16; reboot'`,
+			command:  adapter.UpContainer(connection, name, `--name foo;rm -rf / -e POSTGRES_PASSWORD=pass`, `postgres:16; reboot`, "").(*ssh.Command).Command,
+			expected: `docker run -d --name 'foo; rm -rf /' '-rf' '/' '-e' 'POSTGRES_PASSWORD=pass' -- 'postgres:16; reboot'`,
 		},
 		{
 			name:     "up keeps a quoted value with a space as a single argument",
-			command:  adapter.UpContainer(connection, `-e SCOPE="my cluster" -e NAME=test`, `postgres:16`, "").(*ssh.Command).Command,
-			expected: `docker run -d '-e' 'SCOPE=my cluster' '-e' 'NAME=test' -- 'postgres:16'`,
+			command:  adapter.UpContainer(connection, name, `-e SCOPE="my cluster" -e NAME=test`, `postgres:16`, "").(*ssh.Command).Command,
+			expected: `docker run -d --name 'foo; rm -rf /' '-e' 'SCOPE=my cluster' '-e' 'NAME=test' -- 'postgres:16'`,
 		},
 		{
-			name:     "up appends a non-empty command after the image",
-			command:  adapter.UpContainer(connection, `--name foo`, `postgres:18`, `sh -c 'echo "hi"'`).(*ssh.Command).Command,
-			expected: `docker run -d '--name' 'foo' -- 'postgres:18' 'sh' '-c' 'echo "hi"'`,
+			name:     "up always enforces the given name, discarding any --name in options",
+			command:  adapter.UpContainer(connection, "mycontainer", `--name foo`, `postgres:18`, `sh -c 'echo "hi"'`).(*ssh.Command).Command,
+			expected: `docker run -d --name 'mycontainer' -- 'postgres:18' 'sh' '-c' 'echo "hi"'`,
 		},
 		{
 			name:     "down quotes name",
@@ -146,6 +146,29 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 				t.Fatalf("expected %q, got %q", test.expected, test.command)
 			}
 		})
+	}
+}
+
+// TestExecContainerRecoversEscapedQuoteInHandWrittenSpan reproduces the etcd
+// PostDeploy pattern (`user add '{{dbUser}}:{{dbPass}}'`, a plugin's own
+// literal single quotes wrapped around an interpolated value): a password
+// containing a quote and a space must survive tokenizing intact once the
+// caller (node.getExecutionValues) has backslash-escaped it, instead of the
+// naive quote-toggle parser closing the span early and mangling the value.
+func TestExecContainerRecoversEscapedQuoteInHandWrittenSpan(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	connection := platform.Connection{}
+
+	// value as produced by escapeInterpolatedValue("it's a test") interpolated
+	// into etcd's own "'root:" + dbUser + ":" + dbPass + "'" template.
+	command := `etcdctl user add 'root:it\'s a test'`
+	got := adapter.ExecContainer(connection, "n1", command).(*ssh.Command).Command
+	expected := `docker exec -- 'n1' 'etcdctl' 'user' 'add' 'root:it'\''s a test'`
+	// NOTE: the last field is shellQuote's own re-escaping of the recovered
+	// literal value "root:it's a test" - what matters is that it was
+	// recovered as one field, not split apart at the embedded quote.
+	if got != expected {
+		t.Fatalf("expected %q, got %q", expected, got)
 	}
 }
 

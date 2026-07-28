@@ -78,7 +78,11 @@ const (
 func clusterToBackupV1(c cluster.Response) backupClusterV1 {
 	sidecars := make([]backupSidecarV1, len(c.Nodes))
 	for i, n := range c.Nodes {
-		sidecars[i] = backupSidecarV1{Host: n.Host, Port: *n.KeeperPort}
+		port := 0
+		if n.KeeperPort != nil {
+			port = *n.KeeperPort
+		}
+		sidecars[i] = backupSidecarV1{Host: n.Host, Port: port}
 	}
 	return backupClusterV1{Name: c.Name, Tags: c.Tags, Sidecars: sidecars}
 }

@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"ivory/clients/console/ssh"
 	"ivory/core/utils"
@@ -257,6 +258,53 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		}
 	})
 
+	t.Run("patroni single host offsets the default db and keeper ports per node", func(t *testing.T) {
+		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
+			Plugin:     keeper.PATRONI_POSTGRES,
+			Cluster:    "main",
+			SingleHost: true,
+			Values:     map[string]string{"{{dcs}}": "etcd1:2379"},
+			Nodes: []KeeperDeployPlanNodeRequest{
+				{Host: "n1"},
+				{Host: "n2"},
+				{Host: "n3"},
+			},
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		for i, node := range plan.Nodes {
+			if node.DbPort != 5432+i {
+				t.Errorf("node %d dbPort = %d, want %d", i, node.DbPort, 5432+i)
+			}
+			if node.KeeperPort != 8008+i {
+				t.Errorf("node %d keeperPort = %d, want %d", i, node.KeeperPort, 8008+i)
+			}
+		}
+	})
+
+	t.Run("patroni single host honors an explicit per-node db port without offsetting it", func(t *testing.T) {
+		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
+			Plugin:     keeper.PATRONI_POSTGRES,
+			Cluster:    "main",
+			SingleHost: true,
+			Values:     map[string]string{"{{dcs}}": "etcd1:2379"},
+			Nodes: []KeeperDeployPlanNodeRequest{
+				{Host: "n1", DbPort: intPtr(6000), KeeperPort: intPtr(6100)},
+				{Host: "n2"},
+			},
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if plan.Nodes[0].DbPort != 6000 || plan.Nodes[0].KeeperPort != 6100 {
+			t.Errorf("node 0 ports = %d/%d, want 6000/6100", plan.Nodes[0].DbPort, plan.Nodes[0].KeeperPort)
+		}
+		if plan.Nodes[1].DbPort != 5433 || plan.Nodes[1].KeeperPort != 8009 {
+			t.Errorf("node 1 ports = %d/%d, want 5433/8009", plan.Nodes[1].DbPort, plan.Nodes[1].KeeperPort)
+		}
+	})
+
 	t.Run("etcd single host derives unique peer ports and the dcs", func(t *testing.T) {
 		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
 			Plugin:     keeper.NATIVE_ETCD,
@@ -482,6 +530,25 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 			t.Fatal("expected error for unknown plugin, got nil")
 		}
 	})
+}
+
+func TestService_KeeperDeployPlanWarningsBlockDeploy(t *testing.T) {
+	s := newDeployTestService()
+
+	// NOTE: no {{dcs}} value is provided, so the plan carries patroni's usual
+	// "missing value for placeholder {{dcs}}" warning; KeeperDeploy must
+	// refuse before ever touching Connection/Vaults (left zero-valued here).
+	_, err := s.KeeperDeploy(KeeperDeployRequest{
+		Plugin:  keeper.PATRONI_POSTGRES,
+		Cluster: "main",
+		Node:    KeeperDeployPlanNodeRequest{Host: "db1"},
+	})
+	if !errors.Is(err, ErrKeeperDeployPlanHasWarnings) {
+		t.Fatalf("expected ErrKeeperDeployPlanHasWarnings, got %v", err)
+	}
+	if !strings.Contains(err.Error(), "{{dcs}}") {
+		t.Fatalf("expected the error to name the missing placeholder, got %v", err)
+	}
 }
 
 func TestService_KeeperDeploySpecUnknownPlugin(t *testing.T) {

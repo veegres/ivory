@@ -84,13 +84,6 @@ export interface PlatformVaultConnection {
     vaultId: string,
 }
 
-export interface PlatformCredConnection {
-    host: string,
-    port: number,
-    username: string,
-    password?: string,
-}
-
 export interface CpuMetrics {
     totalTicks: number,
     idleTicks: number,
@@ -157,9 +150,12 @@ export interface KeeperDeployNode {
 // values resolve the deployment plan for this one node (ports, options,
 // interpolation), connection and vaults are resolved by the caller (e.g. a
 // stored cluster's vaults) since node has no access to cluster storage.
+// singleHost must match the cluster's own networking mode - deploying a new
+// node with a different mode than its peers produces an incompatible container.
 export interface KeeperDeployRequest {
     plugin: KeeperPlugin,
     cluster: string,
+    singleHost: boolean,
     image?: string,
     values: {[key: string]: string},
     node: KeeperDeployNode,

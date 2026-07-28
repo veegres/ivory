@@ -22,6 +22,7 @@ const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     name: "", certs: {}, vaults: {}, tags: [],
     plugins: {database, keeper},
     tls: {keeper: false, database: false},
+    singleHost: false,
     host: "", port: 0,
 }) as AutoRequest
 

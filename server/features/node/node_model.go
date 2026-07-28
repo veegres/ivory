@@ -262,10 +262,14 @@ type DeployFieldsResponse struct {
 // Values resolve the deployment plan for this one node (ports, options,
 // interpolation), Connection and Vaults are resolved by the caller (a stored
 // cluster's vaults or a freshly entered SSH/database credential) since node
-// has no access to the cluster feature's storage.
+// has no access to the cluster feature's storage. SingleHost must match the
+// cluster's own networking mode (cluster.Options.SingleHost) - deploying a
+// new node with a different mode than its peers produces an incompatible
+// container (see KeeperDeployPlan / mapKeeperDeploymentToPlatformSpec).
 type KeeperDeployRequest struct {
 	Plugin     KeeperPlugin                `json:"plugin" form:"plugin" binding:"required"`
 	Cluster    string                      `json:"cluster" form:"cluster"`
+	SingleHost bool                        `json:"singleHost" form:"singleHost"`
 	Image      string                      `json:"image" form:"image"`
 	Values     map[string]string           `json:"values" form:"values"`
 	Node       KeeperDeployPlanNodeRequest `json:"node" form:"node"`
@@ -273,13 +277,13 @@ type KeeperDeployRequest struct {
 	Vaults     Vaults                      `json:"vaults" form:"vaults" binding:"required"`
 }
 
-// KeeperDeployUpRequest deploys one node that a KeeperDeployPlan already
-// resolved: PlanValues are the plan's effective field values (dcs, derived
-// member lists, ...), RequestValues the raw request-supplied interpolation
-// extras, and Node the node's own resolved ports/options.
-type KeeperDeployUpRequest struct {
+// KeeperDeployExecRequest is the common shape shared by every action that
+// runs against one node of an already-resolved KeeperDeployPlan:
+// PlanValues are the plan's effective field values (dcs, derived member
+// lists, ...), RequestValues the raw request-supplied interpolation extras,
+// and Node the node's own resolved ports/options.
+type KeeperDeployExecRequest struct {
 	Cluster       string
-	Image         string
 	PlanValues    map[string]string
 	RequestValues map[string]string
 	Node          KeeperDeployPlanNode
@@ -287,16 +291,17 @@ type KeeperDeployUpRequest struct {
 	Vaults        Vaults
 }
 
+// KeeperDeployUpRequest deploys one node that a KeeperDeployPlan already resolved.
+type KeeperDeployUpRequest struct {
+	KeeperDeployExecRequest
+	Image string
+}
+
 // KeeperPostDeployRequest runs a deployment plan's post-deploy commands (e.g.
 // enabling authentication) inside one already-deployed node.
 type KeeperPostDeployRequest struct {
-	Cluster       string
-	RequestValues map[string]string
-	PlanValues    map[string]string
-	PostDeploy    []string
-	Node          KeeperDeployPlanNode
-	Connection    PlatformVaultConnection
-	Vaults        Vaults
+	KeeperDeployExecRequest
+	PostDeploy []string
 }
 
 type PlatformLogsRequest struct {

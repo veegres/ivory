@@ -102,6 +102,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
         certs: {},
         vaults: {sshKeyId: "00000000-0000-0000-0000-000000000000"},
         tags: [],
+        singleHost: false,
         ...overrides,
     }
 }

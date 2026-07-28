@@ -15,6 +15,7 @@ import (
 
 var ErrKeeperDeployImageNotProvided = errors.New("deploy image not provided")
 var ErrKeeperDeployDatabaseCredentialsRequired = errors.New("database credentials are required")
+var ErrKeeperDeployPlanHasWarnings = errors.New("deployment plan has warnings")
 
 func (s *Service) KeeperDeploySpec(r KeeperDeploySpecRequest) (*KeeperDeploySpecResponse, error) {
 	metadata, err := s.keeperMetadataRegistry.Get(r.Plugin)
@@ -73,12 +74,18 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 		dbPort := dbPortDefault
 		if n.DbPort != nil && *n.DbPort > 0 {
 			dbPort = *n.DbPort
+		} else if r.SingleHost {
+			// NOTE: mirrors the FieldPort base+i offset below - nodes sharing
+			// one host can't all bind the same default database port
+			dbPort += i
 		}
 		keeperPort := dbPort
 		if hasKeeperEndpoint {
 			keeperPort, _ = strconv.Atoi(keeperPortDefault)
 			if n.KeeperPort != nil && *n.KeeperPort > 0 {
 				keeperPort = *n.KeeperPort
+			} else if r.SingleHost {
+				keeperPort += i
 			}
 		} else if n.KeeperPort != nil && *n.KeeperPort > 0 && *n.KeeperPort != dbPort {
 			warnings = append(warnings, fmt.Sprintf(
@@ -235,7 +242,11 @@ func (s *Service) KeeperDeployUp(r KeeperDeployUpRequest) ([]string, error) {
 	}
 	values := s.buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
 	return s.PlatformContainerUp(PlatformUpRequest{
-		Name:        r.Cluster,
+		// NOTE: the deployed container's name is the node's own host, matching
+		// what KeeperPostDeploy/PlatformContainerStop/Start/Exec assume when
+		// they address it by r.Node.Host afterwards - it must not be the
+		// cluster name, which every node in a multi-node deploy would share.
+		Name:        r.Node.Host,
 		Image:       r.Image,
 		Connection:  r.Connection,
 		Vaults:      r.Vaults,
@@ -251,15 +262,23 @@ func (s *Service) KeeperDeployUp(r KeeperDeployUpRequest) ([]string, error) {
 // rather than an error, since the deployment itself already succeeded.
 func (s *Service) KeeperPostDeploy(r KeeperPostDeployRequest) []string {
 	logs := make([]string, 0, len(r.PostDeploy))
-	values := s.buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
+
+	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	if err != nil {
+		logs = append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err))
+		return logs
+	}
+	nodeValues := s.buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
+	// NOTE: resolved once and reused across every command below, instead of
+	// re-fetching and re-decrypting the same vault secret per command.
+	values, err := s.getExecutionValues(r.Connection.Host, r.Vaults, nodeValues)
+	if err != nil {
+		logs = append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err))
+		return logs
+	}
+
 	for _, command := range r.PostDeploy {
-		res, err := s.PlatformContainerExec(PlatformExecRequest{
-			Name:       r.Node.Host,
-			Connection: r.Connection,
-			Vaults:     r.Vaults,
-			Command:    command,
-			Values:     values,
-		})
+		res, err := s.execContainerCommand(adapter, conn, r.Node.Host, command, values)
 		if err != nil {
 			logs = append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err))
 			return logs
@@ -278,17 +297,21 @@ func (s *Service) KeeperPostDeploy(r KeeperPostDeployRequest) []string {
 // cluster, not once per node.
 func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 	plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
-		Plugin:  r.Plugin,
-		Cluster: r.Cluster,
-		Image:   r.Image,
-		Values:  r.Values,
-		Nodes:   []KeeperDeployPlanNodeRequest{r.Node},
+		Plugin:     r.Plugin,
+		Cluster:    r.Cluster,
+		SingleHost: r.SingleHost,
+		Image:      r.Image,
+		Values:     r.Values,
+		Nodes:      []KeeperDeployPlanNodeRequest{r.Node},
 	})
 	if err != nil {
 		return nil, err
 	}
 	if plan.Image == "" {
 		return nil, ErrKeeperDeployImageNotProvided
+	}
+	if len(plan.Warnings) > 0 {
+		return nil, fmt.Errorf("%w: %s", ErrKeeperDeployPlanHasWarnings, strings.Join(plan.Warnings, "; "))
 	}
 	if _, dbCredentials := plan.Fields.Defaults[string(keeper.VarDbUser)]; dbCredentials && r.Vaults.DatabaseId == uuid.Nil {
 		return nil, ErrKeeperDeployDatabaseCredentialsRequired
@@ -298,29 +321,21 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 	}
 
 	planNode := plan.Nodes[0]
-	logs, err := s.KeeperDeployUp(KeeperDeployUpRequest{
+	execRequest := KeeperDeployExecRequest{
 		Cluster:       r.Cluster,
-		Image:         plan.Image,
 		PlanValues:    plan.Values,
 		RequestValues: r.Values,
 		Node:          planNode,
 		Connection:    r.Connection,
 		Vaults:        r.Vaults,
-	})
+	}
+	logs, err := s.KeeperDeployUp(KeeperDeployUpRequest{KeeperDeployExecRequest: execRequest, Image: plan.Image})
 	if err != nil {
 		return nil, err
 	}
 
 	if len(plan.PostDeploy) > 0 {
-		logs = append(logs, s.KeeperPostDeploy(KeeperPostDeployRequest{
-			Cluster:       r.Cluster,
-			RequestValues: r.Values,
-			PlanValues:    plan.Values,
-			PostDeploy:    plan.PostDeploy,
-			Node:          planNode,
-			Connection:    r.Connection,
-			Vaults:        r.Vaults,
-		})...)
+		logs = append(logs, s.KeeperPostDeploy(KeeperPostDeployRequest{KeeperDeployExecRequest: execRequest, PostDeploy: plan.PostDeploy})...)
 	}
 	return logs, nil
 }

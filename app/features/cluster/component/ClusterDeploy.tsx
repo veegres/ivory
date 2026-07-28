@@ -1,5 +1,5 @@
-import {Edit, Preview, RocketLaunch} from "@mui/icons-material"
-import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
+import {RocketLaunch} from "@mui/icons-material"
+import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {useCallback, useEffect, useMemo, useState} from "react"
 
 import {ListNodeInput} from "../../../core/pages/cluster/list/ListNodeInput"
@@ -14,7 +14,7 @@ import {SubContentBox} from "../../../shared/component/box/SubContentBox"
 import {TitledBox} from "../../../shared/component/box/TitledBox"
 import {WarningList} from "../../../shared/component/box/WarningList"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
-import {TypedField} from "../../../shared/component/input/TypedField"
+import {DeployImageHeader} from "../../../shared/component/input/DeployImageHeader"
 import {SkeletonGroup} from "../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {getDeployPlaceholderKeys, getNodeConfigs, NodeInputFormat, VaultOptions} from "../../../shared/helper/HelperUtils"
@@ -22,7 +22,7 @@ import {useDebounce} from "../../../shared/hook/Debounce"
 import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
 import {useKeeperDeployForm, useRouterNodeKeeperDeployPlan} from "../../node/api/NodeHook"
-import {DeployFieldResponse, InterpolationVar, KeeperDeployPlanRequest, KeeperPlugin} from "../../node/api/NodeType"
+import {InterpolationVar, KeeperDeployPlanRequest, KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
 import {VaultType} from "../../vault/api/VaultType"
 import {useRouterClusterDeploy} from "../api/ClusterHook"
@@ -45,6 +45,7 @@ const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     certs: {}, vaults: {}, tags: [],
     plugins: {database, keeper},
     tls: {keeper: false, database: false},
+    singleHost: false,
 }) as ClusterOptions
 
 type Props = {
@@ -69,7 +70,7 @@ export function ClusterDeploy(props: Props) {
 
     const deploy = useRouterClusterDeploy(setResponse)
     const {
-        deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, updateInput,
+        deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, renderField,
         withKeeperPort, withDbCredentials, mandatoryFields, autoFields,
     } = useKeeperDeployForm(options.plugins.keeper)
 
@@ -199,23 +200,9 @@ export function ClusterDeploy(props: Props) {
         return (
             <TitledBox title={"Mandatory Options"} island={true}>
                 <Box sx={[SX.subContent, {gap: 1}]}>
-                    {mandatoryFields.map(renderField)}
+                    {mandatoryFields.map(f => renderField(f, planValues))}
                 </Box>
             </TitledBox>
-        )
-    }
-
-    function renderField(field: DeployFieldResponse) {
-        return (
-            <TypedField
-                key={field.name}
-                label={field.label}
-                example={field.example}
-                type={field.type}
-                value={inputs[field.name] ?? planValues[field.name] ?? field.default ?? ""}
-                disabled={autoFields.includes(field) && preview}
-                onChange={(v) => updateInput(field.name, v)}
-            />
         )
     }
 
@@ -308,35 +295,17 @@ export function ClusterDeploy(props: Props) {
         return (
             <SubContentBox label={"Image Options"} island={true}>
                 <Box sx={[SX.subContent, {gap: 2}]}>
-                    <Box sx={SX.between}>
-                        <TextField
-                            fullWidth={true}
-                            size={"small"}
-                            label={"Image"}
-                            value={imageUri}
-                            onChange={v => setImageUri(v.target.value)}
-                        />
-                        <ToggleButtonGroup value={preview} exclusive={true} size={"small"} onChange={(_, v) => setPreview(v)}>
-                            <Tooltip title={"Preview"} placement={"top"}>
-                                <ToggleButton value={true}><Preview/></ToggleButton>
-                            </Tooltip>
-                            <Tooltip title={"Edit"} placement={"top"}>
-                                <ToggleButton value={false}><Edit/></ToggleButton>
-                            </Tooltip>
-                        </ToggleButtonGroup>
-                    </Box>
-                    <Box sx={SX.note}>
-                        <Box>Use interpolated options to automatically populate values</Box>
-                        <Box sx={SX.note}>
-                            {placeholderKeys.map(k => (
-                                <Code key={k} sx={{fontSize: "11px"}}>{k}</Code>
-                            ))}
-                        </Box>
-                    </Box>
+                    <DeployImageHeader
+                        imageUri={imageUri}
+                        onImageUriChange={setImageUri}
+                        preview={preview}
+                        onPreviewChange={setPreview}
+                        placeholderKeys={placeholderKeys}
+                    />
                     <WarningList warnings={planWarnings}/>
                     {autoFields.length > 0 && planNodes.length > 0 && (
                         <Box sx={[SX.subContent, {gap: 1}]}>
-                            {autoFields.map(renderField)}
+                            {autoFields.map(f => renderField(f, planValues))}
                         </Box>
                     )}
                     {planNodes.length === 0 ? (

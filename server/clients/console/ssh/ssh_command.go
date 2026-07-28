@@ -1,11 +1,11 @@
 package ssh
 
 import (
-	"bufio"
 	"crypto/ed25519"
 	"errors"
 	"fmt"
 	"io"
+	"ivory/clients/console"
 	"log/slog"
 	"net"
 	"net/url"
@@ -35,6 +35,9 @@ type Command struct {
 	Command         string
 	HostKeyCallback ssh.HostKeyCallback
 	Timeout         time.Duration
+	// ExecuteTimeout bounds Execute() (not Start/Wait used directly for
+	// long-running log-follow streaming): zero means no bound.
+	ExecuteTimeout time.Duration
 
 	JobID        string
 	JobPersist   bool
@@ -196,31 +199,13 @@ func (c *Command) Execute() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var output []string
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		output = append(output, scanner.Text())
-	}
-
-	errWait := c.Wait()
-	if errWait != nil {
+	return console.Execute(reader, c.Wait, c.Abort, func(err error) (int, bool) {
 		var exitErr *ssh.ExitError
-		if errors.As(errWait, &exitErr) {
-			return output, fmt.Errorf("exit code %d: %s", exitErr.ExitStatus(), strings.Join(output, "\n"))
+		if errors.As(err, &exitErr) {
+			return exitErr.ExitStatus(), true
 		}
-		return output, errWait
-	}
-
-	errScanner := scanner.Err()
-	if errScanner != nil {
-		// NOTE: Reading from a PTY might return an EIO error when the process exits.
-		if !strings.Contains(errScanner.Error(), "input/output error") {
-			return output, errScanner
-		}
-	}
-
-	return output, nil
+		return 0, false
+	}, c.ExecuteTimeout)
 }
 
 func (c *Command) getDialAddress() (string, error) {

@@ -19,11 +19,12 @@ type NodeConfig struct {
 }
 
 type Options struct {
-	Plugins Plugins    `json:"plugins"`
-	Tls     Tls        `json:"tls"`
-	Certs   cert.Certs `json:"certs"`
-	Vaults  Vaults     `json:"vaults"`
-	Tags    []string   `json:"tags"`
+	Plugins    Plugins    `json:"plugins"`
+	Tls        Tls        `json:"tls"`
+	Certs      cert.Certs `json:"certs"`
+	Vaults     Vaults     `json:"vaults"`
+	Tags       []string   `json:"tags"`
+	SingleHost bool       `json:"singleHost"`
 }
 
 type Request struct {

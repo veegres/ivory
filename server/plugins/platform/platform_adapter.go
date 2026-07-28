@@ -62,10 +62,13 @@ type ContainerManager interface {
 	// ListContainer lists every deployed container on the node.
 	ListContainer(connection Connection) console.Command
 	// UpContainer creates and starts a new container running image with the
-	// given native options text (as rendered by RenderOptions). entryScript,
+	// given native options text (as rendered by RenderOptions). name is the
+	// deployment's authoritative identity: the adapter enforces it regardless
+	// of what the (still user-editable) options text contains, so later
+	// lifecycle calls (Stop/Start/Exec/Logs by name) always resolve. entryScript,
 	// if non-empty, replaces the image's own default startup command (see
 	// keeper.DeploymentSpec.EntryScript).
-	UpContainer(connection Connection, options, image, entryScript string) console.Command
+	UpContainer(connection Connection, name, options, image, entryScript string) console.Command
 	// DownContainer removes the named container.
 	DownContainer(connection Connection, name string) console.Command
 	// StartContainer starts an existing, stopped container.

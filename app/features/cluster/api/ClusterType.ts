@@ -18,6 +18,7 @@ export interface Options {
     certs: Certs,
     vaults: Vaults,
     tags: string[],
+    singleHost: boolean,
 }
 
 export interface NodeConfig {

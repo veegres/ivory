@@ -1,14 +1,15 @@
 package shell
 
 import (
-	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
+	"ivory/clients/console"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/creack/pty"
 )
@@ -20,6 +21,9 @@ type Command struct {
 	JobID        string
 	JobPersist   bool
 	JobKeepAlive bool
+	// ExecuteTimeout bounds Execute() (not Start/Wait used directly for
+	// long-running streaming): zero means no bound.
+	ExecuteTimeout time.Duration
 
 	cmd *exec.Cmd
 }
@@ -73,30 +77,11 @@ func (c *Command) Execute() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var output []string
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		output = append(output, scanner.Text())
-	}
-
-	errWait := c.Wait()
-	if errWait != nil {
+	return console.Execute(reader, c.Wait, c.Abort, func(err error) (int, bool) {
 		var exitErr *exec.ExitError
-		if errors.As(errWait, &exitErr) {
-			return output, fmt.Errorf("exit code %d: %s", exitErr.ExitCode(), strings.Join(output, "\n"))
+		if errors.As(err, &exitErr) {
+			return exitErr.ExitCode(), true
 		}
-		return output, errWait
-	}
-
-	errScanner := scanner.Err()
-	if errScanner != nil {
-		// NOTE: On Linux, reading from a PTY master after the slave is closed
-		// returns an EIO error. This is expected behavior and should be ignored.
-		if !strings.Contains(errScanner.Error(), "input/output error") {
-			return output, errScanner
-		}
-	}
-
-	return output, nil
+		return 0, false
+	}, c.ExecuteTimeout)
 }

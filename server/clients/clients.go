@@ -14,3 +14,12 @@ const IntegrationTimeout = 300 * time.Millisecond
 // deployment (LDAP, OIDC), where round-trips are naturally slower and a
 // false timeout would fail a real user login.
 const ExternalTimeout = 5 * time.Second
+
+// CommandExecuteTimeout bounds a single one-shot remote command (docker
+// run/exec/stop/start/list, ...) run through console.Command.Execute. It is
+// generous enough to cover a slow image pull, but keeps a single hung
+// command (e.g. a stuck "docker pull") from blocking its caller - and with
+// it a whole synchronous cluster deploy (cluster.Service.Deploy) - forever.
+// It does not apply to Start/Wait used directly for long-running log-follow
+// streaming.
+const CommandExecuteTimeout = 5 * time.Minute

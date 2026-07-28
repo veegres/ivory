@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"ivory/clients"
-	"log/slog"
 	"net"
 	"strings"
 	"sync"
@@ -45,6 +44,7 @@ func (c *Client) Command(con Connection, command string) *Command {
 		Command:         command,
 		HostKeyCallback: c.hostKeyCallback,
 		Timeout:         c.timeout,
+		ExecuteTimeout:  clients.CommandExecuteTimeout,
 		Dial: func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
 			return c.dialCached(network, addr, con.Password, con.PrivateKey, config)
 		},
@@ -70,12 +70,12 @@ func (c *Client) dialCached(network, addr, password string, privateKey *ed25519.
 	c.mu.RUnlock()
 
 	if ok {
-		// Check if the connection is still alive by opening a temporary session
-		// or sending a keepalive. Opening a session is the most reliable check.
-		if session, err := client.NewSession(); err == nil {
-			if err := session.Close(); err != nil {
-				slog.Error("failed to close temporary ssh session", "error", err)
-			}
+		// NOTE: a global keepalive request is a cheaper liveness probe than
+		// opening a full session channel - the server almost certainly won't
+		// recognize this request name and will reply "request failed", but
+		// that reply is itself proof the round trip completed; only a
+		// transport-level error means the connection is actually dead.
+		if _, _, err := client.SendRequest("keepalive@ivory", true, nil); err == nil {
 			return client, nil
 		}
 		// Connection is dead, remove it

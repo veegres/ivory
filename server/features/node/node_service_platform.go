@@ -124,7 +124,7 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
 	}
 
-	return s.executeCommand(adapter.UpContainer(conn, options, r.Image, entryScript))
+	return s.executeCommand(adapter.UpContainer(conn, r.Name, options, r.Image, entryScript))
 }
 
 // PlatformContainerExec runs one command inside the named deployment,
@@ -141,12 +141,21 @@ func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error)
 		return nil, err
 	}
 
-	command := keeper.Interpolate(r.Command, values)
+	return s.execContainerCommand(adapter, conn, r.Name, r.Command, values)
+}
+
+// execContainerCommand interpolates and runs one command against an
+// already-resolved adapter/connection/values set, so a caller that needs to
+// run several commands against the same deployment (e.g. KeeperPostDeploy)
+// can resolve the vault credentials once and reuse them across calls instead
+// of re-fetching and re-decrypting them per command.
+func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.Connection, name string, commandTemplate string, values map[string]string) ([]string, error) {
+	command := keeper.Interpolate(commandTemplate, values)
 	if unresolved := keeper.UnresolvedPlaceholders(command); len(unresolved) > 0 {
 		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
 	}
 
-	return s.executeCommand(adapter.ExecContainer(conn, r.Name, command))
+	return s.executeCommand(adapter.ExecContainer(conn, name, command))
 }
 
 // getExecutionValues finalizes interpolation values for execution: the host
@@ -164,10 +173,26 @@ func (s *Service) getExecutionValues(host string, vaults Vaults, requestValues m
 		if err != nil {
 			return nil, fmt.Errorf("failed to get database credentials from vault: %v", err)
 		}
-		values[string(keeper.VarDbUser)] = dbCred.Username
-		values[string(keeper.VarDbPass)] = dbCred.Secret
+		values[string(keeper.VarDbUser)] = escapeInterpolatedValue(dbCred.Username)
+		values[string(keeper.VarDbPass)] = escapeInterpolatedValue(dbCred.Secret)
 	}
 	return values, nil
+}
+
+// escapeInterpolatedValue neutralizes characters that could break out of a
+// keeper plugin's own hand-written quoting once substituted into an
+// options/entryScript/command template (e.g. etcd's PostDeploy wraps
+// {{dbUser}}:{{dbPass}} in literal single quotes - an unescaped quote or
+// space in the value corrupts the command it's exec'd with). The backslash
+// itself is escaped first, then both quote characters, since a value may
+// land inside either a single- or a double-quoted span depending on the
+// plugin; container_manager.go's splitShellFields recovers these escapes
+// when the interpolated command is tokenized for execution.
+func escapeInterpolatedValue(v string) string {
+	v = strings.ReplaceAll(v, `\`, `\\`)
+	v = strings.ReplaceAll(v, `'`, `\'`)
+	v = strings.ReplaceAll(v, `"`, `\"`)
+	return v
 }
 
 func (s *Service) normalizeDatabaseOptions(options string) string {
