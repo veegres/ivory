@@ -167,7 +167,7 @@ func permissionStatusToBackupV1(ps permission.Status) (backupPermissionTypeV1, e
 
 // Import mappers: backup V1 schema → domain
 
-func backupToClusterV1(bc backupClusterV1) cluster.Request {
+func (bc backupClusterV1) toCluster() cluster.Request {
 	nodes := make([]cluster.NodeConfig, len(bc.Sidecars))
 	for i, k := range bc.Sidecars {
 		nodes[i] = cluster.NodeConfig{Host: k.Host, KeeperPort: &k.Port}
@@ -182,15 +182,15 @@ func backupToClusterV1(bc backupClusterV1) cluster.Request {
 	}
 }
 
-func backupToQueryV1(bq backupQueryV1) (query.Request, error) {
+func (bq backupQueryV1) toQuery() (query.Request, error) {
 	varieties := make([]query.VarietyType, 0, len(bq.Varieties))
 	for _, v := range bq.Varieties {
-		variety, err := syncQueryVarietyV1(v)
+		variety, err := v.toQueryVariety()
 		if err == nil {
 			varieties = append(varieties, variety)
 		}
 	}
-	queryType, err := syncQueryTypeV1(bq.Type)
+	queryType, err := bq.Type.toQueryType()
 	if err != nil {
 		return query.Request{}, err
 	}
@@ -204,7 +204,7 @@ func backupToQueryV1(bq backupQueryV1) (query.Request, error) {
 	}, nil
 }
 
-func syncQueryTypeV1(bqt backupQueryTypeV1) (query.Type, error) {
+func (bqt backupQueryTypeV1) toQueryType() (query.Type, error) {
 	switch bqt {
 	case BLOAT_V1:
 		return query.BLOAT, nil
@@ -221,7 +221,7 @@ func syncQueryTypeV1(bqt backupQueryTypeV1) (query.Type, error) {
 	}
 }
 
-func syncQueryVarietyV1(bqv backupQueryVarietyV1) (query.VarietyType, error) {
+func (bqv backupQueryVarietyV1) toQueryVariety() (query.VarietyType, error) {
 	switch bqv {
 	case DatabaseSensitiveV1:
 		return query.DatabaseSensitive, nil
@@ -234,14 +234,14 @@ func syncQueryVarietyV1(bqv backupQueryVarietyV1) (query.VarietyType, error) {
 	}
 }
 
-func backupToUserPermissionsV1(bp backupPermissionsV1) permission.UserPermissions {
+func (bp backupPermissionsV1) toUserPermissions() permission.UserPermissions {
 	perms := make(permission.PermissionMap)
 	for k, v := range bp.Permissions {
 		perm, err := syncPermissionV1(k)
 		if err != nil {
 			continue
 		}
-		status, err := syncPermissionStatusV1(v)
+		status, err := v.toPermissionStatus()
 		if err != nil {
 			continue
 		}
@@ -250,6 +250,9 @@ func backupToUserPermissionsV1(bp backupPermissionsV1) permission.UserPermission
 	return permission.UserPermissions{Username: bp.Username, Permissions: perms}
 }
 
+// syncPermissionV1 looks up a stored permission key against the current set
+// of valid features; its input is a plain string (the backup's map key), not
+// a named local type, so unlike its siblings it cannot become a method.
 func syncPermissionV1(p string) (env.Feature, error) {
 	for _, validFeature := range env.All {
 		if string(validFeature) == p {
@@ -259,7 +262,7 @@ func syncPermissionV1(p string) (env.Feature, error) {
 	return "", ErrInvalidFeature
 }
 
-func syncPermissionStatusV1(bpt backupPermissionTypeV1) (permission.Status, error) {
+func (bpt backupPermissionTypeV1) toPermissionStatus() (permission.Status, error) {
 	switch bpt {
 	case NOT_PERMITTED_V1:
 		return permission.NOT_PERMITTED, nil

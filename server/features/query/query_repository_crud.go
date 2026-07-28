@@ -26,7 +26,7 @@ func (r *Repository) ListByFilter(queryType *Type, plugin *DbPlugin) ([]Response
 		if queryType != nil && query.Type != *queryType {
 			return false
 		}
-		if plugin != nil && !matchesPlugin(query.Plugin, *plugin) {
+		if plugin != nil && !r.matchesPlugin(query.Plugin, *plugin) {
 			return false
 		}
 		return true
@@ -35,7 +35,7 @@ func (r *Repository) ListByFilter(queryType *Type, plugin *DbPlugin) ([]Response
 
 func (r *Repository) HasSystemQueriesForPlugin(plugin DbPlugin) (bool, error) {
 	list, err := r.bucket.GetList(func(query Response) bool {
-		return query.Creation == System && matchesPlugin(query.Plugin, plugin)
+		return query.Creation == System && r.matchesPlugin(query.Plugin, plugin)
 	}, nil)
 	if err != nil {
 		return false, err
@@ -45,7 +45,7 @@ func (r *Repository) HasSystemQueriesForPlugin(plugin DbPlugin) (bool, error) {
 
 // matchesPlugin treats records stored before the plugin field existed
 // (empty plugin) as postgres queries.
-func matchesPlugin(stored DbPlugin, requested DbPlugin) bool {
+func (r *Repository) matchesPlugin(stored DbPlugin, requested DbPlugin) bool {
 	if stored == "" {
 		stored = database.POSTGRES
 	}

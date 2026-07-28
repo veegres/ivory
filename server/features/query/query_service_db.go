@@ -13,7 +13,7 @@ func (s *Service) ConsoleQuery(queryCtx Context, query string, options *DbOption
 	if err != nil {
 		return nil, err
 	}
-	result, err := client.GetFields(ctx, query, mapDbOptions(options))
+	result, err := client.GetFields(ctx, query, options.toQueryOptions())
 	return mapDbResponse(result), err
 }
 
@@ -116,7 +116,7 @@ func (s *Service) ChartQuery(queryCtx Context, chartType ChartType) (*Chart, err
 }
 
 func (s *Service) mapContext(queryCtx Context) (database.Context, error) {
-	con := database.Connection{Config: mapDbConfig(queryCtx.Connection.Db)}
+	con := database.Connection{Config: queryCtx.Connection.Db.toDatabaseConfig()}
 	ctx := database.Context{Connection: &con, Application: s.GetApplicationName(queryCtx.Session)}
 	if queryCtx.Connection.VaultId != nil {
 		cred, errCred := s.vaultService.GetDecrypted(*queryCtx.Connection.VaultId)

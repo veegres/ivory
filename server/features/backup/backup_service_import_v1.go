@@ -20,7 +20,7 @@ func (s *Service) importV1(data []byte) error {
 	var err error
 	// Save clusters
 	for i, bc := range bkp.Clusters {
-		clusterModel := backupToClusterV1(bc)
+		clusterModel := bc.toCluster()
 		_, errMut := s.clusterService.Update(clusterModel)
 		if errMut != nil {
 			err = errors.Join(err, fmt.Errorf("%s[%d]: %w", "cluster", i, errMut))
@@ -28,7 +28,7 @@ func (s *Service) importV1(data []byte) error {
 	}
 	// Save queries
 	for i, bq := range bkp.Queries {
-		queryModel, errMap := backupToQueryV1(bq)
+		queryModel, errMap := bq.toQuery()
 		if errMap != nil {
 			continue
 		}
@@ -39,7 +39,7 @@ func (s *Service) importV1(data []byte) error {
 	}
 	// Save permissions
 	for i, bp := range bkp.Permissions {
-		permModel := backupToUserPermissionsV1(bp)
+		permModel := bp.toUserPermissions()
 		errMut := s.permissionService.UpdateUserPermissions(permModel.Username, permModel.Permissions)
 		if errMut != nil {
 			err = errors.Join(err, fmt.Errorf("%s[%d]: %w", "permission", i, errMut))

@@ -127,7 +127,7 @@ func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) 
 
 	keeperNodeMap := make(map[string]node.KeeperOneResponse)
 	for _, response := range responses {
-		if hasLeaderEntry(response.Response) {
+		if s.hasLeaderEntry(response.Response) {
 			s.addKeeperResponsesToMap(keeperNodeMap, response.Response)
 		}
 	}
@@ -149,14 +149,14 @@ func (s *Service) getKeeperListByLeader(configs []NodeConfig, cluster Options) (
 			requestErrs = errors.Join(requestErrs, errors.New(response.Error))
 			continue
 		}
-		if hasLeaderEntry(response.Response) {
+		if s.hasLeaderEntry(response.Response) {
 			return response.Response, nil
 		}
 	}
 	return nil, errors.Join(requestErrs, ErrNoLeaderFound)
 }
 
-func hasLeaderEntry(responses []node.KeeperOneResponse) bool {
+func (s *Service) hasLeaderEntry(responses []node.KeeperOneResponse) bool {
 	for _, r := range responses {
 		if r.Role == node.KeeperRoleLeader {
 			return true

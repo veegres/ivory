@@ -2,7 +2,6 @@ package cluster
 
 import (
 	"errors"
-	"fmt"
 	"ivory/core/utils"
 	"ivory/features/node"
 	"ivory/plugins/keeper"
@@ -10,27 +9,6 @@ import (
 	"strings"
 	"testing"
 )
-
-func TestService_getNodeKey(t *testing.T) {
-	s := &Service{}
-	host := "localhost"
-	port := 8008
-
-	t.Run("should return host and port when port is not nil", func(t *testing.T) {
-		key := s.getNodeKey(host, &port)
-		expected := fmt.Sprintf("%s:%d", host, port)
-		if key != expected {
-			t.Errorf("Expected key '%s', got '%s'", expected, key)
-		}
-	})
-
-	t.Run("should return only host when port is nil", func(t *testing.T) {
-		key := s.getNodeKey(host, nil)
-		if key != host {
-			t.Errorf("Expected key '%s', got '%s'", host, key)
-		}
-	})
-}
 
 func TestService_Overview_Mapping(t *testing.T) {
 	s := &Service{}

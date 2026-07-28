@@ -175,7 +175,7 @@ func mapSystemRequest(plugin DbPlugin, req database.SystemRequest) Request {
 	}
 }
 
-func mapDbConfig(c DbConfig) database.Config {
+func (c DbConfig) toDatabaseConfig() database.Config {
 	return database.Config{
 		Plugin: c.Plugin,
 		Host:   c.Host,
@@ -185,7 +185,7 @@ func mapDbConfig(c DbConfig) database.Config {
 	}
 }
 
-func mapDbOptions(o *DbOptions) *database.QueryOptions {
+func (o *DbOptions) toQueryOptions() *database.QueryOptions {
 	if o == nil {
 		return nil
 	}

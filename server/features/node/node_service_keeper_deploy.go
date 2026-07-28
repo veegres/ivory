@@ -211,7 +211,7 @@ func (s *Service) getPlanValues(r KeeperDeployPlanRequest, n KeeperDeployPlanNod
 // stripped because they are resolved from the vault at execution time,
 // effective field values win over raw request-supplied ones and per-node
 // port values win over the base.
-func buildNodeValues(name string, requestValues map[string]string, planValues map[string]string, pn KeeperDeployPlanNode) map[string]string {
+func (s *Service) buildNodeValues(name string, requestValues map[string]string, planValues map[string]string, pn KeeperDeployPlanNode) map[string]string {
 	values := make(map[string]string, len(requestValues)+len(planValues)+len(pn.Ports)+3)
 	maps.Copy(values, requestValues)
 	maps.Copy(values, planValues)
@@ -233,7 +233,7 @@ func (s *Service) KeeperDeployUp(r KeeperDeployUpRequest) ([]string, error) {
 	if r.Node.Host == "" {
 		return nil, errors.New("host not provided for node")
 	}
-	values := buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
+	values := s.buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
 	return s.PlatformContainerUp(PlatformUpRequest{
 		Name:        r.Cluster,
 		Image:       r.Image,
@@ -251,7 +251,7 @@ func (s *Service) KeeperDeployUp(r KeeperDeployUpRequest) ([]string, error) {
 // rather than an error, since the deployment itself already succeeded.
 func (s *Service) KeeperPostDeploy(r KeeperPostDeployRequest) []string {
 	logs := make([]string, 0, len(r.PostDeploy))
-	values := buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
+	values := s.buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
 	for _, command := range r.PostDeploy {
 		res, err := s.PlatformContainerExec(PlatformExecRequest{
 			Name:       r.Node.Host,

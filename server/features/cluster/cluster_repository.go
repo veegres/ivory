@@ -2,8 +2,6 @@ package cluster
 
 import (
 	"ivory/clients/storage"
-	"ivory/features/node"
-	"ivory/features/query"
 )
 
 type Repository struct {
@@ -18,16 +16,6 @@ func NewRepository(bucket *storage.DbBucket[Response]) *Repository {
 
 func (r *Repository) List() ([]Response, error) {
 	return r.bucket.GetList(nil, nil)
-}
-
-// SearchCriteria narrows List down to matching clusters. A nil field is
-// skipped; Names is nil-vs-empty sensitive so a resolved-but-empty tag
-// search (no cluster has the requested tags) still returns no results
-// instead of falling back to an unfiltered list.
-type SearchCriteria struct {
-	Names    []string
-	Keeper   *node.KeeperPlugin
-	Database *query.DbPlugin
 }
 
 func (r *Repository) Search(criteria SearchCriteria) ([]Response, error) {

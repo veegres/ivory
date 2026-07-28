@@ -542,6 +542,7 @@ func TestService_getInterpolatedStringDeployKeys(t *testing.T) {
 }
 
 func TestBuildNodeValues(t *testing.T) {
+	s := &Service{}
 	pn := KeeperDeployPlanNode{
 		Host:       "db1",
 		KeeperPort: 8008,
@@ -550,7 +551,7 @@ func TestBuildNodeValues(t *testing.T) {
 	}
 
 	t.Run("strips credentials and fills built-ins", func(t *testing.T) {
-		got := buildNodeValues("main", map[string]string{string(keeper.VarDbUser): "postgres", string(keeper.VarDbPass): "secret", "{{dcs}}": "etcd1:2379"}, map[string]string{"{{dcs}}": "etcd1:2379"}, pn)
+		got := s.buildNodeValues("main", map[string]string{string(keeper.VarDbUser): "postgres", string(keeper.VarDbPass): "secret", "{{dcs}}": "etcd1:2379"}, map[string]string{"{{dcs}}": "etcd1:2379"}, pn)
 		want := map[string]string{
 			string(keeper.VarCluster):    "main",
 			string(keeper.VarKeeperPort): "8008",
@@ -564,7 +565,7 @@ func TestBuildNodeValues(t *testing.T) {
 	})
 
 	t.Run("plan values win over raw request values", func(t *testing.T) {
-		got := buildNodeValues("main", map[string]string{"{{dcs}}": "stale"}, map[string]string{"{{dcs}}": "fresh"}, pn)
+		got := s.buildNodeValues("main", map[string]string{"{{dcs}}": "stale"}, map[string]string{"{{dcs}}": "fresh"}, pn)
 		if got["{{dcs}}"] != "fresh" {
 			t.Errorf("{{dcs}} = %q, want the plan value to win", got["{{dcs}}"])
 		}

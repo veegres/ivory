@@ -236,17 +236,3 @@ func (s *Service) planDeploy(name string, options Options, singleHost bool, imag
 		Nodes:      planNodes,
 	})
 }
-
-func mapPlanNodeConfigs(planNodes []node.KeeperDeployPlanNode) []NodeConfig {
-	nodes := make([]NodeConfig, 0, len(planNodes))
-	for _, pn := range planNodes {
-		sshPort, keeperPort, dbPort := pn.SshPort, pn.KeeperPort, pn.DbPort
-		nodes = append(nodes, NodeConfig{
-			Host:       pn.Host,
-			SshPort:    &sshPort,
-			KeeperPort: &keeperPort,
-			DbPort:     &dbPort,
-		})
-	}
-	return nodes
-}

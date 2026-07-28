@@ -1,21 +1,7 @@
 package cluster
 
-import (
-	"ivory/features/node"
-	"ivory/features/query"
-)
-
 func (s *Service) List() ([]Response, error) {
 	return s.clusterRepository.List()
-}
-
-// SearchRequest narrows Search down to matching clusters. Tags is resolved
-// to cluster names before hitting the repository; Keeper and Database are
-// passed through as-is. A nil/empty field is skipped (no restriction).
-type SearchRequest struct {
-	Tags     []string
-	Keeper   *node.KeeperPlugin
-	Database *query.DbPlugin
 }
 
 func (s *Service) Search(request SearchRequest) ([]Response, error) {

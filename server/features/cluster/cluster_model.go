@@ -100,6 +100,25 @@ type CommonConfig struct {
 	DbPass  string `json:"dbPass"`
 }
 
+// SearchRequest narrows Search down to matching clusters. Tags is resolved
+// to cluster names before hitting the repository; Keeper and Database are
+// passed through as-is. A nil/empty field is skipped (no restriction).
+type SearchRequest struct {
+	Tags     []string
+	Keeper   *node.KeeperPlugin
+	Database *query.DbPlugin
+}
+
+// SearchCriteria narrows List down to matching clusters. A nil field is
+// skipped; Names is nil-vs-empty sensitive so a resolved-but-empty tag
+// search (no cluster has the requested tags) still returns no results
+// instead of falling back to an unfiltered list.
+type SearchCriteria struct {
+	Names    []string
+	Keeper   *node.KeeperPlugin
+	Database *query.DbPlugin
+}
+
 // SPECIFIC (SERVER)
 
 func mapKeeperResponse(r node.KeeperOneResponse) NodeConfig {
@@ -122,6 +141,20 @@ func mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeC
 	nodes := make([]NodeConfig, 0, len(keeperNodes))
 	for _, item := range keeperNodes {
 		nodes = append(nodes, mapKeeperResponse(item))
+	}
+	return nodes
+}
+
+func mapPlanNodeConfigs(planNodes []node.KeeperDeployPlanNode) []NodeConfig {
+	nodes := make([]NodeConfig, 0, len(planNodes))
+	for _, pn := range planNodes {
+		sshPort, keeperPort, dbPort := pn.SshPort, pn.KeeperPort, pn.DbPort
+		nodes = append(nodes, NodeConfig{
+			Host:       pn.Host,
+			SshPort:    &sshPort,
+			KeeperPort: &keeperPort,
+			DbPort:     &dbPort,
+		})
 	}
 	return nodes
 }
