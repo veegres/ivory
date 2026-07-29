@@ -38,7 +38,7 @@ Focus on **unit tests for business logic**:
 
 ### Testing Tools
 
-- **Vitest** - Test framework with fake timers and mocking
+- **Rstest** - Test framework with fake timers and mocking
 - **React Testing Library** - For testing hooks with `renderHook`
 - **@testing-library/jest-dom** - For DOM assertions like `toBeInTheDocument`
 
@@ -49,4 +49,4 @@ This app is built with:
 - [React](https://reactjs.org) - A JavaScript library for building user interfaces
 - [React Query](https://react-query.tanstack.com) - Provide data global state for requests with fetch, cache and update data
 - [MUI](https://mui.com) - The React Material Design library
-- [Vitest](https://vitest.dev) - Testing framework
+- [Rstest](https://rstest.rs) - Testing framework

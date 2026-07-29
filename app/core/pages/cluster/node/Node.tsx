@@ -21,7 +21,7 @@ export function Node() {
     const activeNodeName = useStore(s => s.activeNode[activeClusterName ?? ""])
 
     const overview = useRouterClusterOverview(activeClusterName, false)
-    const updateCluster = useRouterClusterUpdate(activeCluster?.name!)
+    const updateCluster = useRouterClusterUpdate(activeClusterName!)
 
     return (
         <PageMainBox withPadding visible={!!activeCluster}>

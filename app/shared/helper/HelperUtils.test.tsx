@@ -1,8 +1,8 @@
 import {createTheme} from "@mui/material"
+import {describe, expect, it} from "@rstest/core"
 import {AxiosError} from "axios"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
-import {describe, expect, it} from "vitest"
 
 import {NodeConfig} from "../../features/cluster/api/ClusterType"
 import {DeployFieldsResponse, InterpolationVar} from "../../features/node/api/NodeType"

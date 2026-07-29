@@ -1,10 +1,10 @@
-// This file is used to set up the testing environment for vitest.
+// This file is used to set up the testing environment for rstest.
 // It is a good place to add polyfills, mocks, and other setup code.
 
 import "@testing-library/jest-dom"
 
+import {afterEach} from "@rstest/core"
 import {cleanup} from "@testing-library/react"
-import {afterEach} from "vitest"
 
 import {MutationObserverMock, ResizeObserverMock, setupLocalStorageMock, setupMatchMediaMock} from "./TestMocks"
 

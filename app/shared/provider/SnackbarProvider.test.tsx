@@ -1,5 +1,5 @@
+import {describe, expect, it} from "@rstest/core"
 import {render, screen, waitFor} from "@testing-library/react"
-import {describe, expect, it} from "vitest"
 
 import {SnackbarProvide, useSnackbar} from "./SnackbarProvider"
 

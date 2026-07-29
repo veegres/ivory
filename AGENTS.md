@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Ivory is split into a Go backend in `server/` and a Vite/React frontend in `app/`. Backend packages are organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `core/` for wiring. Frontend source lives in `app/`, with `features/` for domain logic, `core/` for main pages and widgets, `shared/` for shared components, hooks, and providers, and `tools/` for standalone utilities (e.g. `pg_compacttable`). Tests live in `server/**/_test.go`, and on the frontend are colocated with the source they test (`[filename].test.[ext]`). Docs and screenshots are under `.doc/`; local Docker setups are under `.docker/`.
+Ivory is split into a Go backend in `server/` and a Rsbuild/React frontend in `app/`. Backend packages are organized by concern: `features/` for business logic, `clients/` for integrations, `storage/` for persistence, and `core/` for wiring. Frontend source lives in `app/`, with `features/` for domain logic, `core/` for main pages and widgets, `shared/` for shared components, hooks, and providers, and `tools/` for standalone utilities (e.g. `pg_compacttable`). Tests live in `server/**/_test.go`, and on the frontend are colocated with the source they test (`[filename].test.[ext]`). Docs and screenshots are under `.doc/`; local Docker setups are under `.docker/`.
 
 **Mandatory Check**: When modifying frontend code, always run `cd app && npm run lint` and `cd app && npm run build` to ensure no linting or TypeScript compilation errors were introduced.
 
@@ -13,14 +13,14 @@ Backend:
 
 Frontend:
 - `cd app && npm install` installs dependencies.
-- `cd app && npm start` starts the Vite dev server.
+- `cd app && npm start` starts the Rsbuild dev server.
 - `cd app && npm run build` runs TypeScript compile plus production build.
-- `cd app && npm run lint` runs ESLint over `core/`, `features/`, `shared/` and `tools/`.
-- `cd app && npm test` starts Vitest; `npm run test:coverage` runs coverage.
+- `cd app && npm run lint` runs Rslint over `core/`, `features/`, `shared/` and `tools/`.
+- `cd app && npm test` runs the Rstest suite once.
 
 Use `.docker/ivory-dev/` for the stack.
 
-**Keep the lint script's directory list in sync**: `lint`/`lint:fix` in `app/package.json` explicitly list which top-level directories ESLint scans. Any new top-level frontend directory (like `tools/`) must be added to both scripts, or its files are silently unlinted — CI's `npm run lint` step will report success even with real errors (e.g. unsorted imports) inside the missing directory.
+**Keep the lint script's directory list in sync**: `lint`/`lint:fix` in `app/package.json` explicitly list which top-level directories Rslint scans. Any new top-level frontend directory (like `tools/`) must be added to both scripts, or its files are silently unlinted — CI's `npm run lint` step will report success even with real errors (e.g. unsorted imports) inside the missing directory.
 
 ## Architectural Patterns
 - **Vertical Consolidation**: Prefer grouping all management logic for a single entity into one feature. For example, the `node` feature manages both Platform access (metrics, deployment operations) and the Database/Keeper (HA, config).
@@ -97,7 +97,7 @@ Backend mirrors this: `server/features/node/node_model.go` defines `KeeperPlugin
 ## Testing Guidelines
 - **Zero Deletion Policy**: NEVER delete existing tests during refactoring or type synchronization. If types change, UPDATE the tests to match the new structures. A "refactor" that results in fewer tests is a failure.
 - **Backend Tests**: Backend tests use Go's standard `testing` package with table-driven tests and `t.Run()` subtests. Test repository methods (storage adapters) and service logic only. Routers are thin request/response glue and are not tested; the http engine's middlewares (auth, logging, etc.) are the exception and can be tested directly. A test file's name must exactly mirror the source file it tests (e.g. `cluster_repository.go` → `cluster_repository_test.go`), never a custom descriptive name (not `cluster_repository_search_test.go`) — if a file already has a `_test.go` counterpart, add to it instead of creating a new one.
-- **Frontend Tests**: Frontend tests use Vitest and Testing Library. Tests are colocated with the source files they test, following the pattern `[filename].test.[ext]`. No coverage threshold is defined. Test all unit functions and hooks, and give `shared/` (helpers, hooks, providers) thorough coverage since it's foundational, reused logic. Providers (`shared/provider/*`, e.g. `StoreProvider`, `AppProvider`) are tested despite being React components, because they carry state/context logic rather than presentation. **Do not write tests for presentational React components** (pages, widgets, `shared/component/*`) — skip `*.test.tsx` component tests unless explicitly requested.
+- **Frontend Tests**: Frontend tests use Rstest and Testing Library. Tests are colocated with the source files they test, following the pattern `[filename].test.[ext]`. No coverage threshold is defined. Test all unit functions and hooks, and give `shared/` (helpers, hooks, providers) thorough coverage since it's foundational, reused logic. Providers (`shared/provider/*`, e.g. `StoreProvider`, `AppProvider`) are tested despite being React components, because they carry state/context logic rather than presentation. **Do not write tests for presentational React components** (pages, widgets, `shared/component/*`) — skip `*.test.tsx` component tests unless explicitly requested.
 
 ## Commit & Pull Request Guidelines
 Recent commits use short, imperative summaries such as `add tooltips for refresh buttons` and `fix problem with different column widths in list`. Keep commit subjects concise and specific; add a body when the change needs context. Pull requests should describe behavior changes clearly, link relevant issues, and include screenshots or GIFs for UI work. Before opening a PR, run the relevant backend tests, frontend lint, and affected frontend tests.

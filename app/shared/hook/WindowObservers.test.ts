@@ -1,5 +1,5 @@
+import {describe, expect, it, rs} from "@rstest/core"
 import {renderHook} from "@testing-library/react"
-import {describe, expect, it, vi} from "vitest"
 
 import {MutationObserverMock, ResizeObserverMock} from "../test/TestMocks"
 import {useWindowChildCount, useWindowScrolled, useWindowSize} from "./WindowObservers"
@@ -58,7 +58,7 @@ describe("useWindowSize", () => {
     })
 
     it("should cleanup observer on unmount", () => {
-        const disconnectSpy = vi.spyOn(ResizeObserverMock.prototype, "disconnect")
+        const disconnectSpy = rs.spyOn(ResizeObserverMock.prototype, "disconnect")
 
         const element = document.createElement("div")
         const {unmount} = renderHook(() => useWindowSize(element))
@@ -119,7 +119,7 @@ describe("useWindowChildCount", () => {
     })
 
     it("should cleanup observer on unmount", () => {
-        const disconnectSpy = vi.spyOn(MutationObserverMock.prototype, "disconnect")
+        const disconnectSpy = rs.spyOn(MutationObserverMock.prototype, "disconnect")
 
         const element = document.createElement("div")
         const {unmount} = renderHook(() => useWindowChildCount(element))

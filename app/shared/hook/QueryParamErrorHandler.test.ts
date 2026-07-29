@@ -1,16 +1,16 @@
+import {afterEach, beforeEach, describe, expect, it, rs} from "@rstest/core"
 import {act, renderHook, screen} from "@testing-library/react"
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest"
 
 import {SnackbarProvide} from "../provider/SnackbarProvider"
 import {useQueryParamErrorHandler} from "./QueryParamErrorHandler"
 
 describe("useQueryParamErrorHandler", () => {
     beforeEach(() => {
-        vi.useFakeTimers()
+        rs.useFakeTimers()
     })
 
     afterEach(() => {
-        vi.useRealTimers()
+        rs.useRealTimers()
         window.history.pushState({}, "", "/")
     })
 
@@ -19,7 +19,7 @@ describe("useQueryParamErrorHandler", () => {
         renderHook(() => useQueryParamErrorHandler(), {wrapper: SnackbarProvide})
 
         await act(async () => {
-            await vi.advanceTimersByTimeAsync(200)
+            await rs.advanceTimersByTimeAsync(200)
         })
 
         expect(screen.queryByRole("alert")).not.toBeInTheDocument()
@@ -38,7 +38,7 @@ describe("useQueryParamErrorHandler", () => {
         renderHook(() => useQueryParamErrorHandler(), {wrapper: SnackbarProvide})
 
         await act(async () => {
-            await vi.advanceTimersByTimeAsync(100)
+            await rs.advanceTimersByTimeAsync(100)
         })
 
         expect(screen.getByText("EXTERNAL - ERROR, oops")).toBeInTheDocument()

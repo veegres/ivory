@@ -96,13 +96,14 @@ export function PgCompactTable(props: Props) {
                 ) : (
                     <PgCompactTableJob list={jobs.data} cluster={cluster.name} refetchList={jobs.refetch}/>
                 )
-            case ListBlock.QUERY:
+            case ListBlock.QUERY: {
                 const queryCon = getQueryConnection(cluster, db.host, db.port)
                 return (
                     <ManageAccess feature={Feature.ViewQueryCrudList} error={true}>
                         <Query type={QueryType.BLOAT} connection={{...queryCon, db}}/>
                     </ManageAccess>
                 )
+            }
         }
     }
 

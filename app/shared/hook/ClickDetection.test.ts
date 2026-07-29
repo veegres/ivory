@@ -1,6 +1,6 @@
+import {describe, expect, it} from "@rstest/core"
 import {fireEvent, renderHook} from "@testing-library/react"
 import {createRef} from "react"
-import {describe, expect, it} from "vitest"
 
 import {useClickDetection} from "./ClickDetection"
 

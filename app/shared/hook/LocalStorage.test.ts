@@ -1,12 +1,12 @@
+import {afterEach, beforeEach, describe, expect, it, rs} from "@rstest/core"
 import {act, renderHook, waitFor} from "@testing-library/react"
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest"
 
 import {useLocalStorageState} from "./LocalStorage"
 
 describe("useLocalStorageState", () => {
     beforeEach(() => {
         localStorage.clear()
-        vi.clearAllMocks()
+        rs.clearAllMocks()
     })
 
     afterEach(() => {

@@ -1,31 +1,29 @@
-import {beforeEach, describe, expect, it, vi} from "vitest"
+import {beforeEach, describe, expect, it, rs} from "@rstest/core"
 
 import {Cluster} from "../../features/cluster/api/ClusterType"
 import {KeeperPlugin, NodeTabType} from "../../features/node/api/NodeType"
 import {Type as QueryType} from "../../features/query/api/QueryType"
 import {getDomain} from "../helper/HelperUtils"
 import {createMockCluster, createMockNode} from "../test/TestMocks"
+import * as actualAppProvider from "./AppProvider" with {rstest: "importActual"}
 import {MainQueryClient} from "./AppProvider"
 import {useStore, useStoreAction} from "./StoreProvider"
 
 // Mock MainQueryClient from AppProvider
-vi.mock("./AppProvider", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("./AppProvider")>()
-    return {
-        ...actual,
-        MainQueryClient: {
-            clear: vi.fn(),
-            setDefaultOptions: vi.fn(),
-        },
-    }
-})
+rs.mock("./AppProvider", () => ({
+    ...actualAppProvider,
+    MainQueryClient: {
+        clear: rs.fn(),
+        setDefaultOptions: rs.fn(),
+    },
+}))
 
 describe("StoreProvider", () => {
     beforeEach(() => {
         // Reset store to initial state before each test
         useStore.setState(useStore.getInitialState())
         // Clear all mocks
-        vi.clearAllMocks()
+        rs.clearAllMocks()
     })
 
     describe("Initial state", () => {

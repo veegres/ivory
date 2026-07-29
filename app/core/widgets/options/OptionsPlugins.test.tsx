@@ -1,5 +1,5 @@
+import {describe, expect, it, rs} from "@rstest/core"
 import {fireEvent, render, screen} from "@testing-library/react"
-import {describe, expect, it, vi} from "vitest"
 
 import {Plugins} from "../../../features/cluster/api/ClusterType"
 import {KeeperPlugin} from "../../../features/node/api/NodeType"
@@ -22,7 +22,7 @@ describe("OptionsPlugins", () => {
     })
 
     it("should update the keeper plugin and keep the database plugin", () => {
-        const onUpdate = vi.fn()
+        const onUpdate = rs.fn()
         render(<OptionsPlugins plugins={PLUGINS} onUpdate={onUpdate}/>)
 
         openSelect("Keeper Plugin")
@@ -32,7 +32,7 @@ describe("OptionsPlugins", () => {
     })
 
     it("should update the database plugin and keep the keeper plugin", () => {
-        const onUpdate = vi.fn()
+        const onUpdate = rs.fn()
         render(<OptionsPlugins plugins={{keeper: KeeperPlugin.NATIVE_ETCD, database: DbPlugin.POSTGRES}} onUpdate={onUpdate}/>)
 
         openSelect("Database Plugin")

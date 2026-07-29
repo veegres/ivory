@@ -7,7 +7,7 @@
     "allowJs": false,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "types": ["@testing-library/jest-dom"],
 
     /* Node mode */
     "moduleResolution": "bundler",
@@ -23,5 +23,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["core", "demo", "features", "shared", "vite-env.d.ts", "vite.config.mts", "eslint.config.mjs"]
+  "include": ["core", "demo", "features", "shared", "rsbuild-env.d.ts", "rsbuild.config.ts", "rstest.config.mts", "rslint.config.mjs"]
 }

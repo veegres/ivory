@@ -1,15 +1,15 @@
+import {describe, expect, it, rs} from "@rstest/core"
 import {act, fireEvent, renderHook} from "@testing-library/react"
-import {describe, expect, it, vi} from "vitest"
 
 import {useDragger} from "./Dragger"
 
 function mouseDownEvent(pageX: number) {
-    return {preventDefault: vi.fn(), stopPropagation: vi.fn(), pageX} as unknown as React.MouseEvent
+    return {preventDefault: rs.fn(), stopPropagation: rs.fn(), pageX} as unknown as React.MouseEvent
 }
 
 describe("useDragger", () => {
     it("should not call onMove without a preceding mouse down", () => {
-        const onMove = vi.fn()
+        const onMove = rs.fn()
         renderHook(() => useDragger(10, onMove))
 
         fireEvent.mouseMove(document, {clientX: 200})
@@ -18,7 +18,7 @@ describe("useDragger", () => {
     })
 
     it("should call onMove with the new width once dragging exceeds minSize", () => {
-        const onMove = vi.fn()
+        const onMove = rs.fn()
         const {result} = renderHook(() => useDragger(10, onMove))
 
         act(() => result.current.onMouseDown(mouseDownEvent(100), 2, 50))
@@ -28,7 +28,7 @@ describe("useDragger", () => {
     })
 
     it("should not call onMove when resulting width does not exceed minSize", () => {
-        const onMove = vi.fn()
+        const onMove = rs.fn()
         const {result} = renderHook(() => useDragger(100, onMove))
 
         act(() => result.current.onMouseDown(mouseDownEvent(100), 0, 50))
@@ -38,7 +38,7 @@ describe("useDragger", () => {
     })
 
     it("should stop tracking movement after mouse up", () => {
-        const onMove = vi.fn()
+        const onMove = rs.fn()
         const {result} = renderHook(() => useDragger(10, onMove))
 
         act(() => result.current.onMouseDown(mouseDownEvent(100), 0, 50))
@@ -49,7 +49,7 @@ describe("useDragger", () => {
     })
 
     it("should prevent default and stop propagation on mouse down", () => {
-        const onMove = vi.fn()
+        const onMove = rs.fn()
         const {result} = renderHook(() => useDragger(10, onMove))
         const event = mouseDownEvent(100)
 
@@ -60,7 +60,7 @@ describe("useDragger", () => {
     })
 
     it("should stop listening for movement after unmount", () => {
-        const onMove = vi.fn()
+        const onMove = rs.fn()
         const {result, unmount} = renderHook(() => useDragger(10, onMove))
 
         act(() => result.current.onMouseDown(mouseDownEvent(100), 0, 50))

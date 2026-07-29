@@ -1,4 +1,4 @@
-import {describe, expect, it} from "vitest"
+import {describe, expect, it} from "@rstest/core"
 
 import {QueryApi} from "./QueryRouter"
 import {DbPlugin, Type} from "./QueryType"

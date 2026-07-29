@@ -1,4 +1,4 @@
-import {vi} from "vitest"
+import {rs} from "@rstest/core"
 
 import type {Cluster, Node} from "../../features/cluster/api/ClusterType"
 import {KeeperPlugin} from "../../features/node/api/NodeType"
@@ -74,15 +74,15 @@ export class MutationObserverMock {
 export function setupMatchMediaMock() {
     Object.defineProperty(window, "matchMedia", {
         writable: true,
-        value: vi.fn().mockImplementation(query => ({
+        value: rs.fn().mockImplementation(query => ({
             matches: false,
             media: query,
             onchange: null,
-            addListener: vi.fn(), // deprecated
-            removeListener: vi.fn(), // deprecated
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn(),
-            dispatchEvent: vi.fn(),
+            addListener: rs.fn(), // deprecated
+            removeListener: rs.fn(), // deprecated
+            addEventListener: rs.fn(),
+            removeEventListener: rs.fn(),
+            dispatchEvent: rs.fn(),
         })),
     })
 }

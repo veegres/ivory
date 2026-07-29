@@ -2,16 +2,17 @@
   "name": "ivory",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "engines": {
     "npm": ">=10.9.0",
     "node": ">=22.12.0"
   },
   "scripts": {
-    "start": "vite",
-    "build": "tsc && vite build",
-    "lint": "eslint core features shared tools",
-    "lint:fix": "eslint --fix core features shared tools",
-    "test": "vitest run"
+    "start": "rsbuild dev",
+    "build": "tsc && rsbuild build",
+    "lint": "rslint core features shared tools",
+    "lint:fix": "rslint --fix core features shared tools",
+    "test": "rstest run"
   },
   "dependencies": {
     "@codemirror/autocomplete": "6.20.3",
@@ -47,9 +48,10 @@
     "zustand": "5.0.14"
   },
   "devDependencies": {
-    "@eslint/compat": "2.1.0",
-    "@eslint/eslintrc": "3.3.6",
-    "@eslint/js": "9.39.5",
+    "@rsbuild/core": "2.1.9",
+    "@rsbuild/plugin-react": "2.1.0",
+    "@rslint/core": "0.7.2",
+    "@rstest/core": "0.11.5",
     "@tanstack/eslint-plugin-query": "5.101.4",
     "@testing-library/jest-dom": "7.0.0",
     "@testing-library/react": "16.3.2",
@@ -58,22 +60,10 @@
     "@types/node": "26.1.2",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@typescript-eslint/eslint-plugin": "8.65.0",
-    "@typescript-eslint/parser": "8.65.0",
-    "@typescript-eslint/typescript-estree": "8.65.0",
-    "@vitejs/plugin-react": "6.0.4",
-    "@vitest/coverage-v8": "4.1.10",
-    "eslint": "9.39.5",
-    "eslint-plugin-react": "7.37.5",
-    "eslint-plugin-react-hooks": "7.1.1",
-    "eslint-plugin-react-refresh": "0.5.3",
     "eslint-plugin-simple-import-sort": "14.0.0",
+    "globals": "14.0.0",
     "jsdom": "30.0.1",
-    "typescript": "6.0.3",
-    "typescript-eslint": "8.65.0",
-    "vite": "8.1.5",
-    "vite-plugin-svgr": "5.2.0",
-    "vitest": "4.1.10"
+    "typescript": "7.0.2"
   },
   "browserslist": {
     "production": [

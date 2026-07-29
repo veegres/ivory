@@ -1,41 +1,41 @@
+import {beforeEach, describe, expect, it, rs} from "@rstest/core"
+import * as actualReactQuery from "@tanstack/react-query" with {rstest: "importActual"}
 import {render, screen, waitFor} from "@testing-library/react"
 import {useState} from "react"
-import {beforeEach, describe, expect, it, vi} from "vitest"
 
 import {AppProvider, Mode, useSettings} from "./AppProvider"
 
 // Mock the localStorage hook
-vi.mock("../hook/LocalStorage", () => ({
+rs.mock("../hook/LocalStorage", () => ({
     useLocalStorageState: (_key: string, initialValue: any) => {
         return useState(initialValue)
     },
 }))
 
 // Mock QueryClient from tanstack
-vi.mock("@tanstack/react-query", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("@tanstack/react-query")>()
+rs.mock("@tanstack/react-query", () => {
     const mockQueryClient = {
-        setDefaultOptions: vi.fn(),
-        clear: vi.fn(),
-        mount: vi.fn(),
-        unmount: vi.fn(),
-        isFetching: vi.fn(() => 0),
-        isMutating: vi.fn(() => 0),
-        getQueryData: vi.fn(),
-        setQueryData: vi.fn(),
-        getQueriesData: vi.fn(),
-        setQueriesData: vi.fn(),
-        invalidateQueries: vi.fn(),
-        refetchQueries: vi.fn(),
-        cancelQueries: vi.fn(),
-        removeQueries: vi.fn(),
-        resetQueries: vi.fn(),
-        getQueryCache: vi.fn(),
-        getMutationCache: vi.fn(),
+        setDefaultOptions: rs.fn(),
+        clear: rs.fn(),
+        mount: rs.fn(),
+        unmount: rs.fn(),
+        isFetching: rs.fn(() => 0),
+        isMutating: rs.fn(() => 0),
+        getQueryData: rs.fn(),
+        setQueryData: rs.fn(),
+        getQueriesData: rs.fn(),
+        setQueriesData: rs.fn(),
+        invalidateQueries: rs.fn(),
+        refetchQueries: rs.fn(),
+        cancelQueries: rs.fn(),
+        removeQueries: rs.fn(),
+        resetQueries: rs.fn(),
+        getQueryCache: rs.fn(),
+        getMutationCache: rs.fn(),
     }
     return {
-        ...actual,
-        QueryClient: vi.fn(function(this: any) {
+        ...actualReactQuery,
+        QueryClient: rs.fn(function(this: any) {
             return mockQueryClient
         }),
     }
@@ -60,7 +60,7 @@ function TestComponent() {
 
 describe("AppProvider", () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        rs.clearAllMocks()
     })
 
     it("should render children correctly", () => {
@@ -74,15 +74,15 @@ describe("AppProvider", () => {
     })
 
     it("should have correct initial state", async () => {
-        vi.mocked(window.matchMedia).mockImplementation(query => ({
+        rs.mocked(window.matchMedia).mockImplementation(query => ({
             matches: query.includes("dark"),
             media: query,
             onchange: null,
-            addListener: vi.fn(),
-            removeListener: vi.fn(),
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn(),
-            dispatchEvent: vi.fn(),
+            addListener: rs.fn(),
+            removeListener: rs.fn(),
+            addEventListener: rs.fn(),
+            removeEventListener: rs.fn(),
+            dispatchEvent: rs.fn(),
         }))
 
         render(
@@ -100,15 +100,15 @@ describe("AppProvider", () => {
 
 
     it("should use system preference when mode is SYSTEM and prefers light", async () => {
-        vi.mocked(window.matchMedia).mockImplementation(query => ({
+        rs.mocked(window.matchMedia).mockImplementation(query => ({
             matches: false,
             media: query,
             onchange: null,
-            addListener: vi.fn(),
-            removeListener: vi.fn(),
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn(),
-            dispatchEvent: vi.fn(),
+            addListener: rs.fn(),
+            removeListener: rs.fn(),
+            addEventListener: rs.fn(),
+            removeEventListener: rs.fn(),
+            dispatchEvent: rs.fn(),
         }))
 
         render(
@@ -125,15 +125,15 @@ describe("AppProvider", () => {
     })
 
     it("should use system preference when mode is SYSTEM and prefers dark", async () => {
-        vi.mocked(window.matchMedia).mockImplementation(query => ({
+        rs.mocked(window.matchMedia).mockImplementation(query => ({
             matches: true,
             media: query,
             onchange: null,
-            addListener: vi.fn(),
-            removeListener: vi.fn(),
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn(),
-            dispatchEvent: vi.fn(),
+            addListener: rs.fn(),
+            removeListener: rs.fn(),
+            addEventListener: rs.fn(),
+            removeEventListener: rs.fn(),
+            dispatchEvent: rs.fn(),
         }))
 
         render(

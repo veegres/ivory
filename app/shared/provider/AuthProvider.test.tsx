@@ -1,7 +1,7 @@
+import {describe, expect, it, rs} from "@rstest/core"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
 import {render, screen} from "@testing-library/react"
 import {AxiosError, AxiosHeaders, HttpStatusCode} from "axios"
-import {describe, expect, it, vi} from "vitest"
 
 import {api} from "../../features/Api"
 import {ManagementApi} from "../../features/management/api/ManagementRouter"
@@ -41,7 +41,7 @@ describe("AuthProvider", () => {
 
     it("refetches auth info on a 401 response", async () => {
         const queryClient = new QueryClient()
-        const refetchSpy = vi.spyOn(queryClient, "refetchQueries").mockResolvedValue()
+        const refetchSpy = rs.spyOn(queryClient, "refetchQueries").mockResolvedValue()
         renderWithClient(queryClient)
 
         await expect(getRejectedHandler()(makeError(HttpStatusCode.Unauthorized))).rejects.toBeTruthy()
@@ -51,7 +51,7 @@ describe("AuthProvider", () => {
 
     it("refetches auth info on a 403 response", async () => {
         const queryClient = new QueryClient()
-        const refetchSpy = vi.spyOn(queryClient, "refetchQueries").mockResolvedValue()
+        const refetchSpy = rs.spyOn(queryClient, "refetchQueries").mockResolvedValue()
         renderWithClient(queryClient)
 
         await expect(getRejectedHandler()(makeError(HttpStatusCode.Forbidden))).rejects.toBeTruthy()
@@ -61,7 +61,7 @@ describe("AuthProvider", () => {
 
     it("does not refetch on other errors", async () => {
         const queryClient = new QueryClient()
-        const refetchSpy = vi.spyOn(queryClient, "refetchQueries").mockResolvedValue()
+        const refetchSpy = rs.spyOn(queryClient, "refetchQueries").mockResolvedValue()
         renderWithClient(queryClient)
 
         await expect(getRejectedHandler()(makeError(HttpStatusCode.InternalServerError))).rejects.toBeTruthy()

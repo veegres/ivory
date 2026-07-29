@@ -1,5 +1,5 @@
+import {afterEach, beforeEach, describe, expect, it, rs} from "@rstest/core"
 import {act, renderHook, waitFor} from "@testing-library/react"
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest"
 
 import {EventStreamType, EventType} from "../../tools/pg_compacttable/api/job/PgCompactTableJobType"
 import {useStream} from "./Stream"
@@ -34,11 +34,11 @@ class MockEventSource {
 describe("useStream", () => {
     beforeEach(() => {
         MockEventSource.instances = []
-        vi.stubGlobal("EventSource", MockEventSource)
+        rs.stubGlobal("EventSource", MockEventSource)
     })
 
     afterEach(() => {
-        vi.unstubAllGlobals()
+        rs.unstubAllGlobals()
     })
 
     it("should not connect when disabled", () => {
