@@ -1,6 +1,7 @@
 package pg_compacttable
 
 import (
+	"ivory/core/config"
 	"ivory/core/service/job"
 	"net/http"
 	"strconv"
@@ -190,7 +191,7 @@ func (r *Router) GetJobStream(context *gin.Context) {
 	}
 
 	ctx := context.Request.Context()
-	session := context.GetString("session")
+	session := context.GetString(env.AuthContextKey.Session)
 	r.bloatService.Stream(jobUuid, job.SubscriberID(session), ctx.Done(), func(event job.Message) {
 		context.SSEvent(event.Type.String(), event.Message)
 		context.Writer.Flush()

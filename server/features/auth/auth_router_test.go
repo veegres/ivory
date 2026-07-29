@@ -5,6 +5,7 @@ import (
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
 	"ivory/clients/storage"
+	"ivory/core/config"
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
 	"ivory/features/permission"
@@ -96,7 +97,7 @@ func TestValidateMiddleware(t *testing.T) {
 		if context.IsAborted() {
 			t.Fatalf("expected middleware to not abort")
 		}
-		if username, _ := context.Get("username"); username != "admin" {
+		if username, _ := context.Get(env.AuthContextKey.Username); username != "admin" {
 			t.Fatalf("expected username 'admin', got %v", username)
 		}
 	})
@@ -110,7 +111,7 @@ func TestValidateMiddleware(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Fatalf("expected status 200, got %d", w.Code)
 		}
-		if username, _ := context.Get("username"); username != "admin" {
+		if username, _ := context.Get(env.AuthContextKey.Username); username != "admin" {
 			t.Fatalf("expected username 'admin', got %v", username)
 		}
 	})
@@ -127,7 +128,7 @@ func TestValidateMiddleware(t *testing.T) {
 		if context.IsAborted() {
 			t.Fatalf("expected middleware to not abort when a valid cookie token is available as fallback")
 		}
-		if username, _ := context.Get("username"); username != "admin" {
+		if username, _ := context.Get(env.AuthContextKey.Username); username != "admin" {
 			t.Fatalf("expected username 'admin', got %v", username)
 		}
 	})
@@ -169,13 +170,13 @@ func TestAuthContextMiddleware(t *testing.T) {
 		if context.IsAborted() {
 			t.Fatalf("expected middleware to never abort")
 		}
-		if authorised, _ := context.Get("authorised"); authorised != true {
+		if authorised, _ := context.Get(env.AuthContextKey.Authorised); authorised != true {
 			t.Fatalf("expected authorised true, got %v", authorised)
 		}
-		if username, _ := context.Get("username"); username != "admin" {
+		if username, _ := context.Get(env.AuthContextKey.Username); username != "admin" {
 			t.Fatalf("expected username 'admin', got %v", username)
 		}
-		if _, exists := context.Get("authError"); exists {
+		if _, exists := context.Get(env.AuthContextKey.Error); exists {
 			t.Fatalf("expected no authError to be set")
 		}
 	})
@@ -189,10 +190,10 @@ func TestAuthContextMiddleware(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Fatalf("expected status 200, got %d", w.Code)
 		}
-		if authorised, _ := context.Get("authorised"); authorised != true {
+		if authorised, _ := context.Get(env.AuthContextKey.Authorised); authorised != true {
 			t.Fatalf("expected authorised true, got %v", authorised)
 		}
-		if username, _ := context.Get("username"); username != "admin" {
+		if username, _ := context.Get(env.AuthContextKey.Username); username != "admin" {
 			t.Fatalf("expected username 'admin', got %v", username)
 		}
 	})
@@ -208,10 +209,10 @@ func TestAuthContextMiddleware(t *testing.T) {
 		if context.IsAborted() {
 			t.Fatalf("expected middleware to never abort")
 		}
-		if authorised, _ := context.Get("authorised"); authorised != false {
+		if authorised, _ := context.Get(env.AuthContextKey.Authorised); authorised != false {
 			t.Fatalf("expected authorised false, got %v", authorised)
 		}
-		authError, exists := context.Get("authError")
+		authError, exists := context.Get(env.AuthContextKey.Error)
 		if !exists || authError == "" {
 			t.Fatalf("expected a non-empty authError to be set")
 		}
@@ -225,7 +226,7 @@ func TestAuthContextMiddleware(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Fatalf("expected status 200 (never aborts), got %d", w.Code)
 		}
-		if authorised, _ := context.Get("authorised"); authorised != false {
+		if authorised, _ := context.Get(env.AuthContextKey.Authorised); authorised != false {
 			t.Fatalf("expected authorised false, got %v", authorised)
 		}
 	})
