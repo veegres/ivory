@@ -56,8 +56,8 @@ export function useRouterQueryRun(request: RunRequest) {
 }
 
 export function useRouterActivity(connection: Connection) {
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: QueryApi.activity.key(),
         queryFn: () => QueryApi.activity.fn(connection),
         retry: false, refetchOnWindowFocus: true,
@@ -73,8 +73,8 @@ export function useRouterQueryChart(request: ChartRequest, enabled: boolean = fa
 }
 
 export function useRouterQueryDatabase(connection: Connection, params: any, enabled: boolean = true) {
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.databases.key(connection), params.name],
         queryFn: () => QueryApi.databases.fn({connection, ...params}),
         retry: false, enabled, refetchOnWindowFocus: false,
@@ -82,8 +82,8 @@ export function useRouterQueryDatabase(connection: Connection, params: any, enab
 }
 
 export function useRouterQuerySchemas(connection: Connection, params: any, enabled: boolean = true) {
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.schemas.key(connection), params.name],
         queryFn: () => QueryApi.schemas.fn({connection, ...params}),
         retry: false, enabled, refetchOnWindowFocus: false,
@@ -91,8 +91,8 @@ export function useRouterQuerySchemas(connection: Connection, params: any, enabl
 }
 
 export function useRouterQueryTables(connection: Connection, params: any, enabled: boolean = true) {
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...QueryApi.tables.key(connection), params.name],
         queryFn: () => QueryApi.tables.fn({connection, ...params}),
         retry: false, enabled, refetchOnWindowFocus: false,

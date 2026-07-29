@@ -43,7 +43,12 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       ...pluginReact.configs.recommended.rules,
-      ...pluginReactHooks.configs.recommended.rules,
+      // eslint-plugin-react-hooks v7's "recommended" bundles the full React Compiler rule
+      // set (react-hooks/use-memo, set-state-in-effect, refs, etc.), which conflicts with
+      // this codebase's handle***/render*** hook convention. Keep only the two rules that
+      // were enabled pre-v7.
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
       ...pluginTanstackQuery.configs.recommended.rules,
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",

@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout & fetch repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Set up GO
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: '1.26'
           cache-dependency-path: server
@@ -22,7 +22,7 @@ jobs:
           go version
           make build
       - name: Upload Artifacts
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v7
         with:
           name: server
           path: server/build
@@ -31,9 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout & fetch repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Set up Node (yarn, npm)
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: '25'
       - name: Install & Build app
@@ -44,7 +44,7 @@ jobs:
           npm install
           npm run build
       - name: Upload Artifacts
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v7
         with:
           name: app
           path: app/build
@@ -55,14 +55,14 @@ jobs:
     environment: production
     steps:
       - name: Checkout & fetch repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Download Service Artifacts
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v8
         with:
           name: server
           path: server/build
       - name: Download Web Artifacts
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v8
         with:
           name: app
           path: app/build
@@ -73,24 +73,24 @@ jobs:
         run: ls -l
         working-directory: app/build
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
         with:
           platforms: linux/amd64,linux/arm64
       - name: Login to DockerHub Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
       - name: Build and push docker
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64

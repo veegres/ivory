@@ -38,8 +38,8 @@ export function useRouterNodePlatformList(request: PlatformVaultConnection) {
 
 export function useRouterNodeConfig(request?: KeeperOneRequest) {
     const req = request ?? {host: "", port: 1, plugin: KeeperPlugin.PATRONI_POSTGRES}
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.keeper.config.key(req.host, req.port),
         queryFn: () => NodeApi.keeper.config.fn(req),
         enabled: !!request,
@@ -132,8 +132,8 @@ export function useRouterNodePause(cluster: string) {
 //  <Refresher/> via queryClient.setQueryDefaults for this query key. Passing an
 //  explicit value (even undefined) here would always win over that default.
 export function useRouterNodeMetrics(c: PlatformVaultConnection) {
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.platform.metrics.key(c.host),
         queryFn: () => NodeApi.platform.metrics.fn(c),
         retry: false,
@@ -149,8 +149,8 @@ export function useRouterNodePlatformContainerMetrics(request: PlatformActionReq
 }
 
 export function useRouterNodePlatformProcesses(c: PlatformVaultConnection) {
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.platform.processes.key(c.host),
         queryFn: () => NodeApi.platform.processes.fn(c),
         retry: false,
@@ -158,8 +158,8 @@ export function useRouterNodePlatformProcesses(c: PlatformVaultConnection) {
 }
 
 export function useRouterNodePlatformInfo(c: PlatformVaultConnection) {
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: NodeApi.platform.info.key(c.host),
         queryFn: () => NodeApi.platform.info.fn(c),
         retry: false,
