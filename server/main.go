@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	appEnv := env.NewEnvironment()
+	appEnv := config.NewEnvironment()
 
 	httpClient := http.NewClient()
 	sshClient := ssh.NewClient()

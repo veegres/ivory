@@ -78,11 +78,11 @@ func (r *Router) ChangeSecret(context *gin.Context) {
 }
 
 func (r *Router) GetAppInfo(context *gin.Context) {
-	username := context.GetString(env.AuthContextKey.Username)
-	authEnabled := context.GetBool(env.AuthContextKey.Enabled)
-	authorised := context.GetBool(env.AuthContextKey.Authorised)
-	authType := context.GetString(env.AuthContextKey.Type)
-	authError := context.GetString(env.AuthContextKey.Error)
+	username := context.GetString(config.AuthContextKey.Username)
+	authEnabled := context.GetBool(config.AuthContextKey.Enabled)
+	authorised := context.GetBool(config.AuthContextKey.Authorised)
+	authType := context.GetString(config.AuthContextKey.Type)
+	authError := context.GetString(config.AuthContextKey.Error)
 	info := r.service.GetAppInfo(authorised, authEnabled, username, authType, authError)
 	context.JSON(http.StatusOK, gin.H{"response": info})
 }

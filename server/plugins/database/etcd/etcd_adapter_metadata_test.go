@@ -8,14 +8,14 @@ import (
 func TestSupportedFeaturesExclusions(t *testing.T) {
 	features := NewAdapter().SupportedFeatures()
 
-	supported := []env.Feature{env.ManageQueryDbConsole, env.ManageQueryDbTemplate}
+	supported := []config.Feature{config.ManageQueryDbConsole, config.ManageQueryDbTemplate}
 	for _, feature := range supported {
 		if !features[feature] {
 			t.Errorf("feature %v must be supported for etcd", feature)
 		}
 	}
 
-	excluded := []env.Feature{env.ViewQueryDbInfo, env.ViewQueryDbChart, env.ManageQueryDbCancel, env.ManageQueryDbTerminate}
+	excluded := []config.Feature{config.ViewQueryDbInfo, config.ViewQueryDbChart, config.ManageQueryDbCancel, config.ManageQueryDbTerminate}
 	for _, feature := range excluded {
 		if features[feature] {
 			t.Errorf("feature %v must not be supported for etcd", feature)

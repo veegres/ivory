@@ -10,16 +10,16 @@ import (
 func TestSupportedFeaturesExclusions(t *testing.T) {
 	features := NewAdapter().SupportedFeatures()
 
-	supported := []env.Feature{env.ViewNodeKeeperOverview, env.ViewNodeKeeperConfig, env.ManageNodeKeeperReload, env.ManageNodeKeeperFailover}
+	supported := []config.Feature{config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig, config.ManageNodeKeeperReload, config.ManageNodeKeeperFailover}
 	for _, feature := range supported {
 		if !features[feature] {
 			t.Errorf("feature %v must be supported for native postgres", feature)
 		}
 	}
 
-	excluded := []env.Feature{
-		env.ManageNodeKeeperConfigUpdate, env.ManageNodeKeeperSwitchover, env.ManageNodeKeeperReinitialize,
-		env.ManageNodeKeeperRestart, env.ManageNodeKeeperActivation,
+	excluded := []config.Feature{
+		config.ManageNodeKeeperConfigUpdate, config.ManageNodeKeeperSwitchover, config.ManageNodeKeeperReinitialize,
+		config.ManageNodeKeeperRestart, config.ManageNodeKeeperActivation,
 	}
 	for _, feature := range excluded {
 		if features[feature] {

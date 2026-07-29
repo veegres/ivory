@@ -191,7 +191,7 @@ func (r *Router) GetJobStream(context *gin.Context) {
 	}
 
 	ctx := context.Request.Context()
-	session := context.GetString(env.AuthContextKey.Session)
+	session := context.GetString(config.AuthContextKey.Session)
 	r.bloatService.Stream(jobUuid, job.SubscriberID(session), ctx.Done(), func(event job.Message) {
 		context.SSEvent(event.Type.String(), event.Message)
 		context.Writer.Flush()

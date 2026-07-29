@@ -14,7 +14,7 @@ const (
 	GRANTED
 )
 
-type PermissionMap map[env.Feature]Status
+type PermissionMap map[config.Feature]Status
 
 type UserPermissions struct {
 	Username    string        `json:"username"`
@@ -24,7 +24,7 @@ type UserPermissions struct {
 // SPECIFIC (SERVER)
 
 type PermissionRequest struct {
-	Permissions []env.Feature `json:"permissions" binding:"required"`
+	Permissions []config.Feature `json:"permissions" binding:"required"`
 }
 
 // UserPermissionsMap is a map where the key is username/email and value is the permissions map

@@ -8,17 +8,17 @@ import (
 // NOTE: validate that is matches interface in compile-time
 var _ keeper.Metadata = (*Adapter)(nil)
 
-func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
-	return map[env.Feature]bool{
-		env.ViewNodeKeeperOverview:       true,
-		env.ViewNodeKeeperConfig:         true,
-		env.ManageNodeKeeperConfigUpdate: true,
-		env.ManageNodeKeeperSwitchover:   true,
-		env.ManageNodeKeeperReinitialize: true,
-		env.ManageNodeKeeperRestart:      true,
-		env.ManageNodeKeeperReload:       true,
-		env.ManageNodeKeeperFailover:     true,
-		env.ManageNodeKeeperActivation:   true,
+func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+	return map[config.Feature]bool{
+		config.ViewNodeKeeperOverview:       true,
+		config.ViewNodeKeeperConfig:         true,
+		config.ManageNodeKeeperConfigUpdate: true,
+		config.ManageNodeKeeperSwitchover:   true,
+		config.ManageNodeKeeperReinitialize: true,
+		config.ManageNodeKeeperRestart:      true,
+		config.ManageNodeKeeperReload:       true,
+		config.ManageNodeKeeperFailover:     true,
+		config.ManageNodeKeeperActivation:   true,
 	}
 }
 

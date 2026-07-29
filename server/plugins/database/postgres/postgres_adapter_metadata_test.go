@@ -9,9 +9,9 @@ import (
 func TestSupportedFeaturesAllSupported(t *testing.T) {
 	features := NewAdapter().SupportedFeatures()
 
-	all := []env.Feature{
-		env.ViewQueryDbInfo, env.ViewQueryDbChart, env.ManageQueryDbTemplate,
-		env.ManageQueryDbConsole, env.ManageQueryDbCancel, env.ManageQueryDbTerminate,
+	all := []config.Feature{
+		config.ViewQueryDbInfo, config.ViewQueryDbChart, config.ManageQueryDbTemplate,
+		config.ManageQueryDbConsole, config.ManageQueryDbCancel, config.ManageQueryDbTerminate,
 	}
 	for _, feature := range all {
 		if !features[feature] {

@@ -1,4 +1,4 @@
-package env
+package config
 
 // AuthContextKey are the gin.Context keys the auth middlewares populate and other features read.
 var AuthContextKey = struct {

@@ -9,10 +9,10 @@ import (
 func TestSupportedFeaturesAllSupported(t *testing.T) {
 	features := NewAdapter(nil).SupportedFeatures()
 
-	all := []env.Feature{
-		env.ViewNodeKeeperOverview, env.ViewNodeKeeperConfig, env.ManageNodeKeeperConfigUpdate,
-		env.ManageNodeKeeperSwitchover, env.ManageNodeKeeperReinitialize, env.ManageNodeKeeperRestart,
-		env.ManageNodeKeeperReload, env.ManageNodeKeeperFailover, env.ManageNodeKeeperActivation,
+	all := []config.Feature{
+		config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig, config.ManageNodeKeeperConfigUpdate,
+		config.ManageNodeKeeperSwitchover, config.ManageNodeKeeperReinitialize, config.ManageNodeKeeperRestart,
+		config.ManageNodeKeeperReload, config.ManageNodeKeeperFailover, config.ManageNodeKeeperActivation,
 	}
 	for _, feature := range all {
 		if !features[feature] {

@@ -9,10 +9,10 @@ const (
 )
 
 type Adapter interface {
-	// SupportedFeatures reports, for every tool-related env.Feature this tool
+	// SupportedFeatures reports, for every tool-related config.Feature this tool
 	// knows about, whether it supports it for the given database plugin. A
 	// feature absent from the map is not a tool capability at all and is
 	// left unrestricted.
-	SupportedFeatures(plugin env.Plugin) map[env.Feature]bool
+	SupportedFeatures(plugin config.Plugin) map[config.Feature]bool
 	DeleteAll() error
 }

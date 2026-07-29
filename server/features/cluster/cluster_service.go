@@ -3,7 +3,7 @@ package cluster
 import (
 	"errors"
 	"fmt"
-	env "ivory/core/config"
+	"ivory/core/config"
 	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/features/node"
@@ -53,16 +53,16 @@ func NewService(
 	}
 }
 
-func (s *Service) getSupportedFeatures(k node.KeeperPlugin, db query.DbPlugin) map[env.Feature]bool {
-	features := make(map[env.Feature]bool)
+func (s *Service) getSupportedFeatures(k node.KeeperPlugin, db query.DbPlugin) map[config.Feature]bool {
+	features := make(map[config.Feature]bool)
 	maps.Copy(features, s.nodeService.SupportedFeatures(k))
 	maps.Copy(features, s.queryService.SupportedFeatures(db))
 	maps.Copy(features, s.getToolSupportedFeatures(db))
 	return features
 }
 
-func (s *Service) getToolSupportedFeatures(db query.DbPlugin) map[env.Feature]bool {
-	features := make(map[env.Feature]bool)
+func (s *Service) getToolSupportedFeatures(db query.DbPlugin) map[config.Feature]bool {
+	features := make(map[config.Feature]bool)
 	for _, tool := range s.toolRegistry.All() {
 		maps.Copy(features, tool.SupportedFeatures(db))
 	}

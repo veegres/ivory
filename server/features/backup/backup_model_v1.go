@@ -1,7 +1,7 @@
 package backup
 
 import (
-	env "ivory/core/config"
+	"ivory/core/config"
 	"ivory/features/cluster"
 	"ivory/features/permission"
 	"ivory/features/query"
@@ -257,8 +257,8 @@ func (bp backupPermissionsV1) toUserPermissions() permission.UserPermissions {
 // syncPermissionV1 looks up a stored permission key against the current set
 // of valid features; its input is a plain string (the backup's map key), not
 // a named local type, so unlike its siblings it cannot become a method.
-func syncPermissionV1(p string) (env.Feature, error) {
-	for _, validFeature := range env.All {
+func syncPermissionV1(p string) (config.Feature, error) {
+	for _, validFeature := range config.All {
 		if string(validFeature) == p {
 			return validFeature, nil
 		}

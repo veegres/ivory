@@ -5,14 +5,14 @@ import (
 	"ivory/plugins/database"
 )
 
-func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
-	return map[env.Feature]bool{
-		env.ViewQueryDbInfo:        true,
-		env.ViewQueryDbChart:       true,
-		env.ManageQueryDbTemplate:  true,
-		env.ManageQueryDbConsole:   true,
-		env.ManageQueryDbCancel:    true,
-		env.ManageQueryDbTerminate: true,
+func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+	return map[config.Feature]bool{
+		config.ViewQueryDbInfo:        true,
+		config.ViewQueryDbChart:       true,
+		config.ManageQueryDbTemplate:  true,
+		config.ManageQueryDbConsole:   true,
+		config.ManageQueryDbCancel:    true,
+		config.ManageQueryDbTerminate: true,
 	}
 }
 

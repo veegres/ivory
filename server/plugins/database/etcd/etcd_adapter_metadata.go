@@ -10,14 +10,14 @@ const DefaultMembers = `member list`
 const DefaultEndpointStatus = `endpoint status`
 const DefaultAlarms = `alarm list`
 
-func (a *Adapter) SupportedFeatures() map[env.Feature]bool {
-	return map[env.Feature]bool{
-		env.ViewQueryDbInfo:        false,
-		env.ViewQueryDbChart:       false,
-		env.ManageQueryDbTemplate:  true,
-		env.ManageQueryDbConsole:   true,
-		env.ManageQueryDbCancel:    false,
-		env.ManageQueryDbTerminate: false,
+func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+	return map[config.Feature]bool{
+		config.ViewQueryDbInfo:        false,
+		config.ViewQueryDbChart:       false,
+		config.ManageQueryDbTemplate:  true,
+		config.ManageQueryDbConsole:   true,
+		config.ManageQueryDbCancel:    false,
+		config.ManageQueryDbTerminate: false,
 	}
 }
 

@@ -17,7 +17,7 @@ type Response struct {
 type AppInfo struct {
 	Auth    AuthInfo            `json:"auth"`
 	Config  ConfigInfo          `json:"config"`
-	Version env.Version         `json:"version"`
+	Version config.Version      `json:"version"`
 	Secret  secret.SecretStatus `json:"secret"`
 }
 

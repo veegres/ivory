@@ -17,9 +17,9 @@ func NewRouter(permissionService *Service) *Router {
 
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		authEnabled := context.GetBool(env.AuthContextKey.Enabled)
-		authType := context.GetString(env.AuthContextKey.Type)
-		username := context.GetString(env.AuthContextKey.Username)
+		authEnabled := context.GetBool(config.AuthContextKey.Enabled)
+		authType := context.GetString(config.AuthContextKey.Type)
+		username := context.GetString(config.AuthContextKey.Username)
 		permissions, err := r.permissionService.GetUserPermissions(authType, username, !authEnabled)
 		if err != nil {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
@@ -30,7 +30,7 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) ValidateMethodMiddleware(feature env.Feature) gin.HandlerFunc {
+func (r *Router) ValidateMethodMiddleware(feature config.Feature) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		if val, ok := context.Get("permissions"); ok {
 			permissions := val.(PermissionMap)
@@ -56,8 +56,8 @@ func (r *Router) GetAllUserPermissions(context *gin.Context) {
 }
 
 func (r *Router) RequestUserPermission(context *gin.Context) {
-	username := context.GetString(env.AuthContextKey.Username)
-	prefix := context.GetString(env.AuthContextKey.Type)
+	username := context.GetString(config.AuthContextKey.Username)
+	prefix := context.GetString(config.AuthContextKey.Type)
 	var request PermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

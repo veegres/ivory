@@ -10,16 +10,16 @@ import (
 func TestSupportedFeaturesExclusions(t *testing.T) {
 	features := NewAdapter().SupportedFeatures()
 
-	supported := []env.Feature{env.ViewNodeKeeperOverview, env.ManageNodeKeeperSwitchover}
+	supported := []config.Feature{config.ViewNodeKeeperOverview, config.ManageNodeKeeperSwitchover}
 	for _, feature := range supported {
 		if !features[feature] {
 			t.Errorf("feature %v must be supported for etcd", feature)
 		}
 	}
 
-	excluded := []env.Feature{
-		env.ViewNodeKeeperConfig, env.ManageNodeKeeperConfigUpdate, env.ManageNodeKeeperReinitialize,
-		env.ManageNodeKeeperRestart, env.ManageNodeKeeperReload, env.ManageNodeKeeperFailover, env.ManageNodeKeeperActivation,
+	excluded := []config.Feature{
+		config.ViewNodeKeeperConfig, config.ManageNodeKeeperConfigUpdate, config.ManageNodeKeeperReinitialize,
+		config.ManageNodeKeeperRestart, config.ManageNodeKeeperReload, config.ManageNodeKeeperFailover, config.ManageNodeKeeperActivation,
 	}
 	for _, feature := range excluded {
 		if features[feature] {

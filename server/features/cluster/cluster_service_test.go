@@ -19,11 +19,11 @@ import (
 // fakeKeeperMetadata is a minimal keeper.Metadata test double: it only needs
 // to answer SupportedFeatures for these tests, so DeploymentSpec is unused.
 type fakeKeeperMetadata struct {
-	features map[env.Feature]bool
+	features map[config.Feature]bool
 }
 
-func (f fakeKeeperMetadata) SupportedFeatures() map[env.Feature]bool { return f.features }
-func (f fakeKeeperMetadata) DeploymentSpec() keeper.DeploymentSpec   { return keeper.DeploymentSpec{} }
+func (f fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool { return f.features }
+func (f fakeKeeperMetadata) DeploymentSpec() keeper.DeploymentSpec      { return keeper.DeploymentSpec{} }
 
 // fakeDbAdapter is a minimal database.Adapter test double. Embedding the nil
 // interface satisfies the (large) query-execution surface without stubbing
@@ -31,20 +31,20 @@ func (f fakeKeeperMetadata) DeploymentSpec() keeper.DeploymentSpec   { return ke
 // SupportedFeatures actually invoke are overridden.
 type fakeDbAdapter struct {
 	database.Adapter
-	features map[env.Feature]bool
+	features map[config.Feature]bool
 }
 
-func (f fakeDbAdapter) SupportedFeatures() map[env.Feature]bool           { return f.features }
+func (f fakeDbAdapter) SupportedFeatures() map[config.Feature]bool        { return f.features }
 func (f fakeDbAdapter) SystemRequests() []database.SystemRequest          { return nil }
 func (f fakeDbAdapter) SystemCharts() map[database.SystemChartType]string { return nil }
 
 // fakeToolAdapter is a minimal tools.Adapter test double.
 type fakeToolAdapter struct {
-	features map[env.Feature]bool
+	features map[config.Feature]bool
 }
 
-func (f fakeToolAdapter) SupportedFeatures(env.Plugin) map[env.Feature]bool { return f.features }
-func (f fakeToolAdapter) DeleteAll() error                                  { return nil }
+func (f fakeToolAdapter) SupportedFeatures(config.Plugin) map[config.Feature]bool { return f.features }
+func (f fakeToolAdapter) DeleteAll() error                                        { return nil }
 
 // createFeatureTestService wires a cluster Service whose node/query/tool
 // dependencies each expose exactly one fake plugin, so getSupportedFeatures
@@ -74,13 +74,13 @@ func createFeatureTestService(t *testing.T) (*Service, node.KeeperPlugin, query.
 
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
 	keeperMetadataRegistry.Register(keeper.Plugin(keeperPlugin), fakeKeeperMetadata{
-		features: map[env.Feature]bool{env.ViewNodeKeeperOverview: true},
+		features: map[config.Feature]bool{config.ViewNodeKeeperOverview: true},
 	})
 	nodeService := node.NewService(nil, nil, keeperMetadataRegistry, nil, nil, nil)
 
 	databaseRegistry := utils.NewRegistry[database.Plugin, database.Adapter]()
 	databaseRegistry.Register(database.Plugin(dbPlugin), fakeDbAdapter{
-		features: map[env.Feature]bool{env.ViewQueryDbInfo: true},
+		features: map[config.Feature]bool{config.ViewQueryDbInfo: true},
 	})
 	queryRepository := query.NewRepository(
 		storage.NewDbBucket[query.Response](db, "Query"),
@@ -90,7 +90,7 @@ func createFeatureTestService(t *testing.T) (*Service, node.KeeperPlugin, query.
 
 	toolRegistry := utils.NewRegistry[tools.Tool, tools.Adapter]()
 	toolRegistry.Register(tools.PgCompactTable, fakeToolAdapter{
-		features: map[env.Feature]bool{env.ViewToolPgCompactTableList: true},
+		features: map[config.Feature]bool{config.ViewToolPgCompactTableList: true},
 	})
 
 	return &Service{
@@ -105,23 +105,23 @@ func TestService_getSupportedFeatures(t *testing.T) {
 
 	t.Run("merges keeper, database and tool features", func(t *testing.T) {
 		features := s.getSupportedFeatures(keeperPlugin, dbPlugin)
-		if !features[env.ViewNodeKeeperOverview] {
+		if !features[config.ViewNodeKeeperOverview] {
 			t.Errorf("expected keeper feature to be present and true, got %v", features)
 		}
-		if !features[env.ViewQueryDbInfo] {
+		if !features[config.ViewQueryDbInfo] {
 			t.Errorf("expected database feature to be present and true, got %v", features)
 		}
-		if !features[env.ViewToolPgCompactTableList] {
+		if !features[config.ViewToolPgCompactTableList] {
 			t.Errorf("expected tool feature to be present and true, got %v", features)
 		}
 	})
 
 	t.Run("unknown keeper plugin contributes no keeper features but keeps the rest", func(t *testing.T) {
 		features := s.getSupportedFeatures(node.KeeperPlugin("unknown"), dbPlugin)
-		if _, ok := features[env.ViewNodeKeeperOverview]; ok {
+		if _, ok := features[config.ViewNodeKeeperOverview]; ok {
 			t.Errorf("expected no keeper feature for an unknown plugin, got %v", features)
 		}
-		if !features[env.ViewQueryDbInfo] {
+		if !features[config.ViewQueryDbInfo] {
 			t.Errorf("expected database feature to still be present, got %v", features)
 		}
 	})
@@ -131,7 +131,7 @@ func TestService_getToolSupportedFeatures(t *testing.T) {
 	s, _, dbPlugin := createFeatureTestService(t)
 
 	features := s.getToolSupportedFeatures(dbPlugin)
-	if !features[env.ViewToolPgCompactTableList] {
+	if !features[config.ViewToolPgCompactTableList] {
 		t.Errorf("expected tool feature to be present and true, got %v", features)
 	}
 }

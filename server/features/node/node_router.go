@@ -92,7 +92,7 @@ func handleStreamRequest[R any](context *gin.Context, action func(request R, sub
 	}
 
 	ctx := context.Request.Context()
-	session := context.GetString(env.AuthContextKey.Session)
+	session := context.GetString(config.AuthContextKey.Session)
 	action(request, job.SubscriberID(session), ctx.Done(), func(event job.Message) {
 		context.SSEvent(event.Type.String(), event.Message)
 		context.Writer.Flush()

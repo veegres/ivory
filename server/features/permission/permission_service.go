@@ -102,7 +102,7 @@ func (s *Service) CreateUserPermissions(prefix string, username string) (Permiss
 	return permissions, nil
 }
 
-func (s *Service) RequestUserPermissions(prefix string, username string, featuresList []env.Feature) error {
+func (s *Service) RequestUserPermissions(prefix string, username string, featuresList []config.Feature) error {
 	permUsername, errName := s.getFullUsername(prefix, username)
 	if errName != nil {
 		return errName
@@ -110,11 +110,11 @@ func (s *Service) RequestUserPermissions(prefix string, username string, feature
 	return s.updateUserPermissions(permUsername, featuresList, PENDING)
 }
 
-func (s *Service) ApproveUserPermissions(permUsername string, featuresList []env.Feature) error {
+func (s *Service) ApproveUserPermissions(permUsername string, featuresList []config.Feature) error {
 	return s.updateUserPermissions(permUsername, featuresList, GRANTED)
 }
 
-func (s *Service) RejectUserPermissions(permUsername string, featuresList []env.Feature) error {
+func (s *Service) RejectUserPermissions(permUsername string, featuresList []config.Feature) error {
 	return s.updateUserPermissions(permUsername, featuresList, NOT_PERMITTED)
 }
 
@@ -149,8 +149,8 @@ func (s *Service) getFullUsername(prefix string, username string) (string, error
 	return prefix + ":" + username, nil
 }
 
-func (s *Service) isValidFeature(feature env.Feature) bool {
-	for _, validFeature := range env.All {
+func (s *Service) isValidFeature(feature config.Feature) bool {
+	for _, validFeature := range config.All {
 		if validFeature == feature {
 			return true
 		}
@@ -160,7 +160,7 @@ func (s *Service) isValidFeature(feature env.Feature) bool {
 
 func (s *Service) getAllPermissionsWithStatus(status Status) PermissionMap {
 	permissions := make(PermissionMap)
-	for _, feature := range env.All {
+	for _, feature := range config.All {
 		permissions[feature] = status
 	}
 	return permissions
@@ -175,7 +175,7 @@ func (s *Service) getStatus(permUsername string) Status {
 	return NOT_PERMITTED
 }
 
-func (s *Service) updateUserPermissions(permUsername string, featuresList []env.Feature, status Status) error {
+func (s *Service) updateUserPermissions(permUsername string, featuresList []config.Feature, status Status) error {
 	var err error
 	for _, feature := range featuresList {
 		errPerm := s.updateUserPermission(permUsername, feature, status)
@@ -186,7 +186,7 @@ func (s *Service) updateUserPermissions(permUsername string, featuresList []env.
 	return err
 }
 
-func (s *Service) updateUserPermission(permUsername string, feature env.Feature, status Status) error {
+func (s *Service) updateUserPermission(permUsername string, feature config.Feature, status Status) error {
 	if permUsername == "" {
 		return ErrUsernameCannotBeEmpty
 	}
@@ -216,7 +216,7 @@ func (s *Service) normalizeDatabase() error {
 	for permUsername, permissions := range permissionsMap {
 		status := s.getStatus(permUsername)
 		normalisedPermissions := make(PermissionMap)
-		for _, feature := range env.All {
+		for _, feature := range config.All {
 			if perm, ok := permissions[feature]; !ok {
 				normalisedPermissions[feature] = status
 			} else {

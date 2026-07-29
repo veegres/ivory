@@ -19,7 +19,7 @@ type Service struct {
 	certService            *cert.Service
 	jobManager             *job.Service
 
-	dbFeatures map[env.Feature]bool
+	dbFeatures map[config.Feature]bool
 }
 
 func NewService(
@@ -38,14 +38,14 @@ func NewService(
 		certService:            certService,
 		jobManager:             jobManager,
 
-		dbFeatures: make(map[env.Feature]bool),
+		dbFeatures: make(map[config.Feature]bool),
 	}
 }
 
-func (s *Service) SupportedFeatures(t keeper.Plugin) map[env.Feature]bool {
+func (s *Service) SupportedFeatures(t keeper.Plugin) map[config.Feature]bool {
 	c, e := s.keeperMetadataRegistry.Get(t)
 	if e != nil {
-		return map[env.Feature]bool{}
+		return map[config.Feature]bool{}
 	}
 	return c.SupportedFeatures()
 }

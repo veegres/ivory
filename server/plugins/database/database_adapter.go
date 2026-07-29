@@ -58,10 +58,10 @@ type SessionManager interface {
 // MetadataProvider lets a database plugin describe itself: which optional
 // features it supports and which built-in queries/charts it offers.
 type MetadataProvider interface {
-	// SupportedFeatures reports, for every db-related env.Feature this plugin
+	// SupportedFeatures reports, for every db-related config.Feature this plugin
 	// knows about, whether it supports it. A feature absent from the map is
 	// not a database capability at all and is left unrestricted.
-	SupportedFeatures() map[env.Feature]bool
+	SupportedFeatures() map[config.Feature]bool
 	// SystemRequests returns the catalog of built-in queries this plugin ships
 	// (activity, replication, bloat, ...), shown to the user as ready-made queries.
 	SystemRequests() []SystemRequest

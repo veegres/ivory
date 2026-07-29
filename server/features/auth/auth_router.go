@@ -37,14 +37,14 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 			session = id.String()
 			r.setCookieSession(context, session)
 		}
-		context.Set(env.AuthContextKey.Session, session)
+		context.Set(config.AuthContextKey.Session, session)
 		context.Next()
 	}
 }
 
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		context.Set(env.AuthContextKey.Enabled, true)
+		context.Set(config.AuthContextKey.Enabled, true)
 		valid, username, authType, errParse := r.resolveAuth(context)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
@@ -52,7 +52,7 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 			return
 		}
 		if errors.Is(errParse, ErrAuthDisabled) {
-			context.Set(env.AuthContextKey.Enabled, false)
+			context.Set(config.AuthContextKey.Enabled, false)
 		} else {
 			if username == "" {
 				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrUsernameEmpty.Error()})
@@ -62,8 +62,8 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidAuthType.Error()})
 				return
 			}
-			context.Set(env.AuthContextKey.Username, username)
-			context.Set(env.AuthContextKey.Type, authType.String())
+			context.Set(config.AuthContextKey.Username, username)
+			context.Set(config.AuthContextKey.Type, authType.String())
 		}
 		context.Next()
 	}
@@ -71,18 +71,18 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 
 func (r *Router) AuthContextMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		context.Set(env.AuthContextKey.Enabled, true)
+		context.Set(config.AuthContextKey.Enabled, true)
 		valid, username, authType, errParse := r.resolveAuth(context)
-		context.Set(env.AuthContextKey.Authorised, valid)
+		context.Set(config.AuthContextKey.Authorised, valid)
 		if errors.Is(errParse, ErrAuthDisabled) {
-			context.Set(env.AuthContextKey.Enabled, false)
+			context.Set(config.AuthContextKey.Enabled, false)
 		} else {
 			if errParse != nil {
-				context.Set(env.AuthContextKey.Error, errParse.Error())
+				context.Set(config.AuthContextKey.Error, errParse.Error())
 			}
-			context.Set(env.AuthContextKey.Username, username)
+			context.Set(config.AuthContextKey.Username, username)
 			if authType != nil {
-				context.Set(env.AuthContextKey.Type, authType.String())
+				context.Set(config.AuthContextKey.Type, authType.String())
 			}
 		}
 		context.Next()
