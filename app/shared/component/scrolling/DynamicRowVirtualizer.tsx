@@ -38,6 +38,7 @@ export function DynamicRowVirtualizer(props: Props) {
         count: rows.length,
         getScrollElement: () => parentRef.current,
         estimateSize: () => 25,
+        useFlushSync: false,
     })
 
     const items = virtualizer.getVirtualItems()
