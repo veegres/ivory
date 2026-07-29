@@ -42,7 +42,7 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	path := engine.Group(env.Config.UrlPath)
 	unsafe := path.Group("/api", gin.Recovery(), fc.Auth.SessionMiddleware())
 	unsafe.GET("/ping", pong)
-	unsafe.GET("/info", fc.Management.GetAppInfo)
+	unsafe.GET("/info", fc.Auth.AuthContextMiddleware(), fc.Management.GetAppInfo)
 	unsafe.POST("/logout", fc.Auth.Logout)
 
 	initial := unsafe.Group("/", cc.Secret.EmptyMiddleware())

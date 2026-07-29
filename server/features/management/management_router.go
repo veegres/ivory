@@ -2,7 +2,6 @@ package management
 
 import (
 	"fmt"
-	"ivory/features/auth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -78,7 +77,11 @@ func (r *Router) ChangeSecret(context *gin.Context) {
 }
 
 func (r *Router) GetAppInfo(context *gin.Context) {
-	token, errToken := auth.GetToken(context)
-	info := r.service.GetAppInfo(token, errToken)
+	username := context.GetString("username")
+	authEnabled := context.GetBool("auth")
+	authorised := context.GetBool("authorised")
+	authType := context.GetString("authType")
+	authError := context.GetString("authError")
+	info := r.service.GetAppInfo(authorised, authEnabled, username, authType, authError)
 	context.JSON(http.StatusOK, gin.H{"response": info})
 }

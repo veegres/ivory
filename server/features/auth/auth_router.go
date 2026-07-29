@@ -41,38 +41,10 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 	}
 }
 
-func GetToken(context *gin.Context) (string, error) {
-	authHeader := context.Request.Header.Get("Authorization")
-	if authHeader != "" {
-		return GetTokenFromHeader(authHeader)
-	}
-	cookieToken, errToken := context.Cookie("token")
-	if cookieToken == "" || errToken != nil {
-		cookieTokenError, _ := context.Cookie("token_error")
-		if cookieTokenError != "" {
-			return "", errors.New(cookieTokenError)
-		}
-		return "", ErrNoAuthorizationToken
-	}
-	return cookieToken, nil
-}
-
-func GetTokenFromHeader(str string) (string, error) {
-	if str == "" {
-		return "", ErrNoAuthorizationToken
-	}
-	parts := strings.SplitN(str, " ", 2)
-	if !(len(parts) == 2 && parts[0] == "Bearer") {
-		return "", ErrInvalidAuthorizationHeader
-	}
-	return parts[1], nil
-}
-
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		context.Set("auth", true)
-		token, errToken := GetToken(context)
-		valid, username, authType, errParse := r.authService.ParseAuthToken(token, errToken)
+		valid, username, authType, errParse := r.resolveAuth(context)
 		if !valid {
 			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
 			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errParse.Error()})
@@ -94,6 +66,56 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 		}
 		context.Next()
 	}
+}
+
+func (r *Router) AuthContextMiddleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		context.Set("auth", true)
+		valid, username, authType, errParse := r.resolveAuth(context)
+		context.Set("authorised", valid)
+		if errors.Is(errParse, ErrAuthDisabled) {
+			context.Set("auth", false)
+		} else {
+			if errParse != nil {
+				context.Set("authError", errParse.Error())
+			}
+			context.Set("username", username)
+			if authType != nil {
+				context.Set("authType", authType.String())
+			}
+		}
+		context.Next()
+	}
+}
+
+func (r *Router) resolveAuth(context *gin.Context) (bool, string, *AuthType, error) {
+	headerToken, errHeader := r.getHeaderToken(context)
+	cookieToken, errCookie := r.getCookieToken(context)
+	return r.authService.ParseAuthTokenWithFallback(headerToken, errHeader, cookieToken, errCookie)
+}
+
+func (r *Router) getHeaderToken(context *gin.Context) (string, error) {
+	authHeader := context.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		return "", ErrNoAuthorizationToken
+	}
+	parts := strings.SplitN(authHeader, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Bearer") {
+		return "", ErrInvalidAuthorizationHeader
+	}
+	return parts[1], nil
+}
+
+func (r *Router) getCookieToken(context *gin.Context) (string, error) {
+	cookieToken, errToken := context.Cookie("token")
+	if cookieToken == "" || errToken != nil {
+		cookieTokenError, _ := context.Cookie("token_error")
+		if cookieTokenError != "" {
+			return "", errors.New(cookieTokenError)
+		}
+		return "", ErrNoAuthorizationToken
+	}
+	return cookieToken, nil
 }
 
 func (r *Router) LdapConnect(context *gin.Context) {

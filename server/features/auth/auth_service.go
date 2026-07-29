@@ -75,6 +75,15 @@ func (s *Service) GetSupportedTypes() []AuthType {
 	return supported
 }
 
+// ParseAuthTokenWithFallback tries primaryToken first and only falls back to fallbackToken if it doesn't validate.
+func (s *Service) ParseAuthTokenWithFallback(primaryToken string, primaryErr error, fallbackToken string, fallbackErr error) (bool, string, *AuthType, error) {
+	valid, username, authType, errParse := s.ParseAuthToken(primaryToken, primaryErr)
+	if valid {
+		return valid, username, authType, errParse
+	}
+	return s.ParseAuthToken(fallbackToken, fallbackErr)
+}
+
 func (s *Service) ParseAuthToken(token string, tokenErr error) (bool, string, *AuthType, error) {
 	if len(s.GetSupportedTypes()) == 0 {
 		return true, "", nil, ErrAuthDisabled

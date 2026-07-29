@@ -113,7 +113,7 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	return nil
 }
 
-func (s *Service) GetAppInfo(token string, tokenErr error) *AppInfo {
+func (s *Service) GetAppInfo(authorised bool, authEnabled bool, username string, authType string, authError string) *AppInfo {
 	appConfig, errConfig := s.configService.GetAppConfig()
 	configConfigured := s.configService.GetIsConfigured()
 	authSupported := s.authService.GetSupportedTypes()
@@ -136,7 +136,7 @@ func (s *Service) GetAppInfo(token string, tokenErr error) *AppInfo {
 		}
 	}
 
-	authorised, user, authError := s.getAuthInfo(token, tokenErr)
+	authorisedResult, user, resultError := s.getAuthInfo(authorised, authEnabled, username, authType, authError)
 	return &AppInfo{
 		Config: ConfigInfo{
 			Configured: configConfigured,
@@ -147,23 +147,18 @@ func (s *Service) GetAppInfo(token string, tokenErr error) *AppInfo {
 		Version: s.env.Version,
 		Auth: AuthInfo{
 			Supported:  authSupported,
-			Authorised: authorised,
+			Authorised: authorisedResult,
 			User:       user,
-			Error:      authError,
+			Error:      resultError,
 		},
 	}
 }
 
-func (s *Service) getAuthInfo(token string, tokenErr error) (bool, *UserInfo, string) {
-	authorised, username, authType, errParse := s.authService.ParseAuthToken(token, tokenErr)
-	if errParse != nil && !errors.Is(errParse, auth.ErrAuthDisabled) {
-		return authorised, nil, errParse.Error()
+func (s *Service) getAuthInfo(authorised bool, authEnabled bool, username string, authType string, authError string) (bool, *UserInfo, string) {
+	if authError != "" {
+		return authorised, nil, authError
 	}
-	prefix := ""
-	if authType != nil {
-		prefix = authType.String()
-	}
-	permissions, errPerm := s.permissionService.GetUserPermissions(prefix, username, errors.Is(errParse, auth.ErrAuthDisabled))
+	permissions, errPerm := s.permissionService.GetUserPermissions(authType, username, !authEnabled)
 	user := &UserInfo{Username: username, Permissions: permissions}
 	if errPerm != nil {
 		return authorised, user, errPerm.Error()
