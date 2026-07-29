@@ -268,6 +268,46 @@ func TestJob_Run_KillerStopsJobWithoutSubscribers(t *testing.T) {
 	}
 }
 
+func TestJob_SubscribersAndSize(t *testing.T) {
+	cmd := &MockCommand{id: "test-job-subscribers"}
+	job := NewJob(cmd, nil)
+	job.setStatus(RUNNING)
+
+	if size := job.Size(); size != 0 {
+		t.Fatalf("expected size 0 for a fresh job, got %d", size)
+	}
+	if subs := job.Subscribers(); len(subs) != 0 {
+		t.Fatalf("expected no subscribers, got %v", subs)
+	}
+
+	if _, ok := job.addSubscriber("sub-1"); !ok {
+		t.Fatal("expected first subscribe to succeed")
+	}
+	if _, ok := job.addSubscriber("sub-2"); !ok {
+		t.Fatal("expected second subscribe to succeed")
+	}
+
+	if size := job.Size(); size != 2 {
+		t.Fatalf("expected size 2, got %d", size)
+	}
+	subs := job.Subscribers()
+	if len(subs) != 2 {
+		t.Fatalf("expected 2 subscribers, got %v", subs)
+	}
+	found1, found2 := false, false
+	for _, id := range subs {
+		if id == "sub-1" {
+			found1 = true
+		}
+		if id == "sub-2" {
+			found2 = true
+		}
+	}
+	if !found1 || !found2 {
+		t.Fatalf("expected both sub-1 and sub-2 to be reported, got %v", subs)
+	}
+}
+
 func TestJob_AddSubscriber_FailsWhenJobFinished(t *testing.T) {
 	cmd := &MockCommand{id: "test-job-finished"}
 	job := NewJob(cmd, nil)

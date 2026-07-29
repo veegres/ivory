@@ -117,3 +117,147 @@ func TestServiceSearch(t *testing.T) {
 		}
 	})
 }
+
+func TestServiceUpdate(t *testing.T) {
+	s := createTestService(t)
+	port := 5432
+
+	t.Run("empty name is rejected", func(t *testing.T) {
+		if _, err := s.Update(Request{Nodes: []NodeConfig{{Host: "h1", KeeperPort: &port}}}); err != ErrClusterNameEmpty {
+			t.Fatalf("expected ErrClusterNameEmpty, got %v", err)
+		}
+	})
+
+	t.Run("no nodes is rejected", func(t *testing.T) {
+		if _, err := s.Update(Request{Name: "c1"}); err != ErrClusterKeepersEmpty {
+			t.Fatalf("expected ErrClusterKeepersEmpty, got %v", err)
+		}
+	})
+
+	t.Run("creates a new cluster and tags it", func(t *testing.T) {
+		created, err := s.Update(Request{
+			Name:  "c1",
+			Nodes: []NodeConfig{{Host: "h1", KeeperPort: &port}},
+			Options: Options{
+				Tags: []string{"PROD"},
+			},
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(created.Tags) != 1 || created.Tags[0] != "prod" {
+			t.Fatalf("expected the tag to be lowercased to 'prod', got %v", created.Tags)
+		}
+
+		got, errGet := s.Get("c1")
+		if errGet != nil {
+			t.Fatalf("expected no error, got %v", errGet)
+		}
+		if len(got.Nodes) != 1 || got.Nodes[0].Host != "h1" {
+			t.Fatalf("expected 1 node with host h1, got %v", got.Nodes)
+		}
+
+		clusters, errTag := s.tagService.Get("prod")
+		if errTag != nil {
+			t.Fatalf("expected no error, got %v", errTag)
+		}
+		if len(clusters) != 1 || clusters[0] != "c1" {
+			t.Fatalf("expected c1 tagged as prod, got %v", clusters)
+		}
+	})
+
+	t.Run("updating retags the cluster", func(t *testing.T) {
+		if _, err := s.Update(Request{
+			Name:    "c1",
+			Nodes:   []NodeConfig{{Host: "h1", KeeperPort: &port}},
+			Options: Options{Tags: []string{"staging"}},
+		}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if _, err := s.tagService.Get("prod"); err == nil {
+			t.Fatalf("expected the old 'prod' tag to be gone")
+		}
+		clusters, err := s.tagService.Get("staging")
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(clusters) != 1 || clusters[0] != "c1" {
+			t.Fatalf("expected c1 tagged as staging, got %v", clusters)
+		}
+	})
+}
+
+func TestServiceGet(t *testing.T) {
+	s := createTestService(t)
+	if _, err := s.clusterRepository.Create(Request{Name: "c1"}); err != nil {
+		t.Fatalf("failed to seed: %v", err)
+	}
+
+	if _, err := s.Get("c1"); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if _, err := s.Get("unknown"); err == nil {
+		t.Fatalf("expected an error for an unknown cluster")
+	}
+}
+
+func TestServiceList(t *testing.T) {
+	s := createTestService(t)
+	if _, err := s.clusterRepository.Create(Request{Name: "c1"}); err != nil {
+		t.Fatalf("failed to seed: %v", err)
+	}
+	if _, err := s.clusterRepository.Create(Request{Name: "c2"}); err != nil {
+		t.Fatalf("failed to seed: %v", err)
+	}
+
+	list, err := s.List()
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(list) != 2 {
+		t.Fatalf("expected 2 clusters, got %d", len(list))
+	}
+}
+
+func TestServiceDelete(t *testing.T) {
+	s := createTestService(t)
+	port := 5432
+	if _, err := s.Update(Request{
+		Name:    "c1",
+		Nodes:   []NodeConfig{{Host: "h1", KeeperPort: &port}},
+		Options: Options{Tags: []string{"prod"}},
+	}); err != nil {
+		t.Fatalf("failed to seed: %v", err)
+	}
+
+	if err := s.Delete("c1"); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if _, err := s.Get("c1"); err == nil {
+		t.Fatalf("expected the cluster to be gone")
+	}
+	if _, err := s.tagService.Get("prod"); err == nil {
+		t.Fatalf("expected the cluster's tag association to be cleaned up")
+	}
+}
+
+func TestServiceDeleteAll(t *testing.T) {
+	s := createTestService(t)
+	if _, err := s.clusterRepository.Create(Request{Name: "c1"}); err != nil {
+		t.Fatalf("failed to seed: %v", err)
+	}
+	if _, err := s.clusterRepository.Create(Request{Name: "c2"}); err != nil {
+		t.Fatalf("failed to seed: %v", err)
+	}
+
+	if err := s.DeleteAll(); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	list, err := s.List()
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(list) != 0 {
+		t.Fatalf("expected no clusters, got %v", list)
+	}
+}

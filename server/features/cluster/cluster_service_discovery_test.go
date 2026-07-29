@@ -2,12 +2,19 @@ package cluster
 
 import (
 	"errors"
+	"ivory/clients/storage"
 	"ivory/core/utils"
 	"ivory/features/node"
+	"ivory/features/query"
+	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"ivory/tools"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/boltdb/bolt"
 )
 
 func TestService_Overview_Mapping(t *testing.T) {
@@ -61,6 +68,166 @@ type fakeKeeperAdapter struct {
 
 func (f *fakeKeeperAdapter) List(keeper.Request) ([]keeper.Response, int, error) {
 	return f.listResponse, f.listStatus, f.listErr
+}
+
+// createTestServiceWithNode wires a real node.Service whose keeper registry
+// resolves plugin "fake" to adapter, so Overview/Detect/Fix can be exercised
+// end to end without a real keeper endpoint.
+func createTestServiceWithNode(t *testing.T, adapter keeper.Adapter) *Service {
+	t.Helper()
+	s := createTestService(t)
+
+	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+	keeperRegistry.Register("fake", adapter)
+	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
+	s.nodeService = node.NewService(nil, keeperRegistry, keeperMetadataRegistry, nil, nil, nil)
+
+	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "query.db"), 0600, nil)
+	if errOpen != nil {
+		t.Fatalf("failed to open test database: %v", errOpen)
+	}
+	t.Cleanup(func() { db.Close() })
+	s.queryService = query.NewService(
+		query.NewRepository(storage.NewDbBucket[query.Response](db, "Query"), nil),
+		utils.NewRegistry[database.Plugin, database.Adapter](),
+		nil, nil, "ivory",
+	)
+	s.toolRegistry = utils.NewRegistry[tools.Tool, tools.Adapter]()
+	return s
+}
+
+func TestService_Overview_EndToEnd(t *testing.T) {
+	port := 8008
+	host1, host2 := "host1", "host2"
+	adapter := &fakeKeeperAdapter{
+		listResponse: []keeper.Response{
+			{Role: keeper.Leader, State: "running", DiscoveredHost: &host1, DiscoveredKeeperPort: &port},
+			{Role: "replica", State: "running", DiscoveredHost: &host2, DiscoveredKeeperPort: &port},
+		},
+	}
+	s := createTestServiceWithNode(t, adapter)
+
+	if _, err := s.clusterRepository.Create(Request{
+		Name:  "c1",
+		Nodes: []NodeConfig{{Host: host1, KeeperPort: &port}, {Host: host2, KeeperPort: &port}},
+		Options: Options{
+			Plugins: Plugins{Keeper: "fake"},
+		},
+	}); err != nil {
+		t.Fatalf("failed to seed cluster: %v", err)
+	}
+
+	overview, err := s.Overview("c1", "", 0)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(overview.Nodes) != 2 {
+		t.Fatalf("expected 2 nodes, got %v", overview.Nodes)
+	}
+	for key, n := range overview.Nodes {
+		for _, w := range n.Warnings {
+			t.Errorf("unexpected warning for %s: %s", key, w)
+		}
+	}
+
+	t.Run("unknown cluster fails", func(t *testing.T) {
+		if _, err := s.Overview("unknown", "", 0); err == nil {
+			t.Fatalf("expected an error for an unknown cluster")
+		}
+	})
+}
+
+func TestService_Detect(t *testing.T) {
+	port := 8008
+	host1 := "host1"
+	adapter := &fakeKeeperAdapter{
+		listResponse: []keeper.Response{
+			{Role: keeper.Leader, State: "running", DiscoveredHost: &host1, DiscoveredKeeperPort: &port},
+		},
+	}
+	s := createTestServiceWithNode(t, adapter)
+
+	detected, err := s.Detect(CreateAutoRequest{
+		Name: "detected-cluster",
+		Host: host1,
+		Port: port,
+		Options: Options{
+			Plugins: Plugins{Keeper: "fake"},
+			Tags:    []string{"PROD"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(detected.Nodes) != 1 || detected.Nodes[0].Host != host1 {
+		t.Fatalf("expected 1 detected node with host %s, got %v", host1, detected.Nodes)
+	}
+	if len(detected.Tags) != 1 || detected.Tags[0] != "prod" {
+		t.Fatalf("expected the tag to be lowercased to 'prod', got %v", detected.Tags)
+	}
+
+	got, errGet := s.Get("detected-cluster")
+	if errGet != nil {
+		t.Fatalf("expected the cluster to be persisted, got %v", errGet)
+	}
+	if len(got.Nodes) != 1 {
+		t.Fatalf("expected the persisted cluster to have 1 node, got %v", got.Nodes)
+	}
+}
+
+func TestService_Fix(t *testing.T) {
+	port := 8008
+	host1, host2 := "host1", "host2"
+	adapter := &fakeKeeperAdapter{
+		listResponse: []keeper.Response{
+			{Role: keeper.Leader, State: "running", DiscoveredHost: &host1, DiscoveredKeeperPort: &port},
+			{Role: "replica", State: "running", DiscoveredHost: &host2, DiscoveredKeeperPort: &port},
+		},
+	}
+	s := createTestServiceWithNode(t, adapter)
+
+	if _, err := s.clusterRepository.Create(Request{
+		Name:  "c1",
+		Nodes: []NodeConfig{{Host: host1, KeeperPort: &port}},
+		Options: Options{
+			Plugins: Plugins{Keeper: "fake"},
+		},
+	}); err != nil {
+		t.Fatalf("failed to seed cluster: %v", err)
+	}
+
+	fixed, err := s.Fix("c1")
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(fixed.Nodes) != 2 {
+		t.Fatalf("expected the fixed cluster to report both members from the leader, got %v", fixed.Nodes)
+	}
+
+	t.Run("unknown cluster fails", func(t *testing.T) {
+		if _, err := s.Fix("unknown"); err == nil {
+			t.Fatalf("expected an error for an unknown cluster")
+		}
+	})
+
+	t.Run("no leader found fails", func(t *testing.T) {
+		noLeaderAdapter := &fakeKeeperAdapter{
+			listResponse: []keeper.Response{
+				{Role: "replica", State: "running", DiscoveredHost: &host1, DiscoveredKeeperPort: &port},
+			},
+		}
+		s2 := createTestServiceWithNode(t, noLeaderAdapter)
+		if _, err := s2.clusterRepository.Create(Request{
+			Name:    "c2",
+			Nodes:   []NodeConfig{{Host: host1, KeeperPort: &port}},
+			Options: Options{Plugins: Plugins{Keeper: "fake"}},
+		}); err != nil {
+			t.Fatalf("failed to seed cluster: %v", err)
+		}
+		if _, err := s2.Fix("c2"); err == nil {
+			t.Fatalf("expected an error when no leader is found")
+		}
+	})
 }
 
 func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T) {

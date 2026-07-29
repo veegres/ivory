@@ -84,6 +84,67 @@ func runAuthContextMiddleware(r *Router, authHeader string, tokenCookie string) 
 	return runMiddleware(r.AuthContextMiddleware(), authHeader, tokenCookie)
 }
 
+func runSessionMiddleware(r *Router, sessionCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(w)
+	context.Request = httptest.NewRequest(http.MethodGet, "/", nil)
+	if sessionCookie != "" {
+		context.Request.AddCookie(&http.Cookie{Name: "session", Value: sessionCookie})
+	}
+
+	r.SessionMiddleware()(context)
+
+	return w, context
+}
+
+func TestSessionMiddleware(t *testing.T) {
+	t.Run("generates and cookies a new session when none is present", func(t *testing.T) {
+		r := createTestRouter(t)
+
+		w, context := runSessionMiddleware(r, "")
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200, got %d", w.Code)
+		}
+		if context.IsAborted() {
+			t.Fatalf("expected middleware to not abort")
+		}
+		session, _ := context.Get(config.AuthContextKey.Session)
+		sessionStr, ok := session.(string)
+		if !ok || sessionStr == "" {
+			t.Fatalf("expected a non-empty session to be set in context, got %v", session)
+		}
+
+		var cookieSet bool
+		for _, c := range w.Result().Cookies() {
+			if c.Name == "session" && c.Value == sessionStr {
+				cookieSet = true
+			}
+		}
+		if !cookieSet {
+			t.Fatalf("expected a session cookie matching %q to be set, got %v", sessionStr, w.Result().Cookies())
+		}
+	})
+
+	t.Run("reuses an existing session cookie without setting a new one", func(t *testing.T) {
+		r := createTestRouter(t)
+
+		w, context := runSessionMiddleware(r, "existing-session-id")
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200, got %d", w.Code)
+		}
+		session, _ := context.Get(config.AuthContextKey.Session)
+		if session != "existing-session-id" {
+			t.Fatalf("expected the existing session to be reused, got %v", session)
+		}
+		if len(w.Result().Cookies()) != 0 {
+			t.Fatalf("expected no new cookie to be set, got %v", w.Result().Cookies())
+		}
+	})
+}
+
 func TestValidateMiddleware(t *testing.T) {
 	t.Run("valid header token is accepted", func(t *testing.T) {
 		r := createTestRouter(t)
