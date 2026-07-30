@@ -52,10 +52,11 @@ type Props = {
     keeper: KeeperPlugin,
     database: DbPlugin,
     withLabel?: boolean,
+    size?: number,
 }
 
 export function ClusterDeploy(props: Props) {
-    const {keeper, database, withLabel = false} = props
+    const {keeper, database, withLabel = false, size} = props
     const [cluster, setCluster] = useState("")
     const [options, setOptions] = useState<ClusterOptions>(InitialRequest(keeper, database))
     const [overrides, setOverrides] = useState<{[node: string]: string}>({})
@@ -109,6 +110,7 @@ export function ClusterDeploy(props: Props) {
                 icon={<RocketLaunch/>}
                 variant={withLabel ? "button_label" : "button"}
                 label={"Deploy"}
+                size={size}
                 back={!!response}
                 onBackClick={() => setResponse(undefined)}
             >

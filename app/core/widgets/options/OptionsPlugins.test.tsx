@@ -26,7 +26,7 @@ describe("OptionsPlugins", () => {
         render(<OptionsPlugins plugins={PLUGINS} onUpdate={onUpdate}/>)
 
         openSelect("Keeper Plugin")
-        fireEvent.click(screen.getByRole("option", {name: "Native Etcd"}))
+        fireEvent.click(screen.getByRole("option", {name: /^Etcd/}))
 
         expect(onUpdate).toHaveBeenCalledWith({keeper: KeeperPlugin.NATIVE_ETCD, database: DbPlugin.POSTGRES})
     })
@@ -46,8 +46,8 @@ describe("OptionsPlugins", () => {
 
         openSelect("Keeper Plugin")
 
-        expect(screen.getByRole("option", {name: "Patroni Postgres"})).toBeInTheDocument()
-        expect(screen.getByRole("option", {name: "Native Postgres"})).toBeInTheDocument()
-        expect(screen.getByRole("option", {name: "Native Etcd"})).toBeInTheDocument()
+        expect(screen.getByRole("option", {name: /^Patroni Postgres/})).toBeInTheDocument()
+        expect(screen.getByRole("option", {name: /^Postgres/})).toBeInTheDocument()
+        expect(screen.getByRole("option", {name: /^Etcd/})).toBeInTheDocument()
     })
 })

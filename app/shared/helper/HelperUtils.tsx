@@ -34,6 +34,7 @@ import {
     KeeperState,
     KeeperStatus,
     PlatformVaultConnection,
+    ReleaseStage,
     Role,
 } from "../../features/node/api/NodeType"
 import {Status as PermissionStatus} from "../../features/permission/api/PermissionType"
@@ -73,10 +74,16 @@ export const VaultOptions: { [key in VaultType]: EnumOptions } = {
     [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
 }
 
-export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlugin: DbPlugin} } = {
-    [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres", dbPlugin: DbPlugin.POSTGRES},
-    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Native Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES},
-    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Native Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD},
+export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlugin: DbPlugin, stage: ReleaseStage} } = {
+    [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.STABLE},
+    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.BETA},
+    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD, stage: ReleaseStage.ALPHA},
+}
+
+export const ReleaseStageOptions: { [key in ReleaseStage]: {label: string, description: string, color: "success" | "warning" | "error"} } = {
+    [ReleaseStage.STABLE]: {label: "STABLE", description: "Production ready", color: "success"},
+    [ReleaseStage.BETA]: {label: "BETA", description: "Mostly stable, expect rough edges", color: "warning"},
+    [ReleaseStage.ALPHA]: {label: "ALPHA", description: "Experimental, use with caution", color: "error"},
 }
 
 export const DbPluginOptions: { [key in DbPlugin]: EnumOptions } = {

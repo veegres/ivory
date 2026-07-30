@@ -2,20 +2,17 @@ import {Box} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
-import {ClusterDeploy} from "../../../../features/cluster/component/ClusterDeploy"
-import {ClusterDetect} from "../../../../features/cluster/component/ClusterDetect"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {ActionsLoader} from "../../../../shared/component/progress/ActionsLoader"
 import {SkeletonRows} from "../../../../shared/component/progress/SkeletonRows"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {KeeperPluginOptions, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
+import {SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import scroll from "../../../../shared/style/scroll.module.css"
 import {ListClusterAdd} from "./ListClusterAdd"
 import {ListEmptyInfo} from "./ListEmptyInfo"
 import {ListRow} from "./ListRow"
 import {ListRowNew} from "./ListRowNew"
-import {ListTableRefresher} from "./ListTableRefresher"
 
 const SX: SxPropsMap = {
     box: {overflowY: "scroll"},
@@ -37,7 +34,6 @@ type Props = {
 }
 
 export function ListTable(props: Props) {
-    const keeper = useStore(s => s.activeClusterKeeperPlugin)
     const activeCluster = useStore(s => s.activeCluster)
     const search = useStore(s => s.searchCluster)
     const {list, fetching, pending} = props
@@ -52,9 +48,6 @@ export function ListTable(props: Props) {
                 <Box sx={SX.headName}>Name</Box>
                 <Box sx={SX.headClusters}>Clusters</Box>
                 <ActionsLoader label={<Box sx={SX.headNodes}>Nodes</Box>} loading={fetching && !pending}>
-                    <ListTableRefresher/>
-                    <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
-                    <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
                     <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                 </ActionsLoader>
             </Box>

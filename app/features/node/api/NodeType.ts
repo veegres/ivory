@@ -20,9 +20,6 @@ export enum KeeperStatus {
 
 export type Role = "leader"|"replica"|"unknown";
 
-// KeeperState is Ivory's normalized keeper state: every adapter maps its own
-// plugin-specific and version-specific vocabulary (e.g. Patroni renamed
-// state names across releases) onto this fixed set on the backend.
 export type KeeperState = "running"|"starting"|"restarting"|"stopping"|"stopped"|"failed"|"unreachable"|"unknown";
 
 export interface Keeper {
@@ -117,9 +114,6 @@ export interface PlatformCopyIdRequest {
     publicKey: string,
 }
 
-// PlatformUpRequest is the low-level deployment primitive: options is the
-// user-editable options template and values holds the {{placeholder}}
-// interpolation values (cluster, dcs, ports, aux ports, ...).
 export interface PlatformUpRequest {
     name: string,
     image: string,
@@ -134,9 +128,6 @@ export interface PlatformUpRequest {
     values: {[key: string]: string},
 }
 
-// KeeperDeployNode is the single-node shape for KeeperDeployRequest: it
-// mirrors the server's KeeperDeployPlanNodeRequest rather than reusing the
-// cluster feature's DeployNode, since node must not import from cluster.
 export interface KeeperDeployNode {
     host: string,
     sshPort?: number,
@@ -146,12 +137,6 @@ export interface KeeperDeployNode {
     options?: string,
 }
 
-// KeeperDeployRequest deploys a single keeper node end-to-end: plugin and
-// values resolve the deployment plan for this one node (ports, options,
-// interpolation), connection and vaults are resolved by the caller (e.g. a
-// stored cluster's vaults) since node has no access to cluster storage.
-// singleHost must match the cluster's own networking mode - deploying a new
-// node with a different mode than its peers produces an incompatible container.
 export interface KeeperDeployRequest {
     plugin: KeeperPlugin,
     cluster: string,
@@ -170,9 +155,6 @@ export interface KeeperDeploySpecRequest {
     plugin: KeeperPlugin,
 }
 
-// DeployFieldResponse describes one editable image-level field: its value
-// interpolates as {{name}}, the plan prefills it (a user edit wins), derived
-// marks values computed from the node list.
 export interface DeployFieldResponse {
     name: string,
     label: string,
@@ -182,12 +164,6 @@ export interface DeployFieldResponse {
     derived: boolean,
 }
 
-// InterpolationVar is a built-in {{placeholder}} variable usable in the
-// user-editable Options text, in its interpolated form; plugin-declared
-// field names extend this set. Mirrors the subset of the server's
-// keeper.Var constants that can appear in Options - keeper.VarPrimaryHost
-// is deliberately not included here, since it only ever appears in
-// EntryScript, which is never shown or editable in the UI.
 export enum InterpolationVar {
     Cluster = "{{cluster}}",
     Host = "{{host}}",
@@ -197,12 +173,6 @@ export enum InterpolationVar {
     DbPass = "{{dbPass}}",
 }
 
-// DeployFieldsResponse tells the form which fields the keeper plugin needs.
-// defaults mirrors the spec's built-in variable defaults keyed by the
-// variable's interpolated form: an absent {{keeperPort}} hides the keeper
-// port inputs (the keeper endpoint is the database itself), an absent
-// {{dbUser}} hides the credential inputs (a non-empty value is the
-// engine-required username, prefilled and locked).
 export interface DeployFieldsResponse {
     defaults: {[name: string]: string},
     fields: DeployFieldResponse[],
@@ -213,8 +183,6 @@ export interface KeeperDeploySpecResponse {
     fields: DeployFieldsResponse,
 }
 
-// KeeperDeployPlanRequest describes a deployment intent: everything except the
-// node hosts is optional and falls back to the keeper plugin's spec.
 export interface KeeperDeployPlanRequest {
     plugin: KeeperPlugin,
     cluster: string,
@@ -224,10 +192,6 @@ export interface KeeperDeployPlanRequest {
     nodes: KeeperDeployNode[],
 }
 
-// KeeperDeployPlanResponse is the resolved deployment: concrete ports and options
-// per node, the effective field values (user-provided or computed), the
-// post-deploy command templates, and advisory warnings. Previews mask
-// credentials.
 export interface KeeperDeployPlanResponse {
     image: string,
     values: {[name: string]: string},
@@ -286,3 +250,9 @@ export type PlatformInfoRequest = PlatformVaultConnection
 // SPECIFIC (WEB)
 
 export enum NodeTabType {DATABASE, CONTAINER, KEEPER, TOOLS, PLATFORM}
+
+export enum ReleaseStage {
+    ALPHA = "alpha",
+    BETA = "beta",
+    STABLE = "stable",
+}

@@ -7,8 +7,9 @@ import {HiddenScrolling} from "./HiddenScrolling"
 
 const ALL = "ALL"
 const SX: SxPropsMap = {
-    after: {display: "flex", gap: "3px"},
-    element: {padding: "3px 7px", borderRadius: "3px", lineHeight: "1"},
+    after: {display: "flex", gap: "3px", flexGrow: 1},
+    element: {padding: "6px 7px", borderRadius: "3px", lineHeight: "1"},
+    count: {width: "30px"},
 }
 
 type Props = {
@@ -42,7 +43,18 @@ export function ToggleButtonScrollable(props: Props) {
             <Box sx={SX.after}>
                 {renderInfo()}
                 <Tooltip title={renderTagsTooltip()} placement={"top"}>
-                    <span>{renderSelectButton(count, !isAll)}</span>
+                    <Box component={"span"}>
+                        <ToggleButton
+                            sx={[SX.element, SX.count]}
+                            color={"secondary"}
+                            size={"small"}
+                            selected={!isAll}
+                            disabled={true}
+                            value={count}
+                        >
+                            {count}
+                        </ToggleButton>
+                    </Box>
                 </Tooltip>
             </Box>
         )

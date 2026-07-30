@@ -30,10 +30,11 @@ type Props = {
     keeper: KeeperPlugin,
     database: DbPlugin,
     withLabel?: boolean,
+    size?: number,
 }
 
 export function ClusterDetect(props: Props) {
-    const {keeper, database, withLabel = false} = props
+    const {keeper, database, withLabel = false, size} = props
     const [request, setRequest] = useState(InitialRequest(keeper, database))
     const [portPlugin, setPortPlugin] = useState<KeeperPlugin>()
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
@@ -49,6 +50,7 @@ export function ClusterDetect(props: Props) {
                 icon={<AutoFixHigh/>}
                 variant={withLabel ? "button_label" : "button"}
                 label={"Detect"}
+                size={size}
             >
                 <TextField
                     size={"small"}
