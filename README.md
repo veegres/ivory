@@ -22,8 +22,36 @@ It is designed for developers and DBAs who want a single UI to operate, troubles
 high-availability database clusters — without dropping into the CLI for every 
 task.
 
-Ivory can run as a local tool on your laptop or as a shared service on a VM for team use. It provides
-such things as:
+Ivory can run as a local tool on your laptop or as a shared service on a VM for team use.
+
+### Vision: Beyond Postgres
+
+Ivory started as a Postgres/Patroni tool. We're working towards a more pluggable architecture,
+where support for other databases and HA tools could be added as a plugin, instead of being baked
+into the core. v2 is the first step of that rework:
+
+| Version | |
+|---|---|
+| **v1** | Hard-wired to Patroni and Postgres, with Postgres-centric node management and no mobile support. |
+| **v2** | Pluggable Keeper and database engines — the goal is to manage different databases by implementing a simple plugin for each, instead of baking their behaviour into the core. Node management is now VM-centric, with nodes modeled as Hardware + Software behind a generic Platform abstraction (on-prem Docker over SSH today, Kubernetes/OpenShift planned). The UI is now mobile friendly, so you can check on and operate your clusters from your phone. |
+
+---
+
+<div align="center">
+  <h3>🌟 Support This Project! 🌟</h3>
+</div>
+
+If you found this project helpful, interesting, or inspiring, please consider giving it a **star** ⭐! Your support helps:
+
+✅ **Increase visibility** – More people can discover and benefit from this project.  
+✅ **Boost motivation** – It encourages us to keep improving and adding new features.  
+✅ **Show appreciation** – A small gesture that means a lot to open-source creators!
+
+Thank you for being part of this journey! 🚀
+
+---
+
+## Features
 
 **Cluster management**
 - [Keep all clusters in one place — register by hand, auto-detect from a single node address, or deploy fresh](.doc/clusters.md)
@@ -41,22 +69,6 @@ such things as:
 **Database troubleshooting**
 - [Run and save template SQL queries for database monitoring](.doc/node.md#database)
 - [Manage Postgres bloat with pgcompacttable](.doc/pg_compacttable.md)
-
----
-
-<div align="center">
-  <h3>🌟 Support This Project! 🌟</h3>
-</div>
-
-If you found this project helpful, interesting, or inspiring, please consider giving it a **star** ⭐! Your support helps:
-
-✅ **Increase visibility** – More people can discover and benefit from this project.  
-✅ **Boost motivation** – It encourages us to keep improving and adding new features.  
-✅ **Show appreciation** – A small gesture that means a lot to open-source creators!
-
-Thank you for being part of this journey! 🚀
-
----
 
 ## Get started
 1. Start the docker container
