@@ -1,5 +1,4 @@
 import {defineConfig, globalIgnores, reactHooksPlugin, reactPlugin, ts} from "@rslint/core"
-import tanstackQueryPlugin from "@tanstack/eslint-plugin-query"
 import simpleImportSortPlugin from "eslint-plugin-simple-import-sort"
 import globals from "globals"
 
@@ -30,11 +29,9 @@ export default defineConfig([
     },
     {
         plugins: {
-            "@tanstack/query": tanstackQueryPlugin,
             "simple-import-sort": simpleImportSortPlugin,
         },
         rules: {
-            ...tanstackQueryPlugin.configs.recommended.rules,
             "simple-import-sort/imports": "error",
             "simple-import-sort/exports": "error",
         },
