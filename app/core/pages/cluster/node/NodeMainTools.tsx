@@ -43,7 +43,7 @@ export function NodeMainTools(props: Props) {
     const overview = useRouterClusterOverview(cluster.name, false)
 
     const tools = TOOLS.filter(t => overview.data?.features[t.feature] !== false)
-    if (tools.length === 0) return <ErrorSmart error={"No tools are supported by this cluster's plugins"}/>
+    if (tools.length === 0) return <ErrorSmart type={"info"} error={`There is no available tools for ${cluster.plugins.database} plugin`}/>
 
     return (
         <Box sx={SX.box}>

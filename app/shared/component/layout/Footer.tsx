@@ -5,7 +5,7 @@ import {IvoryLinks} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", fontFamily: "monospace", margin: "5px 20px 5px", gap: "5px"},
-    links: {display: "flex", justifyContent: "center", gap: 3, fontSize: "12px"},
+    links: {display: "flex", flexWrap: "wrap", justifyContent: "center", rowGap: 1, columnGap: 3, fontSize: "12px"},
     version: {display: "flex", justifyContent: "center", color: "text.disabled", fontSize: "8px"},
 }
 

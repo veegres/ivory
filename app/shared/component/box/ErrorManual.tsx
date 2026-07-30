@@ -13,7 +13,7 @@ export function ErrorDbMissing() {
 }
 
 export function ErrorSshMissing() {
-    return <ErrorSmart error={"Provide SSH Key and Port to interact with VM"}/>
+    return <ErrorSmart error={"Provide SSH Key and VM Port to interact with it"}/>
 }
 
 export function ErrorKeeperMissing() {
@@ -33,5 +33,5 @@ export function ErrorNoAccess({name}: {name: string}) {
 }
 
 export function ErrorNotSupported({name}: {name: string}) {
-    return <ErrorSmart error={`The ${name} feature is not supported by the current cluster's plugins`}/>
+    return <ErrorSmart type={"info"} error={`The ${name} feature is not supported by the current cluster's plugin`}/>
 }
