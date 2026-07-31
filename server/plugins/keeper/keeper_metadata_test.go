@@ -42,12 +42,12 @@ func TestDeploymentSpecUnknownVariables(t *testing.T) {
 			name: "misspelled variables are reported once",
 			spec: DeploymentSpec{
 				Ports:      []string{"{{dbPortt}}"},
-				PostDeploy: []string{"login {{dbUesr}}:{{dbPass}}", "again {{dbUesr}}"},
+				PostScript: "login {{dbUesr}}:{{dbPass}}\nagain {{dbUesr}}",
 				Env: []EnvVar{
 					{Name: "PASSWORD", Value: `"{{dbPassword}}"`},
 				},
 			},
-			expected: []string{"{{dbPortt}}", "{{dbUesr}}", "{{dbPassword}}"},
+			expected: []string{"{{dbUesr}}", "{{dbPortt}}", "{{dbPassword}}"},
 		},
 		{
 			name: "undeclared field template variables are reported",

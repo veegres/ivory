@@ -50,31 +50,31 @@ func TestDeploymentSpec(t *testing.T) {
 		t.Errorf("expected db port default 2379, got %+v", spec.Defaults)
 	}
 	if len(spec.Fields) != 2 {
-		t.Fatalf("expected the peerPort and initialCluster fields, got %+v", spec.Fields)
+		t.Fatalf("expected the peerPort and clusterHosts fields, got %+v", spec.Fields)
 	}
 	if spec.Fields[0].Name != keeper.VarPeerPort || spec.Fields[0].Type != keeper.FieldPort || spec.Fields[0].Default != "2380" {
 		t.Errorf("expected a peerPort port field with default 2380, got %+v", spec.Fields[0])
 	}
-	if spec.Fields[1].Name != keeper.VarInitialCluster || spec.Fields[1].Type != keeper.FieldText {
-		t.Errorf("expected an initialCluster text field, got %+v", spec.Fields[1])
+	if spec.Fields[1].Name != keeper.VarClusterHosts || spec.Fields[1].Type != keeper.FieldText {
+		t.Errorf("expected a clusterHosts text field, got %+v", spec.Fields[1])
 	}
 	if spec.Fields[1].Template != "{{host}}=http://{{host}}:{{peerPort}}" || spec.Fields[1].Separator != "," {
-		t.Errorf("unexpected initialCluster template %q with separator %q", spec.Fields[1].Template, spec.Fields[1].Separator)
+		t.Errorf("unexpected clusterHosts template %q with separator %q", spec.Fields[1].Template, spec.Fields[1].Separator)
 	}
 	if user, ok := spec.Defaults[keeper.VarDbUser]; !ok || user != "root" {
 		t.Errorf("expected credentials with the etcd-required username root (auth enable needs it), got %+v", spec.Defaults)
 	}
-	if len(spec.PostDeploy) != 3 {
-		t.Fatalf("expected 3 post-deploy auth commands, got %+v", spec.PostDeploy)
+	if spec.PostScript == "" {
+		t.Fatal("expected a post-deploy auth script")
 	}
-	if !strings.Contains(spec.PostDeploy[0], "user add") || !strings.Contains(spec.PostDeploy[0], "{{dbUser}}:{{dbPass}}") {
-		t.Errorf("expected the first post-deploy command to create the credentials user, got %q", spec.PostDeploy[0])
+	if !strings.Contains(spec.PostScript, "user add") || !strings.Contains(spec.PostScript, "{{dbUser}}:{{dbPass}}") {
+		t.Errorf("expected the post-deploy script to create the credentials user, got %q", spec.PostScript)
 	}
-	if !strings.Contains(spec.PostDeploy[1], "user grant-role {{dbUser}} root") {
-		t.Errorf("expected the second post-deploy command to grant the root role, got %q", spec.PostDeploy[1])
+	if !strings.Contains(spec.PostScript, "user grant-role {{dbUser}} root") {
+		t.Errorf("expected the post-deploy script to grant the root role, got %q", spec.PostScript)
 	}
-	if !strings.Contains(spec.PostDeploy[2], "auth enable") {
-		t.Errorf("expected the last post-deploy command to enable authentication, got %q", spec.PostDeploy[2])
+	if !strings.Contains(spec.PostScript, "auth enable") {
+		t.Errorf("expected the post-deploy script to enable authentication, got %q", spec.PostScript)
 	}
 	for _, port := range spec.Ports {
 		if port == "2380" {

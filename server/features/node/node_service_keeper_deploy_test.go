@@ -6,9 +6,11 @@ import (
 	"ivory/clients/console/ssh"
 	"ivory/core/utils"
 	"ivory/plugins/keeper"
+	"ivory/plugins/keeper/clickhouse"
 	"ivory/plugins/keeper/etcd"
 	"ivory/plugins/keeper/patroni"
 	"ivory/plugins/keeper/postgres"
+	"ivory/plugins/keeper/redis"
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/linux"
 	"reflect"
@@ -26,6 +28,8 @@ func newDeployTestService() *Service {
 	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
 	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
 	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	keeperMetadataRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
+	keeperMetadataRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
 	return &Service{
 		platformRegistry:       platformRegistry,
 		keeperMetadataRegistry: keeperMetadataRegistry,
@@ -81,7 +85,7 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 					Defaults: map[string]string{string(keeper.VarDbPort): "2379", string(keeper.VarDbUser): "root"},
 					Fields: []DeployFieldResponse{
 						{Name: "{{peerPort}}", Label: "Peer Port", Type: "port", Default: "2380"},
-						{Name: "{{initialCluster}}", Label: "Initial Cluster", Type: "text", Derived: true},
+						{Name: "{{clusterHosts}}", Label: "Initial Cluster", Type: "text", Derived: true},
 					},
 				},
 			},
@@ -158,7 +162,7 @@ func TestService_KeeperDeployPlanTemplates(t *testing.T) {
 		"-v /data/etcd:/data/etcd\n" +
 		"-e ETCD_NAME=\"{{host}}\"\n" +
 		"-e ETCD_DATA_DIR=\"/data/etcd\"\n" +
-		"-e ETCD_INITIAL_CLUSTER=\"{{initialCluster}}\"\n" +
+		"-e ETCD_INITIAL_CLUSTER=\"{{clusterHosts}}\"\n" +
 		"-e ETCD_INITIAL_CLUSTER_STATE=\"new\"\n" +
 		"-e ETCD_INITIAL_CLUSTER_TOKEN=\"{{cluster}}\"\n" +
 		"-e ETCD_LISTEN_CLIENT_URLS=\"http://0.0.0.0:{{dbPort}}\"\n" +
@@ -170,7 +174,7 @@ func TestService_KeeperDeployPlanTemplates(t *testing.T) {
 		"--network host\n" +
 		"-e ETCD_NAME=\"{{host}}\"\n" +
 		"-e ETCD_DATA_DIR=\"/data/etcd\"\n" +
-		"-e ETCD_INITIAL_CLUSTER=\"{{initialCluster}}\"\n" +
+		"-e ETCD_INITIAL_CLUSTER=\"{{clusterHosts}}\"\n" +
 		"-e ETCD_INITIAL_CLUSTER_STATE=\"new\"\n" +
 		"-e ETCD_INITIAL_CLUSTER_TOKEN=\"{{cluster}}\"\n" +
 		"-e ETCD_LISTEN_CLIENT_URLS=\"http://0.0.0.0:{{dbPort}}\"\n" +
@@ -320,11 +324,11 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 		expectedMembers := "n1=http://n1:2380,n2=http://n2:2381,n3=http://n3:2382"
-		if plan.Values["{{initialCluster}}"] != expectedMembers {
-			t.Errorf("Values[{{initialCluster}}] = %q, want %q", plan.Values["{{initialCluster}}"], expectedMembers)
+		if plan.Values["{{clusterHosts}}"] != expectedMembers {
+			t.Errorf("Values[{{clusterHosts}}] = %q, want %q", plan.Values["{{clusterHosts}}"], expectedMembers)
 		}
-		if len(plan.PostDeploy) != 3 {
-			t.Errorf("expected the etcd auth post-deploy commands, got %+v", plan.PostDeploy)
+		if plan.PostScript == "" {
+			t.Error("expected the etcd auth post-deploy script")
 		}
 		for i, node := range plan.Nodes {
 			if node.Ports["{{peerPort}}"] != 2380+i {
@@ -351,8 +355,8 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if plan.Values["{{initialCluster}}"] != "n1=http://n1:2380,n2=http://n2:2380" {
-			t.Errorf("Values[{{initialCluster}}] = %q", plan.Values["{{initialCluster}}"])
+		if plan.Values["{{clusterHosts}}"] != "n1=http://n1:2380,n2=http://n2:2380" {
+			t.Errorf("Values[{{clusterHosts}}] = %q", plan.Values["{{clusterHosts}}"])
 		}
 		if plan.Nodes[0].DbPort != 2379 || plan.Nodes[1].Ports["{{peerPort}}"] != 2380 {
 			t.Errorf("unexpected ports %+v", plan.Nodes)
@@ -432,6 +436,37 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		}
 	})
 
+	t.Run("clickhouse gives every node including the primary an entry script", func(t *testing.T) {
+		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
+			Plugin:  keeper.NATIVE_CLICKHOUSE,
+			Cluster: "ch",
+			Values:  map[string]string{"{{dcs}}": "keeper1:9181,keeper2:9181"},
+			Nodes:   []KeeperDeployPlanNodeRequest{{Host: "ch1"}, {Host: "ch2"}},
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		expectedClusterHosts := "<replica><host>ch1</host><port>9000</port></replica><replica><host>ch2</host><port>9000</port></replica>"
+		if plan.Values["{{clusterHosts}}"] != expectedClusterHosts {
+			t.Errorf("Values[{{clusterHosts}}] = %q, want %q", plan.Values["{{clusterHosts}}"], expectedClusterHosts)
+		}
+		for i, host := range []string{"ch1", "ch2"} {
+			node := plan.Nodes[i]
+			if node.EntryScript == "" {
+				t.Fatalf("node %q: expected a non-empty EntryScript even for the primary, clickhouse leaves EntryScriptReplicasOnly false", host)
+			}
+			if !strings.Contains(node.EntryScriptPreview, expectedClusterHosts) {
+				t.Errorf("node %q: expected EntryScriptPreview to embed the resolved cluster replica list, got:\n%s", host, node.EntryScriptPreview)
+			}
+			if !strings.Contains(node.EntryScriptPreview, `dcs="keeper1:9181,keeper2:9181"`) {
+				t.Errorf("node %q: expected EntryScriptPreview to resolve the dcs field, got:\n%s", host, node.EntryScriptPreview)
+			}
+		}
+		if len(plan.Warnings) != 0 {
+			t.Errorf("expected no warnings, got %v", plan.Warnings)
+		}
+	})
+
 	t.Run("etcd user-edited peer port becomes the base", func(t *testing.T) {
 		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
 			Plugin:     keeper.NATIVE_ETCD,
@@ -449,8 +484,8 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		if plan.Nodes[0].Ports["{{peerPort}}"] != 3000 || plan.Nodes[1].Ports["{{peerPort}}"] != 3001 {
 			t.Errorf("unexpected per-node peer ports %+v", plan.Nodes)
 		}
-		if plan.Values["{{initialCluster}}"] != "n1=http://n1:3000,n2=http://n2:3001" {
-			t.Errorf("Values[{{initialCluster}}] = %q", plan.Values["{{initialCluster}}"])
+		if plan.Values["{{clusterHosts}}"] != "n1=http://n1:3000,n2=http://n2:3001" {
+			t.Errorf("Values[{{clusterHosts}}] = %q", plan.Values["{{clusterHosts}}"])
 		}
 	})
 
@@ -458,14 +493,14 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
 			Plugin:  keeper.NATIVE_ETCD,
 			Cluster: "dcs",
-			Values:  map[string]string{"{{initialCluster}}": "custom=http://elsewhere:2380"},
+			Values:  map[string]string{"{{clusterHosts}}": "custom=http://elsewhere:2380"},
 			Nodes:   []KeeperDeployPlanNodeRequest{{Host: "n1"}},
 		})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if plan.Values["{{initialCluster}}"] != "custom=http://elsewhere:2380" {
-			t.Errorf("Values[initialCluster] = %q, want the edited value", plan.Values["{{initialCluster}}"])
+		if plan.Values["{{clusterHosts}}"] != "custom=http://elsewhere:2380" {
+			t.Errorf("Values[{{clusterHosts}}] = %q, want the edited value", plan.Values["{{clusterHosts}}"])
 		}
 		if !strings.Contains(plan.Nodes[0].OptionsPreview, `-e ETCD_INITIAL_CLUSTER="custom=http://elsewhere:2380"`) {
 			t.Errorf("preview misses the edited member list:\n%s", plan.Nodes[0].OptionsPreview)

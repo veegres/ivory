@@ -47,14 +47,14 @@ func TestMapKeeperDeploymentFields(t *testing.T) {
 				Defaults: map[keeper.Var]string{keeper.VarDbPort: "2379"},
 				Fields: []keeper.FieldSpec{
 					{Name: "{{peerPort}}", Label: "Peer Port", Type: keeper.FieldPort, Default: "2380"},
-					{Name: "{{initialCluster}}", Label: "Initial Cluster", Type: keeper.FieldText, Template: "{{host}}=http://{{host}}:{{peerPort}}", Separator: ","},
+					{Name: "{{clusterHosts}}", Label: "Initial Cluster", Type: keeper.FieldText, Template: "{{host}}=http://{{host}}:{{peerPort}}", Separator: ","},
 				},
 			},
 			expected: DeployFieldsResponse{
 				Defaults: map[string]string{string(keeper.VarDbPort): "2379"},
 				Fields: []DeployFieldResponse{
 					{Name: "{{peerPort}}", Label: "Peer Port", Type: "port", Default: "2380"},
-					{Name: "{{initialCluster}}", Label: "Initial Cluster", Type: "text", Derived: true},
+					{Name: "{{clusterHosts}}", Label: "Initial Cluster", Type: "text", Derived: true},
 				},
 			},
 		},

@@ -59,11 +59,13 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 	dbPortDefault, _ := strconv.Atoi(spec.Defaults[keeper.VarDbPort])
 	keeperPortDefault, hasKeeperEndpoint := spec.Defaults[keeper.VarKeeperPort]
 
-	// NOTE: the first node in the list is always the primary (see
-	// keeper.DeploymentSpec.EntryScript's doc for why) and always gets the
-	// image's normal command; every other node gets EntryScript with
-	// VarPrimaryHost resolved to the primary's real host, already known
-	// from the request itself.
+	// NOTE: EntryScript applies to every node by default, the first node
+	// (the primary; see keeper.DeploymentSpec.EntryScript's doc for why it's
+	// first) included, unless the plugin sets EntryScriptReplicasOnly, in
+	// which case the primary gets the image's normal command instead and
+	// only the other nodes get EntryScript. Either way, VarPrimaryHost is
+	// resolved to the primary's real host, already known from the request
+	// itself.
 	var primaryHost string
 	if len(r.Nodes) > 0 {
 		primaryHost = r.Nodes[0].Host
@@ -103,7 +105,7 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 			options = template
 		}
 		var entryScript string
-		if i > 0 && spec.EntryScript != "" {
+		if (i > 0 || !spec.EntryScriptReplicasOnly) && spec.EntryScript != "" {
 			entryScript = strings.ReplaceAll(spec.EntryScript, string(keeper.VarPrimaryHost), primaryHost)
 		}
 		nodes = append(nodes, KeeperDeployPlanNode{
@@ -188,7 +190,7 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 	return &KeeperDeployPlanResponse{
 		Image:      image,
 		Values:     effective,
-		PostDeploy: spec.PostDeploy,
+		PostScript: spec.PostScript,
 		Fields:     mapKeeperDeploymentFields(spec),
 		Nodes:      nodes,
 		Warnings:   warnings,
@@ -256,12 +258,15 @@ func (s *Service) KeeperDeployUp(r KeeperDeployUpRequest) ([]string, error) {
 	})
 }
 
-// KeeperPostDeploy runs a deployment plan's post-deploy initialization
-// commands (e.g. enabling authentication) inside one already-deployed node.
-// A failing command stops the remaining ones but is reported as a log line
-// rather than an error, since the deployment itself already succeeded.
+// KeeperPostDeploy runs a deployment plan's post-deploy script (e.g.
+// enabling authentication) once inside one already-deployed node. A failing
+// script is reported as a log line rather than an error, since the
+// deployment itself already succeeded.
 func (s *Service) KeeperPostDeploy(r KeeperPostDeployRequest) []string {
-	logs := make([]string, 0, len(r.PostDeploy))
+	if r.PostScript == "" {
+		return nil
+	}
+	logs := make([]string, 0, 1)
 
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
@@ -269,22 +274,18 @@ func (s *Service) KeeperPostDeploy(r KeeperPostDeployRequest) []string {
 		return logs
 	}
 	nodeValues := s.buildNodeValues(r.Cluster, r.RequestValues, r.PlanValues, r.Node)
-	// NOTE: resolved once and reused across every command below, instead of
-	// re-fetching and re-decrypting the same vault secret per command.
 	values, err := s.getExecutionValues(r.Connection.Host, r.Vaults, nodeValues)
 	if err != nil {
 		logs = append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err))
 		return logs
 	}
 
-	for _, command := range r.PostDeploy {
-		res, err := s.execContainerCommand(adapter, conn, r.Node.Host, command, values)
-		if err != nil {
-			logs = append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err))
-			return logs
-		}
-		logs = append(logs, res...)
+	res, err := s.execContainerCommand(adapter, conn, r.Node.Host, r.PostScript, values)
+	if err != nil {
+		logs = append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err))
+		return logs
 	}
+	logs = append(logs, res...)
 	return logs
 }
 
@@ -334,8 +335,8 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 		return nil, err
 	}
 
-	if len(plan.PostDeploy) > 0 {
-		logs = append(logs, s.KeeperPostDeploy(KeeperPostDeployRequest{KeeperDeployExecRequest: execRequest, PostDeploy: plan.PostDeploy})...)
+	if plan.PostScript != "" {
+		logs = append(logs, s.KeeperPostDeploy(KeeperPostDeployRequest{KeeperDeployExecRequest: execRequest, PostScript: plan.PostScript})...)
 	}
 	return logs, nil
 }

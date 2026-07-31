@@ -197,7 +197,7 @@ export interface KeeperDeployPlanRequest {
 export interface KeeperDeployPlanResponse {
     image: string,
     values: {[name: string]: string},
-    postDeploy: string[],
+    postScript: string,
     fields: DeployFieldsResponse,
     nodes: KeeperDeployPlanNode[],
     warnings: string[],

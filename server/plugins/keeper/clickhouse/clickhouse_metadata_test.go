@@ -3,6 +3,7 @@ package clickhouse
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"strings"
 	"testing"
 )
 
@@ -51,14 +52,29 @@ func TestDeploymentSpec(t *testing.T) {
 	if spec.Defaults[keeper.VarDbPort] != "9000" {
 		t.Errorf("expected db port default 9000, got %+v", spec.Defaults)
 	}
-	if len(spec.Fields) != 0 {
-		t.Errorf("expected no fields, got %+v", spec.Fields)
+	if len(spec.Fields) != 2 {
+		t.Fatalf("expected the dcs and clusterHosts fields, got %+v", spec.Fields)
 	}
-	if len(spec.PostDeploy) != 0 {
-		t.Errorf("expected no post-deploy commands, got %+v", spec.PostDeploy)
+	if spec.Fields[0].Name != keeper.VarDcs || spec.Fields[0].Type != keeper.FieldText {
+		t.Errorf("expected a dcs text field, got %+v", spec.Fields[0])
 	}
-	if spec.EntryScript != "" {
-		t.Errorf("expected no entry script (no automatic clustering), got %q", spec.EntryScript)
+	if spec.Fields[1].Name != keeper.VarClusterHosts || spec.Fields[1].Type != keeper.FieldText {
+		t.Errorf("expected a clusterHosts text field, got %+v", spec.Fields[1])
+	}
+	if !strings.Contains(spec.Fields[1].Template, string(keeper.VarHost)) || !strings.Contains(spec.Fields[1].Template, string(keeper.VarDbPort)) {
+		t.Errorf("expected clusterHosts template to reference host and db port, got %q", spec.Fields[1].Template)
+	}
+	if spec.PostScript != "" {
+		t.Errorf("expected no post-deploy script, got %q", spec.PostScript)
+	}
+	if spec.EntryScript == "" {
+		t.Error("expected an entry script to generate the cluster config on every node")
+	}
+	if spec.EntryScriptReplicasOnly {
+		t.Error("expected EntryScriptReplicasOnly false (default), clickhouse has no primary/replica asymmetry to skip node 0 for")
+	}
+	if !strings.Contains(spec.EntryScript, string(keeper.VarDcs)) || !strings.Contains(spec.EntryScript, string(keeper.VarClusterHosts)) {
+		t.Errorf("expected the entry script to reference both dcs and clusterHosts, got %q", spec.EntryScript)
 	}
 	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
 		t.Errorf("spec references unknown variables: %v", unknown)

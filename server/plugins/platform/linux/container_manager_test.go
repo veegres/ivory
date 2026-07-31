@@ -149,9 +149,9 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 	}
 }
 
-// TestExecContainerRecoversEscapedQuoteInHandWrittenSpan reproduces the etcd
-// PostDeploy pattern (`user add '{{dbUser}}:{{dbPass}}'`, a plugin's own
-// literal single quotes wrapped around an interpolated value): a password
+// TestExecContainerRecoversEscapedQuoteInHandWrittenSpan reproduces a
+// plugin's own hand-written single-quoted span wrapped around an
+// interpolated value (e.g. `user add '{{dbUser}}:{{dbPass}}'`): a password
 // containing a quote and a space must survive tokenizing intact once the
 // caller (node.getExecutionValues) has backslash-escaped it, instead of the
 // naive quote-toggle parser closing the span early and mangling the value.

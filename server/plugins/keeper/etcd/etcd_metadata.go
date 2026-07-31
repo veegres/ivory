@@ -22,13 +22,22 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
+// postScript enables authentication after the cluster is up, using the
+// database credentials as the root user - etcd has no bootstrap-time
+// credentials, so this can only happen once etcd itself is already running.
+// The three etcdctl steps are chained with "&&" into one script, the same
+// shape as EntryScript, so a failure partway through (e.g. the user already
+// existing) stops the rest rather than silently continuing.
+const postScript = `sh -c '
+etcdctl --endpoints=http://localhost:` + string(keeper.VarDbPort) + ` user add "` + string(keeper.VarDbUser) + `:` + string(keeper.VarDbPass) + `" &&
+etcdctl --endpoints=http://localhost:` + string(keeper.VarDbPort) + ` user grant-role ` + string(keeper.VarDbUser) + ` root &&
+etcdctl --endpoints=http://localhost:` + string(keeper.VarDbPort) + ` auth enable
+'`
+
 // DeploymentSpec bootstraps a static etcd cluster: the client port maps to
 // the node database port, the {{peerPort}} field (default 2380, unique per
-// node in single-host mode) is the peer listener, and the {{initialCluster}}
+// node in single-host mode) is the peer listener, and the {{clusterHosts}}
 // member list (name=http://host:peerPort,...) is derived from the node list.
-// Etcd has no bootstrap-time credentials: authentication is enabled after the
-// cluster is up via the PostDeploy etcdctl commands, using the database
-// credentials as the root user.
 func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
 	return keeper.DeploymentSpec{
 		DefaultImage: "quay.io/coreos/etcd:v3.6.5",
@@ -39,21 +48,17 @@ func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
 		},
 		Fields: []keeper.FieldSpec{
 			{Name: keeper.VarPeerPort, Label: "Peer Port", Type: keeper.FieldPort, Default: "2380"},
-			{Name: keeper.VarInitialCluster, Label: "Initial Cluster", Type: keeper.FieldText, Template: string(keeper.VarHost) + "=http://" + string(keeper.VarHost) + ":" + string(keeper.VarPeerPort), Separator: ","},
+			{Name: keeper.VarClusterHosts, Label: "Initial Cluster", Type: keeper.FieldText, Template: string(keeper.VarHost) + "=http://" + string(keeper.VarHost) + ":" + string(keeper.VarPeerPort), Separator: ","},
 		},
-		PostDeploy: []string{
-			"etcdctl --endpoints=http://localhost:" + string(keeper.VarDbPort) + " user add '" + string(keeper.VarDbUser) + ":" + string(keeper.VarDbPass) + "'",
-			"etcdctl --endpoints=http://localhost:" + string(keeper.VarDbPort) + " user grant-role " + string(keeper.VarDbUser) + " root",
-			"etcdctl --endpoints=http://localhost:" + string(keeper.VarDbPort) + " auth enable",
-		},
-		Ports: []string{string(keeper.VarDbPort), string(keeper.VarPeerPort)},
+		PostScript: postScript,
+		Ports:      []string{string(keeper.VarDbPort), string(keeper.VarPeerPort)},
 		Volumes: []keeper.VolumeSpec{
 			{HostPath: "/data/etcd", ContainerPath: "/data/etcd"},
 		},
 		Env: []keeper.EnvVar{
 			{Name: "ETCD_NAME", Value: `"` + string(keeper.VarHost) + `"`},
 			{Name: "ETCD_DATA_DIR", Value: `"/data/etcd"`},
-			{Name: "ETCD_INITIAL_CLUSTER", Value: `"` + string(keeper.VarInitialCluster) + `"`},
+			{Name: "ETCD_INITIAL_CLUSTER", Value: `"` + string(keeper.VarClusterHosts) + `"`},
 			{Name: "ETCD_INITIAL_CLUSTER_STATE", Value: `"new"`},
 			{Name: "ETCD_INITIAL_CLUSTER_TOKEN", Value: `"` + string(keeper.VarCluster) + `"`},
 			{Name: "ETCD_LISTEN_CLIENT_URLS", Value: `"http://0.0.0.0:` + string(keeper.VarDbPort) + `"`},
