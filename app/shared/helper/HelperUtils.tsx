@@ -78,6 +78,8 @@ export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlug
     [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.STABLE},
     [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.BETA},
     [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD, stage: ReleaseStage.ALPHA},
+    [KeeperPlugin.NATIVE_REDIS]: {name: "redis", label: "Redis", icon: <HeartBrokenTwoTone/>, key: "native_redis", dbPlugin: DbPlugin.REDIS, stage: ReleaseStage.ALPHA},
+    [KeeperPlugin.NATIVE_CLICKHOUSE]: {name: "clickhouse", label: "ClickHouse", icon: <HeartBrokenTwoTone/>, key: "native_clickhouse", dbPlugin: DbPlugin.CLICKHOUSE, stage: ReleaseStage.ALPHA},
 }
 
 export const ReleaseStageOptions: { [key in ReleaseStage]: {label: string, description: string, color: "success" | "warning" | "error"} } = {
@@ -89,6 +91,8 @@ export const ReleaseStageOptions: { [key in ReleaseStage]: {label: string, descr
 export const DbPluginOptions: { [key in DbPlugin]: EnumOptions } = {
     [DbPlugin.POSTGRES]: {name: "POSTGRES", label: "Postgres", icon: <DnsTwoTone/>, key: "postgres"},
     [DbPlugin.ETCD]: {name: "ETCD", label: "Etcd", icon: <DnsTwoTone/>, key: "etcd"},
+    [DbPlugin.REDIS]: {name: "REDIS", label: "Redis", icon: <DnsTwoTone/>, key: "redis"},
+    [DbPlugin.CLICKHOUSE]: {name: "CLICKHOUSE", label: "ClickHouse", icon: <DnsTwoTone/>, key: "clickhouse"},
 }
 
 export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {

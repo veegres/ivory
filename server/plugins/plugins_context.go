@@ -7,12 +7,16 @@ import (
 	"ivory/clients/http"
 	"ivory/core/utils"
 	"ivory/plugins/database"
+	chdb "ivory/plugins/database/clickhouse"
 	etcddb "ivory/plugins/database/etcd"
 	"ivory/plugins/database/postgres"
+	redisdb "ivory/plugins/database/redis"
 	"ivory/plugins/keeper"
+	chkeeper "ivory/plugins/keeper/clickhouse"
 	etcdkeeper "ivory/plugins/keeper/etcd"
 	"ivory/plugins/keeper/patroni"
 	pgkeeper "ivory/plugins/keeper/postgres"
+	rediskeeper "ivory/plugins/keeper/redis"
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/linux"
 )
@@ -31,8 +35,12 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	patroniAdapter := patroni.NewAdapter(httpClient)
 	pgKeeperAdapter := pgkeeper.NewAdapter()
 	etcdKeeperAdapter := etcdkeeper.NewAdapter()
+	redisKeeperAdapter := rediskeeper.NewAdapter()
+	clickhouseKeeperAdapter := chkeeper.NewAdapter()
 	postgresAdapter := postgres.NewAdapter()
 	etcdDbAdapter := etcddb.NewAdapter()
+	redisDbAdapter := redisdb.NewAdapter()
+	clickhouseDbAdapter := chdb.NewAdapter()
 	linuxAdapter := linux.NewAdapter(sshClient)
 
 	// REGISTRY
@@ -40,13 +48,19 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroniAdapter)
 	keeperRegistry.Register(keeper.NATIVE_POSTGRES, pgKeeperAdapter)
 	keeperRegistry.Register(keeper.NATIVE_ETCD, etcdKeeperAdapter)
+	keeperRegistry.Register(keeper.NATIVE_REDIS, redisKeeperAdapter)
+	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouseKeeperAdapter)
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
 	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroniAdapter)
 	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, pgKeeperAdapter)
 	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcdKeeperAdapter)
+	keeperMetadataRegistry.Register(keeper.NATIVE_REDIS, redisKeeperAdapter)
+	keeperMetadataRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouseKeeperAdapter)
 	databaseRegistry := utils.NewRegistry[database.Plugin, database.Adapter]()
 	databaseRegistry.Register(database.POSTGRES, postgresAdapter)
 	databaseRegistry.Register(database.ETCD, etcdDbAdapter)
+	databaseRegistry.Register(database.REDIS, redisDbAdapter)
+	databaseRegistry.Register(database.CLICKHOUSE, clickhouseDbAdapter)
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
 	platformRegistry.Register(platform.Linux, linuxAdapter)
 

@@ -42,8 +42,8 @@ rework:
 | [Patroni](https://patroni.readthedocs.io/) | Postgres   | STABLE  | The Keeper Ivory was originally built around                               |
 | Postgres                                   | Postgres   | BETA    | Not everyone needs HA — sometimes you just want to manage a plain Postgres |
 | ETCD                                       | ETCD       | ALPHA   | Patroni relies on etcd as a DCS, so managing it directly made sense too    |
-| Redis                                      | Redis      | PLANNED | —                                                                          |
-| ClickHouse                                 | ClickHouse | PLANNED | —                                                                          |
+| Redis                                      | Redis      | ALPHA   | A widely used cache/store that often sits right next to the databases Ivory already manages |
+| ClickHouse                                 | ClickHouse | ALPHA   | A popular analytics database and a natural next step for Ivory's plugin set |
 
 P.S. these particular databases weren't picked from a grand roadmap — they're mainly what the maintainer runs day to
 day, and Ivory exists to simplify that routine first. Broader support grows from there.

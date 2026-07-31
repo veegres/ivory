@@ -10,8 +10,10 @@ import (
 type Plugin string
 
 const (
-	POSTGRES Plugin = "postgres"
-	ETCD     Plugin = "etcd"
+	POSTGRES   Plugin = "postgres"
+	ETCD       Plugin = "etcd"
+	REDIS      Plugin = "redis"
+	CLICKHOUSE Plugin = "clickhouse"
 )
 
 func (p Plugin) String() string {

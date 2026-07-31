@@ -6,6 +6,8 @@ export enum KeeperPlugin {
     PATRONI_POSTGRES = "patroni_postgres",
     NATIVE_POSTGRES = "native_postgres",
     NATIVE_ETCD = "native_etcd",
+    NATIVE_REDIS = "native_redis",
+    NATIVE_CLICKHOUSE = "native_clickhouse",
 }
 
 export interface KeeperConnection {

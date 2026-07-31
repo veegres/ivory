@@ -5,6 +5,8 @@ import {Certs} from "../../cert/api/CertType"
 export enum DbPlugin {
     POSTGRES = "postgres",
     ETCD = "etcd",
+    REDIS = "redis",
+    CLICKHOUSE = "clickhouse",
 }
 
 export interface DbConfig {

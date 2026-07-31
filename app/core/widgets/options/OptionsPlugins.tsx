@@ -36,6 +36,8 @@ export function OptionsPlugins(props: Props) {
                     {renderKeeperItem(KeeperPlugin.PATRONI_POSTGRES)}
                     {renderKeeperItem(KeeperPlugin.NATIVE_POSTGRES)}
                     {renderKeeperItem(KeeperPlugin.NATIVE_ETCD)}
+                    {renderKeeperItem(KeeperPlugin.NATIVE_REDIS)}
+                    {renderKeeperItem(KeeperPlugin.NATIVE_CLICKHOUSE)}
                 </Select>
             </FormControl>
             <FormControl sx={SX.field} fullWidth size={"small"}>
@@ -49,6 +51,8 @@ export function OptionsPlugins(props: Props) {
                 >
                     <MenuItem value={DbPlugin.POSTGRES}>{DbPluginOptions[DbPlugin.POSTGRES].label}</MenuItem>
                     <MenuItem value={DbPlugin.ETCD}>{DbPluginOptions[DbPlugin.ETCD].label}</MenuItem>
+                    <MenuItem value={DbPlugin.REDIS}>{DbPluginOptions[DbPlugin.REDIS].label}</MenuItem>
+                    <MenuItem value={DbPlugin.CLICKHOUSE}>{DbPluginOptions[DbPlugin.CLICKHOUSE].label}</MenuItem>
                 </Select>
             </FormControl>
         </>
