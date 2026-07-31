@@ -23,13 +23,13 @@ type KeeperPlugin = keeper.Plugin
 // Built-in interpolation variable names, re-exported so other features never
 // import the plugin package directly.
 const (
-	VarCluster     = keeper.VarCluster
-	VarHost        = keeper.VarHost
-	VarKeeperPort  = keeper.VarKeeperPort
-	VarDbPort      = keeper.VarDbPort
-	VarDbUser      = keeper.VarDbUser
-	VarDbPass      = keeper.VarDbPass
-	VarPrimaryHost = keeper.VarPrimaryHost
+	VarCluster    = keeper.VarCluster
+	VarHost       = keeper.VarHost
+	VarKeeperPort = keeper.VarKeeperPort
+	VarDbPort     = keeper.VarDbPort
+	VarDbUser     = keeper.VarDbUser
+	VarDbPass     = keeper.VarDbPass
+	VarLeaderHost = keeper.VarLeaderHost
 )
 
 type KeeperStatus = keeper.Status

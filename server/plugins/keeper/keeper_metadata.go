@@ -49,7 +49,7 @@ type DeploymentSpec struct {
 	// same way as EntryScript.
 	PostScript string
 	// EntryScript, if set, replaces the image's own default startup command
-	// for every node, including the deploy's first (always the primary; see
+	// for every node, including the deploy's first (always the leader; see
 	// KeeperDeployPlan) - unless EntryScriptReplicasOnly is set, see its doc.
 	// Unlike PostScript, this isn't exec'd into an already-running container
 	// after the fact - it IS the container's own command, so it must itself
@@ -57,18 +57,18 @@ type DeploymentSpec struct {
 	// postgres rebases via pg_basebackup before postgres itself ever
 	// starts, since streaming replication needs a real base backup - a
 	// fresh initdb can't be turned into a replica by just pointing it at a
-	// primary). It uses the regular {{placeholder}} vocabulary, including
-	// VarPrimaryHost, interpolated by KeeperDeployPlan the same way as
+	// leader). It uses the regular {{placeholder}} vocabulary, including
+	// VarLeaderHost, interpolated by KeeperDeployPlan the same way as
 	// Options.
 	EntryScript string
 	// EntryScriptReplicasOnly, if true, skips EntryScript for the deploy's
-	// first node (the primary) instead of KeeperDeployPlan's default of
+	// first node (the leader) instead of KeeperDeployPlan's default of
 	// applying it uniformly to every node. Set this when the first node
 	// genuinely is special and must get the image's plain startup command -
 	// e.g. postgres/redis, where only a replica needs to rebase/attach
-	// itself to the primary, and the primary would break if it ran that same
+	// itself to the leader, and the leader would break if it ran that same
 	// script. Leave it false (the default) for keepers with no
-	// single-primary distinction at all, where every node - the first one
+	// single-leader distinction at all, where every node - the first one
 	// too - needs the identical startup-time setup (e.g. ClickHouse's
 	// EntryScript generates the same cluster config file on every node).
 	EntryScriptReplicasOnly bool
@@ -89,22 +89,22 @@ type Var string
 // Ivory first, then the plugin field variables (declared by plugins as
 // FieldSpec names), so names are all visible at a glance and never collide.
 const (
-	VarCluster     Var = "{{cluster}}"     // cluster name
-	VarHost        Var = "{{host}}"        // node host
-	VarKeeperPort  Var = "{{keeperPort}}"  // keeper endpoint port (the database port when there is no separate keeper endpoint)
-	VarDbPort      Var = "{{dbPort}}"      // database endpoint port
-	VarDbUser      Var = "{{dbUser}}"      // database endpoint credentials username, resolved from the vault
-	VarDbPass      Var = "{{dbPass}}"      // database endpoint credentials password, resolved from the vault
-	VarPrimaryHost Var = "{{primaryHost}}" // the deploy request's first node's host (see keeper.DeploymentSpec.EntryScript and KeeperDeployPlan)
+	VarCluster    Var = "{{cluster}}"    // cluster name
+	VarHost       Var = "{{host}}"       // node host
+	VarKeeperPort Var = "{{keeperPort}}" // keeper endpoint port (the database port when there is no separate keeper endpoint)
+	VarDbPort     Var = "{{dbPort}}"     // database endpoint port
+	VarDbUser     Var = "{{dbUser}}"     // database endpoint credentials username, resolved from the vault
+	VarDbPass     Var = "{{dbPass}}"     // database endpoint credentials password, resolved from the vault
+	VarLeaderHost Var = "{{leaderHost}}" // the deploy request's first node's host (see keeper.DeploymentSpec.EntryScript and KeeperDeployPlan) - named after Role's Leader/Replica vocabulary, not the underlying engine's own term (postgres says "primary", redis says "master")
 
 	VarDcs          Var = "{{dcs}}"          // external coordinator address a plugin points at instead of deploying its own: patroni's etcd/zookeeper DCS, clickhouse's zookeeper/clickhouse-keeper ensemble
-	VarPeerPort     Var = "{{peerPort}}"     // etcd: peer listener port, unique per node in single-host mode
+	VarPeerPort     Var = "{{peerPort}}"     // a port only cluster members dial among themselves, never Ivory itself - only etcd declares it today (its raft peer listener, unique per node in single-host mode), but any plugin needing a cluster-internal-only port (as opposed to VarDbPort/VarKeeperPort, which Ivory's own Adapter calls) can reuse this same field rather than inventing its own
 	VarClusterHosts Var = "{{clusterHosts}}" // every node in this deploy, built via a plugin's own FieldSpec.Template (etcd: member list name=http://host:peerPort,...; clickhouse: <replica> entries for its own <remote_servers> shard) - distinct from {{dcs}}, the external coordinator this deploy does NOT include
 )
 
 // Vars lists the built-in variables Ivory provides to every deployment;
 // plugin field variables count as known only when the spec declares them.
-var Vars = []Var{VarCluster, VarHost, VarKeeperPort, VarDbPort, VarDbUser, VarDbPass, VarPrimaryHost}
+var Vars = []Var{VarCluster, VarHost, VarKeeperPort, VarDbPort, VarDbUser, VarDbPass, VarLeaderHost}
 
 var placeholderPattern = regexp.MustCompile(`{{\w+}}`)
 

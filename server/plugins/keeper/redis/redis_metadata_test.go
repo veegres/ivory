@@ -64,8 +64,8 @@ func TestDeploymentSpec(t *testing.T) {
 	if spec.EntryScript == "" {
 		t.Error("expected an entry script to start replicas via REDIS_REPLICATION_MODE")
 	}
-	if !strings.Contains(spec.EntryScript, string(keeper.VarPrimaryHost)) {
-		t.Errorf("expected the entry script to reference %s, got %q", keeper.VarPrimaryHost, spec.EntryScript)
+	if !strings.Contains(spec.EntryScript, string(keeper.VarLeaderHost)) {
+		t.Errorf("expected the entry script to reference %s, got %q", keeper.VarLeaderHost, spec.EntryScript)
 	}
 	if !strings.Contains(spec.EntryScript, "REDIS_REPLICATION_MODE") {
 		t.Errorf("expected the entry script to set REDIS_REPLICATION_MODE, got %q", spec.EntryScript)
