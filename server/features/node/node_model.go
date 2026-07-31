@@ -219,7 +219,11 @@ type KeeperDeployPlanResponse struct {
 }
 
 type KeeperDeployPlanNode struct {
-	Host           string         `json:"host"`
+	Host string `json:"host"`
+	// Index is this node's 1-based position in the request's node list (see
+	// keeper.VarIndex); used by plugins whose ensemble config needs a
+	// genuinely unique small integer per member rather than a hostname.
+	Index          int            `json:"index"`
 	SshPort        int            `json:"sshPort"`
 	KeeperPort     int            `json:"keeperPort"`
 	DbPort         int            `json:"dbPort"`
@@ -228,8 +232,8 @@ type KeeperDeployPlanNode struct {
 	OptionsPreview string         `json:"optionsPreview"`
 	// EntryScript and EntryScriptPreview mirror Options/OptionsPreview, but
 	// for the container's startup command (keeper.DeploymentSpec.EntryScript)
-	// instead of its flags; empty for the primary and for any plugin that
-	// declares no EntryScript.
+	// instead of its flags; empty when the plugin declares no EntryScript,
+	// or for the leader when the plugin sets EntryScriptReplicasOnly.
 	EntryScript        string `json:"entryScript"`
 	EntryScriptPreview string `json:"entryScriptPreview"`
 }

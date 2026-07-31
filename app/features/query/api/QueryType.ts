@@ -7,6 +7,7 @@ export enum DbPlugin {
     ETCD = "etcd",
     REDIS = "redis",
     CLICKHOUSE = "clickhouse",
+    ZOOKEEPER = "zookeeper",
 }
 
 export interface DbConfig {

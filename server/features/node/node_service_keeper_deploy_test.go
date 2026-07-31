@@ -11,6 +11,7 @@ import (
 	"ivory/plugins/keeper/patroni"
 	"ivory/plugins/keeper/postgres"
 	"ivory/plugins/keeper/redis"
+	"ivory/plugins/keeper/zookeeper"
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/linux"
 	"reflect"
@@ -30,6 +31,7 @@ func newDeployTestService() *Service {
 	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
 	keeperMetadataRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
 	keeperMetadataRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
+	keeperMetadataRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewAdapter())
 	return &Service{
 		platformRegistry:       platformRegistry,
 		keeperMetadataRegistry: keeperMetadataRegistry,
@@ -467,6 +469,39 @@ func TestService_KeeperDeployPlan(t *testing.T) {
 		}
 	})
 
+	t.Run("zookeeper assigns each node a 1-based index for ZOO_MY_ID and the ensemble list", func(t *testing.T) {
+		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
+			Plugin:  keeper.NATIVE_ZOOKEEPER,
+			Cluster: "zk",
+			Nodes:   []KeeperDeployPlanNodeRequest{{Host: "zk1"}, {Host: "zk2"}, {Host: "zk3"}},
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		expectedServers := "server.1=zk1:2888:3888;2181 server.2=zk2:2888:3888;2181 server.3=zk3:2888:3888;2181"
+		if plan.Values["{{clusterHosts}}"] != expectedServers {
+			t.Errorf("Values[{{clusterHosts}}] = %q, want %q", plan.Values["{{clusterHosts}}"], expectedServers)
+		}
+		for i, host := range []string{"zk1", "zk2", "zk3"} {
+			node := plan.Nodes[i]
+			if node.Index != i+1 {
+				t.Errorf("node %q: Index = %d, want %d", host, node.Index, i+1)
+			}
+			if !strings.Contains(node.OptionsPreview, fmt.Sprintf(`-e ZOO_MY_ID="%d"`, i+1)) {
+				t.Errorf("node %q: expected OptionsPreview to resolve its own ZOO_MY_ID, got:\n%s", host, node.OptionsPreview)
+			}
+			if !strings.Contains(node.OptionsPreview, expectedServers) {
+				t.Errorf("node %q: expected OptionsPreview to embed the resolved ensemble server list, got:\n%s", host, node.OptionsPreview)
+			}
+			if node.EntryScript != "" {
+				t.Errorf("node %q: expected no EntryScript, zookeeper bootstraps purely via Env, got:\n%s", host, node.EntryScript)
+			}
+		}
+		if len(plan.Warnings) != 0 {
+			t.Errorf("expected no warnings, got %v", plan.Warnings)
+		}
+	})
+
 	t.Run("etcd user-edited peer port becomes the base", func(t *testing.T) {
 		plan, err := s.KeeperDeployPlan(KeeperDeployPlanRequest{
 			Plugin:     keeper.NATIVE_ETCD,
@@ -647,6 +682,7 @@ func TestBuildNodeValues(t *testing.T) {
 	s := &Service{}
 	pn := KeeperDeployPlanNode{
 		Host:       "db1",
+		Index:      1,
 		KeeperPort: 8008,
 		DbPort:     5432,
 		Ports:      map[string]int{"{{peerPort}}": 2380},
@@ -656,6 +692,7 @@ func TestBuildNodeValues(t *testing.T) {
 		got := s.buildNodeValues("main", map[string]string{string(keeper.VarDbUser): "postgres", string(keeper.VarDbPass): "secret", "{{dcs}}": "etcd1:2379"}, map[string]string{"{{dcs}}": "etcd1:2379"}, pn)
 		want := map[string]string{
 			string(keeper.VarCluster):    "main",
+			string(keeper.VarIndex):      "1",
 			string(keeper.VarKeeperPort): "8008",
 			string(keeper.VarDbPort):     "5432",
 			"{{dcs}}":                    "etcd1:2379",

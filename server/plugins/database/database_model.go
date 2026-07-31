@@ -14,6 +14,7 @@ const (
 	ETCD       Plugin = "etcd"
 	REDIS      Plugin = "redis"
 	CLICKHOUSE Plugin = "clickhouse"
+	ZOOKEEPER  Plugin = "zookeeper"
 )
 
 func (p Plugin) String() string {
