@@ -38,6 +38,7 @@ export function OptionsPlugins(props: Props) {
                     {renderKeeperItem(KeeperPlugin.NATIVE_ETCD)}
                     {renderKeeperItem(KeeperPlugin.NATIVE_REDIS)}
                     {renderKeeperItem(KeeperPlugin.NATIVE_CLICKHOUSE)}
+                    {renderKeeperItem(KeeperPlugin.NATIVE_ZOOKEEPER)}
                 </Select>
             </FormControl>
             <FormControl sx={SX.field} fullWidth size={"small"}>
@@ -53,6 +54,7 @@ export function OptionsPlugins(props: Props) {
                     <MenuItem value={DbPlugin.ETCD}>{DbPluginOptions[DbPlugin.ETCD].label}</MenuItem>
                     <MenuItem value={DbPlugin.REDIS}>{DbPluginOptions[DbPlugin.REDIS].label}</MenuItem>
                     <MenuItem value={DbPlugin.CLICKHOUSE}>{DbPluginOptions[DbPlugin.CLICKHOUSE].label}</MenuItem>
+                    <MenuItem value={DbPlugin.ZOOKEEPER}>{DbPluginOptions[DbPlugin.ZOOKEEPER].label}</MenuItem>
                 </Select>
             </FormControl>
         </>

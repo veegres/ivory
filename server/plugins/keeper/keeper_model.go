@@ -15,6 +15,7 @@ const (
 	NATIVE_ETCD       Plugin = "native_etcd"
 	NATIVE_REDIS      Plugin = "native_redis"
 	NATIVE_CLICKHOUSE Plugin = "native_clickhouse"
+	NATIVE_ZOOKEEPER  Plugin = "native_zookeeper"
 )
 
 func (p Plugin) String() string {

@@ -96,6 +96,7 @@ const (
 	VarDbUser     Var = "{{dbUser}}"     // database endpoint credentials username, resolved from the vault
 	VarDbPass     Var = "{{dbPass}}"     // database endpoint credentials password, resolved from the vault
 	VarLeaderHost Var = "{{leaderHost}}" // the deploy request's first node's host (see keeper.DeploymentSpec.EntryScript and KeeperDeployPlan) - named after Role's Leader/Replica vocabulary, not the underlying engine's own term (postgres says "primary", redis says "master")
+	VarIndex      Var = "{{index}}"      // this node's 1-based position in the deploy request's node list (see KeeperDeployPlanNode.Index) - the only built-in that isn't derived from the node's own connection details, for engines whose ensemble config needs a genuinely unique small integer per member rather than a hostname (e.g. ZooKeeper's myid/server.N)
 
 	VarDcs          Var = "{{dcs}}"          // external coordinator address a plugin points at instead of deploying its own: patroni's etcd/zookeeper DCS, clickhouse's zookeeper/clickhouse-keeper ensemble
 	VarPeerPort     Var = "{{peerPort}}"     // a port only cluster members dial among themselves, never Ivory itself - only etcd declares it today (its raft peer listener, unique per node in single-host mode), but any plugin needing a cluster-internal-only port (as opposed to VarDbPort/VarKeeperPort, which Ivory's own Adapter calls) can reuse this same field rather than inventing its own
@@ -104,7 +105,7 @@ const (
 
 // Vars lists the built-in variables Ivory provides to every deployment;
 // plugin field variables count as known only when the spec declares them.
-var Vars = []Var{VarCluster, VarHost, VarKeeperPort, VarDbPort, VarDbUser, VarDbPass, VarLeaderHost}
+var Vars = []Var{VarCluster, VarHost, VarKeeperPort, VarDbPort, VarDbUser, VarDbPass, VarLeaderHost, VarIndex}
 
 var placeholderPattern = regexp.MustCompile(`{{\w+}}`)
 

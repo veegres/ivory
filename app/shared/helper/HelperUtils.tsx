@@ -80,6 +80,7 @@ export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlug
     [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD, stage: ReleaseStage.ALPHA},
     [KeeperPlugin.NATIVE_REDIS]: {name: "redis", label: "Redis", icon: <HeartBrokenTwoTone/>, key: "native_redis", dbPlugin: DbPlugin.REDIS, stage: ReleaseStage.ALPHA},
     [KeeperPlugin.NATIVE_CLICKHOUSE]: {name: "clickhouse", label: "ClickHouse", icon: <HeartBrokenTwoTone/>, key: "native_clickhouse", dbPlugin: DbPlugin.CLICKHOUSE, stage: ReleaseStage.ALPHA},
+    [KeeperPlugin.NATIVE_ZOOKEEPER]: {name: "zookeeper", label: "ZooKeeper", icon: <HeartBrokenTwoTone/>, key: "native_zookeeper", dbPlugin: DbPlugin.ZOOKEEPER, stage: ReleaseStage.ALPHA},
 }
 
 export const ReleaseStageOptions: { [key in ReleaseStage]: {label: string, description: string, color: "success" | "warning" | "error"} } = {
@@ -93,6 +94,7 @@ export const DbPluginOptions: { [key in DbPlugin]: EnumOptions } = {
     [DbPlugin.ETCD]: {name: "ETCD", label: "Etcd", icon: <DnsTwoTone/>, key: "etcd"},
     [DbPlugin.REDIS]: {name: "REDIS", label: "Redis", icon: <DnsTwoTone/>, key: "redis"},
     [DbPlugin.CLICKHOUSE]: {name: "CLICKHOUSE", label: "ClickHouse", icon: <DnsTwoTone/>, key: "clickhouse"},
+    [DbPlugin.ZOOKEEPER]: {name: "ZOOKEEPER", label: "ZooKeeper", icon: <DnsTwoTone/>, key: "zookeeper"},
 }
 
 export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {

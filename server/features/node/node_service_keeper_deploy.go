@@ -110,6 +110,7 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 		}
 		nodes = append(nodes, KeeperDeployPlanNode{
 			Host:        n.Host,
+			Index:       i + 1,
 			SshPort:     sshPort,
 			KeeperPort:  keeperPort,
 			DbPort:      dbPort,
@@ -202,11 +203,12 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 // values; effective values win over raw request ones and per-node port
 // values win over the cluster-level base.
 func (s *Service) getPlanValues(r KeeperDeployPlanRequest, n KeeperDeployPlanNode, effective map[string]string) map[string]string {
-	values := make(map[string]string, len(r.Values)+len(effective)+len(n.Ports)+4)
+	values := make(map[string]string, len(r.Values)+len(effective)+len(n.Ports)+5)
 	maps.Copy(values, r.Values)
 	maps.Copy(values, effective)
 	values[string(keeper.VarCluster)] = r.Cluster
 	values[string(keeper.VarHost)] = n.Host
+	values[string(keeper.VarIndex)] = strconv.Itoa(n.Index)
 	values[string(keeper.VarKeeperPort)] = strconv.Itoa(n.KeeperPort)
 	values[string(keeper.VarDbPort)] = strconv.Itoa(n.DbPort)
 	for name, port := range n.Ports {
@@ -221,12 +223,13 @@ func (s *Service) getPlanValues(r KeeperDeployPlanRequest, n KeeperDeployPlanNod
 // effective field values win over raw request-supplied ones and per-node
 // port values win over the base.
 func (s *Service) buildNodeValues(name string, requestValues map[string]string, planValues map[string]string, pn KeeperDeployPlanNode) map[string]string {
-	values := make(map[string]string, len(requestValues)+len(planValues)+len(pn.Ports)+3)
+	values := make(map[string]string, len(requestValues)+len(planValues)+len(pn.Ports)+4)
 	maps.Copy(values, requestValues)
 	maps.Copy(values, planValues)
 	delete(values, string(keeper.VarDbUser))
 	delete(values, string(keeper.VarDbPass))
 	values[string(keeper.VarCluster)] = name
+	values[string(keeper.VarIndex)] = strconv.Itoa(pn.Index)
 	values[string(keeper.VarKeeperPort)] = strconv.Itoa(pn.KeeperPort)
 	values[string(keeper.VarDbPort)] = strconv.Itoa(pn.DbPort)
 	for portName, port := range pn.Ports {
