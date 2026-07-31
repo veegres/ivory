@@ -48,8 +48,8 @@ func TestDeploymentSpec(t *testing.T) {
 	if len(spec.Fields) != 1 || spec.Fields[0].Name != keeper.VarDcs || spec.Fields[0].Type != keeper.FieldText {
 		t.Errorf("expected a dcs text field (external DCS address), got %+v", spec.Fields)
 	}
-	if len(spec.PostDeploy) != 0 {
-		t.Errorf("expected no post-deploy commands, got %+v", spec.PostDeploy)
+	if spec.PostScript != "" {
+		t.Errorf("expected no post-deploy script, got %q", spec.PostScript)
 	}
 	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
 		t.Errorf("spec references unknown variables: %v", unknown)

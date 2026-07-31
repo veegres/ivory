@@ -145,10 +145,9 @@ func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error)
 }
 
 // execContainerCommand interpolates and runs one command against an
-// already-resolved adapter/connection/values set, so a caller that needs to
-// run several commands against the same deployment (e.g. KeeperPostDeploy)
-// can resolve the vault credentials once and reuse them across calls instead
-// of re-fetching and re-decrypting them per command.
+// already-resolved adapter/connection/values set, so a caller that already
+// resolved vault credentials (e.g. KeeperPostDeploy) doesn't re-fetch and
+// re-decrypt them just to run its command.
 func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.Connection, name string, commandTemplate string, values map[string]string) ([]string, error) {
 	command := keeper.Interpolate(commandTemplate, values)
 	if unresolved := keeper.UnresolvedPlaceholders(command); len(unresolved) > 0 {
@@ -181,8 +180,8 @@ func (s *Service) getExecutionValues(host string, vaults Vaults, requestValues m
 
 // escapeInterpolatedValue neutralizes characters that could break out of a
 // keeper plugin's own hand-written quoting once substituted into an
-// options/entryScript/command template (e.g. etcd's PostDeploy wraps
-// {{dbUser}}:{{dbPass}} in literal single quotes - an unescaped quote or
+// options/entryScript/PostScript template (e.g. etcd's PostScript wraps
+// {{dbUser}}:{{dbPass}} in literal double quotes - an unescaped quote or
 // space in the value corrupts the command it's exec'd with). The backslash
 // itself is escaped first, then both quote characters, since a value may
 // land inside either a single- or a double-quoted span depending on the

@@ -158,7 +158,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 
 	// 6. Post-deploy initialization runs once for the whole cluster (e.g.
 	// enabling authentication), not once per node.
-	if deployed.Load() && len(plan.PostDeploy) > 0 {
+	if deployed.Load() && plan.PostScript != "" {
 		pn := plan.Nodes[0]
 		nodeKey := s.getNodeKey(pn.Host, &pn.KeeperPort)
 		logs.send(nodeKey, "running post-deploy initialization")
@@ -171,12 +171,12 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 				Connection:    s.getNodeConnection(cluster, pn),
 				Vaults:        s.getNodeVaults(cluster),
 			},
-			PostDeploy: plan.PostDeploy,
+			PostScript: plan.PostScript,
 		}) {
 			logs.send(nodeKey, log)
 		}
 		logs.send(nodeKey, "post-deploy initialization finished")
-	} else if len(plan.PostDeploy) > 0 {
+	} else if plan.PostScript != "" {
 		logs.send("system", "skipping post-deploy initialization: not every node deployed successfully")
 	}
 

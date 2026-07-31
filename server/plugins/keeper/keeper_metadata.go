@@ -38,15 +38,20 @@ type DeploymentSpec struct {
 	//     is the engine-required username (forms prefill and lock it)
 	Defaults map[Var]string
 	Fields   []FieldSpec
-	// PostDeploy declares commands executed inside one deployed container
-	// after the whole deployment succeeded (e.g. enabling authentication).
-	// Commands are interpolated with the same {{placeholder}} vocabulary,
-	// including credentials.
-	PostDeploy []string
+	// PostScript, if set, is executed once inside an already-deployed
+	// container after the whole deployment succeeds (e.g. enabling
+	// authentication). Unlike EntryScript, this doesn't replace the
+	// container's startup command - it's exec'd into the already-running
+	// container afterward - so a plugin needing several steps joins them
+	// itself (e.g. with "&&") into one script, the same way EntryScript is
+	// one script rather than a list of commands. It uses the regular
+	// {{placeholder}} vocabulary, including credentials, interpolated the
+	// same way as EntryScript.
+	PostScript string
 	// EntryScript, if set, replaces the image's own default startup command
-	// for every node except the deploy's first (which is always the primary
-	// and always gets the image's normal command; see KeeperDeployPlan).
-	// Unlike PostDeploy, this isn't exec'd into an already-running container
+	// for every node, including the deploy's first (always the primary; see
+	// KeeperDeployPlan) - unless EntryScriptReplicasOnly is set, see its doc.
+	// Unlike PostScript, this isn't exec'd into an already-running container
 	// after the fact - it IS the container's own command, so it must itself
 	// end by starting the plugin's actual server process (e.g. native
 	// postgres rebases via pg_basebackup before postgres itself ever
@@ -56,6 +61,17 @@ type DeploymentSpec struct {
 	// VarPrimaryHost, interpolated by KeeperDeployPlan the same way as
 	// Options.
 	EntryScript string
+	// EntryScriptReplicasOnly, if true, skips EntryScript for the deploy's
+	// first node (the primary) instead of KeeperDeployPlan's default of
+	// applying it uniformly to every node. Set this when the first node
+	// genuinely is special and must get the image's plain startup command -
+	// e.g. postgres/redis, where only a replica needs to rebase/attach
+	// itself to the primary, and the primary would break if it ran that same
+	// script. Leave it false (the default) for keepers with no
+	// single-primary distinction at all, where every node - the first one
+	// too - needs the identical startup-time setup (e.g. ClickHouse's
+	// EntryScript generates the same cluster config file on every node).
+	EntryScriptReplicasOnly bool
 }
 
 // Var is a built-in {{placeholder}} variable that Ivory provides to every
@@ -81,9 +97,9 @@ const (
 	VarDbPass      Var = "{{dbPass}}"      // database endpoint credentials password, resolved from the vault
 	VarPrimaryHost Var = "{{primaryHost}}" // the deploy request's first node's host (see keeper.DeploymentSpec.EntryScript and KeeperDeployPlan)
 
-	VarDcs            Var = "{{dcs}}"            // patroni: address of the external DCS it coordinates through
-	VarPeerPort       Var = "{{peerPort}}"       // etcd: peer listener port, unique per node in single-host mode
-	VarInitialCluster Var = "{{initialCluster}}" // etcd: member list (name=http://host:peerPort,...) derived from the node list
+	VarDcs          Var = "{{dcs}}"          // external coordinator address a plugin points at instead of deploying its own: patroni's etcd/zookeeper DCS, clickhouse's zookeeper/clickhouse-keeper ensemble
+	VarPeerPort     Var = "{{peerPort}}"     // etcd: peer listener port, unique per node in single-host mode
+	VarClusterHosts Var = "{{clusterHosts}}" // every node in this deploy, built via a plugin's own FieldSpec.Template (etcd: member list name=http://host:peerPort,...; clickhouse: <replica> entries for its own <remote_servers> shard) - distinct from {{dcs}}, the external coordinator this deploy does NOT include
 )
 
 // Vars lists the built-in variables Ivory provides to every deployment;
@@ -132,9 +148,8 @@ func (s DeploymentSpec) UnknownVariables() []string {
 		known[string(f.Name)] = true
 	}
 
-	texts := []string{s.DefaultImage, s.EntryScript}
+	texts := []string{s.DefaultImage, s.EntryScript, s.PostScript}
 	texts = append(texts, s.Ports...)
-	texts = append(texts, s.PostDeploy...)
 	for _, e := range s.Env {
 		texts = append(texts, e.Value)
 	}
@@ -173,7 +188,7 @@ const (
 // declared as a plugin constant next to the built-in Vars. A user-provided
 // value always wins; otherwise the value is derived from the node list
 // (Template interpolated once per node, entries joined with Separator — e.g.
-// etcd's initial cluster member list) or falls back to Default (e.g.
+// VarClusterHosts' member list) or falls back to Default (e.g.
 // patroni's external DCS address, empty until typed). Fields are resolved in
 // declaration order, so a Template may reference earlier fields.
 type FieldSpec struct {

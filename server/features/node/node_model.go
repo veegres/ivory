@@ -207,12 +207,12 @@ type KeeperDeployPlanNodeRequest struct {
 
 // KeeperDeployPlanResponse is the resolved deployment: concrete ports and
 // options per node, the effective field values (user-provided or computed),
-// the post-deploy command templates, and advisory warnings (missing
+// the post-deploy script template, and advisory warnings (missing
 // placeholder values, ignored ports). Previews mask credentials.
 type KeeperDeployPlanResponse struct {
 	Image      string                 `json:"image"`
 	Values     map[string]string      `json:"values"`
-	PostDeploy []string               `json:"postDeploy"`
+	PostScript string                 `json:"postScript"`
 	Fields     DeployFieldsResponse   `json:"fields"`
 	Nodes      []KeeperDeployPlanNode `json:"nodes"`
 	Warnings   []string               `json:"warnings"`
@@ -297,11 +297,11 @@ type KeeperDeployUpRequest struct {
 	Image string
 }
 
-// KeeperPostDeployRequest runs a deployment plan's post-deploy commands (e.g.
+// KeeperPostDeployRequest runs a deployment plan's post-deploy script (e.g.
 // enabling authentication) inside one already-deployed node.
 type KeeperPostDeployRequest struct {
 	KeeperDeployExecRequest
-	PostDeploy []string
+	PostScript string
 }
 
 type PlatformLogsRequest struct {

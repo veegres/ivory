@@ -68,6 +68,7 @@ func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
 			{Name: "POSTGRES_USER", Value: `"` + string(keeper.VarDbUser) + `"`},
 			{Name: "POSTGRES_PASSWORD", Value: `"` + string(keeper.VarDbPass) + `"`},
 		},
-		EntryScript: entryScript,
+		EntryScript:             entryScript,
+		EntryScriptReplicasOnly: true,
 	}
 }

@@ -55,8 +55,11 @@ func TestDeploymentSpec(t *testing.T) {
 	if len(spec.Fields) != 0 {
 		t.Errorf("expected no fields, got %+v", spec.Fields)
 	}
-	if len(spec.PostDeploy) != 0 {
-		t.Errorf("expected no post-deploy commands, got %+v", spec.PostDeploy)
+	if spec.PostScript != "" {
+		t.Errorf("expected no post-deploy script, got %q", spec.PostScript)
+	}
+	if !spec.EntryScriptReplicasOnly {
+		t.Error("expected EntryScriptReplicasOnly true, the primary must not replicate from itself")
 	}
 	if spec.EntryScript == "" {
 		t.Error("expected an entry script to start replicas via REDIS_REPLICATION_MODE")

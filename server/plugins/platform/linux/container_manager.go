@@ -171,9 +171,9 @@ func shellQuoteFields(value string) []string {
 // value) stays one argument instead of being broken apart at the space inside
 // the quotes. A backslash escapes the very next rune literally regardless of
 // quote state, so a value inserted into a plugin's own hand-written quoted
-// span (e.g. etcd's PostDeploy wraps {{dbUser}}:{{dbPass}} in literal single
-// quotes) can contain that same quote character - escaped by the caller
-// before interpolation - without prematurely closing the span.
+// span (e.g. a PostScript wrapping {{dbUser}}:{{dbPass}} in literal quotes)
+// can contain that same quote character - escaped by the caller before
+// interpolation - without prematurely closing the span.
 func splitShellFields(value string) []string {
 	fields := make([]string, 0)
 	var current strings.Builder

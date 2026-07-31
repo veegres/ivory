@@ -140,7 +140,7 @@ describe("getKeeperDefaultPort", () => {
             },
             fields: [
                 {name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false},
-                {name: "{{initialCluster}}", label: "Initial Cluster", type: "text", derived: true},
+                {name: "{{clusterHosts}}", label: "Initial Cluster", type: "text", derived: true},
             ],
         }
         expect(getKeeperDefaultPort(fields)).toBe(2379)
@@ -160,7 +160,7 @@ describe("getDeployFieldGroups", () => {
         defaults: {[InterpolationVar.DbPort]: "2379", [InterpolationVar.DbUser]: "root"},
         fields: [
             {name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false},
-            {name: "{{initialCluster}}", label: "Initial Cluster", type: "text", derived: true},
+            {name: "{{clusterHosts}}", label: "Initial Cluster", type: "text", derived: true},
         ],
     }
 
@@ -176,7 +176,7 @@ describe("getDeployFieldGroups", () => {
         const groups = getDeployFieldGroups(etcd)
         expect(groups.withKeeperPort).toBe(false)
         expect(groups.mandatoryFields).toEqual([])
-        expect(groups.autoFields.map(f => f.name)).toEqual(["{{peerPort}}", "{{initialCluster}}"])
+        expect(groups.autoFields.map(f => f.name)).toEqual(["{{peerPort}}", "{{clusterHosts}}"])
     })
 
     it("should default to no fields and credentials required when fields are absent", () => {

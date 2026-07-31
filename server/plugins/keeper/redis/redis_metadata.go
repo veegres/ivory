@@ -60,6 +60,7 @@ func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
 			{Name: "REDIS_PASSWORD", Value: `"` + string(keeper.VarDbPass) + `"`},
 			{Name: "ALLOW_EMPTY_PASSWORD", Value: `"no"`},
 		},
-		EntryScript: entryScript,
+		EntryScript:             entryScript,
+		EntryScriptReplicasOnly: true,
 	}
 }
