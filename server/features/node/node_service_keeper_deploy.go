@@ -60,15 +60,15 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 	keeperPortDefault, hasKeeperEndpoint := spec.Defaults[keeper.VarKeeperPort]
 
 	// NOTE: EntryScript applies to every node by default, the first node
-	// (the primary; see keeper.DeploymentSpec.EntryScript's doc for why it's
+	// (the leader; see keeper.DeploymentSpec.EntryScript's doc for why it's
 	// first) included, unless the plugin sets EntryScriptReplicasOnly, in
-	// which case the primary gets the image's normal command instead and
-	// only the other nodes get EntryScript. Either way, VarPrimaryHost is
-	// resolved to the primary's real host, already known from the request
+	// which case the leader gets the image's normal command instead and
+	// only the other nodes get EntryScript. Either way, VarLeaderHost is
+	// resolved to the leader's real host, already known from the request
 	// itself.
-	var primaryHost string
+	var leaderHost string
 	if len(r.Nodes) > 0 {
-		primaryHost = r.Nodes[0].Host
+		leaderHost = r.Nodes[0].Host
 	}
 
 	nodes := make([]KeeperDeployPlanNode, 0, len(r.Nodes))
@@ -106,7 +106,7 @@ func (s *Service) KeeperDeployPlan(r KeeperDeployPlanRequest) (*KeeperDeployPlan
 		}
 		var entryScript string
 		if (i > 0 || !spec.EntryScriptReplicasOnly) && spec.EntryScript != "" {
-			entryScript = strings.ReplaceAll(spec.EntryScript, string(keeper.VarPrimaryHost), primaryHost)
+			entryScript = strings.ReplaceAll(spec.EntryScript, string(keeper.VarLeaderHost), leaderHost)
 		}
 		nodes = append(nodes, KeeperDeployPlanNode{
 			Host:        n.Host,

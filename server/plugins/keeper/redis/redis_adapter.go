@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var ErrNodeIsPrimary = errors.New("failover target must be a replica; this node is the master")
+var ErrNodeIsLeader = errors.New("failover target must be a replica; this node is the leader")
 var ErrCredentialsRequired = errors.New("redis requires keeper credentials; add database password to keeper vault and configure it in your cluster")
 
 // requestTimeout bounds every keeper operation (connect + command), so an
@@ -84,7 +84,7 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 	}
 	fields := parseInfo(info)
 	if fields["role"] != "slave" {
-		return nil, http.StatusBadRequest, ErrNodeIsPrimary
+		return nil, http.StatusBadRequest, ErrNodeIsLeader
 	}
 
 	if errPromote := client.ReplicaOf(ctx, "NO", "ONE").Err(); errPromote != nil {

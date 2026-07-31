@@ -14,7 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-var ErrNodeIsPrimary = errors.New("failover target must be a replica; this node is the primary")
+var ErrNodeIsLeader = errors.New("failover target must be a replica; this node is the leader")
 var ErrReloadFailed = errors.New("postgres refused to reload the configuration")
 var ErrPromoteRefused = errors.New("postgres refused to start the promotion")
 var ErrCredentialsRequired = errors.New("native postgres requires keeper credentials; add database password to keeper vault and configure it in your cluster")
@@ -181,7 +181,7 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 		return nil, http.StatusBadRequest, err
 	}
 	if !inRecovery {
-		return nil, http.StatusBadRequest, ErrNodeIsPrimary
+		return nil, http.StatusBadRequest, ErrNodeIsLeader
 	}
 	// NOTE: pg_promote(false) only signals the promotion and returns
 	// immediately, so it fits into the request timeout

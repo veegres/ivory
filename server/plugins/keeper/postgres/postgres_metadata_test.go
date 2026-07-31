@@ -64,8 +64,8 @@ func TestDeploymentSpec(t *testing.T) {
 	if spec.EntryScript == "" {
 		t.Error("expected an entry script to rebase replicas via pg_basebackup")
 	}
-	if !strings.Contains(spec.EntryScript, string(keeper.VarPrimaryHost)) {
-		t.Errorf("expected the entry script to reference %s, got %q", keeper.VarPrimaryHost, spec.EntryScript)
+	if !strings.Contains(spec.EntryScript, string(keeper.VarLeaderHost)) {
+		t.Errorf("expected the entry script to reference %s, got %q", keeper.VarLeaderHost, spec.EntryScript)
 	}
 	if !strings.Contains(spec.EntryScript, "pg_basebackup") {
 		t.Errorf("expected the entry script to run pg_basebackup, got %q", spec.EntryScript)
