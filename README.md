@@ -45,6 +45,7 @@ rework:
 | Redis                                      | Redis      | ALPHA  | A widely used cache/store that often sits right next to the databases Ivory already manages                                                                          |
 | ClickHouse                                 | ClickHouse | ALPHA  | A popular analytics database and a natural next step for Ivory's plugin set                                                                                          |
 | ZooKeeper                                  | ZooKeeper  | ALPHA  | ClickHouse needs real ZooKeeper protocol, not etcd, to coordinate replication — deployable as its own ensemble and usable as the external DCS other keepers point at |
+| MongoDB                                    | MongoDB    | ALPHA  | A widely used document store with its own native replica-set HA, a natural fit next to Ivory's other native (non-orchestrated) keepers                               |
 
 P.S. these particular databases weren't picked from a grand roadmap — they're mainly what the maintainer runs day to
 day, and Ivory exists to simplify that routine first. Broader support grows from there.
