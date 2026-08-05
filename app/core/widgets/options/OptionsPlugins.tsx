@@ -1,16 +1,43 @@
-import {Box, FormControl, InputLabel, MenuItem, Select} from "@mui/material"
+import {Box, FormControl, InputLabel, MenuItem, Select, Tooltip} from "@mui/material"
 
 import {Plugins} from "../../../features/cluster/api/ClusterType"
 import {KeeperPlugin} from "../../../features/node/api/NodeType"
 import {DbPlugin} from "../../../features/query/api/QueryType"
-import {InfoColorBox} from "../../../shared/component/box/InfoColorBox"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
-import {DbPluginOptions, KeeperPluginOptions, ReleaseStageOptions} from "../../../shared/helper/HelperUtils"
+import {DbModelOptions, DbPluginOptions, KeeperPluginOptions, ReleaseStageOptions} from "../../../shared/helper/HelperUtils"
 
+// Mirrors ListKeepers.tsx's plain, muted-text badge style (no colored boxes)
+// so the two keeper pickers read as one visual language. Each badge sits in
+// a fixed-width column so it lines up across rows regardless of label length.
 const SX: SxPropsMap = {
     field: {flex: "1 1 var(--size-field)", minWidth: "var(--size-field)"},
-    item: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, width: "100%"},
+    item: {display: "flex", alignItems: "center", gap: 1.5, width: "100%"},
+    label: {flex: "1 1 auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"},
+    model: {flexShrink: 0, width: "76px", textAlign: "right", fontSize: "12px", color: "primary.main", textTransform: "uppercase"},
+    stage: {flexShrink: 0, width: "48px", textAlign: "right", fontSize: "12px", color: "secondary.main", textTransform: "uppercase"},
 }
+
+// KEEPER_PLUGIN_ORDER/DB_PLUGIN_ORDER list every plugin grouped by DbModel
+// (see the model column each item renders), so the dropdown reads as
+// sorted-by-data-model without re-sorting on every render.
+const KEEPER_PLUGIN_ORDER: KeeperPlugin[] = [
+    KeeperPlugin.PATRONI_POSTGRES,
+    KeeperPlugin.NATIVE_POSTGRES,
+    KeeperPlugin.NATIVE_MONGO,
+    KeeperPlugin.NATIVE_REDIS,
+    KeeperPlugin.NATIVE_CLICKHOUSE,
+    KeeperPlugin.NATIVE_ETCD,
+    KeeperPlugin.NATIVE_ZOOKEEPER,
+]
+
+const DB_PLUGIN_ORDER: DbPlugin[] = [
+    DbPlugin.POSTGRES,
+    DbPlugin.MONGO,
+    DbPlugin.REDIS,
+    DbPlugin.CLICKHOUSE,
+    DbPlugin.ETCD,
+    DbPlugin.ZOOKEEPER,
+]
 
 type Props = {
     plugins: Plugins,
@@ -33,12 +60,7 @@ export function OptionsPlugins(props: Props) {
                     renderValue={(v) => KeeperPluginOptions[v as KeeperPlugin].label}
                     onChange={(e) => handleKeeperUpdate(e.target.value as KeeperPlugin)}
                 >
-                    {renderKeeperItem(KeeperPlugin.PATRONI_POSTGRES)}
-                    {renderKeeperItem(KeeperPlugin.NATIVE_POSTGRES)}
-                    {renderKeeperItem(KeeperPlugin.NATIVE_ETCD)}
-                    {renderKeeperItem(KeeperPlugin.NATIVE_REDIS)}
-                    {renderKeeperItem(KeeperPlugin.NATIVE_CLICKHOUSE)}
-                    {renderKeeperItem(KeeperPlugin.NATIVE_ZOOKEEPER)}
+                    {KEEPER_PLUGIN_ORDER.map(renderKeeperItem)}
                 </Select>
             </FormControl>
             <FormControl sx={SX.field} fullWidth size={"small"}>
@@ -48,13 +70,10 @@ export function OptionsPlugins(props: Props) {
                     label={"Database Plugin"}
                     value={plugins.database}
                     disabled={disabled}
+                    renderValue={(v) => DbPluginOptions[v as DbPlugin].label}
                     onChange={(e) => handleDatabaseUpdate(e.target.value as DbPlugin)}
                 >
-                    <MenuItem value={DbPlugin.POSTGRES}>{DbPluginOptions[DbPlugin.POSTGRES].label}</MenuItem>
-                    <MenuItem value={DbPlugin.ETCD}>{DbPluginOptions[DbPlugin.ETCD].label}</MenuItem>
-                    <MenuItem value={DbPlugin.REDIS}>{DbPluginOptions[DbPlugin.REDIS].label}</MenuItem>
-                    <MenuItem value={DbPlugin.CLICKHOUSE}>{DbPluginOptions[DbPlugin.CLICKHOUSE].label}</MenuItem>
-                    <MenuItem value={DbPlugin.ZOOKEEPER}>{DbPluginOptions[DbPlugin.ZOOKEEPER].label}</MenuItem>
+                    {DB_PLUGIN_ORDER.map(renderDbItem)}
                 </Select>
             </FormControl>
         </>
@@ -63,11 +82,32 @@ export function OptionsPlugins(props: Props) {
     function renderKeeperItem(plugin: KeeperPlugin) {
         const option = KeeperPluginOptions[plugin]
         const stage = ReleaseStageOptions[option.stage]
+        const model = DbModelOptions[option.model]
         return (
             <MenuItem key={plugin} value={plugin}>
                 <Box sx={SX.item}>
-                    <Box>{option.label}</Box>
-                    <InfoColorBox label={stage.label} title={stage.description} color={stage.color}/>
+                    <Box sx={SX.label}>{option.label}</Box>
+                    <Tooltip title={model.description} placement={"top"}>
+                        <Box sx={SX.model}>{model.label}</Box>
+                    </Tooltip>
+                    <Tooltip title={stage.description} placement={"top"}>
+                        <Box sx={SX.stage}>{stage.label}</Box>
+                    </Tooltip>
+                </Box>
+            </MenuItem>
+        )
+    }
+
+    function renderDbItem(plugin: DbPlugin) {
+        const option = DbPluginOptions[plugin]
+        const model = DbModelOptions[option.model]
+        return (
+            <MenuItem key={plugin} value={plugin}>
+                <Box sx={SX.item}>
+                    <Box sx={SX.label}>{option.label}</Box>
+                    <Tooltip title={model.description} placement={"top"}>
+                        <Box sx={SX.model}>{model.label}</Box>
+                    </Tooltip>
                 </Box>
             </MenuItem>
         )

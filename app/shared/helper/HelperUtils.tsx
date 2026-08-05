@@ -74,13 +74,19 @@ export const VaultOptions: { [key in VaultType]: EnumOptions } = {
     [VaultType.SSH_KEY]: {name: "SSH_KEY", label: "SSH Key", icon: <KeyTwoTone/>, key: "sshKeyId"},
 }
 
-export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlugin: DbPlugin, stage: ReleaseStage} } = {
-    [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.STABLE},
-    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.BETA},
-    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD, stage: ReleaseStage.ALPHA},
-    [KeeperPlugin.NATIVE_REDIS]: {name: "redis", label: "Redis", icon: <HeartBrokenTwoTone/>, key: "native_redis", dbPlugin: DbPlugin.REDIS, stage: ReleaseStage.ALPHA},
-    [KeeperPlugin.NATIVE_CLICKHOUSE]: {name: "clickhouse", label: "ClickHouse", icon: <HeartBrokenTwoTone/>, key: "native_clickhouse", dbPlugin: DbPlugin.CLICKHOUSE, stage: ReleaseStage.ALPHA},
-    [KeeperPlugin.NATIVE_ZOOKEEPER]: {name: "zookeeper", label: "ZooKeeper", icon: <HeartBrokenTwoTone/>, key: "native_zookeeper", dbPlugin: DbPlugin.ZOOKEEPER, stage: ReleaseStage.ALPHA},
+// DbModel classifies a plugin by the data model it exposes (OLTP, OLAP, ...),
+// shown next to the plugin's release stage and used to sort the plugin
+// picker - see OptionsPlugins.tsx and ListKeepers.tsx.
+export type DbModel = "OLTP" | "OLAP" | "Key-Value" | "Document" | "DCS"
+
+export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlugin: DbPlugin, stage: ReleaseStage, model: DbModel} } = {
+    [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.STABLE, model: "OLTP"},
+    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.BETA, model: "OLTP"},
+    [KeeperPlugin.NATIVE_MONGO]: {name: "mongo", label: "MongoDB", icon: <HeartBrokenTwoTone/>, key: "native_mongo", dbPlugin: DbPlugin.MONGO, stage: ReleaseStage.ALPHA, model: "Document"},
+    [KeeperPlugin.NATIVE_REDIS]: {name: "redis", label: "Redis", icon: <HeartBrokenTwoTone/>, key: "native_redis", dbPlugin: DbPlugin.REDIS, stage: ReleaseStage.ALPHA, model: "Key-Value"},
+    [KeeperPlugin.NATIVE_CLICKHOUSE]: {name: "clickhouse", label: "ClickHouse", icon: <HeartBrokenTwoTone/>, key: "native_clickhouse", dbPlugin: DbPlugin.CLICKHOUSE, stage: ReleaseStage.ALPHA, model: "OLAP"},
+    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD, stage: ReleaseStage.ALPHA, model: "DCS"},
+    [KeeperPlugin.NATIVE_ZOOKEEPER]: {name: "zookeeper", label: "ZooKeeper", icon: <HeartBrokenTwoTone/>, key: "native_zookeeper", dbPlugin: DbPlugin.ZOOKEEPER, stage: ReleaseStage.ALPHA, model: "DCS"},
 }
 
 export const ReleaseStageOptions: { [key in ReleaseStage]: {label: string, description: string, color: "success" | "warning" | "error"} } = {
@@ -89,12 +95,21 @@ export const ReleaseStageOptions: { [key in ReleaseStage]: {label: string, descr
     [ReleaseStage.ALPHA]: {label: "ALPHA", description: "Experimental, use with caution", color: "error"},
 }
 
-export const DbPluginOptions: { [key in DbPlugin]: EnumOptions } = {
-    [DbPlugin.POSTGRES]: {name: "POSTGRES", label: "Postgres", icon: <DnsTwoTone/>, key: "postgres"},
-    [DbPlugin.ETCD]: {name: "ETCD", label: "Etcd", icon: <DnsTwoTone/>, key: "etcd"},
-    [DbPlugin.REDIS]: {name: "REDIS", label: "Redis", icon: <DnsTwoTone/>, key: "redis"},
-    [DbPlugin.CLICKHOUSE]: {name: "CLICKHOUSE", label: "ClickHouse", icon: <DnsTwoTone/>, key: "clickhouse"},
-    [DbPlugin.ZOOKEEPER]: {name: "ZOOKEEPER", label: "ZooKeeper", icon: <DnsTwoTone/>, key: "zookeeper"},
+export const DbModelOptions: { [key in DbModel]: {label: string, description: string} } = {
+    "OLTP": {label: "OLTP", description: "Relational, transactional workloads"},
+    "OLAP": {label: "OLAP", description: "Columnar, analytical workloads"},
+    "Key-Value": {label: "Key-Value", description: "In-memory key-value store"},
+    "Document": {label: "Document", description: "Document-oriented store"},
+    "DCS": {label: "DCS", description: "Distributed coordination / consensus store"},
+}
+
+export const DbPluginOptions: { [key in DbPlugin]: EnumOptions & {model: DbModel} } = {
+    [DbPlugin.POSTGRES]: {name: "POSTGRES", label: "Postgres", icon: <DnsTwoTone/>, key: "postgres", model: "OLTP"},
+    [DbPlugin.MONGO]: {name: "MONGO", label: "MongoDB", icon: <DnsTwoTone/>, key: "mongo", model: "Document"},
+    [DbPlugin.REDIS]: {name: "REDIS", label: "Redis", icon: <DnsTwoTone/>, key: "redis", model: "Key-Value"},
+    [DbPlugin.CLICKHOUSE]: {name: "CLICKHOUSE", label: "ClickHouse", icon: <DnsTwoTone/>, key: "clickhouse", model: "OLAP"},
+    [DbPlugin.ETCD]: {name: "ETCD", label: "Etcd", icon: <DnsTwoTone/>, key: "etcd", model: "DCS"},
+    [DbPlugin.ZOOKEEPER]: {name: "ZOOKEEPER", label: "ZooKeeper", icon: <DnsTwoTone/>, key: "zookeeper", model: "DCS"},
 }
 
 export const KeeperStatusOptions: { [key in KeeperStatus]: EnumOptions } = {
