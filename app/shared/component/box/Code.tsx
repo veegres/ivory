@@ -1,6 +1,6 @@
 import {Box, Theme} from "@mui/material"
 import {SystemStyleObject} from "@mui/system"
-import {ReactNode} from "react"
+import {forwardRef, ReactNode} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
 
@@ -16,6 +16,6 @@ type Props = {
     sx?: SystemStyleObject<Theme>,
 }
 
-export function Code(props: Props) {
-    return <Box sx={[SX.code, props.sx ?? {}]}>{props.children}</Box>
-}
+export const Code = forwardRef<HTMLDivElement, Props>(function Code({children, sx, ...rest}, ref) {
+    return <Box ref={ref} sx={[SX.code, sx ?? {}]} {...rest}>{children}</Box>
+})
