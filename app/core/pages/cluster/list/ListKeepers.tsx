@@ -4,7 +4,7 @@ import {useRef, useState} from "react"
 
 import {KeeperPlugin, ReleaseStage} from "../../../../features/node/api/NodeType"
 import {EnumOptions, SxPropsMap} from "../../../../shared/helper/HelperType"
-import {KeeperPluginOptions, ReleaseStageOptions} from "../../../../shared/helper/HelperUtils"
+import {DbModel, DbModelOptions, KeeperPluginOptions, ReleaseStageOptions} from "../../../../shared/helper/HelperUtils"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {
@@ -21,12 +21,14 @@ const SX: SxPropsMap = {
     },
     icon: {fontSize: "18px", color: "common.white"},
     popper: {zIndex: 3},
-    menu: {padding: "4px 0px", minWidth: "170px"},
+    menu: {padding: "4px 0px", minWidth: "220px"},
     item: {
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, padding: "5px 10px",
+        display: "flex", alignItems: "center", gap: 1.5, padding: "5px 10px",
         fontFamily: "monospace", letterSpacing: 1, fontSize: "12px", textTransform: "uppercase",
     },
-    stage: {fontSize: "11px", color: "text.secondary", fontFamily: "monospace"},
+    label: {flex: "1 1 auto", minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis"},
+    model: {flexShrink: 0, width: "72px", textAlign: "right", fontSize: "11px", color: "primary.main"},
+    stage: {flexShrink: 0, width: "48px", textAlign: "right", fontSize: "11px", color: "secondary.main"},
 }
 
 export function ListKeepers() {
@@ -57,11 +59,15 @@ export function ListKeepers() {
         </>
     )
 
-    function renderItem(key: KeeperPlugin, value: EnumOptions & {stage: ReleaseStage}) {
+    function renderItem(key: KeeperPlugin, value: EnumOptions & {stage: ReleaseStage, model: DbModel}) {
         const itemStage = ReleaseStageOptions[value.stage]
+        const itemModel = DbModelOptions[value.model]
         return (
             <MenuItem key={key} sx={SX.item} selected={key === keeper} onClick={() => handleClick(key)}>
-                <Box>{value.label}</Box>
+                <Box sx={SX.label}>{value.label}</Box>
+                <Tooltip title={itemModel.description} placement={"top"}>
+                    <Box sx={SX.model}>{itemModel.label.toLowerCase()}</Box>
+                </Tooltip>
                 <Tooltip title={itemStage.description} placement={"top"}>
                     <Box sx={SX.stage}>{itemStage.label.toLowerCase()}</Box>
                 </Tooltip>

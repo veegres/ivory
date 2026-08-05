@@ -9,6 +9,7 @@ export enum KeeperPlugin {
     NATIVE_REDIS = "native_redis",
     NATIVE_CLICKHOUSE = "native_clickhouse",
     NATIVE_ZOOKEEPER = "native_zookeeper",
+    NATIVE_MONGO = "native_mongo",
 }
 
 export interface KeeperConnection {
