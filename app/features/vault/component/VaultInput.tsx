@@ -1,10 +1,16 @@
 import {FormControl, InputLabel, OutlinedInput, Theme} from "@mui/material"
 import {SystemStyleObject} from "@mui/system"
+import {forwardRef} from "react"
 
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
-    input: {height: "32px"},
+    input: {
+        height: "32px",
+        "& input": {fontSize: "14px", fontFamily: "monospace"},
+        "& .MuiOutlinedInput-notchedOutline": {borderColor: "divider"},
+        "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {borderColor: "divider"},
+    },
 }
 
 type Props = {
@@ -16,10 +22,10 @@ type Props = {
     onChange: (value: string) => void
 }
 
-export function VaultInput(props: Props) {
-    const {sx, label, type, value, disabled, onChange} = props
+export const VaultInput = forwardRef<HTMLDivElement, Props>(function VaultInput(props, ref) {
+    const {sx, label, type, value, disabled, onChange, ...rest} = props
     return (
-        <FormControl sx={sx} disabled={disabled}>
+        <FormControl ref={ref} sx={sx} disabled={disabled} {...rest}>
             <InputLabel shrink>{label}</InputLabel>
             <OutlinedInput
                 sx={SX.input}
@@ -31,4 +37,4 @@ export function VaultInput(props: Props) {
             />
         </FormControl>
     )
-}
+})

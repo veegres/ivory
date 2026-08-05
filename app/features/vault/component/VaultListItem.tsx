@@ -1,5 +1,4 @@
 import {Cancel, CheckCircle, ContentCopy, Delete, Edit} from "@mui/icons-material"
-import {Box, Tooltip} from "@mui/material"
 import {useEffect, useState} from "react"
 
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
@@ -32,17 +31,14 @@ export function VaultListItem(props: Props) {
     const Row = isSshKey ? VaultRowSshKey : VaultRowPassword
 
     return (
-        <Tooltip title={`ID: ${uuid}`} placement={"top-start"}>
-            <Box>
-                <Row
-                    renderButtons={edit ? renderWriteButtons() : renderReadButtons()}
-                    disabled={!edit}
-                    vault={v}
-                    onChangeVault={(vault) => setVault(vault)}
-                    onEmpty={(v) => setEmpty(v)}
-                />
-            </Box>
-        </Tooltip>
+        <Row
+            uuid={uuid}
+            renderButtons={edit ? renderWriteButtons() : renderReadButtons()}
+            disabled={!edit}
+            vault={v}
+            onChangeVault={(vault) => setVault(vault)}
+            onEmpty={(v) => setEmpty(v)}
+        />
     )
 
     function renderReadButtons() {

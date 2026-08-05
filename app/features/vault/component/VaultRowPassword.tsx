@@ -3,6 +3,7 @@ import {ReactElement, useEffect, useRef, useState} from "react"
 
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {Vault} from "../api/VaultType"
+import {VaultId} from "./VaultId"
 import {VaultInput} from "./VaultInput"
 
 const SX: SxPropsMap = {
@@ -10,6 +11,7 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
+    uuid?: string,
     renderButtons: ReactElement,
     disabled: boolean,
     vault: Vault,
@@ -18,7 +20,7 @@ type Props = {
 }
 
 export function VaultRowPassword(props: Props) {
-    const {renderButtons, vault, disabled, onChangeVault, onEmpty} = props
+    const {uuid, renderButtons, vault, disabled, onChangeVault, onEmpty} = props
     const [username, setUsername] = useState(vault.username)
     const [secret, setSecret] = useState(vault.secret)
 
@@ -29,6 +31,7 @@ export function VaultRowPassword(props: Props) {
 
     return (
         <Box sx={SX.row}>
+            {uuid && <VaultId uuid={uuid}/>}
             <VaultInput
                 sx={{width: "150px"}}
                 label={"Username"}
