@@ -9,12 +9,14 @@ import (
 	"ivory/plugins/database"
 	chdb "ivory/plugins/database/clickhouse"
 	etcddb "ivory/plugins/database/etcd"
+	mongodb "ivory/plugins/database/mongo"
 	"ivory/plugins/database/postgres"
 	redisdb "ivory/plugins/database/redis"
 	zkdb "ivory/plugins/database/zookeeper"
 	"ivory/plugins/keeper"
 	chkeeper "ivory/plugins/keeper/clickhouse"
 	etcdkeeper "ivory/plugins/keeper/etcd"
+	mongokeeper "ivory/plugins/keeper/mongo"
 	"ivory/plugins/keeper/patroni"
 	pgkeeper "ivory/plugins/keeper/postgres"
 	rediskeeper "ivory/plugins/keeper/redis"
@@ -40,11 +42,13 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	redisKeeperAdapter := rediskeeper.NewAdapter()
 	clickhouseKeeperAdapter := chkeeper.NewAdapter()
 	zookeeperKeeperAdapter := zkkeeper.NewAdapter()
+	mongoKeeperAdapter := mongokeeper.NewAdapter()
 	postgresAdapter := postgres.NewAdapter()
 	etcdDbAdapter := etcddb.NewAdapter()
 	redisDbAdapter := redisdb.NewAdapter()
 	clickhouseDbAdapter := chdb.NewAdapter()
 	zookeeperDbAdapter := zkdb.NewAdapter()
+	mongoDbAdapter := mongodb.NewAdapter()
 	linuxAdapter := linux.NewAdapter(sshClient)
 
 	// REGISTRY
@@ -55,6 +59,7 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	keeperRegistry.Register(keeper.NATIVE_REDIS, redisKeeperAdapter)
 	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouseKeeperAdapter)
 	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeperKeeperAdapter)
+	keeperRegistry.Register(keeper.NATIVE_MONGO, mongoKeeperAdapter)
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
 	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroniAdapter)
 	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, pgKeeperAdapter)
@@ -62,12 +67,14 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	keeperMetadataRegistry.Register(keeper.NATIVE_REDIS, redisKeeperAdapter)
 	keeperMetadataRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouseKeeperAdapter)
 	keeperMetadataRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeperKeeperAdapter)
+	keeperMetadataRegistry.Register(keeper.NATIVE_MONGO, mongoKeeperAdapter)
 	databaseRegistry := utils.NewRegistry[database.Plugin, database.Adapter]()
 	databaseRegistry.Register(database.POSTGRES, postgresAdapter)
 	databaseRegistry.Register(database.ETCD, etcdDbAdapter)
 	databaseRegistry.Register(database.REDIS, redisDbAdapter)
 	databaseRegistry.Register(database.CLICKHOUSE, clickhouseDbAdapter)
 	databaseRegistry.Register(database.ZOOKEEPER, zookeeperDbAdapter)
+	databaseRegistry.Register(database.MONGO, mongoDbAdapter)
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
 	platformRegistry.Register(platform.Linux, linuxAdapter)
 
