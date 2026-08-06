@@ -13,10 +13,9 @@
 
 <br>
 
-Ivory is an open-source database cluster management tool built around the concept of a **Keeper** — a generic HA
-management layer responsible for leader election, automatic failover, and cluster coordination. A Keeper can be a
-standalone agent running beside the database or a management system embedded directly in the database engine. As an
-example - [Patroni](https://patroni.readthedocs.io/)
+Ivory is an open-source database cluster management tool built around the concept of a **Keeper** — a generic
+management layer responsible for cluster manipulations. A Keeper can be a standalone agent running beside the 
+database or a management system embedded directly in the database engine. As an example - [Patroni](https://patroni.readthedocs.io/)
 the Keeper implementation for PostgreSQL.
 
 It is designed for developers and DBAs who want a single UI to operate, troubleshoot, and deploy high-availability
