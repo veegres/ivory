@@ -200,13 +200,14 @@ export function useRouterNodePlatformDown(connection: PlatformVaultConnection) {
     })
 }
 
-export function useRouterNodeKeeperDeploy(connection: PlatformVaultConnection) {
+export function useRouterNodeKeeperDeploy(connection: PlatformVaultConnection, onSuccess?: (data: string[]) => void) {
     const activeCluster = useStore(s => s.activeCluster)
     const activeClusterKey = activeCluster ? ClusterApi.overview.keyCommon(activeCluster.name) : []
     return useMutationAdapter({
         mutationFn: NodeApi.container.keeper.deploy.fn,
         mutationKey: NodeApi.container.keeper.deploy.key(),
         successKeys: [NodeApi.container.list.key(connection), activeClusterKey],
+        onSuccess: (_, data) => onSuccess ? onSuccess(data) : void 0,
     })
 }
 
