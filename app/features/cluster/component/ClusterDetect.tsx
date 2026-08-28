@@ -3,6 +3,7 @@ import {Box, Button, Divider, TextField} from "@mui/material"
 import {useEffect, useState} from "react"
 
 import {Options} from "../../../core/widgets/options/Options"
+import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {getKeeperDefaultPort} from "../../../shared/helper/HelperUtils"
@@ -45,39 +46,40 @@ export function ClusterDetect(props: Props) {
         <ManageAccess feature={Feature.ManageClusterCreate}>
             <DialogButton
                 title={"DETECT CLUSTER"}
-                renderActions={renderActions()}
                 icon={<AutoFixHigh/>}
                 variant={withLabel ? "button_label" : "button"}
                 label={"Detect"}
                 size={size}
             >
-                <TextField
-                    size={"small"}
-                    label={"Name"}
-                    required
-                    value={request.name}
-                    onChange={(e) => handleNameUpdate(e.target.value)}
-                />
-                <Box sx={SX.node}>
+                <DialogScreen renderActions={renderActions()}>
                     <TextField
-                        fullWidth
                         size={"small"}
-                        label={"Domain"}
+                        label={"Name"}
                         required
-                        value={request.host}
-                        onChange={(e) => handleHostUpdate(e.target.value)}
+                        value={request.name}
+                        onChange={(e) => handleNameUpdate(e.target.value)}
                     />
-                    <TextField
-                        type={"number"}
-                        size={"small"}
-                        label={"Port"}
-                        required
-                        value={request.port || ""}
-                        onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
-                    />
-                </Box>
-                <Divider variant={"middle"}/>
-                <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})} disablePlugins={true}/>
+                    <Box sx={SX.node}>
+                        <TextField
+                            fullWidth
+                            size={"small"}
+                            label={"Domain"}
+                            required
+                            value={request.host}
+                            onChange={(e) => handleHostUpdate(e.target.value)}
+                        />
+                        <TextField
+                            type={"number"}
+                            size={"small"}
+                            label={"Port"}
+                            required
+                            value={request.port || ""}
+                            onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
+                        />
+                    </Box>
+                    <Divider variant={"middle"}/>
+                    <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})} disablePlugins={true}/>
+                </DialogScreen>
             </DialogButton>
         </ManageAccess>
     )

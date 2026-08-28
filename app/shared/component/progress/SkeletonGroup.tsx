@@ -3,18 +3,23 @@ import {Skeleton} from "@mui/material"
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
-    skeleton: {flexGrow: 1},
+    grow: {flexGrow: 1},
 }
 
 type Props = {
-    count: number
+    count: number,
+    width?: number | string,
+    height?: number | string,
+    grow?: boolean,
 }
 
 export function SkeletonGroup(props: Props) {
+    const {count, width = 200, height = 150, grow = true} = props
+
     return (
         <>
-            {[...Array(props.count).keys()].map((key) => (
-                <Skeleton variant={"rounded"} sx={SX.skeleton} key={key} width={200} height={150}/>
+            {[...Array(count).keys()].map((key) => (
+                <Skeleton variant={"rounded"} sx={[grow && SX.grow]} key={key} width={width} height={height}/>
             ))}
         </>
     )

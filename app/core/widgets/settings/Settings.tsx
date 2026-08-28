@@ -7,6 +7,7 @@ import {ManageSecret} from "../../../features/management/component/ManageSecret"
 import {Permissions} from "../../../features/permission/component/Permissions"
 import {Vault} from "../../../features/vault/component/Vault"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
 import {Settings as SettingsType} from "../../../shared/helper/HelperType"
 import {SettingOptions} from "../../../shared/helper/HelperUtils"
@@ -22,9 +23,10 @@ export function Settings() {
             icon={<MuiSettings/>}
             back={page !== SettingsType.MENU}
             onBackClick={() => setPage(SettingsType.MENU)}
+            onClose={() => setPage(SettingsType.MENU)}
             size={40}
         >
-            {renderContent()}
+            <DialogScreen>{renderContent()}</DialogScreen>
         </DialogButton>
     )
 

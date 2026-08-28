@@ -2,6 +2,7 @@ import {Add} from "@mui/icons-material"
 import {Box, Button} from "@mui/material"
 import {SyntheticEvent} from "react"
 
+import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {InfoColorBox} from "../../../shared/component/box/InfoColorBox"
 import {InfoColorBoxRow} from "../../../shared/component/box/InfoColorBoxRow"
@@ -33,6 +34,7 @@ const SX: SxPropsMap = {
 type Props = {
     keeper: KeeperPlugin,
     platform: PlatformPlugin,
+    hint: string,
     // onOpen runs a template: your own goes straight to the deploy form, a
     // shipped one opens as a copy first, since only your own are deployable
     onOpen: (template: Template) => void,
@@ -46,22 +48,25 @@ type Props = {
 // buttons cover the other two things you can do with one: edit your own, or
 // copy any of them into one you own.
 export function DeploymentTemplateList(props: Props) {
-    const {keeper, platform, onOpen, onCopy, onEdit, onNew} = props
+    const {keeper, platform, hint, onOpen, onCopy, onEdit, onNew} = props
     const list = useRouterDeploymentTemplateList({keeper, platform})
     const remove = useRouterDeploymentTemplateDelete()
 
     return (
-        <Box sx={SX.box}>
-            {renderBody()}
-            <ManageAccess feature={Feature.ManageDeploymentTemplateCreate}>
-                <Button fullWidth={true} startIcon={<Add/>} onClick={onNew}>New template</Button>
-            </ManageAccess>
-        </Box>
+        <DialogScreen>
+            <Box sx={SX.box}>
+                <Note center={true}>{hint}</Note>
+                {renderBody()}
+                <ManageAccess feature={Feature.ManageDeploymentTemplateCreate}>
+                    <Button fullWidth={true} startIcon={<Add/>} onClick={onNew}>New template</Button>
+                </ManageAccess>
+            </Box>
+        </DialogScreen>
     )
 
     function renderBody() {
         if (list.isError) return <ErrorSmart error={list.error}/>
-        if (list.isPending) return <SkeletonGroup count={3}/>
+        if (list.isPending) return <SkeletonGroup count={3} width={"100%"} height={76} grow={false}/>
         if (!list.data || list.data.length === 0) return renderEmpty()
         return list.data.map(renderRow)
     }

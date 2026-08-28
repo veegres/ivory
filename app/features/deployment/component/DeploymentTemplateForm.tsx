@@ -1,14 +1,18 @@
 import {Box, Button} from "@mui/material"
-import {createPortal} from "react-dom"
 
+import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {WarningList} from "../../../shared/component/box/WarningList"
-import {useDialogFooter} from "../../../shared/component/button/DialogButton"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
 import {KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
-import {useRouterDeploymentTemplateCreate, useRouterDeploymentTemplateUpdate, useTemplateForm} from "../api/DeploymentHook"
+import {
+    useRouterDeploymentTemplateCreate,
+    useRouterDeploymentTemplateList,
+    useRouterDeploymentTemplateUpdate,
+    useTemplateForm,
+} from "../api/DeploymentHook"
 import {Template, TemplateRequest} from "../api/DeploymentType"
 import {DeploymentTemplateEditor} from "./DeploymentTemplateEditor"
 
@@ -16,60 +20,48 @@ const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
 }
 
+// NOTE: source and template are not the same field under two names - a source
+// is copied from and then forgotten, a template is written back to and is the
+// only one that needs an id, which is why edit discriminates them
 type Props = {
     keeper: KeeperPlugin,
     platform: PlatformPlugin,
-    // template being edited, or the one being copied; absent means a brand new
-    // one written from scratch
-    template?: Template,
-    edit?: boolean,
-    takenNames: string[],
     onDone: (template: Template) => void,
-}
+} & ({edit: false, source?: Template} | {edit: true, template: Template})
 
 // DeploymentTemplateForm covers the three ways a template comes to exist: a new
 // one written from scratch, a copy of another (yours or a shipped one), and an
 // edit of your own. All three end the same way - the saved template is handed
 // back so it can be run.
 export function DeploymentTemplateForm(props: Props) {
-    const {keeper, platform: initialPlatform, template, edit = false, takenNames, onDone} = props
-    // NOTE: a template's platform is fixed once it exists, and a new one takes
-    // the dialog's - there is nothing to choose while only one platform exists
-    const platform = template?.platform ?? initialPlatform
-    const footer = useDialogFooter()
+    const {keeper, platform, edit, onDone} = props
     const form = useTemplateForm(getInitialTemplate())
+    // NOTE: shares the list query's cache, so the name check costs no request
+    const list = useRouterDeploymentTemplateList({keeper, platform})
     const create = useRouterDeploymentTemplateCreate(onDone)
     const update = useRouterDeploymentTemplateUpdate(onDone)
 
     const action = edit ? update : create
 
     return (
-        <Box sx={SX.box}>
-            {action.isError && <ErrorSmart error={action.error}/>}
-            <WarningList warnings={getWarnings()}/>
-            <DeploymentTemplateEditor
-                template={form.template}
-                onChange={form.setTemplate}
-                onCommandChange={form.updateCommand}
-                onCommandAdd={form.addCommand}
-                onCommandRemove={form.removeCommand}
-            />
-            {renderAction()}
-        </Box>
+        <DialogScreen renderActions={renderActions()}>
+            <Box sx={SX.box}>
+                {action.isError && <ErrorSmart error={action.error}/>}
+                <WarningList warnings={getWarnings()}/>
+                <DeploymentTemplateEditor
+                    template={form.template}
+                    onChange={form.setTemplate}
+                    onCommandChange={form.updateCommand}
+                    onCommandAdd={form.addCommand}
+                    onCommandRemove={form.removeCommand}
+                />
+            </Box>
+        </DialogScreen>
     )
-
-    // NOTE: the button belongs in the dialog's action bar, next to where every
-    // other dialog keeps its confirm - so it is rendered there rather than at
-    // the end of a form the user has to scroll through to reach it
-    function renderAction() {
-        if (footer === undefined) return renderButton()
-        if (footer === null) return
-        return createPortal(renderButton(), footer)
-    }
 
     // NOTE: error={true} on purpose - a user without the permission must see
     // why they cannot proceed, instead of a form with no button and no reason
-    function renderButton() {
+    function renderActions() {
         return (
             <ManageAccess feature={getFeature()} error={true}>
                 <Button
@@ -102,26 +94,28 @@ export function DeploymentTemplateForm(props: Props) {
     // NOTE: keeping its own name is not a collision with itself
     function isNameTaken() {
         const name = form.template.name.trim()
-        if (edit && name === template?.name) return false
-        return takenNames.includes(name)
+        if (props.edit && name === props.template.name) return false
+        return (list.data ?? []).some(template => template.name === name)
     }
 
     function handleAction() {
-        const request = {...form.template, platform}
-        if (edit && template) update.mutate({id: template.id, template: request})
-        else create.mutate(request)
+        if (props.edit) update.mutate({id: props.template.id, template: form.template})
+        else create.mutate(form.template)
     }
 
+    // NOTE: a template's platform is fixed once it exists, and a new one takes
+    // the dialog's - there is nothing to choose while only one platform exists
     function getInitialTemplate(): TemplateRequest {
-        if (!template) {
-            return {name: "", description: "", keeper, platform: initialPlatform, commands: [{command: ""}]}
+        const origin = props.edit ? props.template : props.source
+        if (!origin) {
+            return {name: "", description: "", keeper, platform, commands: [{command: ""}]}
         }
         return {
-            name: edit ? template.name : `${template.name} (copy)`,
-            description: template.description,
-            keeper: template.keeper,
-            platform: template.platform,
-            commands: template.commands,
+            name: props.edit ? origin.name : `${origin.name} (copy)`,
+            description: origin.description,
+            keeper: origin.keeper,
+            platform: origin.platform,
+            commands: origin.commands,
         }
     }
 }
