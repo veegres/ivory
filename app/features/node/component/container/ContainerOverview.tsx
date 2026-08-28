@@ -47,13 +47,14 @@ export function ContainerOverview(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <HeadBox title={connection.host}>
+            <HeadBox title={name}>
                 <ManageAccessBox sx={SX.action} feature={Feature.ManageNodePlatformContainer}>
                     {activeCluster && (
                         <ContainerKeeperDeploy
                             connection={connection}
                             plugin={activeCluster.plugins.keeper}
                             cluster={activeCluster.name}
+                            node={name}
                             databaseId={activeCluster.vaults.databaseId}
                             sshKeyId={activeCluster.vaults.sshKeyId}
                         />

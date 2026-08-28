@@ -317,7 +317,7 @@ export function ClusterDeploy(props: Props) {
     }
 
     function handleMemoDuplicates() {
-        const names = nodes.map(n => n.name).filter((name): name is string => !!name)
+        const names = nodes.map(n => n.name).filter(name => !!name)
         return new Set(names.filter((name, i) => names.indexOf(name) !== i))
     }
 

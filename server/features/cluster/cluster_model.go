@@ -13,9 +13,11 @@ import (
 
 type NodeConfig struct {
 	// Name is the node's own name, unique within the cluster and independent
-	// of its host: it is the deployment's identity ({{name}}, --name). Host
-	// stays the connection identity that keeper-reported nodes are matched
-	// against, so the two are deliberately separate.
+	// of its host: it is the deployment's identity ({{name}}, --name) and the
+	// name the platform addresses the deployment by, so it is required on
+	// every write (see Service.validateNodeNames). Host stays the connection
+	// identity that keeper-reported nodes are matched against, so the two are
+	// deliberately separate.
 	Name       string `json:"name" form:"name"`
 	Host       string `json:"host" form:"host"`
 	SshPort    *int   `json:"sshPort" form:"sshPort"`
@@ -126,7 +128,15 @@ type SearchCriteria struct {
 // SPECIFIC (SERVER)
 
 func mapKeeperResponse(r node.KeeperOneResponse) NodeConfig {
+	// NOTE: a keeper that names its members by endpoint rather than by name
+	// reports no name at all, and the node falls back to its host - the same
+	// default withNodeNames gives clusters stored before names existed
+	name := *r.DiscoveredHost
+	if r.DiscoveredName != nil && *r.DiscoveredName != "" {
+		name = *r.DiscoveredName
+	}
 	return NodeConfig{
+		Name:       name,
 		Host:       *r.DiscoveredHost,
 		KeeperPort: r.DiscoveredKeeperPort,
 		DbPort:     r.DiscoveredDbPort,

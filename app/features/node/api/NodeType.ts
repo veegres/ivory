@@ -66,6 +66,7 @@ export interface KeeperResponse {
     scheduledRestart?: ScheduledRestart,
     tags?: {[key: string]: any},
     discoveredHost?: string,
+    discoveredName?: string,
     discoveredKeeperPort?: number,
     discoveredDbPort?: number,
 }

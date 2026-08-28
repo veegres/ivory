@@ -38,12 +38,12 @@ describe("shortUuid", () => {
 
 describe("getDomain", () => {
   it("should return the domain string from a NodeConfig object", () => {
-    const config: NodeConfig = {host: "localhost", keeperPort: 8008}
+    const config: NodeConfig = {name: "node1", host: "localhost", keeperPort: 8008}
     expect(getDomain(config)).toBe("localhost:8008::")
   })
 
   it("should return the domain string without port if keeperPort is undefined", () => {
-    const config: NodeConfig = {host: "localhost"}
+    const config: NodeConfig = {name: "node1", host: "localhost"}
     expect(getDomain(config)).toBe("localhost:::")
   })
 })
@@ -51,8 +51,8 @@ describe("getDomain", () => {
 describe("getDomains", () => {
     it("should return an array of domain strings from an array of NodeConfig objects", () => {
         const configs: NodeConfig[] = [
-            {host: "localhost", keeperPort: 8008},
-            {host: "127.0.0.1", keeperPort: 8008},
+            {name: "node1", host: "localhost", keeperPort: 8008},
+            {name: "node1", host: "127.0.0.1", keeperPort: 8008},
         ]
         expect(getDomains(configs)).toEqual(["localhost:8008::", "127.0.0.1:8008::"])
     })
@@ -62,6 +62,7 @@ describe("getNodeConnection", () => {
     it("should return a NodeConfig object from a domain string", () => {
         const domain = "localhost:8008"
         expect(getNodeConfig(domain)).toEqual({
+            name: "localhost",
             host: "localhost",
             keeperPort: 8008,
         })
@@ -70,6 +71,7 @@ describe("getNodeConnection", () => {
     it("should return a NodeConfig object with default port if port is not in domain string", () => {
         const domain = "localhost"
         expect(getNodeConfig(domain)).toEqual({
+            name: "localhost",
             host: "localhost",
         })
     })
@@ -79,8 +81,8 @@ describe("getNodeConnections", () => {
     it("should return an array of NodeConfig objects from an array of domain strings", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
         expect(getNodeConfigs(domains)).toEqual([
-            {host: "localhost", keeperPort: 8008},
-            {host: "127.0.0.1"},
+            {name: "localhost", host: "localhost", keeperPort: 8008},
+            {name: "127.0.0.1", host: "127.0.0.1"},
         ])
     })
 })
@@ -97,25 +99,25 @@ describe("getNodeConfig with format", () => {
 
     it("should fill missing segments from defaults", () => {
         expect(getNodeConfig("node1", withKeeperPort)).toEqual({
-            host: "node1", keeperPort: 8008, dbPort: 5432, sshPort: 22,
+            name: "node1", host: "node1", keeperPort: 8008, dbPort: 5432, sshPort: 22,
         })
     })
 
     it("should keep provided segments over defaults", () => {
         expect(getNodeConfig("node1:8009:5433:2222", withKeeperPort)).toEqual({
-            host: "node1", keeperPort: 8009, dbPort: 5433, sshPort: 2222,
+            name: "node1", host: "node1", keeperPort: 8009, dbPort: 5433, sshPort: 2222,
         })
     })
 
     it("should parse host:dbPort:sshPort and mirror keeperPort from dbPort", () => {
         expect(getNodeConfig("node1:2381:2222", withoutKeeperPort)).toEqual({
-            host: "node1", keeperPort: 2381, dbPort: 2381, sshPort: 2222,
+            name: "node1", host: "node1", keeperPort: 2381, dbPort: 2381, sshPort: 2222,
         })
     })
 
     it("should mirror the default dbPort into keeperPort when only host is given", () => {
         expect(getNodeConfig("node1", withoutKeeperPort)).toEqual({
-            host: "node1", keeperPort: 2379, dbPort: 2379, sshPort: 22,
+            name: "node1", host: "node1", keeperPort: 2379, dbPort: 2379, sshPort: 22,
         })
     })
 })
@@ -203,14 +205,14 @@ describe("getUnknownPlaceholders", () => {
 
 describe("isConnectionEqual", () => {
     it("should return true if connections are equal", () => {
-        const c1: NodeConfig = {host: "localhost", keeperPort: 8008}
-        const c2: NodeConfig = {host: "localhost", keeperPort: 8008}
+        const c1: NodeConfig = {name: "node1", host: "localhost", keeperPort: 8008}
+        const c2: NodeConfig = {name: "node1", host: "localhost", keeperPort: 8008}
         expect(isConnectionEqual(c1, c2)).toBe(true)
     })
 
     it("should return false if connections are not equal", () => {
-        const c1: NodeConfig = {host: "localhost", keeperPort: 8008}
-        const c2: NodeConfig = {host: "localhost", keeperPort: 8009}
+        const c1: NodeConfig = {name: "node1", host: "localhost", keeperPort: 8008}
+        const c2: NodeConfig = {name: "node1", host: "localhost", keeperPort: 8009}
         expect(isConnectionEqual(c1, c2)).toBe(false)
     })
 })

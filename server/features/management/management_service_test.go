@@ -186,7 +186,7 @@ func TestServiceErase(t *testing.T) {
 	port := 5432
 	if _, err := env.clusterService.Update(cluster.Request{
 		Name:  "c1",
-		Nodes: []cluster.NodeConfig{{Host: "h1", KeeperPort: &port}},
+		Nodes: []cluster.NodeConfig{{Name: "h1", Host: "h1", KeeperPort: &port}},
 	}); err != nil {
 		t.Fatalf("failed to seed cluster: %v", err)
 	}

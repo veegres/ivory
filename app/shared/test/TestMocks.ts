@@ -97,7 +97,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
             database: DbPlugin.POSTGRES,
             keeper: KeeperPlugin.PATRONI_POSTGRES,
         },
-        nodes: [{host: "localhost", keeperPort: 8008}],
+        nodes: [{name: "node1", host: "localhost", keeperPort: 8008}],
         tls: {keeper: false, database: false},
         certs: {},
         vaults: {sshKeyId: "00000000-0000-0000-0000-000000000000"},
@@ -111,7 +111,7 @@ export function createMockCluster(overrides: Partial<Cluster> = {}): Cluster {
  */
 export function createMockNode(overrides: Partial<Node> = {}): Node {
     return {
-        config: {host: "localhost", keeperPort: 8008},
+        config: {name: "node1", host: "localhost", keeperPort: 8008},
         keeper: {
             state: "running",
             role: "leader",

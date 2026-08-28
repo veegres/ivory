@@ -31,6 +31,9 @@ func TestMapMembers(t *testing.T) {
 	if leader.Key == nil || *leader.Key != "etcd1" {
 		t.Errorf("expected key etcd1, got %v", leader.Key)
 	}
+	if leader.DiscoveredName == nil || *leader.DiscoveredName != "etcd1" {
+		t.Errorf("expected discovered name etcd1, got %v", leader.DiscoveredName)
+	}
 	if leader.DiscoveredHost == nil || *leader.DiscoveredHost != "etcd1" {
 		t.Errorf("expected discovered host etcd1, got %v", leader.DiscoveredHost)
 	}

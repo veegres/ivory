@@ -289,12 +289,13 @@ func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex
 	}
 
 	response := keeper.Response{
-		Key:    &name,
-		Status: &keeperStatus,
-		State:  state,
-		Role:   role,
-		Lag:    lag,
-		Tags:   tags,
+		Key:            &name,
+		Status:         &keeperStatus,
+		State:          state,
+		Role:           role,
+		Lag:            lag,
+		Tags:           tags,
+		DiscoveredName: &name,
 	}
 
 	if len(m.ClientURLs) > 0 {

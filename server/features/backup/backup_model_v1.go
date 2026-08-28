@@ -174,7 +174,7 @@ func permissionStatusToBackupV1(ps permission.Status) (backupPermissionTypeV1, e
 func (bc backupClusterV1) toCluster() cluster.Request {
 	nodes := make([]cluster.NodeConfig, len(bc.Sidecars))
 	for i, k := range bc.Sidecars {
-		nodes[i] = cluster.NodeConfig{Host: k.Host, KeeperPort: &k.Port}
+		nodes[i] = cluster.NodeConfig{Name: k.Host, Host: k.Host, KeeperPort: &k.Port}
 	}
 	return cluster.Request{
 		Name: bc.Name,

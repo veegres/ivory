@@ -58,6 +58,7 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 			ScheduledSwitchover:  a.mapSwitchover(host, response.ScheduledSwitchover),
 			Tags:                 patroniInstance.Tags,
 			DiscoveredHost:       &patroniInstance.Host,
+			DiscoveredName:       &patroniInstance.Name,
 			DiscoveredDbPort:     &patroniInstance.Port,
 			DiscoveredKeeperPort: &port,
 		})

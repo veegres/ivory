@@ -164,7 +164,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                config: {host: "localhost", keeperPort: 8009},
+                config: {name: "node1", host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.config))
@@ -179,7 +179,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                config: {host: "localhost", keeperPort: 8009},
+                config: {name: "node1", host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.config))
@@ -327,7 +327,7 @@ describe("StoreProvider", () => {
             useStoreAction.setCluster(cluster)
 
             const node = createMockNode({
-                config: {host: "localhost", keeperPort: 8009},
+                config: {name: "node1", host: "localhost", keeperPort: 8009},
             })
 
             useStoreAction.setNode(getDomain(node.config))

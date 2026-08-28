@@ -221,11 +221,16 @@ export interface NodeInputFormat {
     defaults: {keeperPort?: number, dbPort?: number, sshPort?: number},
 }
 
+// NOTE: a domain string carries no name - it never has - so the node is named
+// after its host, the same default the server applies to clusters stored
+// before names existed. A name typed elsewhere is preserved by the caller.
 export const getNodeConfig = (domain: string, format?: NodeInputFormat): NodeConfig => {
-    const [host, second, third, fourth] = domain.split(":")
+    const [rawHost, second, third, fourth] = domain.split(":")
+    const host = rawHost.toLowerCase()
     if (!format) {
         return {
-            host: host.toLowerCase(),
+            name: host,
+            host,
             keeperPort: parseInt(second) || undefined,
             dbPort: parseInt(third) || undefined,
             sshPort: parseInt(fourth) || undefined,
@@ -235,7 +240,7 @@ export const getNodeConfig = (domain: string, format?: NodeInputFormat): NodeCon
     const dbPort = parseInt(withKeeperPort ? third : second) || defaults.dbPort
     const sshPort = parseInt(withKeeperPort ? fourth : third) || defaults.sshPort
     const keeperPort = withKeeperPort ? parseInt(second) || defaults.keeperPort : dbPort
-    return {host: host.toLowerCase(), keeperPort, dbPort, sshPort}
+    return {name: host, host, keeperPort, dbPort, sshPort}
 }
 
 export const getNodeConfigs = (domains: string[], format?: NodeInputFormat): NodeConfig[] => {

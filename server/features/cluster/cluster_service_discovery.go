@@ -261,7 +261,7 @@ func (s *Service) mergeKeeperNode(nodeMap map[string]Node, kn node.KeeperOneResp
 		cn.Keeper = kn
 		nodeMap[nodeKey] = cn
 	} else {
-		config := NodeConfig{Host: *kn.DiscoveredHost, KeeperPort: kn.DiscoveredKeeperPort, DbPort: kn.DiscoveredDbPort}
+		config := mapKeeperResponse(kn)
 		warnings := []string{"node was found in Keeper response, but not in the cluster configuration"}
 		nodeMap[nodeKey] = Node{config, kn, warnings}
 	}

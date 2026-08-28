@@ -111,7 +111,7 @@ func TestServiceExportProducesValidLatestJSON(t *testing.T) {
 			Plugins: cluster.Plugins{Keeper: keeper.PATRONI_POSTGRES, Database: database.POSTGRES},
 			Tags:    []string{"prod"},
 		},
-		Nodes: []cluster.NodeConfig{{Host: "host1", KeeperPort: &port}},
+		Nodes: []cluster.NodeConfig{{Name: "host1", Host: "host1", KeeperPort: &port}},
 	}); err != nil {
 		t.Fatalf("failed to seed cluster: %v", err)
 	}

@@ -57,6 +57,7 @@ type KeeperResponse struct {
 	ScheduledRestart     *KeeperScheduledRestart    `json:"scheduledRestart"`
 	Tags                 *map[string]any            `json:"tags"`
 	DiscoveredHost       *string                    `json:"discoveredHost"`
+	DiscoveredName       *string                    `json:"discoveredName"`
 	DiscoveredKeeperPort *int                       `json:"discoveredKeeperPort"`
 	DiscoveredDbPort     *int                       `json:"discoveredDbPort"`
 }
@@ -259,6 +260,7 @@ func mapKeeperResponse(r keeper.Response) KeeperResponse {
 		ScheduledRestart:     restart,
 		Tags:                 r.Tags,
 		DiscoveredHost:       r.DiscoveredHost,
+		DiscoveredName:       r.DiscoveredName,
 		DiscoveredKeeperPort: r.DiscoveredKeeperPort,
 		DiscoveredDbPort:     r.DiscoveredDbPort,
 	}
