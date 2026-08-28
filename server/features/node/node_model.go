@@ -23,6 +23,10 @@ type KeeperPlugin = keeper.Plugin
 // PlatformPlugin selects which deployment target an operation runs against.
 type PlatformPlugin = platform.Plugin
 
+// DefaultPlatform is the platform a connection resolves to when it names none,
+// which is every cluster stored before platforms were selectable.
+const DefaultPlatform = platform.Docker
+
 type KeeperStatus = keeper.Status
 type KeeperRole = keeper.Role
 type KeeperState = keeper.State
@@ -113,15 +117,15 @@ type PlatformVaultConnection struct {
 	Host    string    `json:"host" form:"host" binding:"required"`
 	Port    int       `json:"port" form:"port" binding:"required"`
 	VaultId uuid.UUID `json:"vaultId" form:"vaultId" binding:"required"`
-	// Platform selects the adapter; empty means Linux, so clusters stored
-	// before platforms were selectable keep resolving.
+	// Platform selects the adapter; empty means DefaultPlatform, so clusters
+	// stored before platforms were selectable keep resolving.
 	Platform PlatformPlugin `json:"platform" form:"platform"`
 }
 
-// PlatformOrDefault resolves the adapter key, defaulting to Linux.
+// PlatformOrDefault resolves the adapter key, defaulting to DefaultPlatform.
 func (c PlatformVaultConnection) PlatformOrDefault() PlatformPlugin {
 	if c.Platform == "" {
-		return platform.Linux
+		return DefaultPlatform
 	}
 	return c.Platform
 }

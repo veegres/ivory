@@ -88,7 +88,7 @@ const deploySingleHostReplica = `docker run -d
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Redis (Multi Host)",
 			Description: "One redis leader and two replicas, one per VM. Name the leader redis-1 or edit REDIS_MASTER_HOST to match.",
 			Commands: []keeper.DeploymentCommand{
@@ -98,7 +98,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			},
 		},
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Redis (Single Host)",
 			Description: "One redis leader and two replicas on one VM. Give each node its own database port in the deploy form, and point the replicas at the leader's.",
 			Commands: []keeper.DeploymentCommand{

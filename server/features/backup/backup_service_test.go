@@ -13,7 +13,7 @@ import (
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/etcd"
 	"ivory/plugins/platform"
-	"ivory/plugins/platform/linux"
+	"ivory/plugins/platform/docker"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -60,7 +60,7 @@ func createTestBackupService(t *testing.T) *Service {
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
 	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Linux, linux.NewAdapter(nil))
+	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
 	deploymentService := deployment.NewService(deploymentRepository, keeperMetadataRegistry, platformRegistry)
 
 	return NewService(clusterService, queryService, permissionService, deploymentService)

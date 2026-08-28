@@ -254,12 +254,14 @@ func (bp backupPermissionsV1) toUserPermissions() permission.UserPermissions {
 	return permission.UserPermissions{Username: bp.Username, Permissions: perms}
 }
 
-// syncPermissionV1 looks up a stored permission key against the current set
-// of valid features; its input is a plain string (the backup's map key), not
-// a named local type, so unlike its siblings it cannot become a method.
+// syncPermissionV1 looks up a stored permission key against the current set of
+// valid features, resolving one saved under a name that has since been renamed;
+// its input is a plain string (the backup's map key), not a named local type,
+// so unlike its siblings it cannot become a method.
 func syncPermissionV1(p string) (config.Feature, error) {
+	stored := config.Feature(p).Current()
 	for _, validFeature := range config.All {
-		if string(validFeature) == p {
+		if validFeature == stored {
 			return validFeature, nil
 		}
 	}

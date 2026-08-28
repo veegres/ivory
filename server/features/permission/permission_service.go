@@ -215,6 +215,7 @@ func (s *Service) normalizeDatabase() error {
 	}
 	for permUsername, permissions := range permissionsMap {
 		status := s.getStatus(permUsername)
+		permissions = permissions.renamed()
 		normalisedPermissions := make(PermissionMap)
 		for _, feature := range config.All {
 			if perm, ok := permissions[feature]; !ok {

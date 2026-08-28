@@ -12,7 +12,7 @@ import (
 	"ivory/plugins/keeper/redis"
 	"ivory/plugins/keeper/zookeeper"
 	"ivory/plugins/platform"
-	"ivory/plugins/platform/linux"
+	"ivory/plugins/platform/docker"
 	"strings"
 	"testing"
 )
@@ -32,7 +32,7 @@ func newFullTestService(t *testing.T) *Service {
 	keeperMetadataRegistry.Register(keeper.NATIVE_MONGO, mongo.NewAdapter())
 
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Linux, linux.NewAdapter(nil))
+	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
 
 	return NewService(newTestRepository(t), keeperMetadataRegistry, platformRegistry)
 }
@@ -177,7 +177,7 @@ func TestDefaultsFilterByPlugin(t *testing.T) {
 			utils.NewRegistry[keeper.Plugin, keeper.Metadata](),
 			func() *utils.Registry[platform.Plugin, platform.Adapter] {
 				r := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-				r.Register(platform.Linux, linux.NewAdapter(nil))
+				r.Register(platform.Docker, docker.NewAdapter(nil))
 				return r
 			}(),
 		)
@@ -194,7 +194,7 @@ func TestDefaultsFilterByPlugin(t *testing.T) {
 // user hits it.
 func TestDefaultsProduceRunnableCommands(t *testing.T) {
 	s := newFullTestService(t)
-	adapter := linux.NewAdapter(ssh.NewClient())
+	adapter := docker.NewAdapter(ssh.NewClient())
 
 	values := keeper.Values{
 		Cluster: "main", Name: "node-1", Host: "10.0.0.1",

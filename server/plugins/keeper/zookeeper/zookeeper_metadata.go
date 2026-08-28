@@ -110,7 +110,7 @@ const deploySingleHostNode3 = `docker run -d
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "ZooKeeper (Multi Host)",
 			Description: "Three-node zookeeper ensemble, one per VM. Name the nodes zookeeper-1..3 or edit the server list to match.",
 			Commands: []keeper.DeploymentCommand{
@@ -120,7 +120,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			},
 		},
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "ZooKeeper (Single Host)",
 			Description: "Three-node zookeeper ensemble on one VM. Each node uses its own quorum and election ports; give each its own client port in the deploy form.",
 			Commands: []keeper.DeploymentCommand{

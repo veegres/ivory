@@ -12,8 +12,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Service) PlatformVmCopyId(r PlatformCopyIdRequest) (string, error) {
-	adapter, err := s.platformRegistry.Get(platform.Linux)
+func (s *Service) PlatformSystemCopyId(r PlatformCopyIdRequest) (string, error) {
+	adapter, err := s.platformRegistry.Get(DefaultPlatform)
 	if err != nil {
 		return "", err
 	}
@@ -21,7 +21,7 @@ func (s *Service) PlatformVmCopyId(r PlatformCopyIdRequest) (string, error) {
 	return "ok", adapter.CopyId(con, r.PublicKey)
 }
 
-func (s *Service) PlatformVmMetrics(r PlatformMetricsRequest) (*PlatformMetricsResponse, error) {
+func (s *Service) PlatformSystemMetrics(r PlatformMetricsRequest) (*PlatformMetricsResponse, error) {
 	adapter, conn, err := s.getPlatformAdapter(r)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (s *Service) PlatformVmMetrics(r PlatformMetricsRequest) (*PlatformMetricsR
 	return mapPlatformMetrics(metrics), nil
 }
 
-func (s *Service) PlatformVmProcesses(r PlatformProcessesRequest) (PlatformProcessesResponse, error) {
+func (s *Service) PlatformSystemProcesses(r PlatformProcessesRequest) (PlatformProcessesResponse, error) {
 	adapter, conn, err := s.getPlatformAdapter(r)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (s *Service) PlatformVmProcesses(r PlatformProcessesRequest) (PlatformProce
 	return mapPlatformProcesses(processes), nil
 }
 
-func (s *Service) PlatformVmInfo(r PlatformInfoRequest) (PlatformInfoResponse, error) {
+func (s *Service) PlatformSystemInfo(r PlatformInfoRequest) (PlatformInfoResponse, error) {
 	adapter, conn, err := s.getPlatformAdapter(r)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (s *Service) PlatformVmInfo(r PlatformInfoRequest) (PlatformInfoResponse, e
 	return mapPlatformInfo(info), nil
 }
 
-func (s *Service) PlatformLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
+func (s *Service) PlatformSystemLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})

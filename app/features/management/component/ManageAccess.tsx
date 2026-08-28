@@ -38,9 +38,12 @@ function renderError(feature: Feature, access: Access) {
 
 // NOTE: "unsupported" is returned without ever looking at permissions, since an
 // unsupported feature stays denied no matter the permission outcome would have been
-type Access = "allowed" | "unsupported" | "denied"
+export type Access = "allowed" | "unsupported" | "denied"
 
-function useHasAccess(feature: Feature): Access {
+// useHasAccess is exported for callers that have to tell "unsupported" apart
+// from "denied" - a plugin that cannot do a thing at all is worth hiding, while
+// a permission the user lacks is worth reporting.
+export function useHasAccess(feature: Feature): Access {
     const info = useRouterInfo(false)
     const activeCluster = useStore(s => s.activeCluster)
     const overview = useRouterClusterOverview(activeCluster?.name, false)

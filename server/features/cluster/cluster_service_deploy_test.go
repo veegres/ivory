@@ -12,7 +12,7 @@ import (
 	"ivory/plugins/keeper/patroni"
 	"ivory/plugins/keeper/postgres"
 	"ivory/plugins/platform"
-	"ivory/plugins/platform/linux"
+	"ivory/plugins/platform/docker"
 	"path/filepath"
 	"testing"
 
@@ -42,12 +42,12 @@ func newDeployTestService(t *testing.T) *Service {
 	tagService := tag.NewService(tagRepository)
 
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Linux, linux.NewAdapter(ssh.NewClient()))
+	platformRegistry.Register(platform.Docker, docker.NewAdapter(ssh.NewClient()))
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
 	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
 	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
 	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	nodeService := node.NewService(platformRegistry, nil, keeperMetadataRegistry, nil, nil, nil)
+	nodeService := node.NewService(platformRegistry, nil, nil, keeperMetadataRegistry, nil, nil, nil)
 
 	return &Service{
 		clusterRepository: clusterRepository,

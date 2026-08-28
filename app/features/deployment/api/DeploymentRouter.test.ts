@@ -6,8 +6,8 @@ import {DeploymentApi} from "./DeploymentRouter"
 describe("DeploymentApi.template.list.key", () => {
 
     it("should separate cache by keeper and platform", () => {
-        const etcd = DeploymentApi.template.list.key({keeper: KeeperPlugin.NATIVE_ETCD, platform: PlatformPlugin.LINUX})
-        const redis = DeploymentApi.template.list.key({keeper: KeeperPlugin.NATIVE_REDIS, platform: PlatformPlugin.LINUX})
+        const etcd = DeploymentApi.template.list.key({keeper: KeeperPlugin.NATIVE_ETCD, platform: PlatformPlugin.DOCKER})
+        const redis = DeploymentApi.template.list.key({keeper: KeeperPlugin.NATIVE_REDIS, platform: PlatformPlugin.DOCKER})
         expect(etcd).not.toEqual(redis)
     })
 
@@ -18,7 +18,7 @@ describe("DeploymentApi.template.list.key", () => {
     it("should invalidate every filtered list from keyCommon", () => {
         const common = DeploymentApi.template.list.keyCommon()
         const filtered = [
-            DeploymentApi.template.list.key({keeper: KeeperPlugin.NATIVE_ETCD, platform: PlatformPlugin.LINUX}),
+            DeploymentApi.template.list.key({keeper: KeeperPlugin.NATIVE_ETCD, platform: PlatformPlugin.DOCKER}),
             DeploymentApi.template.list.key({keeper: KeeperPlugin.NATIVE_REDIS}),
             DeploymentApi.template.list.key(),
         ]

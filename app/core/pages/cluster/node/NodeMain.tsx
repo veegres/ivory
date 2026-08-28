@@ -44,7 +44,7 @@ export function NodeMain(props: Props) {
 
     function renderActions() {
         if (tab === NodeTabType.DATABASE) return renderDatabaseActions()
-        if (tab === NodeTabType.PLATFORM) return renderPlatformActions()
+        if (tab === NodeTabType.SYSTEM) return renderSystemActions()
         if (tab === NodeTabType.CONTAINER) return renderContainerActions()
         return
     }
@@ -77,10 +77,10 @@ export function NodeMain(props: Props) {
         )
     }
 
-    function renderPlatformActions() {
+    function renderSystemActions() {
         const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
         if (!con) return
-        const queryKeys = [NodeApi.platform.metrics.key(con.host), NodeApi.platform.processes.key(con.host)]
+        const queryKeys = [NodeApi.system.metrics.key(con.host), NodeApi.system.processes.key(con.host)]
         return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]} size={32}/>
     }
 

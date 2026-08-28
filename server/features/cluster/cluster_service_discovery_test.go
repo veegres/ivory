@@ -8,6 +8,7 @@ import (
 	"ivory/features/query"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 	"ivory/tools"
 	"net/http"
 	"path/filepath"
@@ -80,7 +81,8 @@ func createTestServiceWithNode(t *testing.T, adapter keeper.Adapter) *Service {
 	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
 	keeperRegistry.Register("fake", adapter)
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	s.nodeService = node.NewService(nil, keeperRegistry, keeperMetadataRegistry, nil, nil, nil)
+	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
+	s.nodeService = node.NewService(nil, platformMetadataRegistry, keeperRegistry, keeperMetadataRegistry, nil, nil, nil)
 
 	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "query.db"), 0600, nil)
 	if errOpen != nil {
@@ -246,7 +248,7 @@ func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T
 		listStatus: http.StatusServiceUnavailable,
 		listErr:    errors.New(errMessage),
 	})
-	s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil, nil)}
+	s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
 
 	configs := []NodeConfig{{Host: host, KeeperPort: &port}}
 	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{Plugins: Plugins{Keeper: "fake"}})
@@ -306,7 +308,7 @@ func TestService_getKeeperListByManyAll_PrefersLeaderReportedSyncData(t *testing
 
 	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
 	keeperRegistry.Register("fake", &multiHostFakeKeeperAdapter{responses: responses})
-	s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil, nil)}
+	s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
 
 	// NOTE: replicas are listed before the leader on purpose - responses
 	// preserve config order (node_service_keeper.go's KeeperNodeListMulti
@@ -371,7 +373,7 @@ func TestService_getKeeperListByLeader(t *testing.T) {
 
 		keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
 		keeperRegistry.Register("fake", &multiHostFakeKeeperAdapter{responses: responses})
-		s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil, nil)}
+		s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
 
 		configs := []NodeConfig{
 			{Host: db2, KeeperPort: &port, DbPort: &port},
@@ -401,7 +403,7 @@ func TestService_getKeeperListByLeader(t *testing.T) {
 
 		keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
 		keeperRegistry.Register("fake", &multiHostFakeKeeperAdapter{responses: responses})
-		s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil, nil)}
+		s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
 
 		configs := []NodeConfig{
 			{Host: db1, KeeperPort: &port, DbPort: &port},

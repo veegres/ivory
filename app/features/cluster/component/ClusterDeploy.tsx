@@ -46,7 +46,7 @@ const SX: SxPropsMap = {
 
 // NOTE: a constant until a second platform exists - it was state with no
 // setter, which reads as a choice nobody can make
-const platform = PlatformPlugin.LINUX
+const platform = PlatformPlugin.DOCKER
 
 const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     certs: {}, vaults: {}, tags: [],

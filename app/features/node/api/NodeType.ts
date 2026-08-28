@@ -13,9 +13,9 @@ export enum KeeperPlugin {
 }
 
 // PlatformPlugin selects the deployment target a template and a deployment
-// run against. Only linux exists today; k8s is the reason it is a choice.
+// run against. Only docker exists today; k8s is the reason it is a choice.
 export enum PlatformPlugin {
-    LINUX = "linux",
+    DOCKER = "docker",
 }
 
 // DeployVar is the closed set of {{variables}} a deployment command may use:
@@ -105,7 +105,7 @@ export interface PlatformVaultConnection {
     host: string,
     port: number,
     vaultId: string,
-    // platform selects the deployment target; omitted means linux, so clusters
+    // platform selects the deployment target; omitted means docker, so clusters
     // stored before platforms were selectable keep resolving
     platform?: PlatformPlugin,
 }
@@ -219,7 +219,7 @@ export type PlatformInfoRequest = PlatformVaultConnection
 
 // SPECIFIC (WEB)
 
-export enum NodeTabType {DATABASE, CONTAINER, KEEPER, TOOLS, PLATFORM}
+export enum NodeTabType {DATABASE, CONTAINER, KEEPER, TOOLS, SYSTEM}
 
 export enum ReleaseStage {
     ALPHA = "alpha",

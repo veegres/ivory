@@ -1,7 +1,9 @@
 import {InfoOutlined} from "@mui/icons-material"
 import {Alert, Box, Collapse, Tab, Tabs, ToggleButton, Tooltip} from "@mui/material"
-import {ReactNode, useState} from "react"
+import {ReactNode, useEffect, useState} from "react"
 
+import {Feature} from "../../../../features/Feature"
+import {useHasAccess} from "../../../../features/management/component/ManageAccess"
 import {NodeTabType} from "../../../../features/node/api/NodeType"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
@@ -35,12 +37,17 @@ export function NodeMainTabsHead(props: Props) {
     const {tab, info, renderActions} = props
     const [alert, setAlert] = useState(false)
     const {setNodeBody} = useStoreAction
+    // NOTE: only "unsupported" hides the tab - a permission the user lacks is
+    // still worth showing, so the tab body can say so
+    const system = useHasAccess(Feature.ViewNodeSystem) !== "unsupported"
+
+    useEffect(handleEffectSystemTab, [system, tab, setNodeBody])
 
     return (
         <Box sx={SX.box}>
             <Box sx={SX.title}>
                 <Tabs sx={SX.tabs} value={tab} onChange={(_, e) => setNodeBody(e)} variant={"scrollable"} scrollButtons={"auto"} allowScrollButtonsMobile>
-                    <Tab value={NodeTabType.PLATFORM} label={NODE_TABS[NodeTabType.PLATFORM].label}/>
+                    {system && <Tab value={NodeTabType.SYSTEM} label={NODE_TABS[NodeTabType.SYSTEM].label}/>}
                     <Tab value={NodeTabType.CONTAINER} label={NODE_TABS[NodeTabType.CONTAINER].label}/>
                     <Tab value={NodeTabType.KEEPER} label={NODE_TABS[NodeTabType.KEEPER].label}/>
                     <Tab value={NodeTabType.DATABASE} label={NODE_TABS[NodeTabType.DATABASE].label}/>
@@ -60,4 +67,8 @@ export function NodeMainTabsHead(props: Props) {
             </Collapse>
         </Box>
     )
+
+    function handleEffectSystemTab() {
+        if (!system && tab === NodeTabType.SYSTEM) setNodeBody(NodeTabType.CONTAINER)
+    }
 }

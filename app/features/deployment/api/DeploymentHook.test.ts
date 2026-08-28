@@ -11,7 +11,7 @@ const etcdCommand: TemplateCommand = {
 }
 
 function initialTemplate(): TemplateRequest {
-    return {name: "etcd", keeper: KeeperPlugin.NATIVE_ETCD, platform: PlatformPlugin.LINUX, commands: [etcdCommand]}
+    return {name: "etcd", keeper: KeeperPlugin.NATIVE_ETCD, platform: PlatformPlugin.DOCKER, commands: [etcdCommand]}
 }
 
 describe("getUnknownCommandPlaceholders", () => {

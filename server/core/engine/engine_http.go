@@ -190,11 +190,13 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	keeperGroup.POST("/pause", rp.ValidateMethodMiddleware(coreConfig.ManageNodeKeeperActivation), r.PostNodePause)
 
 	platformGroup := group.Group("/platform")
-	platformGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformMetrics)
-	platformGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.StreamPlatformLogs)
-	platformGroup.GET("/processes", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformProcesses)
-	platformGroup.GET("/info", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatform), r.GetPlatformInfo)
-	platformGroup.POST("/copy-id", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatform), r.PostPlatformCopyId)
+
+	systemGroup := platformGroup.Group("/system")
+	systemGroup.GET("/metrics", rp.ValidateMethodMiddleware(coreConfig.ViewNodeSystem), r.GetPlatformSystemMetrics)
+	systemGroup.GET("/logs", rp.ValidateMethodMiddleware(coreConfig.ViewNodeSystem), r.StreamPlatformSystemLogs)
+	systemGroup.GET("/processes", rp.ValidateMethodMiddleware(coreConfig.ViewNodeSystem), r.GetPlatformSystemProcesses)
+	systemGroup.GET("/info", rp.ValidateMethodMiddleware(coreConfig.ViewNodeSystem), r.GetPlatformSystemInfo)
+	systemGroup.POST("/copy-id", rp.ValidateMethodMiddleware(coreConfig.ManageNodeSystem), r.PostPlatformSystemCopyId)
 
 	containerGroup := platformGroup.Group("/container")
 	containerGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewNodePlatformContainer), r.GetPlatformContainerList)

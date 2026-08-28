@@ -1,4 +1,4 @@
-package linux
+package docker
 
 import (
 	"errors"

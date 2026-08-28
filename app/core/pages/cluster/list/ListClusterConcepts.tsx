@@ -15,10 +15,10 @@ const SX: SxPropsMap = {
 }
 
 const CONCEPTS: {term: string, description: string}[] = [
-    {term: "Node", description: "A server with three ports — keeper, database, and platform (e.g. Linux) — though keeper and database can share one"},
+    {term: "Node", description: "A server with three ports — keeper, database, and platform (e.g. Docker) — though keeper and database can share one"},
     {term: "Keeper", description: "Manages your database cluster. Provides features like failover, reload, reinit, etc. Functionality depends on your keeper"},
     {term: "Database", description: "The actual database software. Allows you to execute some template and custom queries"},
-    {term: "Platform", description: "Deploys and manages your containers, and shows some server information to help you with troubleshooting"},
+    {term: "Platform", description: "Deploys and manages your containers, and shows system information to help you with troubleshooting"},
 ]
 
 export function ListClusterConcepts() {

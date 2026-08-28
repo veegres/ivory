@@ -55,8 +55,12 @@ func NewService(
 	}
 }
 
+// getSupportedFeatures asks the platform for its capabilities alongside the
+// keeper's and the database's. A cluster names no platform of its own yet, so
+// it reports the one its connections resolve to.
 func (s *Service) getSupportedFeatures(k node.KeeperPlugin, db query.DbPlugin) map[config.Feature]bool {
 	features := make(map[config.Feature]bool)
+	maps.Copy(features, s.nodeService.PlatformSupportedFeatures(node.DefaultPlatform))
 	maps.Copy(features, s.nodeService.SupportedFeatures(k))
 	maps.Copy(features, s.queryService.SupportedFeatures(db))
 	maps.Copy(features, s.getToolSupportedFeatures(db))

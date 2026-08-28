@@ -22,6 +22,14 @@ type fakePlatformAdapter struct {
 	platform.Adapter
 }
 
+type fakePlatformMetadata struct {
+	features map[config.Feature]bool
+}
+
+func (f *fakePlatformMetadata) SupportedFeatures() map[config.Feature]bool {
+	return f.features
+}
+
 type fakeKeeperMetadata struct {
 	features map[config.Feature]bool
 }
@@ -83,7 +91,10 @@ func createTestNodeService(t *testing.T) (*Service, *vault.Service) {
 	)
 
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Linux, &fakePlatformAdapter{})
+	platformRegistry.Register(platform.Docker, &fakePlatformAdapter{})
+
+	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
+	platformMetadataRegistry.Register(platform.Docker, &fakePlatformMetadata{features: map[config.Feature]bool{config.ViewNodeSystem: true}})
 
 	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
 	keeperRegistry.Register("fake", &fakeKeeperAdapter{})
@@ -91,7 +102,7 @@ func createTestNodeService(t *testing.T) (*Service, *vault.Service) {
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
 	keeperMetadataRegistry.Register("fake", &fakeKeeperMetadata{features: map[config.Feature]bool{config.ViewClusterList: true}})
 
-	s := NewService(platformRegistry, keeperRegistry, keeperMetadataRegistry, vaultService, certService, nil)
+	s := NewService(platformRegistry, platformMetadataRegistry, keeperRegistry, keeperMetadataRegistry, vaultService, certService, nil)
 	return s, vaultService
 }
 
@@ -107,6 +118,24 @@ func TestServiceSupportedFeatures(t *testing.T) {
 
 	t.Run("unknown plugin returns an empty map", func(t *testing.T) {
 		features := s.SupportedFeatures("unknown")
+		if len(features) != 0 {
+			t.Fatalf("expected an empty map, got %v", features)
+		}
+	})
+}
+
+func TestServicePlatformSupportedFeatures(t *testing.T) {
+	s, _ := createTestNodeService(t)
+
+	t.Run("known platform returns its feature map", func(t *testing.T) {
+		features := s.PlatformSupportedFeatures(platform.Docker)
+		if !features[config.ViewNodeSystem] {
+			t.Fatalf("expected ViewNodeSystem to be supported, got %v", features)
+		}
+	})
+
+	t.Run("unknown platform returns an empty map", func(t *testing.T) {
+		features := s.PlatformSupportedFeatures("unknown")
 		if len(features) != 0 {
 			t.Fatalf("expected an empty map, got %v", features)
 		}

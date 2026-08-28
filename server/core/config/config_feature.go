@@ -27,8 +27,8 @@ const (
 	ManageNodeKeeperFailover     Feature = "manage.node.keeper.failover"
 	ManageNodeKeeperActivation   Feature = "manage.node.keeper.activation"
 
-	ViewNodePlatform            Feature = "view.node.platform"
-	ManageNodePlatform          Feature = "manage.node.platform"
+	ViewNodeSystem              Feature = "view.node.system"
+	ManageNodeSystem            Feature = "manage.node.system"
 	ViewNodePlatformContainer   Feature = "view.node.platform.container"
 	ManageNodePlatformContainer Feature = "manage.node.platform.container"
 
@@ -83,6 +83,24 @@ const (
 	ManageManagementBackup Feature = "manage.management.backup"
 )
 
+// renamedFeatures maps a feature key that used to be stored under a different
+// name to the one it goes by now. Permissions persist the key they were written
+// with, so a rename has to stay readable or every stored grant silently resets
+// to the default the next time the database is normalized.
+var renamedFeatures = map[Feature]Feature{
+	"view.node.platform":   ViewNodeSystem,
+	"manage.node.platform": ManageNodeSystem,
+}
+
+// Current resolves a stored feature key to the name it goes by now, leaving
+// anything already current untouched.
+func (f Feature) Current() Feature {
+	if current, ok := renamedFeatures[f]; ok {
+		return current
+	}
+	return f
+}
+
 type Plugin interface {
 	String() string
 }
@@ -97,8 +115,8 @@ var All = []Feature{
 	ViewTagList,
 	ViewNodeKeeperOverview,
 	ViewNodeKeeperConfig,
-	ViewNodePlatform,
-	ManageNodePlatform,
+	ViewNodeSystem,
+	ManageNodeSystem,
 	ManageNodeKeeperConfigUpdate,
 	ManageNodeKeeperSwitchover,
 	ManageNodeKeeperReinitialize,

@@ -5,7 +5,7 @@ import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
 import {NodeTabType} from "../../../../features/node/api/NodeType"
 import {Container} from "../../../../features/node/component/container/Container"
 import {Keeper} from "../../../../features/node/component/keeper/Keeper"
-import {Platform} from "../../../../features/node/component/platform/Platform"
+import {System} from "../../../../features/node/component/system/System"
 import {getKeeperOneRequest, getPlatformConnection, getQueryConnection} from "../../../../shared/helper/HelperUtils"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTools} from "./NodeMainTools"
@@ -104,14 +104,15 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
             </ul>
         </>
     },
-    [NodeTabType.PLATFORM]: {
-        label: "Platform",
-        body: (c: Cluster, n: Node) => <Platform connection={getPlatformConnection(c, n.config.host, n.config.sshPort)}/>,
+    [NodeTabType.SYSTEM]: {
+        label: "System",
+        body: (c: Cluster, n: Node) => <System connection={getPlatformConnection(c, n.config.host, n.config.sshPort)}/>,
         info: <>
-            A health view of the host (virtual machine) this node runs on. Ivory connects to it
-            through the platform credentials and shows general host information, live CPU, memory and
+            A health view of the system (virtual machine) this node runs on. Ivory connects to it
+            through the platform credentials and shows general system information, live CPU, memory and
             network usage charts, the list of running processes and system logs. It helps to spot
-            problems at the host level — before digging into the container or the database itself.
+            problems at the system level — before digging into the container or the database itself.
+            It is only available on platforms that expose the node itself.
         </>
     },
 }

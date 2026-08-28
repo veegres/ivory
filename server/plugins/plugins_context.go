@@ -22,16 +22,17 @@ import (
 	rediskeeper "ivory/plugins/keeper/redis"
 	zkkeeper "ivory/plugins/keeper/zookeeper"
 	"ivory/plugins/platform"
-	"ivory/plugins/platform/linux"
+	"ivory/plugins/platform/docker"
 )
 
 // Context holds every plugin registry, keyed by each plugin family's own
 // Plugin type, that the rest of Ivory resolves adapters through.
 type Context struct {
-	KeeperRegistry         *utils.Registry[keeper.Plugin, keeper.Adapter]
-	KeeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata]
-	DatabaseRegistry       *utils.Registry[database.Plugin, database.Adapter]
-	PlatformRegistry       *utils.Registry[platform.Plugin, platform.Adapter]
+	KeeperRegistry           *utils.Registry[keeper.Plugin, keeper.Adapter]
+	KeeperMetadataRegistry   *utils.Registry[keeper.Plugin, keeper.Metadata]
+	DatabaseRegistry         *utils.Registry[database.Plugin, database.Adapter]
+	PlatformRegistry         *utils.Registry[platform.Plugin, platform.Adapter]
+	PlatformMetadataRegistry *utils.Registry[platform.Plugin, platform.Metadata]
 }
 
 func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
@@ -49,7 +50,7 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	clickhouseDbAdapter := chdb.NewAdapter()
 	zookeeperDbAdapter := zkdb.NewAdapter()
 	mongoDbAdapter := mongodb.NewAdapter()
-	linuxAdapter := linux.NewAdapter(sshClient)
+	dockerAdapter := docker.NewAdapter(sshClient)
 
 	// REGISTRY
 	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
@@ -76,12 +77,15 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	databaseRegistry.Register(database.ZOOKEEPER, zookeeperDbAdapter)
 	databaseRegistry.Register(database.MONGO, mongoDbAdapter)
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Linux, linuxAdapter)
+	platformRegistry.Register(platform.Docker, dockerAdapter)
+	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
+	platformMetadataRegistry.Register(platform.Docker, dockerAdapter)
 
 	return &Context{
-		KeeperRegistry:         keeperRegistry,
-		KeeperMetadataRegistry: keeperMetadataRegistry,
-		DatabaseRegistry:       databaseRegistry,
-		PlatformRegistry:       platformRegistry,
+		KeeperRegistry:           keeperRegistry,
+		KeeperMetadataRegistry:   keeperMetadataRegistry,
+		DatabaseRegistry:         databaseRegistry,
+		PlatformRegistry:         platformRegistry,
+		PlatformMetadataRegistry: platformMetadataRegistry,
 	}
 }

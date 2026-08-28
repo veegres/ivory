@@ -72,7 +72,7 @@ mongosh --quiet --port {{dbPort}} --eval "rs.initiate({_id: \"{{cluster}}\", mem
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Mongo (Multi Host)",
 			Description: "Three-member replica set, one per VM. The last command initiates the set once every member is running - name the nodes mongo-1..3 or edit the member list to match.",
 			Commands: []keeper.DeploymentCommand{
@@ -82,7 +82,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			},
 		},
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Mongo (Single Host)",
 			Description: "Three-member replica set on one VM. Give each node its own database port in the deploy form and edit the member list to match.",
 			Commands: []keeper.DeploymentCommand{

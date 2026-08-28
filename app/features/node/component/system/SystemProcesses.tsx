@@ -2,7 +2,7 @@ import {useMemo} from "react"
 
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {VirtualizedTable} from "../../../../shared/component/table/VirtualizedTable"
-import {useRouterNodePlatformProcesses} from "../../api/NodeHook"
+import {useRouterNodeSystemProcesses} from "../../api/NodeHook"
 import {PlatformVaultConnection, Process} from "../../api/NodeType"
 
 const COLUMNS = [
@@ -19,9 +19,9 @@ type Props = {
     connection: PlatformVaultConnection,
 }
 
-export function PlatformProcesses(props: Props) {
+export function SystemProcesses(props: Props) {
     const {connection} = props
-    const processes = useRouterNodePlatformProcesses(connection)
+    const processes = useRouterNodeSystemProcesses(connection)
 
     const rows = useMemo(handleMemoRows, [processes.data])
 

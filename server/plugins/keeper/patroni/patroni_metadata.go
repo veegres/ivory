@@ -73,7 +73,7 @@ const deploySingleHost = `docker run -d
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Patroni (Multi Host)",
 			Description: "Three spilo nodes, one per VM, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run.",
 			Commands: []keeper.DeploymentCommand{
@@ -83,7 +83,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			},
 		},
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Patroni (Single Host)",
 			Description: "Three spilo nodes on one VM. Give each node its own keeper and database port in the deploy form.",
 			Commands: []keeper.DeploymentCommand{

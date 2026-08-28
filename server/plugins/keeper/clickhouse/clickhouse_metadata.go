@@ -113,7 +113,7 @@ exec /entrypoint.sh
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "ClickHouse (Multi Host)",
 			Description: "Three clickhouse replicas in one shard, coordinated through an external ZooKeeper or ClickHouse Keeper ensemble. Edit the replica and keeper lists to match your hosts.",
 			Commands: []keeper.DeploymentCommand{
@@ -123,7 +123,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			},
 		},
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "ClickHouse (Single Host)",
 			Description: "Three clickhouse replicas on one VM. The native port is fixed by the image's config.xml, so this needs a custom image to avoid collisions.",
 			Commands: []keeper.DeploymentCommand{

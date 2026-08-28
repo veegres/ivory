@@ -280,7 +280,7 @@ export const DeployVarOptions: { [key in DeployVar]: DeployVarMeta } = {
 }
 
 export const PlatformPluginOptions: { [key in PlatformPlugin]: EnumOptions } = {
-    [PlatformPlugin.LINUX]: {label: "LINUX", name: "Linux", key: PlatformPlugin.LINUX, icon: <DnsTwoTone/>},
+    [PlatformPlugin.DOCKER]: {label: "DOCKER", name: "Docker", key: PlatformPlugin.DOCKER, icon: <DnsTwoTone/>},
 }
 
 // PlaceholderPattern is the shape of a variable, shared so the editor's

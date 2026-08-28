@@ -39,7 +39,7 @@ func TestKeeperNodeList_KeepsResponseAlongsideError(t *testing.T) {
 		listStatus: http.StatusServiceUnavailable,
 		listErr:    errors.New("the database system is starting up"),
 	})
-	s := NewService(nil, keeperRegistry, nil, nil, nil, nil)
+	s := NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)
 
 	responses, status, err := s.KeeperNodeList(KeeperOneRequest{
 		KeeperConnection: KeeperConnection{Host: host, Port: port},
