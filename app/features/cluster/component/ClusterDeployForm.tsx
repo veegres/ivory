@@ -1,11 +1,9 @@
 import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
-import {Options} from "../../../core/widgets/options/Options"
 import {OptionsVault} from "../../../core/widgets/options/OptionsVault"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {Note} from "../../../shared/component/box/Note"
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
 import {TitledBox} from "../../../shared/component/box/TitledBox"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -19,6 +17,7 @@ import {useRouterClusterDeploy} from "../api/ClusterHook"
 import {DeployCredentials, DeployNode, Options as ClusterOptions} from "../api/ClusterType"
 import {ClusterDeployNode} from "./ClusterDeployNode"
 import {ClusterDeployResponse} from "./ClusterDeployResponse"
+import {ClusterOptionsBox} from "./ClusterOptionsBox"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
@@ -266,11 +265,7 @@ export function ClusterDeployForm(props: Props) {
     }
 
     function renderClusterOptions() {
-        return (
-            <SubContentBox label={"Cluster Options"} dense={true}>
-                <Options options={options} onUpdate={handleOptionsUpdate} disablePlugins={true}/>
-            </SubContentBox>
-        )
+        return <ClusterOptionsBox options={options} onUpdate={handleOptionsUpdate}/>
     }
 
     function handleMemoDuplicates() {
