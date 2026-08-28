@@ -6,7 +6,7 @@ import (
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/etcd"
 	"ivory/plugins/platform"
-	"ivory/plugins/platform/linux"
+	"ivory/plugins/platform/docker"
 	"strings"
 	"testing"
 
@@ -19,7 +19,7 @@ func newTestService(t *testing.T) *Service {
 	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
 	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
 	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Linux, linux.NewAdapter(nil))
+	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
 
 	return NewService(newTestRepository(t), keeperMetadataRegistry, platformRegistry)
 }
@@ -28,7 +28,7 @@ func testRequest(name string) TemplateRequest {
 	return TemplateRequest{
 		Name:     name,
 		Keeper:   keeper.NATIVE_ETCD,
-		Platform: platform.Linux,
+		Platform: platform.Docker,
 		Commands: []TemplateCommand{{
 			Command: `docker run -d --name {{name}} -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380" etcd`,
 		}},
@@ -261,4 +261,39 @@ func TestIsDefaultId(t *testing.T) {
 	if isDefaultId(uuid.New().String()) {
 		t.Error("a stored template's id must not look like a shipped one")
 	}
+}
+
+// TestService_CreateRenamesLegacyPlatform covers the one live path that still
+// carries the old key: importing a backup written before linux was renamed to
+// docker. The template must be stored - and name-checked - as docker.
+func TestService_CreateRenamesLegacyPlatform(t *testing.T) {
+	s := newTestService(t)
+
+	r := testRequest("imported")
+	r.Platform = "linux"
+
+	created, err := s.Create(r)
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	if created.Platform != platform.Docker {
+		t.Errorf("Create() platform = %q, want %q", created.Platform, platform.Docker)
+	}
+
+	t.Run("the stored name is taken under the current platform too", func(t *testing.T) {
+		again := testRequest("imported")
+		if _, err := s.Create(again); !errors.Is(err, ErrTemplateNameTaken) {
+			t.Fatalf("expected ErrTemplateNameTaken, got %v", err)
+		}
+	})
+
+	t.Run("it lists under the current platform", func(t *testing.T) {
+		list, err := s.List(ListRequest{Platform: platformPtr(platform.Docker)})
+		if err != nil {
+			t.Fatalf("List() error = %v", err)
+		}
+		if len(list) == 0 || list[0].Name != "imported" {
+			t.Fatalf("List() = %+v, want the imported template first", list)
+		}
+	})
 }

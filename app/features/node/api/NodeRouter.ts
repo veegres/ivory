@@ -17,7 +17,7 @@ import {
 } from "./NodeType"
 
 // NodeApi mirrors the server's node.Router route groups: keeper (HA
-// management, /node/keeper/...), platform (host-level, /node/platform/...),
+// management, /node/keeper/...), system (node-level, /node/platform/system/...),
 // container (lifecycle, /node/platform/container/...) and, nested inside
 // container like the server's containerKeeperGroup, container.keeper (deploy
 // actions, /node/platform/container/keeper/...).
@@ -84,23 +84,23 @@ export const NodeApi = {
                 .then((response) => response.data.response),
         },
     },
-    platform: {
+    system: {
         metrics: {
-            key: (host: string) => ["node", "platform", "metrics", host],
-            fn: (request: PlatformVaultConnection) => api.get<R<PlatformMetricsResponse>>("/node/platform/metrics", {params: {request: JSON.stringify(request)}})
+            key: (host: string) => ["node", "platform", "system", "metrics", host],
+            fn: (request: PlatformVaultConnection) => api.get<R<PlatformMetricsResponse>>("/node/platform/system/metrics", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         logs: {
-            url: (request: PlatformLogsRequest) => `/api/node/platform/logs?request=${encodeURIComponent(JSON.stringify(request))}`,
+            url: (request: PlatformLogsRequest) => `/api/node/platform/system/logs?request=${encodeURIComponent(JSON.stringify(request))}`,
         },
         processes: {
-            key: (host: string) => ["node", "platform", "processes", host],
-            fn: (request: PlatformVaultConnection) => api.get<R<PlatformProcessesResponse>>("/node/platform/processes", {params: {request: JSON.stringify(request)}})
+            key: (host: string) => ["node", "platform", "system", "processes", host],
+            fn: (request: PlatformVaultConnection) => api.get<R<PlatformProcessesResponse>>("/node/platform/system/processes", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         info: {
-            key: (host: string) => ["node", "platform", "info", host],
-            fn: (request: PlatformVaultConnection) => api.get<R<PlatformInfoResponse>>("/node/platform/info", {params: {request: JSON.stringify(request)}})
+            key: (host: string) => ["node", "platform", "system", "info", host],
+            fn: (request: PlatformVaultConnection) => api.get<R<PlatformInfoResponse>>("/node/platform/system/info", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
     },

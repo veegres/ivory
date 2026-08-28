@@ -6,7 +6,7 @@ import {NoBox} from "../../../../shared/component/box/NoBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useDebounce} from "../../../../shared/hook/Debounce"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
-import {useRouterNodePlatformLogs} from "../../api/NodeHook"
+import {useRouterNodeSystemLogs} from "../../api/NodeHook"
 import {PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
@@ -23,15 +23,15 @@ type Props = {
     connection: PlatformVaultConnection,
 }
 
-export function PlatformLogs(props: Props) {
+export function SystemLogs(props: Props) {
     const {connection} = props
-    const path = useStore(s => s.nodeState.platformLogsPath)
-    const {setPlatformLogsPath} = useStoreAction
+    const path = useStore(s => s.nodeState.systemLogsPath)
+    const {setSystemLogsPath} = useStoreAction
     const debouncePath = useDebounce(path)
     const [follow, setFollow] = useState(true)
 
     const request = {connection, path: debouncePath, tail: 50, follow}
-    const logs = useRouterNodePlatformLogs(request, debouncePath !== "")
+    const logs = useRouterNodeSystemLogs(request, debouncePath !== "")
 
     return (
         <>
@@ -42,7 +42,7 @@ export function PlatformLogs(props: Props) {
                     placeholder={"Path"}
                     value={path}
                     slotProps={{htmlInput: {sx: SX.input}}}
-                    onChange={(e) => setPlatformLogsPath(e.target.value)}
+                    onChange={(e) => setSystemLogsPath(e.target.value)}
                 />
                 <Box sx={SX.options}>
                     <Box>Follow</Box>

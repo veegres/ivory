@@ -13,7 +13,7 @@ func testBackupDeployment(name string) backupDeploymentV2 {
 		Name:        name,
 		Description: "three etcd members",
 		Keeper:      string(keeper.NATIVE_ETCD),
-		Platform:    string(platform.Linux),
+		Platform:    string(platform.Docker),
 		Commands: []backupDeploymentCommandV2{
 			{Command: "docker run -d --name {{name}} etcd"},
 			{Command: "docker run -d --name {{name}} etcd", PostScript: "etcdctl auth enable"},

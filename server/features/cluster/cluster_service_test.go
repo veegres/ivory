@@ -8,6 +8,7 @@ import (
 	"ivory/features/query"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 	"ivory/tools"
 	"os"
 	"path/filepath"
@@ -27,6 +28,12 @@ func (f fakeKeeperMetadata) Requirements() keeper.Requirements {
 	return keeper.Requirements{DbPort: 5432}
 }
 func (f fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate { return nil }
+
+type fakePlatformMetadata struct {
+	features map[config.Feature]bool
+}
+
+func (f fakePlatformMetadata) SupportedFeatures() map[config.Feature]bool { return f.features }
 
 // fakeDbAdapter is a minimal database.Adapter test double. Embedding the nil
 // interface satisfies the (large) query-execution surface without stubbing
@@ -79,7 +86,11 @@ func createFeatureTestService(t *testing.T) (*Service, node.KeeperPlugin, query.
 	keeperMetadataRegistry.Register(keeper.Plugin(keeperPlugin), fakeKeeperMetadata{
 		features: map[config.Feature]bool{config.ViewNodeKeeperOverview: true},
 	})
-	nodeService := node.NewService(nil, nil, keeperMetadataRegistry, nil, nil, nil)
+	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
+	platformMetadataRegistry.Register(node.DefaultPlatform, fakePlatformMetadata{
+		features: map[config.Feature]bool{config.ViewNodeSystem: true},
+	})
+	nodeService := node.NewService(nil, platformMetadataRegistry, nil, keeperMetadataRegistry, nil, nil, nil)
 
 	databaseRegistry := utils.NewRegistry[database.Plugin, database.Adapter]()
 	databaseRegistry.Register(database.Plugin(dbPlugin), fakeDbAdapter{

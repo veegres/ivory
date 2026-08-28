@@ -115,7 +115,7 @@ etcdctl --endpoints=http://localhost:{{dbPort}} auth enable
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Etcd (Multi Host)",
 			Description: "Three-member static etcd cluster, one member per VM. Name the nodes etcd-1..3 or edit the member list to match.",
 			Commands: []keeper.DeploymentCommand{
@@ -125,7 +125,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			},
 		},
 		{
-			Platform:    platform.Linux,
+			Platform:    platform.Docker,
 			Name:        "Etcd (Single Host)",
 			Description: "Three-member etcd cluster on one VM. Each member peers on its own port; give each its own client port in the deploy form.",
 			Commands: []keeper.DeploymentCommand{

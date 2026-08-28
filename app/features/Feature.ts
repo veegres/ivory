@@ -23,8 +23,8 @@ export enum Feature {
     ManageNodeKeeperFailover = "manage.node.keeper.failover",
     ManageNodeKeeperActivation = "manage.node.keeper.activation",
 
-    ViewNodePlatform = "view.node.platform",
-    ManageNodePlatform = "manage.node.platform", // NOTE: we do not use this api method in UI
+    ViewNodeSystem = "view.node.system",
+    ManageNodeSystem = "manage.node.system", // NOTE: we do not use this api method in UI
     ManageNodePlatformContainer = "manage.node.platform.container",
     ViewNodePlatformContainer = "view.node.platform.container",
 

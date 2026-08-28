@@ -12,7 +12,7 @@ func testTemplateRequest(name string) deployment.TemplateRequest {
 		Name:        name,
 		Description: "three etcd members",
 		Keeper:      keeper.NATIVE_ETCD,
-		Platform:    platform.Linux,
+		Platform:    platform.Docker,
 		Commands: []deployment.TemplateCommand{
 			{Command: "docker run -d --name {{name}} etcd"},
 			{Command: "docker run -d --name {{name}} etcd", PostScript: "etcdctl auth enable"},
@@ -38,7 +38,7 @@ func TestExportV2(t *testing.T) {
 	if got.Name != "mine" || got.Description != "three etcd members" {
 		t.Errorf("got %+v, want the stored name and description", got)
 	}
-	if got.Keeper != string(keeper.NATIVE_ETCD) || got.Platform != string(platform.Linux) {
+	if got.Keeper != string(keeper.NATIVE_ETCD) || got.Platform != string(platform.Docker) {
 		t.Errorf("got keeper %q platform %q, want the stored pair", got.Keeper, got.Platform)
 	}
 	if len(got.Commands) != 2 || got.Commands[1].PostScript != "etcdctl auth enable" {

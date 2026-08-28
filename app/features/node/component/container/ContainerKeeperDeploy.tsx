@@ -47,7 +47,7 @@ export function ContainerKeeperDeploy(props: Props) {
     const [dbPort, setDbPort] = useState<string>("")
     const [submitted, setSubmitted] = useState(false)
 
-    const platform = connection.platform ?? PlatformPlugin.LINUX
+    const platform = connection.platform ?? PlatformPlugin.DOCKER
     const nodeDeploy = useRouterNodeKeeperDeploy(connection)
     const spec = useRouterNodeKeeperDeploySpec(plugin)
     const picker = useDeploymentTemplatePicker({

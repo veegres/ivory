@@ -4,7 +4,7 @@ import {useEffect, useState} from "react"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {InfoStatusItem, InfoStatusList} from "../../../../shared/component/box/InfoStatusList"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {useRouterNodePlatformInfo} from "../../api/NodeHook"
+import {useRouterNodeSystemInfo} from "../../api/NodeHook"
 import {PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
@@ -24,10 +24,10 @@ type Props = {
     connection: PlatformVaultConnection,
 }
 
-export function PlatformInfo(props: Props) {
+export function SystemInfo(props: Props) {
     const {connection} = props
     const [cachedError, setCachedError] = useState<Error>()
-    const info = useRouterNodePlatformInfo(connection)
+    const info = useRouterNodeSystemInfo(connection)
 
     useEffect(() => {
         if (info.data) setCachedError(undefined)

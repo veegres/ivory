@@ -23,7 +23,7 @@ func newTestRepository(t *testing.T) *Repository {
 }
 
 const testKeeper KeeperPlugin = "native_etcd"
-const testPlatform PlatformPlugin = "linux"
+const testPlatform PlatformPlugin = "docker"
 
 func testTemplate(name string) Template {
 	return Template{
@@ -118,7 +118,7 @@ func TestRepository_ListFiltersByPlugin(t *testing.T) {
 	}{
 		{name: "no filter", criteria: ListRequest{}, expected: 2},
 		{name: "by keeper", criteria: ListRequest{Keeper: keeperPtr("native_etcd")}, expected: 1},
-		{name: "by platform", criteria: ListRequest{Platform: platformPtr("linux")}, expected: 2},
+		{name: "by platform", criteria: ListRequest{Platform: platformPtr("docker")}, expected: 2},
 		{name: "by unknown platform", criteria: ListRequest{Platform: platformPtr("k8s")}, expected: 0},
 	}
 
@@ -197,6 +197,56 @@ func TestRepository_BackfillsCreation(t *testing.T) {
 		}
 		if len(list) != 1 || list[0].Creation != Manual {
 			t.Errorf("List() = %+v, want one manual template", list)
+		}
+	})
+}
+
+// TestRepository_RenamesStoredPlatform covers a template stored before the
+// linux platform was renamed to docker: it has to keep listing and reading back
+// under the current name, filter included, or it disappears from the UI.
+func TestRepository_RenamesStoredPlatform(t *testing.T) {
+	r := newTestRepository(t)
+
+	stored := testTemplate("legacy")
+	stored.Platform = "linux"
+	created, err := r.Create(uuid.New(), stored)
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+
+	t.Run("get", func(t *testing.T) {
+		got, err := r.Get(uuid.MustParse(created.Id))
+		if err != nil {
+			t.Fatalf("Get() error = %v", err)
+		}
+		if got.Platform != testPlatform {
+			t.Errorf("Get() platform = %q, want %q", got.Platform, testPlatform)
+		}
+	})
+
+	t.Run("list filtered by the current platform", func(t *testing.T) {
+		list, err := r.List(ListRequest{Platform: platformPtr(testPlatform)})
+		if err != nil {
+			t.Fatalf("List() error = %v", err)
+		}
+		if len(list) != 1 {
+			t.Fatalf("List() = %d templates, want 1", len(list))
+		}
+		if list[0].Platform != testPlatform {
+			t.Errorf("List() platform = %q, want %q", list[0].Platform, testPlatform)
+		}
+	})
+
+	t.Run("get by name within the current platform", func(t *testing.T) {
+		got, err := r.GetByName("legacy", testKeeper, testPlatform)
+		if err != nil {
+			t.Fatalf("GetByName() error = %v", err)
+		}
+		if got == nil {
+			t.Fatalf("GetByName() = nil, want the stored template")
+		}
+		if got.Platform != testPlatform {
+			t.Errorf("GetByName() platform = %q, want %q", got.Platform, testPlatform)
 		}
 	})
 }

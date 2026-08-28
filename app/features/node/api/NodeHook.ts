@@ -13,8 +13,8 @@ import {
     PlatformVaultConnection,
 } from "./NodeType"
 
-export function useRouterNodePlatformLogs(request: PlatformLogsRequest, enabled: boolean) {
-    const {loading, response, reconnect} = useStream(NodeApi.platform.logs.url(request), {enabled})
+export function useRouterNodeSystemLogs(request: PlatformLogsRequest, enabled: boolean) {
+    const {loading, response, reconnect} = useStream(NodeApi.system.logs.url(request), {enabled})
     return {isFetching: loading, data: response, reconnect}
 }
 
@@ -125,11 +125,11 @@ export function useRouterNodePause(cluster: string) {
 // NOTE: refetchInterval is intentionally not passed here - it is controlled by
 //  <Refresher/> via queryClient.setQueryDefaults for this query key. Passing an
 //  explicit value (even undefined) here would always win over that default.
-export function useRouterNodeMetrics(c: PlatformVaultConnection) {
+export function useRouterNodeSystemMetrics(c: PlatformVaultConnection) {
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        queryKey: NodeApi.platform.metrics.key(c.host),
-        queryFn: () => NodeApi.platform.metrics.fn(c),
+        queryKey: NodeApi.system.metrics.key(c.host),
+        queryFn: () => NodeApi.system.metrics.fn(c),
         retry: false,
     })
 }
@@ -142,20 +142,20 @@ export function useRouterNodePlatformContainerMetrics(request: PlatformActionReq
     })
 }
 
-export function useRouterNodePlatformProcesses(c: PlatformVaultConnection) {
+export function useRouterNodeSystemProcesses(c: PlatformVaultConnection) {
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        queryKey: NodeApi.platform.processes.key(c.host),
-        queryFn: () => NodeApi.platform.processes.fn(c),
+        queryKey: NodeApi.system.processes.key(c.host),
+        queryFn: () => NodeApi.system.processes.fn(c),
         retry: false,
     })
 }
 
-export function useRouterNodePlatformInfo(c: PlatformVaultConnection) {
+export function useRouterNodeSystemInfo(c: PlatformVaultConnection) {
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     return useQuery({
-        queryKey: NodeApi.platform.info.key(c.host),
-        queryFn: () => NodeApi.platform.info.fn(c),
+        queryKey: NodeApi.system.info.key(c.host),
+        queryFn: () => NodeApi.system.info.fn(c),
         retry: false,
     })
 }

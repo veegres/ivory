@@ -15,14 +15,14 @@ func TestPlatformVaultConnectionPlatformOrDefault(t *testing.T) {
 			// NOTE: clusters stored before platforms were selectable have no
 			// platform at all, and must keep resolving to the only adapter
 			// that existed then
-			name:       "an empty platform falls back to linux",
+			name:       "an empty platform falls back to docker",
 			connection: PlatformVaultConnection{Host: "db1"},
-			expected:   platform.Linux,
+			expected:   platform.Docker,
 		},
 		{
 			name:       "an explicit platform is kept",
-			connection: PlatformVaultConnection{Host: "db1", Platform: platform.Linux},
-			expected:   platform.Linux,
+			connection: PlatformVaultConnection{Host: "db1", Platform: platform.Docker},
+			expected:   platform.Docker,
 		},
 	}
 

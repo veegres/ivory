@@ -5,7 +5,7 @@ import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {HistoryTrackerChart} from "../../../../shared/component/chart/HistoryTrackerChart"
 import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {useRouterNodeMetrics} from "../../api/NodeHook"
+import {useRouterNodeSystemMetrics} from "../../api/NodeHook"
 import {PlatformMetricsResponse as NodeMetrics,PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
@@ -16,10 +16,10 @@ type Props = {
     connection: PlatformVaultConnection,
 }
 
-export function PlatformMetrics(props: Props) {
+export function SystemMetrics(props: Props) {
     const {connection} = props
     const [cachedError, setCachedError] = useState<Error>()
-    const metrics = useRouterNodeMetrics(connection)
+    const metrics = useRouterNodeSystemMetrics(connection)
 
     useEffect(() => {
         if (metrics.data) setCachedError(undefined)

@@ -23,8 +23,8 @@ interface Store {
         dbName?: string,
         dbSchema?: string,
         containerTab: number,
-        platformTab: number,
-        platformLogsPath: string,
+        systemTab: number,
+        systemLogsPath: string,
         toolsTab?: number,
     },
 }
@@ -46,8 +46,8 @@ export const useStore = create(persist<Store>(
             dbName: undefined,
             dbSchema: undefined,
             containerTab: 0,
-            platformTab: 0,
-            platformLogsPath: "",
+            systemTab: 0,
+            systemLogsPath: "",
             toolsTab: undefined,
         },
     }),
@@ -79,8 +79,8 @@ export const useStoreAction = {
     setDbSchema: setDbSchema,
     setRefreshPeriod: setRefreshPeriod,
     setContainerTab: setContainerTab,
-    setPlatformTab: setPlatformTab,
-    setPlatformLogsPath: setPlatformLogsPath,
+    setSystemTab: setSystemTab,
+    setSystemLogsPath: setSystemLogsPath,
     setToolsTab: setToolsTab,
 }
 
@@ -157,12 +157,12 @@ function setContainerTab(t: number) {
     useStore.setState(s => ({...s, nodeState: {...s.nodeState, containerTab: t}}))
 }
 
-function setPlatformTab(t: number) {
-    useStore.setState(s => ({...s, nodeState: {...s.nodeState, platformTab: t}}))
+function setSystemTab(t: number) {
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, systemTab: t}}))
 }
 
-function setPlatformLogsPath(path: string) {
-    useStore.setState(s => ({...s, nodeState: {...s.nodeState, platformLogsPath: path}}))
+function setSystemLogsPath(path: string) {
+    useStore.setState(s => ({...s, nodeState: {...s.nodeState, systemLogsPath: path}}))
 }
 
 function setToolsTab(t: number) {

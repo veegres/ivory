@@ -2,24 +2,24 @@ package node
 
 import "github.com/gin-gonic/gin"
 
-func (r *Router) GetPlatformMetrics(context *gin.Context) {
-	handlePlatformParamRequest(context, r.service.PlatformVmMetrics)
+func (r *Router) GetPlatformSystemMetrics(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformSystemMetrics)
 }
 
-func (r *Router) PostPlatformCopyId(context *gin.Context) {
-	handlePlatformBodyRequest(context, r.service.PlatformVmCopyId)
+func (r *Router) PostPlatformSystemCopyId(context *gin.Context) {
+	handlePlatformBodyRequest(context, r.service.PlatformSystemCopyId)
 }
 
-func (r *Router) StreamPlatformLogs(context *gin.Context) {
-	handleStreamRequest(context, r.service.PlatformLogs)
+func (r *Router) StreamPlatformSystemLogs(context *gin.Context) {
+	handleStreamRequest(context, r.service.PlatformSystemLogs)
 }
 
-func (r *Router) GetPlatformProcesses(context *gin.Context) {
-	handlePlatformParamRequest(context, r.service.PlatformVmProcesses)
+func (r *Router) GetPlatformSystemProcesses(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformSystemProcesses)
 }
 
-func (r *Router) GetPlatformInfo(context *gin.Context) {
-	handlePlatformParamRequest(context, r.service.PlatformVmInfo)
+func (r *Router) GetPlatformSystemInfo(context *gin.Context) {
+	handlePlatformParamRequest(context, r.service.PlatformSystemInfo)
 }
 
 func (r *Router) PostPlatformContainerUp(context *gin.Context) {

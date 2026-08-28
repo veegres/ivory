@@ -27,17 +27,17 @@ type Connection struct {
 	PrivateKey []byte
 }
 
-// Adapter is implemented by every platform plugin (linux, ...). It combines
-// host-level (VmManager) and container-level (ContainerManager) operations
-// into the single interface the rest of Ivory depends on.
+// Adapter is implemented by every platform plugin (docker, ...). It combines
+// system-level (SystemManager) and container-level (ContainerManager)
+// operations into the single interface the rest of Ivory depends on.
 type Adapter interface {
-	VmManager
+	SystemManager
 	ContainerManager
 }
 
-// VmManager covers host-level operations against the node itself, not any
-// specific container running on it.
-type VmManager interface {
+// SystemManager covers system-level operations against the node itself, not
+// any specific container running on it.
+type SystemManager interface {
 	// Metrics returns the node's current CPU/memory/network usage.
 	Metrics(connection Connection) (*Metrics, error)
 	// CopyId installs publicKey into the node's authorized_keys, enabling
