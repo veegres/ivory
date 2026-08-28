@@ -58,6 +58,7 @@ export function NodeHeadForm(props: Props) {
         <Box sx={SX.box}>
             <Box sx={SX.body}>
                 <Box sx={SX.container}>
+                    {renderItem("Name", node.config.name, "name", "text")}
                     {renderItem("Host", node.config.host, "host", "text")}
                     {renderItem("Keeper", node.config.keeperPort, "keeperPort", "number")}
                     {renderItem("Database", node.config.dbPort, "dbPort", "number")}

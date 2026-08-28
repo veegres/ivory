@@ -28,6 +28,7 @@ type Props = {
     connection: PlatformVaultConnection,
     plugin: KeeperPlugin,
     cluster: string,
+    node: string,
     databaseId?: string,
     sshKeyId?: string,
 }
@@ -37,7 +38,7 @@ type Props = {
 // KeeperDeploy directly - no cluster endpoint involved, which is why it lives
 // in the node/container feature rather than cluster.
 export function ContainerKeeperDeploy(props: Props) {
-    const {connection, plugin, cluster, databaseId, sshKeyId} = props
+    const {connection, plugin, cluster, node, databaseId, sshKeyId} = props
 
     const [template, setTemplate] = useState<Template>()
     const [command, setCommand] = useState<TemplateCommand>()
@@ -57,7 +58,7 @@ export function ContainerKeeperDeploy(props: Props) {
     })
     const dbVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
 
-    useEffect(handleEffectSpec, [spec.data, connection.host])
+    useEffect(handleEffectSpec, [spec.data, node])
     useEffect(handleEffectTemplate, [template])
 
     const withKeeperPort = spec.data?.keeperPort !== undefined
@@ -256,12 +257,13 @@ export function ContainerKeeperDeploy(props: Props) {
     }
 
     // NOTE: the ports come from the plugin's own defaults, and the name from
-    // the host, which is what the deployment used to be identified by
+    // the node this dialog belongs to - it is what the platform addresses its
+    // container by
     function handleEffectSpec() {
         if (!spec.data) return
         setKeeperPort(spec.data.keeperPort?.toString() ?? "")
         setDbPort(spec.data.dbPort.toString())
-        setName(prev => prev || connection.host)
+        setName(prev => prev || node)
     }
 
     // NOTE: a template's command is copied in once; from then on the edit is

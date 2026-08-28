@@ -1,5 +1,7 @@
 package cluster
 
+import "fmt"
+
 func (s *Service) List() ([]Response, error) {
 	return s.clusterRepository.List()
 }
@@ -40,6 +42,9 @@ func (s *Service) Update(cluster Request) (*Response, error) {
 	if cluster.Nodes == nil || len(cluster.Nodes) == 0 {
 		return nil, ErrClusterKeepersEmpty
 	}
+	if err := s.validateNodeNames(cluster.Nodes); err != nil {
+		return nil, err
+	}
 	tags, err := s.saveTags(cluster.Name, cluster.Tags)
 	if err != nil {
 		return nil, err
@@ -59,6 +64,23 @@ func (s *Service) Delete(cluster string) error {
 
 func (s *Service) DeleteAll() error {
 	return s.clusterRepository.DeleteAll()
+}
+
+// validateNodeNames enforces the naming rules the cluster depends on: a
+// node's name identifies its deployment on the platform, so it must exist
+// and be unique within the cluster.
+func (s *Service) validateNodeNames(nodes []NodeConfig) error {
+	seen := make(map[string]bool, len(nodes))
+	for _, n := range nodes {
+		if n.Name == "" {
+			return ErrClusterNodeNameNotProvided
+		}
+		if seen[n.Name] {
+			return fmt.Errorf("%w: %s", ErrClusterNodeNameNotUnique, n.Name)
+		}
+		seen[n.Name] = true
+	}
+	return nil
 }
 
 func (s *Service) saveTags(name string, tags []string) ([]string, error) {

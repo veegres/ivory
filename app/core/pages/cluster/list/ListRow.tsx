@@ -102,7 +102,7 @@ export function ListRow(props: Props) {
             <ListCellRead name={cluster.name} toggle={toggle}/>
         ) : (
             <ListCellUpdate
-                cluster={{...cluster, nodes: getNodeConfigs(stateNodes)}}
+                cluster={{...cluster, nodes: getEditedNodes()}}
                 toggle={toggle}
                 onUpdate={overview.refetch}
                 onClose={() => setStateNodes(getDomains(cluster.nodes))}
@@ -137,5 +137,12 @@ export function ListRow(props: Props) {
 
     function handleEffectNodesUpdate() {
         setStateNodes(getDomains(cluster.nodes, !editable))
+    }
+
+    // NOTE: a row here is only a host and its ports - the name is edited in
+    // the node block - so the name of the row in the same position is carried
+    // over instead of being reset to the host it was defaulted from
+    function getEditedNodes() {
+        return getNodeConfigs(stateNodes).map((n, i) => ({...n, name: cluster.nodes[i]?.name ?? n.name}))
     }
 }

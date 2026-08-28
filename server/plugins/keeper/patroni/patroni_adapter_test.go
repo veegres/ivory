@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"ivory/clients/http"
 	"ivory/plugins/keeper"
+	"net"
 	nethttp "net/http"
+	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -288,4 +291,50 @@ func TestKeeperResponse_Mapping(t *testing.T) {
 			t.Errorf("Expected keeper port 8008, got %d", *expectedResponse.DiscoveredKeeperPort)
 		}
 	})
+}
+
+func TestAdapter_List(t *testing.T) {
+	server := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.URL.Path != "/cluster" {
+			w.WriteHeader(nethttp.StatusNotFound)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(cluster{
+			Members: []instance{{
+				Name:   "postgres-1",
+				Host:   "10.0.0.1",
+				Port:   5432,
+				Role:   "leader",
+				State:  "running",
+				ApiUrl: "http://10.0.0.1:8008/patroni",
+				Lag:    json.RawMessage("0"),
+			}},
+		})
+	}))
+	defer server.Close()
+
+	host, portStr, _ := net.SplitHostPort(strings.TrimPrefix(server.URL, "http://"))
+	port, _ := strconv.Atoi(portStr)
+
+	responses, _, err := NewAdapter(http.NewClient()).List(keeper.Request{Host: host, Port: port})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(responses) != 1 {
+		t.Fatalf("expected 1 response, got %d", len(responses))
+	}
+
+	member := responses[0]
+	if member.DiscoveredName == nil || *member.DiscoveredName != "postgres-1" {
+		t.Errorf("expected discovered name postgres-1, got %v", member.DiscoveredName)
+	}
+	if member.DiscoveredHost == nil || *member.DiscoveredHost != "10.0.0.1" {
+		t.Errorf("expected discovered host 10.0.0.1, got %v", member.DiscoveredHost)
+	}
+	if member.DiscoveredKeeperPort == nil || *member.DiscoveredKeeperPort != 8008 {
+		t.Errorf("expected discovered keeper port 8008, got %v", member.DiscoveredKeeperPort)
+	}
+	if member.DiscoveredDbPort == nil || *member.DiscoveredDbPort != 5432 {
+		t.Errorf("expected discovered db port 5432, got %v", member.DiscoveredDbPort)
+	}
 }

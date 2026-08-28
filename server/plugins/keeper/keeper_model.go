@@ -133,6 +133,14 @@ type Response struct {
 	// own response, leave it nil rather than guessing or borrowing it from
 	// elsewhere.
 	DiscoveredHost *string `json:"discoveredHost"`
+	// DiscoveredName is the member's own name as the keeper itself calls it
+	// (e.g. a Patroni member name, an etcd member name). It is the name the
+	// node was deployed under, which is why it becomes NodeConfig.Name on
+	// auto-creation instead of the host. An adapter whose engine has no
+	// separate member name - one that identifies members by host:port
+	// (mongo, redis, clickhouse, zookeeper, native postgres) - leaves it nil
+	// rather than reporting an endpoint as a name.
+	DiscoveredName *string `json:"discoveredName"`
 	// DiscoveredKeeperPort is required whenever DiscoveredHost is set: a
 	// host known without a port can't be matched back to a configured node
 	// (see cluster.addKeeperResponsesToMap), so an adapter that discovers a

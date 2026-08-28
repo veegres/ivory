@@ -54,7 +54,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		Options: r.ClusterOptions,
 	}
 
-	if err := s.validateDeployNodes(r.Nodes); err != nil {
+	if err := s.validateNodeNames(cluster.Nodes); err != nil {
 		return nil, err
 	}
 	// NOTE: a vault and a pair of inline credentials are two answers to one
@@ -188,22 +188,6 @@ func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg 
 			logsSend("system", fmt.Sprintf("failed to remove the vault created for this deploy: %v", err))
 		}
 	}
-}
-
-// validateDeployNodes enforces the naming rules the cluster depends on: a
-// node's name identifies its deployment, so it must exist and be unique.
-func (s *Service) validateDeployNodes(nodes []DeployNode) error {
-	seen := make(map[string]bool, len(nodes))
-	for _, n := range nodes {
-		if n.Name == "" {
-			return ErrClusterNodeNameNotProvided
-		}
-		if seen[n.Name] {
-			return fmt.Errorf("%w: %s", ErrClusterNodeNameNotUnique, n.Name)
-		}
-		seen[n.Name] = true
-	}
-	return nil
 }
 
 func (s *Service) postDeploy(cluster Request, nodes []DeployNode, logsSend func(ctx string, msg string)) {

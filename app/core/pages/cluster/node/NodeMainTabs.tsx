@@ -20,7 +20,9 @@ interface NodeTab {
 export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
     [NodeTabType.CONTAINER]: {
         label: "Container",
-        body: (c: Cluster, n: Node) => <Container connection={getPlatformConnection(c, n.config.host, n.config.sshPort)}/>,
+        body: (c: Cluster, n: Node) => (
+            <Container connection={getPlatformConnection(c, n.config.host, n.config.sshPort)} name={n.config.name}/>
+        ),
         info: <>
             Everything about the container this node runs in. The <i>overview</i> shows live
             resource usage and recent logs, and lets you start, restart, stop or remove the container,

@@ -22,8 +22,10 @@ export interface Options {
 
 export interface NodeConfig {
     // name is the node's own name, unique within the cluster and independent of
-    // its host: it is the deployment's identity ({{name}}, --name)
-    name?: string,
+    // its host: it is the deployment's identity ({{name}}, --name) and the name
+    // the platform addresses the container by, so it is always set - a node the
+    // keeper reports no name for falls back to its host
+    name: string,
     host: string,
     sshPort?: number,
     keeperPort?: number,

@@ -15,10 +15,11 @@ const SX: SxPropsMap = {
 
 type Props = {
     connection?: PlatformVaultConnection,
+    name: string,
 }
 
 export function Container(props: Props) {
-    const {connection} = props
+    const {connection, name} = props
     const tab = useStore(s => s.nodeState.containerTab)
     const {setContainerTab} = useStoreAction
 
@@ -26,7 +27,7 @@ export function Container(props: Props) {
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} error={true}>
             <TitledBox title={"Container"} renderActions={renderActions()}>
-                {tab === 0 && <ContainerOverview connection={connection} name={connection.host}/>}
+                {tab === 0 && <ContainerOverview connection={connection} name={name}/>}
                 {tab === 1 && <ContainerList connection={connection}/>}
             </TitledBox>
         </ManageAccessBox>

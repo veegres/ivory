@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"errors"
 	"ivory/clients/storage"
 	"ivory/features/node"
 	"ivory/features/query"
@@ -123,7 +124,7 @@ func TestServiceUpdate(t *testing.T) {
 	port := 5432
 
 	t.Run("empty name is rejected", func(t *testing.T) {
-		if _, err := s.Update(Request{Nodes: []NodeConfig{{Host: "h1", KeeperPort: &port}}}); err != ErrClusterNameEmpty {
+		if _, err := s.Update(Request{Nodes: []NodeConfig{{Name: "h1", Host: "h1", KeeperPort: &port}}}); !errors.Is(err, ErrClusterNameEmpty) {
 			t.Fatalf("expected ErrClusterNameEmpty, got %v", err)
 		}
 	})
@@ -134,10 +135,27 @@ func TestServiceUpdate(t *testing.T) {
 		}
 	})
 
+	t.Run("node without a name is rejected", func(t *testing.T) {
+		_, err := s.Update(Request{Name: "c1", Nodes: []NodeConfig{{Host: "h1", KeeperPort: &port}}})
+		if !errors.Is(err, ErrClusterNodeNameNotProvided) {
+			t.Fatalf("expected ErrClusterNodeNameNotProvided, got %v", err)
+		}
+	})
+
+	t.Run("duplicate node names are rejected", func(t *testing.T) {
+		_, err := s.Update(Request{Name: "c1", Nodes: []NodeConfig{
+			{Name: "n1", Host: "h1", KeeperPort: &port},
+			{Name: "n1", Host: "h2", KeeperPort: &port},
+		}})
+		if !errors.Is(err, ErrClusterNodeNameNotUnique) {
+			t.Fatalf("expected ErrClusterNodeNameNotUnique, got %v", err)
+		}
+	})
+
 	t.Run("creates a new cluster and tags it", func(t *testing.T) {
 		created, err := s.Update(Request{
 			Name:  "c1",
-			Nodes: []NodeConfig{{Host: "h1", KeeperPort: &port}},
+			Nodes: []NodeConfig{{Name: "h1", Host: "h1", KeeperPort: &port}},
 			Options: Options{
 				Tags: []string{"PROD"},
 			},
@@ -169,7 +187,7 @@ func TestServiceUpdate(t *testing.T) {
 	t.Run("updating retags the cluster", func(t *testing.T) {
 		if _, err := s.Update(Request{
 			Name:    "c1",
-			Nodes:   []NodeConfig{{Host: "h1", KeeperPort: &port}},
+			Nodes:   []NodeConfig{{Name: "h1", Host: "h1", KeeperPort: &port}},
 			Options: Options{Tags: []string{"staging"}},
 		}); err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -224,7 +242,7 @@ func TestServiceDelete(t *testing.T) {
 	port := 5432
 	if _, err := s.Update(Request{
 		Name:    "c1",
-		Nodes:   []NodeConfig{{Host: "h1", KeeperPort: &port}},
+		Nodes:   []NodeConfig{{Name: "h1", Host: "h1", KeeperPort: &port}},
 		Options: Options{Tags: []string{"prod"}},
 	}); err != nil {
 		t.Fatalf("failed to seed: %v", err)

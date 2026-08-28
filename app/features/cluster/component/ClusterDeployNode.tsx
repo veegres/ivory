@@ -49,7 +49,7 @@ export function ClusterDeployNode(props: Props) {
                     size={"small"}
                     label={"Name"}
                     placeholder={"etcd-1"}
-                    value={node.name ?? ""}
+                    value={node.name}
                     error={duplicate || (showErrors && !node.name)}
                     helperText={duplicate && "another node already uses this name"}
                     onChange={(e) => onChange({...node, name: e.target.value})}
