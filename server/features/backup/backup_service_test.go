@@ -161,7 +161,13 @@ func TestServiceImportDispatchesByFilename(t *testing.T) {
 
 	t.Run("filename with .v2. is imported as v2", func(t *testing.T) {
 		s := createTestBackupService(t)
-		v2, errMarshal := json.Marshal(BackupV2{Clusters: backupModel.Clusters})
+		port := 1
+		v2, errMarshal := json.Marshal(BackupV2{Clusters: []backupClusterV2{{
+			Name:     "dispatched-cluster",
+			Keeper:   string(keeper.NATIVE_ETCD),
+			Database: string(database.ETCD),
+			Nodes:    []backupNodeV2{{Name: "n1", Host: "h1", KeeperPort: &port}},
+		}}})
 		if errMarshal != nil {
 			t.Fatalf("failed to marshal backup model: %v", errMarshal)
 		}
