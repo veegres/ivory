@@ -1,10 +1,12 @@
 import {AutoFixHigh} from "@mui/icons-material"
-import {Box, Button, Divider, TextField} from "@mui/material"
-import {useEffect, useState} from "react"
+import {Box, Button, TextField} from "@mui/material"
+import {useCallback, useEffect, useState} from "react"
 
-import {Options} from "../../../core/widgets/options/Options"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
+import {Note} from "../../../shared/component/box/Note"
+import {TitledBox} from "../../../shared/component/box/TitledBox"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
+import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {getKeeperDefaultPort} from "../../../shared/helper/HelperUtils"
 import {Feature} from "../../Feature"
@@ -13,10 +15,15 @@ import {useRouterNodeKeeperDeploySpec} from "../../node/api/NodeHook"
 import {KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
 import {useRouterClusterCreateAuto} from "../api/ClusterHook"
-import {AutoRequest} from "../api/ClusterType"
+import {AutoRequest, Options as ClusterOptions} from "../api/ClusterType"
+import {ClusterOptionsBox} from "./ClusterOptionsBox"
 
 const SX: SxPropsMap = {
-    node: {display: "flex", flexWrap: "wrap", gap: 2},
+    box: {display: "flex", flexDirection: "column", gap: 2},
+    column: {display: "flex", flexDirection: "column", gap: 1},
+    // NOTE: the same indent the section title carries, so the sentence starts
+    // under the heading it belongs to rather than flush against the frame
+    note: {paddingX: "10px"},
 }
 
 const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
@@ -33,12 +40,18 @@ type Props = {
     size?: number,
 }
 
+// ClusterDetect is the deploy dialog's counterpart for a cluster that already
+// runs: the same sections filled in the same way, except that only one node is
+// asked for, because the keeper on it reports the rest.
 export function ClusterDetect(props: Props) {
     const {keeper, database, withLabel = false, size} = props
     const [request, setRequest] = useState(InitialRequest(keeper, database))
     const [portPlugin, setPortPlugin] = useState<KeeperPlugin>()
+    const [submitted, setSubmitted] = useState(false)
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
     const deploySpec = useRouterNodeKeeperDeploySpec(keeper)
+
+    const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
 
     useEffect(handleEffectDeploySpec, [deploySpec.data, portPlugin, keeper, database])
 
@@ -52,33 +65,10 @@ export function ClusterDetect(props: Props) {
                 size={size}
             >
                 <DialogScreen renderActions={renderActions()}>
-                    <TextField
-                        size={"small"}
-                        label={"Name"}
-                        required
-                        value={request.name}
-                        onChange={(e) => handleNameUpdate(e.target.value)}
-                    />
-                    <Box sx={SX.node}>
-                        <TextField
-                            fullWidth
-                            size={"small"}
-                            label={"Domain"}
-                            required
-                            value={request.host}
-                            onChange={(e) => handleHostUpdate(e.target.value)}
-                        />
-                        <TextField
-                            type={"number"}
-                            size={"small"}
-                            label={"Port"}
-                            required
-                            value={request.port || ""}
-                            onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
-                        />
+                    <Box sx={SX.box}>
+                        {renderCluster()}
+                        {renderNode()}
                     </Box>
-                    <Divider variant={"middle"}/>
-                    <Options options={request} onUpdate={(opt) => setRequest({...request, ...opt})} disablePlugins={true}/>
                 </DialogScreen>
             </DialogButton>
         </ManageAccess>
@@ -86,16 +76,62 @@ export function ClusterDetect(props: Props) {
 
     function renderActions() {
         return (
-            <Button
-                fullWidth={true}
-                loading={updateCluster.isPending}
-                onClick={() => updateCluster.mutate(request)}
-                disabled={!request.name || !request.host || !request.port}
-            >
+            <Button fullWidth={true} loading={updateCluster.isPending} onClick={handleDetect}>
                 Detect
             </Button>
         )
     }
+
+    function renderCluster() {
+        return (
+            <TitledBox title={"Cluster"} island={true}>
+                <Box sx={SX.column}>
+                    <TextField
+                        fullWidth={true}
+                        size={"small"}
+                        label={"Name"}
+                        value={request.name}
+                        error={submitted && !request.name}
+                        onChange={(e) => handleNameUpdate(e.target.value)}
+                    />
+                    <ClusterOptionsBox options={request} onUpdate={handleOptionsUpdate}/>
+                </Box>
+            </TitledBox>
+        )
+    }
+
+    // NOTE: one node is the whole of it, unlike the deploy form's card per
+    // template command - Ivory asks the keeper on it for the rest of the cluster
+    function renderNode() {
+        return (
+            <TitledBox title={"Node"} island={true}>
+                <Box sx={SX.column}>
+                    <Box sx={SX.note}>
+                        <Note>Any node of the cluster - the others are discovered through its keeper.</Note>
+                    </Box>
+                    <FieldRow>
+                        <TextField
+                            size={"small"}
+                            label={"Host"}
+                            placeholder={"10.0.0.1"}
+                            value={request.host}
+                            error={submitted && !request.host}
+                            onChange={(e) => handleHostUpdate(e.target.value)}
+                        />
+                        <TextField
+                            size={"small"}
+                            type={"number"}
+                            label={"Port"}
+                            value={request.port || ""}
+                            error={submitted && !request.port}
+                            onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
+                        />
+                    </FieldRow>
+                </Box>
+            </TitledBox>
+        )
+    }
+
     function handleNameUpdate(v: string) {
         setRequest(c => ({...c, name: v}))
     }
@@ -108,9 +144,23 @@ export function ClusterDetect(props: Props) {
         setRequest(c => ({...c, port: isNaN(v) ? 0 : v}))
     }
 
+    function handleCallOptionsUpdate(opt: ClusterOptions) {
+        setRequest(prev => ({...prev, ...opt}))
+    }
+
+    // NOTE: Detect stays clickable while fields are missing, exactly as Deploy
+    // does - clicking it is what asks for the errors to be shown, and a
+    // disabled button could never explain itself
+    function handleDetect() {
+        setSubmitted(true)
+        if (!request.name || !request.host || !request.port) return
+        updateCluster.mutate(request)
+    }
+
     function handleSuccessUpdate() {
         setRequest(InitialRequest(keeper, database))
         setPortPlugin(undefined)
+        setSubmitted(false)
     }
 
     // NOTE: seeds the keeper API port default once per selected keeper plugin,
