@@ -6,7 +6,7 @@ import (
 	"ivory/clients/storage"
 	"ivory/core/service/vault"
 	"ivory/features/node"
-	"strings"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -43,25 +43,28 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		return nil, ErrClusterNodesNotProvided
 	}
 
-	plan, err := s.planDeploy(r.CommonConfig.Cluster, r.ClusterOptions, r.SingleHost, r.Image, r.Values, r.Nodes)
+	spec, err := s.nodeService.KeeperDeploySpec(node.KeeperDeploySpecRequest{Plugin: r.ClusterOptions.Plugins.Keeper})
 	if err != nil {
 		return nil, err
 	}
-	if plan.Image == "" {
-		return nil, ErrClusterImageNotProvided
-	}
-	if len(plan.Warnings) > 0 {
-		return nil, fmt.Errorf("%w: %s", ErrClusterDeployPlanHasWarnings, strings.Join(plan.Warnings, "; "))
-	}
 
-	clusterOptions := r.ClusterOptions
-	clusterOptions.SingleHost = r.SingleHost
 	cluster := Request{
 		Name:    r.CommonConfig.Cluster,
-		Nodes:   mapPlanNodeConfigs(plan.Nodes),
-		Options: clusterOptions,
+		Nodes:   mapDeployNodeConfigs(r.Nodes),
+		Options: r.ClusterOptions,
 	}
 
+	if err := s.validateDeployNodes(r.Nodes); err != nil {
+		return nil, err
+	}
+	// NOTE: a vault and a pair of inline credentials are two answers to one
+	// question - rather than pick one silently, say that only one was asked for
+	if cluster.Vaults.SshKeyId != nil && (r.CommonConfig.SshUser != "" || r.CommonConfig.SshPass != "") {
+		return nil, ErrSshCredentialsAmbiguous
+	}
+	if cluster.Vaults.DatabaseId != nil && (r.CommonConfig.DbUser != "" || r.CommonConfig.DbPass != "") {
+		return nil, ErrDatabaseCredentialsAmbiguous
+	}
 	if cluster.Vaults.SshKeyId == nil && (r.CommonConfig.SshUser == "" || r.CommonConfig.SshPass == "") {
 		return nil, ErrSshCredentialsRequired
 	}
@@ -69,17 +72,16 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	// locked: changing it is rejected instead of silently overridden, an
 	// empty one is prefilled
 	dbUser := r.CommonConfig.DbUser
-	requiredUser, dbCredentials := plan.Fields.Defaults[string(node.VarDbUser)]
-	if requiredUser != "" {
-		if dbUser != "" && dbUser != requiredUser {
-			return nil, fmt.Errorf("database username %q is not allowed: the keeper plugin locks it to %q", dbUser, requiredUser)
+	if spec.DbUser != "" {
+		if dbUser != "" && dbUser != spec.DbUser {
+			return nil, fmt.Errorf("database username %q is not allowed: the keeper plugin locks it to %q", dbUser, spec.DbUser)
 		}
-		dbUser = requiredUser
+		dbUser = spec.DbUser
 	}
-	if dbCredentials && cluster.Vaults.DatabaseId == nil && (dbUser == "" || r.CommonConfig.DbPass == "") {
+	if spec.Credentials && cluster.Vaults.DatabaseId == nil && (dbUser == "" || r.CommonConfig.DbPass == "") {
 		return nil, ErrDatabaseCredentialsRequired
 	}
-	if err := s.nodeService.ValidateKeeperLockedCredentials(requiredUser, s.getDatabaseId(cluster)); err != nil {
+	if err := s.nodeService.ValidateKeeperLockedCredentials(spec.DbUser, s.getDatabaseId(cluster)); err != nil {
 		return nil, err
 	}
 	if _, e := s.Get(cluster.Name); e == nil {
@@ -88,10 +90,12 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		return nil, e
 	}
 
-	// NOTE: plan.Warnings is already guaranteed empty here - Deploy refuses to
-	// proceed with a warned plan above, so there is nothing left to log.
 	logs := &deployLogs{}
-	logs.send("system", fmt.Sprintf("deployment plan resolved: image %s, %d node(s)", plan.Image, len(plan.Nodes)))
+	logs.send("system", fmt.Sprintf("deploying %d node(s)", len(r.Nodes)))
+
+	// NOTE: only the vaults this call created are rolled back when nothing
+	// deploys - one the user picked is theirs and outlives the attempt
+	created := make([]uuid.UUID, 0, 2)
 
 	// 2. Handle SSH Key
 	if cluster.Vaults.SshKeyId == nil {
@@ -102,13 +106,14 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 			return nil, err
 		}
 		cluster.Vaults.SshKeyId = id
+		created = append(created, *id)
 		if v.Metadata == nil {
 			return nil, ErrSshKeyVaultMissingMetadata
 		}
 	}
 
 	// 3. Handle DB Password
-	if dbCredentials && cluster.Vaults.DatabaseId == nil {
+	if spec.Credentials && cluster.Vaults.DatabaseId == nil {
 		logs.send("system", "saving database credentials to vault")
 		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: dbUser, Secret: r.CommonConfig.DbPass}
 		id, _, err := s.vaultService.Create(dbVault)
@@ -116,81 +121,112 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 			return nil, err
 		}
 		cluster.Vaults.DatabaseId = id
+		created = append(created, *id)
 	}
 	// NOTE: when the plugin has no separate keeper port its keeper endpoint
 	// is the database itself, so the same credentials authenticate both
-	if _, hasKeeperEndpoint := plan.Fields.Defaults[string(node.VarKeeperPort)]; !hasKeeperEndpoint && cluster.Vaults.KeeperId == nil {
+	if spec.KeeperPort == nil && cluster.Vaults.KeeperId == nil {
 		cluster.Vaults.KeeperId = cluster.Vaults.DatabaseId
 	}
 
-	// 4. Update Cluster
-	logs.send("system", "updating cluster configuration")
-	_, err = s.Update(cluster)
-	if err != nil {
-		return nil, err
-	}
-
-	// 5. Deploy every node, calling into node's keeper-deploy business logic
-	// for each; the cluster owns the batch orchestration (parallel/sequential,
-	// aggregated timestamped logs) while node resolves and executes the
-	// individual container deploy.
-	var deployed atomic.Bool
-	deployed.Store(true)
+	// 4. Deploy every node by running its own command; the cluster owns only
+	// the batch orchestration (parallel/sequential, aggregated timestamped
+	// logs) while node executes the individual deployment.
+	var up atomic.Int32
 	if r.Parallel {
 		var wg sync.WaitGroup
-		for _, planNode := range plan.Nodes {
+		for _, deployNode := range r.Nodes {
 			wg.Add(1)
-			go func(pn node.KeeperDeployPlanNode) {
+			go func(dn DeployNode) {
 				defer wg.Done()
-				if !s.deployNode(cluster, r.Values, plan, pn, logs.send) {
-					deployed.Store(false)
+				if s.deployNode(cluster, dn, logs.send) {
+					up.Add(1)
 				}
-			}(planNode)
+			}(deployNode)
 		}
 		wg.Wait()
 	} else {
-		for _, planNode := range plan.Nodes {
-			if !s.deployNode(cluster, r.Values, plan, planNode, logs.send) {
-				deployed.Store(false)
+		for _, deployNode := range r.Nodes {
+			if s.deployNode(cluster, deployNode, logs.send) {
+				up.Add(1)
 			}
 		}
 	}
+	deployed := int(up.Load()) == len(r.Nodes)
 
-	// 6. Post-deploy initialization runs once for the whole cluster (e.g.
-	// enabling authentication), not once per node.
-	if deployed.Load() && plan.PostScript != "" {
-		pn := plan.Nodes[0]
-		nodeKey := s.getNodeKey(pn.Host, &pn.KeeperPort)
-		logs.send(nodeKey, "running post-deploy initialization")
-		for _, log := range s.nodeService.KeeperPostDeploy(node.KeeperPostDeployRequest{
-			KeeperDeployExecRequest: node.KeeperDeployExecRequest{
-				Cluster:       cluster.Name,
-				RequestValues: r.Values,
-				PlanValues:    plan.Values,
-				Node:          pn,
-				Connection:    s.getNodeConnection(cluster, pn),
-				Vaults:        s.getNodeVaults(cluster),
-			},
-			PostScript: plan.PostScript,
-		}) {
-			logs.send(nodeKey, log)
-		}
-		logs.send(nodeKey, "post-deploy initialization finished")
-	} else if plan.PostScript != "" {
+	// 5. Register the cluster only once something is actually running under
+	// its name. Registering first left a cluster of nodes that do not exist
+	// behind every failed attempt, along with the vaults made to reach them.
+	if up.Load() == 0 {
+		logs.send("system", "no node deployed: the cluster was not registered")
+		s.rollbackVaults(created, logs.send)
+		return logs.list(), nil
+	}
+	logs.send("system", "updating cluster configuration")
+	if _, err = s.Update(cluster); err != nil {
+		return nil, err
+	}
+
+	// 6. Post-scripts run after every node is up, in node order - a script
+	// that needs the whole cluster running (etcd's auth enable, mongo's
+	// rs.initiate) therefore belongs on the last node.
+	if deployed {
+		s.postDeploy(cluster, r.Nodes, logs.send)
+	} else if slices.ContainsFunc(r.Nodes, func(n DeployNode) bool { return n.PostScript != "" }) {
 		logs.send("system", "skipping post-deploy initialization: not every node deployed successfully")
 	}
 
 	return logs.list(), nil
 }
 
-// deployNode deploys one node of a plan already resolved for the whole
-// cluster by delegating to node's KeeperDeployUp; it only adds the
-// cluster-level concerns of resolving the node's vault-backed connection and
-// aggregating timestamped logs for the batch.
-func (s *Service) deployNode(cluster Request, requestValues map[string]string, plan *node.KeeperDeployPlanResponse, pn node.KeeperDeployPlanNode, logsSend func(ctx string, msg string)) bool {
-	nodeKey := s.getNodeKey(pn.Host, &pn.KeeperPort)
+// rollbackVaults removes the vaults this deploy created for itself. A failure
+// to remove one is logged rather than returned: the deploy has already
+// finished, and a stray vault is not worth losing its logs over.
+func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg string)) {
+	for _, id := range ids {
+		if err := s.vaultService.Delete(id); err != nil {
+			logsSend("system", fmt.Sprintf("failed to remove the vault created for this deploy: %v", err))
+		}
+	}
+}
 
-	if pn.Host == "" {
+// validateDeployNodes enforces the naming rules the cluster depends on: a
+// node's name identifies its deployment, so it must exist and be unique.
+func (s *Service) validateDeployNodes(nodes []DeployNode) error {
+	seen := make(map[string]bool, len(nodes))
+	for _, n := range nodes {
+		if n.Name == "" {
+			return ErrClusterNodeNameNotProvided
+		}
+		if seen[n.Name] {
+			return fmt.Errorf("%w: %s", ErrClusterNodeNameNotUnique, n.Name)
+		}
+		seen[n.Name] = true
+	}
+	return nil
+}
+
+func (s *Service) postDeploy(cluster Request, nodes []DeployNode, logsSend func(ctx string, msg string)) {
+	for _, n := range nodes {
+		if n.PostScript == "" {
+			continue
+		}
+		nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
+		logsSend(nodeKey, "running post-deploy initialization")
+		for _, log := range s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n)) {
+			logsSend(nodeKey, log)
+		}
+		logsSend(nodeKey, "post-deploy initialization finished")
+	}
+}
+
+// deployNode deploys one node by delegating to node's KeeperDeployUp; it only
+// adds the cluster-level concerns of resolving the node's vault-backed
+// connection and aggregating timestamped logs for the batch.
+func (s *Service) deployNode(cluster Request, n DeployNode, logsSend func(ctx string, msg string)) bool {
+	nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
+
+	if n.Host == "" {
 		logsSend(nodeKey, "deploy failed: host not provided for node")
 		return false
 	}
@@ -201,17 +237,7 @@ func (s *Service) deployNode(cluster Request, requestValues map[string]string, p
 
 	logsSend(nodeKey, "deploy started")
 	// NOTE: even if connection was closed we do not want to stop deployment
-	res, err := s.nodeService.KeeperDeployUp(node.KeeperDeployUpRequest{
-		KeeperDeployExecRequest: node.KeeperDeployExecRequest{
-			Cluster:       cluster.Name,
-			PlanValues:    plan.Values,
-			RequestValues: requestValues,
-			Node:          pn,
-			Connection:    s.getNodeConnection(cluster, pn),
-			Vaults:        s.getNodeVaults(cluster),
-		},
-		Image: plan.Image,
-	})
+	res, err := s.nodeService.KeeperDeployUp(s.mapDeployRequest(cluster, n))
 	if err != nil {
 		logsSend(nodeKey, fmt.Sprintf("deploy failed: %v", err))
 		return false
@@ -221,6 +247,30 @@ func (s *Service) deployNode(cluster Request, requestValues map[string]string, p
 	}
 	logsSend(nodeKey, "deploy finished")
 	return true
+}
+
+// mapDeployRequest builds node's flat deploy request for one node; both the
+// deploy and post-deploy steps run against the identical scope, so they share
+// one mapper rather than assembling it twice.
+func (s *Service) mapDeployRequest(cluster Request, n DeployNode) node.KeeperDeployRequest {
+	return node.KeeperDeployRequest{
+		Plugin:     cluster.Options.Plugins.Keeper,
+		Cluster:    cluster.Name,
+		Name:       n.Name,
+		KeeperPort: getPortValue(n.KeeperPort),
+		DbPort:     getPortValue(n.DbPort),
+		Command:    n.Command,
+		PostScript: n.PostScript,
+		Connection: s.getNodeConnection(cluster, n),
+		Vaults:     s.getNodeVaults(cluster),
+	}
+}
+
+func getPortValue(port *int) int {
+	if port == nil {
+		return 0
+	}
+	return *port
 }
 
 // getDatabaseId returns the cluster's database vault id, or uuid.Nil when
@@ -233,40 +283,21 @@ func (s *Service) getDatabaseId(cluster Request) uuid.UUID {
 	return *cluster.Vaults.DatabaseId
 }
 
-// getNodeConnection resolves the SSH connection for a planned node from the
-// cluster's own SSH vault; shared by deployNode and Deploy's post-deploy
-// step, both of which run only after the SSH vault is guaranteed non-nil
+// getNodeConnection resolves the SSH connection for a node from the cluster's
+// own SSH vault; it runs only after the SSH vault is guaranteed non-nil
 // (either provided or freshly generated in Deploy's "Handle SSH Key" step).
-func (s *Service) getNodeConnection(cluster Request, pn node.KeeperDeployPlanNode) node.PlatformVaultConnection {
-	return node.PlatformVaultConnection{Host: pn.Host, Port: pn.SshPort, VaultId: *cluster.Vaults.SshKeyId}
+func (s *Service) getNodeConnection(cluster Request, n DeployNode) node.PlatformVaultConnection {
+	sshPort := 22
+	if n.SshPort != nil && *n.SshPort > 0 {
+		sshPort = *n.SshPort
+	}
+	return node.PlatformVaultConnection{Host: n.Host, Port: sshPort, VaultId: *cluster.Vaults.SshKeyId}
 }
 
 // getNodeVaults resolves the database/SSH vault ids to pass to a node
-// keeper-deploy action; shared by deployNode and Deploy's post-deploy step.
-// The database vault is optional for keeper plugins that consume no
-// database credentials; a plugin that does need them fails with an
-// unresolved {{dbUser}}/{{dbPass}} placeholder error instead.
+// keeper-deploy action. The database vault is optional for keeper plugins
+// that consume no database credentials; a plugin that does need them fails
+// with an unresolved {{dbUser}}/{{dbPass}} placeholder error instead.
 func (s *Service) getNodeVaults(cluster Request) node.Vaults {
 	return node.Vaults{DatabaseId: s.getDatabaseId(cluster), SshKeyId: *cluster.Vaults.SshKeyId}
-}
-
-func (s *Service) planDeploy(name string, options Options, singleHost bool, image string, values map[string]string, nodes []DeployNode) (*node.KeeperDeployPlanResponse, error) {
-	planNodes := make([]node.KeeperDeployPlanNodeRequest, 0, len(nodes))
-	for _, n := range nodes {
-		planNodes = append(planNodes, node.KeeperDeployPlanNodeRequest{
-			Host:       n.Host,
-			SshPort:    n.SshPort,
-			KeeperPort: n.KeeperPort,
-			DbPort:     n.DbPort,
-			Options:    n.Options,
-		})
-	}
-	return s.nodeService.KeeperDeployPlan(node.KeeperDeployPlanRequest{
-		Plugin:     options.Plugins.Keeper,
-		Cluster:    name,
-		SingleHost: singleHost,
-		Image:      image,
-		Values:     values,
-		Nodes:      planNodes,
-	})
 }

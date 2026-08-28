@@ -16,7 +16,13 @@ func (s *Service) importV1(data []byte) error {
 	if err := json.Unmarshal(data, &bkp); err != nil {
 		return err
 	}
+	return s.restoreV1(bkp)
+}
 
+// restoreV1 writes an already-parsed V1 payload. It is split out because V2
+// carries the same three collections, so a later format reuses the restore
+// rather than copying it.
+func (s *Service) restoreV1(bkp BackupV1) error {
 	var err error
 	// Save clusters
 	for i, bc := range bkp.Clusters {

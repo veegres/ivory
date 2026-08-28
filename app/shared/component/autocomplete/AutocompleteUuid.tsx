@@ -17,10 +17,13 @@ type Props = {
     // is selected (e.g. a plugin-locked vault username), so it stays visible
     // after blur instead of being cleared
     search?: string,
+    // error marks the field from the outside, for a selection a form requires
+    // and has not got; the not-found state marks itself
+    error?: boolean,
 }
 
 export function AutocompleteUuid(props: Props) {
-    const {onUpdate, loading, label, selected, search = ""} = props
+    const {onUpdate, loading, label, selected, search = "", error = false} = props
     const [inputValue, setInputValue] = useState(search)
     const {value, options, isOptionNotFound} = useMemo(handleMemoOptions, [selected, props.options])
 
@@ -52,7 +55,7 @@ export function AutocompleteUuid(props: Props) {
             <TextField
                 {...params}
                 label={label}
-                error={isOptionNotFound}
+                error={isOptionNotFound || error}
                 helperText={isOptionNotFound && "element wasn't found"}
             />
         )

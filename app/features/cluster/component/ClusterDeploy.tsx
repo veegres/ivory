@@ -2,50 +2,56 @@ import {RocketLaunch} from "@mui/icons-material"
 import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {useCallback, useEffect, useMemo, useState} from "react"
 
-import {ListNodeInput} from "../../../core/pages/cluster/list/ListNodeInput"
 import {Options} from "../../../core/widgets/options/Options"
 import {OptionsVault} from "../../../core/widgets/options/OptionsVault"
-import {Code} from "../../../shared/component/box/Code"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
-import {List} from "../../../shared/component/box/List"
-import {ListItem} from "../../../shared/component/box/ListItem"
 import {Logs} from "../../../shared/component/box/Logs"
+import {Note} from "../../../shared/component/box/Note"
 import {SubContentBox} from "../../../shared/component/box/SubContentBox"
 import {TitledBox} from "../../../shared/component/box/TitledBox"
-import {WarningList} from "../../../shared/component/box/WarningList"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
-import {DeployImageHeader} from "../../../shared/component/input/DeployImageHeader"
+import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SkeletonGroup} from "../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
-import {getDeployPlaceholderKeys, getNodeConfigs, NodeInputFormat, VaultOptions} from "../../../shared/helper/HelperUtils"
-import {useDebounce} from "../../../shared/hook/Debounce"
+import {DeployPasswordMask, KeeperPluginOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
+import {Template} from "../../deployment/api/DeploymentType"
+import {useDeploymentTemplatePicker} from "../../deployment/component/DeploymentTemplatePicker"
 import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
-import {useKeeperDeployForm, useRouterNodeKeeperDeployPlan} from "../../node/api/NodeHook"
-import {InterpolationVar, KeeperDeployPlanRequest, KeeperPlugin} from "../../node/api/NodeType"
+import {useRouterNodeKeeperDeploySpec} from "../../node/api/NodeHook"
+import {KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
+import {useRouterVault} from "../../vault/api/VaultHook"
 import {VaultType} from "../../vault/api/VaultType"
 import {useRouterClusterDeploy} from "../api/ClusterHook"
-import {Options as ClusterOptions} from "../api/ClusterType"
+import {DeployCredentials, DeployNode, Options as ClusterOptions} from "../api/ClusterType"
+import {ClusterDeployNode} from "./ClusterDeployNode"
 
 const SX: SxPropsMap = {
-    note: {
-        display: "flex", justifyContent: "center", alignItems: "center",
-        color: "text.disabled", fontSize: 12, flexWrap: "wrap", gap: 0.5,
+    box: {display: "flex", flexDirection: "column", gap: 2},
+    column: {display: "flex", flexDirection: "column", gap: 1},
+    // NOTE: bordered like the field above it and like a template row, so a
+    // clickable row reads as one of them rather than as loose text; the radius
+    // and the hover border are the outlined input's, not the island's, since
+    // this sits inline with the fields rather than around them
+    toggle: {
+        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1,
+        padding: "6px 10px", border: 1, borderColor: "divider", borderRadius: 1,
+        cursor: "pointer", userSelect: "none",
+        "&:hover": {bgcolor: "action.hover", borderColor: "text.primary"},
     },
-    between: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
-    subContent: {display: "flex", flexDirection: "column"},
+    templateName: {fontFamily: "monospace", fontSize: "13px", color: "text.secondary"},
     toggleButton: {padding: "0px 10px"},
-    input: {height: "40px"},
-    logs: {colorScheme: "dark", fontSize: "13px"},
-    row: {"&:hover": {color: "primary.main"}},
 }
+
+// NOTE: a constant until a second platform exists - it was state with no
+// setter, which reads as a choice nobody can make
+const platform = PlatformPlugin.LINUX
 
 const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     certs: {}, vaults: {}, tags: [],
     plugins: {database, keeper},
     tls: {keeper: false, database: false},
-    singleHost: false,
 }) as ClusterOptions
 
 type Props = {
@@ -55,156 +61,159 @@ type Props = {
     size?: number,
 }
 
+// ClusterDeploy fills in a template: the template already says what to run and
+// on how many nodes, so this asks only where each of those nodes lives. The
+// node count comes from the template and is not editable here - a different
+// size is a different template.
 export function ClusterDeploy(props: Props) {
     const {keeper, database, withLabel = false, size} = props
+    const [template, setTemplate] = useState<Template>()
+    const [nodes, setNodes] = useState<DeployNode[]>([])
     const [cluster, setCluster] = useState("")
     const [options, setOptions] = useState<ClusterOptions>(InitialRequest(keeper, database))
-    const [overrides, setOverrides] = useState<{[node: string]: string}>({})
-    const [nodes, setNodes] = useState<string[]>([])
     const [ssh, setSsh] = useState<"new" | "vault">("vault")
     const [db, setDb] = useState<"new" | "vault">("vault")
     const [sshCred, setSshCred] = useState({username: "", password: ""})
     const [dbCred, setDbCred] = useState({username: "", password: ""})
-    const [dev, setDev] = useState(false)
     const [parallel, setParallel] = useState(false)
+    const [submitted, setSubmitted] = useState(false)
     const [response, setResponse] = useState<string[] | undefined>(undefined)
 
     const deploy = useRouterClusterDeploy(setResponse)
-    const {
-        deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, renderField,
-        withKeeperPort, withDbCredentials, mandatoryFields, autoFields,
-    } = useKeeperDeployForm(options.plugins.keeper)
+    const spec = useRouterNodeKeeperDeploySpec(options.plugins.keeper)
+    const picker = useDeploymentTemplatePicker({
+        keeper: options.plugins.keeper,
+        platform,
+        hint: "Pick a template to deploy a cluster, copy one to adjust it, or write a new one",
+        onPick: setTemplate,
+    })
+    // NOTE: shares OptionsVault's query, so resolving the chosen vault's
+    // username for the preview costs no extra request
+    const dbVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
 
     useEffect(handleEffectPluginProps, [keeper, database])
-    useEffect(handleEffectImage, [image])
+    useEffect(handleEffectSpec, [spec.data])
+    // NOTE: the node list is seeded from the template exactly once; from then
+    // on each node is the user's own, so re-seeding would discard their input
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(handleEffectTemplate, [template])
 
-    const fields = image?.fields
+    const withKeeperPort = spec.data?.keeperPort !== undefined
+    const withDbCredentials = spec.data?.credentials ?? false
 
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
-    const handleNodesUpdate = useCallback(handleCallNodesUpdate, [])
-    const handleSingleHostUpdate = useCallback(handleCallSingleHostUpdate, [])
 
-    const nodeFormat = useMemo(handleMemoNodeFormat, [fields, withKeeperPort])
-    const placeholderKeys = getDeployPlaceholderKeys(fields, withKeeperPort, withDbCredentials)
-    const planRequest = useMemo(
-        handleMemoPlanRequest,
-        // NOTE: getValues is intentionally not a dependency, its input
-        // (inputs) is listed instead
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [image, imageUri, options.plugins.keeper, cluster, dev, nodes, nodeFormat, inputs, overrides, fields]
-    )
-    const plan = useRouterNodeKeeperDeployPlan(useDebounce(planRequest, 300))
-    // NOTE: the plan query keeps the previous response while a new one is
-    // fetching (and when it is disabled), so removed nodes are filtered out
-    // by the current request instead of waiting for the next response
-    const planNodes = useMemo(handleMemoPlanNodes, [plan.data, planRequest])
-    const planWarnings = planRequest ? plan.data?.warnings ?? [] : []
-    const planValues = planRequest ? plan.data?.values ?? {} : {}
+    const complete = nodes.length > 0 && nodes.every(n => !!n.name && !!n.host && !!n.command.trim())
+    // NOTE: a duplicate name is a conflict the user should see while typing,
+    // unlike an unfilled field, which waits for Deploy
+    const duplicates = useMemo(handleMemoDuplicates, [nodes])
 
     return (
         <ManageAccess feature={Feature.ManageClusterCreate}>
             <DialogButton
                 title={"DEPLOY CLUSTER"}
-                renderActions={renderActions()}
+                renderActions={!picker.editing && template && renderActions()}
                 icon={<RocketLaunch/>}
                 variant={withLabel ? "button_label" : "button"}
                 label={"Deploy"}
                 size={size}
-                back={!!response}
-                onBackClick={() => setResponse(undefined)}
+                back={!!response || !!template || picker.editing}
+                onBackClick={handleBack}
             >
-                {response ? <Logs logs={response} height={570} auto={false}/> : renderBody()}
+                {renderContent()}
             </DialogButton>
         </ManageAccess>
     )
 
-    function renderBody() {
-        if (deploySpec.isError) return <ErrorSmart error={deploySpec.error}/>
-        if (deploySpec.isPending || !ready) return <SkeletonGroup count={3}/>
-        return (
-            <Box sx={[SX.subContent, {gap: 1}]}>
-                {renderMandatoryFields()}
-                {renderImageOptions()}
-                {renderClusterOptions()}
-            </Box>
-        )
+    function renderContent() {
+        if (response) return <Logs logs={response} height={570} auto={false}/>
+        if (spec.isError) return <ErrorSmart error={spec.error}/>
+        if (spec.isPending) return <SkeletonGroup count={3}/>
+        if (!template) return picker.render()
+        return renderBody(template)
     }
 
     function renderActions() {
-        const planReady = !!planRequest && !!plan.data && planWarnings.length === 0
         return (
-            <Button fullWidth={true} loading={deploy.isPending} onClick={handleDeploy} disabled={!cluster || !planReady || !!response}>
+            <Button fullWidth={true} loading={deploy.isPending} onClick={handleDeploy} disabled={!!response}>
                 Deploy
             </Button>
         )
     }
 
-    function renderMandatoryFields() {
+    function renderBody(selected: Template) {
         return (
-            <Box sx={[SX.subContent, {gap: 1}]}>
-                <List>
-                    <ListItem
-                        title={"Parallel Deployment"}
-                        description={`
-                            Some services, such as Patroni, require sequential deployment to establish a cluster
-                            correctly and allow all nodes to connect to each other. Be cautious.
-                        `}
-                        button={<Checkbox
-                            size={"small"}
-                            checked={parallel}
-                            color={"default"}
-                            onChange={(_, c) => setParallel(c)}
-                        />}
-                    />
-                    <ListItem
-                        title={"Single-host mode"}
-                        description={`
-                            Single-VM setup: services communicate via localhost. Local DNS resolution may
-                            require additional /etc/hosts entries. Designed for development and testing.
-                        `}
-                        button={<Checkbox
-                            size={"small"}
-                            checked={dev}
-                            color={"default"}
-                            onChange={(_, c) => handleSingleHostUpdate(c)}
-                        />}
-                    />
-                </List>
-                <TitledBox title={"Cluster"} island={true}>
-                    <Box sx={[SX.subContent, {gap: 1}]}>
-                        <TextField
-                            fullWidth={true}
-                            size={"small"}
-                            label={"Name"}
-                            value={cluster}
-                            onChange={(e) => setCluster(e.target.value)}
-                        />
-                        <ListNodeInput
-                            InputProps={SX.input}
-                            minLength={4}
-                            inputs={nodes}
-                            onChange={handleNodesUpdate}
-                            editable={true}
-                            withKeeperPort={withKeeperPort}
-                        />
-                    </Box>
-                </TitledBox>
+            <Box sx={SX.box}>
+                {renderCluster(selected)}
                 {renderSshInputs()}
                 {renderDbInputs()}
-                {renderMandatoryOptions()}
+                {renderNodes()}
             </Box>
         )
     }
 
-    function renderMandatoryOptions() {
-        if (mandatoryFields.length === 0) return
+    function renderCluster(selected: Template) {
         return (
-            <TitledBox title={"Mandatory Options"} island={true}>
-                <Box sx={[SX.subContent, {gap: 1}]}>
-                    {mandatoryFields.map(f => renderField(f, planValues))}
+            <TitledBox title={"Cluster"} renderActions={renderTemplateName(selected)} island={true}>
+                <Box sx={SX.column}>
+                    <TextField
+                        fullWidth={true}
+                        size={"small"}
+                        label={"Name"}
+                        value={cluster}
+                        error={submitted && !cluster}
+                        onChange={(e) => setCluster(e.target.value)}
+                    />
+                    {renderParallel()}
+                    {renderClusterOptions()}
                 </Box>
             </TitledBox>
+        )
+    }
+
+    function renderTemplateName(selected: Template) {
+        return <Box sx={SX.templateName}>{selected.name}</Box>
+    }
+
+    function renderParallel() {
+        return (
+            <Box sx={SX.toggle} onClick={() => setParallel(!parallel)}>
+                <Box>
+                    <Box>Parallel deployment</Box>
+                    <Note>Some keepers, such as Patroni, need their nodes deployed one after another.</Note>
+                </Box>
+                {/* NOTE: the row toggles on click, so the checkbox has to stop
+                    its own click bubbling or the two would cancel out */}
+                <Checkbox
+                    size={"small"}
+                    color={"default"}
+                    checked={parallel}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(_, c) => setParallel(c)}
+                />
+            </Box>
+        )
+    }
+
+    // NOTE: no wrapping box - a node box is a top-level section here exactly as
+    // it is in the template editor, so the two screens show a node the same way
+    function renderNodes() {
+        return nodes.map(renderNode)
+    }
+
+    function renderNode(node: DeployNode, index: number) {
+        return (
+            <ClusterDeployNode
+                key={index}
+                node={node}
+                cluster={cluster}
+                withKeeperPort={withKeeperPort}
+                showErrors={submitted}
+                duplicate={!!node.name && duplicates.has(node.name)}
+                credentials={getCredentials()}
+                onChange={(updated) => handleNodeUpdate(index, updated)}
+            />
         )
     }
 
@@ -213,13 +222,14 @@ export function ClusterDeploy(props: Props) {
         return (
             <TitledBox title={"Database Credentials"} renderActions={renderDbInputActions()} island={true}>
                 {db === "new" ? (
-                    <Box sx={SX.between}>
+                    <FieldRow>
                         <TextField
                             fullWidth
                             size={"small"}
                             label={"Username"}
                             value={dbCred.username}
-                            disabled={!!fields?.defaults[InterpolationVar.DbUser]}
+                            disabled={!!spec.data?.dbUser}
+                            error={submitted && db === "new" && !dbCred.username}
                             onChange={v => setDbCred({...dbCred, username: v.target.value})}
                         />
                         <TextField
@@ -228,15 +238,17 @@ export function ClusterDeploy(props: Props) {
                             type={"password"}
                             label={"Password"}
                             value={dbCred.password}
+                            error={submitted && db === "new" && !dbCred.password}
                             onChange={v => setDbCred({...dbCred, password: v.target.value})}
                         />
-                    </Box>
+                    </FieldRow>
                 ) : (
                     <OptionsVault
                         type={VaultType.DATABASE_PASSWORD}
                         selected={options.vaults.databaseId}
                         onUpdate={handleVaultUpdate}
-                        username={fields?.defaults[InterpolationVar.DbUser] || undefined}
+                        username={spec.data?.dbUser || undefined}
+                        error={submitted && db === "vault" && !options.vaults.databaseId}
                     />
                 )}
             </TitledBox>
@@ -245,7 +257,7 @@ export function ClusterDeploy(props: Props) {
 
     function renderDbInputActions() {
         return (
-            <ToggleButtonGroup size={"small"} exclusive={true} value={db} onChange={(_, v) => setDb(v)}>
+            <ToggleButtonGroup size={"small"} exclusive={true} value={db} onChange={(_, v) => v && setDb(handleModeChange(VaultType.DATABASE_PASSWORD, v))}>
                 <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
                 <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
             </ToggleButtonGroup>
@@ -256,12 +268,13 @@ export function ClusterDeploy(props: Props) {
         return (
             <TitledBox title={"SSH Credentials"} renderActions={renderSshInputActions()} island={true}>
                 {ssh === "new" ? (
-                    <Box sx={SX.between}>
+                    <FieldRow>
                         <TextField
                             fullWidth
                             size={"small"}
                             label={"Username"}
                             value={sshCred.username}
+                            error={submitted && ssh === "new" && !sshCred.username}
                             onChange={v => setSshCred({...sshCred, username: v.target.value})}
                         />
                         <TextField
@@ -270,14 +283,16 @@ export function ClusterDeploy(props: Props) {
                             label={"Password"}
                             type={"password"}
                             value={sshCred.password}
+                            error={submitted && ssh === "new" && !sshCred.password}
                             onChange={v => setSshCred({...sshCred, password: v.target.value})}
                         />
-                    </Box>
+                    </FieldRow>
                 ) : (
                     <OptionsVault
                         type={VaultType.SSH_KEY}
                         selected={options.vaults.sshKeyId}
                         onUpdate={handleVaultUpdate}
+                        error={submitted && ssh === "vault" && !options.vaults.sshKeyId}
                     />
                 )}
             </TitledBox>
@@ -286,160 +301,147 @@ export function ClusterDeploy(props: Props) {
 
     function renderSshInputActions() {
         return (
-            <ToggleButtonGroup size={"small"} exclusive={true} value={ssh} onChange={(_, v) => setSsh(v)}>
+            <ToggleButtonGroup size={"small"} exclusive={true} value={ssh} onChange={(_, v) => v && setSsh(handleModeChange(VaultType.SSH_KEY, v))}>
                 <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
                 <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
             </ToggleButtonGroup>
         )
     }
 
-    function renderImageOptions() {
-        return (
-            <SubContentBox label={"Image Options"} island={true}>
-                <Box sx={[SX.subContent, {gap: 2}]}>
-                    <DeployImageHeader
-                        imageUri={imageUri}
-                        onImageUriChange={setImageUri}
-                        preview={preview}
-                        onPreviewChange={setPreview}
-                        placeholderKeys={placeholderKeys}
-                    />
-                    <WarningList warnings={planWarnings}/>
-                    {autoFields.length > 0 && planNodes.length > 0 && (
-                        <Box sx={[SX.subContent, {gap: 1}]}>
-                            {autoFields.map(f => renderField(f, planValues))}
-                        </Box>
-                    )}
-                    {planNodes.length === 0 ? (
-                        <Box sx={SX.note}>Start by adding nodes – image options will appear here</Box>
-                    ) : planNodes.map(node => {
-                        const key = `${node.host}:${node.keeperPort}`
-                        return (
-                            <TextField
-                                key={key}
-                                fullWidth={true}
-                                multiline={true}
-                                disabled={preview}
-                                size={"small"}
-                                label={<Box>Node <Code>{getNodeLabel(node.host, node.keeperPort, node.dbPort, node.sshPort)}</Code> options</Box>}
-                                value={preview ? node.optionsPreview : overrides[key] ?? node.options}
-                                onChange={v => handleOverrideUpdate(key, v.target.value)}
-                            />
-                        )
-                    })}
-                </Box>
-            </SubContentBox>
-        )
-    }
-
     function renderClusterOptions() {
         return (
-            <SubContentBox label={"Cluster Options"} island={true}>
+            <SubContentBox label={"Cluster Options"} dense={true}>
                 <Options options={options} onUpdate={handleOptionsUpdate} disablePlugins={true}/>
             </SubContentBox>
         )
     }
 
-    function handleMemoPlanNodes() {
-        if (!planRequest) return []
-        const keys = new Set(planRequest.nodes.map(n => `${n.host}:${n.keeperPort}`))
-        return (plan.data?.nodes ?? []).filter(n => keys.has(`${n.host}:${n.keeperPort}`))
+    function handleMemoDuplicates() {
+        const names = nodes.map(n => n.name).filter((name): name is string => !!name)
+        return new Set(names.filter((name, i) => names.indexOf(name) !== i))
     }
 
-    function handleMemoNodeFormat(): NodeInputFormat | undefined {
-        if (!fields) return undefined
-        return {
-            withKeeperPort,
-            defaults: {
-                keeperPort: Number(fields.defaults[InterpolationVar.KeeperPort]) || undefined,
-                dbPort: Number(fields.defaults[InterpolationVar.DbPort]) || undefined,
-                sshPort: 22,
-            },
-        }
-    }
-
-    function handleMemoPlanRequest(): KeeperDeployPlanRequest | undefined {
-        if (!image || !nodeFormat) return undefined
-        const activeNodes = nodes.filter(n => !!n)
-        if (activeNodes.length === 0) return undefined
-        return {
-            plugin: options.plugins.keeper,
-            cluster,
-            singleHost: dev,
-            image: imageUri,
-            values: getValues(),
-            nodes: getNodeConfigs(activeNodes, nodeFormat).map(config => (
-                {...config, options: overrides[`${config.host}:${config.keeperPort}`]}
-            )),
-        }
-    }
-
-    function handleOverrideUpdate(node: string, opt: string) {
-        setOverrides(prev => ({...prev, [node]: opt}))
-    }
-
-    function handleCallNodesUpdate(nodes: string[]) {
-        setNodes(nodes)
-    }
-
-    function handleCallSingleHostUpdate(checked: boolean) {
-        setDev(checked)
-        // NOTE: the rendered template differs between the modes, edits made
-        // for one mode don't apply to the other
-        setOverrides({})
+    function handleNodeUpdate(index: number, node: DeployNode) {
+        setNodes(prev => prev.map((n, i) => i === index ? node : n))
     }
 
     function handleCallOptionsUpdate(opt: ClusterOptions) {
         setOptions(prev => ({...prev, ...opt}))
     }
 
+    // NOTE: the unselected mode's vault id is cleared too - leaving one behind
+    // would send both a vault and a password for the same credential
+    function handleModeChange(type: VaultType, mode: "new" | "vault") {
+        if (mode === "new") handleCallVaultUpdate(type, undefined)
+        return mode
+    }
+
     function handleCallVaultUpdate(t: VaultType, s?: string) {
         setOptions(prev => ({...prev, vaults: {...prev.vaults, [VaultOptions[t].key]: s}}))
     }
 
+    function handleBack() {
+        if (response) return setResponse(undefined)
+        if (picker.back()) return
+        setTemplate(undefined)
+    }
+
+    // NOTE: Deploy stays clickable while fields are missing - clicking it is
+    // what asks for the errors to be shown, and a disabled button could never
+    // explain itself
     function handleDeploy() {
-        if (!planRequest) return
+        setSubmitted(true)
+        if (!isReady()) return
         deploy.mutate({
-            parallel: parallel,
-            singleHost: dev,
-            image: imageUri,
-            nodes: planRequest.nodes,
-            values: getValues(),
-            commonConfig: {
-                cluster,
-                dbUser: dbCred.username, dbPass: dbCred.password,
-                sshUser: sshCred.username, sshPass: sshCred.password,
-            },
+            parallel,
+            nodes,
+            commonConfig: {cluster, ...getSshConfig(), ...getDbConfig()},
             clusterOptions: options,
         })
     }
 
+    // NOTE: mirrors what cluster.Deploy rejects - ssh credentials are always
+    // required, database ones only when the keeper plugin consumes them, which
+    // is the same condition that renders their section
+    function isReady() {
+        return !!cluster && duplicates.size === 0 && !response && complete && isSshReady() && isDbReady()
+    }
+
+    // NOTE: the preview may show the username - the form knows it either way -
+    // but never the password, only that one exists
+    function getCredentials(): DeployCredentials {
+        if (!withDbCredentials) return {}
+        if (db === "new") {
+            return {
+                user: dbCred.username || undefined,
+                pass: dbCred.password ? DeployPasswordMask : undefined,
+            }
+        }
+        const vault = getDbVault()
+        return {user: vault?.username, pass: vault && DeployPasswordMask}
+    }
+
+    function getDbVault() {
+        const id = options.vaults.databaseId
+        return id ? dbVaults.data?.[id] : undefined
+    }
+
+    // NOTE: a vault id and a username/password pair are two answers to one
+    // question and the server rejects both together, so whichever the user did
+    // not choose is left out entirely rather than sent alongside
+    function getSshConfig() {
+        if (ssh === "vault") return {sshUser: "", sshPass: ""}
+        return {sshUser: sshCred.username, sshPass: sshCred.password}
+    }
+
+    function getDbConfig() {
+        if (!withDbCredentials || db === "vault") return {dbUser: "", dbPass: ""}
+        return {dbUser: dbCred.username, dbPass: dbCred.password}
+    }
+
+    function isSshReady() {
+        if (ssh === "vault") return !!options.vaults.sshKeyId
+        return !!sshCred.username && !!sshCred.password
+    }
+
+    function isDbReady() {
+        if (!withDbCredentials) return true
+        if (db === "vault") return !!options.vaults.databaseId
+        return !!dbCred.username && !!dbCred.password
+    }
+
     // NOTE: the plugin selectors are disabled inside the dialog, so the plugins
     // can only change through the cluster list filter; the filter also changes
-    // the node input format, hence the entered nodes are reset (the mandatory
-    // field inputs are reset by useKeeperDeployForm itself once the new
-    // plugin's spec loads)
+    // the available templates, hence the reset
     function handleEffectPluginProps() {
         setOptions(prev => ({...prev, plugins: {keeper, database}}))
+        setTemplate(undefined)
         setNodes([])
-        setOverrides({})
     }
 
-    // NOTE: applies the fetched default database username once per selected
+    // NOTE: applies the engine-locked database username once per selected
     // keeper plugin, so a user edit is kept until the plugin changes
-    function handleEffectImage() {
-        if (!image) return
-        setDbCred({username: image.fields.defaults[InterpolationVar.DbUser] ?? "", password: ""})
+    function handleEffectSpec() {
+        if (!spec.data) return
+        setDbCred({username: spec.data.dbUser ?? "", password: ""})
     }
 
-    // NOTE: credentials are never part of the values — they are resolved
-    // from the vault at execution time and stay visible as {{dbUser}}/
-    // {{dbPass}} in the preview
-    function getValues() {
-        return {...inputs}
-    }
-
-    function getNodeLabel(host: string, keeperPort: number, dbPort: number, sshPort: number) {
-        return withKeeperPort ? `${host}:${keeperPort}:${dbPort}:${sshPort}` : `${host}:${dbPort}:${sshPort}`
+    // NOTE: the template's command count is the node count - a cluster of a
+    // different size is a different template, so nodes are never added here
+    function handleEffectTemplate() {
+        setSubmitted(false)
+        if (!template) return setNodes([])
+        // NOTE: the shipped templates reference these exact names in their own
+        // text (etcd-1, postgres-1, ...), so the prefill makes a copied
+        // template deployable without editing its commands
+        setNodes(template.commands.map((c, i) => ({
+            name: `${KeeperPluginOptions[options.plugins.keeper].name}-${i + 1}`,
+            host: "",
+            keeperPort: spec.data?.keeperPort,
+            dbPort: spec.data?.dbPort,
+            sshPort: 22,
+            command: c.command,
+            postScript: c.postScript,
+        })))
     }
 }

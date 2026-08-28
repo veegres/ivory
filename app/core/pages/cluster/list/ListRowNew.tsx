@@ -65,7 +65,6 @@ export function ListRowNew(props: Props) {
                     certs: {},
                     vaults: {},
                     tls: {keeper: false, database: false},
-                    singleHost: false,
                 }}
                 toggle={toggle}
                 onUpdate={clean}

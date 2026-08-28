@@ -3,6 +3,7 @@ package etcd
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -22,49 +23,116 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// postScript enables authentication after the cluster is up, using the
-// database credentials as the root user - etcd has no bootstrap-time
-// credentials, so this can only happen once etcd itself is already running.
-// The three etcdctl steps are chained with "&&" into one script, the same
-// shape as EntryScript, so a failure partway through (e.g. the user already
-// existing) stops the rest rather than silently continuing.
-const postScript = `sh -c '
-etcdctl --endpoints=http://localhost:` + string(keeper.VarDbPort) + ` user add "` + string(keeper.VarDbUser) + `:` + string(keeper.VarDbPass) + `" &&
-etcdctl --endpoints=http://localhost:` + string(keeper.VarDbPort) + ` user grant-role ` + string(keeper.VarDbUser) + ` root &&
-etcdctl --endpoints=http://localhost:` + string(keeper.VarDbPort) + ` auth enable
+// Requirements reports etcd's client port as the database endpoint; etcd has no
+// separate management API, so the keeper endpoint is the database itself. Auth
+// can only be enabled through a user named root.
+func (a *Adapter) Requirements() keeper.Requirements {
+	return keeper.Requirements{
+		DbPort:      2379,
+		Credentials: true,
+		DbUser:      "root",
+	}
+}
+
+// The peer port, the member list and every other value only the operator knows
+// are written literally: they are plain text to read and edit, not variables.
+// Only the node's own identity and endpoints are interpolated.
+
+const deployMultiHost = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --restart unless-stopped
+  -p {{dbPort}}:{{dbPort}}
+  -p 2380:2380
+  -v /data/etcd:/data/etcd
+  -e ETCD_NAME="{{name}}"
+  -e ETCD_DATA_DIR="/data/etcd"
+  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2380,etcd-3=http://etcd-3:2380"
+  -e ETCD_INITIAL_CLUSTER_STATE="new"
+  -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
+  -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
+  -e ETCD_ADVERTISE_CLIENT_URLS="http://{{host}}:{{dbPort}}"
+  -e ETCD_LISTEN_PEER_URLS="http://0.0.0.0:2380"
+  -e ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{host}}:2380"
+  quay.io/coreos/etcd:v3.6.5`
+
+const deploySingleHostNode1 = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e ETCD_NAME="{{name}}"
+  -e ETCD_DATA_DIR="/data/etcd"
+  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2382,etcd-3=http://etcd-3:2384"
+  -e ETCD_INITIAL_CLUSTER_STATE="new"
+  -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
+  -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
+  -e ETCD_ADVERTISE_CLIENT_URLS="http://{{host}}:{{dbPort}}"
+  -e ETCD_LISTEN_PEER_URLS="http://0.0.0.0:2380"
+  -e ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{host}}:2380"
+  quay.io/coreos/etcd:v3.6.5`
+
+const deploySingleHostNode2 = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e ETCD_NAME="{{name}}"
+  -e ETCD_DATA_DIR="/data/etcd"
+  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2382,etcd-3=http://etcd-3:2384"
+  -e ETCD_INITIAL_CLUSTER_STATE="new"
+  -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
+  -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
+  -e ETCD_ADVERTISE_CLIENT_URLS="http://{{host}}:{{dbPort}}"
+  -e ETCD_LISTEN_PEER_URLS="http://0.0.0.0:2382"
+  -e ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{host}}:2382"
+  quay.io/coreos/etcd:v3.6.5`
+
+const deploySingleHostNode3 = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e ETCD_NAME="{{name}}"
+  -e ETCD_DATA_DIR="/data/etcd"
+  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2382,etcd-3=http://etcd-3:2384"
+  -e ETCD_INITIAL_CLUSTER_STATE="new"
+  -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
+  -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
+  -e ETCD_ADVERTISE_CLIENT_URLS="http://{{host}}:{{dbPort}}"
+  -e ETCD_LISTEN_PEER_URLS="http://0.0.0.0:2384"
+  -e ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{host}}:2384"
+  quay.io/coreos/etcd:v3.6.5`
+
+// deployAuth enables authentication once the whole cluster is running: etcd
+// has no bootstrap-time credentials, so the root user can only be created
+// against an already-formed cluster. That is why it sits on the last command
+// rather than the first. The steps are chained with "&&" so a failure partway
+// through stops the rest instead of silently continuing.
+const deployAuth = `sh -c '
+etcdctl --endpoints=http://localhost:{{dbPort}} user add "{{dbUser}}:{{dbPass}}" &&
+etcdctl --endpoints=http://localhost:{{dbPort}} user grant-role {{dbUser}} root &&
+etcdctl --endpoints=http://localhost:{{dbPort}} auth enable
 '`
 
-// DeploymentSpec bootstraps a static etcd cluster: the client port maps to
-// the node database port, the {{peerPort}} field (default 2380, unique per
-// node in single-host mode) is the peer listener, and the {{clusterHosts}}
-// member list (name=http://host:peerPort,...) is derived from the node list.
-func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
-	return keeper.DeploymentSpec{
-		DefaultImage: "quay.io/coreos/etcd:v3.6.5",
-		// NOTE: etcd requires a user named root before auth can be enabled
-		Defaults: map[keeper.Var]string{
-			keeper.VarDbPort: "2379",
-			keeper.VarDbUser: "root",
+func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+	return []keeper.DeploymentTemplate{
+		{
+			Platform:    platform.Linux,
+			Name:        "Etcd (Multi Host)",
+			Description: "Three-member static etcd cluster, one member per VM. Name the nodes etcd-1..3 or edit the member list to match.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deployMultiHost},
+				{Command: deployMultiHost},
+				{Command: deployMultiHost, PostScript: deployAuth},
+			},
 		},
-		Fields: []keeper.FieldSpec{
-			{Name: keeper.VarPeerPort, Label: "Peer Port", Type: keeper.FieldPort, Default: "2380"},
-			{Name: keeper.VarClusterHosts, Label: "Initial Cluster", Type: keeper.FieldText, Template: string(keeper.VarHost) + "=http://" + string(keeper.VarHost) + ":" + string(keeper.VarPeerPort), Separator: ","},
-		},
-		PostScript: postScript,
-		Ports:      []string{string(keeper.VarDbPort), string(keeper.VarPeerPort)},
-		Volumes: []keeper.VolumeSpec{
-			{HostPath: "/data/etcd", ContainerPath: "/data/etcd"},
-		},
-		Env: []keeper.EnvVar{
-			{Name: "ETCD_NAME", Value: `"` + string(keeper.VarHost) + `"`},
-			{Name: "ETCD_DATA_DIR", Value: `"/data/etcd"`},
-			{Name: "ETCD_INITIAL_CLUSTER", Value: `"` + string(keeper.VarClusterHosts) + `"`},
-			{Name: "ETCD_INITIAL_CLUSTER_STATE", Value: `"new"`},
-			{Name: "ETCD_INITIAL_CLUSTER_TOKEN", Value: `"` + string(keeper.VarCluster) + `"`},
-			{Name: "ETCD_LISTEN_CLIENT_URLS", Value: `"http://0.0.0.0:` + string(keeper.VarDbPort) + `"`},
-			{Name: "ETCD_ADVERTISE_CLIENT_URLS", Value: `"http://` + string(keeper.VarHost) + `:` + string(keeper.VarDbPort) + `"`},
-			{Name: "ETCD_LISTEN_PEER_URLS", Value: `"http://0.0.0.0:` + string(keeper.VarPeerPort) + `"`},
-			{Name: "ETCD_INITIAL_ADVERTISE_PEER_URLS", Value: `"http://` + string(keeper.VarHost) + `:` + string(keeper.VarPeerPort) + `"`},
+		{
+			Platform:    platform.Linux,
+			Name:        "Etcd (Single Host)",
+			Description: "Three-member etcd cluster on one VM. Each member peers on its own port; give each its own client port in the deploy form.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deploySingleHostNode1},
+				{Command: deploySingleHostNode2},
+				{Command: deploySingleHostNode3, PostScript: deployAuth},
+			},
 		},
 	}
 }

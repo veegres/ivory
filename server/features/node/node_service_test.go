@@ -30,8 +30,12 @@ func (f *fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool {
 	return f.features
 }
 
-func (f *fakeKeeperMetadata) DeploymentSpec() keeper.DeploymentSpec {
-	return keeper.DeploymentSpec{}
+func (f *fakeKeeperMetadata) Requirements() keeper.Requirements {
+	return keeper.Requirements{DbPort: 5432}
+}
+
+func (f *fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate {
+	return nil
 }
 
 func createTestNodeService(t *testing.T) (*Service, *vault.Service) {

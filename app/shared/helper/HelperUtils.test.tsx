@@ -5,19 +5,20 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 
 import {NodeConfig} from "../../features/cluster/api/ClusterType"
-import {DeployFieldsResponse, InterpolationVar} from "../../features/node/api/NodeType"
+import {DeployVar, KeeperDeploySpecResponse} from "../../features/node/api/NodeType"
 import {
     DateTimeFormatter,
-    getDeployFieldGroups,
-    getDeployPlaceholderKeys,
+    DeployPasswordMask,
     getDomain,
     getDomains,
     getErrorMessage,
     getKeeperDefaultPort,
     getNodeConfig,
     getNodeConfigs,
+    getPlaceholders,
     getShortUuid,
-    getUpdatedInputs,
+    getUnknownPlaceholders,
+    interpolateCommand,
     isConnectionEqual,
     NodeInputFormat,
     randomUnicodeAnimal,
@@ -121,111 +122,84 @@ describe("getNodeConfig with format", () => {
 
 describe("getKeeperDefaultPort", () => {
     it("should return the keeper port when the plugin has a separate one", () => {
-        const fields: DeployFieldsResponse = {
-            defaults: {
-                [InterpolationVar.KeeperPort]: "8008",
-                [InterpolationVar.DbPort]: "5432",
-                [InterpolationVar.DbUser]: "postgres",
-            },
-            fields: [{name: "{{dcs}}", label: "DCS", type: "text", derived: false}],
-        }
-        expect(getKeeperDefaultPort(fields)).toBe(8008)
+        const spec: KeeperDeploySpecResponse = {dbPort: 5432, keeperPort: 8008, credentials: true, dbUser: "postgres"}
+        expect(getKeeperDefaultPort(spec)).toBe(8008)
     })
 
     it("should fall back to the db port when there is no separate keeper endpoint", () => {
-        const fields: DeployFieldsResponse = {
-            defaults: {
-                [InterpolationVar.DbPort]: "2379",
-                [InterpolationVar.DbUser]: "root",
-            },
-            fields: [
-                {name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false},
-                {name: "{{clusterHosts}}", label: "Initial Cluster", type: "text", derived: true},
-            ],
-        }
-        expect(getKeeperDefaultPort(fields)).toBe(2379)
+        const spec: KeeperDeploySpecResponse = {dbPort: 2379, credentials: true, dbUser: "root"}
+        expect(getKeeperDefaultPort(spec)).toBe(2379)
     })
 })
 
-describe("getDeployFieldGroups", () => {
-    const patroni: DeployFieldsResponse = {
-        defaults: {
-            [InterpolationVar.KeeperPort]: "8008",
-            [InterpolationVar.DbPort]: "5432",
-            [InterpolationVar.DbUser]: "postgres",
-        },
-        fields: [{name: "{{dcs}}", label: "DCS", type: "text", derived: false}],
-    }
-    const etcd: DeployFieldsResponse = {
-        defaults: {[InterpolationVar.DbPort]: "2379", [InterpolationVar.DbUser]: "root"},
-        fields: [
-            {name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false},
-            {name: "{{clusterHosts}}", label: "Initial Cluster", type: "text", derived: true},
-        ],
-    }
-
-    it("should treat a present keeper port and db user as enabled", () => {
-        const groups = getDeployFieldGroups(patroni)
-        expect(groups.withKeeperPort).toBe(true)
-        expect(groups.withDbCredentials).toBe(true)
-        expect(groups.mandatoryFields.map(f => f.name)).toEqual(["{{dcs}}"])
-        expect(groups.autoFields).toEqual([])
+describe("getPlaceholders", () => {
+    it("should list every variable in order, deduplicated", () => {
+        const command = "docker run --name {{name}} -p {{dbPort}}:{{dbPort}} --hostname {{host}}"
+        expect(getPlaceholders(command)).toEqual(["{{name}}", "{{dbPort}}", "{{host}}"])
     })
 
-    it("should classify derived and defaulted fields as auto", () => {
-        const groups = getDeployFieldGroups(etcd)
-        expect(groups.withKeeperPort).toBe(false)
-        expect(groups.mandatoryFields).toEqual([])
-        expect(groups.autoFields.map(f => f.name)).toEqual(["{{peerPort}}", "{{clusterHosts}}"])
+    it("should return nothing for a command with no variables", () => {
+        expect(getPlaceholders("docker run -d redis:7")).toEqual([])
     })
 
-    it("should default to no fields and credentials required when fields are absent", () => {
-        const groups = getDeployFieldGroups(undefined)
-        expect(groups.withKeeperPort).toBe(false)
-        expect(groups.withDbCredentials).toBe(true)
-        expect(groups.mandatoryFields).toEqual([])
-        expect(groups.autoFields).toEqual([])
+    it("should not match docker's own template syntax", () => {
+        expect(getPlaceholders("--format '{{json .}}'")).toEqual([])
     })
 })
 
-describe("getDeployPlaceholderKeys", () => {
-    const fields: DeployFieldsResponse = {
-        defaults: {[InterpolationVar.DbPort]: "2379"},
-        fields: [{name: "{{peerPort}}", label: "Peer Port", type: "port", default: "2380", derived: false}],
-    }
+describe("interpolateCommand", () => {
+    const values = {cluster: "main", name: "etcd-1", host: "10.0.0.1", sshPort: 22, keeperPort: 8008, dbPort: 2379}
 
-    it("should drop keeper-port and credential variables when unused and append field names", () => {
-        const keys = getDeployPlaceholderKeys(fields, false, false)
-        expect(keys).not.toContain(InterpolationVar.KeeperPort)
-        expect(keys).not.toContain(InterpolationVar.DbUser)
-        expect(keys).not.toContain(InterpolationVar.DbPass)
-        expect(keys).toContain(InterpolationVar.Host)
-        expect(keys).toContain("{{peerPort}}")
+    it("should fill every value a deploy supplies", () => {
+        const command = "--name {{name}} --hostname {{host}} -p {{dbPort}} -e TOKEN={{cluster}}"
+        expect(interpolateCommand(command, values)).toBe("--name etcd-1 --hostname 10.0.0.1 -p 2379 -e TOKEN=main")
     })
 
-    it("should keep keeper-port and credentials when used", () => {
-        const keys = getDeployPlaceholderKeys(fields, true, true)
-        expect(keys).toContain(InterpolationVar.KeeperPort)
-        expect(keys).toContain(InterpolationVar.DbUser)
-        expect(keys).toContain(InterpolationVar.DbPass)
+    it("should leave the credentials unresolved when the form has none", () => {
+        expect(interpolateCommand("-e PASS={{dbPass}} -u {{dbUser}}", values)).toBe("-e PASS={{dbPass}} -u {{dbUser}}")
+    })
+
+    // NOTE: the username is the form's own, so a preview may show it; the
+    // password never leaves the server, so what a preview gets is the mask
+    it("should fill the username and mask the password", () => {
+        const command = "-e PASS={{dbPass}} -u {{dbUser}}"
+        expect(interpolateCommand(command, {...values, dbUser: "postgres", dbPass: DeployPasswordMask}))
+            .toBe("-e PASS=***** -u postgres")
+    })
+
+    it("should leave a value that has not been filled in yet", () => {
+        expect(interpolateCommand("--name {{name}} --hostname {{host}}", {name: "etcd-1"}))
+            .toBe("--name etcd-1 --hostname {{host}}")
+    })
+
+    it("should not touch docker's own template syntax", () => {
+        expect(interpolateCommand("--format '{{json .}}'", values)).toBe("--format '{{json .}}'")
+    })
+})
+
+describe("getUnknownPlaceholders", () => {
+    it("should accept every variable in the closed vocabulary", () => {
+        const command = Object.values(DeployVar).join(" ")
+        expect(getUnknownPlaceholders(command)).toEqual([])
+    })
+
+    // NOTE: this is what keeps the vocabulary closed - a typo has to be an
+    // error, never a silently-introduced new variable
+    it("should report a misspelled variable", () => {
+        expect(getUnknownPlaceholders("-e USER={{dbUesr}}")).toEqual(["{{dbUesr}}"])
+    })
+
+    // NOTE: a peer port, a member list, a coordinator address and the leader's
+    // host are written literally now - they are values only the operator
+    // knows, not variables
+    it("should report a variable retired from the vocabulary", () => {
+        const command = "-p {{peerPort}} -e HOSTS={{clusterHosts}} -e DCS={{dcs}} -h {{leaderHost}}"
+        expect(getUnknownPlaceholders(command))
+            .toEqual(["{{peerPort}}", "{{clusterHosts}}", "{{dcs}}", "{{leaderHost}}"])
     })
 })
 
-describe("getUpdatedInputs", () => {
-    it("should set a value", () => {
-        expect(getUpdatedInputs({}, "{{dcs}}", "etcd1:2379")).toEqual({"{{dcs}}": "etcd1:2379"})
-    })
 
-    it("should drop a field when cleared so it returns to its computed value", () => {
-        expect(getUpdatedInputs({"{{dcs}}": "x"}, "{{dcs}}", "")).toEqual({})
-    })
-
-    it("should not mutate the input", () => {
-        const inputs = {"{{dcs}}": "x"}
-        getUpdatedInputs(inputs, "{{dcs}}", "y")
-        expect(inputs).toEqual({"{{dcs}}": "x"})
-    })
-})
 
 describe("isConnectionEqual", () => {
     it("should return true if connections are equal", () => {

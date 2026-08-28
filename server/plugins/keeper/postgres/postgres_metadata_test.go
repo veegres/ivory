@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"ivory/core/config"
-	"ivory/plugins/keeper"
 	"strings"
 	"testing"
 )
@@ -28,49 +27,47 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestDeploymentSpec(t *testing.T) {
-	spec := NewAdapter().DeploymentSpec()
+func TestRequirements(t *testing.T) {
+	req := NewAdapter().Requirements()
 
-	if spec.DefaultImage == "" {
-		t.Error("expected a default image")
+	if req.DbPort != 5432 {
+		t.Errorf("expected db port 5432, got %d", req.DbPort)
 	}
-	if len(spec.Ports) != 1 {
-		t.Errorf("expected 1 port (db), got %d", len(spec.Ports))
+	if req.KeeperPort != nil {
+		t.Errorf("expected no separate keeper port (plain postgres has no management api), got %v", *req.KeeperPort)
 	}
-	if len(spec.Volumes) == 0 {
-		t.Error("expected at least one volume")
+	if !req.Credentials {
+		t.Error("expected postgres to consume database credentials")
 	}
-	if len(spec.Env) == 0 {
-		t.Error("expected at least one env var")
+	if req.DbUser != "" {
+		t.Errorf("expected a free choice of username, got the locked %q", req.DbUser)
 	}
-	if user, ok := spec.Defaults[keeper.VarDbUser]; !ok || user != "" {
-		t.Errorf("expected credentials with a user-chosen username, got %+v", spec.Defaults)
+}
+
+// TestDefaultTemplates covers the leader/replica asymmetry: it is expressed as
+// a different command at index 0, not as a flag. A replica must rebase from
+// the leader before postgres ever starts, since streaming replication cannot
+// build the initial database.
+func TestDefaultTemplates(t *testing.T) {
+	templates := NewAdapter().DefaultTemplates()
+
+	if len(templates) != 2 {
+		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
 	}
-	if _, ok := spec.Defaults[keeper.VarKeeperPort]; ok {
-		t.Errorf("expected no separate keeper port, got %+v", spec.Defaults)
-	}
-	if spec.Defaults[keeper.VarDbPort] != "5432" {
-		t.Errorf("expected db port default 5432, got %+v", spec.Defaults)
-	}
-	if len(spec.Fields) != 0 {
-		t.Errorf("expected no fields, got %+v", spec.Fields)
-	}
-	if spec.PostScript != "" {
-		t.Errorf("expected no post-deploy script, got %q", spec.PostScript)
-	}
-	if !spec.EntryScriptReplicasOnly {
-		t.Error("expected EntryScriptReplicasOnly true, the primary must not rebase itself from itself")
-	}
-	if spec.EntryScript == "" {
-		t.Error("expected an entry script to rebase replicas via pg_basebackup")
-	}
-	if !strings.Contains(spec.EntryScript, string(keeper.VarLeaderHost)) {
-		t.Errorf("expected the entry script to reference %s, got %q", keeper.VarLeaderHost, spec.EntryScript)
-	}
-	if !strings.Contains(spec.EntryScript, "pg_basebackup") {
-		t.Errorf("expected the entry script to run pg_basebackup, got %q", spec.EntryScript)
-	}
-	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
-		t.Errorf("spec references unknown variables: %v", unknown)
+
+	for _, template := range templates {
+		t.Run(template.Name, func(t *testing.T) {
+			if strings.Contains(template.Commands[0].Command, "pg_basebackup") {
+				t.Error("the leader must not run the replica bootstrap")
+			}
+			for i, command := range template.Commands[1:] {
+				if !strings.Contains(command.Command, "pg_basebackup") {
+					t.Errorf("replica %d does not rebase from the leader", i+1)
+				}
+				if !strings.Contains(command.Command, "host=postgres-1") {
+					t.Errorf("replica %d has no leader host to bootstrap from", i+1)
+				}
+			}
+		})
 	}
 }

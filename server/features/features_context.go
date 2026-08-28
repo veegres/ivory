@@ -13,6 +13,7 @@ import (
 	"ivory/features/backup"
 	"ivory/features/cluster"
 	"ivory/features/config"
+	"ivory/features/deployment"
 	"ivory/features/management"
 	"ivory/features/node"
 	"ivory/features/permission"
@@ -31,6 +32,7 @@ type Router struct {
 	Tag        *tag.Router
 	Node       *node.Router
 	Query      *query.Router
+	Deployment *deployment.Router
 	Management *management.Router
 	Config     *config.Router
 }
@@ -54,6 +56,7 @@ func NewContext(
 	tagBucket := storage.NewDbBucket[[]string](st, "Tag")
 	permissionBucket := storage.NewDbBucket[permission.PermissionMap](st, "Permission")
 	queryBucket := storage.NewDbBucket[query.Response](st, "Query")
+	deploymentBucket := storage.NewDbBucket[deployment.Template](st, "DeploymentTemplate")
 
 	// FILES
 	configFiles := storage.NewFileStorage("config", ".json")
@@ -64,6 +67,7 @@ func NewContext(
 	tagRepo := tag.NewRepository(tagBucket)
 	permissionRepo := permission.NewRepository(permissionBucket)
 	queryRepo := query.NewRepository(queryBucket, queryLogFiles)
+	deploymentRepo := deployment.NewRepository(deploymentBucket)
 
 	// AUTH PROVIDER
 	basicProvider := basic.NewProvider()
@@ -82,10 +86,11 @@ func NewContext(
 	nodeService := node.NewService(platformRegistry, keeperRegistry, keeperMetadataRegistry, vaultService, certService, jobService)
 	tagService := tag.NewService(tagRepo)
 	queryService := query.NewService(queryRepo, databaseRegistry, vaultService, certService, env.Version.Label)
+	deploymentService := deployment.NewService(deploymentRepo, keeperMetadataRegistry, platformRegistry)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, vaultService, toolRegistry)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
-	backupService := backup.NewService(clusterService, queryService, permissionService)
+	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService)
 	managementService := management.NewService(
 		env,
 		authService,
@@ -95,6 +100,7 @@ func NewContext(
 		tagService,
 		jobService,
 		queryService,
+		deploymentService,
 		nodeService,
 		secretService,
 		configService,
@@ -111,6 +117,7 @@ func NewContext(
 			Tag:        tag.NewRouter(tagService),
 			Node:       node.NewRouter(nodeService),
 			Query:      query.NewRouter(queryService, configService),
+			Deployment: deployment.NewRouter(deploymentService),
 			Management: management.NewRouter(managementService),
 			Config:     config.NewRouter(configService),
 		},

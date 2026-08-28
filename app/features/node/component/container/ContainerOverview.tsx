@@ -54,7 +54,6 @@ export function ContainerOverview(props: Props) {
                             connection={connection}
                             plugin={activeCluster.plugins.keeper}
                             cluster={activeCluster.name}
-                            singleHost={activeCluster.singleHost}
                             databaseId={activeCluster.vaults.databaseId}
                             sshKeyId={activeCluster.vaults.sshKeyId}
                         />

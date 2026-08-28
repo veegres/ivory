@@ -2,7 +2,6 @@ package clickhouse
 
 import (
 	"ivory/core/config"
-	"ivory/plugins/keeper"
 	"strings"
 	"testing"
 )
@@ -28,55 +27,48 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestDeploymentSpec(t *testing.T) {
-	spec := NewAdapter().DeploymentSpec()
+func TestRequirements(t *testing.T) {
+	req := NewAdapter().Requirements()
 
-	if spec.DefaultImage == "" {
-		t.Error("expected a default image")
+	if req.DbPort != 9000 {
+		t.Errorf("expected the native tcp port 9000, got %d", req.DbPort)
 	}
-	if len(spec.Ports) != 1 {
-		t.Errorf("expected 1 port (db), got %d", len(spec.Ports))
+	if req.KeeperPort != nil {
+		t.Errorf("expected no separate keeper port, got %v", *req.KeeperPort)
 	}
-	if len(spec.Volumes) == 0 {
-		t.Error("expected at least one volume")
+	if !req.Credentials {
+		t.Error("expected clickhouse to consume database credentials")
 	}
-	if len(spec.Env) == 0 {
-		t.Error("expected at least one env var")
+	if req.DbUser != "" {
+		t.Errorf("expected a free choice of username, got the locked %q", req.DbUser)
 	}
-	if user, ok := spec.Defaults[keeper.VarDbUser]; !ok || user != "" {
-		t.Errorf("expected credentials with a user-chosen username, got %+v", spec.Defaults)
+}
+
+// TestDefaultTemplates covers clickhouse's lack of asymmetry: every node
+// generates the same cluster config file, so there is no special first node.
+func TestDefaultTemplates(t *testing.T) {
+	templates := NewAdapter().DefaultTemplates()
+
+	if len(templates) != 2 {
+		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
 	}
-	if _, ok := spec.Defaults[keeper.VarKeeperPort]; ok {
-		t.Errorf("expected no separate keeper port, got %+v", spec.Defaults)
-	}
-	if spec.Defaults[keeper.VarDbPort] != "9000" {
-		t.Errorf("expected db port default 9000, got %+v", spec.Defaults)
-	}
-	if len(spec.Fields) != 2 {
-		t.Fatalf("expected the dcs and clusterHosts fields, got %+v", spec.Fields)
-	}
-	if spec.Fields[0].Name != keeper.VarDcs || spec.Fields[0].Type != keeper.FieldText {
-		t.Errorf("expected a dcs text field, got %+v", spec.Fields[0])
-	}
-	if spec.Fields[1].Name != keeper.VarClusterHosts || spec.Fields[1].Type != keeper.FieldText {
-		t.Errorf("expected a clusterHosts text field, got %+v", spec.Fields[1])
-	}
-	if !strings.Contains(spec.Fields[1].Template, string(keeper.VarHost)) || !strings.Contains(spec.Fields[1].Template, string(keeper.VarDbPort)) {
-		t.Errorf("expected clusterHosts template to reference host and db port, got %q", spec.Fields[1].Template)
-	}
-	if spec.PostScript != "" {
-		t.Errorf("expected no post-deploy script, got %q", spec.PostScript)
-	}
-	if spec.EntryScript == "" {
-		t.Error("expected an entry script to generate the cluster config on every node")
-	}
-	if spec.EntryScriptReplicasOnly {
-		t.Error("expected EntryScriptReplicasOnly false (default), clickhouse has no primary/replica asymmetry to skip node 0 for")
-	}
-	if !strings.Contains(spec.EntryScript, string(keeper.VarDcs)) || !strings.Contains(spec.EntryScript, string(keeper.VarClusterHosts)) {
-		t.Errorf("expected the entry script to reference both dcs and clusterHosts, got %q", spec.EntryScript)
-	}
-	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
-		t.Errorf("spec references unknown variables: %v", unknown)
+
+	for _, template := range templates {
+		t.Run(template.Name, func(t *testing.T) {
+			for i, command := range template.Commands {
+				if command.Command != template.Commands[0].Command {
+					t.Errorf("command %d differs, but clickhouse has no leader/replica asymmetry", i)
+				}
+				if !strings.Contains(command.Command, "ivory-cluster.xml") {
+					t.Errorf("command %d does not generate the cluster config", i)
+				}
+				if !strings.Contains(command.Command, "<replica><host>clickhouse-1</host>") {
+					t.Errorf("command %d is missing the shard's replica list", i)
+				}
+				if !strings.Contains(command.Command, "<node><host>keeper-1</host>") {
+					t.Errorf("command %d is missing the coordinator list", i)
+				}
+			}
+		})
 	}
 }

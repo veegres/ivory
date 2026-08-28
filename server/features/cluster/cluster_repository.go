@@ -15,7 +15,8 @@ func NewRepository(bucket *storage.DbBucket[Response]) *Repository {
 }
 
 func (r *Repository) List() ([]Response, error) {
-	return r.bucket.GetList(nil, nil)
+	list, err := r.bucket.GetList(nil, nil)
+	return withNodeNames(list), err
 }
 
 func (r *Repository) Search(criteria SearchCriteria) ([]Response, error) {
@@ -26,7 +27,7 @@ func (r *Repository) Search(criteria SearchCriteria) ([]Response, error) {
 			names[name] = true
 		}
 	}
-	return r.bucket.GetList(func(c Response) bool {
+	list, err := r.bucket.GetList(func(c Response) bool {
 		if names != nil && !names[c.Name] {
 			return false
 		}
@@ -38,10 +39,12 @@ func (r *Repository) Search(criteria SearchCriteria) ([]Response, error) {
 		}
 		return true
 	}, nil)
+	return withNodeNames(list), err
 }
 
 func (r *Repository) Get(key string) (Response, error) {
-	return r.bucket.Get(key)
+	cluster, err := r.bucket.Get(key)
+	return cluster.withNodeNames(), err
 }
 
 func (r *Repository) Update(cluster Request) error {
@@ -58,4 +61,11 @@ func (r *Repository) Delete(key string) error {
 
 func (r *Repository) DeleteAll() error {
 	return r.bucket.DeleteAll()
+}
+
+func withNodeNames(list []Response) []Response {
+	for i := range list {
+		list[i] = list[i].withNodeNames()
+	}
+	return list
 }

@@ -32,6 +32,11 @@ const (
 	ViewNodePlatformContainer   Feature = "view.node.platform.container"
 	ManageNodePlatformContainer Feature = "manage.node.platform.container"
 
+	ViewDeploymentTemplateList     Feature = "view.deployment.template.list"
+	ManageDeploymentTemplateCreate Feature = "manage.deployment.template.create"
+	ManageDeploymentTemplateUpdate Feature = "manage.deployment.template.update"
+	ManageDeploymentTemplateDelete Feature = "manage.deployment.template.delete"
+
 	// Query features
 	ViewQueryCrudList     Feature = "view.query.crud.list"
 	ManageQueryCrudCreate Feature = "manage.query.crud.create"
@@ -103,6 +108,10 @@ var All = []Feature{
 	ManageNodeKeeperActivation,
 	ManageNodePlatformContainer,
 	ViewNodePlatformContainer,
+	ViewDeploymentTemplateList,
+	ManageDeploymentTemplateCreate,
+	ManageDeploymentTemplateUpdate,
+	ManageDeploymentTemplateDelete,
 	ViewQueryCrudList,
 	ManageQueryCrudCreate,
 	ManageQueryCrudUpdate,

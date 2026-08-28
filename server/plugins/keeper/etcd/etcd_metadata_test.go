@@ -28,65 +28,91 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestDeploymentSpec(t *testing.T) {
-	spec := NewAdapter().DeploymentSpec()
+func TestRequirements(t *testing.T) {
+	req := NewAdapter().Requirements()
 
-	if spec.DefaultImage == "" {
-		t.Error("expected a default image")
+	if req.DbPort != 2379 {
+		t.Errorf("expected client port 2379, got %d", req.DbPort)
 	}
-	if len(spec.Ports) != 2 {
-		t.Errorf("expected 2 ports (client, peer), got %d", len(spec.Ports))
+	if req.KeeperPort != nil {
+		t.Errorf("expected no separate keeper port (the client port is the keeper endpoint), got %v", *req.KeeperPort)
 	}
-	if len(spec.Volumes) == 0 {
-		t.Error("expected at least one volume")
+	if !req.Credentials {
+		t.Error("expected etcd to consume database credentials")
 	}
-	if len(spec.Env) == 0 {
-		t.Error("expected at least one env var")
+	if req.DbUser != "root" {
+		t.Errorf("expected the etcd-required username root (auth enable needs it), got %q", req.DbUser)
 	}
-	if _, ok := spec.Defaults[keeper.VarKeeperPort]; ok {
-		t.Errorf("expected no separate keeper port (client port is the db port), got %+v", spec.Defaults)
+}
+
+// TestDefaultTemplates covers etcd's bootstrap: it has no bootstrap-time
+// credentials, so the root user can only be created once the whole cluster is
+// running - which is why the auth script sits on the last command, not the
+// first.
+func TestDefaultTemplates(t *testing.T) {
+	templates := NewAdapter().DefaultTemplates()
+
+	if len(templates) != 2 {
+		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
 	}
-	if spec.Defaults[keeper.VarDbPort] != "2379" {
-		t.Errorf("expected db port default 2379, got %+v", spec.Defaults)
+
+	for _, template := range templates {
+		t.Run(template.Name, func(t *testing.T) {
+			if len(template.Commands) != 3 {
+				t.Fatalf("expected a three-member cluster, got %d commands", len(template.Commands))
+			}
+
+			last := template.Commands[len(template.Commands)-1]
+			if last.PostScript == "" {
+				t.Fatal("expected the last command to enable authentication")
+			}
+			for _, fragment := range []string{"user add", "{{dbUser}}:{{dbPass}}", "user grant-role {{dbUser}} root", "auth enable"} {
+				if !strings.Contains(last.PostScript, fragment) {
+					t.Errorf("expected the post script to contain %q, got %q", fragment, last.PostScript)
+				}
+			}
+			for i, command := range template.Commands[:len(template.Commands)-1] {
+				if command.PostScript != "" {
+					t.Errorf("command %d must not enable auth before every member is up", i)
+				}
+			}
+
+			// NOTE: the member list is literal text now, so a shipped
+			// template has to carry a complete one to be deployable as-is
+			for i, command := range template.Commands {
+				if !strings.Contains(command.Command, "ETCD_INITIAL_CLUSTER=\"etcd-1=") {
+					t.Errorf("command %d has no initial cluster list to edit", i)
+				}
+				if len(keeper.UnknownPlaceholders(command.Command)) > 0 {
+					t.Errorf("command %d references a variable outside the vocabulary", i)
+				}
+			}
+		})
 	}
-	if len(spec.Fields) != 2 {
-		t.Fatalf("expected the peerPort and clusterHosts fields, got %+v", spec.Fields)
-	}
-	if spec.Fields[0].Name != keeper.VarPeerPort || spec.Fields[0].Type != keeper.FieldPort || spec.Fields[0].Default != "2380" {
-		t.Errorf("expected a peerPort port field with default 2380, got %+v", spec.Fields[0])
-	}
-	if spec.Fields[1].Name != keeper.VarClusterHosts || spec.Fields[1].Type != keeper.FieldText {
-		t.Errorf("expected a clusterHosts text field, got %+v", spec.Fields[1])
-	}
-	if spec.Fields[1].Template != "{{host}}=http://{{host}}:{{peerPort}}" || spec.Fields[1].Separator != "," {
-		t.Errorf("unexpected clusterHosts template %q with separator %q", spec.Fields[1].Template, spec.Fields[1].Separator)
-	}
-	if user, ok := spec.Defaults[keeper.VarDbUser]; !ok || user != "root" {
-		t.Errorf("expected credentials with the etcd-required username root (auth enable needs it), got %+v", spec.Defaults)
-	}
-	if spec.PostScript == "" {
-		t.Fatal("expected a post-deploy auth script")
-	}
-	if !strings.Contains(spec.PostScript, "user add") || !strings.Contains(spec.PostScript, "{{dbUser}}:{{dbPass}}") {
-		t.Errorf("expected the post-deploy script to create the credentials user, got %q", spec.PostScript)
-	}
-	if !strings.Contains(spec.PostScript, "user grant-role {{dbUser}} root") {
-		t.Errorf("expected the post-deploy script to grant the root role, got %q", spec.PostScript)
-	}
-	if !strings.Contains(spec.PostScript, "auth enable") {
-		t.Errorf("expected the post-deploy script to enable authentication, got %q", spec.PostScript)
-	}
-	for _, port := range spec.Ports {
-		if port == "2380" {
-			t.Error("peer port must be the {{peerPort}} placeholder, not a literal 2380")
+}
+
+// TestDefaultTemplatesSingleHostPeerPortsDiffer covers the collision the
+// deleted singleHost flag used to compute away: three members on one VM cannot
+// share a peer listener.
+func TestDefaultTemplatesSingleHostPeerPortsDiffer(t *testing.T) {
+	for _, template := range NewAdapter().DefaultTemplates() {
+		if !strings.Contains(template.Name, "Single Host") {
+			continue
 		}
-	}
-	for _, e := range spec.Env {
-		if strings.Contains(e.Value, "2380") {
-			t.Errorf("env %s must use the {{peerPort}} placeholder, not a literal 2380", e.Name)
+		seen := make(map[string]bool)
+		for i, command := range template.Commands {
+			for _, port := range []string{"2380", "2382", "2384"} {
+				if !strings.Contains(command.Command, "http://0.0.0.0:"+port) {
+					continue
+				}
+				if seen[port] {
+					t.Errorf("command %d reuses peer port %s on the same VM", i, port)
+				}
+				seen[port] = true
+			}
 		}
-	}
-	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
-		t.Errorf("spec references unknown variables: %v", unknown)
+		if len(seen) != len(template.Commands) {
+			t.Errorf("expected one distinct peer port per member, got %d", len(seen))
+		}
 	}
 }

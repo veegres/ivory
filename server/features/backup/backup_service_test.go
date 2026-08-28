@@ -5,11 +5,15 @@ import (
 	"ivory/clients/storage"
 	"ivory/core/utils"
 	"ivory/features/cluster"
+	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/features/tag"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"ivory/plugins/keeper/etcd"
+	"ivory/plugins/platform"
+	"ivory/plugins/platform/linux"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -52,7 +56,14 @@ func createTestBackupService(t *testing.T) *Service {
 	permissionRepository := permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission"))
 	permissionService := permission.NewService(permissionRepository)
 
-	return NewService(clusterService, queryService, permissionService)
+	deploymentRepository := deployment.NewRepository(storage.NewDbBucket[deployment.Template](db, "DeploymentTemplate"))
+	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
+	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
+	platformRegistry.Register(platform.Linux, linux.NewAdapter(nil))
+	deploymentService := deployment.NewService(deploymentRepository, keeperMetadataRegistry, platformRegistry)
+
+	return NewService(clusterService, queryService, permissionService, deploymentService)
 }
 
 func createMultipartFile(t *testing.T, fieldFilename string, content []byte) *multipart.FileHeader {
@@ -85,12 +96,12 @@ func createMultipartFile(t *testing.T, fieldFilename string, content []byte) *mu
 
 func TestServiceGetFileName(t *testing.T) {
 	s := createTestBackupService(t)
-	if got := s.GetFileName(); got != "ivory.v1.bak" {
-		t.Fatalf("expected 'ivory.v1.bak', got %q", got)
+	if got := s.GetFileName(); got != "ivory.v2.bak" {
+		t.Fatalf("expected 'ivory.v2.bak', got %q", got)
 	}
 }
 
-func TestServiceExportProducesValidV1JSON(t *testing.T) {
+func TestServiceExportProducesValidLatestJSON(t *testing.T) {
 	s := createTestBackupService(t)
 
 	port := 5432
@@ -110,9 +121,9 @@ func TestServiceExportProducesValidV1JSON(t *testing.T) {
 		t.Fatalf("expected no error, got %v", errExport)
 	}
 
-	var backupModel BackupV1
+	var backupModel BackupV2
 	if err := json.Unmarshal(data, &backupModel); err != nil {
-		t.Fatalf("expected exported data to be valid BackupV1 JSON: %v", err)
+		t.Fatalf("expected exported data to be valid BackupV2 JSON: %v", err)
 	}
 	if len(backupModel.Clusters) != 1 || backupModel.Clusters[0].Name != "cluster1" {
 		t.Fatalf("expected exported cluster1, got %v", backupModel.Clusters)
@@ -148,9 +159,24 @@ func TestServiceImportDispatchesByFilename(t *testing.T) {
 		}
 	})
 
+	t.Run("filename with .v2. is imported as v2", func(t *testing.T) {
+		s := createTestBackupService(t)
+		v2, errMarshal := json.Marshal(BackupV2{Clusters: backupModel.Clusters})
+		if errMarshal != nil {
+			t.Fatalf("failed to marshal backup model: %v", errMarshal)
+		}
+		if err := s.Import(createMultipartFile(t, "ivory.v2.bak", v2)); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		clusters, _ := s.clusterService.List()
+		if len(clusters) != 1 {
+			t.Fatalf("expected 1 cluster imported, got %v", clusters)
+		}
+	})
+
 	t.Run("unsupported version in filename is rejected", func(t *testing.T) {
 		s := createTestBackupService(t)
-		if err := s.Import(createMultipartFile(t, "ivory.v2.bak", data)); err == nil {
+		if err := s.Import(createMultipartFile(t, "ivory.v9.bak", data)); err == nil {
 			t.Fatalf("expected an error for an unsupported backup version")
 		}
 	})

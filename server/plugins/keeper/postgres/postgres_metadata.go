@@ -3,6 +3,7 @@ package postgres
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -22,54 +23,99 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// entryScript makes a non-leader node rebase itself as a streaming replica
-// of {{leaderHost}} before postgres ever starts, instead of coming up as
-// its own fresh standalone instance:
-//   - PG_VERSION only exists once the data directory has actually been
-//     initialized, so its absence means this is the container's very first
-//     boot; on every later restart the check is false and startup goes
-//     straight to the real entrypoint.
-//   - a streaming replica can only ever be created from a real base backup
-//     of the leader - WAL streaming ships changes to an existing copy, it
-//     cannot build the initial database from nothing, and a fresh initdb'd
-//     directory has its own unrelated system identifier that postgres will
-//     refuse to stream to. So the first thing a fresh node does is wait for
-//     the leader to accept connections, then pg_basebackup from it.
-//   - -R makes pg_basebackup write standby.signal and primary_conninfo
-//     itself (postgres' own term for this GUC, unrelated to Ivory's
-//     leader/replica vocabulary); application_name is threaded through the
-//     same connection string (rather than a bare --application-name flag,
-//     which pg_basebackup has no such option for) so the replica shows up
-//     under its own {{host}} in primary_conninfo - see the postgres
-//     Adapter's mapSyncStandby doc for why that convention is what lets
-//     Ivory tell sync from async standbys apart later.
-const entryScript = `sh -c '
+func (a *Adapter) Requirements() keeper.Requirements {
+	return keeper.Requirements{
+		DbPort:      5432,
+		Credentials: true,
+	}
+}
+
+// A replica rebases from the leader before postgres ever starts: streaming
+// replication ships changes to an existing copy, it cannot build the initial
+// database, and a fresh initdb has its own system identifier the leader would
+// refuse to stream to. PG_VERSION only exists once the data directory is
+// initialized, so its absence marks the container's first boot. -R writes
+// standby.signal and primary_conninfo; application_name is threaded through
+// the connection string (pg_basebackup has no flag for it) so the replica
+// appears under its own name, which is what lets Ivory tell sync from async
+// standbys apart later. The leader's host is written literally: only the
+// operator knows which node it is.
+
+const deployMultiHostLeader = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --restart unless-stopped
+  -p {{dbPort}}:{{dbPort}}
+  -v /data/postgres:/var/lib/postgresql/data
+  -e PGPORT="{{dbPort}}"
+  -e POSTGRES_USER="{{dbUser}}"
+  -e POSTGRES_PASSWORD="{{dbPass}}"
+  postgres:18`
+
+const deployMultiHostReplica = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --restart unless-stopped
+  -p {{dbPort}}:{{dbPort}}
+  -v /data/postgres:/var/lib/postgresql/data
+  -e PGPORT="{{dbPort}}"
+  -e POSTGRES_USER="{{dbUser}}"
+  -e POSTGRES_PASSWORD="{{dbPass}}"
+  postgres:18
+  sh -c '
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
-  until pg_isready -d "host=` + string(keeper.VarLeaderHost) + ` port=` + string(keeper.VarDbPort) + ` user=` + string(keeper.VarDbUser) + ` password=` + string(keeper.VarDbPass) + `"; do sleep 1; done
-  pg_basebackup -d "host=` + string(keeper.VarLeaderHost) + ` port=` + string(keeper.VarDbPort) + ` user=` + string(keeper.VarDbUser) + ` password=` + string(keeper.VarDbPass) + ` application_name=` + string(keeper.VarHost) + `" -D "$PGDATA" -Fp -R -X stream -c fast
+  until pg_isready -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
+  pg_basebackup -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
 fi
 exec docker-entrypoint.sh postgres
 '`
 
-func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
-	return keeper.DeploymentSpec{
-		DefaultImage: "postgres:18",
-		// NOTE: the empty username means credentials are consumed but the
-		// username is the user's choice
-		Defaults: map[keeper.Var]string{
-			keeper.VarDbPort: "5432",
-			keeper.VarDbUser: "",
+const deploySingleHostLeader = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e PGPORT="{{dbPort}}"
+  -e POSTGRES_USER="{{dbUser}}"
+  -e POSTGRES_PASSWORD="{{dbPass}}"
+  postgres:18`
+
+const deploySingleHostReplica = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e PGPORT="{{dbPort}}"
+  -e POSTGRES_USER="{{dbUser}}"
+  -e POSTGRES_PASSWORD="{{dbPass}}"
+  postgres:18
+  sh -c '
+if [ ! -s "$PGDATA/PG_VERSION" ]; then
+  until pg_isready -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
+  pg_basebackup -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
+fi
+exec docker-entrypoint.sh postgres
+'`
+
+func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+	return []keeper.DeploymentTemplate{
+		{
+			Platform:    platform.Linux,
+			Name:        "Postgres (Multi Host)",
+			Description: "One postgres leader and two streaming replicas, one per VM. Name the leader postgres-1 or edit the replica connection to match.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deployMultiHostLeader},
+				{Command: deployMultiHostReplica},
+				{Command: deployMultiHostReplica},
+			},
 		},
-		Ports: []string{string(keeper.VarDbPort)},
-		Volumes: []keeper.VolumeSpec{
-			{HostPath: "/data/postgres", ContainerPath: "/var/lib/postgresql/data"},
+		{
+			Platform:    platform.Linux,
+			Name:        "Postgres (Single Host)",
+			Description: "One postgres leader and two streaming replicas on one VM. Give each node its own database port in the deploy form, and point the replicas at the leader's.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deploySingleHostLeader},
+				{Command: deploySingleHostReplica},
+				{Command: deploySingleHostReplica},
+			},
 		},
-		Env: []keeper.EnvVar{
-			{Name: "PGPORT", Value: `"` + string(keeper.VarDbPort) + `"`},
-			{Name: "POSTGRES_USER", Value: `"` + string(keeper.VarDbUser) + `"`},
-			{Name: "POSTGRES_PASSWORD", Value: `"` + string(keeper.VarDbPass) + `"`},
-		},
-		EntryScript:             entryScript,
-		EntryScriptReplicasOnly: true,
 	}
 }

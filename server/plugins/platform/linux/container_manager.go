@@ -33,51 +33,31 @@ var byteSizeUnits = map[string]float64{
 	"TIB": 1024 * 1024 * 1024 * 1024,
 }
 
-// RenderOptions renders the deploy spec into docker run flags, one per line,
-// keeping {{placeholder}} templates intact for later interpolation.
-func (a *Adapter) RenderOptions(spec platform.DeploySpec) string {
-	lines := make([]string, 0)
-	if spec.Name != "" {
-		lines = append(lines, "--name "+spec.Name)
-	}
-	if spec.Hostname != "" {
-		lines = append(lines, "--hostname "+spec.Hostname)
-	}
-	if spec.HostNetwork {
-		lines = append(lines, "--network host")
-	}
-	if spec.RestartPolicy != "" {
-		lines = append(lines, "--restart "+spec.RestartPolicy)
-	}
-	for _, port := range spec.Ports {
-		lines = append(lines, "-p "+port+":"+port)
-	}
-	for _, volume := range spec.Volumes {
-		lines = append(lines, "-v "+volume.HostPath+":"+volume.ContainerPath)
-	}
-	for _, env := range spec.Env {
-		lines = append(lines, "-e "+env.Name+"="+env.Value)
-	}
-	return strings.Join(lines, "\n")
-}
-
 func (a *Adapter) ListContainer(connection platform.Connection) console.Command {
 	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
 }
 
-func (a *Adapter) UpContainer(connection platform.Connection, name, options, image, entryScript string) console.Command {
-	// NOTE: name is enforced here rather than trusted from the (user-editable)
-	// options text, so a --name line removed or altered during editing can
-	// never desync the real container name from what Ivory expects to manage
-	// afterwards (see removeFlag).
-	parts := []string{"run", "-d", "--name", shellQuote(name)}
-	parts = append(parts, quoteFields(removeFlag(splitShellFields(options), "--name"))...)
-	parts = append(parts, "--")
-	parts = append(parts, shellQuote(image))
-	if entryScript != "" {
-		parts = append(parts, shellQuoteFields(entryScript)...)
+// UpContainer runs the user's own deployment command verbatim. It is
+// tokenized quote-aware first so the newlines that make the command readable
+// collapse to spaces, while newlines inside a quoted span - a multi-line
+// "sh -c '...'" startup script, whose line breaks are real statement
+// separators - survive inside their single token untouched.
+func (a *Adapter) UpContainer(connection platform.Connection, command string) console.Command {
+	fields := trimDockerPrefix(splitShellFields(command))
+	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(quoteFields(fields), " ")))
+}
+
+// trimDockerPrefix drops a leading "sudo"/"docker" token pair, since
+// normalizeDockerCommand adds the prefix back and would not recognise it once
+// quoteFields has wrapped it in quotes.
+func trimDockerPrefix(fields []string) []string {
+	if len(fields) > 0 && fields[0] == "sudo" {
+		fields = fields[1:]
 	}
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(parts, " ")))
+	if len(fields) > 0 && fields[0] == "docker" {
+		fields = fields[1:]
+	}
+	return fields
 }
 
 func (a *Adapter) DownContainer(connection platform.Connection, name string) console.Command {
@@ -136,29 +116,25 @@ func (a *Adapter) normalizeDockerCommand(command string) string {
 	return "docker " + trimmed
 }
 
-// removeFlag drops flag and the value token right after it from an already
-// tokenized options list, operating on tokens (not the raw string) so a
-// value elsewhere in the string can't be mistaken for the flag itself and
-// a token containing a literal space (from a quoted span) never gets
-// re-split by a later round of tokenizing.
-func removeFlag(fields []string, flag string) []string {
-	kept := make([]string, 0, len(fields))
-	for i := 0; i < len(fields); i++ {
-		if fields[i] == flag {
-			i++ // also skip the flag's value
-			continue
-		}
-		kept = append(kept, fields[i])
-	}
-	return kept
-}
-
+// quoteFields re-quotes tokens for the shell, leaving plain ones alone so the
+// executed command still reads like the one the user wrote.
 func quoteFields(fields []string) []string {
 	quoted := make([]string, 0, len(fields))
 	for _, field := range fields {
-		quoted = append(quoted, shellQuote(field))
+		if needsShellQuote(field) {
+			quoted = append(quoted, shellQuote(field))
+		} else {
+			quoted = append(quoted, field)
+		}
 	}
 	return quoted
+}
+
+func needsShellQuote(field string) bool {
+	if field == "" {
+		return true
+	}
+	return strings.ContainsAny(field, " \t\n'\"\\$`&|;<>()*?[]#~!")
 }
 
 func shellQuoteFields(value string) []string {
@@ -167,9 +143,8 @@ func shellQuoteFields(value string) []string {
 
 // splitShellFields splits a docker options string into individual arguments,
 // honoring single/double-quoted spans the way a real shell would, so a flag
-// value like `-e SCOPE="my cluster"` (as produced by RenderOptions for an env
-// value) stays one argument instead of being broken apart at the space inside
-// the quotes. A backslash escapes the very next rune literally regardless of
+// value like `-e SCOPE="my cluster"` stays one argument instead of being
+// broken apart at the space inside the quotes. A backslash escapes the very next rune literally regardless of
 // quote state, so a value inserted into a plugin's own hand-written quoted
 // span (e.g. a PostScript wrapping {{dbUser}}:{{dbPass}} in literal quotes)
 // can contain that same quote character - escaped by the caller before

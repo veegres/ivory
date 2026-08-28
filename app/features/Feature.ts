@@ -29,6 +29,11 @@ export enum Feature {
     ViewNodePlatformContainer = "view.node.platform.container",
 
     // Query features
+    ViewDeploymentTemplateList = "view.deployment.template.list",
+    ManageDeploymentTemplateCreate = "manage.deployment.template.create",
+    ManageDeploymentTemplateUpdate = "manage.deployment.template.update",
+    ManageDeploymentTemplateDelete = "manage.deployment.template.delete",
+
     ViewQueryCrudList = "view.query.crud.list",
     ManageQueryCrudCreate = "manage.query.crud.create",
     ManageQueryCrudUpdate = "manage.query.crud.update",

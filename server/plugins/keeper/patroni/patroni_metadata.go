@@ -3,6 +3,7 @@ package patroni
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -22,34 +23,74 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
-	return keeper.DeploymentSpec{
-		DefaultImage: "ghcr.io/zalando/spilo-18:4.1-p2",
-		// NOTE: spilo names its superuser postgres, the password is the only
-		// free choice
-		Defaults: map[keeper.Var]string{
-			keeper.VarKeeperPort: "8008",
-			keeper.VarDbPort:     "5432",
-			keeper.VarDbUser:     "postgres",
+// Requirements reports spilo's endpoints: patroni's REST API on its own port
+// and postgres beneath it. Spilo names its superuser postgres, so the password
+// is the only free choice.
+func (a *Adapter) Requirements() keeper.Requirements {
+	keeperPort := 8008
+	return keeper.Requirements{
+		DbPort:      5432,
+		KeeperPort:  &keeperPort,
+		Credentials: true,
+		DbUser:      "postgres",
+	}
+}
+
+// The DCS address is written literally: patroni coordinates through one the
+// user already runs, so only they know where it is.
+
+const deployMultiHost = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --restart unless-stopped
+  -p {{keeperPort}}:{{keeperPort}}
+  -p {{dbPort}}:{{dbPort}}
+  -v /data/postgres:/home/postgres/pgdata
+  -e SCOPE="{{cluster}}"
+  -e PATRONI_NAME="{{name}}"
+  -e ETCD3_HOSTS="etcd-1:2379,etcd-2:2379,etcd-3:2379"
+  -e PGPORT={{dbPort}}
+  -e APIPORT={{keeperPort}}
+  -e PGPASSWORD_SUPERUSER="{{dbPass}}"
+  -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
+  -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
+  ghcr.io/zalando/spilo-18:4.1-p2`
+
+const deploySingleHost = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e SCOPE="{{cluster}}"
+  -e PATRONI_NAME="{{name}}"
+  -e ETCD3_HOSTS="etcd-1:2379,etcd-2:2379,etcd-3:2379"
+  -e PGPORT={{dbPort}}
+  -e APIPORT={{keeperPort}}
+  -e PGPASSWORD_SUPERUSER="{{dbPass}}"
+  -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
+  -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
+  ghcr.io/zalando/spilo-18:4.1-p2`
+
+func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+	return []keeper.DeploymentTemplate{
+		{
+			Platform:    platform.Linux,
+			Name:        "Patroni (Multi Host)",
+			Description: "Three spilo nodes, one per VM, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deployMultiHost},
+				{Command: deployMultiHost},
+				{Command: deployMultiHost},
+			},
 		},
-		// NOTE: patroni needs the address of an external DCS it coordinates
-		// through; only the user knows where it runs
-		Fields: []keeper.FieldSpec{
-			{Name: keeper.VarDcs, Label: "DCS (etcd, zookeper, etc)", Example: "etcd1:2379, etcd2:2379, etcd3:2379", Type: keeper.FieldText},
-		},
-		Ports: []string{string(keeper.VarKeeperPort), string(keeper.VarDbPort)},
-		Volumes: []keeper.VolumeSpec{
-			{HostPath: "/data/postgres", ContainerPath: "/home/postgres/pgdata"},
-		},
-		Env: []keeper.EnvVar{
-			{Name: "SCOPE", Value: `"` + string(keeper.VarCluster) + `"`},
-			{Name: "PATRONI_NAME", Value: `"` + string(keeper.VarHost) + `"`},
-			{Name: "ETCD3_HOSTS", Value: `"` + string(keeper.VarDcs) + `"`},
-			{Name: "PGPORT", Value: string(keeper.VarDbPort)},
-			{Name: "APIPORT", Value: string(keeper.VarKeeperPort)},
-			{Name: "PGPASSWORD_SUPERUSER", Value: `"` + string(keeper.VarDbPass) + `"`},
-			{Name: "RESTAPI_CONNECT_ADDRESS", Value: `"` + string(keeper.VarHost) + `:` + string(keeper.VarKeeperPort) + `"`},
-			{Name: "SPILO_CONFIGURATION", Value: `'{"postgresql":{"connect_address":"` + string(keeper.VarHost) + `:` + string(keeper.VarDbPort) + `"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'`},
+		{
+			Platform:    platform.Linux,
+			Name:        "Patroni (Single Host)",
+			Description: "Three spilo nodes on one VM. Give each node its own keeper and database port in the deploy form.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deploySingleHost},
+				{Command: deploySingleHost},
+				{Command: deploySingleHost},
+			},
 		},
 	}
 }

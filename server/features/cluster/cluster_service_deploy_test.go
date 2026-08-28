@@ -14,7 +14,6 @@ import (
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/linux"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/boltdb/bolt"
@@ -23,9 +22,9 @@ import (
 
 // newDeployTestService builds a cluster Service with a real repository and
 // real keeper/platform plugin registries, enough to exercise Deploy's
-// validation path and planDeploy without ever touching the network: no
-// vaultService is wired in, so tests must stay on the side of Deploy that
-// returns before any vault or SSH work happens.
+// validation path without ever touching the network: no vaultService is wired
+// in, so tests must stay on the side of Deploy that returns before any vault
+// or SSH work happens.
 func newDeployTestService(t *testing.T) *Service {
 	t.Helper()
 
@@ -59,12 +58,10 @@ func newDeployTestService(t *testing.T) *Service {
 
 func validDeployRequest() DeployRequest {
 	return DeployRequest{
-		Nodes: []DeployNode{{NodeConfig: NodeConfig{Host: "db1"}}},
-		// NOTE: patroni's only plan warning is a missing {{dcs}} value, so it
-		// must be supplied here - otherwise Deploy would refuse every one of
-		// these requests for having plan warnings before ever reaching the
-		// specific validation each subtest means to exercise.
-		Values: map[string]string{"{{dcs}}": "etcd1:2379"},
+		Nodes: []DeployNode{{
+			NodeConfig: NodeConfig{Name: "db-1", Host: "db1"},
+			Command:    `docker run -d --name {{name}} -e ETCD3_HOSTS="etcd-1:2379" spilo`,
+		}},
 		CommonConfig: CommonConfig{
 			Cluster: "test-cluster",
 			SshUser: "root",
@@ -98,7 +95,32 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		}
 	})
 
-	t.Run("unknown keeper plugin fails planning", func(t *testing.T) {
+	t.Run("node name not provided", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := validDeployRequest()
+		r.Nodes[0].Name = ""
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrClusterNodeNameNotProvided) {
+			t.Fatalf("expected ErrClusterNodeNameNotProvided, got %v", err)
+		}
+	})
+
+	t.Run("node names must be unique within the cluster", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := validDeployRequest()
+		r.Nodes = append(r.Nodes, DeployNode{
+			NodeConfig: NodeConfig{Name: "db-1", Host: "db2"},
+			Command:    "docker run -d spilo",
+		})
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrClusterNodeNameNotUnique) {
+			t.Fatalf("expected ErrClusterNodeNameNotUnique, got %v", err)
+		}
+	})
+
+	t.Run("unknown keeper plugin is rejected", func(t *testing.T) {
 		s := newDeployTestService(t)
 		r := validDeployRequest()
 		r.ClusterOptions.Plugins.Keeper = "unknown-plugin"
@@ -143,6 +165,32 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		}
 	})
 
+	// NOTE: a vault and inline credentials are two answers to one question, so
+	// the request is refused rather than one of them silently winning
+	t.Run("ssh vault and inline credentials cannot both be given", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := validDeployRequest()
+		id := uuid.New()
+		r.ClusterOptions.Vaults.SshKeyId = &id
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrSshCredentialsAmbiguous) {
+			t.Fatalf("expected ErrSshCredentialsAmbiguous, got %v", err)
+		}
+	})
+
+	t.Run("database vault and inline credentials cannot both be given", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := validDeployRequest()
+		id := uuid.New()
+		r.ClusterOptions.Vaults.DatabaseId = &id
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrDatabaseCredentialsAmbiguous) {
+			t.Fatalf("expected ErrDatabaseCredentialsAmbiguous, got %v", err)
+		}
+	})
+
 	t.Run("cluster name already taken", func(t *testing.T) {
 		s := newDeployTestService(t)
 		r := validDeployRequest()
@@ -156,21 +204,6 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		}
 	})
 
-	t.Run("plan warnings block the deploy", func(t *testing.T) {
-		s := newDeployTestService(t)
-		r := validDeployRequest()
-		// NOTE: dropping the {{dcs}} value reintroduces patroni's only plan
-		// warning, which Deploy must now refuse rather than silently deploy.
-		r.Values = nil
-
-		_, err := s.Deploy(r)
-		if !errors.Is(err, ErrClusterDeployPlanHasWarnings) {
-			t.Fatalf("expected ErrClusterDeployPlanHasWarnings, got %v", err)
-		}
-		if !strings.Contains(err.Error(), "{{dcs}}") {
-			t.Fatalf("expected the error to name the missing placeholder, got %v", err)
-		}
-	})
 }
 
 func TestService_deployNode(t *testing.T) {
@@ -180,7 +213,7 @@ func TestService_deployNode(t *testing.T) {
 		var logs []string
 		logsSend := func(ctx string, msg string) { logs = append(logs, ctx+" | "+msg) }
 
-		ok := s.deployNode(Request{}, nil, &node.KeeperDeployPlanResponse{}, node.KeeperDeployPlanNode{}, logsSend)
+		ok := s.deployNode(Request{}, DeployNode{}, logsSend)
 		if ok {
 			t.Fatalf("expected deployNode to fail for a missing host")
 		}
@@ -194,7 +227,7 @@ func TestService_deployNode(t *testing.T) {
 		logsSend := func(ctx string, msg string) { logs = append(logs, ctx+" | "+msg) }
 
 		cluster := Request{Options: Options{Vaults: Vaults{SshKeyId: nil}}}
-		ok := s.deployNode(cluster, nil, &node.KeeperDeployPlanResponse{}, node.KeeperDeployPlanNode{Host: "db1"}, logsSend)
+		ok := s.deployNode(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-1", Host: "db1"}}, logsSend)
 		if ok {
 			t.Fatalf("expected deployNode to fail without an ssh key vault id")
 		}
@@ -222,30 +255,46 @@ func TestService_getDatabaseId(t *testing.T) {
 	})
 }
 
-func TestService_planDeploy(t *testing.T) {
-	s := newDeployTestService(t)
+// TestService_mapDeployRequest covers what replaced the deploy plan: the
+// cluster no longer computes anything for a node, it just hands node its own
+// command and connection details.
+func TestService_mapDeployRequest(t *testing.T) {
+	s := &Service{}
+	sshKeyId := uuid.New()
+	cluster := Request{
+		Name:    "test-cluster",
+		Options: Options{Plugins: Plugins{Keeper: node.KeeperPlugin(keeper.PATRONI_POSTGRES)}, Vaults: Vaults{SshKeyId: &sshKeyId}},
+	}
 
-	sshPort := 2222
-	nodes := []DeployNode{
-		{NodeConfig: NodeConfig{Host: "db1", SshPort: &sshPort}},
-		{NodeConfig: NodeConfig{Host: "db2"}},
-	}
-	options := Options{Plugins: Plugins{Keeper: node.KeeperPlugin(keeper.PATRONI_POSTGRES)}}
+	t.Run("carries the node's own command, ports and defaults", func(t *testing.T) {
+		sshPort, keeperPort, dbPort := 2222, 8008, 5432
+		got := s.mapDeployRequest(cluster, DeployNode{
+			NodeConfig: NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
+			Command:    "docker run -d spilo",
+			PostScript: "echo done",
+		})
 
-	plan, err := s.planDeploy("test-cluster", options, false, "", nil, nodes)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if plan.Image == "" {
-		t.Fatalf("expected the plugin's default image to be used")
-	}
-	if len(plan.Nodes) != 2 {
-		t.Fatalf("expected 2 planned nodes, got %d", len(plan.Nodes))
-	}
-	if plan.Nodes[0].Host != "db1" || plan.Nodes[0].SshPort != sshPort {
-		t.Errorf("expected the first node's host/ssh port to carry through, got %+v", plan.Nodes[0])
-	}
-	if plan.Nodes[1].Host != "db2" || plan.Nodes[1].SshPort != 22 {
-		t.Errorf("expected the second node to default to ssh port 22, got %+v", plan.Nodes[1])
-	}
+		if got.Name != "db-1" || got.Cluster != "test-cluster" {
+			t.Errorf("expected the node and cluster names to carry through, got %+v", got)
+		}
+		if got.Connection.Host != "db1" || got.Connection.Port != sshPort {
+			t.Errorf("expected the ssh connection to come from the node, got %+v", got.Connection)
+		}
+		if got.KeeperPort != keeperPort || got.DbPort != dbPort {
+			t.Errorf("expected the node's own ports, got %d/%d", got.KeeperPort, got.DbPort)
+		}
+		if got.Command != "docker run -d spilo" || got.PostScript != "echo done" {
+			t.Errorf("expected the node's own command and post script, got %+v", got)
+		}
+	})
+
+	t.Run("an unset ssh port defaults to 22", func(t *testing.T) {
+		got := s.mapDeployRequest(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-2", Host: "db2"}})
+		if got.Connection.Port != 22 {
+			t.Errorf("expected ssh port 22, got %d", got.Connection.Port)
+		}
+		if got.KeeperPort != 0 || got.DbPort != 0 {
+			t.Errorf("expected unset ports to stay zero, got %d/%d", got.KeeperPort, got.DbPort)
+		}
+	})
 }

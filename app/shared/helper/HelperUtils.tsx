@@ -25,14 +25,14 @@ import dayjs from "dayjs"
 import {CertType, FileUsageType} from "../../features/cert/api/CertType"
 import {Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/api/ClusterType"
 import {
-    DeployFieldResponse,
-    DeployFieldsResponse,
-    InterpolationVar,
+    DeployVar,
     KeeperConnection,
+    KeeperDeploySpecResponse,
     KeeperOneRequest,
     KeeperPlugin,
     KeeperState,
     KeeperStatus,
+    PlatformPlugin,
     PlatformVaultConnection,
     ReleaseStage,
     Role,
@@ -242,47 +242,90 @@ export const getNodeConfigs = (domains: string[], format?: NodeInputFormat): Nod
     return domains.map(value => getNodeConfig(value, format))
 }
 
-export const getKeeperDefaultPort = (fields: DeployFieldsResponse): number => {
-    return Number(fields.defaults[InterpolationVar.KeeperPort] ?? fields.defaults[InterpolationVar.DbPort])
+// getKeeperDefaultPort is the endpoint Ivory itself dials: the plugin's own
+// keeper port when it has one, otherwise the database port.
+export const getKeeperDefaultPort = (spec: KeeperDeploySpecResponse): number => {
+    return spec.keeperPort ?? spec.dbPort
 }
 
-export interface DeployFieldGroups {
-    // whether the plugin has a separate keeper endpoint (else it is the database)
-    withKeeperPort: boolean,
-    // whether the plugin consumes database credentials
-    withDbCredentials: boolean,
-    // fields nobody but the user can know (no default, not derived)
-    mandatoryFields: DeployFieldResponse[],
-    // fields the system fills itself (derived from the node list or defaulted)
-    autoFields: DeployFieldResponse[],
+export interface DeployVarMeta {
+    label: string,
+    // example is what the variable turns into, shown next to it so the list
+    // explains itself
+    example: string,
+    // secret means the browser must never hold the value: a preview shows the
+    // mask, and only the server ever substitutes the real one
+    secret: boolean,
 }
 
-export const getDeployFieldGroups = (fields?: DeployFieldsResponse): DeployFieldGroups => ({
-    withKeeperPort: fields?.defaults[InterpolationVar.KeeperPort] !== undefined,
-    withDbCredentials: !fields || fields.defaults[InterpolationVar.DbUser] !== undefined,
-    mandatoryFields: fields?.fields.filter(f => !f.derived && !f.default) ?? [],
-    autoFields: fields?.fields.filter(f => f.derived || !!f.default) ?? [],
-})
+// DeployPasswordMask is what a preview shows in place of a secret. It is not a
+// placeholder - the command really does get a value there, this is only what
+// the screen is allowed to render.
+export const DeployPasswordMask = "*****"
 
-// getDeployPlaceholderKeys lists the interpolation variables shown in the
-// image-options legend: the built-ins the plugin actually uses plus its own
-// declared field names.
-export const getDeployPlaceholderKeys = (fields: DeployFieldsResponse | undefined, withKeeperPort: boolean, withDbCredentials: boolean): string[] => {
-    const keys = InterpolatedOptionsKeys.filter(key => {
-        if (key === InterpolationVar.KeeperPort) return withKeeperPort
-        if (key === InterpolationVar.DbUser || key === InterpolationVar.DbPass) return withDbCredentials
-        return true
-    })
-    return [...keys, ...(fields?.fields.map(f => f.name) ?? [])]
+export const DeployVarOptions: { [key in DeployVar]: DeployVarMeta } = {
+    [DeployVar.Cluster]: {label: "Cluster", example: "my-cluster", secret: false},
+    [DeployVar.Name]: {label: "Node Name", example: "node-1", secret: false},
+    [DeployVar.Host]: {label: "Host", example: "10.0.0.1", secret: false},
+    [DeployVar.SshPort]: {label: "SSH Port", example: "22", secret: false},
+    [DeployVar.KeeperPort]: {label: "Keeper Port", example: "8008", secret: false},
+    [DeployVar.DbPort]: {label: "Database Port", example: "5432", secret: false},
+    [DeployVar.DbUser]: {label: "Database User", example: "postgres", secret: false},
+    [DeployVar.DbPass]: {label: "Database Password", example: DeployPasswordMask, secret: true},
 }
 
-// getUpdatedInputs applies a field edit; clearing a field drops it so it
-// returns to its computed value on the next plan.
-export const getUpdatedInputs = (inputs: {[name: string]: string}, name: string, value: string): {[name: string]: string} => {
-    const next = {...inputs}
-    if (value === "") delete next[name]
-    else next[name] = value
-    return next
+export const PlatformPluginOptions: { [key in PlatformPlugin]: EnumOptions } = {
+    [PlatformPlugin.LINUX]: {label: "LINUX", name: "Linux", key: PlatformPlugin.LINUX, icon: <DnsTwoTone/>},
+}
+
+// PlaceholderPattern is the shape of a variable, shared so the editor's
+// highlighting marks exactly what interpolation will act on. Copy it with
+// new RegExp before handing it to anything that keeps lastIndex.
+export const PlaceholderPattern = /{{\w+}}/g
+
+// getPlaceholders lists every {{variable}} a command references, in order and
+// deduplicated.
+export const getPlaceholders = (text: string): string[] => {
+    return [...new Set(text.match(PlaceholderPattern) ?? [])]
+}
+
+// DeployValues is what a deploy supplies to a command. The username is here
+// because the form already knows it, so a preview may as well read like the
+// real thing; the password is only ever the mask, since the browser is never
+// given the value the server substitutes.
+export interface DeployValues {
+    cluster?: string,
+    name?: string,
+    host?: string,
+    sshPort?: number,
+    keeperPort?: number,
+    dbPort?: number,
+    dbUser?: string,
+    dbPass?: string,
+}
+
+// interpolateCommand fills a command with a node's values so the user can read
+// what will actually run. It mirrors keeper.Interpolate: a missing or empty
+// value leaves the placeholder in place rather than substituting nothing.
+export const interpolateCommand = (text: string, values: DeployValues): string => {
+    const lookup: {[key in DeployVar]?: string} = {
+        [DeployVar.Cluster]: values.cluster,
+        [DeployVar.Name]: values.name,
+        [DeployVar.Host]: values.host,
+        [DeployVar.SshPort]: values.sshPort?.toString(),
+        [DeployVar.KeeperPort]: values.keeperPort?.toString(),
+        [DeployVar.DbPort]: values.dbPort?.toString(),
+        [DeployVar.DbUser]: values.dbUser,
+        [DeployVar.DbPass]: values.dbPass,
+    }
+    return text.replace(PlaceholderPattern, match => lookup[match as DeployVar] || match)
+}
+
+// getUnknownPlaceholders reports the ones outside the closed vocabulary. They
+// are a validation error, never a new variable.
+export const getUnknownPlaceholders = (text: string): string[] => {
+    const known = Object.values(DeployVar) as string[]
+    return getPlaceholders(text).filter(p => !known.includes(p))
 }
 
 export const getMainKeeper = (nodes: NodeOverview = {}, manual?: string): [string?, Node?] => {
@@ -302,11 +345,6 @@ export const getDetectionItems = (mainNode: [string?, Node?], manual: boolean) =
         {title: "Main Keeper", label: mainLabel, color: NodeColor[mainRole].label}
     ]
 }
-
-// NOTE: interpolation itself happens server-side (deploy plan); this list
-// only feeds the placeholder legend in the deploy dialogs — plugin-declared
-// field names extend it there
-export const InterpolatedOptionsKeys: readonly string[] = Object.values(InterpolationVar)
 
 export const getShortUuid = (uuid: string) => uuid.substring(0, 8)
 

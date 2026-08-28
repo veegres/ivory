@@ -12,6 +12,27 @@ export enum KeeperPlugin {
     NATIVE_MONGO = "native_mongo",
 }
 
+// PlatformPlugin selects the deployment target a template and a deployment
+// run against. Only linux exists today; k8s is the reason it is a choice.
+export enum PlatformPlugin {
+    LINUX = "linux",
+}
+
+// DeployVar is the closed set of {{variables}} a deployment command may use:
+// the node's own identity and endpoints, plus the credentials resolved from the
+// vault. Anything else an engine needs is written literally into the command.
+// A placeholder outside this set is a validation error, never a new variable.
+export enum DeployVar {
+    Cluster = "{{cluster}}",
+    Name = "{{name}}",
+    Host = "{{host}}",
+    SshPort = "{{sshPort}}",
+    KeeperPort = "{{keeperPort}}",
+    DbPort = "{{dbPort}}",
+    DbUser = "{{dbUser}}",
+    DbPass = "{{dbPass}}",
+}
+
 export interface KeeperConnection {
     host: string,
     port: number,
@@ -83,6 +104,9 @@ export interface PlatformVaultConnection {
     host: string,
     port: number,
     vaultId: string,
+    // platform selects the deployment target; omitted means linux, so clusters
+    // stored before platforms were selectable keep resolving
+    platform?: PlatformPlugin,
 }
 
 export interface CpuMetrics {
@@ -119,102 +143,43 @@ export interface PlatformCopyIdRequest {
 }
 
 export interface PlatformUpRequest {
-    name: string,
-    image: string,
     connection: PlatformVaultConnection,
-    vaults: {
-        // NOTE: optional for keeper plugins that consume no database
-        // credentials (no {{dbUser}} in the keeper plugin's spec defaults)
-        databaseId?: string,
-        sshKeyId: string,
-    },
-    options: string,
-    values: {[key: string]: string},
+    vaults: DeployVaults,
+    command: string,
 }
 
-export interface KeeperDeployNode {
-    host: string,
-    sshPort?: number,
-    keeperPort?: number,
-    dbPort?: number,
-    // options overrides the rendered options template for this node
-    options?: string,
+export interface DeployVaults {
+    // NOTE: optional for keeper plugins that consume no database credentials
+    databaseId?: string,
+    sshKeyId: string,
 }
 
+// KeeperDeployRequest deploys one node. It is flat by design: node owns no
+// node type of its own, and host/ssh port come from the connection.
 export interface KeeperDeployRequest {
     plugin: KeeperPlugin,
     cluster: string,
-    singleHost: boolean,
-    image?: string,
-    values: {[key: string]: string},
-    node: KeeperDeployNode,
+    name: string,
+    keeperPort?: number,
+    dbPort?: number,
+    command: string,
+    postScript?: string,
     connection: PlatformVaultConnection,
-    vaults: {
-        databaseId?: string,
-        sshKeyId: string,
-    },
+    vaults: DeployVaults,
 }
 
 export interface KeeperDeploySpecRequest {
     plugin: KeeperPlugin,
 }
 
-export interface DeployFieldResponse {
-    name: string,
-    label: string,
-    example?: string,
-    type: "text" | "port",
-    default?: string,
-    derived: boolean,
-}
-
-export enum InterpolationVar {
-    Cluster = "{{cluster}}",
-    Host = "{{host}}",
-    KeeperPort = "{{keeperPort}}",
-    DbPort = "{{dbPort}}",
-    DbUser = "{{dbUser}}",
-    DbPass = "{{dbPass}}",
-}
-
-export interface DeployFieldsResponse {
-    defaults: {[name: string]: string},
-    fields: DeployFieldResponse[],
-}
-
+// KeeperDeploySpecResponse is what the deploy forms need to know about the
+// engine: its default endpoints and whether it consumes credentials. It says
+// nothing about how to deploy - that is a command the user writes.
 export interface KeeperDeploySpecResponse {
-    uri: string,
-    fields: DeployFieldsResponse,
-}
-
-export interface KeeperDeployPlanRequest {
-    plugin: KeeperPlugin,
-    cluster: string,
-    singleHost: boolean,
-    image?: string,
-    values: {[key: string]: string},
-    nodes: KeeperDeployNode[],
-}
-
-export interface KeeperDeployPlanResponse {
-    image: string,
-    values: {[name: string]: string},
-    postScript: string,
-    fields: DeployFieldsResponse,
-    nodes: KeeperDeployPlanNode[],
-    warnings: string[],
-}
-
-export interface KeeperDeployPlanNode {
-    host: string,
-    sshPort: number,
-    keeperPort: number,
     dbPort: number,
-    ports: {[name: string]: number},
-    options: string,
-    optionsPreview: string,
-    entryScript: string,
-    entryScriptPreview: string,
+    keeperPort?: number,
+    credentials: boolean,
+    dbUser: string,
 }
 
 export interface PlatformLogsRequest {

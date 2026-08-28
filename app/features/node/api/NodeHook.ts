@@ -1,17 +1,11 @@
-import {keepPreviousData, useQuery} from "@tanstack/react-query"
-import {createElement, useEffect, useMemo, useState} from "react"
+import {useQuery} from "@tanstack/react-query"
 
-import {TypedField} from "../../../shared/component/input/TypedField"
-import {getDeployFieldGroups, getUpdatedInputs} from "../../../shared/helper/HelperUtils"
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
 import {useStream} from "../../../shared/hook/Stream"
 import {useStore} from "../../../shared/provider/StoreProvider"
 import {ClusterApi} from "../../cluster/api/ClusterRouter"
 import {NodeApi} from "./NodeRouter"
 import {
-    DeployFieldResponse,
-    KeeperDeployPlanRequest,
-    KeeperDeploySpecResponse,
     KeeperOneRequest,
     KeeperPlugin,
     PlatformActionRequest,
@@ -221,67 +215,4 @@ export function useRouterNodeKeeperDeploySpec(plugin: KeeperPlugin) {
         queryKey: NodeApi.container.keeper.deploySpec.key(plugin),
         queryFn: () => NodeApi.container.keeper.deploySpec.fn({plugin}),
     })
-}
-
-// NOTE: the plan is a pure server-side computation of the deployment (ports,
-// aux ports, dcs, per-node options and credential-masked previews); callers
-// debounce the request themselves, previous data is kept while refetching to
-// avoid preview flicker
-export function useRouterNodeKeeperDeployPlan(request?: KeeperDeployPlanRequest) {
-    return useQuery({
-        queryKey: NodeApi.container.keeper.deployPlan.key(request),
-        queryFn: () => NodeApi.container.keeper.deployPlan.fn(request ?? {} as KeeperDeployPlanRequest),
-        enabled: !!request,
-        placeholderData: keepPreviousData,
-    })
-}
-
-// useKeeperDeployForm is the business logic shared by every keeper deploy
-// dialog (cluster's whole-cluster ClusterDeploy and node's single-container
-// ContainerKeeperDeploy): it seeds the image/URI once per plugin from the
-// deploy spec, derives the field groups, and owns the mandatory-field inputs
-// map. Node owns this because it owns the deploy spec/plan computation
-// itself; cluster only reuses it (the same direction as the API layer).
-export function useKeeperDeployForm(plugin: KeeperPlugin) {
-    const [image, setImage] = useState<KeeperDeploySpecResponse>()
-    const [imageUri, setImageUri] = useState("")
-    const [imagePlugin, setImagePlugin] = useState<KeeperPlugin>()
-    const [inputs, setInputs] = useState<{[name: string]: string}>({})
-    const [preview, setPreview] = useState(true)
-
-    const deploySpec = useRouterNodeKeeperDeploySpec(plugin)
-
-    useEffect(handleEffectDeploySpec, [deploySpec.data, imagePlugin, plugin])
-
-    // NOTE: false while a newly selected plugin's spec hasn't loaded yet, so
-    // callers can keep showing a skeleton instead of the previous plugin's fields
-    const ready = !!image && imagePlugin === plugin
-    const groups = useMemo(() => getDeployFieldGroups(image?.fields), [image?.fields])
-
-    return {deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, updateInput, renderField, ...groups}
-
-    function handleEffectDeploySpec() {
-        const data = deploySpec.data
-        if (!data || imagePlugin === plugin) return
-        setImagePlugin(plugin)
-        setImage(data)
-        setImageUri(data.uri)
-        setInputs({})
-    }
-
-    function updateInput(name: string, value: string) {
-        setInputs(prev => getUpdatedInputs(prev, name, value))
-    }
-
-    function renderField(field: DeployFieldResponse, planValues: {[name: string]: string} = {}) {
-        return createElement(TypedField, {
-            key: field.name,
-            label: field.label,
-            example: field.example,
-            type: field.type,
-            value: inputs[field.name] ?? planValues[field.name] ?? field.default ?? "",
-            disabled: groups.autoFields.includes(field) && preview,
-            onChange: (value: string) => updateInput(field.name, value),
-        })
-    }
 }

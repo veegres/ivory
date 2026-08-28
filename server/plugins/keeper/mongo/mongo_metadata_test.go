@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"ivory/core/config"
-	"ivory/plugins/keeper"
 	"strings"
 	"testing"
 )
@@ -31,43 +30,49 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestDeploymentSpec(t *testing.T) {
-	spec := NewAdapter().DeploymentSpec()
+func TestRequirements(t *testing.T) {
+	req := NewAdapter().Requirements()
 
-	if spec.DefaultImage == "" {
-		t.Error("expected a default image")
+	if req.DbPort != 27017 {
+		t.Errorf("expected db port 27017, got %d", req.DbPort)
 	}
-	if len(spec.Ports) != 1 {
-		t.Errorf("expected 1 port (db), got %d", len(spec.Ports))
+	if req.KeeperPort != nil {
+		t.Errorf("expected no separate keeper port, got %v", *req.KeeperPort)
 	}
-	if len(spec.Volumes) == 0 {
-		t.Error("expected at least one volume")
+	if req.Credentials {
+		t.Error("expected no credentials: replica set auth also needs an internal keyfile")
 	}
-	if _, ok := spec.Defaults[keeper.VarDbUser]; ok {
-		t.Errorf("expected no credentials required by default, got %+v", spec.Defaults)
+}
+
+// TestDefaultTemplates covers the replica set bootstrap: every member starts
+// as a plain mongod, and the last command initiates the set once they are all
+// up - which is why rs.initiate() sits there rather than on the first.
+func TestDefaultTemplates(t *testing.T) {
+	templates := NewAdapter().DefaultTemplates()
+
+	if len(templates) != 2 {
+		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
 	}
-	if _, ok := spec.Defaults[keeper.VarKeeperPort]; ok {
-		t.Errorf("expected no separate keeper port, got %+v", spec.Defaults)
-	}
-	if spec.Defaults[keeper.VarDbPort] != "27017" {
-		t.Errorf("expected db port default 27017, got %+v", spec.Defaults)
-	}
-	if spec.EntryScriptReplicasOnly {
-		t.Error("expected EntryScriptReplicasOnly false, every node needs --replSet at startup")
-	}
-	if spec.EntryScript == "" || !strings.Contains(spec.EntryScript, "--replSet") {
-		t.Errorf("expected an entry script starting mongod with --replSet, got %q", spec.EntryScript)
-	}
-	if spec.PostScript == "" || !strings.Contains(spec.PostScript, "rs.initiate") {
-		t.Errorf("expected a post-deploy script calling rs.initiate, got %q", spec.PostScript)
-	}
-	if !strings.Contains(spec.PostScript, string(keeper.VarClusterHosts)) {
-		t.Errorf("expected post script to reference %s, got %q", keeper.VarClusterHosts, spec.PostScript)
-	}
-	if len(spec.Fields) != 1 || spec.Fields[0].Name != keeper.VarClusterHosts {
-		t.Errorf("expected a single clusterHosts field, got %+v", spec.Fields)
-	}
-	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
-		t.Errorf("spec references unknown variables: %v", unknown)
+
+	for _, template := range templates {
+		t.Run(template.Name, func(t *testing.T) {
+			last := template.Commands[len(template.Commands)-1]
+			if !strings.Contains(last.PostScript, "rs.initiate") {
+				t.Fatal("expected the last command to initiate the replica set")
+			}
+			if !strings.Contains(last.PostScript, `mongo-1:27017`) {
+				t.Error("expected the members list rs.initiate is given")
+			}
+			for i, command := range template.Commands[:len(template.Commands)-1] {
+				if command.PostScript != "" {
+					t.Errorf("command %d must not initiate the set before every member is up", i)
+				}
+			}
+			for i, command := range template.Commands {
+				if !strings.Contains(command.Command, "--replSet") {
+					t.Errorf("command %d does not start with a replica set name", i)
+				}
+			}
+		})
 	}
 }

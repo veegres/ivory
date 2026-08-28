@@ -22,7 +22,6 @@ const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
     name: "", certs: {}, vaults: {}, tags: [],
     plugins: {database, keeper},
     tls: {keeper: false, database: false},
-    singleHost: false,
     host: "", port: 0,
 }) as AutoRequest
 
@@ -119,6 +118,6 @@ export function ClusterDetect(props: Props) {
         const data = deploySpec.data
         if (!data || portPlugin === keeper) return
         setPortPlugin(keeper)
-        setRequest(prev => ({...prev, plugins: {keeper, database}, port: getKeeperDefaultPort(data.fields)}))
+        setRequest(prev => ({...prev, plugins: {keeper, database}, port: getKeeperDefaultPort(data)}))
     }
 }
