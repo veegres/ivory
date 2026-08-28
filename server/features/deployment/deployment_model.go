@@ -83,42 +83,6 @@ type ListRequest struct {
 	Platform *PlatformPlugin `json:"platform" form:"platform"`
 }
 
-// withCreation defaults a stored template to Manual, so one saved before the
-// field existed reads back as what it actually is - only the shipped templates
-// are ever System, and those are computed rather than stored.
-func (t Template) withCreation() Template {
-	if t.Creation == "" {
-		t.Creation = Manual
-	}
-	return t
-}
-
-// normalized is what every read path returns: a stored template carries the
-// field names and platform key it was written with, and the rest of the code
-// only ever sees the current ones.
-func (t Template) normalized() Template {
-	t = t.withCreation()
-	t.Platform = t.Platform.Current()
-	return t
-}
-
-// normalized resolves a platform sent under a name that has since been renamed,
-// so a backup written before the rename imports as the platform it means.
-func (r TemplateRequest) normalized() TemplateRequest {
-	r.Platform = r.Platform.Current()
-	return r
-}
-
-// normalized resolves a platform filter sent under a name that has since been
-// renamed, so it matches the templates it was meant to select.
-func (r ListRequest) normalized() ListRequest {
-	if r.Platform != nil {
-		current := r.Platform.Current()
-		r.Platform = &current
-	}
-	return r
-}
-
 func isDefaultId(id string) bool {
 	return strings.HasPrefix(id, defaultIdPrefix)
 }

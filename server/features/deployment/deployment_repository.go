@@ -18,8 +18,7 @@ func NewRepository(bucket *storage.DbBucket[Template]) *Repository {
 }
 
 func (r *Repository) Get(key uuid.UUID) (Template, error) {
-	template, err := r.bucket.Get(key.String())
-	return template.normalized(), err
+	return r.bucket.Get(key.String())
 }
 
 func (r *Repository) List(criteria ListRequest) ([]Template, error) {
@@ -27,21 +26,21 @@ func (r *Repository) List(criteria ListRequest) ([]Template, error) {
 		if criteria.Keeper != nil && t.Keeper != *criteria.Keeper {
 			return false
 		}
-		if criteria.Platform != nil && t.Platform.Current() != *criteria.Platform {
+		if criteria.Platform != nil && t.Platform != *criteria.Platform {
 			return false
 		}
 		return true
 	}, func(list []Template, i, j int) bool {
 		return list[i].CreatedAt < list[j].CreatedAt
 	})
-	return normalized(list), err
+	return list, err
 }
 
 // GetByName looks a name up within one keeper/platform pair, because that is
 // the scope the template list - and so the user - sees it in.
 func (r *Repository) GetByName(name string, keeper KeeperPlugin, platform PlatformPlugin) (*Template, error) {
 	list, err := r.bucket.GetList(func(t Template) bool {
-		return t.Name == name && t.Keeper == keeper && t.Platform.Current() == platform
+		return t.Name == name && t.Keeper == keeper && t.Platform == platform
 	}, nil)
 	if err != nil {
 		return nil, err
@@ -49,8 +48,7 @@ func (r *Repository) GetByName(name string, keeper KeeperPlugin, platform Platfo
 	if len(list) == 0 {
 		return nil, nil
 	}
-	template := list[0].normalized()
-	return &template, nil
+	return &list[0], nil
 }
 
 // Create stores a template under the id the service assigned it, mirroring
@@ -78,11 +76,4 @@ func (r *Repository) Delete(key uuid.UUID) error {
 
 func (r *Repository) DeleteAll() error {
 	return r.bucket.DeleteAll()
-}
-
-func normalized(list []Template) []Template {
-	for i := range list {
-		list[i] = list[i].normalized()
-	}
-	return list
 }
