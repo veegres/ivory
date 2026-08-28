@@ -43,11 +43,9 @@ type Context struct {
 
 func NewContext(
 	env *coreConfig.Environment,
-	databaseRegistry *utils.Registry[database.Plugin, database.Adapter],
-	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter],
-	platformMetadataRegistry *utils.Registry[platform.Plugin, platform.Metadata],
-	keeperRegistry *utils.Registry[keeper.Plugin, keeper.Adapter],
-	keeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata],
+	databaseRegistry *utils.Registry[database.PluginType, database.Adapter],
+	platformRegistry *utils.Registry[platform.PluginType, platform.Plugin],
+	keeperRegistry *utils.Registry[keeper.PluginType, keeper.Plugin],
 	toolRegistry *utils.Registry[tools.Tool, tools.Adapter],
 	coreService *core.Service,
 ) *Context {
@@ -84,10 +82,10 @@ func NewContext(
 	secretService := vaultService.SecretService()
 	permissionService := permission.NewService(permissionRepo)
 
-	nodeService := node.NewService(platformRegistry, platformMetadataRegistry, keeperRegistry, keeperMetadataRegistry, vaultService, certService, jobService)
+	nodeService := node.NewService(platformRegistry, keeperRegistry, vaultService, certService, jobService)
 	tagService := tag.NewService(tagRepo)
 	queryService := query.NewService(queryRepo, databaseRegistry, vaultService, certService, env.Version.Label)
-	deploymentService := deployment.NewService(deploymentRepo, keeperMetadataRegistry, platformRegistry)
+	deploymentService := deployment.NewService(deploymentRepo, keeperRegistry, platformRegistry)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, vaultService, toolRegistry)
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)

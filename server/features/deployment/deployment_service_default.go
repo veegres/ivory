@@ -14,21 +14,21 @@ import (
 func (s *Service) Defaults(criteria ListRequest) []Template {
 	criteria = criteria.normalized()
 	defaults := make([]Template, 0)
-	for plugin, metadata := range s.keeperMetadataRegistry.All() {
-		if metadata == nil {
+	for pluginType, plugin := range s.keeperRegistry.All() {
+		if plugin == nil {
 			continue
 		}
-		if criteria.Keeper != nil && plugin != *criteria.Keeper {
+		if criteria.Keeper != nil && pluginType != *criteria.Keeper {
 			continue
 		}
-		for _, t := range metadata.DefaultTemplates() {
+		for _, t := range plugin.DefaultTemplates() {
 			if criteria.Platform != nil && t.Platform != *criteria.Platform {
 				continue
 			}
 			if _, err := s.platformRegistry.Get(t.Platform); err != nil {
 				continue
 			}
-			defaults = append(defaults, mapDefaultTemplate(plugin, t))
+			defaults = append(defaults, mapDefaultTemplate(pluginType, t))
 		}
 	}
 
@@ -43,7 +43,7 @@ func (s *Service) Defaults(criteria ListRequest) []Template {
 	return defaults
 }
 
-func mapDefaultTemplate(plugin keeper.Plugin, t keeper.DeploymentTemplate) Template {
+func mapDefaultTemplate(plugin keeper.PluginType, t keeper.DeploymentTemplate) Template {
 	return Template{
 		Id:          defaultId(plugin, t.Platform, t.Name),
 		Name:        t.Name,

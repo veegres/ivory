@@ -20,17 +20,17 @@ import (
 // newDeployTestService registers every keeper plugin, enough for the pure
 // deploy computations that touch no connection.
 func newDeployTestService() *Service {
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
-	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_MONGO, mongo.NewAdapter())
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
+	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
+	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_MONGO, mongo.NewAdapter())
 	return &Service{
-		platformRegistry:       utils.NewRegistry[platform.Plugin, platform.Adapter](),
-		keeperMetadataRegistry: keeperMetadataRegistry,
+		platformRegistry: utils.NewRegistry[platform.PluginType, platform.Plugin](),
+		keeperRegistry:   keeperRegistry,
 	}
 }
 
@@ -86,7 +86,7 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 	}
 
 	t.Run("unknown plugin", func(t *testing.T) {
-		empty := &Service{keeperMetadataRegistry: utils.NewRegistry[keeper.Plugin, keeper.Metadata]()}
+		empty := &Service{keeperRegistry: utils.NewRegistry[keeper.PluginType, keeper.Plugin]()}
 		if _, err := empty.KeeperDeploySpec(KeeperDeploySpecRequest{Plugin: "unknown"}); err == nil {
 			t.Fatal("expected error for unknown plugin, got nil")
 		}

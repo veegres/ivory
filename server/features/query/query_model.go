@@ -71,7 +71,7 @@ type Response struct {
 	CreatedAt   int64         `json:"createdAt"`
 }
 
-type DbPlugin = database.Plugin
+type DbPlugin = database.PluginType
 
 type DbConfig struct {
 	Plugin DbPlugin `json:"plugin"`

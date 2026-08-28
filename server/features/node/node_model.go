@@ -18,10 +18,10 @@ type KeeperConnection struct {
 // KeeperPlugin and KeeperStatus/KeeperRole/KeeperState are kept as aliases so
 // request binding and keeperRegistry.Get() don't need explicit conversions
 // at the call site.
-type KeeperPlugin = keeper.Plugin
+type KeeperPlugin = keeper.PluginType
 
 // PlatformPlugin selects which deployment target an operation runs against.
-type PlatformPlugin = platform.Plugin
+type PlatformPlugin = platform.PluginType
 
 // DefaultPlatform is the platform a connection resolves to when it names none,
 // which is every cluster stored before platforms were selectable.

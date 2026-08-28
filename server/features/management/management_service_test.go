@@ -97,7 +97,7 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 
 	queryService := query.NewService(
 		query.NewRepository(storage.NewDbBucket[query.Response](db, "Query"), storage.NewFileStorage("query-logs", ".log")),
-		utils.NewRegistry[database.Plugin, database.Adapter](),
+		utils.NewRegistry[database.PluginType, database.Adapter](),
 		vaultService,
 		certService,
 		"ivory",
@@ -105,8 +105,8 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 
 	deploymentService := deployment.NewService(
 		deployment.NewRepository(storage.NewDbBucket[deployment.Template](db, "DeploymentTemplate")),
-		utils.NewRegistry[keeper.Plugin, keeper.Metadata](),
-		utils.NewRegistry[platform.Plugin, platform.Adapter](),
+		utils.NewRegistry[keeper.PluginType, keeper.Plugin](),
+		utils.NewRegistry[platform.PluginType, platform.Plugin](),
 	)
 
 	clusterService := cluster.NewService(

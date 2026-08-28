@@ -3,6 +3,7 @@ package cluster
 import (
 	"errors"
 	"ivory/clients/storage"
+	"ivory/core/config"
 	"ivory/core/utils"
 	"ivory/features/node"
 	"ivory/features/query"
@@ -62,9 +63,14 @@ func TestService_Overview_Mapping(t *testing.T) {
 // connection problem (e.g. postgres starting up).
 type fakeKeeperAdapter struct {
 	keeper.Adapter
+	keeper.Metadata
 	listResponse []keeper.Response
 	listStatus   int
 	listErr      error
+}
+
+func (f *fakeKeeperAdapter) SupportedFeatures() map[config.Feature]bool {
+	return nil
 }
 
 func (f *fakeKeeperAdapter) List(keeper.Request) ([]keeper.Response, int, error) {
@@ -74,15 +80,14 @@ func (f *fakeKeeperAdapter) List(keeper.Request) ([]keeper.Response, int, error)
 // createTestServiceWithNode wires a real node.Service whose keeper registry
 // resolves plugin "fake" to adapter, so Overview/Detect/Fix can be exercised
 // end to end without a real keeper endpoint.
-func createTestServiceWithNode(t *testing.T, adapter keeper.Adapter) *Service {
+func createTestServiceWithNode(t *testing.T, adapter keeper.Plugin) *Service {
 	t.Helper()
 	s := createTestService(t)
 
-	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 	keeperRegistry.Register("fake", adapter)
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
-	s.nodeService = node.NewService(nil, platformMetadataRegistry, keeperRegistry, keeperMetadataRegistry, nil, nil, nil)
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
+	s.nodeService = node.NewService(platformRegistry, keeperRegistry, nil, nil, nil)
 
 	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "query.db"), 0600, nil)
 	if errOpen != nil {
@@ -91,7 +96,7 @@ func createTestServiceWithNode(t *testing.T, adapter keeper.Adapter) *Service {
 	t.Cleanup(func() { db.Close() })
 	s.queryService = query.NewService(
 		query.NewRepository(storage.NewDbBucket[query.Response](db, "Query"), nil),
-		utils.NewRegistry[database.Plugin, database.Adapter](),
+		utils.NewRegistry[database.PluginType, database.Adapter](),
 		nil, nil, "ivory",
 	)
 	s.toolRegistry = utils.NewRegistry[tools.Tool, tools.Adapter]()
@@ -237,7 +242,7 @@ func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T
 	port := 8008
 	errMessage := "the database system is starting up"
 
-	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 	keeperRegistry.Register("fake", &fakeKeeperAdapter{
 		listResponse: []keeper.Response{{
 			State:                keeper.StateStarting,
@@ -248,7 +253,7 @@ func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T
 		listStatus: http.StatusServiceUnavailable,
 		listErr:    errors.New(errMessage),
 	})
-	s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
+	s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil)}
 
 	configs := []NodeConfig{{Host: host, KeeperPort: &port}}
 	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{Plugins: Plugins{Keeper: "fake"}})
@@ -279,6 +284,7 @@ func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T
 // data a peer can't determine about itself, such as Sync status.
 type multiHostFakeKeeperAdapter struct {
 	keeper.Adapter
+	keeper.Metadata
 	responses map[string][]keeper.Response
 }
 
@@ -306,9 +312,9 @@ func TestService_getKeeperListByManyAll_PrefersLeaderReportedSyncData(t *testing
 		},
 	}
 
-	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 	keeperRegistry.Register("fake", &multiHostFakeKeeperAdapter{responses: responses})
-	s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
+	s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil)}
 
 	// NOTE: replicas are listed before the leader on purpose - responses
 	// preserve config order (node_service_keeper.go's KeeperNodeListMulti
@@ -371,9 +377,9 @@ func TestService_getKeeperListByLeader(t *testing.T) {
 			},
 		}
 
-		keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+		keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 		keeperRegistry.Register("fake", &multiHostFakeKeeperAdapter{responses: responses})
-		s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
+		s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil)}
 
 		configs := []NodeConfig{
 			{Host: db2, KeeperPort: &port, DbPort: &port},
@@ -401,9 +407,9 @@ func TestService_getKeeperListByLeader(t *testing.T) {
 			db2: {{Role: keeper.Replica, State: keeper.StateRunning, DiscoveredHost: &db2, DiscoveredKeeperPort: &port, DiscoveredDbPort: &port}},
 		}
 
-		keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+		keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 		keeperRegistry.Register("fake", &multiHostFakeKeeperAdapter{responses: responses})
-		s := &Service{nodeService: node.NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)}
+		s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil)}
 
 		configs := []NodeConfig{
 			{Host: db1, KeeperPort: &port, DbPort: &port},

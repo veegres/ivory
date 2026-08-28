@@ -41,13 +41,13 @@ func newDeployTestService(t *testing.T) *Service {
 	tagRepository := tag.NewRepository(storage.NewDbBucket[[]string](db, "Tag"))
 	tagService := tag.NewService(tagRepository)
 
-	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 	platformRegistry.Register(platform.Docker, docker.NewAdapter(ssh.NewClient()))
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
-	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	nodeService := node.NewService(platformRegistry, nil, nil, keeperMetadataRegistry, nil, nil, nil)
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
+	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
+	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	nodeService := node.NewService(platformRegistry, keeperRegistry, nil, nil, nil)
 
 	return &Service{
 		clusterRepository: clusterRepository,

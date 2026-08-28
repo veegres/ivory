@@ -51,17 +51,17 @@ func createTestBackupService(t *testing.T) *Service {
 	clusterService := cluster.NewService(clusterRepository, nil, tagService, nil, nil, nil)
 
 	queryRepository := query.NewRepository(storage.NewDbBucket[query.Response](db, "Query"), nil)
-	queryService := query.NewService(queryRepository, utils.NewRegistry[database.Plugin, database.Adapter](), nil, nil, "ivory")
+	queryService := query.NewService(queryRepository, utils.NewRegistry[database.PluginType, database.Adapter](), nil, nil, "ivory")
 
 	permissionRepository := permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission"))
 	permissionService := permission.NewService(permissionRepository)
 
 	deploymentRepository := deployment.NewRepository(storage.NewDbBucket[deployment.Template](db, "DeploymentTemplate"))
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
-	deploymentService := deployment.NewService(deploymentRepository, keeperMetadataRegistry, platformRegistry)
+	deploymentService := deployment.NewService(deploymentRepository, keeperRegistry, platformRegistry)
 
 	return NewService(clusterService, queryService, permissionService, deploymentService)
 }

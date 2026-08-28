@@ -161,7 +161,7 @@ func createTestQueryService(t *testing.T, adapter *fakeDatabaseAdapter) *testQue
 		cert.NewRepository(storage.NewDbBucket[cert.Cert](db, "Cert"), storage.NewFileStorage("cert", "")),
 	)
 
-	registry := utils.NewRegistry[database.Plugin, database.Adapter]()
+	registry := utils.NewRegistry[database.PluginType, database.Adapter]()
 	if adapter != nil {
 		registry.Register(database.POSTGRES, adapter)
 	}

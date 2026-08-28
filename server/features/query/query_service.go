@@ -20,17 +20,17 @@ var ErrDeletionOfSystemQueriesRestricted = errors.New("deletion of system querie
 
 type Service struct {
 	repository       *Repository
-	databaseRegistry *utils.Registry[database.Plugin, database.Adapter]
+	databaseRegistry *utils.Registry[database.PluginType, database.Adapter]
 	vaultService     *vault.Service
 	certService      *cert.Service
 
 	appName  string
-	chartMap map[database.Plugin]map[ChartType]Request
+	chartMap map[database.PluginType]map[ChartType]Request
 }
 
 func NewService(
 	repository *Repository,
-	databaseRegistry *utils.Registry[database.Plugin, database.Adapter],
+	databaseRegistry *utils.Registry[database.PluginType, database.Adapter],
 	vaultService *vault.Service,
 	certService *cert.Service,
 	appName string,
@@ -54,7 +54,7 @@ func (s *Service) GetApplicationName(session string) string {
 	return s.appName + " [" + fmt.Sprintf("%.7s", session) + "]"
 }
 
-func (s *Service) SupportedFeatures(t database.Plugin) map[config.Feature]bool {
+func (s *Service) SupportedFeatures(t database.PluginType) map[config.Feature]bool {
 	c, e := s.databaseRegistry.Get(t)
 	if e != nil {
 		return map[config.Feature]bool{}
@@ -72,7 +72,7 @@ func (s *Service) getDatabaseAdapter(queryCtx Context) (database.Adapter, databa
 }
 
 func (s *Service) initializeSystemCharts() {
-	s.chartMap = make(map[database.Plugin]map[ChartType]Request)
+	s.chartMap = make(map[database.PluginType]map[ChartType]Request)
 	for t, adapter := range s.databaseRegistry.All() {
 		s.chartMap[t] = make(map[ChartType]Request)
 		for name, query := range adapter.SystemCharts() {

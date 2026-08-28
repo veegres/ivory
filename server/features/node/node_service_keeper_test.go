@@ -14,6 +14,7 @@ import (
 // connection problem (e.g. postgres starting up).
 type fakeKeeperAdapter struct {
 	keeper.Adapter
+	keeper.Metadata
 	listResponse []keeper.Response
 	listStatus   int
 	listErr      error
@@ -28,7 +29,7 @@ func TestKeeperNodeList_KeepsResponseAlongsideError(t *testing.T) {
 	port := 5432
 	state := keeper.StateStarting
 
-	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 	keeperRegistry.Register("fake", &fakeKeeperAdapter{
 		listResponse: []keeper.Response{{
 			State:                state,
@@ -39,7 +40,7 @@ func TestKeeperNodeList_KeepsResponseAlongsideError(t *testing.T) {
 		listStatus: http.StatusServiceUnavailable,
 		listErr:    errors.New("the database system is starting up"),
 	})
-	s := NewService(nil, nil, keeperRegistry, nil, nil, nil, nil)
+	s := NewService(nil, keeperRegistry, nil, nil, nil)
 
 	responses, status, err := s.KeeperNodeList(KeeperOneRequest{
 		KeeperConnection: KeeperConnection{Host: host, Port: port},

@@ -6,47 +6,51 @@ import (
 	"ivory/core/service/cert"
 	"ivory/core/service/job"
 	"ivory/core/service/vault"
-	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 )
 
+// platformRegistry is the narrow view node needs of the platform plugin
+// registry: resolving one plugin by key, never registering.
+type platformRegistry interface {
+	Get(platform.PluginType) (platform.Plugin, error)
+}
+
+// keeperRegistry is the same narrow view of the keeper plugin registry.
+type keeperRegistry interface {
+	Get(keeper.PluginType) (keeper.Plugin, error)
+}
+
 type Service struct {
-	platformRegistry         *utils.Registry[platform.Plugin, platform.Adapter]
-	platformMetadataRegistry *utils.Registry[platform.Plugin, platform.Metadata]
-	keeperRegistry           *utils.Registry[keeper.Plugin, keeper.Adapter]
-	keeperMetadataRegistry   *utils.Registry[keeper.Plugin, keeper.Metadata]
-	vaultService             *vault.Service
-	certService              *cert.Service
-	jobManager               *job.Service
+	platformRegistry platformRegistry
+	keeperRegistry   keeperRegistry
+	vaultService     *vault.Service
+	certService      *cert.Service
+	jobManager       *job.Service
 
 	dbFeatures map[config.Feature]bool
 }
 
 func NewService(
-	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter],
-	platformMetadataRegistry *utils.Registry[platform.Plugin, platform.Metadata],
-	keeperRegistry *utils.Registry[keeper.Plugin, keeper.Adapter],
-	keeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata],
+	platformRegistry platformRegistry,
+	keeperRegistry keeperRegistry,
 	vaultService *vault.Service,
 	certService *cert.Service,
 	jobManager *job.Service,
 ) *Service {
 	return &Service{
-		platformRegistry:         platformRegistry,
-		platformMetadataRegistry: platformMetadataRegistry,
-		keeperRegistry:           keeperRegistry,
-		keeperMetadataRegistry:   keeperMetadataRegistry,
-		vaultService:             vaultService,
-		certService:              certService,
-		jobManager:               jobManager,
+		platformRegistry: platformRegistry,
+		keeperRegistry:   keeperRegistry,
+		vaultService:     vaultService,
+		certService:      certService,
+		jobManager:       jobManager,
 
 		dbFeatures: make(map[config.Feature]bool),
 	}
 }
 
-func (s *Service) SupportedFeatures(t keeper.Plugin) map[config.Feature]bool {
-	c, e := s.keeperMetadataRegistry.Get(t)
+func (s *Service) SupportedFeatures(t keeper.PluginType) map[config.Feature]bool {
+	c, e := s.keeperRegistry.Get(t)
 	if e != nil {
 		return map[config.Feature]bool{}
 	}
@@ -57,7 +61,7 @@ func (s *Service) SupportedFeatures(t keeper.Plugin) map[config.Feature]bool {
 // for, which is a separate question from what the keeper supports: a platform
 // that only ever addresses a scheduler has no node of its own to show.
 func (s *Service) PlatformSupportedFeatures(p PlatformPlugin) map[config.Feature]bool {
-	c, e := s.platformMetadataRegistry.Get(p)
+	c, e := s.platformRegistry.Get(p)
 	if e != nil {
 		return map[config.Feature]bool{}
 	}
