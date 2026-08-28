@@ -1,8 +1,6 @@
 import {api} from "../../Api"
 import {R} from "../../management/api/ManagementType"
 import {
-    KeeperDeployPlanRequest,
-    KeeperDeployPlanResponse,
     KeeperDeployRequest,
     KeeperDeploySpecRequest,
     KeeperDeploySpecResponse,
@@ -146,9 +144,8 @@ export const NodeApi = {
                 .then((response) => response.data.response),
         },
         // node.container.keeper.deploy is the single-node counterpart of
-        // cluster.deploy; deploySpec/deployPlan are the pure planning
-        // computation both the cluster (whole-cluster) and single-container
-        // deploy dialogs use.
+        // cluster.deploy; deploySpec reports the engine's default endpoints
+        // and whether it consumes credentials.
         keeper: {
             deploy: {
                 key: () => ["node", "platform", "container", "keeper", "deploy"],
@@ -158,11 +155,6 @@ export const NodeApi = {
             deploySpec: {
                 key: (plugin: KeeperPlugin) => ["node", "platform", "container", "keeper", "deploy", "spec", plugin],
                 fn: (request: KeeperDeploySpecRequest) => api.get<R<KeeperDeploySpecResponse>>("/node/platform/container/keeper/deploy/spec", {params: {request: JSON.stringify(request)}})
-                    .then((response) => response.data.response),
-            },
-            deployPlan: {
-                key: (request?: KeeperDeployPlanRequest) => ["node", "platform", "container", "keeper", "deploy", "plan", request],
-                fn: (request: KeeperDeployPlanRequest) => api.post<R<KeeperDeployPlanResponse>>("/node/platform/container/keeper/deploy/plan", request)
                     .then((response) => response.data.response),
             },
         },

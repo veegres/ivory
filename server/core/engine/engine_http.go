@@ -10,6 +10,7 @@ import (
 	"ivory/features/auth"
 	"ivory/features/cluster"
 	"ivory/features/config"
+	"ivory/features/deployment"
 	"ivory/features/management"
 	"ivory/features/node"
 	"ivory/features/permission"
@@ -63,6 +64,7 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	tagRouter(safe, fc.Permission, fc.Tag)
 	permissionRouter(safe, fc.Permission, fc.Permission)
 	queryRouter(safe, fc.Permission, fc.Query)
+	deploymentRouter(safe, fc.Permission, fc.Deployment)
 
 	slog.Info("Ivory address: " + env.Config.UrlAddress)
 	slog.Info("Ivory WEB path: " + env.Config.UrlPath)
@@ -207,7 +209,14 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 	containerKeeperGroup := containerGroup.Group("/keeper")
 	containerKeeperGroup.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostNodeKeeperDeploy)
 	containerKeeperGroup.GET("/deploy/spec", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.GetNodeKeeperDeploySpec)
-	containerKeeperGroup.POST("/deploy/plan", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostNodeKeeperDeployPlan)
+}
+
+func deploymentRouter(g *gin.RouterGroup, rp *permission.Router, r *deployment.Router) {
+	group := g.Group("/deployment/template")
+	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewDeploymentTemplateList), r.GetDeploymentTemplateList)
+	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageDeploymentTemplateCreate), r.PostDeploymentTemplate)
+	group.PUT("/:uuid", rp.ValidateMethodMiddleware(coreConfig.ManageDeploymentTemplateUpdate), r.PutDeploymentTemplate)
+	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(coreConfig.ManageDeploymentTemplateDelete), r.DeleteDeploymentTemplate)
 }
 
 func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {

@@ -2,7 +2,6 @@ package redis
 
 import (
 	"ivory/core/config"
-	"ivory/plugins/keeper"
 	"strings"
 	"testing"
 )
@@ -28,49 +27,48 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestDeploymentSpec(t *testing.T) {
-	spec := NewAdapter().DeploymentSpec()
+func TestRequirements(t *testing.T) {
+	req := NewAdapter().Requirements()
 
-	if spec.DefaultImage == "" {
-		t.Error("expected a default image")
+	if req.DbPort != 6379 {
+		t.Errorf("expected db port 6379, got %d", req.DbPort)
 	}
-	if len(spec.Ports) != 1 {
-		t.Errorf("expected 1 port (db), got %d", len(spec.Ports))
+	if req.KeeperPort != nil {
+		t.Errorf("expected no separate keeper port, got %v", *req.KeeperPort)
 	}
-	if len(spec.Volumes) == 0 {
-		t.Error("expected at least one volume")
+	if !req.Credentials || req.DbUser != "default" {
+		t.Errorf("expected credentials with redis' default username, got %+v", req)
 	}
-	if len(spec.Env) == 0 {
-		t.Error("expected at least one env var")
+}
+
+// TestDefaultTemplates covers the leader/replica asymmetry: it is expressed as
+// a different command at index 0, not as a flag.
+func TestDefaultTemplates(t *testing.T) {
+	templates := NewAdapter().DefaultTemplates()
+
+	if len(templates) != 2 {
+		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
 	}
-	if user, ok := spec.Defaults[keeper.VarDbUser]; !ok || user != "default" {
-		t.Errorf("expected credentials with the redis default username, got %+v", spec.Defaults)
-	}
-	if _, ok := spec.Defaults[keeper.VarKeeperPort]; ok {
-		t.Errorf("expected no separate keeper port, got %+v", spec.Defaults)
-	}
-	if spec.Defaults[keeper.VarDbPort] != "6379" {
-		t.Errorf("expected db port default 6379, got %+v", spec.Defaults)
-	}
-	if len(spec.Fields) != 0 {
-		t.Errorf("expected no fields, got %+v", spec.Fields)
-	}
-	if spec.PostScript != "" {
-		t.Errorf("expected no post-deploy script, got %q", spec.PostScript)
-	}
-	if !spec.EntryScriptReplicasOnly {
-		t.Error("expected EntryScriptReplicasOnly true, the primary must not replicate from itself")
-	}
-	if spec.EntryScript == "" {
-		t.Error("expected an entry script to start replicas via REDIS_REPLICATION_MODE")
-	}
-	if !strings.Contains(spec.EntryScript, string(keeper.VarLeaderHost)) {
-		t.Errorf("expected the entry script to reference %s, got %q", keeper.VarLeaderHost, spec.EntryScript)
-	}
-	if !strings.Contains(spec.EntryScript, "REDIS_REPLICATION_MODE") {
-		t.Errorf("expected the entry script to set REDIS_REPLICATION_MODE, got %q", spec.EntryScript)
-	}
-	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
-		t.Errorf("spec references unknown variables: %v", unknown)
+
+	for _, template := range templates {
+		t.Run(template.Name, func(t *testing.T) {
+			if strings.Contains(template.Commands[0].Command, "REDIS_REPLICATION_MODE") {
+				t.Error("the leader must not come up as a replica")
+			}
+			for i, command := range template.Commands[1:] {
+				if !strings.Contains(command.Command, "REDIS_REPLICATION_MODE") {
+					t.Errorf("replica %d does not attach to the leader", i+1)
+				}
+				if !strings.Contains(command.Command, `REDIS_MASTER_HOST="redis-1"`) {
+					t.Errorf("replica %d has no leader host to attach to", i+1)
+				}
+			}
+			// NOTE: the official image takes port/password as CLI flags only,
+			// so the leader - which runs no bootstrap - could not be
+			// configured through env vars at all
+			if !strings.Contains(template.Commands[0].Command, "bitnami/redis") {
+				t.Error("expected bitnami/redis, the only image configurable through env vars alone")
+			}
+		})
 	}
 }

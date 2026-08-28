@@ -3,6 +3,7 @@ package clickhouse
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -22,91 +23,114 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// entryScript generates a config.d/ivory-cluster.xml at container startup so
-// every node - including the primary, since clickhouse has no primary/replica
-// asymmetry and EntryScript applies uniformly by default (see
-// keeper.DeploymentSpec.EntryScriptReplicasOnly) - joins the same
-// <remote_servers> shard and points at the same external coordinator, and
-// then hands off to the image's normal startup:
-//   - {{clusterHosts}} is already-resolved <replica> XML for every node in
-//     this deploy (built by KeeperDeployPlan from the Fields entry below), so
-//     it is embedded directly, no runtime work needed.
-//   - {{dcs}} is a single comma-separated host:port list the user provides
-//     (same free-text shape as patroni's own {{dcs}} field - see that
-//     plugin's Adapter doc), so unlike {{clusterHosts}} it still needs
-//     splitting into <node> entries at container startup, since Ivory only
-//     ever sees it as one opaque string.
-//   - <macros> gives every node's replicated tables a stable per-replica
-//     identity (its own {{host}}) for ON CLUSTER / {replica} substitutions.
-const entryScript = `sh -c '
-dcs="` + string(keeper.VarDcs) + `"
-zk=""
-oldifs="$IFS"
-IFS=","
-for hp in $dcs; do
-  h=${hp%%:*}
-  p=${hp##*:}
-  zk="$zk<node><host>$h</host><port>$p</port></node>"
-done
-IFS="$oldifs"
+// Requirements reports the native tcp protocol port. The official image has no
+// env var to move it away from its config.xml default, so a deploy overriding
+// it needs a custom image. The username is the user's own choice.
+func (a *Adapter) Requirements() keeper.Requirements {
+	return keeper.Requirements{
+		DbPort:      9000,
+		Credentials: true,
+	}
+}
+
+// Every node runs the same command, including the first: clickhouse has no
+// leader/replica asymmetry. The startup script writes a cluster config file and
+// then hands off to the image's own entrypoint. Both the shard's replica list
+// and the coordinator address are written literally - only the operator knows
+// which hosts those are - and <macros> gives replicated tables a stable
+// per-replica identity for ON CLUSTER / {replica}.
+
+const deployMultiHost = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --restart unless-stopped
+  -p {{dbPort}}:{{dbPort}}
+  -v /data/clickhouse:/var/lib/clickhouse
+  -e CLICKHOUSE_USER="{{dbUser}}"
+  -e CLICKHOUSE_PASSWORD="{{dbPass}}"
+  -e CLICKHOUSE_DB="default"
+  clickhouse/clickhouse-server:24
+  sh -c '
 cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
 <clickhouse>
   <remote_servers>
     <ivory_cluster>
       <shard>
-        ` + string(keeper.VarClusterHosts) + `
+        <replica><host>clickhouse-1</host><port>9000</port></replica>
+        <replica><host>clickhouse-2</host><port>9000</port></replica>
+        <replica><host>clickhouse-3</host><port>9000</port></replica>
       </shard>
     </ivory_cluster>
   </remote_servers>
   <zookeeper>
-    $zk
+    <node><host>keeper-1</host><port>9181</port></node>
+    <node><host>keeper-2</host><port>9181</port></node>
+    <node><host>keeper-3</host><port>9181</port></node>
   </zookeeper>
   <macros>
-    <cluster>` + string(keeper.VarCluster) + `</cluster>
-    <replica>` + string(keeper.VarHost) + `</replica>
+    <cluster>{{cluster}}</cluster>
+    <replica>{{name}}</replica>
   </macros>
 </clickhouse>
 IVORYEOF
 exec /entrypoint.sh
 '`
 
-// DeploymentSpec clusters every node into one <remote_servers> shard
-// coordinated through an externally-run ZooKeeper or ClickHouse Keeper
-// ensemble - the same posture as patroni pointing at an external DCS via
-// {{dcs}} (see patroni's Adapter doc), rather than Ivory deploying and
-// managing that coordinator itself. EntryScriptReplicasOnly is deliberately
-// left false (the default): clickhouse has no primary/replica asymmetry, so
-// every node - including the first - needs EntryScript to generate the same
-// cluster config file, unlike postgres/etcd/redis which skip it on node 0.
-// Unlike VarDbPort's other users, the official image has no env var to
-// change the native tcp_port away from its config.xml default (9000): it is
-// still declared here because Defaults always requires it, but a deploy
-// that overrides it would need a custom image with its own config.xml.
-func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
-	return keeper.DeploymentSpec{
-		DefaultImage: "clickhouse/clickhouse-server:24",
-		// NOTE: the empty username means credentials are consumed but the
-		// username is the user's choice
-		Defaults: map[keeper.Var]string{
-			keeper.VarDbPort: "9000",
-			keeper.VarDbUser: "",
-		},
-		Fields: []keeper.FieldSpec{
-			{Name: keeper.VarDcs, Label: "ZooKeeper / ClickHouse Keeper", Example: "keeper1:9181, keeper2:9181, keeper3:9181", Type: keeper.FieldText},
-			{
-				Name: keeper.VarClusterHosts, Label: "Cluster Replicas (auto)", Type: keeper.FieldText,
-				Template: "<replica><host>" + string(keeper.VarHost) + "</host><port>" + string(keeper.VarDbPort) + "</port></replica>",
+const deploySingleHost = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e CLICKHOUSE_USER="{{dbUser}}"
+  -e CLICKHOUSE_PASSWORD="{{dbPass}}"
+  -e CLICKHOUSE_DB="default"
+  clickhouse/clickhouse-server:24
+  sh -c '
+cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
+<clickhouse>
+  <remote_servers>
+    <ivory_cluster>
+      <shard>
+        <replica><host>clickhouse-1</host><port>9000</port></replica>
+        <replica><host>clickhouse-2</host><port>9000</port></replica>
+        <replica><host>clickhouse-3</host><port>9000</port></replica>
+      </shard>
+    </ivory_cluster>
+  </remote_servers>
+  <zookeeper>
+    <node><host>keeper-1</host><port>9181</port></node>
+    <node><host>keeper-2</host><port>9181</port></node>
+    <node><host>keeper-3</host><port>9181</port></node>
+  </zookeeper>
+  <macros>
+    <cluster>{{cluster}}</cluster>
+    <replica>{{name}}</replica>
+  </macros>
+</clickhouse>
+IVORYEOF
+exec /entrypoint.sh
+'`
+
+func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+	return []keeper.DeploymentTemplate{
+		{
+			Platform:    platform.Linux,
+			Name:        "ClickHouse (Multi Host)",
+			Description: "Three clickhouse replicas in one shard, coordinated through an external ZooKeeper or ClickHouse Keeper ensemble. Edit the replica and keeper lists to match your hosts.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deployMultiHost},
+				{Command: deployMultiHost},
+				{Command: deployMultiHost},
 			},
 		},
-		Ports: []string{string(keeper.VarDbPort)},
-		Volumes: []keeper.VolumeSpec{
-			{HostPath: "/data/clickhouse", ContainerPath: "/var/lib/clickhouse"},
+		{
+			Platform:    platform.Linux,
+			Name:        "ClickHouse (Single Host)",
+			Description: "Three clickhouse replicas on one VM. The native port is fixed by the image's config.xml, so this needs a custom image to avoid collisions.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deploySingleHost},
+				{Command: deploySingleHost},
+				{Command: deploySingleHost},
+			},
 		},
-		Env: []keeper.EnvVar{
-			{Name: "CLICKHOUSE_USER", Value: `"` + string(keeper.VarDbUser) + `"`},
-			{Name: "CLICKHOUSE_PASSWORD", Value: `"` + string(keeper.VarDbPass) + `"`},
-			{Name: "CLICKHOUSE_DB", Value: `"default"`},
-		},
-		EntryScript: entryScript,
 	}
 }

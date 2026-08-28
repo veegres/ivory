@@ -8,55 +8,80 @@ import (
 	"testing"
 )
 
-func TestRenderOptions(t *testing.T) {
-	adapter := &Adapter{}
+// TestUpContainerRunsTheCommandAsWritten covers what the deployment model
+// rests on: the command the user reads is the command that runs. Readability
+// whitespace between flags collapses, but a quoted multi-line startup script -
+// whose newlines are real statement separators - survives byte for byte.
+func TestUpContainerRunsTheCommandAsWritten(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	connection := platform.Connection{}
 
-	t.Run("full spec renders docker flags in order", func(t *testing.T) {
-		spec := platform.DeploySpec{
-			Name:          "{{host}}",
-			Hostname:      "{{host}}",
-			RestartPolicy: "unless-stopped",
-			Ports:         []string{"{{keeperPort}}", "{{dbPort}}"},
-			Volumes:       []platform.VolumeMount{{HostPath: "/data/postgres", ContainerPath: "/home/postgres/pgdata"}},
-			Env: []platform.EnvVar{
-				{Name: "SCOPE", Value: `"{{cluster}}"`},
-				{Name: "PGPORT", Value: `{{dbPort}}`},
-			},
-		}
-		expected := "--name {{host}}\n" +
-			"--hostname {{host}}\n" +
-			"--restart unless-stopped\n" +
-			"-p {{keeperPort}}:{{keeperPort}}\n" +
-			"-p {{dbPort}}:{{dbPort}}\n" +
-			"-v /data/postgres:/home/postgres/pgdata\n" +
-			`-e SCOPE="{{cluster}}"` + "\n" +
-			"-e PGPORT={{dbPort}}"
-		if got := adapter.RenderOptions(spec); got != expected {
-			t.Fatalf("expected:\n%s\ngot:\n%s", expected, got)
-		}
-	})
+	tests := []struct {
+		name     string
+		command  string
+		expected string
+	}{
+		{
+			name: "newlines between flags collapse to spaces",
+			command: `docker run -d
+  --name etcd-1
+  --hostname 10.0.0.1
+  -p 2379:2379
+  quay.io/coreos/etcd:v3.6.5`,
+			expected: `docker run -d --name etcd-1 --hostname 10.0.0.1 -p 2379:2379 quay.io/coreos/etcd:v3.6.5`,
+		},
+		{
+			name: "a quoted multi-line entry script stays one argument",
+			command: `docker run -d --name pg-2 postgres:18
+  sh -c '
+until pg_isready -h pg-1; do sleep 1; done
+exec docker-entrypoint.sh postgres
+'`,
+			expected: `docker run -d --name pg-2 postgres:18 sh -c '
+until pg_isready -h pg-1; do sleep 1; done
+exec docker-entrypoint.sh postgres
+'`,
+		},
+		{
+			name:     "a leading docker prefix is not duplicated",
+			command:  `docker run -d --name n1 redis:7`,
+			expected: `docker run -d --name n1 redis:7`,
+		},
+		{
+			name:     "a sudo docker prefix is normalized away",
+			command:  `sudo docker run -d --name n1 redis:7`,
+			expected: `docker run -d --name n1 redis:7`,
+		},
+		{
+			name:     "a command without the prefix gets one",
+			command:  `run -d --name n1 redis:7`,
+			expected: `docker run -d --name n1 redis:7`,
+		},
+		{
+			name:     "a quoted value with a space stays one argument",
+			command:  `docker run -d -e SCOPE="my cluster" postgres:18`,
+			expected: `docker run -d -e 'SCOPE=my cluster' postgres:18`,
+		},
+		{
+			name:     "tabs and carriage returns collapse like any other whitespace",
+			command:  "docker run -d --name test \n\t --restart always  \r\n -p 80:80 redis:7",
+			expected: `docker run -d --name test --restart always -p 80:80 redis:7`,
+		},
+		{
+			name:     "the user's own --name is honoured, not overridden",
+			command:  `docker run -d --name my-own-name postgres:18`,
+			expected: `docker run -d --name my-own-name postgres:18`,
+		},
+	}
 
-	t.Run("host network renders without ports, volumes and restart policy", func(t *testing.T) {
-		spec := platform.DeploySpec{
-			Name:        "{{host}}",
-			Hostname:    "{{host}}",
-			HostNetwork: true,
-			Env:         []platform.EnvVar{{Name: "SCOPE", Value: `"{{cluster}}"`}},
-		}
-		expected := "--name {{host}}\n" +
-			"--hostname {{host}}\n" +
-			"--network host\n" +
-			`-e SCOPE="{{cluster}}"`
-		if got := adapter.RenderOptions(spec); got != expected {
-			t.Fatalf("expected:\n%s\ngot:\n%s", expected, got)
-		}
-	})
-
-	t.Run("empty spec renders empty string", func(t *testing.T) {
-		if got := adapter.RenderOptions(platform.DeploySpec{}); got != "" {
-			t.Fatalf("expected empty string, got %q", got)
-		}
-	})
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := adapter.UpContainer(connection, test.command).(*ssh.Command).Command
+			if got != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, got)
+			}
+		})
+	}
 }
 
 func TestNormalizeDockerCommand(t *testing.T) {
@@ -94,19 +119,9 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "up quotes options and image",
-			command:  adapter.UpContainer(connection, name, `--name foo;rm -rf / -e POSTGRES_PASSWORD=pass`, `postgres:16; reboot`, "").(*ssh.Command).Command,
-			expected: `docker run -d --name 'foo; rm -rf /' '-rf' '/' '-e' 'POSTGRES_PASSWORD=pass' -- 'postgres:16; reboot'`,
-		},
-		{
-			name:     "up keeps a quoted value with a space as a single argument",
-			command:  adapter.UpContainer(connection, name, `-e SCOPE="my cluster" -e NAME=test`, `postgres:16`, "").(*ssh.Command).Command,
-			expected: `docker run -d --name 'foo; rm -rf /' '-e' 'SCOPE=my cluster' '-e' 'NAME=test' -- 'postgres:16'`,
-		},
-		{
-			name:     "up always enforces the given name, discarding any --name in options",
-			command:  adapter.UpContainer(connection, "mycontainer", `--name foo`, `postgres:18`, `sh -c 'echo "hi"'`).(*ssh.Command).Command,
-			expected: `docker run -d --name 'mycontainer' -- 'postgres:18' 'sh' '-c' 'echo "hi"'`,
+			name:     "up re-quotes an argument holding shell metacharacters",
+			command:  adapter.UpContainer(connection, `docker run -d --name "foo; rm -rf /" postgres:16`).(*ssh.Command).Command,
+			expected: `docker run -d --name 'foo; rm -rf /' postgres:16`,
 		},
 		{
 			name:     "down quotes name",
@@ -136,7 +151,7 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 		{
 			name:     "exec quotes name and command fields",
 			command:  adapter.ExecContainer(connection, name, `etcdctl user add 'root:se cret'`).(*ssh.Command).Command,
-			expected: `docker exec -- 'foo; rm -rf /' 'etcdctl' 'user' 'add' 'root:se cret'`,
+			expected: `docker exec -- 'foo; rm -rf /' etcdctl user add 'root:se cret'`,
 		},
 	}
 
@@ -163,7 +178,7 @@ func TestExecContainerRecoversEscapedQuoteInHandWrittenSpan(t *testing.T) {
 	// into etcd's own "'root:" + dbUser + ":" + dbPass + "'" template.
 	command := `etcdctl user add 'root:it\'s a test'`
 	got := adapter.ExecContainer(connection, "n1", command).(*ssh.Command).Command
-	expected := `docker exec -- 'n1' 'etcdctl' 'user' 'add' 'root:it'\''s a test'`
+	expected := `docker exec -- 'n1' etcdctl user add 'root:it'\''s a test'`
 	// NOTE: the last field is shellQuote's own re-escaping of the recovered
 	// literal value "root:it's a test" - what matters is that it was
 	// recovered as one field, not split apart at the embedded quote.

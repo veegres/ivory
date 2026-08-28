@@ -1,104 +1,120 @@
 import {Rocket} from "@mui/icons-material"
 import {Box, Button, TextField} from "@mui/material"
-import {useEffect, useMemo, useState} from "react"
+import {useEffect, useState} from "react"
 
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {Logs} from "../../../../shared/component/box/Logs"
+import {Note} from "../../../../shared/component/box/Note"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
-import {WarningList} from "../../../../shared/component/box/WarningList"
 import {DialogButton} from "../../../../shared/component/button/DialogButton"
-import {DeployImageHeader} from "../../../../shared/component/input/DeployImageHeader"
+import {CodeField} from "../../../../shared/component/input/CodeField"
+import {FieldRow} from "../../../../shared/component/input/FieldRow"
 import {SkeletonGroup} from "../../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {getDeployPlaceholderKeys, getShortUuid} from "../../../../shared/helper/HelperUtils"
-import {useDebounce} from "../../../../shared/hook/Debounce"
-import {useKeeperDeployForm, useRouterNodeKeeperDeploy, useRouterNodeKeeperDeployPlan} from "../../api/NodeHook"
-import {InterpolationVar, KeeperDeployPlanRequest, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
+import {DeployPasswordMask, getShortUuid, interpolateCommand} from "../../../../shared/helper/HelperUtils"
+import {Template, TemplateCommand} from "../../../deployment/api/DeploymentType"
+import {DeploymentPreviewNote} from "../../../deployment/component/DeploymentPreviewNote"
+import {useDeploymentTemplatePicker} from "../../../deployment/component/DeploymentTemplatePicker"
+import {useRouterVault} from "../../../vault/api/VaultHook"
+import {VaultType} from "../../../vault/api/VaultType"
+import {useRouterNodeKeeperDeploy, useRouterNodeKeeperDeploySpec} from "../../api/NodeHook"
+import {KeeperPlugin, PlatformPlugin, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
-    note: {
-        display: "flex", justifyContent: "center", alignItems: "center",
-        color: "text.disabled", fontSize: 12, flexWrap: "wrap", gap: 0.5,
-    },
-    between: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1},
     subContent: {display: "flex", flexDirection: "column"},
-    toggleButton: {padding: "0px 10px"},
-    clusterInfo: {
-        "& .MuiListItem-root": {padding: "2px 16px"},
-        "& .MuiBox-root": {margin: "2px 0px"},
-    },
 }
 
 type Props = {
     connection: PlatformVaultConnection,
     plugin: KeeperPlugin,
     cluster: string,
-    singleHost: boolean,
     databaseId?: string,
     sshKeyId?: string,
 }
 
-// ContainerKeeperDeploy deploys a keeper onto a single existing node of an
-// already-configured cluster: it calls node's own KeeperDeploy action
-// directly (no cluster endpoint involved), so it lives in the node/container
-// feature rather than cluster - unlike ClusterDeploy, which batches nodes
-// through cluster's own /cluster/deploy action.
+// ContainerKeeperDeploy deploys a keeper onto a single existing node: it picks
+// one command out of a template and runs it here, calling node's own
+// KeeperDeploy directly - no cluster endpoint involved, which is why it lives
+// in the node/container feature rather than cluster.
 export function ContainerKeeperDeploy(props: Props) {
-    const {connection, plugin, cluster, singleHost, databaseId, sshKeyId} = props
+    const {connection, plugin, cluster, databaseId, sshKeyId} = props
 
-    const [override, setOverride] = useState<string | undefined>(undefined)
+    const [template, setTemplate] = useState<Template>()
+    const [command, setCommand] = useState<TemplateCommand>()
+    const [name, setName] = useState("")
     const [keeperPort, setKeeperPort] = useState<string>("")
     const [dbPort, setDbPort] = useState<string>("")
+    const [submitted, setSubmitted] = useState(false)
 
+    const platform = connection.platform ?? PlatformPlugin.LINUX
     const nodeDeploy = useRouterNodeKeeperDeploy(connection)
-    const {
-        deploySpec, image, imageUri, setImageUri, ready, preview, setPreview, inputs, renderField,
-        withKeeperPort, withDbCredentials, mandatoryFields, autoFields,
-    } = useKeeperDeployForm(plugin)
+    const spec = useRouterNodeKeeperDeploySpec(plugin)
+    const picker = useDeploymentTemplatePicker({
+        keeper: plugin,
+        platform,
+        hint: "Pick a template to deploy this node - it uses the template's first command",
+        onPick: setTemplate,
+    })
+    const dbVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
 
-    useEffect(handleEffectImage, [image])
+    useEffect(handleEffectSpec, [spec.data, connection.host])
+    useEffect(handleEffectTemplate, [template])
 
-    const planRequest = useMemo(
-        handleMemoPlanRequest,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [image, imageUri, plugin, cluster, singleHost, connection.host, keeperPort, dbPort, inputs, override]
-    )
-    const plan = useRouterNodeKeeperDeployPlan(useDebounce(planRequest, 300))
-    const planNode = plan.data?.nodes[0]
-    const planWarnings = plan.data?.warnings ?? []
-    const planValues = plan.data?.values ?? {}
+    const withKeeperPort = spec.data?.keeperPort !== undefined
+    const withDbCredentials = spec.data?.credentials ?? false
 
     return (
         <DialogButton
             title={"DEPLOY CONTAINER"}
             variant={"button"}
-            renderActions={renderActions()}
+            renderActions={!picker.editing && command && renderActions()}
             icon={<Rocket fontSize={"small"}/>}
-            back={!!nodeDeploy.data}
+            back={!!nodeDeploy.data || !!template || picker.editing}
+            onBackClick={handleBack}
         >
-            {nodeDeploy.data ? <Logs logs={nodeDeploy.data} height={570} auto={false}/> : renderBody()}
+            {renderContent()}
         </DialogButton>
     )
 
-    function renderBody() {
-        if (deploySpec.isError) return <ErrorSmart error={deploySpec.error}/>
-        if (deploySpec.isPending || !ready) return <SkeletonGroup count={3}/>
-        return (
-            <Box sx={[SX.subContent, {gap: 2}]}>
-                {renderClusterInfo()}
-                {renderMandatoryFields()}
-                {renderImageOptions()}
-            </Box>
-        )
+    function renderContent() {
+        if (nodeDeploy.data) return <Logs logs={nodeDeploy.data} height={570} auto={false}/>
+        if (spec.isError) return <ErrorSmart error={spec.error}/>
+        if (spec.isPending) return <SkeletonGroup count={3}/>
+        if (!template || !command) return picker.render()
+        return renderBody(command)
     }
 
     function renderActions() {
         const dbVaultMissing = withDbCredentials && !databaseId
-        const planReady = !!plan.data && planWarnings.length === 0
         return (
-            <Button loading={nodeDeploy.isPending} onClick={handleAction} disabled={!planReady || dbVaultMissing || !sshKeyId}>
+            <Button
+                loading={nodeDeploy.isPending}
+                onClick={handleAction}
+                disabled={dbVaultMissing || !sshKeyId}
+            >
                 Deploy
             </Button>
+        )
+    }
+
+    function renderBody(current: TemplateCommand) {
+        return (
+            <Box sx={[SX.subContent, {gap: 2}]}>
+                {renderClusterInfo()}
+                {renderNodeFields()}
+                {renderPreview(current)}
+                {template && template.commands.length > 1 && renderCommandNote()}
+            </Box>
+        )
+    }
+
+    // NOTE: a note, not a picker - this screen deploys one node, and which of
+    // a template's commands that is has no answer beyond "the first"
+    function renderCommandNote() {
+        return (
+            <Note center={true}>
+                This template has {template?.commands.length} commands - the first one is used here
+            </Note>
         )
     }
 
@@ -106,16 +122,8 @@ export function ContainerKeeperDeploy(props: Props) {
         return (
             <TitledBox title={"Cluster"} island={true}>
                 <Box sx={[SX.subContent, {gap: 1}]}>
-                    <Box sx={SX.between}>
-                        <TextField
-                            fullWidth
-                            size={"small"}
-                            label={"Cluster Name"}
-                            value={cluster}
-                            disabled={true}
-                        />
-                    </Box>
-                    <Box sx={SX.between}>
+                    <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
+                    <FieldRow>
                         {withDbCredentials && (
                             <TextField
                                 fullWidth
@@ -132,20 +140,27 @@ export function ContainerKeeperDeploy(props: Props) {
                             value={getShortUuid(sshKeyId ?? "none")}
                             disabled={true}
                         />
-                    </Box>
+                    </FieldRow>
                 </Box>
             </TitledBox>
         )
     }
 
-    function renderMandatoryFields() {
+    function renderNodeFields() {
         return (
-            <TitledBox title={"Mandatory Options"} island={true}>
+            <TitledBox title={"Node"} island={true}>
                 <Box sx={[SX.subContent, {gap: 1}]}>
-                    <Box sx={SX.between}>
+                    <TextField
+                        fullWidth
+                        size={"small"}
+                        label={"Name"}
+                        value={name}
+                        error={submitted && !name.trim()}
+                        onChange={e => setName(e.target.value)}
+                    />
+                    <FieldRow>
                         {withKeeperPort && (
                             <TextField
-                                fullWidth
                                 size={"small"}
                                 type={"number"}
                                 label={"Keeper Port"}
@@ -154,102 +169,106 @@ export function ContainerKeeperDeploy(props: Props) {
                             />
                         )}
                         <TextField
-                            fullWidth
                             size={"small"}
                             type={"number"}
                             label={"Database Port"}
                             value={dbPort}
                             onChange={e => setDbPort(e.target.value)}
                         />
-                    </Box>
-                    {mandatoryFields.map(f => renderField(f, planValues))}
-                    {image?.fields.fields.some(f => f.derived) && (
-                        <Box sx={SX.note}>
-                            The configuration is derived for a new cluster on this node,
-                            joining an existing cluster is not supported yet
-                        </Box>
+                    </FieldRow>
+                </Box>
+            </TitledBox>
+        )
+    }
+
+    // NOTE: the command belongs to the template and is read-only here - what
+    // this screen supplies is the node config it interpolates, so it is shown
+    // filled in rather than editable. The hint sits above the code: it says how
+    // to read what follows, which is no use once you have already read it.
+    function renderPreview(current: TemplateCommand) {
+        return (
+            <TitledBox title={"Preview"} island={true}>
+                <Box sx={[SX.subContent, {gap: 1}]}>
+                    <DeploymentPreviewNote/>
+                    <CodeField
+                        label={"Command"}
+                        value={interpolateCommand(current.command, getValues())}
+                        editable={false}
+                        minHeight={"120px"}
+                    />
+                    {current.postScript && (
+                        <CodeField
+                            label={"Post Script"}
+                            hint={"runs in the container once this node is up"}
+                            value={interpolateCommand(current.postScript, getValues())}
+                            editable={false}
+                        />
                     )}
                 </Box>
             </TitledBox>
         )
     }
 
-    function renderImageOptions() {
-        return (
-            <TitledBox title={"Image Options"} island={true}>
-                <Box sx={[SX.subContent, {gap: 2}]}>
-                    <DeployImageHeader
-                        imageUri={imageUri}
-                        onImageUriChange={setImageUri}
-                        preview={preview}
-                        onPreviewChange={setPreview}
-                        placeholderKeys={getPlaceholderKeys()}
-                    />
-                    <WarningList warnings={planWarnings}/>
-                    {autoFields.map(f => renderField(f, planValues))}
-                    <TextField
-                        fullWidth
-                        multiline
-                        minRows={5}
-                        disabled={preview}
-                        size={"small"}
-                        label={"Options"}
-                        value={preview ? planNode?.optionsPreview ?? "" : override ?? planNode?.options ?? ""}
-                        onChange={v => setOverride(v.target.value)}
-                    />
-                </Box>
-            </TitledBox>
-        )
-    }
-
-    function handleMemoPlanRequest(): KeeperDeployPlanRequest | undefined {
-        if (!image) return undefined
+    function getValues() {
         return {
-            plugin,
             cluster,
-            singleHost,
-            image: imageUri,
-            values: getValues(),
-            nodes: [getNode()],
+            name,
+            host: connection.host,
+            sshPort: connection.port,
+            keeperPort: Number(keeperPort) || undefined,
+            dbPort: Number(dbPort) || undefined,
+            dbUser: getDbVault()?.username,
+            dbPass: getDbVault() && DeployPasswordMask,
         }
     }
 
+    function getDbVault() {
+        return databaseId ? dbVaults.data?.[databaseId] : undefined
+    }
+
+    function isReady() {
+        return !!command?.command.trim() && !!name.trim()
+    }
+
+    function handleBack() {
+        if (nodeDeploy.data) return
+        if (picker.back()) return
+        setTemplate(undefined)
+        setCommand(undefined)
+    }
+
+    // NOTE: Deploy stays clickable while a field is missing - clicking it is
+    // what asks for the errors to be shown
     function handleAction() {
-        if (!plan.data) return
+        setSubmitted(true)
+        if (!command || !isReady()) return
         nodeDeploy.mutate({
             plugin,
             cluster,
-            singleHost,
+            name,
             connection,
-            node: getNode(),
-            image: imageUri,
-            values: getValues(),
+            command: command.command,
+            postScript: command.postScript,
+            keeperPort: Number(keeperPort) || undefined,
+            dbPort: Number(dbPort) || undefined,
             vaults: {databaseId, sshKeyId: sshKeyId ?? ""},
         })
     }
 
-    // NOTE: the shared image hook only seeds the built-in field values it owns
-    // itself; the keeper/db port defaults are specific to a single-node deploy
-    function handleEffectImage() {
-        if (!image) return
-        setKeeperPort(image.fields.defaults[InterpolationVar.KeeperPort] ?? "")
-        setDbPort(image.fields.defaults[InterpolationVar.DbPort] ?? "")
+    // NOTE: the ports come from the plugin's own defaults, and the name from
+    // the host, which is what the deployment used to be identified by
+    function handleEffectSpec() {
+        if (!spec.data) return
+        setKeeperPort(spec.data.keeperPort?.toString() ?? "")
+        setDbPort(spec.data.dbPort.toString())
+        setName(prev => prev || connection.host)
     }
 
-    function getNode() {
-        return {
-            host: connection.host,
-            keeperPort: Number(keeperPort) || undefined,
-            dbPort: Number(dbPort) || undefined,
-            options: override,
-        }
-    }
-
-    function getValues() {
-        return {...inputs}
-    }
-
-    function getPlaceholderKeys() {
-        return getDeployPlaceholderKeys(image?.fields, withKeeperPort, withDbCredentials)
+    // NOTE: a template's command is copied in once; from then on the edit is
+    // this node's own and never touches the template
+    function handleEffectTemplate() {
+        setSubmitted(false)
+        if (!template) return
+        setCommand(template.commands[0])
     }
 }

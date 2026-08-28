@@ -12,6 +12,11 @@ import (
 // COMMON (WEB AND SERVER)
 
 type NodeConfig struct {
+	// Name is the node's own name, unique within the cluster and independent
+	// of its host: it is the deployment's identity ({{name}}, --name). Host
+	// stays the connection identity that keeper-reported nodes are matched
+	// against, so the two are deliberately separate.
+	Name       string `json:"name" form:"name"`
 	Host       string `json:"host" form:"host"`
 	SshPort    *int   `json:"sshPort" form:"sshPort"`
 	KeeperPort *int   `json:"keeperPort" form:"keeperPort"`
@@ -19,12 +24,11 @@ type NodeConfig struct {
 }
 
 type Options struct {
-	Plugins    Plugins    `json:"plugins"`
-	Tls        Tls        `json:"tls"`
-	Certs      cert.Certs `json:"certs"`
-	Vaults     Vaults     `json:"vaults"`
-	Tags       []string   `json:"tags"`
-	SingleHost bool       `json:"singleHost"`
+	Plugins Plugins    `json:"plugins"`
+	Tls     Tls        `json:"tls"`
+	Certs   cert.Certs `json:"certs"`
+	Vaults  Vaults     `json:"vaults"`
+	Tags    []string   `json:"tags"`
 }
 
 type Request struct {
@@ -78,19 +82,18 @@ type CreateAutoRequest struct {
 // the keeper plugin's DeploymentSpec unless explicitly provided. Values
 // carries plugin-required inputs (e.g. "dcs" for patroni).
 type DeployRequest struct {
-	Parallel       bool              `json:"parallel"`
-	SingleHost     bool              `json:"singleHost"`
-	Image          string            `json:"image"`
-	Nodes          []DeployNode      `json:"nodes"`
-	Values         map[string]string `json:"values"`
-	CommonConfig   CommonConfig      `json:"commonConfig"`
-	ClusterOptions Options           `json:"clusterOptions"`
+	Parallel       bool         `json:"parallel"`
+	Nodes          []DeployNode `json:"nodes"`
+	CommonConfig   CommonConfig `json:"commonConfig"`
+	ClusterOptions Options      `json:"clusterOptions"`
 }
 
+// DeployNode pairs one node with the command that deploys it, for the length
+// of one request only - the command is never persisted on the cluster.
 type DeployNode struct {
 	NodeConfig
-	// Options overrides the rendered options template for this node.
-	Options string `json:"options"`
+	Command    string `json:"command"`
+	PostScript string `json:"postScript"`
 }
 
 type CommonConfig struct {
@@ -146,16 +149,24 @@ func mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeC
 	return nodes
 }
 
-func mapPlanNodeConfigs(planNodes []node.KeeperDeployPlanNode) []NodeConfig {
-	nodes := make([]NodeConfig, 0, len(planNodes))
-	for _, pn := range planNodes {
-		sshPort, keeperPort, dbPort := pn.SshPort, pn.KeeperPort, pn.DbPort
-		nodes = append(nodes, NodeConfig{
-			Host:       pn.Host,
-			SshPort:    &sshPort,
-			KeeperPort: &keeperPort,
-			DbPort:     &dbPort,
-		})
+// withNodeNames defaults every node's name to its host, so clusters stored
+// before names existed keep rendering and deploying: host used to serve as
+// the deployment's name, and that is exactly what the default preserves.
+func (r Response) withNodeNames() Response {
+	for i := range r.Nodes {
+		if r.Nodes[i].Name == "" {
+			r.Nodes[i].Name = r.Nodes[i].Host
+		}
 	}
-	return nodes
+	return r
+}
+
+// mapDeployNodeConfigs keeps only the connection details on the cluster: the
+// commands themselves live in templates, never on the stored cluster.
+func mapDeployNodeConfigs(nodes []DeployNode) []NodeConfig {
+	configs := make([]NodeConfig, 0, len(nodes))
+	for _, n := range nodes {
+		configs = append(configs, n.NodeConfig)
+	}
+	return configs
 }

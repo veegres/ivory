@@ -12,10 +12,11 @@ type Props = {
     // username locks the selectable vaults to the ones with this username
     // (e.g. a keeper plugin's engine-required database user)
     username?: string,
+    error?: boolean,
 }
 
 export function OptionsVault(props: Props) {
-    const {type, onUpdate, selected, username} = props
+    const {type, onUpdate, selected, username, error = false} = props
     const passId = selected ?? ""
     const {label} = VaultOptions[type]
 
@@ -30,6 +31,7 @@ export function OptionsVault(props: Props) {
             loading={query.isPending}
             onUpdate={handleUpdate}
             search={username}
+            error={error}
         />
     )
 

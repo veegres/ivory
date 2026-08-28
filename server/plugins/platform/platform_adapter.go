@@ -56,19 +56,13 @@ type VmManager interface {
 // ContainerManager covers the lifecycle and inspection of a single deployed
 // container on the node.
 type ContainerManager interface {
-	// RenderOptions renders a deploy spec into the adapter's native, still
-	// user-editable options text (docker run flags, a manifest, etc).
-	RenderOptions(spec DeploySpec) string
 	// ListContainer lists every deployed container on the node.
 	ListContainer(connection Connection) console.Command
-	// UpContainer creates and starts a new container running image with the
-	// given native options text (as rendered by RenderOptions). name is the
-	// deployment's authoritative identity: the adapter enforces it regardless
-	// of what the (still user-editable) options text contains, so later
-	// lifecycle calls (Stop/Start/Exec/Logs by name) always resolve. entryScript,
-	// if non-empty, replaces the image's own default startup command (see
-	// keeper.DeploymentSpec.EntryScript).
-	UpContainer(connection Connection, name, options, image, entryScript string) console.Command
+	// UpContainer runs the deployment command as written by the user, already
+	// interpolated. The adapter does not reinterpret it: the container's name,
+	// image and startup command are all whatever the command itself says, so
+	// what runs is what the user read on screen.
+	UpContainer(connection Connection, command string) console.Command
 	// DownContainer removes the named container.
 	DownContainer(connection Connection, name string) console.Command
 	// StartContainer starts an existing, stopped container.

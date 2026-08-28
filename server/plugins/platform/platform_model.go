@@ -7,31 +7,6 @@ const (
 	Linux Plugin = "linux"
 )
 
-// DeploySpec describes a single deployment in platform-neutral terms. Field
-// values may contain {{placeholder}} templates; adapters render them as-is
-// and interpolation happens later, right before deployment.
-type DeploySpec struct {
-	Name          string
-	Hostname      string
-	RestartPolicy string
-	HostNetwork   bool
-	Ports         []string
-	Volumes       []VolumeMount
-	Env           []EnvVar
-}
-
-// EnvVar is a single environment variable to set on the deployed container.
-type EnvVar struct {
-	Name  string
-	Value string
-}
-
-// VolumeMount is a single host-path-to-container-path volume mount.
-type VolumeMount struct {
-	HostPath      string
-	ContainerPath string
-}
-
 // Metrics is a snapshot of resource usage for a node or a single container.
 type Metrics struct {
 	Cpu     CpuMetrics     `json:"cpu"`

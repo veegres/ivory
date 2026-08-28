@@ -3,6 +3,7 @@ package patroni
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"strings"
 	"testing"
 )
 
@@ -21,37 +22,44 @@ func TestSupportedFeaturesAllSupported(t *testing.T) {
 	}
 }
 
-func TestDeploymentSpec(t *testing.T) {
-	spec := NewAdapter(nil).DeploymentSpec()
+func TestRequirements(t *testing.T) {
+	req := NewAdapter(nil).Requirements()
 
-	if spec.DefaultImage == "" {
-		t.Error("expected a default image")
+	if req.DbPort != 5432 {
+		t.Errorf("expected db port 5432, got %d", req.DbPort)
 	}
-	if len(spec.Ports) != 2 {
-		t.Errorf("expected 2 ports (keeper, db), got %d", len(spec.Ports))
+	if req.KeeperPort == nil || *req.KeeperPort != 8008 {
+		t.Errorf("expected patroni's own rest api port 8008, got %v", req.KeeperPort)
 	}
-	if len(spec.Volumes) == 0 {
-		t.Error("expected at least one volume")
+	if !req.Credentials {
+		t.Error("expected patroni to consume database credentials")
 	}
-	if len(spec.Env) == 0 {
-		t.Error("expected at least one env var")
+	if req.DbUser != "postgres" {
+		t.Errorf("expected spilo's locked superuser postgres, got %q", req.DbUser)
 	}
-	if user, ok := spec.Defaults[keeper.VarDbUser]; !ok || user != "postgres" {
-		t.Errorf("expected credentials with the spilo-required username postgres, got %+v", spec.Defaults)
+}
+
+// TestDefaultTemplates covers patroni's external DCS: Ivory never deploys the
+// coordinator, the user points at one they already run.
+func TestDefaultTemplates(t *testing.T) {
+	templates := NewAdapter(nil).DefaultTemplates()
+
+	if len(templates) != 2 {
+		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
 	}
-	if spec.Defaults[keeper.VarKeeperPort] != "8008" {
-		t.Errorf("expected keeper port default 8008, got %+v", spec.Defaults)
-	}
-	if spec.Defaults[keeper.VarDbPort] != "5432" {
-		t.Errorf("expected db port default 5432, got %+v", spec.Defaults)
-	}
-	if len(spec.Fields) != 1 || spec.Fields[0].Name != keeper.VarDcs || spec.Fields[0].Type != keeper.FieldText {
-		t.Errorf("expected a dcs text field (external DCS address), got %+v", spec.Fields)
-	}
-	if spec.PostScript != "" {
-		t.Errorf("expected no post-deploy script, got %q", spec.PostScript)
-	}
-	if unknown := spec.UnknownVariables(); len(unknown) != 0 {
-		t.Errorf("spec references unknown variables: %v", unknown)
+
+	for _, template := range templates {
+		t.Run(template.Name, func(t *testing.T) {
+			for i, command := range template.Commands {
+				// NOTE: the DCS is literal text now - Ivory never deploys the
+				// coordinator, so a shipped template carries an address to edit
+				if !strings.Contains(command.Command, `ETCD3_HOSTS="etcd-1:2379`) {
+					t.Errorf("command %d has no external DCS address to edit", i)
+				}
+				if !strings.Contains(command.Command, string(keeper.VarKeeperPort)) {
+					t.Errorf("command %d does not expose patroni's own rest api port", i)
+				}
+			}
+		})
 	}
 }

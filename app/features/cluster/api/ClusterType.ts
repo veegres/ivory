@@ -18,10 +18,12 @@ export interface Options {
     certs: Certs,
     vaults: Vaults,
     tags: string[],
-    singleHost: boolean,
 }
 
 export interface NodeConfig {
+    // name is the node's own name, unique within the cluster and independent of
+    // its host: it is the deployment's identity ({{name}}, --name)
+    name?: string,
     host: string,
     sshPort?: number,
     keeperPort?: number,
@@ -66,20 +68,24 @@ export interface DeployCommonConfig {
     dbPass: string,
 }
 
-export interface DeployNode extends NodeConfig {
-    // options overrides the rendered options template for this node
-    options?: string,
+// DeployCredentials is what a deploy preview is allowed to show of the
+// database credentials: the username as it really is, and the password only
+// ever as its mask - the real one is substituted on the server.
+export interface DeployCredentials {
+    user?: string,
+    pass?: string,
 }
 
-// DeployRequest describes a deployment intent: node ports, the image, aux
-// ports, the DCS value and the per-node options are resolved server-side
-// from the keeper plugin's spec unless explicitly provided.
+// DeployNode pairs one node with the command that deploys it, for the length
+// of one request only - the command is never persisted on the cluster.
+export interface DeployNode extends NodeConfig {
+    command: string,
+    postScript?: string,
+}
+
 export interface DeployRequest {
     parallel: boolean,
-    singleHost: boolean,
-    image?: string,
     nodes: DeployNode[],
-    values: {[key: string]: string},
     commonConfig: DeployCommonConfig,
     clusterOptions: Options
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"ivory/features/cluster"
+	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
 	"log/slog"
@@ -19,7 +20,7 @@ var ErrInvalidStatus = errors.New("invalid status")
 var ErrInvalidFeature = errors.New("invalid feature")
 var ErrUnsupportedBackupVersion = errors.New("unsupported backup version")
 
-const latestBackupVersion = "v1"
+const latestBackupVersion = "v2"
 
 // Service manages the lifecycle of system backups (export/import).
 // It handles backward compatibility by dispatching imports to version-specific
@@ -28,17 +29,20 @@ type Service struct {
 	clusterService    *cluster.Service
 	queryService      *query.Service
 	permissionService *permission.Service
+	deploymentService *deployment.Service
 }
 
 func NewService(
 	clusterService *cluster.Service,
 	queryService *query.Service,
 	permissionService *permission.Service,
+	deploymentService *deployment.Service,
 ) *Service {
 	return &Service{
 		clusterService:    clusterService,
 		queryService:      queryService,
 		permissionService: permissionService,
+		deploymentService: deploymentService,
 	}
 }
 
@@ -58,8 +62,8 @@ func (s *Service) GetFileName() string {
 // the new version while preserving older import handlers for legacy file.
 func (s *Service) Export() ([]byte, error) {
 	switch latestBackupVersion {
-	case "v1":
-		backupModel, err := s.exportV1()
+	case "v2":
+		backupModel, err := s.exportV2()
 		if err != nil {
 			return nil, err
 		}
@@ -88,6 +92,11 @@ func (s *Service) Import(file *multipart.FileHeader) error {
 		return errRead
 	}
 
+	if strings.Contains(file.Filename, ".v2.") {
+		return s.importV2(data)
+	}
+	// NOTE: a name with no version at all is a v1 file - v1 predates the
+	// version marker, so the absence of one identifies it
 	if strings.Contains(file.Filename, ".v1.") || !strings.Contains(file.Filename, ".v") {
 		return s.importV1(data)
 	}

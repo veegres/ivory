@@ -12,6 +12,7 @@ import (
 	"ivory/features/backup"
 	"ivory/features/cluster"
 	"ivory/features/config"
+	"ivory/features/deployment"
 	"ivory/features/node"
 	"ivory/features/permission"
 	"ivory/features/query"
@@ -28,6 +29,7 @@ type Service struct {
 	certService       *cert.Service
 	tagService        *tag.Service
 	queryService      *query.Service
+	deploymentService *deployment.Service
 	nodeService       *node.Service
 	secretService     *secret.Service
 	configService     *config.Service
@@ -45,6 +47,7 @@ func NewService(
 	tagService *tag.Service,
 	jobService *job.Service,
 	queryService *query.Service,
+	deploymentService *deployment.Service,
 	nodeService *node.Service,
 	secretService *secret.Service,
 	configService *config.Service,
@@ -60,6 +63,7 @@ func NewService(
 		certService:       certService,
 		tagService:        tagService,
 		queryService:      queryService,
+		deploymentService: deploymentService,
 		nodeService:       nodeService,
 		secretService:     secretService,
 		configService:     configService,
@@ -82,11 +86,12 @@ func (s *Service) Erase() error {
 	errCluster := s.clusterService.DeleteAll()
 	errTag := s.tagService.DeleteAll()
 	errQuery := s.queryService.DeleteAll()
+	errDeployment := s.deploymentService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
 	errTools := s.deleteAllTools()
 
-	return errors.Join(errSecret, errCred, errCert, errCluster, errTag, errQuery, errConfig, errPerm, errTools)
+	return errors.Join(errSecret, errCred, errCert, errCluster, errTag, errQuery, errDeployment, errConfig, errPerm, errTools)
 }
 
 func (s *Service) deleteAllTools() error {

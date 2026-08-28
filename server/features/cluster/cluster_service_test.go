@@ -17,13 +17,16 @@ import (
 )
 
 // fakeKeeperMetadata is a minimal keeper.Metadata test double: it only needs
-// to answer SupportedFeatures for these tests, so DeploymentSpec is unused.
+// to answer SupportedFeatures for these tests, so Requirements is a stub.
 type fakeKeeperMetadata struct {
 	features map[config.Feature]bool
 }
 
 func (f fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool { return f.features }
-func (f fakeKeeperMetadata) DeploymentSpec() keeper.DeploymentSpec      { return keeper.DeploymentSpec{} }
+func (f fakeKeeperMetadata) Requirements() keeper.Requirements {
+	return keeper.Requirements{DbPort: 5432}
+}
+func (f fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate { return nil }
 
 // fakeDbAdapter is a minimal database.Adapter test double. Embedding the nil
 // interface satisfies the (large) query-execution surface without stubbing

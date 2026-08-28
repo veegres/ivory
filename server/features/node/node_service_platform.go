@@ -7,7 +7,6 @@ import (
 	"ivory/core/service/job"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
-	"maps"
 	"strings"
 
 	"github.com/google/uuid"
@@ -110,21 +109,15 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 		return nil, err
 	}
 
-	options := s.normalizeDatabaseOptions(keeper.Interpolate(r.Options, values))
-	if unresolved := keeper.UnresolvedPlaceholders(options); len(unresolved) > 0 {
+	// NOTE: the command is not whitespace-normalized here - it may embed a
+	// multi-line startup script whose newlines are real statement separators.
+	// The adapter collapses only the whitespace outside quoted spans.
+	command := keeper.Interpolate(r.Command, values)
+	if unresolved := keeper.UnresolvedPlaceholders(command); len(unresolved) > 0 {
 		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
 	}
 
-	// NOTE: unlike options, entryScript is not run through
-	// normalizeDatabaseOptions - it can be a multi-line shell script (see
-	// keeper.DeploymentSpec.EntryScript) whose newlines are meaningful
-	// statement separators (e.g. before "then"/"fi"), not just formatting.
-	entryScript := keeper.Interpolate(r.EntryScript, values)
-	if unresolved := keeper.UnresolvedPlaceholders(entryScript); len(unresolved) > 0 {
-		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
-	}
-
-	return s.executeCommand(adapter.UpContainer(conn, r.Name, options, r.Image, entryScript))
+	return s.executeCommand(adapter.UpContainer(conn, command))
 }
 
 // PlatformContainerExec runs one command inside the named deployment,
@@ -148,7 +141,7 @@ func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error)
 // already-resolved adapter/connection/values set, so a caller that already
 // resolved vault credentials (e.g. KeeperPostDeploy) doesn't re-fetch and
 // re-decrypt them just to run its command.
-func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.Connection, name string, commandTemplate string, values map[string]string) ([]string, error) {
+func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.Connection, name string, commandTemplate string, values keeper.Values) ([]string, error) {
 	command := keeper.Interpolate(commandTemplate, values)
 	if unresolved := keeper.UnresolvedPlaceholders(command); len(unresolved) > 0 {
 		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
@@ -160,27 +153,25 @@ func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.C
 // getExecutionValues finalizes interpolation values for execution: the host
 // comes from the connection and the database credentials from the vault, so
 // they cannot be spoofed through request values.
-func (s *Service) getExecutionValues(host string, vaults Vaults, requestValues map[string]string) (map[string]string, error) {
-	values := make(map[string]string, len(requestValues)+3)
-	maps.Copy(values, requestValues)
-	values[string(keeper.VarHost)] = host
+func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.Values) (keeper.Values, error) {
+	values.Host = host
 
 	// NOTE: the vault is optional for keeper plugins that consume no database
 	// credentials, unused values just keep their placeholders unresolved
 	if vaults.DatabaseId != uuid.Nil {
 		dbCred, err := s.vaultService.GetDecrypted(vaults.DatabaseId)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get database credentials from vault: %v", err)
+			return values, fmt.Errorf("failed to get database credentials from vault: %v", err)
 		}
-		values[string(keeper.VarDbUser)] = escapeInterpolatedValue(dbCred.Username)
-		values[string(keeper.VarDbPass)] = escapeInterpolatedValue(dbCred.Secret)
+		values.DbUser = escapeInterpolatedValue(dbCred.Username)
+		values.DbPass = escapeInterpolatedValue(dbCred.Secret)
 	}
 	return values, nil
 }
 
 // escapeInterpolatedValue neutralizes characters that could break out of a
 // keeper plugin's own hand-written quoting once substituted into an
-// options/entryScript/PostScript template (e.g. etcd's PostScript wraps
+// command or post-script template (e.g. an etcd post-script wraps
 // {{dbUser}}:{{dbPass}} in literal double quotes - an unescaped quote or
 // space in the value corrupts the command it's exec'd with). The backslash
 // itself is escaped first, then both quote characters, since a value may
@@ -192,10 +183,6 @@ func escapeInterpolatedValue(v string) string {
 	v = strings.ReplaceAll(v, `'`, `\'`)
 	v = strings.ReplaceAll(v, `"`, `\"`)
 	return v
-}
-
-func (s *Service) normalizeDatabaseOptions(options string) string {
-	return strings.Join(strings.Fields(options), " ")
 }
 
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {

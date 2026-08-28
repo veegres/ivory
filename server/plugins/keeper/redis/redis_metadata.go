@@ -3,6 +3,7 @@ package redis
 import (
 	"ivory/core/config"
 	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 )
 
 // NOTE: validate that is matches interface in compile-time
@@ -22,47 +23,89 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// entryScript makes a non-leader node start as a replica of {{leaderHost}}
-// instead of coming up as its own standalone leader.
-//
-// The official redis image only takes port/password as redis-server CLI
-// flags, not env vars, so it cannot be configured through DeploymentSpec.Env
-// alone the way postgres/etcd are - the leader node (which never gets an
-// EntryScript, see keeper.DeploymentSpec.EntryScript) would be left with no
-// password and the default port. bitnami/redis is used instead because it
-// reads REDIS_PASSWORD/REDIS_PORT_NUMBER from Env on every node including
-// the leader, and only the replica-specific settings
-// (REDIS_REPLICATION_MODE/REDIS_MASTER_*, bitnami's own env var names -
-// unrelated to Ivory's leader/replica vocabulary) need to be layered on top
-// here, exactly the same division of labor as postgres' own EntryScript
-// (Env configures every node identically, EntryScript adds what only a
-// replica needs) - just with env vars exported before exec instead of a
-// basebackup.
-const entryScript = `sh -c '
-export REDIS_REPLICATION_MODE="slave"
-export REDIS_MASTER_HOST="` + string(keeper.VarLeaderHost) + `"
-export REDIS_MASTER_PORT_NUMBER="` + string(keeper.VarDbPort) + `"
-export REDIS_MASTER_PASSWORD="` + string(keeper.VarDbPass) + `"
-exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
-'`
+func (a *Adapter) Requirements() keeper.Requirements {
+	return keeper.Requirements{
+		DbPort:      6379,
+		Credentials: true,
+		DbUser:      "default",
+	}
+}
 
-func (a *Adapter) DeploymentSpec() keeper.DeploymentSpec {
-	return keeper.DeploymentSpec{
-		DefaultImage: "bitnami/redis:7.4",
-		Defaults: map[keeper.Var]string{
-			keeper.VarDbPort: "6379",
-			keeper.VarDbUser: "default",
+// The bitnami image is used rather than the official one because that takes
+// port and password as redis-server flags only, so the leader - which runs no
+// replica bootstrap - could not be configured through environment variables at
+// all. The leader/replica difference is just a different command, and the
+// leader's host is written literally: only the operator knows which node it is.
+
+const deployMultiHostLeader = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --restart unless-stopped
+  -p {{dbPort}}:{{dbPort}}
+  -v /data/redis:/bitnami/redis/data
+  -e REDIS_PORT_NUMBER="{{dbPort}}"
+  -e REDIS_PASSWORD="{{dbPass}}"
+  -e ALLOW_EMPTY_PASSWORD="no"
+  bitnami/redis:7.4`
+
+const deployMultiHostReplica = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --restart unless-stopped
+  -p {{dbPort}}:{{dbPort}}
+  -v /data/redis:/bitnami/redis/data
+  -e REDIS_PORT_NUMBER="{{dbPort}}"
+  -e REDIS_PASSWORD="{{dbPass}}"
+  -e ALLOW_EMPTY_PASSWORD="no"
+  -e REDIS_REPLICATION_MODE="slave"
+  -e REDIS_MASTER_HOST="redis-1"
+  -e REDIS_MASTER_PORT_NUMBER="6379"
+  -e REDIS_MASTER_PASSWORD="{{dbPass}}"
+  bitnami/redis:7.4`
+
+const deploySingleHostLeader = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e REDIS_PORT_NUMBER="{{dbPort}}"
+  -e REDIS_PASSWORD="{{dbPass}}"
+  -e ALLOW_EMPTY_PASSWORD="no"
+  bitnami/redis:7.4`
+
+const deploySingleHostReplica = `docker run -d
+  --name {{name}}
+  --hostname {{host}}
+  --network host
+  -e REDIS_PORT_NUMBER="{{dbPort}}"
+  -e REDIS_PASSWORD="{{dbPass}}"
+  -e ALLOW_EMPTY_PASSWORD="no"
+  -e REDIS_REPLICATION_MODE="slave"
+  -e REDIS_MASTER_HOST="redis-1"
+  -e REDIS_MASTER_PORT_NUMBER="6379"
+  -e REDIS_MASTER_PASSWORD="{{dbPass}}"
+  bitnami/redis:7.4`
+
+func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+	return []keeper.DeploymentTemplate{
+		{
+			Platform:    platform.Linux,
+			Name:        "Redis (Multi Host)",
+			Description: "One redis leader and two replicas, one per VM. Name the leader redis-1 or edit REDIS_MASTER_HOST to match.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deployMultiHostLeader},
+				{Command: deployMultiHostReplica},
+				{Command: deployMultiHostReplica},
+			},
 		},
-		Ports: []string{string(keeper.VarDbPort)},
-		Volumes: []keeper.VolumeSpec{
-			{HostPath: "/data/redis", ContainerPath: "/bitnami/redis/data"},
+		{
+			Platform:    platform.Linux,
+			Name:        "Redis (Single Host)",
+			Description: "One redis leader and two replicas on one VM. Give each node its own database port in the deploy form, and point the replicas at the leader's.",
+			Commands: []keeper.DeploymentCommand{
+				{Command: deploySingleHostLeader},
+				{Command: deploySingleHostReplica},
+				{Command: deploySingleHostReplica},
+			},
 		},
-		Env: []keeper.EnvVar{
-			{Name: "REDIS_PORT_NUMBER", Value: `"` + string(keeper.VarDbPort) + `"`},
-			{Name: "REDIS_PASSWORD", Value: `"` + string(keeper.VarDbPass) + `"`},
-			{Name: "ALLOW_EMPTY_PASSWORD", Value: `"no"`},
-		},
-		EntryScript:             entryScript,
-		EntryScriptReplicasOnly: true,
 	}
 }

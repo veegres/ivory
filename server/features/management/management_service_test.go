@@ -16,10 +16,13 @@ import (
 	"ivory/features/backup"
 	"ivory/features/cluster"
 	"ivory/features/config"
+	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/features/tag"
 	"ivory/plugins/database"
+	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 	"ivory/tools"
 	"os"
 	"path/filepath"
@@ -100,6 +103,12 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 		"ivory",
 	)
 
+	deploymentService := deployment.NewService(
+		deployment.NewRepository(storage.NewDbBucket[deployment.Template](db, "DeploymentTemplate")),
+		utils.NewRegistry[keeper.Plugin, keeper.Metadata](),
+		utils.NewRegistry[platform.Plugin, platform.Adapter](),
+	)
+
 	clusterService := cluster.NewService(
 		cluster.NewRepository(storage.NewDbBucket[cluster.Response](db, "Cluster")),
 		nil,
@@ -130,7 +139,7 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 
 	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
 
-	backupService := backup.NewService(clusterService, queryService, permissionService)
+	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService)
 
 	toolRegistry := utils.NewRegistry[tools.Tool, tools.Adapter]()
 
@@ -145,6 +154,7 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 		tagService,
 		nil,
 		queryService,
+		deploymentService,
 		nil,
 		secretService,
 		configService,
@@ -329,8 +339,8 @@ func TestServiceGetAppInfoWhenConfigured(t *testing.T) {
 func TestServiceBackupDelegation(t *testing.T) {
 	env := createTestManagementService(t)
 
-	if got := env.service.BackupFileName(); got != "ivory.v1.bak" {
-		t.Fatalf("expected 'ivory.v1.bak', got %q", got)
+	if got := env.service.BackupFileName(); got != "ivory.v2.bak" {
+		t.Fatalf("expected 'ivory.v2.bak', got %q", got)
 	}
 
 	data, err := env.service.BackupExport()
