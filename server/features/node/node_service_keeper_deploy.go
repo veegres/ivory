@@ -15,7 +15,7 @@ var ErrKeeperDeployDatabaseCredentialsRequired = errors.New("database credential
 // KeeperDeploySpec reports what the deploy forms need to know about the
 // engine: its default endpoints and whether it consumes credentials.
 func (s *Service) KeeperDeploySpec(r KeeperDeploySpecRequest) (*KeeperDeploySpecResponse, error) {
-	metadata, err := s.keeperMetadataRegistry.Get(r.Plugin)
+	metadata, err := s.keeperRegistry.Get(r.Plugin)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (s *Service) KeeperPostDeploy(r KeeperDeployRequest) []string {
 // KeeperDeploy is the self-contained single-node deploy action: run the
 // command, then its own post-script.
 func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
-	metadata, err := s.keeperMetadataRegistry.Get(r.Plugin)
+	metadata, err := s.keeperRegistry.Get(r.Plugin)
 	if err != nil {
 		return nil, err
 	}

@@ -6,20 +6,20 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-// Plugin identifies which keeper (HA management tool) manages a node.
-type Plugin string
+// PluginType identifies which keeper (HA management tool) manages a node.
+type PluginType string
 
 const (
-	PATRONI_POSTGRES  Plugin = "patroni_postgres"
-	NATIVE_POSTGRES   Plugin = "native_postgres"
-	NATIVE_ETCD       Plugin = "native_etcd"
-	NATIVE_REDIS      Plugin = "native_redis"
-	NATIVE_CLICKHOUSE Plugin = "native_clickhouse"
-	NATIVE_ZOOKEEPER  Plugin = "native_zookeeper"
-	NATIVE_MONGO      Plugin = "native_mongo"
+	PATRONI_POSTGRES  PluginType = "patroni_postgres"
+	NATIVE_POSTGRES   PluginType = "native_postgres"
+	NATIVE_ETCD       PluginType = "native_etcd"
+	NATIVE_REDIS      PluginType = "native_redis"
+	NATIVE_CLICKHOUSE PluginType = "native_clickhouse"
+	NATIVE_ZOOKEEPER  PluginType = "native_zookeeper"
+	NATIVE_MONGO      PluginType = "native_mongo"
 )
 
-func (p Plugin) String() string {
+func (p PluginType) String() string {
 	return string(p)
 }
 

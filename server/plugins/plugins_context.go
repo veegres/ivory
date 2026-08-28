@@ -26,13 +26,13 @@ import (
 )
 
 // Context holds every plugin registry, keyed by each plugin family's own
-// Plugin type, that the rest of Ivory resolves adapters through.
+// PluginType, that the rest of Ivory resolves plugins through. A plugin is
+// registered once: keeper.Plugin and platform.Plugin carry both the adapter
+// and the metadata half, and consumers depend on the narrower view they need.
 type Context struct {
-	KeeperRegistry           *utils.Registry[keeper.Plugin, keeper.Adapter]
-	KeeperMetadataRegistry   *utils.Registry[keeper.Plugin, keeper.Metadata]
-	DatabaseRegistry         *utils.Registry[database.Plugin, database.Adapter]
-	PlatformRegistry         *utils.Registry[platform.Plugin, platform.Adapter]
-	PlatformMetadataRegistry *utils.Registry[platform.Plugin, platform.Metadata]
+	KeeperRegistry   *utils.Registry[keeper.PluginType, keeper.Plugin]
+	DatabaseRegistry *utils.Registry[database.PluginType, database.Adapter]
+	PlatformRegistry *utils.Registry[platform.PluginType, platform.Plugin]
 }
 
 func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
@@ -53,7 +53,7 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	dockerAdapter := docker.NewAdapter(sshClient)
 
 	// REGISTRY
-	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroniAdapter)
 	keeperRegistry.Register(keeper.NATIVE_POSTGRES, pgKeeperAdapter)
 	keeperRegistry.Register(keeper.NATIVE_ETCD, etcdKeeperAdapter)
@@ -61,31 +61,19 @@ func NewContext(httpClient *http.Client, sshClient *ssh.Client) *Context {
 	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouseKeeperAdapter)
 	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeperKeeperAdapter)
 	keeperRegistry.Register(keeper.NATIVE_MONGO, mongoKeeperAdapter)
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroniAdapter)
-	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, pgKeeperAdapter)
-	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcdKeeperAdapter)
-	keeperMetadataRegistry.Register(keeper.NATIVE_REDIS, redisKeeperAdapter)
-	keeperMetadataRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouseKeeperAdapter)
-	keeperMetadataRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeperKeeperAdapter)
-	keeperMetadataRegistry.Register(keeper.NATIVE_MONGO, mongoKeeperAdapter)
-	databaseRegistry := utils.NewRegistry[database.Plugin, database.Adapter]()
+	databaseRegistry := utils.NewRegistry[database.PluginType, database.Adapter]()
 	databaseRegistry.Register(database.POSTGRES, postgresAdapter)
 	databaseRegistry.Register(database.ETCD, etcdDbAdapter)
 	databaseRegistry.Register(database.REDIS, redisDbAdapter)
 	databaseRegistry.Register(database.CLICKHOUSE, clickhouseDbAdapter)
 	databaseRegistry.Register(database.ZOOKEEPER, zookeeperDbAdapter)
 	databaseRegistry.Register(database.MONGO, mongoDbAdapter)
-	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 	platformRegistry.Register(platform.Docker, dockerAdapter)
-	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
-	platformMetadataRegistry.Register(platform.Docker, dockerAdapter)
 
 	return &Context{
-		KeeperRegistry:           keeperRegistry,
-		KeeperMetadataRegistry:   keeperMetadataRegistry,
-		DatabaseRegistry:         databaseRegistry,
-		PlatformRegistry:         platformRegistry,
-		PlatformMetadataRegistry: platformMetadataRegistry,
+		KeeperRegistry:   keeperRegistry,
+		DatabaseRegistry: databaseRegistry,
+		PlatformRegistry: platformRegistry,
 	}
 }

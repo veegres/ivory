@@ -6,29 +6,29 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-// Plugin identifies which database engine a Config connects to.
-type Plugin string
+// PluginType identifies which database engine a Config connects to.
+type PluginType string
 
 const (
-	POSTGRES   Plugin = "postgres"
-	ETCD       Plugin = "etcd"
-	REDIS      Plugin = "redis"
-	CLICKHOUSE Plugin = "clickhouse"
-	ZOOKEEPER  Plugin = "zookeeper"
-	MONGO      Plugin = "mongo"
+	POSTGRES   PluginType = "postgres"
+	ETCD       PluginType = "etcd"
+	REDIS      PluginType = "redis"
+	CLICKHOUSE PluginType = "clickhouse"
+	ZOOKEEPER  PluginType = "zookeeper"
+	MONGO      PluginType = "mongo"
 )
 
-func (p Plugin) String() string {
+func (p PluginType) String() string {
 	return string(p)
 }
 
 // Config is the persisted, user-facing database connection configuration.
 type Config struct {
-	Plugin Plugin  `json:"plugin"`
-	Host   string  `json:"host"`
-	Port   int     `json:"port"`
-	Name   *string `json:"name"`
-	Schema *string `json:"schema"`
+	Plugin PluginType `json:"plugin"`
+	Host   string     `json:"host"`
+	Port   int        `json:"port"`
+	Name   *string    `json:"name"`
+	Schema *string    `json:"schema"`
 }
 
 // SPECIFIC (SERVER)

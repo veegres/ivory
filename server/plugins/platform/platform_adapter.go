@@ -27,6 +27,15 @@ type Connection struct {
 	PrivateKey []byte
 }
 
+// Plugin is the whole contract a platform plugin registers under: operations
+// against a reachable node plus its own self-description. It exists so a
+// plugin is registered once, in one registry, while consumers keep depending
+// on the half they actually use.
+type Plugin interface {
+	Adapter
+	Metadata
+}
+
 // Adapter is implemented by every platform plugin (docker, ...). It combines
 // system-level (SystemManager) and container-level (ContainerManager)
 // operations into the single interface the rest of Ivory depends on.

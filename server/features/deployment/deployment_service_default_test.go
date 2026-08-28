@@ -22,19 +22,19 @@ import (
 func newFullTestService(t *testing.T) *Service {
 	t.Helper()
 
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
-	keeperMetadataRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewAdapter())
-	keeperMetadataRegistry.Register(keeper.NATIVE_MONGO, mongo.NewAdapter())
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
+	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
+	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_MONGO, mongo.NewAdapter())
 
-	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
 
-	return NewService(newTestRepository(t), keeperMetadataRegistry, platformRegistry)
+	return NewService(newTestRepository(t), keeperRegistry, platformRegistry)
 }
 
 // TestDefaultsCoverEveryKeeper is what replaced the per-plugin deployment-spec
@@ -43,7 +43,7 @@ func TestDefaultsCoverEveryKeeper(t *testing.T) {
 	s := newFullTestService(t)
 	defaults := s.Defaults(ListRequest{})
 
-	plugins := []keeper.Plugin{
+	plugins := []keeper.PluginType{
 		keeper.PATRONI_POSTGRES, keeper.NATIVE_POSTGRES, keeper.NATIVE_ETCD,
 		keeper.NATIVE_REDIS, keeper.NATIVE_CLICKHOUSE, keeper.NATIVE_ZOOKEEPER, keeper.NATIVE_MONGO,
 	}
@@ -174,9 +174,9 @@ func TestDefaultsFilterByPlugin(t *testing.T) {
 	t.Run("an unregistered keeper has no templates", func(t *testing.T) {
 		empty := NewService(
 			newTestRepository(t),
-			utils.NewRegistry[keeper.Plugin, keeper.Metadata](),
-			func() *utils.Registry[platform.Plugin, platform.Adapter] {
-				r := utils.NewRegistry[platform.Plugin, platform.Adapter]()
+			utils.NewRegistry[keeper.PluginType, keeper.Plugin](),
+			func() *utils.Registry[platform.PluginType, platform.Plugin] {
+				r := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 				r.Register(platform.Docker, docker.NewAdapter(nil))
 				return r
 			}(),

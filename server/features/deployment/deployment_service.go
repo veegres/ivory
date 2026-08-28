@@ -2,7 +2,6 @@ package deployment
 
 import (
 	"errors"
-	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 )
@@ -14,20 +13,33 @@ var ErrTemplateReadOnly = errors.New("shipped templates cannot be changed, copy 
 var ErrTemplatePluginImmutable = errors.New("template keeper and platform cannot be changed")
 var ErrUnknownPlatform = errors.New("unknown platform")
 
+// keeperRegistry is the narrow view deployment needs of the keeper plugin
+// registry: it reads the deployments every registered plugin ships and never
+// operates a running keeper.
+type keeperRegistry interface {
+	All() map[keeper.PluginType]keeper.Plugin
+}
+
+// platformRegistry is narrower still: deployment only asks whether a platform
+// is registered at all.
+type platformRegistry interface {
+	Get(platform.PluginType) (platform.Plugin, error)
+}
+
 type Service struct {
-	repository             *Repository
-	keeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata]
-	platformRegistry       *utils.Registry[platform.Plugin, platform.Adapter]
+	repository       *Repository
+	keeperRegistry   keeperRegistry
+	platformRegistry platformRegistry
 }
 
 func NewService(
 	repository *Repository,
-	keeperMetadataRegistry *utils.Registry[keeper.Plugin, keeper.Metadata],
-	platformRegistry *utils.Registry[platform.Plugin, platform.Adapter],
+	keeperRegistry keeperRegistry,
+	platformRegistry platformRegistry,
 ) *Service {
 	return &Service{
-		repository:             repository,
-		keeperMetadataRegistry: keeperMetadataRegistry,
-		platformRegistry:       platformRegistry,
+		repository:       repository,
+		keeperRegistry:   keeperRegistry,
+		platformRegistry: platformRegistry,
 	}
 }

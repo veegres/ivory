@@ -17,9 +17,11 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-// fakeKeeperMetadata is a minimal keeper.Metadata test double: it only needs
-// to answer SupportedFeatures for these tests, so Requirements is a stub.
+// fakeKeeperMetadata is a minimal keeper.Plugin test double: only the metadata
+// half is real - it answers SupportedFeatures, stubs Requirements, and leaves
+// the adapter half an embedded nil these tests never call.
 type fakeKeeperMetadata struct {
+	keeper.Adapter
 	features map[config.Feature]bool
 }
 
@@ -30,6 +32,7 @@ func (f fakeKeeperMetadata) Requirements() keeper.Requirements {
 func (f fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate { return nil }
 
 type fakePlatformMetadata struct {
+	platform.Adapter
 	features map[config.Feature]bool
 }
 
@@ -82,18 +85,18 @@ func createFeatureTestService(t *testing.T) (*Service, node.KeeperPlugin, query.
 	keeperPlugin := node.KeeperPlugin("fake-keeper")
 	dbPlugin := query.DbPlugin("fake-db")
 
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.Plugin(keeperPlugin), fakeKeeperMetadata{
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
+	keeperRegistry.Register(keeper.PluginType(keeperPlugin), fakeKeeperMetadata{
 		features: map[config.Feature]bool{config.ViewNodeKeeperOverview: true},
 	})
-	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
-	platformMetadataRegistry.Register(node.DefaultPlatform, fakePlatformMetadata{
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
+	platformRegistry.Register(node.DefaultPlatform, fakePlatformMetadata{
 		features: map[config.Feature]bool{config.ViewNodeSystem: true},
 	})
-	nodeService := node.NewService(nil, platformMetadataRegistry, nil, keeperMetadataRegistry, nil, nil, nil)
+	nodeService := node.NewService(platformRegistry, keeperRegistry, nil, nil, nil)
 
-	databaseRegistry := utils.NewRegistry[database.Plugin, database.Adapter]()
-	databaseRegistry.Register(database.Plugin(dbPlugin), fakeDbAdapter{
+	databaseRegistry := utils.NewRegistry[database.PluginType, database.Adapter]()
+	databaseRegistry.Register(database.PluginType(dbPlugin), fakeDbAdapter{
 		features: map[config.Feature]bool{config.ViewQueryDbInfo: true},
 	})
 	queryRepository := query.NewRepository(

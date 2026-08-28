@@ -5,8 +5,8 @@ import "testing"
 func TestPluginCurrent(t *testing.T) {
 	tests := []struct {
 		name     string
-		stored   Plugin
-		expected Plugin
+		stored   PluginType
+		expected PluginType
 	}{
 		{name: "a renamed platform resolves to its current name", stored: "linux", expected: Docker},
 		{name: "a current platform is left untouched", stored: Docker, expected: Docker},

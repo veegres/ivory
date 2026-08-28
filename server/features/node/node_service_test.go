@@ -18,11 +18,8 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-type fakePlatformAdapter struct {
-	platform.Adapter
-}
-
 type fakePlatformMetadata struct {
+	platform.Adapter
 	features map[config.Feature]bool
 }
 
@@ -31,6 +28,7 @@ func (f *fakePlatformMetadata) SupportedFeatures() map[config.Feature]bool {
 }
 
 type fakeKeeperMetadata struct {
+	keeper.Adapter
 	features map[config.Feature]bool
 }
 
@@ -90,19 +88,13 @@ func createTestNodeService(t *testing.T) (*Service, *vault.Service) {
 		cert.NewRepository(storage.NewDbBucket[cert.Cert](db, "Cert"), storage.NewFileStorage("cert", "")),
 	)
 
-	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
-	platformRegistry.Register(platform.Docker, &fakePlatformAdapter{})
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
+	platformRegistry.Register(platform.Docker, &fakePlatformMetadata{features: map[config.Feature]bool{config.ViewNodeSystem: true}})
 
-	platformMetadataRegistry := utils.NewRegistry[platform.Plugin, platform.Metadata]()
-	platformMetadataRegistry.Register(platform.Docker, &fakePlatformMetadata{features: map[config.Feature]bool{config.ViewNodeSystem: true}})
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
+	keeperRegistry.Register("fake", &fakeKeeperMetadata{features: map[config.Feature]bool{config.ViewClusterList: true}})
 
-	keeperRegistry := utils.NewRegistry[keeper.Plugin, keeper.Adapter]()
-	keeperRegistry.Register("fake", &fakeKeeperAdapter{})
-
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register("fake", &fakeKeeperMetadata{features: map[config.Feature]bool{config.ViewClusterList: true}})
-
-	s := NewService(platformRegistry, platformMetadataRegistry, keeperRegistry, keeperMetadataRegistry, vaultService, certService, nil)
+	s := NewService(platformRegistry, keeperRegistry, vaultService, certService, nil)
 	return s, vaultService
 }
 

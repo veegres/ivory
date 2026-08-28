@@ -28,7 +28,7 @@ type Metadata interface {
 // one per node, written for a specific platform. It carries nothing about
 // where the nodes run - host, ports and names are supplied at deploy time.
 type DeploymentTemplate struct {
-	Platform    platform.Plugin
+	Platform    platform.PluginType
 	Name        string
 	Description string
 	Commands    []DeploymentCommand

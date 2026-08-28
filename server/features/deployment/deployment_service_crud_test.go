@@ -16,12 +16,12 @@ import (
 func newTestService(t *testing.T) *Service {
 	t.Helper()
 
-	keeperMetadataRegistry := utils.NewRegistry[keeper.Plugin, keeper.Metadata]()
-	keeperMetadataRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	platformRegistry := utils.NewRegistry[platform.Plugin, platform.Adapter]()
+	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
 
-	return NewService(newTestRepository(t), keeperMetadataRegistry, platformRegistry)
+	return NewService(newTestRepository(t), keeperRegistry, platformRegistry)
 }
 
 func testRequest(name string) TemplateRequest {

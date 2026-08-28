@@ -26,9 +26,7 @@ func main() {
 		appEnv,
 		pc.DatabaseRegistry,
 		pc.PlatformRegistry,
-		pc.PlatformMetadataRegistry,
 		pc.KeeperRegistry,
-		pc.KeeperMetadataRegistry,
 		tc.Registry,
 		cc.Service,
 	)

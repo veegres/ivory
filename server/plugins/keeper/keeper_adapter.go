@@ -12,6 +12,15 @@ import (
 var ErrBodyShouldBeEmpty = errors.New("body should be empty")
 var ErrNotSupported = errors.New("operation is not supported by this keeper plugin")
 
+// Plugin is the whole contract a keeper plugin registers under: operations
+// against a running keeper plus its own self-description. It exists so a
+// plugin is registered once, in one registry, while consumers keep depending
+// on the half they actually use.
+type Plugin interface {
+	Adapter
+	Metadata
+}
+
 // Adapter covers operations against a running keeper; plugin self-description
 // (supported features, deployment defaults) lives in Metadata. Methods a
 // plugin cannot perform (e.g. patroni-only orchestration on native postgres)
