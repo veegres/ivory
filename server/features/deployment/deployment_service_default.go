@@ -12,7 +12,6 @@ import (
 // keeper.Metadata requires DefaultTemplates - makes it impossible to add a
 // keeper plugin that has no deployments to copy from.
 func (s *Service) Defaults(criteria ListRequest) []Template {
-	criteria = criteria.normalized()
 	defaults := make([]Template, 0)
 	for pluginType, plugin := range s.keeperRegistry.All() {
 		if plugin == nil {

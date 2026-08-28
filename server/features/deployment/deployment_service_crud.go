@@ -11,7 +11,6 @@ import (
 // List returns the user's own templates followed by the shipped defaults, so
 // the UI renders one list rather than two separate concepts.
 func (s *Service) List(criteria ListRequest) ([]Template, error) {
-	criteria = criteria.normalized()
 	stored, err := s.repository.List(criteria)
 	if err != nil {
 		return nil, err
@@ -24,7 +23,6 @@ func (s *Service) Get(key uuid.UUID) (Template, error) {
 }
 
 func (s *Service) Create(r TemplateRequest) (*Template, error) {
-	r = r.normalized()
 	if err := s.validate(r, ""); err != nil {
 		return nil, err
 	}
@@ -35,7 +33,6 @@ func (s *Service) Create(r TemplateRequest) (*Template, error) {
 // Update rejects a change of keeper or platform: the commands are written
 // against a specific pair, so switching either would silently invalidate them.
 func (s *Service) Update(key uuid.UUID, r TemplateRequest) (*Template, error) {
-	r = r.normalized()
 	current, err := s.repository.Get(key)
 	if err != nil {
 		return nil, err

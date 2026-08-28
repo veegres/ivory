@@ -7,23 +7,6 @@ const (
 	Docker PluginType = "docker"
 )
 
-// renamedPlugins maps a platform key that used to be stored under a different
-// name to the one it goes by now. Deployment templates and backups persist the
-// key they were written with, so a rename has to stay readable or every stored
-// template reads back as a platform no adapter answers to.
-var renamedPlugins = map[PluginType]PluginType{
-	"linux": Docker,
-}
-
-// Current resolves a stored platform key to the name it goes by now, leaving
-// anything already current untouched.
-func (p PluginType) Current() PluginType {
-	if current, ok := renamedPlugins[p]; ok {
-		return current
-	}
-	return p
-}
-
 // Metrics is a snapshot of resource usage for a node or a single container.
 type Metrics struct {
 	Cpu     CpuMetrics     `json:"cpu"`
