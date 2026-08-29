@@ -68,25 +68,34 @@ Thank you for being part of this journey! 🚀
 
 ## Features
 
+**Deployment**
+
+- [Deploying a cluster](.doc/deployment.md#deploying-a-cluster) — over SSH, with no orchestrator or agent
+- [Deploying a single cluster node](.doc/deployment.md#deploying-a-single-cluster-node) — add or rebuild one node of an existing cluster
+- [Deployment templates](.doc/deployment.md) — the command that runs on each node, saved and reusable
+- [Default templates](.doc/deployment.md#default-templates) — ready to deploy for every supported database, in two variants:
+    - **Multi host** — one node per machine, the usual layout for a real cluster
+    - **Single host** — the whole cluster on one machine, for trying it out locally or on a test VM
+
 **Cluster management**
 
-- [Keep all clusters in one place — register by hand, auto-detect from a single node address, or deploy fresh](.doc/clusters.md)
-- [Monitor real-time cluster health: node roles, replication lag, pending restarts, warnings](.doc/overview.md)
-- [Perform HA operations: switchover, failover, reinitialise, restart, reload, pause/resume](.doc/overview.md#ha-operations)
-- [View and patch database configuration per node](.doc/node.md#configuration)
+- [Cluster list](.doc/clusters.md) — register manually, auto-detect from one address, or deploy
+- [Cluster health](.doc/overview.md) — node roles, replication lag, pending restarts, warnings
+- [HA operations](.doc/overview.md#ha-operations) — switchover, failover, reinitialise, restart, reload, pause
+- [Database configuration](.doc/node.md#configuration) — view and patch settings per node
 
 **Node operations**
 
-- [Deploy new database containers on remote hosts over SSH — no agent needed](.doc/node.md#container)
-- [Control the full container lifecycle: up, start, stop, restart, down, logs](.doc/node.md#container)
-- [Manage Keeper directly per node: switchover, failover, reinitialise, restart, pause, configure](.doc/node.md#keeper)
-- [Monitor real-time VM metrics (CPU, memory, network) per node](.doc/node.md#platform)
-- [Stream live logs from any file on the remote host or from a container](.doc/node.md#logs)
+- [Container lifecycle](.doc/node.md#container) — deploy, start, stop, restart, remove, logs
+- [Keeper operations per node](.doc/node.md#keeper) — the same HA actions in a full-page view
+- [VM metrics](.doc/node.md#system) — CPU, memory, network and processes on the host
+- [Log streaming](.doc/node.md#logs) — any file on the host, or container output
 
 **Database troubleshooting**
 
-- [Run and save template SQL queries for database monitoring](.doc/node.md#database)
-- [Manage Postgres bloat with pgcompacttable](.doc/pg_compacttable.md)
+- [Query builder](.doc/node.md#database) — saved SQL queries for monitoring and diagnostics
+- [Database tools](.doc/node.md#tools) — engine-specific maintenance tools, run as background jobs with live output:
+    - **Postgres** — [pgcompacttable](.doc/pg_compacttable.md), reduces table and index bloat without heavy locks
 
 ## Get started
 
@@ -100,10 +109,8 @@ Thank you for being part of this journey! 🚀
         - 📦 **GitHub Container registry** `docker run -p 80:80 --restart always ghcr.io/veegres/ivory:v2.0.0-alpha.1`
 2. Go to http://localhost:80
 3. Complete the initial setup wizard (authentication, secret key)
-4. Add your first cluster — three options:
-    - **Manual** — provide all node addresses yourself
-    - **Auto-detect** — give one node address and Ivory discovers the rest
-    - **Deploy** — provision a brand-new cluster on remote hosts
+4. Add your first cluster — **manual** (all node addresses), **auto-detect** (one address, Ivory
+   finds the rest), or **[deploy](.doc/deployment.md)** a new one from a template
 5. Start monitoring
 
 ![Demo](.doc/images/demo.png)

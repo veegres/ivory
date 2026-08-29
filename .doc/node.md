@@ -6,11 +6,16 @@ availability, and a **Database** engine that stores data. Ivory lets you interac
 the same place.
 
 Clicking a node in the [Overview](overview.md) opens the Node view, which is split into five tabs:
-**Keeper**, **Container**, **Database**, **Tools**, and **Platform**.
+**System**, **Container**, **Keeper**, **Database**, and **Tools**.
 
-## Platform
+A **platform** is the deployment target Ivory integrates with — on-prem Docker over SSH today, with
+Kubernetes/OpenShift planned. The tabs follow its two parts: the **System** tab covers the machine a
+deployment runs on, the **Container** tab covers what is deployed onto it. On a platform that cannot
+address the machine itself, the System tab is hidden.
 
-The Platform tab provides visibility into the virtual machine (VM) hosting this node over SSH. It does not require any
+## System
+
+The System tab provides visibility into the virtual machine (VM) hosting this node over SSH. It does not require any
 agent on the remote host — only SSH access.
 
 ### VM Metrics
@@ -22,6 +27,11 @@ Real-time resource usage is polled from the remote host and displayed on an auto
 | **CPU** | Total CPU ticks and idle ticks. Use the difference over an interval to derive utilisation. |
 | **Memory** | Total bytes and available bytes on the host. |
 | **Network** | Cumulative bytes received and transmitted since boot. |
+
+### Processes and Info
+
+The running process list on the host, and basic system information about the machine — enough to answer "is anything
+else on this box" without opening a shell.
 
 ### Logs
 
@@ -39,36 +49,34 @@ Docker.
 
 ### Prerequisites
 
-Before deploying, copy Ivory's public SSH key to the remote host using the **Copy ID** button on the Platform tab. This
-sets up passwordless SSH access that all container operations depend on.
+All container operations run over SSH with the key held in Ivory's vault. Copy that key's public half into the host's
+`authorized_keys` before using this tab; the vault shows it next to the entry.
 
 | Operation | Description |
 |-----------|-------------|
+| **Overview** | The container for this node: live metrics, streaming logs, and the lifecycle buttons below. |
 | **List** | Show all deployments (Docker containers) currently on the remote host. |
-| **Up** | Pull the image and start a new container. Accepts a raw option string with `{{placeholder}}` interpolation (see below). |
+| **Deploy** | Run a [deployment template](deployment.md) on this host to create the container (see below). |
 | **Start** | Start an existing container that was stopped. |
 | **Stop** | Gracefully stop a running container (the container record remains). |
 | **Restart** | Stop and immediately start the container. |
-| **Down** | Stop and **remove** the container entirely. |
+| **Remove** | Stop and **remove** the container entirely. |
 | **Logs** | Stream live output from the container. |
 
-### Option Placeholders
+### Deploy
 
-The deployment form accepts a free-form option string (Docker Compose arguments or environment variables) with
-Ivory-managed placeholders that are interpolated at deploy time:
+**Deploy** opens the same [deployment template](deployment.md) flow used for a whole cluster, applied to this one node.
+Use it to add a member to a running cluster, or to rebuild one that was removed.
 
-| Placeholder | Value injected |
-|-------------|---------------|
-| `{{host}}` | The node's hostname or IP address |
-| `{{cluster}}` | The cluster name configured in Ivory |
-| `{{dcs}}` | The DCS connection string used by the Keeper |
-| `{{keeperPort}}` | The Keeper API port |
-| `{{dbPort}}` | The database port |
-| `{{dbUser}}` | The database superuser username |
-| `{{dbPass}}` | The database superuser password |
+Everything on the screen is filled in and disabled: the node is the one the dialog was opened on, its ports are the
+keeper plugin's defaults, and the credentials are the cluster's. The one choice is **which of the template's nodes runs
+on this host**, a toggle above the node card, since a template describes a whole cluster.
 
-This lets a single image option template work across all nodes of a cluster — each node fills in its own values
-automatically.
+The command is read-only and shown already interpolated with this node's values, so it matches what will run. The
+database password is the exception: it is displayed as `*****` and substituted on the server from the vault, so it
+never reaches the browser.
+
+See [Deployment](deployment.md) for what a template is, the full variable reference, and the default templates.
 
 ---
 
@@ -148,13 +156,15 @@ the selected database.
 
 ## Tools
 
-The Tools tab groups maintenance operations that run against the node's database.
+The Tools tab groups maintenance operations that run against the node's database. Each tool is
+specific to one database engine and only works on nodes running that engine.
 
-### pgcompacttable
+### pgcompacttable (Postgres only)
 
-[pgcompacttable](https://github.com/dataegret/pgcompacttable) reduces table and index bloat
-without taking heavy locks, making it safe to run on production systems. See
-[pgcompacttable](pg_compacttable.md) for full details.
+[pgcompacttable](https://github.com/dataegret/pgcompacttable) is a Postgres tool: it reduces table
+and index bloat without taking heavy locks, which makes it safe to run on production systems. It
+applies to Postgres nodes only, whichever keeper manages them, and has no equivalent for the other
+engines Ivory supports. See [pgcompacttable](pg_compacttable.md) for full details.
 
 Jobs can only be submitted against the **leader** node (Ivory enforces this automatically). Once
 submitted, a job runs in the background — you can monitor its status and stream its output from the

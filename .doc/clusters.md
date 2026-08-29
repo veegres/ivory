@@ -28,10 +28,11 @@ There are three ways to add a cluster depending on your situation.
 Click the **+** button to open the manual form. Provide:
 
 - Cluster **name**
-- One or more **nodes** — for each node specify its host, keeper port (default `8008`),
-  database port (default `5432`), and optionally an SSH port
-- **Keeper plugin** — currently Patroni
-- **Database plugin** — currently PostgreSQL
+- One or more **nodes** — for each node a **name** (unique within the cluster), its host, keeper port
+  (default `8008` for Patroni), database port (default `5432` for Postgres), and optionally an SSH
+  port
+- **Keeper plugin** — Patroni, Postgres, Etcd, Redis, ClickHouse, ZooKeeper or MongoDB
+- **Database plugin** — the engine behind that keeper; selecting a keeper preselects its usual pair
 - Optional: TLS certificates for keeper and database connections, vault references for credentials,
   and tags
 
@@ -40,26 +41,30 @@ Use this when you already know all node addresses or when auto-detection is not 
 ### Auto-Detect (existing cluster, only one node address known)
 
 Click the **auto** button (the wand/detect icon next to +). Provide just one node's host and keeper
-port — Ivory queries Patroni on that node, which returns the full cluster membership, and then
-automatically creates all node entries with the correct hosts, keeper ports, and database ports.
+port — Ivory asks the keeper on that node for the full cluster membership, then creates every node
+entry with the correct hosts, keeper ports and database ports. Where the keeper names its members
+itself (Patroni, etcd), those names become the node names; otherwise a node is named after its host.
 
 All detected nodes share the same keeper plugin, database plugin, TLS, and vault settings that you
 configure in the wizard.
 
-### Deploy (new cluster, no PostgreSQL running yet)
+### Deploy (new cluster, nothing running yet)
 
-Click the **deploy** button to open the deployment wizard. This is for provisioning a brand-new
-cluster on remote hosts. The wizard collects:
+Click the **deploy** button to deploy a new cluster onto remote hosts over SSH. The deployment is
+described by a **[deployment template](deployment.md)**: the command that will run on each node,
+either one of the templates a keeper plugin ships or one you wrote yourself.
 
-- Cluster **name** and a list of **target hosts** with their intended ports
-- **SSH credentials** — used to connect to each host and run Docker commands; optionally stored in
-  vault for reuse
-- **Database credentials** — the superuser username and password for the new PostgreSQL instances
-- **Image options** — a free-form Docker option string with `{{placeholder}}` interpolation
-  (see [Node → Container](node.md#container) for the full placeholder reference)
+The dialog has three screens:
 
-Ivory then deploys the container on each host sequentially (or in parallel if configured), sets up
-Patroni, and registers all nodes in the cluster.
+1. **Pick a template** for the selected keeper and platform, or copy an existing one and adjust it.
+2. **Fill it in** — cluster name, SSH credentials, database credentials, and one node card per
+   command in the template (name, host, ports). Each card shows the command it will run, already
+   interpolated with that node's values.
+3. **Deploy**, and read the per-node logs. Ivory registers the cluster once a node is up, then runs
+   any post scripts.
+
+See [Deployment](deployment.md) for the details: what a template contains, the variables a command
+may use, the default templates, and how a deploy is executed.
 
 After deployment you can manage each node's container lifecycle from the [Node → Container](node.md#container)
 tab at any time.
@@ -71,7 +76,7 @@ tab at any time.
 In the [Overview](overview.md), the settings button (top-right corner of the cluster header) opens
 the cluster options panel. Here you can:
 
-- Set or rotate **database credentials** (postgres user password) and **Patroni REST API credentials**
+- Set or rotate **database credentials** and **Keeper API credentials**
 - Attach or change **TLS certificates** for keeper and database connections
 - Link a **vault** entry to avoid storing credentials in plain text
 - Add or remove **tags** for filtering

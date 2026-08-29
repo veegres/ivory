@@ -1,5 +1,8 @@
 # [☰](../README.md) pgcompacttable
 
+**This tool is Postgres only.** It runs against Postgres nodes, whichever keeper manages them, and
+has no equivalent for the other database engines Ivory supports.
+
 PostgreSQL does not reclaim disk space immediately when rows are updated or deleted — old row
 versions (dead tuples) accumulate in the heap as **bloat**. Left unchecked, bloat inflates table
 and index sizes, slows sequential scans, and increases I/O. Ivory integrates
