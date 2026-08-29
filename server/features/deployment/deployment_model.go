@@ -97,7 +97,7 @@ func isDefaultId(id string) bool {
 func (r TemplateRequest) unknownPlaceholders() []string {
 	unknown := make([]string, 0)
 	for _, c := range r.Commands {
-		for _, text := range []string{c.Command, c.PostScript} {
+		for _, text := range append([]string{c.Command}, c.PostScripts...) {
 			for _, v := range keeper.UnknownPlaceholders(text) {
 				if !slices.Contains(unknown, v) {
 					unknown = append(unknown, v)

@@ -53,26 +53,37 @@ func (s *Service) KeeperDeployUp(r KeeperDeployRequest) ([]string, error) {
 }
 
 // KeeperPostDeploy runs a deployment's post-script inside its already-running
-// container. It reports failures as log lines rather than an error, so one
-// node's bootstrap step can't fail a whole batch that otherwise deployed.
-func (s *Service) KeeperPostDeploy(r KeeperDeployRequest) []string {
-	if r.PostScript == "" {
-		return nil
+// container. It keeps reporting the failure as a log line so one node's
+// bootstrap step can't fail a whole batch that otherwise deployed, and returns
+// it as well so the caller can say so in its result: a post script that
+// silently does nothing leaves a cluster that looks deployed and is not
+// initialized.
+func (s *Service) KeeperPostDeploy(r KeeperDeployRequest) ([]string, error) {
+	if len(r.PostScripts) == 0 {
+		return nil, nil
 	}
-	if unknown := keeper.UnknownPlaceholders(r.PostScript); len(unknown) > 0 {
-		return []string{fmt.Sprintf("post-deploy initialization failed: unknown variables in post script: %s", strings.Join(unknown, ", "))}
+	// NOTE: the steps run as separate executions rather than one chained
+	// script, so a deployment whose image has no shell can still be
+	// initialized - etcd's holds only etcd, etcdctl and etcdutl
+	logs := make([]string, 0, len(r.PostScripts))
+	for _, script := range r.PostScripts {
+		if unknown := keeper.UnknownPlaceholders(script); len(unknown) > 0 {
+			err := fmt.Errorf("unknown variables in post script: %s", strings.Join(unknown, ", "))
+			return append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err)), err
+		}
+		stepLogs, err := s.PlatformContainerExec(PlatformExecRequest{
+			Name:       r.Name,
+			Connection: r.Connection,
+			Vaults:     r.Vaults,
+			Command:    script,
+			Values:     s.getValues(r),
+		})
+		logs = append(logs, stepLogs...)
+		if err != nil {
+			return append(logs, fmt.Sprintf("post-deploy initialization failed: %v", err)), err
+		}
 	}
-	logs, err := s.PlatformContainerExec(PlatformExecRequest{
-		Name:       r.Name,
-		Connection: r.Connection,
-		Vaults:     r.Vaults,
-		Command:    r.PostScript,
-		Values:     s.getValues(r),
-	})
-	if err != nil {
-		return []string{fmt.Sprintf("post-deploy initialization failed: %v", err)}
-	}
-	return logs
+	return logs, nil
 }
 
 // KeeperDeploy is the self-contained single-node deploy action: run the
@@ -100,7 +111,12 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append(logs, s.KeeperPostDeploy(r)...), nil
+	postLogs, postErr := s.KeeperPostDeploy(r)
+	logs = append(logs, postLogs...)
+	if postErr != nil {
+		logs = append(logs, "the node is running, but its post-deploy initialization did not complete")
+	}
+	return logs, nil
 }
 
 // ValidateKeeperLockedCredentials rejects a vault whose username doesn't match

@@ -60,16 +60,27 @@ func TestDefaultTemplates(t *testing.T) {
 			}
 
 			last := template.Commands[len(template.Commands)-1]
-			if last.PostScript == "" {
-				t.Fatal("expected the last command to enable authentication")
+			// NOTE: three separate steps, not one script chained with "&&":
+			// the etcd image ships no shell at all, so there is nothing to
+			// interpret a chain
+			if len(last.PostScripts) != 3 {
+				t.Fatalf("expected three steps to enable authentication, got %d", len(last.PostScripts))
 			}
-			for _, fragment := range []string{"user add", "{{dbUser}}:{{dbPass}}", "user grant-role {{dbUser}} root", "auth enable"} {
-				if !strings.Contains(last.PostScript, fragment) {
-					t.Errorf("expected the post script to contain %q, got %q", fragment, last.PostScript)
+			for i, fragment := range []string{"user add", "user grant-role", "auth enable"} {
+				if !strings.Contains(last.PostScripts[i], fragment) {
+					t.Errorf("step %d: expected %q, got %q", i, fragment, last.PostScripts[i])
+				}
+			}
+			for i, script := range last.PostScripts {
+				if strings.Contains(script, "sh -c") {
+					t.Errorf("step %d assumes a shell the etcd image does not ship", i)
+				}
+				if !strings.Contains(script, string(keeper.VarDbPort)) {
+					t.Errorf("step %d does not address the node's own client port", i)
 				}
 			}
 			for i, command := range template.Commands[:len(template.Commands)-1] {
-				if command.PostScript != "" {
+				if len(command.PostScripts) > 0 {
 					t.Errorf("command %d must not enable auth before every member is up", i)
 				}
 			}

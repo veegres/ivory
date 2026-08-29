@@ -7,7 +7,7 @@ import {TemplateCommand, TemplateRequest} from "./DeploymentType"
 
 const etcdCommand: TemplateCommand = {
     command: `docker run -d --name {{name}} -p 2380:2380 -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380" etcd`,
-    postScript: `etcdctl user add "{{dbUser}}:{{dbPass}}"`,
+    postScripts: [`etcdctl user add {{dbUser}}:{{dbPass}}`],
 }
 
 function initialTemplate(): TemplateRequest {
@@ -21,7 +21,7 @@ describe("getUnknownCommandPlaceholders", () => {
     })
 
     it("should report an unknown variable from either the command or the post script", () => {
-        const command: TemplateCommand = {command: "docker run {{nope}}", postScript: "echo {{alsoNope}}"}
+        const command: TemplateCommand = {command: "docker run {{nope}}", postScripts: ["echo {{alsoNope}}"]}
         expect(getUnknownCommandPlaceholders(command)).toEqual(["{{nope}}", "{{alsoNope}}"])
     })
 

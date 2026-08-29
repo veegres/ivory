@@ -40,13 +40,17 @@ export function NodeMainTabsHead(props: Props) {
     // NOTE: only "unsupported" hides the tab - a permission the user lacks is
     // still worth showing, so the tab body can say so
     const system = useHasAccess(Feature.ViewNodeSystem) !== "unsupported"
+    // NOTE: the effect below moves the stored tab off a hidden System, but it
+    // runs after the first render - so the value handed to Tabs is corrected
+    // here as well, or MUI warns about a value matching none of its tabs
+    const value = system || tab !== NodeTabType.SYSTEM ? tab : NodeTabType.CONTAINER
 
     useEffect(handleEffectSystemTab, [system, tab, setNodeBody])
 
     return (
         <Box sx={SX.box}>
             <Box sx={SX.title}>
-                <Tabs sx={SX.tabs} value={tab} onChange={(_, e) => setNodeBody(e)} variant={"scrollable"} scrollButtons={"auto"} allowScrollButtonsMobile>
+                <Tabs sx={SX.tabs} value={value} onChange={(_, e) => setNodeBody(e)} variant={"scrollable"} scrollButtons={"auto"} allowScrollButtonsMobile>
                     {system && <Tab value={NodeTabType.SYSTEM} label={NODE_TABS[NodeTabType.SYSTEM].label}/>}
                     <Tab value={NodeTabType.CONTAINER} label={NODE_TABS[NodeTabType.CONTAINER].label}/>
                     <Tab value={NodeTabType.KEEPER} label={NODE_TABS[NodeTabType.KEEPER].label}/>

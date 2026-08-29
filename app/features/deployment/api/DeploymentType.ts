@@ -11,7 +11,9 @@ export enum CreationType {
 // position: which node it lands on is chosen at deploy time.
 export interface TemplateCommand {
     command: string,
-    postScript?: string,
+    // NOTE: each step runs as its own execution, so nothing may assume a shell
+    // - the images these run in are increasingly distroless and have no "&&"
+    postScripts?: string[],
     defaults?: TemplateDefaults,
 }
 

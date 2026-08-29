@@ -7,7 +7,6 @@ import (
 	"math"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 // containerCpuScale is an arbitrary fixed-point scale used to encode docker's
@@ -34,56 +33,54 @@ var byteSizeUnits = map[string]float64{
 }
 
 func (a *Adapter) ListContainer(connection platform.Connection) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("ps -a"))
+	return a.sshClient.Command(a.mapToSshCommand(connection), "docker ps -a")
 }
 
-// UpContainer runs the user's own deployment command verbatim. It is
-// tokenized quote-aware first so the newlines that make the command readable
-// collapse to spaces, while newlines inside a quoted span - a multi-line
-// "sh -c '...'" startup script, whose line breaks are real statement
-// separators - survive inside their single token untouched.
-func (a *Adapter) UpContainer(connection platform.Connection, command string) console.Command {
-	fields := trimDockerPrefix(splitShellFields(command))
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(quoteFields(fields), " ")))
+// UpContainer starts a container from the options the user wrote. The verb is
+// Ivory's, exactly as it is for every other method here: this deploys a
+// container and nothing else, so taking the executable from the command text
+// would make it a remote shell that happens to be called UpContainer.
+func (a *Adapter) UpContainer(connection platform.Connection, command []string) console.Command {
+	return a.sshClient.Command(a.mapToSshCommand(connection), strings.Join(quoteFields(normalizeRun(command)), " "))
 }
 
-// trimDockerPrefix drops a leading "sudo"/"docker" token pair, since
-// normalizeDockerCommand adds the prefix back and would not recognise it once
-// quoteFields has wrapped it in quotes.
-func trimDockerPrefix(fields []string) []string {
-	if len(fields) > 0 && fields[0] == "sudo" {
-		fields = fields[1:]
+// normalizeRun puts Ivory's own "docker run" in front of the user's options.
+// A "docker" or "run" they wrote themselves is dropped rather than duplicated
+// - a command is usually copied in whole - so the executed verb is always
+// exactly this one.
+func normalizeRun(command []string) []string {
+	for _, verb := range []string{"docker", "run"} {
+		if len(command) > 0 && command[0] == verb {
+			command = command[1:]
+		}
 	}
-	if len(fields) > 0 && fields[0] == "docker" {
-		fields = fields[1:]
-	}
-	return fields
+	return append([]string{"docker", "run"}, command...)
 }
 
 func (a *Adapter) DownContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("rm -- "+shellQuote(name)))
+	return a.sshClient.Command(a.mapToSshCommand(connection), "docker rm -- "+shellQuote(name))
 }
 
 func (a *Adapter) StartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("start -- "+shellQuote(name)))
+	return a.sshClient.Command(a.mapToSshCommand(connection), "docker start -- "+shellQuote(name))
 }
 
 func (a *Adapter) StopContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("stop -- "+shellQuote(name)))
+	return a.sshClient.Command(a.mapToSshCommand(connection), "docker stop -- "+shellQuote(name))
 }
 
 func (a *Adapter) RestartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand("restart -- "+shellQuote(name)))
+	return a.sshClient.Command(a.mapToSshCommand(connection), "docker restart -- "+shellQuote(name))
 }
 
-func (a *Adapter) ExecContainer(connection platform.Connection, name string, command string) console.Command {
-	parts := []string{"exec", "--", shellQuote(name)}
-	parts = append(parts, shellQuoteFields(command)...)
-	return a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(strings.Join(parts, " ")))
+func (a *Adapter) ExecContainer(connection platform.Connection, name string, command []string) console.Command {
+	parts := []string{"docker", "exec", "--", shellQuote(name)}
+	parts = append(parts, quoteFields(command)...)
+	return a.sshClient.Command(a.mapToSshCommand(connection), strings.Join(parts, " "))
 }
 
 func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
-	commandStr := "logs "
+	commandStr := "docker logs "
 	if tail > 0 {
 		commandStr += "--tail " + strconv.Itoa(tail) + " "
 	}
@@ -91,29 +88,18 @@ func (a *Adapter) LogsContainer(connection platform.Connection, name string, tai
 		commandStr += "--follow "
 	}
 	commandStr += "-- " + shellQuote(name)
-	command := a.sshClient.Command(a.mapToSshCommand(connection), a.normalizeDockerCommand(commandStr))
+	command := a.sshClient.Command(a.mapToSshCommand(connection), commandStr)
 	command.JobKeepAlive = false
 	return command
 }
 
 func (a *Adapter) MetricsContainer(connection platform.Connection, name string) (*platform.Metrics, error) {
-	command := a.normalizeDockerCommand("stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name))
+	command := "docker stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name)
 	result, err := a.execute(connection, command)
 	if err != nil {
 		return nil, err
 	}
 	return a.parseContainerMetrics(strings.Join(result, "\n"))
-}
-
-func (a *Adapter) normalizeDockerCommand(command string) string {
-	trimmed := strings.TrimSpace(command)
-	if trimmed == "" {
-		return ""
-	}
-	if strings.HasPrefix(trimmed, "docker ") || trimmed == "docker" || strings.HasPrefix(trimmed, "sudo docker ") {
-		return trimmed
-	}
-	return "docker " + trimmed
 }
 
 // quoteFields re-quotes tokens for the shell, leaving plain ones alone so the
@@ -135,57 +121,6 @@ func needsShellQuote(field string) bool {
 		return true
 	}
 	return strings.ContainsAny(field, " \t\n'\"\\$`&|;<>()*?[]#~!")
-}
-
-func shellQuoteFields(value string) []string {
-	return quoteFields(splitShellFields(value))
-}
-
-// splitShellFields splits a docker options string into individual arguments,
-// honoring single/double-quoted spans the way a real shell would, so a flag
-// value like `-e SCOPE="my cluster"` stays one argument instead of being
-// broken apart at the space inside the quotes. A backslash escapes the very next rune literally regardless of
-// quote state, so a value inserted into a plugin's own hand-written quoted
-// span (e.g. a PostScript wrapping {{dbUser}}:{{dbPass}} in literal quotes)
-// can contain that same quote character - escaped by the caller before
-// interpolation - without prematurely closing the span.
-func splitShellFields(value string) []string {
-	fields := make([]string, 0)
-	var current strings.Builder
-	hasToken := false
-	var quote rune
-	runes := []rune(value)
-	for i := 0; i < len(runes); i++ {
-		r := runes[i]
-		switch {
-		case r == '\\' && i+1 < len(runes):
-			i++
-			current.WriteRune(runes[i])
-			hasToken = true
-		case quote != 0:
-			if r == quote {
-				quote = 0
-			} else {
-				current.WriteRune(r)
-			}
-		case r == '\'' || r == '"':
-			quote = r
-			hasToken = true
-		case unicode.IsSpace(r):
-			if hasToken {
-				fields = append(fields, current.String())
-				current.Reset()
-				hasToken = false
-			}
-		default:
-			current.WriteRune(r)
-			hasToken = true
-		}
-	}
-	if hasToken {
-		fields = append(fields, current.String())
-	}
-	return fields
 }
 
 func (a *Adapter) parseContainerMetrics(output string) (*platform.Metrics, error) {

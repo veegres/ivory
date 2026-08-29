@@ -14,7 +14,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     command: string,
-    postScript?: string,
+    postScripts?: string[],
     // NOTE: whatever the screen already knows about the node - a value it has
     // no answer for yet leaves its placeholder standing
     values: DeployValues,
@@ -26,7 +26,7 @@ type Props = {
 // cluster one folds it away because there is a form around it, the single-node
 // one opens it because there is nothing else on the screen to read.
 export function DeploymentCommandPreview(props: Props) {
-    const {command, postScript, values, defaultOpen = false} = props
+    const {command, postScripts, values, defaultOpen = false} = props
 
     return (
         /* NOTE: the badge rides on the toggle's own row - it says what is
@@ -37,7 +37,7 @@ export function DeploymentCommandPreview(props: Props) {
     )
 
     function renderBadge() {
-        if (!postScript) return
+        if (!postScripts?.length) return
         return (
             <InfoColorBoxRow>
                 <InfoColorBox label={"post script"} title={"Runs inside the container once this node is up"}/>
@@ -57,11 +57,11 @@ export function DeploymentCommandPreview(props: Props) {
                     editable={false}
                     minHeight={"120px"}
                 />
-                {postScript && (
+                {!!postScripts?.length && (
                     <CodeField
                         label={"Post Script"}
-                        hint={"runs in the container once this node is up"}
-                        value={interpolateCommand(postScript, values)}
+                        hint={"each line runs in the container once this node is up"}
+                        value={postScripts.map((s) => interpolateCommand(s, values)).join("\n")}
                         editable={false}
                     />
                 )}

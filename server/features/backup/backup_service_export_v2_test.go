@@ -24,9 +24,9 @@ func testTemplateRequest(name string) deployment.TemplateRequest {
 				Defaults: deployment.TemplateDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
 			},
 			{
-				Command:    "docker run -d --name {{name}} etcd",
-				PostScript: "etcdctl auth enable",
-				Defaults:   deployment.TemplateDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+				Command:     "docker run -d --name {{name}} etcd",
+				PostScripts: []string{"etcdctl auth enable"},
+				Defaults:    deployment.TemplateDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
 			},
 		},
 	}
@@ -53,7 +53,7 @@ func TestExportV2(t *testing.T) {
 	if got.Keeper != string(keeper.NATIVE_ETCD) || got.Platform != string(platform.Docker) {
 		t.Errorf("got keeper %q platform %q, want the stored pair", got.Keeper, got.Platform)
 	}
-	if len(got.Commands) != 2 || got.Commands[1].PostScript != "etcdctl auth enable" {
+	if len(got.Commands) != 2 || len(got.Commands[1].PostScripts) != 1 || got.Commands[1].PostScripts[0] != "etcdctl auth enable" {
 		t.Errorf("got commands %+v, want both, post script included", got.Commands)
 	}
 	// NOTE: without these a single-host template restores with every node on

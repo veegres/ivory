@@ -196,15 +196,15 @@ type KeeperDeploySpecResponse struct {
 // KeeperDeployRequest deploys one node. It is deliberately flat: node owns no
 // node struct of its own, and Host/ssh port come from Connection.
 type KeeperDeployRequest struct {
-	Plugin     KeeperPlugin            `json:"plugin" form:"plugin" binding:"required"`
-	Cluster    string                  `json:"cluster" form:"cluster"`
-	Name       string                  `json:"name" form:"name" binding:"required"`
-	KeeperPort int                     `json:"keeperPort" form:"keeperPort"`
-	DbPort     int                     `json:"dbPort" form:"dbPort"`
-	Command    string                  `json:"command" form:"command" binding:"required"`
-	PostScript string                  `json:"postScript" form:"postScript"`
-	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Vaults     Vaults                  `json:"vaults" form:"vaults" binding:"required"`
+	Plugin      KeeperPlugin            `json:"plugin" form:"plugin" binding:"required"`
+	Cluster     string                  `json:"cluster" form:"cluster"`
+	Name        string                  `json:"name" form:"name" binding:"required"`
+	KeeperPort  int                     `json:"keeperPort" form:"keeperPort"`
+	DbPort      int                     `json:"dbPort" form:"dbPort"`
+	Command     string                  `json:"command" form:"command" binding:"required"`
+	PostScripts []string                `json:"postScripts" form:"postScripts"`
+	Connection  PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
+	Vaults      Vaults                  `json:"vaults" form:"vaults" binding:"required"`
 }
 
 type PlatformLogsRequest struct {

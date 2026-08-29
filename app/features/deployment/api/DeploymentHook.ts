@@ -43,10 +43,10 @@ export function useRouterDeploymentTemplateDelete() {
 
 // getUnknownCommandPlaceholders reports the placeholders one command uses that
 // are outside the closed vocabulary - a validation error rather than a new
-// variable. A command and its post script share one scope, so they are checked
-// as one piece of text.
+// variable. A command and its post script steps share one scope, so they are
+// checked as one piece of text.
 export function getUnknownCommandPlaceholders(command: TemplateCommand) {
-    return getUnknownPlaceholders(command.command + " " + (command.postScript ?? ""))
+    return getUnknownPlaceholders([command.command, ...(command.postScripts ?? [])].join(" "))
 }
 
 // useTemplateForm owns the editable copy of a template: the list of commands

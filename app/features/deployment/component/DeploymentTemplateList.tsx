@@ -35,8 +35,9 @@ type Props = {
     keeper: KeeperPlugin,
     platform: PlatformPlugin,
     hint: string,
-    // onOpen runs a template: your own goes straight to the deploy form, a
-    // shipped one opens as a copy first, since only your own are deployable
+    // onOpen runs a template - every one of them, shipped or your own, goes
+    // straight to the deploy form; a shipped one is only restricted in that it
+    // cannot be edited or deleted
     onOpen: (template: Template) => void,
     onCopy: (template: Template) => void,
     onEdit: (template: Template) => void,

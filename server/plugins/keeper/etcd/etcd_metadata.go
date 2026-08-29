@@ -38,6 +38,11 @@ func (a *Adapter) Requirements() keeper.Requirements {
 // The peer port, the member list and every other value only the operator knows
 // are written literally: they are plain text to read and edit, not variables.
 // Only the node's own identity and endpoints are interpolated.
+//
+// The multi-host member list is addresses, not container names: each member is
+// a plain docker run on its own VM with no shared network between them, so
+// nothing resolves the others by name. The 10.0.0.x are example text the
+// operator replaces with their own VMs.
 
 const deployMultiHost = `docker run -d
   --name {{name}}
@@ -48,7 +53,7 @@ const deployMultiHost = `docker run -d
   -v /data/etcd:/data/etcd
   -e ETCD_NAME="{{name}}"
   -e ETCD_DATA_DIR="/data/etcd"
-  -e ETCD_INITIAL_CLUSTER="etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380"
+  -e ETCD_INITIAL_CLUSTER="etcd1=http://10.0.0.1:2380,etcd2=http://10.0.0.2:2380,etcd3=http://10.0.0.3:2380"
   -e ETCD_INITIAL_CLUSTER_STATE="new"
   -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
   -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
@@ -108,20 +113,27 @@ const deploySingleHostNode3 = `docker run -d
 // deployAuth enables authentication once the whole cluster is running: etcd
 // has no bootstrap-time credentials, so the root user can only be created
 // against an already-formed cluster. That is why it sits on the last command
-// rather than the first. The steps are chained with "&&" so a failure partway
-// through stops the rest instead of silently continuing.
-const deployAuth = `sh -c '
-etcdctl --endpoints=http://localhost:{{dbPort}} user add "{{dbUser}}:{{dbPass}}" &&
-etcdctl --endpoints=http://localhost:{{dbPort}} user grant-role {{dbUser}} root &&
-etcdctl --endpoints=http://localhost:{{dbPort}} auth enable
-'`
+// rather than the first.
+//
+// It is three commands rather than one script chained with "&&" because the
+// etcd image ships no shell at all - only etcd, etcdctl and etcdutl - so there
+// is nothing to interpret a chain. Each runs as its own exec, which is also
+// what lets {{dbUser}}/{{dbPass}} be used directly: every argument is filled
+// in after the command is split, so nothing parses the value.
+const (
+	deployAuthAddUser   = `etcdctl --endpoints=http://localhost:{{dbPort}} user add {{dbUser}}:{{dbPass}}`
+	deployAuthGrantRole = `etcdctl --endpoints=http://localhost:{{dbPort}} user grant-role {{dbUser}} root`
+	deployAuthEnable    = `etcdctl --endpoints=http://localhost:{{dbPort}} auth enable`
+)
+
+var deployAuth = []string{deployAuthAddUser, deployAuthGrantRole, deployAuthEnable}
 
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
 			Platform:    platform.Docker,
 			Name:        "Etcd (Multi Host)",
-			Description: "Three-member static etcd cluster, one member per VM. Name the nodes etcd1..3 or edit the member list to match.",
+			Description: "Three-member static etcd cluster, one member per VM. Replace 10.0.0.1-3 with the VM addresses, and name the nodes etcd1..3 or edit the member list to match.",
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
@@ -132,9 +144,9 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 					Defaults: keeper.DeploymentDefaults{Name: "etcd2", KeeperPort: 2379, DbPort: 2379},
 				},
 				{
-					Command:    deployMultiHost,
-					PostScript: deployAuth,
-					Defaults:   keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2379, DbPort: 2379},
+					Command:     deployMultiHost,
+					PostScripts: deployAuth,
+					Defaults:    keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2379, DbPort: 2379},
 				},
 			},
 		},
@@ -152,9 +164,9 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 					Defaults: keeper.DeploymentDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
 				},
 				{
-					Command:    deploySingleHostNode3,
-					PostScript: deployAuth,
-					Defaults:   keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2383, DbPort: 2383},
+					Command:     deploySingleHostNode3,
+					PostScripts: deployAuth,
+					Defaults:    keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2383, DbPort: 2383},
 				},
 			},
 		},

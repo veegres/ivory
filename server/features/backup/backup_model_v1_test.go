@@ -54,3 +54,37 @@ func TestSyncPermissionV1(t *testing.T) {
 		})
 	}
 }
+
+// TestToClusterDisambiguatesSingleHostNodes covers a V1 file holding a cluster
+// whose nodes all sit on one VM. V1 knew no node names, so every node's name
+// defaults to its host; leaving three of them identical made the restore fail
+// the cluster's uniqueness check and put back nothing at all.
+func TestToClusterDisambiguatesSingleHostNodes(t *testing.T) {
+	bc := backupClusterV1{
+		Name: "single-host",
+		Sidecars: []backupSidecarV1{
+			{Host: "10.0.0.1", Port: 8008},
+			{Host: "10.0.0.1", Port: 8009},
+			{Host: "10.0.0.1", Port: 8010},
+			{Host: "10.0.0.2", Port: 8008},
+		},
+	}
+
+	nodes := bc.toCluster().Nodes
+
+	expected := []string{"10.0.0.1", "10.0.0.1-2", "10.0.0.1-3", "10.0.0.2"}
+	if len(nodes) != len(expected) {
+		t.Fatalf("expected %d nodes, got %d", len(expected), len(nodes))
+	}
+	for i, name := range expected {
+		if nodes[i].Name != name {
+			t.Errorf("node %d: expected name %q, got %q", i, name, nodes[i].Name)
+		}
+		if nodes[i].Host != bc.Sidecars[i].Host {
+			t.Errorf("node %d: host must stay the connection identity, got %q", i, nodes[i].Host)
+		}
+		if nodes[i].KeeperPort == nil || *nodes[i].KeeperPort != bc.Sidecars[i].Port {
+			t.Errorf("node %d: expected keeper port %d", i, bc.Sidecars[i].Port)
+		}
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"ivory/clients/console/ssh"
 	"ivory/plugins/platform"
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -43,19 +44,23 @@ exec docker-entrypoint.sh postgres
 '`,
 		},
 		{
-			name:     "a leading docker prefix is not duplicated",
+			// NOTE: the verb is Ivory's, so the user's own is dropped rather
+			// than duplicated - a command is usually copied in whole
+			name:     "a restated docker run is not duplicated",
 			command:  `docker run -d --name n1 redis:7`,
 			expected: `docker run -d --name n1 redis:7`,
 		},
 		{
-			name:     "a sudo docker prefix is normalized away",
-			command:  `sudo docker run -d --name n1 redis:7`,
+			name:     "options alone still become a docker run",
+			command:  `-d --name n1 redis:7`,
 			expected: `docker run -d --name n1 redis:7`,
 		},
 		{
-			name:     "a command without the prefix gets one",
-			command:  `run -d --name n1 redis:7`,
-			expected: `docker run -d --name n1 redis:7`,
+			// NOTE: UpContainer starts a container and nothing else - a command
+			// text naming its own executable would make it a remote shell
+			name:     "another executable cannot replace the verb",
+			command:  `rm -rf /`,
+			expected: `docker run rm -rf /`,
 		},
 		{
 			name:     "a quoted value with a space stays one argument",
@@ -76,33 +81,9 @@ exec docker-entrypoint.sh postgres
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := adapter.UpContainer(connection, test.command).(*ssh.Command).Command
+			got := adapter.UpContainer(connection, platform.SplitCommand(test.command)).(*ssh.Command).Command
 			if got != test.expected {
 				t.Fatalf("expected %q, got %q", test.expected, got)
-			}
-		})
-	}
-}
-
-func TestNormalizeDockerCommand(t *testing.T) {
-	tests := []struct {
-		name     string
-		command  string
-		expected string
-	}{
-		{name: "prefix plain command", command: "ps", expected: "docker ps"},
-		{name: "keep docker command", command: "docker ps", expected: "docker ps"},
-		{name: "keep sudo docker command", command: "sudo docker ps", expected: "sudo docker ps"},
-		{name: "trim spaces", command: "  images  ", expected: "docker images"},
-	}
-
-	adapter := &Adapter{}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			actual := adapter.normalizeDockerCommand(test.command)
-			if actual != test.expected {
-				t.Fatalf("expected %q, got %q", test.expected, actual)
 			}
 		})
 	}
@@ -120,7 +101,7 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 	}{
 		{
 			name:     "up re-quotes an argument holding shell metacharacters",
-			command:  adapter.UpContainer(connection, `docker run -d --name "foo; rm -rf /" postgres:16`).(*ssh.Command).Command,
+			command:  adapter.UpContainer(connection, platform.SplitCommand(`docker run -d --name "foo; rm -rf /" postgres:16`)).(*ssh.Command).Command,
 			expected: `docker run -d --name 'foo; rm -rf /' postgres:16`,
 		},
 		{
@@ -150,7 +131,7 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 		},
 		{
 			name:     "exec quotes name and command fields",
-			command:  adapter.ExecContainer(connection, name, `etcdctl user add 'root:se cret'`).(*ssh.Command).Command,
+			command:  adapter.ExecContainer(connection, name, platform.SplitCommand(`etcdctl user add 'root:se cret'`)).(*ssh.Command).Command,
 			expected: `docker exec -- 'foo; rm -rf /' etcdctl user add 'root:se cret'`,
 		},
 	}
@@ -164,34 +145,121 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 	}
 }
 
-// TestExecContainerRecoversEscapedQuoteInHandWrittenSpan reproduces a
-// plugin's own hand-written single-quoted span wrapped around an
-// interpolated value (e.g. `user add '{{dbUser}}:{{dbPass}}'`): a password
-// containing a quote and a space must survive tokenizing intact once the
-// caller (node.getExecutionValues) has backslash-escaped it, instead of the
-// naive quote-toggle parser closing the span early and mangling the value.
-func TestExecContainerRecoversEscapedQuoteInHandWrittenSpan(t *testing.T) {
+// TestSplitCommandKeepsAValueInsideItsArgument is why the split happens before
+// interpolation and lives outside the adapter: a value filled into an argument
+// that is already separated is content, not syntax. Before, the value went into
+// the command text and this tokenizer parsed it - a quote closed the template
+// author's own span and the value came apart into several arguments.
+func TestSplitCommandKeepsAValueInsideItsArgument(t *testing.T) {
 	adapter := NewAdapter(ssh.NewClient())
 	connection := platform.Connection{}
 
-	// value as produced by escapeInterpolatedValue("it's a test") interpolated
-	// into etcd's own "'root:" + dbUser + ":" + dbPass + "'" template.
-	command := `etcdctl user add 'root:it\'s a test'`
-	got := adapter.ExecContainer(connection, "n1", command).(*ssh.Command).Command
-	expected := `docker exec -- 'n1' etcdctl user add 'root:it'\''s a test'`
-	// NOTE: the last field is shellQuote's own re-escaping of the recovered
-	// literal value "root:it's a test" - what matters is that it was
-	// recovered as one field, not split apart at the embedded quote.
+	hostile := `it's a "test" \ $HOME ` + "`id`"
+	fill := func(command []string) []string {
+		for i, argument := range command {
+			command[i] = strings.ReplaceAll(argument, "{{dbPass}}", hostile)
+		}
+		return command
+	}
+
+	tests := []struct {
+		name     string
+		run      func() string
+		expected string
+	}{
+		{
+			name: "run keeps the value in one argument",
+			run: func() string {
+				return adapter.UpContainer(connection, fill(platform.SplitCommand(`docker run -d -e P="{{dbPass}}" img`))).(*ssh.Command).Command
+			},
+			expected: `docker run -d -e 'P=it'\''s a "test" \ $HOME ` + "`id`" + `' img`,
+		},
+		{
+			name: "exec keeps the value in one argument",
+			run: func() string {
+				return adapter.ExecContainer(connection, "n1", fill(platform.SplitCommand(`etcdctl user add root:{{dbPass}}`))).(*ssh.Command).Command
+			},
+			expected: `docker exec -- 'n1' etcdctl user add 'root:it'\''s a "test" \ $HOME ` + "`id`" + `'`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := test.run(); got != test.expected {
+				t.Fatalf("expected %q, got %q", test.expected, got)
+			}
+		})
+	}
+}
+
+// TestExecContainerKeepsAuthorBackslashInSingleQuotedSpan pins the other half
+// of that contract: inside a single-quoted span a backslash belongs to the
+// template author and is a literal character, so a post script's own \" has
+// to reach the inner `sh -c` still escaped. Consuming it here is what turned
+// mongo's rs.initiate into `{_id: mongo-cluster}` - bare identifiers where
+// strings belonged - once the remote shell parsed the script a second time.
+func TestExecContainerKeepsAuthorBackslashInSingleQuotedSpan(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	connection := platform.Connection{}
+
+	command := `sh -c 'mongosh --eval "rs.initiate({_id: \"rs0\"})"'`
+	got := adapter.ExecContainer(connection, "n1", platform.SplitCommand(command)).(*ssh.Command).Command
+	expected := `docker exec -- 'n1' sh -c 'mongosh --eval "rs.initiate({_id: \"rs0\"})"'`
 	if got != expected {
 		t.Fatalf("expected %q, got %q", expected, got)
 	}
 }
 
+// TestSplitShellFieldsAppliesShellBackslashRules covers the quote states a
+// backslash means different things in, so the tokenizer keeps matching a real
+// shell rather than the template author having to guess.
+func TestSplitCommandAppliesShellBackslashRules(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "single-quoted span keeps the backslash literal",
+			input:    `sh -c 'echo \"x\"'`,
+			expected: []string{"sh", "-c", `echo \"x\"`},
+		},
+		{
+			name:     "double-quoted span consumes an escape it interprets",
+			input:    `-e A="say \"hi\""`,
+			expected: []string{"-e", `A=say "hi"`},
+		},
+		{
+			name:     "double-quoted span keeps a backslash before an ordinary rune",
+			input:    `-e A="C:\path"`,
+			expected: []string{"-e", `A=C:\path`},
+		},
+		{
+			name:     "unquoted backslash escapes the next rune",
+			input:    `-e A=one\ two`,
+			expected: []string{"-e", "A=one two"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := platform.SplitCommand(test.input)
+			if len(got) != len(test.expected) {
+				t.Fatalf("expected %q, got %q", test.expected, got)
+			}
+			for i := range got {
+				if got[i] != test.expected[i] {
+					t.Fatalf("expected %q, got %q", test.expected, got)
+				}
+			}
+		})
+	}
+}
+
 func TestMetricsContainerQuotesShellArguments(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
 	name := "foo; rm -rf /"
 
-	command := adapter.normalizeDockerCommand("stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name))
+	command := "docker stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name)
 	expected := `docker stats --no-stream --format '{{json .}}' -- 'foo; rm -rf /'`
 	if command != expected {
 		t.Fatalf("expected %q, got %q", expected, command)

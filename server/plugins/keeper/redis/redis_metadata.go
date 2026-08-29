@@ -32,69 +32,59 @@ func (a *Adapter) Requirements() keeper.Requirements {
 	}
 }
 
-// The bitnami image is used rather than the official one because that takes
-// port and password as redis-server flags only, so the leader - which runs no
-// replica bootstrap - could not be configured through environment variables at
-// all. The leader/replica difference is just a different command, and the
-// leader's host is written literally: only the operator knows which node it is.
+// The official image takes its port and password as redis-server flags rather
+// than environment variables, so the command states them after the image - the
+// container runs redis-server directly, with no shell in between to reparse
+// them. bitnami/redis was used for this once and was retired from Docker Hub;
+// a frozen bitnamilegacy tag would only postpone the same failure.
+//
+// The leader/replica difference is just a different command. The leader's
+// address is written literally, as example text the operator replaces: only
+// they know which VM it is, and a container name resolves on neither a plain
+// docker run across VMs nor host networking.
 
 const deployMultiHostLeader = `docker run -d
   --name {{name}}
   --hostname {{host}}
   --restart unless-stopped
   -p {{dbPort}}:{{dbPort}}
-  -v /data/redis:/bitnami/redis/data
-  -e REDIS_PORT_NUMBER="{{dbPort}}"
-  -e REDIS_PASSWORD="{{dbPass}}"
-  -e ALLOW_EMPTY_PASSWORD="no"
-  bitnami/redis:7.4`
+  -v /data/redis:/data
+  redis:7.4
+  redis-server --port {{dbPort}} --requirepass "{{dbPass}}" --appendonly yes`
 
 const deployMultiHostReplica = `docker run -d
   --name {{name}}
   --hostname {{host}}
   --restart unless-stopped
   -p {{dbPort}}:{{dbPort}}
-  -v /data/redis:/bitnami/redis/data
-  -e REDIS_PORT_NUMBER="{{dbPort}}"
-  -e REDIS_PASSWORD="{{dbPass}}"
-  -e ALLOW_EMPTY_PASSWORD="no"
-  -e REDIS_REPLICATION_MODE="slave"
-  -e REDIS_MASTER_HOST="redis1"
-  -e REDIS_MASTER_PORT_NUMBER="6379"
-  -e REDIS_MASTER_PASSWORD="{{dbPass}}"
-  bitnami/redis:7.4`
+  -v /data/redis:/data
+  redis:7.4
+  redis-server --port {{dbPort}} --requirepass "{{dbPass}}" --appendonly yes --replicaof 10.0.0.1 6379 --masterauth "{{dbPass}}"`
 
 // The single-host commands drop --hostname, which docker rejects alongside
-// --network host, and the replicas follow the leader at {{host}}:6379 - host
-// networking resolves no container names, and 6379 is the first node's port
-// rather than the replica's own.
+// --network host, and publish no port: each node answers on its own port of
+// the host's one namespace. The replicas follow the leader at {{host}}:6379 -
+// host networking resolves no container names, and 6379 is the first node's
+// port rather than the replica's own.
 
 const deploySingleHostLeader = `docker run -d
   --name {{name}}
   --network host
-  -e REDIS_PORT_NUMBER="{{dbPort}}"
-  -e REDIS_PASSWORD="{{dbPass}}"
-  -e ALLOW_EMPTY_PASSWORD="no"
-  bitnami/redis:7.4`
+  redis:7.4
+  redis-server --port {{dbPort}} --requirepass "{{dbPass}}"`
 
 const deploySingleHostReplica = `docker run -d
   --name {{name}}
   --network host
-  -e REDIS_PORT_NUMBER="{{dbPort}}"
-  -e REDIS_PASSWORD="{{dbPass}}"
-  -e ALLOW_EMPTY_PASSWORD="no"
-  -e REDIS_REPLICATION_MODE="slave"
-  -e REDIS_MASTER_HOST="{{host}}"
-  -e REDIS_MASTER_PORT_NUMBER="6379"
-  -e REDIS_MASTER_PASSWORD="{{dbPass}}"
-  bitnami/redis:7.4`
+  redis:7.4
+  redis-server --port {{dbPort}} --requirepass "{{dbPass}}" --replicaof {{host}} 6379 --masterauth "{{dbPass}}"`
 
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
 			Platform:    platform.Docker,
 			Name:        "Redis (Multi Host)",
-			Description: "One redis leader and two replicas, one per VM. Name the leader redis1 or edit REDIS_MASTER_HOST to match.",
+			Description: "One redis leader and two replicas, one per VM. Replace 10.0.0.1 in the replica commands with the leader's address.",
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHostLeader,

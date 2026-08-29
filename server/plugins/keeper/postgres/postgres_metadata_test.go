@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"ivory/core/config"
+	"ivory/plugins/keeper"
 	"strings"
 	"testing"
 )
@@ -60,9 +61,9 @@ func TestDefaultTemplates(t *testing.T) {
 			// NOTE: on one VM the leader is reached at {{host}} - host
 			// networking joins no docker network, so its container name
 			// resolves to nothing
-			leader := "host=postgres1"
+			leader := "-h postgres1"
 			if strings.Contains(template.Name, "Single Host") {
-				leader = "host={{host}}"
+				leader = "-h {{host}}"
 			}
 			for i, command := range template.Commands[1:] {
 				if !strings.Contains(command.Command, "pg_basebackup") {
@@ -70,6 +71,20 @@ func TestDefaultTemplates(t *testing.T) {
 				}
 				if !strings.Contains(command.Command, leader) {
 					t.Errorf("replica %d has no leader host to bootstrap from", i+1)
+				}
+				// NOTE: the bootstrap script is parsed again by the
+				// container's own shell, so it reads the credentials from the
+				// env this same command sets rather than interpolating them -
+				// a password holding a `$` or a backtick would otherwise be
+				// expanded or executed there
+				script := command.Command[strings.Index(command.Command, "sh -c '"):]
+				for _, v := range []keeper.Var{keeper.VarDbUser, keeper.VarDbPass} {
+					if strings.Contains(script, string(v)) {
+						t.Errorf("replica %d interpolates %s into a script the container parses again", i+1, v)
+					}
+				}
+				if !strings.Contains(script, `PGPASSWORD="$POSTGRES_PASSWORD"`) {
+					t.Errorf("replica %d does not take its password from the env the command sets", i+1)
 				}
 			}
 		})

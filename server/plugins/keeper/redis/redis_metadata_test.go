@@ -49,29 +49,37 @@ func TestDefaultTemplates(t *testing.T) {
 
 	for _, template := range templates {
 		t.Run(template.Name, func(t *testing.T) {
-			if strings.Contains(template.Commands[0].Command, "REDIS_REPLICATION_MODE") {
+			if strings.Contains(template.Commands[0].Command, "--replicaof") {
 				t.Error("the leader must not come up as a replica")
 			}
-			// NOTE: on one VM the leader is reached at {{host}} - host
-			// networking joins no docker network, so its container name
-			// resolves to nothing
-			leader := `REDIS_MASTER_HOST="redis1"`
+			// NOTE: neither a plain docker run across VMs nor host networking
+			// resolves a container name, so the leader is an address either
+			// way - literal example text on separate VMs, {{host}} on one
+			leader := "--replicaof 10.0.0.1 6379"
 			if strings.Contains(template.Name, "Single Host") {
-				leader = `REDIS_MASTER_HOST="{{host}}"`
+				leader = "--replicaof {{host}} 6379"
 			}
 			for i, command := range template.Commands[1:] {
-				if !strings.Contains(command.Command, "REDIS_REPLICATION_MODE") {
+				if !strings.Contains(command.Command, leader) {
 					t.Errorf("replica %d does not attach to the leader", i+1)
 				}
-				if !strings.Contains(command.Command, leader) {
-					t.Errorf("replica %d has no leader host to attach to", i+1)
+				if !strings.Contains(command.Command, `--masterauth "{{dbPass}}"`) {
+					t.Errorf("replica %d cannot authenticate to a password-protected leader", i+1)
 				}
 			}
-			// NOTE: the official image takes port/password as CLI flags only,
-			// so the leader - which runs no bootstrap - could not be
-			// configured through env vars at all
-			if !strings.Contains(template.Commands[0].Command, "bitnami/redis") {
-				t.Error("expected bitnami/redis, the only image configurable through env vars alone")
+			// NOTE: bitnami/redis was retired from Docker Hub, so every
+			// command states its port and password as redis-server flags
+			// instead - the official image takes no env vars for them
+			for i, command := range template.Commands {
+				if !strings.Contains(command.Command, "redis:7.4") || strings.Contains(command.Command, "bitnami") {
+					t.Errorf("command %d must use the official image, bitnami/redis no longer exists", i)
+				}
+				if !strings.Contains(command.Command, "--port {{dbPort}}") {
+					t.Errorf("command %d does not state its own port", i)
+				}
+				if !strings.Contains(command.Command, `--requirepass "{{dbPass}}"`) {
+					t.Errorf("command %d comes up without a password", i)
+				}
 			}
 		})
 	}

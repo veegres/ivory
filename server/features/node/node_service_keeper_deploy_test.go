@@ -241,20 +241,27 @@ func TestService_KeeperDeployRequiresDatabaseCredentials(t *testing.T) {
 func TestService_KeeperPostDeployRejectsUnknownVariables(t *testing.T) {
 	s := newDeployTestService()
 
-	logs := s.KeeperPostDeploy(KeeperDeployRequest{
-		Name:       "db1",
-		PostScript: `etcdctl user add {{dbUesr}}`,
-		Connection: PlatformVaultConnection{Host: "db1", Port: 22},
+	logs, err := s.KeeperPostDeploy(KeeperDeployRequest{
+		Name:        "db1",
+		PostScripts: []string{`etcdctl user add {{dbUesr}}`},
+		Connection:  PlatformVaultConnection{Host: "db1", Port: 22},
 	})
 	if len(logs) != 1 || !strings.Contains(logs[0], "{{dbUesr}}") {
 		t.Fatalf("expected one log line naming the unknown variable, got %v", logs)
+	}
+	if err == nil || !strings.Contains(err.Error(), "{{dbUesr}}") {
+		t.Fatalf("expected the failure to be returned as an error naming the variable, got %v", err)
 	}
 }
 
 func TestService_KeeperPostDeploySkipsEmptyScript(t *testing.T) {
 	s := newDeployTestService()
 
-	if logs := s.KeeperPostDeploy(KeeperDeployRequest{Name: "db1"}); logs != nil {
+	logs, err := s.KeeperPostDeploy(KeeperDeployRequest{Name: "db1"})
+	if logs != nil {
 		t.Fatalf("expected no logs without a post script, got %v", logs)
+	}
+	if err != nil {
+		t.Fatalf("expected no error without a post script, got %v", err)
 	}
 }

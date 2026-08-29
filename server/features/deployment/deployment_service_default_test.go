@@ -88,7 +88,7 @@ func TestDefaultsAreWellFormed(t *testing.T) {
 				}
 				// NOTE: the catalog is hand-written, so a typo would otherwise
 				// only surface as an unresolved placeholder at deploy time
-				for _, text := range []string{command.Command, command.PostScript} {
+				for _, text := range append([]string{command.Command}, command.PostScripts...) {
 					if unknown := keeper.UnknownPlaceholders(text); len(unknown) > 0 {
 						t.Errorf("command %d references unknown variables: %v", i, unknown)
 					}
@@ -99,6 +99,47 @@ func TestDefaultsAreWellFormed(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestDefaultsKeepCredentialsOutOfNestedScripts holds the one boundary
+// interpolation cannot cross. A value is filled into an argument after the
+// command has been split, so nothing parses it - except a shell the command
+// itself starts. Where a template's argument is "sh -c '...'", the container
+// parses that script a second time and a `$` or a backtick in a password is
+// expansion again. Such a script reads what it needs from env its own command
+// sets, the way postgres reads $POSTGRES_PASSWORD.
+//
+// A post script step is a plain command with no shell, so credentials there
+// are fine - which is exactly why etcd's auth steps can name {{dbPass}}.
+func TestDefaultsKeepCredentialsOutOfNestedScripts(t *testing.T) {
+	s := newFullTestService(t)
+	credentials := []keeper.Var{keeper.VarKeeperUser, keeper.VarKeeperPass, keeper.VarDbUser, keeper.VarDbPass}
+
+	for _, template := range s.Defaults(ListRequest{}) {
+		t.Run(template.Name, func(t *testing.T) {
+			for i, command := range template.Commands {
+				texts := append([]string{command.Command}, command.PostScripts...)
+				for _, text := range texts {
+					script := nestedScript(text)
+					for _, v := range credentials {
+						if strings.Contains(script, string(v)) {
+							t.Errorf("command %d interpolates %s into a script the container parses again", i, v)
+						}
+					}
+				}
+			}
+		})
+	}
+}
+
+// nestedScript returns the part of a command a second shell parses - the tail
+// after "sh -c '" - or empty when the command runs no script of its own.
+func nestedScript(command string) string {
+	i := strings.Index(command, "sh -c '")
+	if i < 0 {
+		return ""
+	}
+	return command[i:]
 }
 
 // TestSingleHostDefaultsAvoidCollisions covers what the deleted singleHost
@@ -268,12 +309,17 @@ func TestDefaultsProduceRunnableCommands(t *testing.T) {
 	for _, template := range s.Defaults(ListRequest{}) {
 		t.Run(template.Name, func(t *testing.T) {
 			for i, command := range template.Commands {
-				interpolated := keeper.Interpolate(command.Command, values)
-				if left := keeper.UnresolvedPlaceholders(interpolated); len(left) > 0 {
+				if left := keeper.UnresolvedPlaceholders(keeper.Interpolate(command.Command, values)); len(left) > 0 {
 					t.Errorf("command %d still references %v after a node fills it in", i, left)
 				}
 
-				got := adapter.UpContainer(platform.Connection{}, interpolated).(*ssh.Command).Command
+				// NOTE: split first, fill each argument in, then hand the
+				// adapter the finished command - the real execution path
+				args := platform.SplitCommand(command.Command)
+				for j, argument := range args {
+					args[j] = keeper.Interpolate(argument, values)
+				}
+				got := adapter.UpContainer(platform.Connection{}, args).(*ssh.Command).Command
 				if !strings.HasPrefix(got, "docker run -d") {
 					t.Errorf("command %d does not run a container: %q", i, got)
 				}

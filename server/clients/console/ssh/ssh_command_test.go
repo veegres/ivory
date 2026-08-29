@@ -34,6 +34,22 @@ func TestCommand_Id(t *testing.T) {
 	}
 }
 
+// TestCommand_IdHidesCommandText pins the one thing the id must never do: an
+// ssh command carries interpolated vault credentials, and the id is broadcast
+// as a job log line and used as a log file name.
+func TestCommand_IdHidesCommandText(t *testing.T) {
+	secret := "s3cr3t-pa55"
+	cmd := &Command{Host: "localhost", Username: "user", Command: "docker run -e P=" + secret + " img"}
+
+	id := cmd.Id()
+	if strings.Contains(id, secret) {
+		t.Errorf("id leaks the command text: %s", id)
+	}
+	if strings.Contains(id, "docker") || strings.Contains(id, "localhost") || strings.Contains(id, "user") {
+		t.Errorf("id leaks command details: %s", id)
+	}
+}
+
 func TestCommand_Errors(t *testing.T) {
 	client := NewClient()
 	_, prv, _ := ed25519.GenerateKey(rand.Reader)

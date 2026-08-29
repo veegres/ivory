@@ -37,9 +37,15 @@ type DeploymentTemplate struct {
 // DeploymentCommand is one node's deployment. It has no identity beyond its
 // position: which node it lands on is chosen at deploy time.
 type DeploymentCommand struct {
-	Command    string             `json:"command"`
-	PostScript string             `json:"postScript"`
-	Defaults   DeploymentDefaults `json:"defaults"`
+	Command string `json:"command"`
+	// PostScripts run inside the deployment once the batch is up, in order,
+	// each as its own execution. It is a list rather than one script because
+	// nothing may assume a shell: the images these run in are increasingly
+	// distroless (etcd's holds only etcd, etcdctl and etcdutl), so "&&" is not
+	// available to chain with. One command per step also means each argument is
+	// interpolated on its own, with no second parse to escape for.
+	PostScripts []string           `json:"postScripts"`
+	Defaults    DeploymentDefaults `json:"defaults"`
 }
 
 // DeploymentDefaults is what the deploy form fills this command's node card in
