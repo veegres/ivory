@@ -8,7 +8,7 @@ import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {interpolateCommand} from "../../../shared/helper/HelperUtils"
 import {DeploymentPreviewNote} from "../../deployment/component/DeploymentPreviewNote"
-import {DeployCredentials, DeployNode} from "../api/ClusterType"
+import {DeployNode, DeployPreviewCredentials} from "../api/ClusterType"
 
 const SX: SxPropsMap = {
     // NOTE: a frame with no heading - the fields name themselves and the nodes
@@ -23,12 +23,11 @@ const SX: SxPropsMap = {
 type Props = {
     node: DeployNode,
     cluster: string,
-    withKeeperPort: boolean,
     // NOTE: a field is only marked red once the user has tried to deploy - an
     // untouched form should not open covered in errors
     showErrors: boolean,
     // NOTE: resolved by the dialog, which is where the credentials are chosen
-    credentials: DeployCredentials,
+    credentials: DeployPreviewCredentials,
     // NOTE: a name collision is the exception: it only exists once the user
     // has typed it, and it is the one error a red border cannot explain
     duplicate: boolean,
@@ -40,7 +39,7 @@ type Props = {
 // themselves, so a number was a label restating the layout. Only the command,
 // which is read-only here, collapses.
 export function ClusterDeployNode(props: Props) {
-    const {node, cluster, withKeeperPort, showErrors, duplicate, credentials, onChange} = props
+    const {node, cluster, showErrors, duplicate, credentials, onChange} = props
 
     return (
         <Box sx={SX.box}>
@@ -64,7 +63,7 @@ export function ClusterDeployNode(props: Props) {
                 />
             </FieldRow>
             <FieldRow>
-                {withKeeperPort && renderPort("Keeper Port", node.keeperPort, (v) => onChange({...node, keeperPort: v}))}
+                {renderPort("Keeper Port", node.keeperPort, (v) => onChange({...node, keeperPort: v}))}
                 {renderPort("Database Port", node.dbPort, (v) => onChange({...node, dbPort: v}))}
                 {renderPort("SSH Port", node.sshPort, (v) => onChange({...node, sshPort: v}))}
             </FieldRow>
@@ -116,6 +115,7 @@ export function ClusterDeployNode(props: Props) {
                 type={"number"}
                 label={label}
                 value={value ?? ""}
+                error={showErrors && !value}
                 onChange={(e) => onPortChange(Number(e.target.value) || undefined)}
             />
         )
@@ -129,8 +129,10 @@ export function ClusterDeployNode(props: Props) {
             sshPort: node.sshPort,
             keeperPort: node.keeperPort,
             dbPort: node.dbPort,
-            dbUser: credentials.user,
-            dbPass: credentials.pass,
+            keeperUser: credentials.keeper.user,
+            keeperPass: credentials.keeper.pass,
+            dbUser: credentials.database.user,
+            dbPass: credentials.database.pass,
         })
     }
 }

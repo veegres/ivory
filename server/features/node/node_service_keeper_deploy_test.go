@@ -15,6 +15,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 // newDeployTestService registers every keeper plugin, enough for the pure
@@ -34,10 +36,6 @@ func newDeployTestService() *Service {
 	}
 }
 
-func intPtr(v int) *int {
-	return &v
-}
-
 func TestService_KeeperDeploySpec(t *testing.T) {
 	s := newDeployTestService()
 
@@ -49,27 +47,33 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 		{
 			name:     "patroni exposes its own keeper endpoint and a locked superuser",
 			plugin:   keeper.PATRONI_POSTGRES,
-			expected: KeeperDeploySpecResponse{DbPort: 5432, KeeperPort: intPtr(8008), Credentials: true, DbUser: "postgres"},
+			expected: KeeperDeploySpecResponse{DbPort: 5432, KeeperPort: 8008, DbCredentials: true, DbUser: "postgres"},
 		},
 		{
-			name:     "etcd serves its keeper endpoint on the database port",
-			plugin:   keeper.NATIVE_ETCD,
-			expected: KeeperDeploySpecResponse{DbPort: 2379, Credentials: true, DbUser: "root"},
+			// NOTE: the keeper endpoint being the database is not a reason to
+			// answer once - both halves are asked for separately
+			name:   "etcd asks for keeper and database credentials of its own",
+			plugin: keeper.NATIVE_ETCD,
+			expected: KeeperDeploySpecResponse{
+				DbPort: 2379, KeeperPort: 2379,
+				KeeperCredentials: true, KeeperUser: "root",
+				DbCredentials: true, DbUser: "root",
+			},
 		},
 		{
 			name:     "native postgres consumes credentials but leaves the username free",
 			plugin:   keeper.NATIVE_POSTGRES,
-			expected: KeeperDeploySpecResponse{DbPort: 5432, Credentials: true},
+			expected: KeeperDeploySpecResponse{DbPort: 5432, KeeperPort: 5432, KeeperCredentials: true, DbCredentials: true},
 		},
 		{
 			name:     "zookeeper consumes no credentials at all",
 			plugin:   keeper.NATIVE_ZOOKEEPER,
-			expected: KeeperDeploySpecResponse{DbPort: 2181},
+			expected: KeeperDeploySpecResponse{DbPort: 2181, KeeperPort: 2181},
 		},
 		{
 			name:     "mongo consumes no credentials at all",
 			plugin:   keeper.NATIVE_MONGO,
-			expected: KeeperDeploySpecResponse{DbPort: 27017},
+			expected: KeeperDeploySpecResponse{DbPort: 27017, KeeperPort: 27017},
 		},
 	}
 
@@ -149,6 +153,8 @@ func TestService_KeeperDeployUpRejectsUnknownVariables(t *testing.T) {
 
 	_, err := s.KeeperDeployUp(KeeperDeployRequest{
 		Name:       "db1",
+		KeeperPort: 2181,
+		DbPort:     2181,
 		Command:    `docker run -d --name {{name}} -e ZOO_MY_ID={{index}} zookeeper:3.9`,
 		Connection: PlatformVaultConnection{Host: "db1", Port: 22},
 	})
@@ -169,6 +175,34 @@ func TestService_KeeperDeployUpRequiresHost(t *testing.T) {
 	}
 }
 
+// TestService_KeeperDeployUpRequiresPorts covers the deploy contract that
+// replaced the port magic: nothing falls back to a database port or to ssh 22.
+func TestService_KeeperDeployUpRequiresPorts(t *testing.T) {
+	s := newDeployTestService()
+	valid := KeeperDeployRequest{
+		Name:       "db1",
+		KeeperPort: 8008,
+		DbPort:     5432,
+		Command:    "docker run -d spilo",
+		Connection: PlatformVaultConnection{Host: "db1", Port: 22},
+	}
+
+	tests := map[string]func(r *KeeperDeployRequest){
+		"keeper port unset":   func(r *KeeperDeployRequest) { r.KeeperPort = 0 },
+		"database port unset": func(r *KeeperDeployRequest) { r.DbPort = 0 },
+		"ssh port unset":      func(r *KeeperDeployRequest) { r.Connection.Port = 0 },
+	}
+	for name, unset := range tests {
+		t.Run(name, func(t *testing.T) {
+			r := valid
+			unset(&r)
+			if _, err := s.KeeperDeployUp(r); !errors.Is(err, ErrKeeperDeployPortsRequired) {
+				t.Fatalf("expected ErrKeeperDeployPortsRequired, got %v", err)
+			}
+		})
+	}
+}
+
 func TestService_KeeperDeployRequiresDatabaseCredentials(t *testing.T) {
 	s := newDeployTestService()
 
@@ -181,6 +215,19 @@ func TestService_KeeperDeployRequiresDatabaseCredentials(t *testing.T) {
 		})
 		if !errors.Is(err, ErrKeeperDeployDatabaseCredentialsRequired) {
 			t.Fatalf("expected ErrKeeperDeployDatabaseCredentialsRequired, got %v", err)
+		}
+	})
+
+	t.Run("a plugin whose keeper endpoint needs credentials needs a keeper vault", func(t *testing.T) {
+		_, err := s.KeeperDeploy(KeeperDeployRequest{
+			Plugin:     keeper.NATIVE_ETCD,
+			Name:       "etcd-1",
+			Command:    "docker run -d etcd",
+			Connection: PlatformVaultConnection{Host: "db1", Port: 22},
+			Vaults:     Vaults{DatabaseId: uuid.New()},
+		})
+		if !errors.Is(err, ErrKeeperDeployKeeperCredentialsRequired) {
+			t.Fatalf("expected ErrKeeperDeployKeeperCredentialsRequired, got %v", err)
 		}
 	})
 

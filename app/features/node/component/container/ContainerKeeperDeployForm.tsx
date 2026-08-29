@@ -44,6 +44,7 @@ type Props = {
     node: string,
     template: Template,
     spec: KeeperDeploySpecResponse,
+    keeperId?: string,
     databaseId?: string,
     sshKeyId?: string,
     logs?: string[],
@@ -55,17 +56,18 @@ type Props = {
 // are the keeper plugin's own defaults, and the command belongs to the
 // template - so every field here is a read-only account of the deployment.
 export function ContainerKeeperDeployForm(props: Props) {
-    const {connection, plugin, cluster, node, template, spec, databaseId, sshKeyId, logs, onDeployed} = props
+    const {connection, plugin, cluster, node, template, spec, keeperId, databaseId, sshKeyId, logs, onDeployed} = props
     // NOTE: which of the template's nodes runs on this host - the first one
     // unless the user says otherwise, since a template is written in node order
     const [index, setIndex] = useState(0)
 
     const nodeDeploy = useRouterNodeKeeperDeploy(connection, onDeployed)
+    const keeperVaults = useRouterVault(VaultType.KEEPER_PASSWORD)
     const dbVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
 
     const command = template.commands[index]
-    const withKeeperPort = spec.keeperPort !== undefined
-    const withDbCredentials = spec.credentials
+    const withKeeperCredentials = spec.keeperCredentials
+    const withDbCredentials = spec.dbCredentials
 
     if (logs) return <ContainerKeeperDeployResponse logs={logs}/>
 
@@ -80,12 +82,13 @@ export function ContainerKeeperDeployForm(props: Props) {
     )
 
     function renderActions() {
+        const keeperVaultMissing = withKeeperCredentials && !keeperId
         const dbVaultMissing = withDbCredentials && !databaseId
         return (
             <Button
                 loading={nodeDeploy.isPending}
                 onClick={handleAction}
-                disabled={dbVaultMissing || !sshKeyId || !command.command.trim()}
+                disabled={keeperVaultMissing || dbVaultMissing || !sshKeyId || !command.command.trim()}
             >
                 Deploy
             </Button>
@@ -116,22 +119,9 @@ export function ContainerKeeperDeployForm(props: Props) {
                 <Box sx={[SX.subContent, {gap: 1}]}>
                     <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
                     <FieldRow>
-                        {withDbCredentials && (
-                            <TextField
-                                fullWidth
-                                size={"small"}
-                                label={"Database Credentials"}
-                                value={getShortUuid(databaseId ?? "none")}
-                                disabled={true}
-                            />
-                        )}
-                        <TextField
-                            fullWidth
-                            size={"small"}
-                            label={"SSH Credentials"}
-                            value={getShortUuid(sshKeyId ?? "none")}
-                            disabled={true}
-                        />
+                        {withKeeperCredentials && renderVaultField("Keeper Credentials", keeperId)}
+                        {withDbCredentials && renderVaultField("Database Credentials", databaseId)}
+                        {renderVaultField("SSH Credentials", sshKeyId)}
                     </FieldRow>
                 </Box>
             </TitledBox>
@@ -150,7 +140,7 @@ export function ContainerKeeperDeployForm(props: Props) {
                     <TextField size={"small"} label={"Host"} value={connection.host} disabled={true}/>
                 </FieldRow>
                 <FieldRow>
-                    {withKeeperPort && renderPort("Keeper Port", spec.keeperPort)}
+                    {renderPort("Keeper Port", spec.keeperPort)}
                     {renderPort("Database Port", spec.dbPort)}
                     {renderPort("SSH Port", connection.port)}
                 </FieldRow>
@@ -163,8 +153,12 @@ export function ContainerKeeperDeployForm(props: Props) {
         )
     }
 
-    function renderPort(label: string, value?: number) {
-        return <TextField size={"small"} type={"number"} label={label} value={value ?? ""} disabled={true}/>
+    function renderVaultField(label: string, vaultId?: string) {
+        return <TextField fullWidth size={"small"} label={label} value={getShortUuid(vaultId ?? "none")} disabled={true}/>
+    }
+
+    function renderPort(label: string, value: number) {
+        return <TextField size={"small"} type={"number"} label={label} value={value} disabled={true}/>
     }
 
     function renderBadge() {
@@ -210,7 +204,7 @@ export function ContainerKeeperDeployForm(props: Props) {
             postScript: command.postScript,
             keeperPort: spec.keeperPort,
             dbPort: spec.dbPort,
-            vaults: {databaseId, sshKeyId: sshKeyId ?? ""},
+            vaults: {keeperId, databaseId, sshKeyId: sshKeyId ?? ""},
         })
     }
 
@@ -222,9 +216,15 @@ export function ContainerKeeperDeployForm(props: Props) {
             sshPort: connection.port,
             keeperPort: spec.keeperPort,
             dbPort: spec.dbPort,
+            keeperUser: getKeeperVault()?.username,
+            keeperPass: getKeeperVault() && DeployPasswordMask,
             dbUser: getDbVault()?.username,
             dbPass: getDbVault() && DeployPasswordMask,
         }
+    }
+
+    function getKeeperVault() {
+        return keeperId ? keeperVaults.data?.[keeperId] : undefined
     }
 
     function getDbVault() {

@@ -33,10 +33,13 @@ func TestRequirements(t *testing.T) {
 	if req.DbPort != 6379 {
 		t.Errorf("expected db port 6379, got %d", req.DbPort)
 	}
-	if req.KeeperPort != nil {
-		t.Errorf("expected no separate keeper port, got %v", *req.KeeperPort)
+	if req.KeeperPort != 6379 {
+		t.Errorf("expected the keeper endpoint to be declared as 6379, got %d", req.KeeperPort)
 	}
-	if !req.Credentials || req.DbUser != "default" {
+	if !req.KeeperCredentials || req.KeeperUser != "default" {
+		t.Errorf("expected keeper credentials locked to redis' default username, got %v/%q", req.KeeperCredentials, req.KeeperUser)
+	}
+	if !req.DbCredentials || req.DbUser != "default" {
 		t.Errorf("expected credentials with redis' default username, got %+v", req)
 	}
 }

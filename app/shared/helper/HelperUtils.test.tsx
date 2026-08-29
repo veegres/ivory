@@ -5,14 +5,13 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 
 import {NodeConfig} from "../../features/cluster/api/ClusterType"
-import {DeployVar, KeeperDeploySpecResponse} from "../../features/node/api/NodeType"
+import {DeployVar} from "../../features/node/api/NodeType"
 import {
     DateTimeFormatter,
     DeployPasswordMask,
     getDomain,
     getDomains,
     getErrorMessage,
-    getKeeperDefaultPort,
     getNodeConfig,
     getNodeConfigs,
     getPlaceholders,
@@ -20,7 +19,6 @@ import {
     getUnknownPlaceholders,
     interpolateCommand,
     isConnectionEqual,
-    NodeInputFormat,
     randomUnicodeAnimal,
     SizeFormatter,
     SxPropsFormatter
@@ -87,50 +85,19 @@ describe("getNodeConnections", () => {
     })
 })
 
-describe("getNodeConfig with format", () => {
-    const withKeeperPort: NodeInputFormat = {
-        withKeeperPort: true,
-        defaults: {keeperPort: 8008, dbPort: 5432, sshPort: 22},
-    }
-    const withoutKeeperPort: NodeInputFormat = {
-        withKeeperPort: false,
-        defaults: {dbPort: 2379, sshPort: 22},
-    }
-
-    it("should fill missing segments from defaults", () => {
-        expect(getNodeConfig("node1", withKeeperPort)).toEqual({
-            name: "node1", host: "node1", keeperPort: 8008, dbPort: 5432, sshPort: 22,
-        })
-    })
-
-    it("should keep provided segments over defaults", () => {
-        expect(getNodeConfig("node1:8009:5433:2222", withKeeperPort)).toEqual({
+describe("getNodeConfig port parsing", () => {
+    it("should parse every segment of host:keeperPort:dbPort:sshPort", () => {
+        expect(getNodeConfig("node1:8009:5433:2222")).toEqual({
             name: "node1", host: "node1", keeperPort: 8009, dbPort: 5433, sshPort: 2222,
         })
     })
 
-    it("should parse host:dbPort:sshPort and mirror keeperPort from dbPort", () => {
-        expect(getNodeConfig("node1:2381:2222", withoutKeeperPort)).toEqual({
-            name: "node1", host: "node1", keeperPort: 2381, dbPort: 2381, sshPort: 2222,
+    // NOTE: no port is derived from another any more - a keeper port left out
+    // of the string stays missing instead of mirroring the database port
+    it("should leave every omitted port undefined", () => {
+        expect(getNodeConfig("node1:2381")).toEqual({
+            name: "node1", host: "node1", keeperPort: 2381, dbPort: undefined, sshPort: undefined,
         })
-    })
-
-    it("should mirror the default dbPort into keeperPort when only host is given", () => {
-        expect(getNodeConfig("node1", withoutKeeperPort)).toEqual({
-            name: "node1", host: "node1", keeperPort: 2379, dbPort: 2379, sshPort: 22,
-        })
-    })
-})
-
-describe("getKeeperDefaultPort", () => {
-    it("should return the keeper port when the plugin has a separate one", () => {
-        const spec: KeeperDeploySpecResponse = {dbPort: 5432, keeperPort: 8008, credentials: true, dbUser: "postgres"}
-        expect(getKeeperDefaultPort(spec)).toBe(8008)
-    })
-
-    it("should fall back to the db port when there is no separate keeper endpoint", () => {
-        const spec: KeeperDeploySpecResponse = {dbPort: 2379, credentials: true, dbUser: "root"}
-        expect(getKeeperDefaultPort(spec)).toBe(2379)
     })
 })
 
@@ -167,6 +134,18 @@ describe("interpolateCommand", () => {
         const command = "-e PASS={{dbPass}} -u {{dbUser}}"
         expect(interpolateCommand(command, {...values, dbUser: "postgres", dbPass: DeployPasswordMask}))
             .toBe("-e PASS=***** -u postgres")
+    })
+
+    it("should fill the keeper credentials independently of the database ones", () => {
+        const command = "-u {{keeperUser}} -p {{keeperPass}} --db-user {{dbUser}}"
+        const filled = {...values, keeperUser: "root", keeperPass: DeployPasswordMask, dbUser: "postgres"}
+        expect(interpolateCommand(command, filled)).toBe("-u root -p ***** --db-user postgres")
+    })
+
+    it("should leave the keeper credentials unresolved when only the database ones are given", () => {
+        const command = "-u {{keeperUser}} --db-user {{dbUser}}"
+        expect(interpolateCommand(command, {...values, dbUser: "postgres"}))
+            .toBe("-u {{keeperUser}} --db-user postgres")
     })
 
     it("should leave a value that has not been filled in yet", () => {

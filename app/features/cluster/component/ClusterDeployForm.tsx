@@ -1,11 +1,9 @@
-import {Box, Button, Checkbox, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Box, Button, Checkbox, TextField} from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
-import {OptionsVault} from "../../../core/widgets/options/OptionsVault"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {Note} from "../../../shared/component/box/Note"
 import {TitledBox} from "../../../shared/component/box/TitledBox"
-import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployPasswordMask, KeeperPluginOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
 import {Template} from "../../deployment/api/DeploymentType"
@@ -14,7 +12,13 @@ import {DbPlugin} from "../../query/api/QueryType"
 import {useRouterVault} from "../../vault/api/VaultHook"
 import {VaultType} from "../../vault/api/VaultType"
 import {useRouterClusterDeploy} from "../api/ClusterHook"
-import {DeployCredentials, DeployNode, Options as ClusterOptions} from "../api/ClusterType"
+import {
+    DeployCredentials,
+    DeployNode,
+    DeployPreviewCredentials,
+    Options as ClusterOptions,
+} from "../api/ClusterType"
+import {ClusterDeployCredentials, Credential, CredentialMode} from "./ClusterDeployCredentials"
 import {ClusterDeployNode} from "./ClusterDeployNode"
 import {ClusterDeployResponse} from "./ClusterDeployResponse"
 import {ClusterOptionsBox} from "./ClusterOptionsBox"
@@ -33,7 +37,6 @@ const SX: SxPropsMap = {
         "&:hover": {bgcolor: "action.hover", borderColor: "text.primary"},
     },
     templateName: {fontFamily: "monospace", fontSize: "13px", color: "text.secondary"},
-    toggleButton: {padding: "0px 10px"},
 }
 
 const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
@@ -60,27 +63,30 @@ export function ClusterDeployForm(props: Props) {
     const [nodes, setNodes] = useState<DeployNode[]>(getInitialNodes)
     const [cluster, setCluster] = useState("")
     const [options, setOptions] = useState<ClusterOptions>(InitialRequest(keeper, database))
-    const [ssh, setSsh] = useState<"new" | "vault">("vault")
-    const [db, setDb] = useState<"new" | "vault">("vault")
-    const [sshCred, setSshCred] = useState({username: "", password: ""})
-    // NOTE: seeded with the engine-locked database username, which the user
-    // cannot change when the engine has one
-    const [dbCred, setDbCred] = useState({username: spec.dbUser ?? "", password: ""})
+    const [sshMode, setSshMode] = useState<CredentialMode>("vault")
+    const [keeperMode, setKeeperMode] = useState<CredentialMode>("vault")
+    const [dbMode, setDbMode] = useState<CredentialMode>("vault")
+    const [sshCred, setSshCred] = useState<Credential>({username: "", password: ""})
+    // NOTE: seeded with the engine-locked usernames, which the user cannot
+    // change when the engine has them
+    const [keeperCred, setKeeperCred] = useState<Credential>({username: spec.keeperUser ?? "", password: ""})
+    const [dbCred, setDbCred] = useState<Credential>({username: spec.dbUser ?? "", password: ""})
     const [parallel, setParallel] = useState(false)
     const [submitted, setSubmitted] = useState(false)
 
     const deploy = useRouterClusterDeploy(onDeployed)
-    // NOTE: shares OptionsVault's query, so resolving the chosen vault's
+    // NOTE: shares OptionsVault's queries, so resolving a chosen vault's
     // username for the preview costs no extra request
+    const keeperVaults = useRouterVault(VaultType.KEEPER_PASSWORD)
     const dbVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
 
-    const withKeeperPort = spec.keeperPort !== undefined
-    const withDbCredentials = spec.credentials
+    const withKeeperCredentials = spec.keeperCredentials
+    const withDbCredentials = spec.dbCredentials
 
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
 
-    const complete = nodes.length > 0 && nodes.every(n => !!n.name && !!n.host && !!n.command.trim())
+    const complete = nodes.length > 0 && nodes.every(isNodeComplete)
     // NOTE: a duplicate name is a conflict the user should see while typing,
     // unlike an unfilled field, which waits for Deploy
     const duplicates = useMemo(handleMemoDuplicates, [nodes])
@@ -94,8 +100,9 @@ export function ClusterDeployForm(props: Props) {
         <DialogScreen renderActions={renderActions()}>
             <Box sx={SX.box}>
                 {renderCluster()}
-                {renderSshInputs()}
-                {renderDbInputs()}
+                {renderSshCredentials()}
+                {renderKeeperCredentials()}
+                {renderDbCredentials()}
                 {renderNodes()}
             </Box>
         </DialogScreen>
@@ -164,103 +171,65 @@ export function ClusterDeployForm(props: Props) {
                 key={index}
                 node={node}
                 cluster={cluster}
-                withKeeperPort={withKeeperPort}
                 showErrors={submitted}
                 duplicate={!!node.name && duplicates.has(node.name)}
-                credentials={getCredentials()}
+                credentials={getPreviewCredentials()}
                 onChange={(updated) => handleNodeUpdate(index, updated)}
             />
         )
     }
 
-    function renderDbInputs() {
+    function renderSshCredentials() {
+        return (
+            <ClusterDeployCredentials
+                title={"SSH Credentials"}
+                type={VaultType.SSH_KEY}
+                mode={sshMode}
+                credential={sshCred}
+                vaultId={options.vaults.sshKeyId}
+                showErrors={submitted}
+                onModeChange={setSshMode}
+                onCredentialChange={setSshCred}
+                onVaultChange={handleVaultUpdate}
+            />
+        )
+    }
+
+    // NOTE: an engine that is its own keeper renders this and the database
+    // section both, and the user points them at the same vault entry
+    function renderKeeperCredentials() {
+        if (!withKeeperCredentials) return
+        return (
+            <ClusterDeployCredentials
+                title={"Keeper Credentials"}
+                type={VaultType.KEEPER_PASSWORD}
+                mode={keeperMode}
+                credential={keeperCred}
+                vaultId={options.vaults.keeperId}
+                lockedUser={spec.keeperUser}
+                showErrors={submitted}
+                onModeChange={setKeeperMode}
+                onCredentialChange={setKeeperCred}
+                onVaultChange={handleVaultUpdate}
+            />
+        )
+    }
+
+    function renderDbCredentials() {
         if (!withDbCredentials) return
         return (
-            <TitledBox title={"Database Credentials"} renderActions={renderDbInputActions()} island={true}>
-                {db === "new" ? (
-                    <FieldRow>
-                        <TextField
-                            fullWidth
-                            size={"small"}
-                            label={"Username"}
-                            value={dbCred.username}
-                            disabled={!!spec.dbUser}
-                            error={submitted && db === "new" && !dbCred.username}
-                            onChange={v => setDbCred({...dbCred, username: v.target.value})}
-                        />
-                        <TextField
-                            fullWidth
-                            size={"small"}
-                            type={"password"}
-                            label={"Password"}
-                            value={dbCred.password}
-                            error={submitted && db === "new" && !dbCred.password}
-                            onChange={v => setDbCred({...dbCred, password: v.target.value})}
-                        />
-                    </FieldRow>
-                ) : (
-                    <OptionsVault
-                        type={VaultType.DATABASE_PASSWORD}
-                        selected={options.vaults.databaseId}
-                        onUpdate={handleVaultUpdate}
-                        username={spec.dbUser || undefined}
-                        error={submitted && db === "vault" && !options.vaults.databaseId}
-                    />
-                )}
-            </TitledBox>
-        )
-    }
-
-    function renderDbInputActions() {
-        return (
-            <ToggleButtonGroup size={"small"} exclusive={true} value={db} onChange={(_, v) => v && setDb(handleModeChange(VaultType.DATABASE_PASSWORD, v))}>
-                <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
-                <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
-            </ToggleButtonGroup>
-        )
-    }
-
-    function renderSshInputs() {
-        return (
-            <TitledBox title={"SSH Credentials"} renderActions={renderSshInputActions()} island={true}>
-                {ssh === "new" ? (
-                    <FieldRow>
-                        <TextField
-                            fullWidth
-                            size={"small"}
-                            label={"Username"}
-                            value={sshCred.username}
-                            error={submitted && ssh === "new" && !sshCred.username}
-                            onChange={v => setSshCred({...sshCred, username: v.target.value})}
-                        />
-                        <TextField
-                            fullWidth
-                            size={"small"}
-                            label={"Password"}
-                            type={"password"}
-                            value={sshCred.password}
-                            error={submitted && ssh === "new" && !sshCred.password}
-                            onChange={v => setSshCred({...sshCred, password: v.target.value})}
-                        />
-                    </FieldRow>
-                ) : (
-                    <OptionsVault
-                        type={VaultType.SSH_KEY}
-                        selected={options.vaults.sshKeyId}
-                        onUpdate={handleVaultUpdate}
-                        error={submitted && ssh === "vault" && !options.vaults.sshKeyId}
-                    />
-                )}
-            </TitledBox>
-        )
-    }
-
-    function renderSshInputActions() {
-        return (
-            <ToggleButtonGroup size={"small"} exclusive={true} value={ssh} onChange={(_, v) => v && setSsh(handleModeChange(VaultType.SSH_KEY, v))}>
-                <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
-                <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
-            </ToggleButtonGroup>
+            <ClusterDeployCredentials
+                title={"Database Credentials"}
+                type={VaultType.DATABASE_PASSWORD}
+                mode={dbMode}
+                credential={dbCred}
+                vaultId={options.vaults.databaseId}
+                lockedUser={spec.dbUser}
+                showErrors={submitted}
+                onModeChange={setDbMode}
+                onCredentialChange={setDbCred}
+                onVaultChange={handleVaultUpdate}
+            />
         )
     }
 
@@ -281,13 +250,6 @@ export function ClusterDeployForm(props: Props) {
         setOptions(prev => ({...prev, ...opt}))
     }
 
-    // NOTE: the unselected mode's vault id is cleared too - leaving one behind
-    // would send both a vault and a password for the same credential
-    function handleModeChange(type: VaultType, mode: "new" | "vault") {
-        if (mode === "new") handleCallVaultUpdate(type, undefined)
-        return mode
-    }
-
     function handleCallVaultUpdate(t: VaultType, s?: string) {
         setOptions(prev => ({...prev, vaults: {...prev.vaults, [VaultOptions[t].key]: s}}))
     }
@@ -301,59 +263,72 @@ export function ClusterDeployForm(props: Props) {
         deploy.mutate({
             parallel,
             nodes,
-            commonConfig: {cluster, ...getSshConfig(), ...getDbConfig()},
+            commonConfig: {cluster, ...getSshConfig(), ...getKeeperConfig(), ...getDbConfig()},
             clusterOptions: options,
         })
     }
 
     // NOTE: mirrors what cluster.Deploy rejects - ssh credentials are always
-    // required, database ones only when the keeper plugin consumes them, which
-    // is the same condition that renders their section
+    // required, keeper and database ones only when the keeper plugin consumes
+    // them, which is the same condition that renders their section
     function isReady() {
-        return !!cluster && duplicates.size === 0 && complete && isSshReady() && isDbReady()
+        return !!cluster && duplicates.size === 0 && complete
+            && isCredentialReady(true, sshMode, sshCred, options.vaults.sshKeyId)
+            && isCredentialReady(withKeeperCredentials, keeperMode, keeperCred, options.vaults.keeperId)
+            && isCredentialReady(withDbCredentials, dbMode, dbCred, options.vaults.databaseId)
     }
 
-    // NOTE: the preview may show the username - the form knows it either way -
-    // but never the password, only that one exists
-    function getCredentials(): DeployCredentials {
-        if (!withDbCredentials) return {}
-        if (db === "new") {
+    function isCredentialReady(required: boolean, mode: CredentialMode, credential: Credential, vaultId?: string) {
+        if (!required) return true
+        if (mode === "vault") return !!vaultId
+        return !!credential.username && !!credential.password
+    }
+
+    function isNodeComplete(node: DeployNode) {
+        return !!node.name && !!node.host && !!node.command.trim()
+            && !!node.keeperPort && !!node.dbPort && !!node.sshPort
+    }
+
+    // NOTE: the preview may show a username - the form knows it either way -
+    // but never a password, only that one exists
+    function getPreviewCredentials(): DeployPreviewCredentials {
+        return {
+            keeper: getCredentialPreview(withKeeperCredentials, keeperMode, keeperCred, getVaultUsername(keeperVaults.data, options.vaults.keeperId)),
+            database: getCredentialPreview(withDbCredentials, dbMode, dbCred, getVaultUsername(dbVaults.data, options.vaults.databaseId)),
+        }
+    }
+
+    function getCredentialPreview(required: boolean, mode: CredentialMode, credential: Credential, vaultUsername?: string): DeployCredentials {
+        if (!required) return {}
+        if (mode === "new") {
             return {
-                user: dbCred.username || undefined,
-                pass: dbCred.password ? DeployPasswordMask : undefined,
+                user: credential.username || undefined,
+                pass: credential.password ? DeployPasswordMask : undefined,
             }
         }
-        const vault = getDbVault()
-        return {user: vault?.username, pass: vault && DeployPasswordMask}
+        return {user: vaultUsername, pass: vaultUsername && DeployPasswordMask}
     }
 
-    function getDbVault() {
-        const id = options.vaults.databaseId
-        return id ? dbVaults.data?.[id] : undefined
+    function getVaultUsername(vaults?: {[key: string]: {username: string}}, vaultId?: string) {
+        return vaultId ? vaults?.[vaultId]?.username : undefined
     }
 
     // NOTE: a vault id and a username/password pair are two answers to one
     // question and the server rejects both together, so whichever the user did
     // not choose is left out entirely rather than sent alongside
     function getSshConfig() {
-        if (ssh === "vault") return {sshUser: "", sshPass: ""}
+        if (sshMode === "vault") return {sshUser: "", sshPass: ""}
         return {sshUser: sshCred.username, sshPass: sshCred.password}
     }
 
+    function getKeeperConfig() {
+        if (!withKeeperCredentials || keeperMode === "vault") return {keeperUser: "", keeperPass: ""}
+        return {keeperUser: keeperCred.username, keeperPass: keeperCred.password}
+    }
+
     function getDbConfig() {
-        if (!withDbCredentials || db === "vault") return {dbUser: "", dbPass: ""}
+        if (!withDbCredentials || dbMode === "vault") return {dbUser: "", dbPass: ""}
         return {dbUser: dbCred.username, dbPass: dbCred.password}
-    }
-
-    function isSshReady() {
-        if (ssh === "vault") return !!options.vaults.sshKeyId
-        return !!sshCred.username && !!sshCred.password
-    }
-
-    function isDbReady() {
-        if (!withDbCredentials) return true
-        if (db === "vault") return !!options.vaults.databaseId
-        return !!dbCred.username && !!dbCred.password
     }
 
     // NOTE: the template's command count is the node count - a cluster of a

@@ -151,13 +151,21 @@ func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.C
 }
 
 // getExecutionValues finalizes interpolation values for execution: the host
-// comes from the connection and the database credentials from the vault, so
-// they cannot be spoofed through request values.
+// comes from the connection and the keeper/database credentials from their own
+// vaults, so they cannot be spoofed through request values.
 func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.Values) (keeper.Values, error) {
 	values.Host = host
 
-	// NOTE: the vault is optional for keeper plugins that consume no database
+	// NOTE: either vault is optional for keeper plugins that consume no such
 	// credentials, unused values just keep their placeholders unresolved
+	if vaults.KeeperId != uuid.Nil {
+		keeperCred, err := s.vaultService.GetDecrypted(vaults.KeeperId)
+		if err != nil {
+			return values, fmt.Errorf("failed to get keeper credentials from vault: %v", err)
+		}
+		values.KeeperUser = escapeInterpolatedValue(keeperCred.Username)
+		values.KeeperPass = escapeInterpolatedValue(keeperCred.Secret)
+	}
 	if vaults.DatabaseId != uuid.Nil {
 		dbCred, err := s.vaultService.GetDecrypted(vaults.DatabaseId)
 		if err != nil {

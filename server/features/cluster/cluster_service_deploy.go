@@ -57,10 +57,16 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	if err := s.validateNodeNames(cluster.Nodes); err != nil {
 		return nil, err
 	}
+	if err := s.validateNodePorts(cluster.Nodes); err != nil {
+		return nil, err
+	}
 	// NOTE: a vault and a pair of inline credentials are two answers to one
 	// question - rather than pick one silently, say that only one was asked for
 	if cluster.Vaults.SshKeyId != nil && (r.CommonConfig.SshUser != "" || r.CommonConfig.SshPass != "") {
 		return nil, ErrSshCredentialsAmbiguous
+	}
+	if cluster.Vaults.KeeperId != nil && (r.CommonConfig.KeeperUser != "" || r.CommonConfig.KeeperPass != "") {
+		return nil, ErrKeeperCredentialsAmbiguous
 	}
 	if cluster.Vaults.DatabaseId != nil && (r.CommonConfig.DbUser != "" || r.CommonConfig.DbPass != "") {
 		return nil, ErrDatabaseCredentialsAmbiguous
@@ -68,20 +74,26 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	if cluster.Vaults.SshKeyId == nil && (r.CommonConfig.SshUser == "" || r.CommonConfig.SshPass == "") {
 		return nil, ErrSshCredentialsRequired
 	}
-	// NOTE: an engine-required username (spilo's postgres, etcd's root) is
-	// locked: changing it is rejected instead of silently overridden, an
-	// empty one is prefilled
-	dbUser := r.CommonConfig.DbUser
-	if spec.DbUser != "" {
-		if dbUser != "" && dbUser != spec.DbUser {
-			return nil, fmt.Errorf("database username %q is not allowed: the keeper plugin locks it to %q", dbUser, spec.DbUser)
-		}
-		dbUser = spec.DbUser
+	keeperUser, err := s.resolveLockedUsername(r.CommonConfig.KeeperUser, spec.KeeperUser)
+	if err != nil {
+		return nil, err
 	}
-	if spec.Credentials && cluster.Vaults.DatabaseId == nil && (dbUser == "" || r.CommonConfig.DbPass == "") {
+	dbUser, err := s.resolveLockedUsername(r.CommonConfig.DbUser, spec.DbUser)
+	if err != nil {
+		return nil, err
+	}
+	// NOTE: an engine that is its own keeper is asked twice - pointing both at
+	// one vault entry is the user's answer to give, never the deploy's
+	if spec.KeeperCredentials && cluster.Vaults.KeeperId == nil && (keeperUser == "" || r.CommonConfig.KeeperPass == "") {
+		return nil, ErrKeeperCredentialsRequired
+	}
+	if spec.DbCredentials && cluster.Vaults.DatabaseId == nil && (dbUser == "" || r.CommonConfig.DbPass == "") {
 		return nil, ErrDatabaseCredentialsRequired
 	}
-	if err := s.nodeService.ValidateKeeperLockedCredentials(spec.DbUser, s.getDatabaseId(cluster)); err != nil {
+	if err := s.nodeService.ValidateKeeperLockedCredentials(spec.KeeperUser, getVaultId(cluster.Vaults.KeeperId)); err != nil {
+		return nil, err
+	}
+	if err := s.nodeService.ValidateKeeperLockedCredentials(spec.DbUser, getVaultId(cluster.Vaults.DatabaseId)); err != nil {
 		return nil, err
 	}
 	if _, e := s.Get(cluster.Name); e == nil {
@@ -95,7 +107,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 
 	// NOTE: only the vaults this call created are rolled back when nothing
 	// deploys - one the user picked is theirs and outlives the attempt
-	created := make([]uuid.UUID, 0, 2)
+	created := make([]uuid.UUID, 0, 3)
 
 	// 2. Handle SSH Key
 	if cluster.Vaults.SshKeyId == nil {
@@ -112,8 +124,20 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		}
 	}
 
-	// 3. Handle DB Password
-	if spec.Credentials && cluster.Vaults.DatabaseId == nil {
+	// 3. Handle Keeper Password
+	if spec.KeeperCredentials && cluster.Vaults.KeeperId == nil {
+		logs.send("system", "saving keeper credentials to vault")
+		keeperVault := vault.Vault{Type: vault.KEEPER_PASSWORD, Username: keeperUser, Secret: r.CommonConfig.KeeperPass}
+		id, _, err := s.vaultService.Create(keeperVault)
+		if err != nil {
+			return nil, err
+		}
+		cluster.Vaults.KeeperId = id
+		created = append(created, *id)
+	}
+
+	// 4. Handle DB Password
+	if spec.DbCredentials && cluster.Vaults.DatabaseId == nil {
 		logs.send("system", "saving database credentials to vault")
 		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: dbUser, Secret: r.CommonConfig.DbPass}
 		id, _, err := s.vaultService.Create(dbVault)
@@ -123,13 +147,8 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		cluster.Vaults.DatabaseId = id
 		created = append(created, *id)
 	}
-	// NOTE: when the plugin has no separate keeper port its keeper endpoint
-	// is the database itself, so the same credentials authenticate both
-	if spec.KeeperPort == nil && cluster.Vaults.KeeperId == nil {
-		cluster.Vaults.KeeperId = cluster.Vaults.DatabaseId
-	}
 
-	// 4. Deploy every node by running its own command; the cluster owns only
+	// 5. Deploy every node by running its own command; the cluster owns only
 	// the batch orchestration (parallel/sequential, aggregated timestamped
 	// logs) while node executes the individual deployment.
 	var up atomic.Int32
@@ -154,7 +173,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 	deployed := int(up.Load()) == len(r.Nodes)
 
-	// 5. Register the cluster only once something is actually running under
+	// 6. Register the cluster only once something is actually running under
 	// its name. Registering first left a cluster of nodes that do not exist
 	// behind every failed attempt, along with the vaults made to reach them.
 	if up.Load() == 0 {
@@ -167,7 +186,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		return nil, err
 	}
 
-	// 6. Post-scripts run after every node is up, in node order - a script
+	// 7. Post-scripts run after every node is up, in node order - a script
 	// that needs the whole cluster running (etcd's auth enable, mongo's
 	// rs.initiate) therefore belongs on the last node.
 	if deployed {
@@ -177,6 +196,18 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 
 	return logs.list(), nil
+}
+
+// validateNodePorts requires every endpoint a deploy needs to be stated: a
+// keeper port is never taken from the database port, however alike the two
+// look on engines whose keeper endpoint is the database itself.
+func (s *Service) validateNodePorts(nodes []NodeConfig) error {
+	for _, n := range nodes {
+		if !isPortProvided(n.KeeperPort) || !isPortProvided(n.DbPort) || !isPortProvided(n.SshPort) {
+			return fmt.Errorf("%w: %s", ErrClusterNodePortsNotProvided, n.Name)
+		}
+	}
+	return nil
 }
 
 // rollbackVaults removes the vaults this deploy created for itself. A failure
@@ -257,31 +288,47 @@ func getPortValue(port *int) int {
 	return *port
 }
 
-// getDatabaseId returns the cluster's database vault id, or uuid.Nil when
-// none is linked, matching node's Vaults convention (a value type instead of
-// a pointer).
-func (s *Service) getDatabaseId(cluster Request) uuid.UUID {
-	if cluster.Vaults.DatabaseId == nil {
+func isPortProvided(port *int) bool {
+	return port != nil && *port > 0
+}
+
+// getVaultId converts to node's Vaults convention, a value type instead of a
+// pointer.
+func getVaultId(id *uuid.UUID) uuid.UUID {
+	if id == nil {
 		return uuid.Nil
 	}
-	return *cluster.Vaults.DatabaseId
+	return *id
+}
+
+// resolveLockedUsername applies an engine-required username (spilo's postgres,
+// etcd's root): changing it is rejected rather than silently overridden.
+func (s *Service) resolveLockedUsername(typed string, locked string) (string, error) {
+	if locked == "" {
+		return typed, nil
+	}
+	if typed != "" && typed != locked {
+		return "", fmt.Errorf("username %q is not allowed: the keeper plugin locks it to %q", typed, locked)
+	}
+	return locked, nil
 }
 
 // getNodeConnection resolves the SSH connection for a node from the cluster's
 // own SSH vault; it runs only after the SSH vault is guaranteed non-nil
-// (either provided or freshly generated in Deploy's "Handle SSH Key" step).
+// (either provided or freshly generated in Deploy's "Handle SSH Key" step)
+// and after validateNodePorts, so the ssh port is the node's own rather than
+// an assumed 22.
 func (s *Service) getNodeConnection(cluster Request, n DeployNode) node.PlatformVaultConnection {
-	sshPort := 22
-	if n.SshPort != nil && *n.SshPort > 0 {
-		sshPort = *n.SshPort
-	}
-	return node.PlatformVaultConnection{Host: n.Host, Port: sshPort, VaultId: *cluster.Vaults.SshKeyId}
+	return node.PlatformVaultConnection{Host: n.Host, Port: getPortValue(n.SshPort), VaultId: *cluster.Vaults.SshKeyId}
 }
 
-// getNodeVaults resolves the database/SSH vault ids to pass to a node
-// keeper-deploy action. The database vault is optional for keeper plugins
-// that consume no database credentials; a plugin that does need them fails
-// with an unresolved {{dbUser}}/{{dbPass}} placeholder error instead.
+// getNodeVaults resolves the vault ids to pass to a node keeper-deploy action.
+// A plugin that needs credentials it was not given fails with an unresolved
+// {{keeperUser}}/{{dbUser}} placeholder error instead.
 func (s *Service) getNodeVaults(cluster Request) node.Vaults {
-	return node.Vaults{DatabaseId: s.getDatabaseId(cluster), SshKeyId: *cluster.Vaults.SshKeyId}
+	return node.Vaults{
+		KeeperId:   getVaultId(cluster.Vaults.KeeperId),
+		DatabaseId: getVaultId(cluster.Vaults.DatabaseId),
+		SshKeyId:   *cluster.Vaults.SshKeyId,
+	}
 }

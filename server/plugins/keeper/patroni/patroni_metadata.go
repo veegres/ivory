@@ -27,12 +27,11 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 // and postgres beneath it. Spilo names its superuser postgres, so the password
 // is the only free choice.
 func (a *Adapter) Requirements() keeper.Requirements {
-	keeperPort := 8008
 	return keeper.Requirements{
-		DbPort:      5432,
-		KeeperPort:  &keeperPort,
-		Credentials: true,
-		DbUser:      "postgres",
+		DbPort:        5432,
+		KeeperPort:    8008,
+		DbCredentials: true,
+		DbUser:        "postgres",
 	}
 }
 

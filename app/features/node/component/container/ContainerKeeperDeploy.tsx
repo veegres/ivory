@@ -26,6 +26,7 @@ type Props = {
     plugin: KeeperPlugin,
     cluster: string,
     node: string,
+    keeperId?: string,
     databaseId?: string,
     sshKeyId?: string,
 }
@@ -35,7 +36,7 @@ type Props = {
 // KeeperDeploy directly - no cluster endpoint involved, which is why it lives
 // in the node/container feature rather than cluster.
 export function ContainerKeeperDeploy(props: Props) {
-    const {connection, plugin, cluster, node, databaseId, sshKeyId} = props
+    const {connection, plugin, cluster, node, keeperId, databaseId, sshKeyId} = props
     const [step, setStep] = useState<Step>({kind: "list"})
     const spec = useRouterNodeKeeperDeploySpec(plugin)
 
@@ -99,6 +100,7 @@ export function ContainerKeeperDeploy(props: Props) {
                         node={node}
                         template={step.template}
                         spec={spec.data}
+                        keeperId={keeperId}
                         databaseId={databaseId}
                         sshKeyId={sshKeyId}
                         logs={step.logs}

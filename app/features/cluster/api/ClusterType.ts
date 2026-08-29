@@ -66,16 +66,23 @@ export interface DeployCommonConfig {
     cluster: string,
     sshUser: string,
     sshPass: string,
+    keeperUser: string,
+    keeperPass: string,
     dbUser: string,
     dbPass: string,
 }
 
-// DeployCredentials is what a deploy preview is allowed to show of the
-// database credentials: the username as it really is, and the password only
-// ever as its mask - the real one is substituted on the server.
+// DeployCredentials is what a deploy preview is allowed to show of one
+// credential pair: the username as it really is, and the password only ever as
+// its mask - the real one is substituted on the server.
 export interface DeployCredentials {
     user?: string,
     pass?: string,
+}
+
+export interface DeployPreviewCredentials {
+    keeper: DeployCredentials,
+    database: DeployCredentials,
 }
 
 // DeployNode pairs one node with the command that deploys it, for the length

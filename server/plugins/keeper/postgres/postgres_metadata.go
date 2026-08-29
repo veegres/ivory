@@ -25,8 +25,10 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		DbPort:      5432,
-		Credentials: true,
+		DbPort:            5432,
+		KeeperPort:        5432,
+		KeeperCredentials: true,
+		DbCredentials:     true,
 	}
 }
 

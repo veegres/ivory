@@ -29,6 +29,8 @@ export enum DeployVar {
     SshPort = "{{sshPort}}",
     KeeperPort = "{{keeperPort}}",
     DbPort = "{{dbPort}}",
+    KeeperUser = "{{keeperUser}}",
+    KeeperPass = "{{keeperPass}}",
     DbUser = "{{dbUser}}",
     DbPass = "{{dbPass}}",
 }
@@ -149,8 +151,11 @@ export interface PlatformUpRequest {
     command: string,
 }
 
+// DeployVaults answers each credential separately: the keeper and database
+// vaults are optional for plugins that consume no such credentials, and one is
+// never filled in from the other.
 export interface DeployVaults {
-    // NOTE: optional for keeper plugins that consume no database credentials
+    keeperId?: string,
     databaseId?: string,
     sshKeyId: string,
 }
@@ -161,8 +166,8 @@ export interface KeeperDeployRequest {
     plugin: KeeperPlugin,
     cluster: string,
     name: string,
-    keeperPort?: number,
-    dbPort?: number,
+    keeperPort: number,
+    dbPort: number,
     command: string,
     postScript?: string,
     connection: PlatformVaultConnection,
@@ -178,8 +183,10 @@ export interface KeeperDeploySpecRequest {
 // nothing about how to deploy - that is a command the user writes.
 export interface KeeperDeploySpecResponse {
     dbPort: number,
-    keeperPort?: number,
-    credentials: boolean,
+    keeperPort: number,
+    keeperCredentials: boolean,
+    keeperUser: string,
+    dbCredentials: boolean,
     dbUser: string,
 }
 

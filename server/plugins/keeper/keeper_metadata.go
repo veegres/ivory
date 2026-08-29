@@ -42,20 +42,22 @@ type DeploymentCommand struct {
 }
 
 // Requirements is what Ivory must know to talk to the engine, not how to
-// deploy it: the endpoints it listens on and whether it consumes credentials.
+// deploy it.
 type Requirements struct {
 	// DbPort is the database endpoint's default port.
 	DbPort int
-	// KeeperPort is the separate keeper endpoint's default port; nil means the
-	// keeper endpoint is the database itself.
-	KeeperPort *int
-	// Credentials reports whether the deployment consumes {{dbUser}}/{{dbPass}}
-	// at all, which is a separate question from whether the username is fixed:
-	// clickhouse and native postgres need credentials but let the user pick the
-	// name, while zookeeper and mongo need none.
-	Credentials bool
-	// DbUser, when Credentials is set and non-empty, is the username the engine
-	// locks itself to - forms prefill it and refuse to change it.
+	// KeeperPort is the keeper endpoint's default port, declared even when it
+	// is the database port.
+	KeeperPort int
+	// KeeperCredentials reports whether the keeper endpoint consumes credentials.
+	KeeperCredentials bool
+	// KeeperUser is the username the keeper endpoint locks itself to; empty
+	// leaves the choice to the user.
+	KeeperUser string
+	// DbCredentials reports whether the database endpoint consumes credentials.
+	DbCredentials bool
+	// DbUser is the username the engine locks itself to; empty leaves the
+	// choice to the user.
 	DbUser string
 }
 
@@ -72,10 +74,12 @@ const (
 	VarName       Var = "{{name}}"       // node name, unique within the cluster; the deployment's own name
 	VarHost       Var = "{{host}}"       // node host
 	VarSshPort    Var = "{{sshPort}}"    // node ssh port
-	VarKeeperPort Var = "{{keeperPort}}" // keeper endpoint port (the database port when there is no separate keeper endpoint)
+	VarKeeperPort Var = "{{keeperPort}}" // keeper endpoint port
 	VarDbPort     Var = "{{dbPort}}"     // database endpoint port
-	VarDbUser     Var = "{{dbUser}}"     // database credentials username, resolved from the vault at execution time
-	VarDbPass     Var = "{{dbPass}}"     // database credentials password, resolved from the vault at execution time
+	VarKeeperUser Var = "{{keeperUser}}" // keeper credentials username, resolved from the keeper vault at execution time
+	VarKeeperPass Var = "{{keeperPass}}" // keeper credentials password, resolved from the keeper vault at execution time
+	VarDbUser     Var = "{{dbUser}}"     // database credentials username, resolved from the database vault at execution time
+	VarDbPass     Var = "{{dbPass}}"     // database credentials password, resolved from the database vault at execution time
 )
 
 // Vars is the complete closed list of variables a command may reference. It is
@@ -85,7 +89,8 @@ const (
 // coordinator address, which node is the leader) is written literally into the
 // command, because only the user knows it and it is plain text they can read.
 var Vars = []Var{
-	VarCluster, VarName, VarHost, VarSshPort, VarKeeperPort, VarDbPort, VarDbUser, VarDbPass,
+	VarCluster, VarName, VarHost, VarSshPort, VarKeeperPort, VarDbPort,
+	VarKeeperUser, VarKeeperPass, VarDbUser, VarDbPass,
 }
 
 // Values is one command's complete interpolation scope. There is no shared
@@ -98,6 +103,8 @@ type Values struct {
 	SshPort    string
 	KeeperPort string
 	DbPort     string
+	KeeperUser string
+	KeeperPass string
 	DbUser     string
 	DbPass     string
 }
@@ -110,6 +117,8 @@ func (v Values) lookup() map[Var]string {
 		VarSshPort:    v.SshPort,
 		VarKeeperPort: v.KeeperPort,
 		VarDbPort:     v.DbPort,
+		VarKeeperUser: v.KeeperUser,
+		VarKeeperPass: v.KeeperPass,
 		VarDbUser:     v.DbUser,
 		VarDbPass:     v.DbPass,
 	}

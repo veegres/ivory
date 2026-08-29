@@ -34,10 +34,13 @@ func TestRequirements(t *testing.T) {
 	if req.DbPort != 2181 {
 		t.Errorf("expected client port 2181, got %d", req.DbPort)
 	}
-	if req.KeeperPort != nil {
-		t.Errorf("expected no separate keeper port, got %v", *req.KeeperPort)
+	if req.KeeperPort != 2181 {
+		t.Errorf("expected the keeper endpoint to be declared as 2181, got %d", req.KeeperPort)
 	}
-	if req.Credentials {
+	if req.KeeperCredentials {
+		t.Error("expected no keeper credentials: zookeeper ships without auth")
+	}
+	if req.DbCredentials {
 		t.Error("expected no credentials: zookeeper ships without auth")
 	}
 }

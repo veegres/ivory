@@ -28,8 +28,10 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 // it needs a custom image. The username is the user's own choice.
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		DbPort:      9000,
-		Credentials: true,
+		DbPort:            9000,
+		KeeperPort:        9000,
+		KeeperCredentials: true,
+		DbCredentials:     true,
 	}
 }
 
