@@ -23,12 +23,10 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// Requirements reports the native tcp protocol port. The official image has no
-// env var to move it away from its config.xml default, so a deploy overriding
-// it needs a custom image. The username is the user's own choice.
+// Requirements reports the native tcp protocol port, which clickhouse answers
+// both keeper and database questions on. The username is the user's own choice.
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		DbPort:            9000,
 		KeeperPort:        9000,
 		KeeperCredentials: true,
 		DbCredentials:     true,

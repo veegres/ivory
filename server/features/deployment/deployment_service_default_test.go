@@ -134,9 +134,9 @@ func TestSingleHostDefaultsAvoidCollisions(t *testing.T) {
 
 // TestDefaultsStateNodeDefaults holds the promise the deploy form depends on:
 // a shipped template fills its own node cards in, so deploying one asks for
-// nothing but the host. A command that states no port would silently fall back
-// to the plugin's single default and put every node of a single-host template
-// on one port.
+// nothing but the host and its ssh port. There is no fallback behind this - a
+// command that states no port leaves the field empty for the user to fill in,
+// so a shipped template that forgot one would not deploy at all.
 func TestDefaultsStateNodeDefaults(t *testing.T) {
 	s := newFullTestService(t)
 

@@ -30,9 +30,6 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter().Requirements()
 
-	if req.DbPort != 5432 {
-		t.Errorf("expected db port 5432, got %d", req.DbPort)
-	}
 	if req.KeeperPort != 5432 {
 		t.Errorf("expected the keeper endpoint to be declared as 5432 (plain postgres has no management api), got %d", req.KeeperPort)
 	}

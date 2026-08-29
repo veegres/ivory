@@ -179,10 +179,14 @@ export interface KeeperDeploySpecRequest {
 }
 
 // KeeperDeploySpecResponse is what the deploy forms need to know about the
-// engine: its default endpoints and whether it consumes credentials. It says
-// nothing about how to deploy - that is a command the user writes.
+// engine: whether it consumes credentials, and which usernames it locks itself
+// to. It says nothing about how to deploy - that is a command the user writes.
+//
+// keeperPort is the engine's own default and is deliberately the only port
+// left: a deploy takes its ports from the template's commands alone, so this
+// serves ClusterDetect, which points at a cluster that already runs and has no
+// template to read them from.
 export interface KeeperDeploySpecResponse {
-    dbPort: number,
     keeperPort: number,
     keeperCredentials: boolean,
     keeperUser: string,

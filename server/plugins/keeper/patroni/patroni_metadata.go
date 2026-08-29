@@ -28,7 +28,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 // is the only free choice.
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		DbPort:        5432,
 		KeeperPort:    8008,
 		DbCredentials: true,
 		DbUser:        "postgres",

@@ -321,17 +321,18 @@ export function ClusterDeployForm(props: Props) {
 
     // NOTE: the template's command count is the node count - a cluster of a
     // different size is a different template, so nodes are never added here.
-    // Each card is filled in from its own command: a single-host template puts
-    // each node on its own port and names it the way its own commands do
-    // (etcd1, postgres1, ...), which the plugin's one set of Requirements
-    // cannot express. A command that states nothing falls back to those.
+    // A card is filled in from its own command and from nowhere else: the ports
+    // a node answers on belong to the command that writes them, so a template
+    // that states none leaves the field empty for the user rather than
+    // borrowing the engine's, which on a single host would put every node on
+    // one port. The ssh port is never in a template - it describes the machine.
     function getInitialNodes(): DeployNode[] {
         return template.commands.map((c, i) => ({
             name: c.defaults?.name || `${KeeperPluginOptions[keeper].name}${i + 1}`,
             host: "",
-            keeperPort: c.defaults?.keeperPort || spec.keeperPort,
-            dbPort: c.defaults?.dbPort || spec.dbPort,
-            sshPort: 22,
+            keeperPort: c.defaults?.keeperPort,
+            dbPort: c.defaults?.dbPort,
+            sshPort: undefined,
             command: c.command,
             postScript: c.postScript,
         }))

@@ -61,10 +61,10 @@ type DeploymentDefaults struct {
 // Requirements is what Ivory must know to talk to the engine, not how to
 // deploy it.
 type Requirements struct {
-	// DbPort is the database endpoint's default port.
-	DbPort int
-	// KeeperPort is the keeper endpoint's default port, declared even when it
-	// is the database port.
+	// KeeperPort is the keeper endpoint's default port. It is the only port
+	// here: a deploy takes its ports from the template's commands, so this
+	// serves cluster detection, which meets a cluster that already runs and
+	// has no template to read them from.
 	KeeperPort int
 	// KeeperCredentials reports whether the keeper endpoint consumes credentials.
 	KeeperCredentials bool

@@ -29,7 +29,7 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 // mechanism for yet. Adapter.connect still accepts credentials when an operator
 // configures auth on the deployed cluster themselves.
 func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{DbPort: 27017, KeeperPort: 27017}
+	return keeper.Requirements{KeeperPort: 27017}
 }
 
 // Every member starts as a plain mongod that already knows its replica set

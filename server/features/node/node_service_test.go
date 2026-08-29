@@ -37,7 +37,7 @@ func (f *fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool {
 }
 
 func (f *fakeKeeperMetadata) Requirements() keeper.Requirements {
-	return keeper.Requirements{DbPort: 5432}
+	return keeper.Requirements{KeeperPort: 5432}
 }
 
 func (f *fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate {

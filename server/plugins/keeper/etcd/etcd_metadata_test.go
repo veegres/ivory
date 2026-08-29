@@ -31,9 +31,6 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter().Requirements()
 
-	if req.DbPort != 2379 {
-		t.Errorf("expected client port 2379, got %d", req.DbPort)
-	}
 	if req.KeeperPort != 2379 {
 		t.Errorf("expected the client port 2379 declared as the keeper endpoint too, got %d", req.KeeperPort)
 	}

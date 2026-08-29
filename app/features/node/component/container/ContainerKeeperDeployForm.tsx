@@ -63,9 +63,11 @@ export function ContainerKeeperDeployForm(props: Props) {
     const withDbCredentials = spec.dbCredentials
     // NOTE: the ports belong to the chosen node, not to the engine - node 2 of
     // a single-host template answers on its own pair, and switching the toggle
-    // above has to move them with it
-    const keeperPort = command.defaults?.keeperPort ?? spec.keeperPort
-    const dbPort = command.defaults?.dbPort ?? spec.dbPort
+    // above moves them with it. A template that states none leaves them blank
+    // rather than borrowing the engine's, which would deploy this node onto
+    // whatever port the first one already took.
+    const keeperPort = command.defaults?.keeperPort
+    const dbPort = command.defaults?.dbPort
 
     if (logs) return <DialogLogsScreen logs={logs}/>
 
@@ -79,14 +81,18 @@ export function ContainerKeeperDeployForm(props: Props) {
         </DialogScreen>
     )
 
+    // NOTE: nothing on this screen is editable, so a template that states no
+    // ports cannot be completed here - the button says so by staying disabled,
+    // and the template is where the missing port is filled in
     function renderActions() {
         const keeperVaultMissing = withKeeperCredentials && !keeperId
         const dbVaultMissing = withDbCredentials && !databaseId
+        const portsMissing = !keeperPort || !dbPort
         return (
             <Button
                 loading={nodeDeploy.isPending}
                 onClick={handleAction}
-                disabled={keeperVaultMissing || dbVaultMissing || !sshKeyId || !command.command.trim()}
+                disabled={keeperVaultMissing || dbVaultMissing || portsMissing || !sshKeyId || !command.command.trim()}
             >
                 Deploy
             </Button>
@@ -156,11 +162,12 @@ export function ContainerKeeperDeployForm(props: Props) {
         return <TextField fullWidth size={"small"} label={label} value={getShortUuid(vaultId ?? "none")} disabled={true}/>
     }
 
-    function renderPort(label: string, value: number) {
-        return <TextField size={"small"} type={"number"} label={label} value={value} disabled={true}/>
+    function renderPort(label: string, value?: number) {
+        return <TextField size={"small"} type={"number"} label={label} value={value ?? ""} disabled={true}/>
     }
 
     function handleAction() {
+        if (!keeperPort || !dbPort) return
         nodeDeploy.mutate({
             plugin,
             cluster,
