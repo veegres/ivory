@@ -30,9 +30,6 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter().Requirements()
 
-	if req.KeeperPort != 6379 {
-		t.Errorf("expected the keeper endpoint to be declared as 6379, got %d", req.KeeperPort)
-	}
 	if !req.KeeperCredentials || req.KeeperUser != "default" {
 		t.Errorf("expected keeper credentials locked to redis' default username, got %v/%q", req.KeeperCredentials, req.KeeperUser)
 	}

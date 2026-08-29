@@ -45,9 +45,9 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 		expected KeeperDeploySpecResponse
 	}{
 		{
-			name:     "patroni exposes its own keeper endpoint and a locked superuser",
+			name:     "patroni asks for the database pair only and locks its superuser",
 			plugin:   keeper.PATRONI_POSTGRES,
-			expected: KeeperDeploySpecResponse{KeeperPort: 8008, DbCredentials: true, DbUser: "postgres"},
+			expected: KeeperDeploySpecResponse{DbCredentials: true, DbUser: "postgres"},
 		},
 		{
 			// NOTE: the keeper endpoint being the database is not a reason to
@@ -55,7 +55,6 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 			name:   "etcd asks for keeper and database credentials of its own",
 			plugin: keeper.NATIVE_ETCD,
 			expected: KeeperDeploySpecResponse{
-				KeeperPort: 2379,
 				KeeperCredentials: true, KeeperUser: "root",
 				DbCredentials: true, DbUser: "root",
 			},
@@ -63,17 +62,17 @@ func TestService_KeeperDeploySpec(t *testing.T) {
 		{
 			name:     "native postgres consumes credentials but leaves the username free",
 			plugin:   keeper.NATIVE_POSTGRES,
-			expected: KeeperDeploySpecResponse{KeeperPort: 5432, KeeperCredentials: true, DbCredentials: true},
+			expected: KeeperDeploySpecResponse{KeeperCredentials: true, DbCredentials: true},
 		},
 		{
 			name:     "zookeeper consumes no credentials at all",
 			plugin:   keeper.NATIVE_ZOOKEEPER,
-			expected: KeeperDeploySpecResponse{KeeperPort: 2181},
+			expected: KeeperDeploySpecResponse{},
 		},
 		{
 			name:     "mongo consumes no credentials at all",
 			plugin:   keeper.NATIVE_MONGO,
-			expected: KeeperDeploySpecResponse{KeeperPort: 27017},
+			expected: KeeperDeploySpecResponse{},
 		},
 	}
 

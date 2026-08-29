@@ -10,7 +10,6 @@ import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
-import {useRouterNodeKeeperDeploySpec} from "../../node/api/NodeHook"
 import {KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
 import {useRouterClusterCreateAuto} from "../api/ClusterHook"
@@ -45,14 +44,12 @@ type Props = {
 export function ClusterDetect(props: Props) {
     const {keeper, database, withLabel = false, size} = props
     const [request, setRequest] = useState(InitialRequest(keeper, database))
-    const [portPlugin, setPortPlugin] = useState<KeeperPlugin>()
     const [submitted, setSubmitted] = useState(false)
     const updateCluster = useRouterClusterCreateAuto(handleSuccessUpdate)
-    const deploySpec = useRouterNodeKeeperDeploySpec(keeper)
 
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
 
-    useEffect(handleEffectDeploySpec, [deploySpec.data, portPlugin, keeper, database])
+    useEffect(handleEffectPlugins, [keeper, database])
 
     return (
         <ManageAccess feature={Feature.ManageClusterCreate}>
@@ -158,17 +155,15 @@ export function ClusterDetect(props: Props) {
 
     function handleSuccessUpdate() {
         setRequest(InitialRequest(keeper, database))
-        setPortPlugin(undefined)
         setSubmitted(false)
     }
 
-    // NOTE: seeds the keeper API port default once per selected keeper plugin,
-    // the plugin selectors are disabled inside the dialog, so the plugins can
-    // only change through the cluster list filter
-    function handleEffectDeploySpec() {
-        const data = deploySpec.data
-        if (!data || portPlugin === keeper) return
-        setPortPlugin(keeper)
-        setRequest(prev => ({...prev, plugins: {keeper, database}, port: data.keeperPort}))
+    // NOTE: the plugin selectors are disabled inside the dialog, so the pair can
+    // only change through the cluster list filter behind it - this is what
+    // carries that change into a dialog mounted before it happened. The port is
+    // not seeded alongside them: it is the one the keeper actually answers on,
+    // which only the operator knows.
+    function handleEffectPlugins() {
+        setRequest(prev => ({...prev, plugins: {keeper, database}}))
     }
 }
