@@ -24,7 +24,6 @@ func (s *Service) KeeperDeploySpec(r KeeperDeploySpecRequest) (*KeeperDeploySpec
 	}
 	req := metadata.Requirements()
 	return &KeeperDeploySpecResponse{
-		KeeperPort:        req.KeeperPort,
 		KeeperCredentials: req.KeeperCredentials,
 		KeeperUser:        req.KeeperUser,
 		DbCredentials:     req.DbCredentials,

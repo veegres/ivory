@@ -23,11 +23,11 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// Requirements reports the client port only. Zookeeper ships with no auth, so
-// the deployment consumes no credentials - operators who need it configure it
-// on the deployed ensemble themselves.
+// Requirements is empty: zookeeper ships with no auth, so the deployment
+// consumes no credentials at either endpoint - operators who need it configure
+// it on the deployed ensemble themselves.
 func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{KeeperPort: 2181}
+	return keeper.Requirements{}
 }
 
 // ZOO_MY_ID is written literally per command: zookeeper needs a genuinely

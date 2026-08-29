@@ -23,12 +23,11 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// Requirements reports spilo's endpoints: patroni's REST API on its own port
-// and postgres beneath it. Spilo names its superuser postgres, so the password
-// is the only free choice.
+// Requirements declares only the database pair: the shipped spilo deployment
+// leaves patroni's rest api unauthenticated. Spilo names its superuser
+// postgres, so the password is the only free choice.
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		KeeperPort:    8008,
 		DbCredentials: true,
 		DbUser:        "postgres",
 	}

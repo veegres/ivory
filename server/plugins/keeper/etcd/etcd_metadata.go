@@ -23,12 +23,11 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// Requirements reports etcd's client port as the database endpoint; etcd has no
-// separate management API, so the keeper endpoint is the database itself. Auth
+// Requirements reports both credential pairs: etcd has no separate management
+// API, so the keeper endpoint is the database itself and is asked twice. Auth
 // can only be enabled through a user named root.
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		KeeperPort:        2379,
 		KeeperCredentials: true,
 		KeeperUser:        "root",
 		DbCredentials:     true,

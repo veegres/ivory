@@ -25,9 +25,6 @@ func TestSupportedFeaturesAllSupported(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter(nil).Requirements()
 
-	if req.KeeperPort != 8008 {
-		t.Errorf("expected patroni's own rest api port 8008, got %d", req.KeeperPort)
-	}
 	if req.KeeperCredentials {
 		t.Error("expected no keeper credentials: the shipped spilo deployment leaves the rest api unauthenticated")
 	}

@@ -31,9 +31,6 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter().Requirements()
 
-	if req.KeeperPort != 2379 {
-		t.Errorf("expected the client port 2379 declared as the keeper endpoint too, got %d", req.KeeperPort)
-	}
 	if !req.KeeperCredentials || req.KeeperUser != "root" {
 		t.Errorf("expected keeper credentials locked to root, got %v/%q", req.KeeperCredentials, req.KeeperUser)
 	}

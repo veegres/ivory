@@ -23,11 +23,11 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-// Requirements reports the native tcp protocol port, which clickhouse answers
-// both keeper and database questions on. The username is the user's own choice.
+// Requirements reports both credential pairs: clickhouse answers keeper and
+// database questions on the same native tcp endpoint, so it is asked twice.
+// The username is the user's own choice.
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		KeeperPort:        9000,
 		KeeperCredentials: true,
 		DbCredentials:     true,
 	}

@@ -33,9 +33,6 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter().Requirements()
 
-	if req.KeeperPort != 27017 {
-		t.Errorf("expected the keeper endpoint to be declared as 27017, got %d", req.KeeperPort)
-	}
 	if req.KeeperCredentials {
 		t.Error("expected no keeper credentials: the deployed replica set runs unauthenticated")
 	}

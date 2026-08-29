@@ -32,9 +32,6 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter().Requirements()
 
-	if req.KeeperPort != 9000 {
-		t.Errorf("expected the keeper endpoint to be declared as 9000, got %d", req.KeeperPort)
-	}
 	if !req.KeeperCredentials || req.KeeperUser != "" {
 		t.Errorf("expected keeper credentials with a username of the user's own choice, got %v/%q", req.KeeperCredentials, req.KeeperUser)
 	}
