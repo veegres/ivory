@@ -33,10 +33,13 @@ func TestRequirements(t *testing.T) {
 	if req.DbPort != 9000 {
 		t.Errorf("expected the native tcp port 9000, got %d", req.DbPort)
 	}
-	if req.KeeperPort != nil {
-		t.Errorf("expected no separate keeper port, got %v", *req.KeeperPort)
+	if req.KeeperPort != 9000 {
+		t.Errorf("expected the keeper endpoint to be declared as 9000, got %d", req.KeeperPort)
 	}
-	if !req.Credentials {
+	if !req.KeeperCredentials || req.KeeperUser != "" {
+		t.Errorf("expected keeper credentials with a username of the user's own choice, got %v/%q", req.KeeperCredentials, req.KeeperUser)
+	}
+	if !req.DbCredentials {
 		t.Error("expected clickhouse to consume database credentials")
 	}
 	if req.DbUser != "" {

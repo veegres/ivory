@@ -28,10 +28,13 @@ func TestRequirements(t *testing.T) {
 	if req.DbPort != 5432 {
 		t.Errorf("expected db port 5432, got %d", req.DbPort)
 	}
-	if req.KeeperPort == nil || *req.KeeperPort != 8008 {
-		t.Errorf("expected patroni's own rest api port 8008, got %v", req.KeeperPort)
+	if req.KeeperPort != 8008 {
+		t.Errorf("expected patroni's own rest api port 8008, got %d", req.KeeperPort)
 	}
-	if !req.Credentials {
+	if req.KeeperCredentials {
+		t.Error("expected no keeper credentials: the shipped spilo deployment leaves the rest api unauthenticated")
+	}
+	if !req.DbCredentials {
 		t.Error("expected patroni to consume database credentials")
 	}
 	if req.DbUser != "postgres" {

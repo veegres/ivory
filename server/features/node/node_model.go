@@ -157,9 +157,11 @@ type PlatformUpRequest struct {
 	Values     keeper.Values           `json:"values" form:"values"`
 }
 
+// Vaults answers each credential separately: KeeperId and DatabaseId may be
+// empty when the plugin consumes no such credentials, and one is never filled
+// in from the other.
 type Vaults struct {
-	// DatabaseId may be empty when the keeper plugin declares that it needs
-	// no database credentials (Requirements.Credentials is false)
+	KeeperId   uuid.UUID `json:"keeperId"`
 	DatabaseId uuid.UUID `json:"databaseId"`
 	SshKeyId   uuid.UUID `json:"sshKeyId" binding:"required"`
 }
@@ -183,10 +185,12 @@ type KeeperDeploySpecRequest struct {
 // default endpoints and whether credentials are consumed. It says nothing
 // about how to deploy - that is a command the user writes.
 type KeeperDeploySpecResponse struct {
-	DbPort      int    `json:"dbPort"`
-	KeeperPort  *int   `json:"keeperPort"`
-	Credentials bool   `json:"credentials"`
-	DbUser      string `json:"dbUser"`
+	DbPort            int    `json:"dbPort"`
+	KeeperPort        int    `json:"keeperPort"`
+	KeeperCredentials bool   `json:"keeperCredentials"`
+	KeeperUser        string `json:"keeperUser"`
+	DbCredentials     bool   `json:"dbCredentials"`
+	DbUser            string `json:"dbUser"`
 }
 
 // KeeperDeployRequest deploys one node. It is deliberately flat: node owns no

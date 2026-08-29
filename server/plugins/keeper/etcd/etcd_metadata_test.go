@@ -34,10 +34,13 @@ func TestRequirements(t *testing.T) {
 	if req.DbPort != 2379 {
 		t.Errorf("expected client port 2379, got %d", req.DbPort)
 	}
-	if req.KeeperPort != nil {
-		t.Errorf("expected no separate keeper port (the client port is the keeper endpoint), got %v", *req.KeeperPort)
+	if req.KeeperPort != 2379 {
+		t.Errorf("expected the client port 2379 declared as the keeper endpoint too, got %d", req.KeeperPort)
 	}
-	if !req.Credentials {
+	if !req.KeeperCredentials || req.KeeperUser != "root" {
+		t.Errorf("expected keeper credentials locked to root, got %v/%q", req.KeeperCredentials, req.KeeperUser)
+	}
+	if !req.DbCredentials {
 		t.Error("expected etcd to consume database credentials")
 	}
 	if req.DbUser != "root" {

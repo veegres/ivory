@@ -99,11 +99,13 @@ type DeployNode struct {
 }
 
 type CommonConfig struct {
-	Cluster string `json:"cluster"`
-	SshUser string `json:"sshUser"`
-	SshPass string `json:"sshPass"`
-	DbUser  string `json:"dbUser"`
-	DbPass  string `json:"dbPass"`
+	Cluster    string `json:"cluster"`
+	SshUser    string `json:"sshUser"`
+	SshPass    string `json:"sshPass"`
+	KeeperUser string `json:"keeperUser"`
+	KeeperPass string `json:"keeperPass"`
+	DbUser     string `json:"dbUser"`
+	DbPass     string `json:"dbPass"`
 }
 
 // SearchRequest narrows Search down to matching clusters. Tags is resolved

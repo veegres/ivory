@@ -16,11 +16,10 @@ type Props = {
     editable: boolean,
     minLength?: number,
     InputProps?: SxProps<Theme>,
-    withKeeperPort?: boolean,
 }
 
 export function ListNodeInput(props: Props) {
-    const {inputs, InputProps, minLength, editable, colors, onChange, withKeeperPort = true} = props
+    const {inputs, InputProps, minLength, editable, colors, onChange} = props
     return (
         <DynamicInputs
             InputProps={InputProps}
@@ -37,7 +36,7 @@ export function ListNodeInput(props: Props) {
     function renderPost() {
         return (
             <Box sx={SX.label}>
-                <Code>Host</Code>{withKeeperPort && <>:<Code>Keeper Port</Code></>}:<Code>DB Port</Code>:<Code>SSH Port</Code>
+                <Code>Host</Code>:<Code>Keeper Port</Code>:<Code>DB Port</Code>:<Code>SSH Port</Code>
             </Box>
         )
     }

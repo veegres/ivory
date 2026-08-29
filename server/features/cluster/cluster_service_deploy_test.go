@@ -57,9 +57,10 @@ func newDeployTestService(t *testing.T) *Service {
 }
 
 func validDeployRequest() DeployRequest {
+	sshPort, keeperPort, dbPort := 22, 8008, 5432
 	return DeployRequest{
 		Nodes: []DeployNode{{
-			NodeConfig: NodeConfig{Name: "db-1", Host: "db1"},
+			NodeConfig: NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
 			Command:    `docker run -d --name {{name}} -e ETCD3_HOSTS="etcd-1:2379" spilo`,
 		}},
 		CommonConfig: CommonConfig{
@@ -70,6 +71,15 @@ func validDeployRequest() DeployRequest {
 		},
 		ClusterOptions: Options{Plugins: Plugins{Keeper: node.KeeperPlugin(keeper.PATRONI_POSTGRES)}},
 	}
+}
+
+// etcdDeployRequest is a request for a plugin that consumes keeper credentials
+// as well as database ones, which patroni's shipped deployment does not.
+func etcdDeployRequest() DeployRequest {
+	r := validDeployRequest()
+	r.ClusterOptions.Plugins.Keeper = node.KeeperPlugin(keeper.NATIVE_ETCD)
+	r.CommonConfig.KeeperPass = "secret"
+	return r
 }
 
 func TestService_Deploy_ValidationErrors(t *testing.T) {
@@ -109,14 +119,24 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 	t.Run("node names must be unique within the cluster", func(t *testing.T) {
 		s := newDeployTestService(t)
 		r := validDeployRequest()
-		r.Nodes = append(r.Nodes, DeployNode{
-			NodeConfig: NodeConfig{Name: "db-1", Host: "db2"},
-			Command:    "docker run -d spilo",
-		})
+		duplicate := r.Nodes[0]
+		duplicate.Host = "db2"
+		r.Nodes = append(r.Nodes, duplicate)
 
 		_, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNodeNameNotUnique) {
 			t.Fatalf("expected ErrClusterNodeNameNotUnique, got %v", err)
+		}
+	})
+
+	t.Run("a node without a keeper port is rejected", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := validDeployRequest()
+		r.Nodes[0].KeeperPort = nil
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrClusterNodePortsNotProvided) {
+			t.Fatalf("expected ErrClusterNodePortsNotProvided, got %v", err)
 		}
 	})
 
@@ -151,6 +171,40 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		_, err := s.Deploy(r)
 		if !errors.Is(err, ErrDatabaseCredentialsRequired) {
 			t.Fatalf("expected ErrDatabaseCredentialsRequired, got %v", err)
+		}
+	})
+
+	t.Run("keeper credentials required for a plugin whose keeper endpoint needs them", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := etcdDeployRequest()
+		r.CommonConfig.KeeperPass = ""
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrKeeperCredentialsRequired) {
+			t.Fatalf("expected ErrKeeperCredentialsRequired, got %v", err)
+		}
+	})
+
+	t.Run("keeper vault and inline credentials cannot both be given", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := etcdDeployRequest()
+		id := uuid.New()
+		r.ClusterOptions.Vaults.KeeperId = &id
+
+		_, err := s.Deploy(r)
+		if !errors.Is(err, ErrKeeperCredentialsAmbiguous) {
+			t.Fatalf("expected ErrKeeperCredentialsAmbiguous, got %v", err)
+		}
+	})
+
+	t.Run("locked keeper username cannot be overridden", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := etcdDeployRequest()
+		r.CommonConfig.KeeperUser = "someone-else"
+
+		_, err := s.Deploy(r)
+		if err == nil {
+			t.Fatalf("expected an error for an unauthorized username override, got none")
 		}
 	})
 
@@ -237,20 +291,62 @@ func TestService_deployNode(t *testing.T) {
 	})
 }
 
-func TestService_getDatabaseId(t *testing.T) {
-	s := &Service{}
-
-	t.Run("nil database vault id returns uuid.Nil", func(t *testing.T) {
-		if got := s.getDatabaseId(Request{}); got != uuid.Nil {
+func TestGetVaultId(t *testing.T) {
+	t.Run("nil vault id returns uuid.Nil", func(t *testing.T) {
+		if got := getVaultId(nil); got != uuid.Nil {
 			t.Errorf("expected uuid.Nil, got %v", got)
 		}
 	})
 
-	t.Run("set database vault id is returned as a value", func(t *testing.T) {
+	t.Run("set vault id is returned as a value", func(t *testing.T) {
 		id := uuid.New()
-		cluster := Request{Options: Options{Vaults: Vaults{DatabaseId: &id}}}
-		if got := s.getDatabaseId(cluster); got != id {
+		if got := getVaultId(&id); got != id {
 			t.Errorf("expected %v, got %v", id, got)
+		}
+	})
+}
+
+func TestService_getNodeVaults(t *testing.T) {
+	s := &Service{}
+	sshKeyId, databaseId := uuid.New(), uuid.New()
+
+	t.Run("each vault is carried through as chosen", func(t *testing.T) {
+		keeperId := uuid.New()
+		cluster := Request{Options: Options{Vaults: Vaults{KeeperId: &keeperId, DatabaseId: &databaseId, SshKeyId: &sshKeyId}}}
+		got := s.getNodeVaults(cluster)
+		if got.KeeperId != keeperId || got.DatabaseId != databaseId || got.SshKeyId != sshKeyId {
+			t.Errorf("expected every vault to carry through, got %+v", got)
+		}
+	})
+
+	t.Run("a missing keeper vault is never taken from the database one", func(t *testing.T) {
+		cluster := Request{Options: Options{Vaults: Vaults{DatabaseId: &databaseId, SshKeyId: &sshKeyId}}}
+		if got := s.getNodeVaults(cluster); got.KeeperId != uuid.Nil {
+			t.Errorf("expected no keeper vault, got %v", got.KeeperId)
+		}
+	})
+}
+
+func TestService_resolveLockedUsername(t *testing.T) {
+	s := &Service{}
+
+	t.Run("a free username is whatever the user typed", func(t *testing.T) {
+		got, err := s.resolveLockedUsername("someone", "")
+		if err != nil || got != "someone" {
+			t.Errorf("expected the typed username, got %q (%v)", got, err)
+		}
+	})
+
+	t.Run("an empty username is prefilled with the locked one", func(t *testing.T) {
+		got, err := s.resolveLockedUsername("", "root")
+		if err != nil || got != "root" {
+			t.Errorf("expected the locked username, got %q (%v)", got, err)
+		}
+	})
+
+	t.Run("overriding a locked username is rejected", func(t *testing.T) {
+		if _, err := s.resolveLockedUsername("someone-else", "root"); err == nil {
+			t.Error("expected an error for an unauthorized username override, got none")
 		}
 	})
 }
@@ -288,13 +384,45 @@ func TestService_mapDeployRequest(t *testing.T) {
 		}
 	})
 
-	t.Run("an unset ssh port defaults to 22", func(t *testing.T) {
+	// NOTE: Deploy rejects an unset port before ever mapping the node, so no
+	// port is assumed here - not even the conventional ssh 22
+	t.Run("an unset port is carried through as zero rather than assumed", func(t *testing.T) {
 		got := s.mapDeployRequest(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-2", Host: "db2"}})
-		if got.Connection.Port != 22 {
-			t.Errorf("expected ssh port 22, got %d", got.Connection.Port)
+		if got.Connection.Port != 0 {
+			t.Errorf("expected the ssh port to stay zero, got %d", got.Connection.Port)
 		}
 		if got.KeeperPort != 0 || got.DbPort != 0 {
 			t.Errorf("expected unset ports to stay zero, got %d/%d", got.KeeperPort, got.DbPort)
+		}
+	})
+}
+
+func TestService_validateNodePorts(t *testing.T) {
+	s := &Service{}
+	port := 5432
+
+	t.Run("every port provided is accepted", func(t *testing.T) {
+		nodes := []NodeConfig{{Name: "db-1", Host: "db1", SshPort: &port, KeeperPort: &port, DbPort: &port}}
+		if err := s.validateNodePorts(nodes); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("a missing port is rejected", func(t *testing.T) {
+		zero := 0
+		tests := map[string]NodeConfig{
+			"keeper port unset":   {Name: "db-1", Host: "db1", SshPort: &port, DbPort: &port},
+			"database port unset": {Name: "db-1", Host: "db1", SshPort: &port, KeeperPort: &port},
+			"ssh port unset":      {Name: "db-1", Host: "db1", KeeperPort: &port, DbPort: &port},
+			"keeper port is zero": {Name: "db-1", Host: "db1", SshPort: &port, KeeperPort: &zero, DbPort: &port},
+			"every port unset":    {Name: "db-1", Host: "db1"},
+		}
+		for name, config := range tests {
+			t.Run(name, func(t *testing.T) {
+				if err := s.validateNodePorts([]NodeConfig{config}); !errors.Is(err, ErrClusterNodePortsNotProvided) {
+					t.Fatalf("expected ErrClusterNodePortsNotProvided, got %v", err)
+				}
+			})
 		}
 	})
 }

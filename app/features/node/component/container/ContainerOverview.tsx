@@ -55,6 +55,7 @@ export function ContainerOverview(props: Props) {
                             plugin={activeCluster.plugins.keeper}
                             cluster={activeCluster.name}
                             node={name}
+                            keeperId={activeCluster.vaults.keeperId}
                             databaseId={activeCluster.vaults.databaseId}
                             sshKeyId={activeCluster.vaults.sshKeyId}
                         />

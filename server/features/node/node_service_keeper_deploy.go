@@ -11,6 +11,9 @@ import (
 )
 
 var ErrKeeperDeployDatabaseCredentialsRequired = errors.New("database credentials are required")
+var ErrKeeperDeployKeeperCredentialsRequired = errors.New("keeper credentials are required")
+
+var ErrKeeperDeployPortsRequired = errors.New("keeper, database and ssh ports are required")
 
 // KeeperDeploySpec reports what the deploy forms need to know about the
 // engine: its default endpoints and whether it consumes credentials.
@@ -21,10 +24,12 @@ func (s *Service) KeeperDeploySpec(r KeeperDeploySpecRequest) (*KeeperDeploySpec
 	}
 	req := metadata.Requirements()
 	return &KeeperDeploySpecResponse{
-		DbPort:      req.DbPort,
-		KeeperPort:  req.KeeperPort,
-		Credentials: req.Credentials,
-		DbUser:      req.DbUser,
+		DbPort:            req.DbPort,
+		KeeperPort:        req.KeeperPort,
+		KeeperCredentials: req.KeeperCredentials,
+		KeeperUser:        req.KeeperUser,
+		DbCredentials:     req.DbCredentials,
+		DbUser:            req.DbUser,
 	}, nil
 }
 
@@ -34,6 +39,9 @@ func (s *Service) KeeperDeploySpec(r KeeperDeploySpecRequest) (*KeeperDeploySpec
 func (s *Service) KeeperDeployUp(r KeeperDeployRequest) ([]string, error) {
 	if r.Connection.Host == "" {
 		return nil, errors.New("host not provided for node")
+	}
+	if r.KeeperPort <= 0 || r.DbPort <= 0 || r.Connection.Port <= 0 {
+		return nil, ErrKeeperDeployPortsRequired
 	}
 	if unknown := keeper.UnknownPlaceholders(r.Command); len(unknown) > 0 {
 		return nil, fmt.Errorf("unknown variables in command: %s", strings.Join(unknown, ", "))
@@ -77,8 +85,14 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 		return nil, err
 	}
 	req := metadata.Requirements()
-	if req.Credentials && r.Vaults.DatabaseId == uuid.Nil {
+	if req.KeeperCredentials && r.Vaults.KeeperId == uuid.Nil {
+		return nil, ErrKeeperDeployKeeperCredentialsRequired
+	}
+	if req.DbCredentials && r.Vaults.DatabaseId == uuid.Nil {
 		return nil, ErrKeeperDeployDatabaseCredentialsRequired
+	}
+	if err := s.ValidateKeeperLockedCredentials(req.KeeperUser, r.Vaults.KeeperId); err != nil {
+		return nil, err
 	}
 	if err := s.ValidateKeeperLockedCredentials(req.DbUser, r.Vaults.DatabaseId); err != nil {
 		return nil, err
@@ -92,17 +106,18 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 }
 
 // ValidateKeeperLockedCredentials rejects a vault whose username doesn't match
-// the one the engine locks itself to.
-func (s *Service) ValidateKeeperLockedCredentials(requiredUser string, databaseId uuid.UUID) error {
-	if requiredUser == "" || databaseId == uuid.Nil {
+// the one the engine locks itself to. It serves the keeper and the database
+// vault alike - each is checked against its own locked username.
+func (s *Service) ValidateKeeperLockedCredentials(requiredUser string, vaultId uuid.UUID) error {
+	if requiredUser == "" || vaultId == uuid.Nil {
 		return nil
 	}
-	dbVault, err := s.vaultService.Get(databaseId)
+	credentials, err := s.vaultService.Get(vaultId)
 	if err != nil {
 		return err
 	}
-	if dbVault.Username != requiredUser {
-		return fmt.Errorf("database vault username %q is not allowed: the keeper plugin locks it to %q", dbVault.Username, requiredUser)
+	if credentials.Username != requiredUser {
+		return fmt.Errorf("vault username %q is not allowed: the keeper plugin locks it to %q", credentials.Username, requiredUser)
 	}
 	return nil
 }

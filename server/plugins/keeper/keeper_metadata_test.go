@@ -45,6 +45,8 @@ func TestInterpolate(t *testing.T) {
 		SshPort:    "22",
 		KeeperPort: "8008",
 		DbPort:     "5432",
+		KeeperUser: "root",
+		KeeperPass: "keeper-secret",
 		DbUser:     "postgres",
 		DbPass:     "secret",
 	}
@@ -61,8 +63,8 @@ func TestInterpolate(t *testing.T) {
 	})
 
 	t.Run("node values", func(t *testing.T) {
-		got := Interpolate("{{cluster}} {{name}} {{host}} {{keeperPort}} {{dbPort}} {{dbUser}} {{dbPass}}", values)
-		want := "main db-1 10.0.0.1 8008 5432 postgres secret"
+		got := Interpolate("{{cluster}} {{name}} {{host}} {{keeperPort}} {{dbPort}} {{keeperUser}} {{keeperPass}} {{dbUser}} {{dbPass}}", values)
+		want := "main db-1 10.0.0.1 8008 5432 root keeper-secret postgres secret"
 		if got != want {
 			t.Errorf("Interpolate() = %q, want %q", got, want)
 		}

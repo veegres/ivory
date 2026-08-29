@@ -27,7 +27,6 @@ import {Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/ap
 import {
     DeployVar,
     KeeperConnection,
-    KeeperDeploySpecResponse,
     KeeperOneRequest,
     KeeperPlugin,
     KeeperState,
@@ -212,45 +211,24 @@ export const getDomains = (nodes: NodeConfig[], simple: boolean = false) => {
     return nodes.map(value => getDomain(value, simple))
 }
 
-// NodeInputFormat declares how a node domain string is parsed: without a
-// keeper port the format degrades to host:dbPort:sshPort and the keeper port
-// mirrors the db port (plugins with no separate keeper API port); missing
-// segments fall back to the provided defaults
-export interface NodeInputFormat {
-    withKeeperPort: boolean,
-    defaults: {keeperPort?: number, dbPort?: number, sshPort?: number},
-}
-
 // NOTE: a domain string carries no name - it never has - so the node is named
 // after its host, the same default the server applies to clusters stored
 // before names existed. A name typed elsewhere is preserved by the caller.
-export const getNodeConfig = (domain: string, format?: NodeInputFormat): NodeConfig => {
-    const [rawHost, second, third, fourth] = domain.split(":")
+// Every port it omits stays undefined: none of them is derived from another.
+export const getNodeConfig = (domain: string): NodeConfig => {
+    const [rawHost, keeperPort, dbPort, sshPort] = domain.split(":")
     const host = rawHost.toLowerCase()
-    if (!format) {
-        return {
-            name: host,
-            host,
-            keeperPort: parseInt(second) || undefined,
-            dbPort: parseInt(third) || undefined,
-            sshPort: parseInt(fourth) || undefined,
-        }
+    return {
+        name: host,
+        host,
+        keeperPort: parseInt(keeperPort) || undefined,
+        dbPort: parseInt(dbPort) || undefined,
+        sshPort: parseInt(sshPort) || undefined,
     }
-    const {withKeeperPort, defaults} = format
-    const dbPort = parseInt(withKeeperPort ? third : second) || defaults.dbPort
-    const sshPort = parseInt(withKeeperPort ? fourth : third) || defaults.sshPort
-    const keeperPort = withKeeperPort ? parseInt(second) || defaults.keeperPort : dbPort
-    return {name: host, host, keeperPort, dbPort, sshPort}
 }
 
-export const getNodeConfigs = (domains: string[], format?: NodeInputFormat): NodeConfig[] => {
-    return domains.map(value => getNodeConfig(value, format))
-}
-
-// getKeeperDefaultPort is the endpoint Ivory itself dials: the plugin's own
-// keeper port when it has one, otherwise the database port.
-export const getKeeperDefaultPort = (spec: KeeperDeploySpecResponse): number => {
-    return spec.keeperPort ?? spec.dbPort
+export const getNodeConfigs = (domains: string[]): NodeConfig[] => {
+    return domains.map(value => getNodeConfig(value))
 }
 
 export interface DeployVarMeta {
@@ -275,6 +253,8 @@ export const DeployVarOptions: { [key in DeployVar]: DeployVarMeta } = {
     [DeployVar.SshPort]: {label: "SSH Port", example: "22", secret: false},
     [DeployVar.KeeperPort]: {label: "Keeper Port", example: "8008", secret: false},
     [DeployVar.DbPort]: {label: "Database Port", example: "5432", secret: false},
+    [DeployVar.KeeperUser]: {label: "Keeper User", example: "root", secret: false},
+    [DeployVar.KeeperPass]: {label: "Keeper Password", example: DeployPasswordMask, secret: true},
     [DeployVar.DbUser]: {label: "Database User", example: "postgres", secret: false},
     [DeployVar.DbPass]: {label: "Database Password", example: DeployPasswordMask, secret: true},
 }
@@ -305,6 +285,8 @@ export interface DeployValues {
     sshPort?: number,
     keeperPort?: number,
     dbPort?: number,
+    keeperUser?: string,
+    keeperPass?: string,
     dbUser?: string,
     dbPass?: string,
 }
@@ -320,6 +302,8 @@ export const interpolateCommand = (text: string, values: DeployValues): string =
         [DeployVar.SshPort]: values.sshPort?.toString(),
         [DeployVar.KeeperPort]: values.keeperPort?.toString(),
         [DeployVar.DbPort]: values.dbPort?.toString(),
+        [DeployVar.KeeperUser]: values.keeperUser,
+        [DeployVar.KeeperPass]: values.keeperPass,
         [DeployVar.DbUser]: values.dbUser,
         [DeployVar.DbPass]: values.dbPass,
     }

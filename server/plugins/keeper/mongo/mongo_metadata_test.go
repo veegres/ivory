@@ -36,10 +36,13 @@ func TestRequirements(t *testing.T) {
 	if req.DbPort != 27017 {
 		t.Errorf("expected db port 27017, got %d", req.DbPort)
 	}
-	if req.KeeperPort != nil {
-		t.Errorf("expected no separate keeper port, got %v", *req.KeeperPort)
+	if req.KeeperPort != 27017 {
+		t.Errorf("expected the keeper endpoint to be declared as 27017, got %d", req.KeeperPort)
 	}
-	if req.Credentials {
+	if req.KeeperCredentials {
+		t.Error("expected no keeper credentials: the deployed replica set runs unauthenticated")
+	}
+	if req.DbCredentials {
 		t.Error("expected no credentials: replica set auth also needs an internal keyfile")
 	}
 }

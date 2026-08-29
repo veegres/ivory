@@ -8,7 +8,6 @@ import {TitledBox} from "../../../shared/component/box/TitledBox"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
-import {getKeeperDefaultPort} from "../../../shared/helper/HelperUtils"
 import {Feature} from "../../Feature"
 import {ManageAccess} from "../../management/component/ManageAccess"
 import {useRouterNodeKeeperDeploySpec} from "../../node/api/NodeHook"
@@ -170,6 +169,6 @@ export function ClusterDetect(props: Props) {
         const data = deploySpec.data
         if (!data || portPlugin === keeper) return
         setPortPlugin(keeper)
-        setRequest(prev => ({...prev, plugins: {keeper, database}, port: getKeeperDefaultPort(data)}))
+        setRequest(prev => ({...prev, plugins: {keeper, database}, port: data.keeperPort}))
     }
 }
