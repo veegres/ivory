@@ -12,6 +12,18 @@ export enum CreationType {
 export interface TemplateCommand {
     command: string,
     postScript?: string,
+    defaults?: TemplateDefaults,
+}
+
+// TemplateDefaults is what this command fills its node card in with. A command
+// and the endpoints it answers on are one fact rather than two: a single-host
+// template writes a distinct peer port into each of its commands, and only that
+// command knows which client port has to match it. Host and ssh port are absent
+// on purpose - both describe the machine, which is what a template never knows.
+export interface TemplateDefaults {
+    name?: string,
+    keeperPort?: number,
+    dbPort?: number,
 }
 
 // Template is a saved deployment: an ordered list of commands, one per node,

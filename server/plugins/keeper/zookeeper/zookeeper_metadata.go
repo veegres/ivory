@@ -48,7 +48,7 @@ const deployMultiHostNode1 = `docker run -d
   -v /data/zookeeper/data:/data
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="1"
-  -e ZOO_SERVERS="server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2888:3888;2181 server.3=zookeeper-3:2888:3888;2181"
+  -e ZOO_SERVERS="server.1=zookeeper1:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=zookeeper3:2888:3888;2181"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -62,7 +62,7 @@ const deployMultiHostNode2 = `docker run -d
   -v /data/zookeeper/data:/data
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="2"
-  -e ZOO_SERVERS="server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2888:3888;2181 server.3=zookeeper-3:2888:3888;2181"
+  -e ZOO_SERVERS="server.1=zookeeper1:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=zookeeper3:2888:3888;2181"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -76,34 +76,48 @@ const deployMultiHostNode3 = `docker run -d
   -v /data/zookeeper/data:/data
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="3"
-  -e ZOO_SERVERS="server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2888:3888;2181 server.3=zookeeper-3:2888:3888;2181"
+  -e ZOO_SERVERS="server.1=zookeeper1:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=zookeeper3:2888:3888;2181"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
+// The single-host commands drop --hostname, which docker rejects alongside
+// --network host, and address the ensemble by {{host}} - host networking joins
+// no docker network, so a container name resolves to nothing. Three members
+// sharing one port namespace need three of everything the image binds:
+// ZOO_CFG_EXTRA carries clientPort because the entrypoint hardcodes 2181 and
+// the config is read as java properties, where the later key wins; the admin
+// server is switched off rather than moved, since it binds 8080 on every
+// member and the adapter reads the ensemble over 4lw on the client port
+// anyway. The client port is left off the server specs for the same
+// last-writer reason - zookeeper rejects a config that sets it in both places.
+
 const deploySingleHostNode1 = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e ZOO_MY_ID="1"
-  -e ZOO_SERVERS="server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2890:3890;2181 server.3=zookeeper-3:2892:3892;2181"
+  -e ZOO_SERVERS="server.1={{host}}:2888:3888 server.2={{host}}:2890:3890 server.3={{host}}:2892:3892"
+  -e ZOO_CFG_EXTRA="clientPort={{dbPort}}"
+  -e ZOO_ADMINSERVER_ENABLED="false"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
 const deploySingleHostNode2 = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e ZOO_MY_ID="2"
-  -e ZOO_SERVERS="server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2890:3890;2181 server.3=zookeeper-3:2892:3892;2181"
+  -e ZOO_SERVERS="server.1={{host}}:2888:3888 server.2={{host}}:2890:3890 server.3={{host}}:2892:3892"
+  -e ZOO_CFG_EXTRA="clientPort={{dbPort}}"
+  -e ZOO_ADMINSERVER_ENABLED="false"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
 const deploySingleHostNode3 = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e ZOO_MY_ID="3"
-  -e ZOO_SERVERS="server.1=zookeeper-1:2888:3888;2181 server.2=zookeeper-2:2890:3890;2181 server.3=zookeeper-3:2892:3892;2181"
+  -e ZOO_SERVERS="server.1={{host}}:2888:3888 server.2={{host}}:2890:3890 server.3={{host}}:2892:3892"
+  -e ZOO_CFG_EXTRA="clientPort={{dbPort}}"
+  -e ZOO_ADMINSERVER_ENABLED="false"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -112,21 +126,39 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "ZooKeeper (Multi Host)",
-			Description: "Three-node zookeeper ensemble, one per VM. Name the nodes zookeeper-1..3 or edit the server list to match.",
+			Description: "Three-node zookeeper ensemble, one per VM. Name the nodes zookeeper1..3 or edit the server list to match.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deployMultiHostNode1},
-				{Command: deployMultiHostNode2},
-				{Command: deployMultiHostNode3},
+				{
+					Command:  deployMultiHostNode1,
+					Defaults: keeper.DeploymentDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
+				},
+				{
+					Command:  deployMultiHostNode2,
+					Defaults: keeper.DeploymentDefaults{Name: "zookeeper2", KeeperPort: 2181, DbPort: 2181},
+				},
+				{
+					Command:  deployMultiHostNode3,
+					Defaults: keeper.DeploymentDefaults{Name: "zookeeper3", KeeperPort: 2181, DbPort: 2181},
+				},
 			},
 		},
 		{
 			Platform:    platform.Docker,
 			Name:        "ZooKeeper (Single Host)",
-			Description: "Three-node zookeeper ensemble on one VM. Each node uses its own quorum and election ports; give each its own client port in the deploy form.",
+			Description: "Three-node zookeeper ensemble on one VM, each node on its own client, quorum and election ports. Fill in the host and deploy.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deploySingleHostNode1},
-				{Command: deploySingleHostNode2},
-				{Command: deploySingleHostNode3},
+				{
+					Command:  deploySingleHostNode1,
+					Defaults: keeper.DeploymentDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
+				},
+				{
+					Command:  deploySingleHostNode2,
+					Defaults: keeper.DeploymentDefaults{Name: "zookeeper2", KeeperPort: 2182, DbPort: 2182},
+				},
+				{
+					Command:  deploySingleHostNode3,
+					Defaults: keeper.DeploymentDefaults{Name: "zookeeper3", KeeperPort: 2183, DbPort: 2183},
+				},
 			},
 		},
 	}

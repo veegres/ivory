@@ -321,15 +321,16 @@ export function ClusterDeployForm(props: Props) {
 
     // NOTE: the template's command count is the node count - a cluster of a
     // different size is a different template, so nodes are never added here.
-    // The shipped templates reference these exact names in their own text
-    // (etcd-1, postgres-1, ...), so the prefill makes a copied template
-    // deployable without editing its commands
+    // Each card is filled in from its own command: a single-host template puts
+    // each node on its own port and names it the way its own commands do
+    // (etcd1, postgres1, ...), which the plugin's one set of Requirements
+    // cannot express. A command that states nothing falls back to those.
     function getInitialNodes(): DeployNode[] {
         return template.commands.map((c, i) => ({
-            name: `${KeeperPluginOptions[keeper].name}-${i + 1}`,
+            name: c.defaults?.name || `${KeeperPluginOptions[keeper].name}${i + 1}`,
             host: "",
-            keeperPort: spec.keeperPort,
-            dbPort: spec.dbPort,
+            keeperPort: c.defaults?.keeperPort || spec.keeperPort,
+            dbPort: c.defaults?.dbPort || spec.dbPort,
             sshPort: 22,
             command: c.command,
             postScript: c.postScript,

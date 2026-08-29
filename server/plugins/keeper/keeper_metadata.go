@@ -25,8 +25,8 @@ type Metadata interface {
 }
 
 // DeploymentTemplate is one shipped deployment: an ordered list of commands,
-// one per node, written for a specific platform. It carries nothing about
-// where the nodes run - host, ports and names are supplied at deploy time.
+// one per node, written for a specific platform. It says nothing about where
+// the nodes run - the host is supplied at deploy time.
 type DeploymentTemplate struct {
 	Platform    platform.PluginType
 	Name        string
@@ -37,8 +37,25 @@ type DeploymentTemplate struct {
 // DeploymentCommand is one node's deployment. It has no identity beyond its
 // position: which node it lands on is chosen at deploy time.
 type DeploymentCommand struct {
-	Command    string `json:"command"`
-	PostScript string `json:"postScript"`
+	Command    string             `json:"command"`
+	PostScript string             `json:"postScript"`
+	Defaults   DeploymentDefaults `json:"defaults"`
+}
+
+// DeploymentDefaults is what the deploy form fills this command's node card in
+// with. A command and the endpoints it answers on are one fact rather than two:
+// a single-host template writes a distinct peer port into each of its commands,
+// and only that command knows which client port has to match it. The name is
+// here for the same reason - a member list naming etcd-2 is only correct if the
+// node running that command is called etcd-2.
+//
+// Host and ssh port are deliberately absent: both describe the machine being
+// deployed onto, which is exactly what a template does not know. A zero field
+// states nothing and the form falls back to the plugin's Requirements.
+type DeploymentDefaults struct {
+	Name       string `json:"name"`
+	KeeperPort int    `json:"keeperPort"`
+	DbPort     int    `json:"dbPort"`
 }
 
 // Requirements is what Ivory must know to talk to the engine, not how to

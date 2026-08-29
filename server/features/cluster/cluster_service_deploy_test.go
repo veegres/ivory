@@ -61,7 +61,7 @@ func validDeployRequest() DeployRequest {
 	return DeployRequest{
 		Nodes: []DeployNode{{
 			NodeConfig: NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
-			Command:    `docker run -d --name {{name}} -e ETCD3_HOSTS="etcd-1:2379" spilo`,
+			Command:    `docker run -d --name {{name}} -e ETCD3_HOSTS="etcd1:2379" spilo`,
 		}},
 		CommonConfig: CommonConfig{
 			Cluster: "test-cluster",

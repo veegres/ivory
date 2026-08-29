@@ -47,7 +47,7 @@ const deployMultiHost = `docker run -d
   -v /data/postgres:/home/postgres/pgdata
   -e SCOPE="{{cluster}}"
   -e PATRONI_NAME="{{name}}"
-  -e ETCD3_HOSTS="etcd-1:2379,etcd-2:2379,etcd-3:2379"
+  -e ETCD3_HOSTS="etcd1:2379,etcd2:2379,etcd3:2379"
   -e PGPORT={{dbPort}}
   -e APIPORT={{keeperPort}}
   -e PGPASSWORD_SUPERUSER="{{dbPass}}"
@@ -55,13 +55,18 @@ const deployMultiHost = `docker run -d
   -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
   ghcr.io/zalando/spilo-18:4.1-p2`
 
+// The single-host command drops --hostname: docker rejects it outright
+// alongside --network host, which every node here needs to reach the DCS and
+// its peers on the host's own interface. Each node is told its own PGPORT and
+// APIPORT, which is what keeps three spilos out of each other's way on one
+// port namespace.
+
 const deploySingleHost = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e SCOPE="{{cluster}}"
   -e PATRONI_NAME="{{name}}"
-  -e ETCD3_HOSTS="etcd-1:2379,etcd-2:2379,etcd-3:2379"
+  -e ETCD3_HOSTS="etcd1:2379,etcd2:2379,etcd3:2379"
   -e PGPORT={{dbPort}}
   -e APIPORT={{keeperPort}}
   -e PGPASSWORD_SUPERUSER="{{dbPass}}"
@@ -76,19 +81,37 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Name:        "Patroni (Multi Host)",
 			Description: "Three spilo nodes, one per VM, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deployMultiHost},
-				{Command: deployMultiHost},
-				{Command: deployMultiHost},
+				{
+					Command:  deployMultiHost,
+					Defaults: keeper.DeploymentDefaults{Name: "patroni1", KeeperPort: 8008, DbPort: 5432},
+				},
+				{
+					Command:  deployMultiHost,
+					Defaults: keeper.DeploymentDefaults{Name: "patroni2", KeeperPort: 8008, DbPort: 5432},
+				},
+				{
+					Command:  deployMultiHost,
+					Defaults: keeper.DeploymentDefaults{Name: "patroni3", KeeperPort: 8008, DbPort: 5432},
+				},
 			},
 		},
 		{
 			Platform:    platform.Docker,
 			Name:        "Patroni (Single Host)",
-			Description: "Three spilo nodes on one VM. Give each node its own keeper and database port in the deploy form.",
+			Description: "Three spilo nodes on one VM, each on its own keeper and database port, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run, fill in the host and deploy.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deploySingleHost},
-				{Command: deploySingleHost},
-				{Command: deploySingleHost},
+				{
+					Command:  deploySingleHost,
+					Defaults: keeper.DeploymentDefaults{Name: "patroni1", KeeperPort: 8008, DbPort: 5432},
+				},
+				{
+					Command:  deploySingleHost,
+					Defaults: keeper.DeploymentDefaults{Name: "patroni2", KeeperPort: 8009, DbPort: 5433},
+				},
+				{
+					Command:  deploySingleHost,
+					Defaults: keeper.DeploymentDefaults{Name: "patroni3", KeeperPort: 8010, DbPort: 5434},
+				},
 			},
 		},
 	}

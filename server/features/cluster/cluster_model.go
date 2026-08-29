@@ -79,10 +79,9 @@ type CreateAutoRequest struct {
 	Options
 }
 
-// DeployRequest describes a deployment intent: node ports, the image, aux
-// ports, the DCS value and the per-node options are resolved server-side from
-// the keeper plugin's DeploymentSpec unless explicitly provided. Values
-// carries plugin-required inputs (e.g. "dcs" for patroni).
+// DeployRequest is one whole cluster's deployment: every node states its own
+// name, host, ports and command, and nothing is resolved server-side from the
+// keeper plugin.
 type DeployRequest struct {
 	Parallel       bool         `json:"parallel"`
 	Nodes          []DeployNode `json:"nodes"`

@@ -9,6 +9,7 @@ import (
 var ErrTemplateNameRequired = errors.New("template name is required")
 var ErrTemplateNameTaken = errors.New("template name is already taken")
 var ErrTemplateCommandsRequired = errors.New("template needs at least one command")
+var ErrTemplatePortInvalid = errors.New("template default port is out of range")
 var ErrTemplateReadOnly = errors.New("shipped templates cannot be changed, copy one instead")
 var ErrTemplatePluginImmutable = errors.New("template keeper and platform cannot be changed")
 var ErrUnknownPlatform = errors.New("unknown platform")

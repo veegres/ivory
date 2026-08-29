@@ -122,6 +122,69 @@ func TestSingleHostDefaultsAvoidCollisions(t *testing.T) {
 				if strings.Contains(command.Command, "\n  -v ") {
 					t.Errorf("command %d mounts a volume, which collides on one VM", i)
 				}
+				// NOTE: docker refuses --hostname and --network host together,
+				// so a command carrying both never starts at all
+				if strings.Contains(command.Command, "--hostname") {
+					t.Errorf("command %d sets --hostname, which docker rejects alongside --network host", i)
+				}
+			}
+		})
+	}
+}
+
+// TestDefaultsStateNodeDefaults holds the promise the deploy form depends on:
+// a shipped template fills its own node cards in, so deploying one asks for
+// nothing but the host. A command that states no port would silently fall back
+// to the plugin's single default and put every node of a single-host template
+// on one port.
+func TestDefaultsStateNodeDefaults(t *testing.T) {
+	s := newFullTestService(t)
+
+	for _, template := range s.Defaults(ListRequest{}) {
+		t.Run(template.Name, func(t *testing.T) {
+			names := map[string]bool{}
+			for i, command := range template.Commands {
+				if command.Defaults.Name == "" {
+					t.Errorf("command %d states no default node name", i)
+				}
+				if names[command.Defaults.Name] {
+					t.Errorf("command %d reuses the node name %q, which a cluster rejects", i, command.Defaults.Name)
+				}
+				names[command.Defaults.Name] = true
+				if command.Defaults.KeeperPort == 0 {
+					t.Errorf("command %d states no default keeper port", i)
+				}
+				if command.Defaults.DbPort == 0 {
+					t.Errorf("command %d states no default database port", i)
+				}
+			}
+		})
+	}
+}
+
+// TestSingleHostDefaultsGiveEachNodeItsOwnPorts is the collision the shipped
+// single-host templates existed to demonstrate and could not survive: three
+// nodes sharing one port namespace need three sets of ports, and the deploy
+// form takes them from the commands themselves.
+func TestSingleHostDefaultsGiveEachNodeItsOwnPorts(t *testing.T) {
+	s := newFullTestService(t)
+
+	for _, template := range s.Defaults(ListRequest{}) {
+		if !strings.Contains(template.Name, "Single Host") {
+			continue
+		}
+		t.Run(template.Name, func(t *testing.T) {
+			keeperPorts := map[int]bool{}
+			dbPorts := map[int]bool{}
+			for i, command := range template.Commands {
+				if keeperPorts[command.Defaults.KeeperPort] {
+					t.Errorf("command %d reuses keeper port %d on the same VM", i, command.Defaults.KeeperPort)
+				}
+				if dbPorts[command.Defaults.DbPort] {
+					t.Errorf("command %d reuses database port %d on the same VM", i, command.Defaults.DbPort)
+				}
+				keeperPorts[command.Defaults.KeeperPort] = true
+				dbPorts[command.Defaults.DbPort] = true
 			}
 		})
 	}
