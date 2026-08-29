@@ -1,13 +1,9 @@
 import {Box, TextField} from "@mui/material"
 
-import {InfoColorBox} from "../../../shared/component/box/InfoColorBox"
-import {InfoColorBoxRow} from "../../../shared/component/box/InfoColorBoxRow"
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
-import {CodeField} from "../../../shared/component/input/CodeField"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
-import {interpolateCommand} from "../../../shared/helper/HelperUtils"
-import {DeploymentPreviewNote} from "../../deployment/component/DeploymentPreviewNote"
+import {DeployValues} from "../../../shared/helper/HelperUtils"
+import {DeploymentCommandPreview} from "../../deployment/component/DeploymentCommandPreview"
 import {DeployNode, DeployPreviewCredentials} from "../api/ClusterType"
 
 const SX: SxPropsMap = {
@@ -17,7 +13,6 @@ const SX: SxPropsMap = {
         display: "flex", flexDirection: "column", gap: 1,
         padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
     },
-    preview: {display: "flex", flexDirection: "column", gap: 1},
 }
 
 type Props = {
@@ -67,46 +62,9 @@ export function ClusterDeployNode(props: Props) {
                 {renderPort("Database Port", node.dbPort, (v) => onChange({...node, dbPort: v}))}
                 {renderPort("SSH Port", node.sshPort, (v) => onChange({...node, sshPort: v}))}
             </FieldRow>
-            {/* NOTE: the badge rides on the toggle's own row - it says what is
-                inside the section, so it belongs to the line that opens it */}
-            <SubContentBox label={"Preview"} renderActions={renderBadge()} dense={true}>
-                {renderPreview()}
-            </SubContentBox>
+            <DeploymentCommandPreview command={node.command} postScript={node.postScript} values={getValues()}/>
         </Box>
     )
-
-    function renderBadge() {
-        if (!node.postScript) return
-        return (
-            <InfoColorBoxRow>
-                <InfoColorBox label={"post script"} title={"Runs inside the container once this node is up"}/>
-            </InfoColorBoxRow>
-        )
-    }
-
-    // NOTE: the hint sits above the code, not under it - it says how to read
-    // what follows, which is no use once you have already read it
-    function renderPreview() {
-        return (
-            <Box sx={SX.preview}>
-                <DeploymentPreviewNote/>
-                <CodeField
-                    label={"Command"}
-                    value={getPreview(node.command)}
-                    editable={false}
-                    minHeight={"120px"}
-                />
-                {node.postScript && (
-                    <CodeField
-                        label={"Post Script"}
-                        hint={"runs in the container once this node is up"}
-                        value={getPreview(node.postScript)}
-                        editable={false}
-                    />
-                )}
-            </Box>
-        )
-    }
 
     function renderPort(label: string, value: number | undefined, onPortChange: (value?: number) => void) {
         return (
@@ -121,8 +79,8 @@ export function ClusterDeployNode(props: Props) {
         )
     }
 
-    function getPreview(text: string) {
-        return interpolateCommand(text, {
+    function getValues(): DeployValues {
+        return {
             cluster,
             name: node.name,
             host: node.host,
@@ -133,6 +91,6 @@ export function ClusterDeployNode(props: Props) {
             keeperPass: credentials.keeper.pass,
             dbUser: credentials.database.user,
             dbPass: credentials.database.pass,
-        })
+        }
     }
 }

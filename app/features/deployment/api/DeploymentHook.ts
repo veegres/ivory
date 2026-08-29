@@ -1,10 +1,12 @@
 import {useQuery} from "@tanstack/react-query"
 import {useMemo, useState} from "react"
 
-import {getUnknownPlaceholders} from "../../../shared/helper/HelperUtils"
+import {DeployPasswordMask, getUnknownPlaceholders} from "../../../shared/helper/HelperUtils"
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
+import {useRouterVault} from "../../vault/api/VaultHook"
+import {VaultMap, VaultType} from "../../vault/api/VaultType"
 import {DeploymentApi} from "./DeploymentRouter"
-import {Template, TemplateCommand, TemplateListRequest, TemplateRequest} from "./DeploymentType"
+import {DeployCredentials, Template, TemplateCommand, TemplateListRequest, TemplateRequest} from "./DeploymentType"
 
 export function useRouterDeploymentTemplateList(request?: TemplateListRequest) {
     return useQuery({
@@ -76,5 +78,24 @@ export function useTemplateForm(initial: TemplateRequest) {
 
     function removeCommand(index: number) {
         setTemplate(prev => ({...prev, commands: prev.commands.filter((_, i) => i !== index)}))
+    }
+}
+
+// useDeployVaultCredentials resolves what a preview may show of the two vault
+// entries a deploy uses: the username as stored, and the password only as its
+// mask. Both deploy screens ask the same question of the same two queries, and
+// they share the vault tab's cache, so neither costs a request of its own.
+export function useDeployVaultCredentials(keeperId?: string, databaseId?: string) {
+    const keeperVaults = useRouterVault(VaultType.KEEPER_PASSWORD)
+    const databaseVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
+
+    return {
+        keeper: getCredentials(keeperVaults.data, keeperId),
+        database: getCredentials(databaseVaults.data, databaseId),
+    }
+
+    function getCredentials(vaults?: VaultMap, vaultId?: string): DeployCredentials {
+        const user = vaultId ? vaults?.[vaultId]?.username : undefined
+        return {user, pass: user && DeployPasswordMask}
     }
 }

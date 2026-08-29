@@ -1,6 +1,7 @@
 import {ReactNode} from "react"
 
 import {Certs} from "../../cert/api/CertType"
+import {DeployCredentials} from "../../deployment/api/DeploymentType"
 import {Feature} from "../../Feature"
 import {KeeperOneResponse, KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
@@ -72,14 +73,8 @@ export interface DeployCommonConfig {
     dbPass: string,
 }
 
-// DeployCredentials is what a deploy preview is allowed to show of one
-// credential pair: the username as it really is, and the password only ever as
-// its mask - the real one is substituted on the server.
-export interface DeployCredentials {
-    user?: string,
-    pass?: string,
-}
-
+// DeployPreviewCredentials is the pair of previews a node card needs - what
+// may be shown of the keeper's credentials and of the database's.
 export interface DeployPreviewCredentials {
     keeper: DeployCredentials,
     database: DeployCredentials,

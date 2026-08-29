@@ -1,4 +1,4 @@
-import {KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
+import {KeeperDeploySpecResponse, KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
 
 // CreationType distinguishes the templates Ivory ships from the ones you own,
 // using the same vocabulary as the query builder's own templates.
@@ -38,4 +38,22 @@ export interface TemplateRequest {
 export interface TemplateListRequest {
     keeper?: KeeperPlugin,
     platform?: PlatformPlugin,
+}
+
+// DeployCredentials is what a deploy preview is allowed to show of one
+// credential pair: the username as it really is, and the password only ever as
+// its mask - the real one is substituted on the server.
+export interface DeployCredentials {
+    user?: string,
+    pass?: string,
+}
+
+// DeployScreenProps is what DeploymentTemplateDialog hands the screen that
+// runs a template: the template itself, the keeper's requirements, and the
+// logs of the run that already happened, if there was one.
+export interface DeployScreenProps {
+    template: Template,
+    spec: KeeperDeploySpecResponse,
+    logs?: string[],
+    onDeployed: (logs: string[]) => void,
 }
