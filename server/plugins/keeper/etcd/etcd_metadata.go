@@ -28,7 +28,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 // can only be enabled through a user named root.
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
-		DbPort:            2379,
 		KeeperPort:        2379,
 		KeeperCredentials: true,
 		KeeperUser:        "root",

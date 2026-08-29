@@ -27,7 +27,7 @@ type fakeKeeperMetadata struct {
 
 func (f fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool { return f.features }
 func (f fakeKeeperMetadata) Requirements() keeper.Requirements {
-	return keeper.Requirements{DbPort: 5432}
+	return keeper.Requirements{KeeperPort: 5432}
 }
 func (f fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate { return nil }
 

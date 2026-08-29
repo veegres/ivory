@@ -27,7 +27,7 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 // the deployment consumes no credentials - operators who need it configure it
 // on the deployed ensemble themselves.
 func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{DbPort: 2181, KeeperPort: 2181}
+	return keeper.Requirements{KeeperPort: 2181}
 }
 
 // ZOO_MY_ID is written literally per command: zookeeper needs a genuinely

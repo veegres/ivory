@@ -25,9 +25,6 @@ func TestSupportedFeaturesAllSupported(t *testing.T) {
 func TestRequirements(t *testing.T) {
 	req := NewAdapter(nil).Requirements()
 
-	if req.DbPort != 5432 {
-		t.Errorf("expected db port 5432, got %d", req.DbPort)
-	}
 	if req.KeeperPort != 8008 {
 		t.Errorf("expected patroni's own rest api port 8008, got %d", req.KeeperPort)
 	}

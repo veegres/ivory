@@ -181,11 +181,15 @@ type KeeperDeploySpecRequest struct {
 	Plugin KeeperPlugin `json:"plugin" form:"plugin" binding:"required"`
 }
 
-// KeeperDeploySpecResponse is plugin metadata the deploy forms need: the
-// default endpoints and whether credentials are consumed. It says nothing
-// about how to deploy - that is a command the user writes.
+// KeeperDeploySpecResponse is plugin metadata the deploy forms need: whether
+// credentials are consumed and which usernames the engine locks itself to. It
+// says nothing about how to deploy - that is a command the user writes.
+//
+// KeeperPort is the engine's own default and is deliberately the only port
+// left: a deploy takes its ports from the template's commands alone, so this
+// serves cluster detection, which points at a cluster that already runs and
+// has no template to read them from.
 type KeeperDeploySpecResponse struct {
-	DbPort            int    `json:"dbPort"`
 	KeeperPort        int    `json:"keeperPort"`
 	KeeperCredentials bool   `json:"keeperCredentials"`
 	KeeperUser        string `json:"keeperUser"`
