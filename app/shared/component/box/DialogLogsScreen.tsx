@@ -1,6 +1,6 @@
-import {DialogScreen} from "../../../../shared/component/box/DialogScreen"
-import {Logs} from "../../../../shared/component/box/Logs"
-import {TitledBox} from "../../../../shared/component/box/TitledBox"
+import {DialogScreen} from "./DialogScreen"
+import {Logs} from "./Logs"
+import {TitledBox} from "./TitledBox"
 
 // NOTE: the virtualizer inside Logs needs a pixel height, so this is where it
 // and the dialog have to agree: --size-dialog (600) less the screen's padding
@@ -14,9 +14,11 @@ type Props = {
     logs: string[],
 }
 
-// ContainerKeeperDeployResponse is what the deploy left behind - the output of
-// the command and of the post script that followed it.
-export function ContainerKeeperDeployResponse(props: Props) {
+// DialogLogsScreen is a whole dialog screen filled by the output of whatever
+// the screen before it ran. It knows nothing about what produced the lines -
+// the height is the only thing it decides, and that is the dialog's geometry
+// rather than anything about the caller.
+export function DialogLogsScreen(props: Props) {
     const {logs} = props
 
     return (

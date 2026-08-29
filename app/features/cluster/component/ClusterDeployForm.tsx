@@ -1,26 +1,21 @@
 import {Box, Button, Checkbox, TextField} from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
+import {DialogLogsScreen} from "../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {Note} from "../../../shared/component/box/Note"
 import {TitledBox} from "../../../shared/component/box/TitledBox"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployPasswordMask, KeeperPluginOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
-import {Template} from "../../deployment/api/DeploymentType"
+import {useDeployVaultCredentials} from "../../deployment/api/DeploymentHook"
+import {DeployCredentials, Template} from "../../deployment/api/DeploymentType"
 import {KeeperDeploySpecResponse, KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
-import {useRouterVault} from "../../vault/api/VaultHook"
 import {VaultType} from "../../vault/api/VaultType"
 import {useRouterClusterDeploy} from "../api/ClusterHook"
-import {
-    DeployCredentials,
-    DeployNode,
-    DeployPreviewCredentials,
-    Options as ClusterOptions,
-} from "../api/ClusterType"
+import {DeployNode, DeployPreviewCredentials, Options as ClusterOptions} from "../api/ClusterType"
 import {ClusterDeployCredentials, Credential, CredentialMode} from "./ClusterDeployCredentials"
 import {ClusterDeployNode} from "./ClusterDeployNode"
-import {ClusterDeployResponse} from "./ClusterDeployResponse"
 import {ClusterOptionsBox} from "./ClusterOptionsBox"
 
 const SX: SxPropsMap = {
@@ -75,10 +70,7 @@ export function ClusterDeployForm(props: Props) {
     const [submitted, setSubmitted] = useState(false)
 
     const deploy = useRouterClusterDeploy(onDeployed)
-    // NOTE: shares OptionsVault's queries, so resolving a chosen vault's
-    // username for the preview costs no extra request
-    const keeperVaults = useRouterVault(VaultType.KEEPER_PASSWORD)
-    const dbVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
+    const vaultCredentials = useDeployVaultCredentials(options.vaults.keeperId, options.vaults.databaseId)
 
     const withKeeperCredentials = spec.keeperCredentials
     const withDbCredentials = spec.dbCredentials
@@ -94,7 +86,7 @@ export function ClusterDeployForm(props: Props) {
     // NOTE: the response replaces the fields from inside this component rather
     // than from the dialog above it, so going back from the logs of a deploy
     // that failed on its third node returns to the form still filled in
-    if (logs) return <ClusterDeployResponse logs={logs}/>
+    if (logs) return <DialogLogsScreen logs={logs}/>
 
     return (
         <DialogScreen renderActions={renderActions()}>
@@ -293,12 +285,12 @@ export function ClusterDeployForm(props: Props) {
     // but never a password, only that one exists
     function getPreviewCredentials(): DeployPreviewCredentials {
         return {
-            keeper: getCredentialPreview(withKeeperCredentials, keeperMode, keeperCred, getVaultUsername(keeperVaults.data, options.vaults.keeperId)),
-            database: getCredentialPreview(withDbCredentials, dbMode, dbCred, getVaultUsername(dbVaults.data, options.vaults.databaseId)),
+            keeper: getCredentialPreview(withKeeperCredentials, keeperMode, keeperCred, vaultCredentials.keeper),
+            database: getCredentialPreview(withDbCredentials, dbMode, dbCred, vaultCredentials.database),
         }
     }
 
-    function getCredentialPreview(required: boolean, mode: CredentialMode, credential: Credential, vaultUsername?: string): DeployCredentials {
+    function getCredentialPreview(required: boolean, mode: CredentialMode, credential: Credential, vault: DeployCredentials): DeployCredentials {
         if (!required) return {}
         if (mode === "new") {
             return {
@@ -306,11 +298,7 @@ export function ClusterDeployForm(props: Props) {
                 pass: credential.password ? DeployPasswordMask : undefined,
             }
         }
-        return {user: vaultUsername, pass: vaultUsername && DeployPasswordMask}
-    }
-
-    function getVaultUsername(vaults?: {[key: string]: {username: string}}, vaultId?: string) {
-        return vaultId ? vaults?.[vaultId]?.username : undefined
+        return vault
     }
 
     // NOTE: a vault id and a username/password pair are two answers to one

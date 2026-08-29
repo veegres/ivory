@@ -1,23 +1,18 @@
 import {Box, Button, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {useState} from "react"
 
+import {DialogLogsScreen} from "../../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../../shared/component/box/DialogScreen"
-import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
-import {InfoColorBoxRow} from "../../../../shared/component/box/InfoColorBoxRow"
 import {Note} from "../../../../shared/component/box/Note"
-import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
 import {TitledBox} from "../../../../shared/component/box/TitledBox"
-import {CodeField} from "../../../../shared/component/input/CodeField"
 import {FieldRow} from "../../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {DeployPasswordMask, getShortUuid, interpolateCommand} from "../../../../shared/helper/HelperUtils"
+import {DeployValues, getShortUuid} from "../../../../shared/helper/HelperUtils"
+import {useDeployVaultCredentials} from "../../../deployment/api/DeploymentHook"
 import {Template} from "../../../deployment/api/DeploymentType"
-import {DeploymentPreviewNote} from "../../../deployment/component/DeploymentPreviewNote"
-import {useRouterVault} from "../../../vault/api/VaultHook"
-import {VaultType} from "../../../vault/api/VaultType"
+import {DeploymentCommandPreview} from "../../../deployment/component/DeploymentCommandPreview"
 import {useRouterNodeKeeperDeploy} from "../../api/NodeHook"
 import {KeeperDeploySpecResponse, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
-import {ContainerKeeperDeployResponse} from "./ContainerKeeperDeployResponse"
 
 const SX: SxPropsMap = {
     subContent: {display: "flex", flexDirection: "column"},
@@ -27,7 +22,6 @@ const SX: SxPropsMap = {
         display: "flex", flexDirection: "column", gap: 1,
         padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
     },
-    preview: {display: "flex", flexDirection: "column", gap: 1},
     // NOTE: the same frame as the node card below it - it is a section of the
     // screen in its own right, not a caption floating between two boxes
     chooser: {
@@ -62,14 +56,13 @@ export function ContainerKeeperDeployForm(props: Props) {
     const [index, setIndex] = useState(0)
 
     const nodeDeploy = useRouterNodeKeeperDeploy(connection, onDeployed)
-    const keeperVaults = useRouterVault(VaultType.KEEPER_PASSWORD)
-    const dbVaults = useRouterVault(VaultType.DATABASE_PASSWORD)
+    const credentials = useDeployVaultCredentials(keeperId, databaseId)
 
     const command = template.commands[index]
     const withKeeperCredentials = spec.keeperCredentials
     const withDbCredentials = spec.dbCredentials
 
-    if (logs) return <ContainerKeeperDeployResponse logs={logs}/>
+    if (logs) return <DialogLogsScreen logs={logs}/>
 
     return (
         <DialogScreen renderActions={renderActions()}>
@@ -144,11 +137,12 @@ export function ContainerKeeperDeployForm(props: Props) {
                     {renderPort("Database Port", spec.dbPort)}
                     {renderPort("SSH Port", connection.port)}
                 </FieldRow>
-                {/* NOTE: the badge rides on the toggle's own row - it says what
-                    is inside the section, so it belongs to the line that opens it */}
-                <SubContentBox label={"Preview"} renderActions={renderBadge()} defaultOpen={true} dense={true}>
-                    {renderPreview()}
-                </SubContentBox>
+                <DeploymentCommandPreview
+                    command={command.command}
+                    postScript={command.postScript}
+                    values={getValues()}
+                    defaultOpen={true}
+                />
             </Box>
         )
     }
@@ -159,39 +153,6 @@ export function ContainerKeeperDeployForm(props: Props) {
 
     function renderPort(label: string, value: number) {
         return <TextField size={"small"} type={"number"} label={label} value={value} disabled={true}/>
-    }
-
-    function renderBadge() {
-        if (!command.postScript) return
-        return (
-            <InfoColorBoxRow>
-                <InfoColorBox label={"post script"} title={"Runs inside the container once this node is up"}/>
-            </InfoColorBoxRow>
-        )
-    }
-
-    // NOTE: the hint sits above the code, not under it - it says how to read
-    // what follows, which is no use once you have already read it
-    function renderPreview() {
-        return (
-            <Box sx={SX.preview}>
-                <DeploymentPreviewNote/>
-                <CodeField
-                    label={"Command"}
-                    value={interpolateCommand(command.command, getValues())}
-                    editable={false}
-                    minHeight={"120px"}
-                />
-                {command.postScript && (
-                    <CodeField
-                        label={"Post Script"}
-                        hint={"runs in the container once this node is up"}
-                        value={interpolateCommand(command.postScript, getValues())}
-                        editable={false}
-                    />
-                )}
-            </Box>
-        )
     }
 
     function handleAction() {
@@ -208,7 +169,7 @@ export function ContainerKeeperDeployForm(props: Props) {
         })
     }
 
-    function getValues() {
+    function getValues(): DeployValues {
         return {
             cluster,
             name: node,
@@ -216,18 +177,10 @@ export function ContainerKeeperDeployForm(props: Props) {
             sshPort: connection.port,
             keeperPort: spec.keeperPort,
             dbPort: spec.dbPort,
-            keeperUser: getKeeperVault()?.username,
-            keeperPass: getKeeperVault() && DeployPasswordMask,
-            dbUser: getDbVault()?.username,
-            dbPass: getDbVault() && DeployPasswordMask,
+            keeperUser: credentials.keeper.user,
+            keeperPass: credentials.keeper.pass,
+            dbUser: credentials.database.user,
+            dbPass: credentials.database.pass,
         }
-    }
-
-    function getKeeperVault() {
-        return keeperId ? keeperVaults.data?.[keeperId] : undefined
-    }
-
-    function getDbVault() {
-        return databaseId ? dbVaults.data?.[databaseId] : undefined
     }
 }
