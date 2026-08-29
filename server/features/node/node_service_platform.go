@@ -178,27 +178,45 @@ func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.V
 }
 
 // escapeInterpolatedValue neutralizes characters that could break out of a
-// keeper plugin's own hand-written quoting once substituted into an
-// command or post-script template (e.g. an etcd post-script wraps
-// {{dbUser}}:{{dbPass}} in literal double quotes - an unescaped quote or
-// space in the value corrupts the command it's exec'd with). The backslash
-// itself is escaped first, then both quote characters, since a value may
-// land inside either a single- or a double-quoted span depending on the
-// plugin; container_manager.go's splitShellFields recovers these escapes
-// when the interpolated command is tokenized for execution.
+// keeper plugin's own hand-written quoting once substituted into a command or
+// post-script template (e.g. an etcd post-script wraps {{dbUser}}:{{dbPass}}
+// in literal quotes - an unescaped quote in the value corrupts the command
+// it's exec'd with). Each one is marked with platform.ValueEscape rather than
+// a backslash, so splitShellFields can tell a credential's quote from a
+// backslash the template author wrote: escaping both the same way is what
+// used to strip a post script's own `\"` on the way to the inner shell.
+//
+// A value never carries the marker itself, so any occurrence is dropped
+// before escaping rather than trusted.
 func escapeInterpolatedValue(v string) string {
-	v = strings.ReplaceAll(v, `\`, `\\`)
-	v = strings.ReplaceAll(v, `'`, `\'`)
-	v = strings.ReplaceAll(v, `"`, `\"`)
-	return v
+	v = strings.ReplaceAll(v, string(platform.ValueEscape), "")
+	var escaped strings.Builder
+	for _, r := range v {
+		if r == '\'' || r == '"' || r == '\\' {
+			escaped.WriteRune(platform.ValueEscape)
+		}
+		escaped.WriteRune(r)
+	}
+	return escaped.String()
 }
 
+// PlatformContainerDown removes a deployment, stopping it first. The stop is
+// what makes Down usable at all: removing a running deployment is refused by
+// the platform, so Down used to fail on exactly the deployments a user wants
+// to remove. It is a graceful stop rather than a forced removal because these
+// are databases, and the platform's own shutdown timeout is worth waiting for.
+// A stop failure is not fatal - an already-stopped deployment still removes.
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.DownContainer(conn, r.Name))
+	stopLogs, _ := s.executeCommand(adapter.StopContainer(conn, r.Name))
+	downLogs, err := s.executeCommand(adapter.DownContainer(conn, r.Name))
+	if err != nil {
+		return nil, err
+	}
+	return append(stopLogs, downLogs...), nil
 }
 
 func (s *Service) PlatformContainerList(c PlatformVaultConnection) ([]string, error) {

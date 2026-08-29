@@ -221,17 +221,36 @@ func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg 
 	}
 }
 
+// postDeploy runs every node's post-script and reports, at the end, how many
+// of them failed. A failure does not abort the batch - the nodes are already
+// up - but it has to be stated: a post script is what turns running processes
+// into an initialized cluster (etcd's auth enable, mongo's rs.initiate), so a
+// deploy whose scripts all failed otherwise reads as a success.
 func (s *Service) postDeploy(cluster Request, nodes []DeployNode, logsSend func(ctx string, msg string)) {
+	failed := 0
+	total := 0
 	for _, n := range nodes {
 		if n.PostScript == "" {
 			continue
 		}
+		total++
 		nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 		logsSend(nodeKey, "running post-deploy initialization")
-		for _, log := range s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n)) {
+		logs, err := s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n))
+		for _, log := range logs {
 			logsSend(nodeKey, log)
 		}
+		if err != nil {
+			failed++
+			logsSend(nodeKey, "post-deploy initialization did not complete")
+			continue
+		}
 		logsSend(nodeKey, "post-deploy initialization finished")
+	}
+	if failed > 0 {
+		logsSend("system", fmt.Sprintf(
+			"post-deploy initialization failed on %d of %d node(s): the cluster is registered and running, but not initialized",
+			failed, total))
 	}
 }
 

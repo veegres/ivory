@@ -7,6 +7,14 @@ const (
 	Docker PluginType = "docker"
 )
 
+// ValueEscape marks the single character after it as literal content the
+// server injected into a command (a vault credential), whatever quoting
+// surrounds it. It is deliberately not a backslash: a backslash in a command
+// belongs to the template author and has to keep its ordinary shell meaning,
+// so escaping both with the same character made a plugin's own `\"` and an
+// escaped credential indistinguishable - and the tokenizer ate both.
+const ValueEscape = '\x00'
+
 // Metrics is a snapshot of resource usage for a node or a single container.
 type Metrics struct {
 	Cpu     CpuMetrics     `json:"cpu"`

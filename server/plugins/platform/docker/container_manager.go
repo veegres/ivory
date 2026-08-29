@@ -144,11 +144,15 @@ func shellQuoteFields(value string) []string {
 // splitShellFields splits a docker options string into individual arguments,
 // honoring single/double-quoted spans the way a real shell would, so a flag
 // value like `-e SCOPE="my cluster"` stays one argument instead of being
-// broken apart at the space inside the quotes. A backslash escapes the very next rune literally regardless of
-// quote state, so a value inserted into a plugin's own hand-written quoted
-// span (e.g. a PostScript wrapping {{dbUser}}:{{dbPass}} in literal quotes)
-// can contain that same quote character - escaped by the caller before
-// interpolation - without prematurely closing the span.
+// broken apart at the space inside the quotes.
+//
+// Backslashes follow shell rules, because they belong to the template author:
+// inside a single-quoted span a backslash is a literal character, so a post
+// script's own `\"` survives tokenizing and reaches the inner `sh -c` still
+// escaped. Only platform.ValueEscape - which nothing but the server emits -
+// forces the next rune to be literal regardless of quote state, which is what
+// lets a vault credential carry a quote without closing a plugin's own
+// hand-written span.
 func splitShellFields(value string) []string {
 	fields := make([]string, 0)
 	var current strings.Builder
@@ -158,7 +162,11 @@ func splitShellFields(value string) []string {
 	for i := 0; i < len(runes); i++ {
 		r := runes[i]
 		switch {
-		case r == '\\' && i+1 < len(runes):
+		case r == platform.ValueEscape && i+1 < len(runes):
+			i++
+			current.WriteRune(runes[i])
+			hasToken = true
+		case r == '\\' && quote != '\'' && i+1 < len(runes) && escapesInQuote(runes[i+1], quote):
 			i++
 			current.WriteRune(runes[i])
 			hasToken = true
@@ -186,6 +194,17 @@ func splitShellFields(value string) []string {
 		fields = append(fields, current.String())
 	}
 	return fields
+}
+
+// escapesInQuote reports whether a backslash before r actually escapes it in
+// the given quote state. Unquoted, a backslash escapes anything; inside a
+// double-quoted span it only escapes the few characters that span still
+// interprets, and is an ordinary character before anything else.
+func escapesInQuote(r rune, quote rune) bool {
+	if quote == '"' {
+		return r == '"' || r == '\\' || r == '$' || r == '`'
+	}
+	return true
 }
 
 func (a *Adapter) parseContainerMetrics(output string) (*platform.Metrics, error) {

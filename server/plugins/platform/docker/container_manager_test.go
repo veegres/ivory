@@ -168,15 +168,17 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 // plugin's own hand-written single-quoted span wrapped around an
 // interpolated value (e.g. `user add '{{dbUser}}:{{dbPass}}'`): a password
 // containing a quote and a space must survive tokenizing intact once the
-// caller (node.getExecutionValues) has backslash-escaped it, instead of the
-// naive quote-toggle parser closing the span early and mangling the value.
+// caller (node.getExecutionValues) has marked it with platform.ValueEscape,
+// instead of the naive quote-toggle parser closing the span early and
+// mangling the value.
 func TestExecContainerRecoversEscapedQuoteInHandWrittenSpan(t *testing.T) {
 	adapter := NewAdapter(ssh.NewClient())
 	connection := platform.Connection{}
 
 	// value as produced by escapeInterpolatedValue("it's a test") interpolated
 	// into etcd's own "'root:" + dbUser + ":" + dbPass + "'" template.
-	command := `etcdctl user add 'root:it\'s a test'`
+	esc := string(platform.ValueEscape)
+	command := `etcdctl user add 'root:it` + esc + `'s a test'`
 	got := adapter.ExecContainer(connection, "n1", command).(*ssh.Command).Command
 	expected := `docker exec -- 'n1' etcdctl user add 'root:it'\''s a test'`
 	// NOTE: the last field is shellQuote's own re-escaping of the recovered
@@ -184,6 +186,75 @@ func TestExecContainerRecoversEscapedQuoteInHandWrittenSpan(t *testing.T) {
 	// recovered as one field, not split apart at the embedded quote.
 	if got != expected {
 		t.Fatalf("expected %q, got %q", expected, got)
+	}
+}
+
+// TestExecContainerKeepsAuthorBackslashInSingleQuotedSpan pins the other half
+// of that contract: inside a single-quoted span a backslash belongs to the
+// template author and is a literal character, so a post script's own \" has
+// to reach the inner `sh -c` still escaped. Consuming it here is what turned
+// mongo's rs.initiate into `{_id: mongo-cluster}` - bare identifiers where
+// strings belonged - once the remote shell parsed the script a second time.
+func TestExecContainerKeepsAuthorBackslashInSingleQuotedSpan(t *testing.T) {
+	adapter := NewAdapter(ssh.NewClient())
+	connection := platform.Connection{}
+
+	command := `sh -c 'mongosh --eval "rs.initiate({_id: \"rs0\"})"'`
+	got := adapter.ExecContainer(connection, "n1", command).(*ssh.Command).Command
+	expected := `docker exec -- 'n1' sh -c 'mongosh --eval "rs.initiate({_id: \"rs0\"})"'`
+	if got != expected {
+		t.Fatalf("expected %q, got %q", expected, got)
+	}
+}
+
+// TestSplitShellFieldsAppliesShellBackslashRules covers the quote states a
+// backslash means different things in, so the tokenizer keeps matching a real
+// shell rather than the template author having to guess.
+func TestSplitShellFieldsAppliesShellBackslashRules(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "single-quoted span keeps the backslash literal",
+			input:    `sh -c 'echo \"x\"'`,
+			expected: []string{"sh", "-c", `echo \"x\"`},
+		},
+		{
+			name:     "double-quoted span consumes an escape it interprets",
+			input:    `-e A="say \"hi\""`,
+			expected: []string{"-e", `A=say "hi"`},
+		},
+		{
+			name:     "double-quoted span keeps a backslash before an ordinary rune",
+			input:    `-e A="C:\path"`,
+			expected: []string{"-e", `A=C:\path`},
+		},
+		{
+			name:     "unquoted backslash escapes the next rune",
+			input:    `-e A=one\ two`,
+			expected: []string{"-e", "A=one two"},
+		},
+		{
+			name:     "value escape wins in any quote state",
+			input:    `'a` + string(platform.ValueEscape) + `'b'`,
+			expected: []string{"a'b"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := splitShellFields(test.input)
+			if len(got) != len(test.expected) {
+				t.Fatalf("expected %q, got %q", test.expected, got)
+			}
+			for i := range got {
+				if got[i] != test.expected[i] {
+					t.Fatalf("expected %q, got %q", test.expected, got)
+				}
+			}
+		})
 	}
 }
 
