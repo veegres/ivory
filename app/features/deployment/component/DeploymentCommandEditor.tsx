@@ -31,17 +31,17 @@ export function DeploymentCommandEditor(props: Props) {
                 placeholder={"docker run -d --name {{name}} ..."}
                 onUpdate={handleCommandChange}
             />
-            {/* NOTE: the placeholder is a real post script rather than the
-                word "optional" - it has to show that this one runs inside the
-                container, unlike the command above it which starts one. It is
-                deliberately plain shell: naming one engine's client made it
-                read as the answer for that engine rather than an example. */}
+{/* NOTE: one command per line, because each line runs as its own
+                execution rather than as a script - a distroless image has no
+                shell to chain them with. The placeholder is a real step rather
+                than the word "optional": it has to show that these run inside
+                the container, unlike the command above which starts one. */}
             <CodeField
                 label={"Post Script"}
-                hint={"optional — runs in the container once every node is up"}
-                value={command.postScript ?? ""}
+                hint={"optional — one command per line, each runs in the container once every node is up"}
+                value={getPostScriptText()}
                 editable={editable}
-                placeholder={`sh -c 'echo "{{name}} joined {{cluster}}"'`}
+                placeholder={"etcdctl --endpoints=http://localhost:{{dbPort}} auth enable"}
                 onUpdate={handlePostScriptChange}
             />
         </Box>
@@ -89,11 +89,16 @@ export function DeploymentCommandEditor(props: Props) {
     }
 
     function handlePostScriptChange(value: string) {
-        onChange({...command, postScript: value})
+        const steps = value.split("\n").map((line) => line.trim()).filter((line) => line !== "")
+        onChange({...command, postScripts: steps.length > 0 ? steps : undefined})
     }
 
     function handleDefaultsChange(defaults: TemplateDefaults) {
         onChange({...command, defaults: {...command.defaults, ...defaults}})
+    }
+
+    function getPostScriptText() {
+        return (command.postScripts ?? []).join("\n")
     }
 
     function getPort(value: string) {

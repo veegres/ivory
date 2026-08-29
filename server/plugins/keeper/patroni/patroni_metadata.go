@@ -34,7 +34,15 @@ func (a *Adapter) Requirements() keeper.Requirements {
 }
 
 // The DCS address is written literally: patroni coordinates through one the
-// user already runs, so only they know where it is.
+// user already runs, so only they know where it is. The 10.0.0.x are example
+// text the operator replaces - a container name resolves on neither a plain
+// docker run across VMs nor host networking.
+//
+// The node's name goes into SPILO_CONFIGURATION rather than PATRONI_NAME:
+// configure_spilo.py never reads that variable, so all three nodes used to
+// register under whatever socket.gethostname() returned and collide. It is a
+// plain top-level patroni key, and spilo merges this JSON over its generated
+// config.
 
 const deployMultiHost = `docker run -d
   --name {{name}}
@@ -44,13 +52,12 @@ const deployMultiHost = `docker run -d
   -p {{dbPort}}:{{dbPort}}
   -v /data/postgres:/home/postgres/pgdata
   -e SCOPE="{{cluster}}"
-  -e PATRONI_NAME="{{name}}"
-  -e ETCD3_HOSTS="etcd1:2379,etcd2:2379,etcd3:2379"
+  -e ETCD3_HOSTS="10.0.0.1:2379,10.0.0.2:2379,10.0.0.3:2379"
   -e PGPORT={{dbPort}}
   -e APIPORT={{keeperPort}}
   -e PGPASSWORD_SUPERUSER="{{dbPass}}"
   -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
-  -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
+  -e SPILO_CONFIGURATION='{"name":"{{name}}","postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
   ghcr.io/zalando/spilo-18:4.1-p2`
 
 // The single-host command drops --hostname: docker rejects it outright
@@ -58,18 +65,27 @@ const deployMultiHost = `docker run -d
 // its peers on the host's own interface. Each node is told its own PGPORT and
 // APIPORT, which is what keeps three spilos out of each other's way on one
 // port namespace.
+//
+// --add-host is what keeps spilo alive without --hostname. Host networking
+// leaves the container answering to the VM's own hostname, and
+// configure_spilo.py resolves it - getaddrinfo(gethostname()) on its first
+// line, before it reads any configuration - so an unresolvable one kills the
+// container outright. The mapping is example text the operator replaces with
+// the VM's real hostname; the address it resolves to is never used, only that
+// it resolves. The DCS ports are the ones etcd's own single-host template
+// listens on.
 
 const deploySingleHost = `docker run -d
   --name {{name}}
   --network host
+  --add-host myvm:127.0.0.1
   -e SCOPE="{{cluster}}"
-  -e PATRONI_NAME="{{name}}"
-  -e ETCD3_HOSTS="etcd1:2379,etcd2:2379,etcd3:2379"
+  -e ETCD3_HOSTS="{{host}}:2379,{{host}}:2381,{{host}}:2383"
   -e PGPORT={{dbPort}}
   -e APIPORT={{keeperPort}}
   -e PGPASSWORD_SUPERUSER="{{dbPass}}"
   -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
-  -e SPILO_CONFIGURATION='{"postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
+  -e SPILO_CONFIGURATION='{"name":"{{name}}","postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
   ghcr.io/zalando/spilo-18:4.1-p2`
 
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
@@ -77,7 +93,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Patroni (Multi Host)",
-			Description: "Three spilo nodes, one per VM, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run.",
+			Description: "Three spilo nodes, one per VM, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run - the 10.0.0.x are examples.",
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
@@ -96,7 +112,7 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Patroni (Single Host)",
-			Description: "Three spilo nodes on one VM, each on its own keeper and database port, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run, fill in the host and deploy.",
+			Description: "Three spilo nodes on one VM, each on its own keeper and database port, coordinating through an external DCS - the ports are etcd's own single-host template. Replace myvm in --add-host with the VM hostname, which spilo must be able to resolve, then fill in the host and deploy.",
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHost,

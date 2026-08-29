@@ -54,7 +54,7 @@ func TestDefaultTemplates(t *testing.T) {
 	for _, template := range templates {
 		t.Run(template.Name, func(t *testing.T) {
 			last := template.Commands[len(template.Commands)-1]
-			if !strings.Contains(last.PostScript, "rs.initiate") {
+			if len(last.PostScripts) != 1 || !strings.Contains(last.PostScripts[0], "rs.initiate") {
 				t.Fatal("expected the last command to initiate the replica set")
 			}
 			// NOTE: on one VM the members differ by port and are addressed by
@@ -64,11 +64,11 @@ func TestDefaultTemplates(t *testing.T) {
 			if strings.Contains(template.Name, "Single Host") {
 				member = `{{host}}:27017`
 			}
-			if !strings.Contains(last.PostScript, member) {
+			if !strings.Contains(last.PostScripts[0], member) {
 				t.Error("expected the members list rs.initiate is given")
 			}
 			for i, command := range template.Commands[:len(template.Commands)-1] {
-				if command.PostScript != "" {
+				if len(command.PostScripts) > 0 {
 					t.Errorf("command %d must not initiate the set before every member is up", i)
 				}
 			}

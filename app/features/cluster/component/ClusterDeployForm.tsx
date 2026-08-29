@@ -334,7 +334,7 @@ export function ClusterDeployForm(props: Props) {
             dbPort: c.defaults?.dbPort,
             sshPort: undefined,
             command: c.command,
-            postScript: c.postScript,
+            postScripts: c.postScripts,
         }))
     }
 }

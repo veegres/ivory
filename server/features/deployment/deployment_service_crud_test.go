@@ -65,7 +65,7 @@ func TestService_Create(t *testing.T) {
 		},
 		{
 			name:     "an unknown variable in a post script is rejected",
-			mutate:   func(r *TemplateRequest) { r.Commands[0].PostScript = "etcdctl user add {{dbUesr}}" },
+			mutate:   func(r *TemplateRequest) { r.Commands[0].PostScripts = []string{"etcdctl user add {{dbUesr}}"} },
 			contains: "{{dbUesr}}",
 		},
 		{

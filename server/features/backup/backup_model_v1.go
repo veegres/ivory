@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"fmt"
 	"ivory/core/config"
 	"ivory/features/cluster"
 	"ivory/features/permission"
@@ -171,10 +172,16 @@ func permissionStatusToBackupV1(ps permission.Status) (backupPermissionTypeV1, e
 
 // Import mappers: backup V1 schema → domain
 
+// toCluster names every node after its host: V1 knew no node names, and a
+// host is what used to identify a deployment. Repeats are suffixed because a
+// V1 cluster could have several nodes on one VM, and names must be unique
+// within a cluster - mapping them all to the same host made a file holding
+// one such cluster restore no clusters at all.
 func (bc backupClusterV1) toCluster() cluster.Request {
 	nodes := make([]cluster.NodeConfig, len(bc.Sidecars))
+	taken := make(map[string]bool, len(bc.Sidecars))
 	for i, k := range bc.Sidecars {
-		nodes[i] = cluster.NodeConfig{Name: k.Host, Host: k.Host, KeeperPort: &k.Port}
+		nodes[i] = cluster.NodeConfig{Name: uniqueNodeNameV1(k.Host, taken), Host: k.Host, KeeperPort: &k.Port}
 	}
 	return cluster.Request{
 		Name: bc.Name,
@@ -184,6 +191,17 @@ func (bc backupClusterV1) toCluster() cluster.Request {
 		},
 		Nodes: nodes,
 	}
+}
+
+// uniqueNodeNameV1 returns host, or the first free host-2, host-3, ... when it
+// is already spoken for, and records the result as taken.
+func uniqueNodeNameV1(host string, taken map[string]bool) string {
+	name := host
+	for i := 2; taken[name]; i++ {
+		name = fmt.Sprintf("%s-%d", host, i)
+	}
+	taken[name] = true
+	return name
 }
 
 func (bq backupQueryV1) toQuery() (query.Request, error) {

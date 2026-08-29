@@ -122,9 +122,9 @@ type backupDeploymentV2 struct {
 }
 
 type backupDeploymentCommandV2 struct {
-	Command    string                     `json:"command"`
-	PostScript string                     `json:"postScript"`
-	Defaults   backupDeploymentDefaultsV2 `json:"defaults"`
+	Command     string                     `json:"command"`
+	PostScripts []string                   `json:"postScripts"`
+	Defaults    backupDeploymentDefaultsV2 `json:"defaults"`
 }
 
 // backupDeploymentDefaultsV2 is what the command fills its node card in with.
@@ -245,8 +245,8 @@ func deploymentToBackupV2(t deployment.Template) backupDeploymentV2 {
 	commands := make([]backupDeploymentCommandV2, len(t.Commands))
 	for i, c := range t.Commands {
 		commands[i] = backupDeploymentCommandV2{
-			Command:    c.Command,
-			PostScript: c.PostScript,
+			Command:     c.Command,
+			PostScripts: c.PostScripts,
 			Defaults: backupDeploymentDefaultsV2{
 				Name:       c.Defaults.Name,
 				KeeperPort: c.Defaults.KeeperPort,
@@ -387,8 +387,8 @@ func (b backupDeploymentV2) toTemplateRequest() deployment.TemplateRequest {
 	commands := make([]deployment.TemplateCommand, len(b.Commands))
 	for i, c := range b.Commands {
 		commands[i] = deployment.TemplateCommand{
-			Command:    c.Command,
-			PostScript: c.PostScript,
+			Command:     c.Command,
+			PostScripts: c.PostScripts,
 			Defaults: deployment.TemplateDefaults{
 				Name:       c.Defaults.Name,
 				KeeperPort: c.Defaults.KeeperPort,

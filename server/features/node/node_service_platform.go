@@ -108,15 +108,10 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// NOTE: the command is not whitespace-normalized here - it may embed a
-	// multi-line startup script whose newlines are real statement separators.
-	// The adapter collapses only the whitespace outside quoted spans.
-	command := keeper.Interpolate(r.Command, values)
-	if unresolved := keeper.UnresolvedPlaceholders(command); len(unresolved) > 0 {
-		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
+	command, err := resolveCommand(r.Command, values)
+	if err != nil {
+		return nil, err
 	}
-
 	return s.executeCommand(adapter.UpContainer(conn, command))
 }
 
@@ -142,17 +137,37 @@ func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error)
 // resolved vault credentials (e.g. KeeperPostDeploy) doesn't re-fetch and
 // re-decrypt them just to run its command.
 func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.Connection, name string, commandTemplate string, values keeper.Values) ([]string, error) {
-	command := keeper.Interpolate(commandTemplate, values)
-	if unresolved := keeper.UnresolvedPlaceholders(command); len(unresolved) > 0 {
+	command, err := resolveCommand(commandTemplate, values)
+	if err != nil {
+		return nil, err
+	}
+	return s.executeCommand(adapter.ExecContainer(conn, name, command))
+}
+
+// resolveCommand turns a template into the exact arguments that will run. The
+// split comes first and the values go into arguments that are already
+// separated, so a credential can never introduce an argument boundary or close
+// a span the template author opened - which is what makes escaping
+// unnecessary. The platform is handed the finished command and never sees a
+// placeholder.
+func resolveCommand(template string, values keeper.Values) ([]string, error) {
+	command := platform.SplitCommand(template)
+	for i, argument := range command {
+		command[i] = keeper.Interpolate(argument, values)
+	}
+	if unresolved := keeper.UnresolvedPlaceholders(strings.Join(command, " ")); len(unresolved) > 0 {
 		return nil, fmt.Errorf("missing values for placeholders: %s", strings.Join(unresolved, ", "))
 	}
-
-	return s.executeCommand(adapter.ExecContainer(conn, name, command))
+	return command, nil
 }
 
 // getExecutionValues finalizes interpolation values for execution: the host
 // comes from the connection and the keeper/database credentials from their own
 // vaults, so they cannot be spoofed through request values.
+//
+// Nothing is escaped on the way out. The adapter interpolates into an argument
+// that has already been split off, so a value is never seen by a parser and
+// there is nothing for an escape to protect it from.
 func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.Values) (keeper.Values, error) {
 	values.Host = host
 
@@ -163,42 +178,37 @@ func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.V
 		if err != nil {
 			return values, fmt.Errorf("failed to get keeper credentials from vault: %v", err)
 		}
-		values.KeeperUser = escapeInterpolatedValue(keeperCred.Username)
-		values.KeeperPass = escapeInterpolatedValue(keeperCred.Secret)
+		values.KeeperUser = keeperCred.Username
+		values.KeeperPass = keeperCred.Secret
 	}
 	if vaults.DatabaseId != uuid.Nil {
 		dbCred, err := s.vaultService.GetDecrypted(vaults.DatabaseId)
 		if err != nil {
 			return values, fmt.Errorf("failed to get database credentials from vault: %v", err)
 		}
-		values.DbUser = escapeInterpolatedValue(dbCred.Username)
-		values.DbPass = escapeInterpolatedValue(dbCred.Secret)
+		values.DbUser = dbCred.Username
+		values.DbPass = dbCred.Secret
 	}
 	return values, nil
 }
 
-// escapeInterpolatedValue neutralizes characters that could break out of a
-// keeper plugin's own hand-written quoting once substituted into an
-// command or post-script template (e.g. an etcd post-script wraps
-// {{dbUser}}:{{dbPass}} in literal double quotes - an unescaped quote or
-// space in the value corrupts the command it's exec'd with). The backslash
-// itself is escaped first, then both quote characters, since a value may
-// land inside either a single- or a double-quoted span depending on the
-// plugin; container_manager.go's splitShellFields recovers these escapes
-// when the interpolated command is tokenized for execution.
-func escapeInterpolatedValue(v string) string {
-	v = strings.ReplaceAll(v, `\`, `\\`)
-	v = strings.ReplaceAll(v, `'`, `\'`)
-	v = strings.ReplaceAll(v, `"`, `\"`)
-	return v
-}
-
+// PlatformContainerDown removes a deployment, stopping it first. The stop is
+// what makes Down usable at all: removing a running deployment is refused by
+// the platform, so Down used to fail on exactly the deployments a user wants
+// to remove. It is a graceful stop rather than a forced removal because these
+// are databases, and the platform's own shutdown timeout is worth waiting for.
+// A stop failure is not fatal - an already-stopped deployment still removes.
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {
 	adapter, conn, err := s.getPlatformAdapter(r.Connection)
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.DownContainer(conn, r.Name))
+	stopLogs, _ := s.executeCommand(adapter.StopContainer(conn, r.Name))
+	downLogs, err := s.executeCommand(adapter.DownContainer(conn, r.Name))
+	if err != nil {
+		return nil, err
+	}
+	return append(stopLogs, downLogs...), nil
 }
 
 func (s *Service) PlatformContainerList(c PlatformVaultConnection) ([]string, error) {

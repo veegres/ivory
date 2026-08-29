@@ -150,7 +150,7 @@ export function ContainerKeeperDeployForm(props: Props) {
                 </FieldRow>
                 <DeploymentCommandPreview
                     command={command.command}
-                    postScript={command.postScript}
+                    postScripts={command.postScripts}
                     values={getValues()}
                     defaultOpen={true}
                 />
@@ -174,7 +174,7 @@ export function ContainerKeeperDeployForm(props: Props) {
             name: node,
             connection,
             command: command.command,
-            postScript: command.postScript,
+            postScripts: command.postScripts,
             keeperPort,
             dbPort,
             vaults: {keeperId, databaseId, sshKeyId: sshKeyId ?? ""},

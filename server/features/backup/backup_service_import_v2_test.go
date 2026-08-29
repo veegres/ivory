@@ -24,9 +24,9 @@ func testBackupDeployment(name string) backupDeploymentV2 {
 				Defaults: backupDeploymentDefaultsV2{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
 			},
 			{
-				Command:    "docker run -d --name {{name}} etcd",
-				PostScript: "etcdctl auth enable",
-				Defaults:   backupDeploymentDefaultsV2{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+				Command:     "docker run -d --name {{name}} etcd",
+				PostScripts: []string{"etcdctl auth enable"},
+				Defaults:    backupDeploymentDefaultsV2{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
 			},
 		},
 	}

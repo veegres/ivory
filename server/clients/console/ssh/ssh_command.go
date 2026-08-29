@@ -2,6 +2,8 @@ package ssh
 
 import (
 	"crypto/ed25519"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -48,11 +50,17 @@ type Command struct {
 	Dial    func(network, addr string, config *ssh.ClientConfig) (*ssh.Client, error)
 }
 
+// Id hashes the command rather than embedding it, exactly as its shell
+// sibling does. An ssh command carries interpolated vault credentials, and an
+// id is a job key that gets persisted and logged: spelling the command out
+// here made "no caller of Id() runs a command with credentials in it" an
+// unstated invariant that any new job-backed route would silently break.
 func (c *Command) Id() string {
 	if c.JobID != "" {
 		return c.JobID
 	}
-	return fmt.Sprintf("ssh|%s@%s|%s", c.Username, c.Host, c.Command)
+	h := sha256.Sum256(fmt.Appendf(nil, "ssh|%s@%s|%s", c.Username, c.Host, c.Command))
+	return hex.EncodeToString(h[:])
 }
 func (c *Command) Persist() bool {
 	return c.JobPersist

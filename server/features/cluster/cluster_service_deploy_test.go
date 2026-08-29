@@ -2,8 +2,12 @@ package cluster
 
 import (
 	"errors"
+	"fmt"
 	"ivory/clients/console/ssh"
 	"ivory/clients/storage"
+	"ivory/core/service/encryption"
+	"ivory/core/service/secret"
+	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/features/node"
 	"ivory/features/tag"
@@ -13,6 +17,7 @@ import (
 	"ivory/plugins/keeper/postgres"
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/docker"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -24,8 +29,15 @@ import (
 // real keeper/platform plugin registries, enough to exercise Deploy's
 // validation path without ever touching the network: no vaultService is wired
 // in, so tests must stay on the side of Deploy that returns before any vault
-// or SSH work happens.
+// or SSH work happens. newDeployTestServiceWithVault adds a real vault for the
+// tests that need to run past that point.
 func newDeployTestService(t *testing.T) *Service {
+	t.Helper()
+	s, _ := newDeployTestServiceWithVault(t, false)
+	return s
+}
+
+func newDeployTestServiceWithVault(t *testing.T, withVault bool) (*Service, *vault.Service) {
 	t.Helper()
 
 	tmpDir := t.TempDir()
@@ -47,13 +59,37 @@ func newDeployTestService(t *testing.T) *Service {
 	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
 	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
 	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	nodeService := node.NewService(platformRegistry, keeperRegistry, nil, nil, nil)
+	var vaultService *vault.Service
+	if withVault {
+		oldWd, _ := os.Getwd()
+		if err := os.Chdir(tmpDir); err != nil {
+			t.Fatalf("failed to chdir: %v", err)
+		}
+		t.Cleanup(func() { os.Chdir(oldWd) })
+
+		secretService := secret.NewService(
+			secret.NewRepository(storage.NewDbBucket[string](db, "Secret")),
+			encryption.NewService(),
+		)
+		if err := secretService.SetDefault(); err != nil {
+			t.Fatalf("failed to set default secret: %v", err)
+		}
+		vaultService = vault.NewService(
+			vault.NewRepository(storage.NewDbBucket[vault.Vault](db, "Vault")),
+			ssh.NewClient(),
+			secretService,
+			encryption.NewService(),
+		)
+	}
+
+	nodeService := node.NewService(platformRegistry, keeperRegistry, vaultService, nil, nil)
 
 	return &Service{
 		clusterRepository: clusterRepository,
 		tagService:        tagService,
 		nodeService:       nodeService,
-	}
+		vaultService:      vaultService,
+	}, vaultService
 }
 
 func validDeployRequest() DeployRequest {
@@ -365,9 +401,9 @@ func TestService_mapDeployRequest(t *testing.T) {
 	t.Run("carries the node's own command, ports and defaults", func(t *testing.T) {
 		sshPort, keeperPort, dbPort := 2222, 8008, 5432
 		got := s.mapDeployRequest(cluster, DeployNode{
-			NodeConfig: NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
-			Command:    "docker run -d spilo",
-			PostScript: "echo done",
+			NodeConfig:  NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
+			Command:     "docker run -d spilo",
+			PostScripts: []string{"echo done"},
 		})
 
 		if got.Name != "db-1" || got.Cluster != "test-cluster" {
@@ -379,7 +415,7 @@ func TestService_mapDeployRequest(t *testing.T) {
 		if got.KeeperPort != keeperPort || got.DbPort != dbPort {
 			t.Errorf("expected the node's own ports, got %d/%d", got.KeeperPort, got.DbPort)
 		}
-		if got.Command != "docker run -d spilo" || got.PostScript != "echo done" {
+		if got.Command != "docker run -d spilo" || len(got.PostScripts) != 1 || got.PostScripts[0] != "echo done" {
 			t.Errorf("expected the node's own command and post script, got %+v", got)
 		}
 	})
@@ -425,4 +461,112 @@ func TestService_validateNodePorts(t *testing.T) {
 			})
 		}
 	})
+}
+
+// TestService_Deploy_RegistersClusterBeforeDeploying covers the order a deploy
+// runs in and why: the cluster and its vaults are written first, so a
+// deployment that never came up is still reachable to be opened and read. The
+// nodes here carry no host, so every one of them fails inside deployNode
+// before any connection is attempted - and the cluster must survive that
+// intact rather than be rolled back out from under the containers.
+func TestService_Deploy_RegistersClusterBeforeDeploying(t *testing.T) {
+	s, vaultService := newDeployTestServiceWithVault(t, true)
+
+	r := etcdDeployRequest()
+	r.Nodes[0].Host = ""
+
+	logs, err := s.Deploy(r)
+	if err != nil {
+		t.Fatalf("expected the failure to be reported through the logs, got %v", err)
+	}
+	if len(logs) == 0 {
+		t.Fatal("expected the operator to get the logs of the attempt")
+	}
+
+	stored, err := s.Get(r.CommonConfig.Cluster)
+	if err != nil {
+		t.Fatalf("the cluster must be registered even when no node deployed: %v", err)
+	}
+	if len(stored.Nodes) != len(r.Nodes) {
+		t.Errorf("expected every configured node to be registered, got %d of %d", len(stored.Nodes), len(r.Nodes))
+	}
+	if stored.Vaults.SshKeyId == nil {
+		t.Error("the cluster must keep the ssh vault it was deployed with")
+	}
+
+	// NOTE: the vaults are the cluster's configuration now - removing them
+	// would leave the failed deployments unreachable
+	vaults, err := vaultService.Map(nil)
+	if err != nil {
+		t.Fatalf("failed to list vaults: %v", err)
+	}
+	if len(vaults) == 0 {
+		t.Error("expected the vaults created for this deploy to be kept")
+	}
+}
+
+// TestService_sshTargets covers who the generated key has to be installed on:
+// each machine once. Several nodes of a single-host cluster share a VM, so
+// visiting them per node would copy the same key three times over.
+func TestService_sshTargets(t *testing.T) {
+	s := &Service{}
+	port := func(p int) *int { return &p }
+
+	tests := []struct {
+		name     string
+		nodes    []DeployNode
+		expected []string
+	}{
+		{
+			name: "one target per host",
+			nodes: []DeployNode{
+				{NodeConfig: NodeConfig{Host: "10.0.0.1", SshPort: port(22)}},
+				{NodeConfig: NodeConfig{Host: "10.0.0.2", SshPort: port(22)}},
+			},
+			expected: []string{"10.0.0.1:22", "10.0.0.2:22"},
+		},
+		{
+			name: "three nodes on one VM are one target",
+			nodes: []DeployNode{
+				{NodeConfig: NodeConfig{Host: "10.0.0.1", SshPort: port(22)}},
+				{NodeConfig: NodeConfig{Host: "10.0.0.1", SshPort: port(22)}},
+				{NodeConfig: NodeConfig{Host: "10.0.0.1", SshPort: port(22)}},
+			},
+			expected: []string{"10.0.0.1:22"},
+		},
+		{
+			name: "one host on two ssh ports is two targets",
+			nodes: []DeployNode{
+				{NodeConfig: NodeConfig{Host: "10.0.0.1", SshPort: port(22)}},
+				{NodeConfig: NodeConfig{Host: "10.0.0.1", SshPort: port(2222)}},
+			},
+			expected: []string{"10.0.0.1:22", "10.0.0.1:2222"},
+		},
+		{
+			name: "a node with no host is left to deployNode to report",
+			nodes: []DeployNode{
+				{NodeConfig: NodeConfig{Host: "", SshPort: port(22)}},
+				{NodeConfig: NodeConfig{Host: "10.0.0.1", SshPort: port(22)}},
+			},
+			expected: []string{"10.0.0.1:22"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			targets := s.sshTargets(test.nodes, "root", "secret")
+			if len(targets) != len(test.expected) {
+				t.Fatalf("expected %d target(s), got %d", len(test.expected), len(targets))
+			}
+			for i, want := range test.expected {
+				got := fmt.Sprintf("%s:%d", targets[i].Host, targets[i].Port)
+				if got != want {
+					t.Errorf("target %d: expected %q, got %q", i, want, got)
+				}
+				if targets[i].Username != "root" || targets[i].Password != "secret" {
+					t.Errorf("target %d must carry the typed ssh credentials, the only thing they are used for", i)
+				}
+			}
+		})
+	}
 }

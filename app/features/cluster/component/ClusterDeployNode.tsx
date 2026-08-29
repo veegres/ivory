@@ -62,7 +62,7 @@ export function ClusterDeployNode(props: Props) {
                 {renderPort("Database Port", node.dbPort, (v) => onChange({...node, dbPort: v}))}
                 {renderPort("SSH Port", node.sshPort, (v) => onChange({...node, sshPort: v}))}
             </FieldRow>
-            <DeploymentCommandPreview command={node.command} postScript={node.postScript} values={getValues()}/>
+            <DeploymentCommandPreview command={node.command} postScripts={node.postScripts} values={getValues()}/>
         </Box>
     )
 

@@ -84,7 +84,7 @@ export interface DeployPreviewCredentials {
 // of one request only - the command is never persisted on the cluster.
 export interface DeployNode extends NodeConfig {
     command: string,
-    postScript?: string,
+    postScripts?: string[],
 }
 
 export interface DeployRequest {

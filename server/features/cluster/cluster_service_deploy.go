@@ -105,8 +105,8 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	logs := &deployLogs{}
 	logs.send("system", fmt.Sprintf("deploying %d node(s)", len(r.Nodes)))
 
-	// NOTE: only the vaults this call created are rolled back when nothing
-	// deploys - one the user picked is theirs and outlives the attempt
+	// NOTE: only the vaults this call created can be rolled back at all - one
+	// the user picked is theirs and outlives the attempt either way
 	created := make([]uuid.UUID, 0, 3)
 
 	// 2. Handle SSH Key
@@ -115,12 +115,18 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		sshVault := vault.Vault{Type: vault.SSH_KEY, Username: r.CommonConfig.SshUser}
 		id, v, err := s.vaultService.Create(sshVault)
 		if err != nil {
+			s.rollbackVaults(created, logs.send)
 			return nil, err
 		}
 		cluster.Vaults.SshKeyId = id
 		created = append(created, *id)
 		if v.Metadata == nil {
+			s.rollbackVaults(created, logs.send)
 			return nil, ErrSshKeyVaultMissingMetadata
+		}
+		if err := s.authorizeSshKey(r.Nodes, r.CommonConfig, *v.Metadata, logs.send); err != nil {
+			s.rollbackVaults(created, logs.send)
+			return nil, err
 		}
 	}
 
@@ -130,6 +136,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		keeperVault := vault.Vault{Type: vault.KEEPER_PASSWORD, Username: keeperUser, Secret: r.CommonConfig.KeeperPass}
 		id, _, err := s.vaultService.Create(keeperVault)
 		if err != nil {
+			s.rollbackVaults(created, logs.send)
 			return nil, err
 		}
 		cluster.Vaults.KeeperId = id
@@ -142,13 +149,26 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: dbUser, Secret: r.CommonConfig.DbPass}
 		id, _, err := s.vaultService.Create(dbVault)
 		if err != nil {
+			s.rollbackVaults(created, logs.send)
 			return nil, err
 		}
 		cluster.Vaults.DatabaseId = id
 		created = append(created, *id)
 	}
 
-	// 5. Deploy every node by running its own command; the cluster owns only
+	// 5. Register the cluster with its full configuration before anything is
+	// started. A deployment that failed to come up is still there to be opened
+	// and read, and that is exactly what an operator needs - which takes the
+	// cluster's own config to reach it. Registering afterwards, or registering
+	// only the nodes that came up, would leave a failed deploy invisible and
+	// untroubleshootable.
+	logs.send("system", "updating cluster configuration")
+	if _, err = s.Update(cluster); err != nil {
+		s.rollbackVaults(created, logs.send)
+		return nil, err
+	}
+
+	// 6. Deploy every node by running its own command; the cluster owns only
 	// the batch orchestration (parallel/sequential, aggregated timestamped
 	// logs) while node executes the individual deployment.
 	var up atomic.Int32
@@ -172,18 +192,10 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		}
 	}
 	deployed := int(up.Load()) == len(r.Nodes)
-
-	// 6. Register the cluster only once something is actually running under
-	// its name. Registering first left a cluster of nodes that do not exist
-	// behind every failed attempt, along with the vaults made to reach them.
-	if up.Load() == 0 {
-		logs.send("system", "no node deployed: the cluster was not registered")
-		s.rollbackVaults(created, logs.send)
-		return logs.list(), nil
-	}
-	logs.send("system", "updating cluster configuration")
-	if _, err = s.Update(cluster); err != nil {
-		return nil, err
+	if !deployed {
+		logs.send("system", fmt.Sprintf(
+			"%d of %d node(s) deployed: the cluster is registered, open the ones that failed to see why",
+			up.Load(), len(r.Nodes)))
 	}
 
 	// 7. Post-scripts run after every node is up, in node order - a script
@@ -191,7 +203,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	// rs.initiate) therefore belongs on the last node.
 	if deployed {
 		s.postDeploy(cluster, r.Nodes, logs.send)
-	} else if slices.ContainsFunc(r.Nodes, func(n DeployNode) bool { return n.PostScript != "" }) {
+	} else if slices.ContainsFunc(r.Nodes, func(n DeployNode) bool { return len(n.PostScripts) > 0 }) {
 		logs.send("system", "skipping post-deploy initialization: not every node deployed successfully")
 	}
 
@@ -210,9 +222,62 @@ func (s *Service) validateNodePorts(nodes []NodeConfig) error {
 	return nil
 }
 
-// rollbackVaults removes the vaults this deploy created for itself. A failure
-// to remove one is logged rather than returned: the deploy has already
-// finished, and a stray vault is not worth losing its logs over.
+// authorizeSshKey installs the freshly generated public key on every host this
+// deploy will reach. A generated key authenticates nothing on its own - the
+// host has never seen it - so without this the deploy offers a key that is
+// rejected everywhere. The typed ssh password is what installs it, and that is
+// the only thing that password is ever used for: every later connection is by
+// key, out of the vault.
+//
+// It runs only where the key was generated. A vault the user picked is one
+// whose key they already authorized, and there is no password to install it
+// with anyway - a vault and inline credentials are two answers to one question
+// and are rejected together.
+//
+// A failure aborts the deploy rather than being logged and stepped over, like
+// every other step of this preparation phase: nothing has been started on any
+// host yet, so there is nothing left behind to troubleshoot, and every node
+// would otherwise fail with the same authentication error one at a time.
+func (s *Service) authorizeSshKey(nodes []DeployNode, c CommonConfig, publicKey string, logsSend func(ctx string, msg string)) error {
+	for _, target := range s.sshTargets(nodes, c.SshUser, c.SshPass) {
+		nodeKey := s.getNodeKey(target.Host, &target.Port)
+		logsSend(nodeKey, "authorizing the generated ssh key on the host")
+		if _, err := s.nodeService.PlatformSystemCopyId(node.PlatformCopyIdRequest{
+			PlatformCredConnection: target,
+			PublicKey:              publicKey,
+		}); err != nil {
+			return fmt.Errorf("failed to authorize the ssh key on %s: %w", nodeKey, err)
+		}
+	}
+	return nil
+}
+
+// sshTargets is every distinct host and ssh port this deploy has to reach.
+// Several nodes of one cluster may share a VM, and a key only has to be
+// installed on it once; a node with no host is left to deployNode, which
+// reports that itself.
+func (s *Service) sshTargets(nodes []DeployNode, username string, password string) []node.PlatformCredConnection {
+	seen := make(map[string]bool, len(nodes))
+	targets := make([]node.PlatformCredConnection, 0, len(nodes))
+	for _, n := range nodes {
+		port := getPortValue(n.SshPort)
+		key := s.getNodeKey(n.Host, &port)
+		if n.Host == "" || seen[key] {
+			continue
+		}
+		seen[key] = true
+		targets = append(targets, node.PlatformCredConnection{Host: n.Host, Port: port, Username: username, Password: password})
+	}
+	return targets
+}
+
+// rollbackVaults removes the vaults this deploy created for itself. It runs
+// only where the call fails before the cluster is registered - nothing then
+// points at them and no retry can find them again. Once the cluster exists
+// they are its configuration and are never removed, however the deploy goes:
+// a deployment that failed to start is still there to be opened and read, and
+// reaching it takes these same credentials. A failure to remove one is logged
+// rather than returned, since a stray vault is not worth losing the logs over.
 func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg string)) {
 	for _, id := range ids {
 		if err := s.vaultService.Delete(id); err != nil {
@@ -221,17 +286,36 @@ func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg 
 	}
 }
 
+// postDeploy runs every node's post-script and reports, at the end, how many
+// of them failed. A failure does not abort the batch - the nodes are already
+// up - but it has to be stated: a post script is what turns running processes
+// into an initialized cluster (etcd's auth enable, mongo's rs.initiate), so a
+// deploy whose scripts all failed otherwise reads as a success.
 func (s *Service) postDeploy(cluster Request, nodes []DeployNode, logsSend func(ctx string, msg string)) {
+	failed := 0
+	total := 0
 	for _, n := range nodes {
-		if n.PostScript == "" {
+		if len(n.PostScripts) == 0 {
 			continue
 		}
+		total++
 		nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 		logsSend(nodeKey, "running post-deploy initialization")
-		for _, log := range s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n)) {
+		logs, err := s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n))
+		for _, log := range logs {
 			logsSend(nodeKey, log)
 		}
+		if err != nil {
+			failed++
+			logsSend(nodeKey, "post-deploy initialization did not complete")
+			continue
+		}
 		logsSend(nodeKey, "post-deploy initialization finished")
+	}
+	if failed > 0 {
+		logsSend("system", fmt.Sprintf(
+			"post-deploy initialization failed on %d of %d node(s): the cluster is registered and running, but not initialized",
+			failed, total))
 	}
 }
 
@@ -269,15 +353,15 @@ func (s *Service) deployNode(cluster Request, n DeployNode, logsSend func(ctx st
 // one mapper rather than assembling it twice.
 func (s *Service) mapDeployRequest(cluster Request, n DeployNode) node.KeeperDeployRequest {
 	return node.KeeperDeployRequest{
-		Plugin:     cluster.Options.Plugins.Keeper,
-		Cluster:    cluster.Name,
-		Name:       n.Name,
-		KeeperPort: getPortValue(n.KeeperPort),
-		DbPort:     getPortValue(n.DbPort),
-		Command:    n.Command,
-		PostScript: n.PostScript,
-		Connection: s.getNodeConnection(cluster, n),
-		Vaults:     s.getNodeVaults(cluster),
+		Plugin:      cluster.Options.Plugins.Keeper,
+		Cluster:     cluster.Name,
+		Name:        n.Name,
+		KeeperPort:  getPortValue(n.KeeperPort),
+		DbPort:      getPortValue(n.DbPort),
+		Command:     n.Command,
+		PostScripts: n.PostScripts,
+		Connection:  s.getNodeConnection(cluster, n),
+		Vaults:      s.getNodeVaults(cluster),
 	}
 }
 

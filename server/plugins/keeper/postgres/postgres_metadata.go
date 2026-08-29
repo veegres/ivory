@@ -35,18 +35,32 @@ func (a *Adapter) Requirements() keeper.Requirements {
 // database, and a fresh initdb has its own system identifier the leader would
 // refuse to stream to. PG_VERSION only exists once the data directory is
 // initialized, so its absence marks the container's first boot. -R writes
-// standby.signal and primary_conninfo; application_name is threaded through
-// the connection string (pg_basebackup has no flag for it) so the replica
-// appears under its own name, which is what lets Ivory tell sync from async
-// standbys apart later. The leader's host is written literally: only the
-// operator knows which node it is.
+// standby.signal and primary_conninfo; application_name is threaded through a
+// conninfo -d (pg_basebackup has no flag for it) so the replica appears under
+// its own name, which is what lets Ivory tell sync from async standbys apart
+// later. The -h/-p/-U flags are appended after that conninfo and win over it,
+// so the connection itself is still stated as flags. The leader's host is
+// written literally: only the operator knows which node it is.
+//
+// The volume is mounted at /var/lib/postgresql, the directory the image itself
+// declares, rather than at .../data: postgres:18 moved its default PGDATA to
+// /var/lib/postgresql/18/docker, so a volume on the pre-18 path caught nothing
+// the database actually writes - pg_basebackup -D "$PGDATA" rebuilt a replica
+// into an unmounted directory that the next container recreation threw away.
+//
+// The script reads the credentials from the env the command itself sets rather
+// than interpolating {{dbUser}}/{{dbPass}} a second time: this text is parsed
+// again by the container's own shell, where a password holding a `$` or a
+// backtick would be expanded or executed. They stay out of the conninfo for a
+// second reason - libpq applies its own quoting rules there, so a space in
+// either would terminate the value early.
 
 const deployMultiHostLeader = `docker run -d
   --name {{name}}
   --hostname {{host}}
   --restart unless-stopped
   -p {{dbPort}}:{{dbPort}}
-  -v /data/postgres:/var/lib/postgresql/data
+  -v /data/postgres:/var/lib/postgresql
   -e PGPORT="{{dbPort}}"
   -e POSTGRES_USER="{{dbUser}}"
   -e POSTGRES_PASSWORD="{{dbPass}}"
@@ -57,15 +71,16 @@ const deployMultiHostReplica = `docker run -d
   --hostname {{host}}
   --restart unless-stopped
   -p {{dbPort}}:{{dbPort}}
-  -v /data/postgres:/var/lib/postgresql/data
+  -v /data/postgres:/var/lib/postgresql
   -e PGPORT="{{dbPort}}"
   -e POSTGRES_USER="{{dbUser}}"
   -e POSTGRES_PASSWORD="{{dbPass}}"
   postgres:18
   sh -c '
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
-  until pg_isready -d "host=postgres1 port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
-  pg_basebackup -d "host=postgres1 port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
+  export PGPASSWORD="$POSTGRES_PASSWORD"
+  until pg_isready -h postgres1 -p 5432 -U "$POSTGRES_USER"; do sleep 1; done
+  pg_basebackup -d "application_name={{name}}" -h postgres1 -p 5432 -U "$POSTGRES_USER" -D "$PGDATA" -Fp -R -X stream -c fast
 fi
 exec docker-entrypoint.sh postgres
 '`
@@ -94,8 +109,9 @@ const deploySingleHostReplica = `docker run -d
   postgres:18
   sh -c '
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
-  until pg_isready -d "host={{host}} port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
-  pg_basebackup -d "host={{host}} port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
+  export PGPASSWORD="$POSTGRES_PASSWORD"
+  until pg_isready -h {{host}} -p 5432 -U "$POSTGRES_USER"; do sleep 1; done
+  pg_basebackup -d "application_name={{name}}" -h {{host}} -p 5432 -U "$POSTGRES_USER" -D "$PGDATA" -Fp -R -X stream -c fast
 fi
 exec docker-entrypoint.sh postgres
 '`

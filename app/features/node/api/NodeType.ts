@@ -169,7 +169,7 @@ export interface KeeperDeployRequest {
     keeperPort: number,
     dbPort: number,
     command: string,
-    postScript?: string,
+    postScripts?: string[],
     connection: PlatformVaultConnection,
     vaults: DeployVaults,
 }

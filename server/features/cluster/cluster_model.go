@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"fmt"
 	"ivory/core/config"
 	"ivory/core/service/cert"
 	"ivory/features/node"
@@ -93,8 +94,8 @@ type DeployRequest struct {
 // of one request only - the command is never persisted on the cluster.
 type DeployNode struct {
 	NodeConfig
-	Command    string `json:"command"`
-	PostScript string `json:"postScript"`
+	Command     string   `json:"command"`
+	PostScripts []string `json:"postScripts"`
 }
 
 type CommonConfig struct {
@@ -163,13 +164,35 @@ func mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeC
 // withNodeNames defaults every node's name to its host, so clusters stored
 // before names existed keep rendering and deploying: host used to serve as
 // the deployment's name, and that is exactly what the default preserves.
+//
+// Repeats are suffixed because several nodes on one VM share a host, and a
+// cluster whose names collide is rejected by validateNodeNames - defaulting
+// them all to the same host is what made an existing single-host cluster
+// impossible to update or edit in the list at all.
 func (r Response) withNodeNames() Response {
+	taken := make(map[string]bool, len(r.Nodes))
+	for _, n := range r.Nodes {
+		if n.Name != "" {
+			taken[n.Name] = true
+		}
+	}
 	for i := range r.Nodes {
 		if r.Nodes[i].Name == "" {
-			r.Nodes[i].Name = r.Nodes[i].Host
+			r.Nodes[i].Name = uniqueNodeName(r.Nodes[i].Host, taken)
 		}
 	}
 	return r
+}
+
+// uniqueNodeName returns host, or the first free host-2, host-3, ... when it
+// is already spoken for, and records the result as taken.
+func uniqueNodeName(host string, taken map[string]bool) string {
+	name := host
+	for i := 2; taken[name]; i++ {
+		name = fmt.Sprintf("%s-%d", host, i)
+	}
+	taken[name] = true
+	return name
 }
 
 // mapDeployNodeConfigs keeps only the connection details on the cluster: the

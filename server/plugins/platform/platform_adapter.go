@@ -68,10 +68,11 @@ type ContainerManager interface {
 	// ListContainer lists every deployed container on the node.
 	ListContainer(connection Connection) console.Command
 	// UpContainer runs the deployment command as written by the user, already
-	// interpolated. The adapter does not reinterpret it: the container's name,
-	// image and startup command are all whatever the command itself says, so
-	// what runs is what the user read on screen.
-	UpContainer(connection Connection, command string) console.Command
+	// split by SplitCommand and already interpolated. The adapter does not
+	// reinterpret it: the container's name, image and startup command are all
+	// whatever the command itself says, so what runs is what the user read on
+	// screen.
+	UpContainer(connection Connection, command []string) console.Command
 	// DownContainer removes the named container.
 	DownContainer(connection Connection, name string) console.Command
 	// StartContainer starts an existing, stopped container.
@@ -80,8 +81,9 @@ type ContainerManager interface {
 	StopContainer(connection Connection, name string) console.Command
 	// RestartContainer restarts a container.
 	RestartContainer(connection Connection, name string) console.Command
-	// ExecContainer runs a command inside the named running container.
-	ExecContainer(connection Connection, name string, command string) console.Command
+	// ExecContainer runs an already-split, already-interpolated command inside
+	// the named running container.
+	ExecContainer(connection Connection, name string, command []string) console.Command
 	// LogsContainer streams (or dumps, if follow is false) the named
 	// container's logs.
 	LogsContainer(connection Connection, name string, tail int, follow bool) console.Command
