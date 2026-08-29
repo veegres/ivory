@@ -63,7 +63,14 @@ func TestDefaultTemplates(t *testing.T) {
 			if !strings.Contains(last.PostScript, "rs.initiate") {
 				t.Fatal("expected the last command to initiate the replica set")
 			}
-			if !strings.Contains(last.PostScript, `mongo-1:27017`) {
+			// NOTE: on one VM the members differ by port and are addressed by
+			// {{host}} - host networking joins no docker network, so their
+			// container names resolve to nothing
+			member := `mongo1:27017`
+			if strings.Contains(template.Name, "Single Host") {
+				member = `{{host}}:27017`
+			}
+			if !strings.Contains(last.PostScript, member) {
 				t.Error("expected the members list rs.initiate is given")
 			}
 			for i, command := range template.Commands[:len(template.Commands)-1] {

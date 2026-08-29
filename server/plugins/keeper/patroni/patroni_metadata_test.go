@@ -56,7 +56,7 @@ func TestDefaultTemplates(t *testing.T) {
 			for i, command := range template.Commands {
 				// NOTE: the DCS is literal text now - Ivory never deploys the
 				// coordinator, so a shipped template carries an address to edit
-				if !strings.Contains(command.Command, `ETCD3_HOSTS="etcd-1:2379`) {
+				if !strings.Contains(command.Command, `ETCD3_HOSTS="etcd1:2379`) {
 					t.Errorf("command %d has no external DCS address to edit", i)
 				}
 				if !strings.Contains(command.Command, string(keeper.VarKeeperPort)) {

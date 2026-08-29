@@ -19,8 +19,15 @@ func testBackupDeployment(name string) backupDeploymentV2 {
 		Keeper:      string(keeper.NATIVE_ETCD),
 		Platform:    string(platform.Docker),
 		Commands: []backupDeploymentCommandV2{
-			{Command: "docker run -d --name {{name}} etcd"},
-			{Command: "docker run -d --name {{name}} etcd", PostScript: "etcdctl auth enable"},
+			{
+				Command:  "docker run -d --name {{name}} etcd",
+				Defaults: backupDeploymentDefaultsV2{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+			},
+			{
+				Command:    "docker run -d --name {{name}} etcd",
+				PostScript: "etcdctl auth enable",
+				Defaults:   backupDeploymentDefaultsV2{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+			},
 		},
 	}
 }
@@ -92,6 +99,11 @@ func TestImportV2(t *testing.T) {
 			restored++
 			if tpl.Name != "mine" || len(tpl.Commands) != 2 {
 				t.Errorf("got %+v, want the exported template", tpl)
+			}
+			// NOTE: a restore that dropped these would put every node of a
+			// single-host template back on one port
+			if tpl.Commands[1].Defaults.Name != "etcd2" || tpl.Commands[1].Defaults.KeeperPort != 2381 {
+				t.Errorf("got defaults %+v, want the second node's own name and port", tpl.Commands[1].Defaults)
 			}
 		}
 	}

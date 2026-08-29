@@ -19,8 +19,15 @@ func testTemplateRequest(name string) deployment.TemplateRequest {
 		Keeper:      keeper.NATIVE_ETCD,
 		Platform:    platform.Docker,
 		Commands: []deployment.TemplateCommand{
-			{Command: "docker run -d --name {{name}} etcd"},
-			{Command: "docker run -d --name {{name}} etcd", PostScript: "etcdctl auth enable"},
+			{
+				Command:  "docker run -d --name {{name}} etcd",
+				Defaults: deployment.TemplateDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+			},
+			{
+				Command:    "docker run -d --name {{name}} etcd",
+				PostScript: "etcdctl auth enable",
+				Defaults:   deployment.TemplateDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+			},
 		},
 	}
 }
@@ -48,6 +55,11 @@ func TestExportV2(t *testing.T) {
 	}
 	if len(got.Commands) != 2 || got.Commands[1].PostScript != "etcdctl auth enable" {
 		t.Errorf("got commands %+v, want both, post script included", got.Commands)
+	}
+	// NOTE: without these a single-host template restores with every node on
+	// one port, which is the collision the defaults exist to prevent
+	if got.Commands[1].Defaults.Name != "etcd2" || got.Commands[1].Defaults.DbPort != 2381 {
+		t.Errorf("got defaults %+v, want the second node's own name and port", got.Commands[1].Defaults)
 	}
 }
 

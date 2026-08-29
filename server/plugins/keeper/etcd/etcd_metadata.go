@@ -50,7 +50,7 @@ const deployMultiHost = `docker run -d
   -v /data/etcd:/data/etcd
   -e ETCD_NAME="{{name}}"
   -e ETCD_DATA_DIR="/data/etcd"
-  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2380,etcd-3=http://etcd-3:2380"
+  -e ETCD_INITIAL_CLUSTER="etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380"
   -e ETCD_INITIAL_CLUSTER_STATE="new"
   -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
   -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
@@ -59,13 +59,18 @@ const deployMultiHost = `docker run -d
   -e ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{host}}:2380"
   quay.io/coreos/etcd:v3.6.5`
 
+// The single-host commands drop --hostname: docker rejects it outright
+// alongside --network host, which every member here needs to reach its peers
+// on the host's own interface. The member list addresses them by {{host}}
+// rather than by container name for the same reason - host networking joins no
+// docker network, so there is no embedded dns to resolve a name against.
+
 const deploySingleHostNode1 = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e ETCD_NAME="{{name}}"
   -e ETCD_DATA_DIR="/data/etcd"
-  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2382,etcd-3=http://etcd-3:2384"
+  -e ETCD_INITIAL_CLUSTER="etcd1=http://{{host}}:2380,etcd2=http://{{host}}:2382,etcd3=http://{{host}}:2384"
   -e ETCD_INITIAL_CLUSTER_STATE="new"
   -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
   -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
@@ -76,11 +81,10 @@ const deploySingleHostNode1 = `docker run -d
 
 const deploySingleHostNode2 = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e ETCD_NAME="{{name}}"
   -e ETCD_DATA_DIR="/data/etcd"
-  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2382,etcd-3=http://etcd-3:2384"
+  -e ETCD_INITIAL_CLUSTER="etcd1=http://{{host}}:2380,etcd2=http://{{host}}:2382,etcd3=http://{{host}}:2384"
   -e ETCD_INITIAL_CLUSTER_STATE="new"
   -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
   -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
@@ -91,11 +95,10 @@ const deploySingleHostNode2 = `docker run -d
 
 const deploySingleHostNode3 = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e ETCD_NAME="{{name}}"
   -e ETCD_DATA_DIR="/data/etcd"
-  -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380,etcd-2=http://etcd-2:2382,etcd-3=http://etcd-3:2384"
+  -e ETCD_INITIAL_CLUSTER="etcd1=http://{{host}}:2380,etcd2=http://{{host}}:2382,etcd3=http://{{host}}:2384"
   -e ETCD_INITIAL_CLUSTER_STATE="new"
   -e ETCD_INITIAL_CLUSTER_TOKEN="{{cluster}}"
   -e ETCD_LISTEN_CLIENT_URLS="http://0.0.0.0:{{dbPort}}"
@@ -120,21 +123,41 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Etcd (Multi Host)",
-			Description: "Three-member static etcd cluster, one member per VM. Name the nodes etcd-1..3 or edit the member list to match.",
+			Description: "Three-member static etcd cluster, one member per VM. Name the nodes etcd1..3 or edit the member list to match.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deployMultiHost},
-				{Command: deployMultiHost},
-				{Command: deployMultiHost, PostScript: deployAuth},
+				{
+					Command:  deployMultiHost,
+					Defaults: keeper.DeploymentDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+				},
+				{
+					Command:  deployMultiHost,
+					Defaults: keeper.DeploymentDefaults{Name: "etcd2", KeeperPort: 2379, DbPort: 2379},
+				},
+				{
+					Command:    deployMultiHost,
+					PostScript: deployAuth,
+					Defaults:   keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2379, DbPort: 2379},
+				},
 			},
 		},
 		{
 			Platform:    platform.Docker,
 			Name:        "Etcd (Single Host)",
-			Description: "Three-member etcd cluster on one VM. Each member peers on its own port; give each its own client port in the deploy form.",
+			Description: "Three-member etcd cluster on one VM, each member on its own client and peer port. Fill in the host and deploy.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deploySingleHostNode1},
-				{Command: deploySingleHostNode2},
-				{Command: deploySingleHostNode3, PostScript: deployAuth},
+				{
+					Command:  deploySingleHostNode1,
+					Defaults: keeper.DeploymentDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+				},
+				{
+					Command:  deploySingleHostNode2,
+					Defaults: keeper.DeploymentDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+				},
+				{
+					Command:    deploySingleHostNode3,
+					PostScript: deployAuth,
+					Defaults:   keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2383, DbPort: 2383},
+				},
 			},
 		},
 	}

@@ -58,11 +58,18 @@ func TestDefaultTemplates(t *testing.T) {
 			if strings.Contains(template.Commands[0].Command, "REDIS_REPLICATION_MODE") {
 				t.Error("the leader must not come up as a replica")
 			}
+			// NOTE: on one VM the leader is reached at {{host}} - host
+			// networking joins no docker network, so its container name
+			// resolves to nothing
+			leader := `REDIS_MASTER_HOST="redis1"`
+			if strings.Contains(template.Name, "Single Host") {
+				leader = `REDIS_MASTER_HOST="{{host}}"`
+			}
 			for i, command := range template.Commands[1:] {
 				if !strings.Contains(command.Command, "REDIS_REPLICATION_MODE") {
 					t.Errorf("replica %d does not attach to the leader", i+1)
 				}
-				if !strings.Contains(command.Command, `REDIS_MASTER_HOST="redis-1"`) {
+				if !strings.Contains(command.Command, leader) {
 					t.Errorf("replica %d has no leader host to attach to", i+1)
 				}
 			}

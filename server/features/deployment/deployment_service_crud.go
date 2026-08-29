@@ -71,6 +71,9 @@ func (s *Service) validate(r TemplateRequest, allowedName string) error {
 	if unknown := r.unknownPlaceholders(); len(unknown) > 0 {
 		return fmt.Errorf("unknown variables: %s", strings.Join(unknown, ", "))
 	}
+	if port, invalid := r.invalidPort(); invalid {
+		return fmt.Errorf("%w: %d", ErrTemplatePortInvalid, port)
+	}
 	if r.trimmed().Name == allowedName {
 		return nil
 	}

@@ -70,6 +70,11 @@ type Template struct {
 // per-command mapping.
 type TemplateCommand = keeper.DeploymentCommand
 
+// TemplateDefaults is what one command fills its node card in with at deploy
+// time. Aliased for the same reason TemplateCommand is: a template shipped by a
+// keeper plugin needs no per-command mapping.
+type TemplateDefaults = keeper.DeploymentDefaults
+
 type TemplateRequest struct {
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
@@ -103,12 +108,34 @@ func (r TemplateRequest) unknownPlaceholders() []string {
 	return unknown
 }
 
+// invalidPort reports the first default port outside the range a port can take
+// at all. Zero is allowed and means the command states none, leaving the deploy
+// form on the keeper plugin's own Requirements.
+func (r TemplateRequest) invalidPort() (int, bool) {
+	for _, c := range r.Commands {
+		for _, port := range []int{c.Defaults.KeeperPort, c.Defaults.DbPort} {
+			if port < 0 || port > 65535 {
+				return port, true
+			}
+		}
+	}
+	return 0, false
+}
+
 // trimmed is what actually gets stored and compared: a name is identified by
 // what it reads as, so " etcd" and "etcd" are the same name and neither is
-// allowed to sit next to the other in the list.
+// allowed to sit next to the other in the list. A command's default node name
+// is trimmed for the same reason - it is written into --name and matched
+// against a keeper's own member names later.
 func (r TemplateRequest) trimmed() TemplateRequest {
 	r.Name = strings.TrimSpace(r.Name)
 	r.Description = strings.TrimSpace(r.Description)
+	commands := make([]TemplateCommand, len(r.Commands))
+	for i, c := range r.Commands {
+		c.Defaults.Name = strings.TrimSpace(c.Defaults.Name)
+		commands[i] = c
+	}
+	r.Commands = commands
 	return r
 }
 

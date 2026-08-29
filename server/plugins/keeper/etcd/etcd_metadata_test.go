@@ -83,7 +83,7 @@ func TestDefaultTemplates(t *testing.T) {
 			// NOTE: the member list is literal text now, so a shipped
 			// template has to carry a complete one to be deployable as-is
 			for i, command := range template.Commands {
-				if !strings.Contains(command.Command, "ETCD_INITIAL_CLUSTER=\"etcd-1=") {
+				if !strings.Contains(command.Command, "ETCD_INITIAL_CLUSTER=\"etcd1=") {
 					t.Errorf("command %d has no initial cluster list to edit", i)
 				}
 				if len(keeper.UnknownPlaceholders(command.Command)) > 0 {

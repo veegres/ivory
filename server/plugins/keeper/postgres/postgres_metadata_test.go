@@ -63,11 +63,18 @@ func TestDefaultTemplates(t *testing.T) {
 			if strings.Contains(template.Commands[0].Command, "pg_basebackup") {
 				t.Error("the leader must not run the replica bootstrap")
 			}
+			// NOTE: on one VM the leader is reached at {{host}} - host
+			// networking joins no docker network, so its container name
+			// resolves to nothing
+			leader := "host=postgres1"
+			if strings.Contains(template.Name, "Single Host") {
+				leader = "host={{host}}"
+			}
 			for i, command := range template.Commands[1:] {
 				if !strings.Contains(command.Command, "pg_basebackup") {
 					t.Errorf("replica %d does not rebase from the leader", i+1)
 				}
-				if !strings.Contains(command.Command, "host=postgres-1") {
+				if !strings.Contains(command.Command, leader) {
 					t.Errorf("replica %d has no leader host to bootstrap from", i+1)
 				}
 			}

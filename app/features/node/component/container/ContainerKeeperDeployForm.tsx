@@ -47,7 +47,7 @@ type Props = {
 
 // ContainerKeeperDeployForm shows what deploying this node will run. It has
 // nothing to fill in: the node is the one the dialog was opened on, its ports
-// are the keeper plugin's own defaults, and the command belongs to the
+// are the ones the chosen command states, and the command belongs to the
 // template - so every field here is a read-only account of the deployment.
 export function ContainerKeeperDeployForm(props: Props) {
     const {connection, plugin, cluster, node, template, spec, keeperId, databaseId, sshKeyId, logs, onDeployed} = props
@@ -61,6 +61,11 @@ export function ContainerKeeperDeployForm(props: Props) {
     const command = template.commands[index]
     const withKeeperCredentials = spec.keeperCredentials
     const withDbCredentials = spec.dbCredentials
+    // NOTE: the ports belong to the chosen node, not to the engine - node 2 of
+    // a single-host template answers on its own pair, and switching the toggle
+    // above has to move them with it
+    const keeperPort = command.defaults?.keeperPort ?? spec.keeperPort
+    const dbPort = command.defaults?.dbPort ?? spec.dbPort
 
     if (logs) return <DialogLogsScreen logs={logs}/>
 
@@ -133,8 +138,8 @@ export function ContainerKeeperDeployForm(props: Props) {
                     <TextField size={"small"} label={"Host"} value={connection.host} disabled={true}/>
                 </FieldRow>
                 <FieldRow>
-                    {renderPort("Keeper Port", spec.keeperPort)}
-                    {renderPort("Database Port", spec.dbPort)}
+                    {renderPort("Keeper Port", keeperPort)}
+                    {renderPort("Database Port", dbPort)}
                     {renderPort("SSH Port", connection.port)}
                 </FieldRow>
                 <DeploymentCommandPreview
@@ -163,8 +168,8 @@ export function ContainerKeeperDeployForm(props: Props) {
             connection,
             command: command.command,
             postScript: command.postScript,
-            keeperPort: spec.keeperPort,
-            dbPort: spec.dbPort,
+            keeperPort,
+            dbPort,
             vaults: {keeperId, databaseId, sshKeyId: sshKeyId ?? ""},
         })
     }
@@ -175,8 +180,8 @@ export function ContainerKeeperDeployForm(props: Props) {
             name: node,
             host: connection.host,
             sshPort: connection.port,
-            keeperPort: spec.keeperPort,
-            dbPort: spec.dbPort,
+            keeperPort,
+            dbPort,
             keeperUser: credentials.keeper.user,
             keeperPass: credentials.keeper.pass,
             dbUser: credentials.database.user,

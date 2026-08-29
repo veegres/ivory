@@ -66,15 +66,21 @@ const deployMultiHostReplica = `docker run -d
   postgres:18
   sh -c '
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
-  until pg_isready -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
-  pg_basebackup -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
+  until pg_isready -d "host=postgres1 port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
+  pg_basebackup -d "host=postgres1 port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
 fi
 exec docker-entrypoint.sh postgres
 '`
 
+// The single-host commands drop --hostname: docker rejects it outright
+// alongside --network host, which each node needs to answer on its own port of
+// the host's one port namespace. The replicas rebase from {{host}} rather than
+// from a container name - host networking joins no docker network, so there is
+// no embedded dns to resolve one - and the leader's port is literal 5432
+// because that is the first node's port, not the replica's own.
+
 const deploySingleHostLeader = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e PGPORT="{{dbPort}}"
   -e POSTGRES_USER="{{dbUser}}"
@@ -83,7 +89,6 @@ const deploySingleHostLeader = `docker run -d
 
 const deploySingleHostReplica = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e PGPORT="{{dbPort}}"
   -e POSTGRES_USER="{{dbUser}}"
@@ -91,8 +96,8 @@ const deploySingleHostReplica = `docker run -d
   postgres:18
   sh -c '
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
-  until pg_isready -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
-  pg_basebackup -d "host=postgres-1 port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
+  until pg_isready -d "host={{host}} port=5432 user={{dbUser}} password={{dbPass}}"; do sleep 1; done
+  pg_basebackup -d "host={{host}} port=5432 user={{dbUser}} password={{dbPass}} application_name={{name}}" -D "$PGDATA" -Fp -R -X stream -c fast
 fi
 exec docker-entrypoint.sh postgres
 '`
@@ -102,21 +107,39 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Postgres (Multi Host)",
-			Description: "One postgres leader and two streaming replicas, one per VM. Name the leader postgres-1 or edit the replica connection to match.",
+			Description: "One postgres leader and two streaming replicas, one per VM. Name the leader postgres1 or edit the replica connection to match.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deployMultiHostLeader},
-				{Command: deployMultiHostReplica},
-				{Command: deployMultiHostReplica},
+				{
+					Command:  deployMultiHostLeader,
+					Defaults: keeper.DeploymentDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
+				},
+				{
+					Command:  deployMultiHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "postgres2", KeeperPort: 5432, DbPort: 5432},
+				},
+				{
+					Command:  deployMultiHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "postgres3", KeeperPort: 5432, DbPort: 5432},
+				},
 			},
 		},
 		{
 			Platform:    platform.Docker,
 			Name:        "Postgres (Single Host)",
-			Description: "One postgres leader and two streaming replicas on one VM. Give each node its own database port in the deploy form, and point the replicas at the leader's.",
+			Description: "One postgres leader and two streaming replicas on one VM, each on its own port. The replicas rebase from the leader on 5432. Fill in the host and deploy.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deploySingleHostLeader},
-				{Command: deploySingleHostReplica},
-				{Command: deploySingleHostReplica},
+				{
+					Command:  deploySingleHostLeader,
+					Defaults: keeper.DeploymentDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
+				},
+				{
+					Command:  deploySingleHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "postgres2", KeeperPort: 5433, DbPort: 5433},
+				},
+				{
+					Command:  deploySingleHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "postgres3", KeeperPort: 5434, DbPort: 5434},
+				},
 			},
 		},
 	}

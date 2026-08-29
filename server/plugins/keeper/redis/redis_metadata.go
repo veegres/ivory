@@ -61,14 +61,18 @@ const deployMultiHostReplica = `docker run -d
   -e REDIS_PASSWORD="{{dbPass}}"
   -e ALLOW_EMPTY_PASSWORD="no"
   -e REDIS_REPLICATION_MODE="slave"
-  -e REDIS_MASTER_HOST="redis-1"
+  -e REDIS_MASTER_HOST="redis1"
   -e REDIS_MASTER_PORT_NUMBER="6379"
   -e REDIS_MASTER_PASSWORD="{{dbPass}}"
   bitnami/redis:7.4`
 
+// The single-host commands drop --hostname, which docker rejects alongside
+// --network host, and the replicas follow the leader at {{host}}:6379 - host
+// networking resolves no container names, and 6379 is the first node's port
+// rather than the replica's own.
+
 const deploySingleHostLeader = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e REDIS_PORT_NUMBER="{{dbPort}}"
   -e REDIS_PASSWORD="{{dbPass}}"
@@ -77,13 +81,12 @@ const deploySingleHostLeader = `docker run -d
 
 const deploySingleHostReplica = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   -e REDIS_PORT_NUMBER="{{dbPort}}"
   -e REDIS_PASSWORD="{{dbPass}}"
   -e ALLOW_EMPTY_PASSWORD="no"
   -e REDIS_REPLICATION_MODE="slave"
-  -e REDIS_MASTER_HOST="redis-1"
+  -e REDIS_MASTER_HOST="{{host}}"
   -e REDIS_MASTER_PORT_NUMBER="6379"
   -e REDIS_MASTER_PASSWORD="{{dbPass}}"
   bitnami/redis:7.4`
@@ -93,21 +96,39 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Redis (Multi Host)",
-			Description: "One redis leader and two replicas, one per VM. Name the leader redis-1 or edit REDIS_MASTER_HOST to match.",
+			Description: "One redis leader and two replicas, one per VM. Name the leader redis1 or edit REDIS_MASTER_HOST to match.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deployMultiHostLeader},
-				{Command: deployMultiHostReplica},
-				{Command: deployMultiHostReplica},
+				{
+					Command:  deployMultiHostLeader,
+					Defaults: keeper.DeploymentDefaults{Name: "redis1", KeeperPort: 6379, DbPort: 6379},
+				},
+				{
+					Command:  deployMultiHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "redis2", KeeperPort: 6379, DbPort: 6379},
+				},
+				{
+					Command:  deployMultiHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "redis3", KeeperPort: 6379, DbPort: 6379},
+				},
 			},
 		},
 		{
 			Platform:    platform.Docker,
 			Name:        "Redis (Single Host)",
-			Description: "One redis leader and two replicas on one VM. Give each node its own database port in the deploy form, and point the replicas at the leader's.",
+			Description: "One redis leader and two replicas on one VM, each on its own port. The replicas follow the leader on 6379. Fill in the host and deploy.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deploySingleHostLeader},
-				{Command: deploySingleHostReplica},
-				{Command: deploySingleHostReplica},
+				{
+					Command:  deploySingleHostLeader,
+					Defaults: keeper.DeploymentDefaults{Name: "redis1", KeeperPort: 6379, DbPort: 6379},
+				},
+				{
+					Command:  deploySingleHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "redis2", KeeperPort: 6380, DbPort: 6380},
+				},
+				{
+					Command:  deploySingleHostReplica,
+					Defaults: keeper.DeploymentDefaults{Name: "redis3", KeeperPort: 6381, DbPort: 6381},
+				},
 			},
 		},
 	}

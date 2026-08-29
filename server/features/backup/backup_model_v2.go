@@ -122,8 +122,18 @@ type backupDeploymentV2 struct {
 }
 
 type backupDeploymentCommandV2 struct {
-	Command    string `json:"command"`
-	PostScript string `json:"postScript"`
+	Command    string                     `json:"command"`
+	PostScript string                     `json:"postScript"`
+	Defaults   backupDeploymentDefaultsV2 `json:"defaults"`
+}
+
+// backupDeploymentDefaultsV2 is what the command fills its node card in with.
+// It is part of the template rather than of a node: a file restored without it
+// would put every node of a single-host template back on one port.
+type backupDeploymentDefaultsV2 struct {
+	Name       string `json:"name"`
+	KeeperPort int    `json:"keeperPort"`
+	DbPort     int    `json:"dbPort"`
 }
 
 // Export mappers: domain → backup V2 schema
@@ -234,7 +244,15 @@ func permissionStatusToBackupV2(ps permission.Status) (backupPermissionStatusV2,
 func deploymentToBackupV2(t deployment.Template) backupDeploymentV2 {
 	commands := make([]backupDeploymentCommandV2, len(t.Commands))
 	for i, c := range t.Commands {
-		commands[i] = backupDeploymentCommandV2{Command: c.Command, PostScript: c.PostScript}
+		commands[i] = backupDeploymentCommandV2{
+			Command:    c.Command,
+			PostScript: c.PostScript,
+			Defaults: backupDeploymentDefaultsV2{
+				Name:       c.Defaults.Name,
+				KeeperPort: c.Defaults.KeeperPort,
+				DbPort:     c.Defaults.DbPort,
+			},
+		}
 	}
 	return backupDeploymentV2{
 		Name:        t.Name,
@@ -368,7 +386,15 @@ func (bps backupPermissionStatusV2) toPermissionStatus() (permission.Status, err
 func (b backupDeploymentV2) toTemplateRequest() deployment.TemplateRequest {
 	commands := make([]deployment.TemplateCommand, len(b.Commands))
 	for i, c := range b.Commands {
-		commands[i] = deployment.TemplateCommand{Command: c.Command, PostScript: c.PostScript}
+		commands[i] = deployment.TemplateCommand{
+			Command:    c.Command,
+			PostScript: c.PostScript,
+			Defaults: deployment.TemplateDefaults{
+				Name:       c.Defaults.Name,
+				KeeperPort: c.Defaults.KeeperPort,
+				DbPort:     c.Defaults.DbPort,
+			},
+		}
 	}
 	return deployment.TemplateRequest{
 		Name:        b.Name,

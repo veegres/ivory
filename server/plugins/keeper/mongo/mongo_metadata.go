@@ -49,9 +49,12 @@ const deployMultiHost = `docker run -d
 exec docker-entrypoint.sh mongod --replSet "{{cluster}}" --port {{dbPort}} --bind_ip_all
 '`
 
+// The single-host command drops --hostname, which docker rejects alongside
+// --network host, and each member is given its own --port so three mongods can
+// share the one port namespace.
+
 const deploySingleHost = `docker run -d
   --name {{name}}
-  --hostname {{host}}
   --network host
   mongo:8
   sh -c '
@@ -66,7 +69,15 @@ exec docker-entrypoint.sh mongod --replSet "{{cluster}}" --port {{dbPort}} --bin
 // literal single quote would terminate it early.
 const deployInitiate = `sh -c '
 until mongosh --quiet --port {{dbPort}} --eval "1" >/dev/null 2>&1; do sleep 1; done
-mongosh --quiet --port {{dbPort}} --eval "rs.initiate({_id: \"{{cluster}}\", members: [{_id: 0, host: \"mongo-1:27017\"}, {_id: 1, host: \"mongo-2:27017\"}, {_id: 2, host: \"mongo-3:27017\"}]})"
+mongosh --quiet --port {{dbPort}} --eval "rs.initiate({_id: \"{{cluster}}\", members: [{_id: 0, host: \"mongo1:27017\"}, {_id: 1, host: \"mongo2:27017\"}, {_id: 2, host: \"mongo3:27017\"}]})"
+'`
+
+// deploySingleHostInitiate is deployInitiate's twin for one VM: the members
+// differ only in port, and they are addressed by {{host}} because host
+// networking resolves no container names.
+const deploySingleHostInitiate = `sh -c '
+until mongosh --quiet --port {{dbPort}} --eval "1" >/dev/null 2>&1; do sleep 1; done
+mongosh --quiet --port {{dbPort}} --eval "rs.initiate({_id: \"{{cluster}}\", members: [{_id: 0, host: \"{{host}}:27017\"}, {_id: 1, host: \"{{host}}:27018\"}, {_id: 2, host: \"{{host}}:27019\"}]})"
 '`
 
 func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
@@ -74,21 +85,41 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Mongo (Multi Host)",
-			Description: "Three-member replica set, one per VM. The last command initiates the set once every member is running - name the nodes mongo-1..3 or edit the member list to match.",
+			Description: "Three-member replica set, one per VM. The last command initiates the set once every member is running - name the nodes mongo1..3 or edit the member list to match.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deployMultiHost},
-				{Command: deployMultiHost},
-				{Command: deployMultiHost, PostScript: deployInitiate},
+				{
+					Command:  deployMultiHost,
+					Defaults: keeper.DeploymentDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
+				},
+				{
+					Command:  deployMultiHost,
+					Defaults: keeper.DeploymentDefaults{Name: "mongo2", KeeperPort: 27017, DbPort: 27017},
+				},
+				{
+					Command:    deployMultiHost,
+					PostScript: deployInitiate,
+					Defaults:   keeper.DeploymentDefaults{Name: "mongo3", KeeperPort: 27017, DbPort: 27017},
+				},
 			},
 		},
 		{
 			Platform:    platform.Docker,
 			Name:        "Mongo (Single Host)",
-			Description: "Three-member replica set on one VM. Give each node its own database port in the deploy form and edit the member list to match.",
+			Description: "Three-member replica set on one VM, each member on its own port. The last command initiates the set once every member is running. Fill in the host and deploy.",
 			Commands: []keeper.DeploymentCommand{
-				{Command: deploySingleHost},
-				{Command: deploySingleHost},
-				{Command: deploySingleHost, PostScript: deployInitiate},
+				{
+					Command:  deploySingleHost,
+					Defaults: keeper.DeploymentDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
+				},
+				{
+					Command:  deploySingleHost,
+					Defaults: keeper.DeploymentDefaults{Name: "mongo2", KeeperPort: 27018, DbPort: 27018},
+				},
+				{
+					Command:    deploySingleHost,
+					PostScript: deploySingleHostInitiate,
+					Defaults:   keeper.DeploymentDefaults{Name: "mongo3", KeeperPort: 27019, DbPort: 27019},
+				},
 			},
 		},
 	}

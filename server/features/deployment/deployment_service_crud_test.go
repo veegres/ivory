@@ -30,7 +30,7 @@ func testRequest(name string) TemplateRequest {
 		Keeper:   keeper.NATIVE_ETCD,
 		Platform: platform.Docker,
 		Commands: []TemplateCommand{{
-			Command: `docker run -d --name {{name}} -e ETCD_INITIAL_CLUSTER="etcd-1=http://etcd-1:2380" etcd`,
+			Command: `docker run -d --name {{name}} -e ETCD_INITIAL_CLUSTER="etcd1=http://etcd1:2380" etcd`,
 		}},
 	}
 }
@@ -67,6 +67,22 @@ func TestService_Create(t *testing.T) {
 			name:     "an unknown variable in a post script is rejected",
 			mutate:   func(r *TemplateRequest) { r.Commands[0].PostScript = "etcdctl user add {{dbUesr}}" },
 			contains: "{{dbUesr}}",
+		},
+		{
+			name:     "a default port above the range is rejected",
+			mutate:   func(r *TemplateRequest) { r.Commands[0].Defaults.DbPort = 70000 },
+			expected: ErrTemplatePortInvalid,
+		},
+		{
+			name:     "a negative default port is rejected",
+			mutate:   func(r *TemplateRequest) { r.Commands[0].Defaults.KeeperPort = -1 },
+			expected: ErrTemplatePortInvalid,
+		},
+		{
+			// NOTE: zero is how a command says it states no port at all,
+			// leaving the deploy form on the plugin's own Requirements
+			name:   "a command stating no ports is accepted",
+			mutate: func(r *TemplateRequest) { r.Commands[0].Defaults = TemplateDefaults{} },
 		},
 	}
 
@@ -157,6 +173,26 @@ func TestService_CreateTrimsTheName(t *testing.T) {
 	}
 	if created.Name != "mine" {
 		t.Errorf("Name = %q, want %q", created.Name, "mine")
+	}
+}
+
+// TestService_CreateTrimsDefaultNodeNames covers the name a command hands the
+// deploy form: it ends up in --name and is matched against a keeper's own
+// member names later, so a stray space would be a node nothing can find.
+func TestService_CreateTrimsDefaultNodeNames(t *testing.T) {
+	s := newTestService(t)
+	r := testRequest("mine")
+	r.Commands[0].Defaults = TemplateDefaults{Name: "  etcd1  ", KeeperPort: 2379, DbPort: 2379}
+
+	created, err := s.Create(r)
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	if got := created.Commands[0].Defaults.Name; got != "etcd1" {
+		t.Errorf("Defaults.Name = %q, want %q", got, "etcd1")
+	}
+	if created.Commands[0].Defaults.DbPort != 2379 {
+		t.Errorf("Defaults.DbPort = %d, want 2379", created.Commands[0].Defaults.DbPort)
 	}
 }
 
