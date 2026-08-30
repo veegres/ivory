@@ -87,8 +87,8 @@ func (s *Service) PlatformSupportedFeatures(p PlatformPlugin) map[config.Feature
 	return c.SupportedFeatures()
 }
 
-func (s *Service) getPlatformAdapter(c PlatformVaultConnection) (platform.Adapter, platform.Connection, error) {
-	adapter, err := s.platformRegistry.Get(c.PlatformOrDefault())
+func (s *Service) getPlatformPlugin(c PlatformVaultConnection) (platform.Plugin, platform.Connection, error) {
+	plugin, err := s.platformRegistry.Get(c.PlatformOrDefault())
 	if err != nil {
 		return nil, platform.Connection{}, err
 	}
@@ -96,7 +96,7 @@ func (s *Service) getPlatformAdapter(c PlatformVaultConnection) (platform.Adapte
 	if err != nil {
 		return nil, platform.Connection{}, err
 	}
-	return adapter, platformConn, err
+	return plugin, platformConn, err
 }
 
 func (s *Service) getKeeperAdapter(c KeeperOptions) (keeper.Adapter, *tls.Config, *keeper.Credentials, error) {

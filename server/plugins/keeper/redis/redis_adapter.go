@@ -18,22 +18,22 @@ var ErrCredentialsRequired = errors.New("redis requires keeper credentials; add 
 const requestTimeout = 5 * time.Second
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Adapter = (*Adapter)(nil)
+var _ keeper.Adapter = (*Plugin)(nil)
 
-// Adapter talks to redis directly, the same way native postgres does: there
+// Plugin talks to redis directly, the same way native postgres does: there
 // is no separate orchestrator, the keeper connection host/port is the redis
 // host/port (keeperPort == dbPort convention), and the keeper vault holds
 // redis AUTH credentials. Operations that require orchestration across nodes
 // (a Sentinel/Cluster-style coordinator Ivory does not run) are not
 // supported and excluded from SupportedFeatures.
-type Adapter struct{}
+type Plugin struct{}
 
-func NewAdapter() *Adapter {
-	return &Adapter{}
+func NewPlugin() *Plugin {
+	return &Plugin{}
 }
 
-func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
-	client, err := a.connect(request)
+func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
+	client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -51,8 +51,8 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return []keeper.Response{response}, http.StatusOK, nil
 }
 
-func (a *Adapter) Config(request keeper.Request) (any, int, error) {
-	client, err := a.connect(request)
+func (p *Plugin) Config(request keeper.Request) (any, int, error) {
+	client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -68,8 +68,8 @@ func (a *Adapter) Config(request keeper.Request) (any, int, error) {
 	return settings, http.StatusOK, nil
 }
 
-func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
-	client, err := a.connect(request)
+func (p *Plugin) Failover(request keeper.Request) (*string, int, error) {
+	client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -94,46 +94,46 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) ConfigUpdate(keeper.Request) (any, int, error) {
+func (p *Plugin) ConfigUpdate(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Switchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Switchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
+func (p *Plugin) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
 // Reload has no redis equivalent: CONFIG REWRITE only persists the current
 // in-memory config back to redis.conf, it does not reload settings from
 // disk, so there is nothing to map this onto.
-func (a *Adapter) Reload(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reload(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
+func (p *Plugin) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
+func (p *Plugin) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) connect(request keeper.Request) (*redis.Client, error) {
+func (p *Plugin) connect(request keeper.Request) (*redis.Client, error) {
 	var username, password string
 	if request.Credentials != nil {
 		username = request.Credentials.Username

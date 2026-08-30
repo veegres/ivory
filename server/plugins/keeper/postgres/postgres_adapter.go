@@ -53,9 +53,9 @@ const syncStandbyQuery = `SELECT application_name, sync_state FROM pg_stat_repli
 const sqlStateCannotConnectNow = "57P03"
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Adapter = (*Adapter)(nil)
+var _ keeper.Adapter = (*Plugin)(nil)
 
-// Adapter provides the native postgres experience alongside patroni by
+// Plugin provides the native postgres experience alongside patroni by
 // talking to postgres directly. The keeper connection host/port is the
 // postgres host/port (keeperPort == dbPort convention) and the keeper vault
 // holds database credentials. Operations that require orchestration or OS
@@ -65,16 +65,16 @@ var _ keeper.Adapter = (*Adapter)(nil)
 // identifying a connected standby's Sync status (see mapSyncStandby) depends
 // entirely on the operator manually setting each standby's primary_conninfo
 // application_name to match the Host Ivory has configured for it.
-type Adapter struct{}
+type Plugin struct{}
 
-func NewAdapter() *Adapter {
-	return &Adapter{}
+func NewPlugin() *Plugin {
+	return &Plugin{}
 }
 
-func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
+func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	var inRecovery bool
 	var lag int64
-	err := a.queryRow(request, listQuery, func(row pgx.Row) error {
+	err := p.queryRow(request, listQuery, func(row pgx.Row) error {
 		return row.Scan(&inRecovery, &lag)
 	})
 	if err != nil {
@@ -88,7 +88,7 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	}
 	responses := []keeper.Response{mapNode(request.Host, request.Port, inRecovery, lag)}
 	if !inRecovery {
-		responses = append(responses, a.listSyncStandbys(request)...)
+		responses = append(responses, p.listSyncStandbys(request)...)
 	}
 	return responses, http.StatusOK, nil
 }
@@ -99,9 +99,9 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 // themselves. It is best-effort: pg_stat_replication may be restricted for
 // the configured credentials, or briefly fail during a topology change, in
 // which case the primary's own List response above is still returned as-is.
-func (a *Adapter) listSyncStandbys(request keeper.Request) []keeper.Response {
+func (p *Plugin) listSyncStandbys(request keeper.Request) []keeper.Response {
 	var standbys []keeper.Response
-	err := a.query(request, syncStandbyQuery, func(rows pgx.Rows) error {
+	err := p.query(request, syncStandbyQuery, func(rows pgx.Rows) error {
 		for rows.Next() {
 			var applicationName, syncState string
 			if errScan := rows.Scan(&applicationName, &syncState); errScan != nil {
@@ -139,9 +139,9 @@ func mapUnavailableState(err error) (keeper.State, bool) {
 	return keeper.StateStarting, true
 }
 
-func (a *Adapter) Config(request keeper.Request) (any, int, error) {
+func (p *Plugin) Config(request keeper.Request) (any, int, error) {
 	settings := map[string]string{}
-	err := a.query(request, configQuery, func(rows pgx.Rows) error {
+	err := p.query(request, configQuery, func(rows pgx.Rows) error {
 		for rows.Next() {
 			var name, setting string
 			if errScan := rows.Scan(&name, &setting); errScan != nil {
@@ -157,9 +157,9 @@ func (a *Adapter) Config(request keeper.Request) (any, int, error) {
 	return settings, http.StatusOK, nil
 }
 
-func (a *Adapter) Reload(request keeper.Request) (*string, int, error) {
+func (p *Plugin) Reload(request keeper.Request) (*string, int, error) {
 	var reloaded bool
-	err := a.queryRow(request, "SELECT pg_reload_conf()", func(row pgx.Row) error {
+	err := p.queryRow(request, "SELECT pg_reload_conf()", func(row pgx.Row) error {
 		return row.Scan(&reloaded)
 	})
 	if err != nil {
@@ -172,9 +172,9 @@ func (a *Adapter) Reload(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
+func (p *Plugin) Failover(request keeper.Request) (*string, int, error) {
 	var inRecovery bool
-	err := a.queryRow(request, "SELECT pg_is_in_recovery()", func(row pgx.Row) error {
+	err := p.queryRow(request, "SELECT pg_is_in_recovery()", func(row pgx.Row) error {
 		return row.Scan(&inRecovery)
 	})
 	if err != nil {
@@ -186,7 +186,7 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 	// NOTE: pg_promote(false) only signals the promotion and returns
 	// immediately, so it fits into the request timeout
 	var promoted bool
-	errPromote := a.queryRow(request, "SELECT pg_promote(false)", func(row pgx.Row) error {
+	errPromote := p.queryRow(request, "SELECT pg_promote(false)", func(row pgx.Row) error {
 		return row.Scan(&promoted)
 	})
 	if errPromote != nil {
@@ -199,46 +199,46 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) ConfigUpdate(keeper.Request) (any, int, error) {
+func (p *Plugin) ConfigUpdate(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Switchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Switchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
+func (p *Plugin) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
+func (p *Plugin) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
+func (p *Plugin) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) queryRow(request keeper.Request, query string, scan func(row pgx.Row) error) error {
-	return a.withConnection(request, func(ctx context.Context, conn *pgx.Conn) error {
+func (p *Plugin) queryRow(request keeper.Request, query string, scan func(row pgx.Row) error) error {
+	return p.withConnection(request, func(ctx context.Context, conn *pgx.Conn) error {
 		return scan(conn.QueryRow(ctx, query))
 	})
 }
 
-func (a *Adapter) query(request keeper.Request, query string, parse func(rows pgx.Rows) error) error {
-	return a.withConnection(request, func(ctx context.Context, conn *pgx.Conn) error {
+func (p *Plugin) query(request keeper.Request, query string, parse func(rows pgx.Rows) error) error {
+	return p.withConnection(request, func(ctx context.Context, conn *pgx.Conn) error {
 		rows, err := conn.Query(ctx, query)
 		if err != nil {
 			return err
@@ -248,7 +248,7 @@ func (a *Adapter) query(request keeper.Request, query string, parse func(rows pg
 	})
 }
 
-func (a *Adapter) withConnection(request keeper.Request, action func(ctx context.Context, conn *pgx.Conn) error) error {
+func (p *Plugin) withConnection(request keeper.Request, action func(ctx context.Context, conn *pgx.Conn) error) error {
 	var username, password string
 	if request.Credentials != nil {
 		username = request.Credentials.Username
@@ -307,7 +307,7 @@ func mapUnavailableNode(host string, port int, state keeper.State) keeper.Respon
 // is self-declared by the same operator who configured Ivory. application_name
 // is also self-declared (by the standby's own primary_conninfo), so it's the
 // right kind of value in principle - but Ivory has no orchestration for
-// native postgres (see Adapter's doc comment) and never sets it itself, even
+// native postgres (see Plugin's doc comment) and never sets it itself, even
 // for clusters it deployed, so this only resolves to the right node if the
 // operator manually sets each standby's primary_conninfo application_name to
 // exactly the Host configured for that node in Ivory. Standbys that don't

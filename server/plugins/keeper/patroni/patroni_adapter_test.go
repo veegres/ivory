@@ -32,7 +32,7 @@ func TestClient_Overview_Mapping(t *testing.T) {
 
 		// Mock the gateway response
 		httpClient := &http.Client{}
-		_ = NewAdapter(httpClient)
+		_ = NewPlugin(httpClient)
 
 		// Verify the struct is created correctly
 		if len(patroniResponse.Members) != 1 {
@@ -51,7 +51,7 @@ func TestClient_Overview_Mapping(t *testing.T) {
 			{"trailing slash", "http://10.0.0.1:8008/", "10.0.0.1"},
 		}
 
-		_ = &Adapter{}
+		_ = &Plugin{}
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
@@ -73,7 +73,7 @@ func TestClient_Overview_Mapping(t *testing.T) {
 }
 
 func TestClient_mapLag(t *testing.T) {
-	client := &Adapter{}
+	client := &Plugin{}
 
 	t.Run("valid lag", func(t *testing.T) {
 		patroniInstance := instance{
@@ -107,7 +107,7 @@ func TestClient_mapLag(t *testing.T) {
 }
 
 func TestClient_mapRole(t *testing.T) {
-	client := &Adapter{}
+	client := &Plugin{}
 
 	testCases := []struct {
 		input    string
@@ -132,7 +132,7 @@ func TestClient_mapRole(t *testing.T) {
 }
 
 func TestClient_mapSync(t *testing.T) {
-	client := &Adapter{}
+	client := &Plugin{}
 
 	testCases := []struct {
 		input    string
@@ -157,7 +157,7 @@ func TestClient_mapSync(t *testing.T) {
 }
 
 func TestClient_mapState(t *testing.T) {
-	client := &Adapter{}
+	client := &Plugin{}
 
 	testCases := []struct {
 		input    string
@@ -192,7 +192,7 @@ func TestClient_mapState(t *testing.T) {
 }
 
 func TestClient_mapRestart(t *testing.T) {
-	client := &Adapter{}
+	client := &Plugin{}
 
 	t.Run("valid restart", func(t *testing.T) {
 		patroniRestart := &scheduledRestart{
@@ -221,7 +221,7 @@ func TestClient_mapRestart(t *testing.T) {
 }
 
 func TestClient_Activate(t *testing.T) {
-	client := NewAdapter(&http.Client{})
+	client := NewPlugin(&http.Client{})
 
 	t.Run("should return error when body is not nil", func(t *testing.T) {
 		request := keeper.Request{
@@ -243,7 +243,7 @@ func TestClient_Activate(t *testing.T) {
 }
 
 func TestClient_Pause(t *testing.T) {
-	client := NewAdapter(&http.Client{})
+	client := NewPlugin(&http.Client{})
 
 	t.Run("should return error when body is not nil", func(t *testing.T) {
 		request := keeper.Request{
@@ -293,7 +293,7 @@ func TestKeeperResponse_Mapping(t *testing.T) {
 	})
 }
 
-func TestAdapter_List(t *testing.T) {
+func TestPlugin_List(t *testing.T) {
 	server := httptest.NewServer(nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
 		if r.URL.Path != "/cluster" {
 			w.WriteHeader(nethttp.StatusNotFound)
@@ -316,7 +316,7 @@ func TestAdapter_List(t *testing.T) {
 	host, portStr, _ := net.SplitHostPort(strings.TrimPrefix(server.URL, "http://"))
 	port, _ := strconv.Atoi(portStr)
 
-	responses, _, err := NewAdapter(http.NewClient()).List(keeper.Request{Host: host, Port: port})
+	responses, _, err := NewPlugin(http.NewClient()).List(keeper.Request{Host: host, Port: port})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

@@ -7,9 +7,9 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Metadata = (*Adapter)(nil)
+var _ keeper.Metadata = (*Plugin)(nil)
 
-func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
 		config.ViewNodeKeeperOverview:       true,
 		config.ViewNodeKeeperConfig:         true,
@@ -23,7 +23,7 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (a *Adapter) HasLeader() bool { return true }
+func (p *Plugin) HasLeader() bool { return true }
 
 // ZOO_MY_ID is written literally per command: zookeeper needs a genuinely
 // unique small integer per member, which no host-derived value can provide -
@@ -116,7 +116,7 @@ const deploySingleHostNode3 = `docker run -d
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
-func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
 			Platform:    platform.Docker,

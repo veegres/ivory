@@ -18,9 +18,9 @@ var ErrCommandNotAvailable = errors.New("zookeeper did not return the expected a
 const requestTimeout = 5 * time.Second
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Adapter = (*Adapter)(nil)
+var _ keeper.Adapter = (*Plugin)(nil)
 
-// Adapter talks to zookeeper's own admin ("four-letter word") text protocol
+// Plugin talks to zookeeper's own admin ("four-letter word") text protocol
 // directly, the same way native etcd does: there is no separate
 // orchestrator, and the keeper connection host/port is zookeeper's client
 // port (keeperPort == dbPort convention). There are no credentials to
@@ -30,13 +30,13 @@ var _ keeper.Adapter = (*Adapter)(nil)
 // protocol) with no manual trigger anywhere in the admin surface, so
 // Switchover/Failover are not supported - unlike etcd, which can force a
 // raft leader change via MoveLeader.
-type Adapter struct{}
+type Plugin struct{}
 
-func NewAdapter() *Adapter {
-	return &Adapter{}
+func NewPlugin() *Plugin {
+	return &Plugin{}
 }
 
-func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
+func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
@@ -53,7 +53,7 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return []keeper.Response{mapNode(request.Host, request.Port, state)}, http.StatusOK, nil
 }
 
-func (a *Adapter) Config(request keeper.Request) (any, int, error) {
+func (p *Plugin) Config(request keeper.Request) (any, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
@@ -68,46 +68,46 @@ func (a *Adapter) Config(request keeper.Request) (any, int, error) {
 	return settings, http.StatusOK, nil
 }
 
-func (a *Adapter) ConfigUpdate(keeper.Request) (any, int, error) {
+func (p *Plugin) ConfigUpdate(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Switchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Switchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
+func (p *Plugin) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
 // Reload has no clean zookeeper equivalent: the closest admin surface,
 // "reconfig", changes ensemble membership, not general config, and is a
 // stateful multi-step operation - not a simple reload.
-func (a *Adapter) Reload(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reload(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Failover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Failover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
+func (p *Plugin) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
+func (p *Plugin) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 

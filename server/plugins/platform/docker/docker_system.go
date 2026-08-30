@@ -55,35 +55,35 @@ var infoSectionKeys = []string{
 var ErrInvalidPublicKey = errors.New("public key cannot be empty or contain newlines")
 
 // NOTE: validate that is matches interface in compile-time
-var _ platform.Adapter = (*Adapter)(nil)
+var _ platform.System = (*Plugin)(nil)
 
-type Adapter struct {
+type Plugin struct {
 	sshClient *ssh.Client
 }
 
-func NewAdapter(sshClient *ssh.Client) *Adapter {
-	return &Adapter{sshClient}
+func NewPlugin(sshClient *ssh.Client) *Plugin {
+	return &Plugin{sshClient}
 }
 
-func (a *Adapter) Metrics(connection platform.Connection) (*platform.Metrics, error) {
-	result, err := a.execute(connection, MetricsCommand)
+func (p *Plugin) Metrics(connection platform.Connection) (*platform.Metrics, error) {
+	result, err := p.execute(connection, MetricsCommand)
 	if err != nil {
 		return nil, err
 	}
-	return a.parseMetrics(strings.Join(result, "\n"))
+	return p.parseMetrics(strings.Join(result, "\n"))
 }
 
-func (a *Adapter) CopyId(connection platform.Connection, publicKey string) error {
+func (p *Plugin) CopyId(connection platform.Connection, publicKey string) error {
 	if strings.TrimSpace(publicKey) == "" || strings.ContainsAny(publicKey, "\r\n") {
 		return ErrInvalidPublicKey
 	}
 	key := shellQuote(publicKey)
 	command := fmt.Sprintf(`umask 077 && mkdir -p ~/.ssh && touch ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys && (grep -qxF -- %s ~/.ssh/authorized_keys || printf '%%s\n' %s >> ~/.ssh/authorized_keys)`, key, key)
-	_, err := a.execute(connection, command)
+	_, err := p.execute(connection, command)
 	return err
 }
 
-func (a *Adapter) Logs(connection platform.Connection, filePath string, tail int, follow bool) console.Command {
+func (p *Plugin) Logs(connection platform.Connection, filePath string, tail int, follow bool) console.Command {
 	commandStr := "tail "
 	if tail > 0 {
 		commandStr += "-n " + strconv.Itoa(tail) + " "
@@ -92,33 +92,33 @@ func (a *Adapter) Logs(connection platform.Connection, filePath string, tail int
 		commandStr += "-f "
 	}
 	commandStr += "-- " + shellQuote(filePath)
-	command := a.sshClient.Command(a.mapToSshCommand(connection), commandStr)
+	command := p.sshClient.Command(p.mapToSshCommand(connection), commandStr)
 	command.JobKeepAlive = false
 	return command
 }
 
-func (a *Adapter) Processes(connection platform.Connection) ([]platform.Process, error) {
-	result, err := a.execute(connection, ProcessesCommand)
+func (p *Plugin) Processes(connection platform.Connection) ([]platform.Process, error) {
+	result, err := p.execute(connection, ProcessesCommand)
 	if err != nil {
 		return nil, err
 	}
-	return a.parseProcesses(result)
+	return p.parseProcesses(result)
 }
 
-func (a *Adapter) Info(connection platform.Connection) ([]platform.InfoItem, error) {
-	result, err := a.execute(connection, InfoCommand)
+func (p *Plugin) Info(connection platform.Connection) ([]platform.InfoItem, error) {
+	result, err := p.execute(connection, InfoCommand)
 	if err != nil {
 		return nil, err
 	}
-	return a.parseInfo(strings.Join(result, "\n")), nil
+	return p.parseInfo(strings.Join(result, "\n")), nil
 }
 
-func (a *Adapter) execute(connection platform.Connection, command string) ([]string, error) {
-	cmd := a.sshClient.Command(a.mapToSshCommand(connection), command)
+func (p *Plugin) execute(connection platform.Connection, command string) ([]string, error) {
+	cmd := p.sshClient.Command(p.mapToSshCommand(connection), command)
 	return cmd.Execute()
 }
 
-func (a *Adapter) mapToSshCommand(conn platform.Connection) ssh.Connection {
+func (p *Plugin) mapToSshCommand(conn platform.Connection) ssh.Connection {
 	var prvKey *ed25519.PrivateKey
 	if len(conn.PrivateKey) > 0 {
 		pk := ed25519.PrivateKey(conn.PrivateKey)
@@ -140,8 +140,8 @@ func shellQuote(value string) string {
 	return "'" + strings.ReplaceAll(value, "'", `'\''`) + "'"
 }
 
-func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
-	sections := a.splitSections(output, metricsSectionKeys)
+func (p *Plugin) parseMetrics(output string) (*platform.Metrics, error) {
+	sections := p.splitSections(output, metricsSectionKeys)
 
 	for _, key := range metricsSectionKeys {
 		if _, ok := sections[key]; !ok {
@@ -149,15 +149,15 @@ func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
 		}
 	}
 
-	cpu, err := a.parseCpuMetrics(sections["__IVORY_CPU__"])
+	cpu, err := p.parseCpuMetrics(sections["__IVORY_CPU__"])
 	if err != nil {
 		return nil, err
 	}
-	memory, err := a.parseMemoryMetrics(sections["__IVORY_MEM__"])
+	memory, err := p.parseMemoryMetrics(sections["__IVORY_MEM__"])
 	if err != nil {
 		return nil, err
 	}
-	network, err := a.parseNetworkMetrics(sections["__IVORY_NET__"])
+	network, err := p.parseNetworkMetrics(sections["__IVORY_NET__"])
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (a *Adapter) parseMetrics(output string) (*platform.Metrics, error) {
 
 // splitSections splits sentinel-marked command output (each section preceded
 // by one of keys on its own line) into per-section lines.
-func (a *Adapter) splitSections(output string, keys []string) map[string][]string {
+func (p *Plugin) splitSections(output string, keys []string) map[string][]string {
 	markers := make(map[string]bool, len(keys))
 	for _, key := range keys {
 		markers[key] = true
@@ -195,12 +195,12 @@ func (a *Adapter) splitSections(output string, keys []string) map[string][]strin
 	return sections
 }
 
-func (a *Adapter) parseCpuMetrics(lines []string) (platform.CpuMetrics, error) {
+func (p *Plugin) parseCpuMetrics(lines []string) (platform.CpuMetrics, error) {
 	if len(lines) == 0 {
 		return platform.CpuMetrics{}, platform.ErrInvalidCpuMetrics
 	}
 
-	total, idle, err := a.parseCpuLine(lines[0])
+	total, idle, err := p.parseCpuLine(lines[0])
 	if err != nil {
 		return platform.CpuMetrics{}, err
 	}
@@ -208,7 +208,7 @@ func (a *Adapter) parseCpuMetrics(lines []string) (platform.CpuMetrics, error) {
 	return platform.CpuMetrics{TotalTicks: total, IdleTicks: idle}, nil
 }
 
-func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
+func (p *Plugin) parseCpuLine(line string) (uint64, uint64, error) {
 	fields := strings.Fields(line)
 	if len(fields) < 5 || fields[0] != "cpu" {
 		return 0, 0, platform.ErrInvalidCpuMetrics
@@ -238,12 +238,12 @@ func (a *Adapter) parseCpuLine(line string) (uint64, uint64, error) {
 	return total, idle, nil
 }
 
-func (a *Adapter) parseMemoryMetrics(lines []string) (platform.MemoryMetrics, error) {
+func (p *Plugin) parseMemoryMetrics(lines []string) (platform.MemoryMetrics, error) {
 	if len(lines) < 2 {
 		return platform.MemoryMetrics{}, platform.ErrInvalidMemoryMetrics
 	}
 
-	values := a.parseMeminfoFields(lines)
+	values := p.parseMeminfoFields(lines)
 	total := values["MemTotal"]
 	available := values["MemAvailable"]
 	if total == 0 {
@@ -259,7 +259,7 @@ func (a *Adapter) parseMemoryMetrics(lines []string) (platform.MemoryMetrics, er
 // parseMeminfoFields extracts numeric fields (in bytes) from /proc/meminfo-style
 // "Key: value kB" lines. Unparsable lines are skipped rather than failing,
 // since callers apply their own strictness on top (e.g. requiring MemTotal).
-func (a *Adapter) parseMeminfoFields(lines []string) map[string]uint64 {
+func (p *Plugin) parseMeminfoFields(lines []string) map[string]uint64 {
 	values := make(map[string]uint64, len(lines))
 	for _, line := range lines {
 		fields := strings.Fields(line)
@@ -275,7 +275,7 @@ func (a *Adapter) parseMeminfoFields(lines []string) map[string]uint64 {
 	return values
 }
 
-func (a *Adapter) parseNetworkMetrics(lines []string) (platform.NetworkMetrics, error) {
+func (p *Plugin) parseNetworkMetrics(lines []string) (platform.NetworkMetrics, error) {
 	var received uint64
 	var transmitted uint64
 	for _, line := range lines {
@@ -315,7 +315,7 @@ func (a *Adapter) parseNetworkMetrics(lines []string) (platform.NetworkMetrics, 
 
 // parseProcesses is lenient: a single malformed row (e.g. a command name with
 // an unexpected shape) is skipped rather than failing the whole listing.
-func (a *Adapter) parseProcesses(lines []string) ([]platform.Process, error) {
+func (p *Plugin) parseProcesses(lines []string) ([]platform.Process, error) {
 	processes := make([]platform.Process, 0, len(lines))
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
@@ -370,8 +370,8 @@ func (a *Adapter) parseProcesses(lines []string) ([]platform.Process, error) {
 
 // parseInfo is best-effort: it is a display-only inventory, so a missing or
 // unparsable section is simply omitted rather than failing the whole call.
-func (a *Adapter) parseInfo(output string) []platform.InfoItem {
-	sections := a.splitSections(output, infoSectionKeys)
+func (p *Plugin) parseInfo(output string) []platform.InfoItem {
+	sections := p.splitSections(output, infoSectionKeys)
 
 	items := make([]platform.InfoItem, 0, len(infoSectionKeys))
 	add := func(key, value string) {
@@ -381,24 +381,24 @@ func (a *Adapter) parseInfo(output string) []platform.InfoItem {
 		items = append(items, platform.InfoItem{Key: key, Value: value})
 	}
 
-	add("Host", a.parseHost(sections["__IVORY_HOST__"]))
-	add("OS", a.parseOsRelease(sections["__IVORY_OS__"]))
-	add("Kernel", a.firstLine(sections["__IVORY_KERNEL__"]))
-	add("Uptime", a.parseUptime(sections["__IVORY_UPTIME__"]))
-	cpu, cores := a.parseCpuInfo(sections["__IVORY_CPU__"])
+	add("Host", p.parseHost(sections["__IVORY_HOST__"]))
+	add("OS", p.parseOsRelease(sections["__IVORY_OS__"]))
+	add("Kernel", p.firstLine(sections["__IVORY_KERNEL__"]))
+	add("Uptime", p.parseUptime(sections["__IVORY_UPTIME__"]))
+	cpu, cores := p.parseCpuInfo(sections["__IVORY_CPU__"])
 	add("CPU", cpu)
 	add("CPU Cores", cores)
-	add("GPU", a.parseGpu(sections["__IVORY_GPU__"]))
-	add("Memory", a.parseMeminfoTotal(sections["__IVORY_MEM__"], "MemTotal"))
-	add("Swap", a.parseMeminfoTotal(sections["__IVORY_SWAP__"], "SwapTotal"))
-	add("Disk", a.parseDiskSummary(sections["__IVORY_DISK__"]))
-	add("Local IP", a.parseLocalIp(sections["__IVORY_IP__"]))
-	add("Locale", a.parseLocale(sections["__IVORY_LOCALE__"]))
+	add("GPU", p.parseGpu(sections["__IVORY_GPU__"]))
+	add("Memory", p.parseMeminfoTotal(sections["__IVORY_MEM__"], "MemTotal"))
+	add("Swap", p.parseMeminfoTotal(sections["__IVORY_SWAP__"], "SwapTotal"))
+	add("Disk", p.parseDiskSummary(sections["__IVORY_DISK__"]))
+	add("Local IP", p.parseLocalIp(sections["__IVORY_IP__"]))
+	add("Locale", p.parseLocale(sections["__IVORY_LOCALE__"]))
 
 	return items
 }
 
-func (a *Adapter) firstLine(lines []string) string {
+func (p *Plugin) firstLine(lines []string) string {
 	if len(lines) == 0 {
 		return ""
 	}
@@ -409,7 +409,7 @@ func (a *Adapter) firstLine(lines []string) string {
 // (<product_family>)", e.g. "21KDA04PCD (ThinkPad X1 Carbon Gen 12)") and
 // falls back to the network hostname when DMI data isn't available (e.g.
 // inside a VM/container without access to /sys/devices/virtual/dmi).
-func (a *Adapter) parseHost(lines []string) string {
+func (p *Plugin) parseHost(lines []string) string {
 	var productName, productFamily, hostname string
 	for _, line := range lines {
 		if value, ok := strings.CutPrefix(line, "product_name="); ok {
@@ -434,7 +434,7 @@ func (a *Adapter) parseHost(lines []string) string {
 	return fmt.Sprintf("%s (%s)", productName, productFamily)
 }
 
-func (a *Adapter) parseOsRelease(lines []string) string {
+func (p *Plugin) parseOsRelease(lines []string) string {
 	for _, line := range lines {
 		if name, ok := strings.CutPrefix(line, "PRETTY_NAME="); ok {
 			return strings.Trim(name, `"`)
@@ -443,7 +443,7 @@ func (a *Adapter) parseOsRelease(lines []string) string {
 	return ""
 }
 
-func (a *Adapter) parseUptime(lines []string) string {
+func (p *Plugin) parseUptime(lines []string) string {
 	if len(lines) == 0 {
 		return ""
 	}
@@ -472,7 +472,7 @@ func (a *Adapter) parseUptime(lines []string) string {
 
 // parseCpuInfo reads the two lines produced by `grep -m1 "model name"` and
 // `grep -c ^processor` against /proc/cpuinfo.
-func (a *Adapter) parseCpuInfo(lines []string) (model string, cores string) {
+func (p *Plugin) parseCpuInfo(lines []string) (model string, cores string) {
 	for _, line := range lines {
 		if _, value, found := strings.Cut(line, ":"); found && strings.HasPrefix(line, "model name") {
 			model = strings.TrimSpace(value)
@@ -496,7 +496,7 @@ const intelIntegratedPciAddr = "0000:00:02.0"
 // may not expose the max-frequency sysfs files this reads, and the
 // Integrated/Discrete tag is only added when it can be determined with
 // confidence - see the addr/vendor checks below).
-func (a *Adapter) parseGpu(lines []string) string {
+func (p *Plugin) parseGpu(lines []string) string {
 	var name, addr, freqMhz string
 	for _, line := range lines {
 		if value, ok := strings.CutPrefix(line, "name="); ok {
@@ -512,7 +512,7 @@ func (a *Adapter) parseGpu(lines []string) string {
 		}
 	}
 
-	model := a.parseGpuModel(name)
+	model := p.parseGpuModel(name)
 	if model == "" {
 		return ""
 	}
@@ -537,7 +537,7 @@ func (a *Adapter) parseGpu(lines []string) string {
 // Graphics"): it prefers the bracketed marketing name lspci reports over the
 // raw PCI device string, and re-adds the vendor prefix if the bracketed name
 // dropped it (e.g. NVIDIA's bracket omits "NVIDIA").
-func (a *Adapter) parseGpuModel(line string) string {
+func (p *Plugin) parseGpuModel(line string) string {
 	if line == "" {
 		return ""
 	}
@@ -573,8 +573,8 @@ func (a *Adapter) parseGpuModel(line string) string {
 
 // parseMeminfoTotal reports the total capacity for a /proc/meminfo key (e.g.
 // MemTotal, SwapTotal).
-func (a *Adapter) parseMeminfoTotal(lines []string, totalKey string) string {
-	total := a.parseMeminfoFields(lines)[totalKey]
+func (p *Plugin) parseMeminfoTotal(lines []string, totalKey string) string {
+	total := p.parseMeminfoFields(lines)[totalKey]
 	if total == 0 {
 		return ""
 	}
@@ -582,7 +582,7 @@ func (a *Adapter) parseMeminfoTotal(lines []string, totalKey string) string {
 }
 
 // parseDiskSummary reports the total capacity of the root filesystem.
-func (a *Adapter) parseDiskSummary(lines []string) string {
+func (p *Plugin) parseDiskSummary(lines []string) string {
 	if len(lines) == 0 {
 		return ""
 	}
@@ -599,7 +599,7 @@ func (a *Adapter) parseDiskSummary(lines []string) string {
 
 // parseLocalIp reports every address `hostname -I` returns (a node may have
 // several, e.g. a LAN address plus a docker bridge address).
-func (a *Adapter) parseLocalIp(lines []string) string {
+func (p *Plugin) parseLocalIp(lines []string) string {
 	if len(lines) == 0 {
 		return ""
 	}
@@ -610,7 +610,7 @@ func (a *Adapter) parseLocalIp(lines []string) string {
 	return strings.Join(fields, ", ")
 }
 
-func (a *Adapter) parseLocale(lines []string) string {
+func (p *Plugin) parseLocale(lines []string) string {
 	for _, line := range lines {
 		if value, ok := strings.CutPrefix(line, "LANG="); ok {
 			return value

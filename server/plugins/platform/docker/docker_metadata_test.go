@@ -6,7 +6,7 @@ import (
 )
 
 func TestSupportedFeatures(t *testing.T) {
-	features := NewAdapter(nil).SupportedFeatures()
+	features := NewPlugin(nil).SupportedFeatures()
 
 	supported := []config.Feature{config.ViewNodeSystem, config.ManageNodeSystem}
 	for _, feature := range supported {

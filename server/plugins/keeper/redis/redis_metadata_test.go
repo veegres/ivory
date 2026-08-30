@@ -7,7 +7,7 @@ import (
 )
 
 func TestSupportedFeaturesExclusions(t *testing.T) {
-	features := NewAdapter().SupportedFeatures()
+	features := NewPlugin().SupportedFeatures()
 
 	supported := []config.Feature{config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig, config.ManageNodeKeeperFailover}
 	for _, feature := range supported {
@@ -32,7 +32,7 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 // the deployment, because redis answers keeper and database questions on one
 // endpoint, as the account the image ships.
 func TestDefaultTemplateDefaults(t *testing.T) {
-	for _, template := range NewAdapter().DefaultTemplates() {
+	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
 			if template.Defaults.KeeperUser != "default" {
 				t.Errorf("expected keeper user %q, got %q", "default", template.Defaults.KeeperUser)
@@ -47,7 +47,7 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 // TestDefaultTemplates covers the leader/replica asymmetry: it is expressed as
 // a different command at index 0, not as a flag.
 func TestDefaultTemplates(t *testing.T) {
-	templates := NewAdapter().DefaultTemplates()
+	templates := NewPlugin().DefaultTemplates()
 
 	if len(templates) != 2 {
 		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))

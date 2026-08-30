@@ -19,9 +19,9 @@ var ErrCredentialsRequired = errors.New("clickhouse requires keeper credentials;
 const requestTimeout = 5 * time.Second
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Adapter = (*Adapter)(nil)
+var _ keeper.Adapter = (*Plugin)(nil)
 
-// Adapter talks to clickhouse-server directly, the same way native postgres
+// Plugin talks to clickhouse-server directly, the same way native postgres
 // does: there is no separate orchestrator, the keeper connection host/port
 // is the clickhouse native-protocol host/port (keeperPort == dbPort
 // convention), and the keeper vault holds clickhouse credentials. ClickHouse
@@ -30,14 +30,14 @@ var _ keeper.Adapter = (*Adapter)(nil)
 // leader to switch or fail over to, and Switchover/Failover are excluded
 // from SupportedFeatures. List reports every reachable node as Replica,
 // which is what each one is; Unknown would claim Ivory could not tell.
-type Adapter struct{}
+type Plugin struct{}
 
-func NewAdapter() *Adapter {
-	return &Adapter{}
+func NewPlugin() *Plugin {
+	return &Plugin{}
 }
 
-func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
-	conn, err := a.connect(request)
+func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
+	conn, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -60,8 +60,8 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return []keeper.Response{mapNode(request.Host, request.Port, isReadonly > 0, absoluteDelay)}, http.StatusOK, nil
 }
 
-func (a *Adapter) Config(request keeper.Request) (any, int, error) {
-	conn, err := a.connect(request)
+func (p *Plugin) Config(request keeper.Request) (any, int, error) {
+	conn, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -92,8 +92,8 @@ func (a *Adapter) Config(request keeper.Request) (any, int, error) {
 
 // Reload runs SYSTEM RELOAD CONFIG, clickhouse's genuine equivalent of
 // postgres' pg_reload_conf(): it re-reads config.xml without restarting.
-func (a *Adapter) Reload(request keeper.Request) (*string, int, error) {
-	conn, err := a.connect(request)
+func (p *Plugin) Reload(request keeper.Request) (*string, int, error) {
+	conn, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -109,43 +109,43 @@ func (a *Adapter) Reload(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) ConfigUpdate(keeper.Request) (any, int, error) {
+func (p *Plugin) ConfigUpdate(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Switchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Switchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
+func (p *Plugin) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Failover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Failover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
+func (p *Plugin) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
+func (p *Plugin) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) connect(request keeper.Request) (driver.Conn, error) {
+func (p *Plugin) connect(request keeper.Request) (driver.Conn, error) {
 	var username, password string
 	if request.Credentials != nil {
 		username = request.Credentials.Username

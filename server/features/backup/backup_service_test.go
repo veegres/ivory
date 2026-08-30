@@ -58,9 +58,9 @@ func createTestBackupService(t *testing.T) *Service {
 
 	deploymentRepository := deployment.NewRepository(storage.NewDbBucket[deployment.Template](db, "DeploymentTemplate"))
 	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
-	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewPlugin())
 	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
-	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
+	platformRegistry.Register(platform.Docker, docker.NewPlugin(nil))
 	deploymentService := deployment.NewService(deploymentRepository, keeperRegistry, platformRegistry)
 
 	return NewService(clusterService, queryService, permissionService, deploymentService)

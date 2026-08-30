@@ -231,7 +231,7 @@ func TestResolveCandidate(t *testing.T) {
 }
 
 func TestUnsupportedOperations(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{}
 
 	type op struct {

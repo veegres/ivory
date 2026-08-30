@@ -21,7 +21,7 @@ Inter-|   Receive                                                |  Transmit
 eth0: 2048 2 0 0 0 0 0 0 4096 4 0 0 0 0 0 0
 `
 	sshClient := ssh.NewClient()
-	adapter := NewAdapter(sshClient)
+	adapter := NewPlugin(sshClient)
 	metrics, err := adapter.parseMetrics(output)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -45,7 +45,7 @@ eth0: 2048 2 0 0 0 0 0 0 4096 4 0 0 0 0 0 0
 }
 
 func TestParseMetricsErrorsAndEdgeCases(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 
 	t.Run("multi-interface", func(t *testing.T) {
 		output := `__IVORY_CPU__
@@ -135,7 +135,7 @@ lo: 100 1 0 0 0 0 0 0 100 1 0 0 0 0 0 0
 }
 
 func TestCopyIdRejectsNewlinePublicKey(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 
 	err := adapter.CopyId(platform.Connection{}, "ssh-ed25519 AAAA attacker\nssh-ed25519 BBBB")
 	if !errors.Is(err, ErrInvalidPublicKey) {
@@ -154,7 +154,7 @@ func TestShellQuote(t *testing.T) {
 }
 
 func TestLogsQuotesShellArguments(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	connection := platform.Connection{}
 
 	command := adapter.Logs(connection, `/tmp/app; rm -rf /`, 10, false).(*ssh.Command).Command
@@ -170,7 +170,7 @@ func TestParseProcesses(t *testing.T) {
 		"   1 root      0.0  0.1   1024 1 init init",
 	}
 
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	processes, err := adapter.parseProcesses(lines)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -200,7 +200,7 @@ func TestParseProcesses(t *testing.T) {
 func TestParseProcessesProgramStripsPath(t *testing.T) {
 	lines := []string{"1 root 0.0 0.1 1024 1 /usr/lib/postgresql/16/bin/postgres /usr/lib/postgresql/16/bin/postgres -D /var/lib/postgresql/data"}
 
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	processes, err := adapter.parseProcesses(lines)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -221,7 +221,7 @@ func TestParseProcessesSkipsMalformedLines(t *testing.T) {
 		"   ",
 	}
 
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	processes, err := adapter.parseProcesses(lines)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -234,7 +234,7 @@ func TestParseProcessesSkipsMalformedLines(t *testing.T) {
 func TestParseProcessesAllMalformedReturnsError(t *testing.T) {
 	lines := []string{"not a valid ps line"}
 
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	_, err := adapter.parseProcesses(lines)
 	if !errors.Is(err, platform.ErrInvalidProcesses) {
 		t.Fatalf("expected ErrInvalidProcesses, got %v", err)
@@ -242,7 +242,7 @@ func TestParseProcessesAllMalformedReturnsError(t *testing.T) {
 }
 
 func TestParseProcessesEmptyInput(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	processes, err := adapter.parseProcesses([]string{})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -283,7 +283,7 @@ __IVORY_IP__
 __IVORY_LOCALE__
 LANG=en_US.UTF-8
 `
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	items := adapter.parseInfo(output)
 
 	got := map[string]string{}
@@ -346,7 +346,7 @@ __IVORY_DISK__
 __IVORY_IP__
 __IVORY_LOCALE__
 `
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	items := adapter.parseInfo(output)
 
 	got := map[string]string{}
@@ -368,7 +368,7 @@ __IVORY_LOCALE__
 }
 
 func TestParseGpuModel(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 
 	tests := map[string]struct {
 		line     string
@@ -403,7 +403,7 @@ func TestParseGpuModel(t *testing.T) {
 }
 
 func TestParseGpu(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 
 	tests := map[string]struct {
 		lines    []string

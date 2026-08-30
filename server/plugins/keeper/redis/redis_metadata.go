@@ -7,9 +7,9 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Metadata = (*Adapter)(nil)
+var _ keeper.Metadata = (*Plugin)(nil)
 
-func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
 		config.ViewNodeKeeperOverview:       true,
 		config.ViewNodeKeeperConfig:         true,
@@ -23,7 +23,7 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (a *Adapter) HasLeader() bool { return true }
+func (p *Plugin) HasLeader() bool { return true }
 
 // The official image takes its port and password as redis-server flags rather
 // than environment variables, so the command states them after the image - the
@@ -72,7 +72,7 @@ const deploySingleHostReplica = `docker run -d
   redis:7.4
   redis-server --port {{dbPort}} --requirepass "{{dbPass}}" --replicaof {{host}} 6379 --masterauth "{{dbPass}}"`
 
-func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
 			Platform:    platform.Docker,

@@ -7,9 +7,9 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Metadata = (*Adapter)(nil)
+var _ keeper.Metadata = (*Plugin)(nil)
 
-func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
 		config.ViewNodeKeeperOverview:       true,
 		config.ViewNodeKeeperConfig:         true,
@@ -23,7 +23,7 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (a *Adapter) HasLeader() bool { return true }
+func (p *Plugin) HasLeader() bool { return true }
 
 // Every member starts as a plain mongod that already knows its replica set
 // name; who becomes primary is decided later, by deployInitiate. The official
@@ -73,7 +73,7 @@ until mongosh --quiet --port {{dbPort}} --eval "1" >/dev/null 2>&1; do sleep 1; 
 mongosh --quiet --port {{dbPort}} --eval "rs.initiate({_id: \"{{cluster}}\", members: [{_id: 0, host: \"{{host}}:27017\"}, {_id: 1, host: \"{{host}}:27018\"}, {_id: 2, host: \"{{host}}:27019\"}]})"
 '`
 
-func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
 			Platform:    platform.Docker,

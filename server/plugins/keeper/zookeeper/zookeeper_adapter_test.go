@@ -90,7 +90,7 @@ func TestMapNode(t *testing.T) {
 }
 
 func TestListRequiresReachableHost(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{Host: "127.0.0.1", Port: 1}
 
 	_, status, err := adapter.List(request)
@@ -104,7 +104,7 @@ func TestListRequiresReachableHost(t *testing.T) {
 }
 
 func TestUnsupportedOperations(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{}
 
 	type op struct {

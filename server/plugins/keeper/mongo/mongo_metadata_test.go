@@ -7,7 +7,7 @@ import (
 )
 
 func TestSupportedFeaturesExclusions(t *testing.T) {
-	features := NewAdapter().SupportedFeatures()
+	features := NewPlugin().SupportedFeatures()
 
 	supported := []config.Feature{
 		config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig,
@@ -35,7 +35,7 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 // the deployment, because enabling client auth would take a keyfile the
 // deployment does not ship, so there is no account to name.
 func TestDefaultTemplateDefaults(t *testing.T) {
-	for _, template := range NewAdapter().DefaultTemplates() {
+	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
 			if template.Defaults.KeeperUser != "" {
 				t.Errorf("expected keeper user %q, got %q", "", template.Defaults.KeeperUser)
@@ -51,7 +51,7 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 // as a plain mongod, and the last command initiates the set once they are all
 // up - which is why rs.initiate() sits there rather than on the first.
 func TestDefaultTemplates(t *testing.T) {
-	templates := NewAdapter().DefaultTemplates()
+	templates := NewPlugin().DefaultTemplates()
 
 	if len(templates) != 2 {
 		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
