@@ -15,6 +15,9 @@ type Metadata interface {
 	// plugin knows about, whether it supports it. A feature absent from the
 	// map is not a keeper capability at all and is left unrestricted.
 	SupportedFeatures() map[config.Feature]bool
+	// HasLeader reports whether the engine elects a single primary at all, so
+	// a consumer can tell a missing leader from an engine that has none.
+	HasLeader() bool
 	Requirements() Requirements
 	// DefaultTemplates returns the ready-to-copy deployments Ivory ships for
 	// this engine, one set per platform it supports. It lives on the plugin

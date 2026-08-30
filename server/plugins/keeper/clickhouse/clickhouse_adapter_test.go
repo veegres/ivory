@@ -13,10 +13,13 @@ func TestMapNode(t *testing.T) {
 		readonly      bool
 		absoluteDelay uint64
 		expectedState keeper.State
+		expectedRole  keeper.Role
 		expectedLag   int64
 	}{
-		{name: "healthy node is running", readonly: false, absoluteDelay: 0, expectedState: keeper.StateRunning, expectedLag: 0},
-		{name: "readonly node reports stopping", readonly: true, absoluteDelay: 12, expectedState: keeper.StateStopping, expectedLag: 12},
+		{name: "healthy node is a running replica", readonly: false, absoluteDelay: 0, expectedState: keeper.StateRunning, expectedRole: keeper.Replica, expectedLag: 0},
+		// NOTE: still a replica - the node answered, so what it is stays
+		// known; only its state changes
+		{name: "readonly node stays a replica", readonly: true, absoluteDelay: 12, expectedState: keeper.StateStopping, expectedRole: keeper.Replica, expectedLag: 12},
 	}
 
 	for _, tt := range tests {
@@ -28,8 +31,11 @@ func TestMapNode(t *testing.T) {
 			if response.Lag != tt.expectedLag {
 				t.Errorf("expected lag %d, got %d", tt.expectedLag, response.Lag)
 			}
-			if response.Role != keeper.Unknown {
-				t.Errorf("expected role unknown (clickhouse has no leader concept), got %v", response.Role)
+			if response.Role != tt.expectedRole {
+				t.Errorf("expected role %q, got %q", tt.expectedRole, response.Role)
+			}
+			if response.Sync {
+				t.Error("clickhouse has no synchronous-replica set, so Sync must stay false")
 			}
 			if response.Key == nil || *response.Key != "ch1:9000" {
 				t.Errorf("expected key ch1:9000, got %v", response.Key)

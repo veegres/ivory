@@ -37,8 +37,8 @@ type Role string
 
 const (
 	Leader  Role = "leader"
-	Replica      = "replica"
-	Unknown      = "unknown"
+	Replica Role = "replica"
+	Unknown Role = "unknown"
 )
 
 // State is Ivory's normalized view of what the keeper's postgres process is

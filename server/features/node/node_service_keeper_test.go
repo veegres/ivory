@@ -20,6 +20,8 @@ type fakeKeeperAdapter struct {
 	listErr      error
 }
 
+func (f *fakeKeeperAdapter) HasLeader() bool { return true }
+
 func (f *fakeKeeperAdapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return f.listResponse, f.listStatus, f.listErr
 }

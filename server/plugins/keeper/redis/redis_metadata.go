@@ -23,6 +23,8 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
+func (a *Adapter) HasLeader() bool { return true }
+
 func (a *Adapter) Requirements() keeper.Requirements {
 	return keeper.Requirements{
 		KeeperCredentials: true,

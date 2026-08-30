@@ -23,6 +23,8 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
+func (a *Adapter) HasLeader() bool { return true }
+
 // Requirements declares only the database pair: the shipped spilo deployment
 // leaves patroni's rest api unauthenticated. Spilo names its superuser
 // postgres, so the password is the only free choice.

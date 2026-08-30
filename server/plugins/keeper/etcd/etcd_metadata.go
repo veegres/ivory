@@ -23,6 +23,8 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
+func (a *Adapter) HasLeader() bool { return true }
+
 // Requirements reports both credential pairs: etcd has no separate management
 // API, so the keeper endpoint is the database itself and is asked twice. Auth
 // can only be enabled through a user named root.

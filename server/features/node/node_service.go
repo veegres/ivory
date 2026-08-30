@@ -57,6 +57,17 @@ func (s *Service) SupportedFeatures(t keeper.PluginType) map[config.Feature]bool
 	return c.SupportedFeatures()
 }
 
+// KeeperHasLeader reports whether the keeper elects a single primary at all.
+// An unknown plugin is treated as electing one: that is what every keeper but
+// clickhouse does, and it keeps a warning rather than silently dropping it.
+func (s *Service) KeeperHasLeader(t keeper.PluginType) bool {
+	c, e := s.keeperRegistry.Get(t)
+	if e != nil {
+		return true
+	}
+	return c.HasLeader()
+}
+
 // PlatformSupportedFeatures reports what the platform itself can be asked
 // for, which is a separate question from what the keeper supports: a platform
 // that only ever addresses a scheduler has no node of its own to show.

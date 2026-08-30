@@ -27,9 +27,9 @@ var _ keeper.Adapter = (*Adapter)(nil)
 // convention), and the keeper vault holds clickhouse credentials. ClickHouse
 // has no single-primary replication model - every replica accepts writes
 // and coordinates through ClickHouse Keeper/ZooKeeper - so there is no
-// leader to switch or fail over to; List reports every reachable node's
-// Role as Unknown rather than inventing a leader that doesn't exist, and
-// Switchover/Failover are excluded from SupportedFeatures.
+// leader to switch or fail over to, and Switchover/Failover are excluded
+// from SupportedFeatures. List reports every reachable node as Replica,
+// which is what each one is; Unknown would claim Ivory could not tell.
 type Adapter struct{}
 
 func NewAdapter() *Adapter {
@@ -177,7 +177,7 @@ func mapNode(host string, port int, readonly bool, absoluteDelay uint64) keeper.
 		Key:                  &key,
 		Status:               &status,
 		State:                state,
-		Role:                 keeper.Unknown,
+		Role:                 keeper.Replica,
 		Lag:                  int64(absoluteDelay),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,

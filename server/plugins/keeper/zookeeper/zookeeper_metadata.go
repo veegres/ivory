@@ -23,6 +23,8 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
+func (a *Adapter) HasLeader() bool { return true }
+
 // Requirements is empty: zookeeper ships with no auth, so the deployment
 // consumes no credentials at either endpoint - operators who need it configure
 // it on the deployed ensemble themselves.
