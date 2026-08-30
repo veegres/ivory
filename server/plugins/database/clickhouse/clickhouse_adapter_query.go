@@ -3,7 +3,7 @@ package clickhouse
 import (
 	"context"
 	"fmt"
-	chclient "ivory/clients/clickhouse"
+	"ivory/clients/clickhouse"
 	"ivory/plugins/database"
 	"reflect"
 	"time"
@@ -16,7 +16,7 @@ func (a *Adapter) GetMany(ctx database.Context, query string, queryParams []any)
 	if errConnect != nil {
 		return nil, errConnect
 	}
-	defer chclient.Close(conn)
+	defer clickhouse.Close(conn)
 
 	requestCtx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -46,7 +46,7 @@ func (a *Adapter) GetOne(ctx database.Context, query string) (any, error) {
 	if errConnect != nil {
 		return nil, errConnect
 	}
-	defer chclient.Close(conn)
+	defer clickhouse.Close(conn)
 
 	requestCtx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -94,7 +94,7 @@ func (a *Adapter) GetFields(ctx database.Context, query string, options *databas
 	if errConnect != nil {
 		return nil, errConnect
 	}
-	defer chclient.Close(conn)
+	defer clickhouse.Close(conn)
 
 	requestCtx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()

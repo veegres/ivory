@@ -2,7 +2,7 @@ package zookeeper
 
 import (
 	"errors"
-	zkclient "ivory/clients/zookeeper"
+	"ivory/clients/zookeeper"
 	"ivory/plugins/database"
 
 	"github.com/go-zookeeper/zk"
@@ -38,7 +38,7 @@ func (a *Adapter) connect(ctx database.Context) (*zk.Conn, string, error) {
 		password = ctx.Connection.Credentials.Password
 	}
 
-	return zkclient.Connect(zkclient.Config{
+	return zookeeper.Connect(zookeeper.Config{
 		Host:     db.Host,
 		Port:     db.Port,
 		Username: username,

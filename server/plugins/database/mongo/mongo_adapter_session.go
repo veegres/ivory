@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"context"
-	mongoclient "ivory/clients/mongo"
+	"ivory/clients/mongo"
 	"ivory/plugins/database"
 	"time"
 
@@ -23,7 +23,7 @@ func (a *Adapter) Terminate(ctx database.Context, pid int) error {
 	if errConnect != nil {
 		return errConnect
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	requestCtx, cancel := context.WithTimeout(context.Background(), client.Timeout)
 	defer cancel()
@@ -38,7 +38,7 @@ func (a *Adapter) ActiveQueries(ctx database.Context, options *database.QueryOpt
 	if errConnect != nil {
 		return nil, errConnect
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	requestCtx, cancel := context.WithTimeout(context.Background(), client.Timeout)
 	defer cancel()

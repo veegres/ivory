@@ -3,7 +3,7 @@ package mongo
 import (
 	"context"
 	"errors"
-	mongoclient "ivory/clients/mongo"
+	"ivory/clients/mongo"
 	"ivory/plugins/database"
 )
 
@@ -27,7 +27,7 @@ func NewAdapter() *Adapter {
 	return &Adapter{}
 }
 
-func (a *Adapter) connect(ctx database.Context) (*mongoclient.Client, string, error) {
+func (a *Adapter) connect(ctx database.Context) (*mongo.Client, string, error) {
 	db := ctx.Connection.Config
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, "unknown", database.ErrDatabaseHostOrPortNotSpecified
@@ -39,7 +39,7 @@ func (a *Adapter) connect(ctx database.Context) (*mongoclient.Client, string, er
 		password = ctx.Connection.Credentials.Password
 	}
 
-	return mongoclient.Connect(context.Background(), mongoclient.Config{
+	return mongo.Connect(context.Background(), mongo.Config{
 		Host:     db.Host,
 		Port:     db.Port,
 		Username: username,

@@ -3,7 +3,7 @@ package mongo
 import (
 	"context"
 	"errors"
-	mongoclient "ivory/clients/mongo"
+	"ivory/clients/mongo"
 	"ivory/plugins/keeper"
 	"net"
 	"net/http"
@@ -44,7 +44,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -61,7 +61,7 @@ func (p *Plugin) Config(request keeper.Request) (any, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -87,7 +87,7 @@ func (p *Plugin) ConfigUpdate(request keeper.Request) (any, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -145,7 +145,7 @@ func (p *Plugin) Failover(request keeper.Request) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -178,7 +178,7 @@ func (p *Plugin) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (p *Plugin) connect(request keeper.Request) (*mongoclient.Client, error) {
+func (p *Plugin) connect(request keeper.Request) (*mongo.Client, error) {
 	var username, password string
 	if request.Credentials != nil {
 		username = request.Credentials.Username
@@ -186,7 +186,7 @@ func (p *Plugin) connect(request keeper.Request) (*mongoclient.Client, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	client, _, err := mongoclient.Connect(ctx, mongoclient.Config{
+	client, _, err := mongo.Connect(ctx, mongo.Config{
 		Host:     request.Host,
 		Port:     request.Port,
 		Username: username,
@@ -196,7 +196,7 @@ func (p *Plugin) connect(request keeper.Request) (*mongoclient.Client, error) {
 	return client, err
 }
 
-func (p *Plugin) replSetGetStatus(ctx context.Context, client *mongoclient.Client) (*replSetStatus, error) {
+func (p *Plugin) replSetGetStatus(ctx context.Context, client *mongo.Client) (*replSetStatus, error) {
 	var status replSetStatus
 	err := client.Database(adminDb).RunCommand(ctx, bson.D{{Key: "replSetGetStatus", Value: 1}}).Decode(&status)
 	if err != nil {

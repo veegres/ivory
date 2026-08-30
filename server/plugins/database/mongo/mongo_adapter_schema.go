@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"context"
-	mongoclient "ivory/clients/mongo"
+	"ivory/clients/mongo"
 	"ivory/plugins/database"
 	"strings"
 
@@ -14,7 +14,7 @@ func (a *Adapter) ListDatabases(ctx database.Context, name string) ([]string, er
 	if errConnect != nil {
 		return nil, errConnect
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	requestCtx, cancel := context.WithTimeout(context.Background(), client.Timeout)
 	defer cancel()
@@ -38,7 +38,7 @@ func (a *Adapter) ListTables(ctx database.Context, schema string, name string) (
 	if errConnect != nil {
 		return nil, errConnect
 	}
-	defer mongoclient.Close(client)
+	defer mongo.Close(client)
 
 	requestCtx, cancel := context.WithTimeout(context.Background(), client.Timeout)
 	defer cancel()
