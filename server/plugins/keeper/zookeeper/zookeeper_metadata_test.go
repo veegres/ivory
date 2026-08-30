@@ -8,7 +8,7 @@ import (
 )
 
 func TestSupportedFeaturesExclusions(t *testing.T) {
-	features := NewAdapter().SupportedFeatures()
+	features := NewPlugin().SupportedFeatures()
 
 	supported := []config.Feature{config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig}
 	for _, feature := range supported {
@@ -33,7 +33,7 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 // the deployment, because zookeeper ships without auth, so a deployment gets
 // no account to name.
 func TestDefaultTemplateDefaults(t *testing.T) {
-	for _, template := range NewAdapter().DefaultTemplates() {
+	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
 			if template.Defaults.KeeperUser != "" {
 				t.Errorf("expected keeper user %q, got %q", "", template.Defaults.KeeperUser)
@@ -48,7 +48,7 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 // TestDefaultTemplates covers the one thing no host-derived value can provide:
 // a unique small integer per member, written literally into each command.
 func TestDefaultTemplates(t *testing.T) {
-	templates := NewAdapter().DefaultTemplates()
+	templates := NewPlugin().DefaultTemplates()
 
 	if len(templates) != 2 {
 		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))

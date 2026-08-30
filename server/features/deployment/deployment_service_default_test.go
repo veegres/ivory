@@ -23,16 +23,16 @@ func newFullTestService(t *testing.T) *Service {
 	t.Helper()
 
 	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
-	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
-	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_MONGO, mongo.NewAdapter())
+	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewPlugin(nil))
+	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_REDIS, redis.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_MONGO, mongo.NewPlugin())
 
 	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
-	platformRegistry.Register(platform.Docker, docker.NewAdapter(nil))
+	platformRegistry.Register(platform.Docker, docker.NewPlugin(nil))
 
 	return NewService(newTestRepository(t), keeperRegistry, platformRegistry)
 }
@@ -332,7 +332,7 @@ func TestDefaultsFilterByPlugin(t *testing.T) {
 			utils.NewRegistry[keeper.PluginType, keeper.Plugin](),
 			func() *utils.Registry[platform.PluginType, platform.Plugin] {
 				r := utils.NewRegistry[platform.PluginType, platform.Plugin]()
-				r.Register(platform.Docker, docker.NewAdapter(nil))
+				r.Register(platform.Docker, docker.NewPlugin(nil))
 				return r
 			}(),
 		)
@@ -349,7 +349,7 @@ func TestDefaultsFilterByPlugin(t *testing.T) {
 // user hits it.
 func TestDefaultsProduceRunnableCommands(t *testing.T) {
 	s := newFullTestService(t)
-	adapter := docker.NewAdapter(ssh.NewClient())
+	adapter := docker.NewPlugin(ssh.NewClient())
 
 	values := keeper.Values{
 		Cluster: "main", Name: "node-1", Host: "10.0.0.1",

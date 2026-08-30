@@ -9,7 +9,7 @@ import (
 )
 
 func TestSupportedFeaturesExclusions(t *testing.T) {
-	features := NewAdapter().SupportedFeatures()
+	features := NewPlugin().SupportedFeatures()
 
 	supported := []config.Feature{config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig, config.ManageNodeKeeperReload}
 	for _, feature := range supported {
@@ -34,7 +34,7 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 // the deployment, because clickhouse answers keeper and database questions on
 // the same native endpoint, as the account CLICKHOUSE_USER creates.
 func TestDefaultTemplateDefaults(t *testing.T) {
-	for _, template := range NewAdapter().DefaultTemplates() {
+	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
 			if template.Defaults.KeeperUser != "default" {
 				t.Errorf("expected keeper user %q, got %q", "default", template.Defaults.KeeperUser)
@@ -51,7 +51,7 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 // are identical - and the one thing that does separate the single-host nodes:
 // three servers on one port namespace need three sets of listening ports.
 func TestDefaultTemplates(t *testing.T) {
-	templates := NewAdapter().DefaultTemplates()
+	templates := NewPlugin().DefaultTemplates()
 
 	if len(templates) != 2 {
 		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
@@ -136,7 +136,7 @@ func portOf(t *testing.T, command string, tag string) int {
 // SupportedFeatures - zookeeper declares neither switchover nor failover and
 // still reports one.
 func TestHasLeaderIsFalse(t *testing.T) {
-	if NewAdapter().HasLeader() {
+	if NewPlugin().HasLeader() {
 		t.Error("clickhouse coordinates through ClickHouse Keeper and elects no leader")
 	}
 }

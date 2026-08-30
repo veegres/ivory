@@ -7,9 +7,9 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Metadata = (*Adapter)(nil)
+var _ keeper.Metadata = (*Plugin)(nil)
 
-func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
 		config.ViewNodeKeeperOverview:       true,
 		config.ViewNodeKeeperConfig:         true,
@@ -25,7 +25,7 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 // Every replica accepts writes and they coordinate through ClickHouse
 // Keeper/ZooKeeper, so there is no leader to elect.
-func (a *Adapter) HasLeader() bool { return false }
+func (p *Plugin) HasLeader() bool { return false }
 
 // Every node runs the same command, including the first: clickhouse has no
 // leader/replica asymmetry. The startup script writes a cluster config file and
@@ -186,7 +186,7 @@ IVORYEOF
 exec /entrypoint.sh
 '`
 
-func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
 			Platform:    platform.Docker,

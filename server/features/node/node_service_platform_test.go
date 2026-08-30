@@ -90,7 +90,7 @@ func (c recordingCommand) Execute() ([]string, error) {
 }
 
 type recordingPlatform struct {
-	platform.Adapter
+	platform.Plugin
 	calls []string
 }
 

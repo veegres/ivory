@@ -8,7 +8,7 @@ import (
 )
 
 func TestSupportedFeaturesAllSupported(t *testing.T) {
-	features := NewAdapter(nil).SupportedFeatures()
+	features := NewPlugin(nil).SupportedFeatures()
 
 	all := []config.Feature{
 		config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig, config.ManageNodeKeeperConfigUpdate,
@@ -27,7 +27,7 @@ func TestSupportedFeaturesAllSupported(t *testing.T) {
 // the deployment, because the shipped spilo deployment leaves the rest api
 // unauthenticated and names its superuser postgres.
 func TestDefaultTemplateDefaults(t *testing.T) {
-	for _, template := range NewAdapter(nil).DefaultTemplates() {
+	for _, template := range NewPlugin(nil).DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
 			if template.Defaults.KeeperUser != "" {
 				t.Errorf("expected keeper user %q, got %q", "", template.Defaults.KeeperUser)
@@ -42,7 +42,7 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 // TestDefaultTemplates covers patroni's external DCS: Ivory never deploys the
 // coordinator, the user points at one they already run.
 func TestDefaultTemplates(t *testing.T) {
-	templates := NewAdapter(nil).DefaultTemplates()
+	templates := NewPlugin(nil).DefaultTemplates()
 
 	if len(templates) != 2 {
 		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))

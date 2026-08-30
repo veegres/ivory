@@ -21,13 +21,13 @@ import (
 // deploy computations that touch no connection.
 func newDeployTestService() *Service {
 	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
-	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
-	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_REDIS, redis.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_MONGO, mongo.NewAdapter())
+	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewPlugin(nil))
+	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_REDIS, redis.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_CLICKHOUSE, clickhouse.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_ZOOKEEPER, zookeeper.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_MONGO, mongo.NewPlugin())
 	return &Service{
 		platformRegistry: utils.NewRegistry[platform.PluginType, platform.Plugin](),
 		keeperRegistry:   keeperRegistry,

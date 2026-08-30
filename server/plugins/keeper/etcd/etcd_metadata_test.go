@@ -8,7 +8,7 @@ import (
 )
 
 func TestSupportedFeaturesExclusions(t *testing.T) {
-	features := NewAdapter().SupportedFeatures()
+	features := NewPlugin().SupportedFeatures()
 
 	supported := []config.Feature{config.ViewNodeKeeperOverview, config.ManageNodeKeeperSwitchover}
 	for _, feature := range supported {
@@ -33,7 +33,7 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 // the deployment, because etcd is its own keeper and can only enable auth
 // through a user named root.
 func TestDefaultTemplateDefaults(t *testing.T) {
-	for _, template := range NewAdapter().DefaultTemplates() {
+	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
 			if template.Defaults.KeeperUser != "root" {
 				t.Errorf("expected keeper user %q, got %q", "root", template.Defaults.KeeperUser)
@@ -50,7 +50,7 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 // running - which is why the auth script sits on the last command, not the
 // first.
 func TestDefaultTemplates(t *testing.T) {
-	templates := NewAdapter().DefaultTemplates()
+	templates := NewPlugin().DefaultTemplates()
 
 	if len(templates) != 2 {
 		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))
@@ -106,7 +106,7 @@ func TestDefaultTemplates(t *testing.T) {
 // deleted singleHost flag used to compute away: three members on one VM cannot
 // share a peer listener.
 func TestDefaultTemplatesSingleHostPeerPortsDiffer(t *testing.T) {
-	for _, template := range NewAdapter().DefaultTemplates() {
+	for _, template := range NewPlugin().DefaultTemplates() {
 		if !strings.Contains(template.Name, "Single Host") {
 			continue
 		}

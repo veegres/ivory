@@ -7,9 +7,9 @@ import (
 )
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Metadata = (*Adapter)(nil)
+var _ keeper.Metadata = (*Plugin)(nil)
 
-func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
+func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
 		config.ViewNodeKeeperOverview:       true,
 		config.ViewNodeKeeperConfig:         false,
@@ -23,7 +23,7 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (a *Adapter) HasLeader() bool { return true }
+func (p *Plugin) HasLeader() bool { return true }
 
 // The peer port, the member list and every other value only the operator knows
 // are written literally: they are plain text to read and edit, not variables.
@@ -118,7 +118,7 @@ const (
 
 var deployAuth = []string{deployAuthAddUser, deployAuthGrantRole, deployAuthEnable}
 
-func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
+func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
 		{
 			Platform:    platform.Docker,

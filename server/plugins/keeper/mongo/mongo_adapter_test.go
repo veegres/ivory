@@ -117,7 +117,7 @@ func TestSelfMember(t *testing.T) {
 }
 
 func TestConfigUpdateRequiresBody(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{Host: "localhost", Port: 27017}
 
 	_, status, err := adapter.ConfigUpdate(request)
@@ -131,7 +131,7 @@ func TestConfigUpdateRequiresBody(t *testing.T) {
 }
 
 func TestUnsupportedOperations(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{}
 
 	type op struct {
@@ -163,7 +163,7 @@ func TestUnsupportedOperations(t *testing.T) {
 }
 
 func TestListConnectFailure(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{Host: "", Port: 0}
 
 	_, status, err := adapter.List(request)

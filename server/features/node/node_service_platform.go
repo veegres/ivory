@@ -13,20 +13,20 @@ import (
 )
 
 func (s *Service) PlatformSystemCopyId(r PlatformCopyIdRequest) (string, error) {
-	adapter, err := s.platformRegistry.Get(DefaultPlatform)
+	plugin, err := s.platformRegistry.Get(DefaultPlatform)
 	if err != nil {
 		return "", err
 	}
 	con := s.getPlatformCredConnection(r.PlatformCredConnection)
-	return "ok", adapter.CopyId(con, r.PublicKey)
+	return "ok", plugin.CopyId(con, r.PublicKey)
 }
 
 func (s *Service) PlatformSystemMetrics(r PlatformMetricsRequest) (*PlatformMetricsResponse, error) {
-	adapter, conn, err := s.getPlatformAdapter(r)
+	plugin, conn, err := s.getPlatformPlugin(r)
 	if err != nil {
 		return nil, err
 	}
-	metrics, err := adapter.Metrics(conn)
+	metrics, err := plugin.Metrics(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -34,11 +34,11 @@ func (s *Service) PlatformSystemMetrics(r PlatformMetricsRequest) (*PlatformMetr
 }
 
 func (s *Service) PlatformSystemProcesses(r PlatformProcessesRequest) (PlatformProcessesResponse, error) {
-	adapter, conn, err := s.getPlatformAdapter(r)
+	plugin, conn, err := s.getPlatformPlugin(r)
 	if err != nil {
 		return nil, err
 	}
-	processes, err := adapter.Processes(conn)
+	processes, err := plugin.Processes(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -46,11 +46,11 @@ func (s *Service) PlatformSystemProcesses(r PlatformProcessesRequest) (PlatformP
 }
 
 func (s *Service) PlatformSystemInfo(r PlatformInfoRequest) (PlatformInfoResponse, error) {
-	adapter, conn, err := s.getPlatformAdapter(r)
+	plugin, conn, err := s.getPlatformPlugin(r)
 	if err != nil {
 		return nil, err
 	}
-	info, err := adapter.Info(conn)
+	info, err := plugin.Info(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (s *Service) PlatformSystemInfo(r PlatformInfoRequest) (PlatformInfoRespons
 }
 
 func (s *Service) PlatformSystemLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
@@ -67,31 +67,31 @@ func (s *Service) PlatformSystemLogs(r PlatformLogsRequest, subscriberID job.Sub
 		send(job.Message{Type: job.SERVER, Message: "path cannot be empty"})
 		return
 	}
-	s.streamCommand(adapter.Logs(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)
+	s.streamCommand(plugin.Logs(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)
 }
 
 func (s *Service) PlatformContainerStop(r PlatformActionRequest) ([]string, error) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.StopContainer(conn, r.Name))
+	return s.executeCommand(plugin.StopContainer(conn, r.Name))
 }
 
 func (s *Service) PlatformContainerRestart(r PlatformActionRequest) ([]string, error) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.RestartContainer(conn, r.Name))
+	return s.executeCommand(plugin.RestartContainer(conn, r.Name))
 }
 
 func (s *Service) PlatformContainerStart(r PlatformActionRequest) ([]string, error) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.StartContainer(conn, r.Name))
+	return s.executeCommand(plugin.StartContainer(conn, r.Name))
 }
 
 func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
@@ -99,7 +99,7 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 		return nil, errors.New("host is empty")
 	}
 
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		return nil, err
 	}
@@ -112,14 +112,14 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.UpContainer(conn, command))
+	return s.executeCommand(plugin.UpContainer(conn, command))
 }
 
 // PlatformContainerExec runs one command inside the named deployment,
 // interpolating the command template exactly like PlatformContainerUp does
 // for options (host and vault credentials are injected server-side).
 func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		return nil, err
 	}
@@ -129,19 +129,19 @@ func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error)
 		return nil, err
 	}
 
-	return s.execContainerCommand(adapter, conn, r.Name, r.Command, values)
+	return s.execContainerCommand(plugin, conn, r.Name, r.Command, values)
 }
 
 // execContainerCommand interpolates and runs one command against an
-// already-resolved adapter/connection/values set, so a caller that already
+// already-resolved plugin/connection/values set, so a caller that already
 // resolved vault credentials (e.g. KeeperPostDeploy) doesn't re-fetch and
 // re-decrypt them just to run its command.
-func (s *Service) execContainerCommand(adapter platform.Adapter, conn platform.Connection, name string, commandTemplate string, values keeper.Values) ([]string, error) {
+func (s *Service) execContainerCommand(plugin platform.Plugin, conn platform.Connection, name string, commandTemplate string, values keeper.Values) ([]string, error) {
 	command, err := resolveCommand(commandTemplate, values)
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.ExecContainer(conn, name, command))
+	return s.executeCommand(plugin.ExecContainer(conn, name, command))
 }
 
 // resolveCommand turns a template into the exact arguments that will run. The
@@ -165,7 +165,7 @@ func resolveCommand(template string, values keeper.Values) ([]string, error) {
 // comes from the connection and the keeper/database credentials from their own
 // vaults, so they cannot be spoofed through request values.
 //
-// Nothing is escaped on the way out. The adapter interpolates into an argument
+// Nothing is escaped on the way out. The plugin interpolates into an argument
 // that has already been split off, so a value is never seen by a parser and
 // there is nothing for an escape to protect it from.
 func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.Values) (keeper.Values, error) {
@@ -199,12 +199,12 @@ func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.V
 // are databases, and the platform's own shutdown timeout is worth waiting for.
 // A stop failure is not fatal - an already-stopped deployment still removes.
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		return nil, err
 	}
-	stopLogs, _ := s.executeCommand(adapter.StopContainer(conn, r.Name))
-	downLogs, err := s.executeCommand(adapter.DownContainer(conn, r.Name))
+	stopLogs, _ := s.executeCommand(plugin.StopContainer(conn, r.Name))
+	downLogs, err := s.executeCommand(plugin.DownContainer(conn, r.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -212,19 +212,19 @@ func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, erro
 }
 
 func (s *Service) PlatformContainerList(c PlatformVaultConnection) ([]string, error) {
-	adapter, conn, err := s.getPlatformAdapter(c)
+	plugin, conn, err := s.getPlatformPlugin(c)
 	if err != nil {
 		return nil, err
 	}
-	return s.executeCommand(adapter.ListContainer(conn))
+	return s.executeCommand(plugin.ListContainer(conn))
 }
 
 func (s *Service) PlatformContainerMetrics(r PlatformActionRequest) (*PlatformMetricsResponse, error) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		return nil, err
 	}
-	metrics, err := adapter.MetricsContainer(conn, r.Name)
+	metrics, err := plugin.MetricsContainer(conn, r.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +232,7 @@ func (s *Service) PlatformContainerMetrics(r PlatformActionRequest) (*PlatformMe
 }
 
 func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {
-	adapter, conn, err := s.getPlatformAdapter(r.Connection)
+	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
@@ -241,7 +241,7 @@ func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.
 		send(job.Message{Type: job.SERVER, Message: "path cannot be empty"})
 		return
 	}
-	s.streamCommand(adapter.LogsContainer(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)
+	s.streamCommand(plugin.LogsContainer(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)
 }
 
 func (s *Service) streamCommand(cmd console.Command, subscriberID job.SubscriberID, close <-chan struct{}, send func(event job.Message)) {

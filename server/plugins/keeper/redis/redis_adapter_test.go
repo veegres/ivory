@@ -81,7 +81,7 @@ func TestMapNode(t *testing.T) {
 }
 
 func TestListRequiresCredentials(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{Host: "localhost", Port: 6379}
 
 	_, status, err := adapter.List(request)
@@ -95,7 +95,7 @@ func TestListRequiresCredentials(t *testing.T) {
 }
 
 func TestConfigRequiresCredentials(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{Host: "localhost", Port: 6379}
 
 	_, status, err := adapter.Config(request)
@@ -109,7 +109,7 @@ func TestConfigRequiresCredentials(t *testing.T) {
 }
 
 func TestFailoverRequiresCredentials(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{Host: "localhost", Port: 6379}
 
 	_, status, err := adapter.Failover(request)
@@ -123,7 +123,7 @@ func TestFailoverRequiresCredentials(t *testing.T) {
 }
 
 func TestUnsupportedOperations(t *testing.T) {
-	adapter := NewAdapter()
+	adapter := NewPlugin()
 	request := keeper.Request{}
 
 	type op struct {

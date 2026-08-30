@@ -19,7 +19,7 @@ import (
 )
 
 type fakePlatformMetadata struct {
-	platform.Adapter
+	platform.Plugin
 	features map[config.Feature]bool
 }
 
@@ -132,7 +132,7 @@ func TestServicePlatformSupportedFeatures(t *testing.T) {
 	})
 }
 
-func TestServiceGetPlatformAdapter(t *testing.T) {
+func TestServiceGetPlatformPlugin(t *testing.T) {
 	s, vaultService := createTestNodeService(t)
 
 	key, _, errCreate := vaultService.Create(vault.Vault{Type: vault.SSH_KEY, Username: "root"})
@@ -141,12 +141,12 @@ func TestServiceGetPlatformAdapter(t *testing.T) {
 	}
 
 	t.Run("known platform and vault produce a usable connection", func(t *testing.T) {
-		adapter, conn, err := s.getPlatformAdapter(PlatformVaultConnection{Host: "host1", Port: 22, VaultId: *key})
+		plugin, conn, err := s.getPlatformPlugin(PlatformVaultConnection{Host: "host1", Port: 22, VaultId: *key})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if adapter == nil {
-			t.Fatalf("expected a non-nil adapter")
+		if plugin == nil {
+			t.Fatalf("expected a non-nil plugin")
 		}
 		if conn.Host != "host1" || conn.Port != 22 || conn.Username != "root" {
 			t.Fatalf("unexpected connection: %+v", conn)
@@ -159,7 +159,7 @@ func TestServiceGetPlatformAdapter(t *testing.T) {
 	t.Run("unknown vault id fails", func(t *testing.T) {
 		badId := *key
 		badId[0] ^= 0xFF
-		_, _, err := s.getPlatformAdapter(PlatformVaultConnection{Host: "host1", Port: 22, VaultId: badId})
+		_, _, err := s.getPlatformPlugin(PlatformVaultConnection{Host: "host1", Port: 22, VaultId: badId})
 		if err == nil {
 			t.Fatalf("expected an error for an unknown vault id")
 		}

@@ -22,9 +22,9 @@ const requestTimeout = 5 * time.Second
 const adminDb = "admin"
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Adapter = (*Adapter)(nil)
+var _ keeper.Adapter = (*Plugin)(nil)
 
-// Adapter talks to mongod's own replica set admin surface directly, the same
+// Plugin talks to mongod's own replica set admin surface directly, the same
 // way native etcd/zookeeper do: there is no separate orchestrator, and the
 // keeper connection host/port is mongod's own port (keeperPort == dbPort
 // convention). Automatic election is native to the replica set protocol;
@@ -33,14 +33,14 @@ var _ keeper.Adapter = (*Adapter)(nil)
 // replSetStepDown only ever steps the current primary down and lets the set
 // elect whichever secondary has the best position, it cannot name a specific
 // target the way Patroni's DCS-mediated switchover can.
-type Adapter struct{}
+type Plugin struct{}
 
-func NewAdapter() *Adapter {
-	return &Adapter{}
+func NewPlugin() *Plugin {
+	return &Plugin{}
 }
 
-func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
-	client, err := a.connect(request)
+func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
+	client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -49,15 +49,15 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	status, errStatus := a.replSetGetStatus(ctx, client)
+	status, errStatus := p.replSetGetStatus(ctx, client)
 	if errStatus != nil {
 		return nil, http.StatusBadRequest, errStatus
 	}
 	return mapStatus(status), http.StatusOK, nil
 }
 
-func (a *Adapter) Config(request keeper.Request) (any, int, error) {
-	client, err := a.connect(request)
+func (p *Plugin) Config(request keeper.Request) (any, int, error) {
+	client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -79,11 +79,11 @@ func (a *Adapter) Config(request keeper.Request) (any, int, error) {
 // returns), the real mongo primitive for changing member list/priorities/
 // votes - unlike Patroni's DCS-stored dynamic config, this always requires
 // the caller to submit the whole document, not a partial patch.
-func (a *Adapter) ConfigUpdate(request keeper.Request) (any, int, error) {
+func (p *Plugin) ConfigUpdate(request keeper.Request) (any, int, error) {
 	if request.Body == nil {
 		return nil, http.StatusBadRequest, ErrConfigBodyRequired
 	}
-	client, err := a.connect(request)
+	client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -101,30 +101,30 @@ func (a *Adapter) ConfigUpdate(request keeper.Request) (any, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Switchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Switchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
+func (p *Plugin) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
 // Reload has no mongo equivalent: setParameter changes individual runtime
 // parameters one at a time, it does not reload a config file the way
 // postgres' pg_reload_conf() does.
-func (a *Adapter) Reload(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reload(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
@@ -140,8 +140,8 @@ func (a *Adapter) Reload(keeper.Request) (*string, int, error) {
 // error is still returned as-is rather than guessed away, since the same
 // error shape also covers genuine failures (e.g. no secondary is caught up
 // enough to take over).
-func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
-	client, err := a.connect(request)
+func (p *Plugin) Failover(request keeper.Request) (*string, int, error) {
+	client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -150,7 +150,7 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	status, errStatus := a.replSetGetStatus(ctx, client)
+	status, errStatus := p.replSetGetStatus(ctx, client)
 	if errStatus != nil {
 		return nil, http.StatusBadRequest, errStatus
 	}
@@ -170,15 +170,15 @@ func (a *Adapter) Failover(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
+func (p *Plugin) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
+func (p *Plugin) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) connect(request keeper.Request) (*mongoclient.Client, error) {
+func (p *Plugin) connect(request keeper.Request) (*mongoclient.Client, error) {
 	var username, password string
 	if request.Credentials != nil {
 		username = request.Credentials.Username
@@ -196,7 +196,7 @@ func (a *Adapter) connect(request keeper.Request) (*mongoclient.Client, error) {
 	return client, err
 }
 
-func (a *Adapter) replSetGetStatus(ctx context.Context, client *mongoclient.Client) (*replSetStatus, error) {
+func (p *Plugin) replSetGetStatus(ctx context.Context, client *mongoclient.Client) (*replSetStatus, error) {
 	var status replSetStatus
 	err := client.Database(adminDb).RunCommand(ctx, bson.D{{Key: "replSetGetStatus", Value: 1}}).Decode(&status)
 	if err != nil {

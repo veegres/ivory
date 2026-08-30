@@ -54,11 +54,11 @@ func newDeployTestServiceWithVault(t *testing.T, withVault bool) (*Service, *vau
 	tagService := tag.NewService(tagRepository)
 
 	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
-	platformRegistry.Register(platform.Docker, docker.NewAdapter(ssh.NewClient()))
+	platformRegistry.Register(platform.Docker, docker.NewPlugin(ssh.NewClient()))
 	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
-	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewAdapter(nil))
-	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewAdapter())
-	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewAdapter())
+	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewPlugin(nil))
+	keeperRegistry.Register(keeper.NATIVE_POSTGRES, postgres.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewPlugin())
 	var vaultService *vault.Service
 	if withVault {
 		oldWd, _ := os.Getwd()

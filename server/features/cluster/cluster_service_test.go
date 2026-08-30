@@ -30,7 +30,7 @@ func (f fakeKeeperMetadata) HasLeader() bool                               { ret
 func (f fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate { return nil }
 
 type fakePlatformMetadata struct {
-	platform.Adapter
+	platform.Plugin
 	features map[config.Feature]bool
 }
 

@@ -1,6 +1,6 @@
 // Package platform defines the plugin boundary for deployment targets
 // (on-prem Docker-over-SSH now, Kubernetes/OpenShift later). A
-// platform.Adapter lets the rest of Ivory read host/container metrics and
+// platform.Plugin lets the rest of Ivory read host/container metrics and
 // deploy/manage containers without knowing which concrete platform it is
 // talking to.
 package platform
@@ -32,21 +32,14 @@ type Connection struct {
 // plugin is registered once, in one registry, while consumers keep depending
 // on the half they actually use.
 type Plugin interface {
-	Adapter
+	System
+	Container
 	Metadata
 }
 
-// Adapter is implemented by every platform plugin (docker, ...). It combines
-// system-level (SystemManager) and container-level (ContainerManager)
-// operations into the single interface the rest of Ivory depends on.
-type Adapter interface {
-	SystemManager
-	ContainerManager
-}
-
-// SystemManager covers system-level operations against the node itself, not
+// System covers system-level operations against the node itself, not
 // any specific container running on it.
-type SystemManager interface {
+type System interface {
 	// Metrics returns the node's current CPU/memory/network usage.
 	Metrics(connection Connection) (*Metrics, error)
 	// CopyId installs publicKey into the node's authorized_keys, enabling
@@ -58,17 +51,17 @@ type SystemManager interface {
 	Processes(connection Connection) ([]Process, error)
 	// Info returns a list of arbitrary platform-reported details about the
 	// node (OS, kernel, uptime, hardware...). Content and order are entirely
-	// up to each adapter.
+	// up to each plugin.
 	Info(connection Connection) ([]InfoItem, error)
 }
 
-// ContainerManager covers the lifecycle and inspection of a single deployed
+// Container covers the lifecycle and inspection of a single deployed
 // container on the node.
-type ContainerManager interface {
+type Container interface {
 	// ListContainer lists every deployed container on the node.
 	ListContainer(connection Connection) console.Command
 	// UpContainer runs the deployment command as written by the user, already
-	// split by SplitCommand and already interpolated. The adapter does not
+	// split by SplitCommand and already interpolated. The plugin does not
 	// reinterpret it: the container's name, image and startup command are all
 	// whatever the command itself says, so what runs is what the user read on
 	// screen.

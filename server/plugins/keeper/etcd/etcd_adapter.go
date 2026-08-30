@@ -18,20 +18,20 @@ var ErrCandidateRequired = errors.New("candidate is required, etcd cannot choose
 var ErrCandidateNotFound = errors.New("candidate was not found among cluster members")
 
 // NOTE: validate that is matches interface in compile-time
-var _ keeper.Adapter = (*Adapter)(nil)
+var _ keeper.Adapter = (*Plugin)(nil)
 
-// Adapter manages an etcd cluster as the keeper entity. The keeper
+// Plugin manages an etcd cluster as the keeper entity. The keeper
 // connection host/port is the etcd client endpoint (keeperPort == dbPort ==
 // client port convention). Only overview and leader move are supported;
 // everything else is excluded from SupportedFeatures.
-type Adapter struct{}
+type Plugin struct{}
 
-func NewAdapter() *Adapter {
-	return &Adapter{}
+func NewPlugin() *Plugin {
+	return &Plugin{}
 }
 
-func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
-	ctx, client, err := a.connect(request)
+func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
+	ctx, client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -69,13 +69,13 @@ func (a *Adapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return mapMembers(members, statuses), status, errs
 }
 
-func (a *Adapter) Switchover(request keeper.Request) (*string, int, error) {
+func (p *Plugin) Switchover(request keeper.Request) (*string, int, error) {
 	body, errBody := parseSwitchoverBody(request.Body)
 	if errBody != nil {
 		return nil, http.StatusBadRequest, errBody
 	}
 
-	ctx, client, err := a.connect(request)
+	ctx, client, err := p.connect(request)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -102,43 +102,43 @@ func (a *Adapter) Switchover(request keeper.Request) (*string, int, error) {
 	return &response, http.StatusOK, nil
 }
 
-func (a *Adapter) Config(keeper.Request) (any, int, error) {
+func (p *Plugin) Config(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) ConfigUpdate(keeper.Request) (any, int, error) {
+func (p *Plugin) ConfigUpdate(keeper.Request) (any, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteSwitchover(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteSwitchover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reinitialize(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reinitialize(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Restart(keeper.Request) (*string, int, error) {
+func (p *Plugin) Restart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) DeleteRestart(keeper.Request) (*string, int, error) {
+func (p *Plugin) DeleteRestart(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Reload(keeper.Request) (*string, int, error) {
+func (p *Plugin) Reload(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Failover(keeper.Request) (*string, int, error) {
+func (p *Plugin) Failover(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Activate(keeper.Request) (*string, int, error) {
+func (p *Plugin) Activate(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
-func (a *Adapter) Pause(keeper.Request) (*string, int, error) {
+func (p *Plugin) Pause(keeper.Request) (*string, int, error) {
 	return nil, http.StatusNotImplemented, keeper.ErrNotSupported
 }
 
@@ -160,7 +160,7 @@ func (c *connection) Close() {
 
 // connect opens an etcd client for the request's endpoint and returns a
 // context bound to the client's request timeout together with it.
-func (a *Adapter) connect(request keeper.Request) (context.Context, *connection, error) {
+func (p *Plugin) connect(request keeper.Request) (context.Context, *connection, error) {
 	var username, password string
 	if request.Credentials != nil {
 		username = request.Credentials.Username

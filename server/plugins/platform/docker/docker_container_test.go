@@ -14,7 +14,7 @@ import (
 // whitespace between flags collapses, but a quoted multi-line startup script -
 // whose newlines are real statement separators - survives byte for byte.
 func TestUpContainerRunsTheCommandAsWritten(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	connection := platform.Connection{}
 
 	tests := []struct {
@@ -90,7 +90,7 @@ exec docker-entrypoint.sh postgres
 }
 
 func TestContainerCommandsQuoteShellArguments(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	connection := platform.Connection{}
 	name := "foo; rm -rf /"
 
@@ -151,7 +151,7 @@ func TestContainerCommandsQuoteShellArguments(t *testing.T) {
 // the command text and this tokenizer parsed it - a quote closed the template
 // author's own span and the value came apart into several arguments.
 func TestSplitCommandKeepsAValueInsideItsArgument(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	connection := platform.Connection{}
 
 	hostile := `it's a "test" \ $HOME ` + "`id`"
@@ -199,7 +199,7 @@ func TestSplitCommandKeepsAValueInsideItsArgument(t *testing.T) {
 // mongo's rs.initiate into `{_id: mongo-cluster}` - bare identifiers where
 // strings belonged - once the remote shell parsed the script a second time.
 func TestExecContainerKeepsAuthorBackslashInSingleQuotedSpan(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	connection := platform.Connection{}
 
 	command := `sh -c 'mongosh --eval "rs.initiate({_id: \"rs0\"})"'`
@@ -269,7 +269,7 @@ func TestMetricsContainerQuotesShellArguments(t *testing.T) {
 func TestParseContainerMetrics(t *testing.T) {
 	output := `{"CPUPerc":"12.34%","MemUsage":"20.5MiB / 1.952GiB","NetIO":"1.2kB / 648B"}`
 
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	metrics, err := adapter.parseContainerMetrics(output)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -302,7 +302,7 @@ func TestParseContainerMetrics(t *testing.T) {
 func TestParseContainerMetricsCpuClampsAboveHundredPercent(t *testing.T) {
 	output := `{"CPUPerc":"230.50%","MemUsage":"1B / 2B","NetIO":"0B / 0B"}`
 
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 	metrics, err := adapter.parseContainerMetrics(output)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -313,7 +313,7 @@ func TestParseContainerMetricsCpuClampsAboveHundredPercent(t *testing.T) {
 }
 
 func TestParseContainerMetricsErrorsAndEdgeCases(t *testing.T) {
-	adapter := NewAdapter(ssh.NewClient())
+	adapter := NewPlugin(ssh.NewClient())
 
 	t.Run("empty output", func(t *testing.T) {
 		_, err := adapter.parseContainerMetrics("   ")

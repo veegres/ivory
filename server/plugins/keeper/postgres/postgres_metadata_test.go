@@ -8,7 +8,7 @@ import (
 )
 
 func TestSupportedFeaturesExclusions(t *testing.T) {
-	features := NewAdapter().SupportedFeatures()
+	features := NewPlugin().SupportedFeatures()
 
 	supported := []config.Feature{config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig, config.ManageNodeKeeperReload, config.ManageNodeKeeperFailover}
 	for _, feature := range supported {
@@ -33,7 +33,7 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 // the deployment, because the keeper endpoint is postgres itself, as the
 // account POSTGRES_USER creates.
 func TestDefaultTemplateDefaults(t *testing.T) {
-	for _, template := range NewAdapter().DefaultTemplates() {
+	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
 			if template.Defaults.KeeperUser != "postgres" {
 				t.Errorf("expected keeper user %q, got %q", "postgres", template.Defaults.KeeperUser)
@@ -50,7 +50,7 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 // the leader before postgres ever starts, since streaming replication cannot
 // build the initial database.
 func TestDefaultTemplates(t *testing.T) {
-	templates := NewAdapter().DefaultTemplates()
+	templates := NewPlugin().DefaultTemplates()
 
 	if len(templates) != 2 {
 		t.Fatalf("expected a multi-host and a single-host template, got %d", len(templates))

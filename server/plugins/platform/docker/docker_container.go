@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// NOTE: validate that is matches interface in compile-time
+var _ platform.Container = (*Plugin)(nil)
+
 // containerCpuScale is an arbitrary fixed-point scale used to encode docker's
 // already-computed CPU percentage into the TotalTicks/IdleTicks counters, so
 // container metrics fit the same Metrics shape produced from host /proc stats.
@@ -32,16 +35,16 @@ var byteSizeUnits = map[string]float64{
 	"TIB": 1024 * 1024 * 1024 * 1024,
 }
 
-func (a *Adapter) ListContainer(connection platform.Connection) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), "docker ps -a")
+func (p *Plugin) ListContainer(connection platform.Connection) console.Command {
+	return p.sshClient.Command(p.mapToSshCommand(connection), "docker ps -a")
 }
 
 // UpContainer starts a container from the options the user wrote. The verb is
 // Ivory's, exactly as it is for every other method here: this deploys a
 // container and nothing else, so taking the executable from the command text
 // would make it a remote shell that happens to be called UpContainer.
-func (a *Adapter) UpContainer(connection platform.Connection, command []string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), strings.Join(quoteFields(normalizeRun(command)), " "))
+func (p *Plugin) UpContainer(connection platform.Connection, command []string) console.Command {
+	return p.sshClient.Command(p.mapToSshCommand(connection), strings.Join(quoteFields(normalizeRun(command)), " "))
 }
 
 // normalizeRun puts Ivory's own "docker run" in front of the user's options.
@@ -57,29 +60,29 @@ func normalizeRun(command []string) []string {
 	return append([]string{"docker", "run"}, command...)
 }
 
-func (a *Adapter) DownContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), "docker rm -- "+shellQuote(name))
+func (p *Plugin) DownContainer(connection platform.Connection, name string) console.Command {
+	return p.sshClient.Command(p.mapToSshCommand(connection), "docker rm -- "+shellQuote(name))
 }
 
-func (a *Adapter) StartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), "docker start -- "+shellQuote(name))
+func (p *Plugin) StartContainer(connection platform.Connection, name string) console.Command {
+	return p.sshClient.Command(p.mapToSshCommand(connection), "docker start -- "+shellQuote(name))
 }
 
-func (a *Adapter) StopContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), "docker stop -- "+shellQuote(name))
+func (p *Plugin) StopContainer(connection platform.Connection, name string) console.Command {
+	return p.sshClient.Command(p.mapToSshCommand(connection), "docker stop -- "+shellQuote(name))
 }
 
-func (a *Adapter) RestartContainer(connection platform.Connection, name string) console.Command {
-	return a.sshClient.Command(a.mapToSshCommand(connection), "docker restart -- "+shellQuote(name))
+func (p *Plugin) RestartContainer(connection platform.Connection, name string) console.Command {
+	return p.sshClient.Command(p.mapToSshCommand(connection), "docker restart -- "+shellQuote(name))
 }
 
-func (a *Adapter) ExecContainer(connection platform.Connection, name string, command []string) console.Command {
+func (p *Plugin) ExecContainer(connection platform.Connection, name string, command []string) console.Command {
 	parts := []string{"docker", "exec", "--", shellQuote(name)}
 	parts = append(parts, quoteFields(command)...)
-	return a.sshClient.Command(a.mapToSshCommand(connection), strings.Join(parts, " "))
+	return p.sshClient.Command(p.mapToSshCommand(connection), strings.Join(parts, " "))
 }
 
-func (a *Adapter) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
+func (p *Plugin) LogsContainer(connection platform.Connection, name string, tail int, follow bool) console.Command {
 	commandStr := "docker logs "
 	if tail > 0 {
 		commandStr += "--tail " + strconv.Itoa(tail) + " "
@@ -88,18 +91,18 @@ func (a *Adapter) LogsContainer(connection platform.Connection, name string, tai
 		commandStr += "--follow "
 	}
 	commandStr += "-- " + shellQuote(name)
-	command := a.sshClient.Command(a.mapToSshCommand(connection), commandStr)
+	command := p.sshClient.Command(p.mapToSshCommand(connection), commandStr)
 	command.JobKeepAlive = false
 	return command
 }
 
-func (a *Adapter) MetricsContainer(connection platform.Connection, name string) (*platform.Metrics, error) {
+func (p *Plugin) MetricsContainer(connection platform.Connection, name string) (*platform.Metrics, error) {
 	command := "docker stats --no-stream --format " + shellQuote("{{json .}}") + " -- " + shellQuote(name)
-	result, err := a.execute(connection, command)
+	result, err := p.execute(connection, command)
 	if err != nil {
 		return nil, err
 	}
-	return a.parseContainerMetrics(strings.Join(result, "\n"))
+	return p.parseContainerMetrics(strings.Join(result, "\n"))
 }
 
 // quoteFields re-quotes tokens for the shell, leaving plain ones alone so the
@@ -123,7 +126,7 @@ func needsShellQuote(field string) bool {
 	return strings.ContainsAny(field, " \t\n'\"\\$`&|;<>()*?[]#~!")
 }
 
-func (a *Adapter) parseContainerMetrics(output string) (*platform.Metrics, error) {
+func (p *Plugin) parseContainerMetrics(output string) (*platform.Metrics, error) {
 	line := strings.TrimSpace(output)
 	if line == "" {
 		return nil, platform.ErrContainerNotRunning
