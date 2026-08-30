@@ -203,6 +203,57 @@ func TestDefaultsStateNodeDefaults(t *testing.T) {
 	}
 }
 
+// TestDefaultsStateCredentialDefaults holds the rule that replaced
+// keeper.Requirements: the deploy screen opens a credential pair filled in when
+// the template names a username for it, and switched off when it does not. So a
+// template whose commands reference {{dbUser}}/{{dbPass}} has to name the
+// database user it creates - otherwise the screen would open with the pair off
+// and the deploy would fail on a placeholder nothing filled in.
+//
+// The reverse is deliberately not asserted. A template names a username for a
+// pair its commands never mention whenever Ivory needs the account to reach the
+// engine afterwards rather than to start it: etcd's root, clickhouse's keeper
+// endpoint being the database itself.
+func TestDefaultsStateCredentialDefaults(t *testing.T) {
+	s := newFullTestService(t)
+
+	for _, template := range s.Defaults(ListRequest{}) {
+		t.Run(template.Name, func(t *testing.T) {
+			pairs := []struct {
+				label string
+				vars  []keeper.Var
+				user  string
+			}{
+				{label: "keeper", vars: []keeper.Var{keeper.VarKeeperUser, keeper.VarKeeperPass}, user: template.Defaults.KeeperUser},
+				{label: "database", vars: []keeper.Var{keeper.VarDbUser, keeper.VarDbPass}, user: template.Defaults.DbUser},
+			}
+			for _, pair := range pairs {
+				if !referencesAny(template, pair.vars) {
+					continue
+				}
+				if pair.user == "" {
+					t.Errorf("the commands reference the %s credentials but the template names no %s user", pair.label, pair.label)
+				}
+			}
+		})
+	}
+}
+
+// referencesAny reports whether any of a template's commands or post scripts
+// names one of the given variables.
+func referencesAny(template Template, vars []keeper.Var) bool {
+	for _, command := range template.Commands {
+		for _, text := range append([]string{command.Command}, command.PostScripts...) {
+			for _, v := range vars {
+				if strings.Contains(text, string(v)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 // TestSingleHostDefaultsGiveEachNodeItsOwnPorts is the collision the shipped
 // single-host templates existed to demonstrate and could not survive: three
 // nodes sharing one port namespace need three sets of ports, and the deploy

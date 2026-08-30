@@ -177,22 +177,6 @@ type PlatformExecRequest struct {
 	Values     keeper.Values           `json:"values"`
 }
 
-type KeeperDeploySpecRequest struct {
-	Plugin KeeperPlugin `json:"plugin" form:"plugin" binding:"required"`
-}
-
-// KeeperDeploySpecResponse is plugin metadata the deploy forms need: whether
-// credentials are consumed and which usernames the engine locks itself to. It
-// carries no ports at all - every port is stated by a template's command or
-// typed by the user - and says nothing about how to deploy either, that being
-// a command the user writes.
-type KeeperDeploySpecResponse struct {
-	KeeperCredentials bool   `json:"keeperCredentials"`
-	KeeperUser        string `json:"keeperUser"`
-	DbCredentials     bool   `json:"dbCredentials"`
-	DbUser            string `json:"dbUser"`
-}
-
 // KeeperDeployRequest deploys one node. It is deliberately flat: node owns no
 // node struct of its own, and Host/ssh port come from Connection.
 type KeeperDeployRequest struct {

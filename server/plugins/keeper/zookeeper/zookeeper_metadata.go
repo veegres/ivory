@@ -25,13 +25,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 func (a *Adapter) HasLeader() bool { return true }
 
-// Requirements is empty: zookeeper ships with no auth, so the deployment
-// consumes no credentials at either endpoint - operators who need it configure
-// it on the deployed ensemble themselves.
-func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{}
-}
-
 // ZOO_MY_ID is written literally per command: zookeeper needs a genuinely
 // unique small integer per member, which no host-derived value can provide -
 // which is why all three commands are spelled out rather than shared. The
@@ -132,15 +125,15 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHostNode1,
-					Defaults: keeper.DeploymentDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
 				},
 				{
 					Command:  deployMultiHostNode2,
-					Defaults: keeper.DeploymentDefaults{Name: "zookeeper2", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper2", KeeperPort: 2181, DbPort: 2181},
 				},
 				{
 					Command:  deployMultiHostNode3,
-					Defaults: keeper.DeploymentDefaults{Name: "zookeeper3", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper3", KeeperPort: 2181, DbPort: 2181},
 				},
 			},
 		},
@@ -151,15 +144,15 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,
-					Defaults: keeper.DeploymentDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
 				},
 				{
 					Command:  deploySingleHostNode2,
-					Defaults: keeper.DeploymentDefaults{Name: "zookeeper2", KeeperPort: 2182, DbPort: 2182},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper2", KeeperPort: 2182, DbPort: 2182},
 				},
 				{
 					Command:  deploySingleHostNode3,
-					Defaults: keeper.DeploymentDefaults{Name: "zookeeper3", KeeperPort: 2183, DbPort: 2183},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper3", KeeperPort: 2183, DbPort: 2183},
 				},
 			},
 		},

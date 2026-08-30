@@ -5,8 +5,7 @@ import {InfoColorBoxRow} from "../../../shared/component/box/InfoColorBoxRow"
 import {SubContentBox} from "../../../shared/component/box/SubContentBox"
 import {CodeField} from "../../../shared/component/input/CodeField"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
-import {DeployValues, interpolateCommand} from "../../../shared/helper/HelperUtils"
-import {DeploymentPreviewNote} from "./DeploymentPreviewNote"
+import {DeployPasswordMask, DeployValues, interpolateCommand} from "../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     preview: {display: "flex", flexDirection: "column", gap: 1},
@@ -24,14 +23,23 @@ type Props = {
 // DeploymentCommandPreview shows one node's command as it will run, with its
 // post script below it. Both deploy screens read a command the same way: the
 // cluster one folds it away because there is a form around it, the single-node
-// one opens it because there is nothing else on the screen to read.
+// one opens it because there is nothing else on the screen to read. Everything
+// is real except the password, so the mask is the only thing worth explaining -
+// the section's own hint does that, since a reader has to know the deployed
+// command is not quite the one on screen.
 export function DeploymentCommandPreview(props: Props) {
     const {command, postScripts, values, defaultOpen = false} = props
 
     return (
         /* NOTE: the badge rides on the toggle's own row - it says what is
            inside the section, so it belongs to the line that opens it */
-        <SubContentBox label={"Preview"} renderActions={renderBadge()} defaultOpen={defaultOpen} dense={true}>
+        <SubContentBox
+            label={"Preview"}
+            hint={`This is what will run on the node, with ${DeployPasswordMask} standing in for the password: the server substitutes the real one from the database credentials above, so it never reaches the browser.`}
+            renderActions={renderBadge()}
+            defaultOpen={defaultOpen}
+            dense={true}
+        >
             {renderPreview()}
         </SubContentBox>
     )
@@ -45,12 +53,9 @@ export function DeploymentCommandPreview(props: Props) {
         )
     }
 
-    // NOTE: the hint sits above the code, not under it - it says how to read
-    // what follows, which is no use once you have already read it
     function renderPreview() {
         return (
             <Box sx={SX.preview}>
-                <DeploymentPreviewNote/>
                 <CodeField
                     label={"Command"}
                     value={interpolateCommand(command, values)}

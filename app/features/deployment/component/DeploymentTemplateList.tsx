@@ -4,9 +4,9 @@ import {SyntheticEvent} from "react"
 
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
+import {Hint} from "../../../shared/component/box/Hint"
 import {InfoColorBox} from "../../../shared/component/box/InfoColorBox"
 import {InfoColorBoxRow} from "../../../shared/component/box/InfoColorBoxRow"
-import {Note} from "../../../shared/component/box/Note"
 import {CopyIconButton, DeleteIconButton, EditIconButton} from "../../../shared/component/button/IconButtons"
 import {SkeletonGroup} from "../../../shared/component/progress/SkeletonGroup"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -56,7 +56,7 @@ export function DeploymentTemplateList(props: Props) {
     return (
         <DialogScreen>
             <Box sx={SX.box}>
-                <Note center={true}>{hint}</Note>
+                <Hint center={true}>{hint}</Hint>
                 {renderBody()}
                 <ManageAccess feature={Feature.ManageDeploymentTemplateCreate}>
                     <Button fullWidth={true} startIcon={<Add/>} onClick={onNew}>New template</Button>
@@ -73,7 +73,7 @@ export function DeploymentTemplateList(props: Props) {
     }
 
     function renderEmpty() {
-        return <Box sx={SX.empty}><Note center={true}>No templates for this keeper yet</Note></Box>
+        return <Box sx={SX.empty}><Hint center={true}>No templates for this keeper yet</Hint></Box>
     }
 
     function renderRow(template: Template) {
@@ -84,7 +84,7 @@ export function DeploymentTemplateList(props: Props) {
                     <InfoColorBoxRow>{renderLabels(template)}</InfoColorBoxRow>
                 </Box>
                 <Box sx={SX.footer}>
-                    <Note>{template.description}</Note>
+                    <Hint>{template.description}</Hint>
                     <Box sx={SX.actions}>{renderActions(template)}</Box>
                 </Box>
             </Box>

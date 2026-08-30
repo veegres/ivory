@@ -7,7 +7,7 @@ const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1, backgroundImage: "inherit", backgroundColor: "inherit"},
     title: {fontSize: "1rem", fontWeight: 500, fontFamily: "monospace"},
     head: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1, padding: "0px 10px", flexWrap: "wrap"},
-    island: {padding: 1, border: 1, borderColor: "divider", borderRadius: 2},
+    island: {padding: "6px 8px", border: 1, borderColor: "divider", borderRadius: 2},
 }
 
 type Props = {

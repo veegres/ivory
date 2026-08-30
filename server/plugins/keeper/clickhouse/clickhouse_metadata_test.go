@@ -29,17 +29,20 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestRequirements(t *testing.T) {
-	req := NewAdapter().Requirements()
-
-	if !req.KeeperCredentials || req.KeeperUser != "" {
-		t.Errorf("expected keeper credentials with a username of the user's own choice, got %v/%q", req.KeeperCredentials, req.KeeperUser)
-	}
-	if !req.DbCredentials {
-		t.Error("expected clickhouse to consume database credentials")
-	}
-	if req.DbUser != "" {
-		t.Errorf("expected a free choice of username, got the locked %q", req.DbUser)
+// TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
+// deploy screen's credential fields are filled in by the template that creates
+// the deployment, because clickhouse answers keeper and database questions on
+// the same native endpoint, as the account CLICKHOUSE_USER creates.
+func TestDefaultTemplateDefaults(t *testing.T) {
+	for _, template := range NewAdapter().DefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			if template.Defaults.KeeperUser != "default" {
+				t.Errorf("expected keeper user %q, got %q", "default", template.Defaults.KeeperUser)
+			}
+			if template.Defaults.DbUser != "default" {
+				t.Errorf("expected database user %q, got %q", "default", template.Defaults.DbUser)
+			}
+		})
 	}
 }
 

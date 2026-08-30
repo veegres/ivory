@@ -59,6 +59,7 @@ type Template struct {
 	Description string            `json:"description"`
 	Keeper      KeeperPlugin      `json:"keeper"`
 	Platform    PlatformPlugin    `json:"platform"`
+	Defaults    TemplateDefaults  `json:"defaults"`
 	Commands    []TemplateCommand `json:"commands"`
 	Creation    CreationType      `json:"creation"`
 	CreatedAt   int64             `json:"createdAt"`
@@ -70,16 +71,24 @@ type Template struct {
 // per-command mapping.
 type TemplateCommand = keeper.DeploymentCommand
 
-// TemplateDefaults is what one command fills its node card in with at deploy
+// CommandDefaults is what one command fills its node card in with at deploy
 // time. Aliased for the same reason TemplateCommand is: a template shipped by a
 // keeper plugin needs no per-command mapping.
-type TemplateDefaults = keeper.DeploymentDefaults
+type CommandDefaults = keeper.DeploymentCommandDefaults
+
+// TemplateDefaults is what the whole template fills the deploy screen's
+// credential fields in with. It replaced keeper.Requirements, which asked the
+// engine what a deployment consumes: what a deployment ends up with is decided
+// by the command that creates it, so the template is the only thing that can
+// answer, and a template the user wrote answers for itself.
+type TemplateDefaults = keeper.DeploymentTemplateDefaults
 
 type TemplateRequest struct {
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
 	Keeper      KeeperPlugin      `json:"keeper"`
 	Platform    PlatformPlugin    `json:"platform"`
+	Defaults    TemplateDefaults  `json:"defaults"`
 	Commands    []TemplateCommand `json:"commands"`
 }
 
@@ -110,10 +119,10 @@ func (r TemplateRequest) unknownPlaceholders() []string {
 
 // invalidPort reports the first default port outside the range a port can take
 // at all. Zero is allowed and means the command states none, leaving the deploy
-// form on the keeper plugin's own Requirements.
+// form's port empty for the user to type.
 func (r TemplateRequest) invalidPort() (int, bool) {
 	for _, c := range r.Commands {
-		for _, port := range []int{c.Defaults.KeeperPort, c.Defaults.DbPort} {
+		for _, port := range []int{c.Defaults.SshPort, c.Defaults.KeeperPort, c.Defaults.DbPort} {
 			if port < 0 || port > 65535 {
 				return port, true
 			}
@@ -126,10 +135,14 @@ func (r TemplateRequest) invalidPort() (int, bool) {
 // what it reads as, so " etcd" and "etcd" are the same name and neither is
 // allowed to sit next to the other in the list. A command's default node name
 // is trimmed for the same reason - it is written into --name and matched
-// against a keeper's own member names later.
+// against a keeper's own member names later. The default usernames are trimmed
+// for the same reason: one is written into a vault entry and authenticates with
+// it later.
 func (r TemplateRequest) trimmed() TemplateRequest {
 	r.Name = strings.TrimSpace(r.Name)
 	r.Description = strings.TrimSpace(r.Description)
+	r.Defaults.KeeperUser = strings.TrimSpace(r.Defaults.KeeperUser)
+	r.Defaults.DbUser = strings.TrimSpace(r.Defaults.DbUser)
 	commands := make([]TemplateCommand, len(r.Commands))
 	for i, c := range r.Commands {
 		c.Defaults.Name = strings.TrimSpace(c.Defaults.Name)
@@ -147,6 +160,7 @@ func (r TemplateRequest) toTemplate(id uuid.UUID, createdAt int64) Template {
 		Description: r.Description,
 		Keeper:      r.Keeper,
 		Platform:    r.Platform,
+		Defaults:    r.Defaults,
 		Commands:    r.Commands,
 		Creation:    Manual,
 		CreatedAt:   createdAt,

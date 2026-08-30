@@ -82,7 +82,7 @@ func TestService_Create(t *testing.T) {
 			// NOTE: zero is how a command says it states no port at all,
 			// leaving the deploy form on the plugin's own Requirements
 			name:   "a command stating no ports is accepted",
-			mutate: func(r *TemplateRequest) { r.Commands[0].Defaults = TemplateDefaults{} },
+			mutate: func(r *TemplateRequest) { r.Commands[0].Defaults = CommandDefaults{} },
 		},
 	}
 
@@ -182,7 +182,7 @@ func TestService_CreateTrimsTheName(t *testing.T) {
 func TestService_CreateTrimsDefaultNodeNames(t *testing.T) {
 	s := newTestService(t)
 	r := testRequest("mine")
-	r.Commands[0].Defaults = TemplateDefaults{Name: "  etcd1  ", KeeperPort: 2379, DbPort: 2379}
+	r.Commands[0].Defaults = CommandDefaults{Name: "  etcd1  ", KeeperPort: 2379, DbPort: 2379}
 
 	created, err := s.Create(r)
 	if err != nil {

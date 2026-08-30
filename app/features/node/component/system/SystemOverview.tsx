@@ -1,4 +1,4 @@
-import {TitledBox} from "../../../../shared/component/box/TitledBox"
+import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
 import {TabsButton} from "../../../../shared/component/button/TabsButton"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {PlatformVaultConnection} from "../../api/NodeType"
@@ -15,10 +15,10 @@ export function SystemOverview(props: Props) {
     const {setSystemTab} = useStoreAction
 
     return (
-        <TitledBox title={"System"} renderActions={renderActions()} island={true}>
+        <SubContentBox label={"System"} renderActions={renderActions()} island={true} collapsible={false}>
             {tab === 0 && <SystemProcesses connection={connection}/>}
             {tab === 1 && <SystemLogs connection={connection}/>}
-        </TitledBox>
+        </SubContentBox>
     )
 
     function renderActions() {

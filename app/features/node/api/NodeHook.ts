@@ -210,10 +210,3 @@ export function useRouterNodeKeeperDeploy(connection: PlatformVaultConnection, o
         onSuccess: (_, data) => onSuccess ? onSuccess(data) : void 0,
     })
 }
-
-export function useRouterNodeKeeperDeploySpec(plugin: KeeperPlugin) {
-    return useQuery({
-        queryKey: NodeApi.container.keeper.deploySpec.key(plugin),
-        queryFn: () => NodeApi.container.keeper.deploySpec.fn({plugin}),
-    })
-}

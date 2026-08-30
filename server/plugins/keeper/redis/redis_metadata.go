@@ -25,15 +25,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 func (a *Adapter) HasLeader() bool { return true }
 
-func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{
-		KeeperCredentials: true,
-		KeeperUser:        "default",
-		DbCredentials:     true,
-		DbUser:            "default",
-	}
-}
-
 // The official image takes its port and password as redis-server flags rather
 // than environment variables, so the command states them after the image - the
 // container runs redis-server directly, with no shell in between to reparse
@@ -87,18 +78,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Redis (Multi Host)",
 			Description: "One redis leader and two replicas, one per VM. Replace 10.0.0.1 in the replica commands with the leader's address.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "default", DbUser: "default"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHostLeader,
-					Defaults: keeper.DeploymentDefaults{Name: "redis1", KeeperPort: 6379, DbPort: 6379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis1", KeeperPort: 6379, DbPort: 6379},
 				},
 				{
 					Command:  deployMultiHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "redis2", KeeperPort: 6379, DbPort: 6379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis2", KeeperPort: 6379, DbPort: 6379},
 				},
 				{
 					Command:  deployMultiHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "redis3", KeeperPort: 6379, DbPort: 6379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis3", KeeperPort: 6379, DbPort: 6379},
 				},
 			},
 		},
@@ -106,18 +98,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Redis (Single Host)",
 			Description: "One redis leader and two replicas on one VM, each on its own port. The replicas follow the leader on 6379. Fill in the host and deploy.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "default", DbUser: "default"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostLeader,
-					Defaults: keeper.DeploymentDefaults{Name: "redis1", KeeperPort: 6379, DbPort: 6379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis1", KeeperPort: 6379, DbPort: 6379},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "redis2", KeeperPort: 6380, DbPort: 6380},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis2", KeeperPort: 6380, DbPort: 6380},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "redis3", KeeperPort: 6381, DbPort: 6381},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis3", KeeperPort: 6381, DbPort: 6381},
 				},
 			},
 		},

@@ -103,17 +103,19 @@ func validDeployRequest() DeployRequest {
 			Cluster: "test-cluster",
 			SshUser: "root",
 			SshPass: "secret",
+			DbUser:  "postgres",
 			DbPass:  "secret",
 		},
 		ClusterOptions: Options{Plugins: Plugins{Keeper: node.KeeperPlugin(keeper.PATRONI_POSTGRES)}},
 	}
 }
 
-// etcdDeployRequest is a request for a plugin that consumes keeper credentials
-// as well as database ones, which patroni's shipped deployment does not.
+// etcdDeployRequest answers the keeper credential pair as well as the database
+// one, which etcd's shipped deployment asks for and patroni's does not.
 func etcdDeployRequest() DeployRequest {
 	r := validDeployRequest()
 	r.ClusterOptions.Plugins.Keeper = node.KeeperPlugin(keeper.NATIVE_ETCD)
+	r.CommonConfig.KeeperUser = "root"
 	r.CommonConfig.KeeperPass = "secret"
 	return r
 }
@@ -199,25 +201,25 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		}
 	})
 
-	t.Run("database credentials required for a plugin that needs them", func(t *testing.T) {
+	t.Run("a database username without a password is half an answer", func(t *testing.T) {
 		s := newDeployTestService(t)
 		r := validDeployRequest()
 		r.CommonConfig.DbPass = ""
 
 		_, err := s.Deploy(r)
-		if !errors.Is(err, ErrDatabaseCredentialsRequired) {
-			t.Fatalf("expected ErrDatabaseCredentialsRequired, got %v", err)
+		if !errors.Is(err, ErrDatabaseCredentialsIncomplete) {
+			t.Fatalf("expected ErrDatabaseCredentialsIncomplete, got %v", err)
 		}
 	})
 
-	t.Run("keeper credentials required for a plugin whose keeper endpoint needs them", func(t *testing.T) {
+	t.Run("a keeper password without a username is half an answer", func(t *testing.T) {
 		s := newDeployTestService(t)
 		r := etcdDeployRequest()
-		r.CommonConfig.KeeperPass = ""
+		r.CommonConfig.KeeperUser = ""
 
 		_, err := s.Deploy(r)
-		if !errors.Is(err, ErrKeeperCredentialsRequired) {
-			t.Fatalf("expected ErrKeeperCredentialsRequired, got %v", err)
+		if !errors.Is(err, ErrKeeperCredentialsIncomplete) {
+			t.Fatalf("expected ErrKeeperCredentialsIncomplete, got %v", err)
 		}
 	})
 
@@ -233,25 +235,42 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		}
 	})
 
-	t.Run("locked keeper username cannot be overridden", func(t *testing.T) {
-		s := newDeployTestService(t)
+	// NOTE: no username is locked any more - a template names a default the
+	// deploy screen opens on, and what the user types instead is their answer.
+	// The pair is still refused alongside a vault, which is two answers to one
+	// question rather than an unexpected one.
+	t.Run("usernames the engine did not suggest are stored as typed", func(t *testing.T) {
+		s, vaultService := newDeployTestServiceWithVault(t, true)
 		r := etcdDeployRequest()
+		r.Nodes[0].Host = ""
 		r.CommonConfig.KeeperUser = "someone-else"
+		r.CommonConfig.DbUser = "someone-else-too"
 
-		_, err := s.Deploy(r)
-		if err == nil {
-			t.Fatalf("expected an error for an unauthorized username override, got none")
+		if _, err := s.Deploy(r); err != nil {
+			t.Fatalf("expected the deploy to run past validation, got %v", err)
 		}
-	})
-
-	t.Run("locked database username cannot be overridden", func(t *testing.T) {
-		s := newDeployTestService(t)
-		r := validDeployRequest()
-		r.CommonConfig.DbUser = "someone-else"
-
-		_, err := s.Deploy(r)
-		if err == nil {
-			t.Fatalf("expected an error for an unauthorized username override, got none")
+		stored, err := s.Get(r.CommonConfig.Cluster)
+		if err != nil {
+			t.Fatalf("expected the cluster to be registered, got %v", err)
+		}
+		for _, want := range []struct {
+			label    string
+			vaultId  *uuid.UUID
+			username string
+		}{
+			{label: "keeper", vaultId: stored.Vaults.KeeperId, username: "someone-else"},
+			{label: "database", vaultId: stored.Vaults.DatabaseId, username: "someone-else-too"},
+		} {
+			if want.vaultId == nil {
+				t.Fatalf("expected a %s vault entry for the pair that was typed", want.label)
+			}
+			credentials, err := vaultService.Get(*want.vaultId)
+			if err != nil {
+				t.Fatalf("failed to read the %s vault: %v", want.label, err)
+			}
+			if credentials.Username != want.username {
+				t.Errorf("expected the typed %s username %q, got %q", want.label, want.username, credentials.Username)
+			}
 		}
 	})
 
@@ -363,28 +382,28 @@ func TestService_getNodeVaults(t *testing.T) {
 	})
 }
 
-func TestService_resolveLockedUsername(t *testing.T) {
-	s := &Service{}
-
-	t.Run("a free username is whatever the user typed", func(t *testing.T) {
-		got, err := s.resolveLockedUsername("someone", "")
-		if err != nil || got != "someone" {
-			t.Errorf("expected the typed username, got %q (%v)", got, err)
-		}
-	})
-
-	t.Run("an empty username is prefilled with the locked one", func(t *testing.T) {
-		got, err := s.resolveLockedUsername("", "root")
-		if err != nil || got != "root" {
-			t.Errorf("expected the locked username, got %q (%v)", got, err)
-		}
-	})
-
-	t.Run("overriding a locked username is rejected", func(t *testing.T) {
-		if _, err := s.resolveLockedUsername("someone-else", "root"); err == nil {
-			t.Error("expected an error for an unauthorized username override, got none")
-		}
-	})
+// TestService_isHalfCredential covers what replaced resolveLockedUsername: no
+// username is required or locked any more, but half a pair would be written to
+// a vault entry that authenticates nothing.
+func TestService_isHalfCredential(t *testing.T) {
+	tests := []struct {
+		name     string
+		username string
+		password string
+		expected bool
+	}{
+		{name: "a whole pair is an answer", username: "root", password: "secret", expected: false},
+		{name: "neither half is an answer too", username: "", password: "", expected: false},
+		{name: "a username alone is half", username: "root", password: "", expected: true},
+		{name: "a password alone is half", username: "", password: "secret", expected: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isHalfCredential(tt.username, tt.password); got != tt.expected {
+				t.Errorf("isHalfCredential(%q, %q) = %v, want %v", tt.username, tt.password, got, tt.expected)
+			}
+		})
+	}
 }
 
 // TestService_mapDeployRequest covers what replaced the deploy plan: the

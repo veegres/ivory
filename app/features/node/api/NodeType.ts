@@ -35,6 +35,16 @@ export enum DeployVar {
     DbPass = "{{dbPass}}",
 }
 
+// DeployVarScope is how many values a variable has in one deployment: a Node
+// variable is answered once per node, a Cluster variable once for the whole
+// deployment and reaches every node's command with the same value. It is what
+// the template editor groups the variable list by, and it says where the deploy
+// screen asks for each one - the node card, or the sections above it.
+export enum DeployVarScope {
+    Command = "node",
+    Template = "cluster",
+}
+
 export interface KeeperConnection {
     host: string,
     port: number,
@@ -172,22 +182,6 @@ export interface KeeperDeployRequest {
     postScripts?: string[],
     connection: PlatformVaultConnection,
     vaults: DeployVaults,
-}
-
-export interface KeeperDeploySpecRequest {
-    plugin: KeeperPlugin,
-}
-
-// KeeperDeploySpecResponse is what the deploy forms need to know about the
-// engine: whether it consumes credentials, and which usernames it locks itself
-// to. It carries no ports at all - every port is stated by a template's command
-// or typed by the user, and it says nothing about how to deploy either, that
-// being a command the user writes.
-export interface KeeperDeploySpecResponse {
-    keeperCredentials: boolean,
-    keeperUser: string,
-    dbCredentials: boolean,
-    dbUser: string,
 }
 
 export interface PlatformLogsRequest {

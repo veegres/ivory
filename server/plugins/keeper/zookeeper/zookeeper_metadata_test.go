@@ -28,14 +28,20 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestRequirements(t *testing.T) {
-	req := NewAdapter().Requirements()
-
-	if req.KeeperCredentials {
-		t.Error("expected no keeper credentials: zookeeper ships without auth")
-	}
-	if req.DbCredentials {
-		t.Error("expected no credentials: zookeeper ships without auth")
+// TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
+// deploy screen's credential fields are filled in by the template that creates
+// the deployment, because zookeeper ships without auth, so a deployment gets
+// no account to name.
+func TestDefaultTemplateDefaults(t *testing.T) {
+	for _, template := range NewAdapter().DefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			if template.Defaults.KeeperUser != "" {
+				t.Errorf("expected keeper user %q, got %q", "", template.Defaults.KeeperUser)
+			}
+			if template.Defaults.DbUser != "" {
+				t.Errorf("expected database user %q, got %q", "", template.Defaults.DbUser)
+			}
+		})
 	}
 }
 

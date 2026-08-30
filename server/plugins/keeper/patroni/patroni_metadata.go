@@ -25,16 +25,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 func (a *Adapter) HasLeader() bool { return true }
 
-// Requirements declares only the database pair: the shipped spilo deployment
-// leaves patroni's rest api unauthenticated. Spilo names its superuser
-// postgres, so the password is the only free choice.
-func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{
-		DbCredentials: true,
-		DbUser:        "postgres",
-	}
-}
-
 // The DCS address is written literally: patroni coordinates through one the
 // user already runs, so only they know where it is. The 10.0.0.x are example
 // text the operator replaces - a container name resolves on neither a plain
@@ -96,18 +86,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Patroni (Multi Host)",
 			Description: "Three spilo nodes, one per VM, coordinating through an external DCS. Point ETCD3_HOSTS at the DCS you run - the 10.0.0.x are examples.",
+			Defaults:    keeper.DeploymentTemplateDefaults{DbUser: "postgres"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "patroni1", KeeperPort: 8008, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni1", KeeperPort: 8008, DbPort: 5432},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "patroni2", KeeperPort: 8008, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni2", KeeperPort: 8008, DbPort: 5432},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "patroni3", KeeperPort: 8008, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni3", KeeperPort: 8008, DbPort: 5432},
 				},
 			},
 		},
@@ -115,18 +106,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Patroni (Single Host)",
 			Description: "Three spilo nodes on one VM, each on its own keeper and database port, coordinating through an external DCS - the ports are etcd's own single-host template. Replace myvm in --add-host with the VM hostname, which spilo must be able to resolve, then fill in the host and deploy.",
+			Defaults:    keeper.DeploymentTemplateDefaults{DbUser: "postgres"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentDefaults{Name: "patroni1", KeeperPort: 8008, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni1", KeeperPort: 8008, DbPort: 5432},
 				},
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentDefaults{Name: "patroni2", KeeperPort: 8009, DbPort: 5433},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni2", KeeperPort: 8009, DbPort: 5433},
 				},
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentDefaults{Name: "patroni3", KeeperPort: 8010, DbPort: 5434},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni3", KeeperPort: 8010, DbPort: 5434},
 				},
 			},
 		},

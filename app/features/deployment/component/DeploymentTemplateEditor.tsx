@@ -4,9 +4,10 @@ import {Box, Button, TextField} from "@mui/material"
 import {SubContentBox} from "../../../shared/component/box/SubContentBox"
 import {CopyIconButton, DeleteIconButton} from "../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
-import {TemplateCommand, TemplateRequest} from "../api/DeploymentType"
+import {DeployVar} from "../../node/api/NodeType"
+import {TemplateCommand, TemplateDefaults, TemplateRequest} from "../api/DeploymentType"
 import {DeploymentCommandEditor} from "./DeploymentCommandEditor"
-import {DeploymentVariables} from "./DeploymentVariables"
+import {DeploymentDefaultsGrid} from "./DeploymentDefaultsGrid"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
@@ -30,7 +31,7 @@ export function DeploymentTemplateEditor(props: Props) {
     return (
         <Box sx={SX.box}>
             {renderInfo()}
-            <DeploymentVariables/>
+            {renderDefaults()}
             {template.commands.map(renderCommand)}
             {editable && renderAdd()}
         </Box>
@@ -56,6 +57,51 @@ export function DeploymentTemplateEditor(props: Props) {
                     onChange={(e) => onChange({...template, description: e.target.value})}
                 />
             </Box>
+        )
+    }
+
+    // NOTE: usernames only, and one set for the whole template: every node of a
+    // deployment authenticates the same way, so a per-command copy could only
+    // disagree with its neighbours. A username here means the deployment ends
+    // up with that account, so the deploy screen opens on it; naming none opens
+    // that credential switched off. A password is never stored in a template.
+    function renderDefaults() {
+        return (
+            <SubContentBox
+                label={"Variables & Defaults"}
+                hint={"cluster-wide values available to every command in this template as {{variable}} - some are disabled because their value is always set at deploy time"}
+                island={true}
+                collapsible={false}
+            >
+                <DeploymentDefaultsGrid
+                    editable={editable}
+                    fields={[
+                        {
+                            variable: DeployVar.Cluster, value: "", disabled: true,
+                            hint: "set when you deploy - the same value reaches every node's command",
+                            onChange: () => {},
+                        },
+                        {
+                            variable: DeployVar.KeeperUser, value: template.defaults?.keeperUser ?? "",
+                            hint: "the account the keeper command creates - shown as a suggestion on the deploy screen, editable there",
+                            onChange: (v) => handleDefaultsChange({keeperUser: v})},
+                        {
+                            variable: DeployVar.KeeperPass, value: "", disabled: true,
+                            hint: "resolved from the keeper vault when you deploy - a password is never stored in a template",
+                            onChange: () => {},
+                        },
+                        {
+                            variable: DeployVar.DbUser, value: template.defaults?.dbUser ?? "",
+                            hint: "the account the database command creates - shown as a suggestion on the deploy screen, editable there",
+                            onChange: (v) => handleDefaultsChange({dbUser: v})},
+                        {
+                            variable: DeployVar.DbPass, value: "", disabled: true,
+                            hint: "resolved from the database vault when you deploy - a password is never stored in a template",
+                            onChange: () => {},
+                        },
+                    ]}
+                />
+            </SubContentBox>
         )
     }
 
@@ -98,5 +144,9 @@ export function DeploymentTemplateEditor(props: Props) {
                 Add node command
             </Button>
         )
+    }
+
+    function handleDefaultsChange(defaults: TemplateDefaults) {
+        onChange({...template, defaults: {...template.defaults, ...defaults}})
     }
 }

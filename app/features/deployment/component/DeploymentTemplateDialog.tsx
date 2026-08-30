@@ -1,11 +1,7 @@
 import {SvgIconProps} from "@mui/material"
 import {ReactElement, ReactNode, useState} from "react"
 
-import {DialogScreen} from "../../../shared/component/box/DialogScreen"
-import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
-import {SkeletonGroup} from "../../../shared/component/progress/SkeletonGroup"
-import {useRouterNodeKeeperDeploySpec} from "../../node/api/NodeHook"
 import {KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
 import {DeployScreenProps, Template} from "../api/DeploymentType"
 import {DeploymentTemplateForm} from "./DeploymentTemplateForm"
@@ -40,7 +36,6 @@ type Props = {
 export function DeploymentTemplateDialog(props: Props) {
     const {keeper, platform, title, icon, hint, label, variant = "button", size, renderDeploy} = props
     const [step, setStep] = useState<Step>({kind: "list"})
-    const spec = useRouterNodeKeeperDeploySpec(keeper)
 
     return (
         <DialogButton
@@ -58,8 +53,6 @@ export function DeploymentTemplateDialog(props: Props) {
     )
 
     function renderStep() {
-        if (spec.isError) return <DialogScreen><ErrorSmart error={spec.error}/></DialogScreen>
-        if (spec.isPending) return <DialogScreen><SkeletonGroup count={3}/></DialogScreen>
         switch (step.kind) {
             case "list":
                 return (
@@ -96,7 +89,6 @@ export function DeploymentTemplateDialog(props: Props) {
             case "deploy":
                 return renderDeploy({
                     template: step.template,
-                    spec: spec.data,
                     logs: step.logs,
                     onDeployed: (logs) => setStep({kind: "deploy", template: step.template, logs}),
                 })

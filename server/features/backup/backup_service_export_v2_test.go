@@ -21,12 +21,12 @@ func testTemplateRequest(name string) deployment.TemplateRequest {
 		Commands: []deployment.TemplateCommand{
 			{
 				Command:  "docker run -d --name {{name}} etcd",
-				Defaults: deployment.TemplateDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+				Defaults: deployment.CommandDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
 			},
 			{
 				Command:     "docker run -d --name {{name}} etcd",
 				PostScripts: []string{"etcdctl auth enable"},
-				Defaults:    deployment.TemplateDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+				Defaults:    deployment.CommandDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
 			},
 		},
 	}
