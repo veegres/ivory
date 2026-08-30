@@ -126,3 +126,14 @@ func portOf(t *testing.T, command string, tag string) int {
 	}
 	return port
 }
+
+// TestHasLeaderIsFalse pins the one thing that separates clickhouse from every
+// other keeper: it has no single-primary model, so nothing elects a leader and
+// the overview must not warn that none was found. It cannot be inferred from
+// SupportedFeatures - zookeeper declares neither switchover nor failover and
+// still reports one.
+func TestHasLeaderIsFalse(t *testing.T) {
+	if NewAdapter().HasLeader() {
+		t.Error("clickhouse coordinates through ClickHouse Keeper and elects no leader")
+	}
+}

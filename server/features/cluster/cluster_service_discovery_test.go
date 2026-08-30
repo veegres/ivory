@@ -41,7 +41,7 @@ func TestService_Overview_Mapping(t *testing.T) {
 			},
 		}
 
-		resultNodeMap := s.buildOverviewNodes(clusterNodes, keeperNodes, nil, nil)
+		resultNodeMap := s.buildOverviewNodes(clusterNodes, keeperNodes, nil, nil, true)
 
 		if len(resultNodeMap) != 1 {
 			t.Fatalf("Expected 1 mapped node, got %d", len(resultNodeMap))
@@ -72,6 +72,8 @@ type fakeKeeperAdapter struct {
 func (f *fakeKeeperAdapter) SupportedFeatures() map[config.Feature]bool {
 	return nil
 }
+
+func (f *fakeKeeperAdapter) HasLeader() bool { return true }
 
 func (f *fakeKeeperAdapter) List(keeper.Request) ([]keeper.Response, int, error) {
 	return f.listResponse, f.listStatus, f.listErr
@@ -257,7 +259,7 @@ func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T
 
 	configs := []NodeConfig{{Host: host, KeeperPort: &port}}
 	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{Plugins: Plugins{Keeper: "fake"}})
-	nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err)
+	nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err, true)
 
 	nodeKey := "db1:8008"
 	if err == nil || !strings.Contains(err.Error(), errMessage) {
@@ -287,6 +289,8 @@ type multiHostFakeKeeperAdapter struct {
 	keeper.Metadata
 	responses map[string][]keeper.Response
 }
+
+func (f *multiHostFakeKeeperAdapter) HasLeader() bool { return true }
 
 func (f *multiHostFakeKeeperAdapter) List(request keeper.Request) ([]keeper.Response, int, error) {
 	return f.responses[request.Host], http.StatusOK, nil
@@ -436,7 +440,7 @@ func TestService_buildOverviewNodes(t *testing.T) {
 		"db1:8008": {Role: keeper.Leader, DiscoveredHost: &host1, DiscoveredKeeperPort: &port},
 		"db2:8008": {Role: keeper.Leader, DiscoveredHost: &host2, DiscoveredKeeperPort: &port},
 		"db3:8008": {Role: keeper.Replica, DiscoveredHost: &host3, DiscoveredKeeperPort: &port},
-	}, nil, nil)
+	}, nil, nil, true)
 
 	t.Run("should add multi leader warnings", func(t *testing.T) {
 		if len(nodes["db1:8008"].Warnings) != 2 {
@@ -509,7 +513,7 @@ func TestService_addOverviewWarnings(t *testing.T) {
 		"db3:8008": {Keeper: node.KeeperOneResponse{Role: keeper.Replica}},
 	}
 
-	s.addOverviewWarnings(nodes)
+	s.addOverviewWarnings(nodes, true)
 
 	if len(nodes["db1:8008"].Warnings) != 1 {
 		t.Fatalf("Expected db1 leader warning, got %v", nodes["db1:8008"].Warnings)
@@ -537,7 +541,7 @@ func TestService_addOverviewWarnings_DbPortMismatch(t *testing.T) {
 		},
 	}
 
-	s.addOverviewWarnings(nodes)
+	s.addOverviewWarnings(nodes, true)
 
 	if len(nodes["patroni1:5001"].Warnings) != 0 {
 		t.Fatalf("Expected patroni1 without warnings, got %v", nodes["patroni1:5001"].Warnings)
@@ -554,11 +558,32 @@ func TestService_addOverviewWarnings_NoLeaderFound(t *testing.T) {
 		"db2:8008": {Keeper: node.KeeperOneResponse{Role: keeper.Replica}},
 	}
 
-	s.addOverviewWarnings(nodes)
+	s.addOverviewWarnings(nodes, true)
 
 	for key, n := range nodes {
 		if len(n.Warnings) != 1 || n.Warnings[0] != "no leader node was found in Keeper response" {
 			t.Fatalf("Expected %s to have a no-leader warning, got %v", key, n.Warnings)
+		}
+	}
+}
+
+// TestService_addOverviewWarnings_LeaderlessKeeper covers an engine with no
+// single-primary model at all (clickhouse): every node is a replica of the
+// shard and none leads it, so warning that no leader was found would fire on
+// every healthy cluster.
+func TestService_addOverviewWarnings_LeaderlessKeeper(t *testing.T) {
+	s := &Service{}
+	nodes := map[string]Node{
+		"ch1:9000": {Keeper: node.KeeperOneResponse{Role: keeper.Replica, State: keeper.StateRunning}},
+		"ch2:9000": {Keeper: node.KeeperOneResponse{Role: keeper.Replica, State: keeper.StateRunning}},
+		"ch3:9000": {Keeper: node.KeeperOneResponse{Role: keeper.Replica, State: keeper.StateRunning}},
+	}
+
+	s.addOverviewWarnings(nodes, false)
+
+	for key, n := range nodes {
+		if len(n.Warnings) != 0 {
+			t.Fatalf("Expected %s to have no warnings, got %v", key, n.Warnings)
 		}
 	}
 }
@@ -569,7 +594,7 @@ func TestService_getKeeperListAutoMerge(t *testing.T) {
 	t.Run("should return concrete errors when no configured nodes can be requested", func(t *testing.T) {
 		configs := []NodeConfig{{Host: "db1"}}
 		keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{})
-		nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err)
+		nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err, true)
 
 		if len(nodes) != 1 {
 			t.Fatalf("Expected one configured node, got %v", nodes)

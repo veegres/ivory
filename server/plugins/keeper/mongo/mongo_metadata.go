@@ -23,6 +23,8 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
+func (a *Adapter) HasLeader() bool { return true }
+
 // Requirements deliberately declares no credentials: enabling client auth on a
 // replica set also requires internal authentication between members (a shared
 // keyfile mounted into every container), which the deploy model has no

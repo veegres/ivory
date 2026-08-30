@@ -23,7 +23,8 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 		keeperNodeMap, connectionErrors, requestError = s.getKeeperListByOne(host, port, cluster.Options)
 	}
 
-	resultNodeMap := s.buildOverviewNodes(cluster.Nodes, keeperNodeMap, connectionErrors, requestError)
+	hasLeader := s.nodeService.KeeperHasLeader(cluster.Plugins.Keeper)
+	resultNodeMap := s.buildOverviewNodes(cluster.Nodes, keeperNodeMap, connectionErrors, requestError, hasLeader)
 	supportedFeatures := s.getSupportedFeatures(cluster.Plugins.Keeper, cluster.Plugins.Database)
 	return &Overview{resultNodeMap, supportedFeatures}, nil
 }
@@ -205,12 +206,12 @@ func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Opti
 	return responses, connectionErrors, nil
 }
 
-func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[string]node.KeeperOneResponse, connectionErrors map[string]error, requestError error) map[string]Node {
+func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[string]node.KeeperOneResponse, connectionErrors map[string]error, requestError error, hasLeader bool) map[string]Node {
 	resultNodeMap := s.getConfiguredNodeMap(configs, connectionErrors, requestError)
 	for _, kn := range keeperNodes {
 		s.mergeKeeperNode(resultNodeMap, kn)
 	}
-	s.addOverviewWarnings(resultNodeMap)
+	s.addOverviewWarnings(resultNodeMap, hasLeader)
 	return resultNodeMap
 }
 
@@ -284,7 +285,10 @@ func (s *Service) resolveConfigByHost(nodeMap map[string]Node, host string) (Nod
 	return NodeConfig{}, false
 }
 
-func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
+// addOverviewWarnings annotates each node. hasLeader says whether the engine
+// elects a single primary at all: where it does not, no node reports one and
+// warning that none was found would fire on every healthy cluster.
+func (s *Service) addOverviewWarnings(nodeMap map[string]Node, hasLeader bool) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
 		if !s.hasKeeper(cn.Keeper) {
@@ -298,6 +302,9 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node) {
 			leaderKeys = append(leaderKeys, nodeKey)
 		}
 		nodeMap[nodeKey] = cn
+	}
+	if !hasLeader {
+		return
 	}
 	switch {
 	case len(leaderKeys) == 0:

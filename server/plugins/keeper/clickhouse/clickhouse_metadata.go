@@ -23,6 +23,10 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
+// Every replica accepts writes and they coordinate through ClickHouse
+// Keeper/ZooKeeper, so there is no leader to elect.
+func (a *Adapter) HasLeader() bool { return false }
+
 // Requirements reports both credential pairs: clickhouse answers keeper and
 // database questions on the same native tcp endpoint, so it is asked twice.
 // The username is the user's own choice.
