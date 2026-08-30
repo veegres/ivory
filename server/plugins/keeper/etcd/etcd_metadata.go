@@ -25,18 +25,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 func (a *Adapter) HasLeader() bool { return true }
 
-// Requirements reports both credential pairs: etcd has no separate management
-// API, so the keeper endpoint is the database itself and is asked twice. Auth
-// can only be enabled through a user named root.
-func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{
-		KeeperCredentials: true,
-		KeeperUser:        "root",
-		DbCredentials:     true,
-		DbUser:            "root",
-	}
-}
-
 // The peer port, the member list and every other value only the operator knows
 // are written literally: they are plain text to read and edit, not variables.
 // Only the node's own identity and endpoints are interpolated.
@@ -136,19 +124,20 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Etcd (Multi Host)",
 			Description: "Three-member static etcd cluster, one member per VM. Replace 10.0.0.1-3 with the VM addresses, and name the nodes etcd1..3 or edit the member list to match.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "root", DbUser: "root"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "etcd2", KeeperPort: 2379, DbPort: 2379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", KeeperPort: 2379, DbPort: 2379},
 				},
 				{
 					Command:     deployMultiHost,
 					PostScripts: deployAuth,
-					Defaults:    keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2379, DbPort: 2379},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "etcd3", KeeperPort: 2379, DbPort: 2379},
 				},
 			},
 		},
@@ -156,19 +145,20 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Etcd (Single Host)",
 			Description: "Three-member etcd cluster on one VM, each member on its own client and peer port. Fill in the host and deploy.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "root", DbUser: "root"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,
-					Defaults: keeper.DeploymentDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
 				},
 				{
 					Command:  deploySingleHostNode2,
-					Defaults: keeper.DeploymentDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
 				},
 				{
 					Command:     deploySingleHostNode3,
 					PostScripts: deployAuth,
-					Defaults:    keeper.DeploymentDefaults{Name: "etcd3", KeeperPort: 2383, DbPort: 2383},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "etcd3", KeeperPort: 2383, DbPort: 2383},
 				},
 			},
 		},

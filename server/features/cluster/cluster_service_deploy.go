@@ -43,8 +43,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 		return nil, ErrClusterNodesNotProvided
 	}
 
-	spec, err := s.nodeService.KeeperDeploySpec(node.KeeperDeploySpecRequest{Plugin: r.ClusterOptions.Plugins.Keeper})
-	if err != nil {
+	if err := s.nodeService.ValidateKeeperPlugin(r.ClusterOptions.Plugins.Keeper); err != nil {
 		return nil, err
 	}
 
@@ -74,27 +73,16 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	if cluster.Vaults.SshKeyId == nil && (r.CommonConfig.SshUser == "" || r.CommonConfig.SshPass == "") {
 		return nil, ErrSshCredentialsRequired
 	}
-	keeperUser, err := s.resolveLockedUsername(r.CommonConfig.KeeperUser, spec.KeeperUser)
-	if err != nil {
-		return nil, err
+	// NOTE: whether a deployment has keeper or database credentials at all is
+	// the user's answer, not the engine's - the template names a default
+	// username and the deploy screen offers to switch the pair off. What is
+	// left to check is that the answer is whole: half a pair would be stored
+	// as a vault entry that authenticates nothing.
+	if isHalfCredential(r.CommonConfig.KeeperUser, r.CommonConfig.KeeperPass) {
+		return nil, ErrKeeperCredentialsIncomplete
 	}
-	dbUser, err := s.resolveLockedUsername(r.CommonConfig.DbUser, spec.DbUser)
-	if err != nil {
-		return nil, err
-	}
-	// NOTE: an engine that is its own keeper is asked twice - pointing both at
-	// one vault entry is the user's answer to give, never the deploy's
-	if spec.KeeperCredentials && cluster.Vaults.KeeperId == nil && (keeperUser == "" || r.CommonConfig.KeeperPass == "") {
-		return nil, ErrKeeperCredentialsRequired
-	}
-	if spec.DbCredentials && cluster.Vaults.DatabaseId == nil && (dbUser == "" || r.CommonConfig.DbPass == "") {
-		return nil, ErrDatabaseCredentialsRequired
-	}
-	if err := s.nodeService.ValidateKeeperLockedCredentials(spec.KeeperUser, getVaultId(cluster.Vaults.KeeperId)); err != nil {
-		return nil, err
-	}
-	if err := s.nodeService.ValidateKeeperLockedCredentials(spec.DbUser, getVaultId(cluster.Vaults.DatabaseId)); err != nil {
-		return nil, err
+	if isHalfCredential(r.CommonConfig.DbUser, r.CommonConfig.DbPass) {
+		return nil, ErrDatabaseCredentialsIncomplete
 	}
 	if _, e := s.Get(cluster.Name); e == nil {
 		return nil, ErrClusterNameTaken
@@ -131,9 +119,13 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 
 	// 3. Handle Keeper Password
-	if spec.KeeperCredentials && cluster.Vaults.KeeperId == nil {
+	//
+	// NOTE: a vault is written because the user typed a pair, never because the
+	// engine was asked whether it consumes one - an engine that is its own
+	// keeper is asked twice and pointing both at one entry is the user's answer
+	if cluster.Vaults.KeeperId == nil && r.CommonConfig.KeeperPass != "" {
 		logs.send("system", "saving keeper credentials to vault")
-		keeperVault := vault.Vault{Type: vault.KEEPER_PASSWORD, Username: keeperUser, Secret: r.CommonConfig.KeeperPass}
+		keeperVault := vault.Vault{Type: vault.KEEPER_PASSWORD, Username: r.CommonConfig.KeeperUser, Secret: r.CommonConfig.KeeperPass}
 		id, _, err := s.vaultService.Create(keeperVault)
 		if err != nil {
 			s.rollbackVaults(created, logs.send)
@@ -144,9 +136,9 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	}
 
 	// 4. Handle DB Password
-	if spec.DbCredentials && cluster.Vaults.DatabaseId == nil {
+	if cluster.Vaults.DatabaseId == nil && r.CommonConfig.DbPass != "" {
 		logs.send("system", "saving database credentials to vault")
-		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: dbUser, Secret: r.CommonConfig.DbPass}
+		dbVault := vault.Vault{Type: vault.DATABASE_PASSWORD, Username: r.CommonConfig.DbUser, Secret: r.CommonConfig.DbPass}
 		id, _, err := s.vaultService.Create(dbVault)
 		if err != nil {
 			s.rollbackVaults(created, logs.send)
@@ -163,7 +155,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, error) {
 	// only the nodes that came up, would leave a failed deploy invisible and
 	// untroubleshootable.
 	logs.send("system", "updating cluster configuration")
-	if _, err = s.Update(cluster); err != nil {
+	if _, err := s.Update(cluster); err != nil {
 		s.rollbackVaults(created, logs.send)
 		return nil, err
 	}
@@ -385,16 +377,9 @@ func getVaultId(id *uuid.UUID) uuid.UUID {
 	return *id
 }
 
-// resolveLockedUsername applies an engine-required username (spilo's postgres,
-// etcd's root): changing it is rejected rather than silently overridden.
-func (s *Service) resolveLockedUsername(typed string, locked string) (string, error) {
-	if locked == "" {
-		return typed, nil
-	}
-	if typed != "" && typed != locked {
-		return "", fmt.Errorf("username %q is not allowed: the keeper plugin locks it to %q", typed, locked)
-	}
-	return locked, nil
+// isHalfCredential reports a pair answered with only one of its two halves.
+func isHalfCredential(username string, password string) bool {
+	return (username == "") != (password == "")
 }
 
 // getNodeConnection resolves the SSH connection for a node from the cluster's

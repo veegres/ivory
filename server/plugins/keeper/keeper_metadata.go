@@ -18,7 +18,6 @@ type Metadata interface {
 	// HasLeader reports whether the engine elects a single primary at all, so
 	// a consumer can tell a missing leader from an engine that has none.
 	HasLeader() bool
-	Requirements() Requirements
 	// DefaultTemplates returns the ready-to-copy deployments Ivory ships for
 	// this engine, one set per platform it supports. It lives on the plugin
 	// rather than in a central catalog for the same reason
@@ -34,6 +33,7 @@ type DeploymentTemplate struct {
 	Platform    platform.PluginType
 	Name        string
 	Description string
+	Defaults    DeploymentTemplateDefaults
 	Commands    []DeploymentCommand
 }
 
@@ -47,41 +47,47 @@ type DeploymentCommand struct {
 	// distroless (etcd's holds only etcd, etcdctl and etcdutl), so "&&" is not
 	// available to chain with. One command per step also means each argument is
 	// interpolated on its own, with no second parse to escape for.
-	PostScripts []string           `json:"postScripts"`
-	Defaults    DeploymentDefaults `json:"defaults"`
+	PostScripts []string                  `json:"postScripts"`
+	Defaults    DeploymentCommandDefaults `json:"defaults"`
 }
 
-// DeploymentDefaults is what the deploy form fills this command's node card in
-// with. A command and the endpoints it answers on are one fact rather than two:
-// a single-host template writes a distinct peer port into each of its commands,
-// and only that command knows which client port has to match it. The name is
-// here for the same reason - a member list naming etcd-2 is only correct if the
-// node running that command is called etcd-2.
+// DeploymentCommandDefaults is what the deploy form fills this command's node
+// card in with. A command and the endpoints it answers on are one fact rather
+// than two: a single-host template writes a distinct peer port into each of its
+// commands, and only that command knows which client port has to match it. The
+// name is here for the same reason - a member list naming etcd2 is only correct
+// if the node running that command is called etcd2. SshPort is here for the
+// same reason as the other two ports: a single-host template's nodes are
+// reached through the same VM but can still be forwarded on distinct ports, and
+// only the command that pairs with a given peer port knows which one.
 //
-// Host and ssh port are deliberately absent: both describe the machine being
-// deployed onto, which is exactly what a template does not know. A zero field
-// states nothing and the form falls back to the plugin's Requirements.
-type DeploymentDefaults struct {
+// Host is deliberately absent: it is the one thing that identifies the actual
+// machine, which a template can never know ahead of time. A zero field states
+// nothing, and the deploy form leaves it empty for the user to type.
+type DeploymentCommandDefaults struct {
 	Name       string `json:"name"`
+	SshPort    int    `json:"sshPort"`
 	KeeperPort int    `json:"keeperPort"`
 	DbPort     int    `json:"dbPort"`
 }
 
-// Requirements is what Ivory must know to talk to the engine, not how to
-// deploy it. It names no ports: a port is stated by a template's command or
-// typed by the user, and an engine's conventional default is a guess that
-// reads as an answer.
-type Requirements struct {
-	// KeeperCredentials reports whether the keeper endpoint consumes credentials.
-	KeeperCredentials bool
-	// KeeperUser is the username the keeper endpoint locks itself to; empty
-	// leaves the choice to the user.
-	KeeperUser string
-	// DbCredentials reports whether the database endpoint consumes credentials.
-	DbCredentials bool
-	// DbUser is the username the engine locks itself to; empty leaves the
-	// choice to the user.
-	DbUser string
+// DeploymentTemplateDefaults is what a template fills the deploy screen's
+// credential fields in with. It sits on the template rather than on a command
+// because credentials are one answer for the whole cluster: every node of a
+// deployment authenticates the same way, so three commands each naming their
+// own username could only ever disagree.
+//
+// It states usernames and nothing else. Whether a deployment has credentials at
+// all is the user's answer on the deploy screen, not the template's: a username
+// here means the deployment ends up with that account - spilo names its
+// superuser postgres, etcd can only enable auth through root - so the screen
+// opens on it, already filled in. Where it names none, the screen opens with
+// that credential switched off and the user says what they want instead.
+// Passwords are never here: a template is stored, read and copied, and a secret
+// in one would be a secret in all three.
+type DeploymentTemplateDefaults struct {
+	KeeperUser string `json:"keeperUser"`
+	DbUser     string `json:"dbUser"`
 }
 
 // Var is a {{placeholder}} variable, in its interpolated form. The set is

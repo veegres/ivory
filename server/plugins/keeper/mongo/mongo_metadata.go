@@ -25,15 +25,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 func (a *Adapter) HasLeader() bool { return true }
 
-// Requirements deliberately declares no credentials: enabling client auth on a
-// replica set also requires internal authentication between members (a shared
-// keyfile mounted into every container), which the deploy model has no
-// mechanism for yet. Adapter.connect still accepts credentials when an operator
-// configures auth on the deployed cluster themselves.
-func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{}
-}
-
 // Every member starts as a plain mongod that already knows its replica set
 // name; who becomes primary is decided later, by deployInitiate. The official
 // image has no env var for --replSet, so this replaces the image's default
@@ -91,16 +82,16 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "mongo2", KeeperPort: 27017, DbPort: 27017},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo2", KeeperPort: 27017, DbPort: 27017},
 				},
 				{
 					Command:     deployMultiHost,
 					PostScripts: []string{deployInitiate},
-					Defaults:    keeper.DeploymentDefaults{Name: "mongo3", KeeperPort: 27017, DbPort: 27017},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "mongo3", KeeperPort: 27017, DbPort: 27017},
 				},
 			},
 		},
@@ -111,16 +102,16 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
 				},
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentDefaults{Name: "mongo2", KeeperPort: 27018, DbPort: 27018},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo2", KeeperPort: 27018, DbPort: 27018},
 				},
 				{
 					Command:     deploySingleHost,
 					PostScripts: []string{deploySingleHostInitiate},
-					Defaults:    keeper.DeploymentDefaults{Name: "mongo3", KeeperPort: 27019, DbPort: 27019},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "mongo3", KeeperPort: 27019, DbPort: 27019},
 				},
 			},
 		},

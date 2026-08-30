@@ -115,6 +115,7 @@ export function DeploymentTemplateForm(props: Props) {
             description: origin.description,
             keeper: origin.keeper,
             platform: origin.platform,
+            defaults: origin.defaults,
             commands: origin.commands,
         }
     }

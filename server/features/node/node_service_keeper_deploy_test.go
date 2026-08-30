@@ -15,8 +15,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/google/uuid"
 )
 
 // newDeployTestService registers every keeper plugin, enough for the pure
@@ -36,61 +34,30 @@ func newDeployTestService() *Service {
 	}
 }
 
-func TestService_KeeperDeploySpec(t *testing.T) {
+// TestService_ValidateKeeperPlugin covers what is left of the old deploy spec:
+// the plugin a deploy names has to be one Ivory actually has, because the
+// cluster stores it and every later request resolves its adapter through it.
+// What that plugin's deployment consumes is no longer asked of it at all - a
+// template states the usernames its own commands create, which is asserted in
+// each plugin's own DefaultTemplates test.
+func TestService_ValidateKeeperPlugin(t *testing.T) {
 	s := newDeployTestService()
 
-	tests := []struct {
-		name     string
-		plugin   KeeperPlugin
-		expected KeeperDeploySpecResponse
-	}{
-		{
-			name:     "patroni asks for the database pair only and locks its superuser",
-			plugin:   keeper.PATRONI_POSTGRES,
-			expected: KeeperDeploySpecResponse{DbCredentials: true, DbUser: "postgres"},
-		},
-		{
-			// NOTE: the keeper endpoint being the database is not a reason to
-			// answer once - both halves are asked for separately
-			name:   "etcd asks for keeper and database credentials of its own",
-			plugin: keeper.NATIVE_ETCD,
-			expected: KeeperDeploySpecResponse{
-				KeeperCredentials: true, KeeperUser: "root",
-				DbCredentials: true, DbUser: "root",
-			},
-		},
-		{
-			name:     "native postgres consumes credentials but leaves the username free",
-			plugin:   keeper.NATIVE_POSTGRES,
-			expected: KeeperDeploySpecResponse{KeeperCredentials: true, DbCredentials: true},
-		},
-		{
-			name:     "zookeeper consumes no credentials at all",
-			plugin:   keeper.NATIVE_ZOOKEEPER,
-			expected: KeeperDeploySpecResponse{},
-		},
-		{
-			name:     "mongo consumes no credentials at all",
-			plugin:   keeper.NATIVE_MONGO,
-			expected: KeeperDeploySpecResponse{},
-		},
+	plugins := []KeeperPlugin{
+		keeper.PATRONI_POSTGRES, keeper.NATIVE_ETCD, keeper.NATIVE_POSTGRES,
+		keeper.NATIVE_REDIS, keeper.NATIVE_CLICKHOUSE, keeper.NATIVE_ZOOKEEPER, keeper.NATIVE_MONGO,
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := s.KeeperDeploySpec(KeeperDeploySpecRequest{Plugin: tt.plugin})
-			if err != nil {
-				t.Fatalf("KeeperDeploySpec() error = %v", err)
-			}
-			if !reflect.DeepEqual(*got, tt.expected) {
-				t.Errorf("KeeperDeploySpec() = %+v, want %+v", *got, tt.expected)
+	for _, plugin := range plugins {
+		t.Run(string(plugin), func(t *testing.T) {
+			if err := s.ValidateKeeperPlugin(plugin); err != nil {
+				t.Errorf("ValidateKeeperPlugin(%q) error = %v", plugin, err)
 			}
 		})
 	}
 
 	t.Run("unknown plugin", func(t *testing.T) {
 		empty := &Service{keeperRegistry: utils.NewRegistry[keeper.PluginType, keeper.Plugin]()}
-		if _, err := empty.KeeperDeploySpec(KeeperDeploySpecRequest{Plugin: "unknown"}); err == nil {
+		if err := empty.ValidateKeeperPlugin("unknown"); err == nil {
 			t.Fatal("expected error for unknown plugin, got nil")
 		}
 	})
@@ -202,33 +169,28 @@ func TestService_KeeperDeployUpRequiresPorts(t *testing.T) {
 	}
 }
 
-func TestService_KeeperDeployRequiresDatabaseCredentials(t *testing.T) {
+// TestService_KeeperDeployJudgesTheRequestOnly covers what replaced the
+// plugin's Requirements: whether a deployment has keeper or database
+// credentials at all is the user's answer on the deploy screen, so a request
+// carrying neither vault is judged on its own ports rather than refused here. A
+// command that really needs one still fails visibly, on the unresolved
+// placeholder it names.
+func TestService_KeeperDeployJudgesTheRequestOnly(t *testing.T) {
 	s := newDeployTestService()
 
-	t.Run("a plugin that consumes credentials needs a database vault", func(t *testing.T) {
-		_, err := s.KeeperDeploy(KeeperDeployRequest{
-			Plugin:     keeper.PATRONI_POSTGRES,
-			Name:       "db1",
-			Command:    "docker run -d spilo",
-			Connection: PlatformVaultConnection{Host: "db1", Port: 22},
+	for _, plugin := range []KeeperPlugin{keeper.PATRONI_POSTGRES, keeper.NATIVE_ETCD} {
+		t.Run(string(plugin), func(t *testing.T) {
+			_, err := s.KeeperDeploy(KeeperDeployRequest{
+				Plugin:     plugin,
+				Name:       "db1",
+				Command:    "docker run -d image",
+				Connection: PlatformVaultConnection{Host: "db1", Port: 22},
+			})
+			if !errors.Is(err, ErrKeeperDeployPortsRequired) {
+				t.Fatalf("expected the request to be judged on its own ports, got %v", err)
+			}
 		})
-		if !errors.Is(err, ErrKeeperDeployDatabaseCredentialsRequired) {
-			t.Fatalf("expected ErrKeeperDeployDatabaseCredentialsRequired, got %v", err)
-		}
-	})
-
-	t.Run("a plugin whose keeper endpoint needs credentials needs a keeper vault", func(t *testing.T) {
-		_, err := s.KeeperDeploy(KeeperDeployRequest{
-			Plugin:     keeper.NATIVE_ETCD,
-			Name:       "etcd-1",
-			Command:    "docker run -d etcd",
-			Connection: PlatformVaultConnection{Host: "db1", Port: 22},
-			Vaults:     Vaults{DatabaseId: uuid.New()},
-		})
-		if !errors.Is(err, ErrKeeperDeployKeeperCredentialsRequired) {
-			t.Fatalf("expected ErrKeeperDeployKeeperCredentialsRequired, got %v", err)
-		}
-	})
+	}
 
 	t.Run("unknown plugin", func(t *testing.T) {
 		_, err := s.KeeperDeploy(KeeperDeployRequest{Plugin: "unknown", Name: "db1", Command: "docker run -d redis:7"})

@@ -38,10 +38,6 @@ func (f *fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool {
 
 func (f *fakeKeeperMetadata) HasLeader() bool { return true }
 
-func (f *fakeKeeperMetadata) Requirements() keeper.Requirements {
-	return keeper.Requirements{}
-}
-
 func (f *fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate {
 	return nil
 }

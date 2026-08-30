@@ -27,14 +27,20 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestRequirements(t *testing.T) {
-	req := NewAdapter().Requirements()
-
-	if !req.KeeperCredentials || req.KeeperUser != "default" {
-		t.Errorf("expected keeper credentials locked to redis' default username, got %v/%q", req.KeeperCredentials, req.KeeperUser)
-	}
-	if !req.DbCredentials || req.DbUser != "default" {
-		t.Errorf("expected credentials with redis' default username, got %+v", req)
+// TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
+// deploy screen's credential fields are filled in by the template that creates
+// the deployment, because redis answers keeper and database questions on one
+// endpoint, as the account the image ships.
+func TestDefaultTemplateDefaults(t *testing.T) {
+	for _, template := range NewAdapter().DefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			if template.Defaults.KeeperUser != "default" {
+				t.Errorf("expected keeper user %q, got %q", "default", template.Defaults.KeeperUser)
+			}
+			if template.Defaults.DbUser != "default" {
+				t.Errorf("expected database user %q, got %q", "default", template.Defaults.DbUser)
+			}
+		})
 	}
 }
 

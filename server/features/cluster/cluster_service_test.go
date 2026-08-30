@@ -18,18 +18,15 @@ import (
 )
 
 // fakeKeeperMetadata is a minimal keeper.Plugin test double: only the metadata
-// half is real - it answers SupportedFeatures, stubs Requirements, and leaves
-// the adapter half an embedded nil these tests never call.
+// half is real - it answers SupportedFeatures and leaves the adapter half an
+// embedded nil these tests never call.
 type fakeKeeperMetadata struct {
 	keeper.Adapter
 	features map[config.Feature]bool
 }
 
-func (f fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool { return f.features }
-func (f fakeKeeperMetadata) HasLeader() bool                            { return true }
-func (f fakeKeeperMetadata) Requirements() keeper.Requirements {
-	return keeper.Requirements{}
-}
+func (f fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool    { return f.features }
+func (f fakeKeeperMetadata) HasLeader() bool                               { return true }
 func (f fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate { return nil }
 
 type fakePlatformMetadata struct {

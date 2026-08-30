@@ -51,7 +51,6 @@ export function ClusterDeploy(props: Props) {
                 keeper={keeper}
                 database={database}
                 template={screen.template}
-                spec={screen.spec}
                 logs={screen.logs}
                 onDeployed={screen.onDeployed}
             />

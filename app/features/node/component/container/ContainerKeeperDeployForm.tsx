@@ -3,8 +3,8 @@ import {useState} from "react"
 
 import {DialogLogsScreen} from "../../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../../shared/component/box/DialogScreen"
-import {Note} from "../../../../shared/component/box/Note"
-import {TitledBox} from "../../../../shared/component/box/TitledBox"
+import {Hint} from "../../../../shared/component/box/Hint"
+import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
 import {FieldRow} from "../../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {DeployValues, getShortUuid} from "../../../../shared/helper/HelperUtils"
@@ -12,7 +12,7 @@ import {useDeployVaultCredentials} from "../../../deployment/api/DeploymentHook"
 import {Template} from "../../../deployment/api/DeploymentType"
 import {DeploymentCommandPreview} from "../../../deployment/component/DeploymentCommandPreview"
 import {useRouterNodeKeeperDeploy} from "../../api/NodeHook"
-import {KeeperDeploySpecResponse, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
+import {KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     subContent: {display: "flex", flexDirection: "column"},
@@ -37,7 +37,6 @@ type Props = {
     cluster: string,
     node: string,
     template: Template,
-    spec: KeeperDeploySpecResponse,
     keeperId?: string,
     databaseId?: string,
     sshKeyId?: string,
@@ -50,7 +49,7 @@ type Props = {
 // are the ones the chosen command states, and the command belongs to the
 // template - so every field here is a read-only account of the deployment.
 export function ContainerKeeperDeployForm(props: Props) {
-    const {connection, plugin, cluster, node, template, spec, keeperId, databaseId, sshKeyId, logs, onDeployed} = props
+    const {connection, plugin, cluster, node, template, keeperId, databaseId, sshKeyId, logs, onDeployed} = props
     // NOTE: which of the template's nodes runs on this host - the first one
     // unless the user says otherwise, since a template is written in node order
     const [index, setIndex] = useState(0)
@@ -59,8 +58,11 @@ export function ContainerKeeperDeployForm(props: Props) {
     const credentials = useDeployVaultCredentials(keeperId, databaseId)
 
     const command = template.commands[index]
-    const withKeeperCredentials = spec.keeperCredentials
-    const withDbCredentials = spec.dbCredentials
+    // NOTE: the template names the account its commands create, so it is also
+    // what says which credentials this deployment has at all - the cluster's
+    // own vault entry is then either there or reported as none
+    const withKeeperCredentials = !!template.defaults?.keeperUser
+    const withDbCredentials = !!template.defaults?.dbUser
     // NOTE: the ports belong to the chosen node, not to the engine - node 2 of
     // a single-host template answers on its own pair, and switching the toggle
     // above moves them with it. A template that states none leaves them blank
@@ -83,16 +85,17 @@ export function ContainerKeeperDeployForm(props: Props) {
 
     // NOTE: nothing on this screen is editable, so a template that states no
     // ports cannot be completed here - the button says so by staying disabled,
-    // and the template is where the missing port is filled in
+    // and the template is where the missing port is filled in. Only ssh is
+    // required of the vaults: it is how the container is started at all, while
+    // a command needing a credential the cluster has none of fails visibly, on
+    // the placeholder nothing filled in.
     function renderActions() {
-        const keeperVaultMissing = withKeeperCredentials && !keeperId
-        const dbVaultMissing = withDbCredentials && !databaseId
         const portsMissing = !keeperPort || !dbPort
         return (
             <Button
                 loading={nodeDeploy.isPending}
                 onClick={handleAction}
-                disabled={keeperVaultMissing || dbVaultMissing || portsMissing || !sshKeyId || !command.command.trim()}
+                disabled={portsMissing || !sshKeyId || !command.command.trim()}
             >
                 Deploy
             </Button>
@@ -107,7 +110,7 @@ export function ContainerKeeperDeployForm(props: Props) {
         if (template.commands.length === 1) return
         return (
             <Box sx={SX.chooser}>
-                <Note center={true}>Pick which of the template's nodes is deployed here</Note>
+                <Hint center={true}>Pick which of the template's nodes is deployed here</Hint>
                 <ToggleButtonGroup fullWidth={true} size={"small"} exclusive={true} value={index} onChange={(_, v) => setIndex(v ?? index)}>
                     {template.commands.map((_, i) => (
                         <ToggleButton key={i} sx={SX.toggleButton} value={i}>Node {i + 1}</ToggleButton>
@@ -119,7 +122,7 @@ export function ContainerKeeperDeployForm(props: Props) {
 
     function renderClusterInfo() {
         return (
-            <TitledBox title={"Cluster"} island={true}>
+            <SubContentBox label={"Cluster"} island={true} collapsible={false}>
                 <Box sx={[SX.subContent, {gap: 1}]}>
                     <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
                     <FieldRow>
@@ -128,7 +131,7 @@ export function ContainerKeeperDeployForm(props: Props) {
                         {renderVaultField("SSH Credentials", sshKeyId)}
                     </FieldRow>
                 </Box>
-            </TitledBox>
+            </SubContentBox>
         )
     }
 

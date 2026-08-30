@@ -49,6 +49,7 @@ func mapDefaultTemplate(plugin keeper.PluginType, t keeper.DeploymentTemplate) T
 		Description: t.Description,
 		Keeper:      plugin,
 		Platform:    t.Platform,
+		Defaults:    t.Defaults,
 		Commands:    t.Commands,
 		Creation:    System,
 	}

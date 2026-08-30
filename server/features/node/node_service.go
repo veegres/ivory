@@ -57,6 +57,14 @@ func (s *Service) SupportedFeatures(t keeper.PluginType) map[config.Feature]bool
 	return c.SupportedFeatures()
 }
 
+// ValidateKeeperPlugin reports whether a keeper plugin is registered at all. A
+// deploy asks before it runs anything: the plugin it names is stored on the
+// cluster and is what every later request resolves its adapter through.
+func (s *Service) ValidateKeeperPlugin(t keeper.PluginType) error {
+	_, err := s.keeperRegistry.Get(t)
+	return err
+}
+
 // KeeperHasLeader reports whether the keeper elects a single primary at all.
 // An unknown plugin is treated as electing one: that is what every keeper but
 // clickhouse does, and it keeps a warning rather than silently dropping it.

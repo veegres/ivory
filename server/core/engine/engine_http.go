@@ -210,7 +210,6 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 
 	containerKeeperGroup := containerGroup.Group("/keeper")
 	containerKeeperGroup.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostNodeKeeperDeploy)
-	containerKeeperGroup.GET("/deploy/spec", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.GetNodeKeeperDeploySpec)
 }
 
 func deploymentRouter(g *gin.RouterGroup, rp *permission.Router, r *deployment.Router) {

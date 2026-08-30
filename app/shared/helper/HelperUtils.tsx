@@ -26,6 +26,7 @@ import {CertType, FileUsageType} from "../../features/cert/api/CertType"
 import {Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/api/ClusterType"
 import {
     DeployVar,
+    DeployVarScope,
     KeeperConnection,
     KeeperOneRequest,
     KeeperPlugin,
@@ -239,6 +240,9 @@ export interface DeployVarMeta {
     // secret means the browser must never hold the value: a preview shows the
     // mask, and only the server ever substitutes the real one
     secret: boolean,
+    // scope is how many values the variable has in one deployment, which is
+    // what the template editor groups the list by
+    scope: DeployVarScope,
 }
 
 // DeployPasswordMask is what a preview shows in place of a secret. It is not a
@@ -247,16 +251,16 @@ export interface DeployVarMeta {
 export const DeployPasswordMask = "*****"
 
 export const DeployVarOptions: { [key in DeployVar]: DeployVarMeta } = {
-    [DeployVar.Cluster]: {label: "Cluster", example: "my-cluster", secret: false},
-    [DeployVar.Name]: {label: "Node Name", example: "node-1", secret: false},
-    [DeployVar.Host]: {label: "Host", example: "10.0.0.1", secret: false},
-    [DeployVar.SshPort]: {label: "SSH Port", example: "22", secret: false},
-    [DeployVar.KeeperPort]: {label: "Keeper Port", example: "8008", secret: false},
-    [DeployVar.DbPort]: {label: "Database Port", example: "5432", secret: false},
-    [DeployVar.KeeperUser]: {label: "Keeper User", example: "root", secret: false},
-    [DeployVar.KeeperPass]: {label: "Keeper Password", example: DeployPasswordMask, secret: true},
-    [DeployVar.DbUser]: {label: "Database User", example: "postgres", secret: false},
-    [DeployVar.DbPass]: {label: "Database Password", example: DeployPasswordMask, secret: true},
+    [DeployVar.Cluster]: {label: "Cluster", example: "my-cluster", secret: false, scope: DeployVarScope.Template},
+    [DeployVar.Name]: {label: "Node Name", example: "node1", secret: false, scope: DeployVarScope.Command},
+    [DeployVar.Host]: {label: "Host", example: "localhost", secret: false, scope: DeployVarScope.Command},
+    [DeployVar.SshPort]: {label: "SSH Port", example: "22", secret: false, scope: DeployVarScope.Command},
+    [DeployVar.KeeperPort]: {label: "Keeper Port", example: "8008", secret: false, scope: DeployVarScope.Command},
+    [DeployVar.DbPort]: {label: "Database Port", example: "5432", secret: false, scope: DeployVarScope.Command},
+    [DeployVar.KeeperUser]: {label: "Keeper User", example: "admin", secret: false, scope: DeployVarScope.Template},
+    [DeployVar.KeeperPass]: {label: "Keeper Password", example: DeployPasswordMask, secret: true, scope: DeployVarScope.Template},
+    [DeployVar.DbUser]: {label: "Database User", example: "superuser", secret: false, scope: DeployVarScope.Template},
+    [DeployVar.DbPass]: {label: "Database Password", example: DeployPasswordMask, secret: true, scope: DeployVarScope.Template},
 }
 
 export const PlatformPluginOptions: { [key in PlatformPlugin]: EnumOptions } = {

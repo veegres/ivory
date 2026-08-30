@@ -9,19 +9,16 @@ type Props = {
     type: VaultType,
     selected?: string,
     onUpdate: (type: VaultType, s?: string) => void,
-    // username locks the selectable vaults to the ones with this username
-    // (e.g. a keeper plugin's engine-required database user)
-    username?: string,
     error?: boolean,
 }
 
 export function OptionsVault(props: Props) {
-    const {type, onUpdate, selected, username, error = false} = props
+    const {type, onUpdate, selected, error = false} = props
     const passId = selected ?? ""
     const {label} = VaultOptions[type]
 
     const query = useRouterVault(type)
-    const options = useMemo(handleMemoOptions, [query.data, username])
+    const options = useMemo(handleMemoOptions, [query.data])
 
     return (
         <AutocompleteUuid
@@ -30,7 +27,6 @@ export function OptionsVault(props: Props) {
             options={options}
             loading={query.isPending}
             onUpdate={handleUpdate}
-            search={username}
             error={error}
         />
     )
@@ -41,7 +37,6 @@ export function OptionsVault(props: Props) {
 
     function handleMemoOptions(): Option[] {
         return Object.entries(query.data ?? {})
-            .filter(([, value]) => username === undefined || value.username === username)
             .map(([key, value]) => ({
                 key,
                 short: getShortUuid(key),

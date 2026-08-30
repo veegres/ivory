@@ -25,13 +25,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 
 func (a *Adapter) HasLeader() bool { return true }
 
-func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{
-		KeeperCredentials: true,
-		DbCredentials:     true,
-	}
-}
-
 // A replica rebases from the leader before postgres ever starts: streaming
 // replication ships changes to an existing copy, it cannot build the initial
 // database, and a fresh initdb has its own system identifier the leader would
@@ -124,18 +117,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Postgres (Multi Host)",
 			Description: "One postgres leader and two streaming replicas, one per VM. Name the leader postgres1 or edit the replica connection to match.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "postgres", DbUser: "postgres"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHostLeader,
-					Defaults: keeper.DeploymentDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
 				},
 				{
 					Command:  deployMultiHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "postgres2", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres2", KeeperPort: 5432, DbPort: 5432},
 				},
 				{
 					Command:  deployMultiHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "postgres3", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres3", KeeperPort: 5432, DbPort: 5432},
 				},
 			},
 		},
@@ -143,18 +137,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "Postgres (Single Host)",
 			Description: "One postgres leader and two streaming replicas on one VM, each on its own port. The replicas rebase from the leader on 5432. Fill in the host and deploy.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "postgres", DbUser: "postgres"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostLeader,
-					Defaults: keeper.DeploymentDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "postgres2", KeeperPort: 5433, DbPort: 5433},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres2", KeeperPort: 5433, DbPort: 5433},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentDefaults{Name: "postgres3", KeeperPort: 5434, DbPort: 5434},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres3", KeeperPort: 5434, DbPort: 5434},
 				},
 			},
 		},

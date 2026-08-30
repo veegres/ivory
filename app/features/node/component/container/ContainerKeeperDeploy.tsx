@@ -41,7 +41,6 @@ export function ContainerKeeperDeploy(props: Props) {
                 cluster={cluster}
                 node={node}
                 template={screen.template}
-                spec={screen.spec}
                 keeperId={keeperId}
                 databaseId={databaseId}
                 sshKeyId={sshKeyId}

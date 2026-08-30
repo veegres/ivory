@@ -1,4 +1,4 @@
-import {KeeperDeploySpecResponse, KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
+import {KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
 
 // CreationType distinguishes the templates Ivory ships from the ones you own,
 // using the same vocabulary as the query builder's own templates.
@@ -14,18 +14,32 @@ export interface TemplateCommand {
     // NOTE: each step runs as its own execution, so nothing may assume a shell
     // - the images these run in are increasingly distroless and have no "&&"
     postScripts?: string[],
-    defaults?: TemplateDefaults,
+    defaults?: CommandDefaults,
 }
 
-// TemplateDefaults is what this command fills its node card in with. A command
+// CommandDefaults is what this command fills its node card in with. A command
 // and the endpoints it answers on are one fact rather than two: a single-host
 // template writes a distinct peer port into each of its commands, and only that
-// command knows which client port has to match it. Host and ssh port are absent
-// on purpose - both describe the machine, which is what a template never knows.
-export interface TemplateDefaults {
+// command knows which client port has to match it - sshPort included, since a
+// single-host node can still be forwarded on its own port. Host is absent on
+// purpose - it is the actual machine, which a template never knows.
+export interface CommandDefaults {
     name?: string,
+    sshPort?: number,
     keeperPort?: number,
     dbPort?: number,
+}
+
+// TemplateDefaults is what the whole template fills the deploy screen's
+// credential fields with. Credentials are one answer for the whole cluster, so
+// they sit here rather than on a command, where three copies could only ever
+// disagree. A username means the deployment ends up with that account - spilo
+// names its superuser postgres, etcd can only enable auth through root - so the
+// screen opens on it; where it names none, the screen opens with that credential
+// switched off. Passwords are never here: a template is stored, read and copied.
+export interface TemplateDefaults {
+    keeperUser?: string,
+    dbUser?: string,
 }
 
 // Template is a saved deployment: an ordered list of commands, one per node,
@@ -36,6 +50,7 @@ export interface Template {
     description?: string,
     keeper: KeeperPlugin,
     platform: PlatformPlugin,
+    defaults?: TemplateDefaults,
     commands: TemplateCommand[],
     creation: CreationType,
     createdAt: number,
@@ -46,6 +61,7 @@ export interface TemplateRequest {
     description?: string,
     keeper: KeeperPlugin,
     platform: PlatformPlugin,
+    defaults?: TemplateDefaults,
     commands: TemplateCommand[],
 }
 
@@ -63,11 +79,12 @@ export interface DeployCredentials {
 }
 
 // DeployScreenProps is what DeploymentTemplateDialog hands the screen that
-// runs a template: the template itself, the keeper's requirements, and the
-// logs of the run that already happened, if there was one.
+// runs a template: the template itself, and the logs of the run that already
+// happened, if there was one. Everything a deploy needs to know about the
+// engine is in the template - that is what replaced the keeper plugin's own
+// deploy spec.
 export interface DeployScreenProps {
     template: Template,
-    spec: KeeperDeploySpecResponse,
     logs?: string[],
     onDeployed: (logs: string[]) => void,
 }

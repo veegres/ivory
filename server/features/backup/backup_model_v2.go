@@ -118,22 +118,32 @@ type backupDeploymentV2 struct {
 	Description string                      `json:"description"`
 	Keeper      string                      `json:"keeper"`
 	Platform    string                      `json:"platform"`
+	Defaults    backupDeploymentDefaultsV2  `json:"defaults"`
 	Commands    []backupDeploymentCommandV2 `json:"commands"`
 }
 
 type backupDeploymentCommandV2 struct {
-	Command     string                     `json:"command"`
-	PostScripts []string                   `json:"postScripts"`
-	Defaults    backupDeploymentDefaultsV2 `json:"defaults"`
+	Command     string                            `json:"command"`
+	PostScripts []string                          `json:"postScripts"`
+	Defaults    backupDeploymentCommandDefaultsV2 `json:"defaults"`
 }
 
-// backupDeploymentDefaultsV2 is what the command fills its node card in with.
-// It is part of the template rather than of a node: a file restored without it
-// would put every node of a single-host template back on one port.
-type backupDeploymentDefaultsV2 struct {
+// backupDeploymentCommandDefaultsV2 is what the command fills its node card in
+// with. It is part of the template rather than of a node: a file restored
+// without it would put every node of a single-host template back on one port.
+type backupDeploymentCommandDefaultsV2 struct {
 	Name       string `json:"name"`
+	SshPort    int    `json:"sshPort"`
 	KeeperPort int    `json:"keeperPort"`
 	DbPort     int    `json:"dbPort"`
+}
+
+// backupDeploymentDefaultsV2 is what the template fills the deploy screen's
+// credential fields in with. It holds usernames only - a template never carries
+// a password, so neither does a file full of templates.
+type backupDeploymentDefaultsV2 struct {
+	KeeperUser string `json:"keeperUser"`
+	DbUser     string `json:"dbUser"`
 }
 
 // Export mappers: domain → backup V2 schema
@@ -247,8 +257,9 @@ func deploymentToBackupV2(t deployment.Template) backupDeploymentV2 {
 		commands[i] = backupDeploymentCommandV2{
 			Command:     c.Command,
 			PostScripts: c.PostScripts,
-			Defaults: backupDeploymentDefaultsV2{
+			Defaults: backupDeploymentCommandDefaultsV2{
 				Name:       c.Defaults.Name,
+				SshPort:    c.Defaults.SshPort,
 				KeeperPort: c.Defaults.KeeperPort,
 				DbPort:     c.Defaults.DbPort,
 			},
@@ -259,7 +270,11 @@ func deploymentToBackupV2(t deployment.Template) backupDeploymentV2 {
 		Description: t.Description,
 		Keeper:      string(t.Keeper),
 		Platform:    string(t.Platform),
-		Commands:    commands,
+		Defaults: backupDeploymentDefaultsV2{
+			KeeperUser: t.Defaults.KeeperUser,
+			DbUser:     t.Defaults.DbUser,
+		},
+		Commands: commands,
 	}
 }
 
@@ -389,8 +404,9 @@ func (b backupDeploymentV2) toTemplateRequest() deployment.TemplateRequest {
 		commands[i] = deployment.TemplateCommand{
 			Command:     c.Command,
 			PostScripts: c.PostScripts,
-			Defaults: deployment.TemplateDefaults{
+			Defaults: deployment.CommandDefaults{
 				Name:       c.Defaults.Name,
+				SshPort:    c.Defaults.SshPort,
 				KeeperPort: c.Defaults.KeeperPort,
 				DbPort:     c.Defaults.DbPort,
 			},
@@ -401,6 +417,10 @@ func (b backupDeploymentV2) toTemplateRequest() deployment.TemplateRequest {
 		Description: b.Description,
 		Keeper:      deployment.KeeperPlugin(b.Keeper),
 		Platform:    deployment.PlatformPlugin(b.Platform),
-		Commands:    commands,
+		Defaults: deployment.TemplateDefaults{
+			KeeperUser: b.Defaults.KeeperUser,
+			DbUser:     b.Defaults.DbUser,
+		},
+		Commands: commands,
 	}
 }

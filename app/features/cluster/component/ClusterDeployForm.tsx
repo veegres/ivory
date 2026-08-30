@@ -3,13 +3,13 @@ import {useCallback, useMemo, useState} from "react"
 
 import {DialogLogsScreen} from "../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
-import {Note} from "../../../shared/component/box/Note"
-import {TitledBox} from "../../../shared/component/box/TitledBox"
+import {Hint} from "../../../shared/component/box/Hint"
+import {SubContentBox} from "../../../shared/component/box/SubContentBox"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployPasswordMask, KeeperPluginOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
 import {useDeployVaultCredentials} from "../../deployment/api/DeploymentHook"
 import {DeployCredentials, Template} from "../../deployment/api/DeploymentType"
-import {KeeperDeploySpecResponse, KeeperPlugin} from "../../node/api/NodeType"
+import {KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
 import {VaultType} from "../../vault/api/VaultType"
 import {useRouterClusterDeploy} from "../api/ClusterHook"
@@ -44,7 +44,6 @@ type Props = {
     keeper: KeeperPlugin,
     database: DbPlugin,
     template: Template,
-    spec: KeeperDeploySpecResponse,
     logs?: string[],
     onDeployed: (logs: string[]) => void,
 }
@@ -54,26 +53,27 @@ type Props = {
 // node count comes from the template and is not editable here - a different
 // size is a different template.
 export function ClusterDeployForm(props: Props) {
-    const {keeper, database, template, spec, logs, onDeployed} = props
+    const {keeper, database, template, logs, onDeployed} = props
     const [nodes, setNodes] = useState<DeployNode[]>(getInitialNodes)
     const [cluster, setCluster] = useState("")
     const [options, setOptions] = useState<ClusterOptions>(InitialRequest(keeper, database))
     const [sshMode, setSshMode] = useState<CredentialMode>("vault")
-    const [keeperMode, setKeeperMode] = useState<CredentialMode>("vault")
-    const [dbMode, setDbMode] = useState<CredentialMode>("vault")
+    // NOTE: a template that names no username for a pair is saying its
+    // deployment ends up with no such account, so that section opens switched
+    // off rather than demanding an answer the deployment has no use for
+    const [keeperMode, setKeeperMode] = useState<CredentialMode>(getInitialMode(template.defaults?.keeperUser))
+    const [dbMode, setDbMode] = useState<CredentialMode>(getInitialMode(template.defaults?.dbUser))
     const [sshCred, setSshCred] = useState<Credential>({username: "", password: ""})
-    // NOTE: seeded with the engine-locked usernames, which the user cannot
-    // change when the engine has them
-    const [keeperCred, setKeeperCred] = useState<Credential>({username: spec.keeperUser ?? "", password: ""})
-    const [dbCred, setDbCred] = useState<Credential>({username: spec.dbUser ?? "", password: ""})
+    // NOTE: seeded with the usernames the template names - a suggestion the
+    // user can replace, not a lock: what the deployment ends up with is stated
+    // by the command that creates it, and that command is theirs to edit
+    const [keeperCred, setKeeperCred] = useState<Credential>({username: template.defaults?.keeperUser ?? "", password: ""})
+    const [dbCred, setDbCred] = useState<Credential>({username: template.defaults?.dbUser ?? "", password: ""})
     const [parallel, setParallel] = useState(false)
     const [submitted, setSubmitted] = useState(false)
 
     const deploy = useRouterClusterDeploy(onDeployed)
     const vaultCredentials = useDeployVaultCredentials(options.vaults.keeperId, options.vaults.databaseId)
-
-    const withKeeperCredentials = spec.keeperCredentials
-    const withDbCredentials = spec.dbCredentials
 
     const handleVaultUpdate = useCallback(handleCallVaultUpdate, [])
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
@@ -110,7 +110,7 @@ export function ClusterDeployForm(props: Props) {
 
     function renderCluster() {
         return (
-            <TitledBox title={"Cluster"} renderActions={renderTemplateName()} island={true}>
+            <SubContentBox label={"Cluster"} renderActions={renderTemplateName()} island={true} collapsible={false}>
                 <Box sx={SX.column}>
                     <TextField
                         fullWidth={true}
@@ -123,7 +123,7 @@ export function ClusterDeployForm(props: Props) {
                     {renderParallel()}
                     {renderClusterOptions()}
                 </Box>
-            </TitledBox>
+            </SubContentBox>
         )
     }
 
@@ -136,7 +136,7 @@ export function ClusterDeployForm(props: Props) {
             <Box sx={SX.toggle} onClick={() => setParallel(!parallel)}>
                 <Box>
                     <Box>Parallel deployment</Box>
-                    <Note>Some keepers, such as Patroni, need their nodes deployed one after another.</Note>
+                    <Hint>Some keepers, such as Patroni, need their nodes deployed one after another.</Hint>
                 </Box>
                 {/* NOTE: the row toggles on click, so the checkbox has to stop
                     its own click bubbling or the two would cancel out */}
@@ -190,7 +190,6 @@ export function ClusterDeployForm(props: Props) {
     // NOTE: an engine that is its own keeper renders this and the database
     // section both, and the user points them at the same vault entry
     function renderKeeperCredentials() {
-        if (!withKeeperCredentials) return
         return (
             <ClusterDeployCredentials
                 title={"Keeper Credentials"}
@@ -198,7 +197,7 @@ export function ClusterDeployForm(props: Props) {
                 mode={keeperMode}
                 credential={keeperCred}
                 vaultId={options.vaults.keeperId}
-                lockedUser={spec.keeperUser}
+                optional={true}
                 showErrors={submitted}
                 onModeChange={setKeeperMode}
                 onCredentialChange={setKeeperCred}
@@ -208,7 +207,6 @@ export function ClusterDeployForm(props: Props) {
     }
 
     function renderDbCredentials() {
-        if (!withDbCredentials) return
         return (
             <ClusterDeployCredentials
                 title={"Database Credentials"}
@@ -216,7 +214,7 @@ export function ClusterDeployForm(props: Props) {
                 mode={dbMode}
                 credential={dbCred}
                 vaultId={options.vaults.databaseId}
-                lockedUser={spec.dbUser}
+                optional={true}
                 showErrors={submitted}
                 onModeChange={setDbMode}
                 onCredentialChange={setDbCred}
@@ -260,18 +258,19 @@ export function ClusterDeployForm(props: Props) {
         })
     }
 
-    // NOTE: mirrors what cluster.Deploy rejects - ssh credentials are always
-    // required, keeper and database ones only when the keeper plugin consumes
-    // them, which is the same condition that renders their section
+    // NOTE: mirrors what cluster.Deploy rejects - ssh is the one credential
+    // that can never be answered with nothing, since it is how Ivory reaches
+    // the host at all; the other two are complete the moment the user says
+    // they are not needed
     function isReady() {
         return !!cluster && duplicates.size === 0 && complete
-            && isCredentialReady(true, sshMode, sshCred, options.vaults.sshKeyId)
-            && isCredentialReady(withKeeperCredentials, keeperMode, keeperCred, options.vaults.keeperId)
-            && isCredentialReady(withDbCredentials, dbMode, dbCred, options.vaults.databaseId)
+            && isCredentialReady(sshMode, sshCred, options.vaults.sshKeyId)
+            && isCredentialReady(keeperMode, keeperCred, options.vaults.keeperId)
+            && isCredentialReady(dbMode, dbCred, options.vaults.databaseId)
     }
 
-    function isCredentialReady(required: boolean, mode: CredentialMode, credential: Credential, vaultId?: string) {
-        if (!required) return true
+    function isCredentialReady(mode: CredentialMode, credential: Credential, vaultId?: string) {
+        if (mode === "none") return true
         if (mode === "vault") return !!vaultId
         return !!credential.username && !!credential.password
     }
@@ -285,13 +284,13 @@ export function ClusterDeployForm(props: Props) {
     // but never a password, only that one exists
     function getPreviewCredentials(): DeployPreviewCredentials {
         return {
-            keeper: getCredentialPreview(withKeeperCredentials, keeperMode, keeperCred, vaultCredentials.keeper),
-            database: getCredentialPreview(withDbCredentials, dbMode, dbCred, vaultCredentials.database),
+            keeper: getCredentialPreview(keeperMode, keeperCred, vaultCredentials.keeper),
+            database: getCredentialPreview(dbMode, dbCred, vaultCredentials.database),
         }
     }
 
-    function getCredentialPreview(required: boolean, mode: CredentialMode, credential: Credential, vault: DeployCredentials): DeployCredentials {
-        if (!required) return {}
+    function getCredentialPreview(mode: CredentialMode, credential: Credential, vault: DeployCredentials): DeployCredentials {
+        if (mode === "none") return {}
         if (mode === "new") {
             return {
                 user: credential.username || undefined,
@@ -310,13 +309,17 @@ export function ClusterDeployForm(props: Props) {
     }
 
     function getKeeperConfig() {
-        if (!withKeeperCredentials || keeperMode === "vault") return {keeperUser: "", keeperPass: ""}
+        if (keeperMode !== "new") return {keeperUser: "", keeperPass: ""}
         return {keeperUser: keeperCred.username, keeperPass: keeperCred.password}
     }
 
     function getDbConfig() {
-        if (!withDbCredentials || dbMode === "vault") return {dbUser: "", dbPass: ""}
+        if (dbMode !== "new") return {dbUser: "", dbPass: ""}
         return {dbUser: dbCred.username, dbPass: dbCred.password}
+    }
+
+    function getInitialMode(defaultUser?: string): CredentialMode {
+        return defaultUser ? "vault" : "none"
     }
 
     // NOTE: the template's command count is the node count - a cluster of a
@@ -325,14 +328,14 @@ export function ClusterDeployForm(props: Props) {
     // a node answers on belong to the command that writes them, so a template
     // that states none leaves the field empty for the user rather than
     // borrowing the engine's, which on a single host would put every node on
-    // one port. The ssh port is never in a template - it describes the machine.
+    // one port. Host is never in a template - it is the actual machine.
     function getInitialNodes(): DeployNode[] {
         return template.commands.map((c, i) => ({
             name: c.defaults?.name || `${KeeperPluginOptions[keeper].name}${i + 1}`,
             host: "",
+            sshPort: c.defaults?.sshPort,
             keeperPort: c.defaults?.keeperPort,
             dbPort: c.defaults?.dbPort,
-            sshPort: undefined,
             command: c.command,
             postScripts: c.postScripts,
         }))

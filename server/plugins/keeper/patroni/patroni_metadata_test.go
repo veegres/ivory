@@ -22,17 +22,20 @@ func TestSupportedFeaturesAllSupported(t *testing.T) {
 	}
 }
 
-func TestRequirements(t *testing.T) {
-	req := NewAdapter(nil).Requirements()
-
-	if req.KeeperCredentials {
-		t.Error("expected no keeper credentials: the shipped spilo deployment leaves the rest api unauthenticated")
-	}
-	if !req.DbCredentials {
-		t.Error("expected patroni to consume database credentials")
-	}
-	if req.DbUser != "postgres" {
-		t.Errorf("expected spilo's locked superuser postgres, got %q", req.DbUser)
+// TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
+// deploy screen's credential fields are filled in by the template that creates
+// the deployment, because the shipped spilo deployment leaves the rest api
+// unauthenticated and names its superuser postgres.
+func TestDefaultTemplateDefaults(t *testing.T) {
+	for _, template := range NewAdapter(nil).DefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			if template.Defaults.KeeperUser != "" {
+				t.Errorf("expected keeper user %q, got %q", "", template.Defaults.KeeperUser)
+			}
+			if template.Defaults.DbUser != "postgres" {
+				t.Errorf("expected database user %q, got %q", "postgres", template.Defaults.DbUser)
+			}
+		})
 	}
 }
 

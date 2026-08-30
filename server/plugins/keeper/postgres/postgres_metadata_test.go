@@ -28,17 +28,20 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestRequirements(t *testing.T) {
-	req := NewAdapter().Requirements()
-
-	if !req.KeeperCredentials || req.KeeperUser != "" {
-		t.Errorf("expected keeper credentials with a username of the user's own choice, got %v/%q", req.KeeperCredentials, req.KeeperUser)
-	}
-	if !req.DbCredentials {
-		t.Error("expected postgres to consume database credentials")
-	}
-	if req.DbUser != "" {
-		t.Errorf("expected a free choice of username, got the locked %q", req.DbUser)
+// TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
+// deploy screen's credential fields are filled in by the template that creates
+// the deployment, because the keeper endpoint is postgres itself, as the
+// account POSTGRES_USER creates.
+func TestDefaultTemplateDefaults(t *testing.T) {
+	for _, template := range NewAdapter().DefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			if template.Defaults.KeeperUser != "postgres" {
+				t.Errorf("expected keeper user %q, got %q", "postgres", template.Defaults.KeeperUser)
+			}
+			if template.Defaults.DbUser != "postgres" {
+				t.Errorf("expected database user %q, got %q", "postgres", template.Defaults.DbUser)
+			}
+		})
 	}
 }
 

@@ -3,49 +3,34 @@ import {Box, Collapse, Typography} from "@mui/material"
 import {memo, PropsWithChildren, ReactNode, useState} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
+import {Hint} from "./Hint"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column"},
-    // NOTE: less padding vertically than horizontally - the heading already
-    // carries its own 4px, so a collapsed box otherwise reads as mostly air
-    island: {padding: "4px 8px", border: 1, borderColor: "divider", borderRadius: 2},
-    head: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
-    label: {
-        flexGrow: 1, minWidth: 0,
-        display: "flex", alignItems: "center", userSelect: "none",
-        gap: 0.5, padding: "4px 0",
-    },
-    labelToggle: {
-        cursor: "pointer", "&:hover": {color: "primary.main"}, "&:hover *": {color: "primary.main"},
-    },
+    island: {border: 1, borderColor: "divider", borderRadius: 2},
+    islandHead: {padding: "6px 8px"},
+    islandBody: {padding: "0px 8px 6px"},
+    head: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, minHeight: "32px"},
+    headDense: {minHeight: "26px"},
+    label: {flexGrow: 1, minWidth: 0, display: "flex", alignItems: "center", userSelect: "none", gap: 0.5},
+    labelToggle: {cursor: "pointer", "&:hover": {color: "primary.main"}, "&:hover *": {color: "primary.main"}},
+    labelStatic: {padding: "0px 4px"},
     actions: {display: "flex", alignItems: "center"},
     icon: {fontSize: "20px", transition: "transform 0.2s", transform: "rotate(-90deg)"},
     iconDense: {fontSize: "16px"},
     iconOpen: {transform: "rotate(0deg)"},
-    // NOTE: only the gap that sits between chevron and text, not the chevron's
-    // own width - a heading with no arrow should not be indented as if it had
-    // one, it just should not sit flush against the border
-    labelStatic: {paddingX: 0.5},
     text: {
         fontSize: "15px", fontWeight: 600, textTransform: "uppercase", color: "text.secondary",
         fontFamily: "monospace", transition: "color 0.2s", lineHeight: 1,
     },
-    // NOTE: matches Caption, so a section nested inside a box does not outweigh
-    // the fields it contains
     textDense: {fontSize: "13px"},
-    // NOTE: a size under Note's - it shares a line with the title rather than
-    // sitting under one, so it must not compete with it. It opts back into
-    // selection, which the label turns off for the sake of the toggle: a
-    // sentence is there to be read and copied, not clicked. Its indent matches
-    // labelStatic's, so it starts under the title rather than under the border.
-    hint: {
-        paddingX: 0.5, userSelect: "text", cursor: "text",
-        fontSize: "11px", lineHeight: 1.4, color: "text.disabled",
-    },
-    content: {marginTop: 1},
-    // NOTE: a hint already separates the heading from what follows, so the
-    // content takes no gap of its own on top of it
-    contentHinted: {marginTop: 0},
+}
+
+// NOTE: not typed as SxPropsMap - Hint takes a plain SystemStyleObject, and
+// the annotation is what makes the two disagree
+const HintSX = {
+    hint: {userSelect: "text", cursor: "text", fontSize: "11px", padding: "0px 4px 4px"},
+    islandHint: {padding: "0px 10px 4px"},
 }
 
 type Props = {
@@ -82,17 +67,13 @@ export const SubContentBox = memo(function SubContentBox(props: PropsWithChildre
 
     return (
         <Box sx={[SX.box, island && SX.island]}>
-            <Box sx={SX.head}>
-                <Box
-                    sx={[SX.label, collapsible ? SX.labelToggle : SX.labelStatic]}
-                    onClick={collapsible ? handleToggle : undefined}
-                >
+            <Box sx={[SX.head, island && SX.islandHead, dense && SX.headDense]}>
+                <Box sx={[SX.label, collapsible ? SX.labelToggle : SX.labelStatic]} onClick={collapsible ? handleToggle : undefined}>
                     {collapsible && renderIcon()}
                     <Typography sx={[SX.text, dense && SX.textDense]}>{label}</Typography>
                 </Box>
                 {renderActions && <Box sx={SX.actions}>{renderActions}</Box>}
             </Box>
-            {hint && <Box sx={SX.hint}>{hint}</Box>}
             {renderContent()}
         </Box>
     )
@@ -101,10 +82,21 @@ export const SubContentBox = memo(function SubContentBox(props: PropsWithChildre
         return <KeyboardArrowDown sx={[SX.icon, dense && SX.iconDense, open && SX.iconOpen]}/>
     }
 
+    function getHintSx() {
+        return {...HintSX.hint, ...(island ? HintSX.islandHint : {})}
+    }
+
     function renderContent() {
-        const content = <Box sx={[SX.content, !!hint && SX.contentHinted]}>{children}</Box>
-        if (!collapsible) return content
-        return <Collapse in={open}>{content}</Collapse>
+        if (!children) return
+        if (!collapsible) return renderContentBody()
+        return <Collapse in={open}>{renderContentBody()}</Collapse>
+    }
+
+    function renderContentBody() {
+        return <>
+            {hint && <Hint sx={getHintSx()}>{hint}</Hint>}
+            <Box sx={[island && SX.islandBody]}>{children}</Box>
+        </>
     }
 
     function handleToggle() {

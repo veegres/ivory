@@ -28,17 +28,20 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 	}
 }
 
-func TestRequirements(t *testing.T) {
-	req := NewAdapter().Requirements()
-
-	if !req.KeeperCredentials || req.KeeperUser != "root" {
-		t.Errorf("expected keeper credentials locked to root, got %v/%q", req.KeeperCredentials, req.KeeperUser)
-	}
-	if !req.DbCredentials {
-		t.Error("expected etcd to consume database credentials")
-	}
-	if req.DbUser != "root" {
-		t.Errorf("expected the etcd-required username root (auth enable needs it), got %q", req.DbUser)
+// TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
+// deploy screen's credential fields are filled in by the template that creates
+// the deployment, because etcd is its own keeper and can only enable auth
+// through a user named root.
+func TestDefaultTemplateDefaults(t *testing.T) {
+	for _, template := range NewAdapter().DefaultTemplates() {
+		t.Run(template.Name, func(t *testing.T) {
+			if template.Defaults.KeeperUser != "root" {
+				t.Errorf("expected keeper user %q, got %q", "root", template.Defaults.KeeperUser)
+			}
+			if template.Defaults.DbUser != "root" {
+				t.Errorf("expected database user %q, got %q", "root", template.Defaults.DbUser)
+			}
+		})
 	}
 }
 

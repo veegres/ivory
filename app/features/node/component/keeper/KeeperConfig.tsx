@@ -5,7 +5,7 @@ import {useEffect, useState} from "react"
 
 import {ErrorKeeperMissing} from "../../../../shared/component/box/ErrorManual"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
-import {TitledBox} from "../../../../shared/component/box/TitledBox"
+import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
 import {CancelIconButton, CopyIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {CodeThemes} from "../../../../shared/helper/HelperUtils"
@@ -44,7 +44,7 @@ export function KeeperConfig(props: Props) {
     if (isPending) return <Skeleton variant={"rounded"} height={300}/>
 
     return (
-        <TitledBox title={"Config"} island={true} renderActions={renderActions()}>
+        <SubContentBox label={"Config"} island={true} collapsible={false} renderActions={renderActions()}>
             <Box sx={[SX.input, {borderColor: isEditable ? "divider" : "transparent"}]}>
                 <ReactCodeMirror
                     height={"100%"}
@@ -58,7 +58,7 @@ export function KeeperConfig(props: Props) {
                     onChange={(value) => setConfigState(value)}
                 />
             </Box>
-        </TitledBox>
+        </SubContentBox>
     )
 
     function renderActions() {

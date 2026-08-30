@@ -27,16 +27,6 @@ func (a *Adapter) SupportedFeatures() map[config.Feature]bool {
 // Keeper/ZooKeeper, so there is no leader to elect.
 func (a *Adapter) HasLeader() bool { return false }
 
-// Requirements reports both credential pairs: clickhouse answers keeper and
-// database questions on the same native tcp endpoint, so it is asked twice.
-// The username is the user's own choice.
-func (a *Adapter) Requirements() keeper.Requirements {
-	return keeper.Requirements{
-		KeeperCredentials: true,
-		DbCredentials:     true,
-	}
-}
-
 // Every node runs the same command, including the first: clickhouse has no
 // leader/replica asymmetry. The startup script writes a cluster config file and
 // then hands off to the image's own entrypoint. Both the shard's replica list
@@ -202,18 +192,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "ClickHouse (Multi Host)",
 			Description: "Three clickhouse replicas in one shard, coordinated through an external ZooKeeper or ClickHouse Keeper ensemble. Edit the replica and keeper lists to match your hosts.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "default", DbUser: "default"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "clickhouse1", KeeperPort: 9000, DbPort: 9000},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse1", KeeperPort: 9000, DbPort: 9000},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "clickhouse2", KeeperPort: 9000, DbPort: 9000},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse2", KeeperPort: 9000, DbPort: 9000},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentDefaults{Name: "clickhouse3", KeeperPort: 9000, DbPort: 9000},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse3", KeeperPort: 9000, DbPort: 9000},
 				},
 			},
 		},
@@ -221,18 +212,19 @@ func (a *Adapter) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "ClickHouse (Single Host)",
 			Description: "Three clickhouse replicas on one VM, each on its own native, http and interserver port, coordinated through an external ZooKeeper or ClickHouse Keeper ensemble. Edit the keeper list to match your hosts, fill in the host and deploy.",
+			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "default", DbUser: "default"},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,
-					Defaults: keeper.DeploymentDefaults{Name: "clickhouse1", KeeperPort: 9000, DbPort: 9000},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse1", KeeperPort: 9000, DbPort: 9000},
 				},
 				{
 					Command:  deploySingleHostNode2,
-					Defaults: keeper.DeploymentDefaults{Name: "clickhouse2", KeeperPort: 9001, DbPort: 9001},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse2", KeeperPort: 9001, DbPort: 9001},
 				},
 				{
 					Command:  deploySingleHostNode3,
-					Defaults: keeper.DeploymentDefaults{Name: "clickhouse3", KeeperPort: 9002, DbPort: 9002},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse3", KeeperPort: 9002, DbPort: 9002},
 				},
 			},
 		},
