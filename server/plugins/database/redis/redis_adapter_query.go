@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	goredis "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 )
 
 var ErrEmptyCommand = errors.New("command is empty")
@@ -39,7 +39,7 @@ func (a *Adapter) GetFields(ctx database.Context, query string, options *databas
 		args[i] = token
 	}
 	result, errDo := client.Do(requestCtx, args...).Result()
-	if errDo != nil && !errors.Is(errDo, goredis.Nil) {
+	if errDo != nil && !errors.Is(errDo, redis.Nil) {
 		return nil, errDo
 	}
 

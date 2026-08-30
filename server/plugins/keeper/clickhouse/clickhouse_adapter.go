@@ -3,7 +3,7 @@ package clickhouse
 import (
 	"context"
 	"errors"
-	chclient "ivory/clients/clickhouse"
+	"ivory/clients/clickhouse"
 	"ivory/plugins/keeper"
 	"net/http"
 	"strconv"
@@ -41,7 +41,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	defer chclient.Close(conn)
+	defer clickhouse.Close(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -65,7 +65,7 @@ func (p *Plugin) Config(request keeper.Request) (any, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	defer chclient.Close(conn)
+	defer clickhouse.Close(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -97,7 +97,7 @@ func (p *Plugin) Reload(request keeper.Request) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	defer chclient.Close(conn)
+	defer clickhouse.Close(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
@@ -156,7 +156,7 @@ func (p *Plugin) connect(request keeper.Request) (driver.Conn, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
-	conn, _, err := chclient.Connect(ctx, chclient.Config{
+	conn, _, err := clickhouse.Connect(ctx, clickhouse.Config{
 		Host:     request.Host,
 		Port:     request.Port,
 		Username: username,

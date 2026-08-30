@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 	"errors"
-	redisclient "ivory/clients/redis"
+	"ivory/clients/redis"
 	"ivory/plugins/database"
 	"strconv"
 )
@@ -28,7 +28,7 @@ func NewAdapter() *Adapter {
 	return &Adapter{}
 }
 
-func (a *Adapter) connect(ctx database.Context) (*redisclient.Client, string, error) {
+func (a *Adapter) connect(ctx database.Context) (*redis.Client, string, error) {
 	db := ctx.Connection.Config
 	if db.Port == 0 || db.Host == "" || db.Host == "-" {
 		return nil, "unknown", database.ErrDatabaseHostOrPortNotSpecified
@@ -47,7 +47,7 @@ func (a *Adapter) connect(ctx database.Context) (*redisclient.Client, string, er
 		}
 	}
 
-	return redisclient.Connect(context.Background(), redisclient.Config{
+	return redis.Connect(context.Background(), redis.Config{
 		Host:     db.Host,
 		Port:     db.Port,
 		Database: index,

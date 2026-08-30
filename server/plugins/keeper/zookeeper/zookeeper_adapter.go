@@ -3,7 +3,7 @@ package zookeeper
 import (
 	"context"
 	"errors"
-	zkclient "ivory/clients/zookeeper"
+	"ivory/clients/zookeeper"
 	"ivory/plugins/keeper"
 	"net/http"
 	"strconv"
@@ -40,7 +40,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	output, err := zkclient.FourLetterCommand(ctx, zkclient.Config{Host: request.Host, Port: request.Port}, "mntr")
+	output, err := zookeeper.FourLetterCommand(ctx, zookeeper.Config{Host: request.Host, Port: request.Port}, "mntr")
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -57,7 +57,7 @@ func (p *Plugin) Config(request keeper.Request) (any, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	output, err := zkclient.FourLetterCommand(ctx, zkclient.Config{Host: request.Host, Port: request.Port}, "conf")
+	output, err := zookeeper.FourLetterCommand(ctx, zookeeper.Config{Host: request.Host, Port: request.Port}, "conf")
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}

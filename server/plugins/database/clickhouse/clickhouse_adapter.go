@@ -3,7 +3,7 @@ package clickhouse
 import (
 	"context"
 	"errors"
-	chclient "ivory/clients/clickhouse"
+	"ivory/clients/clickhouse"
 	"ivory/plugins/database"
 	"regexp"
 	"strings"
@@ -46,7 +46,7 @@ func (a *Adapter) connect(ctx database.Context) (driver.Conn, string, error) {
 		return nil, "unknown", database.ErrPasswordNotSet
 	}
 
-	return chclient.Connect(context.Background(), chclient.Config{
+	return clickhouse.Connect(context.Background(), clickhouse.Config{
 		Host:     db.Host,
 		Port:     db.Port,
 		Database: dbName,
