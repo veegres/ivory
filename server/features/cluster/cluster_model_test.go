@@ -1,6 +1,9 @@
 package cluster
 
-import "testing"
+import (
+	"ivory/features/node"
+	"testing"
+)
 
 // TestWithNodeNamesDisambiguatesSharedHosts covers a cluster stored before
 // node names existed whose nodes all sit on one VM. Defaulting every name to
@@ -54,5 +57,29 @@ func TestWithNodeNamesDisambiguatesSharedHosts(t *testing.T) {
 				t.Errorf("the defaulted names must survive the cluster's own validation: %v", err)
 			}
 		})
+	}
+}
+
+// TestMapKeeperResponseListSkipsResponsesWithoutAHost covers what Detect and Fix
+// must not write into a cluster: a response that carries no endpoint describes
+// an attribute of a node (native postgres' sync state, read from the primary) or
+// a member the keeper cannot yet address, not a node. Storing one would put a
+// node with no host into the cluster - and mapping one derefs a host that is not
+// there.
+func TestMapKeeperResponseListSkipsResponsesWithoutAHost(t *testing.T) {
+	host := "db1"
+	port := 5432
+	name := "postgres2"
+
+	got := mapKeeperResponseList([]node.KeeperOneResponse{
+		{DiscoveredHost: &host, DiscoveredKeeperPort: &port, DiscoveredDbPort: &port},
+		{Sync: true, DiscoveredName: &name},
+	})
+
+	if len(got) != 1 {
+		t.Fatalf("expected only the response describing a node, got %d: %v", len(got), got)
+	}
+	if got[0].Host != host {
+		t.Errorf("expected the node at %q, got %q", host, got[0].Host)
 	}
 }

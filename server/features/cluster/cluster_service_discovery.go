@@ -208,8 +208,20 @@ func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Opti
 
 func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[string]node.KeeperOneResponse, connectionErrors map[string]error, requestError error, hasLeader bool) map[string]Node {
 	resultNodeMap := s.getConfiguredNodeMap(configs, connectionErrors, requestError)
+	// NOTE: two passes, because one of these describes a node and the other only
+	// describes an attribute of one. Merging them together would leave the
+	// outcome to map iteration order - whichever reached a node first would
+	// win, and a sync flag applied before the node's own response arrived would
+	// then be overwritten by it.
 	for _, kn := range keeperNodes {
-		s.mergeKeeperNode(resultNodeMap, kn)
+		if s.hasKeeper(kn) {
+			s.mergeKeeperNode(resultNodeMap, kn)
+		}
+	}
+	for _, kn := range keeperNodes {
+		if !s.hasKeeper(kn) {
+			s.mergeKeeperSync(resultNodeMap, kn)
+		}
 	}
 	s.addOverviewWarnings(resultNodeMap, hasLeader)
 	return resultNodeMap
@@ -237,7 +249,17 @@ func (s *Service) getConfiguredNodeMap(configs []NodeConfig, connectionErrors ma
 }
 
 func (s *Service) mergeKeeperNode(nodeMap map[string]Node, kn node.KeeperOneResponse) {
+	// NOTE: a response that states no host names its node instead - an etcd
+	// member the keeper knows about but has no client url for yet. It cannot
+	// create a node, since there is nothing to reach it at, but it can still
+	// report the state of one Ivory already has configured; it used to be
+	// dropped before it got here.
 	if kn.DiscoveredHost == nil {
+		if nodeKey, ok := s.resolveKeyByName(nodeMap, kn.DiscoveredName); ok && !s.hasKeeper(nodeMap[nodeKey].Keeper) {
+			cn := nodeMap[nodeKey]
+			cn.Keeper = kn
+			nodeMap[nodeKey] = cn
+		}
 		return
 	}
 	// NOTE: a response that couldn't determine its own port (e.g. native
@@ -266,6 +288,41 @@ func (s *Service) mergeKeeperNode(nodeMap map[string]Node, kn node.KeeperOneResp
 		warnings := []string{"node was found in Keeper response, but not in the cluster configuration"}
 		nodeMap[nodeKey] = Node{config, kn, warnings}
 	}
+}
+
+// mergeKeeperSync applies a response that claims no state of its own: it is an
+// attribute of a node rather than a node, and Sync is the only such attribute -
+// a replica's synchronous membership is visible from the primary alone, so a
+// node's own response can never carry it (see postgres.mapSyncStandby).
+//
+// It is applied on top of whatever the node itself reported, never in place of
+// it: the alternative reported a replica with no lag, no ports and a liveness
+// the primary is in no position to vouch for, and only for as long as map
+// iteration order happened to favour it.
+func (s *Service) mergeKeeperSync(nodeMap map[string]Node, kn node.KeeperOneResponse) {
+	nodeKey, ok := s.resolveKeyByName(nodeMap, kn.DiscoveredName)
+	if !ok {
+		return
+	}
+	cn := nodeMap[nodeKey]
+	cn.Keeper.Sync = kn.Sync
+	nodeMap[nodeKey] = cn
+}
+
+// resolveKeyByName finds the configured node with this name. Unlike a host it
+// needs no ambiguity check: a name is unique within a cluster, enforced on every
+// write by validateNodeNames, which is what lets it identify one node of a
+// single-host cluster where the shared host cannot.
+func (s *Service) resolveKeyByName(nodeMap map[string]Node, name *string) (string, bool) {
+	if name == nil || *name == "" {
+		return "", false
+	}
+	for nodeKey, n := range nodeMap {
+		if n.Config.Name == *name {
+			return nodeKey, true
+		}
+	}
+	return "", false
 }
 
 // resolveConfigByHost finds the configured node matching host, only when
@@ -323,13 +380,28 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, hasLeader bool) {
 
 func (s *Service) addKeeperResponsesToMap(nodeMap map[string]node.KeeperOneResponse, nodes []node.KeeperOneResponse) {
 	for _, n := range nodes {
-		if n.DiscoveredHost == nil {
+		nodeKey, ok := s.getResponseKey(n)
+		if !ok {
 			continue
 		}
-		nodeKey := s.getNodeKey(*n.DiscoveredHost, n.DiscoveredKeeperPort)
-		if _, ok := nodeMap[nodeKey]; ok {
+		if _, exists := nodeMap[nodeKey]; exists {
 			continue
 		}
 		nodeMap[nodeKey] = n
 	}
+}
+
+// getResponseKey identifies the member a keeper response is about, for dedup
+// across the several nodes whose view it may arrive in. An endpoint is preferred
+// where the keeper reported one; a response that states only a name is kept
+// under that name rather than dropped, which is what used to happen to native
+// postgres' sync-standby responses and to an etcd member with no client url yet.
+func (s *Service) getResponseKey(n node.KeeperOneResponse) (string, bool) {
+	if n.DiscoveredHost != nil {
+		return s.getNodeKey(*n.DiscoveredHost, n.DiscoveredKeeperPort), true
+	}
+	if n.DiscoveredName != nil {
+		return *n.DiscoveredName, true
+	}
+	return "", false
 }

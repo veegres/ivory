@@ -111,8 +111,8 @@ func (p *Plugin) listSyncStandbys(request keeper.Request) []keeper.Response {
 			// replication client_port, not its listening port, so the
 			// standby's real keeper/db port is left undiscovered here rather
 			// than guessed - the discovery layer resolves this response to
-			// the right configured node by host instead (see
-			// cluster.mergeKeeperNode).
+			// the right configured node by name instead (see
+			// cluster.mergeKeeperSync).
 			standbys = append(standbys, mapSyncStandby(applicationName, syncState))
 		}
 		return rows.Err()
@@ -294,43 +294,32 @@ func mapUnavailableNode(host string, port int, state keeper.State) keeper.Respon
 	}
 }
 
-// mapSyncStandby builds a Response for a standby discovered via the
-// primary's pg_stat_replication.
+// mapSyncStandby reports one attribute of another node, not a node. Sync state
+// is visible from the primary alone - a standby cannot determine its own
+// synchronous status by querying itself - so it is the one thing a node's own
+// connection can never report, and the only thing this response claims.
 //
-// host comes from application_name, not client_addr. client_addr is the
-// network-observed source address of the replication TCP connection - it's
-// never a domain name, and in Ivory's own Docker-over-SSH deployments it can
-// be a container-internal address that doesn't correspond to the node's
-// configured Host at all (an external network hop can rewrite it, or a
-// single-host cluster's containers can share one docker network). That
-// makes it fundamentally unlike Patroni's or etcd's discovered host, which
-// is self-declared by the same operator who configured Ivory. application_name
-// is also self-declared (by the standby's own primary_conninfo), so it's the
-// right kind of value in principle - but Ivory has no orchestration for
-// native postgres (see Plugin's doc comment) and never sets it itself, even
-// for clusters it deployed, so this only resolves to the right node if the
-// operator manually sets each standby's primary_conninfo application_name to
-// exactly the Host configured for that node in Ivory. Standbys that don't
-// follow this convention are simply skipped by syncStandbyQuery, same as if
-// they weren't connected at all.
+// It states no Status, State or Role for the same reason it states no port: it
+// knows none of them. Declaring a standby Active and running because the primary
+// still lists it would mask one whose postgres is actually down, and the
+// standby's own connection reports all three anyway. A response claiming no
+// state of its own is how the discovery layer tells an attribute from a node
+// (see cluster.mergeKeeperSync).
 //
-// DiscoveredKeeperPort/DiscoveredDbPort are deliberately left nil: unlike
-// the primary's own connection, this adapter has no legitimate way to learn
-// a standby's real port from pg_stat_replication (only its ephemeral
-// replication client_port is visible, not its listening port), and nodes
-// aren't guaranteed to share one port across the cluster - so guessing
-// (e.g. reusing the primary's own port) would misattribute this response to
-// the wrong node whenever ports differ per node. Leaving them nil signals
-// the discovery layer to resolve this response to the right configured node
-// by host instead (see cluster.mergeKeeperNode).
-func mapSyncStandby(host string, syncState string) keeper.Response {
-	var status keeper.Status = keeper.Active
+// It names its node rather than addressing it. application_name is self-declared
+// by the standby's own primary_conninfo, exactly like a patroni member name, and
+// the shipped template sets it to the node's name; a name is unique within a
+// cluster, so it identifies one node where a host cannot - every node of a
+// single-host cluster shares one. The alternative, client_addr, is worse than
+// ambiguous: it is the network-observed source address of the replication
+// connection, never a domain name, and an external hop or a shared docker
+// network can rewrite it into something that corresponds to no configured node
+// at all. A standby whose application_name matches no configured node is
+// skipped, same as one that sets none.
+func mapSyncStandby(name string, syncState string) keeper.Response {
 	return keeper.Response{
-		Status:         &status,
-		State:          keeper.StateRunning,
-		Role:           keeper.Replica,
 		Sync:           syncState == "sync" || syncState == "quorum",
-		DiscoveredHost: &host,
+		DiscoveredName: &name,
 	}
 }
 

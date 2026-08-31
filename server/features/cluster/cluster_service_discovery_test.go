@@ -505,6 +505,95 @@ func TestService_mergeKeeperNode_ResolvesUnknownPortByHost(t *testing.T) {
 	})
 }
 
+// TestService_mergeKeeperSync covers the single-host cluster the host path
+// cannot serve: three nodes share one host, so only a name identifies one of
+// them. A sync-standby response carries no state of its own, so it is applied on
+// top of whatever the node itself reported rather than standing in for it.
+func TestService_mergeKeeperSync(t *testing.T) {
+	s := &Service{}
+	port1, port2, port3 := 5432, 5433, 5434
+	singleHost := []NodeConfig{
+		{Name: "postgres1", Host: "localhost", KeeperPort: &port1, DbPort: &port1},
+		{Name: "postgres2", Host: "localhost", KeeperPort: &port2, DbPort: &port2},
+		{Name: "postgres3", Host: "localhost", KeeperPort: &port3, DbPort: &port3},
+	}
+	name := func(n string) *string { return &n }
+
+	t.Run("resolves by name where every node shares one host", func(t *testing.T) {
+		nodeMap := s.getConfiguredNodeMap(singleHost, nil, nil)
+		s.mergeKeeperSync(nodeMap, node.KeeperOneResponse{Sync: true, DiscoveredName: name("postgres2")})
+
+		if len(nodeMap) != 3 {
+			t.Fatalf("expected exactly 3 nodes (no phantom entry), got %d: %v", len(nodeMap), nodeMap)
+		}
+		if !nodeMap["localhost:5433"].Keeper.Sync {
+			t.Error("expected postgres2 to be the node the sync flag landed on")
+		}
+		if nodeMap["localhost:5432"].Keeper.Sync || nodeMap["localhost:5434"].Keeper.Sync {
+			t.Error("expected the flag to reach only the node it named")
+		}
+	})
+
+	t.Run("a name matching no configured node is dropped rather than invented", func(t *testing.T) {
+		nodeMap := s.getConfiguredNodeMap(singleHost, nil, nil)
+		s.mergeKeeperSync(nodeMap, node.KeeperOneResponse{Sync: true, DiscoveredName: name("someone-else")})
+
+		if len(nodeMap) != 3 {
+			t.Fatalf("expected exactly 3 nodes, got %d: %v", len(nodeMap), nodeMap)
+		}
+	})
+
+	// NOTE: the two-pass merge is what makes this hold. Both responses are about
+	// postgres2 and arrive from a map, so without it whichever came first would
+	// win: the node's own response would overwrite the sync flag, or the
+	// attribute would stand in for the node and report it with no lag at all.
+	t.Run("the node's own response and the primary's sync flag both survive", func(t *testing.T) {
+		responses := map[string]node.KeeperOneResponse{
+			"localhost:5433": {
+				Role: keeper.Replica, State: keeper.StateRunning, Lag: 128,
+				DiscoveredHost: name("localhost"), DiscoveredKeeperPort: &port2, DiscoveredDbPort: &port2,
+			},
+			"postgres2": {Sync: true, DiscoveredName: name("postgres2")},
+		}
+		nodeMap := s.buildOverviewNodes(singleHost, responses, nil, nil, true)
+
+		if len(nodeMap) != 3 {
+			t.Fatalf("expected exactly 3 nodes, got %d: %v", len(nodeMap), nodeMap)
+		}
+		merged := nodeMap["localhost:5433"].Keeper
+		if !merged.Sync {
+			t.Error("expected the primary's sync flag to be applied")
+		}
+		if merged.Lag != 128 || merged.State != keeper.StateRunning {
+			t.Errorf("expected the node's own response to survive, got lag %d state %q", merged.Lag, merged.State)
+		}
+		if merged.DiscoveredKeeperPort == nil {
+			t.Error("expected the node's own discovered port to survive")
+		}
+	})
+}
+
+// TestService_addKeeperResponsesToMap_KeepsNameOnlyResponse covers what used to
+// be dropped before it reached any merge: a response the keeper identifies by
+// name but has no endpoint for.
+func TestService_addKeeperResponsesToMap_KeepsNameOnlyResponse(t *testing.T) {
+	s := &Service{}
+	name := "etcd2"
+	nodeMap := make(map[string]node.KeeperOneResponse)
+
+	s.addKeeperResponsesToMap(nodeMap, []node.KeeperOneResponse{
+		{Role: keeper.Replica, DiscoveredName: &name},
+		{Role: keeper.Leader},
+	})
+
+	if len(nodeMap) != 1 {
+		t.Fatalf("expected only the identifiable response to be kept, got %d: %v", len(nodeMap), nodeMap)
+	}
+	if _, ok := nodeMap["etcd2"]; !ok {
+		t.Errorf("expected the response to be kept under its name, got %v", nodeMap)
+	}
+}
+
 func TestService_addOverviewWarnings(t *testing.T) {
 	s := &Service{}
 	nodes := map[string]Node{
