@@ -28,7 +28,10 @@ func (p *Plugin) HasLeader() bool { return true }
 // ZOO_MY_ID is written literally per command: zookeeper needs a genuinely
 // unique small integer per member, which no host-derived value can provide -
 // which is why all three commands are spelled out rather than shared. The
-// server list has to be identical on every member, or the ensemble splits; its
+// server list is addresses rather than container names: each member is a plain
+// docker run on its own VM with no shared network between them, so nothing
+// resolves the others by name. It has to be identical on every member, or the
+// ensemble splits; its
 // trailing ";2181" is the client port, since the image has no separate env var
 // for it. ZOO_4LW_COMMANDS_WHITELIST must list mntr and conf explicitly:
 // recent versions whitelist only srvr, and the adapter's List/Config need both.
@@ -43,7 +46,7 @@ const deployMultiHostNode1 = `docker run -d
   -v /data/zookeeper/data:/data
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="1"
-  -e ZOO_SERVERS="server.1=zookeeper1:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=zookeeper3:2888:3888;2181"
+  -e ZOO_SERVERS="server.1=10.0.0.1:2888:3888;2181 server.2=10.0.0.2:2888:3888;2181 server.3=10.0.0.3:2888:3888;2181"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -57,7 +60,7 @@ const deployMultiHostNode2 = `docker run -d
   -v /data/zookeeper/data:/data
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="2"
-  -e ZOO_SERVERS="server.1=zookeeper1:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=zookeeper3:2888:3888;2181"
+  -e ZOO_SERVERS="server.1=10.0.0.1:2888:3888;2181 server.2=10.0.0.2:2888:3888;2181 server.3=10.0.0.3:2888:3888;2181"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -71,7 +74,7 @@ const deployMultiHostNode3 = `docker run -d
   -v /data/zookeeper/data:/data
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="3"
-  -e ZOO_SERVERS="server.1=zookeeper1:2888:3888;2181 server.2=zookeeper2:2888:3888;2181 server.3=zookeeper3:2888:3888;2181"
+  -e ZOO_SERVERS="server.1=10.0.0.1:2888:3888;2181 server.2=10.0.0.2:2888:3888;2181 server.3=10.0.0.3:2888:3888;2181"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -121,7 +124,7 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "ZooKeeper (Multi Host)",
-			Description: "Three-node zookeeper ensemble, one per VM. Name the nodes zookeeper1..3 or edit the server list to match.",
+			Description: "Three-node zookeeper ensemble, one per VM. Replace 10.0.0.1-3 in the server list with the VM addresses - the entry's position is its ZOO_MY_ID, so keep them in order.",
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHostNode1,

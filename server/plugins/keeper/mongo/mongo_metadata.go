@@ -62,7 +62,7 @@ exec docker-entrypoint.sh mongod --replSet "{{cluster}}" --port {{dbPort}} --bin
 // literal single quote would terminate it early.
 const deployInitiate = `sh -c '
 until mongosh --quiet --port {{dbPort}} --eval "1" >/dev/null 2>&1; do sleep 1; done
-mongosh --quiet --port {{dbPort}} --eval "rs.initiate({_id: \"{{cluster}}\", members: [{_id: 0, host: \"mongo1:27017\"}, {_id: 1, host: \"mongo2:27017\"}, {_id: 2, host: \"mongo3:27017\"}]})"
+mongosh --quiet --port {{dbPort}} --eval "rs.initiate({_id: \"{{cluster}}\", members: [{_id: 0, host: \"10.0.0.1:27017\"}, {_id: 1, host: \"10.0.0.2:27017\"}, {_id: 2, host: \"10.0.0.3:27017\"}]})"
 '`
 
 // deploySingleHostInitiate is deployInitiate's twin for one VM: the members
@@ -78,7 +78,7 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Mongo (Multi Host)",
-			Description: "Three-member replica set, one per VM. The last command initiates the set once every member is running - name the nodes mongo1..3 or edit the member list to match.",
+			Description: "Three-member replica set, one per VM. The last command initiates the set once every member is running - replace 10.0.0.1-3 in its member list with the VM addresses.",
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,

@@ -30,25 +30,26 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 
 // TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
 // deploy screen's credential fields are filled in by the template that creates
-// the deployment, because etcd is its own keeper and can only enable auth
-// through a user named root.
+// the deployment. Both templates ship unauthenticated and so name no accounts -
+// a cluster that enabled auth in a post-script could not serve as the DCS for
+// the shipped patroni template, which sends no etcd credentials.
 func TestDefaultTemplateDefaults(t *testing.T) {
 	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
-			if template.Defaults.KeeperUser != "root" {
-				t.Errorf("expected keeper user %q, got %q", "root", template.Defaults.KeeperUser)
+			if template.Defaults.KeeperUser != "" {
+				t.Errorf("expected no keeper user, got %q", template.Defaults.KeeperUser)
 			}
-			if template.Defaults.DbUser != "root" {
-				t.Errorf("expected database user %q, got %q", "root", template.Defaults.DbUser)
+			if template.Defaults.DbUser != "" {
+				t.Errorf("expected no database user, got %q", template.Defaults.DbUser)
 			}
 		})
 	}
 }
 
 // TestDefaultTemplates covers etcd's bootstrap: it has no bootstrap-time
-// credentials, so the root user can only be created once the whole cluster is
-// running - which is why the auth script sits on the last command, not the
-// first.
+// credentials, so nothing about a shipped deployment may depend on an account
+// existing. Neither template enables auth, and neither one names a credential
+// variable it would then have to be given.
 func TestDefaultTemplates(t *testing.T) {
 	templates := NewPlugin().DefaultTemplates()
 
@@ -62,35 +63,17 @@ func TestDefaultTemplates(t *testing.T) {
 				t.Fatalf("expected a three-member cluster, got %d commands", len(template.Commands))
 			}
 
-			last := template.Commands[len(template.Commands)-1]
-			// NOTE: three separate steps, not one script chained with "&&":
-			// the etcd image ships no shell at all, so there is nothing to
-			// interpret a chain
-			if len(last.PostScripts) != 3 {
-				t.Fatalf("expected three steps to enable authentication, got %d", len(last.PostScripts))
-			}
-			for i, fragment := range []string{"user add", "user grant-role", "auth enable"} {
-				if !strings.Contains(last.PostScripts[i], fragment) {
-					t.Errorf("step %d: expected %q, got %q", i, fragment, last.PostScripts[i])
-				}
-			}
-			for i, script := range last.PostScripts {
-				if strings.Contains(script, "sh -c") {
-					t.Errorf("step %d assumes a shell the etcd image does not ship", i)
-				}
-				if !strings.Contains(script, string(keeper.VarDbPort)) {
-					t.Errorf("step %d does not address the node's own client port", i)
-				}
-			}
-			for i, command := range template.Commands[:len(template.Commands)-1] {
-				if len(command.PostScripts) > 0 {
-					t.Errorf("command %d must not enable auth before every member is up", i)
-				}
-			}
-
-			// NOTE: the member list is literal text now, so a shipped
-			// template has to carry a complete one to be deployable as-is
 			for i, command := range template.Commands {
+				if len(command.PostScripts) > 0 {
+					t.Errorf("command %d initializes the cluster, which leaves patroni unable to use it", i)
+				}
+				for _, v := range []keeper.Var{keeper.VarKeeperUser, keeper.VarKeeperPass, keeper.VarDbUser, keeper.VarDbPass} {
+					if strings.Contains(command.Command, string(v)) {
+						t.Errorf("command %d references %s, which an unauthenticated deployment is never given", i, v)
+					}
+				}
+				// NOTE: the member list is literal text now, so a shipped
+				// template has to carry a complete one to be deployable as-is
 				if !strings.Contains(command.Command, "ETCD_INITIAL_CLUSTER=\"etcd1=") {
 					t.Errorf("command %d has no initial cluster list to edit", i)
 				}
@@ -104,7 +87,11 @@ func TestDefaultTemplates(t *testing.T) {
 
 // TestDefaultTemplatesSingleHostPeerPortsDiffer covers the collision the
 // deleted singleHost flag used to compute away: three members on one VM cannot
-// share a peer listener.
+// share a peer listener. Neither the peer nor the client port may be etcd's own
+// default either: etcd replaces an advertise url identical to its built-in
+// default with the detected default host, so under {{host}}=localhost the
+// member using it dies on the peer url and, on the client url, comes up
+// advertising an address the cluster was never configured with.
 func TestDefaultTemplatesSingleHostPeerPortsDiffer(t *testing.T) {
 	for _, template := range NewPlugin().DefaultTemplates() {
 		if !strings.Contains(template.Name, "Single Host") {
@@ -112,7 +99,13 @@ func TestDefaultTemplatesSingleHostPeerPortsDiffer(t *testing.T) {
 		}
 		seen := make(map[string]bool)
 		for i, command := range template.Commands {
-			for _, port := range []string{"2380", "2382", "2384"} {
+			if strings.Contains(command.Command, ":2380") {
+				t.Errorf("command %d peers on etcd's default port, which localhost rewrites", i)
+			}
+			if command.Defaults.DbPort == 2379 {
+				t.Errorf("command %d serves clients on etcd's default port, which localhost rewrites", i)
+			}
+			for _, port := range []string{"2480", "2482", "2484"} {
 				if !strings.Contains(command.Command, "http://0.0.0.0:"+port) {
 					continue
 				}
