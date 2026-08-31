@@ -54,7 +54,7 @@ export function OverviewAction(props: Props) {
                         selected={selectConfig}
                         onClick={toggleConfig}
                     >
-                        <Tooltip title={"Cluster Config"} placement={"top"}><Settings/></Tooltip>
+                        <Tooltip title={"Cluster Configuration"} placement={"top"}><Settings/></Tooltip>
                     </ToggleButton>
                     <ToggleButton
                         sx={SX.toggleButton}
