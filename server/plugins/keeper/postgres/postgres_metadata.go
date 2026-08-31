@@ -49,6 +49,25 @@ func (p *Plugin) HasLeader() bool { return true }
 // backtick would be expanded or executed. They stay out of the conninfo for a
 // second reason - libpq applies its own quoting rules there, so a space in
 // either would terminate the value early.
+//
+// The leader drops an init hook rather than starting straight away, because
+// the image's generated pg_hba.conf grants replication to loopback only: its
+// catch-all last line is "host all all all <method>", and the database keyword
+// all deliberately excludes the replication pseudo-database, so a replica
+// connecting from anywhere else matches nothing. The hook is a plain file in
+// /docker-entrypoint-initdb.d, which the entrypoint sources as the postgres
+// user after it writes its own hba block and before the real server starts.
+// The heredoc delimiter is backslash-quoted so $PGDATA is written literally
+// and expands inside the hook, where it is set, rather than here, where it is
+// not.
+//
+// set -e is what makes a failed rebase visible: without it the replica script
+// falls through to the entrypoint, which finds an empty data directory and
+// initdb's a brand-new standalone primary - a cluster of three primaries that
+// reports itself as a successful deploy. The chown is for the other half of
+// the same step: pg_basebackup runs as root, so creating $PGDATA also creates
+// its parent root-owned and mode 700, and the entrypoint's gosu phase can then
+// not even traverse it.
 
 const deployMultiHostLeader = `docker run -d
   --name {{name}}
@@ -59,7 +78,13 @@ const deployMultiHostLeader = `docker run -d
   -e PGPORT="{{dbPort}}"
   -e POSTGRES_USER="{{dbUser}}"
   -e POSTGRES_PASSWORD="{{dbPass}}"
-  postgres:18`
+  postgres:18
+  sh -c '
+cat > /docker-entrypoint-initdb.d/00-ivory-replication.sh <<\IVORYEOF
+echo "host replication all all scram-sha-256" >> "$PGDATA/pg_hba.conf"
+IVORYEOF
+exec docker-entrypoint.sh postgres
+'`
 
 const deployMultiHostReplica = `docker run -d
   --name {{name}}
@@ -72,10 +97,12 @@ const deployMultiHostReplica = `docker run -d
   -e POSTGRES_PASSWORD="{{dbPass}}"
   postgres:18
   sh -c '
+set -e
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
   export PGPASSWORD="$POSTGRES_PASSWORD"
-  until pg_isready -h postgres1 -p 5432 -U "$POSTGRES_USER"; do sleep 1; done
-  pg_basebackup -d "application_name={{name}}" -h postgres1 -p 5432 -U "$POSTGRES_USER" -D "$PGDATA" -Fp -R -X stream -c fast
+  until pg_isready -h 10.0.0.1 -p 5432 -U "$POSTGRES_USER"; do sleep 1; done
+  pg_basebackup -d "application_name={{name}}" -h 10.0.0.1 -p 5432 -U "$POSTGRES_USER" -D "$PGDATA" -Fp -R -X stream -c fast
+  chown -R postgres:postgres /var/lib/postgresql
 fi
 exec docker-entrypoint.sh postgres
 '`
@@ -93,7 +120,13 @@ const deploySingleHostLeader = `docker run -d
   -e PGPORT="{{dbPort}}"
   -e POSTGRES_USER="{{dbUser}}"
   -e POSTGRES_PASSWORD="{{dbPass}}"
-  postgres:18`
+  postgres:18
+  sh -c '
+cat > /docker-entrypoint-initdb.d/00-ivory-replication.sh <<\IVORYEOF
+echo "host replication all all scram-sha-256" >> "$PGDATA/pg_hba.conf"
+IVORYEOF
+exec docker-entrypoint.sh postgres
+'`
 
 const deploySingleHostReplica = `docker run -d
   --name {{name}}
@@ -103,10 +136,12 @@ const deploySingleHostReplica = `docker run -d
   -e POSTGRES_PASSWORD="{{dbPass}}"
   postgres:18
   sh -c '
+set -e
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
   export PGPASSWORD="$POSTGRES_PASSWORD"
   until pg_isready -h {{host}} -p 5432 -U "$POSTGRES_USER"; do sleep 1; done
   pg_basebackup -d "application_name={{name}}" -h {{host}} -p 5432 -U "$POSTGRES_USER" -D "$PGDATA" -Fp -R -X stream -c fast
+  chown -R postgres:postgres /var/lib/postgresql
 fi
 exec docker-entrypoint.sh postgres
 '`
@@ -116,7 +151,7 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Postgres (Multi Host)",
-			Description: "One postgres leader and two streaming replicas, one per VM. Name the leader postgres1 or edit the replica connection to match.",
+			Description: "One postgres leader and two streaming replicas, one per VM. Replace 10.0.0.1 in the replica connection with the leader's VM address.",
 			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "postgres", DbUser: "postgres"},
 			Commands: []keeper.DeploymentCommand{
 				{

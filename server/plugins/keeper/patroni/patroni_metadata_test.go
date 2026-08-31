@@ -57,7 +57,7 @@ func TestDefaultTemplates(t *testing.T) {
 			// docker run across VMs nor host networking.
 			dcs := `ETCD3_HOSTS="10.0.0.1:2379`
 			if singleHost {
-				dcs = `ETCD3_HOSTS="{{host}}:2379,{{host}}:2381,{{host}}:2383"`
+				dcs = `ETCD3_HOSTS="{{host}}:2479,{{host}}:2481,{{host}}:2483"`
 			}
 			for i, command := range template.Commands {
 				if !strings.Contains(command.Command, dcs) {
@@ -76,10 +76,16 @@ func TestDefaultTemplates(t *testing.T) {
 					t.Errorf("command %d does not give spilo its own node name", i)
 				}
 				// NOTE: spilo resolves getaddrinfo(gethostname()) on its first
-				// line, before it reads any config; without --hostname there
-				// has to be an --add-host or the container dies at once
-				if singleHost && !strings.Contains(command.Command, "--add-host") {
+				// line, before it reads any config; without --hostname the
+				// command has to make the VM's own name resolve, or the
+				// container dies at once. It maps the name it is actually
+				// given rather than one written into the template, which
+				// nobody but the operator of that VM could know
+				if singleHost && !strings.Contains(command.Command, `echo "127.0.0.1 $(hostname)" >> /etc/hosts`) {
 					t.Errorf("command %d leaves the VM hostname unresolvable, which kills spilo at startup", i)
+				}
+				if singleHost && !strings.Contains(command.Command, "exec /bin/sh /launch.sh init") {
+					t.Errorf("command %d does not hand back over to spilo's own startup", i)
 				}
 			}
 		})

@@ -25,7 +25,7 @@ func NewAdapter() *Adapter {
 
 type fn func(pgx.Rows, *pgtype.Map, string) error
 
-func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []any, parse fn) error {
+func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []any, parse fn) (err error) {
 	conn, connUrl, errConn := a.getConnection(ctx)
 	if errConn != nil {
 		return errConn
@@ -37,7 +37,7 @@ func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []
 	if errTx != nil {
 		return errTx
 	}
-	defer a.closeTransaction(tx, txCtx)
+	defer func() { a.closeTransaction(tx, txCtx, err) }()
 
 	if ctx.Connection.Config.Schema != nil {
 		safeSchema := pgx.Identifier{*ctx.Connection.Config.Schema}.Sanitize()
@@ -48,7 +48,6 @@ func (a *Adapter) sendRequest(ctx database.Context, query string, queryParams []
 	}
 
 	var rows pgx.Rows
-	var err error
 	if queryParams == nil {
 		rows, err = tx.Query(txCtx, query)
 	} else {
@@ -175,9 +174,19 @@ func (a *Adapter) getConnection(ctx database.Context) (*pgx.Conn, string, error)
 	})
 }
 
-func (a *Adapter) closeTransaction(tx pgx.Tx, txCtx context.Context) {
-	err := tx.Rollback(txCtx)
-	if err != nil {
-		slog.Warn("postgres rollback", "error", err)
+// closeTransaction commits a request that succeeded and rolls back one that did
+// not. The transaction is what scopes the SET LOCAL search_path, not a
+// read-only guard: rolling back unconditionally discarded every write the query
+// console made while still answering 200, so a CREATE TABLE was indistinguishable
+// from a real one until the next statement could not find it.
+func (a *Adapter) closeTransaction(tx pgx.Tx, txCtx context.Context, reqErr error) {
+	if reqErr != nil {
+		if err := tx.Rollback(txCtx); err != nil {
+			slog.Warn("postgres rollback", "error", err)
+		}
+		return
+	}
+	if err := tx.Commit(txCtx); err != nil {
+		slog.Warn("postgres commit", "error", err)
 	}
 }

@@ -132,10 +132,13 @@ func TestDefaultsKeepCredentialsOutOfNestedScripts(t *testing.T) {
 	}
 }
 
-// nestedScript returns the part of a command a second shell parses - the tail
-// after "sh -c '" - or empty when the command runs no script of its own.
+// nestedScript returns the part of a command a second shell parses, or empty
+// when the command runs no script of its own. The marker is the shell's own
+// "-c", not "sh -c": a template hands its script either to a shell in the
+// image's arguments ("sh -c '…'") or to one it makes the entrypoint
+// ("--entrypoint sh … -c '…'"), and both parse it the same way.
 func nestedScript(command string) string {
-	i := strings.Index(command, "sh -c '")
+	i := strings.Index(command, " -c '")
 	if i < 0 {
 		return ""
 	}
@@ -380,7 +383,7 @@ func TestDefaultsProduceRunnableCommands(t *testing.T) {
 				// NOTE: readability newlines between flags must collapse, but
 				// the ones inside a quoted startup script have to survive -
 				// they are real statement separators
-				if strings.Contains(got, "\n") && !strings.Contains(got, "sh -c") {
+				if strings.Contains(got, "\n") && nestedScript(got) == "" {
 					t.Errorf("command %d has a newline outside a quoted script", i)
 				}
 			}

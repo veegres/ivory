@@ -58,27 +58,35 @@ const deployMultiHost = `docker run -d
 // APIPORT, which is what keeps three spilos out of each other's way on one
 // port namespace.
 //
-// --add-host is what keeps spilo alive without --hostname. Host networking
-// leaves the container answering to the VM's own hostname, and
+// The startup line is what keeps spilo alive without --hostname. Host
+// networking leaves the container answering to the VM's own hostname, and
 // configure_spilo.py resolves it - getaddrinfo(gethostname()) on its first
 // line, before it reads any configuration - so an unresolvable one kills the
-// container outright. The mapping is example text the operator replaces with
-// the VM's real hostname; the address it resolves to is never used, only that
-// it resolves. The DCS ports are the ones etcd's own single-host template
-// listens on.
+// container outright, which is the usual case: most distributions never put
+// the machine's own name in /etc/hosts. The container's /etc/hosts is a
+// private copy even under host networking, so mapping the name there costs
+// nothing and touches nothing on the VM; the address it resolves to is never
+// used, only that it resolves. This replaces an --add-host carrying example
+// text the operator had to replace with the VM's real hostname, which nothing
+// but that operator could know. /bin/sh /launch.sh init is the image's own
+// declared command, which the script hands back over to. The DCS ports are the
+// ones etcd's own single-host template listens on.
 
 const deploySingleHost = `docker run -d
   --name {{name}}
   --network host
-  --add-host myvm:127.0.0.1
   -e SCOPE="{{cluster}}"
-  -e ETCD3_HOSTS="{{host}}:2379,{{host}}:2381,{{host}}:2383"
+  -e ETCD3_HOSTS="{{host}}:2479,{{host}}:2481,{{host}}:2483"
   -e PGPORT={{dbPort}}
   -e APIPORT={{keeperPort}}
   -e PGPASSWORD_SUPERUSER="{{dbPass}}"
   -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
   -e SPILO_CONFIGURATION='{"name":"{{name}}","postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
-  ghcr.io/zalando/spilo-18:4.1-p2`
+  ghcr.io/zalando/spilo-18:4.1-p2
+  sh -c '
+echo "127.0.0.1 $(hostname)" >> /etc/hosts
+exec /bin/sh /launch.sh init
+'`
 
 func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 	return []keeper.DeploymentTemplate{
@@ -105,7 +113,7 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "Patroni (Single Host)",
-			Description: "Three spilo nodes on one VM, each on its own keeper and database port, coordinating through an external DCS - the ports are etcd's own single-host template. Replace myvm in --add-host with the VM hostname, which spilo must be able to resolve, then fill in the host and deploy.",
+			Description: "Three spilo nodes on one VM, each on its own keeper and database port, coordinating through an external DCS - the ports are etcd's own single-host template, which ships unauthenticated. Fill in the host and deploy.",
 			Defaults:    keeper.DeploymentTemplateDefaults{DbUser: "postgres"},
 			Commands: []keeper.DeploymentCommand{
 				{

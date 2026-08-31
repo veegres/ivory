@@ -67,8 +67,25 @@ func TestDefaultTemplates(t *testing.T) {
 				if !strings.Contains(command.Command, "ivory-cluster.xml") {
 					t.Errorf("command %d does not generate the cluster config", i)
 				}
-				if !strings.Contains(command.Command, "<node><host>keeper-1</host>") {
-					t.Errorf("command %d is missing the coordinator list", i)
+				// NOTE: the image's entrypoint ends in exec "$@", so a script
+				// passed the ordinary way is the last thing it runs and the
+				// config file lands after a server is already up on the
+				// untouched one. --entrypoint is what puts it first
+				if !strings.Contains(command.Command, "--entrypoint sh") {
+					t.Errorf("command %d writes its config after the entrypoint has already started a server", i)
+				}
+				// NOTE: CLICKHOUSE_DB is the sole trigger for an init pass
+				// whose client is hardcoded to 127.0.0.1 with no --port, so on
+				// a shared VM it talks to another node's server and kills this
+				// one
+				if strings.Contains(command.Command, "CLICKHOUSE_DB") {
+					t.Errorf("command %d runs the entrypoint's port-blind init pass", i)
+				}
+				// NOTE: a replica registers its fetch endpoint under this name;
+				// left to default to the machine's hostname it does not
+				// resolve, and the replicas silently never catch up
+				if !strings.Contains(command.Command, "<interserver_http_host>{{host}}</interserver_http_host>") {
+					t.Errorf("command %d leaves its fetch endpoint on an unresolvable hostname", i)
 				}
 			}
 			if singleHost {
@@ -76,8 +93,11 @@ func TestDefaultTemplates(t *testing.T) {
 				return
 			}
 			for i, command := range template.Commands {
-				if !strings.Contains(command.Command, "<replica><host>clickhouse1</host>") {
+				if !strings.Contains(command.Command, "<replica><host>10.0.0.1</host>") {
 					t.Errorf("command %d is missing the shard's replica list", i)
+				}
+				if !strings.Contains(command.Command, "<node><host>10.0.0.1</host><port>2181</port></node>") {
+					t.Errorf("command %d is missing the coordinator list", i)
 				}
 			}
 		})
@@ -85,8 +105,10 @@ func TestDefaultTemplates(t *testing.T) {
 }
 
 // assertSingleHostPorts checks the ports three replicas on one VM cannot share:
-// the native port Ivory connects on plus the http and interserver ports the
-// image binds on its own.
+// the native port Ivory connects on plus every other port the image binds on
+// its own. mysql and postgresql are in the list despite nothing using them -
+// the image binds 9004 and 9005 whether or not they are wanted, so they
+// collide like any other.
 func assertSingleHostPorts(t *testing.T, template keeper.DeploymentTemplate) {
 	t.Helper()
 
@@ -101,7 +123,7 @@ func assertSingleHostPorts(t *testing.T, template keeper.DeploymentTemplate) {
 		if strings.Contains(command.Command, "--hostname") {
 			t.Errorf("command %d sets --hostname, which docker rejects alongside --network host", i)
 		}
-		for _, tag := range []string{"http_port", "interserver_http_port"} {
+		for _, tag := range []string{"http_port", "interserver_http_port", "mysql_port", "postgresql_port"} {
 			port := portOf(t, command.Command, tag)
 			if seen[port] {
 				t.Errorf("command %d reuses %s %d, which collides on one host", i, tag, port)

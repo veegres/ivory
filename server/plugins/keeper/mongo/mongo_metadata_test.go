@@ -64,9 +64,10 @@ func TestDefaultTemplates(t *testing.T) {
 				t.Fatal("expected the last command to initiate the replica set")
 			}
 			// NOTE: on one VM the members differ by port and are addressed by
-			// {{host}} - host networking joins no docker network, so their
-			// container names resolve to nothing
-			member := `mongo1:27017`
+			// {{host}}; across VMs they are example addresses. Neither is a
+			// container name - no docker network spans either layout, so a
+			// name resolves to nothing in both
+			member := `10.0.0.1:27017`
 			if strings.Contains(template.Name, "Single Host") {
 				member = `{{host}}:27017`
 			}

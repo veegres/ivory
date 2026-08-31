@@ -61,10 +61,17 @@ func TestDefaultTemplates(t *testing.T) {
 			if strings.Contains(template.Commands[0].Command, "pg_basebackup") {
 				t.Error("the leader must not run the replica bootstrap")
 			}
-			// NOTE: on one VM the leader is reached at {{host}} - host
-			// networking joins no docker network, so its container name
-			// resolves to nothing
-			leader := "-h postgres1"
+			// NOTE: the image's own pg_hba.conf grants replication to loopback
+			// only - its catch-all "host all all all" excludes the replication
+			// pseudo-database - so without this hook a replica connecting from
+			// anywhere else matches no line at all
+			if !strings.Contains(template.Commands[0].Command, "host replication all all scram-sha-256") {
+				t.Error("the leader accepts no replication connection from its replicas")
+			}
+			// NOTE: on one VM the leader is reached at {{host}}; across VMs it
+			// is an example address. Neither is a container name - no docker
+			// network spans either layout, so a name resolves to nothing
+			leader := "-h 10.0.0.1"
 			if strings.Contains(template.Name, "Single Host") {
 				leader = "-h {{host}}"
 			}
@@ -74,6 +81,18 @@ func TestDefaultTemplates(t *testing.T) {
 				}
 				if !strings.Contains(command.Command, leader) {
 					t.Errorf("replica %d has no leader host to bootstrap from", i+1)
+				}
+				// NOTE: without set -e a failed rebase falls through to the
+				// entrypoint, which initdb's a brand-new standalone primary -
+				// three of them read back as a successfully deployed cluster
+				if !strings.Contains(command.Command, "set -e") {
+					t.Errorf("replica %d turns a failed rebase into a standalone primary", i+1)
+				}
+				// NOTE: pg_basebackup runs as root, so creating $PGDATA also
+				// creates its parent root-owned and mode 700, which the
+				// entrypoint's gosu phase cannot even traverse
+				if !strings.Contains(command.Command, "chown -R postgres:postgres /var/lib/postgresql") {
+					t.Errorf("replica %d leaves the data directory's parent root-owned", i+1)
 				}
 				// NOTE: the bootstrap script is parsed again by the
 				// container's own shell, so it reads the credentials from the

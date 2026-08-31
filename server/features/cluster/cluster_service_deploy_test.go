@@ -126,7 +126,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r := validDeployRequest()
 		r.CommonConfig.Cluster = ""
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNameNotProvided) {
 			t.Fatalf("expected ErrClusterNameNotProvided, got %v", err)
 		}
@@ -137,7 +137,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r := validDeployRequest()
 		r.Nodes = nil
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNodesNotProvided) {
 			t.Fatalf("expected ErrClusterNodesNotProvided, got %v", err)
 		}
@@ -148,7 +148,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r := validDeployRequest()
 		r.Nodes[0].Name = ""
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNodeNameNotProvided) {
 			t.Fatalf("expected ErrClusterNodeNameNotProvided, got %v", err)
 		}
@@ -161,7 +161,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		duplicate.Host = "db2"
 		r.Nodes = append(r.Nodes, duplicate)
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNodeNameNotUnique) {
 			t.Fatalf("expected ErrClusterNodeNameNotUnique, got %v", err)
 		}
@@ -172,7 +172,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r := validDeployRequest()
 		r.Nodes[0].KeeperPort = nil
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNodePortsNotProvided) {
 			t.Fatalf("expected ErrClusterNodePortsNotProvided, got %v", err)
 		}
@@ -183,7 +183,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r := validDeployRequest()
 		r.ClusterOptions.Plugins.Keeper = "unknown-plugin"
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if err == nil {
 			t.Fatalf("expected an error for an unknown keeper plugin, got none")
 		}
@@ -195,7 +195,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r.CommonConfig.SshUser = ""
 		r.CommonConfig.SshPass = ""
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrSshCredentialsRequired) {
 			t.Fatalf("expected ErrSshCredentialsRequired, got %v", err)
 		}
@@ -206,7 +206,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r := validDeployRequest()
 		r.CommonConfig.DbPass = ""
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrDatabaseCredentialsIncomplete) {
 			t.Fatalf("expected ErrDatabaseCredentialsIncomplete, got %v", err)
 		}
@@ -217,7 +217,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r := etcdDeployRequest()
 		r.CommonConfig.KeeperUser = ""
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrKeeperCredentialsIncomplete) {
 			t.Fatalf("expected ErrKeeperCredentialsIncomplete, got %v", err)
 		}
@@ -229,7 +229,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		id := uuid.New()
 		r.ClusterOptions.Vaults.KeeperId = &id
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrKeeperCredentialsAmbiguous) {
 			t.Fatalf("expected ErrKeeperCredentialsAmbiguous, got %v", err)
 		}
@@ -246,7 +246,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		r.CommonConfig.KeeperUser = "someone-else"
 		r.CommonConfig.DbUser = "someone-else-too"
 
-		if _, err := s.Deploy(r); err != nil {
+		if _, _, err := s.Deploy(r); err != nil {
 			t.Fatalf("expected the deploy to run past validation, got %v", err)
 		}
 		stored, err := s.Get(r.CommonConfig.Cluster)
@@ -282,7 +282,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		id := uuid.New()
 		r.ClusterOptions.Vaults.SshKeyId = &id
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrSshCredentialsAmbiguous) {
 			t.Fatalf("expected ErrSshCredentialsAmbiguous, got %v", err)
 		}
@@ -294,7 +294,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		id := uuid.New()
 		r.ClusterOptions.Vaults.DatabaseId = &id
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrDatabaseCredentialsAmbiguous) {
 			t.Fatalf("expected ErrDatabaseCredentialsAmbiguous, got %v", err)
 		}
@@ -307,7 +307,7 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 			t.Fatalf("failed to seed existing cluster: %v", err)
 		}
 
-		_, err := s.Deploy(r)
+		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNameTaken) {
 			t.Fatalf("expected ErrClusterNameTaken, got %v", err)
 		}
@@ -494,7 +494,7 @@ func TestService_Deploy_RegistersClusterBeforeDeploying(t *testing.T) {
 	r := etcdDeployRequest()
 	r.Nodes[0].Host = ""
 
-	logs, err := s.Deploy(r)
+	logs, _, err := s.Deploy(r)
 	if err != nil {
 		t.Fatalf("expected the failure to be reported through the logs, got %v", err)
 	}
@@ -521,6 +521,26 @@ func TestService_Deploy_RegistersClusterBeforeDeploying(t *testing.T) {
 	}
 	if len(vaults) == 0 {
 		t.Error("expected the vaults created for this deploy to be kept")
+	}
+}
+
+// TestService_Deploy_ReportsAnIncompleteBatch covers what the router turns into
+// a status: a deploy where a node never came up is not an error - the cluster
+// is registered and the logs say what happened - but it is not a success
+// either, and answering 200 to it made a failed deploy indistinguishable from a
+// working one to anything that read the response rather than the log text.
+func TestService_Deploy_ReportsAnIncompleteBatch(t *testing.T) {
+	s, _ := newDeployTestServiceWithVault(t, true)
+
+	r := etcdDeployRequest()
+	r.Nodes[0].Host = ""
+
+	_, complete, err := s.Deploy(r)
+	if err != nil {
+		t.Fatalf("expected the failure to be reported through the logs, got %v", err)
+	}
+	if complete {
+		t.Error("expected a batch with a node that never came up to report itself incomplete")
 	}
 }
 
