@@ -228,8 +228,20 @@ export const getNodeConfig = (domain: string): NodeConfig => {
     }
 }
 
+// Manually typed nodes get no name field at all, so defaulting to host would
+// leave every node named after an address instead of an identity - node1,
+// node2, ... reads the same way the shipped deployment templates already name
+// their nodes. A name carried over by the caller (see ListRow.getEditedNodes)
+// overrides this.
 export const getNodeConfigs = (domains: string[]): NodeConfig[] => {
-    return domains.map(value => getNodeConfig(value))
+    return domains.map((value, index) => ({...getNodeConfig(value), name: `node${index + 1}`}))
+}
+
+// A row here is only a host and its ports - the name is edited in the node
+// block - so the name of the existing node in the same position is carried
+// over instead of being reset to node1/node2/... by getNodeConfigs.
+export const getEditedNodeConfigs = (domains: string[], existing: NodeConfig[]): NodeConfig[] => {
+    return getNodeConfigs(domains).map((n, i) => ({...n, name: existing[i]?.name ?? n.name}))
 }
 
 export interface DeployVarMeta {
