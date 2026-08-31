@@ -4,7 +4,7 @@ import {Fragment} from "react"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", alignItems: "center", gap: 2},
+    box: {display: "flex", flexDirection: "column", alignItems: "center", gap: 2, paddingX: 2},
     title: {color: "text.disabled", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.2em"},
     concepts: {
         display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "baseline",
