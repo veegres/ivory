@@ -3,6 +3,7 @@ package clickhouse
 import (
 	"context"
 	"fmt"
+	"io"
 	"ivory/clients/clickhouse"
 	"ivory/plugins/database"
 	"reflect"
@@ -99,18 +100,24 @@ func (a *Adapter) GetFields(ctx database.Context, query string, options *databas
 	requestCtx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
+	fields := make([]database.QueryField, 0)
+	resultRows := make([][]any, 0)
+
 	rows, errQuery := conn.Query(requestCtx, finalQuery, params...)
-	if errQuery != nil {
+	if errQuery != nil && !isEmptyResultSet(errQuery) {
 		return nil, errQuery
 	}
-	defer rows.Close()
+	if errQuery == nil {
+		defer rows.Close()
 
-	fields, resultRows, errScan := scanRows(rows)
-	if errScan != nil {
-		return nil, errScan
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
+		var errScan error
+		fields, resultRows, errScan = scanRows(rows)
+		if errScan != nil {
+			return nil, errScan
+		}
+		if rows.Err() != nil {
+			return nil, rows.Err()
+		}
 	}
 
 	return &database.QueryFields{
@@ -121,6 +128,19 @@ func (a *Adapter) GetFields(ctx database.Context, query string, options *databas
 		EndTime:   time.Now().UnixMilli(),
 		Options:   resultOptions,
 	}, nil
+}
+
+// isEmptyResultSet reports the native protocol's answer to a statement that ran
+// and produced no result set - every INSERT, and every DDL that is not ON
+// CLUSTER. The server ends the stream without a data block, which the driver
+// surfaces as a bare io.EOF from Query, so treating it as a failure told the
+// user their statement was rejected when it had in fact already been applied.
+//
+// The comparison is identity rather than errors.Is on purpose: a read that
+// genuinely failed is wrapped by the driver around the same io.EOF, and that one
+// means the statement's fate is unknown and has to stay an error.
+func isEmptyResultSet(err error) bool {
+	return err == io.EOF
 }
 
 // scanDestinations builds one addressable pointer per column, each of the
