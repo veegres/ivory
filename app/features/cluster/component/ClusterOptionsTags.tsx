@@ -1,12 +1,12 @@
-import {useRouterTagList} from "../../../features/tag/api/TagHook"
 import {AutocompleteTags} from "../../../shared/component/autocomplete/AutocompleteTags"
+import {useRouterTagList} from "../../tag/api/TagHook"
 
 type Props = {
     selected?: string[],
     onUpdate: (tags: string[]) => void,
 }
 
-export function OptionsTags(props: Props) {
+export function ClusterOptionsTags(props: Props) {
     const query = useRouterTagList()
     const {data, isPending} = query
     return (

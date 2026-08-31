@@ -1,10 +1,10 @@
 import {Box, FormControl, InputLabel, MenuItem, Select, Tooltip} from "@mui/material"
 
-import {Plugins} from "../../../features/cluster/api/ClusterType"
-import {KeeperPlugin} from "../../../features/node/api/NodeType"
-import {DbPlugin} from "../../../features/query/api/QueryType"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DbModelOptions, DbPluginOptions, KeeperPluginOptions, ReleaseStageOptions} from "../../../shared/helper/HelperUtils"
+import {KeeperPlugin} from "../../node/api/NodeType"
+import {DbPlugin} from "../../query/api/QueryType"
+import {Plugins} from "../api/ClusterType"
 
 // Mirrors ListKeepers.tsx's plain, muted-text badge style (no colored boxes)
 // so the two keeper pickers read as one visual language. Each badge sits in
@@ -45,7 +45,7 @@ type Props = {
     disabled?: boolean,
 }
 
-export function OptionsPlugins(props: Props) {
+export function ClusterOptionsPlugins(props: Props) {
     const {plugins, onUpdate, disabled = false} = props
 
     return (

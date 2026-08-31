@@ -1,10 +1,10 @@
-import {Options} from "../../../core/widgets/options/Options"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
-import {Options as ClusterOptions} from "../api/ClusterType"
+import {Options} from "../api/ClusterType"
+import {ClusterOptions} from "./ClusterOptions"
 
 type Props = {
-    options: ClusterOptions,
-    onUpdate: (options: ClusterOptions) => void,
+    options: Options,
+    onUpdate: (options: Options) => void,
 }
 
 // ClusterOptionsBox is the cluster options widget as a dialog shows it: folded
@@ -15,7 +15,7 @@ export function ClusterOptionsBox(props: Props) {
 
     return (
         <TitleBox label={"All Configuration"} dense={true}>
-            <Options options={options} onUpdate={onUpdate} disablePlugins={true}/>
+            <ClusterOptions options={options} onUpdate={onUpdate} disablePlugins={true}/>
         </TitleBox>
     )
 }

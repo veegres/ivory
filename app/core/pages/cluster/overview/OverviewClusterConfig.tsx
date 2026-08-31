@@ -1,9 +1,9 @@
 import {Box, CircularProgress} from "@mui/material"
 
 import {useRouterClusterUpdate} from "../../../../features/cluster/api/ClusterHook"
-import {Cluster, Options as ClusterOptions, Overview as ClusterOverview} from "../../../../features/cluster/api/ClusterType"
+import {Cluster, Options, Overview as ClusterOverview} from "../../../../features/cluster/api/ClusterType"
+import {ClusterOptions} from "../../../../features/cluster/component/ClusterOptions"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {Options} from "../../../widgets/options/Options"
 import {OverviewClusterConfigNode} from "./OverviewClusterConfigNode"
 
 const SX: SxPropsMap = {
@@ -34,7 +34,7 @@ export function OverviewClusterConfig(props: Props) {
                 manualKeeper={manualKeeper}
             />
             {renderSaving()}
-            <Options options={cluster} onUpdate={handleClusterUpdate}/>
+            <ClusterOptions options={cluster} onUpdate={handleClusterUpdate}/>
         </Box>
     )
 
@@ -48,7 +48,7 @@ export function OverviewClusterConfig(props: Props) {
         )
     }
 
-    function handleClusterUpdate(opt: ClusterOptions) {
+    function handleClusterUpdate(opt: Options) {
         updateCluster.mutate({...cluster, ...opt})
     }
 }

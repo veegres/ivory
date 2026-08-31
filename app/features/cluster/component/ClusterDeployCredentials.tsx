@@ -1,10 +1,10 @@
 import {TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {OptionsVault} from "../../../core/widgets/options/OptionsVault"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {VaultType} from "../../vault/api/VaultType"
+import {ClusterOptionsVault} from "./ClusterOptionsVault"
 
 const SX: SxPropsMap = {
     toggleButton: {padding: "0px 10px"},
@@ -95,7 +95,7 @@ export function ClusterDeployCredentials(props: Props) {
 
     function renderVault() {
         return (
-            <OptionsVault
+            <ClusterOptionsVault
                 type={type}
                 selected={vaultId}
                 onUpdate={onVaultChange}
