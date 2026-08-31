@@ -1,4 +1,4 @@
-import {Box, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {memo} from "react"
 
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -13,15 +13,18 @@ import {ClusterOptionsPlugins} from "./ClusterOptionsPlugins"
 import {ClusterOptionsTags} from "./ClusterOptionsTags"
 import {ClusterOptionsVault} from "./ClusterOptionsVault"
 
-// NOTE: each field is a wrap item with a min width, so the widget lays fields
-// out in a dynamic grid when its container is wide (e.g. the overview page)
-// but collapses to a single, wider column when the container is narrow
-// (e.g. the deploy/detect dialogs)
+
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1.5, alignItems: "flex-start", marginTop: "10px"},
-    divider: {flexBasis: "100%"},
-    field: {flex: "1 1 var(--size-field)", minWidth: "var(--size-field)"},
-    tls: {width: "50%", fontWeight: "bold"},
+    field: {flex: "1 1 220px", minWidth: "min(220px, 100%)"},
+    tls: {display: "flex", flexDirection: "row", alignItems: "center", gap: 1, flex: "1 1 220px", minWidth: "min(220px, 100%)"},
+    tlsLabel: {
+        fontWeight: "bold", fontSize: "0.8125rem", lineHeight: 1.75, letterSpacing: "0.02857em", textTransform: "uppercase",
+        flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+        border: 1, borderColor: "divider", borderRadius: 1, padding: "7px 16px",
+    },
+    tlsToggles: {flex: "1 1 auto", minWidth: 0},
+    tlsToggle: {flex: "1 1 0"},
 }
 
 type Props = {
@@ -37,21 +40,19 @@ export const ClusterOptions = memo(function ClusterOptions(props: Props) {
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
             <ClusterOptionsPlugins plugins={plugins} onUpdate={handlePluginsUpdate} disabled={disablePlugins}/>
-            <Divider sx={SX.divider}/>
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/></Box>
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/></Box>
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/></Box>
-            <Divider sx={SX.divider}/>
-            <ToggleButtonGroup sx={SX.field} size={"small"} fullWidth>
-                <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
-                <ToggleButton sx={SX.tls} disabled={true} value={"tls"}>TLS</ToggleButton>
-                <ToggleButton onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
-            </ToggleButtonGroup>
-            <Divider sx={SX.divider}/>
+            <Box sx={SX.tls}>
+                <Box sx={SX.tlsLabel}>TLS</Box>
+                <ToggleButtonGroup sx={SX.tlsToggles} size={"small"} fullWidth>
+                    <ToggleButton sx={SX.tlsToggle} onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
+                    <ToggleButton sx={SX.tlsToggle} onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
+                </ToggleButtonGroup>
+            </Box>
             <Box sx={SX.field}><ClusterOptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/></Box>
             <Box sx={SX.field}><ClusterOptionsCert type={CertType.CLIENT_CERT} selected={certs.clientCertId} onUpdate={handleCertUpdate}/></Box>
             <Box sx={SX.field}><ClusterOptionsCert type={CertType.CLIENT_KEY} selected={certs.clientKeyId} onUpdate={handleCertUpdate}/></Box>
-            <Divider sx={SX.divider}/>
             <Box sx={SX.field}><ClusterOptionsTags selected={tags} onUpdate={handleTagsUpdate}/></Box>
         </ManageAccessBox>
     )

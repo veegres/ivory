@@ -8,9 +8,10 @@ import {OverviewClusterConfigNode} from "./OverviewClusterConfigNode"
 
 const SX: SxPropsMap = {
     settings: {display: "flex", flexDirection: "column", gap: 1, padding: "8px 0"},
+    head: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1},
     saving: {
         display: "flex", alignItems: "center", gap: 1, minHeight: "26px", fontSize: "12px",
-        color: "text.secondary", padding: "0px 5px",
+        color: "text.secondary", padding: "0px 5px", textTransform: "uppercase",
     },
 }
 
@@ -28,12 +29,14 @@ export function OverviewClusterConfig(props: Props) {
 
     return (
         <Box sx={SX.settings}>
-            <OverviewClusterConfigNode
-                nodes={overview?.nodes ?? cluster.nodesOverview ?? {}}
-                mainKeeper={mainKeeper}
-                manualKeeper={manualKeeper}
-            />
-            {renderSaving()}
+            <Box sx={SX.head}>
+                <OverviewClusterConfigNode
+                    nodes={overview?.nodes ?? cluster.nodesOverview ?? {}}
+                    mainKeeper={mainKeeper}
+                    manualKeeper={manualKeeper}
+                />
+                {renderSaving()}
+            </Box>
             <ClusterOptions options={cluster} onUpdate={handleClusterUpdate}/>
         </Box>
     )
@@ -43,7 +46,7 @@ export function OverviewClusterConfig(props: Props) {
         return (
             <Box sx={SX.saving}>
                 <CircularProgress size={12} color={"inherit"}/>
-                Saving changes...
+                Saving Changes
             </Box>
         )
     }

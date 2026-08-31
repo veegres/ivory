@@ -6,11 +6,8 @@ import {KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
 import {Plugins} from "../api/ClusterType"
 
-// Mirrors ListKeepers.tsx's plain, muted-text badge style (no colored boxes)
-// so the two keeper pickers read as one visual language. Each badge sits in
-// a fixed-width column so it lines up across rows regardless of label length.
 const SX: SxPropsMap = {
-    field: {flex: "1 1 var(--size-field)", minWidth: "var(--size-field)"},
+    field: {flex: "1 1 220px", minWidth: "min(220px, 100%)"},
     item: {display: "flex", alignItems: "center", gap: 1.5, width: "100%"},
     label: {flex: "1 1 auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"},
     model: {flexShrink: 0, width: "76px", textAlign: "right", fontSize: "12px", color: "primary.main", textTransform: "uppercase"},
