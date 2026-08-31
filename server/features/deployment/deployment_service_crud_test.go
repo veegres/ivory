@@ -5,6 +5,7 @@ import (
 	"ivory/core/utils"
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/etcd"
+	"ivory/plugins/keeper/redis"
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/docker"
 	"strings"
@@ -18,6 +19,7 @@ func newTestService(t *testing.T) *Service {
 
 	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewPlugin())
+	keeperRegistry.Register(keeper.NATIVE_REDIS, redis.NewPlugin())
 	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 	platformRegistry.Register(platform.Docker, docker.NewPlugin(nil))
 
@@ -83,6 +85,42 @@ func TestService_Create(t *testing.T) {
 			// leaving the deploy form on the plugin's own Requirements
 			name:   "a command stating no ports is accepted",
 			mutate: func(r *TemplateRequest) { r.Commands[0].Defaults = CommandDefaults{} },
+		},
+		{
+			name:     "a blank command is rejected",
+			mutate:   func(r *TemplateRequest) { r.Commands[0].Command = "  \n " },
+			expected: ErrTemplateCommandBlank,
+		},
+		{
+			name: "two nodes cannot share a default name",
+			mutate: func(r *TemplateRequest) {
+				r.Commands = []TemplateCommand{
+					{Command: "docker run -d --name {{name}} etcd", Defaults: CommandDefaults{Name: "etcd1"}},
+					{Command: "docker run -d --name {{name}} etcd", Defaults: CommandDefaults{Name: " etcd1 "}},
+				}
+			},
+			expected: ErrTemplateNodeNameTaken,
+		},
+		{
+			// NOTE: the deploy screen fills an unnamed node in, so several of
+			// them are not a collision
+			name: "commands stating no default name are accepted",
+			mutate: func(r *TemplateRequest) {
+				r.Commands = []TemplateCommand{
+					{Command: "docker run -d etcd"},
+					{Command: "docker run -d etcd"},
+				}
+			},
+		},
+		{
+			name:     "a keeper this build does not have is rejected",
+			mutate:   func(r *TemplateRequest) { r.Keeper = "native_cassandra" },
+			expected: ErrUnknownKeeper,
+		},
+		{
+			name:     "a platform this build does not have is rejected",
+			mutate:   func(r *TemplateRequest) { r.Platform = "k8s" },
+			expected: ErrUnknownPlatform,
 		},
 	}
 
@@ -155,7 +193,8 @@ func TestService_CreateRejectsTakenNames(t *testing.T) {
 	// reusing a shipped name would be ambiguous in the UI
 	t.Run("a shipped default's name", func(t *testing.T) {
 		s := newTestService(t)
-		defaults := s.Defaults(ListRequest{})
+		etcdKeeper := KeeperPlugin(keeper.NATIVE_ETCD)
+		defaults := s.Defaults(ListRequest{Keeper: &etcdKeeper})
 		if len(defaults) == 0 {
 			t.Fatal("expected the etcd defaults to be available")
 		}
