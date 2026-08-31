@@ -28,8 +28,11 @@ type Props = {
     mode: CredentialMode,
     credential: Credential,
     vaultId?: string,
-    // NOTE: NONE is offered on every credential but ssh, which is how Ivory
-    // reaches the host at all and so is never an answer the deploy can skip
+    // NOTE: whether the username was seeded by the template rather than typed
+    // here - the value is in `credential` either way, but only the caller can
+    // tell the two apart, and an ssh username disabling itself as it is typed
+    // is what checking the value alone would do
+    locked?: boolean,
     optional?: boolean,
     showErrors: boolean,
     onModeChange: (mode: CredentialMode) => void,
@@ -41,7 +44,7 @@ type Props = {
 // keeper and database each get their own. An engine that is its own keeper is
 // asked twice, and pointing both at one vault entry is the user's answer.
 export function ClusterDeployCredentials(props: Props) {
-    const {title, type, mode, credential, vaultId, optional = false, showErrors} = props
+    const {title, type, mode, credential, vaultId, locked = false, optional = false, showErrors} = props
     const {onModeChange, onCredentialChange, onVaultChange} = props
 
     return (
@@ -77,6 +80,7 @@ export function ClusterDeployCredentials(props: Props) {
                     size={"small"}
                     label={"Username"}
                     value={credential.username}
+                    disabled={locked}
                     error={showErrors && !credential.username}
                     onChange={(e) => onCredentialChange({...credential, username: e.target.value})}
                 />
@@ -98,6 +102,7 @@ export function ClusterDeployCredentials(props: Props) {
             <ClusterOptionsVault
                 type={type}
                 selected={vaultId}
+                username={locked ? credential.username : undefined}
                 onUpdate={onVaultChange}
                 error={showErrors && !vaultId}
             />
