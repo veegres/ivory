@@ -121,15 +121,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHostLeader,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres1", SshPort: 22, KeeperPort: 5432, DbPort: 5432},
 				},
 				{
 					Command:  deployMultiHostReplica,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres2", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres2", SshPort: 22, KeeperPort: 5432, DbPort: 5432},
 				},
 				{
 					Command:  deployMultiHostReplica,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres3", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres3", SshPort: 22, KeeperPort: 5432, DbPort: 5432},
 				},
 			},
 		},
@@ -141,15 +141,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostLeader,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres1", KeeperPort: 5432, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres1", SshPort: 22, KeeperPort: 5432, DbPort: 5432},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres2", KeeperPort: 5433, DbPort: 5433},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres2", SshPort: 22, KeeperPort: 5433, DbPort: 5433},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres3", KeeperPort: 5434, DbPort: 5434},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "postgres3", SshPort: 22, KeeperPort: 5434, DbPort: 5434},
 				},
 			},
 		},
