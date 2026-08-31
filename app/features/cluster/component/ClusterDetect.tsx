@@ -3,7 +3,7 @@ import {Box, Button, TextField} from "@mui/material"
 import {useCallback, useEffect, useState} from "react"
 
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -76,7 +76,7 @@ export function ClusterDetect(props: Props) {
 
     function renderCluster() {
         return (
-            <SubContentBox label={"Cluster"} island={true} collapsible={false}>
+            <TitleBox label={"Cluster"} island={true} collapsible={false}>
                 <Box sx={SX.column}>
                     <TextField
                         fullWidth={true}
@@ -88,7 +88,7 @@ export function ClusterDetect(props: Props) {
                     />
                     <ClusterOptionsBox options={request} onUpdate={handleOptionsUpdate}/>
                 </Box>
-            </SubContentBox>
+            </TitleBox>
         )
     }
 
@@ -96,7 +96,7 @@ export function ClusterDetect(props: Props) {
     // template command - Ivory asks the keeper on it for the rest of the cluster
     function renderNode() {
         return (
-            <SubContentBox
+            <TitleBox
                 label={"Node"}
                 hint={"Any node of the cluster - the others are discovered through its keeper"}
                 island={true}
@@ -122,7 +122,7 @@ export function ClusterDetect(props: Props) {
                         />
                     </FieldRow>
                 </Box>
-            </SubContentBox>
+            </TitleBox>
         )
     }
 

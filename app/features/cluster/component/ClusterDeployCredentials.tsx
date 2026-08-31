@@ -1,7 +1,7 @@
 import {TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
 import {OptionsVault} from "../../../core/widgets/options/OptionsVault"
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {VaultType} from "../../vault/api/VaultType"
@@ -45,9 +45,9 @@ export function ClusterDeployCredentials(props: Props) {
     const {onModeChange, onCredentialChange, onVaultChange} = props
 
     return (
-        <SubContentBox label={title} renderActions={renderActions()} island={true} dense={true} collapsible={false}>
+        <TitleBox label={title} renderActions={renderActions()} island={true} dense={true} collapsible={false}>
             {renderContent()}
-        </SubContentBox>
+        </TitleBox>
     )
 
     function renderContent() {

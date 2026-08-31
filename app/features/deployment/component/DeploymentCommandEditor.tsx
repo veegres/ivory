@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {CodeField} from "../../../shared/component/input/CodeField"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployVar} from "../../node/api/NodeType"
@@ -44,7 +44,7 @@ export function DeploymentCommandEditor(props: Props) {
 
     function renderDefaults() {
         return (
-            <SubContentBox
+            <TitleBox
                 label={"Variables & Defaults"}
                 dense={true}
                 collapsible={false}
@@ -79,7 +79,7 @@ export function DeploymentCommandEditor(props: Props) {
                         },
                     ]}
                 />
-            </SubContentBox>
+            </TitleBox>
         )
     }
 

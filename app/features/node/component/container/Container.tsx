@@ -1,5 +1,5 @@
 import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
-import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../../shared/component/box/TitleBox"
 import {TabsButton} from "../../../../shared/component/button/TabsButton"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
@@ -26,10 +26,10 @@ export function Container(props: Props) {
     if (!connection) return <ErrorSshMissing/>
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} error={true}>
-            <SubContentBox label={"Container"} renderActions={renderActions()} collapsible={false}>
+            <TitleBox label={"Container"} renderActions={renderActions()} collapsible={false}>
                 {tab === 0 && <ContainerOverview connection={connection} name={name}/>}
                 {tab === 1 && <ContainerList connection={connection}/>}
-            </SubContentBox>
+            </TitleBox>
         </ManageAccessBox>
     )
 

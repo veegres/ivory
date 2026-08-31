@@ -1,5 +1,5 @@
 import {Options} from "../../../core/widgets/options/Options"
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {Options as ClusterOptions} from "../api/ClusterType"
 
 type Props = {
@@ -14,8 +14,8 @@ export function ClusterOptionsBox(props: Props) {
     const {options, onUpdate} = props
 
     return (
-        <SubContentBox label={"All Options"} dense={true}>
+        <TitleBox label={"All Options"} dense={true}>
             <Options options={options} onUpdate={onUpdate} disablePlugins={true}/>
-        </SubContentBox>
+        </TitleBox>
     )
 }

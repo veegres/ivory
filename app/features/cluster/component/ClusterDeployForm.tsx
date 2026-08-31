@@ -4,7 +4,7 @@ import {useCallback, useMemo, useState} from "react"
 import {DialogLogsScreen} from "../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {Hint} from "../../../shared/component/box/Hint"
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployPasswordMask, KeeperPluginOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
 import {useDeployVaultCredentials} from "../../deployment/api/DeploymentHook"
@@ -107,7 +107,7 @@ export function ClusterDeployForm(props: Props) {
 
     function renderCluster() {
         return (
-            <SubContentBox label={"Cluster"} renderActions={renderTemplateName()} island={true} collapsible={false}>
+            <TitleBox label={"Cluster"} renderActions={renderTemplateName()} island={true} collapsible={false}>
                 <Box sx={SX.column}>
                     <TextField
                         fullWidth={true}
@@ -123,7 +123,7 @@ export function ClusterDeployForm(props: Props) {
                     {renderDbCredentials()}
                     {renderClusterOptions()}
                 </Box>
-            </SubContentBox>
+            </TitleBox>
         )
     }
 
