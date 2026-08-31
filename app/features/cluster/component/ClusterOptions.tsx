@@ -1,17 +1,17 @@
 import {Box, Divider, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {memo} from "react"
 
-import {CertType} from "../../../features/cert/api/CertType"
-import {Options as ClusterOptions, Plugins} from "../../../features/cluster/api/ClusterType"
-import {Feature} from "../../../features/Feature"
-import {ManageAccessBox} from "../../../features/management/component/ManageAccess"
-import {VaultType} from "../../../features/vault/api/VaultType"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {CertOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
-import {OptionsCert} from "./OptionsCert"
-import {OptionsPlugins} from "./OptionsPlugins"
-import {OptionsTags} from "./OptionsTags"
-import {OptionsVault} from "./OptionsVault"
+import {CertType} from "../../cert/api/CertType"
+import {Feature} from "../../Feature"
+import {ManageAccessBox} from "../../management/component/ManageAccess"
+import {VaultType} from "../../vault/api/VaultType"
+import {Options, Plugins} from "../api/ClusterType"
+import {ClusterOptionsCert} from "./ClusterOptionsCert"
+import {ClusterOptionsPlugins} from "./ClusterOptionsPlugins"
+import {ClusterOptionsTags} from "./ClusterOptionsTags"
+import {ClusterOptionsVault} from "./ClusterOptionsVault"
 
 // NOTE: each field is a wrap item with a min width, so the widget lays fields
 // out in a dynamic grid when its container is wide (e.g. the overview page)
@@ -25,22 +25,22 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    options: ClusterOptions,
-    onUpdate: (options: ClusterOptions) => void,
+    options: Options,
+    onUpdate: (options: Options) => void,
     disablePlugins?: boolean,
 }
 
-export const Options = memo(function Options(props: Props) {
+export const ClusterOptions = memo(function ClusterOptions(props: Props) {
     const {onUpdate, options, disablePlugins = false} = props
     const {vaults, tags, certs, tls, plugins} = options
 
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ManageClusterUpdate}>
-            <OptionsPlugins plugins={plugins} onUpdate={handlePluginsUpdate} disabled={disablePlugins}/>
+            <ClusterOptionsPlugins plugins={plugins} onUpdate={handlePluginsUpdate} disabled={disablePlugins}/>
             <Divider sx={SX.divider}/>
-            <Box sx={SX.field}><OptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/></Box>
-            <Box sx={SX.field}><OptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/></Box>
-            <Box sx={SX.field}><OptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/></Box>
+            <Box sx={SX.field}><ClusterOptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/></Box>
+            <Box sx={SX.field}><ClusterOptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/></Box>
+            <Box sx={SX.field}><ClusterOptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/></Box>
             <Divider sx={SX.divider}/>
             <ToggleButtonGroup sx={SX.field} size={"small"} fullWidth>
                 <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
@@ -48,11 +48,11 @@ export const Options = memo(function Options(props: Props) {
                 <ToggleButton onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
             </ToggleButtonGroup>
             <Divider sx={SX.divider}/>
-            <Box sx={SX.field}><OptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/></Box>
-            <Box sx={SX.field}><OptionsCert type={CertType.CLIENT_CERT} selected={certs.clientCertId} onUpdate={handleCertUpdate}/></Box>
-            <Box sx={SX.field}><OptionsCert type={CertType.CLIENT_KEY} selected={certs.clientKeyId} onUpdate={handleCertUpdate}/></Box>
+            <Box sx={SX.field}><ClusterOptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/></Box>
+            <Box sx={SX.field}><ClusterOptionsCert type={CertType.CLIENT_CERT} selected={certs.clientCertId} onUpdate={handleCertUpdate}/></Box>
+            <Box sx={SX.field}><ClusterOptionsCert type={CertType.CLIENT_KEY} selected={certs.clientKeyId} onUpdate={handleCertUpdate}/></Box>
             <Divider sx={SX.divider}/>
-            <Box sx={SX.field}><OptionsTags selected={tags} onUpdate={handleTagsUpdate}/></Box>
+            <Box sx={SX.field}><ClusterOptionsTags selected={tags} onUpdate={handleTagsUpdate}/></Box>
         </ManageAccessBox>
     )
 

@@ -1,9 +1,9 @@
 import {useMemo} from "react"
 
-import {useRouterVault} from "../../../features/vault/api/VaultHook"
-import {VaultType} from "../../../features/vault/api/VaultType"
 import {AutocompleteUuid, Option} from "../../../shared/component/autocomplete/AutocompleteUuid"
 import {getShortUuid,VaultOptions} from "../../../shared/helper/HelperUtils"
+import {useRouterVault} from "../../vault/api/VaultHook"
+import {VaultType} from "../../vault/api/VaultType"
 
 type Props = {
     type: VaultType,
@@ -12,7 +12,7 @@ type Props = {
     error?: boolean,
 }
 
-export function OptionsVault(props: Props) {
+export function ClusterOptionsVault(props: Props) {
     const {type, onUpdate, selected, error = false} = props
     const passId = selected ?? ""
     const {label} = VaultOptions[type]

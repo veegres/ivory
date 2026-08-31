@@ -1,9 +1,9 @@
 import {useMemo} from "react"
 
-import {useRouterCertList} from "../../../features/cert/api/CertHook"
-import {CertType} from "../../../features/cert/api/CertType"
 import {AutocompleteUuid, Option} from "../../../shared/component/autocomplete/AutocompleteUuid"
 import {CertOptions, getShortUuid} from "../../../shared/helper/HelperUtils"
+import {useRouterCertList} from "../../cert/api/CertHook"
+import {CertType} from "../../cert/api/CertType"
 
 type Props = {
     type: CertType,
@@ -11,7 +11,7 @@ type Props = {
     onUpdate: (type: CertType, s?: string) => void,
 }
 
-export function OptionsCert(props: Props) {
+export function ClusterOptionsCert(props: Props) {
     const {type, selected, onUpdate} = props
     const certId = selected ?? ""
     const {label} = CertOptions[type]

@@ -76,7 +76,7 @@ export const VaultOptions: { [key in VaultType]: EnumOptions } = {
 
 // DbModel classifies a plugin by the data model it exposes (OLTP, OLAP, ...),
 // shown next to the plugin's release stage and used to sort the plugin
-// picker - see OptionsPlugins.tsx and ListKeepers.tsx.
+// picker - see ClusterOptionsPlugins.tsx and ListKeepers.tsx.
 export type DbModel = "OLTP" | "OLAP" | "Key-Value" | "Document" | "DCS"
 
 export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlugin: DbPlugin, stage: ReleaseStage, model: DbModel} } = {
