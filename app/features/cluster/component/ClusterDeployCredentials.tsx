@@ -45,7 +45,7 @@ export function ClusterDeployCredentials(props: Props) {
     const {onModeChange, onCredentialChange, onVaultChange} = props
 
     return (
-        <SubContentBox label={title} renderActions={renderActions()} island={true} collapsible={false}>
+        <SubContentBox label={title} renderActions={renderActions()} island={true} dense={true} collapsible={false}>
             {renderContent()}
         </SubContentBox>
     )

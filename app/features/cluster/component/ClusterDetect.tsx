@@ -98,7 +98,7 @@ export function ClusterDetect(props: Props) {
         return (
             <SubContentBox
                 label={"Node"}
-                hint={"Any node of the cluster - the others are discovered through its keeper."}
+                hint={"Any node of the cluster - the others are discovered through its keeper"}
                 island={true}
                 collapsible={false}
             >

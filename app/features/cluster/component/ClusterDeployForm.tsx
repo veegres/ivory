@@ -92,9 +92,6 @@ export function ClusterDeployForm(props: Props) {
         <DialogScreen renderActions={renderActions()}>
             <Box sx={SX.box}>
                 {renderCluster()}
-                {renderSshCredentials()}
-                {renderKeeperCredentials()}
-                {renderDbCredentials()}
                 {renderNodes()}
             </Box>
         </DialogScreen>
@@ -121,6 +118,9 @@ export function ClusterDeployForm(props: Props) {
                         onChange={(e) => setCluster(e.target.value)}
                     />
                     {renderParallel()}
+                    {renderSshCredentials()}
+                    {renderKeeperCredentials()}
+                    {renderDbCredentials()}
                     {renderClusterOptions()}
                 </Box>
             </SubContentBox>

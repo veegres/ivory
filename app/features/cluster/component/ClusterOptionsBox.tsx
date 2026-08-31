@@ -14,7 +14,7 @@ export function ClusterOptionsBox(props: Props) {
     const {options, onUpdate} = props
 
     return (
-        <SubContentBox label={"Cluster Options"} dense={true}>
+        <SubContentBox label={"All Options"} dense={true}>
             <Options options={options} onUpdate={onUpdate} disablePlugins={true}/>
         </SubContentBox>
     )
