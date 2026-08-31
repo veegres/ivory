@@ -125,15 +125,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHostNode1,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper1", SshPort: 22, KeeperPort: 2181, DbPort: 2181},
 				},
 				{
 					Command:  deployMultiHostNode2,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper2", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper2", SshPort: 22, KeeperPort: 2181, DbPort: 2181},
 				},
 				{
 					Command:  deployMultiHostNode3,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper3", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper3", SshPort: 22, KeeperPort: 2181, DbPort: 2181},
 				},
 			},
 		},
@@ -144,15 +144,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper1", KeeperPort: 2181, DbPort: 2181},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper1", SshPort: 22, KeeperPort: 2181, DbPort: 2181},
 				},
 				{
 					Command:  deploySingleHostNode2,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper2", KeeperPort: 2182, DbPort: 2182},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper2", SshPort: 22, KeeperPort: 2182, DbPort: 2182},
 				},
 				{
 					Command:  deploySingleHostNode3,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper3", KeeperPort: 2183, DbPort: 2183},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "zookeeper3", SshPort: 22, KeeperPort: 2183, DbPort: 2183},
 				},
 			},
 		},

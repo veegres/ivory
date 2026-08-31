@@ -82,16 +82,16 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo1", SshPort: 22, KeeperPort: 27017, DbPort: 27017},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo2", KeeperPort: 27017, DbPort: 27017},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo2", SshPort: 22, KeeperPort: 27017, DbPort: 27017},
 				},
 				{
 					Command:     deployMultiHost,
 					PostScripts: []string{deployInitiate},
-					Defaults:    keeper.DeploymentCommandDefaults{Name: "mongo3", KeeperPort: 27017, DbPort: 27017},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "mongo3", SshPort: 22, KeeperPort: 27017, DbPort: 27017},
 				},
 			},
 		},
@@ -102,16 +102,16 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo1", KeeperPort: 27017, DbPort: 27017},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo1", SshPort: 22, KeeperPort: 27017, DbPort: 27017},
 				},
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo2", KeeperPort: 27018, DbPort: 27018},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "mongo2", SshPort: 22, KeeperPort: 27018, DbPort: 27018},
 				},
 				{
 					Command:     deploySingleHost,
 					PostScripts: []string{deploySingleHostInitiate},
-					Defaults:    keeper.DeploymentCommandDefaults{Name: "mongo3", KeeperPort: 27019, DbPort: 27019},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "mongo3", SshPort: 22, KeeperPort: 27019, DbPort: 27019},
 				},
 			},
 		},

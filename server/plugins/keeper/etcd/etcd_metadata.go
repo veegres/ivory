@@ -128,16 +128,16 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", SshPort: 22, KeeperPort: 2379, DbPort: 2379},
 				},
 				{
 					Command:  deployMultiHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", KeeperPort: 2379, DbPort: 2379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", SshPort: 22, KeeperPort: 2379, DbPort: 2379},
 				},
 				{
 					Command:     deployMultiHost,
 					PostScripts: deployAuth,
-					Defaults:    keeper.DeploymentCommandDefaults{Name: "etcd3", KeeperPort: 2379, DbPort: 2379},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "etcd3", SshPort: 22, KeeperPort: 2379, DbPort: 2379},
 				},
 			},
 		},
@@ -149,16 +149,16 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", SshPort: 22, KeeperPort: 2379, DbPort: 2379},
 				},
 				{
 					Command:  deploySingleHostNode2,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", KeeperPort: 2381, DbPort: 2381},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", SshPort: 22, KeeperPort: 2381, DbPort: 2381},
 				},
 				{
 					Command:     deploySingleHostNode3,
 					PostScripts: deployAuth,
-					Defaults:    keeper.DeploymentCommandDefaults{Name: "etcd3", KeeperPort: 2383, DbPort: 2383},
+					Defaults:    keeper.DeploymentCommandDefaults{Name: "etcd3", SshPort: 22, KeeperPort: 2383, DbPort: 2383},
 				},
 			},
 		},
