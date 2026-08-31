@@ -169,6 +169,25 @@ func TestService_KeeperDeployUpRequiresPorts(t *testing.T) {
 	}
 }
 
+// TestService_KeeperDeployUpRequiresACommand covers the other end of the
+// template editor's blank-command check: the verb belongs to Ivory, so a blank
+// command runs a bare "docker run" and the deploy reports docker's usage text
+// instead of what was actually missing.
+func TestService_KeeperDeployUpRequiresACommand(t *testing.T) {
+	s := newDeployTestService()
+	r := KeeperDeployRequest{
+		Name:       "db1",
+		KeeperPort: 8008,
+		DbPort:     5432,
+		Command:    "   \n  ",
+		Connection: PlatformVaultConnection{Host: "db1", Port: 22},
+	}
+
+	if _, err := s.KeeperDeployUp(r); !errors.Is(err, ErrKeeperDeployCommandRequired) {
+		t.Fatalf("expected ErrKeeperDeployCommandRequired, got %v", err)
+	}
+}
+
 // TestService_KeeperDeployJudgesTheRequestOnly covers what replaced the
 // plugin's Requirements: whether a deployment has keeper or database
 // credentials at all is the user's answer on the deploy screen, so a request

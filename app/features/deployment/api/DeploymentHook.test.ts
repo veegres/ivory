@@ -66,6 +66,21 @@ describe("useTemplateForm", () => {
         expect(result.current.valid).toBe(false)
     })
 
+    // NOTE: a blank command is a node the template counts and cannot run, and
+    // adding one is how a new node starts - so the form stays invalid until it
+    // is written
+    it("should be invalid while any command is blank", () => {
+        const {result} = renderHook(() => useTemplateForm(initialTemplate()))
+
+        act(() => result.current.addCommand())
+
+        expect(result.current.valid).toBe(false)
+
+        act(() => result.current.updateCommand(1, {command: "docker run -d --name {{name}} etcd"}))
+
+        expect(result.current.valid).toBe(true)
+    })
+
     it("should add an empty command by default and a copy of one when given", () => {
         const {result} = renderHook(() => useTemplateForm(initialTemplate()))
 

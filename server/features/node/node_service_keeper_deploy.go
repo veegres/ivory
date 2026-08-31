@@ -9,6 +9,7 @@ import (
 )
 
 var ErrKeeperDeployPortsRequired = errors.New("keeper, database and ssh ports are required")
+var ErrKeeperDeployCommandRequired = errors.New("deployment command is required")
 
 // KeeperDeployUp deploys one node by running its own command. Every value the
 // command can reference belongs to this request alone, so one node's values
@@ -19,6 +20,11 @@ func (s *Service) KeeperDeployUp(r KeeperDeployRequest) ([]string, error) {
 	}
 	if r.KeeperPort <= 0 || r.DbPort <= 0 || r.Connection.Port <= 0 {
 		return nil, ErrKeeperDeployPortsRequired
+	}
+	// NOTE: the verb is Ivory's own, so a blank command would run a bare
+	// "docker run" and report docker's usage text as the deploy's failure
+	if strings.TrimSpace(r.Command) == "" {
+		return nil, ErrKeeperDeployCommandRequired
 	}
 	if unknown := keeper.UnknownPlaceholders(r.Command); len(unknown) > 0 {
 		return nil, fmt.Errorf("unknown variables in command: %s", strings.Join(unknown, ", "))

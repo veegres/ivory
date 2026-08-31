@@ -78,6 +78,20 @@ func TestInterpolate(t *testing.T) {
 		}
 	})
 
+	// NOTE: a spelling outside Vars is never resolved, however close it looks -
+	// it stays in the text, where UnresolvedPlaceholders reports it and the
+	// deploy fails on it rather than the shell receiving it
+	t.Run("malformed spellings are not substituted", func(t *testing.T) {
+		got := Interpolate("{{ host }} {{db-port}}", values)
+		want := "{{ host }} {{db-port}}"
+		if got != want {
+			t.Errorf("Interpolate() = %q, want %q", got, want)
+		}
+		if unresolved := UnresolvedPlaceholders(got); len(unresolved) != 2 {
+			t.Errorf("UnresolvedPlaceholders() = %v, want both reported", unresolved)
+		}
+	})
+
 	// NOTE: values belong to one deployment, so a second node resolves its own
 	// and never sees the first's
 	t.Run("one command's values never reach another", func(t *testing.T) {
@@ -157,6 +171,13 @@ func TestUnknownPlaceholders(t *testing.T) {
 			name:     "docker template syntax is not matched",
 			input:    "--format '{{json .}}'",
 			expected: nil,
+		},
+		{
+			// NOTE: these used to slip past the pattern entirely and reach the
+			// shell as literal text - a variable that is nearly right is a typo
+			name:     "malformed spellings of a real variable are reported",
+			input:    "-h {{ host }} -p {{db-port}} --name {{ name}}",
+			expected: []string{"{{ host }}", "{{db-port}}", "{{ name}}"},
 		},
 	}
 

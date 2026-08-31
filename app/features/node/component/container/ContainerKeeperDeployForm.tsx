@@ -45,9 +45,10 @@ type Props = {
 }
 
 // ContainerKeeperDeployForm shows what deploying this node will run. It has
-// nothing to fill in: the node is the one the dialog was opened on, its ports
-// are the ones the chosen command states, and the command belongs to the
-// template - so every field here is a read-only account of the deployment.
+// nothing to fill in: the host is the one the dialog was opened on, the node's
+// name and ports are the ones the chosen command states, and the command
+// belongs to the template - so every field here is a read-only account of the
+// deployment.
 export function ContainerKeeperDeployForm(props: Props) {
     const {connection, plugin, cluster, node, template, keeperId, databaseId, sshKeyId, logs, onDeployed} = props
     // NOTE: which of the template's nodes runs on this host - the first one
@@ -70,6 +71,11 @@ export function ContainerKeeperDeployForm(props: Props) {
     // whatever port the first one already took.
     const keeperPort = command.defaults?.keeperPort
     const dbPort = command.defaults?.dbPort
+    // NOTE: the name belongs to the command as much as its ports do - a member
+    // list baked into the text names its peers, and a node deployed under a
+    // different name is one the others wait for forever. The Ivory node this
+    // dialog was opened on is only the fallback, for a command naming none.
+    const name = command.defaults?.name?.trim() || node
 
     if (logs) return <DialogLogsScreen logs={logs}/>
 
@@ -143,7 +149,7 @@ export function ContainerKeeperDeployForm(props: Props) {
         return (
             <Box sx={SX.node}>
                 <FieldRow>
-                    <TextField size={"small"} label={"Name"} value={node} disabled={true}/>
+                    <TextField size={"small"} label={"Name"} value={name} disabled={true}/>
                     <TextField size={"small"} label={"Host"} value={connection.host} disabled={true}/>
                 </FieldRow>
                 <FieldRow>
@@ -174,7 +180,7 @@ export function ContainerKeeperDeployForm(props: Props) {
         nodeDeploy.mutate({
             plugin,
             cluster,
-            name: node,
+            name,
             connection,
             command: command.command,
             postScripts: command.postScripts,
@@ -187,7 +193,7 @@ export function ContainerKeeperDeployForm(props: Props) {
     function getValues(): DeployValues {
         return {
             cluster,
-            name: node,
+            name,
             host: connection.host,
             sshPort: connection.port,
             keeperPort,

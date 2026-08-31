@@ -58,8 +58,11 @@ export function useTemplateForm(initial: TemplateRequest) {
     // NOTE: kept per command rather than flattened - a template has several,
     // and "{{foo}} is not a known variable" is no help without saying where
     const unknown = useMemo(handleMemoUnknown, [template.commands])
+    // NOTE: a blank command is a node the template counts and cannot run, so it
+    // fails the form the same way a blank name does - the server refuses it too
     const valid = !!template.name.trim()
         && template.commands.length > 0
+        && template.commands.every(c => !!c.command.trim())
         && unknown.every(commandUnknown => commandUnknown.length === 0)
 
     return {template, setTemplate, unknown, valid, updateCommand, addCommand, removeCommand}

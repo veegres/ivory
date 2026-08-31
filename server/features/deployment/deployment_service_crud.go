@@ -58,15 +58,25 @@ func (s *Service) DeleteAll() error {
 }
 
 // validate enforces the rules a template must satisfy to be deployable at all:
-// a unique name, at least one command, and only variables from the closed
-// vocabulary. allowedName is the template's own current name, which a rename
-// check must not treat as a collision with itself.
+// a unique name, a keeper and platform this build actually has, at least one
+// command with text in it, node names that do not collide, and only variables
+// from the closed vocabulary. allowedName is the template's own current name,
+// which a rename check must not treat as a collision with itself.
 func (s *Service) validate(r TemplateRequest, allowedName string) error {
 	if strings.TrimSpace(r.Name) == "" {
 		return ErrTemplateNameRequired
 	}
+	if err := s.validatePlugins(r); err != nil {
+		return err
+	}
 	if len(r.Commands) == 0 {
 		return ErrTemplateCommandsRequired
+	}
+	if index, blank := r.blankCommand(); blank {
+		return fmt.Errorf("%w: node %d", ErrTemplateCommandBlank, index+1)
+	}
+	if name, taken := r.duplicateNodeName(); taken {
+		return fmt.Errorf("%w: %s", ErrTemplateNodeNameTaken, name)
 	}
 	if unknown := r.unknownPlaceholders(); len(unknown) > 0 {
 		return fmt.Errorf("unknown variables: %s", strings.Join(unknown, ", "))
@@ -78,6 +88,20 @@ func (s *Service) validate(r TemplateRequest, allowedName string) error {
 		return nil
 	}
 	return s.validateNameFree(r)
+}
+
+// validatePlugins rejects a template written against a keeper or platform this
+// build does not have. Its commands are written for one specific pair - Update
+// refuses to change either for that reason - so a pair nothing implements is a
+// template the list it belongs to does not exist for.
+func (s *Service) validatePlugins(r TemplateRequest) error {
+	if _, ok := s.keeperRegistry.All()[r.Keeper]; !ok {
+		return fmt.Errorf("%w: %s", ErrUnknownKeeper, r.Keeper)
+	}
+	if _, err := s.platformRegistry.Get(r.Platform); err != nil {
+		return fmt.Errorf("%w: %s", ErrUnknownPlatform, r.Platform)
+	}
+	return nil
 }
 
 // validateNameFree checks the name against stored templates and the shipped

@@ -9,9 +9,12 @@ import (
 var ErrTemplateNameRequired = errors.New("template name is required")
 var ErrTemplateNameTaken = errors.New("template name is already taken")
 var ErrTemplateCommandsRequired = errors.New("template needs at least one command")
+var ErrTemplateCommandBlank = errors.New("template command is blank")
+var ErrTemplateNodeNameTaken = errors.New("template node name is used by more than one command")
 var ErrTemplatePortInvalid = errors.New("template default port is out of range")
 var ErrTemplateReadOnly = errors.New("shipped templates cannot be changed, copy one instead")
 var ErrTemplatePluginImmutable = errors.New("template keeper and platform cannot be changed")
+var ErrUnknownKeeper = errors.New("unknown keeper")
 var ErrUnknownPlatform = errors.New("unknown platform")
 
 // keeperRegistry is the narrow view deployment needs of the keeper plugin

@@ -140,6 +140,13 @@ describe("getPlaceholders", () => {
     it("should not match docker's own template syntax", () => {
         expect(getPlaceholders("--format '{{json .}}'")).toEqual([])
     })
+
+    // NOTE: these used to slip past the pattern and reach the shell as literal
+    // text - a spelling that is nearly right is a typo, reported as unknown
+    it("should match the near misses of a variable", () => {
+        expect(getPlaceholders("-h {{ host }} -p {{db-port}}")).toEqual(["{{ host }}", "{{db-port}}"])
+        expect(getUnknownPlaceholders("-h {{ host }} -p {{db-port}}")).toEqual(["{{ host }}", "{{db-port}}"])
+    })
 })
 
 describe("interpolateCommand", () => {

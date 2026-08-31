@@ -282,7 +282,12 @@ export const PlatformPluginOptions: { [key in PlatformPlugin]: EnumOptions } = {
 // PlaceholderPattern is the shape of a variable, shared so the editor's
 // highlighting marks exactly what interpolation will act on. Copy it with
 // new RegExp before handing it to anything that keeps lastIndex.
-export const PlaceholderPattern = /{{\w+}}/g
+//
+// It matches the near misses of a variable too - {{ host }}, {{db-port}} - so
+// they are reported as unknown rather than reaching the shell as literal text.
+// Go template syntax ({{json .}}, {{.Name}}) still does not match: docker
+// interprets it itself and a command may legitimately carry it.
+export const PlaceholderPattern = /{{\s*[\w-]+\s*}}/g
 
 // getPlaceholders lists every {{variable}} a command references, in order and
 // deduplicated.

@@ -117,6 +117,40 @@ func (r TemplateRequest) unknownPlaceholders() []string {
 	return unknown
 }
 
+// blankCommand reports the position of the first command with no text in it. A
+// template's commands are its nodes, so a blank one is a node the deploy screen
+// offers, counts and cannot run - the same reason a nameless template is
+// refused rather than stored.
+func (r TemplateRequest) blankCommand() (int, bool) {
+	for i, c := range r.Commands {
+		if strings.TrimSpace(c.Command) == "" {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+// duplicateNodeName reports the first default node name shared by two commands.
+// A name is a node's identity within its cluster, and cluster.Deploy rejects a
+// pair that collides - so the template would be saved and could never deploy,
+// which is exactly the kind of failure worth saying here instead of there. A
+// command stating no name is not a collision: the deploy screen fills that one
+// in.
+func (r TemplateRequest) duplicateNodeName() (string, bool) {
+	seen := make(map[string]bool, len(r.Commands))
+	for _, c := range r.Commands {
+		name := strings.TrimSpace(c.Defaults.Name)
+		if name == "" {
+			continue
+		}
+		if seen[name] {
+			return name, true
+		}
+		seen[name] = true
+	}
+	return "", false
+}
+
 // invalidPort reports the first default port outside the range a port can take
 // at all. Zero is allowed and means the command states none, leaving the deploy
 // form's port empty for the user to type.

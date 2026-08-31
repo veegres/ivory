@@ -153,7 +153,14 @@ func (v Values) lookup() map[Var]string {
 	}
 }
 
-var placeholderPattern = regexp.MustCompile(`{{\w+}}`)
+// placeholderPattern matches a variable and the near misses of one: a bare
+// token in braces, with or without surrounding space. {{ host }} and {{db-port}}
+// used to slip past a stricter pattern and reach the shell verbatim, which is
+// the one thing the closed vocabulary exists to prevent - they match here and
+// are reported against Vars like any other typo. Go template syntax
+// ({{json .}}, {{.Name}}) still does not match: docker interprets it itself and
+// a command may legitimately carry it.
+var placeholderPattern = regexp.MustCompile(`{{\s*[\w-]+\s*}}`)
 
 // Interpolate substitutes {{placeholder}} variables with the command's own
 // values. Missing or empty values leave the variable in place so it can be
