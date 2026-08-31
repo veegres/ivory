@@ -18,7 +18,7 @@ import {OptionsVault} from "./OptionsVault"
 // but collapses to a single, wider column when the container is narrow
 // (e.g. the deploy/detect dialogs)
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1.5, alignItems: "flex-start", marginTop: "5px"},
+    box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1.5, alignItems: "flex-start", marginTop: "10px"},
     divider: {flexBasis: "100%"},
     field: {flex: "1 1 var(--size-field)", minWidth: "var(--size-field)"},
     tls: {width: "50%", fontWeight: "bold"},

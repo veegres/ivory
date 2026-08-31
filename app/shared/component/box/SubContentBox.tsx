@@ -29,8 +29,9 @@ const SX: SxPropsMap = {
 // NOTE: not typed as SxPropsMap - Hint takes a plain SystemStyleObject, and
 // the annotation is what makes the two disagree
 const HintSX = {
+    // NOTE: the padding here depends on haa padding
     hint: {userSelect: "text", cursor: "text", fontSize: "11px", padding: "0px 4px 4px"},
-    islandHint: {padding: "0px 10px 4px"},
+    islandHint: {padding: "0px 12px 4px"},
 }
 
 type Props = {
