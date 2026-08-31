@@ -1,4 +1,4 @@
-import {SubContentBox} from "../box/SubContentBox"
+import {TitleBox} from "../box/TitleBox"
 import {CodeEditor} from "./CodeEditor"
 
 type Props = {
@@ -18,7 +18,7 @@ export function CodeField(props: Props) {
     const {label, value, editable, hint, placeholder, minHeight = "80px", onUpdate} = props
 
     return (
-        <SubContentBox label={label} hint={hint} dense={true} collapsible={false}>
+        <TitleBox label={label} hint={hint} dense={true} collapsible={false}>
             <CodeEditor
                 value={value}
                 editable={editable}
@@ -26,6 +26,6 @@ export function CodeField(props: Props) {
                 placeholder={placeholder}
                 onUpdate={onUpdate}
             />
-        </SubContentBox>
+        </TitleBox>
     )
 }

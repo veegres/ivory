@@ -1,6 +1,6 @@
 import {DialogScreen} from "./DialogScreen"
 import {Logs} from "./Logs"
-import {SubContentBox} from "./SubContentBox"
+import {TitleBox} from "./TitleBox"
 
 // NOTE: the virtualizer inside Logs needs a pixel height, so this is where it
 // and the dialog have to agree: --size-dialog (600) less the screen's padding
@@ -23,9 +23,9 @@ export function DialogLogsScreen(props: Props) {
 
     return (
         <DialogScreen fit={true}>
-            <SubContentBox label={"Logs"} island={true} collapsible={false}>
+            <TitleBox label={"Logs"} island={true} collapsible={false}>
                 <Logs logs={logs} height={LOGS_HEIGHT} auto={false}/>
-            </SubContentBox>
+            </TitleBox>
         </DialogScreen>
     )
 }

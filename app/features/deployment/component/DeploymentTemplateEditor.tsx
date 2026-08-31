@@ -1,7 +1,7 @@
 import {Add} from "@mui/icons-material"
 import {Box, Button, TextField} from "@mui/material"
 
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {CopyIconButton, DeleteIconButton} from "../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployVar} from "../../node/api/NodeType"
@@ -67,7 +67,7 @@ export function DeploymentTemplateEditor(props: Props) {
     // that credential switched off. A password is never stored in a template.
     function renderDefaults() {
         return (
-            <SubContentBox
+            <TitleBox
                 label={"Variables & Defaults"}
                 hint={"cluster-wide values available to every command in this template as {{variable}} - some are disabled because their value is always set at deploy time"}
                 island={true}
@@ -101,13 +101,13 @@ export function DeploymentTemplateEditor(props: Props) {
                         },
                     ]}
                 />
-            </SubContentBox>
+            </TitleBox>
         )
     }
 
     function renderCommand(command: TemplateCommand, index: number) {
         return (
-            <SubContentBox
+            <TitleBox
                 key={index}
                 label={`Node ${index + 1}`}
                 renderActions={editable && renderCommandActions(command, index)}
@@ -119,7 +119,7 @@ export function DeploymentTemplateEditor(props: Props) {
                     editable={editable}
                     onChange={(updated) => onCommandChange(index, updated)}
                 />
-            </SubContentBox>
+            </TitleBox>
         )
     }
 

@@ -60,7 +60,7 @@ type Props = {
     collapsible?: boolean,
 }
 
-export const SubContentBox = memo(function SubContentBox(props: PropsWithChildren<Props>) {
+export const TitleBox = memo(function SubContentBox(props: PropsWithChildren<Props>) {
     const {label, hint, children, renderActions, defaultOpen = false, island = false, dense = false} = props
     const {collapsible = true, onOpenChange} = props
     const [uncontrolled, setUncontrolled] = useState(defaultOpen)

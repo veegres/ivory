@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 
 import {InfoColorBox} from "../../../shared/component/box/InfoColorBox"
 import {InfoColorBoxRow} from "../../../shared/component/box/InfoColorBoxRow"
-import {SubContentBox} from "../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {CodeField} from "../../../shared/component/input/CodeField"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployPasswordMask, DeployValues, interpolateCommand} from "../../../shared/helper/HelperUtils"
@@ -33,7 +33,7 @@ export function DeploymentCommandPreview(props: Props) {
     return (
         /* NOTE: the badge rides on the toggle's own row - it says what is
            inside the section, so it belongs to the line that opens it */
-        <SubContentBox
+        <TitleBox
             label={"Preview"}
             hint={`This is what will run on the node, with ${DeployPasswordMask} standing in for the password: the server substitutes the real one from the database credentials above, so it never reaches the browser.`}
             renderActions={renderBadge()}
@@ -41,7 +41,7 @@ export function DeploymentCommandPreview(props: Props) {
             dense={true}
         >
             {renderPreview()}
-        </SubContentBox>
+        </TitleBox>
     )
 
     function renderBadge() {

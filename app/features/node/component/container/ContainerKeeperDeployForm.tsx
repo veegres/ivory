@@ -4,7 +4,7 @@ import {useState} from "react"
 import {DialogLogsScreen} from "../../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../../shared/component/box/DialogScreen"
 import {Hint} from "../../../../shared/component/box/Hint"
-import {SubContentBox} from "../../../../shared/component/box/SubContentBox"
+import {TitleBox} from "../../../../shared/component/box/TitleBox"
 import {FieldRow} from "../../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {DeployValues, getShortUuid} from "../../../../shared/helper/HelperUtils"
@@ -122,7 +122,7 @@ export function ContainerKeeperDeployForm(props: Props) {
 
     function renderClusterInfo() {
         return (
-            <SubContentBox label={"Cluster"} island={true} collapsible={false}>
+            <TitleBox label={"Cluster"} island={true} collapsible={false}>
                 <Box sx={[SX.subContent, {gap: 1}]}>
                     <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
                     <FieldRow>
@@ -131,7 +131,7 @@ export function ContainerKeeperDeployForm(props: Props) {
                         {renderVaultField("SSH Credentials", sshKeyId)}
                     </FieldRow>
                 </Box>
-            </SubContentBox>
+            </TitleBox>
         )
     }
 
