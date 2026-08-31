@@ -1,0 +1,553 @@
+<!--
+  Shared report template for deploy-template-single-host-smoke and deploy-template-multi-host-smoke.
+
+  Design system: technical/engineering report. Deep teal-navy accent, cool slate neutrals (not warm cream,
+  not pure grey). IBM Plex Sans for headings/prose, IBM Plex Mono for anything technical (ports, ids,
+  commands, durations, verbatim output, HTTP status codes). Four semantic verdict colors, kept distinct from
+  the accent and from each other: PASS (green), FAIL (golden amber — found broken, no prior baseline to
+  regress from), REGRESSION (crimson — confirmed-working baseline now broken, the most serious finding),
+  UNTESTED (neutral slate). Light/dark via prefers-color-scheme; this is a plain static file, not a published
+  Artifact, so no data-theme stamping is needed.
+
+  HOW TO USE THIS FILE
+  `deploy-template-smoke-report.example.html`, beside this file, is a filled-in report in exactly this
+  structure — read it when a placeholder here is unclear. Its content is invented; its shape is the spec.
+  Read this file, then write your own report by copying this file's <head> (fonts + <style>) verbatim and
+  this body structure verbatim. Fill in every {{PLACEHOLDER}}. Duplicate the block marked
+  `===== REPEAT: one <section class="plugin"> per template =====` once per template you tested, in the order
+  you tested them. Delete any optional block that doesn't apply — a step's <div class="step-problem">, the
+  `baseline` or `depends on` row of a meta-grid, an unused table row — rather than leaving it in with
+  placeholder text.
+
+  FIVE PARTS, IN THIS ORDER, AND NOTHING ELSE IS AN <h2>:
+    1. Summary     — one row per template, scannable in ten seconds.
+    2. Details     — the eight steps per template, each with its verbatim response.
+    3. Problems    — every problem found, one flat table.
+    4. Fixed       — what the previous run reported that this run can no longer reproduce, one flat table.
+    5. Final state — what the run left behind, and whether each of those is clean.
+  Inside a part, <h3> is a template's own name+badge (in Details) or nothing at all (parts 1, 3, 4 and 5 are
+  a table each, with at most a short callout). **There is no <h4> anywhere.** Do not invent subsections
+  ("As-shipped outcome", "Root cause", "Fix applied", "Verified fix" — all of these are gone on purpose):
+  the eight steps are the structure, and a problem is described under the step that hit it.
+
+  PART 2 — THE EIGHT STEPS. Every template runs the same eight steps, in this order, and every template's
+  section shows all eight even when one of them could not run:
+    1. fetch template          GET /api/deployment/template
+    2. deploy                  POST /api/cluster/deploy
+    3. containers on host      GET /api/node/platform/container/list
+    4. Ivory overview          GET /api/cluster/overview/:name
+    5. engine's own view       etcdctl / rs.status() / INFO replication / pg_stat_replication / 4LW / ...
+    6. write                   POST /api/query/execute/console
+    7. read from another node  POST /api/query/execute/console
+    8. teardown                stop ×N, down ×N, DELETE /api/cluster/:name
+  Same eight for every template, so a reader can compare templates by step number and a missing step is
+  visible by position. Each step is FOUR things, in this order:
+    a. <span class="step-did">   — one short line: what this step did.
+    b. <span class="step-req">   — the exact request or command, one line.
+    c. <pre>                     — THE RESPONSE, VERBATIM. This is not optional and is not a summary. Show
+                                   the real body: the JSON, the deploy log lines, the docker ps rows, the
+                                   psql/etcdctl/mongosh output. Elide with "..." only inside a long value,
+                                   never the whole response. A reader must be able to see what came back
+                                   without taking your word for it.
+    d. <span class="step-verdict ok|bad"> — ONE line: what that response proves, or what is wrong with it.
+       Short. It is a verdict on the response above, never a retelling of it.
+
+  A PROBLEM IS DESCRIBED UNDER ITS OWN STEP. When a step goes wrong, its verdict is `bad` and a
+  <div class="step-problem"> follows it immediately, inside the same <li>, with three labelled lines:
+    PROBLEM — what is wrong, in one or two sentences.
+    CAUSE   — why, once you can point at the evidence. Its own <pre> goes here if it needs one.
+    DONE    — what you did about it: the deploy-time edit you tried, whether it worked, and whether the
+              later steps ran on a patched deploy. Say so plainly — a patched deploy never turns the
+              template's verdict green.
+  Never collect problems into a section of their own inside Details, and never move a problem's explanation
+  away from the step that found it. Part 3 is the flat index of them, not their home.
+
+  A short <div class="tpl-summary"> closes each template's section: one or two sentences, no more. It says
+  what the eight steps add up to, not what they each said.
+
+  A template that fails early still shows steps 3–8. Either continue on a patched deploy (naming the patch
+  in the failing step's DONE line) or, where the failure makes a step impossible, keep the <li> and put
+  <span class="step-skipped"> in place of the response saying which step blocked it.
+
+  PART 3 — PROBLEMS. One flat table, every problem from every template, most serious first (regression, then
+  fail, then lower). Columns: #, severity badge, where (template name, or `Ivory — <component>` for a
+  finding about Ivory itself), problem in one sentence, evidence (a pointer of the form
+  "part 2 → <template>, step <n>" — never a retelling), status (open / known, REPORT.md #n). Nothing appears
+  here that part 2 did not show happening. If the run found nothing, keep the table and give it one row
+  reading "None found." across all columns.
+
+  PART 4 — FIXED. One flat table of what the previous run reported and this run could not reproduce.
+  Columns: was, where, what changed, confirmed by. **The last column is the point** — it names the step in
+  part 2 that proves it, so nothing is marked fixed on the strength of "it passed this time". If there is no
+  previous run to compare against, keep the table and say so in one row.
+
+  PART 5 — FINAL STATE. One table of what the run left behind, each row `clean`, `left in place`, or
+  `not clean` (<span class="state clean|left|dirty">). Cover, at minimum: containers, Ivory cluster records,
+  vault entries, any DCS/coordination state, volumes, pulled images, and the repository working tree. A
+  "not clean" row is not a template problem — it is what the next run will trip over, so it also gets a row
+  in part 3 when Ivory caused it. Close with a callout naming anything the next run must clear first.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Single-Host Template Smoke Run</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-alt: #eaeff6;
+    --border: #d6dbe3;
+    --text: #161b26;
+    --text-muted: #576174;
+    --accent: #1f4d63;
+    --accent-soft: #e1eef3;
+    --header-bg: #16232f;
+    --pass: #128a4e;      --pass-bg: #e2f5ea;
+    --fail: #a8720a;      --fail-bg: #fbead0;
+    --regr: #b8202a;      --regr-bg: #fbe3e4;
+    --untested: #57616f;  --untested-bg: #e8ebf0;
+    --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1319;
+      --surface: #151a22;
+      --surface-alt: #1c222c;
+      --border: #29303c;
+      --text: #e6e9ef;
+      --text-muted: #97a1b0;
+      --accent: #7fb9cc;
+      --accent-soft: #1b2c34;
+      --header-bg: #0c1116;
+      --pass: #49c98a;      --pass-bg: #103322;
+      --fail: #e0ac52;      --fail-bg: #372710;
+      --regr: #ee6a63;      --regr-bg: #391414;
+      --untested: #99a2b2;  --untested-bg: #222836;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0 0 72px;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 28px; }
+  header.report-head {
+    background: var(--header-bg);
+    color: #eef1f4;
+    padding: 40px 28px 32px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #4d7f92;
+  }
+  header.report-head .wrap { padding: 0 28px; }
+  header.report-head h1 { margin: 0 0 10px; font-size: 26px; font-weight: 700; text-wrap: balance; }
+  header.report-head p.dek { margin: 0 0 18px; font-size: 14.5px; color: #aab4c0; max-width: 65ch; }
+  .run-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; font-family: var(--font-mono); font-size: 12.5px; color: #9aa7b6; }
+  .run-meta span b { color: #8ecfe0; font-weight: 600; }
+
+  /* h2 = one of exactly two report parts (Summary, Details) — the biggest, rarest heading in the page */
+  h2 {
+    font-size: 26px; font-weight: 700; margin: 60px 0 20px;
+    padding-bottom: 10px; border-bottom: 3px solid var(--accent);
+    text-wrap: balance;
+  }
+  h2:first-child { margin-top: 0; }
+  /* h3 = a section within a part: a Summary table's title, Cross-cutting findings, or a plugin's name+badge */
+  h3 {
+    font-size: 19px; font-weight: 700; margin: 40px 0 14px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--border);
+    text-wrap: balance;
+  }
+  p { margin: 0 0 12px; max-width: 72ch; }
+  a { color: var(--accent); }
+
+  code {
+    font-family: var(--font-mono); font-size: 0.9em;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  pre {
+    font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55;
+    background: #12151c; color: #d7dce6; border: 1px solid #262c39;
+    border-radius: 8px; padding: 14px 16px; margin: 8px 0 16px;
+    overflow-x: auto; white-space: pre;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  pre.short { max-height: 280px; overflow-y: auto; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 18px; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 7px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  td.num, th.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .table-scroll { overflow-x: auto; }
+
+  .status-pill {
+    display: inline-block; font-family: var(--font-mono); font-weight: 600; font-size: 12px;
+    padding: 1px 8px; border-radius: 5px; border: 1px solid transparent;
+  }
+  .status-pill.s2xx { background: var(--pass-bg); color: var(--pass); border-color: var(--pass); }
+  .status-pill.s4xx, .status-pill.s5xx { background: var(--regr-bg); color: var(--regr); border-color: var(--regr); }
+  .status-pill.s207 { background: var(--fail-bg); color: var(--fail); border-color: var(--fail); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 11px; border-radius: 999px; border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .badge.pass       { background: var(--pass-bg);      color: var(--pass);      border-color: var(--pass); }
+  .badge.fail       { background: var(--fail-bg);      color: var(--fail);      border-color: var(--fail); }
+  .badge.regression { background: var(--regr-bg);      color: var(--regr);      border-color: var(--regr); }
+  .badge.untested   { background: var(--untested-bg);  color: var(--untested);  border-color: var(--untested); }
+
+  /* Summary dashboard: scan verdicts before reading detail */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin: 4px 0 8px;
+  }
+  .summary-tile {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .summary-tile .plugin-name { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .summary-tile .one-liner { font-size: 12.5px; color: var(--text-muted); }
+  .stat-strip { display: flex; flex-wrap: wrap; gap: 18px; margin: 18px 0 28px; font-family: var(--font-mono); font-size: 13px; }
+  .stat-strip .stat b { font-size: 17px; display: block; font-family: var(--font-sans); }
+
+  section.plugin {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 22px 26px 26px; margin: 0 0 22px;
+  }
+  section.plugin > h3 { margin-top: 0; border: none; padding: 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .meta-grid {
+    display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px;
+    font-size: 13px; margin: 10px 0 6px; font-family: var(--font-mono);
+  }
+  .meta-grid dt { color: var(--text-muted); }
+  .meta-grid dd { margin: 0; }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 10px 14px; margin: 10px 0 16px; font-size: 13.5px; border-radius: 0 6px 6px 0;
+  }
+  .callout.warn { border-color: var(--regr); background: var(--regr-bg); }
+  .callout.note { border-color: var(--untested); background: var(--untested-bg); }
+
+  .agree { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; }
+  .agree.yes { color: var(--pass); }
+  .agree.no  { color: var(--regr); }
+
+  footer.report-foot {
+    margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);
+  }
+</style>
+<style>
+  h2 .part-no {
+    font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+    color: var(--accent); letter-spacing: 0.08em; display: block; margin-bottom: 2px;
+  }
+  h2 .part-hint { display: block; font-family: var(--font-sans); font-size: 13.5px; font-weight: 400; color: var(--text-muted); margin-top: 6px; }
+  td .badge { margin: 0; }
+  tr.row-bad td { background: var(--regr-bg); }
+  tr.row-warn td { background: var(--fail-bg); }
+  .state { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; }
+  .state.clean { color: var(--pass); }
+  .state.dirty { color: var(--regr); }
+  .state.left  { color: var(--fail); }
+  .sum-table td.tpl { font-family: var(--font-mono); font-size: 12.5px; }
+
+  /* ---- the step list: every template runs the same steps, each showing its own response ---- */
+  ol.steps { margin: 10px 0 0; padding-left: 26px; }
+  ol.steps > li { margin: 0 0 20px; padding-left: 4px; }
+  ol.steps > li::marker { font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+  .step-did { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  .step-req { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  ol.steps pre { margin: 0; }
+  .step-verdict { display: block; margin-top: 6px; font-size: 13px; font-weight: 600; }
+  .step-verdict.ok  { color: var(--pass); }
+  .step-verdict.bad { color: var(--regr); }
+  /* a problem is described under the step that hit it — never in a section of its own */
+  .step-problem {
+    margin-top: 8px; border-left: 3px solid var(--regr); background: var(--regr-bg);
+    border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px;
+  }
+  .step-problem p { margin: 0 0 6px; max-width: none; }
+  .step-problem p:last-child { margin-bottom: 0; }
+  .step-problem .lab {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--regr); margin-right: 7px;
+  }
+  .step-skipped { color: var(--text-muted); font-style: italic; font-size: 13px; }
+  .tpl-summary {
+    margin-top: 4px; padding: 10px 14px; border-radius: 8px;
+    background: var(--surface-alt); border: 1px solid var(--border); font-size: 13.5px;
+  }
+  .tpl-summary b { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-right: 8px; }
+  .pipeline {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 22px;
+    font-family: var(--font-mono); font-size: 12px;
+  }
+  .pipeline span {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px;
+  }
+  .pipeline span b { color: var(--accent); font-weight: 600; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<header class="report-head">
+  <div class="wrap">
+    <h1>{{REPORT_H1}}</h1>
+    <p class="dek">{{ONE_SENTENCE_SCOPE_AND_METHOD}}</p>
+    <div class="run-meta">
+      <span>Run date: <b>{{DATE}}</b></span>
+      <span>Target: <b>{{TARGET_DESCRIPTION}}</b></span>
+      <span>Ivory server: <b>{{SERVER_HOST_PORT}}</b></span>
+      <span>Baseline: <b>{{PREVIOUS_RUN_DATE_OR_none}}</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- =============================== 1. SUMMARY ===============================
+       One row per template. No responses, no root-cause prose, no <pre> — those live in part 2. -->
+  <h2><span class="part-no">PART 1</span>Summary
+    <span class="part-hint">One line per template. Everything here is scannable in ten seconds; nothing here needs the detail below to be understood.</span>
+  </h2>
+
+  <div class="stat-strip">
+    <div class="stat"><b>{{N}}</b>templates</div>
+    <div class="stat"><b>{{N}}</b>pass</div>
+    <div class="stat"><b>{{N}}</b>fail</div>
+    <div class="stat"><b>{{N}}</b>regression</div>
+    <div class="stat"><b>{{N}}</b>untested</div>
+    <div class="stat"><b>{{Xm Ys}}</b>wall clock</div>
+  </div>
+
+  <div class="table-scroll">
+  <table class="sum-table">
+    <thead>
+      <tr><th>Template</th><th>Verdict</th><th>Nodes up</th><th>Leader</th><th>Query</th><th>In one clause</th></tr>
+    </thead>
+    <tbody>
+      <!-- REPEAT one row per template, in test order. Add class="row-warn" for fail, "row-bad" for regression. -->
+      <tr>
+        <td class="tpl">{{Template name}}</td>
+        <td><span class="badge pass">pass</span></td>
+        <td class="num">{{3/3}}</td><td class="num">{{node name / none / n/a}}</td><td class="num">{{read-after-write ok / not reached}}</td>
+        <td>{{one clause: what worked, or what broke}}</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout">
+    <b>Read this first:</b> {{the one or two things that matter — which templates are bad and why the rest are not worth reading about}}
+  </div>
+
+  <!-- =============================== 2. DETAILS ===============================
+       Eight steps per template. Each step shows its verbatim response. A problem is described
+       under the step that hit it — never in a subsection of its own. There is no <h4> here. -->
+  <h2><span class="part-no">PART 2</span>Details
+    <span class="part-hint">Every template runs the same eight steps. Each step shows the request, the response it got back verbatim, and a one-line verdict. A step that went wrong describes the problem directly underneath itself.</span>
+  </h2>
+
+  <div class="pipeline">
+    <span><b>1</b>fetch template</span>
+    <span><b>2</b>deploy</span>
+    <span><b>3</b>containers on host</span>
+    <span><b>4</b>Ivory overview</span>
+    <span><b>5</b>engine's own view</span>
+    <span><b>6</b>write</span>
+    <span><b>7</b>read from another node</span>
+    <span><b>8</b>teardown</span>
+  </div>
+
+  <!-- ===== REPEAT: one <section class="plugin"> per template, in test order ===== -->
+  <section class="plugin">
+    <h3>{{Template name}} <span class="badge pass">pass</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>{{cluster name used}}</dd>
+      <dt>nodes</dt><dd>{{node1 / node2 / node3 · single-host: "all on localhost" · multi-host: the three hosts}}</dd>
+      <dt>ports</dt><dd>{{keeper · db · ssh, as actually used}}</dd>
+      <!-- multi-host only, when it applies: -->
+      <dt>depends on</dt><dd>{{e.g. etcd multi-host cluster, deployed first — or omit this row}}</dd>
+      <!-- only when there is a previous verdict to hold or break: -->
+      <dt>baseline</dt><dd>{{e.g. passed clean on YYYY-MM-DD}}</dd>
+      <dt>duration</dt><dd>{{Xm Ys}}</dd>
+    </dl>
+    <ol class="steps">
+
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper={{keeper}}&amp;platform=docker</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — the template id, its defaults, and each command's name/ports/postScripts}}</code></pre>
+        <span class="step-verdict ok">✓ {{what the response proves, one line}}</span>
+      </li>
+
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · {{N}} nodes · host={{host}} · {{credentials mode}}</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — status line, complete flag, and the deploy log lines}}</code></pre>
+        <span class="step-verdict ok">✓ {{200 not 207 — every node up and every post-script run}}</span>
+      </li>
+
+      <!-- A FAILING STEP looks like this: same four things, then the problem under it, inside the same <li>. -->
+      <li>
+        <span class="step-did">{{what this step did}}</span>
+        <span class="step-req">{{the exact request or command}}</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — including the error, exactly as it came back}}</code></pre>
+        <span class="step-verdict bad">✗ {{what is wrong, one line}}</span>
+        <div class="step-problem">
+          <p><span class="lab">problem</span>{{what is wrong, one or two sentences}}</p>
+          <pre class="short"><code>{{only when the cause needs its own evidence — container logs, a config file read out of the container}}</code></pre>
+          <p><span class="lab">cause</span>{{why, once you can point at the evidence for it}}</p>
+          <p><span class="lab">done</span>{{the deploy-time edit you tried, whether it worked, and whether the later steps ran on a patched deploy}}</p>
+        </div>
+      </li>
+
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host={{host}}</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — name, image, status per container}}</code></pre>
+        <span class="step-verdict ok">✓ {{N running, none restarting}}</span>
+      </li>
+
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/{{cluster}}</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — the warnings array and every node's name/role/state/port}}</code></pre>
+        <span class="step-verdict ok">✓ {{node count, leader where the engine elects one, no warnings}}</span>
+      </li>
+
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">{{etcdctl endpoint status / rs.status() / INFO replication / pg_stat_replication / 4LW srvr / ...}}</span>
+        <pre class="short"><code>{{VERBATIM OUTPUT}}</code></pre>
+        <span class="step-verdict ok">✓ {{agrees with the overview: same leader, same members}}</span>
+      </li>
+
+      <li>
+        <span class="step-did">Write on {{the leader / one node}}</span>
+        <span class="step-req">POST /api/query/execute/console · node {{name:port}}</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — the statement and what it returned}}</code></pre>
+        <span class="step-verdict ok">✓ write accepted</span>
+      </li>
+
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node {{name:port}}</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — the row/key/znode read back}}</code></pre>
+        <span class="step-verdict ok">✓ the write crossed to another node — replication is real, not just reported</span>
+      </li>
+
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">stop ×{{N}} · down ×{{N}} · DELETE /api/cluster/{{cluster}}</span>
+        <pre class="short"><code>{{VERBATIM RESPONSE — the statuses, and the docker ps -a check}}</code></pre>
+        <span class="step-verdict ok">✓ nothing left on the host</span>
+      </li>
+
+      <!-- A step that could not run at all keeps its <li> and says which step blocked it: -->
+      <!-- <li><span class="step-did">{{step}}</span><span class="step-skipped">not run — step {{n}} left no cluster to query</span></li> -->
+
+    </ol>
+    <div class="tpl-summary"><b>summary</b>{{one or two sentences on what the eight steps add up to — not a retelling of them}}</div>
+  </section>
+  <!-- ===== end repeat ===== -->
+
+  <!-- =============================== 3. PROBLEMS =============================== -->
+  <h2><span class="part-no">PART 3</span>Problems
+    <span class="part-hint">Every problem this run found, in one flat table — template problems and Ivory problems together, most serious first. Nothing appears here that isn't shown happening in part 2.</span>
+  </h2>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>#</th><th>Severity</th><th>Where</th><th>Problem</th><th>Evidence</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <!-- REPEAT, regression first, then fail, then lower. row-bad for regression, row-warn for fail. -->
+      <tr class="row-bad">
+        <td class="num">P1</td>
+        <td><span class="badge regression">regression</span></td>
+        <td>{{Template name, or "Ivory — <component>"}}</td>
+        <td>{{one sentence}}</td>
+        <td>part 2 → {{Template}}, step {{n}}</td>
+        <td>{{open — fixed at deploy time only / open — new finding / open — known, REPORT.md #n}}</td>
+      </tr>
+      <!-- when the run found nothing: <tr><td colspan="6">None found.</td></tr> -->
+    </tbody>
+  </table>
+  </div>
+
+  <!-- =============================== 4. FIXED =============================== -->
+  <h2><span class="part-no">PART 4</span>Fixed since the previous run
+    <span class="part-hint">Problems the {{previous run date}} report raised that this run could no longer reproduce. Each row names what proves it — a passing template is a claim, and the step that backs it is the receipt.</span>
+  </h2>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>Was</th><th>Where</th><th>What changed</th><th>Confirmed by</th></tr>
+    </thead>
+    <tbody>
+      <!-- REPEAT one row per no-longer-reproducible problem. -->
+      <tr>
+        <td>{{what the previous report said was broken}}</td>
+        <td>{{Template name, or "Ivory — <component>"}}</td>
+        <td>{{what changed in the tree since}}</td>
+        <td>part 2 → {{Template}}, step {{n}} — {{the line in that step's response that proves it}}</td>
+      </tr>
+      <!-- when there is nothing to compare against: <tr><td colspan="4">No previous run to compare against.</td></tr> -->
+    </tbody>
+  </table>
+  </div>
+
+  <!-- =============================== 5. FINAL STATE =============================== -->
+  <h2><span class="part-no">PART 5</span>Final state
+    <span class="part-hint">What the run left behind on the host and in Ivory, and whether each of those is clean. A "not clean" row is not a problem with a template — it is something the next run will trip over.</span>
+  </h2>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>What</th><th>State</th><th>Detail / how to undo</th></tr>
+    </thead>
+    <tbody>
+      <!-- Cover at minimum: containers, cluster records, vault entries, DCS state, volumes, images, working tree. -->
+      <tr><td>{{Containers from all N templates}}</td><td><span class="state clean">clean</span></td><td>{{how you know — the check you ran}}</td></tr>
+      <tr><td>{{Ivory cluster records}}</td><td><span class="state clean">clean</span></td><td>{{...}}</td></tr>
+      <tr><td>{{Vault entries created by the deploys}}</td><td><span class="state left">left in place</span></td><td>{{how to undo}}</td></tr>
+      <tr class="row-bad"><td>{{DCS / coordination state}}</td><td><span class="state dirty">not clean</span></td><td>{{how to undo}}</td></tr>
+      <tr><td>{{Docker volumes}}</td><td><span class="state clean">clean</span></td><td>{{...}}</td></tr>
+      <tr><td>{{Repository working tree}}</td><td><span class="state clean">clean</span></td><td>{{no file edited — every fix went into the request body; git status unchanged}}</td></tr>
+      <tr><td>{{Pulled images}}</td><td><span class="state left">left in place</span></td><td>{{...}}</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout warn">
+    <b>Next run starts dirty:</b> {{what must be cleared first — or delete this callout when everything is clean}}
+  </div>
+
+  <footer class="report-foot">
+    Generated by {{agent name}} · {{date}}
+  </footer>
+
+</div>
+</body>
+</html>

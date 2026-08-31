@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Single-Host Template Smoke Run</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --surface: #ffffff;
+    --surface-alt: #eaeff6;
+    --border: #d6dbe3;
+    --text: #161b26;
+    --text-muted: #576174;
+    --accent: #1f4d63;
+    --accent-soft: #e1eef3;
+    --header-bg: #16232f;
+    --pass: #128a4e;      --pass-bg: #e2f5ea;
+    --fail: #a8720a;      --fail-bg: #fbead0;
+    --regr: #b8202a;      --regr-bg: #fbe3e4;
+    --untested: #57616f;  --untested-bg: #e8ebf0;
+    --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1319;
+      --surface: #151a22;
+      --surface-alt: #1c222c;
+      --border: #29303c;
+      --text: #e6e9ef;
+      --text-muted: #97a1b0;
+      --accent: #7fb9cc;
+      --accent-soft: #1b2c34;
+      --header-bg: #0c1116;
+      --pass: #49c98a;      --pass-bg: #103322;
+      --fail: #e0ac52;      --fail-bg: #372710;
+      --regr: #ee6a63;      --regr-bg: #391414;
+      --untested: #99a2b2;  --untested-bg: #222836;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0 0 72px;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 28px; }
+  header.report-head {
+    background: var(--header-bg);
+    color: #eef1f4;
+    padding: 40px 28px 32px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #4d7f92;
+  }
+  header.report-head .wrap { padding: 0 28px; }
+  header.report-head h1 { margin: 0 0 10px; font-size: 26px; font-weight: 700; text-wrap: balance; }
+  header.report-head p.dek { margin: 0 0 18px; font-size: 14.5px; color: #aab4c0; max-width: 65ch; }
+  .run-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; font-family: var(--font-mono); font-size: 12.5px; color: #9aa7b6; }
+  .run-meta span b { color: #8ecfe0; font-weight: 600; }
+
+  /* h2 = one of exactly two report parts (Summary, Details) — the biggest, rarest heading in the page */
+  h2 {
+    font-size: 26px; font-weight: 700; margin: 60px 0 20px;
+    padding-bottom: 10px; border-bottom: 3px solid var(--accent);
+    text-wrap: balance;
+  }
+  h2:first-child { margin-top: 0; }
+  /* h3 = a section within a part: a Summary table's title, Cross-cutting findings, or a plugin's name+badge */
+  h3 {
+    font-size: 19px; font-weight: 700; margin: 40px 0 14px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--border);
+    text-wrap: balance;
+  }
+  /* h4 = unused in this structure; a step describes its own problem inline */
+  h4 { font-size: 15px; font-weight: 600; color: var(--accent); margin: 22px 0 8px; }
+  p { margin: 0 0 12px; max-width: 72ch; }
+  a { color: var(--accent); }
+
+  code {
+    font-family: var(--font-mono); font-size: 0.9em;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  pre {
+    font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55;
+    background: #12151c; color: #d7dce6; border: 1px solid #262c39;
+    border-radius: 8px; padding: 14px 16px; margin: 8px 0 16px;
+    overflow-x: auto; white-space: pre;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  pre.short { max-height: 280px; overflow-y: auto; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 18px; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 7px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  td.num, th.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .table-scroll { overflow-x: auto; }
+
+  /* Per-plugin call log: numbered "did this / got this / verified-or-found-wrong" steps */
+  ol.call-log { margin: 8px 0 16px; padding-left: 24px; }
+  ol.call-log li { margin: 0 0 14px; font-size: 13.5px; }
+  ol.call-log li .did { display: block; }
+  ol.call-log li .got {
+    display: block; margin-top: 3px; padding-left: 16px;
+    color: var(--text-muted); font-family: var(--font-mono); font-size: 12.5px;
+  }
+  ol.call-log li .check {
+    display: block; margin-top: 3px; padding-left: 16px; font-size: 13px; font-weight: 500;
+  }
+  ol.call-log li .check.ok  { color: var(--pass); }
+  ol.call-log li .check.bad { color: var(--regr); }
+  ol.call-log li pre { margin: 6px 0 0; }
+  .status-pill {
+    display: inline-block; font-family: var(--font-mono); font-weight: 600; font-size: 12px;
+    padding: 1px 8px; border-radius: 5px; border: 1px solid transparent;
+  }
+  .status-pill.s2xx { background: var(--pass-bg); color: var(--pass); border-color: var(--pass); }
+  .status-pill.s4xx, .status-pill.s5xx { background: var(--regr-bg); color: var(--regr); border-color: var(--regr); }
+  .status-pill.s207 { background: var(--fail-bg); color: var(--fail); border-color: var(--fail); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 11px; border-radius: 999px; border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .badge.pass       { background: var(--pass-bg);      color: var(--pass);      border-color: var(--pass); }
+  .badge.fail       { background: var(--fail-bg);      color: var(--fail);      border-color: var(--fail); }
+  .badge.regression { background: var(--regr-bg);      color: var(--regr);      border-color: var(--regr); }
+  .badge.untested   { background: var(--untested-bg);  color: var(--untested);  border-color: var(--untested); }
+
+  /* Summary dashboard: scan verdicts before reading detail */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px; margin: 4px 0 8px;
+  }
+  .summary-tile {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .summary-tile .plugin-name { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .summary-tile .one-liner { font-size: 12.5px; color: var(--text-muted); }
+  .stat-strip { display: flex; flex-wrap: wrap; gap: 18px; margin: 18px 0 28px; font-family: var(--font-mono); font-size: 13px; }
+  .stat-strip .stat b { font-size: 17px; display: block; font-family: var(--font-sans); }
+
+  section.plugin {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 22px 26px 26px; margin: 0 0 22px;
+  }
+  section.plugin > h3 { margin-top: 0; border: none; padding: 0; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .meta-grid {
+    display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px;
+    font-size: 13px; margin: 10px 0 6px; font-family: var(--font-mono);
+  }
+  .meta-grid dt { color: var(--text-muted); }
+  .meta-grid dd { margin: 0; }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 10px 14px; margin: 10px 0 16px; font-size: 13.5px; border-radius: 0 6px 6px 0;
+  }
+  .callout.warn { border-color: var(--regr); background: var(--regr-bg); }
+  .callout.note { border-color: var(--untested); background: var(--untested-bg); }
+
+  .agree { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; }
+  .agree.yes { color: var(--pass); }
+  .agree.no  { color: var(--regr); }
+
+  footer.report-foot {
+    margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);
+  }
+</style>
+<style>
+  /* ---- preview-only additions to the shared report design system ---- */
+  .preview-banner {
+    background: var(--fail-bg); color: var(--fail); border: 1px dashed var(--fail);
+    border-radius: 8px; padding: 10px 14px; margin: 24px 0 0;
+    font-family: var(--font-mono); font-size: 12.5px;
+  }
+  h2 .part-no {
+    font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+    color: var(--accent); letter-spacing: 0.08em; display: block; margin-bottom: 2px;
+  }
+  h2 .part-hint { display: block; font-family: var(--font-sans); font-size: 13.5px; font-weight: 400; color: var(--text-muted); margin-top: 6px; }
+  td .badge { margin: 0; }
+  tr.row-bad td { background: var(--regr-bg); }
+  tr.row-warn td { background: var(--fail-bg); }
+  .state { font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; }
+  .state.clean { color: var(--pass); }
+  .state.dirty { color: var(--regr); }
+  .state.left  { color: var(--fail); }
+  .sum-table td.tpl { font-family: var(--font-mono); font-size: 12.5px; }
+
+  /* ---- the step list: every template runs the same steps, each showing its own response ---- */
+  ol.steps { margin: 10px 0 0; padding-left: 26px; }
+  ol.steps > li { margin: 0 0 20px; padding-left: 4px; }
+  ol.steps > li::marker { font-family: var(--font-mono); font-weight: 600; color: var(--accent); }
+  .step-did { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
+  .step-req { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  ol.steps pre { margin: 0; }
+  .step-verdict { display: block; margin-top: 6px; font-size: 13px; font-weight: 600; }
+  .step-verdict.ok  { color: var(--pass); }
+  .step-verdict.bad { color: var(--regr); }
+  /* a problem is described under the step that hit it — never in a section of its own */
+  .step-problem {
+    margin-top: 8px; border-left: 3px solid var(--regr); background: var(--regr-bg);
+    border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px;
+  }
+  .step-problem p { margin: 0 0 6px; max-width: none; }
+  .step-problem p:last-child { margin-bottom: 0; }
+  .step-problem .lab {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--regr); margin-right: 7px;
+  }
+  .step-skipped { color: var(--text-muted); font-style: italic; font-size: 13px; }
+  .tpl-summary {
+    margin-top: 4px; padding: 10px 14px; border-radius: 8px;
+    background: var(--surface-alt); border: 1px solid var(--border); font-size: 13.5px;
+  }
+  .tpl-summary b { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-right: 8px; }
+  .pipeline {
+    display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 22px;
+    font-family: var(--font-mono); font-size: 12px;
+  }
+  .pipeline span {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px;
+  }
+  .pipeline span b { color: var(--accent); font-weight: 600; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<header class="report-head">
+  <div class="wrap">
+    <h1>Single-Host Deployment Template Smoke Run</h1>
+    <p class="dek">Every shipped single-host keeper template deployed verbatim against one Docker host through the live Ivory API, then checked three ways: Ivory's own overview, the engine's native view, and a real read-after-write query.</p>
+    <div class="run-meta">
+      <span>Run date: <b>2026-09-01</b></span>
+      <span>Target: <b>one host, localhost (docker-in-docker lab)</b></span>
+      <span>Ivory server: <b>127.0.0.1:8080</b></span>
+      <span>Baseline: <b>2026-08-31 run</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="preview-banner">
+    PREVIEW — this page shows the report <b>shape</b> only. Every verdict, log line and timing below is invented sample content, not a real run.
+  </div>
+
+  <!-- =============================== 1. SUMMARY =============================== -->
+  <h2><span class="part-no">PART 1</span>Summary
+    <span class="part-hint">One line per template. Everything here is scannable in ten seconds; nothing here needs the detail below to be understood.</span>
+  </h2>
+
+  <div class="stat-strip">
+    <div class="stat"><b>7</b>templates</div>
+    <div class="stat"><b>5</b>pass</div>
+    <div class="stat"><b>1</b>fail</div>
+    <div class="stat"><b>1</b>regression</div>
+    <div class="stat"><b>0</b>untested</div>
+    <div class="stat"><b>18m 04s</b>wall clock</div>
+  </div>
+
+  <div class="table-scroll">
+  <table class="sum-table">
+    <thead>
+      <tr><th>Template</th><th>Verdict</th><th>Nodes up</th><th>Leader</th><th>Query</th><th>In one clause</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="tpl">Patroni (Single Host)</td>
+        <td><span class="badge pass">pass</span></td>
+        <td class="num">3/3</td><td class="num">patroni2</td><td class="num">read-after-write ok</td>
+        <td>Deploys and elects a leader as shipped; replication confirmed from a second node.</td>
+      </tr>
+      <tr>
+        <td class="tpl">Etcd (Single Host)</td>
+        <td><span class="badge pass">pass</span></td>
+        <td class="num">3/3</td><td class="num">etcd1</td><td class="num">read-after-write ok</td>
+        <td>Three peers on distinct ports, post-script <code>auth enable</code> ran on the last node.</td>
+      </tr>
+      <tr>
+        <td class="tpl">Postgres (Single Host)</td>
+        <td><span class="badge pass">pass</span></td>
+        <td class="num">3/3</td><td class="num">postgres1</td><td class="num">read-after-write ok</td>
+        <td>Primary plus two <code>pg_basebackup</code> replicas; streaming confirmed in <code>pg_stat_replication</code>.</td>
+      </tr>
+      <tr class="row-warn">
+        <td class="tpl">Mongo (Single Host)</td>
+        <td><span class="badge fail">fail</span></td>
+        <td class="num">3/3</td><td class="num">none</td><td class="num">not reached</td>
+        <td>Containers start, but <code>rs.initiate</code> names container hostnames that host networking never resolves.</td>
+      </tr>
+      <tr>
+        <td class="tpl">Redis (Single Host)</td>
+        <td><span class="badge pass">pass</span></td>
+        <td class="num">3/3</td><td class="num">redis1</td><td class="num">read-after-write ok</td>
+        <td>Replicas attach to the primary on <code>{{host}}:6379</code>; first pass since the bitnami switch.</td>
+      </tr>
+      <tr class="row-bad">
+        <td class="tpl">ClickHouse (Single Host)</td>
+        <td><span class="badge regression">regression</span></td>
+        <td class="num">1/3</td><td class="num">n/a</td><td class="num">not reached</td>
+        <td>Nodes 2 and 3 exit on a bound port — the generated <code>config.d</code> no longer writes each node's own <code>&lt;tcp_port&gt;</code>.</td>
+      </tr>
+      <tr>
+        <td class="tpl">ZooKeeper (Single Host)</td>
+        <td><span class="badge pass">pass</span></td>
+        <td class="num">3/3</td><td class="num">zookeeper3</td><td class="num">read-after-write ok</td>
+        <td>Client ports 2181–2183 via <code>ZOO_CFG_EXTRA</code>, admin server off; holding since yesterday's fix.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout">
+    <b>Read this first:</b> one regression (ClickHouse — worked on 2026-08-31, broken today) and one standing failure (Mongo — never passed as shipped). Everything else is green, and two templates that failed yesterday pass today (see part 4).
+  </div>
+  <!-- =============================== 2. DETAILS =============================== -->
+  <h2><span class="part-no">PART 2</span>Details
+    <span class="part-hint">Every template runs the same eight steps. Each step shows the request, the response it got back verbatim, and a one-line verdict. A step that went wrong describes the problem directly underneath itself.</span>
+  </h2>
+
+  <div class="pipeline">
+    <span><b>1</b>fetch template</span>
+    <span><b>2</b>deploy</span>
+    <span><b>3</b>containers on host</span>
+    <span><b>4</b>Ivory overview</span>
+    <span><b>5</b>engine's own view</span>
+    <span><b>6</b>write</span>
+    <span><b>7</b>read from another node</span>
+    <span><b>8</b>teardown</span>
+  </div>
+
+  <section class="plugin">
+    <h3>Patroni (Single Host) <span class="badge pass">pass</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>smoke-patroni-single</dd>
+      <dt>nodes</dt><dd>patroni1 / patroni2 / patroni3 · all on localhost</dd>
+      <dt>ports</dt><dd>keeper 8008/8009/8010 · db 5432/5433/5434 · ssh 22</dd>
+      <dt>duration</dt><dd>2m 12s</dd>
+    </dl>
+    <ol class="steps">
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper=patroni&amp;platform=docker</span>
+        <pre class="short"><code>200 OK
+{"response":[{"id":"default:docker:Patroni (Single Host)",
+  "defaults":{"keeperUser":"","dbUser":"postgres"},
+  "commands":[
+    {"defaults":{"name":"patroni1","keeperPort":8008,"dbPort":5432},
+     "command":"docker run -d --name patroni1 --network host -e PATRONI_NAME=patroni1 ...",
+     "postScripts":[]},
+    {"defaults":{"name":"patroni2","keeperPort":8009,"dbPort":5433}, ...},
+    {"defaults":{"name":"patroni3","keeperPort":8010,"dbPort":5434}, ...}]}]}</code></pre>
+        <span class="step-verdict ok">✓ 3 commands, every placeholder in keeper.Vars, no two nodes share a port</span>
+      </li>
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · 3 nodes · host=localhost · db credentials NEW (postgres)</span>
+        <pre class="short"><code>200 OK
+{"response":{"complete":true,"logs":[
+  "[patroni1] docker run -d --name patroni1 --network host ...",
+  "[patroni1] 9f2c1ab4d0e1  exit=0",
+  "[patroni2] 4be80cc71a92  exit=0",
+  "[patroni3] c10d5f8e2b77  exit=0",
+  "[deploy] 3/3 nodes up, 0 post-scripts"]}}</code></pre>
+        <span class="step-verdict ok">✓ 200 not 207 — every node up and every post-script run</span>
+      </li>
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host=localhost</span>
+        <pre class="short"><code>200 OK
+NAME       IMAGE                       STATUS          PORTS
+patroni1   ghcr.io/zalando/spilo-16    Up 47 seconds   (host)
+patroni2   ghcr.io/zalando/spilo-16    Up 44 seconds   (host)
+patroni3   ghcr.io/zalando/spilo-16    Up 41 seconds   (host)</code></pre>
+        <span class="step-verdict ok">✓ 3 running, none restarting</span>
+      </li>
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/smoke-patroni-single</span>
+        <pre class="short"><code>200 OK
+{"response":{"warnings":[],"nodes":[
+  {"name":"patroni1","role":"Replica","state":"streaming","lag":0,"port":8008},
+  {"name":"patroni2","role":"Leader","state":"running","lag":null,"port":8009},
+  {"name":"patroni3","role":"Replica","state":"streaming","lag":0,"port":8010}]}}</code></pre>
+        <span class="step-verdict ok">✓ 3/3 running, exactly one leader, no warnings</span>
+      </li>
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">curl -s localhost:8008/cluster · repeated on 8009, 8010</span>
+        <pre class="short"><code>{"members":[
+  {"name":"patroni1","role":"replica","state":"streaming","lag":0},
+  {"name":"patroni2","role":"leader","state":"running"},
+  {"name":"patroni3","role":"replica","state":"streaming","lag":0}],
+ "scope":"smoke-patroni-single"}
+(identical from all three endpoints)</code></pre>
+        <span class="step-verdict ok">✓ patroni names the same leader and the same three members as the overview</span>
+      </li>
+      <li>
+        <span class="step-did">Write on the leader</span>
+        <span class="step-req">POST /api/query/execute/console · node patroni2:5433</span>
+        <pre class="short"><code>200 OK
+create table ivory_smoke(v text);  -- CREATE TABLE
+insert into ivory_smoke values ('hello');  -- INSERT 0 1</code></pre>
+        <span class="step-verdict ok">✓ write accepted on the leader</span>
+      </li>
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node patroni3:5434</span>
+        <pre class="short"><code>200 OK
+select * from ivory_smoke;
+ v
+-------
+ hello
+(1 row)</code></pre>
+        <span class="step-verdict ok">✓ the row crossed to another node — replication is real, not just reported</span>
+      </li>
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">POST /container/stop ×3 · POST /container/down ×3 · DELETE /api/cluster/smoke-patroni-single</span>
+        <pre class="short"><code>200 OK  (stop ×3, down ×3)
+200 OK  {"response":"deleted"}
+docker ps -a | grep patroni  ->  (empty)</code></pre>
+        <span class="step-verdict bad">✗ containers and cluster gone, but DCS keys survived</span>
+        <div class="step-problem">
+          <p><span class="lab">problem</span>Keys under <code>/service/smoke-patroni-single/</code> are still in etcd after the full teardown, so redeploying under the same name hangs waiting for a leader that will never be elected.</p>
+          <pre class="short"><code>$ etcdctl get /service/smoke-patroni-single/ --prefix --keys-only
+/service/smoke-patroni-single/config
+/service/smoke-patroni-single/initialize
+/service/smoke-patroni-single/leader
+/service/smoke-patroni-single/members/patroni2</code></pre>
+          <p><span class="lab">cause</span>Nothing in Ivory clears DCS state on delete; the keys outlive the cluster record that named them.</p>
+          <p><span class="lab">done</span>Cleared by hand with <code>etcdctl del /service/smoke-patroni-single/ --prefix</code> before the next template ran. Known item, REPORT.md #18.</p>
+        </div>
+      </li>
+    </ol>
+    <div class="tpl-summary"><b>summary</b>Deploys, elects a leader and replicates as shipped. The one problem is Ivory's teardown, not the template: it leaves DCS keys that block a redeploy under the same name.</div>
+  </section>
+
+  <section class="plugin">
+    <h3>Etcd (Single Host) <span class="badge pass">pass</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>smoke-etcd-single</dd>
+      <dt>ports</dt><dd>client 2379/2381/2383 · peer 2380/2382/2384 · ssh 22</dd>
+      <dt>duration</dt><dd>1m 48s</dd>
+    </dl>
+    <ol class="steps">
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper=etcd&amp;platform=docker</span>
+        <pre class="short"><code>200 OK
+id: default:docker:Etcd (Single Host)
+defaults: keeperUser=root  dbUser=root
+etcd1  client 2379  peer 2380   postScripts: []
+etcd2  client 2381  peer 2382   postScripts: []
+etcd3  client 2383  peer 2384   postScripts: ["etcdctl user add root ...","etcdctl auth enable"]</code></pre>
+        <span class="step-verdict ok">✓ post-script sits on the last node, so the cluster is whole before auth is switched on</span>
+      </li>
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · 3 nodes · host=localhost · keeper+db credentials NEW (root)</span>
+        <pre class="short"><code>200 OK
+{"complete":true,"logs":[
+  "[etcd1] 71ab0c9d  exit=0",
+  "[etcd2] 2ff41c80  exit=0",
+  "[etcd3] 9c0a72e5  exit=0",
+  "[etcd3][post 1/2] User root created",
+  "[etcd3][post 2/2] Authentication Enabled",
+  "[deploy] 3/3 nodes up, 2/2 post-scripts ok"]}</code></pre>
+        <span class="step-verdict ok">✓ both post-script steps ran as separate execs — no shell assumed</span>
+      </li>
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host=localhost</span>
+        <pre class="short"><code>200 OK
+etcd1  quay.io/coreos/etcd:v3.6.5  Up 39 seconds  (host)
+etcd2  quay.io/coreos/etcd:v3.6.5  Up 36 seconds  (host)
+etcd3  quay.io/coreos/etcd:v3.6.5  Up 33 seconds  (host)</code></pre>
+        <span class="step-verdict ok">✓ 3 running, none restarting</span>
+      </li>
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/smoke-etcd-single</span>
+        <pre class="short"><code>200 OK
+{"warnings":[],"nodes":[
+  {"name":"etcd1","role":"Leader","state":"started","port":2379},
+  {"name":"etcd2","role":"Replica","state":"started","port":2381},
+  {"name":"etcd3","role":"Replica","state":"started","port":2383}]}</code></pre>
+        <span class="step-verdict ok">✓ names come from etcd itself, so they match the member list written into the commands</span>
+      </li>
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">etcdctl --endpoints=localhost:2379,localhost:2381,localhost:2383 endpoint status</span>
+        <pre class="short"><code>localhost:2379  8e9e05c52164694d  3.6.5  20 kB  true   false  2  14
+localhost:2381  91bc3c398fb3c146  3.6.5  20 kB  false  false  2  14
+localhost:2383  fd422379fda50e48  3.6.5  20 kB  false  false  2  14</code></pre>
+        <span class="step-verdict ok">✓ one leader, same three members, same raft term</span>
+      </li>
+      <li>
+        <span class="step-did">Write on one node</span>
+        <span class="step-req">POST /api/query/execute/console · node etcd1:2379</span>
+        <pre class="short"><code>200 OK
+put /ivory-smoke hello
+OK</code></pre>
+        <span class="step-verdict ok">✓ authenticated as root — the auth post-script did not lock Ivory out</span>
+      </li>
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node etcd3:2383</span>
+        <pre class="short"><code>200 OK
+get /ivory-smoke
+/ivory-smoke
+hello</code></pre>
+        <span class="step-verdict ok">✓ the key crossed to another member</span>
+      </li>
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">stop ×3 · down ×3 · DELETE /api/cluster/smoke-etcd-single</span>
+        <pre class="short"><code>200 OK  (all)
+docker ps -a | grep etcd  ->  (empty)</code></pre>
+        <span class="step-verdict ok">✓ nothing left on the host</span>
+      </li>
+    </ol>
+    <div class="tpl-summary"><b>summary</b>Clean pass, all eight steps. Three peers on distinct client and peer ports, auth enabled after the cluster formed, and Ivory still authenticates afterwards.</div>
+  </section>
+
+  <section class="plugin">
+    <h3>Postgres (Single Host) <span class="badge pass">pass</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>smoke-postgres-single</dd>
+      <dt>ports</dt><dd>db 5432/5433/5434 · ssh 22</dd>
+      <dt>duration</dt><dd>2m 55s</dd>
+    </dl>
+    <ol class="steps">
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper=postgres&amp;platform=docker</span>
+        <pre class="short"><code>200 OK
+id: default:docker:Postgres (Single Host)
+defaults: keeperUser=""  dbUser=postgres
+postgres1  db 5432  plain command
+postgres2  db 5433  pg_basebackup from {{host}}:5432
+postgres3  db 5434  pg_basebackup from {{host}}:5432</code></pre>
+        <span class="step-verdict ok">✓ leader/replica asymmetry is two different commands, not a flag</span>
+      </li>
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · 3 nodes · host=localhost · db credentials NEW (postgres)</span>
+        <pre class="short"><code>200 OK
+{"complete":true,"logs":[
+  "[postgres1] 3ac91f22  exit=0",
+  "[postgres2] pg_basebackup: base backup completed",
+  "[postgres2] 8de40b71  exit=0",
+  "[postgres3] pg_basebackup: base backup completed",
+  "[postgres3] b02cf19a  exit=0",
+  "[deploy] 3/3 nodes up, 0 post-scripts"]}</code></pre>
+        <span class="step-verdict ok">✓ both command shapes ran</span>
+      </li>
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host=localhost</span>
+        <pre class="short"><code>200 OK
+postgres1  postgres:17  Up 1 minute   (host)
+postgres2  postgres:17  Up 51 seconds (host)
+postgres3  postgres:17  Up 44 seconds (host)</code></pre>
+        <span class="step-verdict ok">✓ 3 running, none restarting</span>
+      </li>
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/smoke-postgres-single</span>
+        <pre class="short"><code>200 OK
+{"warnings":[],"nodes":[
+  {"name":"postgres1","role":"Leader","state":"running","port":5432},
+  {"name":"postgres2","role":"Replica","state":"streaming","port":5433},
+  {"name":"postgres3","role":"Replica","state":"streaming","port":5434}]}</code></pre>
+        <span class="step-verdict ok">✓ one leader, two replicas, no warnings</span>
+      </li>
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">psql -p 5432 -c "select client_addr, state, write_lag from pg_stat_replication"</span>
+        <pre class="short"><code> client_addr | state     | write_lag
+-------------+-----------+-----------
+ 127.0.0.1   | streaming | 00:00:00
+ 127.0.0.1   | streaming | 00:00:00
+(2 rows)</code></pre>
+        <span class="step-verdict ok">✓ the replicas are attached, not merely running</span>
+      </li>
+      <li>
+        <span class="step-did">Write on the primary</span>
+        <span class="step-req">POST /api/query/execute/console · node postgres1:5432</span>
+        <pre class="short"><code>200 OK
+create table ivory_smoke(v text);  -- CREATE TABLE
+insert into ivory_smoke values ('hello');  -- INSERT 0 1</code></pre>
+        <span class="step-verdict ok">✓ write accepted</span>
+      </li>
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node postgres3:5434</span>
+        <pre class="short"><code>200 OK
+select * from ivory_smoke;
+ v
+-------
+ hello
+(1 row)</code></pre>
+        <span class="step-verdict ok">✓ read-after-write across nodes</span>
+      </li>
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">stop ×3 · down ×3 · DELETE /api/cluster/smoke-postgres-single</span>
+        <pre class="short"><code>200 OK  (all)
+docker ps -a | grep postgres  ->  (empty)</code></pre>
+        <span class="step-verdict ok">✓ nothing left on the host</span>
+      </li>
+    </ol>
+    <div class="tpl-summary"><b>summary</b>Clean pass, all eight steps. Primary plus two streaming replicas from the shipped commands, no edits.</div>
+  </section>
+  <section class="plugin">
+    <h3>Mongo (Single Host) <span class="badge fail">fail</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>smoke-mongo-single</dd>
+      <dt>ports</dt><dd>27017/27018/27019 · ssh 22</dd>
+      <dt>duration</dt><dd>3m 41s</dd>
+    </dl>
+    <ol class="steps">
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper=mongo&amp;platform=docker</span>
+        <pre class="short"><code>200 OK
+id: default:docker:Mongo (Single Host)
+defaults: keeperUser=""  dbUser=""
+mongo1  27017  postScripts: []
+mongo2  27018  postScripts: []
+mongo3  27019  postScripts: ["mongosh --quiet --eval rs.initiate({_id:'rs0',members:[
+                 {_id:0,host:'mongo1:27017'},{_id:1,host:'mongo2:27018'},
+                 {_id:2,host:'mongo3:27019'}]})"]</code></pre>
+        <span class="step-verdict ok">✓ 3 commands, distinct ports, post-script on the last node</span>
+      </li>
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · 3 nodes · host=localhost · no credentials (template names none)</span>
+        <pre class="short"><code>207 Multi-Status
+{"complete":false,"logs":[
+  "[mongo1] 5c1e77a0  exit=0",
+  "[mongo2] a9b3e214  exit=0",
+  "[mongo3] 0f77dd6c  exit=0",
+  "[mongo3][post 1/1] MongoServerError: replSetInitiate quorum check failed
+     because not all proposed set members responded affirmatively:
+     mongo1:27017 failed with Error connecting to mongo1:27017 ::
+     caused by :: Could not find address for mongo1:27017",
+  "[mongo3][post 1/1] exit=1",
+  "[deploy] 3/3 nodes up, 0/1 post-scripts ok"]}</code></pre>
+        <span class="step-verdict bad">✗ containers run, but the replica set was never initiated</span>
+        <div class="step-problem">
+          <p><span class="lab">problem</span>The <code>rs.initiate</code> post-script addresses peers by container name. The template runs <code>--network host</code>, which joins no docker network and therefore has no embedded DNS, so <code>mongo1:27017</code> resolves to nothing.</p>
+          <p><span class="lab">cause</span>Every other single-host template addresses peers as <code>{{host}}:port</code>; this one post-script still uses container names. The multi-host template is unaffected — there the names are real hosts.</p>
+          <p><span class="lab">done</span>Re-ran the post-script by hand with <code>{{host}}:27017/27018/27019</code>: <code>rs.initiate</code> returned <code>{ ok: 1 }</code>. Steps 3–8 below continue on that hand-initiated cluster, so the template still counts as failing.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host=localhost</span>
+        <pre class="short"><code>200 OK
+mongo1  mongo:8  Up 2 minutes  (host)
+mongo2  mongo:8  Up 2 minutes  (host)
+mongo3  mongo:8  Up 2 minutes  (host)</code></pre>
+        <span class="step-verdict ok">✓ 3 running — the failure is in the post-script, not the containers</span>
+      </li>
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/smoke-mongo-single · taken before the hand-initiation</span>
+        <pre class="short"><code>200 OK
+{"warnings":[],"nodes":[
+  {"name":"mongo1","role":"Replica","state":"running","port":27017},
+  {"name":"mongo2","role":"Replica","state":"running","port":27018},
+  {"name":"mongo3","role":"Replica","state":"running","port":27019}]}</code></pre>
+        <span class="step-verdict bad">✗ three unrelated mongods reported as one healthy cluster</span>
+        <div class="step-problem">
+          <p><span class="lab">problem</span>No leader, no warnings, three <code>Replica</code> rows — the same response a healthy leaderless engine gives. Nothing here says the replica set does not exist.</p>
+          <p><span class="lab">cause</span>Mongo declares <code>HasLeader() == true</code>, so a leaderless result should read as a fault, not as a normal state. The overview does not distinguish them.</p>
+          <p><span class="lab">done</span>Recorded as P3 in part 3 — an Ivory finding, separate from the template's.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">mongosh --port 27018 --eval "rs.status()" · after the hand-initiation</span>
+        <pre class="short"><code>set: "rs0"
+members:
+  localhost:27017  PRIMARY    health 1
+  localhost:27018  SECONDARY  health 1
+  localhost:27019  SECONDARY  health 1</code></pre>
+        <span class="step-verdict ok">✓ with the member list corrected, the set forms immediately</span>
+      </li>
+      <li>
+        <span class="step-did">Write on the primary</span>
+        <span class="step-req">POST /api/query/execute/console · node mongo1:27017</span>
+        <pre class="short"><code>200 OK
+db.ivory_smoke.insertOne({_id:"smoke", v:"hello"})
+{ acknowledged: true, insertedId: 'smoke' }</code></pre>
+        <span class="step-verdict ok">✓ write accepted</span>
+      </li>
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node mongo3:27019</span>
+        <pre class="short"><code>200 OK
+db.ivory_smoke.find()
+[ { _id: 'smoke', v: 'hello' } ]</code></pre>
+        <span class="step-verdict ok">✓ replicates once the set exists — the only broken thing is the member list</span>
+      </li>
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">stop ×3 · down ×3 · DELETE /api/cluster/smoke-mongo-single</span>
+        <pre class="short"><code>200 OK  (all)
+docker ps -a | grep mongo  ->  (empty)</code></pre>
+        <span class="step-verdict ok">✓ nothing left on the host</span>
+      </li>
+    </ol>
+    <div class="tpl-summary"><b>summary</b>Fails as shipped at step 2: one line of the <code>rs.initiate</code> member list uses container names that host networking cannot resolve. Everything downstream works once it is corrected. Step 4 found a separate Ivory problem — the overview reports the broken cluster as healthy.</div>
+  </section>
+
+  <section class="plugin">
+    <h3>Redis (Single Host) <span class="badge pass">pass</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>smoke-redis-single</dd>
+      <dt>ports</dt><dd>6379/6380/6381 · ssh 22</dd>
+      <dt>duration</dt><dd>1m 30s</dd>
+    </dl>
+    <ol class="steps">
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper=redis&amp;platform=docker</span>
+        <pre class="short"><code>200 OK
+id: default:docker:Redis (Single Host)
+defaults: keeperUser=default  dbUser=default
+redis1  6379  bitnami/redis  (primary)
+redis2  6380  REDIS_REPLICATION_MODE=slave  REDIS_MASTER_HOST={{host}}
+redis3  6381  REDIS_REPLICATION_MODE=slave  REDIS_MASTER_HOST={{host}}</code></pre>
+        <span class="step-verdict ok">✓ replicas point at {{host}}, not at a container name</span>
+      </li>
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · 3 nodes · host=localhost · keeper+db credentials NEW (default)</span>
+        <pre class="short"><code>200 OK
+{"complete":true,"logs":[
+  "[redis1] d40ba117  exit=0",
+  "[redis2] 77e1c3f0  exit=0",
+  "[redis3] 1a9b6e28  exit=0",
+  "[deploy] 3/3 nodes up, 0 post-scripts"]}</code></pre>
+        <span class="step-verdict ok">✓ first clean as-shipped deploy since the bitnami switch (part 4)</span>
+      </li>
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host=localhost</span>
+        <pre class="short"><code>200 OK
+redis1  bitnami/redis:7.4  Up 22 seconds  (host)
+redis2  bitnami/redis:7.4  Up 19 seconds  (host)
+redis3  bitnami/redis:7.4  Up 16 seconds  (host)</code></pre>
+        <span class="step-verdict ok">✓ 3 running, none restarting</span>
+      </li>
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/smoke-redis-single</span>
+        <pre class="short"><code>200 OK
+{"warnings":[],"nodes":[
+  {"name":"redis1","role":"Leader","state":"running","port":6379},
+  {"name":"redis2","role":"Replica","state":"running","port":6380},
+  {"name":"redis3","role":"Replica","state":"running","port":6381}]}</code></pre>
+        <span class="step-verdict ok">✓ one primary, two replicas, no warnings</span>
+      </li>
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">redis-cli -p 6379/6380/6381 INFO replication</span>
+        <pre class="short"><code>6379  role:master  connected_slaves:2
+6380  role:slave   master_host:127.0.0.1  master_link_status:up
+6381  role:slave   master_host:127.0.0.1  master_link_status:up</code></pre>
+        <span class="step-verdict ok">✓ both links up, agrees with the overview</span>
+      </li>
+      <li>
+        <span class="step-did">Write on the primary</span>
+        <span class="step-req">POST /api/query/execute/console · node redis1:6379</span>
+        <pre class="short"><code>200 OK
+SET ivory-smoke hello
+OK</code></pre>
+        <span class="step-verdict ok">✓ write accepted</span>
+      </li>
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node redis3:6381</span>
+        <pre class="short"><code>200 OK
+GET ivory-smoke
+"hello"</code></pre>
+        <span class="step-verdict ok">✓ replication is real</span>
+      </li>
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">stop ×3 · down ×3 · DELETE /api/cluster/smoke-redis-single</span>
+        <pre class="short"><code>200 OK  (all)
+docker ps -a | grep redis  ->  (empty)</code></pre>
+        <span class="step-verdict ok">✓ nothing left on the host</span>
+      </li>
+    </ol>
+    <div class="tpl-summary"><b>summary</b>Clean pass, all eight steps — and the first one since the image switch, which is what part 4 records.</div>
+  </section>
+
+  <section class="plugin">
+    <h3>ClickHouse (Single Host) <span class="badge regression">regression</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>smoke-clickhouse-single</dd>
+      <dt>ports</dt><dd>keeper 9181/9182/9183 · db 9000/9001/9002 · ssh 22</dd>
+      <dt>baseline</dt><dd>passed clean on 2026-08-31</dd>
+      <dt>duration</dt><dd>4m 06s</dd>
+    </dl>
+    <ol class="steps">
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper=clickhouse&amp;platform=docker</span>
+        <pre class="short"><code>200 OK
+id: default:docker:ClickHouse (Single Host)
+clickhouse1  keeper 9181  db 9000
+clickhouse2  keeper 9182  db 9001
+clickhouse3  keeper 9183  db 9002
+each command writes /etc/clickhouse-server/config.d/ivory.xml:
+  &lt;clickhouse&gt;&lt;keeper_server&gt;&lt;tcp_port&gt;{{keeperPort}}&lt;/tcp_port&gt;...&lt;/keeper_server&gt;&lt;/clickhouse&gt;</code></pre>
+        <span class="step-verdict bad">✗ the generated config sets the keeper port but never the node's own client port</span>
+        <div class="step-problem">
+          <p><span class="lab">problem</span>Defaults promise db ports 9000/9001/9002, but the generated <code>config.d</code> file contains no <code>&lt;tcp_port&gt;</code> outside <code>&lt;keeper_server&gt;</code>, so all three nodes will fall back to the image default 9000.</p>
+          <p><span class="lab">cause</span>The <code>&lt;tcp_port&gt;{{dbPort}}&lt;/tcp_port&gt;</code> line was dropped from the heredoc. The multi-host template does not need it — separate hosts cannot collide — which is why nothing else caught this.</p>
+          <p><span class="lab">done</span>Deployed as shipped anyway, to record what the failure actually looks like (steps 2–3).</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · 3 nodes · host=localhost</span>
+        <pre class="short"><code>207 Multi-Status
+{"complete":false,"logs":[
+  "[clickhouse1] 61f0a2bb  exit=0",
+  "[clickhouse2] 0b7c9d31  exit=70",
+  "[clickhouse3] e5aa1477  exit=70",
+  "[deploy] 1/3 nodes up, 0 post-scripts"]}</code></pre>
+        <span class="step-verdict bad">✗ two of three nodes exit immediately; the same template deployed 3/3 yesterday</span>
+        <div class="step-problem">
+          <p><span class="lab">problem</span>Nodes 2 and 3 die on a bound port, exactly as step 1 predicted.</p>
+          <pre class="short"><code>GET /api/node/platform/container/logs?name=clickhouse2&amp;tail=20
+&lt;Error&gt; Application: DB::Exception: Listen [0.0.0.0]:9000 failed:
+Poco::Exception. Code: 1000, e.code() = 98, Net Exception:
+Address already in use: 0.0.0.0:9000</code></pre>
+          <p><span class="lab">done</span>Redeployed with <code>&lt;tcp_port&gt;{{dbPort}}&lt;/tcp_port&gt;</code> restored in the request body — <code>200 OK</code>, <code>complete:true</code>, 3/3 up. Steps 3–8 run on that deploy; the shipped template is still broken.</p>
+        </div>
+      </li>
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host=localhost</span>
+        <pre class="short"><code>200 OK   (as shipped)
+clickhouse1  clickhouse/clickhouse-server:24.8  Up 1 minute
+clickhouse2  clickhouse/clickhouse-server:24.8  Exited (70) 58 seconds ago
+clickhouse3  clickhouse/clickhouse-server:24.8  Exited (70) 55 seconds ago
+
+200 OK   (after the port line was restored)
+clickhouse1 / clickhouse2 / clickhouse3   all Up</code></pre>
+        <span class="step-verdict bad">✗ as shipped, 1/3 — the exited containers were left in place, which is how their logs were read</span>
+      </li>
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/smoke-clickhouse-single · after the fix</span>
+        <pre class="short"><code>200 OK
+{"warnings":[],"nodes":[
+  {"name":"clickhouse1","role":"Replica","state":"running","port":9000},
+  {"name":"clickhouse2","role":"Replica","state":"running","port":9001},
+  {"name":"clickhouse3","role":"Replica","state":"running","port":9002}]}</code></pre>
+        <span class="step-verdict ok">✓ leaderless is correct here — clickhouse reports HasLeader() false, so Replica is the right role, not Unknown</span>
+      </li>
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">clickhouse-client --port 9000 --query "SELECT * FROM system.zookeeper WHERE path='/'"</span>
+        <pre class="short"><code>keeper quorum: 3 members
+leader: clickhouse1 (keeper layer)
+znodes: clickhouse, keeper</code></pre>
+        <span class="step-verdict ok">✓ the embedded keeper quorum is real</span>
+      </li>
+      <li>
+        <span class="step-did">Write on one node</span>
+        <span class="step-req">POST /api/query/execute/console · node clickhouse1:9000</span>
+        <pre class="short"><code>200 OK
+CREATE TABLE ivory_smoke ON CLUSTER smoke (v String)
+  ENGINE = ReplicatedMergeTree ORDER BY v;   -- Ok.
+INSERT INTO ivory_smoke VALUES ('hello');    -- Ok. 1 row</code></pre>
+        <span class="step-verdict ok">✓ write accepted</span>
+      </li>
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node clickhouse3:9002</span>
+        <pre class="short"><code>200 OK
+SELECT * FROM ivory_smoke;
+hello</code></pre>
+        <span class="step-verdict ok">✓ the row replicated to the third node</span>
+      </li>
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">stop ×3 · down ×3 · DELETE /api/cluster/smoke-clickhouse-single</span>
+        <pre class="short"><code>200 OK  (all)
+docker ps -a | grep clickhouse  ->  (empty)</code></pre>
+        <span class="step-verdict ok">✓ nothing left on the host, including the two exited containers</span>
+      </li>
+    </ol>
+    <div class="tpl-summary"><b>summary</b>Regression: one missing line in the generated <code>config.d</code> puts all three nodes on port 9000, so two of them exit 70. Restoring <code>&lt;tcp_port&gt;{{dbPort}}&lt;/tcp_port&gt;</code> makes the rest of the pipeline pass unchanged.</div>
+  </section>
+
+  <section class="plugin">
+    <h3>ZooKeeper (Single Host) <span class="badge pass">pass</span></h3>
+    <dl class="meta-grid">
+      <dt>cluster</dt><dd>smoke-zookeeper-single</dd>
+      <dt>ports</dt><dd>client 2181/2182/2183 · ssh 22 · admin server off</dd>
+      <dt>duration</dt><dd>1m 52s</dd>
+    </dl>
+    <ol class="steps">
+      <li>
+        <span class="step-did">Fetch the shipped template</span>
+        <span class="step-req">GET /api/deployment/template?keeper=zookeeper&amp;platform=docker</span>
+        <pre class="short"><code>200 OK
+id: default:docker:ZooKeeper (Single Host)
+defaults: keeperUser=""  dbUser=""
+zookeeper1  2181  ZOO_CFG_EXTRA="clientPort=2181 admin.enableServer=false"
+zookeeper2  2182  ZOO_CFG_EXTRA="clientPort=2182 admin.enableServer=false"
+zookeeper3  2183  ZOO_CFG_EXTRA="clientPort=2183 admin.enableServer=false"</code></pre>
+        <span class="step-verdict ok">✓ each node overrides the entrypoint's hardcoded clientPort and switches off the fixed-port admin server</span>
+      </li>
+      <li>
+        <span class="step-did">Deploy the cluster</span>
+        <span class="step-req">POST /api/cluster/deploy · 3 nodes · host=localhost · no credentials</span>
+        <pre class="short"><code>200 OK
+{"complete":true,"logs":[
+  "[zookeeper1] 2c88f0d3  exit=0",
+  "[zookeeper2] 90a71bb5  exit=0",
+  "[zookeeper3] f3d20c6a  exit=0",
+  "[deploy] 3/3 nodes up, 0 post-scripts"]}</code></pre>
+        <span class="step-verdict ok">✓ all three up on their own client ports</span>
+      </li>
+      <li>
+        <span class="step-did">List the containers on the host</span>
+        <span class="step-req">GET /api/node/platform/container/list · host=localhost</span>
+        <pre class="short"><code>200 OK
+zookeeper1  zookeeper:3.9  Up 30 seconds  (host)
+zookeeper2  zookeeper:3.9  Up 27 seconds  (host)
+zookeeper3  zookeeper:3.9  Up 24 seconds  (host)</code></pre>
+        <span class="step-verdict ok">✓ 3 running, none restarting</span>
+      </li>
+      <li>
+        <span class="step-did">Read Ivory's own view</span>
+        <span class="step-req">GET /api/cluster/overview/smoke-zookeeper-single</span>
+        <pre class="short"><code>200 OK
+{"warnings":[],"nodes":[
+  {"name":"zookeeper1","role":"Replica","state":"ACTIVE","port":2181},
+  {"name":"zookeeper2","role":"Replica","state":"ACTIVE","port":2182},
+  {"name":"zookeeper3","role":"Leader","state":"ACTIVE","port":2183}]}</code></pre>
+        <span class="step-verdict ok">✓ 3 ACTIVE, one leader, no warnings</span>
+      </li>
+      <li>
+        <span class="step-did">Check the engine's own view</span>
+        <span class="step-req">4LW srvr on TCP 2181, 2182, 2183</span>
+        <pre class="short"><code>2181  Mode: follower
+2182  Mode: follower
+2183  Mode: leader</code></pre>
+        <span class="step-verdict ok">✓ same leader and member count as the overview</span>
+      </li>
+      <li>
+        <span class="step-did">Write on one node</span>
+        <span class="step-req">POST /api/query/execute/console · node zookeeper1:2181</span>
+        <pre class="short"><code>200 OK
+create /ivory-smoke hello
+Created /ivory-smoke</code></pre>
+        <span class="step-verdict ok">✓ znode created</span>
+      </li>
+      <li>
+        <span class="step-did">Read from a different node</span>
+        <span class="step-req">POST /api/query/execute/console · node zookeeper3:2183</span>
+        <pre class="short"><code>200 OK
+get /ivory-smoke
+hello</code></pre>
+        <span class="step-verdict ok">✓ the znode crossed to another node</span>
+      </li>
+      <li>
+        <span class="step-did">Tear down</span>
+        <span class="step-req">stop ×3 · down ×3 · DELETE /api/cluster/smoke-zookeeper-single</span>
+        <pre class="short"><code>200 OK  (all)
+docker ps -a | grep zookeeper  ->  (empty)</code></pre>
+        <span class="step-verdict ok">✓ nothing left on the host</span>
+      </li>
+    </ol>
+    <div class="tpl-summary"><b>summary</b>Clean pass, all eight steps. Holding since yesterday's <code>ZOO_CFG_EXTRA</code> fix (part 4).</div>
+  </section>
+  <!-- =============================== 3. PROBLEMS =============================== -->
+  <h2><span class="part-no">PART 3</span>Problems
+    <span class="part-hint">Every problem this run found, in one flat table — template problems and Ivory problems together, most serious first. Nothing appears here that isn't shown happening in part 2.</span>
+  </h2>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>#</th><th>Severity</th><th>Where</th><th>Problem</th><th>Evidence</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr class="row-bad">
+        <td class="num">P1</td>
+        <td><span class="badge regression">regression</span></td>
+        <td>ClickHouse (Single Host)</td>
+        <td>The generated <code>config.d</code> no longer writes <code>&lt;tcp_port&gt;{{dbPort}}&lt;/tcp_port&gt;</code>, so all three nodes bind 9000 and two of them exit 70.</td>
+        <td>part 2 → ClickHouse, steps 1–3</td>
+        <td>open — fixed at deploy time only</td>
+      </tr>
+      <tr class="row-warn">
+        <td class="num">P2</td>
+        <td><span class="badge fail">fail</span></td>
+        <td>Mongo (Single Host)</td>
+        <td><code>rs.initiate</code> addresses peers by container name under <code>--network host</code>, where no DNS exists; the replica set is never formed.</td>
+        <td>part 2 → Mongo, step 2</td>
+        <td>open — fixed at deploy time only</td>
+      </tr>
+      <tr class="row-warn">
+        <td class="num">P3</td>
+        <td><span class="badge fail">fail</span></td>
+        <td>Ivory — <code>cluster.Service</code> overview</td>
+        <td>Three unrelated mongods report as a healthy leaderless cluster with no warnings, so Ivory hid P2 rather than surfacing it.</td>
+        <td>part 2 → Mongo, step 4</td>
+        <td>open — new finding</td>
+      </tr>
+      <tr>
+        <td class="num">P4</td>
+        <td><span class="badge fail">fail</span></td>
+        <td>Ivory — deploy logs</td>
+        <td>Deploy logs carry raw ANSI escapes; <code>docker pull</code> progress lands verbatim in the dialog.</td>
+        <td>part 2 → step 2, every template</td>
+        <td>open — known, REPORT.md #16</td>
+      </tr>
+      <tr>
+        <td class="num">P5</td>
+        <td><span class="badge fail">fail</span></td>
+        <td>Ivory — teardown</td>
+        <td>Keys under <code>/service/&lt;cluster&gt;/</code> survive stop → down → <code>DELETE /cluster/:name</code>, so redeploying the same name hangs waiting for a leader.</td>
+        <td>part 2 → Patroni, step 8</td>
+        <td>open — known, REPORT.md #18</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- =============================== 4. FIXED =============================== -->
+  <h2><span class="part-no">PART 4</span>Fixed since the previous run
+    <span class="part-hint">Problems the 2026-08-31 report raised that this run could no longer reproduce. Each row names what proves it — a passing template is a claim, and the step that backs it is the receipt.</span>
+  </h2>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>Was</th><th>Where</th><th>What changed</th><th>Confirmed by</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Replicas started as independent masters — the official image takes its password only as a CLI flag, so <code>REDIS_REPLICATION_MODE</code> was ignored.</td>
+        <td>Redis (Single Host)</td>
+        <td>Template switched to <code>bitnami/redis</code>, which is configurable through env vars alone.</td>
+        <td>part 2 → Redis, steps 2 and 5 — <code>connected_slaves:2</code></td>
+      </tr>
+      <tr>
+        <td>Nodes 2 and 3 exited on the entrypoint's hardcoded <code>clientPort</code> and on the admin server's fixed 8080.</td>
+        <td>ZooKeeper (Single Host)</td>
+        <td><code>ZOO_CFG_EXTRA</code> now overrides <code>clientPort</code> per node (later key wins) and switches the admin server off.</td>
+        <td>part 2 → ZooKeeper, steps 2 and 5 — three distinct client ports answering</td>
+      </tr>
+      <tr>
+        <td>A password containing <code>'</code> broke the deployed command's quoting and the container never started.</td>
+        <td>all templates naming <code>{{dbPass}}</code></td>
+        <td>Split-then-interpolate: <code>platform.SplitCommand</code> runs before <code>keeper.Interpolate</code>, so a value can't introduce an argument boundary.</td>
+        <td>re-run of Patroni and Postgres with <code>p'a"s $w\`d</code> — both 200</td>
+      </tr>
+      <tr>
+        <td>A deploy that failed on node 3 left no cluster record, so the failed container was unreachable from Ivory.</td>
+        <td>Ivory — <code>cluster.Deploy</code></td>
+        <td>The cluster record is written before any container starts and is never rolled back.</td>
+        <td>part 2 → ClickHouse, step 3 — the exited containers were still there to read logs from</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- =============================== 5. FINAL STATE =============================== -->
+  <h2><span class="part-no">PART 5</span>Final state
+    <span class="part-hint">What the run left behind on the host and in Ivory, and whether each of those is clean. A "not clean" row is not a problem with a template — it is something the next run will trip over.</span>
+  </h2>
+
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>What</th><th>State</th><th>Detail / how to undo</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Containers from all 7 templates</td>
+        <td><span class="state clean">clean</span></td>
+        <td>21 containers stopped and removed — <code>docker ps -a | grep smoke-</code> is empty.</td>
+      </tr>
+      <tr>
+        <td>Ivory cluster records <code>smoke-*</code></td>
+        <td><span class="state clean">clean</span></td>
+        <td>All 7 deleted via <code>DELETE /api/cluster/:name</code>.</td>
+      </tr>
+      <tr>
+        <td>Vault entries created by the deploys</td>
+        <td><span class="state left">left in place</span></td>
+        <td>9 entries (<code>smoke-*-db</code>, <code>smoke-*-keeper</code>). Deleting a cluster does not delete its vaults. Undo: <code>DELETE /api/secret/:id</code> per entry.</td>
+      </tr>
+      <tr class="row-bad">
+        <td>Etcd DCS keys under <code>/service/smoke-patroni-single/</code></td>
+        <td><span class="state dirty">not clean</span></td>
+        <td>Survived the full teardown (P5). Undo: <code>etcdctl del /service/smoke-patroni-single/ --prefix</code>.</td>
+      </tr>
+      <tr>
+        <td>Docker volumes</td>
+        <td><span class="state clean">clean</span></td>
+        <td>Single-host templates mount none by design.</td>
+      </tr>
+      <tr>
+        <td>Repository working tree</td>
+        <td><span class="state clean">clean</span></td>
+        <td>Both fixes in part 2 were applied to the deploy request body, never to a file. <code>git status</code> unchanged.</td>
+      </tr>
+      <tr>
+        <td>Pulled images</td>
+        <td><span class="state left">left in place</span></td>
+        <td><code>bitnami/redis:7.4</code>, <code>clickhouse/clickhouse-server:24.8</code> newly pulled and kept, so the next run doesn't re-download them.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout warn">
+    <b>Next run starts dirty:</b> the leftover DCS keys under <code>/service/smoke-patroni-single/</code> will make a Patroni redeploy under the same cluster name hang. Clear them first, or deploy under a different name.
+  </div>
+
+  <footer class="report-foot">
+    PREVIEW · shape of the report produced by deploy-template-single-host-smoke and deploy-template-multi-host-smoke · sample content, 2026-09-01
+  </footer>
+
+</div>
+</body>
+</html>
