@@ -10,7 +10,7 @@ import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvide
 const SX: SxPropsMap = {
     group: {display: "flex", alignItems: "stretch", minWidth: 0},
     text: {
-        padding: "7px 10px", fontSize: "12px", textTransform: "uppercase", color: "common.white",
+        padding: "7px 10px", fontSize: "12px", textTransform: "uppercase", color: "text.primary",
         fontFamily: "monospace", letterSpacing: 1,
         border: "1px solid", borderColor: "divider", borderRight: "none", borderRadius: "4px 0 0 4px",
         minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", lineHeight: 1,
@@ -19,7 +19,7 @@ const SX: SxPropsMap = {
         height: "28px", width: "32px", minWidth: "unset", flexShrink: 0, padding: 0,
         borderRadius: "0 4px 4px 0", borderColor: "divider",
     },
-    icon: {fontSize: "18px", color: "common.white"},
+    icon: {fontSize: "18px", color: "text.primary"},
     popper: {zIndex: 3},
     menu: {padding: "4px 0px", minWidth: "220px"},
     item: {
