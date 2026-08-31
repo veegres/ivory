@@ -11,6 +11,7 @@ import {
     DeployPasswordMask,
     getDomain,
     getDomains,
+    getEditedNodeConfigs,
     getErrorMessage,
     getNodeConfig,
     getNodeConfigs,
@@ -76,11 +77,36 @@ describe("getNodeConnection", () => {
 })
 
 describe("getNodeConnections", () => {
-    it("should return an array of NodeConfig objects from an array of domain strings", () => {
+    it("should number nodes sequentially instead of naming them after their host", () => {
         const domains = ["localhost:8008", "127.0.0.1"]
         expect(getNodeConfigs(domains)).toEqual([
-            {name: "localhost", host: "localhost", keeperPort: 8008},
-            {name: "127.0.0.1", host: "127.0.0.1"},
+            {name: "node1", host: "localhost", keeperPort: 8008},
+            {name: "node2", host: "127.0.0.1"},
+        ])
+    })
+})
+
+describe("getEditedNodeConfigs", () => {
+    it("should keep an existing node's own name instead of renaming it node1", () => {
+        const domains = ["localhost:8008", "127.0.0.1:8008"]
+        const existing: NodeConfig[] = [
+            {name: "patroni-primary", host: "localhost", keeperPort: 8008},
+            {name: "patroni-replica", host: "127.0.0.1", keeperPort: 8008},
+        ]
+        expect(getEditedNodeConfigs(domains, existing)).toEqual([
+            {name: "patroni-primary", host: "localhost", keeperPort: 8008},
+            {name: "patroni-replica", host: "127.0.0.1", keeperPort: 8008},
+        ])
+    })
+
+    it("should number a newly appended node instead of leaving it nameless", () => {
+        const domains = ["localhost:8008", "127.0.0.1:8008"]
+        const existing: NodeConfig[] = [
+            {name: "patroni-primary", host: "localhost", keeperPort: 8008},
+        ]
+        expect(getEditedNodeConfigs(domains, existing)).toEqual([
+            {name: "patroni-primary", host: "localhost", keeperPort: 8008},
+            {name: "node2", host: "127.0.0.1", keeperPort: 8008},
         ])
     })
 })

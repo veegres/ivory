@@ -5,7 +5,7 @@ import {useEffect, useMemo, useRef, useState} from "react"
 import {useRouterClusterOverview} from "../../../../features/cluster/api/ClusterHook"
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
 import {ColorsMap, SxPropsMap} from "../../../../shared/helper/HelperType"
-import {getDomain, getDomains, getNodeConfigs, NodeColor, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
+import {getDomain, getDomains, getEditedNodeConfigs, NodeColor, SxPropsFormatter} from "../../../../shared/helper/HelperUtils"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
 import {ListCellRead} from "./ListCellRead"
 import {ListCellUpdate} from "./ListCellUpdate"
@@ -139,10 +139,7 @@ export function ListRow(props: Props) {
         setStateNodes(getDomains(cluster.nodes, !editable))
     }
 
-    // NOTE: a row here is only a host and its ports - the name is edited in
-    // the node block - so the name of the row in the same position is carried
-    // over instead of being reset to the host it was defaulted from
     function getEditedNodes() {
-        return getNodeConfigs(stateNodes).map((n, i) => ({...n, name: cluster.nodes[i]?.name ?? n.name}))
+        return getEditedNodeConfigs(stateNodes, cluster.nodes)
     }
 }
