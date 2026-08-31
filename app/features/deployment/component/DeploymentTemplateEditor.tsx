@@ -81,6 +81,7 @@ export function DeploymentTemplateEditor(props: Props) {
                             hint: "set when you deploy - the same value reaches every node's command",
                             onChange: () => {},
                         },
+                        undefined,
                         {
                             variable: DeployVar.KeeperUser, value: template.defaults?.keeperUser ?? "",
                             hint: "the account the keeper command creates - shown as a suggestion on the deploy screen, editable there",

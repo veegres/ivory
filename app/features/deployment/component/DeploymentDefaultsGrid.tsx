@@ -21,18 +21,13 @@ export type DefaultField = {
     variable: DeployVar,
     value: string,
     numeric?: boolean,
-    // NOTE: disabled independently of the grid's own editable - a variable
-    // that is never part of a template (the cluster name, a password, the
-    // host) stays disabled even while the rest of the grid is being edited
     disabled?: boolean,
-    // NOTE: shown as the disabled field's placeholder and appended to its
-    // tooltip, so a reader sees why it is empty without having to ask
     hint?: string,
     onChange: (value: string) => void,
 }
 
 type Props = {
-    fields: DefaultField[],
+    fields: (DefaultField | undefined)[],
     editable?: boolean,
 }
 
@@ -40,7 +35,8 @@ export function DeploymentDefaultsGrid(props: Props) {
     const {fields, editable = true} = props
     return <Box sx={SX.grid}>{fields.map(renderField)}</Box>
 
-    function renderField(field: DefaultField) {
+    function renderField(field?: DefaultField) {
+        if (!field) return <Box/>
         const {variable, value, numeric, disabled, onChange} = field
         return (
             <Box key={variable} sx={SX.pair}>
