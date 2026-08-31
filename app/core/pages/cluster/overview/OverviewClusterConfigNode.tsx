@@ -9,7 +9,7 @@ import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStoreAction} from "../../../../shared/provider/StoreProvider"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", gap: 1},
+    box: {display: "flex", gap: 1, width: "min(375px, 100%)", flexShrink: 0},
     autocomplete: {flex: "auto"},
     toggle: {width: "30px"}
 }
