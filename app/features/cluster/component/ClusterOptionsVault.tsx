@@ -8,17 +8,18 @@ import {VaultType} from "../../vault/api/VaultType"
 type Props = {
     type: VaultType,
     selected?: string,
+    username?: string,
     onUpdate: (type: VaultType, s?: string) => void,
     error?: boolean,
 }
 
 export function ClusterOptionsVault(props: Props) {
-    const {type, onUpdate, selected, error = false} = props
+    const {type, onUpdate, selected, username, error = false} = props
     const passId = selected ?? ""
     const {label} = VaultOptions[type]
 
     const query = useRouterVault(type)
-    const options = useMemo(handleMemoOptions, [query.data])
+    const options = useMemo(handleMemoOptions, [query.data, username])
 
     return (
         <AutocompleteUuid
@@ -37,6 +38,7 @@ export function ClusterOptionsVault(props: Props) {
 
     function handleMemoOptions(): Option[] {
         return Object.entries(query.data ?? {})
+            .filter(([, value]) => !username || value.username === username)
             .map(([key, value]) => ({
                 key,
                 short: getShortUuid(key),

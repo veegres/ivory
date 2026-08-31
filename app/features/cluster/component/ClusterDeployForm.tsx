@@ -64,9 +64,9 @@ export function ClusterDeployForm(props: Props) {
     const [keeperMode, setKeeperMode] = useState<CredentialMode>(getInitialMode(template.defaults?.keeperUser))
     const [dbMode, setDbMode] = useState<CredentialMode>(getInitialMode(template.defaults?.dbUser))
     const [sshCred, setSshCred] = useState<Credential>({username: "", password: ""})
-    // NOTE: seeded with the usernames the template names - a suggestion the
-    // user can replace, not a lock: what the deployment ends up with is stated
-    // by the command that creates it, and that command is theirs to edit
+    // NOTE: seeded with the usernames the template names, and read-only where
+    // it names one: that account is what its commands create, so the deploy
+    // only asks for the password to give it
     const [keeperCred, setKeeperCred] = useState<Credential>({username: template.defaults?.keeperUser ?? "", password: ""})
     const [dbCred, setDbCred] = useState<Credential>({username: template.defaults?.dbUser ?? "", password: ""})
     const [parallel, setParallel] = useState(false)
@@ -197,6 +197,7 @@ export function ClusterDeployForm(props: Props) {
                 mode={keeperMode}
                 credential={keeperCred}
                 vaultId={options.vaults.keeperId}
+                locked={!!template.defaults?.keeperUser}
                 optional={true}
                 showErrors={submitted}
                 onModeChange={setKeeperMode}
@@ -214,6 +215,7 @@ export function ClusterDeployForm(props: Props) {
                 mode={dbMode}
                 credential={dbCred}
                 vaultId={options.vaults.databaseId}
+                locked={!!template.defaults?.dbUser}
                 optional={true}
                 showErrors={submitted}
                 onModeChange={setDbMode}
