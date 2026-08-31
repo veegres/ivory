@@ -77,21 +77,31 @@ func TestMapSyncStandby(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// NOTE: the first arg is application_name, not client_addr - see
-			// mapSyncStandby's doc - so it looks like the node's configured
-			// Host (a domain here), not an IP.
-			response := mapSyncStandby("db2.example.com", tt.syncState)
-			if response.Role != keeper.Replica {
-				t.Errorf("expected role replica, got %v", response.Role)
-			}
+			// NOTE: the first arg is application_name, which the shipped
+			// template sets to the node's name - see mapSyncStandby's doc.
+			response := mapSyncStandby("postgres2", tt.syncState)
 			if response.Sync != tt.expectedSync {
 				t.Errorf("expected sync %v, got %v", tt.expectedSync, response.Sync)
 			}
-			if response.State != keeper.StateRunning {
-				t.Errorf("expected state running, got %q", response.State)
+			if response.DiscoveredName == nil || *response.DiscoveredName != "postgres2" {
+				t.Errorf("expected discovered name postgres2, got %v", response.DiscoveredName)
 			}
-			if response.DiscoveredHost == nil || *response.DiscoveredHost != "db2.example.com" {
-				t.Errorf("expected discovered host db2.example.com, got %v", response.DiscoveredHost)
+			// NOTE: the response is an attribute of a node, not a node, and
+			// claiming otherwise would let it stand in for the standby's own
+			// connection - reporting a replica as running on the primary's say-so
+			// even when its postgres is down. The discovery layer tells the two
+			// apart by exactly this emptiness.
+			if response.DiscoveredHost != nil {
+				t.Errorf("expected no discovered host, got %v", *response.DiscoveredHost)
+			}
+			if response.Role != "" {
+				t.Errorf("expected no role claim, got %v", response.Role)
+			}
+			if response.State != "" {
+				t.Errorf("expected no state claim, got %q", response.State)
+			}
+			if response.Status != nil {
+				t.Errorf("expected no status claim, got %v", *response.Status)
 			}
 			if response.DiscoveredKeeperPort != nil {
 				t.Errorf("expected discovered keeper port to be left unknown (nil), got %v", *response.DiscoveredKeeperPort)

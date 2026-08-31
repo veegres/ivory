@@ -145,9 +145,21 @@ func mapKeeperResponse(r node.KeeperOneResponse) NodeConfig {
 	}
 }
 
+// describesNode reports whether a keeper response describes a node at all. One
+// that states no host describes something else - native postgres reporting a
+// standby's sync state from the primary, an etcd member with no client url yet -
+// and a node config with no host is a node nothing can reach, so Detect and Fix
+// leave those out of the cluster they write rather than storing one.
+func describesNode(r node.KeeperOneResponse) bool {
+	return r.DiscoveredHost != nil
+}
+
 func mapKeeperResponseList(keeperNodes []node.KeeperOneResponse) []NodeConfig {
 	nodes := make([]NodeConfig, 0, len(keeperNodes))
 	for _, item := range keeperNodes {
+		if !describesNode(item) {
+			continue
+		}
 		nodes = append(nodes, mapKeeperResponse(item))
 	}
 	return nodes
@@ -156,6 +168,9 @@ func mapKeeperResponseList(keeperNodes []node.KeeperOneResponse) []NodeConfig {
 func mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeConfig {
 	nodes := make([]NodeConfig, 0, len(keeperNodes))
 	for _, item := range keeperNodes {
+		if !describesNode(item) {
+			continue
+		}
 		nodes = append(nodes, mapKeeperResponse(item))
 	}
 	return nodes
