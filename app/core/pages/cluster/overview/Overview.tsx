@@ -60,7 +60,7 @@ export function Overview() {
     )
 
     function renderMainBlock() {
-        if (!activeCluster) return <AlertCentered text={"Please, select a cluster to see the overview! (click on the name)"}/>
+        if (!activeCluster) return <AlertCentered text={"Select a cluster to see the overview! You need to click on cluster's name"}/>
         if (!activeCluster) return <AlertCentered text={"Selected cluster in not in the list"} severity={"warning"}/>
         return <>
             {overview.error && <ErrorSmart error={overview.error}/>}

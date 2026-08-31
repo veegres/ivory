@@ -5,17 +5,23 @@ import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
     infoAlert: {justifyContent: "center", "& .MuiAlert-message": {textAlign: "center"}},
+    neutralAlert: {color: "text.secondary", border: "1px solid", borderColor: "divider", backgroundColor: "transparent"},
 }
 
 type Props = {
     text: ReactNode,
-    severity?: "success" | "info" | "warning" | "error",
+    severity?: "neutral" | "success" | "info" | "warning" | "error",
 }
 
 export function AlertCentered(props: Props) {
-    const {severity = "info"} = props
+    const {severity = "neutral"} = props
     return (
-        <Alert sx={SX.infoAlert} severity={severity} variant={"outlined"} icon={false}>
+        <Alert
+            sx={severity === "neutral" ? [SX.infoAlert, SX.neutralAlert] : SX.infoAlert}
+            severity={severity === "neutral" ? "info" : severity}
+            variant={"outlined"}
+            icon={false}
+        >
             {props.text}
         </Alert>
     )
