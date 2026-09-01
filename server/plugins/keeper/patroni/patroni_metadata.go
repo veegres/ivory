@@ -118,15 +118,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni1", SshPort: 22, KeeperPort: 8008, DbPort: 5432},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni1", Host: "localhost", SshPort: 22, KeeperPort: 8008, DbPort: 5432},
 				},
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni2", SshPort: 22, KeeperPort: 8009, DbPort: 5433},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni2", Host: "localhost", SshPort: 22, KeeperPort: 8009, DbPort: 5433},
 				},
 				{
 					Command:  deploySingleHost,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni3", SshPort: 22, KeeperPort: 8010, DbPort: 5434},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "patroni3", Host: "localhost", SshPort: 22, KeeperPort: 8010, DbPort: 5434},
 				},
 			},
 		},

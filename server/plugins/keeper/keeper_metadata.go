@@ -61,11 +61,15 @@ type DeploymentCommand struct {
 // reached through the same VM but can still be forwarded on distinct ports, and
 // only the command that pairs with a given peer port knows which one.
 //
-// Host is deliberately absent: it is the one thing that identifies the actual
-// machine, which a template can never know ahead of time. A zero field states
-// nothing, and the deploy form leaves it empty for the user to type.
+// Host is empty in a multi-host template - each of its nodes is a distinct
+// real machine a template can never know ahead of time. A single-host template
+// names one, because all of its commands land on the same machine by
+// definition: it defaults to "localhost", the deploy form's stand-in for
+// wherever the operator runs it, and stays a plain string the user can
+// overwrite like any other default.
 type DeploymentCommandDefaults struct {
 	Name       string `json:"name"`
+	Host       string `json:"host"`
 	SshPort    int    `json:"sshPort"`
 	KeeperPort int    `json:"keeperPort"`
 	DbPort     int    `json:"dbPort"`

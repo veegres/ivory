@@ -330,11 +330,14 @@ export function ClusterDeployForm(props: Props) {
     // a node answers on belong to the command that writes them, so a template
     // that states none leaves the field empty for the user rather than
     // borrowing the engine's, which on a single host would put every node on
-    // one port. Host is never in a template - it is the actual machine.
+    // one port. Host is usually empty for the same reason - a multi-host
+    // template can't know the actual machine - but a single-host template
+    // names one (its commands all land on the same machine), and that default
+    // still stays editable like every other field here.
     function getInitialNodes(): DeployNode[] {
         return template.commands.map((c, i) => ({
             name: c.defaults?.name || `${KeeperPluginOptions[keeper].name}${i + 1}`,
-            host: "",
+            host: c.defaults?.host || "",
             sshPort: c.defaults?.sshPort,
             keeperPort: c.defaults?.keeperPort,
             dbPort: c.defaults?.dbPort,

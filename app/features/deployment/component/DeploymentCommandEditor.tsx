@@ -58,9 +58,9 @@ export function DeploymentCommandEditor(props: Props) {
                             onChange: (v) => handleDefaultsChange({name: v}),
                         },
                         {
-                            variable: DeployVar.Host, value: "", disabled: true,
-                            hint: "the machine you deploy this node onto - never part of a template",
-                            onChange: () => {},
+                            variable: DeployVar.Host, value: command.defaults?.host ?? "",
+                            hint: "the machine you deploy this node onto - a multi-host template leaves it blank, since each node is a different machine",
+                            onChange: (v) => handleDefaultsChange({host: v}),
                         },
                         {
                             variable: DeployVar.SshPort, value: getPortValue(command.defaults?.sshPort), numeric: true,
