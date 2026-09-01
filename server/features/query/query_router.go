@@ -25,7 +25,7 @@ func NewRouter(
 func (r *Router) withQueryContext(ctx *gin.Context, con Connection, handle func(Context)) {
 	session, errSession := ctx.Cookie("session")
 	if errSession != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": errSession.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errSession.Error()})
 		return
 	}
 	handle(Context{
