@@ -238,8 +238,14 @@ These are settled decisions. Do not report them, and do not propose fixes for th
 
 ## Report
 
-Write your final report as a single self-contained HTML file to the path the caller gives you (default, if
-none given: `deploy-template-multi-host-smoke-report.html` in the repo root). **Read
+Write your final report as a single self-contained HTML file under `.report/` in the repo root (create the
+directory if it does not exist), named `deploy-template-multi-host-smoke-report-<YYYY-MM-DD_HH-MM>.html`,
+where the timestamp is when this run **launched**, not when it finished — capture it with `date
++%Y-%m-%d_%H-%M` as your first step, before doing anything else, and reuse that same value for the filename
+even if the run spans multiple hours. Ignore any report path the caller gives you; the `.report/` location and
+this naming are fixed. Before writing, list `.report/deploy-template-multi-host-smoke-report-*.html` and take
+the most recent one (by the timestamp in its name, not mtime) as the previous run for Part 4 — there may be
+none yet. **Read
 `.claude/agents/deploy-template-smoke-report.template.html` first and follow it exactly** — its header
 comment is the specification, not a suggestion. `.claude/agents/deploy-template-smoke-report.example.html`
 is a filled-in report in that exact structure — read it too when a placeholder is unclear (its content is
