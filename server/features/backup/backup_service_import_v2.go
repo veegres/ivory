@@ -25,6 +25,7 @@ func (s *Service) importV2(data []byte) error {
 	for i, bq := range bkp.Queries {
 		queryModel, errMap := bq.toQuery()
 		if errMap != nil {
+			err = errors.Join(err, fmt.Errorf("%s[%d]: %w", "query", i, errMap))
 			continue
 		}
 		if _, _, errMut := s.queryService.Create(query.Manual, queryModel); errMut != nil {
