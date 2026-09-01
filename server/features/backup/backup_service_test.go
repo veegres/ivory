@@ -12,6 +12,7 @@ import (
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/etcd"
+	"ivory/plugins/keeper/patroni"
 	"ivory/plugins/platform"
 	"ivory/plugins/platform/docker"
 	"mime/multipart"
@@ -59,11 +60,52 @@ func createTestBackupService(t *testing.T) *Service {
 	deploymentRepository := deployment.NewRepository(storage.NewDbBucket[deployment.Template](db, "DeploymentTemplate"))
 	keeperRegistry := utils.NewRegistry[keeper.PluginType, keeper.Plugin]()
 	keeperRegistry.Register(keeper.NATIVE_ETCD, etcd.NewPlugin())
+	// NOTE: the frozen backup files carry a patroni template, which the
+	// deployment service refuses to create unless its keeper is registered
+	keeperRegistry.Register(keeper.PATRONI_POSTGRES, patroni.NewPlugin(nil))
 	platformRegistry := utils.NewRegistry[platform.PluginType, platform.Plugin]()
 	platformRegistry.Register(platform.Docker, docker.NewPlugin(nil))
 	deploymentService := deployment.NewService(deploymentRepository, keeperRegistry, platformRegistry)
 
 	return NewService(clusterService, queryService, permissionService, deploymentService)
+}
+
+// readGolden returns one of the frozen backup files under testdata. They are
+// the artifact this package's compatibility tests are written against: a file
+// some older Ivory wrote, checked in so it can never drift with the code the
+// way a struct literal built in a test does. Generated once, then frozen -
+// a test that fails against one is the code moving, not the file.
+func readGolden(t *testing.T, name string) []byte {
+	t.Helper()
+
+	data, err := os.ReadFile(filepath.Join("testdata", name))
+	if err != nil {
+		t.Fatalf("failed to read the frozen backup file %s: %v", name, err)
+	}
+	return data
+}
+
+// assertShapeIsFrozen re-marshals a frozen file through the version struct it
+// belongs to and requires the bytes back unchanged. It is the sacred rule as a
+// test: a released version's types never change again, so a renamed json tag
+// drops a key, a removed field drops it too, and an added one appears with its
+// zero value - every one of those shows up here as a diff. It says nothing
+// about whether the values are right; that is what the import tests are for.
+func assertShapeIsFrozen(t *testing.T, name string, model any) {
+	t.Helper()
+
+	frozen := readGolden(t, name)
+	if err := json.Unmarshal(frozen, model); err != nil {
+		t.Fatalf("the frozen file no longer parses as its own version: %v", err)
+	}
+	got, errMarshal := json.MarshalIndent(model, "", "  ")
+	if errMarshal != nil {
+		t.Fatalf("failed to re-marshal: %v", errMarshal)
+	}
+	if string(append(got, '\n')) != string(frozen) {
+		t.Errorf("the wire shape of %s changed - a released version is frozen, so this means a new version, not an edit\n--- frozen file\n%s\n--- re-marshalled\n%s",
+			name, frozen, got)
+	}
 }
 
 func createMultipartFile(t *testing.T, fieldFilename string, content []byte) *multipart.FileHeader {

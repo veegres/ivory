@@ -1,0 +1,169 @@
+{
+  "clusters": [
+    {
+      "name": "prod-patroni",
+      "keeper": "patroni_postgres",
+      "database": "postgres",
+      "tls": {
+        "keeper": true,
+        "database": false
+      },
+      "tags": [
+        "prod",
+        "eu"
+      ],
+      "nodes": [
+        {
+          "name": "patroni1",
+          "host": "10.0.0.1",
+          "sshPort": 22,
+          "keeperPort": 8008,
+          "dbPort": 5432
+        },
+        {
+          "name": "patroni2",
+          "host": "10.0.0.2",
+          "sshPort": 22,
+          "keeperPort": 8008,
+          "dbPort": 5432
+        }
+      ]
+    },
+    {
+      "name": "coordination",
+      "keeper": "native_etcd",
+      "database": "etcd",
+      "tls": {
+        "keeper": false,
+        "database": false
+      },
+      "tags": [
+        "dcs"
+      ],
+      "nodes": [
+        {
+          "name": "etcd1",
+          "host": "10.0.0.1",
+          "sshPort": 2222,
+          "keeperPort": 2379,
+          "dbPort": 2379
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "name": "table bloat",
+      "type": "bloat",
+      "plugin": "postgres",
+      "description": "estimate bloat per table",
+      "query": "select 1",
+      "varieties": [
+        "database_sensitive",
+        "replica_recommended"
+      ],
+      "params": [
+        "schema",
+        "table"
+      ]
+    },
+    {
+      "name": "running queries",
+      "type": "activity",
+      "plugin": "postgres",
+      "description": null,
+      "query": "select * from pg_stat_activity",
+      "varieties": [
+        "master_only"
+      ],
+      "params": []
+    },
+    {
+      "name": "replication lag",
+      "type": "replication",
+      "plugin": "postgres",
+      "description": null,
+      "query": "select 3",
+      "varieties": [
+        "master_only"
+      ],
+      "params": []
+    },
+    {
+      "name": "table sizes",
+      "type": "statistic",
+      "plugin": "postgres",
+      "description": null,
+      "query": "select 4",
+      "varieties": [
+        "database_sensitive"
+      ],
+      "params": []
+    },
+    {
+      "name": "member list",
+      "type": "other",
+      "plugin": "etcd",
+      "description": "etcd is not postgres, and V1 could not carry this at all",
+      "query": "member list",
+      "varieties": [],
+      "params": []
+    }
+  ],
+  "permissions": [
+    {
+      "username": "basic:alice",
+      "permissions": {
+        "gone.feature.removed": "granted",
+        "manage.cluster.delete": "not_permitted",
+        "view.cluster.list": "pending",
+        "view.node.platform": "granted"
+      }
+    },
+    {
+      "username": "basic:bob",
+      "permissions": {
+        "view.cluster.list": "granted"
+      }
+    }
+  ],
+  "deployments": [
+    {
+      "name": "Patroni on one VM",
+      "description": "three spilo nodes sharing a machine",
+      "keeper": "patroni_postgres",
+      "platform": "docker",
+      "defaults": {
+        "keeperUser": "",
+        "dbUser": "postgres",
+        "dcs": "localhost:2479,localhost:2481"
+      },
+      "commands": [
+        {
+          "command": "docker run -d --name {{name}} -e ETCD3_HOSTS=\"{{dcs}}\" spilo",
+          "postScripts": [],
+          "defaults": {
+            "name": "patroni1",
+            "host": "localhost",
+            "sshPort": 22,
+            "keeperPort": 8008,
+            "dbPort": 5442
+          }
+        },
+        {
+          "command": "docker run -d --name {{name}} -e ETCD3_HOSTS=\"{{dcs}}\" spilo",
+          "postScripts": [
+            "echo initialised"
+          ],
+          "defaults": {
+            "name": "patroni2",
+            "host": "localhost",
+            "sshPort": 22,
+            "keeperPort": 8009,
+            "dbPort": 5443
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "clusters": [
+    {
+      "name": "prod-patroni",
+      "tags": [
+        "prod",
+        "eu"
+      ],
+      "sidecars": [
+        {
+          "host": "10.0.0.1",
+          "port": 8008
+        },
+        {
+          "host": "10.0.0.2",
+          "port": 8008
+        },
+        {
+          "host": "10.0.0.1",
+          "port": 8009
+        }
+      ]
+    },
+    {
+      "name": "staging",
+      "tags": [
+        "staging"
+      ],
+      "sidecars": [
+        {
+          "host": "10.0.1.1",
+          "port": 8008
+        }
+      ]
+    }
+  ],
+  "queries": [
+    {
+      "name": "table bloat",
+      "type": 0,
+      "varieties": [
+        0,
+        2
+      ],
+      "params": [
+        "schema",
+        "table"
+      ],
+      "description": "estimate bloat per table",
+      "default": "select 1",
+      "custom": "select 2"
+    },
+    {
+      "name": "running queries",
+      "type": 1,
+      "varieties": [
+        1
+      ],
+      "params": [],
+      "description": null,
+      "default": "select * from pg_stat_activity",
+      "custom": "select * from pg_stat_activity"
+    },
+    {
+      "name": "replication lag",
+      "type": 2,
+      "varieties": [
+        1
+      ],
+      "params": [],
+      "description": "bytes behind the primary",
+      "default": "select 3",
+      "custom": "select 3"
+    },
+    {
+      "name": "table sizes",
+      "type": 3,
+      "varieties": [
+        0
+      ],
+      "params": [],
+      "description": null,
+      "default": "select 4",
+      "custom": "select 4"
+    },
+    {
+      "name": "scratch",
+      "type": 4,
+      "varieties": [],
+      "params": [],
+      "description": null,
+      "default": "select 5",
+      "custom": "select 5"
+    }
+  ],
+  "permissions": [
+    {
+      "username": "basic:alice",
+      "permissions": {
+        "gone.feature.removed": 2,
+        "manage.cluster.delete": 0,
+        "view.cluster.list": 1,
+        "view.node.platform": 2
+      }
+    },
+    {
+      "username": "basic:bob",
+      "permissions": {
+        "view.cluster.list": 2
+      }
+    }
+  ]
+}
