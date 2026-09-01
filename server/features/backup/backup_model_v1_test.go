@@ -88,3 +88,10 @@ func TestToClusterDisambiguatesSingleHostNodes(t *testing.T) {
 		}
 	}
 }
+
+// TestBackupV1ShapeIsFrozen holds the sacred rule for V1: it shipped long ago,
+// so its types can never change again. Only importV1 moves, adjusting to
+// whatever the root models have become.
+func TestBackupV1ShapeIsFrozen(t *testing.T) {
+	assertShapeIsFrozen(t, "ivory.v1.bak", &BackupV1{})
+}

@@ -278,3 +278,135 @@ func TestImportV2RejectsMalformedJSON(t *testing.T) {
 		t.Fatal("expected an error for malformed backup data")
 	}
 }
+
+// TestImportV2FromFrozenFile is the V1 test's counterpart for the current
+// format: the same frozen-file discipline, applied to the version Export
+// writes today. It is worth having before V2 is frozen rather than after -
+// the file is what will catch a root model drifting out from under importV2
+// once nobody is looking at this code any more.
+func TestImportV2FromFrozenFile(t *testing.T) {
+	s := createTestBackupService(t)
+	if err := s.Import(createMultipartFile(t, "ivory.v2.bak", readGolden(t, "ivory.v2.bak"))); err != nil {
+		t.Fatalf("Import() error = %v", err)
+	}
+
+	// NOTE: everything V1 could not say about a cluster - which pair manages
+	// it, whether it speaks TLS, and each node's own name and three ports
+	t.Run("a cluster restores whole", func(t *testing.T) {
+		c, err := s.clusterService.Get("prod-patroni")
+		if err != nil {
+			t.Fatalf("Get() error = %v", err)
+		}
+		if c.Plugins.Keeper != keeper.PATRONI_POSTGRES || c.Plugins.Database != database.POSTGRES {
+			t.Errorf("got %+v, want the pair the file named", c.Plugins)
+		}
+		if !c.Tls.Keeper || c.Tls.Database {
+			t.Errorf("got tls %+v, want only the keeper half", c.Tls)
+		}
+		if len(c.Nodes) != 2 {
+			t.Fatalf("expected both nodes, got %+v", c.Nodes)
+		}
+		n := c.Nodes[0]
+		if n.Name != "patroni1" || n.Host != "10.0.0.1" {
+			t.Errorf("got %+v, want the node's own name beside its host", n)
+		}
+		if n.SshPort == nil || *n.SshPort != 22 || n.KeeperPort == nil || *n.KeeperPort != 8008 || n.DbPort == nil || *n.DbPort != 5432 {
+			t.Errorf("got ports %v/%v/%v, want all three", n.SshPort, n.KeeperPort, n.DbPort)
+		}
+	})
+
+	// NOTE: a second cluster on a different engine is the point - V1 mapped
+	// every cluster to patroni over postgres, and this is what says V2 does not
+	t.Run("clusters keep their own engines", func(t *testing.T) {
+		c, err := s.clusterService.Get("coordination")
+		if err != nil {
+			t.Fatalf("Get() error = %v", err)
+		}
+		if c.Plugins.Keeper != keeper.NATIVE_ETCD || c.Plugins.Database != database.ETCD {
+			t.Errorf("got %+v, want etcd, not the first cluster's pair", c.Plugins)
+		}
+	})
+
+	// NOTE: stored as words rather than the ordinals V1 used, so they still
+	// mean what they said when the list they index grows
+	t.Run("queries keep their engine and their spelled-out enums", func(t *testing.T) {
+		queries, err := s.queryService.GetList(nil, nil)
+		if err != nil {
+			t.Fatalf("GetList() error = %v", err)
+		}
+		byName := make(map[string]query.Response, len(queries))
+		for _, q := range queries {
+			byName[q.Name] = q
+		}
+		member, ok := byName["member list"]
+		if !ok {
+			t.Fatalf("the non-postgres query was not restored: %v", byName)
+		}
+		if member.Plugin != database.ETCD {
+			t.Errorf("got plugin %v, want etcd: V1 could not carry this at all", member.Plugin)
+		}
+		if member.Type != query.OTHER {
+			t.Errorf("got type %v, want other", member.Type)
+		}
+		if bloat := byName["table bloat"]; bloat.Type != query.BLOAT || len(bloat.Varieties) != 2 {
+			t.Errorf("got %+v, want bloat with both varieties", bloat)
+		}
+	})
+
+	// NOTE: a template restored without these opens its deploy screen with the
+	// credentials switched off, nothing to coordinate through, and every node
+	// of a single-host template back on one port
+	t.Run("a deployment template keeps its defaults", func(t *testing.T) {
+		templates, err := s.deploymentService.List(deployment.ListRequest{})
+		if err != nil {
+			t.Fatalf("List() error = %v", err)
+		}
+		var restored *deployment.Template
+		for i, tpl := range templates {
+			if tpl.Creation == deployment.Manual {
+				restored = &templates[i]
+			}
+		}
+		if restored == nil {
+			t.Fatalf("the manual template was not restored: %v", templates)
+		}
+		if restored.Defaults.DbUser != "postgres" || restored.Defaults.Dcs != "localhost:2479,localhost:2481" {
+			t.Errorf("got template defaults %+v, want the file's user and coordination store", restored.Defaults)
+		}
+		if len(restored.Commands) != 2 {
+			t.Fatalf("expected both commands, got %d", len(restored.Commands))
+		}
+		first, second := restored.Commands[0].Defaults, restored.Commands[1].Defaults
+		if first.Host != "localhost" || second.Host != "localhost" {
+			t.Errorf("got hosts %q/%q, want the machine both commands land on", first.Host, second.Host)
+		}
+		if first.KeeperPort == second.KeeperPort || first.DbPort == second.DbPort {
+			t.Errorf("got %+v and %+v, want each node's own ports", first, second)
+		}
+		if len(restored.Commands[1].PostScripts) != 1 {
+			t.Errorf("got post scripts %v, want the one the file named", restored.Commands[1].PostScripts)
+		}
+	})
+
+	t.Run("a renamed feature key resolves and an unknown one is dropped", func(t *testing.T) {
+		permissions, err := s.permissionService.GetAllUserPermissions()
+		if err != nil {
+			t.Fatalf("GetAllUserPermissions() error = %v", err)
+		}
+		var alice permission.PermissionMap
+		for _, up := range permissions {
+			if up.Username == "basic:alice" {
+				alice = up.Permissions
+			}
+		}
+		if alice == nil {
+			t.Fatalf("expected the file's user, got %v", permissions)
+		}
+		if alice[config.ViewNodeSystem] != permission.GRANTED {
+			t.Errorf("view.node.platform did not resolve to %s: got %v", config.ViewNodeSystem, alice[config.ViewNodeSystem])
+		}
+		if _, exists := alice[config.Feature("gone.feature.removed")]; exists {
+			t.Error("a feature that no longer exists was restored rather than dropped")
+		}
+	})
+}
