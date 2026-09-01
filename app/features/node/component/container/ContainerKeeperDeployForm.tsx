@@ -4,6 +4,7 @@ import {useState} from "react"
 import {DialogLogsScreen} from "../../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../../shared/component/box/DialogScreen"
 import {Hint} from "../../../../shared/component/box/Hint"
+import {PaperBlue} from "../../../../shared/component/box/PaperBlue"
 import {TitleBox} from "../../../../shared/component/box/TitleBox"
 import {FieldRow} from "../../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
@@ -128,16 +129,18 @@ export function ContainerKeeperDeployForm(props: Props) {
 
     function renderClusterInfo() {
         return (
-            <TitleBox label={"Cluster"} island={true} collapsible={false}>
-                <Box sx={[SX.subContent, {gap: 1}]}>
-                    <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
-                    <FieldRow>
-                        {withKeeperCredentials && renderVaultField("Keeper Credentials", keeperId)}
-                        {withDbCredentials && renderVaultField("Database Credentials", databaseId)}
-                        {renderVaultField("SSH Credentials", sshKeyId)}
-                    </FieldRow>
-                </Box>
-            </TitleBox>
+            <PaperBlue>
+                <TitleBox label={"Cluster"} island={true} collapsible={false}>
+                    <Box sx={[SX.subContent, {gap: 1}]}>
+                        <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
+                        <FieldRow>
+                            {withKeeperCredentials && renderVaultField("Keeper Credentials", keeperId)}
+                            {withDbCredentials && renderVaultField("Database Credentials", databaseId)}
+                            {renderVaultField("SSH Credentials", sshKeyId)}
+                        </FieldRow>
+                    </Box>
+                </TitleBox>
+            </PaperBlue>
         )
     }
 
@@ -147,7 +150,7 @@ export function ContainerKeeperDeployForm(props: Props) {
     // command is the only thing on it left to read.
     function renderNode() {
         return (
-            <Box sx={SX.node}>
+            <PaperBlue sx={SX.node}>
                 <FieldRow>
                     <TextField size={"small"} label={"Name"} value={name} disabled={true}/>
                     <TextField size={"small"} label={"Host"} value={connection.host} disabled={true}/>
@@ -163,7 +166,7 @@ export function ContainerKeeperDeployForm(props: Props) {
                     values={getValues()}
                     defaultOpen={true}
                 />
-            </Box>
+            </PaperBlue>
         )
     }
 
