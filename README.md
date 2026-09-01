@@ -23,32 +23,6 @@ database clusters — without dropping into the CLI for every task.
 
 Ivory can run as a local tool on your laptop or as a shared service on a VM for team use.
 
-### Vision: Beyond Postgres
-
-Ivory started as a Postgres/Patroni tool. We're working towards a more pluggable architecture, where support for other
-databases and HA tools could be added as a plugin, instead of being baked into the core. v2 is the first step of that
-rework:
-
-| Version |                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **v1**  | Hard-wired to Patroni and Postgres, with Postgres-centric node management and no mobile support.                                                                                                                                                                                                                                                                                                                                                             |
-| **v2**  | Pluggable Keeper and database engines — the goal is to manage different databases by implementing a simple plugin for each, instead of baking their behaviour into the core. Node management is now VM-centric, with nodes modeled as Hardware + Software behind a generic Platform abstraction (on-prem Docker over SSH today, Kubernetes/OpenShift planned). The UI is now mobile friendly, so you can check on and operate your clusters from your phone. |
-
-### Supported Keepers
-
-| Keeper                                     | Database   | Stage  | Why                                                                                                                                                                  |
-|--------------------------------------------|------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Patroni](https://patroni.readthedocs.io/) | Postgres   | STABLE | The Keeper Ivory was originally built around                                                                                                                         |
-| Postgres                                   | Postgres   | BETA   | Not everyone needs HA — sometimes you just want to manage a plain Postgres                                                                                           |
-| ETCD                                       | ETCD       | ALPHA  | Patroni relies on etcd as a DCS, so managing it directly made sense too                                                                                              |
-| Redis                                      | Redis      | ALPHA  | A widely used cache/store that often sits right next to the databases Ivory already manages                                                                          |
-| ClickHouse                                 | ClickHouse | ALPHA  | A popular analytics database and a natural next step for Ivory's plugin set                                                                                          |
-| ZooKeeper                                  | ZooKeeper  | ALPHA  | ClickHouse needs real ZooKeeper protocol, not etcd, to coordinate replication — deployable as its own ensemble and usable as the external DCS other keepers point at |
-| MongoDB                                    | MongoDB    | ALPHA  | A widely used document store with its own native replica-set HA, a natural fit next to Ivory's other native (non-orchestrated) keepers                               |
-
-P.S. these particular databases weren't picked from a grand roadmap — they're mainly what the maintainer runs day to
-day, and Ivory exists to simplify that routine first. Broader support grows from there.
-
 ---
 
 <div align="center">
@@ -63,6 +37,19 @@ helps:
 ✅ **Show appreciation** – A small gesture that means a lot to open-source creators!
 
 Thank you for being part of this journey! 🚀
+
+---
+
+### Vision: Beyond Postgres
+
+Ivory started as a Postgres/Patroni tool. We're working towards a more pluggable architecture, where support for other
+databases and HA tools could be added as a plugin, instead of being baked into the core. v2 is the first step of that
+rework:
+
+| Version |                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **v1**  | Hard-wired to Patroni and Postgres, with Postgres-centric node management and no mobile support.                                                                                                                                                                                                                                                                                                                                                             |
+| **v2**  | Pluggable Keeper and database engines — the goal is to manage different databases by implementing a simple plugin for each, instead of baking their behaviour into the core. Node management is now VM-centric, with nodes modeled as Hardware + Software behind a generic Platform abstraction (on-prem Docker over SSH today, Kubernetes/OpenShift planned). The UI is now mobile friendly, so you can check on and operate your clusters from your phone. |
 
 ---
 
@@ -97,6 +84,8 @@ Thank you for being part of this journey! 🚀
 - [Database tools](.doc/node.md#tools) — engine-specific maintenance tools, run as background jobs with live output:
     - **Postgres** — [pgcompacttable](.doc/pg_compacttable.md), reduces table and index bloat without heavy locks
 
+---
+
 ## Get started
 
 1. Start the docker container
@@ -114,6 +103,25 @@ Thank you for being part of this journey! 🚀
 5. Start monitoring
 
 ![Demo](.doc/images/demo.png)
+
+---
+
+### Supported Keepers
+
+| Keeper                                     | Database   | Stage  | Why                                                                                                                                                                  |
+|--------------------------------------------|------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Patroni](https://patroni.readthedocs.io/) | Postgres   | STABLE | The Keeper Ivory was originally built around                                                                                                                         |
+| Postgres                                   | Postgres   | BETA   | Not everyone needs HA — sometimes you just want to manage a plain Postgres                                                                                           |
+| ETCD                                       | ETCD       | ALPHA  | Patroni relies on etcd as a DCS, so managing it directly made sense too                                                                                              |
+| Redis                                      | Redis      | ALPHA  | A widely used cache/store that often sits right next to the databases Ivory already manages                                                                          |
+| ClickHouse                                 | ClickHouse | ALPHA  | A popular analytics database and a natural next step for Ivory's plugin set                                                                                          |
+| ZooKeeper                                  | ZooKeeper  | ALPHA  | ClickHouse needs real ZooKeeper protocol, not etcd, to coordinate replication — deployable as its own ensemble and usable as the external DCS other keepers point at |
+| MongoDB                                    | MongoDB    | ALPHA  | A widely used document store with its own native replica-set HA, a natural fit next to Ivory's other native (non-orchestrated) keepers                               |
+
+P.S. these particular databases weren't picked from a grand roadmap — they're mainly what the maintainer runs day to
+day, and Ivory exists to simplify that routine first. Broader support grows from there.
+
+---
 
 ## FAQ
 
