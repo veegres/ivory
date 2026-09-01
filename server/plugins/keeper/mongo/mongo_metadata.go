@@ -37,7 +37,7 @@ const deployMultiHost = `docker run -d
   --restart unless-stopped
   -p {{dbPort}}:{{dbPort}}
   -v /data/mongo:/data/db
-  mongo:8
+  mongo:7
   sh -c '
 exec docker-entrypoint.sh mongod --replSet "{{cluster}}" --port {{dbPort}} --bind_ip_all
 '`
@@ -49,7 +49,7 @@ exec docker-entrypoint.sh mongod --replSet "{{cluster}}" --port {{dbPort}} --bin
 const deploySingleHost = `docker run -d
   --name {{name}}
   --network host
-  mongo:8
+  mongo:7
   sh -c '
 exec docker-entrypoint.sh mongod --replSet "{{cluster}}" --port {{dbPort}} --bind_ip_all
 '`
