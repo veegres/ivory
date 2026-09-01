@@ -35,6 +35,11 @@ func (p *Plugin) HasLeader() bool { return true }
 // trailing ";2181" is the client port, since the image has no separate env var
 // for it. ZOO_4LW_COMMANDS_WHITELIST must list mntr and conf explicitly:
 // recent versions whitelist only srvr, and the adapter's List/Config need both.
+// quorumListenOnAllIPs=true is required: the entrypoint writes ZOO_SERVERS
+// into zoo.cfg verbatim, so without it the quorum peer tries to bind its
+// election port to the literal address stated for its own id - an address the
+// bridge-networked container does not itself own - and fails with
+// BindException on every member.
 
 const deployMultiHostNode1 = `docker run -d
   --name {{name}}
@@ -47,6 +52,7 @@ const deployMultiHostNode1 = `docker run -d
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="1"
   -e ZOO_SERVERS="server.1=10.0.0.1:2888:3888;2181 server.2=10.0.0.2:2888:3888;2181 server.3=10.0.0.3:2888:3888;2181"
+  -e ZOO_CFG_EXTRA="quorumListenOnAllIPs=true"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -61,6 +67,7 @@ const deployMultiHostNode2 = `docker run -d
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="2"
   -e ZOO_SERVERS="server.1=10.0.0.1:2888:3888;2181 server.2=10.0.0.2:2888:3888;2181 server.3=10.0.0.3:2888:3888;2181"
+  -e ZOO_CFG_EXTRA="quorumListenOnAllIPs=true"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
@@ -75,6 +82,7 @@ const deployMultiHostNode3 = `docker run -d
   -v /data/zookeeper/datalog:/datalog
   -e ZOO_MY_ID="3"
   -e ZOO_SERVERS="server.1=10.0.0.1:2888:3888;2181 server.2=10.0.0.2:2888:3888;2181 server.3=10.0.0.3:2888:3888;2181"
+  -e ZOO_CFG_EXTRA="quorumListenOnAllIPs=true"
   -e ZOO_4LW_COMMANDS_WHITELIST="mntr,conf,ruok,srvr"
   zookeeper:3.9`
 
