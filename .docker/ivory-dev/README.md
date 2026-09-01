@@ -13,10 +13,10 @@ All postgres instances are configured with ssl by default, and there are differe
 
 ## Connection
 
-- **Patroni Rest API:** `localhost:[8001-8005]` (example http://patroni1:8003)
-- **Postgres Ports:** `localhost:[5001-5005]` (example `psql --host=localhost --port=5003 --dbname=postgres --username=admin`, `password=admin`)
-- **HAProxy Statistics:** `localhost:8404` (example http://localhost:8404)
-- **Additional Patroni API** `patroni[1-3,-cert,-pass]:8008` you can add them to your hosts
+- **Patroni Rest API:** `localhost:[18001-18005]` (example http://patroni1:18003)
+- **Postgres Ports:** `localhost:[15001-15005]` (example `psql --host=localhost --port=15003 --dbname=postgres --username=admin`, `password=admin`)
+- **HAProxy Statistics:** `localhost:18404` (example http://localhost:18404)
+- **Additional Patroni API** `patroni[1-3,-cert,-pass]:18008` you can add them to your hosts
   (`/etc/hosts`) these lines to the file
   ``` 
   127.0.0.1 patroni1
@@ -25,12 +25,17 @@ All postgres instances are configured with ssl by default, and there are differe
   127.0.0.1 patroni-cert
   127.0.0.1 patroni-pass
   ```
-  
+
+The ports are shifted into the `18xxx`/`15xxx` range (and the containers are named `ivory-dev-*`) so this
+fixture never collides with the container names or ports that a shipped single-host deployment template
+(e.g. Patroni's, which defaults to `patroni1`/`patroni2`/`patroni3` on ports `8008-8010`) would use if you
+deploy it against `localhost` from the same Docker daemon.
+
 ### Clusters
 
-- `patroni[1-3]:[8001-8003]` - cluster is needed for general test
-- `patroni-cert:8004` - cluster is needed to check patroni certificates and required client certificates
-- `patroni-pass:8005` - cluster is needed to check patroni password and required password for unsafe requests
+- `patroni[1-3]:[18001-18003]` - cluster is needed for general test
+- `patroni-cert:18004` - cluster is needed to check patroni certificates and required client certificates
+- `patroni-pass:18005` - cluster is needed to check patroni password and required password for unsafe requests
 
 ### Users
 
@@ -44,7 +49,7 @@ All postgres instances are configured with ssl by default, and there are differe
 - `sslfull` - custom user, it requires `verify-full` connection and has password `sslfull:sslfull`
 
 #### Patroni
-- `patroni` - it is used to connect to cluster `patroni-pass:8005` with password `patroni:patroni
+- `patroni` - it is used to connect to cluster `patroni-pass:18005` with password `patroni:patroni
 
 ### Data
 

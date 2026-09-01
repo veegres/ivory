@@ -28,7 +28,7 @@ export function ContainerList(props: Props) {
     const list = useRouterNodePlatformList(connection)
 
     if (list.isError) return <ErrorSmart error={list.error}/>
-    if (list.isPending) return <SkeletonGroup count={1}/>
+    if (list.isPending) return <SkeletonGroup count={1} width={"100%"} height={130}/>
 
     return (
         <Box sx={SX.box}>
