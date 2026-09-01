@@ -2,6 +2,7 @@ import {AutoFixHigh} from "@mui/icons-material"
 import {Box, Button, TextField} from "@mui/material"
 import {useCallback, useEffect, useState} from "react"
 
+import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {PaperBlue} from "../../../shared/component/box/PaperBlue"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
@@ -59,6 +60,7 @@ export function ClusterDetect(props: Props) {
             >
                 <DialogScreen renderActions={renderActions()}>
                     <Box sx={SX.box}>
+                        {renderInfo()}
                         {renderCluster()}
                         {renderNode()}
                     </Box>
@@ -72,6 +74,17 @@ export function ClusterDetect(props: Props) {
             <Button fullWidth={true} loading={updateCluster.isPending} onClick={handleDetect}>
                 Detect
             </Button>
+        )
+    }
+
+    function renderInfo() {
+        return (
+            <PaperBlue>
+                <AlertCentered text={
+                    "Host, name, and ports come from the keeper, not your platform - if ports are mapped " +
+                    "or forwarded, they may differ from what you'd expect"
+                }/>
+            </PaperBlue>
         )
     }
 

@@ -4,62 +4,62 @@ networks:
 services:
   haproxy:
     image: haproxy
-    container_name: patroni-haproxy
+    container_name: ivory-dev-patroni-haproxy
     networks: [ dev-patroni ]
     ports:
-      - "8008:8008" # patroni general port
-      - "8404:8404" # haproxy statistic
-      - "8001-8005:8001-8005" # patroni ports
-      - "5001-5005:5001-5005" # postgres ports
+      - "18008:18008" # patroni general port
+      - "18404:18404" # haproxy statistic
+      - "18001-18005:18001-18005" # patroni ports
+      - "15001-15005:15001-15005" # postgres ports
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
 
   patroni1:
     build: .
     image: dev-patroni
-    container_name: patroni1
+    container_name: ivory-dev-patroni1
     networks: [ dev-patroni ]
     environment:
-      PATRONI_NAME: "patroni1"
-      PATRONI_POSTGRESQL_LISTEN: "patroni1:5001"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni1:5001"
-      PATRONI_RESTAPI_LISTEN: "patroni1:8001"
+      PATRONI_NAME: "ivory-dev-patroni1"
+      PATRONI_POSTGRESQL_LISTEN: "patroni1:15001"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni1:15001"
+      PATRONI_RESTAPI_LISTEN: "patroni1:18001"
       PATRONI_RAFT_SELF_ADDR: "patroni1:2221"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni2:2222','patroni3:2223'"
 
   patroni2:
     image: dev-patroni
-    container_name: patroni2
+    container_name: ivory-dev-patroni2
     networks: [ dev-patroni ]
     environment:
-      PATRONI_NAME: "patroni2"
-      PATRONI_POSTGRESQL_LISTEN: "patroni2:5002"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni2:5002"
-      PATRONI_RESTAPI_LISTEN: "patroni2:8002"
+      PATRONI_NAME: "ivory-dev-patroni2"
+      PATRONI_POSTGRESQL_LISTEN: "patroni2:15002"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni2:15002"
+      PATRONI_RESTAPI_LISTEN: "patroni2:18002"
       PATRONI_RAFT_SELF_ADDR: "patroni2:2222"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni3:2223'"
 
   patroni3:
     image: dev-patroni
-    container_name: patroni3
+    container_name: ivory-dev-patroni3
     networks: [ dev-patroni ]
     environment:
-      PATRONI_NAME: "patroni3"
-      PATRONI_POSTGRESQL_LISTEN: "patroni3:5003"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni3:5003"
-      PATRONI_RESTAPI_LISTEN: "patroni3:8003"
+      PATRONI_NAME: "ivory-dev-patroni3"
+      PATRONI_POSTGRESQL_LISTEN: "patroni3:15003"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni3:15003"
+      PATRONI_RESTAPI_LISTEN: "patroni3:18003"
       PATRONI_RAFT_SELF_ADDR: "patroni3:2223"
       PATRONI_RAFT_PARTNER_ADDRS: "'patroni1:2221','patroni2:2222'"
 
   patroni-cert:
     image: dev-patroni
-    container_name: patroni-cert
+    container_name: ivory-dev-patroni-cert
     networks: [ dev-patroni ]
     environment:
-      PATRONI_NAME: "patroni-cert"
-      PATRONI_POSTGRESQL_LISTEN: "patroni-cert:5004"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni-cert:5004"
-      PATRONI_RESTAPI_LISTEN: "patroni-cert:8004"
+      PATRONI_NAME: "ivory-dev-patroni-cert"
+      PATRONI_POSTGRESQL_LISTEN: "patroni-cert:15004"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni-cert:15004"
+      PATRONI_RESTAPI_LISTEN: "patroni-cert:18004"
       PATRONI_RAFT_SELF_ADDR: "patroni-cert:2224"
       PATRONI_RESTAPI_CAFILE: "/opt/certs/ca/ca.crt"
       PATRONI_RESTAPI_CERTFILE: "/opt/certs/server/server.crt"
@@ -68,13 +68,13 @@ services:
 
   patroni-pass:
     image: dev-patroni
-    container_name: patroni-pass
+    container_name: ivory-dev-patroni-pass
     networks: [ dev-patroni ]
     environment:
-      PATRONI_NAME: "patroni-pass"
-      PATRONI_POSTGRESQL_LISTEN: "patroni-pass:5005"
-      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni-pass:5005"
-      PATRONI_RESTAPI_LISTEN: "patroni-pass:8005"
+      PATRONI_NAME: "ivory-dev-patroni-pass"
+      PATRONI_POSTGRESQL_LISTEN: "patroni-pass:15005"
+      PATRONI_POSTGRESQL_CONNECT_ADDRESS: "patroni-pass:15005"
+      PATRONI_RESTAPI_LISTEN: "patroni-pass:18005"
       PATRONI_RAFT_SELF_ADDR: "patroni-pass:2225"
       PATRONI_RESTAPI_USERNAME: "patroni"
       PATRONI_RESTAPI_PASSWORD: "patroni"
