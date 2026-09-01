@@ -58,6 +58,13 @@ const deployMultiHost = `docker run -d
 // APIPORT, which is what keeps three spilos out of each other's way on one
 // port namespace.
 //
+// bg_mon is switched off rather than moved: unlike PGPORT/APIPORT, its listen
+// port is not configurable through an env var, only by dropping it from
+// shared_preload_libraries, and it binds the same fixed port on every node
+// under host networking. The override restates spilo's own default list
+// (postgres-appliance/scripts/configure_spilo.py) minus bg_mon, so
+// pg_stat_statements, pgextwlist, pg_auth_mon and set_user keep loading.
+//
 // The startup line is what keeps spilo alive without --hostname. Host
 // networking leaves the container answering to the VM's own hostname, and
 // configure_spilo.py resolves it - getaddrinfo(gethostname()) on its first
@@ -81,7 +88,7 @@ const deploySingleHost = `docker run -d
   -e APIPORT={{keeperPort}}
   -e PGPASSWORD_SUPERUSER="{{dbPass}}"
   -e RESTAPI_CONNECT_ADDRESS="{{host}}:{{keeperPort}}"
-  -e SPILO_CONFIGURATION='{"name":"{{name}}","postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999}}}'
+  -e SPILO_CONFIGURATION='{"name":"{{name}}","postgresql":{"connect_address":"{{host}}:{{dbPort}}"},"bootstrap":{"dcs":{"primary_start_timeout":999,"postgresql":{"parameters":{"shared_preload_libraries":"pg_stat_statements,pgextwlist,pg_auth_mon,set_user"}}}}}'
   ghcr.io/zalando/spilo-18:4.1-p2
   sh -c '
 echo "127.0.0.1 $(hostname)" >> /etc/hosts
