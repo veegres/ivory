@@ -35,8 +35,8 @@ export function DeploymentDefaultsGrid(props: Props) {
     const {fields, editable = true} = props
     return <Box sx={SX.grid}>{fields.map(renderField)}</Box>
 
-    function renderField(field?: DefaultField) {
-        if (!field) return <Box/>
+    function renderField(field: DefaultField | undefined, index: number) {
+        if (!field) return <Box key={index}/>
         const {variable, value, numeric, disabled, onChange} = field
         return (
             <Box key={variable} sx={SX.pair}>

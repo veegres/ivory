@@ -3,6 +3,7 @@ import {Box, Button, TextField} from "@mui/material"
 import {useCallback, useEffect, useState} from "react"
 
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
+import {PaperBlue} from "../../../shared/component/box/PaperBlue"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
@@ -76,19 +77,21 @@ export function ClusterDetect(props: Props) {
 
     function renderCluster() {
         return (
-            <TitleBox label={"Cluster"} island={true} collapsible={false}>
-                <Box sx={SX.column}>
-                    <TextField
-                        fullWidth={true}
-                        size={"small"}
-                        label={"Name"}
-                        value={request.name}
-                        error={submitted && !request.name}
-                        onChange={(e) => handleNameUpdate(e.target.value)}
-                    />
-                    <ClusterOptionsBox options={request} onUpdate={handleOptionsUpdate}/>
-                </Box>
-            </TitleBox>
+            <PaperBlue>
+                <TitleBox label={"Cluster"} island={true} collapsible={false}>
+                    <Box sx={SX.column}>
+                        <TextField
+                            fullWidth={true}
+                            size={"small"}
+                            label={"Name"}
+                            value={request.name}
+                            error={submitted && !request.name}
+                            onChange={(e) => handleNameUpdate(e.target.value)}
+                        />
+                        <ClusterOptionsBox options={request} onUpdate={handleOptionsUpdate}/>
+                    </Box>
+                </TitleBox>
+            </PaperBlue>
         )
     }
 
@@ -96,33 +99,35 @@ export function ClusterDetect(props: Props) {
     // template command - Ivory asks the keeper on it for the rest of the cluster
     function renderNode() {
         return (
-            <TitleBox
-                label={"Node"}
-                hint={"Any node of the cluster - the others are discovered through its keeper"}
-                island={true}
-                collapsible={false}
-            >
-                <Box sx={SX.column}>
-                    <FieldRow>
-                        <TextField
-                            size={"small"}
-                            label={"Host"}
-                            placeholder={"10.0.0.1"}
-                            value={request.host}
-                            error={submitted && !request.host}
-                            onChange={(e) => handleHostUpdate(e.target.value)}
-                        />
-                        <TextField
-                            size={"small"}
-                            type={"number"}
-                            label={"Port"}
-                            value={request.port || ""}
-                            error={submitted && !request.port}
-                            onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
-                        />
-                    </FieldRow>
-                </Box>
-            </TitleBox>
+            <PaperBlue>
+                <TitleBox
+                    label={"Node"}
+                    hint={"Any node of the cluster - the others are discovered through its keeper"}
+                    island={true}
+                    collapsible={false}
+                >
+                    <Box sx={SX.column}>
+                        <FieldRow>
+                            <TextField
+                                size={"small"}
+                                label={"Host"}
+                                placeholder={"10.0.0.1"}
+                                value={request.host}
+                                error={submitted && !request.host}
+                                onChange={(e) => handleHostUpdate(e.target.value)}
+                            />
+                            <TextField
+                                size={"small"}
+                                type={"number"}
+                                label={"Port"}
+                                value={request.port || ""}
+                                error={submitted && !request.port}
+                                onChange={(e) => handlePortUpdate(parseInt(e.target.value))}
+                            />
+                        </FieldRow>
+                    </Box>
+                </TitleBox>
+            </PaperBlue>
         )
     }
 

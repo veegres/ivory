@@ -4,6 +4,7 @@ import {useCallback, useMemo, useState} from "react"
 import {DialogLogsScreen} from "../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {Hint} from "../../../shared/component/box/Hint"
+import {PaperBlue} from "../../../shared/component/box/PaperBlue"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployPasswordMask, KeeperPluginOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
@@ -107,23 +108,25 @@ export function ClusterDeployForm(props: Props) {
 
     function renderCluster() {
         return (
-            <TitleBox label={"Cluster"} renderActions={renderTemplateName()} island={true} collapsible={false}>
-                <Box sx={SX.column}>
-                    <TextField
-                        fullWidth={true}
-                        size={"small"}
-                        label={"Name"}
-                        value={cluster}
-                        error={submitted && !cluster}
-                        onChange={(e) => setCluster(e.target.value)}
-                    />
-                    {renderParallel()}
-                    {renderSshCredentials()}
-                    {renderKeeperCredentials()}
-                    {renderDbCredentials()}
-                    {renderClusterOptions()}
-                </Box>
-            </TitleBox>
+            <PaperBlue>
+                <TitleBox label={"Cluster"} renderActions={renderTemplateName()} island={true} collapsible={false}>
+                    <Box sx={SX.column}>
+                        <TextField
+                            fullWidth={true}
+                            size={"small"}
+                            label={"Name"}
+                            value={cluster}
+                            error={submitted && !cluster}
+                            onChange={(e) => setCluster(e.target.value)}
+                        />
+                        {renderParallel()}
+                        {renderSshCredentials()}
+                        {renderKeeperCredentials()}
+                        {renderDbCredentials()}
+                        {renderClusterOptions()}
+                    </Box>
+                </TitleBox>
+            </PaperBlue>
         )
     }
 
@@ -138,8 +141,6 @@ export function ClusterDeployForm(props: Props) {
                     <Box>Parallel deployment</Box>
                     <Hint>Some keepers, such as Patroni, need their nodes deployed one after another.</Hint>
                 </Box>
-                {/* NOTE: the row toggles on click, so the checkbox has to stop
-                    its own click bubbling or the two would cancel out */}
                 <Checkbox
                     size={"small"}
                     color={"default"}
@@ -151,8 +152,6 @@ export function ClusterDeployForm(props: Props) {
         )
     }
 
-    // NOTE: no wrapping box - a node box is a top-level section here exactly as
-    // it is in the template editor, so the two screens show a node the same way
     function renderNodes() {
         return nodes.map(renderNode)
     }

@@ -1,5 +1,6 @@
-import {Box, TextField} from "@mui/material"
+import {TextField} from "@mui/material"
 
+import {PaperBlue} from "../../../shared/component/box/PaperBlue"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployValues} from "../../../shared/helper/HelperUtils"
@@ -37,7 +38,7 @@ export function ClusterDeployNode(props: Props) {
     const {node, cluster, showErrors, duplicate, credentials, onChange} = props
 
     return (
-        <Box sx={SX.box}>
+        <PaperBlue sx={SX.box}>
             <FieldRow>
                 <TextField
                     size={"small"}
@@ -63,7 +64,7 @@ export function ClusterDeployNode(props: Props) {
                 {renderPort("SSH Port", node.sshPort, (v) => onChange({...node, sshPort: v}))}
             </FieldRow>
             <DeploymentCommandPreview command={node.command} postScripts={node.postScripts} values={getValues()}/>
-        </Box>
+        </PaperBlue>
     )
 
     function renderPort(label: string, value: number | undefined, onPortChange: (value?: number) => void) {

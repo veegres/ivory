@@ -1,6 +1,7 @@
 import {Add} from "@mui/icons-material"
 import {Box, Button, TextField} from "@mui/material"
 
+import {PaperBlue} from "../../../shared/component/box/PaperBlue"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {CopyIconButton, DeleteIconButton} from "../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -32,7 +33,7 @@ export function DeploymentTemplateEditor(props: Props) {
         <Box sx={SX.box}>
             {renderInfo()}
             {renderDefaults()}
-            {template.commands.map(renderCommand)}
+            {template.commands.map(renderNode)}
             {editable && renderAdd()}
         </Box>
     )
@@ -67,60 +68,63 @@ export function DeploymentTemplateEditor(props: Props) {
     // that credential switched off. A password is never stored in a template.
     function renderDefaults() {
         return (
-            <TitleBox
-                label={"Variables & Defaults"}
-                hint={"cluster-wide values available to every command in this template as {{variable}} - some are disabled because their value is always set at deploy time"}
-                island={true}
-                collapsible={false}
-            >
-                <DeploymentDefaultsGrid
-                    editable={editable}
-                    fields={[
-                        {
-                            variable: DeployVar.Cluster, value: "", disabled: true,
-                            hint: "set when you deploy - the same value reaches every node's command",
-                            onChange: () => {},
-                        },
-                        undefined,
-                        {
-                            variable: DeployVar.KeeperUser, value: template.defaults?.keeperUser ?? "",
-                            hint: "the account the keeper command creates - shown as a suggestion on the deploy screen, editable there",
-                            onChange: (v) => handleDefaultsChange({keeperUser: v})},
-                        {
-                            variable: DeployVar.KeeperPass, value: "", disabled: true,
-                            hint: "resolved from the keeper vault when you deploy - a password is never stored in a template",
-                            onChange: () => {},
-                        },
-                        {
-                            variable: DeployVar.DbUser, value: template.defaults?.dbUser ?? "",
-                            hint: "the account the database command creates - shown as a suggestion on the deploy screen, editable there",
-                            onChange: (v) => handleDefaultsChange({dbUser: v})},
-                        {
-                            variable: DeployVar.DbPass, value: "", disabled: true,
-                            hint: "resolved from the database vault when you deploy - a password is never stored in a template",
-                            onChange: () => {},
-                        },
-                    ]}
-                />
-            </TitleBox>
+            <PaperBlue>
+                <TitleBox
+                    label={"Variables & Defaults"}
+                    hint={"cluster-wide values available to every command in this template as {{variable}} - some are disabled because their value is always set at deploy time"}
+                    island={true}
+                    collapsible={false}
+                >
+                    <DeploymentDefaultsGrid
+                        editable={editable}
+                        fields={[
+                            {
+                                variable: DeployVar.Cluster, value: "", disabled: true,
+                                hint: "set when you deploy - the same value reaches every node's command",
+                                onChange: () => {},
+                            },
+                            undefined,
+                            {
+                                variable: DeployVar.KeeperUser, value: template.defaults?.keeperUser ?? "",
+                                hint: "the account the keeper command creates - shown as a suggestion on the deploy screen, editable there",
+                                onChange: (v) => handleDefaultsChange({keeperUser: v})},
+                            {
+                                variable: DeployVar.KeeperPass, value: "", disabled: true,
+                                hint: "resolved from the keeper vault when you deploy - a password is never stored in a template",
+                                onChange: () => {},
+                            },
+                            {
+                                variable: DeployVar.DbUser, value: template.defaults?.dbUser ?? "",
+                                hint: "the account the database command creates - shown as a suggestion on the deploy screen, editable there",
+                                onChange: (v) => handleDefaultsChange({dbUser: v})},
+                            {
+                                variable: DeployVar.DbPass, value: "", disabled: true,
+                                hint: "resolved from the database vault when you deploy - a password is never stored in a template",
+                                onChange: () => {},
+                            },
+                        ]}
+                    />
+                </TitleBox>
+            </PaperBlue>
         )
     }
 
-    function renderCommand(command: TemplateCommand, index: number) {
+    function renderNode(command: TemplateCommand, index: number) {
         return (
-            <TitleBox
-                key={index}
-                label={`Node ${index + 1}`}
-                renderActions={editable && renderCommandActions(command, index)}
-                island={true}
-                defaultOpen={index === 0}
-            >
-                <DeploymentCommandEditor
-                    command={command}
-                    editable={editable}
-                    onChange={(updated) => onCommandChange(index, updated)}
-                />
-            </TitleBox>
+            <PaperBlue key={index}>
+                <TitleBox
+                    label={`Node ${index + 1}`}
+                    renderActions={editable && renderCommandActions(command, index)}
+                    island={true}
+                    defaultOpen={index === 0}
+                >
+                    <DeploymentCommandEditor
+                        command={command}
+                        editable={editable}
+                        onChange={(updated) => onCommandChange(index, updated)}
+                    />
+                </TitleBox>
+            </PaperBlue>
         )
     }
 
