@@ -20,6 +20,7 @@ var ErrClusterNodesNotProvided = errors.New("cluster nodes not provided")
 var ErrClusterNodeNameNotProvided = errors.New("cluster node name not provided")
 var ErrClusterNodeNameNotUnique = errors.New("cluster node name is not unique")
 var ErrClusterNodePortsNotProvided = errors.New("cluster node keeper, database and ssh ports are all required")
+var ErrClusterPlatformNotProvided = errors.New("cluster platform not provided")
 var ErrSshCredentialsRequired = errors.New("ssh credentials are required")
 var ErrKeeperCredentialsIncomplete = errors.New("provide both a keeper username and password, or neither")
 var ErrDatabaseCredentialsIncomplete = errors.New("provide both a database username and password, or neither")
@@ -58,9 +59,6 @@ func NewService(
 	}
 }
 
-// getSupportedFeatures asks the platform for its capabilities alongside the
-// keeper's and the database's. A cluster names no platform of its own yet, so
-// it reports the one its connections resolve to.
 func (s *Service) getSupportedFeatures(k node.KeeperPlugin, db query.DbPlugin) map[config.Feature]bool {
 	features := make(map[config.Feature]bool)
 	maps.Copy(features, s.nodeService.PlatformSupportedFeatures(node.DefaultPlatform))

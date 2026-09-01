@@ -152,6 +152,7 @@ export interface PlatformCopyIdRequest {
     port: number,
     username: string,
     password: string,
+    platform: PlatformPlugin,
     publicKey: string,
 }
 
@@ -161,17 +162,12 @@ export interface PlatformUpRequest {
     command: string,
 }
 
-// DeployVaults answers each credential separately: the keeper and database
-// vaults are optional for plugins that consume no such credentials, and one is
-// never filled in from the other.
 export interface DeployVaults {
     keeperId?: string,
     databaseId?: string,
     sshKeyId: string,
 }
 
-// KeeperDeployRequest deploys one node. It is flat by design: node owns no
-// node type of its own, and host/ssh port come from the connection.
 export interface KeeperDeployRequest {
     plugin: KeeperPlugin,
     cluster: string,

@@ -254,6 +254,7 @@ export function ClusterDeployForm(props: Props) {
         deploy.mutate({
             parallel,
             nodes,
+            platform: template.platform,
             commonConfig: {cluster, ...getSshConfig(), ...getKeeperConfig(), ...getDbConfig()},
             clusterOptions: options,
         })

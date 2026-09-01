@@ -48,6 +48,10 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 		return nil, false, ErrClusterNodesNotProvided
 	}
 
+	if r.Platform == "" {
+		return nil, false, ErrClusterPlatformNotProvided
+	}
+
 	if err := s.nodeService.ValidateKeeperPlugin(r.ClusterOptions.Plugins.Keeper); err != nil {
 		return nil, false, err
 	}
@@ -117,7 +121,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 			s.rollbackVaults(created, logs.send)
 			return nil, false, ErrSshKeyVaultMissingMetadata
 		}
-		if err := s.authorizeSshKey(r.Nodes, r.CommonConfig, *v.Metadata, logs.send); err != nil {
+		if err := s.authorizeSshKey(r, *v.Metadata, logs.send); err != nil {
 			s.rollbackVaults(created, logs.send)
 			return nil, false, err
 		}
@@ -175,7 +179,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 			wg.Add(1)
 			go func(dn DeployNode) {
 				defer wg.Done()
-				if s.deployNode(cluster, dn, logs.send) {
+				if s.deployNode(cluster, dn, r.Platform, logs.send) {
 					up.Add(1)
 				}
 			}(deployNode)
@@ -183,7 +187,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 		wg.Wait()
 	} else {
 		for _, deployNode := range r.Nodes {
-			if s.deployNode(cluster, deployNode, logs.send) {
+			if s.deployNode(cluster, deployNode, r.Platform, logs.send) {
 				up.Add(1)
 			}
 		}
@@ -200,7 +204,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 	// rs.initiate) therefore belongs on the last node.
 	initialized := deployed
 	if deployed {
-		initialized = s.postDeploy(cluster, r.Nodes, logs.send) == 0
+		initialized = s.postDeploy(cluster, r.Nodes, r.Platform, logs.send) == 0
 	} else if slices.ContainsFunc(r.Nodes, func(n DeployNode) bool { return len(n.PostScripts) > 0 }) {
 		logs.send("system", "skipping post-deploy initialization: not every node deployed successfully")
 	}
@@ -236,8 +240,8 @@ func (s *Service) validateNodePorts(nodes []NodeConfig) error {
 // every other step of this preparation phase: nothing has been started on any
 // host yet, so there is nothing left behind to troubleshoot, and every node
 // would otherwise fail with the same authentication error one at a time.
-func (s *Service) authorizeSshKey(nodes []DeployNode, c CommonConfig, publicKey string, logsSend func(ctx string, msg string)) error {
-	for _, target := range s.sshTargets(nodes, c.SshUser, c.SshPass) {
+func (s *Service) authorizeSshKey(r DeployRequest, publicKey string, logsSend func(ctx string, msg string)) error {
+	for _, target := range s.sshTargets(r) {
 		nodeKey := s.getNodeKey(target.Host, &target.Port)
 		logsSend(nodeKey, "authorizing the generated ssh key on the host")
 		if _, err := s.nodeService.PlatformSystemCopyId(node.PlatformCopyIdRequest{
@@ -254,17 +258,23 @@ func (s *Service) authorizeSshKey(nodes []DeployNode, c CommonConfig, publicKey 
 // Several nodes of one cluster may share a VM, and a key only has to be
 // installed on it once; a node with no host is left to deployNode, which
 // reports that itself.
-func (s *Service) sshTargets(nodes []DeployNode, username string, password string) []node.PlatformCredConnection {
-	seen := make(map[string]bool, len(nodes))
-	targets := make([]node.PlatformCredConnection, 0, len(nodes))
-	for _, n := range nodes {
+func (s *Service) sshTargets(r DeployRequest) []node.PlatformCredConnection {
+	seen := make(map[string]bool, len(r.Nodes))
+	targets := make([]node.PlatformCredConnection, 0, len(r.Nodes))
+	for _, n := range r.Nodes {
 		port := getPortValue(n.SshPort)
 		key := s.getNodeKey(n.Host, &port)
 		if n.Host == "" || seen[key] {
 			continue
 		}
 		seen[key] = true
-		targets = append(targets, node.PlatformCredConnection{Host: n.Host, Port: port, Username: username, Password: password})
+		targets = append(targets, node.PlatformCredConnection{
+			Host:     n.Host,
+			Port:     port,
+			Username: r.CommonConfig.SshUser,
+			Password: r.CommonConfig.SshPass,
+			Platform: r.Platform,
+		})
 	}
 	return targets
 }
@@ -289,7 +299,7 @@ func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg 
 // be stated: a post script is what turns running processes into an initialized
 // cluster (etcd's auth enable, mongo's rs.initiate), so a deploy whose scripts
 // all failed otherwise reads as a success.
-func (s *Service) postDeploy(cluster Request, nodes []DeployNode, logsSend func(ctx string, msg string)) int {
+func (s *Service) postDeploy(cluster Request, nodes []DeployNode, platform node.PlatformPlugin, logsSend func(ctx string, msg string)) int {
 	failed := 0
 	total := 0
 	for _, n := range nodes {
@@ -299,7 +309,7 @@ func (s *Service) postDeploy(cluster Request, nodes []DeployNode, logsSend func(
 		total++
 		nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 		logsSend(nodeKey, "running post-deploy initialization")
-		logs, err := s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n))
+		logs, err := s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n, platform))
 		for _, log := range logs {
 			logsSend(nodeKey, log)
 		}
@@ -321,7 +331,7 @@ func (s *Service) postDeploy(cluster Request, nodes []DeployNode, logsSend func(
 // deployNode deploys one node by delegating to node's KeeperDeployUp; it only
 // adds the cluster-level concerns of resolving the node's vault-backed
 // connection and aggregating timestamped logs for the batch.
-func (s *Service) deployNode(cluster Request, n DeployNode, logsSend func(ctx string, msg string)) bool {
+func (s *Service) deployNode(cluster Request, n DeployNode, platform node.PlatformPlugin, logsSend func(ctx string, msg string)) bool {
 	nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 
 	if n.Host == "" {
@@ -335,7 +345,7 @@ func (s *Service) deployNode(cluster Request, n DeployNode, logsSend func(ctx st
 
 	logsSend(nodeKey, "deploy started")
 	// NOTE: even if connection was closed we do not want to stop deployment
-	res, err := s.nodeService.KeeperDeployUp(s.mapDeployRequest(cluster, n))
+	res, err := s.nodeService.KeeperDeployUp(s.mapDeployRequest(cluster, n, platform))
 	if err != nil {
 		logsSend(nodeKey, fmt.Sprintf("deploy failed: %v", err))
 		return false
@@ -350,7 +360,7 @@ func (s *Service) deployNode(cluster Request, n DeployNode, logsSend func(ctx st
 // mapDeployRequest builds node's flat deploy request for one node; both the
 // deploy and post-deploy steps run against the identical scope, so they share
 // one mapper rather than assembling it twice.
-func (s *Service) mapDeployRequest(cluster Request, n DeployNode) node.KeeperDeployRequest {
+func (s *Service) mapDeployRequest(cluster Request, n DeployNode, platform node.PlatformPlugin) node.KeeperDeployRequest {
 	return node.KeeperDeployRequest{
 		Plugin:      cluster.Options.Plugins.Keeper,
 		Cluster:     cluster.Name,
@@ -359,7 +369,7 @@ func (s *Service) mapDeployRequest(cluster Request, n DeployNode) node.KeeperDep
 		DbPort:      getPortValue(n.DbPort),
 		Command:     n.Command,
 		PostScripts: n.PostScripts,
-		Connection:  s.getNodeConnection(cluster, n),
+		Connection:  s.getNodeConnection(cluster, n, platform),
 		Vaults:      s.getNodeVaults(cluster),
 	}
 }
@@ -394,8 +404,13 @@ func isHalfCredential(username string, password string) bool {
 // (either provided or freshly generated in Deploy's "Handle SSH Key" step)
 // and after validateNodePorts, so the ssh port is the node's own rather than
 // an assumed 22.
-func (s *Service) getNodeConnection(cluster Request, n DeployNode) node.PlatformVaultConnection {
-	return node.PlatformVaultConnection{Host: n.Host, Port: getPortValue(n.SshPort), VaultId: *cluster.Vaults.SshKeyId}
+func (s *Service) getNodeConnection(cluster Request, n DeployNode, platform node.PlatformPlugin) node.PlatformVaultConnection {
+	return node.PlatformVaultConnection{
+		Host:     n.Host,
+		Port:     getPortValue(n.SshPort),
+		VaultId:  *cluster.Vaults.SshKeyId,
+		Platform: platform,
+	}
 }
 
 // getNodeVaults resolves the vault ids to pass to a node keeper-deploy action.

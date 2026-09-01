@@ -95,6 +95,7 @@ func newDeployTestServiceWithVault(t *testing.T, withVault bool) (*Service, *vau
 func validDeployRequest() DeployRequest {
 	sshPort, keeperPort, dbPort := 22, 8008, 5432
 	return DeployRequest{
+		Platform: platform.Docker,
 		Nodes: []DeployNode{{
 			NodeConfig: NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
 			Command:    `docker run -d --name {{name}} -e ETCD3_HOSTS="etcd1:2379" spilo`,
@@ -140,6 +141,17 @@ func TestService_Deploy_ValidationErrors(t *testing.T) {
 		_, _, err := s.Deploy(r)
 		if !errors.Is(err, ErrClusterNodesNotProvided) {
 			t.Fatalf("expected ErrClusterNodesNotProvided, got %v", err)
+		}
+	})
+
+	t.Run("platform not provided", func(t *testing.T) {
+		s := newDeployTestService(t)
+		r := validDeployRequest()
+		r.Platform = ""
+
+		_, _, err := s.Deploy(r)
+		if !errors.Is(err, ErrClusterPlatformNotProvided) {
+			t.Fatalf("expected ErrClusterPlatformNotProvided, got %v", err)
 		}
 	})
 
@@ -322,7 +334,7 @@ func TestService_deployNode(t *testing.T) {
 		var logs []string
 		logsSend := func(ctx string, msg string) { logs = append(logs, ctx+" | "+msg) }
 
-		ok := s.deployNode(Request{}, DeployNode{}, logsSend)
+		ok := s.deployNode(Request{}, DeployNode{}, platform.Docker, logsSend)
 		if ok {
 			t.Fatalf("expected deployNode to fail for a missing host")
 		}
@@ -336,7 +348,7 @@ func TestService_deployNode(t *testing.T) {
 		logsSend := func(ctx string, msg string) { logs = append(logs, ctx+" | "+msg) }
 
 		cluster := Request{Options: Options{Vaults: Vaults{SshKeyId: nil}}}
-		ok := s.deployNode(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-1", Host: "db1"}}, logsSend)
+		ok := s.deployNode(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-1", Host: "db1"}}, platform.Docker, logsSend)
 		if ok {
 			t.Fatalf("expected deployNode to fail without an ssh key vault id")
 		}
@@ -423,13 +435,16 @@ func TestService_mapDeployRequest(t *testing.T) {
 			NodeConfig:  NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
 			Command:     "docker run -d spilo",
 			PostScripts: []string{"echo done"},
-		})
+		}, platform.Docker)
 
 		if got.Name != "db-1" || got.Cluster != "test-cluster" {
 			t.Errorf("expected the node and cluster names to carry through, got %+v", got)
 		}
 		if got.Connection.Host != "db1" || got.Connection.Port != sshPort {
 			t.Errorf("expected the ssh connection to come from the node, got %+v", got.Connection)
+		}
+		if got.Connection.Platform != platform.Docker {
+			t.Errorf("expected the connection to name the deploy's platform, got %q", got.Connection.Platform)
 		}
 		if got.KeeperPort != keeperPort || got.DbPort != dbPort {
 			t.Errorf("expected the node's own ports, got %d/%d", got.KeeperPort, got.DbPort)
@@ -442,7 +457,7 @@ func TestService_mapDeployRequest(t *testing.T) {
 	// NOTE: Deploy rejects an unset port before ever mapping the node, so no
 	// port is assumed here - not even the conventional ssh 22
 	t.Run("an unset port is carried through as zero rather than assumed", func(t *testing.T) {
-		got := s.mapDeployRequest(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-2", Host: "db2"}})
+		got := s.mapDeployRequest(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-2", Host: "db2"}}, platform.Docker)
 		if got.Connection.Port != 0 {
 			t.Errorf("expected the ssh port to stay zero, got %d", got.Connection.Port)
 		}
@@ -593,7 +608,11 @@ func TestService_sshTargets(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			targets := s.sshTargets(test.nodes, "root", "secret")
+			targets := s.sshTargets(DeployRequest{
+				Nodes:        test.nodes,
+				Platform:     platform.Docker,
+				CommonConfig: CommonConfig{SshUser: "root", SshPass: "secret"},
+			})
 			if len(targets) != len(test.expected) {
 				t.Fatalf("expected %d target(s), got %d", len(test.expected), len(targets))
 			}
@@ -604,6 +623,9 @@ func TestService_sshTargets(t *testing.T) {
 				}
 				if targets[i].Username != "root" || targets[i].Password != "secret" {
 					t.Errorf("target %d must carry the typed ssh credentials, the only thing they are used for", i)
+				}
+				if targets[i].Platform != platform.Docker {
+					t.Errorf("target %d must name the platform the deploy runs on, got %q", i, targets[i].Platform)
 				}
 			}
 		})

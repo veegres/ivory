@@ -3,7 +3,7 @@ import {ReactNode} from "react"
 import {Certs} from "../../cert/api/CertType"
 import {DeployCredentials} from "../../deployment/api/DeploymentType"
 import {Feature} from "../../Feature"
-import {KeeperOneResponse, KeeperPlugin} from "../../node/api/NodeType"
+import {KeeperOneResponse, KeeperPlugin, PlatformPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
 
 // COMMON (WEB AND SERVER)
@@ -90,6 +90,7 @@ export interface DeployNode extends NodeConfig {
 export interface DeployRequest {
     parallel: boolean,
     nodes: DeployNode[],
+    platform: PlatformPlugin,
     commonConfig: DeployCommonConfig,
     clusterOptions: Options
 }
