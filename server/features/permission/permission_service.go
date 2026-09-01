@@ -150,12 +150,7 @@ func (s *Service) getFullUsername(prefix string, username string) (string, error
 }
 
 func (s *Service) isValidFeature(feature config.Feature) bool {
-	for _, validFeature := range config.All {
-		if validFeature == feature {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(config.All, feature)
 }
 
 func (s *Service) getAllPermissionsWithStatus(status Status) PermissionMap {
@@ -190,8 +185,13 @@ func (s *Service) updateUserPermission(permUsername string, feature config.Featu
 	if permUsername == "" {
 		return ErrUsernameCannotBeEmpty
 	}
-	split := strings.Split(permUsername, ":")
-	username := split[1]
+	prefix, username, found := strings.Cut(permUsername, ":")
+	if !found || prefix == "" {
+		return ErrPrefixCannotBeEmpty
+	}
+	if username == "" {
+		return ErrUsernameCannotBeEmpty
+	}
 	if slices.Contains(s.superusers, username) {
 		return ErrCannotChangePermissionsForSuperusers
 	}
