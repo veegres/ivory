@@ -242,6 +242,41 @@ func TestDefaultsStateCredentialDefaults(t *testing.T) {
 	}
 }
 
+// TestDefaultsStateDcsDefault holds the same line for the coordination store
+// that the command defaults hold for a node's host: a single-host template
+// names one, a multi-host template names none.
+//
+// A single-host deployment's coordinator is knowable - it is the ensemble
+// Ivory's own single-host template puts on that same VM, reached through the
+// loopback host networking shares - so the template states it and the deploy
+// screen opens filled in. A multi-host one runs on machines only the operator
+// knows, and example text there is a value they have to notice is wrong before
+// it reaches a real deploy; the field opens empty and turns red on Deploy
+// instead, which is the same answer this codebase gives for a port.
+func TestDefaultsStateDcsDefault(t *testing.T) {
+	s := newFullTestService(t)
+
+	for _, template := range s.Defaults(ListRequest{}) {
+		t.Run(template.Name, func(t *testing.T) {
+			if !referencesAny(template, []keeper.Var{keeper.VarDcs}) {
+				if template.Defaults.Dcs != "" {
+					t.Errorf("the template names a coordination store no command reads: %q", template.Defaults.Dcs)
+				}
+				return
+			}
+			if strings.Contains(template.Name, "Single Host") {
+				if template.Defaults.Dcs == "" {
+					t.Error("a single-host template reads {{dcs}} but names no coordination store")
+				}
+				return
+			}
+			if template.Defaults.Dcs != "" {
+				t.Errorf("a multi-host template cannot know where the store runs, but names %q", template.Defaults.Dcs)
+			}
+		})
+	}
+}
+
 // referencesAny reports whether any of a template's commands or post scripts
 // names one of the given variables.
 func referencesAny(template Template, vars []keeper.Var) bool {
@@ -362,6 +397,16 @@ func TestDefaultsProduceRunnableCommands(t *testing.T) {
 
 	for _, template := range s.Defaults(ListRequest{}) {
 		t.Run(template.Name, func(t *testing.T) {
+			// NOTE: the run this walks is the one the deploy screen would send:
+			// the template's own default where it names one, and otherwise a
+			// value the operator typed - which is what a multi-host template
+			// leaves to them, exactly as it leaves them the host and the ports
+			// this test supplies above.
+			values := values
+			values.Dcs = template.Defaults.Dcs
+			if values.Dcs == "" {
+				values.Dcs = "typed-on-the-deploy-screen"
+			}
 			for i, command := range template.Commands {
 				if left := keeper.UnresolvedPlaceholders(keeper.Interpolate(command.Command, values)); len(left) > 0 {
 					t.Errorf("command %d still references %v after a node fills it in", i, left)

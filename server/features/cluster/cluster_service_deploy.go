@@ -179,7 +179,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 			wg.Add(1)
 			go func(dn DeployNode) {
 				defer wg.Done()
-				if s.deployNode(cluster, dn, r.Platform, logs.send) {
+				if s.deployNode(cluster, dn, r.Platform, r.CommonConfig.Dcs, logs.send) {
 					up.Add(1)
 				}
 			}(deployNode)
@@ -187,7 +187,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 		wg.Wait()
 	} else {
 		for _, deployNode := range r.Nodes {
-			if s.deployNode(cluster, deployNode, r.Platform, logs.send) {
+			if s.deployNode(cluster, deployNode, r.Platform, r.CommonConfig.Dcs, logs.send) {
 				up.Add(1)
 			}
 		}
@@ -204,7 +204,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 	// rs.initiate) therefore belongs on the last node.
 	initialized := deployed
 	if deployed {
-		initialized = s.postDeploy(cluster, r.Nodes, r.Platform, logs.send) == 0
+		initialized = s.postDeploy(cluster, r.Nodes, r.Platform, r.CommonConfig.Dcs, logs.send) == 0
 	} else if slices.ContainsFunc(r.Nodes, func(n DeployNode) bool { return len(n.PostScripts) > 0 }) {
 		logs.send("system", "skipping post-deploy initialization: not every node deployed successfully")
 	}
@@ -299,7 +299,7 @@ func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg 
 // be stated: a post script is what turns running processes into an initialized
 // cluster (etcd's auth enable, mongo's rs.initiate), so a deploy whose scripts
 // all failed otherwise reads as a success.
-func (s *Service) postDeploy(cluster Request, nodes []DeployNode, platform node.PlatformPlugin, logsSend func(ctx string, msg string)) int {
+func (s *Service) postDeploy(cluster Request, nodes []DeployNode, platform node.PlatformPlugin, dcs string, logsSend func(ctx string, msg string)) int {
 	failed := 0
 	total := 0
 	for _, n := range nodes {
@@ -309,7 +309,7 @@ func (s *Service) postDeploy(cluster Request, nodes []DeployNode, platform node.
 		total++
 		nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 		logsSend(nodeKey, "running post-deploy initialization")
-		logs, err := s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n, platform))
+		logs, err := s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n, platform, dcs))
 		for _, log := range logs {
 			logsSend(nodeKey, log)
 		}
@@ -331,7 +331,7 @@ func (s *Service) postDeploy(cluster Request, nodes []DeployNode, platform node.
 // deployNode deploys one node by delegating to node's KeeperDeployUp; it only
 // adds the cluster-level concerns of resolving the node's vault-backed
 // connection and aggregating timestamped logs for the batch.
-func (s *Service) deployNode(cluster Request, n DeployNode, platform node.PlatformPlugin, logsSend func(ctx string, msg string)) bool {
+func (s *Service) deployNode(cluster Request, n DeployNode, platform node.PlatformPlugin, dcs string, logsSend func(ctx string, msg string)) bool {
 	nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 
 	if n.Host == "" {
@@ -345,7 +345,7 @@ func (s *Service) deployNode(cluster Request, n DeployNode, platform node.Platfo
 
 	logsSend(nodeKey, "deploy started")
 	// NOTE: even if connection was closed we do not want to stop deployment
-	res, err := s.nodeService.KeeperDeployUp(s.mapDeployRequest(cluster, n, platform))
+	res, err := s.nodeService.KeeperDeployUp(s.mapDeployRequest(cluster, n, platform, dcs))
 	if err != nil {
 		logsSend(nodeKey, fmt.Sprintf("deploy failed: %v", err))
 		return false
@@ -360,10 +360,11 @@ func (s *Service) deployNode(cluster Request, n DeployNode, platform node.Platfo
 // mapDeployRequest builds node's flat deploy request for one node; both the
 // deploy and post-deploy steps run against the identical scope, so they share
 // one mapper rather than assembling it twice.
-func (s *Service) mapDeployRequest(cluster Request, n DeployNode, platform node.PlatformPlugin) node.KeeperDeployRequest {
+func (s *Service) mapDeployRequest(cluster Request, n DeployNode, platform node.PlatformPlugin, dcs string) node.KeeperDeployRequest {
 	return node.KeeperDeployRequest{
 		Plugin:      cluster.Options.Plugins.Keeper,
 		Cluster:     cluster.Name,
+		Dcs:         dcs,
 		Name:        n.Name,
 		KeeperPort:  getPortValue(n.KeeperPort),
 		DbPort:      getPortValue(n.DbPort),

@@ -264,6 +264,7 @@ export const DeployPasswordMask = "*****"
 
 export const DeployVarOptions: { [key in DeployVar]: DeployVarMeta } = {
     [DeployVar.Cluster]: {label: "Cluster", example: "my-cluster", secret: false, scope: DeployVarScope.Template},
+    [DeployVar.Dcs]: {label: "DCS Address", example: "10.0.0.1:2379,10.0.0.2:2379", secret: false, scope: DeployVarScope.Template},
     [DeployVar.Name]: {label: "Node Name", example: "node1", secret: false, scope: DeployVarScope.Command},
     [DeployVar.Host]: {label: "Host", example: "localhost", secret: false, scope: DeployVarScope.Command},
     [DeployVar.SshPort]: {label: "SSH Port", example: "22", secret: false, scope: DeployVarScope.Command},
@@ -301,6 +302,7 @@ export const getPlaceholders = (text: string): string[] => {
 // given the value the server substitutes.
 export interface DeployValues {
     cluster?: string,
+    dcs?: string,
     name?: string,
     host?: string,
     sshPort?: number,
@@ -318,6 +320,7 @@ export interface DeployValues {
 export const interpolateCommand = (text: string, values: DeployValues): string => {
     const lookup: {[key in DeployVar]?: string} = {
         [DeployVar.Cluster]: values.cluster,
+        [DeployVar.Dcs]: values.dcs,
         [DeployVar.Name]: values.name,
         [DeployVar.Host]: values.host,
         [DeployVar.SshPort]: values.sshPort?.toString(),

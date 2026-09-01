@@ -34,15 +34,18 @@ export interface CommandDefaults {
 }
 
 // TemplateDefaults is what the whole template fills the deploy screen's
-// credential fields with. Credentials are one answer for the whole cluster, so
-// they sit here rather than on a command, where three copies could only ever
+// cluster-wide fields with. These are one answer for the whole cluster, so they
+// sit here rather than on a command, where three copies could only ever
 // disagree. A username means the deployment ends up with that account - spilo
 // names its superuser postgres, etcd can only enable auth through root - so the
 // screen opens on it; where it names none, the screen opens with that credential
 // switched off. Passwords are never here: a template is stored, read and copied.
+// The DCS address is the store the whole deployment coordinates through, and it
+// is the shipped example the operator edits before deploying.
 export interface TemplateDefaults {
     keeperUser?: string,
     dbUser?: string,
+    dcs?: string,
 }
 
 // Template is a saved deployment: an ordered list of commands, one per node,

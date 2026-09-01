@@ -18,10 +18,11 @@ func testTemplateRequest(name string) deployment.TemplateRequest {
 		Description: "three etcd members",
 		Keeper:      keeper.NATIVE_ETCD,
 		Platform:    platform.Docker,
+		Defaults:    deployment.TemplateDefaults{DbUser: "root", Dcs: "10.0.0.1:2379"},
 		Commands: []deployment.TemplateCommand{
 			{
 				Command:  "docker run -d --name {{name}} etcd",
-				Defaults: deployment.CommandDefaults{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+				Defaults: deployment.CommandDefaults{Name: "etcd1", Host: "localhost", KeeperPort: 2379, DbPort: 2379},
 			},
 			{
 				Command:     "docker run -d --name {{name}} etcd",
@@ -60,6 +61,14 @@ func TestExportV2(t *testing.T) {
 	// one port, which is the collision the defaults exist to prevent
 	if got.Commands[1].Defaults.Name != "etcd2" || got.Commands[1].Defaults.DbPort != 2381 {
 		t.Errorf("got defaults %+v, want the second node's own name and port", got.Commands[1].Defaults)
+	}
+	if got.Commands[0].Defaults.Host != "localhost" {
+		t.Errorf("got host %q, want the machine a single-host template's commands land on", got.Commands[0].Defaults.Host)
+	}
+	// NOTE: without these the restored template opens its deploy screen with
+	// the credentials switched off and the DCS address blank
+	if got.Defaults.DbUser != "root" || got.Defaults.Dcs != "10.0.0.1:2379" {
+		t.Errorf("got template defaults %+v, want the stored user and coordination store", got.Defaults)
 	}
 }
 

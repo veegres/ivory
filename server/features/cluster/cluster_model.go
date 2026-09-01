@@ -100,7 +100,12 @@ type DeployNode struct {
 }
 
 type CommonConfig struct {
-	Cluster    string `json:"cluster"`
+	Cluster string `json:"cluster"`
+	// Dcs is the address of the coordination store the whole deployment runs
+	// against, resolved into {{dcs}}. It is one answer for the cluster rather
+	// than a per-node field, and it is never stored on the cluster: like the
+	// commands themselves it belongs to the deploy request only.
+	Dcs        string `json:"dcs"`
 	SshUser    string `json:"sshUser"`
 	SshPass    string `json:"sshPass"`
 	KeeperUser string `json:"keeperUser"`

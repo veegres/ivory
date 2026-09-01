@@ -334,7 +334,7 @@ func TestService_deployNode(t *testing.T) {
 		var logs []string
 		logsSend := func(ctx string, msg string) { logs = append(logs, ctx+" | "+msg) }
 
-		ok := s.deployNode(Request{}, DeployNode{}, platform.Docker, logsSend)
+		ok := s.deployNode(Request{}, DeployNode{}, platform.Docker, "", logsSend)
 		if ok {
 			t.Fatalf("expected deployNode to fail for a missing host")
 		}
@@ -348,7 +348,7 @@ func TestService_deployNode(t *testing.T) {
 		logsSend := func(ctx string, msg string) { logs = append(logs, ctx+" | "+msg) }
 
 		cluster := Request{Options: Options{Vaults: Vaults{SshKeyId: nil}}}
-		ok := s.deployNode(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-1", Host: "db1"}}, platform.Docker, logsSend)
+		ok := s.deployNode(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-1", Host: "db1"}}, platform.Docker, "", logsSend)
 		if ok {
 			t.Fatalf("expected deployNode to fail without an ssh key vault id")
 		}
@@ -435,10 +435,15 @@ func TestService_mapDeployRequest(t *testing.T) {
 			NodeConfig:  NodeConfig{Name: "db-1", Host: "db1", SshPort: &sshPort, KeeperPort: &keeperPort, DbPort: &dbPort},
 			Command:     "docker run -d spilo",
 			PostScripts: []string{"echo done"},
-		}, platform.Docker)
+		}, platform.Docker, "10.0.0.1:2379")
 
 		if got.Name != "db-1" || got.Cluster != "test-cluster" {
 			t.Errorf("expected the node and cluster names to carry through, got %+v", got)
+		}
+		// NOTE: one address for the whole deployment, so every node's request
+		// carries the same one the deploy screen was given
+		if got.Dcs != "10.0.0.1:2379" {
+			t.Errorf("expected the deploy's coordination store, got %q", got.Dcs)
 		}
 		if got.Connection.Host != "db1" || got.Connection.Port != sshPort {
 			t.Errorf("expected the ssh connection to come from the node, got %+v", got.Connection)
@@ -457,7 +462,7 @@ func TestService_mapDeployRequest(t *testing.T) {
 	// NOTE: Deploy rejects an unset port before ever mapping the node, so no
 	// port is assumed here - not even the conventional ssh 22
 	t.Run("an unset port is carried through as zero rather than assumed", func(t *testing.T) {
-		got := s.mapDeployRequest(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-2", Host: "db2"}}, platform.Docker)
+		got := s.mapDeployRequest(cluster, DeployNode{NodeConfig: NodeConfig{Name: "db-2", Host: "db2"}}, platform.Docker, "")
 		if got.Connection.Port != 0 {
 			t.Errorf("expected the ssh port to stay zero, got %d", got.Connection.Port)
 		}

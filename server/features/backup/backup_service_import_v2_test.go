@@ -18,10 +18,11 @@ func testBackupDeployment(name string) backupDeploymentV2 {
 		Description: "three etcd members",
 		Keeper:      string(keeper.NATIVE_ETCD),
 		Platform:    string(platform.Docker),
+		Defaults:    backupDeploymentDefaultsV2{DbUser: "root", Dcs: "10.0.0.1:2379"},
 		Commands: []backupDeploymentCommandV2{
 			{
 				Command:  "docker run -d --name {{name}} etcd",
-				Defaults: backupDeploymentCommandDefaultsV2{Name: "etcd1", KeeperPort: 2379, DbPort: 2379},
+				Defaults: backupDeploymentCommandDefaultsV2{Name: "etcd1", Host: "localhost", KeeperPort: 2379, DbPort: 2379},
 			},
 			{
 				Command:     "docker run -d --name {{name}} etcd",
@@ -104,6 +105,14 @@ func TestImportV2(t *testing.T) {
 			// single-host template back on one port
 			if tpl.Commands[1].Defaults.Name != "etcd2" || tpl.Commands[1].Defaults.KeeperPort != 2381 {
 				t.Errorf("got defaults %+v, want the second node's own name and port", tpl.Commands[1].Defaults)
+			}
+			if tpl.Commands[0].Defaults.Host != "localhost" {
+				t.Errorf("got host %q, want the machine a single-host template's commands land on", tpl.Commands[0].Defaults.Host)
+			}
+			// NOTE: a restore that dropped these would open the deploy screen
+			// with its credentials switched off and no DCS to dial
+			if tpl.Defaults.DbUser != "root" || tpl.Defaults.Dcs != "10.0.0.1:2379" {
+				t.Errorf("got template defaults %+v, want the exported user and coordination store", tpl.Defaults)
 			}
 		}
 	}

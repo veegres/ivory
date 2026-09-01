@@ -61,11 +61,12 @@ export function DeploymentTemplateEditor(props: Props) {
         )
     }
 
-    // NOTE: usernames only, and one set for the whole template: every node of a
-    // deployment authenticates the same way, so a per-command copy could only
-    // disagree with its neighbours. A username here means the deployment ends
-    // up with that account, so the deploy screen opens on it; naming none opens
-    // that credential switched off. A password is never stored in a template.
+    // NOTE: one set for the whole template: every node of a deployment
+    // authenticates the same way and coordinates through the same store, so a
+    // per-command copy could only disagree with its neighbours. A username here
+    // means the deployment ends up with that account, so the deploy screen opens
+    // on it; naming none opens that credential switched off. A password is never
+    // stored in a template.
     function renderDefaults() {
         return (
             <PaperBlue>
@@ -83,7 +84,11 @@ export function DeploymentTemplateEditor(props: Props) {
                                 hint: "set when you deploy - the same value reaches every node's command",
                                 onChange: () => {},
                             },
-                            undefined,
+                            {
+                                variable: DeployVar.Dcs, value: template.defaults?.dcs ?? "",
+                                hint: "the coordination store this cluster runs against - shown as a suggestion on the deploy screen, editable there",
+                                onChange: (v) => handleDefaultsChange({dcs: v}),
+                            },
                             {
                                 variable: DeployVar.KeeperUser, value: template.defaults?.keeperUser ?? "",
                                 hint: "the account the keeper command creates - shown as a suggestion on the deploy screen, editable there",
