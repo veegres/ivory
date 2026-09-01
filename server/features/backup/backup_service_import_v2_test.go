@@ -193,6 +193,38 @@ func TestImportV2RestoresQueryPlugin(t *testing.T) {
 	}
 }
 
+func TestImportV2AggregatesQueryErrorsButContinues(t *testing.T) {
+	s := createTestBackupService(t)
+
+	data, errMarshal := json.Marshal(BackupV2{
+		Queries: []backupQueryV2{
+			{Name: "broken", Type: backupQueryTypeV2("not-a-type"), Plugin: string(database.REDIS), Query: "KEYS *"},
+			{Name: "good", Type: queryTypeOtherV2, Plugin: string(database.REDIS), Query: "KEYS *"},
+		},
+	})
+	if errMarshal != nil {
+		t.Fatalf("failed to marshal backup: %v", errMarshal)
+	}
+
+	if err := s.importV2(data); err == nil {
+		t.Fatal("expected the unmappable query to be reported")
+	}
+
+	queries, errList := s.queryService.GetList(nil, nil)
+	if errList != nil {
+		t.Fatalf("GetList() error = %v", errList)
+	}
+	found := false
+	for _, q := range queries {
+		if q.Name == "good" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("expected the valid query to be restored despite the broken one")
+	}
+}
+
 func TestImportV2RestoresPermissions(t *testing.T) {
 	s := createTestBackupService(t)
 
