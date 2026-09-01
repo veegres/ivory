@@ -236,6 +236,50 @@ func TestServiceRequestApproveRejectUserPermissions(t *testing.T) {
 	})
 }
 
+// TestServiceApproveRejectRequireAPrefixedUsername covers a name arriving
+// without its prefix. It comes straight off the request path, so nothing
+// guarantees the shape getFullUsername writes - and the old code indexed the
+// split blindly, panicking into an empty 500 rather than saying what was wrong.
+func TestServiceApproveRejectRequireAPrefixedUsername(t *testing.T) {
+	s := createTestPermissionService(t)
+	features := []config.Feature{config.ViewClusterList}
+
+	malformed := []struct {
+		name     string
+		username string
+	}{
+		{name: "no prefix at all", username: "alice"},
+		{name: "empty prefix", username: ":alice"},
+		{name: "empty username", username: "basic:"},
+	}
+
+	for _, tt := range malformed {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := s.ApproveUserPermissions(tt.username, features); err == nil {
+				t.Errorf("ApproveUserPermissions(%q) returned no error", tt.username)
+			}
+			if err := s.RejectUserPermissions(tt.username, features); err == nil {
+				t.Errorf("RejectUserPermissions(%q) returned no error", tt.username)
+			}
+		})
+	}
+
+	// NOTE: a colon in the username itself is only the separator once - the
+	// prefix ends at the first one, and the rest is the name
+	t.Run("a username containing a colon keeps its whole name", func(t *testing.T) {
+		if _, err := s.CreateUserPermissions("ldap", "cn=bob,ou=eng"); err != nil {
+			t.Fatalf("failed to seed: %v", err)
+		}
+		if err := s.ApproveUserPermissions("ldap:cn=bob,ou=eng", features); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		perms, _ := s.GetUserPermissions("ldap", "cn=bob,ou=eng", false)
+		if perms[config.ViewClusterList] != GRANTED {
+			t.Errorf("expected GRANTED, got %v", perms[config.ViewClusterList])
+		}
+	})
+}
+
 func TestServiceDeleteUserPermissions(t *testing.T) {
 	s := createTestPermissionService(t)
 	if _, err := s.CreateUserPermissions("basic", "alice"); err != nil {
