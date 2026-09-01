@@ -12,8 +12,13 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrPlatformRequired = errors.New("platform is required")
+
 func (s *Service) PlatformSystemCopyId(r PlatformCopyIdRequest) (string, error) {
-	plugin, err := s.platformRegistry.Get(DefaultPlatform)
+	if r.Platform == "" {
+		return "", ErrPlatformRequired
+	}
+	plugin, err := s.platformRegistry.Get(r.Platform)
 	if err != nil {
 		return "", err
 	}
@@ -115,9 +120,6 @@ func (s *Service) PlatformContainerUp(r PlatformUpRequest) ([]string, error) {
 	return s.executeCommand(plugin.UpContainer(conn, command))
 }
 
-// PlatformContainerExec runs one command inside the named deployment,
-// interpolating the command template exactly like PlatformContainerUp does
-// for options (host and vault credentials are injected server-side).
 func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error) {
 	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
@@ -132,10 +134,6 @@ func (s *Service) PlatformContainerExec(r PlatformExecRequest) ([]string, error)
 	return s.execContainerCommand(plugin, conn, r.Name, r.Command, values)
 }
 
-// execContainerCommand interpolates and runs one command against an
-// already-resolved plugin/connection/values set, so a caller that already
-// resolved vault credentials (e.g. KeeperPostDeploy) doesn't re-fetch and
-// re-decrypt them just to run its command.
 func (s *Service) execContainerCommand(plugin platform.Plugin, conn platform.Connection, name string, commandTemplate string, values keeper.Values) ([]string, error) {
 	command, err := resolveCommand(commandTemplate, values)
 	if err != nil {
@@ -144,12 +142,6 @@ func (s *Service) execContainerCommand(plugin platform.Plugin, conn platform.Con
 	return s.executeCommand(plugin.ExecContainer(conn, name, command))
 }
 
-// resolveCommand turns a template into the exact arguments that will run. The
-// split comes first and the values go into arguments that are already
-// separated, so a credential can never introduce an argument boundary or close
-// a span the template author opened - which is what makes escaping
-// unnecessary. The platform is handed the finished command and never sees a
-// placeholder.
 func resolveCommand(template string, values keeper.Values) ([]string, error) {
 	command := platform.SplitCommand(template)
 	for i, argument := range command {
@@ -161,13 +153,6 @@ func resolveCommand(template string, values keeper.Values) ([]string, error) {
 	return command, nil
 }
 
-// getExecutionValues finalizes interpolation values for execution: the host
-// comes from the connection and the keeper/database credentials from their own
-// vaults, so they cannot be spoofed through request values.
-//
-// Nothing is escaped on the way out. The plugin interpolates into an argument
-// that has already been split off, so a value is never seen by a parser and
-// there is nothing for an escape to protect it from.
 func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.Values) (keeper.Values, error) {
 	values.Host = host
 
@@ -192,12 +177,6 @@ func (s *Service) getExecutionValues(host string, vaults Vaults, values keeper.V
 	return values, nil
 }
 
-// PlatformContainerDown removes a deployment, stopping it first. The stop is
-// what makes Down usable at all: removing a running deployment is refused by
-// the platform, so Down used to fail on exactly the deployments a user wants
-// to remove. It is a graceful stop rather than a forced removal because these
-// are databases, and the platform's own shutdown timeout is worth waiting for.
-// A stop failure is not fatal - an already-stopped deployment still removes.
 func (s *Service) PlatformContainerDown(r PlatformActionRequest) ([]string, error) {
 	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {

@@ -84,10 +84,11 @@ type CreateAutoRequest struct {
 // name, host, ports and command, and nothing is resolved server-side from the
 // keeper plugin.
 type DeployRequest struct {
-	Parallel       bool         `json:"parallel"`
-	Nodes          []DeployNode `json:"nodes"`
-	CommonConfig   CommonConfig `json:"commonConfig"`
-	ClusterOptions Options      `json:"clusterOptions"`
+	Parallel       bool                `json:"parallel"`
+	Nodes          []DeployNode        `json:"nodes"`
+	Platform       node.PlatformPlugin `json:"platform"`
+	CommonConfig   CommonConfig        `json:"commonConfig"`
+	ClusterOptions Options             `json:"clusterOptions"`
 }
 
 // DeployNode pairs one node with the command that deploys it, for the length

@@ -45,37 +45,18 @@ type Props = {
     onDeployed: (logs: string[]) => void,
 }
 
-// ContainerKeeperDeployForm shows what deploying this node will run. It has
-// nothing to fill in: the host is the one the dialog was opened on, the node's
-// name and ports are the ones the chosen command states, and the command
-// belongs to the template - so every field here is a read-only account of the
-// deployment.
 export function ContainerKeeperDeployForm(props: Props) {
     const {connection, plugin, cluster, node, template, keeperId, databaseId, sshKeyId, logs, onDeployed} = props
-    // NOTE: which of the template's nodes runs on this host - the first one
-    // unless the user says otherwise, since a template is written in node order
     const [index, setIndex] = useState(0)
 
     const nodeDeploy = useRouterNodeKeeperDeploy(connection, onDeployed)
     const credentials = useDeployVaultCredentials(keeperId, databaseId)
 
     const command = template.commands[index]
-    // NOTE: the template names the account its commands create, so it is also
-    // what says which credentials this deployment has at all - the cluster's
-    // own vault entry is then either there or reported as none
     const withKeeperCredentials = !!template.defaults?.keeperUser
     const withDbCredentials = !!template.defaults?.dbUser
-    // NOTE: the ports belong to the chosen node, not to the engine - node 2 of
-    // a single-host template answers on its own pair, and switching the toggle
-    // above moves them with it. A template that states none leaves them blank
-    // rather than borrowing the engine's, which would deploy this node onto
-    // whatever port the first one already took.
     const keeperPort = command.defaults?.keeperPort
     const dbPort = command.defaults?.dbPort
-    // NOTE: the name belongs to the command as much as its ports do - a member
-    // list baked into the text names its peers, and a node deployed under a
-    // different name is one the others wait for forever. The Ivory node this
-    // dialog was opened on is only the fallback, for a command naming none.
     const name = command.defaults?.name?.trim() || node
 
     if (logs) return <DialogLogsScreen logs={logs}/>
@@ -90,12 +71,6 @@ export function ContainerKeeperDeployForm(props: Props) {
         </DialogScreen>
     )
 
-    // NOTE: nothing on this screen is editable, so a template that states no
-    // ports cannot be completed here - the button says so by staying disabled,
-    // and the template is where the missing port is filled in. Only ssh is
-    // required of the vaults: it is how the container is started at all, while
-    // a command needing a credential the cluster has none of fails visibly, on
-    // the placeholder nothing filled in.
     function renderActions() {
         const portsMissing = !keeperPort || !dbPort
         return (
@@ -109,10 +84,6 @@ export function ContainerKeeperDeployForm(props: Props) {
         )
     }
 
-    // NOTE: a template describes a whole cluster, this screen deploys one host
-    // of it - so which of its nodes that is has to be the user's answer, not an
-    // assumption. It sits above the card it changes, and disappears for a
-    // one-node template, where there is nothing to choose.
     function renderNodeChooser() {
         if (template.commands.length === 1) return
         return (
@@ -144,10 +115,6 @@ export function ContainerKeeperDeployForm(props: Props) {
         )
     }
 
-    // NOTE: the same card the cluster deploy shows a node in - a bordered
-    // frame, the fields, then the command folded away behind a toggle. Here it
-    // opens expanded: this screen has one node and nothing to fill in, so the
-    // command is the only thing on it left to read.
     function renderNode() {
         return (
             <PaperBlue sx={SX.node}>
@@ -184,7 +151,7 @@ export function ContainerKeeperDeployForm(props: Props) {
             plugin,
             cluster,
             name,
-            connection,
+            connection: {...connection, platform: template.platform},
             command: command.command,
             postScripts: command.postScripts,
             keeperPort,

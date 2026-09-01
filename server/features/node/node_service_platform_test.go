@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"io"
 	"ivory/clients/console"
 	"ivory/core/config"
@@ -96,6 +97,11 @@ type recordingPlatform struct {
 
 func (r *recordingPlatform) SupportedFeatures() map[config.Feature]bool { return nil }
 
+func (r *recordingPlatform) CopyId(platform.Connection, string) error {
+	r.calls = append(r.calls, "copy-id")
+	return nil
+}
+
 func (r *recordingPlatform) StopContainer(platform.Connection, string) console.Command {
 	return recordingCommand{name: "stop", calls: &r.calls}
 }
@@ -137,4 +143,37 @@ func TestPlatformContainerDownStopsBeforeRemoving(t *testing.T) {
 	if len(logs) != 2 {
 		t.Fatalf("expected both commands' output, got %v", logs)
 	}
+}
+
+// TestPlatformSystemCopyIdRequiresPlatform pins that the adapter is the
+// caller's answer rather than a hardcoded default: a PlatformCredConnection is
+// only ever built from a request, so there is no cluster stored before
+// platforms were selectable to fall back for.
+func TestPlatformSystemCopyIdRequiresPlatform(t *testing.T) {
+	s, _ := createTestNodeService(t)
+	s.platformRegistry = stubPlatformRegistry{plugin: &recordingPlatform{}}
+
+	t.Run("a request naming no platform is rejected", func(t *testing.T) {
+		if _, err := s.PlatformSystemCopyId(PlatformCopyIdRequest{
+			PlatformCredConnection: PlatformCredConnection{Host: "host1", Port: 22, Username: "root", Password: "secret"},
+			PublicKey:              "ssh-rsa key",
+		}); !errors.Is(err, ErrPlatformRequired) {
+			t.Fatalf("expected ErrPlatformRequired, got %v", err)
+		}
+	})
+
+	t.Run("a request naming its platform runs against it", func(t *testing.T) {
+		recorder := &recordingPlatform{}
+		s.platformRegistry = stubPlatformRegistry{plugin: recorder}
+
+		if _, err := s.PlatformSystemCopyId(PlatformCopyIdRequest{
+			PlatformCredConnection: PlatformCredConnection{Host: "host1", Port: 22, Username: "root", Password: "secret", Platform: platform.Docker},
+			PublicKey:              "ssh-rsa key",
+		}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(recorder.calls) != 1 || recorder.calls[0] != "copy-id" {
+			t.Fatalf("expected the key to be installed once, got %v", recorder.calls)
+		}
+	})
 }

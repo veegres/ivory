@@ -131,10 +131,11 @@ func (c PlatformVaultConnection) PlatformOrDefault() PlatformPlugin {
 }
 
 type PlatformCredConnection struct {
-	Host     string `json:"host" form:"host"`
-	Port     int    `json:"port" form:"port"`
-	Username string `json:"username" form:"username"`
-	Password string `json:"password" form:"password"`
+	Host     string         `json:"host" form:"host"`
+	Port     int            `json:"port" form:"port"`
+	Username string         `json:"username" form:"username"`
+	Password string         `json:"password" form:"password"`
+	Platform PlatformPlugin `json:"platform" form:"platform" binding:"required"`
 }
 
 type PlatformMetricsRequest = PlatformVaultConnection

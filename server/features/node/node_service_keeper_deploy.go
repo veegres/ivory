@@ -11,9 +11,6 @@ import (
 var ErrKeeperDeployPortsRequired = errors.New("keeper, database and ssh ports are required")
 var ErrKeeperDeployCommandRequired = errors.New("deployment command is required")
 
-// KeeperDeployUp deploys one node by running its own command. Every value the
-// command can reference belongs to this request alone, so one node's values
-// can never reach another node's command.
 func (s *Service) KeeperDeployUp(r KeeperDeployRequest) ([]string, error) {
 	if r.Connection.Host == "" {
 		return nil, errors.New("host not provided for node")
@@ -37,12 +34,6 @@ func (s *Service) KeeperDeployUp(r KeeperDeployRequest) ([]string, error) {
 	})
 }
 
-// KeeperPostDeploy runs a deployment's post-script inside its already-running
-// container. It keeps reporting the failure as a log line so one node's
-// bootstrap step can't fail a whole batch that otherwise deployed, and returns
-// it as well so the caller can say so in its result: a post script that
-// silently does nothing leaves a cluster that looks deployed and is not
-// initialized.
 func (s *Service) KeeperPostDeploy(r KeeperDeployRequest) ([]string, error) {
 	if len(r.PostScripts) == 0 {
 		return nil, nil
@@ -89,10 +80,6 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 	return logs, nil
 }
 
-// getValues builds one command's complete interpolation scope from its own
-// request. Host and ssh port come from the connection rather than the body so
-// they always describe the machine actually being deployed to; the credentials
-// are left out here and resolved from the vault at execution time.
 func (s *Service) getValues(r KeeperDeployRequest) keeper.Values {
 	return keeper.Values{
 		Cluster:    r.Cluster,
