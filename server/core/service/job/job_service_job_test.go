@@ -151,6 +151,39 @@ func TestJob_Run_Success(t *testing.T) {
 	}
 }
 
+func TestJob_Run_StripsAnsiEscapes(t *testing.T) {
+	cmd := &MockCommand{
+		id:     "test-job-ansi",
+		output: []string{"\x1b[32mPull complete\x1b[0m", "\x1b[1Alayer 2: done"},
+	}
+
+	job := NewJob(cmd, nil)
+	sub, ok := job.addSubscriber("sub-1")
+	if !ok {
+		t.Fatal("expected subscriber to be added")
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		job.Run()
+	}()
+
+	var logLines []string
+	for msg := range sub.Messages {
+		if msg.Type == LOG {
+			logLines = append(logLines, msg.Message)
+		}
+	}
+	wg.Wait()
+
+	want := []string{"Pull complete", "layer 2: done"}
+	if len(logLines) != len(want) || logLines[0] != want[0] || logLines[1] != want[1] {
+		t.Errorf("expected ansi-stripped logs %v, got %v", want, logLines)
+	}
+}
+
 func TestJob_Run_StartError(t *testing.T) {
 	cmd := &MockCommand{
 		id:       "test-job-starterr",

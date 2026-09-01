@@ -8,11 +8,18 @@ import (
 	"log/slog"
 	"maps"
 	"os"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
 	"time"
 )
+
+// ansiEscape matches ANSI CSI escape sequences (cursor movement, color,
+// clear-line, ...) that tools like "docker pull" write to a terminal for a
+// progress bar; a job's subscribers and its persisted log file are plain
+// text, not a terminal, so these would otherwise land verbatim.
+var ansiEscape = regexp.MustCompile("\x1b\\[[0-9;]*[a-zA-Z]")
 
 type Job struct {
 	cmd         console.Command
@@ -86,7 +93,7 @@ func (j *Job) Run() {
 
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
-		msg := scanner.Text()
+		msg := j.stripAnsi(scanner.Text())
 		j.broadcast(LOG, msg)
 		if logFile != nil {
 			_, _ = logFile.WriteString(msg + "\n")
@@ -155,6 +162,10 @@ func (j *Job) killer() {
 			return
 		}
 	}
+}
+
+func (j *Job) stripAnsi(line string) string {
+	return ansiEscape.ReplaceAllString(line, "")
 }
 
 func (j *Job) broadcast(t EventType, m string) {
