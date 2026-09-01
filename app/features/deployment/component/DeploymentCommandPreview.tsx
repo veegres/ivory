@@ -35,7 +35,7 @@ export function DeploymentCommandPreview(props: Props) {
            inside the section, so it belongs to the line that opens it */
         <TitleBox
             label={"Preview"}
-            hint={`This is what will run on the node, with ${DeployPasswordMask} standing in for the password: the server substitutes the real one from the database credentials above, so it never reaches the browser.`}
+            hint={`This is what will run on the node, with ${DeployPasswordMask} standing in for the password: the server substitutes the real one from the database credentials above, so it never reaches the browser. It does reach the node, though - docker keeps the real command it ran, so anyone with docker access there can read the password back out with docker inspect.`}
             renderActions={renderBadge()}
             defaultOpen={defaultOpen}
             dense={true}

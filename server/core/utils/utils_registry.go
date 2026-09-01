@@ -1,6 +1,9 @@
 package utils
 
-import "errors"
+import (
+	"errors"
+	"maps"
+)
 
 var ErrNotImplemented = errors.New("adapter is not implemented")
 
@@ -28,5 +31,5 @@ func (r *Registry[K, V]) Get(name K) (V, error) {
 }
 
 func (r *Registry[K, V]) All() map[K]V {
-	return r.items
+	return maps.Clone(r.items)
 }
