@@ -1,5 +1,6 @@
+import {Box} from "@mui/material"
+
 import {ErrorSshMissing} from "../../../../shared/component/box/ErrorManual"
-import {TitleBox} from "../../../../shared/component/box/TitleBox"
 import {TabsButton} from "../../../../shared/component/button/TabsButton"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvider"
@@ -9,8 +10,11 @@ import {PlatformVaultConnection} from "../../api/NodeType"
 import {ContainerList} from "./ContainerList"
 import {ContainerOverview} from "./ContainerOverview"
 
+const TABS = [{label: "overview"}, {label: "list"}]
+
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", justifyContent: "center", gap: 1},
+    actions: {alignSelf: "flex-start"},
 }
 
 type Props = {
@@ -26,17 +30,9 @@ export function Container(props: Props) {
     if (!connection) return <ErrorSshMissing/>
     return (
         <ManageAccessBox sx={SX.box} feature={Feature.ViewNodePlatformContainer} error={true}>
-            <TitleBox label={"Container"} renderActions={renderActions()} collapsible={false}>
-                {tab === 0 && <ContainerOverview connection={connection} name={name}/>}
-                {tab === 1 && <ContainerList connection={connection}/>}
-            </TitleBox>
+            <Box sx={SX.actions}><TabsButton tabs={TABS} tab={tab} setTab={setContainerTab}/></Box>
+            {tab === 0 && <ContainerOverview connection={connection} name={name}/>}
+            {tab === 1 && <ContainerList connection={connection}/>}
         </ManageAccessBox>
     )
-
-    function renderActions() {
-        const tabs = [{label: "overview"}, {label: "list"}]
-        return (
-            <TabsButton tabs={tabs} tab={tab} setTab={setContainerTab}/>
-        )
-    }
 }

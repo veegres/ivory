@@ -20,7 +20,7 @@ import {ContainerKeeperDeploy} from "./ContainerKeeperDeploy"
 import {ContainerOverviewMetrics} from "./ContainerOverviewMetrics"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1, padding: "0px 5px"},
+    box: {display: "flex", flexDirection: "column", gap: 1},
     action: {display: "flex", gap: 0.5},
     logs: {
         display: "flex", flexDirection: "column", gap: 0.5, padding: "5px",
