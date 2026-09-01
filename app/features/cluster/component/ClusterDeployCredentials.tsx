@@ -65,9 +65,11 @@ export function ClusterDeployCredentials(props: Props) {
     function renderActions() {
         return (
             <ToggleButtonGroup size={"small"} exclusive={true} value={mode} onChange={(_, v) => v && handleModeChange(v)}>
-                <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
                 <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
-                {optional && <ToggleButton sx={SX.toggleButton} value={"none"}>NONE</ToggleButton>}
+                <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
+                {optional && (
+                    <ToggleButton sx={SX.toggleButton} value={"none"} disabled={!!credential.username}>NONE</ToggleButton>
+                )}
             </ToggleButtonGroup>
         )
     }
