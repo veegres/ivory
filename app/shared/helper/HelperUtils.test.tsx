@@ -150,11 +150,12 @@ describe("getPlaceholders", () => {
 })
 
 describe("interpolateCommand", () => {
-    const values = {cluster: "main", name: "etcd-1", host: "10.0.0.1", sshPort: 22, keeperPort: 8008, dbPort: 2379}
+    const values = {cluster: "main", dcs: "10.0.0.9:2379", name: "etcd-1", host: "10.0.0.1", sshPort: 22, keeperPort: 8008, dbPort: 2379}
 
     it("should fill every value a deploy supplies", () => {
-        const command = "--name {{name}} --hostname {{host}} -p {{dbPort}} -e TOKEN={{cluster}}"
-        expect(interpolateCommand(command, values)).toBe("--name etcd-1 --hostname 10.0.0.1 -p 2379 -e TOKEN=main")
+        const command = "--name {{name}} --hostname {{host}} -p {{dbPort}} -e TOKEN={{cluster}} -e DCS={{dcs}}"
+        expect(interpolateCommand(command, values))
+            .toBe("--name etcd-1 --hostname 10.0.0.1 -p 2379 -e TOKEN=main -e DCS=10.0.0.9:2379")
     })
 
     it("should leave the credentials unresolved when the form has none", () => {
@@ -203,13 +204,14 @@ describe("getUnknownPlaceholders", () => {
         expect(getUnknownPlaceholders("-e USER={{dbUesr}}")).toEqual(["{{dbUesr}}"])
     })
 
-    // NOTE: a peer port, a member list, a coordinator address and the leader's
-    // host are written literally now - they are values only the operator
-    // knows, not variables
+    // NOTE: a peer port, a member list and the leader's host are written
+    // literally - they are values only the operator knows, not variables.
+    // {{dcs}} is not among them: it is one address for the whole deployment,
+    // answered once on the deploy screen.
     it("should report a variable retired from the vocabulary", () => {
         const command = "-p {{peerPort}} -e HOSTS={{clusterHosts}} -e DCS={{dcs}} -h {{leaderHost}}"
         expect(getUnknownPlaceholders(command))
-            .toEqual(["{{peerPort}}", "{{clusterHosts}}", "{{dcs}}", "{{leaderHost}}"])
+            .toEqual(["{{peerPort}}", "{{clusterHosts}}", "{{leaderHost}}"])
     })
 })
 

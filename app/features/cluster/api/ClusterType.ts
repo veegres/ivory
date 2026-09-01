@@ -65,6 +65,7 @@ export interface Overview {
 
 export interface DeployCommonConfig {
     cluster: string,
+    dcs: string,
     sshUser: string,
     sshPass: string,
     keeperUser: string,

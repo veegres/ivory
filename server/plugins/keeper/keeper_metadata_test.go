@@ -40,6 +40,7 @@ func TestValuesCoverEveryVar(t *testing.T) {
 func TestInterpolate(t *testing.T) {
 	values := Values{
 		Cluster:    "main",
+		Dcs:        "10.0.0.1:2379",
 		Name:       "db-1",
 		Host:       "10.0.0.1",
 		SshPort:    "22",
@@ -63,8 +64,8 @@ func TestInterpolate(t *testing.T) {
 	})
 
 	t.Run("node values", func(t *testing.T) {
-		got := Interpolate("{{cluster}} {{name}} {{host}} {{keeperPort}} {{dbPort}} {{keeperUser}} {{keeperPass}} {{dbUser}} {{dbPass}}", values)
-		want := "main db-1 10.0.0.1 8008 5432 root keeper-secret postgres secret"
+		got := Interpolate("{{cluster}} {{dcs}} {{name}} {{host}} {{keeperPort}} {{dbPort}} {{keeperUser}} {{keeperPass}} {{dbUser}} {{dbPass}}", values)
+		want := "main 10.0.0.1:2379 db-1 10.0.0.1 8008 5432 root keeper-secret postgres secret"
 		if got != want {
 			t.Errorf("Interpolate() = %q, want %q", got, want)
 		}
@@ -160,12 +161,13 @@ func TestUnknownPlaceholders(t *testing.T) {
 			expected: []string{"{{dbUesr}}", "{{dbPortt}}"},
 		},
 		{
-			// NOTE: a peer port, a member list, a coordinator address and the
-			// leader's host are written literally now - they are values only
-			// the operator knows, not variables
+			// NOTE: a peer port, a member list and the leader's host are
+			// written literally - they are values only the operator knows, not
+			// variables. {{dcs}} is not among them: it is one address for the
+			// whole deployment, answered once on the deploy screen.
 			name:     "variables retired from the vocabulary are unknown",
 			input:    "-p {{peerPort}} -e HOSTS={{clusterHosts}} -e DCS={{dcs}} -h {{leaderHost}}",
-			expected: []string{"{{peerPort}}", "{{clusterHosts}}", "{{dcs}}", "{{leaderHost}}"},
+			expected: []string{"{{peerPort}}", "{{clusterHosts}}", "{{leaderHost}}"},
 		},
 		{
 			name:     "docker template syntax is not matched",

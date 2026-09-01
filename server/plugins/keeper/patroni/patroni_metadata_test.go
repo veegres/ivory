@@ -51,17 +51,24 @@ func TestDefaultTemplates(t *testing.T) {
 	for _, template := range templates {
 		t.Run(template.Name, func(t *testing.T) {
 			singleHost := strings.Contains(template.Name, "Single Host")
-			// NOTE: the DCS is literal text - Ivory never deploys the
-			// coordinator, so a shipped template carries an address to edit.
-			// A container name is not one: it resolves on neither a plain
-			// docker run across VMs nor host networking.
-			dcs := `ETCD3_HOSTS="10.0.0.1:2379`
+			// NOTE: Ivory never deploys the coordinator, so its address comes
+			// in through {{dcs}}, which the deploy screen asks for once and
+			// every node's command reads. Only the single-host template can
+			// name one ahead of time - etcd's own single-host ports, reached
+			// through localhost, which under --network host is the VM the whole
+			// cluster runs on. A multi-host store lives on machines a template
+			// cannot know, exactly like a multi-host node's host, so it states
+			// nothing rather than example text the operator has to notice.
+			dcs := ""
 			if singleHost {
-				dcs = `ETCD3_HOSTS="{{host}}:2479,{{host}}:2481,{{host}}:2483"`
+				dcs = "localhost:2479,localhost:2481,localhost:2483"
+			}
+			if template.Defaults.Dcs != dcs {
+				t.Errorf("expected the DCS default %q, got %q", dcs, template.Defaults.Dcs)
 			}
 			for i, command := range template.Commands {
-				if !strings.Contains(command.Command, dcs) {
-					t.Errorf("command %d has no external DCS address to edit", i)
+				if !strings.Contains(command.Command, `ETCD3_HOSTS="`+string(keeper.VarDcs)+`"`) {
+					t.Errorf("command %d does not point its DCS at {{dcs}}", i)
 				}
 				if !strings.Contains(command.Command, string(keeper.VarKeeperPort)) {
 					t.Errorf("command %d does not expose patroni's own rest api port", i)

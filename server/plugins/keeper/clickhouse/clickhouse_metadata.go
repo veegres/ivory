@@ -48,6 +48,17 @@ func (p *Plugin) HasLeader() bool { return false }
 // CLICKHOUSE_USER and CLICKHOUSE_PASSWORD are unaffected - the entrypoint
 // writes users.d/default-user.xml earlier and outside that block.
 //
+// The <zookeeper> body is {{dcs}}, the one coordination store the whole
+// deployment registers with, answered once on the deploy screen. Its value is
+// the elements clickhouse's own config expects rather than the host:port list
+// patroni's ETCD3_HOSTS takes: {{dcs}} carries whatever text the engine's
+// config wants there. The section is named <zookeeper> whatever answers it -
+// clickhouse-keeper speaks the same protocol and is configured here too, on
+// 9181 rather than 2181 - so pointing at one instead of the other is a value
+// the operator types, not a different template. It is safe inside this heredoc
+// for the reason a password is not: it holds no `$` and no backtick, and the
+// operator reads it on the deploy screen before it runs.
+//
 // interserver_http_host is stated rather than left to default to the machine's
 // hostname: a replica registers its fetch endpoint in zookeeper under that
 // name, and where it does not resolve the DDL and the inserts still succeed
@@ -82,9 +93,7 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
     </ivory_cluster>
   </remote_servers>
   <zookeeper>
-    <node><host>10.0.0.1</host><port>2181</port></node>
-    <node><host>10.0.0.2</host><port>2181</port></node>
-    <node><host>10.0.0.3</host><port>2181</port></node>
+{{dcs}}
   </zookeeper>
   <macros>
     <cluster>{{cluster}}</cluster>
@@ -108,7 +117,9 @@ exec /entrypoint.sh
 //
 // The zookeeper ensemble is the one Ivory's own zookeeper single-host template
 // deploys - the same VM, three client ports - so the two shipped templates work
-// side by side rather than naming hosts nothing deploys.
+// side by side rather than naming hosts nothing deploys. It reaches it through
+// localhost rather than {{host}}: under --network host the container's loopback
+// is the VM's own, which is where that ensemble runs.
 
 const deploySingleHostNode1 = `docker run -d
   --name {{name}}
@@ -136,9 +147,7 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
     </ivory_cluster>
   </remote_servers>
   <zookeeper>
-    <node><host>{{host}}</host><port>2181</port></node>
-    <node><host>{{host}}</host><port>2182</port></node>
-    <node><host>{{host}}</host><port>2183</port></node>
+{{dcs}}
   </zookeeper>
   <macros>
     <cluster>{{cluster}}</cluster>
@@ -175,9 +184,7 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
     </ivory_cluster>
   </remote_servers>
   <zookeeper>
-    <node><host>{{host}}</host><port>2181</port></node>
-    <node><host>{{host}}</host><port>2182</port></node>
-    <node><host>{{host}}</host><port>2183</port></node>
+{{dcs}}
   </zookeeper>
   <macros>
     <cluster>{{cluster}}</cluster>
@@ -214,9 +221,7 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
     </ivory_cluster>
   </remote_servers>
   <zookeeper>
-    <node><host>{{host}}</host><port>2181</port></node>
-    <node><host>{{host}}</host><port>2182</port></node>
-    <node><host>{{host}}</host><port>2183</port></node>
+{{dcs}}
   </zookeeper>
   <macros>
     <cluster>{{cluster}}</cluster>
@@ -232,8 +237,11 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 		{
 			Platform:    platform.Docker,
 			Name:        "ClickHouse (Multi Host)",
-			Description: "Three clickhouse replicas in one shard, one per VM, coordinated through a ZooKeeper ensemble on the same three VMs. Replace 10.0.0.1-3 in the replica and keeper lists with the VM addresses.",
-			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "default", DbUser: "default"},
+			Description: "Three clickhouse replicas in one shard, one per VM, coordinated through a ZooKeeper or clickhouse-keeper ensemble you run. Replace 10.0.0.1-3 in the replica list with the VM addresses, and give the DCS address as one <node><host>..</host><port>..</port></node> per ensemble member.",
+			Defaults: keeper.DeploymentTemplateDefaults{
+				KeeperUser: "default",
+				DbUser:     "default",
+			},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deployMultiHost,
@@ -253,7 +261,11 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Platform:    platform.Docker,
 			Name:        "ClickHouse (Single Host)",
 			Description: "Three clickhouse replicas on one VM, each on its own native, http, interserver, mysql and postgresql port, coordinated through the ZooKeeper ensemble Ivory's own single-host template deploys on the same VM. Deploy that one first, then fill in the host and deploy this.",
-			Defaults:    keeper.DeploymentTemplateDefaults{KeeperUser: "default", DbUser: "default"},
+			Defaults: keeper.DeploymentTemplateDefaults{
+				KeeperUser: "default",
+				DbUser:     "default",
+				Dcs:        `<node><host>localhost</host><port>2181</port></node><node><host>localhost</host><port>2182</port></node><node><host>localhost</host><port>2183</port></node>`,
+			},
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,

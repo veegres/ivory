@@ -20,10 +20,12 @@ export enum PlatformPlugin {
 
 // DeployVar is the closed set of {{variables}} a deployment command may use:
 // the node's own identity and endpoints, plus the credentials resolved from the
-// vault. Anything else an engine needs is written literally into the command.
-// A placeholder outside this set is a validation error, never a new variable.
+// vault and the coordination store the cluster runs against. Anything else an
+// engine needs is written literally into the command. A placeholder outside
+// this set is a validation error, never a new variable.
 export enum DeployVar {
     Cluster = "{{cluster}}",
+    Dcs = "{{dcs}}",
     Name = "{{name}}",
     Host = "{{host}}",
     SshPort = "{{sshPort}}",
@@ -171,6 +173,7 @@ export interface DeployVaults {
 export interface KeeperDeployRequest {
     plugin: KeeperPlugin,
     cluster: string,
+    dcs?: string,
     name: string,
     keeperPort: number,
     dbPort: number,

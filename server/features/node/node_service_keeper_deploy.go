@@ -83,6 +83,7 @@ func (s *Service) KeeperDeploy(r KeeperDeployRequest) ([]string, error) {
 func (s *Service) getValues(r KeeperDeployRequest) keeper.Values {
 	return keeper.Values{
 		Cluster:    r.Cluster,
+		Dcs:        r.Dcs,
 		Name:       r.Name,
 		Host:       r.Connection.Host,
 		SshPort:    strconv.Itoa(r.Connection.Port),

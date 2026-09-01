@@ -183,6 +183,7 @@ type PlatformExecRequest struct {
 type KeeperDeployRequest struct {
 	Plugin      KeeperPlugin            `json:"plugin" form:"plugin" binding:"required"`
 	Cluster     string                  `json:"cluster" form:"cluster"`
+	Dcs         string                  `json:"dcs" form:"dcs"`
 	Name        string                  `json:"name" form:"name" binding:"required"`
 	KeeperPort  int                     `json:"keeperPort" form:"keeperPort"`
 	DbPort      int                     `json:"dbPort" form:"dbPort"`

@@ -19,6 +19,9 @@ const SX: SxPropsMap = {
 type Props = {
     node: DeployNode,
     cluster: string,
+    // NOTE: one address for the whole deployment, so every card previews the
+    // same one rather than holding a copy of its own
+    dcs: string,
     // NOTE: a field is only marked red once the user has tried to deploy - an
     // untouched form should not open covered in errors
     showErrors: boolean,
@@ -35,7 +38,7 @@ type Props = {
 // themselves, so a number was a label restating the layout. Only the command,
 // which is read-only here, collapses.
 export function ClusterDeployNode(props: Props) {
-    const {node, cluster, showErrors, duplicate, credentials, onChange} = props
+    const {node, cluster, dcs, showErrors, duplicate, credentials, onChange} = props
 
     return (
         <PaperBlue sx={SX.box}>
@@ -83,6 +86,7 @@ export function ClusterDeployNode(props: Props) {
     function getValues(): DeployValues {
         return {
             cluster,
+            dcs,
             name: node.name,
             host: node.host,
             sshPort: node.sshPort,

@@ -171,12 +171,13 @@ func (r TemplateRequest) invalidPort() (int, bool) {
 // is trimmed for the same reason - it is written into --name and matched
 // against a keeper's own member names later. The default usernames are trimmed
 // for the same reason: one is written into a vault entry and authenticates with
-// it later.
+// it later, and the default DCS address is an endpoint a node dials.
 func (r TemplateRequest) trimmed() TemplateRequest {
 	r.Name = strings.TrimSpace(r.Name)
 	r.Description = strings.TrimSpace(r.Description)
 	r.Defaults.KeeperUser = strings.TrimSpace(r.Defaults.KeeperUser)
 	r.Defaults.DbUser = strings.TrimSpace(r.Defaults.DbUser)
+	r.Defaults.Dcs = strings.TrimSpace(r.Defaults.Dcs)
 	commands := make([]TemplateCommand, len(r.Commands))
 	for i, c := range r.Commands {
 		c.Defaults.Name = strings.TrimSpace(c.Defaults.Name)

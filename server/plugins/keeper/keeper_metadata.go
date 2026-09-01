@@ -92,6 +92,13 @@ type DeploymentCommandDefaults struct {
 type DeploymentTemplateDefaults struct {
 	KeeperUser string `json:"keeperUser"`
 	DbUser     string `json:"dbUser"`
+	// Dcs is the coordination store {{dcs}} resolves to. It is a default rather
+	// than literal text in the command for the same reason the usernames are:
+	// one cluster coordinates through one store, so three commands each naming
+	// their own address could only ever disagree, and the address is the one
+	// thing about an external DCS that changes between deployments of the same
+	// template. A template whose commands never name {{dcs}} leaves it empty.
+	Dcs string `json:"dcs"`
 }
 
 // Var is a {{placeholder}} variable, in its interpolated form. The set is
@@ -104,6 +111,7 @@ type Var string
 
 const (
 	VarCluster    Var = "{{cluster}}"    // cluster name
+	VarDcs        Var = "{{dcs}}"        // address of the coordination store the cluster runs against, one value for the whole deployment
 	VarName       Var = "{{name}}"       // node name, unique within the cluster; the deployment's own name
 	VarHost       Var = "{{host}}"       // node host
 	VarSshPort    Var = "{{sshPort}}"    // node ssh port
@@ -118,11 +126,12 @@ const (
 // Vars is the complete closed list of variables a command may reference. It is
 // exactly the node's own identity and endpoints - what Ivory needs to register
 // and reach the cluster afterwards - plus the credentials it resolves from the
-// vault. Anything else an engine needs (a peer port, a member list, a
-// coordinator address, which node is the leader) is written literally into the
-// command, because only the user knows it and it is plain text they can read.
+// vault and the coordination store the cluster runs against. Anything else an
+// engine needs (a peer port, a member list, which node is the leader) is
+// written literally into the command, because only the user knows it and it is
+// plain text they can read.
 var Vars = []Var{
-	VarCluster, VarName, VarHost, VarSshPort, VarKeeperPort, VarDbPort,
+	VarCluster, VarDcs, VarName, VarHost, VarSshPort, VarKeeperPort, VarDbPort,
 	VarKeeperUser, VarKeeperPass, VarDbUser, VarDbPass,
 }
 
@@ -131,6 +140,7 @@ var Vars = []Var{
 // deployment, so one node's values can never reach another node's command.
 type Values struct {
 	Cluster    string
+	Dcs        string
 	Name       string
 	Host       string
 	SshPort    string
@@ -145,6 +155,7 @@ type Values struct {
 func (v Values) lookup() map[Var]string {
 	return map[Var]string{
 		VarCluster:    v.Cluster,
+		VarDcs:        v.Dcs,
 		VarName:       v.Name,
 		VarHost:       v.Host,
 		VarSshPort:    v.SshPort,

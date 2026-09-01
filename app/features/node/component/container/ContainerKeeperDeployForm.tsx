@@ -13,7 +13,7 @@ import {useDeployVaultCredentials} from "../../../deployment/api/DeploymentHook"
 import {Template} from "../../../deployment/api/DeploymentType"
 import {DeploymentCommandPreview} from "../../../deployment/component/DeploymentCommandPreview"
 import {useRouterNodeKeeperDeploy} from "../../api/NodeHook"
-import {KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
+import {DeployVar, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
     subContent: {display: "flex", flexDirection: "column"},
@@ -55,6 +55,9 @@ export function ContainerKeeperDeployForm(props: Props) {
     const command = template.commands[index]
     const withKeeperCredentials = !!template.defaults?.keeperUser
     const withDbCredentials = !!template.defaults?.dbUser
+    const dcs = template.defaults?.dcs ?? ""
+    const dcsMissing = !dcs && [command.command, ...(command.postScripts ?? [])]
+        .some(text => text.includes(DeployVar.Dcs))
     const keeperPort = command.defaults?.keeperPort
     const dbPort = command.defaults?.dbPort
     const name = command.defaults?.name?.trim() || node
@@ -77,7 +80,7 @@ export function ContainerKeeperDeployForm(props: Props) {
             <Button
                 loading={nodeDeploy.isPending}
                 onClick={handleAction}
-                disabled={portsMissing || !sshKeyId || !command.command.trim()}
+                disabled={portsMissing || dcsMissing || !sshKeyId || !command.command.trim()}
             >
                 Deploy
             </Button>
@@ -104,6 +107,7 @@ export function ContainerKeeperDeployForm(props: Props) {
                 <TitleBox label={"Cluster"} island={true} collapsible={false}>
                     <Box sx={[SX.subContent, {gap: 1}]}>
                         <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
+                        {!!dcs && <TextField fullWidth size={"small"} label={"DCS Address"} value={dcs} disabled={true}/>}
                         <FieldRow>
                             {withKeeperCredentials && renderVaultField("Keeper Credentials", keeperId)}
                             {withDbCredentials && renderVaultField("Database Credentials", databaseId)}
@@ -150,6 +154,7 @@ export function ContainerKeeperDeployForm(props: Props) {
         nodeDeploy.mutate({
             plugin,
             cluster,
+            dcs,
             name,
             connection: {...connection, platform: template.platform},
             command: command.command,
@@ -163,6 +168,7 @@ export function ContainerKeeperDeployForm(props: Props) {
     function getValues(): DeployValues {
         return {
             cluster,
+            dcs,
             name,
             host: connection.host,
             sshPort: connection.port,

@@ -1,6 +1,6 @@
 /.idea/db-forest-config.xml
-/app/vite.config.mjs
 /.codex
+/.report
 /app/node_modules
 /app/build
 /server/build

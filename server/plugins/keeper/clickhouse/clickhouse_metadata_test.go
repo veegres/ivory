@@ -32,7 +32,10 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 // TestDefaultTemplateDefaults covers what replaced keeper.Requirements: the
 // deploy screen's credential fields are filled in by the template that creates
 // the deployment, because clickhouse answers keeper and database questions on
-// the same native endpoint, as the account CLICKHOUSE_USER creates.
+// the same native endpoint, as the account CLICKHOUSE_USER creates. The DCS
+// default is there for the same reason - {{dcs}} carries the text clickhouse's
+// own config expects, so the template that wrote the command is the only thing
+// that can say what shape that is.
 func TestDefaultTemplateDefaults(t *testing.T) {
 	for _, template := range NewPlugin().DefaultTemplates() {
 		t.Run(template.Name, func(t *testing.T) {
@@ -41,6 +44,26 @@ func TestDefaultTemplateDefaults(t *testing.T) {
 			}
 			if template.Defaults.DbUser != "default" {
 				t.Errorf("expected database user %q, got %q", "default", template.Defaults.DbUser)
+			}
+			// NOTE: three nodes on one VM share a loopback but not a port, and
+			// under --network host that loopback is where the shipped zookeeper
+			// single-host template listens. A multi-host ensemble runs on
+			// machines a template cannot know, so it names none at all.
+			if !strings.Contains(template.Name, "Single Host") {
+				if template.Defaults.Dcs != "" {
+					t.Errorf("expected no DCS default for a multi-host ensemble, got %q", template.Defaults.Dcs)
+				}
+				return
+			}
+			nodes := []string{
+				"<node><host>localhost</host><port>2181</port></node>",
+				"<node><host>localhost</host><port>2182</port></node>",
+				"<node><host>localhost</host><port>2183</port></node>",
+			}
+			for _, node := range nodes {
+				if !strings.Contains(template.Defaults.Dcs, node) {
+					t.Errorf("the DCS default is missing coordinator %s, got %q", node, template.Defaults.Dcs)
+				}
 			}
 		})
 	}
@@ -87,6 +110,11 @@ func TestDefaultTemplates(t *testing.T) {
 				if !strings.Contains(command.Command, "<interserver_http_host>{{host}}</interserver_http_host>") {
 					t.Errorf("command %d leaves its fetch endpoint on an unresolvable hostname", i)
 				}
+				// NOTE: the ensemble is one answer for the whole deployment, so
+				// it is the template's default rather than text in the command
+				if !strings.Contains(command.Command, string(keeper.VarDcs)) {
+					t.Errorf("command %d does not point its coordinator list at {{dcs}}", i)
+				}
 			}
 			if singleHost {
 				assertSingleHostPorts(t, template)
@@ -95,9 +123,6 @@ func TestDefaultTemplates(t *testing.T) {
 			for i, command := range template.Commands {
 				if !strings.Contains(command.Command, "<replica><host>10.0.0.1</host>") {
 					t.Errorf("command %d is missing the shard's replica list", i)
-				}
-				if !strings.Contains(command.Command, "<node><host>10.0.0.1</host><port>2181</port></node>") {
-					t.Errorf("command %d is missing the coordinator list", i)
 				}
 			}
 		})

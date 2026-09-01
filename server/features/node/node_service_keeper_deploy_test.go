@@ -67,6 +67,7 @@ func TestService_getValues(t *testing.T) {
 	s := &Service{}
 	request := KeeperDeployRequest{
 		Cluster:    "main",
+		Dcs:        "10.0.0.1:2379",
 		Name:       "etcd-1",
 		KeeperPort: 8008,
 		DbPort:     5432,
@@ -77,6 +78,7 @@ func TestService_getValues(t *testing.T) {
 		got := s.getValues(request)
 		want := keeper.Values{
 			Cluster:    "main",
+			Dcs:        "10.0.0.1:2379",
 			Name:       "etcd-1",
 			Host:       "db1",
 			SshPort:    "2222",
@@ -102,6 +104,12 @@ func TestService_getValues(t *testing.T) {
 		other.Name = "etcd-2"
 		other.DbPort = 2381
 		other.Connection.Host = "db2"
+
+		// NOTE: the coordination store is the one value they do share - it is
+		// the cluster's, answered once for the whole deploy
+		if got := keeper.Interpolate("{{dcs}}", s.getValues(other)); got != "10.0.0.1:2379" {
+			t.Errorf("second node rendered the coordination store as %q", got)
+		}
 
 		first := keeper.Interpolate("{{name}}@{{host}}:{{dbPort}}", s.getValues(request))
 		second := keeper.Interpolate("{{name}}@{{host}}:{{dbPort}}", s.getValues(other))

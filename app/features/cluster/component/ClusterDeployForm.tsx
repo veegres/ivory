@@ -10,7 +10,7 @@ import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {DeployPasswordMask, KeeperPluginOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
 import {useDeployVaultCredentials} from "../../deployment/api/DeploymentHook"
 import {DeployCredentials, Template} from "../../deployment/api/DeploymentType"
-import {KeeperPlugin} from "../../node/api/NodeType"
+import {DeployVar, KeeperPlugin} from "../../node/api/NodeType"
 import {DbPlugin} from "../../query/api/QueryType"
 import {VaultType} from "../../vault/api/VaultType"
 import {useRouterClusterDeploy} from "../api/ClusterHook"
@@ -57,17 +57,12 @@ export function ClusterDeployForm(props: Props) {
     const {keeper, database, template, logs, onDeployed} = props
     const [nodes, setNodes] = useState<DeployNode[]>(getInitialNodes)
     const [cluster, setCluster] = useState("")
+    const [dcs, setDcs] = useState(template.defaults?.dcs ?? "")
     const [options, setOptions] = useState<ClusterOptions>(InitialRequest(keeper, database))
     const [sshMode, setSshMode] = useState<CredentialMode>("vault")
-    // NOTE: a template that names no username for a pair is saying its
-    // deployment ends up with no such account, so that section opens switched
-    // off rather than demanding an answer the deployment has no use for
     const [keeperMode, setKeeperMode] = useState<CredentialMode>(getInitialMode(template.defaults?.keeperUser))
     const [dbMode, setDbMode] = useState<CredentialMode>(getInitialMode(template.defaults?.dbUser))
     const [sshCred, setSshCred] = useState<Credential>({username: "", password: ""})
-    // NOTE: seeded with the usernames the template names, and read-only where
-    // it names one: that account is what its commands create, so the deploy
-    // only asks for the password to give it
     const [keeperCred, setKeeperCred] = useState<Credential>({username: template.defaults?.keeperUser ?? "", password: ""})
     const [dbCred, setDbCred] = useState<Credential>({username: template.defaults?.dbUser ?? "", password: ""})
     const [parallel, setParallel] = useState(false)
@@ -80,13 +75,9 @@ export function ClusterDeployForm(props: Props) {
     const handleOptionsUpdate = useCallback(handleCallOptionsUpdate, [])
 
     const complete = nodes.length > 0 && nodes.every(isNodeComplete)
-    // NOTE: a duplicate name is a conflict the user should see while typing,
-    // unlike an unfilled field, which waits for Deploy
+    const withDcs = useMemo(handleMemoWithDcs, [template])
     const duplicates = useMemo(handleMemoDuplicates, [nodes])
 
-    // NOTE: the response replaces the fields from inside this component rather
-    // than from the dialog above it, so going back from the logs of a deploy
-    // that failed on its third node returns to the form still filled in
     if (logs) return <DialogLogsScreen logs={logs}/>
 
     return (
@@ -120,6 +111,7 @@ export function ClusterDeployForm(props: Props) {
                             onChange={(e) => setCluster(e.target.value)}
                         />
                         {renderParallel()}
+                        {withDcs && renderDcs()}
                         {renderSshCredentials()}
                         {renderKeeperCredentials()}
                         {renderDbCredentials()}
@@ -128,6 +120,24 @@ export function ClusterDeployForm(props: Props) {
                 </TitleBox>
             </PaperBlue>
         )
+    }
+
+    function renderDcs() {
+        return (
+            <TextField
+                fullWidth={true}
+                size={"small"}
+                label={"DCS"}
+                value={dcs}
+                error={submitted && !dcs}
+                helperText={renderDcsHint()}
+                onChange={(e) => setDcs(e.target.value)}
+            />
+        )
+    }
+
+    function renderDcsHint() {
+        return <Hint>The Distributed Consensus Store (DCS) every node of this cluster registers with</Hint>
     }
 
     function renderTemplateName() {
@@ -162,6 +172,7 @@ export function ClusterDeployForm(props: Props) {
                 key={index}
                 node={node}
                 cluster={cluster}
+                dcs={dcs}
                 showErrors={submitted}
                 duplicate={!!node.name && duplicates.has(node.name)}
                 credentials={getPreviewCredentials()}
@@ -228,6 +239,11 @@ export function ClusterDeployForm(props: Props) {
         return <ClusterOptionsBox options={options} onUpdate={handleOptionsUpdate}/>
     }
 
+    function handleMemoWithDcs() {
+        return template.commands.some(c => [c.command, ...(c.postScripts ?? [])]
+            .some(text => text.includes(DeployVar.Dcs)))
+    }
+
     function handleMemoDuplicates() {
         const names = nodes.map(n => n.name).filter(name => !!name)
         return new Set(names.filter((name, i) => names.indexOf(name) !== i))
@@ -255,7 +271,7 @@ export function ClusterDeployForm(props: Props) {
             parallel,
             nodes,
             platform: template.platform,
-            commonConfig: {cluster, ...getSshConfig(), ...getKeeperConfig(), ...getDbConfig()},
+            commonConfig: {cluster, dcs, ...getSshConfig(), ...getKeeperConfig(), ...getDbConfig()},
             clusterOptions: options,
         })
     }
@@ -265,7 +281,7 @@ export function ClusterDeployForm(props: Props) {
     // the host at all; the other two are complete the moment the user says
     // they are not needed
     function isReady() {
-        return !!cluster && duplicates.size === 0 && complete
+        return !!cluster && (!withDcs || !!dcs) && duplicates.size === 0 && complete
             && isCredentialReady(sshMode, sshCred, options.vaults.sshKeyId)
             && isCredentialReady(keeperMode, keeperCred, options.vaults.keeperId)
             && isCredentialReady(dbMode, dbCred, options.vaults.databaseId)
