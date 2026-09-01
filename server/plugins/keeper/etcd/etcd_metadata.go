@@ -147,15 +147,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", SshPort: 22, KeeperPort: 2479, DbPort: 2479},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd1", Host: "localhost", SshPort: 22, KeeperPort: 2479, DbPort: 2479},
 				},
 				{
 					Command:  deploySingleHostNode2,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", SshPort: 22, KeeperPort: 2481, DbPort: 2481},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd2", Host: "localhost", SshPort: 22, KeeperPort: 2481, DbPort: 2481},
 				},
 				{
 					Command:  deploySingleHostNode3,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd3", SshPort: 22, KeeperPort: 2483, DbPort: 2483},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "etcd3", Host: "localhost", SshPort: 22, KeeperPort: 2483, DbPort: 2483},
 				},
 			},
 		},

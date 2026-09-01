@@ -102,15 +102,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostLeader,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "redis1", SshPort: 22, KeeperPort: 6379, DbPort: 6379},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis1", Host: "localhost", SshPort: 22, KeeperPort: 6379, DbPort: 6379},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "redis2", SshPort: 22, KeeperPort: 6380, DbPort: 6380},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis2", Host: "localhost", SshPort: 22, KeeperPort: 6380, DbPort: 6380},
 				},
 				{
 					Command:  deploySingleHostReplica,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "redis3", SshPort: 22, KeeperPort: 6381, DbPort: 6381},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "redis3", Host: "localhost", SshPort: 22, KeeperPort: 6381, DbPort: 6381},
 				},
 			},
 		},

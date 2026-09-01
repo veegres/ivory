@@ -257,15 +257,15 @@ func (p *Plugin) DefaultTemplates() []keeper.DeploymentTemplate {
 			Commands: []keeper.DeploymentCommand{
 				{
 					Command:  deploySingleHostNode1,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse1", SshPort: 22, KeeperPort: 9000, DbPort: 9000},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse1", Host: "localhost", SshPort: 22, KeeperPort: 9000, DbPort: 9000},
 				},
 				{
 					Command:  deploySingleHostNode2,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse2", SshPort: 22, KeeperPort: 9001, DbPort: 9001},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse2", Host: "localhost", SshPort: 22, KeeperPort: 9001, DbPort: 9001},
 				},
 				{
 					Command:  deploySingleHostNode3,
-					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse3", SshPort: 22, KeeperPort: 9002, DbPort: 9002},
+					Defaults: keeper.DeploymentCommandDefaults{Name: "clickhouse3", Host: "localhost", SshPort: 22, KeeperPort: 9002, DbPort: 9002},
 				},
 			},
 		},

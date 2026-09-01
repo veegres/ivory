@@ -21,10 +21,13 @@ export interface TemplateCommand {
 // and the endpoints it answers on are one fact rather than two: a single-host
 // template writes a distinct peer port into each of its commands, and only that
 // command knows which client port has to match it - sshPort included, since a
-// single-host node can still be forwarded on its own port. Host is absent on
-// purpose - it is the actual machine, which a template never knows.
+// single-host node can still be forwarded on its own port. Host is empty in a
+// multi-host template - each node is a distinct real machine a template can
+// never know ahead of time - but a single-host template can and does name one,
+// since all of its commands land on the same machine by definition.
 export interface CommandDefaults {
     name?: string,
+    host?: string,
     sshPort?: number,
     keeperPort?: number,
     dbPort?: number,
