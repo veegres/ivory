@@ -338,4 +338,45 @@ describe("StoreProvider", () => {
         })
     })
 
+    // NOTE: v1.4.2 persisted under this same key and this same name, so the
+    // version is the only thing that can tell the two shapes apart - hydrating
+    // the old blob left activeCluster with no nodes and threw on first render
+    describe("Persisted version", () => {
+        it("should discard a v1 blob instead of merging it over the defaults", async () => {
+            localStorage.setItem("store", JSON.stringify({
+                version: 1,
+                state: {
+                    searchCluster: "old",
+                    activeClusterTab: 2,
+                    activeCluster: {cluster: {name: "old-cluster"}, detectBy: "host", warning: false},
+                    activeInstance: {"old-cluster": "localhost:8008"},
+                    instance: {body: 0, queryTab: 0, queryConsole: "select 1"},
+                },
+            }))
+
+            await useStore.persist.rehydrate()
+
+            const state = useStore.getState()
+            expect(state.activeCluster).toBeUndefined()
+            expect(state.searchCluster).toBe("")
+            expect(state.activeNode).toEqual({})
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.CONTAINER)
+            expect(state.nodeState.queryConsole).toBe("")
+        })
+
+        it("should keep a blob written by the current version", async () => {
+            localStorage.setItem("store", JSON.stringify({
+                version: useStore.persist.getOptions().version,
+                state: {searchCluster: "kept", nodeState: {queryConsole: "select 1"}},
+            }))
+
+            await useStore.persist.rehydrate()
+
+            const state = useStore.getState()
+            expect(state.searchCluster).toBe("kept")
+            expect(state.nodeState.queryConsole).toBe("select 1")
+            expect(state.nodeState.nodeTab).toBe(NodeTabType.CONTAINER)
+        })
+    })
+
 })

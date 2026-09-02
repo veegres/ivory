@@ -29,31 +29,38 @@ interface Store {
     },
 }
 
+const InitialStore: Store = {
+    searchCluster: "",
+    activeClusterKeeperPlugin: KeeperPlugin.PATRONI_POSTGRES,
+    activeCluster: undefined,
+    manualKeeper: undefined,
+    activeNode: {},
+    activeTags: ["ALL"],
+    warnings: {},
+    refresh: {},
+    nodeState: {
+        nodeTab: NodeTabType.CONTAINER,
+        queryTab: QueryType.CONSOLE,
+        queryConsole: "",
+        dbName: undefined,
+        dbSchema: undefined,
+        containerTab: 0,
+        systemTab: 0,
+        systemLogsPath: "",
+        toolsTab: undefined,
+    },
+}
+
 export const useStore = create(persist<Store>(
-    () => ({
-        searchCluster: "",
-        activeClusterKeeperPlugin: KeeperPlugin.PATRONI_POSTGRES,
-        activeCluster: undefined,
-        manualKeeper: undefined,
-        activeNode: {},
-        activeTags: ["ALL"],
-        warnings: {},
-        refresh: {},
-        nodeState: {
-            nodeTab: NodeTabType.CONTAINER,
-            queryTab: QueryType.CONSOLE,
-            queryConsole: "",
-            dbName: undefined,
-            dbSchema: undefined,
-            containerTab: 0,
-            systemTab: 0,
-            systemLogsPath: "",
-            toolsTab: undefined,
-        },
-    }),
+    () => InitialStore,
     {
         name: "store",
-        version: 1,
+        // NOTE: v1.4.2 persisted a completely different shape under this same
+        //  key and this same version, so the old blob was merged over the new
+        //  defaults instead of being discarded - activeCluster then had no
+        //  nodes and the cluster list threw on the first render after upgrading
+        version: 2,
+        migrate: () => InitialStore,
         // NOTE: nodeState is nested, so the default shallow merge would drop any
         //  field added to it later that is missing from an older persisted blob.
         merge: (persisted, current) => {
