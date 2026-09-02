@@ -14,7 +14,7 @@ const SX = {
         "& .MuiOutlinedInput-notchedOutline": {borderColor: "divider"},
         "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {borderColor: "divider"},
     },
-    inputText: {fontSize: "13px", fontFamily: "monospace", paddingLeft: "8px", paddingRight: "8px"},
+    inputText: {fontSize: "13px", fontFamily: "monospace"},
 }
 
 export type DefaultField = {

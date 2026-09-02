@@ -1,4 +1,4 @@
-import {Box, Checkbox, TextField} from "@mui/material"
+import {Box, TextField, ToggleButton, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {Logs} from "../../../../shared/component/box/Logs"
@@ -9,14 +9,14 @@ import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvide
 import {useRouterNodeSystemLogs} from "../../api/NodeHook"
 import {PlatformVaultConnection} from "../../api/NodeType"
 
+const DEFAULT_TAIL = 50
+
 const SX: SxPropsMap = {
-    head: {
-        display: "flex", gap: 1, justifyContent: "space-between", padding: "4px 0px", alignItems: "center",
-        borderTop: 1, borderBottom: 1, borderColor: "divider", fontSize: "13px",
-    },
-    options: {display: "flex", gap: 1, alignItems: "center", fontFamily: "monospace"},
-    input: {padding: "6px 10px", fontSize: "14px", fontFamily: "monospace"},
-    check: {padding: "6px"},
+    head: {display: "flex", gap: 1, alignItems: "center"},
+    path: {flexGrow: 1},
+    tail: {width: "90px"},
+    follow: {padding: "0px 10px", border: 1, borderColor: "divider", borderRadius: 1, lineHeight: 1},
+    input: {fontFamily: "monospace", fontSize: "13px"},
 }
 
 type Props = {
@@ -27,31 +27,49 @@ export function SystemLogs(props: Props) {
     const {connection} = props
     const path = useStore(s => s.nodeState.systemLogsPath)
     const {setSystemLogsPath} = useStoreAction
-    const debouncePath = useDebounce(path)
+    const [tail, setTail] = useState("")
     const [follow, setFollow] = useState(true)
+    const debouncePath = useDebounce(path)
+    const debounceTail = useDebounce(tail)
 
-    const request = {connection, path: debouncePath, tail: 50, follow}
+    const request = {connection, path: debouncePath, tail: getTail(debounceTail), follow}
     const logs = useRouterNodeSystemLogs(request, debouncePath !== "")
 
     return (
         <>
             <Box sx={SX.head}>
                 <TextField
-                    variant={"outlined"}
+                    sx={SX.path}
+                    size={"small"}
+                    color={"secondary"}
                     placeholder={"Path"}
                     value={path}
                     slotProps={{htmlInput: {sx: SX.input}}}
                     onChange={(e) => setSystemLogsPath(e.target.value)}
                 />
-                <Box sx={SX.options}>
-                    <Box>Follow</Box>
-                    <Checkbox
+                <Tooltip title={"Number of last rows"} placement={"top"}>
+                    <TextField
+                        sx={SX.tail}
                         size={"small"}
-                        checked={follow}
-                        slotProps={{root: {sx: SX.check}}}
-                        onChange={(e) => setFollow(e.target.checked)}
+                        color={"secondary"}
+                        placeholder={DEFAULT_TAIL.toString()}
+                        value={tail}
+                        slotProps={{htmlInput: {sx: SX.input}}}
+                        onChange={(e) => setTail(e.target.value.replace(/\D/g, ""))}
                     />
-                </Box>
+                </Tooltip>
+                <Tooltip title={"Keep streaming new rows"} placement={"top"}>
+                    <ToggleButton
+                        sx={SX.follow}
+                        size={"small"}
+                        value={"follow"}
+                        color={"secondary"}
+                        selected={follow}
+                        onChange={() => setFollow(!follow)}
+                    >
+                        Follow
+                    </ToggleButton>
+                </Tooltip>
             </Box>
             {path === "" ? (
                 <NoBox text={"enter path to see logs"}/>
@@ -60,4 +78,9 @@ export function SystemLogs(props: Props) {
             )}
         </>
     )
+
+    function getTail(value: string) {
+        const rows = parseInt(value)
+        return isNaN(rows) || rows <= 0 ? DEFAULT_TAIL : rows
+    }
 }

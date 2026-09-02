@@ -1,6 +1,6 @@
 import {Box, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
-import {Hint} from "../../../shared/component/box/Hint"
 
+import {Hint} from "../../../shared/component/box/Hint"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {VaultType} from "../../vault/api/VaultType"
