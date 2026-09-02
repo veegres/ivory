@@ -12,7 +12,6 @@ export function SecretButton(props: Props) {
 
     return (
         <Button
-            size={"small"}
             variant={"contained"}
             loading={secret.isPending}
             onClick={() => secret.mutate({key: keyWord})}

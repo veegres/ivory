@@ -45,7 +45,6 @@ export function PermissionsButtons(props: Props) {
         return <Button
             sx={SX.button}
             color={"success"}
-            size={"small"}
             loading={approveRouter.isPending}
             disabled={p.length === 0}
             onClick={() => approveRouter.mutate({username, permissions: p})}
@@ -61,7 +60,6 @@ export function PermissionsButtons(props: Props) {
         return <Button
             sx={SX.button}
             color={"warning"}
-            size={"small"}
             loading={rejectRouter.isPending}
             disabled={p.length === 0}
             onClick={() => rejectRouter.mutate({username, permissions: p})}
@@ -78,7 +76,6 @@ export function PermissionsButtons(props: Props) {
             <Button
                 sx={SX.button}
                 color={"secondary"}
-                size={"small"}
                 loading={requestRouter.isPending}
                 disabled={p.length === 0}
                 onClick={() => requestRouter.mutate(p)}

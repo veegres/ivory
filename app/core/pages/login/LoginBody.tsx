@@ -66,7 +66,7 @@ export function LoginBody(props: Props) {
         if (supported.length < 2) return null
 
         return (
-            <ToggleButtonGroup value={auth} exclusive={true} fullWidth={true} size={"small"}>
+            <ToggleButtonGroup value={auth} exclusive={true} fullWidth={true}>
                 {supported.map(type => (
                     <ToggleButton value={type} key={type} onClick={() => setAuth(type)}>
                         {AuthType[type]}

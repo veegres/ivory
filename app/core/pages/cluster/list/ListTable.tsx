@@ -48,7 +48,7 @@ export function ListTable(props: Props) {
                 <Box sx={SX.headName}>Name</Box>
                 <Box sx={SX.headClusters}>Clusters</Box>
                 <ActionsLoader label={<Box sx={SX.headNodes}>Nodes</Box>} loading={fetching && !pending}>
-                    <ListClusterAdd onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
+                    <ListClusterAdd size={26} onClick={() => setShowNewElement(true)} disabled={showNewElement}/>
                 </ActionsLoader>
             </Box>
             <SkeletonRows isLoading={pending} height={32}>

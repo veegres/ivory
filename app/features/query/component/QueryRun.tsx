@@ -17,7 +17,7 @@ const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1, backgroundImage: "inherit", backgroundColor: "inherit"},
     info: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, fontSize: "13.5px"},
     buttons: {display: "flex", alignItems: "center", fontSize: "10px", gap: "4px"},
-    limit: {height: "26px", width: "90px", fontSize: "14px"},
+    limit: {width: "90px", fontSize: "14px"},
     checkbox: {height: "26px", width: "26px"},
 }
 
@@ -64,8 +64,8 @@ export function QueryRun(props: Props) {
                 />
                 <Box sx={SX.buttons}>
                     {varieties && <QueryVarieties varieties={varieties}/>}
-                    <Refresher queryKeys={[queryKey]}/>
-                    <MenuButton>
+                    <Refresher size={26} queryKeys={[queryKey]}/>
+                    <MenuButton size={26}>
                         <Tooltip title={"Trim and Remove Comments"} placement={"top"}>
                             <Checkbox
                                 sx={SX.checkbox}

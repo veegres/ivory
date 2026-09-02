@@ -1,12 +1,17 @@
-import {Box} from "@mui/material"
-
 import {ClusterApi} from "../../../../features/cluster/api/ClusterRouter"
 import {Refresher} from "../../../widgets/browser/Refresher"
 
-export function ListTableRefresher() {
+type Props = {
+    size?: number,
+    width?: number,
+}
+
+export function ListTableRefresher(props: Props) {
     return (
-        <Box>
-            <Refresher queryKeys={[ClusterApi.list.keyCommon(), ClusterApi.overview.keyCommon()]}/>
-        </Box>
+        <Refresher
+            size={props.size}
+            width={props.width}
+            queryKeys={[ClusterApi.list.keyCommon(), ClusterApi.overview.keyCommon()]}
+        />
     )
 }

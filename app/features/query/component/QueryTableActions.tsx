@@ -9,8 +9,8 @@ import {useRouterQueryCancel, useRouterQueryTerminate} from "../api/QueryHook"
 import {Connection} from "../api/QueryType"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", justifyContent: "space-evenly", alignItems: "center", color: "text.secondary", padding: "0 3px", height: "22px"},
-    actionButton: {padding: "2px 4px", fontSize: "10px"},
+    box: {display: "flex", justifyContent: "space-evenly", alignItems: "center", color: "text.secondary", gap: "1px", height: "22px"},
+    actionButton: {height: "22px", padding: "2px 6px 0px", fontSize: "10px", lineHeight: 1},
 }
 
 type Props = {

@@ -26,8 +26,8 @@ const SX: SxPropsMap = {
     label: {color: "text.secondary", lineHeight: 1},
 }
 
-const group = (size: number): SxProps<Theme> => ({"& .MuiButtonGroup-grouped": {
-    width: size + 4, height: size, fontSize: "12px", padding: "0px", minWidth: "unset", color: "divider",
+const group = (size: number, width: number): SxProps<Theme> => ({width, "& .MuiButtonGroup-grouped": {
+    flex: "1 1 0", height: size, fontSize: "12px", padding: "0px", minWidth: "unset", color: "divider",
 }})
 
 const periods: [string, number][] = [
@@ -38,11 +38,12 @@ const periods: [string, number][] = [
 type Props = {
     queryKeys: QueryKey[],
     size?: number,
+    width?: number,
     defaultPeriod?: [string, number],
 }
 
 export function Refresher(props: Props) {
-    const {size = 28, queryKeys, defaultPeriod} = props
+    const {size = 32, width = size * 2, queryKeys, defaultPeriod} = props
     const queryKeysStr = queryKeys.map(k => k.join(".")).join(".")
     const queryClient = useQueryClient()
     const [open, setOpen] = useState(false)
@@ -56,7 +57,7 @@ export function Refresher(props: Props) {
 
     return (
         <>
-            <ButtonGroup color={"inherit"} ref={anchorRef} sx={group(size)}>
+            <ButtonGroup color={"inherit"} ref={anchorRef} sx={group(size, width)}>
                 <Tooltip title={"Refresh"} placement={"top"} disableInteractive>
                     <Button onClick={handleRefresh}><Autorenew sx={SX.icon}/></Button>
                 </Tooltip>

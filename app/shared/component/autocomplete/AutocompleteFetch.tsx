@@ -13,7 +13,6 @@ type Props = {
     variant?: "standard" | "filled" | "outlined",
     margin?: "dense" | "normal" | "none",
     size?: "small" | "medium",
-    padding?: string,
     value?: string | null,
     connection: Connection,
     params?: any,
@@ -21,7 +20,7 @@ type Props = {
 }
 
 export function AutocompleteFetch(props: Props) {
-    const {label, placeholder, variant, margin, padding, size} = props
+    const {label, placeholder, variant, margin, size} = props
     const {onUpdate, useFetch, disabled = false, value, connection, params} = props
 
     const [inputValue, setInputValue] = useState("")
@@ -47,16 +46,13 @@ export function AutocompleteFetch(props: Props) {
     )
 
     function renderInput(params: AutocompleteRenderInputParams) {
-        const inputProps = padding ? {...params.slotProps.input, style: {padding}} : params.slotProps.input
         return (
             <TextField
                 {...params}
-                size={"small"}
                 label={label}
                 variant={variant}
                 margin={margin}
                 placeholder={placeholder}
-                slotProps={{...params.slotProps, input: inputProps}}
             />
         )
     }

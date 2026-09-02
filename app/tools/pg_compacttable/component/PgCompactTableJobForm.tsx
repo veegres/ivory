@@ -40,7 +40,7 @@ export function PgCompactTableJobForm(props: Props) {
         <Box sx={SX.form}>
             <AutocompleteFetch
                 value={target?.database || null}
-                margin={"dense"} variant={"standard"} size={"small"}
+                margin={"dense"} variant={"standard"}
                 label={"Database"}
                 connection={connection}
                 useFetch={useRouterQueryDatabase}
@@ -48,7 +48,7 @@ export function PgCompactTableJobForm(props: Props) {
             />
             <AutocompleteFetch
                 value={target?.schema || null}
-                margin={"dense"} variant={"standard"} size={"small"}
+                margin={"dense"} variant={"standard"}
                 label={"Schema"}
                 connection={connection}
                 useFetch={useRouterQuerySchemas}
@@ -57,7 +57,7 @@ export function PgCompactTableJobForm(props: Props) {
             />
             <AutocompleteFetch
                 value={target?.table || null}
-                margin={"dense"} variant={"standard"} size={"small"}
+                margin={"dense"} variant={"standard"}
                 label={"Table"}
                 connection={connection}
                 params={{schema: target?.schema ?? ""}}
@@ -67,17 +67,17 @@ export function PgCompactTableJobForm(props: Props) {
             />
             <Box sx={SX.group}>
                 <TextField
-                    label={"Min table size (MB)"} type={"number"} variant={"standard"} size={"small"}
+                    label={"Min table size (MB)"} type={"number"} variant={"standard"}
                     onChange={(e) => setOptions({...options, minTableSize: parseInt(e.target.value)})}
                 />
                 <TextField
-                    label={"Max table size (MB)"} type={"number"} variant={"standard"} size={"small"}
+                    label={"Max table size (MB)"} type={"number"} variant={"standard"}
                     onChange={(e) => setOptions({...options, maxTableSize: parseInt(e.target.value)})}
                 />
             </Box>
             <AutocompleteFetch
                 value={target?.excludeSchema || null}
-                margin={"dense"} variant={"standard"} size={"small"}
+                margin={"dense"} variant={"standard"}
                 label={"Exclude Schema"}
                 connection={connection}
                 useFetch={useRouterQuerySchemas}
@@ -86,7 +86,7 @@ export function PgCompactTableJobForm(props: Props) {
             />
             <AutocompleteFetch
                 value={target?.excludeTable || null}
-                margin={"dense"} variant={"standard"} size={"small"}
+                margin={"dense"} variant={"standard"}
                 label={"Exclude Table"}
                 connection={connection}
                 params={{schema: target?.schema ?? ""}}
@@ -96,7 +96,7 @@ export function PgCompactTableJobForm(props: Props) {
             />
             <Box sx={SX.group}>
                 <TextField
-                    label={"Delay ratio"} type={"number"} variant={"standard"} size={"small"}
+                    label={"Delay ratio"} type={"number"} variant={"standard"}
                     onChange={(e) => setOptions({...options, delayRatio: parseInt(e.target.value)})}
                 />
             </Box>

@@ -9,7 +9,7 @@ import {useStore, useStoreAction} from "../../../../shared/provider/StoreProvide
 const SX: SxPropsMap = {
     input: {padding: "0px", width: "100px", height: "14px", fontSize: "14px"},
     element: {padding: "6px 7px", borderRadius: "3px", lineHeight: "1"},
-    warning: {width: "30px"},
+    warning: {width: "26px", padding: "0px"},
 }
 
 export function ListTags() {
@@ -48,8 +48,8 @@ export function ListTags() {
                     <ToggleButton
                         key={"warnings"}
                         sx={[SX.element, SX.warning]}
-                        color={"warning"}
                         size={"small"}
+                        color={"warning"}
                         selected={warningsCount > 0}
                         disabled={true}
                         value={warnings}

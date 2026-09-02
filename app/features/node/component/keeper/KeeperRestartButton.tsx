@@ -18,10 +18,11 @@ const SX: SxPropsMap = {
 type Props = {
     request: KeeperOneRequest,
     cluster: string,
+    size?: "small" | "medium",
 }
 
 export function KeeperRestartButton(props: Props) {
-    const {request, cluster} = props
+    const {request, cluster, size} = props
 
     const [schedule, setSchedule] = useState<Dayjs>()
     const [pending, setPending] = useState(false)
@@ -33,7 +34,7 @@ export function KeeperRestartButton(props: Props) {
     return (
         <ManageAccess feature={Feature.ManageNodeKeeperRestart}>
             <AlertButton
-                size={"small"}
+                size={size}
                 label={"Restart"}
                 title={`Make a restart of ${request.host}?`}
                 description={"It will restart postgres, that will cause some downtime."}

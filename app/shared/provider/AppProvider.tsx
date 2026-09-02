@@ -10,6 +10,7 @@ import {focusManager, QueryClient, QueryClientProvider} from "@tanstack/react-qu
 import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
 import {createContext, ReactNode, useContext, useEffect} from "react"
 
+import {ThemeComponents} from "../helper/HelperTheme"
 import {useLocalStorageState} from "../hook/LocalStorage"
 
 export enum Mode {
@@ -60,25 +61,7 @@ export function AppProvider(props: { children: ReactNode }) {
     const [state, setState] = useLocalStorageState("appearance", ThemeInitialState, true)
 
     const theme = getTheme(state.mode)
-    // NOTE: the :root variables are the app-wide size limits, reusable in any
-    // sx as pure css strings, e.g. width: "var(--size-field)" or
-    // flex: "1 1 min(var(--size-input), 100%)"
-    const muiTheme = createTheme({
-        palette: {mode: theme},
-        components: {
-            MuiCssBaseline: {
-                styleOverrides: {
-                    ":root": {
-                        "--size-field": "300px",
-                        "--size-input": "263px",
-                        "--size-tile": "350px",
-                        "--size-tile-height": "120px",
-                        "--size-dialog": "600px",
-                    },
-                },
-            },
-        },
-    })
+    const muiTheme = createTheme({palette: {mode: theme}, components: ThemeComponents})
 
     useEffect(handleEffectClient, [state.refetchOnWindowsFocus])
 

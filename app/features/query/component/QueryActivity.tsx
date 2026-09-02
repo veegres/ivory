@@ -27,7 +27,7 @@ const SX: SxPropsMap = {
     },
     count: {
         display: "flex", fontSize: "14px", color: "info.main", border: 1, borderRadius: 1, bgcolor: "rgb(2 131 237 / 0.10)",
-        borderColor: "divider", width: "28px", height: "28px", alignItems: "center", justifyContent: "center",
+        borderColor: "divider", width: "32px", height: "32px", alignItems: "center", justifyContent: "center",
     },
 }
 

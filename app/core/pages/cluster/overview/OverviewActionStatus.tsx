@@ -41,7 +41,6 @@ export function OverviewActionStatus(props: Props) {
         <Box sx={SX.box}>
             <ManageAccess feature={Feature.ManageNodeKeeperActivation}>
                 <AlertButton
-                    size={"small"}
                     color={"inherit"}
                     variant={"outlined"}
                     tooltip={<Box sx={SX.tooltip}>{actionButton[status].label}</Box>}

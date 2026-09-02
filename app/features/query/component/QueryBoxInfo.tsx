@@ -37,7 +37,7 @@ export function QueryBoxInfo(props: Props) {
                     {props.renderVarieties}
                 </QueryBoxWrapper>
                 <QueryBoxWrapper editable={editable}>
-                    <InfoBox tooltip={"Type"} padding={Padding.Small}>
+                    <InfoBox tooltip={"Type"} padding={Padding.Small} height={editable ? "26px" : undefined}>
                         <Box sx={SX.type}>{Type[type]}</Box>
                     </InfoBox>
                 </QueryBoxWrapper>

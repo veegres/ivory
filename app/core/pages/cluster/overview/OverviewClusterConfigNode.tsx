@@ -33,7 +33,6 @@ export function OverviewClusterConfigNode(props: Props) {
         <Box sx={SX.box}>
             <Autocomplete
                 sx={SX.autocomplete}
-                size={"small"}
                 options={options}
                 value={value}
                 disableClearable
@@ -43,7 +42,7 @@ export function OverviewClusterConfigNode(props: Props) {
                 onInputChange={(_, value) => setInputValue(value)}
                 renderInput={(params) => <TextField {...params} label={"Main Keeper"}/>}
             />
-            <ToggleButtonGroup size={"small"}>
+            <ToggleButtonGroup>
                 <Tooltip title={"AUTO"} placement={"top"}>
                     <ToggleButton
                         sx={SX.toggle}

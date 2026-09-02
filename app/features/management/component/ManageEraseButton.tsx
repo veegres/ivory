@@ -14,7 +14,6 @@ export function ManageEraseButton(props: Props) {
     return (
         <AlertButton
             variant={"outlined"}
-            size={"small"}
             color={"error"}
             label={"Erase"}
             title={"Erase all data?"}

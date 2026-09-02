@@ -14,10 +14,11 @@ type Props = {
     request: KeeperOneRequest,
     candidates: string[],
     leaderKey?: string,
+    size?: "small" | "medium",
 }
 
 export function KeeperSwitchoverButton(props: Props) {
-    const {request, candidates, cluster, leaderKey} = props
+    const {request, candidates, cluster, leaderKey, size} = props
 
     const [candidate, setCandidates] = useState<string>()
     const [schedule, setSchedule] = useState<Dayjs>()
@@ -28,8 +29,8 @@ export function KeeperSwitchoverButton(props: Props) {
     return (
         <ManageAccess feature={Feature.ManageNodeKeeperSwitchover}>
             <AlertButton
+                size={size}
                 color={"secondary"}
-                size={"small"}
                 label={"Switchover"}
                 title={`Make a switchover of ${request.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
@@ -45,7 +46,7 @@ export function KeeperSwitchoverButton(props: Props) {
 
     function renderCandidates() {
         return (
-            <FormControl fullWidth size={"small"}>
+            <FormControl fullWidth>
                 <InputLabel id={"select-switchover"}>Candidate</InputLabel>
                 <Select
                     labelId={"select-switchover"}

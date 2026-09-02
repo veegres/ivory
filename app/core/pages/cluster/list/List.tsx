@@ -32,9 +32,9 @@ export function List() {
                 <Box sx={SX.keepers}>
                     <ListKeepers/>
                     <Box sx={SX.actions}>
-                        <ClusterDeploy keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
-                        <ClusterDetect keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
-                        <ListTableRefresher/>
+                        <ClusterDeploy size={26} keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
+                        <ClusterDetect size={26} keeper={keeper} database={KeeperPluginOptions[keeper].dbPlugin}/>
+                        <ListTableRefresher size={26} width={55}/>
                     </Box>
                 </Box>
                 <ManageAccess feature={Feature.ViewTagList}>

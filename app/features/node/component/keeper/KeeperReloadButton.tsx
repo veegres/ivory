@@ -7,16 +7,17 @@ import {KeeperOneRequest} from "../../api/NodeType"
 type Props = {
     request: KeeperOneRequest,
     cluster: string,
+    size?: "small" | "medium",
 }
 
 export function KeeperReloadButton(props: Props) {
-    const {request, cluster} = props
+    const {request, cluster, size} = props
     const reload = useRouterNodeReload(cluster)
 
     return (
         <ManageAccess feature={Feature.ManageNodeKeeperReload}>
             <AlertButton
-                size={"small"}
+                size={size}
                 label={"Reload"}
                 title={`Make a reload of ${request.host}?`}
                 description={`It will reload postgres config, it doesn't have any downtime. It won't help if pending 

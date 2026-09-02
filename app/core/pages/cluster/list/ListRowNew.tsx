@@ -1,16 +1,11 @@
 import {FormControl, OutlinedInput} from "@mui/material"
 import {useState} from "react"
 
-import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getNodeConfigs, KeeperPluginOptions} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import {ListCellUpdate} from "./ListCellUpdate"
 import {ListNodeInput} from "./ListNodeInput"
 import {ListRowLayout} from "./ListRowLayout"
-
-const SX: SxPropsMap = {
-    nodesCellInput: {height: "32px"},
-}
 
 type Props = {
     show: boolean,
@@ -39,7 +34,6 @@ export function ListRowNew(props: Props) {
         return (
             <FormControl fullWidth>
                 <OutlinedInput
-                    sx={SX.nodesCellInput}
                     placeholder={"Name"}
                     value={stateName}
                     onChange={(event) => setStateName(event.target.value)}

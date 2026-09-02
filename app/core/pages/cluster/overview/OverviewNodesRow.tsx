@@ -171,10 +171,10 @@ export function OverviewNodesRow(props: Props) {
         if (role === "unknown" || !keeperRequest) return
         return (
             <MenuButton size={27}>
-                <KeeperScheduleButton request={keeperRequest} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
-                <KeeperFailoverButton request={keeperRequest} cluster={cluster.name} role={role}/>
-                <KeeperRestartButton request={keeperRequest} cluster={cluster.name}/>
-                <KeeperReloadButton request={keeperRequest} cluster={cluster.name}/>
+                <KeeperScheduleButton size={"small"} request={keeperRequest} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
+                <KeeperFailoverButton size={"small"} request={keeperRequest} cluster={cluster.name} role={role}/>
+                <KeeperRestartButton size={"small"} request={keeperRequest} cluster={cluster.name}/>
+                <KeeperReloadButton size={"small"} request={keeperRequest} cluster={cluster.name}/>
             </MenuButton>
         )
     }
@@ -182,8 +182,8 @@ export function OverviewNodesRow(props: Props) {
     function renderRoleButtons() {
         if (!keeperRequest) return
         switch (role) {
-            case "replica": return <KeeperReinitButton request={keeperRequest} cluster={cluster.name}/>
-            case "leader": return <KeeperSwitchoverButton request={keeperRequest} cluster={cluster.name} candidates={candidates.map(c => c.host)} leaderKey={node.keeper.key}/>
+            case "replica": return <KeeperReinitButton size={"small"} request={keeperRequest} cluster={cluster.name}/>
+            case "leader": return <KeeperSwitchoverButton size={"small"} request={keeperRequest} cluster={cluster.name} candidates={candidates.map(c => c.host)} leaderKey={node.keeper.key}/>
             default: return
         }
     }

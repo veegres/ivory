@@ -8,7 +8,7 @@ const SX: SxPropsMap = {
     box: {position: "relative"},
     collapse: {position: "absolute", top: "50%", transform: "translate(calc(-100% + -2px), -50%)"},
     paper: {
-        display: "flex", gap: "3px", alignItems: "center", padding: "3px 5px",
+        display: "flex", gap: "3px", alignItems: "center", padding: "2px",
         border: 1, borderRadius: 1, borderColor: "divider", backgroundColor: "background.default",
     },
 }

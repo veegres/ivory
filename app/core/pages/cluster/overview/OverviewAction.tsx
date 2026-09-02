@@ -47,7 +47,7 @@ export function OverviewAction(props: Props) {
             <Box sx={SX.fixed}>
                 <OverviewNodesClusterFix name={cluster.name}/>
                 {renderRefresh()}
-                <ToggleButtonGroup size={"small"}>
+                <ToggleButtonGroup>
                     <ToggleButton
                         sx={SX.toggleButton}
                         value={"config"}

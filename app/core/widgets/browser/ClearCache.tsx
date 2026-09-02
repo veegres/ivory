@@ -10,7 +10,6 @@ export function ClearCache() {
     return (
         <AlertButton
             variant={"outlined"}
-            size={"small"}
             label={"Clear"}
             title={"Clear local cache data?"}
             description={`This action will clear all your local cache. It shouldn't cause any difficulties. You will

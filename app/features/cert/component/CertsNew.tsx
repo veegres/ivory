@@ -26,7 +26,7 @@ export function CertsNew(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <ToggleButtonGroup sx={SX.group} orientation={"vertical"} size={"small"} exclusive value={tab}>
+            <ToggleButtonGroup sx={SX.group} orientation={"vertical"} exclusive value={tab}>
                 <ToggleButton sx={SX.button} onClick={() => setTab(FileUsageType.UPLOAD)} value={FileUsageType.UPLOAD}>
                     <Tooltip placement={"right"} title={upload.label}>{upload.icon}</Tooltip>
                 </ToggleButton>
