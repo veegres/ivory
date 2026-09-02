@@ -15,6 +15,11 @@ const SIZE = {
 // label sits on the same line as the text it labels, so it moves with it.
 const PAD = "10px"
 
+// NOTE: the notch is cut by the fieldset's own padding, and the legend inside
+// it pads the label by 5px a side, so the gap is centred on the label only when
+// the fieldset starts those 5px before PAD.
+const NOTCH = "5px"
+
 // NOTE: shrink is spelled out because the rest transform below outranks the
 // variant it comes from, and would otherwise pin a floating label inside the
 // field.
@@ -57,6 +62,7 @@ export const ThemeComponents: ThemeOptions["components"] = {
     MuiOutlinedInput: {
         styleOverrides: {
             root: {
+                "& .MuiOutlinedInput-notchedOutline": {paddingLeft: NOTCH},
                 ...getInputSize("medium"),
                 "&.MuiInputBase-sizeSmall": getInputSize("small"),
             },
