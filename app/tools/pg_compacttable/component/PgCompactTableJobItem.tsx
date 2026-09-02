@@ -1,11 +1,12 @@
 import {Clear, Stop} from "@mui/icons-material"
-import {Box, CircularProgress, Divider, IconButton, Paper, Tooltip} from "@mui/material"
+import {Box, CircularProgress, Divider, IconButton, Tooltip} from "@mui/material"
 import {SvgIconProps} from "@mui/material"
 import {cloneElement, ReactElement, useState} from "react"
 
 import {Feature} from "../../../features/Feature"
 import {ManageAccess} from "../../../features/management/component/ManageAccess"
 import {Logs} from "../../../shared/component/box/Logs"
+import {PaperBlue} from "../../../shared/component/box/PaperBlue"
 import {OpenIcon} from "../../../shared/component/icon/OpenIcon"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {getShortUuid} from "../../../shared/helper/HelperUtils"
@@ -15,9 +16,10 @@ import {useRouterPgCompactTableDelete, useRouterPgCompactTableStop} from "../api
 import {PgCompactTable} from "../api/PgCompactTableType"
 
 const SX: SxPropsMap = {
-    paper: {fontSize: "13px", width: "100%", padding: "8px 15px"},
-    header: {display: "flex", flexDirection: "column", fontWeight: "bold", cursor: "pointer"},
+    paper: {fontSize: "13px", width: "100%", padding: "6px 12px", border: 1, borderColor: "divider"},
+    header: {display: "flex", flexDirection: "column", cursor: "pointer"},
     headerLine: {display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "nowrap", height: "20px"},
+    headerTitle: {fontWeight: "bold"},
     logs: {colorScheme: "dark"},
     button: {padding: "1px"},
     tooltipBox: {marginLeft: "4px", width: "25px", display: "flex", alignItems: "center", justifyContent: "center"},
@@ -42,10 +44,10 @@ export function PgCompactTableJobItem(props: Props) {
     const stopJob = useRouterPgCompactTableStop()
 
     return (
-        <Paper sx={SX.paper} variant={"outlined"}>
+        <PaperBlue sx={SX.paper}>
             {renderHeader()}
             {renderBody()}
-        </Paper>
+        </PaperBlue>
     )
 
     function renderBody() {
@@ -61,7 +63,7 @@ export function PgCompactTableJobItem(props: Props) {
     function renderHeader() {
         return (
             <Box sx={SX.header} onClick={() => setOpen(!open)} className={select.none}>
-                <Box sx={SX.headerLine}>
+                <Box sx={[SX.headerLine, SX.headerTitle]}>
                     <Box>Command</Box>
                     <Box sx={SX.separator}>
                         <Box sx={{color: status.color}}>{status.name}</Box>

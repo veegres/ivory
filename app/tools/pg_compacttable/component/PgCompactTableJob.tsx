@@ -7,7 +7,7 @@ import {PgCompactTable} from "../api/PgCompactTableType"
 import {PgCompactTableJobItem} from "./PgCompactTableJobItem"
 
 const style: StylePropsMap = {
-    transition: {display: "flex", flexDirection: "column", gap: "10px"}
+    transition: {display: "flex", flexDirection: "column", gap: "8px"}
 }
 
 type Props = {
