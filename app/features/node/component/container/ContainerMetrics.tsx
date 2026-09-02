@@ -17,7 +17,7 @@ type Props = {
     name: string,
 }
 
-export function ContainerOverviewMetrics(props: Props) {
+export function ContainerMetrics(props: Props) {
     const {connection, name} = props
     const [cachedError, setCachedError] = useState<Error>()
     const metrics = useRouterNodePlatformContainerMetrics({connection, name})
