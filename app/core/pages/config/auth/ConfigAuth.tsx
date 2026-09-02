@@ -12,8 +12,6 @@ import {ConfigAuthOidc} from "./ConfigAuthOidc"
 
 const SX: SxPropsMap = {
     body: {display: "flex", flexDirection: "column", gap: 2},
-    tab: {padding: "10px", minHeight: "40px"},
-    tabs: {minHeight: "40px"},
 }
 
 type Props = {
@@ -56,10 +54,10 @@ export function ConfigAuth(props: Props) {
     function renderAuthSwitch() {
         return (
             <Paper variant={"outlined"}>
-                <Tabs sx={SX.tabs} variant={"fullWidth"} value={authTypeOpen} onChange={(_, v) => setAuthTypeOpen(v)}>
-                    <Tab sx={SX.tab} value={AuthType.BASIC} label={AuthType[AuthType.BASIC]}/>
-                    <Tab sx={SX.tab} value={AuthType.LDAP} label={AuthType[AuthType.LDAP]}/>
-                    <Tab sx={SX.tab} value={AuthType.OIDC} label={AuthType[AuthType.OIDC]}/>
+                <Tabs variant={"fullWidth"} value={authTypeOpen} onChange={(_, v) => setAuthTypeOpen(v)}>
+                    <Tab value={AuthType.BASIC} label={AuthType[AuthType.BASIC]}/>
+                    <Tab value={AuthType.LDAP} label={AuthType[AuthType.LDAP]}/>
+                    <Tab value={AuthType.OIDC} label={AuthType[AuthType.OIDC]}/>
                 </Tabs>
             </Paper>
         )
