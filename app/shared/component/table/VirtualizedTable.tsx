@@ -64,7 +64,7 @@ type Props = {
 export function VirtualizedTable(props: Props) {
     const {columns, rows, renderRowActions, showIndexColumn = true} = props
     // NOTE: "inherit" does not work here - it only copies the parent DOM node's own
-    //  computed background-color, and none of the surrounding Boxes (TitledBox, etc.)
+    //  computed background-color, and none of the surrounding Boxes (TitleBox, etc.)
     //  set one explicitly, so it silently resolved to transparent again. The sticky
     //  cells need a real opaque color to occlude rows scrolling underneath them, so
     //  default to the actual page background rendered behind non-Paper containers.

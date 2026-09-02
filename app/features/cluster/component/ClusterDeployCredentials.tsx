@@ -1,20 +1,15 @@
-import {TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Box, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Hint} from "../../../shared/component/box/Hint"
 
-import {TitleBox} from "../../../shared/component/box/TitleBox"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {VaultType} from "../../vault/api/VaultType"
 import {ClusterOptionsVault} from "./ClusterOptionsVault"
 
 const SX: SxPropsMap = {
-    toggleButton: {padding: "0px 10px"},
+    toggleButton: {lineHeight: 1},
 }
 
-// CredentialMode is how one credential is answered: an existing vault entry, a
-// username and password the deploy writes to a new vault before it starts, or
-// none at all. None exists because whether a deployment has credentials is the
-// user's answer rather than the engine's - a template names the account its
-// commands create, and a deployment that creates none is answered with nothing.
 export type CredentialMode = "new" | "vault" | "none"
 
 export type Credential = {
@@ -28,10 +23,6 @@ type Props = {
     mode: CredentialMode,
     credential: Credential,
     vaultId?: string,
-    // NOTE: whether the username was seeded by the template rather than typed
-    // here - the value is in `credential` either way, but only the caller can
-    // tell the two apart, and an ssh username disabling itself as it is typed
-    // is what checking the value alone would do
     locked?: boolean,
     optional?: boolean,
     showErrors: boolean,
@@ -40,17 +31,15 @@ type Props = {
     onVaultChange: (type: VaultType, vaultId?: string) => void,
 }
 
-// ClusterDeployCredentials is one credential answer on the deploy screen: ssh,
-// keeper and database each get their own. An engine that is its own keeper is
-// asked twice, and pointing both at one vault entry is the user's answer.
 export function ClusterDeployCredentials(props: Props) {
     const {title, type, mode, credential, vaultId, locked = false, optional = false, showErrors} = props
     const {onModeChange, onCredentialChange, onVaultChange} = props
 
     return (
-        <TitleBox label={title} renderActions={renderActions()} island={true} dense={true} collapsible={false}>
-            {renderContent()}
-        </TitleBox>
+        <Box sx={{display: "flex", gap: 0.5}}>
+            <Box sx={{flexGrow: 1}}>{renderContent()}</Box>
+            {renderActions()}
+        </Box>
     )
 
     function renderContent() {
@@ -59,6 +48,8 @@ export function ClusterDeployCredentials(props: Props) {
                 return renderNew()
             case "vault":
                 return renderVault()
+            case "none":
+                return renderNone()
         }
     }
 
@@ -72,6 +63,10 @@ export function ClusterDeployCredentials(props: Props) {
                 )}
             </ToggleButtonGroup>
         )
+    }
+
+    function renderNone() {
+        return <Hint>Cluster will not use credentials</Hint>
     }
 
     function renderNew() {

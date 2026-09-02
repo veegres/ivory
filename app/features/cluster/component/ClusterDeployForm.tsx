@@ -22,10 +22,6 @@ import {ClusterOptionsBox} from "./ClusterOptionsBox"
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2},
     column: {display: "flex", flexDirection: "column", gap: 1},
-    // NOTE: bordered like the field above it and like a template row, so a
-    // clickable row reads as one of them rather than as loose text; the radius
-    // and the hover border are the outlined input's, not the island's, since
-    // this sits inline with the fields rather than around them
     toggle: {
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1,
         padding: "6px 10px", border: 1, borderColor: "divider", borderRadius: 1,

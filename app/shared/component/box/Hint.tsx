@@ -11,7 +11,7 @@ const SX: SxPropsMap = {
 
 type Props = {
     center?: boolean,
-    sx?: SystemStyleObject<Theme>,
+    sx?: SystemStyleObject<Theme> | ((theme: Theme) => SystemStyleObject<Theme>),
 }
 
 // Hint is secondary text that explains or qualifies what it sits next to -
