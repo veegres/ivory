@@ -21,11 +21,11 @@ const SX: SxPropsMap = {
     hint: {textTransform: "uppercase"},
     node: {
         display: "flex", flexDirection: "column", gap: 1,
-        padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
+        padding: "12px 8px 6px", border: 1, borderColor: "divider", borderRadius: 2,
     },
     chooser: {
         display: "flex", flexDirection: "column", gap: 0.5,
-        padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
+        padding: "12px 8px 6px", border: 1, borderColor: "divider", borderRadius: 2,
     },
     toggleButton: {padding: "0px 10px"},
 }

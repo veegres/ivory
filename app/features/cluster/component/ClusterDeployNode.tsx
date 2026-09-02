@@ -8,35 +8,22 @@ import {DeploymentCommandPreview} from "../../deployment/component/DeploymentCom
 import {DeployNode, DeployPreviewCredentials} from "../api/ClusterType"
 
 const SX: SxPropsMap = {
-    // NOTE: a frame with no heading - the fields name themselves and the nodes
-    // are read in order, so numbering them was a label repeating the layout
     box: {
         display: "flex", flexDirection: "column", gap: 1,
-        padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
+        padding: "12px 8px 6px", border: 1, borderColor: "divider", borderRadius: 2,
     },
 }
 
 type Props = {
     node: DeployNode,
     cluster: string,
-    // NOTE: one address for the whole deployment, so every card previews the
-    // same one rather than holding a copy of its own
     dcs: string,
-    // NOTE: a field is only marked red once the user has tried to deploy - an
-    // untouched form should not open covered in errors
     showErrors: boolean,
-    // NOTE: resolved by the dialog, which is where the credentials are chosen
     credentials: DeployPreviewCredentials,
-    // NOTE: a name collision is the exception: it only exists once the user
-    // has typed it, and it is the one error a red border cannot explain
     duplicate: boolean,
     onChange: (node: DeployNode) => void,
 }
 
-// ClusterDeployNode fills in one node of the template. The frame carries no
-// heading: the nodes are read in the template's own order and the fields name
-// themselves, so a number was a label restating the layout. Only the command,
-// which is read-only here, collapses.
 export function ClusterDeployNode(props: Props) {
     const {node, cluster, dcs, showErrors, duplicate, credentials, onChange} = props
 
