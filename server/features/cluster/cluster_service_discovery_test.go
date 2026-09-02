@@ -640,6 +640,32 @@ func TestService_addOverviewWarnings_DbPortMismatch(t *testing.T) {
 	}
 }
 
+// TestService_addOverviewWarnings_UnreachableNodeHasNoPortMismatch covers a node
+// no keeper reported: it is filled in with an unreachable placeholder that
+// carries no port at all, and reporting that as a mismatch claimed an
+// observation nothing made.
+func TestService_addOverviewWarnings_UnreachableNodeHasNoPortMismatch(t *testing.T) {
+	s := &Service{}
+	configuredPort := 5432
+	nodes := map[string]Node{
+		"patroni1:8008": {
+			Config: NodeConfig{DbPort: &configuredPort},
+			Keeper: node.KeeperOneResponse{Role: keeper.Leader, DiscoveredDbPort: &configuredPort},
+		},
+		"patroni2:8008": {Config: NodeConfig{DbPort: &configuredPort}},
+	}
+
+	s.addOverviewWarnings(nodes, true)
+
+	warnings := nodes["patroni2:8008"].Warnings
+	if len(warnings) != 1 || warnings[0] != "node was not found in Keeper response" {
+		t.Fatalf("Expected patroni2 to only report that it was not found, got %v", warnings)
+	}
+	if nodes["patroni2:8008"].Keeper.State != node.KeeperStateUnreachable {
+		t.Fatalf("Expected patroni2 to stay unreachable, got %v", nodes["patroni2:8008"].Keeper.State)
+	}
+}
+
 func TestService_addOverviewWarnings_NoLeaderFound(t *testing.T) {
 	s := &Service{}
 	nodes := map[string]Node{

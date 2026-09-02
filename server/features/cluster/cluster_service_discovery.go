@@ -354,12 +354,16 @@ func (s *Service) resolveConfigByHost(nodeMap map[string]Node, host string) (Nod
 func (s *Service) addOverviewWarnings(nodeMap map[string]Node, hasLeader bool) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
-		if !s.hasKeeper(cn.Keeper) {
+		// NOTE: the port check runs only against a keeper that answered - the
+		// placeholder below reports no port, and a node nothing observed
+		// cannot disagree with the configuration
+		if s.hasKeeper(cn.Keeper) {
+			if !s.isPortEqual(cn.Config.DbPort, cn.Keeper.DiscoveredDbPort) {
+				cn.Warnings = append(cn.Warnings, "database port in keeper response and cluster configuration mismatch")
+			}
+		} else {
 			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
-		}
-		if !s.isPortEqual(cn.Config.DbPort, cn.Keeper.DiscoveredDbPort) {
-			cn.Warnings = append(cn.Warnings, "database port in keeper response and cluster configuration mismatch")
 		}
 		if cn.Keeper.Role == node.KeeperRoleLeader {
 			leaderKeys = append(leaderKeys, nodeKey)
