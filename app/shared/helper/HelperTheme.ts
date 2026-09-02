@@ -28,6 +28,8 @@ const BUTTON = {
     medium: {height: "32px", paddingTop: 0, paddingBottom: 0},
 }
 
+const TAB = "36px"
+
 const AUTOCOMPLETE = {
     small: {root: "0.5px", input: "1px", tag: "0px 3px", indicator: "0px"},
     medium: {root: "2px", input: "2.5px", tag: "1px 3px", indicator: "2px"},
@@ -80,6 +82,16 @@ export const ThemeComponents: ThemeOptions["components"] = {
         styleOverrides: {
             sizeSmall: BUTTON.small,
             sizeMedium: BUTTON.medium,
+        },
+    },
+    MuiTabs: {
+        styleOverrides: {
+            root: {minHeight: TAB},
+        },
+    },
+    MuiTab: {
+        styleOverrides: {
+            root: {minHeight: TAB, paddingTop: 0, paddingBottom: 0},
         },
     },
     MuiAutocomplete: {

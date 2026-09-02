@@ -14,7 +14,10 @@ import {NODE_TABS} from "./NodeMainTabs"
 // the info toggle on the right — both inline and when the row wraps below
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
-    title: {display: "flex", justifyContent: "space-between", alignItems: "center", columnGap: 3, flexWrap: "wrap", alignContent: "stretch"},
+    title: {
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        rowGap: 1, columnGap: 3, flexWrap: "wrap", alignContent: "stretch"
+    },
     // NOTE: the tabs grow factor dwarfs the buttons row's, so the tabs take
     // all the slack inline while the wrapped buttons row still fills its own
     // line and keeps its space-between
@@ -23,7 +26,7 @@ const SX: SxPropsMap = {
         "& .MuiTabs-scrollButtons.Mui-disabled": {opacity: 0.3},
     },
     toggle: {padding: "3px"},
-    buttons: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1, minHeight: "45px", flexGrow: 1},
+    buttons: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1, flexGrow: 1},
     actions: {display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap"},
 }
 
@@ -66,7 +69,7 @@ export function NodeMainTabsHead(props: Props) {
                     </ToggleButton>
                 </Box>
             </Box>
-            <Collapse in={alert}>
+            <Collapse in={alert} unmountOnExit={true}>
                 <Alert severity={"info"} onClose={() => setAlert(false)}>{info}</Alert>
             </Collapse>
         </Box>
