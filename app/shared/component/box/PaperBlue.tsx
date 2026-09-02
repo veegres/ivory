@@ -6,7 +6,7 @@ import {SxPropsFormatter} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: (theme: Theme) => ({
-        bgcolor: alpha(theme.palette.primary.main, theme.palette.action.hoverOpacity / 2),
+        bgcolor: alpha(theme.palette.primary.light, theme.palette.action.hoverOpacity / 2),
         borderRadius: 2,
         overflow: "hidden",
     }),

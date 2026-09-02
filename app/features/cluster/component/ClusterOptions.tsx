@@ -1,6 +1,7 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 import {memo} from "react"
 
+import {FieldLabel} from "../../../shared/component/input/FieldLabel"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {CertOptions, VaultOptions} from "../../../shared/helper/HelperUtils"
 import {CertType} from "../../cert/api/CertType"
@@ -17,10 +18,6 @@ const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1, alignItems: "flex-start", marginTop: "10px"},
     field: {flex: "1 1 235px", minWidth: "min(235px, 100%)"},
     tls: {display: "flex", flexDirection: "row", alignItems: "center", gap: 0.5},
-    tlsLabel: {
-        typography: "button", color: "action.active", display: "flex", alignItems: "center", justifyContent: "center",
-        border: 1, borderColor: "divider", borderRadius: 1, padding: "0px 10px", height: "32px",
-    },
 }
 
 type Props = {
@@ -40,7 +37,7 @@ export const ClusterOptions = memo(function ClusterOptions(props: Props) {
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/></Box>
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/></Box>
             <Box sx={[SX.field, SX.tls]}>
-                <Box sx={SX.tlsLabel}>TLS</Box>
+                <FieldLabel>TLS</FieldLabel>
                 <ToggleButtonGroup fullWidth>
                     <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
                     <ToggleButton onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>

@@ -3,7 +3,7 @@ import {Box} from "@mui/material"
 import {Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {NodeHeadForm} from "./NodeHeadForm"
-import {NodeHeadStatus} from "./NodeHeadStatus"
+import {NodeHeadRole} from "./NodeHeadRole"
 
 const SX: SxPropsMap = {
     info: {display: "flex", flexWrap: "wrap", columnGap: 1, rowGap: 2, margin: "5px 0", width: "100%"},
@@ -20,7 +20,7 @@ export function NodeHead(props: Props) {
 
     return (
         <Box sx={SX.info}>
-            <NodeHeadStatus role={node.keeper.role}/>
+            <NodeHeadRole role={node.keeper.role}/>
             <NodeHeadForm node={node} onUpdate={onUpdate} loading={loading}/>
         </Box>
     )

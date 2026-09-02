@@ -7,6 +7,7 @@ import {VaultType} from "../../vault/api/VaultType"
 
 type Props = {
     type: VaultType,
+    label?: string,
     selected?: string,
     username?: string,
     onUpdate: (type: VaultType, s?: string) => void,
@@ -16,7 +17,7 @@ type Props = {
 export function ClusterOptionsVault(props: Props) {
     const {type, onUpdate, selected, username, error = false} = props
     const passId = selected ?? ""
-    const {label} = VaultOptions[type]
+    const label = props.label ?? VaultOptions[type].label
 
     const query = useRouterVault(type)
     const options = useMemo(handleMemoOptions, [query.data, username])

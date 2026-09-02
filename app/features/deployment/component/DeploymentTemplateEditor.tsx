@@ -11,7 +11,8 @@ import {DeploymentCommandEditor} from "./DeploymentCommandEditor"
 import {DeploymentDefaultsGrid} from "./DeploymentDefaultsGrid"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 2},
+    box: {display: "flex", flexDirection: "column", gap: 1},
+    info: {display: "flex", flexDirection: "column", gap: 1.5, padding: "8px 6px", border: 1, borderColor: "divider"},
 }
 
 type Props = {
@@ -40,7 +41,7 @@ export function DeploymentTemplateEditor(props: Props) {
 
     function renderInfo() {
         return (
-            <Box sx={SX.box}>
+            <PaperBlue sx={SX.info}>
                 <TextField
                     fullWidth={true}
                     label={"Name"}
@@ -55,7 +56,7 @@ export function DeploymentTemplateEditor(props: Props) {
                     value={template.description ?? ""}
                     onChange={(e) => onChange({...template, description: e.target.value})}
                 />
-            </Box>
+            </PaperBlue>
         )
     }
 
