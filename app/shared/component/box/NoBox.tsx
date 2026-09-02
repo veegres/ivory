@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../helper/HelperType"
 const SX: SxPropsMap = {
     no: {
         display: "flex", alignItems: "center", justifyContent: "center", textTransform: "uppercase",
-        padding: "8px 16px", border: "1px solid", borderColor: "divider", lineHeight: "1.54",
+        padding: "6px 16px", border: 1, borderColor: "divider", color: "text.secondary", borderRadius: 1,
     }
 }
 

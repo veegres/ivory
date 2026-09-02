@@ -178,7 +178,6 @@ export function ClusterDeployForm(props: Props) {
     function renderSshCredentials() {
         return (
             <ClusterDeployCredentials
-                title={"SSH Credentials"}
                 type={VaultType.SSH_KEY}
                 mode={sshMode}
                 credential={sshCred}
@@ -196,7 +195,6 @@ export function ClusterDeployForm(props: Props) {
     function renderKeeperCredentials() {
         return (
             <ClusterDeployCredentials
-                title={"Keeper Credentials"}
                 type={VaultType.KEEPER_PASSWORD}
                 mode={keeperMode}
                 credential={keeperCred}
@@ -214,7 +212,6 @@ export function ClusterDeployForm(props: Props) {
     function renderDbCredentials() {
         return (
             <ClusterDeployCredentials
-                title={"Database Credentials"}
                 type={VaultType.DATABASE_PASSWORD}
                 mode={dbMode}
                 credential={dbCred}

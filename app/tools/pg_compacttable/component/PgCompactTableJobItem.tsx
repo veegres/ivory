@@ -16,7 +16,10 @@ import {useRouterPgCompactTableDelete, useRouterPgCompactTableStop} from "../api
 import {PgCompactTable} from "../api/PgCompactTableType"
 
 const SX: SxPropsMap = {
-    paper: {fontSize: "13px", width: "100%", padding: "6px 12px", border: 1, borderColor: "divider"},
+    paper: {
+        display: "flex", flexDirection: "column", fontSize: "13px", width: "100%",
+        padding: "6px 12px", border: 1, borderColor: "divider", gap: 1,
+    },
     header: {display: "flex", flexDirection: "column", cursor: "pointer"},
     headerLine: {display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "nowrap", height: "20px"},
     headerTitle: {fontWeight: "bold"},
@@ -53,10 +56,7 @@ export function PgCompactTableJobItem(props: Props) {
     function renderBody() {
         if (!open) return
         return (
-            <>
-                <Divider sx={SX.divider} textAlign={"left"}>LOGS</Divider>
-                <Logs sx={SX.logs} logs={logs} auto={status.active && open} loading={isFetching}/>
-            </>
+            <Logs sx={SX.logs} logs={logs} auto={status.active && open} loading={isFetching}/>
         )
     }
 

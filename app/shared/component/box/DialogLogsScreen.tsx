@@ -5,10 +5,10 @@ import {TitleBox} from "./TitleBox"
 // NOTE: the virtualizer inside Logs needs a pixel height, so this is where it
 // and the dialog have to agree: --size-dialog (600) less the screen's padding
 // (10 top, 10 bottom), less the box's own frame (its padding, heading and
-// gap), less the logs' footer and gap. Under rather than exactly on it - a few
-// px of slack costs nothing, overshooting brings back the outer scrollbar this
-// screen exists without.
-const LOGS_HEIGHT = 500
+// gap), less the logs' own toolbar and gap. Under rather than exactly on it - a
+// few px of slack costs nothing, overshooting brings back the outer scrollbar
+// this screen exists without.
+const LOGS_HEIGHT = 493
 
 type Props = {
     logs: string[],
@@ -23,9 +23,7 @@ export function DialogLogsScreen(props: Props) {
 
     return (
         <DialogScreen fit={true}>
-            <TitleBox label={"Logs"} island={true} collapsible={false}>
-                <Logs logs={logs} height={LOGS_HEIGHT} auto={false}/>
-            </TitleBox>
+            <Logs logs={logs} height={LOGS_HEIGHT} auto={false}/>
         </DialogScreen>
     )
 }

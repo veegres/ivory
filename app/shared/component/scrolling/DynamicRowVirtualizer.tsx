@@ -1,14 +1,14 @@
 import {Box, SxProps} from "@mui/material"
 import {Theme} from "@mui/material/styles"
 import {useVirtualizer} from "@tanstack/react-virtual"
-import {ReactNode, useRef} from "react"
+import {useRef} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
 import {printLogs, SxPropsFormatter} from "../../helper/HelperUtils"
 import {AutoScrolling} from "./AutoScrolling"
 
 const SX: SxPropsMap = {
-    container: {width: "100%", overflow: "auto", contain: "strict"},
+    container: {width: "100%", overflow: "auto", scrollbarGutter: "stable", contain: "strict"},
     boxAbsolute: {position: "absolute", top: 0, left: 0, width: "100%"},
     boxRelative: {width: "100%", position: "relative"},
 }
@@ -22,7 +22,7 @@ type Props = {
     sxVirtualRow?: SxProps<Theme>,
     classNameVirtualRow?: string,
     reconnect?: () => void,
-    empty?: ReactNode,
+    title?: string,
 }
 
 /**
@@ -31,7 +31,7 @@ type Props = {
  *  Guide https://tanstack.com/virtual/v3/docs/examples/react/dynamic
  */
 export function DynamicRowVirtualizer(props: Props) {
-    const {rows, height, sx, className, sxVirtualRow, classNameVirtualRow, auto, reconnect, empty} = props
+    const {rows, height, sx, className, sxVirtualRow, classNameVirtualRow, auto, reconnect, title} = props
     const parentRef = useRef<Element>(null)
 
     const virtualizer = useVirtualizer({
@@ -43,35 +43,33 @@ export function DynamicRowVirtualizer(props: Props) {
 
     const items = virtualizer.getVirtualItems()
     return (
-        // NOTE: AutoScrolling (and its buttons, e.g. print/reconnect) stays mounted regardless
-        //  of whether rows is currently empty, so it does not flicker/remount whenever a stream
-        //  reconnect briefly clears the rows before new ones arrive. print is always passed
-        //  (even for an empty array) rather than toggled to undefined, for the same reason.
+        // NOTE: print is always passed (even for an empty array) rather than toggled to
+        //  undefined, so its button does not come and go whenever a stream reconnect
+        //  briefly clears the rows before new ones arrive.
         <AutoScrolling
             auto={auto}
             length={rows.length}
             scroll={virtualizer.scrollToIndex}
             print={() => printLogs(`LOGS: ${new Date()}`, rows)}
             reconnect={reconnect}
+            title={title}
         >
             <Box ref={parentRef} sx={SxPropsFormatter.merge(sx, SX.container)} className={className} style={{height: `${height}px`}}>
-                {rows.length === 0 && empty ? empty : (
-                    <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
-                        <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0]?.start ?? 0}px)`}}>
-                            {items.map((virtualRow) => (
-                                <Box
-                                    ref={virtualizer.measureElement}
-                                    key={virtualRow.key}
-                                    data-index={virtualRow.index}
-                                >
-                                    <Box sx={sxVirtualRow} className={classNameVirtualRow}>
-                                        {rows[virtualRow.index]}
-                                    </Box>
+                <Box sx={SX.boxRelative} style={{height: virtualizer.getTotalSize()}}>
+                    <Box sx={SX.boxAbsolute} style={{transform: `translateY(${items[0]?.start ?? 0}px)`}}>
+                        {items.map((virtualRow) => (
+                            <Box
+                                ref={virtualizer.measureElement}
+                                key={virtualRow.key}
+                                data-index={virtualRow.index}
+                            >
+                                <Box sx={sxVirtualRow} className={classNameVirtualRow}>
+                                    {rows[virtualRow.index]}
                                 </Box>
-                            ))}
-                        </Box>
+                            </Box>
+                        ))}
                     </Box>
-                )}
+                </Box>
             </Box>
         </AutoScrolling>
     )
