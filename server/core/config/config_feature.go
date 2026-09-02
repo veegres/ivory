@@ -90,6 +90,42 @@ const (
 var renamedFeatures = map[Feature]Feature{
 	"view.node.platform":   ViewNodeSystem,
 	"manage.node.platform": ManageNodeSystem,
+
+	// v1 called a node an instance, and its keeper features carried no keeper
+	// in the name because there was only one
+	"view.instance.overview":        ViewNodeKeeperOverview,
+	"view.instance.config":          ViewNodeKeeperConfig,
+	"manage.instance.config.update": ManageNodeKeeperConfigUpdate,
+	"manage.instance.switchover":    ManageNodeKeeperSwitchover,
+	"manage.instance.reinitialize":  ManageNodeKeeperReinitialize,
+	"manage.instance.restart":       ManageNodeKeeperRestart,
+	"manage.instance.reload":        ManageNodeKeeperReload,
+	"manage.instance.failover":      ManageNodeKeeperFailover,
+	"manage.instance.activation":    ManageNodeKeeperActivation,
+
+	// v1's saved queries became query.crud, and running one became query.db
+	"view.query.list":                ViewQueryCrudList,
+	"manage.query.create":            ManageQueryCrudCreate,
+	"manage.query.update":            ManageQueryCrudUpdate,
+	"manage.query.delete":            ManageQueryCrudDelete,
+	"view.query.execute.info":        ViewQueryDbInfo,
+	"view.query.execute.chart":       ViewQueryDbChart,
+	"manage.query.execute.template":  ManageQueryDbTemplate,
+	"manage.query.execute.console":   ManageQueryDbConsole,
+	"manage.query.execute.cancel":    ManageQueryDbCancel,
+	"manage.query.execute.terminate": ManageQueryDbTerminate,
+
+	// v1's password store became the vault
+	"view.password.list":     ViewVaultList,
+	"manage.password.create": ManageVaultCreate,
+	"manage.password.update": ManageVaultUpdate,
+	"manage.password.delete": ManageVaultDelete,
+
+	// v1's bloat feature became one tool among several
+	"view.bloat.list":  ViewToolPgCompactTableList,
+	"view.bloat.item":  ViewToolPgCompactTableItem,
+	"view.bloat.logs":  ViewToolPgCompactTableLogs,
+	"manage.bloat.job": ManageToolPgCompactTableJob,
 }
 
 // Current resolves a stored feature key to the name it goes by now, leaving
