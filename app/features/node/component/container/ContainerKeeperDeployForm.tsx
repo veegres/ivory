@@ -16,15 +16,12 @@ import {useRouterNodeKeeperDeploy} from "../../api/NodeHook"
 import {DeployVar, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
-    subContent: {display: "flex", flexDirection: "column"},
-    // NOTE: the frame carries no heading, exactly as the cluster deploy's node
-    // does - the fields name themselves, and there is only ever one node here
+    box: {display: "flex", flexDirection: "column", gap: 2},
+    column: {display: "flex", flexDirection: "column", gap: 1},
     node: {
         display: "flex", flexDirection: "column", gap: 1,
         padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
     },
-    // NOTE: the same frame as the node card below it - it is a section of the
-    // screen in its own right, not a caption floating between two boxes
     chooser: {
         display: "flex", flexDirection: "column", gap: 0.5,
         padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
@@ -66,7 +63,7 @@ export function ContainerKeeperDeployForm(props: Props) {
 
     return (
         <DialogScreen renderActions={renderActions()}>
-            <Box sx={[SX.subContent, {gap: 2}]}>
+            <Box sx={SX.box}>
                 {renderClusterInfo()}
                 {renderNodeChooser()}
                 {renderNode()}
@@ -105,7 +102,7 @@ export function ContainerKeeperDeployForm(props: Props) {
         return (
             <PaperBlue>
                 <TitleBox label={"Cluster"} island={true} collapsible={false}>
-                    <Box sx={[SX.subContent, {gap: 1}]}>
+                    <Box sx={SX.column}>
                         <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
                         {!!dcs && <TextField fullWidth size={"small"} label={"DCS Address"} value={dcs} disabled={true}/>}
                         <FieldRow>
