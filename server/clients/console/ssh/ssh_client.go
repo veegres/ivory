@@ -26,7 +26,7 @@ type Client struct {
 
 func NewClient() *Client {
 	return &Client{
-		timeout:       clients.IntegrationTimeout,
+		timeout:       clients.SshTimeout,
 		knownHosts:    make(map[string][]byte),
 		cachedClients: make(map[string]*ssh.Client),
 	}

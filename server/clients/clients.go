@@ -3,11 +3,18 @@ package clients
 import "time"
 
 // IntegrationTimeout is the shared network timeout for clients that talk to
-// same-host / local-network services (etcd, postgres, ssh, patroni's HTTP
-// API). A healthy round-trip on that kind of deployment is well under
-// 100ms, so this stays short enough to fail fast on an unreachable node
-// instead of stalling requests for several seconds.
+// same-host / local-network services (etcd, postgres, patroni's HTTP API). A
+// healthy round-trip on that kind of deployment is well under 100ms, so this
+// stays short enough to fail fast on an unreachable node instead of stalling
+// requests for several seconds.
 const IntegrationTimeout = 300 * time.Millisecond
+
+// SshTimeout bounds an ssh connection attempt. It is its own constant because
+// ssh is the one client that reaches a machine the operator chose rather than a
+// service beside the database - a remote datacenter or a VPN hop away - and
+// x/crypto/ssh spends it on the key exchange as well as the dial, so it has to
+// cover several round trips, not one.
+const SshTimeout = 5 * time.Second
 
 // ExternalTimeout is the shared network timeout for clients that talk to
 // external services reached over a real network rather than a local Docker

@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"fmt"
+	"ivory/clients"
 	"net"
 	"strconv"
 	"sync/atomic"
@@ -202,6 +203,21 @@ func TestClient_DialCachedRedialsDeadConnection(t *testing.T) {
 
 	if got := atomic.LoadInt32(&dialCount); got != 2 {
 		t.Fatalf("expected a redial once the cached connection died, got %d dial(s)", got)
+	}
+}
+
+// TestCommand_UsesSshTimeout covers the timeout a Command carries: it becomes
+// ssh.ClientConfig.Timeout, which x/crypto/ssh applies to the key exchange as
+// well as the dial, so the local-network 300ms could not complete a handshake
+// with a host a datacenter away.
+func TestCommand_UsesSshTimeout(t *testing.T) {
+	command := NewClient().Command(Connection{Host: "10.0.0.1", Port: 22}, "docker ps")
+
+	if command.Timeout != clients.SshTimeout {
+		t.Errorf("expected the ssh timeout %v, got %v", clients.SshTimeout, command.Timeout)
+	}
+	if clients.SshTimeout <= clients.IntegrationTimeout {
+		t.Errorf("an ssh handshake needs more room than a local-network round trip, got %v", clients.SshTimeout)
 	}
 }
 
