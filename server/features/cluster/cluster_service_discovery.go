@@ -35,6 +35,9 @@ func (s *Service) Detect(cluster CreateAutoRequest) (*Response, error) {
 		return nil, errOver
 	}
 	nodes := mapKeeperResponseMap(keeperNodeMap)
+	if err := s.validateNodeNames(nodes); err != nil {
+		return nil, err
+	}
 
 	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
 	if errSave != nil {
@@ -69,6 +72,9 @@ func (s *Service) Fix(name string) (*Response, error) {
 		return nil, err
 	}
 	nodes := mapKeeperResponseList(keeperNodes)
+	if err := s.validateNodeNames(nodes); err != nil {
+		return nil, err
+	}
 
 	model := Request{
 		Name:  cluster.Name,

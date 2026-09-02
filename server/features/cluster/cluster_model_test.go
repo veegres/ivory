@@ -83,3 +83,86 @@ func TestMapKeeperResponseListSkipsResponsesWithoutAHost(t *testing.T) {
 		t.Errorf("expected the node at %q, got %q", host, got[0].Host)
 	}
 }
+
+// TestMapKeeperResponseDisambiguatesSharedHosts covers a Detect or a Fix of a
+// cluster whose members live on one VM. A keeper that identifies its members by
+// endpoint reports no name of its own, so every node falls back to the same
+// host - and a cluster whose names collide is rejected by validateNodeNames on
+// every later write, leaving it impossible to edit.
+func TestMapKeeperResponseDisambiguatesSharedHosts(t *testing.T) {
+	host := "localhost"
+	first, second, third := 27017, 27018, 27019
+	named := "mongo2"
+
+	tests := []struct {
+		name      string
+		responses []node.KeeperOneResponse
+		expected  []string
+	}{
+		{
+			name: "nameless members on one host",
+			responses: []node.KeeperOneResponse{
+				{DiscoveredHost: &host, DiscoveredKeeperPort: &first},
+				{DiscoveredHost: &host, DiscoveredKeeperPort: &second},
+				{DiscoveredHost: &host, DiscoveredKeeperPort: &third},
+			},
+			expected: []string{"localhost", "localhost-2", "localhost-3"},
+		},
+		{
+			name: "a reported name is kept and never reused",
+			responses: []node.KeeperOneResponse{
+				{DiscoveredHost: &host, DiscoveredKeeperPort: &first, DiscoveredName: &named},
+				{DiscoveredHost: &host, DiscoveredKeeperPort: &second},
+			},
+			expected: []string{"mongo2", "localhost"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := mapKeeperResponseList(test.responses)
+
+			if len(got) != len(test.expected) {
+				t.Fatalf("expected %d nodes, got %d: %v", len(test.expected), len(got), got)
+			}
+			for i, name := range test.expected {
+				if got[i].Name != name {
+					t.Errorf("node %d: expected name %q, got %q", i, name, got[i].Name)
+				}
+			}
+
+			s := &Service{}
+			if err := s.validateNodeNames(got); err != nil {
+				t.Errorf("a discovered cluster must survive the cluster's own validation: %v", err)
+			}
+		})
+	}
+}
+
+// TestMapKeeperResponseMapIsOrdered covers the map-keyed half of discovery:
+// which node keeps the bare name and which one is suffixed must not depend on
+// map iteration order, or two Detects of the same cluster would name its nodes
+// differently.
+func TestMapKeeperResponseMapIsOrdered(t *testing.T) {
+	host := "localhost"
+	first, second, third := 27017, 27018, 27019
+	responses := map[string]node.KeeperOneResponse{
+		"localhost:27017": {DiscoveredHost: &host, DiscoveredKeeperPort: &first},
+		"localhost:27018": {DiscoveredHost: &host, DiscoveredKeeperPort: &second},
+		"localhost:27019": {DiscoveredHost: &host, DiscoveredKeeperPort: &third},
+	}
+	expected := map[int]string{27017: "localhost", 27018: "localhost-2", 27019: "localhost-3"}
+
+	for range 10 {
+		got := mapKeeperResponseMap(responses)
+
+		if len(got) != len(expected) {
+			t.Fatalf("expected %d nodes, got %d: %v", len(expected), len(got), got)
+		}
+		for _, n := range got {
+			if name := expected[*n.KeeperPort]; n.Name != name {
+				t.Errorf("port %d: expected name %q, got %q", *n.KeeperPort, name, n.Name)
+			}
+		}
+	}
+}

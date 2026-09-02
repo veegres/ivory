@@ -6,6 +6,8 @@ import (
 	"ivory/core/service/cert"
 	"ivory/features/node"
 	"ivory/features/query"
+	"maps"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -160,24 +162,40 @@ func describesNode(r node.KeeperOneResponse) bool {
 	return r.DiscoveredHost != nil
 }
 
+// mapUniqueKeeperResponse suffixes a discovered name that is already spoken
+// for, so Detect and Fix cannot store a cluster whose nodes share a name: an
+// engine that identifies its members by endpoint reports no name at all, so
+// every node of a single-host cluster falls back to the same host, and
+// validateNodeNames would then reject every later write to that cluster.
+func mapUniqueKeeperResponse(r node.KeeperOneResponse, taken map[string]bool) NodeConfig {
+	config := mapKeeperResponse(r)
+	config.Name = uniqueNodeName(config.Name, taken)
+	return config
+}
+
 func mapKeeperResponseList(keeperNodes []node.KeeperOneResponse) []NodeConfig {
 	nodes := make([]NodeConfig, 0, len(keeperNodes))
+	taken := make(map[string]bool, len(keeperNodes))
 	for _, item := range keeperNodes {
 		if !describesNode(item) {
 			continue
 		}
-		nodes = append(nodes, mapKeeperResponse(item))
+		nodes = append(nodes, mapUniqueKeeperResponse(item, taken))
 	}
 	return nodes
 }
 
 func mapKeeperResponseMap(keeperNodes map[string]node.KeeperOneResponse) []NodeConfig {
 	nodes := make([]NodeConfig, 0, len(keeperNodes))
-	for _, item := range keeperNodes {
+	taken := make(map[string]bool, len(keeperNodes))
+	// NOTE: map iteration order would otherwise decide which node keeps the
+	// bare name and which one is suffixed
+	for _, key := range slices.Sorted(maps.Keys(keeperNodes)) {
+		item := keeperNodes[key]
 		if !describesNode(item) {
 			continue
 		}
-		nodes = append(nodes, mapKeeperResponse(item))
+		nodes = append(nodes, mapUniqueKeeperResponse(item, taken))
 	}
 	return nodes
 }
@@ -205,12 +223,12 @@ func (r Response) withNodeNames() Response {
 	return r
 }
 
-// uniqueNodeName returns host, or the first free host-2, host-3, ... when it
+// uniqueNodeName returns base, or the first free base-2, base-3, ... when it
 // is already spoken for, and records the result as taken.
-func uniqueNodeName(host string, taken map[string]bool) string {
-	name := host
+func uniqueNodeName(base string, taken map[string]bool) string {
+	name := base
 	for i := 2; taken[name]; i++ {
-		name = fmt.Sprintf("%s-%d", host, i)
+		name = fmt.Sprintf("%s-%d", base, i)
 	}
 	taken[name] = true
 	return name
