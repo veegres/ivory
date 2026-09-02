@@ -13,18 +13,14 @@ import {ClusterOptionsPlugins} from "./ClusterOptionsPlugins"
 import {ClusterOptionsTags} from "./ClusterOptionsTags"
 import {ClusterOptionsVault} from "./ClusterOptionsVault"
 
-
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1.5, alignItems: "flex-start", marginTop: "10px"},
-    field: {flex: "1 1 220px", minWidth: "min(220px, 100%)"},
-    tls: {display: "flex", flexDirection: "row", alignItems: "center", gap: 1, flex: "1 1 220px", minWidth: "min(220px, 100%)"},
+    box: {display: "flex", flexDirection: "row", flexWrap: "wrap", gap: 1, alignItems: "flex-start", marginTop: "10px"},
+    field: {flex: "1 1 235px", minWidth: "min(235px, 100%)"},
+    tls: {display: "flex", flexDirection: "row", alignItems: "center", gap: 0.5},
     tlsLabel: {
-        fontWeight: "bold", fontSize: "0.8125rem", lineHeight: 1.75, letterSpacing: "0.02857em", textTransform: "uppercase",
-        flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-        border: 1, borderColor: "divider", borderRadius: 1, padding: "7px 16px",
+        typography: "button", color: "action.active", display: "flex", alignItems: "center", justifyContent: "center",
+        border: 1, borderColor: "divider", borderRadius: 1, padding: "0px 10px", height: "32px",
     },
-    tlsToggles: {flex: "1 1 auto", minWidth: 0},
-    tlsToggle: {flex: "1 1 0"},
 }
 
 type Props = {
@@ -43,11 +39,11 @@ export const ClusterOptions = memo(function ClusterOptions(props: Props) {
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.DATABASE_PASSWORD} selected={vaults.databaseId} onUpdate={handleVaultUpdate}/></Box>
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.KEEPER_PASSWORD} selected={vaults.keeperId} onUpdate={handleVaultUpdate}/></Box>
             <Box sx={SX.field}><ClusterOptionsVault type={VaultType.SSH_KEY} selected={vaults.sshKeyId} onUpdate={handleVaultUpdate}/></Box>
-            <Box sx={SX.tls}>
+            <Box sx={[SX.field, SX.tls]}>
                 <Box sx={SX.tlsLabel}>TLS</Box>
-                <ToggleButtonGroup sx={SX.tlsToggles} size={"small"} fullWidth>
-                    <ToggleButton sx={SX.tlsToggle} onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
-                    <ToggleButton sx={SX.tlsToggle} onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
+                <ToggleButtonGroup fullWidth>
+                    <ToggleButton onClick={handleTlsKeeperUpdate} selected={tls.keeper} value={"keeper"}>Keeper</ToggleButton>
+                    <ToggleButton onClick={handleTlsDatabaseUpdate} selected={tls.database} value={"database"}>Database</ToggleButton>
                 </ToggleButtonGroup>
             </Box>
             <Box sx={SX.field}><ClusterOptionsCert type={CertType.CLIENT_CA} selected={certs.clientCAId} onUpdate={handleCertUpdate}/></Box>

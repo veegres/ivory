@@ -18,13 +18,13 @@ export function TriggerButton(props: Props) {
     const {title, label, icon, size, disabled = false, variant = "icon", onClick} = props
 
     if (variant === "button") {
-        // NOTE: mirrors the Refresher button dimensions (28px high, +4px wide,
-        // 16px glyph) so the outlined buttons in a toolbar all match
-        const side = size ?? 28
+        // NOTE: mirrors the Refresher button dimensions so the outlined
+        // buttons in a toolbar all match
+        const side = size ?? 32
         return (
             <Tooltip title={title} arrow={true} placement={"top"}>
                 <SimpleButton
-                    sx={{height: `${side}px`, width: `${side + 4}px`}}
+                    sx={{height: `${side}px`, width: `${side}px`}}
                     disabled={disabled}
                     onClick={onClick}
                 >

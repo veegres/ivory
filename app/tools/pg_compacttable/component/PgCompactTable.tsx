@@ -110,7 +110,7 @@ export function PgCompactTable(props: Props) {
     function renderToggle() {
         return (
             <Box sx={SX.toggle}>
-                <ToggleButtonGroup sx={SX.group} size={"small"} color={"secondary"} value={tab} orientation={"vertical"}>
+                <ToggleButtonGroup sx={SX.group} color={"secondary"} value={tab} orientation={"vertical"}>
                     <ToggleButton value={ListBlock.JOB} onClick={handleJobTab}>
                         Jobs
                     </ToggleButton>
@@ -123,7 +123,6 @@ export function PgCompactTable(props: Props) {
                         <Button
                             color={"secondary"}
                             fullWidth
-                            size={"small"}
                             disabled={loading}
                             onClick={handleRefresh}
                         >

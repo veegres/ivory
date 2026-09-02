@@ -8,10 +8,11 @@ type Props = {
     onClick: () => void,
     disabled?: boolean,
     withLabel?: boolean,
+    size?: number,
 }
 
 export function ListClusterAdd(props: Props) {
-    const {onClick, disabled = false, withLabel = false} = props
+    const {onClick, disabled = false, withLabel = false, size} = props
 
     return (
         <ManageAccessBox feature={Feature.ManageClusterUpdate}>
@@ -20,6 +21,7 @@ export function ListClusterAdd(props: Props) {
                 title={"ADD CLUSTER"}
                 label={"Add"}
                 icon={<Add/>}
+                size={size}
                 onClick={onClick}
                 disabled={disabled}
             />

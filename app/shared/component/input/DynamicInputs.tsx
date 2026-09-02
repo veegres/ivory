@@ -2,12 +2,10 @@ import {Box, Chip, FormControl, OutlinedInput, SxProps, Theme} from "@mui/materi
 import {ChangeEvent, memo, ReactNode, useCallback, useMemo} from "react"
 
 import {ColorsMap, SxPropsMap} from "../../helper/HelperType"
-import {SxPropsFormatter} from "../../helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "grid", gap: 1},
     chip: {width: "100%", borderRadius: 2},
-    input: {height: "32px"},
     label: {display: "flex", gap: 1},
     helper: {margin: "2px 14px 0px"},
 }
@@ -23,14 +21,14 @@ type Props = {
     onChange: (values: string[]) => void,
     InputSize?: string,
     InputProps?: SxProps<Theme>,
+    size?: "small" | "medium",
     helper?: ReactNode,
 }
 
 export const DynamicInputs = memo(function DynamicInputs(props: Props) {
-    const {inputs, editable, placeholder, onChange, colors, InputProps, minLength = 1, InputSize = "var(--size-input)", helper} = props
+    const {inputs, editable, placeholder, onChange, colors, InputProps, size, minLength = 1, InputSize = "var(--size-input)", helper} = props
     const colorsMap = colors ?? EMPTY_COLORS
 
-    const mergedSx = useMemo(() => SxPropsFormatter.merge(SX.input, InputProps), [InputProps])
     const nodesWithEmptyElement = useMemo(handleMemoEmptyNodes, [inputs, minLength])
 
     return (
@@ -43,7 +41,8 @@ export const DynamicInputs = memo(function DynamicInputs(props: Props) {
                         value={input}
                         inputs={nodesWithEmptyElement}
                         placeholder={placeholder}
-                        mergedSx={mergedSx}
+                        inputSx={InputProps}
+                        size={size}
                         color={colorsMap[input.toLowerCase()]}
                         onChange={onChange}
                         helper={helper}
@@ -72,14 +71,15 @@ type InputItemProps = {
     value: string,
     inputs: string[],
     placeholder: string,
-    mergedSx: SxProps<Theme>,
+    inputSx?: SxProps<Theme>,
+    size?: "small" | "medium",
     color: "success" | "primary" | "error" | "warning" | "info" | undefined,
     onChange: (values: string[]) => void,
     helper?: ReactNode,
 }
 
 const InputItem = memo(function InputItem(props: InputItemProps) {
-    const {index, value, inputs, placeholder, mergedSx, color, helper, onChange} = props
+    const {index, value, inputs, placeholder, inputSx, size, color, helper, onChange} = props
 
     const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const updated = [...inputs]
@@ -91,10 +91,10 @@ const InputItem = memo(function InputItem(props: InputItemProps) {
     return (
         <FormControl color={color} focused={!!color}>
             <OutlinedInput
-                sx={mergedSx}
+                sx={inputSx}
+                size={size}
                 type={"string"}
                 placeholder={`${placeholder}${index + 1}`}
-                size={"small"}
                 value={value}
                 onChange={handleChange}
             />

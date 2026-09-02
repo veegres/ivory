@@ -16,10 +16,11 @@ const SX: SxPropsMap = {
 type Props = {
     request: KeeperOneRequest,
     cluster: string,
+    size?: "small" | "medium",
 }
 
 export function KeeperReinitButton(props: Props) {
-    const {request, cluster} = props
+    const {request, cluster, size} = props
     const [force, setForce] = useState(false)
     const reinit = useRouterNodeReinit(cluster)
 
@@ -28,8 +29,8 @@ export function KeeperReinitButton(props: Props) {
     return (
         <ManageAccess feature={Feature.ManageNodeKeeperReinitialize}>
             <AlertButton
+                size={size}
                 color={"info"}
-                size={"small"}
                 label={"Reinit"}
                 title={`Make a reinit of ${request.host}?`}
                 description={"It will erase all node data and will download it from scratch."}

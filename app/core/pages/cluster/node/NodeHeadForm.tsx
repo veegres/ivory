@@ -82,7 +82,6 @@ export function NodeHeadForm(props: Props) {
         return (
             <TextField
                 fullWidth
-                size={"small"}
                 label={label}
                 type={type}
                 value={edit ? (config[field] ?? "") : (value ?? "")}

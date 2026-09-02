@@ -31,7 +31,6 @@ export function AutocompleteTags(props: Props) {
     return (
         <Autocomplete
             multiple
-            size={"small"}
             autoHighlight={true}
             loading={loading}
             options={options}

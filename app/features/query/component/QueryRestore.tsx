@@ -34,7 +34,6 @@ export function QueryRestore(props: Props) {
                         <Button
                             disabled={query.default === query.custom}
                             loading={update.isPending}
-                            size={"small"}
                             variant={"outlined"}
                             onClick={handleUpdate}
                         >

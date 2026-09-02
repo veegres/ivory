@@ -22,16 +22,17 @@ type Props = {
     children: ReactNode,
     padding?: Padding,
     withRadius?: boolean,
+    height?: string,
 }
 
 export function InfoBox(props: Props) {
-    const {children, tooltip, padding: p, withRadius} = props
+    const {children, tooltip, padding: p, withRadius, height = "32px"} = props
     const padding = p === Padding.No ? "3px 0px" : p === Padding.Small ? "3px 5px" : "3px 12px"
     const borderRadius = withRadius ? "15px" : "4px"
 
     return (
         <Tooltip title={tooltip} placement={"top"} arrow={true} slotProps={{popper: {sx: SX.tooltip}}}>
-            <Box sx={{...SX.box, padding, borderRadius}}>
+            <Box sx={{...SX.box, padding, borderRadius, height}}>
                 {children}
             </Box>
         </Tooltip>

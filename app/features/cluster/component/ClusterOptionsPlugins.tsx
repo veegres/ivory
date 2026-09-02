@@ -7,7 +7,7 @@ import {DbPlugin} from "../../query/api/QueryType"
 import {Plugins} from "../api/ClusterType"
 
 const SX: SxPropsMap = {
-    field: {flex: "1 1 220px", minWidth: "min(220px, 100%)"},
+    field: {flex: "1 1 235px", minWidth: "min(235px, 100%)"},
     item: {display: "flex", alignItems: "center", gap: 1.5, width: "100%"},
     label: {flex: "1 1 auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"},
     model: {flexShrink: 0, width: "76px", textAlign: "right", fontSize: "12px", color: "primary.main", textTransform: "uppercase"},
@@ -47,7 +47,7 @@ export function ClusterOptionsPlugins(props: Props) {
 
     return (
         <>
-            <FormControl sx={SX.field} fullWidth size={"small"}>
+            <FormControl sx={SX.field} fullWidth>
                 <InputLabel id={"keeper-plugin"}>Keeper Plugin</InputLabel>
                 <Select
                     labelId={"keeper-plugin"}
@@ -60,7 +60,7 @@ export function ClusterOptionsPlugins(props: Props) {
                     {KEEPER_PLUGIN_ORDER.map(renderKeeperItem)}
                 </Select>
             </FormControl>
-            <FormControl sx={SX.field} fullWidth size={"small"}>
+            <FormControl sx={SX.field} fullWidth>
                 <InputLabel id={"database-plugin"}>Database Plugin</InputLabel>
                 <Select
                     labelId={"database-plugin"}

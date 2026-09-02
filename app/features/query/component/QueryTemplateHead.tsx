@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../shared/helper/HelperType"
 import select from "../../../shared/style/select.module.css"
 
 const SX: SxPropsMap = {
-    head: {display: "flex", padding: "5px 15px"},
+    head: {display: "flex", padding: "2px 12px"},
     title: {
         flexGrow: 1, display: "flex", alignItems: "center", gap: 1,
         whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",

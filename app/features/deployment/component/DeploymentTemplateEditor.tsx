@@ -43,7 +43,6 @@ export function DeploymentTemplateEditor(props: Props) {
             <Box sx={SX.box}>
                 <TextField
                     fullWidth={true}
-                    size={"small"}
                     label={"Name"}
                     disabled={!editable}
                     value={template.name}
@@ -51,7 +50,6 @@ export function DeploymentTemplateEditor(props: Props) {
                 />
                 <TextField
                     fullWidth={true}
-                    size={"small"}
                     label={"Description"}
                     disabled={!editable}
                     value={template.description ?? ""}

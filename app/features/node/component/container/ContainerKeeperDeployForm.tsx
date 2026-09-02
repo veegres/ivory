@@ -89,7 +89,7 @@ export function ContainerKeeperDeployForm(props: Props) {
         return (
             <Box sx={SX.chooser}>
                 <Hint center={true}>Pick which of the template's nodes is deployed here</Hint>
-                <ToggleButtonGroup fullWidth={true} size={"small"} exclusive={true} value={index} onChange={(_, v) => setIndex(v ?? index)}>
+                <ToggleButtonGroup fullWidth={true} exclusive={true} value={index} onChange={(_, v) => setIndex(v ?? index)}>
                     {template.commands.map((_, i) => (
                         <ToggleButton key={i} sx={SX.toggleButton} value={i}>Node {i + 1}</ToggleButton>
                     ))}
@@ -103,8 +103,8 @@ export function ContainerKeeperDeployForm(props: Props) {
             <PaperBlue>
                 <TitleBox label={"Cluster"} island={true} collapsible={false}>
                     <Box sx={SX.column}>
-                        <TextField fullWidth size={"small"} label={"Cluster Name"} value={cluster} disabled={true}/>
-                        {!!dcs && <TextField fullWidth size={"small"} label={"DCS Address"} value={dcs} disabled={true}/>}
+                        <TextField fullWidth label={"Cluster Name"} value={cluster} disabled={true}/>
+                        {!!dcs && <TextField fullWidth label={"DCS Address"} value={dcs} disabled={true}/>}
                         <FieldRow>
                             {withKeeperCredentials && renderVaultField("Keeper Credentials", keeperId)}
                             {withDbCredentials && renderVaultField("Database Credentials", databaseId)}
@@ -120,8 +120,8 @@ export function ContainerKeeperDeployForm(props: Props) {
         return (
             <PaperBlue sx={SX.node}>
                 <FieldRow>
-                    <TextField size={"small"} label={"Name"} value={name} disabled={true}/>
-                    <TextField size={"small"} label={"Host"} value={connection.host} disabled={true}/>
+                    <TextField label={"Name"} value={name} disabled={true}/>
+                    <TextField label={"Host"} value={connection.host} disabled={true}/>
                 </FieldRow>
                 <FieldRow>
                     {renderPort("Keeper Port", keeperPort)}
@@ -139,11 +139,11 @@ export function ContainerKeeperDeployForm(props: Props) {
     }
 
     function renderVaultField(label: string, vaultId?: string) {
-        return <TextField fullWidth size={"small"} label={label} value={getShortUuid(vaultId ?? "none")} disabled={true}/>
+        return <TextField fullWidth label={label} value={getShortUuid(vaultId ?? "none")} disabled={true}/>
     }
 
     function renderPort(label: string, value?: number) {
-        return <TextField size={"small"} type={"number"} label={label} value={value ?? ""} disabled={true}/>
+        return <TextField type={"number"} label={label} value={value ?? ""} disabled={true}/>
     }
 
     function handleAction() {

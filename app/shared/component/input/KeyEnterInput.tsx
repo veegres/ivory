@@ -25,7 +25,7 @@ export function KeyEnterInput(props: Props) {
     const [showVault, setShowVault] = useState(false)
 
     return (
-        <FormControl sx={SX.margin} fullWidth required={required} disabled={disabled} size={"small"} margin={"normal"}>
+        <FormControl sx={SX.margin} fullWidth required={required} disabled={disabled} margin={"normal"}>
             <InputLabel>{label}</InputLabel>
             <OutlinedInput
                 value={value}

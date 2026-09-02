@@ -70,7 +70,6 @@ export function NodeMainQueries(props: Props){
                     <ManageAccess feature={Feature.ManageQueryDbConsole}>
                         <ToggleButton
                             sx={SX.group}
-                            size={"small"}
                             color={"secondary"}
                             value={QueryType.CONSOLE}
                             selected={queryTab === QueryType.CONSOLE}
@@ -83,7 +82,6 @@ export function NodeMainQueries(props: Props){
                     <ManageAccess feature={Feature.ViewQueryDbChart}>
                         <ToggleButton
                             sx={SX.group}
-                            size={"small"}
                             color={"secondary"}
                             value={QueryType.CHARTS}
                             selected={queryTab === QueryType.CHARTS}
@@ -93,7 +91,7 @@ export function NodeMainQueries(props: Props){
                         </ToggleButton>
                     </ManageAccess>
 
-                    <ToggleButtonGroup sx={[SX.group, SX.groupSelect]} size={"small"} color={"secondary"} value={queryTab} orientation={"vertical"}>
+                    <ToggleButtonGroup sx={[SX.group, SX.groupSelect]} color={"secondary"} value={queryTab} orientation={"vertical"}>
                         <ToggleButton value={QueryType.ACTIVITY} onClick={() => setQueryTab(QueryType.ACTIVITY)}>
                             ACTIVITY
                         </ToggleButton>

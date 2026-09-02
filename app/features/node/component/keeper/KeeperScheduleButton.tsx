@@ -15,18 +15,19 @@ type Props = {
     cluster: string,
     switchover?: ScheduledSwitchover,
     restart?: ScheduledRestart,
+    size?: "small" | "medium",
 }
 
 export function KeeperScheduleButton(props: Props) {
-    const {request, cluster, switchover, restart} = props
+    const {request, cluster, switchover, restart, size} = props
 
     const deleteRestart = useRouterNodeRestartDelete(cluster)
     const deleteSwitchover = useRouterNodeSwitchoverDelete(cluster)
 
     return (
         <AlertButton
+            size={size}
             color={"secondary"}
-            size={"small"}
             label={"Schedule"}
             title={"Schedule"}
             description={"Here you can check your schedule information and delete it if it is not actual any more."}
@@ -57,7 +58,6 @@ export function KeeperScheduleButton(props: Props) {
         return (
             <ManageAccess feature={Feature.ManageNodeKeeperSwitchover}>
                 <Button
-                    size={"small"}
                     variant={"outlined"}
                     loading={deleteSwitchover.isPending}
                     onClick={() => deleteSwitchover.mutate(request)}
@@ -72,7 +72,6 @@ export function KeeperScheduleButton(props: Props) {
         return (
             <ManageAccess feature={Feature.ManageNodeKeeperRestart}>
                 <Button
-                    size={"small"}
                     variant={"outlined"}
                     loading={deleteRestart.isPending}
                     onClick={() => deleteRestart.mutate(request)}

@@ -100,7 +100,6 @@ export function ClusterDeployForm(props: Props) {
                     <Box sx={SX.column}>
                         <TextField
                             fullWidth={true}
-                            size={"small"}
                             label={"Name"}
                             value={cluster}
                             error={submitted && !cluster}
@@ -122,7 +121,6 @@ export function ClusterDeployForm(props: Props) {
         return (
             <TextField
                 fullWidth={true}
-                size={"small"}
                 label={"DCS"}
                 value={dcs}
                 error={submitted && !dcs}

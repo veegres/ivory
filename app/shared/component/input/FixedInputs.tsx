@@ -4,7 +4,6 @@ import {useEffect} from "react"
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
-    input: {height: "32px"},
     box: {display: "grid", gridTemplateColumns: "repeat(auto-fill, 150px)", gap: 1},
 }
 
@@ -25,10 +24,8 @@ export function FixedInputs(props: Props) {
             {values.map((input, index) => (
                 <FormControl key={index}>
                     <OutlinedInput
-                        sx={SX.input}
                         type={"string"}
                         placeholder={placeholders[index]}
-                        size={"small"}
                         value={input}
                         onChange={(event) => handleChange(index, event.target.value)}
                     />

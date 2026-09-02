@@ -95,7 +95,6 @@ export function ClusterDetect(props: Props) {
                     <Box sx={SX.column}>
                         <TextField
                             fullWidth={true}
-                            size={"small"}
                             label={"Name"}
                             value={request.name}
                             error={submitted && !request.name}
@@ -122,7 +121,6 @@ export function ClusterDetect(props: Props) {
                     <Box sx={SX.column}>
                         <FieldRow>
                             <TextField
-                                size={"small"}
                                 label={"Host"}
                                 placeholder={"10.0.0.1"}
                                 value={request.host}
@@ -130,7 +128,6 @@ export function ClusterDetect(props: Props) {
                                 onChange={(e) => handleHostUpdate(e.target.value)}
                             />
                             <TextField
-                                size={"small"}
                                 type={"number"}
                                 label={"Port"}
                                 value={request.port || ""}

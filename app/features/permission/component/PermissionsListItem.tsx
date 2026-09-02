@@ -54,7 +54,7 @@ export function PermissionsListItem(props: Props) {
     }
 
     function renderStatus(status: Status) {
-        return <Button sx={SX.button} disabled={true} size={"small"}>{Status[status]}</Button>
+        return <Button sx={SX.button} disabled={true}>{Status[status]}</Button>
     }
 
 

@@ -60,7 +60,6 @@ export function NodeMain(props: Props) {
                     useFetch={useRouterQuerySchemas}
                     placeholder={"Schema"}
                     variant={"outlined"}
-                    padding={"3px"}
                     onUpdate={(v) => setDbSchema(v || undefined)}
                     disabled={!dbName}
                 />
@@ -70,7 +69,6 @@ export function NodeMain(props: Props) {
                     useFetch={useRouterQueryDatabase}
                     placeholder={"Database"}
                     variant={"outlined"}
-                    padding={"3px"}
                     onUpdate={(v) => setDbName(v || undefined)}
                 />
             </Box>
@@ -81,13 +79,13 @@ export function NodeMain(props: Props) {
         const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
         if (!con) return
         const queryKeys = [NodeApi.system.metrics.key(con.host), NodeApi.system.processes.key(con.host)]
-        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]} size={32}/>
+        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]}/>
     }
 
     function renderContainerActions() {
         const con = getPlatformConnection(cluster, node.config.host, node.config.sshPort)
         if (!con) return
         const queryKeys = [NodeApi.container.metrics.key({connection: con, name: con.host})]
-        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]} size={32}/>
+        return <Refresher queryKeys={queryKeys} defaultPeriod={["3s", 3000]}/>
     }
 }

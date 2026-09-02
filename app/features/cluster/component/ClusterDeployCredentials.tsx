@@ -55,7 +55,7 @@ export function ClusterDeployCredentials(props: Props) {
 
     function renderActions() {
         return (
-            <ToggleButtonGroup size={"small"} exclusive={true} value={mode} onChange={(_, v) => v && handleModeChange(v)}>
+            <ToggleButtonGroup exclusive={true} value={mode} onChange={(_, v) => v && handleModeChange(v)}>
                 <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
                 <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
                 {optional && (
@@ -74,7 +74,6 @@ export function ClusterDeployCredentials(props: Props) {
             <FieldRow>
                 <TextField
                     fullWidth
-                    size={"small"}
                     label={"Username"}
                     value={credential.username}
                     disabled={locked}
@@ -83,7 +82,6 @@ export function ClusterDeployCredentials(props: Props) {
                 />
                 <TextField
                     fullWidth
-                    size={"small"}
                     type={"password"}
                     label={"Password"}
                     value={credential.password}

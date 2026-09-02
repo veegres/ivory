@@ -59,7 +59,7 @@ export function NodeMainTabsHead(props: Props) {
                 </Tabs>
                 <Box sx={SX.buttons}>
                     <Box sx={SX.actions}>{renderActions}</Box>
-                    <ToggleButton sx={SX.toggle} value={"info"} size={"small"} selected={alert} onClick={() => setAlert(!alert)}>
+                    <ToggleButton sx={SX.toggle} value={"info"} selected={alert} onClick={() => setAlert(!alert)}>
                         <Tooltip title={"Description"} placement={"top"}>
                             <InfoOutlined/>
                         </Tooltip>

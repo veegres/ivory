@@ -37,7 +37,6 @@ export function SystemLogs(props: Props) {
         <>
             <Box sx={SX.head}>
                 <TextField
-                    size={"small"}
                     variant={"outlined"}
                     placeholder={"Path"}
                     value={path}

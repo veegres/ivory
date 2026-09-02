@@ -7,7 +7,6 @@ export function ManageFreeButton() {
     return (
         <AlertButton
             variant={"outlined"}
-            size={"small"}
             label={"Free"}
             title={"Free space"}
             description={`Ivory can take up a significant amount of disk space over time. This

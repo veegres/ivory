@@ -38,7 +38,7 @@ export function SecretBodyInitial() {
         return (
             <>
                 <SecretButton keyWord={key}/>
-                <Button color={"inherit"} variant={"contained"} size={"small"} onClick={() => skip.mutate()}>Skip</Button>
+                <Button color={"inherit"} variant={"contained"} onClick={() => skip.mutate()}>Skip</Button>
             </>
         )
     }

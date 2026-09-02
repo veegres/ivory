@@ -35,7 +35,6 @@ export function CertsTabPath(props: Props) {
             <Box sx={SX.form}>
                 <TextField
                     sx={SX.textField}
-                    size={"small"}
                     label={"Path to The File"}
                     value={path}
                     onChange={(e) => setPath(e.target.value)}
@@ -47,7 +46,6 @@ export function CertsTabPath(props: Props) {
                     loading={add.isPending}
                     onClick={() => add.mutate({path, type})}
                     disabled={!path}
-                    size={"large"}
                 >
                     <CheckCircle/>
                 </Button>

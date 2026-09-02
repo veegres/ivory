@@ -44,7 +44,6 @@ export function ClusterDeployNode(props: Props) {
         <PaperBlue sx={SX.box}>
             <FieldRow>
                 <TextField
-                    size={"small"}
                     label={"Name"}
                     placeholder={"etcd-1"}
                     value={node.name}
@@ -53,7 +52,6 @@ export function ClusterDeployNode(props: Props) {
                     onChange={(e) => onChange({...node, name: e.target.value})}
                 />
                 <TextField
-                    size={"small"}
                     label={"Host"}
                     placeholder={"10.0.0.1"}
                     value={node.host}
@@ -73,7 +71,6 @@ export function ClusterDeployNode(props: Props) {
     function renderPort(label: string, value: number | undefined, onPortChange: (value?: number) => void) {
         return (
             <TextField
-                size={"small"}
                 type={"number"}
                 label={label}
                 value={value ?? ""}

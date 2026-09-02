@@ -12,7 +12,7 @@ export function SettingsThemeChanger() {
     const {state, setTheme} = useSettings()
 
     return (
-        <ToggleButtonGroup size={"small"} value={state.mode}>
+        <ToggleButtonGroup value={state.mode}>
             <ToggleButton sx={SX.button} value={Mode.LIGHT} onClick={() => setTheme(Mode.LIGHT)}>
                 <Tooltip title={Mode.LIGHT.toUpperCase()} placement={"top"}>
                     <LightModeTwoTone/>

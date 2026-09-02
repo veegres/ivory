@@ -23,7 +23,6 @@ export function ScheduleInput(props: Props) {
             <DateTimeField
                 sx={SX.time}
                 label={"Schedule"}
-                size={"small"}
                 disablePast={true}
                 format={DateTimeFormatter.format}
                 value={value ?? null}

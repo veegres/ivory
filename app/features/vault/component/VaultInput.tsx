@@ -6,7 +6,6 @@ import {SxPropsMap} from "../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
     input: {
-        height: "32px",
         "& input": {fontSize: "14px", fontFamily: "monospace"},
         "& .MuiOutlinedInput-notchedOutline": {borderColor: "divider"},
         "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {borderColor: "divider"},

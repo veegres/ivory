@@ -33,7 +33,6 @@ export function AutocompleteUuid(props: Props) {
 
     return (
         <MuiAutocomplete
-            size={"small"}
             autoHighlight={true}
             options={options}
             noOptionsText={"add an option in the settings"}
