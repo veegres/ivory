@@ -1,5 +1,5 @@
 import {Box, Button, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
-import {useState} from "react"
+import {useMemo, useState} from "react"
 
 import {DialogLogsScreen} from "../../../../shared/component/box/DialogLogsScreen"
 import {DialogScreen} from "../../../../shared/component/box/DialogScreen"
@@ -16,8 +16,9 @@ import {useRouterNodeKeeperDeploy} from "../../api/NodeHook"
 import {DeployVar, KeeperPlugin, PlatformVaultConnection} from "../../api/NodeType"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 2},
-    column: {display: "flex", flexDirection: "column", gap: 1},
+    box: {display: "flex", flexDirection: "column", gap: 1},
+    column: {display: "flex", flexDirection: "column", gap: 1, marginTop: "5px"},
+    hint: {textTransform: "uppercase"},
     node: {
         display: "flex", flexDirection: "column", gap: 1,
         padding: 1, border: 1, borderColor: "divider", borderRadius: 2,
@@ -45,6 +46,7 @@ type Props = {
 export function ContainerKeeperDeployForm(props: Props) {
     const {connection, plugin, cluster, node, template, keeperId, databaseId, sshKeyId, logs, onDeployed} = props
     const [index, setIndex] = useState(0)
+    const [dcs, setDcs] = useState(template.defaults?.dcs ?? "")
 
     const nodeDeploy = useRouterNodeKeeperDeploy(connection, onDeployed)
     const credentials = useDeployVaultCredentials(keeperId, databaseId)
@@ -52,12 +54,10 @@ export function ContainerKeeperDeployForm(props: Props) {
     const command = template.commands[index]
     const withKeeperCredentials = !!template.defaults?.keeperUser
     const withDbCredentials = !!template.defaults?.dbUser
-    const dcs = template.defaults?.dcs ?? ""
-    const dcsMissing = !dcs && [command.command, ...(command.postScripts ?? [])]
-        .some(text => text.includes(DeployVar.Dcs))
     const keeperPort = command.defaults?.keeperPort
     const dbPort = command.defaults?.dbPort
     const name = command.defaults?.name?.trim() || node
+    const withDcs = useMemo(handleMemoWithDcs, [command])
 
     if (logs) return <DialogLogsScreen logs={logs}/>
 
@@ -73,6 +73,7 @@ export function ContainerKeeperDeployForm(props: Props) {
 
     function renderActions() {
         const portsMissing = !keeperPort || !dbPort
+        const dcsMissing = withDcs && !dcs.trim()
         return (
             <Button
                 loading={nodeDeploy.isPending}
@@ -87,14 +88,14 @@ export function ContainerKeeperDeployForm(props: Props) {
     function renderNodeChooser() {
         if (template.commands.length === 1) return
         return (
-            <Box sx={SX.chooser}>
-                <Hint center={true}>Pick which of the template's nodes is deployed here</Hint>
+            <PaperBlue sx={SX.chooser}>
+                <Hint sx={SX.hint} center={true}>Select the node you wish to deploy from the template</Hint>
                 <ToggleButtonGroup fullWidth={true} exclusive={true} value={index} onChange={(_, v) => setIndex(v ?? index)}>
                     {template.commands.map((_, i) => (
                         <ToggleButton key={i} sx={SX.toggleButton} value={i}>Node {i + 1}</ToggleButton>
                     ))}
                 </ToggleButtonGroup>
-            </Box>
+            </PaperBlue>
         )
     }
 
@@ -104,12 +105,12 @@ export function ContainerKeeperDeployForm(props: Props) {
                 <TitleBox label={"Cluster"} island={true} collapsible={false}>
                     <Box sx={SX.column}>
                         <TextField fullWidth label={"Cluster Name"} value={cluster} disabled={true}/>
-                        {!!dcs && <TextField fullWidth label={"DCS Address"} value={dcs} disabled={true}/>}
                         <FieldRow>
                             {withKeeperCredentials && renderVaultField("Keeper Credentials", keeperId)}
                             {withDbCredentials && renderVaultField("Database Credentials", databaseId)}
                             {renderVaultField("SSH Credentials", sshKeyId)}
                         </FieldRow>
+                        {withDcs && renderDcs()}
                     </Box>
                 </TitleBox>
             </PaperBlue>
@@ -138,12 +139,29 @@ export function ContainerKeeperDeployForm(props: Props) {
         )
     }
 
+    function renderDcs() {
+        return (
+            <TextField
+                fullWidth={true}
+                label={"DCS"}
+                placeholder={"etcd1:2379, etcd2:2379, etcd3:2379"}
+                helperText={"This cluster relies on the Distributed Consensus Store (DCS)"}
+                value={dcs}
+                onChange={(e) => setDcs(e.target.value)}
+            />
+        )
+    }
+
     function renderVaultField(label: string, vaultId?: string) {
         return <TextField fullWidth label={label} value={getShortUuid(vaultId ?? "none")} disabled={true}/>
     }
 
     function renderPort(label: string, value?: number) {
         return <TextField type={"number"} label={label} value={value ?? ""} disabled={true}/>
+    }
+
+    function handleMemoWithDcs() {
+        return [command.command, ...(command.postScripts ?? [])].some(text => text.includes(DeployVar.Dcs))
     }
 
     function handleAction() {
