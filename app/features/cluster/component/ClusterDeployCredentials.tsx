@@ -18,7 +18,6 @@ export type Credential = {
 }
 
 type Props = {
-    title: string,
     type: VaultType,
     mode: CredentialMode,
     credential: Credential,
@@ -32,7 +31,7 @@ type Props = {
 }
 
 export function ClusterDeployCredentials(props: Props) {
-    const {title, type, mode, credential, vaultId, locked = false, optional = false, showErrors} = props
+    const {type, mode, credential, vaultId, locked = false, optional = false, showErrors} = props
     const {onModeChange, onCredentialChange, onVaultChange} = props
 
     return (
