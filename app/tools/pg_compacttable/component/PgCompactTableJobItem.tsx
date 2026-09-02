@@ -1,5 +1,5 @@
 import {Clear, Stop} from "@mui/icons-material"
-import {Box, CircularProgress, Divider, IconButton, Tooltip} from "@mui/material"
+import {Box, CircularProgress, IconButton, Tooltip} from "@mui/material"
 import {SvgIconProps} from "@mui/material"
 import {cloneElement, ReactElement, useState} from "react"
 

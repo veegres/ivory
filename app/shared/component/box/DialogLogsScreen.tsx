@@ -1,6 +1,5 @@
 import {DialogScreen} from "./DialogScreen"
 import {Logs} from "./Logs"
-import {TitleBox} from "./TitleBox"
 
 // NOTE: the virtualizer inside Logs needs a pixel height, so this is where it
 // and the dialog have to agree: --size-dialog (600) less the screen's padding

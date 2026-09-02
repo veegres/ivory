@@ -11,13 +11,17 @@ const SIZE = {
     medium: {pad: "4.5px"},
 }
 
-// NOTE: shrink repeats MUI's own value because the rest transform below
-// outranks the variant it comes from, and would otherwise pin a floating
-// label inside the field.
+// NOTE: PAD is the horizontal padding of every field, replacing MUI's 14px. A
+// label sits on the same line as the text it labels, so it moves with it.
+const PAD = "10px"
+
+// NOTE: shrink is spelled out because the rest transform below outranks the
+// variant it comes from, and would otherwise pin a floating label inside the
+// field.
 const LABEL = {
-    small: "translate(14px, 1.5px) scale(1)",
-    medium: "translate(14px, 4.5px) scale(1)",
-    shrink: "translate(14px, -9px) scale(0.75)",
+    small: `translate(${PAD}, 1.5px) scale(1)`,
+    medium: `translate(${PAD}, 4.5px) scale(1)`,
+    shrink: `translate(${PAD}, -9px) scale(0.75)`,
 }
 
 // NOTE: buttons carry their border in the box, so this is the whole height and
@@ -111,11 +115,12 @@ type Size = keyof typeof SIZE
 function getInputSize(size: Size) {
     const {pad} = SIZE[size]
     return {
-        "& .MuiOutlinedInput-input": {height: LINE, paddingTop: pad, paddingBottom: pad},
+        "&.MuiInputBase-adornedStart": {paddingLeft: PAD},
+        "&.MuiInputBase-adornedEnd": {paddingRight: PAD},
+        "& .MuiOutlinedInput-input": {height: LINE, padding: `${pad} ${PAD}`},
         "&.MuiInputBase-multiline": {
-            paddingTop: pad,
-            paddingBottom: pad,
-            "& .MuiOutlinedInput-input": {height: "auto", paddingTop: 0, paddingBottom: 0},
+            padding: `${pad} ${PAD}`,
+            "& .MuiOutlinedInput-input": {height: "auto", padding: 0},
         },
     }
 }
@@ -125,7 +130,10 @@ function getAutocompleteSize(size: Size) {
     return {
         paddingTop: root,
         paddingBottom: root,
-        "& .MuiAutocomplete-input": {height: LINE, paddingTop: input, paddingBottom: input},
+        // NOTE: paddingRight is MUI's own - it is what reserves the room the
+        // absolutely positioned dropdown and clear icons sit in.
+        paddingLeft: PAD,
+        "& .MuiAutocomplete-input": {height: LINE, paddingTop: input, paddingBottom: input, paddingLeft: 0},
         "& .MuiAutocomplete-tag": {margin: tag},
         // MUI pins the adornment with a top offset computed for its own 28px
         // indicator, so a resized one has to be centred again.
