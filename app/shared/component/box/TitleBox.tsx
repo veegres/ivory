@@ -8,10 +8,14 @@ import {Hint} from "./Hint"
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 0.5},
     island: {padding: "6px 8px", border: 1, borderColor: "divider", borderRadius: 2},
-    head: {display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1},
+    head: {position: "relative", display: "flex", alignItems: "center", gap: 1, padding: "3px 6px"},
+    hint: {padding: "0px 6px"},
     label: {flexGrow: 1, minWidth: 0, display: "flex", alignItems: "center", userSelect: "none", gap: 0.5},
     labelToggle: {cursor: "pointer", "&:hover": {color: "primary.main"}, "&:hover *": {color: "primary.main"}},
-    actions: {display: "flex", alignItems: "center"},
+    actions: {
+        position: "absolute", right: "6px", top: "50%", transform: "translateY(-50%)",
+        display: "flex", alignItems: "center",
+    },
     icon: {fontSize: "20px", transition: "transform 0.2s", transform: "rotate(-90deg)"},
     iconDense: {fontSize: "16px"},
     iconOpen: {transform: "rotate(0deg)"},
@@ -39,7 +43,8 @@ type Props = {
 // the hint under it and the content share one left edge, the toggle follows the
 // label instead of pushing it sideways, and island only adds the frame and its
 // own padding - so two of them side by side read as one component whatever they
-// are given.
+// are given. The actions float over the head rather than sitting in it, so a
+// section with buttons is exactly as tall as one without.
 export const TitleBox = memo(function TitleBox(props: PropsWithChildren<Props>) {
     const {label, hint, children, renderActions, defaultOpen = false, island = false, dense = false} = props
     const {collapsible = true, onOpenChange} = props
@@ -72,7 +77,7 @@ export const TitleBox = memo(function TitleBox(props: PropsWithChildren<Props>) 
     function renderContentBody() {
         return (
             <Box sx={SX.gap}>
-                {hint && <Hint>{hint}</Hint>}
+                {hint && <Hint sx={SX.hint}>{hint}</Hint>}
                 {children && <Box>{children}</Box>}
             </Box>
         )

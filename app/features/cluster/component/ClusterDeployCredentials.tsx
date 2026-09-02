@@ -1,13 +1,19 @@
-import {Box, TextField, ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {AddTwoTone, BlockTwoTone, LockTwoTone} from "@mui/icons-material"
+import {Box, TextField, ToggleButton, ToggleButtonGroup, Tooltip} from "@mui/material"
+import {ReactElement, ReactNode} from "react"
 
-import {Hint} from "../../../shared/component/box/Hint"
+import {FieldLabel} from "../../../shared/component/input/FieldLabel"
 import {FieldRow} from "../../../shared/component/input/FieldRow"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {VaultType} from "../../vault/api/VaultType"
 import {ClusterOptionsVault} from "./ClusterOptionsVault"
 
 const SX: SxPropsMap = {
-    toggleButton: {lineHeight: 1},
+    label: {gridColumn: "1", justifyContent: "flex-start"},
+    mode: {gridColumn: "2", justifySelf: {xs: "end", sm: "start"}},
+    button: {padding: "3px 6px"},
+    icon: {fontSize: "20px"},
+    content: {gridColumn: {xs: "1 / -1", sm: "3"}, minWidth: 0},
 }
 
 export type CredentialMode = "new" | "vault" | "none"
@@ -17,8 +23,15 @@ export type Credential = {
     password: string,
 }
 
+const ModeOptions: { [key in CredentialMode]: {tooltip: string, icon: ReactElement} } = {
+    vault: {tooltip: "Use an existing vault entry", icon: <LockTwoTone sx={SX.icon}/>},
+    new: {tooltip: "Enter a new username and password", icon: <AddTwoTone sx={SX.icon}/>},
+    none: {tooltip: "Not used by this cluster", icon: <BlockTwoTone sx={SX.icon}/>},
+}
+
 type Props = {
     type: VaultType,
+    label: string,
     mode: CredentialMode,
     credential: Credential,
     vaultId?: string,
@@ -30,49 +43,54 @@ type Props = {
     onVaultChange: (type: VaultType, vaultId?: string) => void,
 }
 
+// ClusterDeployCredentials is one answer to one credential question: which
+// account, and where it comes from. It renders its three cells straight into
+// the caller's grid, so the name, the source and the fields of every credential
+// line up in the same three columns whatever source each one is on.
 export function ClusterDeployCredentials(props: Props) {
-    const {type, mode, credential, vaultId, locked = false, optional = false, showErrors} = props
+    const {type, label, mode, credential, vaultId, locked = false, optional = false, showErrors} = props
     const {onModeChange, onCredentialChange, onVaultChange} = props
 
     return (
-        <Box sx={{display: "flex", gap: 0.5}}>
-            <Box sx={{flexGrow: 1}}>{renderContent()}</Box>
-            {renderActions()}
-        </Box>
+        <>
+            <FieldLabel sx={SX.label}>{label}</FieldLabel>
+            {renderMode()}
+            {renderContent()}
+        </>
     )
 
-    function renderContent() {
-        switch (mode) {
-            case "new":
-                return renderNew()
-            case "vault":
-                return renderVault()
-            case "none":
-                return renderNone()
-        }
-    }
-
-    function renderActions() {
+    function renderMode() {
         return (
-            <ToggleButtonGroup exclusive={true} value={mode} onChange={(_, v) => v && handleModeChange(v)}>
-                <ToggleButton sx={SX.toggleButton} value={"vault"}>VAULT</ToggleButton>
-                <ToggleButton sx={SX.toggleButton} value={"new"}>NEW</ToggleButton>
-                {optional && (
-                    <ToggleButton sx={SX.toggleButton} value={"none"} disabled={!!credential.username}>NONE</ToggleButton>
-                )}
+            <ToggleButtonGroup sx={SX.mode} exclusive={true} value={mode} onChange={(_, v) => v && handleModeChange(v)}>
+                {getModes().map(renderModeButton)}
             </ToggleButtonGroup>
         )
     }
 
-    function renderNone() {
-        return <Hint>Cluster will not use credentials</Hint>
+    function renderModeButton(value: CredentialMode) {
+        const {tooltip, icon} = ModeOptions[value]
+        return (
+            <ToggleButton
+                key={value}
+                sx={SX.button}
+                value={value}
+                disabled={value === "none" && !!credential.username}
+            >
+                <Tooltip title={tooltip} placement={"top"}>{icon}</Tooltip>
+            </ToggleButton>
+        )
+    }
+
+    function renderContent() {
+        const content = getContent()
+        if (!content) return
+        return <Box sx={SX.content}>{content}</Box>
     }
 
     function renderNew() {
         return (
             <FieldRow>
                 <TextField
-                    fullWidth
                     label={"Username"}
                     value={credential.username}
                     disabled={locked}
@@ -80,7 +98,6 @@ export function ClusterDeployCredentials(props: Props) {
                     onChange={(e) => onCredentialChange({...credential, username: e.target.value})}
                 />
                 <TextField
-                    fullWidth
                     type={"password"}
                     label={"Password"}
                     value={credential.password}
@@ -95,6 +112,7 @@ export function ClusterDeployCredentials(props: Props) {
         return (
             <ClusterOptionsVault
                 type={type}
+                label={"Vault Entry"}
                 selected={vaultId}
                 username={locked ? credential.username : undefined}
                 onUpdate={onVaultChange}
@@ -106,5 +124,20 @@ export function ClusterDeployCredentials(props: Props) {
     function handleModeChange(next: CredentialMode) {
         if (next !== "vault") onVaultChange(type, undefined)
         onModeChange(next)
+    }
+
+    function getContent(): ReactNode {
+        switch (mode) {
+            case "new":
+                return renderNew()
+            case "vault":
+                return renderVault()
+            case "none":
+                return
+        }
+    }
+
+    function getModes(): CredentialMode[] {
+        return optional ? ["vault", "new", "none"] : ["vault", "new"]
     }
 }

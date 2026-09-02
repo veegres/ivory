@@ -1,4 +1,4 @@
-import {Box, Button, Checkbox, TextField} from "@mui/material"
+import {Box, Button, Checkbox, Divider, TextField} from "@mui/material"
 import {useCallback, useMemo, useState} from "react"
 
 import {DialogLogsScreen} from "../../../shared/component/box/DialogLogsScreen"
@@ -20,15 +20,26 @@ import {ClusterDeployNode} from "./ClusterDeployNode"
 import {ClusterOptionsBox} from "./ClusterOptionsBox"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 2},
+    box: {display: "flex", flexDirection: "column", gap: 1},
     column: {display: "flex", flexDirection: "column", gap: 1},
     toggle: {
         display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1,
-        padding: "6px 10px", border: 1, borderColor: "divider", borderRadius: 1,
-        cursor: "pointer", userSelect: "none",
+        padding: "3px 3px 3px 10px", border: 1, borderColor: "divider", borderRadius: 1,
+        cursor: "pointer", userSelect: "none", fontSize: "15px",
         "&:hover": {bgcolor: "action.hover", borderColor: "text.primary"},
     },
-    templateName: {fontFamily: "monospace", fontSize: "13px", color: "text.secondary"},
+    section: {display: "flex", flexDirection: "column", gap: 1},
+    divider: {
+        "& .MuiDivider-wrapper": {
+            fontFamily: "monospace", fontSize: "13px", fontWeight: 600,
+            textTransform: "uppercase", color: "text.secondary",
+        },
+    },
+    grid: {
+        display: "grid", alignItems: "center", gap: 1,
+        gridTemplateColumns: {xs: "auto minmax(0, 1fr)", sm: "auto auto minmax(0, 1fr)"},
+    },
+    templateName: {fontFamily: "monospace", fontSize: "13px", color: "text.secondary", textTransform: "uppercase"},
 }
 
 const InitialRequest = (keeper: KeeperPlugin, database: DbPlugin) => ({
@@ -105,11 +116,9 @@ export function ClusterDeployForm(props: Props) {
                             error={submitted && !cluster}
                             onChange={(e) => setCluster(e.target.value)}
                         />
-                        {renderParallel()}
                         {withDcs && renderDcs()}
-                        {renderSshCredentials()}
-                        {renderKeeperCredentials()}
-                        {renderDbCredentials()}
+                        {renderCredentials()}
+                        {renderParallel()}
                         {renderClusterOptions()}
                     </Box>
                 </TitleBox>
@@ -121,17 +130,14 @@ export function ClusterDeployForm(props: Props) {
         return (
             <TextField
                 fullWidth={true}
-                label={"DCS"}
+                label={"DCS Address"}
+                placeholder={"etcd1:2379, etcd2:2379, etcd3:2379"}
+                helperText={"This cluster relies on the Distributed Consensus Store (DCS)"}
                 value={dcs}
                 error={submitted && !dcs}
-                helperText={renderDcsHint()}
                 onChange={(e) => setDcs(e.target.value)}
             />
         )
-    }
-
-    function renderDcsHint() {
-        return <Hint>The Distributed Consensus Store (DCS) every node of this cluster registers with</Hint>
     }
 
     function renderTemplateName() {
@@ -175,10 +181,24 @@ export function ClusterDeployForm(props: Props) {
         )
     }
 
+    function renderCredentials() {
+        return (
+            <Box sx={SX.section}>
+                <Divider sx={SX.divider} textAlign={"left"}>Credentials</Divider>
+                <Box sx={SX.grid}>
+                    {renderSshCredentials()}
+                    {renderKeeperCredentials()}
+                    {renderDbCredentials()}
+                </Box>
+            </Box>
+        )
+    }
+
     function renderSshCredentials() {
         return (
             <ClusterDeployCredentials
                 type={VaultType.SSH_KEY}
+                label={"SSH"}
                 mode={sshMode}
                 credential={sshCred}
                 vaultId={options.vaults.sshKeyId}
@@ -196,6 +216,7 @@ export function ClusterDeployForm(props: Props) {
         return (
             <ClusterDeployCredentials
                 type={VaultType.KEEPER_PASSWORD}
+                label={"Keeper"}
                 mode={keeperMode}
                 credential={keeperCred}
                 vaultId={options.vaults.keeperId}
@@ -213,6 +234,7 @@ export function ClusterDeployForm(props: Props) {
         return (
             <ClusterDeployCredentials
                 type={VaultType.DATABASE_PASSWORD}
+                label={"Database"}
                 mode={dbMode}
                 credential={dbCred}
                 vaultId={options.vaults.databaseId}

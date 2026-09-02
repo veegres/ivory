@@ -72,7 +72,7 @@ export function SystemLogs(props: Props) {
                 </Tooltip>
             </Box>
             {path === "" ? (
-                <NoBox text={"enter path to see logs"}/>
+                <NoBox text={"Enter a file path to view logs"}/>
             ) : (
                 <Logs logs={logs.data} loading={logs.isFetching} reconnect={logs.reconnect}/>
             )}
