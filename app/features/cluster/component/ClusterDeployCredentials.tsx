@@ -14,6 +14,7 @@ const SX: SxPropsMap = {
     button: {padding: "3px 6px"},
     icon: {fontSize: "20px"},
     content: {gridColumn: {xs: "1 / -1", sm: "3"}, minWidth: 0},
+    none: {fontSize: 12, lineHeight: 1, color: "text.secondary"},
 }
 
 export type CredentialMode = "new" | "vault" | "none"
@@ -53,11 +54,15 @@ export function ClusterDeployCredentials(props: Props) {
 
     return (
         <>
-            <FieldLabel sx={SX.label}>{label}</FieldLabel>
+            {renderLabel()}
             {renderMode()}
             {renderContent()}
         </>
     )
+
+    function renderLabel() {
+        return <FieldLabel sx={SX.label}>{label}</FieldLabel>
+    }
 
     function renderMode() {
         return (
@@ -82,9 +87,7 @@ export function ClusterDeployCredentials(props: Props) {
     }
 
     function renderContent() {
-        const content = getContent()
-        if (!content) return
-        return <Box sx={SX.content}>{content}</Box>
+        return <Box sx={SX.content}>{getContent()}</Box>
     }
 
     function renderNew() {
@@ -121,6 +124,10 @@ export function ClusterDeployCredentials(props: Props) {
         )
     }
 
+    function renderNone() {
+        return <FieldLabel sx={SX.none}>Not used by this cluster</FieldLabel>
+    }
+
     function handleModeChange(next: CredentialMode) {
         if (next !== "vault") onVaultChange(type, undefined)
         onModeChange(next)
@@ -133,7 +140,7 @@ export function ClusterDeployCredentials(props: Props) {
             case "vault":
                 return renderVault()
             case "none":
-                return
+                return renderNone()
         }
     }
 
