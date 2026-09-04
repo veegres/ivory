@@ -2,8 +2,8 @@ import {Box, Button, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {useRouterLogin} from "../../../features/auth/api/AuthHook"
-import {AuthType} from "../../../features/auth/api/AuthType"
 import {useRouterUserRegistrationPassword, useRouterUserRegistrationVerify} from "../../../features/user/api/UserHook"
+import {UserAuthType} from "../../../features/user/api/UserType"
 import {redirectToHome} from "../../../features/user/api/UserUrl"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
@@ -103,7 +103,7 @@ export function UserRegistrationBody(props: Props) {
     }
 
     function handlePasswordSet() {
-        login.mutate({type: AuthType.BASIC, subject: {username: registration.data?.username, password}})
+        login.mutate({type: UserAuthType.BASIC, subject: {username: registration.data?.username, password}})
     }
 
     function isMismatched() {

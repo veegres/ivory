@@ -2,21 +2,13 @@ package auth
 
 import "ivory/features/user"
 
-type AuthType int8
+// AuthType is user.AuthType under another name: this is where a person's way
+// of signing in gets verified, but the vocabulary of what that way even is
+// belongs to features/user, since a user is who gets registered for it.
+type AuthType = user.AuthType
 
 const (
-	BASIC AuthType = iota
-	LDAP
-	OIDC
+	BASIC = user.AuthBasic
+	LDAP  = user.AuthLdap
+	OIDC  = user.AuthOidc
 )
-
-// User is the way of signing in this auth type stands for. The vocabulary
-// belongs to features/user, because a user is registered for it, and spelling
-// the string form out with it keeps the two from drifting apart.
-func (s AuthType) User() user.AuthType {
-	return []user.AuthType{user.AuthBasic, user.AuthLdap, user.AuthOidc}[s]
-}
-
-func (s AuthType) String() string {
-	return string(s.User())
-}

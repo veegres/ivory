@@ -2,8 +2,8 @@ import {Alert, Button, Chip, Divider, ToggleButton, ToggleButtonGroup} from "@mu
 import {useState} from "react"
 
 import {useRouterLogin} from "../../../features/auth/api/AuthHook"
-import {AuthType} from "../../../features/auth/api/AuthType"
 import {LogoutButton} from "../../../features/auth/component/LogoutButton"
+import {UserAuthType} from "../../../features/user/api/UserType"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -15,13 +15,13 @@ const SX: SxPropsMap = {
 }
 
 type Props = {
-    supported: AuthType[],
+    supported: UserAuthType[],
     error?: string,
 }
 
 export function LoginBody(props: Props) {
     const {supported, error} = props
-    const [auth, setAuth] = useState<AuthType>(supported[0] ?? AuthType.BASIC)
+    const [auth, setAuth] = useState<UserAuthType>(supported[0] ?? UserAuthType.BASIC)
     const [show, setShow] = useState(false)
     const [username, setUsername] = useState("")
     const [password, setPass] = useState("")
@@ -37,7 +37,7 @@ export function LoginBody(props: Props) {
     )
 
     function renderCreds() {
-        if ([AuthType.OIDC].includes(auth)) return null
+        if ([UserAuthType.OIDC].includes(auth)) return null
 
         return (
             <>
@@ -46,7 +46,7 @@ export function LoginBody(props: Props) {
                     label={"password"}
                     hidden
                     onChange={(e) => setPass(e.target.value)}
-                    onEnterPress={() => handleLogin(AuthType.BASIC)}
+                    onEnterPress={() => handleLogin(UserAuthType.BASIC)}
                 />
             </>
         )
@@ -69,15 +69,15 @@ export function LoginBody(props: Props) {
             <ToggleButtonGroup value={auth} exclusive={true} fullWidth={true}>
                 {supported.map(type => (
                     <ToggleButton value={type} key={type} onClick={() => setAuth(type)}>
-                        {AuthType[type]}
+                        {type.toUpperCase()}
                     </ToggleButton>
                 ))}
             </ToggleButtonGroup>
         )
     }
 
-    function handleLogin(type: AuthType) {
-        const subject = type === AuthType.OIDC ? undefined : {username, password}
+    function handleLogin(type: UserAuthType) {
+        const subject = type === UserAuthType.OIDC ? undefined : {username, password}
         login.mutate({type, subject})
     }
 }

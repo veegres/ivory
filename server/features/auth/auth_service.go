@@ -115,7 +115,7 @@ func (s *Service) ParseAuthToken(token string, tokenErr error) (bool, string, *A
 	if errUsername != nil {
 		return true, "", nil, errUsername
 	}
-	frm, ok := claims["frm"].(float64)
+	frm, ok := claims["frm"].(string)
 	if !ok {
 		return true, "", nil, ErrInvalidTokenCannotParseAuthType
 	}
@@ -152,7 +152,7 @@ func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error)
 // and being registered - for this way of signing in - is what says they are
 // welcome here.
 func (s *Service) generateToken(subject string, authType AuthType) (string, *time.Time, error) {
-	if err := s.userService.VerifySignIn(subject, authType.User()); err != nil {
+	if err := s.userService.VerifySignIn(subject, authType); err != nil {
 		return "", nil, err
 	}
 	return s.tokenService.Generate(subject, jwt.MapClaims{"frm": authType}, s.expiration)
