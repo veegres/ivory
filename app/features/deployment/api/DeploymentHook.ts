@@ -76,7 +76,14 @@ export function useTemplateForm(initial: TemplateRequest) {
     }
 
     function addCommand(source?: TemplateCommand) {
-        setTemplate(prev => ({...prev, commands: [...prev.commands, source ?? {command: ""}]}))
+        setTemplate(prev => ({...prev, commands: [...prev.commands, source ? copyCommand(source) : {command: ""}]}))
+    }
+
+    // NOTE: a copy keeps the command but never the node name - a name is the
+    // one thing two nodes cannot share, and the server refuses a template whose
+    // commands collide. A command stating no name is named on the deploy screen
+    function copyCommand(source: TemplateCommand): TemplateCommand {
+        return {...source, defaults: source.defaults && {...source.defaults, name: undefined}}
     }
 
     function removeCommand(index: number) {
