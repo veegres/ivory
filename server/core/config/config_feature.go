@@ -164,11 +164,11 @@ var authOnly = []Feature{
 	ManagePermissionDelete,
 }
 
-// Withheld names the features nobody holds in this Ivory. It is stated here
-// rather than by whoever answers a request, so the permission middleware and
-// the app info the UI reads cannot disagree about what a loginless session may
-// do.
-func Withheld(authEnabled bool) []Feature {
+// FeaturesWithheldWithoutAuth names the features nobody holds in this Ivory
+// when authEnabled is false. It is stated here rather than by whoever answers
+// a request, so the permission middleware and the app info the UI reads
+// cannot disagree about what a loginless session may do.
+func FeaturesWithheldWithoutAuth(authEnabled bool) []Feature {
 	if authEnabled {
 		return nil
 	}

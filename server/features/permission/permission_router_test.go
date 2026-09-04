@@ -59,7 +59,7 @@ func TestValidateMiddleware(t *testing.T) {
 			t.Fatalf("expected permissions to be set in context")
 		}
 		permMap := perms.(PermissionMap)
-		withheld := config.Withheld(false)
+		withheld := config.FeaturesWithheldWithoutAuth(false)
 		for _, feature := range config.All {
 			if slices.Contains(withheld, feature) {
 				continue
@@ -80,7 +80,7 @@ func TestValidateMiddleware(t *testing.T) {
 
 		perms, _ := context.Get("permissions")
 		permMap := perms.(PermissionMap)
-		for _, feature := range config.Withheld(false) {
+		for _, feature := range config.FeaturesWithheldWithoutAuth(false) {
 			if _, ok := permMap[feature]; ok {
 				t.Fatalf("expected %s to be withheld when auth is disabled", feature)
 			}

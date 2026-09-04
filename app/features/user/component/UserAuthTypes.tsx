@@ -33,15 +33,18 @@ export function UserAuthTypes(props: Props) {
 
     function renderToggle(authType: UserAuthType) {
         const option = OPTIONS[authType]
+        const selected = value.includes(authType)
+        const last = selected && value.length === 1
+        const tooltip = last ? "A user needs at least one way to sign in" : (reason ?? option.description)
         return (
-            <Tooltip key={authType} title={reason ?? option.description} placement={"top"} arrow disableInteractive>
+            <Tooltip key={authType} title={tooltip} placement={"top"} arrow disableInteractive>
                 <Box component={"span"}>
                     <ToggleButton
                         sx={SX.toggle}
                         size={size}
                         value={authType}
-                        selected={value.includes(authType)}
-                        disabled={disabled}
+                        selected={selected}
+                        disabled={disabled || last}
                         onClick={() => handleToggle(authType)}
                     >
                         {option.label}
