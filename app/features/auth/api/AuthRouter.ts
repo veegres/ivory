@@ -1,14 +1,14 @@
 import {api} from "../../Api"
 import {AuthConfigObject} from "../../config/api/ConfigType"
 import {R} from "../../management/api/ManagementType"
-import {AuthType} from "./AuthType"
+import {UserAuthType} from "../../user/api/UserType"
 
 export const AuthApi = {
     login: {
         key: () => ["login"],
-        fn: async (data: {type: AuthType, subject: any}) => {
-            const url = `/${AuthType[data.type].toLowerCase()}/login`
-            if (data.type === AuthType.OIDC) {
+        fn: async (data: {type: UserAuthType, subject: any}) => {
+            const url = `/${data.type}/login`
+            if (data.type === UserAuthType.OIDC) {
                 window.location.href = api.defaults.baseURL + url
                 return Promise.resolve(null)
             }
@@ -18,8 +18,8 @@ export const AuthApi = {
     },
     connect: {
         key: () => ["connect"],
-        fn: (data: {type: AuthType, config: AuthConfigObject}) => api
-            .post<R<any>>(`/${AuthType[data.type].toLowerCase()}/connect`, data.config)
+        fn: (data: {type: UserAuthType, config: AuthConfigObject}) => api
+            .post<R<any>>(`/${data.type}/connect`, data.config)
             .then((response) => response.data.response),
     },
     logout: {

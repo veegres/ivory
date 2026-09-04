@@ -1,8 +1,8 @@
 import {AxiosProgressEvent} from "axios"
 
-import {AuthType} from "../../auth/api/AuthType"
 import {PermissionMap} from "../../permission/api/PermissionType"
 import {SecretStatus} from "../../secret/api/SecretType"
+import {UserAuthType} from "../../user/api/UserType"
 
 // COMMON (WEB AND SERVER)
 
@@ -25,7 +25,7 @@ export interface ConfigInfo {
 }
 
 export interface AuthInfo {
-    supported: AuthType[],
+    supported: UserAuthType[],
     authorised: boolean,
     user?: UserInfo,
     error?: string,

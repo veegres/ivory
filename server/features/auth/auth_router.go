@@ -63,7 +63,7 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 				return
 			}
 			context.Set(config.AuthContextKey.Username, username)
-			context.Set(config.AuthContextKey.Type, authType.String())
+			context.Set(config.AuthContextKey.Type, string(*authType))
 			context.Set(config.AuthContextKey.Superuser, r.authService.IsSuperuser(username))
 		}
 		context.Next()
@@ -84,7 +84,7 @@ func (r *Router) AuthContextMiddleware() gin.HandlerFunc {
 			context.Set(config.AuthContextKey.Username, username)
 			context.Set(config.AuthContextKey.Superuser, r.authService.IsSuperuser(username))
 			if authType != nil {
-				context.Set(config.AuthContextKey.Type, authType.String())
+				context.Set(config.AuthContextKey.Type, string(*authType))
 			}
 		}
 		context.Next()

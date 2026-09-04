@@ -1,9 +1,8 @@
 import {Box, Divider, Paper, Switch, Tab, Tabs} from "@mui/material"
 import {ChangeEvent, useState} from "react"
 
-import {AuthType} from "../../../../features/auth/api/AuthType"
 import {LdapConfig, OidcConfig} from "../../../../features/config/api/ConfigType"
-import {UserSetupRequest} from "../../../../features/user/api/UserType"
+import {UserAuthType, UserSetupRequest} from "../../../../features/user/api/UserType"
 import {UserCreationForm} from "../../../../features/user/component/UserCreationForm"
 import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {ConfigBox} from "../../../../shared/component/box/ConfigBox"
@@ -34,7 +33,7 @@ export function ConfigAuth(props: Props) {
     const {ldapConfig, oidcConfig, basicEnabled, onOidcChange, onBasicChange, onLdapChange} = props
     const {user, onUserChange, onDefaultChange} = props
     const [authEnabled, setAuthEnabled] = useState(false)
-    const [authTypeOpen, setAuthTypeOpen] = useState(AuthType.BASIC)
+    const [authTypeOpen, setAuthTypeOpen] = useState(UserAuthType.BASIC)
 
     return (
         <ConfigBox
@@ -59,9 +58,9 @@ export function ConfigAuth(props: Props) {
         return (
             <Paper variant={"outlined"}>
                 <Tabs variant={"fullWidth"} value={authTypeOpen} onChange={(_, v) => setAuthTypeOpen(v)}>
-                    <Tab value={AuthType.BASIC} label={AuthType[AuthType.BASIC]}/>
-                    <Tab value={AuthType.LDAP} label={AuthType[AuthType.LDAP]}/>
-                    <Tab value={AuthType.OIDC} label={AuthType[AuthType.OIDC]}/>
+                    <Tab value={UserAuthType.BASIC} label={UserAuthType.BASIC.toUpperCase()}/>
+                    <Tab value={UserAuthType.LDAP} label={UserAuthType.LDAP.toUpperCase()}/>
+                    <Tab value={UserAuthType.OIDC} label={UserAuthType.OIDC.toUpperCase()}/>
                 </Tabs>
             </Paper>
         )
@@ -101,9 +100,9 @@ export function ConfigAuth(props: Props) {
 
     function renderAuthBody() {
         switch (authTypeOpen) {
-            case AuthType.BASIC: return <ConfigAuthBasic enabled={basicEnabled} onChange={onBasicChange}/>
-            case AuthType.OIDC: return <ConfigAuthOidc config={oidcConfig} onChange={onOidcChange}/>
-            case AuthType.LDAP: return <ConfigAuthLdap config={ldapConfig} onChange={onLdapChange}/>
+            case UserAuthType.BASIC: return <ConfigAuthBasic enabled={basicEnabled} onChange={onBasicChange}/>
+            case UserAuthType.OIDC: return <ConfigAuthOidc config={oidcConfig} onChange={onOidcChange}/>
+            case UserAuthType.LDAP: return <ConfigAuthLdap config={ldapConfig} onChange={onLdapChange}/>
             default: return null
         }
     }
