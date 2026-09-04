@@ -60,7 +60,6 @@ func NewContext(
 	queryBucket := storage.NewDbBucket[query.Response](st, "Query")
 	deploymentBucket := storage.NewDbBucket[deployment.Template](st, "DeploymentTemplate")
 	userBucket := storage.NewDbBucket[user.User](st, "User")
-	userLinkBucket := storage.NewDbBucket[user.Link](st, "UserLink")
 
 	// FILES
 	configFiles := storage.NewFileStorage("config", ".json")
@@ -72,7 +71,7 @@ func NewContext(
 	permissionRepo := permission.NewRepository(permissionBucket)
 	queryRepo := query.NewRepository(queryBucket, queryLogFiles)
 	deploymentRepo := deployment.NewRepository(deploymentBucket)
-	userRepo := user.NewRepository(userBucket, userLinkBucket)
+	userRepo := user.NewRepository(userBucket)
 
 	// CORE SERVICES
 	vaultService := coreService.Vault
@@ -96,9 +95,9 @@ func NewContext(
 	queryService := query.NewService(queryRepo, databaseRegistry, vaultService, certService, env.Version.Label)
 	deploymentService := deployment.NewService(deploymentRepo, keeperRegistry, platformRegistry)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, vaultService, toolRegistry)
-	authService := auth.NewService(tokenService, basicProvider, ldapProvider, oidcProvider, permissionService)
+	authService := auth.NewService(tokenService, basicProvider, ldapProvider, oidcProvider, userService)
 	configService := config.NewService(configFiles, encryptionService, secretService, authService, userService, basicProvider, ldapProvider, oidcProvider)
-	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService)
+	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService, userService)
 	managementService := management.NewService(
 		env,
 		authService,

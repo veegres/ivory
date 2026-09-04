@@ -7,38 +7,18 @@ import (
 	"ivory/core/config"
 	"slices"
 	"sort"
-	"strings"
 )
 
-var ErrSuperusersCannotHaveEmptyName = errors.New("superusers cannot have empty name")
 var ErrUsernameCannotBeEmpty = errors.New("username cannot be empty")
 var ErrUserPermissionsNotFound = errors.New("this user does not exist any more")
-var ErrPrefixCannotBeEmpty = errors.New("prefix cannot be empty")
-var ErrCannotChangePermissionsForSuperusers = errors.New("cannot change permissions for superusers")
 var ErrInvalidFeature = errors.New("invalid feature")
 
 type Service struct {
 	permissionRepository *Repository
-
-	superusers []string
 }
 
 func NewService(permissionRepository *Repository) *Service {
-	return &Service{
-		permissionRepository: permissionRepository,
-		superusers:           []string{},
-	}
-}
-
-// SetSuperusers replaces the list of usernames that hold every permission. An
-// empty list is allowed: the user feature is what guarantees the last superuser
-// cannot be deleted, and Ivory starts with none at all.
-func (s *Service) SetSuperusers(superusers []string) error {
-	if slices.Contains(superusers, "") {
-		return ErrSuperusersCannotHaveEmptyName
-	}
-	s.superusers = superusers
-	return s.normalizeDatabase()
+	return &Service{permissionRepository: permissionRepository}
 }
 
 func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
@@ -59,15 +39,18 @@ func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
 	return result, nil
 }
 
-func (s *Service) GetUserPermissions(prefix Prefix, username string, allowAll bool) (PermissionMap, error) {
+// GetUserPermissions answers what this session may do. Whatever the answer, the
+// features the caller withholds are taken back out of it: a permission nobody
+// can hold in this Ivory is not this feature's business to decide, so the
+// caller states it.
+func (s *Service) GetUserPermissions(username string, allowAll bool, withheld []config.Feature) (PermissionMap, error) {
 	if allowAll {
-		return s.getAllPermissionsWithStatus(GRANTED), nil
+		return s.getAllPermissionsWithStatus(GRANTED).without(withheld), nil
 	}
-	permUsername, errName := s.getFullUsername(prefix, username)
-	if errName != nil {
-		return nil, errName
+	if username == "" {
+		return nil, ErrUsernameCannotBeEmpty
 	}
-	permissions, err := s.permissionRepository.Get(permUsername)
+	permissions, err := s.permissionRepository.Get(username)
 	if err != nil {
 		// NOTE: a signed-in person whose record is gone was deleted while their
 		// token was still valid - saying so beats reporting a missing element
@@ -76,66 +59,56 @@ func (s *Service) GetUserPermissions(prefix Prefix, username string, allowAll bo
 		}
 		return nil, err
 	}
-	return permissions, nil
+	return permissions.without(withheld), nil
 }
 
-func (s *Service) CreateUserPermissions(prefix Prefix, username string) (PermissionMap, error) {
-	permUsername, errName := s.getFullUsername(prefix, username)
-	if errName != nil {
-		return nil, errName
+// CreateUserPermissions makes sure a user has the record they are entitled to:
+// a missing one is created with defaultStatus, and an existing one keeps every
+// answer it already carries while a feature added since it was written is
+// filled in with defaultStatus too. The caller states that default because the
+// caller is the one who knows what kind of user this is - this feature has
+// never heard of a superuser.
+func (s *Service) CreateUserPermissions(username string, defaultStatus Status) (PermissionMap, error) {
+	if username == "" {
+		return nil, ErrUsernameCannotBeEmpty
 	}
-	existingPermissions, err := s.permissionRepository.Get(permUsername)
+	existing, err := s.permissionRepository.Get(username)
 	if err != nil && !errors.Is(err, storage.ErrNotFound) {
 		return nil, err
 	}
-	if existingPermissions != nil {
-		return existingPermissions, nil
+
+	permissions := make(PermissionMap, len(config.All))
+	renamed := existing.renamed()
+	for _, feature := range config.All {
+		if status, ok := renamed[feature]; ok {
+			permissions[feature] = status
+		} else {
+			permissions[feature] = defaultStatus
+		}
 	}
-
-	status := s.getStatus(permUsername)
-
-	permissions := s.getAllPermissionsWithStatus(status)
-	errCreate := s.permissionRepository.CreateOrUpdate(permUsername, permissions)
-	if errCreate != nil {
+	if errCreate := s.permissionRepository.CreateOrUpdate(username, permissions); errCreate != nil {
 		return nil, errCreate
 	}
-
 	return permissions, nil
 }
 
-func (s *Service) RequestUserPermissions(prefix Prefix, username string, featuresList []config.Feature) error {
-	permUsername, errName := s.getFullUsername(prefix, username)
-	if errName != nil {
-		return errName
-	}
-	return s.updateUserPermissions(permUsername, featuresList, PENDING)
+func (s *Service) RequestUserPermissions(username string, featuresList []config.Feature) error {
+	return s.updateUserPermissions(username, featuresList, PENDING)
 }
 
-func (s *Service) ApproveUserPermissions(permUsername string, featuresList []config.Feature) error {
-	return s.updateUserPermissions(permUsername, featuresList, GRANTED)
+func (s *Service) ApproveUserPermissions(username string, featuresList []config.Feature) error {
+	return s.updateUserPermissions(username, featuresList, GRANTED)
 }
 
-func (s *Service) RejectUserPermissions(permUsername string, featuresList []config.Feature) error {
-	return s.updateUserPermissions(permUsername, featuresList, NOT_PERMITTED)
+func (s *Service) RejectUserPermissions(username string, featuresList []config.Feature) error {
+	return s.updateUserPermissions(username, featuresList, NOT_PERMITTED)
 }
 
-// DeleteBasicUserPermissions drops the record of an Ivory user, under whichever
-// prefix it is stored: they hold the basic one, or the superuser one that takes
-// its place. It exists so the user feature can say a person is gone without
-// knowing anything about how permissions are keyed.
-func (s *Service) DeleteBasicUserPermissions(username string) error {
-	permUsername, errName := s.getFullUsername(PrefixBasic, username)
-	if errName != nil {
-		return errName
-	}
-	return s.permissionRepository.Delete(permUsername)
-}
-
-func (s *Service) DeleteUserPermissions(permUsername string) error {
-	if permUsername == "" {
+func (s *Service) DeleteUserPermissions(username string) error {
+	if username == "" {
 		return ErrUsernameCannotBeEmpty
 	}
-	return s.permissionRepository.Delete(permUsername)
+	return s.permissionRepository.Delete(username)
 }
 
 func (s *Service) DeleteAll() error {
@@ -147,23 +120,6 @@ func (s *Service) UpdateUserPermissions(username string, permissions PermissionM
 		return ErrUsernameCannotBeEmpty
 	}
 	return s.permissionRepository.CreateOrUpdate(username, permissions)
-}
-
-// getFullUsername composes the key one user's permissions are stored under. A
-// superuser gets its own prefix, so the same person holds one record however
-// they sign in. How a key is built is nobody else's business: callers ask for
-// what they want done, they do not name records.
-func (s *Service) getFullUsername(prefix Prefix, username string) (string, error) {
-	if username == "" {
-		return "", ErrUsernameCannotBeEmpty
-	}
-	if prefix == "" {
-		return "", ErrPrefixCannotBeEmpty
-	}
-	if slices.Contains(s.superusers, username) {
-		prefix = PrefixSuperuser
-	}
-	return string(prefix) + ":" + username, nil
 }
 
 func (s *Service) isValidFeature(feature config.Feature) bool {
@@ -178,19 +134,10 @@ func (s *Service) getAllPermissionsWithStatus(status Status) PermissionMap {
 	return permissions
 }
 
-func (s *Service) getStatus(permUsername string) Status {
-	split := strings.Split(permUsername, ":")
-	username := split[1]
-	if slices.Contains(s.superusers, username) {
-		return GRANTED
-	}
-	return NOT_PERMITTED
-}
-
-func (s *Service) updateUserPermissions(permUsername string, featuresList []config.Feature, status Status) error {
+func (s *Service) updateUserPermissions(username string, featuresList []config.Feature, status Status) error {
 	var err error
 	for _, feature := range featuresList {
-		errPerm := s.updateUserPermission(permUsername, feature, status)
+		errPerm := s.updateUserPermission(username, feature, status)
 		if errPerm != nil {
 			err = errors.Join(err, fmt.Errorf("%s: %w", feature, errPerm))
 		}
@@ -198,53 +145,19 @@ func (s *Service) updateUserPermissions(permUsername string, featuresList []conf
 	return err
 }
 
-func (s *Service) updateUserPermission(permUsername string, feature config.Feature, status Status) error {
-	if permUsername == "" {
-		return ErrUsernameCannotBeEmpty
-	}
-	prefix, username, found := strings.Cut(permUsername, ":")
-	if !found || prefix == "" {
-		return ErrPrefixCannotBeEmpty
-	}
+func (s *Service) updateUserPermission(username string, feature config.Feature, status Status) error {
 	if username == "" {
 		return ErrUsernameCannotBeEmpty
-	}
-	if slices.Contains(s.superusers, username) {
-		return ErrCannotChangePermissionsForSuperusers
 	}
 	if !s.isValidFeature(feature) {
 		return ErrInvalidFeature
 	}
 
-	existingPermissions, err := s.permissionRepository.Get(permUsername)
+	existingPermissions, err := s.permissionRepository.Get(username)
 	if err != nil {
 		return err
 	}
 
 	existingPermissions[feature] = status
-	return s.permissionRepository.CreateOrUpdate(permUsername, existingPermissions)
-}
-
-func (s *Service) normalizeDatabase() error {
-	permissionsMap, errMap := s.permissionRepository.GetAll()
-	if errMap != nil {
-		return errMap
-	}
-	for permUsername, permissions := range permissionsMap {
-		status := s.getStatus(permUsername)
-		permissions = permissions.renamed()
-		normalisedPermissions := make(PermissionMap)
-		for _, feature := range config.All {
-			if perm, ok := permissions[feature]; !ok {
-				normalisedPermissions[feature] = status
-			} else {
-				normalisedPermissions[feature] = perm
-			}
-		}
-		errUpdate := s.permissionRepository.CreateOrUpdate(permUsername, normalisedPermissions)
-		if errUpdate != nil {
-			return errUpdate
-		}
-	}
-	return nil
+	return s.permissionRepository.CreateOrUpdate(username, existingPermissions)
 }

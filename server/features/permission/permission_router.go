@@ -18,9 +18,13 @@ func NewRouter(permissionService *Service) *Router {
 func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		authEnabled := context.GetBool(config.AuthContextKey.Enabled)
-		authType := context.GetString(config.AuthContextKey.Type)
 		username := context.GetString(config.AuthContextKey.Username)
-		permissions, err := r.permissionService.GetUserPermissions(Prefix(authType), username, !authEnabled)
+		// NOTE: a superuser holds every permission and cannot be talked out of
+		// it, so their request is authorised wholesale rather than out of a
+		// record somebody else could edit - this feature never learns what a
+		// superuser is, the auth middleware that does says so here
+		superuser := context.GetBool(config.AuthContextKey.Superuser)
+		permissions, err := r.permissionService.GetUserPermissions(username, !authEnabled || superuser, config.Withheld(authEnabled))
 		if err != nil {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
@@ -57,14 +61,13 @@ func (r *Router) GetAllUserPermissions(context *gin.Context) {
 
 func (r *Router) RequestUserPermission(context *gin.Context) {
 	username := context.GetString(config.AuthContextKey.Username)
-	prefix := context.GetString(config.AuthContextKey.Type)
 	var request PermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err := r.permissionService.RequestUserPermissions(Prefix(prefix), username, request.Permissions)
+	err := r.permissionService.RequestUserPermissions(username, request.Permissions)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

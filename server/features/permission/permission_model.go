@@ -2,22 +2,10 @@ package permission
 
 import (
 	"ivory/core/config"
+	"slices"
 )
 
 // COMMON (WEB AND SERVER)
-
-// Prefix names the authority that vouched for a person, and a stored key is
-// that prefix and their username. They live here because this is the package
-// that persists them, and features/auth spells its own type names with them
-// rather than the two drifting apart.
-type Prefix string
-
-const (
-	PrefixBasic     Prefix = "basic"
-	PrefixLdap      Prefix = "ldap"
-	PrefixOidc      Prefix = "oidc"
-	PrefixSuperuser Prefix = "superuser"
-)
 
 type Status int
 
@@ -44,6 +32,21 @@ func (p PermissionMap) renamed() PermissionMap {
 		renamed[current] = status
 	}
 	return renamed
+}
+
+// without drops the features nobody may hold, so an answer never offers a
+// permission the caller has already said is not on the table.
+func (p PermissionMap) without(features []config.Feature) PermissionMap {
+	if len(features) == 0 {
+		return p
+	}
+	kept := make(PermissionMap, len(p))
+	for feature, status := range p {
+		if !slices.Contains(features, feature) {
+			kept[feature] = status
+		}
+	}
+	return kept
 }
 
 type UserPermissions struct {

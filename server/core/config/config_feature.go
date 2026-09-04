@@ -65,13 +65,11 @@ const (
 	ManageCertDelete Feature = "manage.cert.delete"
 
 	// User management features
-	ViewUserList     Feature = "view.user.list"
-	ManageUserDelete Feature = "manage.user.delete"
-
-	ViewUserLinkList     Feature = "view.user.link.list"
-	ManageUserLinkCreate Feature = "manage.user.link.create"
-	ManageUserLinkReset  Feature = "manage.user.link.reset"
-	ManageUserLinkDelete Feature = "manage.user.link.delete"
+	ViewUserList            Feature = "view.user.list"
+	ManageUserCreate        Feature = "manage.user.create"
+	ManageUserUpdate        Feature = "manage.user.update"
+	ManageUserPasswordReset Feature = "manage.user.password.reset"
+	ManageUserDelete        Feature = "manage.user.delete"
 
 	// Permission management features
 	ViewPermissionList     Feature = "view.permission.list"
@@ -150,6 +148,33 @@ type Plugin interface {
 	String() string
 }
 
+// authOnly are the features that only mean anything when Ivory knows who is
+// asking. Without authentication there is nobody to register and nobody to
+// grant anything to, so a loginless session is not given them at all - the
+// alternative is a user manager that can only ever create users who cannot
+// sign in.
+var authOnly = []Feature{
+	ViewUserList,
+	ManageUserCreate,
+	ManageUserUpdate,
+	ManageUserPasswordReset,
+	ManageUserDelete,
+	ViewPermissionList,
+	ManagePermissionUpdate,
+	ManagePermissionDelete,
+}
+
+// Withheld names the features nobody holds in this Ivory. It is stated here
+// rather than by whoever answers a request, so the permission middleware and
+// the app info the UI reads cannot disagree about what a loginless session may
+// do.
+func Withheld(authEnabled bool) []Feature {
+	if authEnabled {
+		return nil
+	}
+	return authOnly
+}
+
 var All = []Feature{
 	ViewClusterList,
 	ViewClusterItem,
@@ -195,11 +220,10 @@ var All = []Feature{
 	ManageCertCreate,
 	ManageCertDelete,
 	ViewUserList,
+	ManageUserCreate,
+	ManageUserUpdate,
+	ManageUserPasswordReset,
 	ManageUserDelete,
-	ViewUserLinkList,
-	ManageUserLinkCreate,
-	ManageUserLinkReset,
-	ManageUserLinkDelete,
 	ViewPermissionList,
 	ManagePermissionUpdate,
 	ManagePermissionDelete,

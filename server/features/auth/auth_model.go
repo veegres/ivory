@@ -1,6 +1,6 @@
 package auth
 
-import "ivory/features/permission"
+import "ivory/features/user"
 
 type AuthType int8
 
@@ -10,13 +10,13 @@ const (
 	OIDC
 )
 
-// Prefix is the authority a permission record is filed under when this auth
-// type vouches for somebody, which is what the string form of an auth type is
-// for in the first place.
-func (s AuthType) Prefix() permission.Prefix {
-	return []permission.Prefix{permission.PrefixBasic, permission.PrefixLdap, permission.PrefixOidc}[s]
+// User is the way of signing in this auth type stands for. The vocabulary
+// belongs to features/user, because a user is registered for it, and spelling
+// the string form out with it keeps the two from drifting apart.
+func (s AuthType) User() user.AuthType {
+	return []user.AuthType{user.AuthBasic, user.AuthLdap, user.AuthOidc}[s]
 }
 
 func (s AuthType) String() string {
-	return string(s.Prefix())
+	return string(s.User())
 }

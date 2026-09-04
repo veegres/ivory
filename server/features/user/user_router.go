@@ -24,6 +24,34 @@ func (r *Router) GetUserList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": users})
 }
 
+func (r *Router) PostUser(context *gin.Context) {
+	var request CreateRequest
+	if errBind := context.ShouldBindJSON(&request); errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+	user, err := r.userService.Create(request, r.getRequester(context))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": user})
+}
+
+func (r *Router) PutUser(context *gin.Context) {
+	var request UpdateRequest
+	if errBind := context.ShouldBindJSON(&request); errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
+	user, err := r.userService.Update(context.Param("username"), request.AuthTypes, r.getRequester(context))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": user})
+}
+
 func (r *Router) DeleteUser(context *gin.Context) {
 	err := r.userService.Delete(context.Param("username"), r.getRequester(context))
 	if err != nil {
@@ -47,59 +75,31 @@ func (r *Router) PostUserPassword(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "password was updated"})
 }
 
-func (r *Router) GetUserLinkList(context *gin.Context) {
-	links, err := r.userService.LinkList()
+func (r *Router) PostUserPasswordReset(context *gin.Context) {
+	registration, err := r.userService.PasswordResetIssue(context.Param("username"), r.getRequester(context))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"response": links})
+	context.JSON(http.StatusOK, gin.H{"response": registration})
 }
 
-func (r *Router) PostUserLink(context *gin.Context) {
-	var request LinkRequest
+func (r *Router) DeleteUserPasswordReset(context *gin.Context) {
+	err := r.userService.PasswordResetRevoke(context.Param("username"), r.getRequester(context))
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"response": "registration is not valid any more"})
+}
+
+func (r *Router) PostUserRegistrationVerify(context *gin.Context) {
+	var request RegistrationVerifyRequest
 	if errBind := context.ShouldBindJSON(&request); errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	link, err := r.userService.LinkCreateInvite(request, r.getRequester(context))
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	context.JSON(http.StatusOK, gin.H{"response": link})
-}
-
-func (r *Router) PostUserResetLink(context *gin.Context) {
-	var request LinkResetRequest
-	if errBind := context.ShouldBindJSON(&request); errBind != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
-		return
-	}
-	link, err := r.userService.LinkCreateReset(request.Username, r.getRequester(context))
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	context.JSON(http.StatusOK, gin.H{"response": link})
-}
-
-func (r *Router) DeleteUserLink(context *gin.Context) {
-	err := r.userService.LinkRevoke(context.Param("uuid"), r.getRequester(context))
-	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	context.JSON(http.StatusOK, gin.H{"response": "link is not valid any more"})
-}
-
-func (r *Router) PostUserLinkVerify(context *gin.Context) {
-	var request LinkVerifyRequest
-	if errBind := context.ShouldBindJSON(&request); errBind != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
-		return
-	}
-	payload, err := r.userService.LinkVerify(request.Token)
+	payload, err := r.userService.RegistrationVerify(request.Token)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -107,13 +107,13 @@ func (r *Router) PostUserLinkVerify(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": payload})
 }
 
-func (r *Router) PostUserLinkPassword(context *gin.Context) {
-	var request LinkPasswordRequest
+func (r *Router) PostUserRegistrationPassword(context *gin.Context) {
+	var request RegistrationPasswordRequest
 	if errBind := context.ShouldBindJSON(&request); errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
 	}
-	user, err := r.userService.LinkApply(request.Token, request.Password)
+	user, err := r.userService.RegistrationApply(request.Token, request.Password)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -6,9 +6,11 @@ import (
 	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
+	"ivory/features/user"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
+	"strings"
 	"testing"
 )
 
@@ -290,6 +292,59 @@ func TestImportV2FromFrozenFile(t *testing.T) {
 		t.Fatalf("Import() error = %v", err)
 	}
 
+	// NOTE: a backup carries who somebody is and never their password, so a
+	// restored user who signs in with one comes back waiting for a registration
+	t.Run("users restore without a password", func(t *testing.T) {
+		users, err := s.userService.List()
+		if err != nil {
+			t.Fatalf("List() error = %v", err)
+		}
+		if len(users) != 3 {
+			t.Fatalf("expected the file's three users, got %+v", users)
+		}
+
+		byName := make(map[string]user.Response, len(users))
+		for _, u := range users {
+			byName[u.Username] = u
+		}
+
+		root, ok := byName["root"]
+		if !ok {
+			t.Fatalf("expected root to come back, got %+v", users)
+		}
+		if !root.Superuser || len(root.AuthTypes) != 3 {
+			t.Errorf("got %+v, want a superuser with every way of signing in", root)
+		}
+		if root.Registration == nil || root.Registration.Status != user.RegistrationMissing {
+			t.Errorf("got %+v, want a registration still to issue", root.Registration)
+		}
+
+		bob, okBob := byName["bob"]
+		if !okBob {
+			t.Fatalf("expected bob to come back, got %+v", users)
+		}
+		if bob.Superuser || len(bob.AuthTypes) != 1 || bob.AuthTypes[0] != user.AuthLdap {
+			t.Errorf("got %+v, want an ldap-only regular user", bob)
+		}
+		if bob.Registration != nil {
+			t.Errorf("got %+v, want nothing to register for somebody who signs in elsewhere", bob.Registration)
+		}
+	})
+
+	// NOTE: a record was keyed by the authority that vouched for a person once,
+	// and a file written then still names them that way
+	t.Run("a permission key written under an authority loses its prefix", func(t *testing.T) {
+		permissions, err := s.permissionService.GetAllUserPermissions()
+		if err != nil {
+			t.Fatalf("GetAllUserPermissions() error = %v", err)
+		}
+		for _, up := range permissions {
+			if strings.Contains(up.Username, ":") {
+				t.Errorf("got %q, want a bare username", up.Username)
+			}
+		}
+	})
+
 	// NOTE: everything V1 could not say about a cluster - which pair manages
 	// it, whether it speaks TLS, and each node's own name and three ports
 	t.Run("a cluster restores whole", func(t *testing.T) {
@@ -395,7 +450,7 @@ func TestImportV2FromFrozenFile(t *testing.T) {
 		}
 		var alice permission.PermissionMap
 		for _, up := range permissions {
-			if up.Username == "basic:alice" {
+			if up.Username == "alice" {
 				alice = up.Permissions
 			}
 		}

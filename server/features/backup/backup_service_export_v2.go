@@ -10,6 +10,10 @@ import "ivory/features/deployment"
 // shape from V1, so there is nothing to project through - and V1 could not
 // carry a plugin, a node name or a node's own ports in the first place.
 func (s *Service) exportV2() (*BackupV2, error) {
+	users, errUser := s.userService.List()
+	if errUser != nil {
+		return nil, errUser
+	}
 	clusters, errCluster := s.clusterService.List()
 	if errCluster != nil {
 		return nil, errCluster
@@ -25,6 +29,11 @@ func (s *Service) exportV2() (*BackupV2, error) {
 	templates, errTemplate := s.deploymentService.List(deployment.ListRequest{})
 	if errTemplate != nil {
 		return nil, errTemplate
+	}
+
+	backupUsers := make([]backupUserV2, 0)
+	for _, u := range users {
+		backupUsers = append(backupUsers, userToBackupV2(u))
 	}
 
 	backupClusters := make([]backupClusterV2, 0)
@@ -64,6 +73,7 @@ func (s *Service) exportV2() (*BackupV2, error) {
 	}
 
 	return &BackupV2{
+		Users:       backupUsers,
 		Clusters:    backupClusters,
 		Queries:     backupQueries,
 		Permissions: backupPermissions,

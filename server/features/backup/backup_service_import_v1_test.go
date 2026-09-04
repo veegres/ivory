@@ -7,6 +7,7 @@ import (
 	"ivory/features/query"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -67,12 +68,12 @@ func TestImportV1(t *testing.T) {
 		}
 		found := false
 		for _, p := range perms {
-			if p.Username == "basic:alice" {
+			if p.Username == "alice" {
 				found = true
 			}
 		}
 		if !found {
-			t.Fatalf("expected restored permissions for basic:alice, got %v", perms)
+			t.Fatalf("expected restored permissions for alice, got %v", perms)
 		}
 	})
 }
@@ -175,7 +176,10 @@ func TestImportV1FromFrozenFile(t *testing.T) {
 		if c.Plugins.Keeper != keeper.PATRONI_POSTGRES || c.Plugins.Database != database.POSTGRES {
 			t.Errorf("got %+v, want patroni over postgres", c.Plugins)
 		}
-		if len(c.Tags) != 2 || c.Tags[0] != "prod" {
+		// NOTE: a restored cluster's tags come back in whatever order the tag
+		// map was ranged in, so this asks which tags are there and not which
+		// came first - the old index check failed about one run in twelve
+		if len(c.Tags) != 2 || !slices.Contains(c.Tags, "prod") || !slices.Contains(c.Tags, "eu") {
 			t.Errorf("got tags %v, want the file's own", c.Tags)
 		}
 	})
@@ -252,7 +256,7 @@ func TestImportV1FromFrozenFile(t *testing.T) {
 		}
 		var alice permission.PermissionMap
 		for _, up := range permissions {
-			if up.Username == "basic:alice" {
+			if up.Username == "alice" {
 				alice = up.Permissions
 			}
 		}

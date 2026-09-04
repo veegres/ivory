@@ -57,7 +57,7 @@ func createTestConfigRouter(t *testing.T) *Router {
 	}
 
 	userService := user.NewService(
-		user.NewRepository(storage.NewDbBucket[user.User](db, "User"), storage.NewDbBucket[user.Link](db, "UserLink")),
+		user.NewRepository(storage.NewDbBucket[user.User](db, "User")),
 		encryption.NewService(),
 		secretService,
 		permission.NewService(permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission"))),

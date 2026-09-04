@@ -6,8 +6,10 @@ import (
 	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
+	"ivory/features/user"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"strings"
 )
 
 // BackupV2 is the current backup format. Its shapes mirror today's root models
@@ -25,10 +27,22 @@ import (
 // current models, and a new format that reused them would inherit their
 // blind spots instead.
 type BackupV2 struct {
+	Users       []backupUserV2        `json:"users"`
 	Clusters    []backupClusterV2     `json:"clusters"`
 	Queries     []backupQueryV2       `json:"queries"`
 	Permissions []backupPermissionsV2 `json:"permissions"`
 	Deployments []backupDeploymentV2  `json:"deployments"`
+}
+
+// backupUserV2 is who a permission record belongs to: a name, the ways that
+// person may sign in, and whether they administer Ivory. It carries no
+// password and no outstanding registration - a password is the one thing a
+// backup never leaves with, so a restored user signing in with one waits for a
+// fresh registration from whoever restored the file.
+type backupUserV2 struct {
+	Username  string   `json:"username"`
+	AuthTypes []string `json:"authTypes"`
+	Superuser bool     `json:"superuser"`
 }
 
 // backupClusterV2 is cluster.Response minus what points outside the file: the
@@ -231,6 +245,22 @@ func queryVarietyToBackupV2(qv query.VarietyType) (backupQueryVarietyV2, error) 
 	}
 }
 
+func userToBackupV2(u user.Response) backupUserV2 {
+	authTypes := make([]string, 0, len(u.AuthTypes))
+	for _, authType := range u.AuthTypes {
+		authTypes = append(authTypes, string(authType))
+	}
+	return backupUserV2{Username: u.Username, AuthTypes: authTypes, Superuser: u.Superuser}
+}
+
+func (bu backupUserV2) toAuthTypes() []user.AuthType {
+	authTypes := make([]user.AuthType, 0, len(bu.AuthTypes))
+	for _, authType := range bu.AuthTypes {
+		authTypes = append(authTypes, user.AuthType(authType))
+	}
+	return authTypes
+}
+
 func userPermissionsToBackupV2(up permission.UserPermissions) (*backupPermissionsV2, error) {
 	perms := make(map[string]backupPermissionStatusV2)
 	for k, v := range up.Permissions {
@@ -375,7 +405,20 @@ func (bp backupPermissionsV2) toUserPermissions() permission.UserPermissions {
 		}
 		perms[perm] = status
 	}
-	return permission.UserPermissions{Username: bp.Username, Permissions: perms}
+	return permission.UserPermissions{Username: syncUsernameV2(bp.Username), Permissions: perms}
+}
+
+// syncUsernameV2 drops the authority prefix a permission key used to be stored
+// under. A record is keyed by the username alone now - one person is one
+// identity, whichever way they sign in - and a file written before that still
+// names them "basic:alice". A name carrying no known prefix is left alone.
+func syncUsernameV2(username string) string {
+	for _, prefix := range []string{"basic:", "ldap:", "oidc:", "superuser:"} {
+		if after, found := strings.CutPrefix(username, prefix); found {
+			return after
+		}
+	}
+	return username
 }
 
 // syncPermissionV2 looks up a stored permission key against the current set of

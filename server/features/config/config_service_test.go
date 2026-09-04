@@ -74,7 +74,7 @@ func createTestConfigService(t *testing.T) *testConfigEnv {
 		permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission")),
 	)
 	userService := user.NewService(
-		user.NewRepository(storage.NewDbBucket[user.User](db, "User"), storage.NewDbBucket[user.Link](db, "UserLink")),
+		user.NewRepository(storage.NewDbBucket[user.User](db, "User")),
 		encryption.NewService(),
 		secretService,
 		permissionService,
@@ -133,7 +133,7 @@ func TestServiceSetAppConfigSuperuser(t *testing.T) {
 		env := createTestConfigService(t)
 
 		req := NewAppConfig{
-			Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
+			User:      &UserSetupRequest{Username: "root", Password: "password123", AuthTypes: []user.AuthType{user.AuthBasic}},
 			AppConfig: AppConfig{Company: "Acme", Auth: AuthConfig{Basic: &basic.Config{}}},
 		}
 		if err := env.service.SetAppConfig(req); err != nil {
@@ -153,7 +153,7 @@ func TestServiceSetAppConfigSuperuser(t *testing.T) {
 		env := createTestConfigService(t)
 
 		req := NewAppConfig{
-			Superuser: &SuperuserRequest{Username: "root", Password: ""},
+			User:      &UserSetupRequest{Username: "root", Password: "", AuthTypes: []user.AuthType{user.AuthBasic}},
 			AppConfig: AppConfig{Company: "Acme", Auth: AuthConfig{Basic: &basic.Config{}}},
 		}
 		if err := env.service.SetAppConfig(req); err == nil {
@@ -166,7 +166,7 @@ func TestServiceSetAppConfigSuperuser(t *testing.T) {
 
 	t.Run("a setup that names no superuser is fine once one exists", func(t *testing.T) {
 		env := createTestConfigService(t)
-		if _, err := env.userService.Create("root", "password123", true); err != nil {
+		if _, err := env.userService.CreateOutright("root", "password123", []user.AuthType{user.AuthBasic}, true); err != nil {
 			t.Fatalf("failed to seed root: %v", err)
 		}
 
@@ -190,7 +190,7 @@ func TestServiceSetAndGetAppConfig(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
-		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
+		User: &UserSetupRequest{Username: "root", Password: "password123", AuthTypes: []user.AuthType{user.AuthBasic}},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{
@@ -272,7 +272,7 @@ func TestServiceSetAppConfigRollsBackOnAuthValidationError(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
-		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
+		User: &UserSetupRequest{Username: "root", Password: "password123", AuthTypes: []user.AuthType{user.AuthBasic}},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{
@@ -294,7 +294,7 @@ func TestServiceReencrypt(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
-		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
+		User: &UserSetupRequest{Username: "root", Password: "password123", AuthTypes: []user.AuthType{user.AuthBasic}},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{
@@ -348,7 +348,7 @@ func TestServiceDeleteAll(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
-		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
+		User: &UserSetupRequest{Username: "root", Password: "password123", AuthTypes: []user.AuthType{user.AuthBasic}},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{

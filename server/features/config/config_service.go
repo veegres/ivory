@@ -17,6 +17,7 @@ var ErrConfigNotSpecified = errors.New("config is not specified")
 var ErrConfigAlreadySet = errors.New("config is already set; to change it, you need to provide the correct secret")
 var ErrCompanyNameEmpty = errors.New("company name cannot be empty")
 var ErrSuperuserRequired = errors.New("a superuser is required to enable authentication")
+var ErrSuperuserPasswordRequired = errors.New("a superuser registered for basic auth needs a password")
 
 type Service struct {
 	configFiles       *storage.FileStorage
@@ -144,7 +145,7 @@ func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 	// NOTE: the superuser is created before the config is saved. The other way
 	// round, a failure here would leave authentication switched on with nobody
 	// able to sign in, and no way left to fix it from the outside
-	errSuperuser := s.setSuperuser(appConfig.Auth, newAppConfig.Superuser)
+	errSuperuser := s.createSetupUser(appConfig.Auth, newAppConfig.User)
 	if errSuperuser != nil {
 		s.clearCache()
 		return errSuperuser
@@ -164,9 +165,12 @@ func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 	return nil
 }
 
-// setSuperuser makes sure enabling authentication leaves somebody who can
-// administer Ivory. Setup is the only place a user is created without a link.
-func (s *Service) setSuperuser(authConfig AuthConfig, request *SuperuserRequest) error {
+// createSetupUser makes sure enabling authentication leaves somebody who can
+// administer Ivory. Setup is the only place a user is registered with a password
+// somebody else typed, and the password is asked for only when that user is
+// registered for basic - an Ivory signed into through LDAP or SSO alone has no
+// use for one.
+func (s *Service) createSetupUser(authConfig AuthConfig, request *UserSetupRequest) error {
 	if !authConfig.enabled() {
 		return nil
 	}
@@ -180,7 +184,16 @@ func (s *Service) setSuperuser(authConfig AuthConfig, request *SuperuserRequest)
 		}
 		return nil
 	}
-	_, err := s.userService.Create(request.Username, request.Password, true)
+	password := ""
+	for _, authType := range request.AuthTypes {
+		if authType == user.AuthBasic {
+			if request.Password == "" {
+				return ErrSuperuserPasswordRequired
+			}
+			password = request.Password
+		}
+	}
+	_, err := s.userService.CreateOutright(request.Username, password, request.AuthTypes, true)
 	return err
 }
 

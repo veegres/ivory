@@ -95,10 +95,9 @@ func (s *Service) Erase() error {
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
 	errUser := s.userService.DeleteAll()
-	errUserLink := s.userService.LinkDeleteAll()
 	errTools := s.deleteAllTools()
 
-	return errors.Join(errSecret, errCred, errCert, errCluster, errTag, errQuery, errDeployment, errConfig, errPerm, errUser, errUserLink, errTools)
+	return errors.Join(errSecret, errCred, errCert, errCluster, errTag, errQuery, errDeployment, errConfig, errPerm, errUser, errTools)
 }
 
 func (s *Service) deleteAllTools() error {
@@ -125,7 +124,7 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	return s.userService.Reencrypt(prevSha, newSha)
 }
 
-func (s *Service) GetAppInfo(authorised bool, authEnabled bool, username string, authType string, authError string) *AppInfo {
+func (s *Service) GetAppInfo(authorised bool, authEnabled bool, username string, authError string) *AppInfo {
 	appConfig, errConfig := s.configService.GetAppConfig()
 	configConfigured := s.configService.GetIsConfigured()
 	authSupported := s.authService.GetSupportedTypes()
@@ -148,7 +147,7 @@ func (s *Service) GetAppInfo(authorised bool, authEnabled bool, username string,
 		}
 	}
 
-	authorisedResult, user, resultError := s.getAuthInfo(authorised, authEnabled, username, authType, authError)
+	authorisedResult, user, resultError := s.getAuthInfo(authorised, authEnabled, username, authError)
 	return &AppInfo{
 		Config: ConfigInfo{
 			Configured: configConfigured,
@@ -181,12 +180,15 @@ func (s *Service) isSuperuser(username string, authEnabled bool) bool {
 	return isSuperuser
 }
 
-func (s *Service) getAuthInfo(authorised bool, authEnabled bool, username string, authType string, authError string) (bool, *UserInfo, string) {
+func (s *Service) getAuthInfo(authorised bool, authEnabled bool, username string, authError string) (bool, *UserInfo, string) {
 	if authError != "" {
 		return authorised, nil, authError
 	}
-	permissions, errPerm := s.permissionService.GetUserPermissions(permission.Prefix(authType), username, !authEnabled)
-	user := &UserInfo{Username: username, Superuser: s.isSuperuser(username, authEnabled), Permissions: permissions}
+	// NOTE: a superuser is answered everything rather than out of a record,
+	// exactly as the permission middleware answers them - the two have to agree
+	superuser := s.isSuperuser(username, authEnabled)
+	permissions, errPerm := s.permissionService.GetUserPermissions(username, !authEnabled || superuser, coreConfig.Withheld(authEnabled))
+	user := &UserInfo{Username: username, Superuser: superuser, Permissions: permissions}
 	if errPerm != nil {
 		return authorised, user, errPerm.Error()
 	}

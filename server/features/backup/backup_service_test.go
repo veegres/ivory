@@ -3,12 +3,16 @@ package backup
 import (
 	"encoding/json"
 	"ivory/clients/storage"
+	"ivory/core/service/encryption"
+	"ivory/core/service/secret"
+	"ivory/core/service/token"
 	"ivory/core/utils"
 	"ivory/features/cluster"
 	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/features/tag"
+	"ivory/features/user"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/etcd"
@@ -67,7 +71,22 @@ func createTestBackupService(t *testing.T) *Service {
 	platformRegistry.Register(platform.Docker, docker.NewPlugin(nil))
 	deploymentService := deployment.NewService(deploymentRepository, keeperRegistry, platformRegistry)
 
-	return NewService(clusterService, queryService, permissionService, deploymentService)
+	secretService := secret.NewService(
+		secret.NewRepository(storage.NewDbBucket[string](db, "Secret")),
+		encryption.NewService(),
+	)
+	if err := secretService.SetDefault(); err != nil {
+		t.Fatalf("failed to set default secret: %v", err)
+	}
+	userService := user.NewService(
+		user.NewRepository(storage.NewDbBucket[user.User](db, "User")),
+		encryption.NewService(),
+		secretService,
+		permissionService,
+		token.NewService(secretService),
+	)
+
+	return NewService(clusterService, queryService, permissionService, deploymentService, userService)
 }
 
 // readGolden returns one of the frozen backup files under testdata. They are

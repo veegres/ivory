@@ -18,10 +18,7 @@ func newTestRepository(t *testing.T) *Repository {
 	}
 	t.Cleanup(func() { db.Close() })
 
-	return NewRepository(
-		storage.NewDbBucket[User](db, "User"),
-		storage.NewDbBucket[Link](db, "UserLink"),
-	)
+	return NewRepository(storage.NewDbBucket[User](db, "User"))
 }
 
 func TestRepositoryCreateAndGet(t *testing.T) {
