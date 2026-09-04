@@ -90,6 +90,17 @@ describe("useTemplateForm", () => {
         expect(result.current.template.commands).toEqual([etcdCommand, {command: ""}, etcdCommand])
     })
 
+    it("should copy a node without its name, which no two commands may share", () => {
+        const named: TemplateCommand = {...etcdCommand, defaults: {name: "etcd1", keeperPort: 2379, dbPort: 2379}}
+        const {result} = renderHook(() => useTemplateForm({...initialTemplate(), commands: [named]}))
+
+        act(() => result.current.addCommand(named))
+
+        expect(result.current.template.commands[1]?.defaults?.name).toBeUndefined()
+        expect(result.current.template.commands[1]?.defaults?.keeperPort).toBe(2379)
+        expect(result.current.template.commands[1]?.command).toBe(named.command)
+    })
+
     it("should replace only the command at the given index", () => {
         const {result} = renderHook(() => useTemplateForm(initialTemplate()))
         const replacement: TemplateCommand = {command: "docker run -d --name {{name}} redis"}
