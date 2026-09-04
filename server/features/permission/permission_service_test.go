@@ -35,9 +35,12 @@ func createTestPermissionService(t *testing.T) *Service {
 func TestServiceSetSuperusers(t *testing.T) {
 	s := createTestPermissionService(t)
 
-	t.Run("empty list is rejected", func(t *testing.T) {
-		if err := s.SetSuperusers(nil); err != ErrAtLeastOneSuperuser {
-			t.Fatalf("expected ErrAtLeastOneSuperuser, got %v", err)
+	t.Run("empty list is accepted, since Ivory starts without any user", func(t *testing.T) {
+		if err := s.SetSuperusers(nil); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(s.superusers) != 0 {
+			t.Fatalf("expected no superusers, got %v", s.superusers)
 		}
 	})
 
@@ -57,15 +60,70 @@ func TestServiceSetSuperusers(t *testing.T) {
 	})
 }
 
-func TestServiceDeleteAdmins(t *testing.T) {
+func TestServiceSetSuperusersClears(t *testing.T) {
 	s := createTestPermissionService(t)
 	if err := s.SetSuperusers([]string{"admin"}); err != nil {
 		t.Fatalf("failed to set superusers: %v", err)
 	}
-	s.DeleteAdmins()
+	if err := s.SetSuperusers(nil); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 	if len(s.superusers) != 0 {
 		t.Fatalf("expected superusers to be cleared, got %v", s.superusers)
 	}
+}
+
+func TestServiceDeleteBasicUserPermissions(t *testing.T) {
+	t.Run("drops the record an Ivory user signs in with", func(t *testing.T) {
+		s := createTestPermissionService(t)
+		if _, err := s.CreateUserPermissions(PrefixBasic, "alice"); err != nil {
+			t.Fatalf("failed to seed alice: %v", err)
+		}
+
+		if err := s.DeleteBasicUserPermissions("alice"); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		all, errAll := s.GetAllUserPermissions()
+		if errAll != nil {
+			t.Fatalf("expected no error, got %v", errAll)
+		}
+		for _, up := range all {
+			if up.Username == "basic:alice" {
+				t.Fatalf("expected the record to be gone, got %+v", up)
+			}
+		}
+	})
+
+	t.Run("drops a superuser's record, which is kept under its own prefix", func(t *testing.T) {
+		s := createTestPermissionService(t)
+		if err := s.SetSuperusers([]string{"root"}); err != nil {
+			t.Fatalf("failed to set superusers: %v", err)
+		}
+		if _, err := s.CreateUserPermissions(PrefixBasic, "root"); err != nil {
+			t.Fatalf("failed to seed root: %v", err)
+		}
+
+		if err := s.DeleteBasicUserPermissions("root"); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		all, errAll := s.GetAllUserPermissions()
+		if errAll != nil {
+			t.Fatalf("expected no error, got %v", errAll)
+		}
+		if len(all) != 0 {
+			t.Fatalf("expected the superuser record to be gone, got %+v", all)
+		}
+	})
+
+	t.Run("empty username is rejected", func(t *testing.T) {
+		s := createTestPermissionService(t)
+
+		if err := s.DeleteBasicUserPermissions(""); err != ErrUsernameCannotBeEmpty {
+			t.Fatalf("expected ErrUsernameCannotBeEmpty, got %v", err)
+		}
+	})
 }
 
 func TestServiceCreateUserPermissions(t *testing.T) {

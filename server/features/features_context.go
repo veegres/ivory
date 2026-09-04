@@ -8,6 +8,7 @@ import (
 	"ivory/core"
 	coreConfig "ivory/core/config"
 	"ivory/core/service/encryption"
+	"ivory/core/service/token"
 	"ivory/core/utils"
 	"ivory/features/auth"
 	"ivory/features/backup"
@@ -19,6 +20,7 @@ import (
 	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/features/tag"
+	"ivory/features/user"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
@@ -35,6 +37,7 @@ type Router struct {
 	Deployment *deployment.Router
 	Management *management.Router
 	Config     *config.Router
+	User       *user.Router
 }
 
 type Context struct {
@@ -56,6 +59,8 @@ func NewContext(
 	permissionBucket := storage.NewDbBucket[permission.PermissionMap](st, "Permission")
 	queryBucket := storage.NewDbBucket[query.Response](st, "Query")
 	deploymentBucket := storage.NewDbBucket[deployment.Template](st, "DeploymentTemplate")
+	userBucket := storage.NewDbBucket[user.User](st, "User")
+	userLinkBucket := storage.NewDbBucket[user.Link](st, "UserLink")
 
 	// FILES
 	configFiles := storage.NewFileStorage("config", ".json")
@@ -67,11 +72,7 @@ func NewContext(
 	permissionRepo := permission.NewRepository(permissionBucket)
 	queryRepo := query.NewRepository(queryBucket, queryLogFiles)
 	deploymentRepo := deployment.NewRepository(deploymentBucket)
-
-	// AUTH PROVIDER
-	basicProvider := basic.NewProvider()
-	ldapProvider := ldap.NewProvider()
-	oidcProvider := oidc.NewProvider()
+	userRepo := user.NewRepository(userBucket, userLinkBucket)
 
 	// CORE SERVICES
 	vaultService := coreService.Vault
@@ -80,15 +81,23 @@ func NewContext(
 
 	encryptionService := encryption.NewService()
 	secretService := vaultService.SecretService()
+	tokenService := token.NewService(secretService)
 	permissionService := permission.NewService(permissionRepo)
+
+	userService := user.NewService(userRepo, encryptionService, secretService, permissionService, tokenService)
+
+	// AUTH PROVIDER
+	basicProvider := basic.NewProvider(userService)
+	ldapProvider := ldap.NewProvider()
+	oidcProvider := oidc.NewProvider()
 
 	nodeService := node.NewService(platformRegistry, keeperRegistry, vaultService, certService, jobService)
 	tagService := tag.NewService(tagRepo)
 	queryService := query.NewService(queryRepo, databaseRegistry, vaultService, certService, env.Version.Label)
 	deploymentService := deployment.NewService(deploymentRepo, keeperRegistry, platformRegistry)
 	clusterService := cluster.NewService(clusterRepo, nodeService, tagService, queryService, vaultService, toolRegistry)
-	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
-	configService := config.NewService(configFiles, encryptionService, secretService, authService, permissionService, basicProvider, ldapProvider, oidcProvider)
+	authService := auth.NewService(tokenService, basicProvider, ldapProvider, oidcProvider, permissionService)
+	configService := config.NewService(configFiles, encryptionService, secretService, authService, userService, basicProvider, ldapProvider, oidcProvider)
 	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService)
 	managementService := management.NewService(
 		env,
@@ -105,6 +114,7 @@ func NewContext(
 		configService,
 		permissionService,
 		backupService,
+		userService,
 		toolRegistry,
 	)
 
@@ -119,6 +129,7 @@ func NewContext(
 			Deployment: deployment.NewRouter(deploymentService),
 			Management: management.NewRouter(managementService),
 			Config:     config.NewRouter(configService),
+			User:       user.NewRouter(userService),
 		},
 	}
 }

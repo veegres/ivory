@@ -5,7 +5,6 @@ type Login struct {
 	Password string `form:"password" json:"password,omitempty"`
 }
 
-type Config struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
+// Config carries no credentials on purpose: basic auth authenticates against
+// the Ivory users, so the only thing the app config states is that it is on.
+type Config struct{}

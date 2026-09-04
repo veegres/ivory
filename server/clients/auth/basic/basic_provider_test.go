@@ -1,12 +1,34 @@
 package basic
 
 import (
+	"errors"
 	"testing"
 )
 
+var errFakeCredentials = errors.New("credentials are not correct")
+
+type fakeVerifier struct {
+	users  map[string]string
+	called int
+}
+
+func (v *fakeVerifier) VerifyPassword(username string, password string) error {
+	v.called++
+	stored, ok := v.users[username]
+	if !ok || stored != password {
+		return errFakeCredentials
+	}
+	return nil
+}
+
+func createTestProvider() (*Provider, *fakeVerifier) {
+	verifier := &fakeVerifier{users: map[string]string{"admin": "password123", "Admin": "Password123"}}
+	return NewProvider(verifier), verifier
+}
+
 func TestProvider_Configured(t *testing.T) {
 	t.Run("should return false when not configured", func(t *testing.T) {
-		provider := NewProvider()
+		provider, _ := createTestProvider()
 
 		if provider.Configured() {
 			t.Error("Expected provider to not be configured")
@@ -14,13 +36,11 @@ func TestProvider_Configured(t *testing.T) {
 	})
 
 	t.Run("should return true after configuration", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
-		}
+		provider, _ := createTestProvider()
 
-		provider.SetConfig(config)
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
+		}
 
 		if !provider.Configured() {
 			t.Error("Expected provider to be configured")
@@ -29,14 +49,10 @@ func TestProvider_Configured(t *testing.T) {
 }
 
 func TestProvider_SetConfig(t *testing.T) {
-	t.Run("should accept valid config", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
-		}
+	t.Run("should accept the config, since it carries no credentials any more", func(t *testing.T) {
+		provider, _ := createTestProvider()
 
-		err := provider.SetConfig(config)
+		err := provider.SetConfig(Config{})
 
 		if err != nil {
 			t.Fatalf("Expected no error, got: %v", err)
@@ -45,96 +61,15 @@ func TestProvider_SetConfig(t *testing.T) {
 			t.Error("Expected provider to be configured")
 		}
 	})
-
-	t.Run("should return error for empty username", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "",
-			Password: "password123",
-		}
-
-		err := provider.SetConfig(config)
-
-		if err == nil {
-			t.Fatal("Expected error for empty username, got nil")
-		}
-		if err.Error() != "username is not specified" {
-			t.Errorf("Expected 'username is not specified', got: %v", err)
-		}
-	})
-
-	t.Run("should return error for empty password", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "",
-		}
-
-		err := provider.SetConfig(config)
-
-		if err == nil {
-			t.Fatal("Expected error for empty password, got nil")
-		}
-		if err.Error() != "password is not specified" {
-			t.Errorf("Expected 'password is not specified', got: %v", err)
-		}
-	})
-
-	t.Run("should return error for both empty", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "",
-			Password: "",
-		}
-
-		err := provider.SetConfig(config)
-
-		if err == nil {
-			t.Fatal("Expected error for empty credentials, got nil")
-		}
-		// Will fail on username check first
-		if err.Error() != "username is not specified" {
-			t.Errorf("Expected 'username is not specified', got: %v", err)
-		}
-	})
-
-	t.Run("should overwrite previous config", func(t *testing.T) {
-		provider := NewProvider()
-		config1 := Config{
-			Username: "admin",
-			Password: "password123",
-		}
-		config2 := Config{
-			Username: "user",
-			Password: "newpassword",
-		}
-
-		provider.SetConfig(config1)
-		provider.SetConfig(config2)
-
-		// Verify new config by trying to login
-		_, err := provider.Verify(Login{Username: "user", Password: "newpassword"})
-		if err != nil {
-			t.Errorf("Expected new config to be active, got error: %v", err)
-		}
-
-		// Old credentials should fail
-		_, err = provider.Verify(Login{Username: "admin", Password: "password123"})
-		if err == nil {
-			t.Error("Expected old credentials to fail")
-		}
-	})
 }
 
 func TestProvider_DeleteConfig(t *testing.T) {
 	t.Run("should delete config", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
-		}
+		provider, _ := createTestProvider()
 
-		provider.SetConfig(config)
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
+		}
 		provider.DeleteConfig()
 
 		if provider.Configured() {
@@ -143,7 +78,7 @@ func TestProvider_DeleteConfig(t *testing.T) {
 	})
 
 	t.Run("should handle deleting when not configured", func(t *testing.T) {
-		provider := NewProvider()
+		provider, _ := createTestProvider()
 
 		// Should not panic
 		provider.DeleteConfig()
@@ -156,12 +91,10 @@ func TestProvider_DeleteConfig(t *testing.T) {
 
 func TestProvider_Verify(t *testing.T) {
 	t.Run("should verify correct credentials", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
+		provider, verifier := createTestProvider()
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
 		}
-		provider.SetConfig(config)
 
 		username, err := provider.Verify(Login{
 			Username: "admin",
@@ -174,131 +107,92 @@ func TestProvider_Verify(t *testing.T) {
 		if username != "admin" {
 			t.Errorf("Expected username 'admin', got '%s'", username)
 		}
+		if verifier.called != 1 {
+			t.Errorf("Expected the verifier to be asked once, got %d", verifier.called)
+		}
 	})
 
-	t.Run("should reject wrong username", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
+	t.Run("should reject unknown username", func(t *testing.T) {
+		provider, _ := createTestProvider()
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
 		}
-		provider.SetConfig(config)
 
 		_, err := provider.Verify(Login{
 			Username: "wronguser",
 			Password: "password123",
 		})
 
-		if err == nil {
-			t.Fatal("Expected error for wrong username, got nil")
-		}
-		if err.Error() != "credentials are not correct" {
-			t.Errorf("Expected 'credentials are not correct', got: %v", err)
+		if !errors.Is(err, errFakeCredentials) {
+			t.Errorf("Expected the verifier error, got: %v", err)
 		}
 	})
 
 	t.Run("should reject wrong password", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
+		provider, _ := createTestProvider()
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
 		}
-		provider.SetConfig(config)
 
 		_, err := provider.Verify(Login{
 			Username: "admin",
 			Password: "wrongpassword",
 		})
 
-		if err == nil {
-			t.Fatal("Expected error for wrong password, got nil")
-		}
-		if err.Error() != "credentials are not correct" {
-			t.Errorf("Expected 'credentials are not correct', got: %v", err)
+		if !errors.Is(err, errFakeCredentials) {
+			t.Errorf("Expected the verifier error, got: %v", err)
 		}
 	})
 
-	t.Run("should reject both wrong", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
+	t.Run("should reject an empty username without asking the verifier", func(t *testing.T) {
+		provider, verifier := createTestProvider()
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
 		}
-		provider.SetConfig(config)
-
-		_, err := provider.Verify(Login{
-			Username: "wronguser",
-			Password: "wrongpassword",
-		})
-
-		if err == nil {
-			t.Fatal("Expected error for wrong credentials, got nil")
-		}
-		if err.Error() != "credentials are not correct" {
-			t.Errorf("Expected 'credentials are not correct', got: %v", err)
-		}
-	})
-
-	t.Run("should handle empty username in login", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
-		}
-		provider.SetConfig(config)
 
 		_, err := provider.Verify(Login{
 			Username: "",
 			Password: "password123",
 		})
 
-		if err == nil {
-			t.Fatal("Expected error for empty username, got nil")
+		if !errors.Is(err, ErrUsernameNotSpecified) {
+			t.Fatalf("Expected ErrUsernameNotSpecified, got: %v", err)
+		}
+		if verifier.called != 0 {
+			t.Errorf("Expected the verifier not to be asked, got %d calls", verifier.called)
 		}
 	})
 
-	t.Run("should handle empty password in login", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
+	t.Run("should reject an empty password without asking the verifier", func(t *testing.T) {
+		provider, verifier := createTestProvider()
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
 		}
-		provider.SetConfig(config)
 
 		_, err := provider.Verify(Login{
 			Username: "admin",
 			Password: "",
 		})
 
-		if err == nil {
-			t.Fatal("Expected error for empty password, got nil")
+		if !errors.Is(err, ErrPasswordNotSpecified) {
+			t.Fatalf("Expected ErrPasswordNotSpecified, got: %v", err)
+		}
+		if verifier.called != 0 {
+			t.Errorf("Expected the verifier not to be asked, got %d calls", verifier.called)
 		}
 	})
 
-	t.Run("should be case-sensitive for username", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "Admin",
-			Password: "password123",
-		}
-		provider.SetConfig(config)
-
-		// Wrong case
-		_, err := provider.Verify(Login{
-			Username: "admin",
-			Password: "password123",
-		})
-
-		if err == nil {
-			t.Fatal("Expected error for case-sensitive username mismatch, got nil")
+	t.Run("should be case-sensitive for username and password", func(t *testing.T) {
+		provider, _ := createTestProvider()
+		if err := provider.SetConfig(Config{}); err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
 		}
 
-		// Correct case
-		username, err := provider.Verify(Login{
-			Username: "Admin",
-			Password: "password123",
-		})
+		if _, err := provider.Verify(Login{Username: "admin", Password: "Password123"}); err == nil {
+			t.Fatal("Expected error for case-sensitive password mismatch, got nil")
+		}
 
+		username, err := provider.Verify(Login{Username: "Admin", Password: "Password123"})
 		if err != nil {
 			t.Fatalf("Expected no error for correct case, got: %v", err)
 		}
@@ -307,78 +201,31 @@ func TestProvider_Verify(t *testing.T) {
 		}
 	})
 
-	t.Run("should be case-sensitive for password", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "Password123",
-		}
-		provider.SetConfig(config)
+	t.Run("should return error when not configured", func(t *testing.T) {
+		provider, verifier := createTestProvider()
 
-		// Wrong case
 		_, err := provider.Verify(Login{
 			Username: "admin",
 			Password: "password123",
 		})
 
-		if err == nil {
-			t.Fatal("Expected error for case-sensitive password mismatch, got nil")
+		if !errors.Is(err, ErrConfigNotConfigured) {
+			t.Fatalf("Expected ErrConfigNotConfigured, got: %v", err)
 		}
-
-		// Correct case
-		_, err = provider.Verify(Login{
-			Username: "admin",
-			Password: "Password123",
-		})
-
-		if err != nil {
-			t.Fatalf("Expected no error for correct case, got: %v", err)
-		}
-	})
-
-	t.Run("should return error when not configured", func(t *testing.T) {
-		provider := NewProvider()
-
-		_, err := provider.Verify(Login{
-			Username: "testuser",
-			Password: "password",
-		})
-
-		if err == nil {
-			t.Fatal("Expected error when not configured, got nil")
-		}
-		if err.Error() != "config is not configured" {
-			t.Errorf("Expected 'config is not configured', got: %v", err)
+		if verifier.called != 0 {
+			t.Errorf("Expected the verifier not to be asked, got %d calls", verifier.called)
 		}
 	})
 }
 
 func TestProvider_Connect(t *testing.T) {
 	t.Run("should return error for obsolete method", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{
-			Username: "admin",
-			Password: "password123",
-		}
+		provider, _ := createTestProvider()
 
-		err := provider.Connect(config)
+		err := provider.Connect(Config{})
 
-		if err == nil {
-			t.Fatal("Expected error for obsolete method, got nil")
-		}
-		if err.Error() != "connection is obsolete" {
-			t.Errorf("Expected 'connection is obsolete', got: %v", err)
-		}
-	})
-
-	t.Run("should return error even with empty config", func(t *testing.T) {
-		provider := NewProvider()
-		config := Config{}
-
-		err := provider.Connect(config)
-
-		if err == nil {
-			t.Fatal("Expected error for obsolete method, got nil")
+		if !errors.Is(err, ErrConnectionObsolete) {
+			t.Fatalf("Expected ErrConnectionObsolete, got: %v", err)
 		}
 	})
 }

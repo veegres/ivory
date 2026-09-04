@@ -6,6 +6,19 @@ import (
 
 // COMMON (WEB AND SERVER)
 
+// Prefix names the authority that vouched for a person, and a stored key is
+// that prefix and their username. They live here because this is the package
+// that persists them, and features/auth spells its own type names with them
+// rather than the two drifting apart.
+type Prefix string
+
+const (
+	PrefixBasic     Prefix = "basic"
+	PrefixLdap      Prefix = "ldap"
+	PrefixOidc      Prefix = "oidc"
+	PrefixSuperuser Prefix = "superuser"
+)
+
 type Status int
 
 const (

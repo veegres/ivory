@@ -154,6 +154,32 @@ func (b *DbBucket[T]) Update(key string, value T) error {
 	})
 }
 
+// DeleteIf deletes a key in the same transaction that decides whether it may be
+// deleted, so a rule about the whole bucket - "the last one stays" - cannot be
+// raced by a concurrent write. The check sees every element, the one being
+// deleted included, and the error it returns is returned as is.
+func (b *DbBucket[T]) DeleteIf(key string, check func(all map[string]T) error) error {
+	if key == "" {
+		return ErrEmptyKey
+	}
+	return b.storage.Update(func(tx *bolt.Tx) error {
+		all := make(map[string]T)
+		cursor := tx.Bucket(b.name).Cursor()
+		for k, value := cursor.First(); k != nil; k, value = cursor.Next() {
+			var el T
+			buff := bytes.NewBuffer(value)
+			if err := gob.NewDecoder(buff).Decode(&el); err != nil {
+				return err
+			}
+			all[string(k)] = el
+		}
+		if err := check(all); err != nil {
+			return err
+		}
+		return tx.Bucket(b.name).Delete([]byte(key))
+	})
+}
+
 func (b *DbBucket[T]) Delete(key string) error {
 	return b.storage.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(b.name).Delete([]byte(key))

@@ -9,6 +9,15 @@ import (
 type NewAppConfig struct {
 	Secret    string    `json:"secret,omitempty"`
 	AppConfig AppConfig `json:"appConfig"`
+	// Superuser is the first user Ivory gets. Setup is the one place a password
+	// is typed on somebody else's behalf, because there is nobody yet who could
+	// be sent a link; every user after this one sets their own.
+	Superuser *SuperuserRequest `json:"superuser,omitempty"`
+}
+
+type SuperuserRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type AppConfig struct {
@@ -17,8 +26,11 @@ type AppConfig struct {
 }
 
 type AuthConfig struct {
-	Superusers []string      `json:"superusers"`
-	Basic      *basic.Config `json:"basic"`
-	Ldap       *ldap.Config  `json:"ldap"`
-	Oidc       *oidc.Config  `json:"oidc"`
+	Basic *basic.Config `json:"basic"`
+	Ldap  *ldap.Config  `json:"ldap"`
+	Oidc  *oidc.Config  `json:"oidc"`
+}
+
+func (c AuthConfig) enabled() bool {
+	return c.Basic != nil || c.Ldap != nil || c.Oidc != nil
 }

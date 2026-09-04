@@ -10,19 +10,20 @@ import (
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
 	"ivory/features/auth"
-	"ivory/features/permission"
+	"ivory/features/user"
 )
 
 var ErrConfigNotSpecified = errors.New("config is not specified")
 var ErrConfigAlreadySet = errors.New("config is already set; to change it, you need to provide the correct secret")
 var ErrCompanyNameEmpty = errors.New("company name cannot be empty")
+var ErrSuperuserRequired = errors.New("a superuser is required to enable authentication")
 
 type Service struct {
 	configFiles       *storage.FileStorage
 	encryptionService *encryption.Service
 	secretService     *secret.Service
 	authService       *auth.Service
-	permissionService *permission.Service
+	userService       *user.Service
 	basicProvider     *basic.Provider
 	ldapProvider      *ldap.Provider
 	oidcProvider      *oidc.Provider
@@ -37,7 +38,7 @@ func NewService(
 	encryptionService *encryption.Service,
 	secretService *secret.Service,
 	authService *auth.Service,
-	permissionService *permission.Service,
+	userService *user.Service,
 	basicProvider *basic.Provider,
 	ldapProvider *ldap.Provider,
 	oidcProvider *oidc.Provider,
@@ -47,7 +48,7 @@ func NewService(
 		encryptionService: encryptionService,
 		secretService:     secretService,
 		authService:       authService,
-		permissionService: permissionService,
+		userService:       userService,
 		basicProvider:     basicProvider,
 		ldapProvider:      ldapProvider,
 		oidcProvider:      oidcProvider,
@@ -140,6 +141,14 @@ func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 		s.clearCache()
 		return errValid
 	}
+	// NOTE: the superuser is created before the config is saved. The other way
+	// round, a failure here would leave authentication switched on with nobody
+	// able to sign in, and no way left to fix it from the outside
+	errSuperuser := s.setSuperuser(appConfig.Auth, newAppConfig.Superuser)
+	if errSuperuser != nil {
+		s.clearCache()
+		return errSuperuser
+	}
 	encryptedAuthConfig, errAuthConfig := s.encryptAuthConfig(appConfig.Auth)
 	if errAuthConfig != nil {
 		s.clearCache()
@@ -153,6 +162,26 @@ func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 		return errSave
 	}
 	return nil
+}
+
+// setSuperuser makes sure enabling authentication leaves somebody who can
+// administer Ivory. Setup is the only place a user is created without a link.
+func (s *Service) setSuperuser(authConfig AuthConfig, request *SuperuserRequest) error {
+	if !authConfig.enabled() {
+		return nil
+	}
+	if request == nil {
+		hasSuperuser, err := s.userService.HasSuperuser()
+		if err != nil {
+			return err
+		}
+		if !hasSuperuser {
+			return ErrSuperuserRequired
+		}
+		return nil
+	}
+	_, err := s.userService.Create(request.Username, request.Password, true)
+	return err
 }
 
 func (s *Service) Reencrypt() error {
@@ -180,19 +209,9 @@ func (s *Service) clearCache() {
 	s.basicProvider.DeleteConfig()
 	s.oidcProvider.DeleteConfig()
 	s.ldapProvider.DeleteConfig()
-	s.permissionService.DeleteAdmins()
 }
 
 func (s *Service) encryptAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
-	if authConfig.Basic != nil {
-		encrypted, err := s.encrypt(authConfig.Basic.Password)
-		if err != nil {
-			return authConfig, err
-		}
-		tmp := *authConfig.Basic
-		tmp.Password = encrypted
-		authConfig.Basic = &tmp
-	}
 	if authConfig.Oidc != nil {
 		encrypted, err := s.encrypt(authConfig.Oidc.ClientSecret)
 		if err != nil {
@@ -215,15 +234,6 @@ func (s *Service) encryptAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
 }
 
 func (s *Service) decryptAuthConfig(authConfig AuthConfig) (AuthConfig, error) {
-	if authConfig.Basic != nil {
-		decrypted, err := s.decrypt(authConfig.Basic.Password)
-		if err != nil {
-			return authConfig, err
-		}
-		tmp := *authConfig.Basic
-		tmp.Password = decrypted
-		authConfig.Basic = &tmp
-	}
 	if authConfig.Oidc != nil {
 		decrypted, err := s.decrypt(authConfig.Oidc.ClientSecret)
 		if err != nil {
@@ -264,10 +274,6 @@ func (s *Service) decrypt(str string) (string, error) {
 func (s *Service) setAuthConfig(authConfig AuthConfig) error {
 	if authConfig.Basic == nil && authConfig.Ldap == nil && authConfig.Oidc == nil {
 		return nil
-	}
-	errSuper := s.permissionService.SetSuperusers(authConfig.Superusers)
-	if errSuper != nil {
-		return errSuper
 	}
 	var err error
 	if authConfig.Basic != nil {
