@@ -75,12 +75,7 @@ export function ClusterDeployCredentials(props: Props) {
     function renderModeButton(value: CredentialMode) {
         const {tooltip, icon} = ModeOptions[value]
         return (
-            <ToggleButton
-                key={value}
-                sx={SX.button}
-                value={value}
-                disabled={value === "none" && !!credential.username}
-            >
+            <ToggleButton key={value} sx={SX.button} value={value}>
                 <Tooltip title={tooltip} placement={"top"}>{icon}</Tooltip>
             </ToggleButton>
         )
