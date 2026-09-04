@@ -1,13 +1,15 @@
-import {Box, Button} from "@mui/material"
+import {Box, Button, Tooltip} from "@mui/material"
 import {useState} from "react"
 
-import {AlertInformative} from "../../../shared/component/box/AlertInformative"
+import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {useRouterSecretChange} from "../api/ManagementHook"
 
 const SX: SxPropsMap = {
-    form: {display: "flex", flexDirection: "column", gap: 2, margin: "20px 0px"},
+    box: {display: "flex", flexDirection: "column", gap: 2},
+    inputs: {display: "flex", flexDirection: "column", gap: 1.5},
+    button: {padding: "5px"},
 }
 
 export function ManageSecret() {
@@ -16,40 +18,56 @@ export function ManageSecret() {
     const changeReq = useRouterSecretChange()
 
     return (
-        <Box>
-            <AlertInformative
-                title={"You can change your secret here"}
-                subtitle={"This is useful if your secret has been compromised or if someone gained access to Ivory and you want to force all users to log out"}
-                description={<>
-                    When you change the secret, Ivory will re-encrypt all your stored vaults, and
-                    all existing Ivory login tokens will be invalidated. This means that you and
-                    everyone else currently logged in will be logged out.
-                    If you skipped setting a secret during the initial setup, you can set it here—just
-                    leave the <i>Previous secret</i> field empty. You can also revert to the default behavior
-                    by leaving the <i>New secret</i> field empty.
-                </>}
-            />
-            <Box sx={SX.form}>
+        <Box sx={SX.box}>
+            <AlertCentered severity={"warning"} text={renderDescription()}/>
+            <Box sx={SX.inputs}>
                 <KeyEnterInput
-                    hidden={true}
+                    label={"Previous secret"}
+                    value={prevKey}
+                    hidden
                     required={false}
-                    label={"Previous Secret"}
                     onChange={(e) => setPrevKey(e.target.value)}
                 />
                 <KeyEnterInput
-                    hidden={true}
+                    label={"New secret"}
+                    value={newKey}
+                    hidden
                     required={false}
-                    label={"New Secret"}
                     onChange={(e) => setNewKey(e.target.value)}
+                    onEnterPress={handleChange}
                 />
-                <Button
-                    variant={"contained"}
-                    loading={changeReq.isPending}
-                    onClick={() => changeReq.mutate({previousKey: prevKey, newKey})}
-                >
-                    Change
-                </Button>
             </Box>
+            {renderButton()}
         </Box>
     )
+
+    function renderButton() {
+        return (
+            <Tooltip title={"Re-encrypt everything with the new secret"} placement={"top"} arrow disableInteractive>
+                <Box component={"span"}>
+                    <Button
+                        sx={SX.button}
+                        fullWidth={true}
+                        loading={changeReq.isPending}
+                        onClick={handleChange}
+                    >
+                        Change secret
+                    </Button>
+                </Box>
+            </Tooltip>
+        )
+    }
+
+    function renderDescription() {
+        return (<>
+            Changing the secret re-encrypts every stored vault and invalidates every login token,
+            so you and everybody else signed in are logged out. Leave <i>Previous secret</i> empty
+            if you skipped setting one during the initial setup, and <i>New secret</i> empty to
+            fall back to the default.
+        </>)
+    }
+
+    function handleChange() {
+        changeReq.mutate({previousKey: prevKey, newKey})
+    }
 }

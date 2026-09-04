@@ -128,8 +128,10 @@ day, and Ivory exists to simplify that routine first. Broader support grows from
 ### How to update to a new version?
 
 Ivory now provides Backup/Restore functionality for migrating your data between versions. You can backup your
-configuration (clusters, queries, permissions) from the Settings page and restore it in a new version. The backup format
-is backward compatible and designed to work across different versions.
+configuration (users, clusters, queries, permissions) from the Settings page and restore it in a new version. A backup
+says who your users are and how they sign in, and never carries a password - after a restore, hand everybody who signs
+in with one a fresh registration link. The backup format is backward compatible and designed to work across different
+versions.
 
 Alternatively, you can mount the data directory between containers (see instructions below), though this approach
 typically works only for patch releases. For minor and major version updates, always check the
@@ -148,9 +150,31 @@ new one by docker flag `--volumes-from`
 Ivory can work with or without authentication. It will ask you to configure it during the initial setup. Ivory supports
 multiple authentication methods:
 
-- **Basic** - Simple username and password authentication
+- **Basic** - Username and password authentication against the Ivory users
 - **LDAP** - Integration with LDAP directories
 - **OIDC/SSO** - Single Sign-On via OpenID Connect
+
+Whichever of them you switch on, everybody who signs in is an Ivory user first. From the _User Manager_ in the
+Settings page you register a username and pick which of the three ways that person may sign in with; a name your
+directory knows but Ivory does not is refused, so an unexpected LDAP account cannot walk in under a name somebody else
+holds. Registering somebody for a password issues a one-time link instead of asking you to type one: the person opens
+it, sets their own password and is signed in straight away. The link works once, expires within hours and can be
+revoked at any time, so hand it only to the person it names. The **superuser** who sets Ivory up is the one exception -
+their password is typed during the initial setup, since there is nobody yet to send a link to. Passwords are encrypted
+with your secret word and stored inside Ivory.
+
+A **superuser** always holds every permission and cannot have any of them taken away, which is what guarantees Ivory
+stays administrable; only a superuser can register, change or delete another one, and there is always at least one.
+Nobody can delete themselves. A username is never changed and the superuser flag is never taken back - what you can
+change about an existing user is which ways they sign in, and the single thing they can change about themselves is
+their own password, from the same _User Manager_. Deleting a user removes their permissions too.
+
+A forgotten password is answered the same way: from the _User Manager_ you **reset** the person's password, which hands
+them a new one-time link, keeping their user and everything it was granted - the password they already have keeps
+working until they use it. Nobody ever types somebody else's password, and only a superuser can reset a superuser's.
+
+Running Ivory **without authentication** switches all of this off: there is no account to change and nobody to grant
+anything to, so neither the _User Manager_ nor the _Permission Manager_ is offered at all.
 
 You can safely provide your secrets to Ivory for SSO and LDAP configuration. Ivory encrypts all secrets using your
 secret word. Therefore, make sure to select the appropriate application configuration in your SSO provider. As well,

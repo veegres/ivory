@@ -61,6 +61,13 @@ export enum Feature {
     ManageCertCreate = "manage.cert.create",
     ManageCertDelete = "manage.cert.delete",
 
+    // User management features
+    ViewUserList = "view.user.list",
+    ManageUserCreate = "manage.user.create",
+    ManageUserUpdate = "manage.user.update",
+    ManageUserPasswordReset = "manage.user.password.reset",
+    ManageUserDelete = "manage.user.delete",
+
     // Permission management features
     ViewPermissionList = "view.permission.list",
     ManagePermissionUpdate = "manage.permission.update",

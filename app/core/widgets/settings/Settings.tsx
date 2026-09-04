@@ -5,6 +5,7 @@ import {Certs} from "../../../features/cert/component/Certs"
 import {ManageBackup} from "../../../features/management/component/ManageBackup"
 import {ManageSecret} from "../../../features/management/component/ManageSecret"
 import {Permissions} from "../../../features/permission/component/Permissions"
+import {UserManager} from "../../../features/user/component/UserManager"
 import {Vault} from "../../../features/vault/component/Vault"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
@@ -42,6 +43,8 @@ export function Settings() {
                 return <ManageSecret/>
             case SettingsType.PERMISSION:
                 return <Permissions/>
+            case SettingsType.USER:
+                return <UserManager/>
             case SettingsType.BACKUP:
                 return <ManageBackup/>
             case SettingsType.ABOUT:

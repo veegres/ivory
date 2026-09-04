@@ -9,7 +9,7 @@ const SX: SxPropsMap = {
     collapse: {display: "flex", flexDirection: "column", gap: 2, marginTop: "20px"},
     label: {fontWeight: "bold"},
     message: {display: "flex", gap: 2, justifyContent: "space-between", alignItems: "center", whiteSpace: "pre-line"},
-    alert: {"& .MuiAlert-message": {flexGrow: 1}, width: "inherit"},
+    alert: {"& .MuiAlert-message": {flexGrow: 1}, width: "inherit", maxWidth: "inherit", minWidth: "inherit"},
     input: {whiteSpace: "pre-wrap", wordWrap: "break-word"},
 }
 

@@ -16,7 +16,7 @@ export const ManagementApi = {
     },
     erase: {
         key: () => ["erase"],
-        fn: (type: "initial" | "management") => api.delete<R<string>>(`/${type}/erase`)
+        fn: () => api.delete<R<string>>("/management/erase")
             .then((response) => response.data.response),
     },
     free: {

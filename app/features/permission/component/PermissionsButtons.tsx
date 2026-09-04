@@ -65,7 +65,7 @@ export function PermissionsButtons(props: Props) {
             onClick={() => rejectRouter.mutate({username, permissions: p})}
             endIcon={count && p.length}
         >
-            Deny
+            Revoke
         </Button>
     }
     function renderRequest() {

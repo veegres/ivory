@@ -21,18 +21,12 @@ export function useRouterSecretChange() {
     })
 }
 
-export function useRouterEraseInitial(onSuccess: () => void) {
+// NOTE: erasing is only ever asked for by somebody signed in - whoever has lost
+// the secret word reinstalls instead, which is why there is no public erase any
+// more
+export function useRouterErase(onSuccess: () => void) {
     return useMutationAdapter({
-        mutationFn: () => ManagementApi.erase.fn("initial"),
-        mutationKey: ManagementApi.erase.key(),
-        successKeys: [ManagementApi.info.key()],
-        onSuccess: onSuccess,
-    })
-}
-
-export function useRouterEraseSafe(onSuccess: () => void) {
-    return useMutationAdapter({
-        mutationFn: () => ManagementApi.erase.fn("management"),
+        mutationFn: ManagementApi.erase.fn,
         mutationKey: ManagementApi.erase.key(),
         successKeys: [ManagementApi.info.key()],
         onSuccess: onSuccess,

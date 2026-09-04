@@ -1,4 +1,4 @@
-import {Stars, StarsOutlined} from "@mui/icons-material"
+import {Stars} from "@mui/icons-material"
 import {Box, ToggleButton, Tooltip} from "@mui/material"
 import {useState} from "react"
 
@@ -10,19 +10,13 @@ import {useRouterInfo} from "../../management/api/ManagementHook"
 import {useRouterUserCreate} from "../api/UserHook"
 import {UserAuthType, UserRegistered, UserRegistration, UserSetupRequest} from "../api/UserType"
 import {UserAuthTypes} from "./UserAuthTypes"
-import {UserRegistrationView} from "./UserRegistrationView"
+import {UserRegistrationLink} from "./UserRegistrationLink"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
     row: {display: "flex", alignItems: "center", gap: 1},
     grow: {flexGrow: 1, minWidth: "150px"},
-    button: {height: "56px"},
 }
-
-// NOTE: a directory account costs nothing to allow - the directory still decides
-// whether that person exists - while a password has to be handed out, so the two
-// start switched on and basic does not
-const DEFAULT_AUTH_TYPES = [UserAuthType.LDAP, UserAuthType.OIDC]
 
 type SetupProps = {
     setup: true,
@@ -42,9 +36,9 @@ type Props = SetupProps | ManageProps
 // may sign in. It is the same form on the setup page and in the user manager -
 // the difference is that setup types the password here, because there is nobody
 // yet to hand a registration link to.
-export function UserCreate(props: Props) {
+export function UserCreationForm(props: Props) {
     const setup = props.setup === true
-    const [own, setOwn] = useState<UserSetupRequest>({username: "", password: "", authTypes: DEFAULT_AUTH_TYPES})
+    const [own, setOwn] = useState<UserSetupRequest>({username: "", password: "", authTypes: []})
     const [superuser, setSuperuser] = useState(false)
     const [registration, setRegistration] = useState<UserRegistration>()
 
@@ -74,12 +68,10 @@ export function UserCreate(props: Props) {
                 {setup ? renderPassword() : renderCreate()}
             </Box>
             {!setup && superuser && <AlertCentered severity={"warning"} text={renderSuperuserDescription()}/>}
-            {registration && <UserRegistrationView registration={registration}/>}
+            {registration && <UserRegistrationLink registration={registration}/>}
         </Box>
     )
 
-    // NOTE: the star is the same mark the user list puts beside a superuser, so
-    // the flag is recognised in the form that sets it and in the row that shows it
     function renderSuperuser() {
         const on = setup || superuser
         return (
@@ -87,20 +79,17 @@ export function UserCreate(props: Props) {
                 <Box component={"span"}>
                     <ToggleButton
                         value={"superuser"}
-                        color={"warning"}
                         selected={on}
                         disabled={setup || !allowed}
                         onClick={() => setSuperuser(!superuser)}
                     >
-                        {on ? <Stars/> : <StarsOutlined/>}
+                        <Stars/>
                     </ToggleButton>
                 </Box>
             </Tooltip>
         )
     }
 
-    // NOTE: setup is the one place a password is typed on somebody else's
-    // behalf; everywhere else this is a link the person opens themselves
     function renderPassword() {
         if (!value.authTypes.includes(UserAuthType.BASIC)) return null
         return (
@@ -120,8 +109,7 @@ export function UserCreate(props: Props) {
             <Tooltip title={getCreateTooltip()} placement={"top"} arrow disableInteractive>
                 <Box component={"span"} sx={SX.grow}>
                     <SimpleButton
-                        sx={SX.button}
-                        fullWidth
+                        fullWidth={true}
                         variant={"contained"}
                         color={"primary"}
                         loading={create.isPending}
@@ -135,8 +123,6 @@ export function UserCreate(props: Props) {
         )
     }
 
-    // NOTE: superuser cannot be taken back later, so it is spelled out the
-    // moment it is switched on rather than in a hint nobody opens
     function renderSuperuserDescription() {
         return (<>
             A <b>superuser</b> holds <b>every permission</b> and can never lose one, not even to
@@ -147,9 +133,9 @@ export function UserCreate(props: Props) {
     }
 
     function getSuperuserTooltip() {
-        if (setup) return "The first user administers Ivory, so this one is always a superuser"
+        if (setup) return "The first Ivory user is always a superuser"
         if (!allowed) return "Only a superuser can register another superuser"
-        return "Superuser - every permission, for good"
+        return "Superuser"
     }
 
     function getCreateTooltip() {
@@ -171,7 +157,7 @@ export function UserCreate(props: Props) {
 
     function handleCreated(registered: UserRegistered) {
         setRegistration(registered.registration)
-        setOwn({username: "", password: "", authTypes: DEFAULT_AUTH_TYPES})
+        setOwn({username: "", password: "", authTypes: []})
         setSuperuser(false)
     }
 

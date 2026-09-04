@@ -1,6 +1,9 @@
+import {UserSetupRequest} from "../../user/api/UserType"
+
 export interface NewAppConfig {
     secret?: string,
     appConfig: AppConfig,
+    user?: UserSetupRequest,
 }
 
 export interface AppConfig {
@@ -9,7 +12,6 @@ export interface AppConfig {
 }
 
 export interface AuthConfig {
-    superusers: string[],
     basic?: BasicConfig,
     ldap?: LdapConfig,
     oidc?: OidcConfig,
@@ -17,10 +19,9 @@ export interface AuthConfig {
 
 export type AuthConfigObject = object
 
-export interface BasicConfig extends AuthConfigObject {
-    username: string,
-    password: string,
-}
+// BasicConfig carries no credentials: basic auth authenticates against the
+// Ivory users, so all the config states is that it is on.
+export type BasicConfig = AuthConfigObject
 
 export interface LdapConfig extends AuthConfigObject {
     url: string,

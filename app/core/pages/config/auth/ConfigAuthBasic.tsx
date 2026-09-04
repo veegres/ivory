@@ -1,31 +1,34 @@
-import {Box} from "@mui/material"
-import {ChangeEvent} from "react"
+import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {BasicConfig} from "../../../../features/config/api/ConfigType"
-import {KeyEnterInput} from "../../../../shared/component/input/KeyEnterInput"
+import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
-    box: {display: "flex",  gap: 1},
+    box: {display: "flex", flexDirection: "column", gap: 1},
 }
 
 type Props = {
-    config: BasicConfig,
-    onChange: (config: BasicConfig) => void,
+    enabled: boolean,
+    onChange: (enabled: boolean) => void,
 }
 
 export function ConfigAuthBasic(props: Props) {
-    const {config, onChange} = props
+    const {enabled, onChange} = props
     return (
         <Box sx={SX.box}>
-            <KeyEnterInput label={"Username"} value={config.username} onChange={handleConfigChange("username")}/>
-            <KeyEnterInput label={"Password"} value={config.password} onChange={handleConfigChange("Password")} hidden/>
+            <AlertCentered text={renderDescription()}/>
+            <ToggleButtonGroup value={enabled} exclusive fullWidth>
+                <ToggleButton value={true} onClick={() => onChange(true)}>Enabled</ToggleButton>
+                <ToggleButton value={false} onClick={() => onChange(false)}>Disabled</ToggleButton>
+            </ToggleButtonGroup>
         </Box>
     )
 
-    function handleConfigChange(key: string) {
-        return (e: ChangeEvent<HTMLInputElement>) => {
-            onChange({...config, [key]: e.target.value})
-        }
+    function renderDescription() {
+        return (
+            "Basic authentication signs in the Ivory users. There are no credentials to type here beyond " +
+            "the superuser above: everybody after them is invited with a link and sets their own password. " +
+            "With this off, that superuser signs in through LDAP or SSO instead."
+        )
     }
 }
