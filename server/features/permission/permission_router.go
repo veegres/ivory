@@ -24,7 +24,7 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 		// record somebody else could edit - this feature never learns what a
 		// superuser is, the auth middleware that does says so here
 		superuser := context.GetBool(config.AuthContextKey.Superuser)
-		permissions, err := r.permissionService.GetUserPermissions(username, !authEnabled || superuser, config.Withheld(authEnabled))
+		permissions, err := r.permissionService.GetUserPermissions(username, !authEnabled || superuser, config.FeaturesWithheldWithoutAuth(authEnabled))
 		if err != nil {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return

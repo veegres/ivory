@@ -86,15 +86,15 @@ func TestV1PermissionsResolve(t *testing.T) {
 	}
 }
 
-func TestWithheld(t *testing.T) {
+func TestFeaturesWithheldWithoutAuth(t *testing.T) {
 	t.Run("nothing is withheld when authentication is on", func(t *testing.T) {
-		if withheld := Withheld(true); len(withheld) != 0 {
+		if withheld := FeaturesWithheldWithoutAuth(true); len(withheld) != 0 {
 			t.Errorf("expected nothing withheld with auth enabled, got %v", withheld)
 		}
 	})
 
 	t.Run("only user and permission features are withheld without authentication", func(t *testing.T) {
-		withheld := Withheld(false)
+		withheld := FeaturesWithheldWithoutAuth(false)
 		if len(withheld) == 0 {
 			t.Fatal("expected the session-only features to be withheld with auth disabled")
 		}

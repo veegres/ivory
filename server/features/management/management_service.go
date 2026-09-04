@@ -187,7 +187,7 @@ func (s *Service) getAuthInfo(authorised bool, authEnabled bool, username string
 	// NOTE: a superuser is answered everything rather than out of a record,
 	// exactly as the permission middleware answers them - the two have to agree
 	superuser := s.isSuperuser(username, authEnabled)
-	permissions, errPerm := s.permissionService.GetUserPermissions(username, !authEnabled || superuser, coreConfig.Withheld(authEnabled))
+	permissions, errPerm := s.permissionService.GetUserPermissions(username, !authEnabled || superuser, coreConfig.FeaturesWithheldWithoutAuth(authEnabled))
 	user := &UserInfo{Username: username, Superuser: superuser, Permissions: permissions}
 	if errPerm != nil {
 		return authorised, user, errPerm.Error()
