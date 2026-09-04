@@ -10,9 +10,9 @@ import (
 	"strings"
 )
 
-var ErrAtLeastOneSuperuser = errors.New("there should be at least 1 superuser")
 var ErrSuperusersCannotHaveEmptyName = errors.New("superusers cannot have empty name")
 var ErrUsernameCannotBeEmpty = errors.New("username cannot be empty")
+var ErrUserPermissionsNotFound = errors.New("this user does not exist any more")
 var ErrPrefixCannotBeEmpty = errors.New("prefix cannot be empty")
 var ErrCannotChangePermissionsForSuperusers = errors.New("cannot change permissions for superusers")
 var ErrInvalidFeature = errors.New("invalid feature")
@@ -30,19 +30,15 @@ func NewService(permissionRepository *Repository) *Service {
 	}
 }
 
+// SetSuperusers replaces the list of usernames that hold every permission. An
+// empty list is allowed: the user feature is what guarantees the last superuser
+// cannot be deleted, and Ivory starts with none at all.
 func (s *Service) SetSuperusers(superusers []string) error {
-	if len(superusers) == 0 {
-		return ErrAtLeastOneSuperuser
-	}
 	if slices.Contains(superusers, "") {
 		return ErrSuperusersCannotHaveEmptyName
 	}
 	s.superusers = superusers
 	return s.normalizeDatabase()
-}
-
-func (s *Service) DeleteAdmins() {
-	s.superusers = []string{}
 }
 
 func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
@@ -63,7 +59,7 @@ func (s *Service) GetAllUserPermissions() ([]UserPermissions, error) {
 	return result, nil
 }
 
-func (s *Service) GetUserPermissions(prefix string, username string, allowAll bool) (PermissionMap, error) {
+func (s *Service) GetUserPermissions(prefix Prefix, username string, allowAll bool) (PermissionMap, error) {
 	if allowAll {
 		return s.getAllPermissionsWithStatus(GRANTED), nil
 	}
@@ -73,12 +69,17 @@ func (s *Service) GetUserPermissions(prefix string, username string, allowAll bo
 	}
 	permissions, err := s.permissionRepository.Get(permUsername)
 	if err != nil {
+		// NOTE: a signed-in person whose record is gone was deleted while their
+		// token was still valid - saying so beats reporting a missing element
+		if errors.Is(err, storage.ErrNotFound) {
+			return nil, ErrUserPermissionsNotFound
+		}
 		return nil, err
 	}
 	return permissions, nil
 }
 
-func (s *Service) CreateUserPermissions(prefix string, username string) (PermissionMap, error) {
+func (s *Service) CreateUserPermissions(prefix Prefix, username string) (PermissionMap, error) {
 	permUsername, errName := s.getFullUsername(prefix, username)
 	if errName != nil {
 		return nil, errName
@@ -102,7 +103,7 @@ func (s *Service) CreateUserPermissions(prefix string, username string) (Permiss
 	return permissions, nil
 }
 
-func (s *Service) RequestUserPermissions(prefix string, username string, featuresList []config.Feature) error {
+func (s *Service) RequestUserPermissions(prefix Prefix, username string, featuresList []config.Feature) error {
 	permUsername, errName := s.getFullUsername(prefix, username)
 	if errName != nil {
 		return errName
@@ -116,6 +117,18 @@ func (s *Service) ApproveUserPermissions(permUsername string, featuresList []con
 
 func (s *Service) RejectUserPermissions(permUsername string, featuresList []config.Feature) error {
 	return s.updateUserPermissions(permUsername, featuresList, NOT_PERMITTED)
+}
+
+// DeleteBasicUserPermissions drops the record of an Ivory user, under whichever
+// prefix it is stored: they hold the basic one, or the superuser one that takes
+// its place. It exists so the user feature can say a person is gone without
+// knowing anything about how permissions are keyed.
+func (s *Service) DeleteBasicUserPermissions(username string) error {
+	permUsername, errName := s.getFullUsername(PrefixBasic, username)
+	if errName != nil {
+		return errName
+	}
+	return s.permissionRepository.Delete(permUsername)
 }
 
 func (s *Service) DeleteUserPermissions(permUsername string) error {
@@ -136,7 +149,11 @@ func (s *Service) UpdateUserPermissions(username string, permissions PermissionM
 	return s.permissionRepository.CreateOrUpdate(username, permissions)
 }
 
-func (s *Service) getFullUsername(prefix string, username string) (string, error) {
+// getFullUsername composes the key one user's permissions are stored under. A
+// superuser gets its own prefix, so the same person holds one record however
+// they sign in. How a key is built is nobody else's business: callers ask for
+// what they want done, they do not name records.
+func (s *Service) getFullUsername(prefix Prefix, username string) (string, error) {
 	if username == "" {
 		return "", ErrUsernameCannotBeEmpty
 	}
@@ -144,9 +161,9 @@ func (s *Service) getFullUsername(prefix string, username string) (string, error
 		return "", ErrPrefixCannotBeEmpty
 	}
 	if slices.Contains(s.superusers, username) {
-		prefix = "superuser"
+		prefix = PrefixSuperuser
 	}
-	return prefix + ":" + username, nil
+	return string(prefix) + ":" + username, nil
 }
 
 func (s *Service) isValidFeature(feature config.Feature) bool {

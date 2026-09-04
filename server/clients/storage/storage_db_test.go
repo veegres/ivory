@@ -1,8 +1,10 @@
 package storage
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/boltdb/bolt"
@@ -457,6 +459,109 @@ func TestNewBucket_CreatesIfNotExists(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected to use newly created bucket, got error: %v", err)
 	}
+}
+
+func TestBucket_DeleteIf(t *testing.T) {
+	t.Run("deletes when the check allows it", func(t *testing.T) {
+		db := createTestDB(t)
+		bucket := NewDbBucket[TestModel](db, "bucket")
+		bucket.Create("key1", TestModel{ID: "1", Name: "Alice"})
+
+		err := bucket.DeleteIf("key1", func(all map[string]TestModel) error { return nil })
+
+		if err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
+		}
+		if _, errGet := bucket.Get("key1"); !errors.Is(errGet, ErrNotFound) {
+			t.Fatalf("Expected the element to be gone, got: %v", errGet)
+		}
+	})
+
+	t.Run("keeps the element and returns the error the check gave", func(t *testing.T) {
+		db := createTestDB(t)
+		bucket := NewDbBucket[TestModel](db, "bucket")
+		bucket.Create("key1", TestModel{ID: "1", Name: "Alice"})
+		refused := errors.New("the last one stays")
+
+		err := bucket.DeleteIf("key1", func(all map[string]TestModel) error { return refused })
+
+		if !errors.Is(err, refused) {
+			t.Fatalf("Expected the check error, got: %v", err)
+		}
+		if _, errGet := bucket.Get("key1"); errGet != nil {
+			t.Fatalf("Expected the element to survive, got: %v", errGet)
+		}
+	})
+
+	t.Run("the check sees every element, the one being deleted included", func(t *testing.T) {
+		db := createTestDB(t)
+		bucket := NewDbBucket[TestModel](db, "bucket")
+		bucket.Create("key1", TestModel{ID: "1", Name: "Alice"})
+		bucket.Create("key2", TestModel{ID: "2", Name: "Bob"})
+
+		var seen map[string]TestModel
+		err := bucket.DeleteIf("key1", func(all map[string]TestModel) error {
+			seen = all
+			return nil
+		})
+
+		if err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
+		}
+		if len(seen) != 2 || seen["key1"].Name != "Alice" || seen["key2"].Name != "Bob" {
+			t.Fatalf("Expected both elements, got: %v", seen)
+		}
+	})
+
+	t.Run("empty key is rejected", func(t *testing.T) {
+		db := createTestDB(t)
+		bucket := NewDbBucket[TestModel](db, "bucket")
+
+		err := bucket.DeleteIf("", func(all map[string]TestModel) error { return nil })
+
+		if !errors.Is(err, ErrEmptyKey) {
+			t.Fatalf("Expected ErrEmptyKey, got: %v", err)
+		}
+	})
+
+	// NOTE: the point of the method - the check and the delete are one
+	// transaction, so a rule counting what is left cannot be raced
+	t.Run("concurrent deletes cannot both pass a last-one-stays check", func(t *testing.T) {
+		db := createTestDB(t)
+		bucket := NewDbBucket[TestModel](db, "bucket")
+		bucket.Create("key1", TestModel{ID: "1", Name: "Alice"})
+		bucket.Create("key2", TestModel{ID: "2", Name: "Bob"})
+		lastOneStays := errors.New("the last one stays")
+
+		check := func(all map[string]TestModel) error {
+			if len(all) <= 1 {
+				return lastOneStays
+			}
+			return nil
+		}
+
+		var wg sync.WaitGroup
+		errs := make([]error, 2)
+		for i, key := range []string{"key1", "key2"} {
+			wg.Add(1)
+			go func(i int, key string) {
+				defer wg.Done()
+				errs[i] = bucket.DeleteIf(key, check)
+			}(i, key)
+		}
+		wg.Wait()
+
+		left, errList := bucket.GetList(nil, nil)
+		if errList != nil {
+			t.Fatalf("Expected no error, got: %v", errList)
+		}
+		if len(left) != 1 {
+			t.Fatalf("Expected exactly one element to survive, got %d", len(left))
+		}
+		if !errors.Is(errs[0], lastOneStays) && !errors.Is(errs[1], lastOneStays) {
+			t.Fatalf("Expected one of the deletes to be refused, got: %v and %v", errs[0], errs[1])
+		}
+	})
 }
 
 func TestBucket_MultipleTypes(t *testing.T) {

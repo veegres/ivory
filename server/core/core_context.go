@@ -27,6 +27,7 @@ type Context struct {
 	Router  *Router
 }
 
+// NewContext TODO probably we should move User, Permission and Auth to this folder it looks like core more - think
 func NewContext(sshClient *ssh.Client) *Context {
 	st := storage.NewDbStorage("core.db")
 

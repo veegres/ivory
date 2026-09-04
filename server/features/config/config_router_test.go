@@ -7,7 +7,9 @@ import (
 	"ivory/clients/storage"
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
+	"ivory/core/service/token"
 	"ivory/features/permission"
+	"ivory/features/user"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -54,8 +56,12 @@ func createTestConfigRouter(t *testing.T) *Router {
 		t.Fatalf("failed to set default secret: %v", err)
 	}
 
-	permissionService := permission.NewService(
-		permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission")),
+	userService := user.NewService(
+		user.NewRepository(storage.NewDbBucket[user.User](db, "User"), storage.NewDbBucket[user.Link](db, "UserLink")),
+		encryption.NewService(),
+		secretService,
+		permission.NewService(permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission"))),
+		token.NewService(secretService),
 	)
 
 	service := NewService(
@@ -63,8 +69,8 @@ func createTestConfigRouter(t *testing.T) *Router {
 		encryption.NewService(),
 		secretService,
 		nil,
-		permissionService,
-		basic.NewProvider(),
+		userService,
+		basic.NewProvider(nopVerifier{}),
 		ldap.NewProvider(),
 		oidc.NewProvider(),
 	)

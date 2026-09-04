@@ -64,6 +64,15 @@ const (
 	ManageCertCreate Feature = "manage.cert.create"
 	ManageCertDelete Feature = "manage.cert.delete"
 
+	// User management features
+	ViewUserList     Feature = "view.user.list"
+	ManageUserDelete Feature = "manage.user.delete"
+
+	ViewUserLinkList     Feature = "view.user.link.list"
+	ManageUserLinkCreate Feature = "manage.user.link.create"
+	ManageUserLinkReset  Feature = "manage.user.link.reset"
+	ManageUserLinkDelete Feature = "manage.user.link.delete"
+
 	// Permission management features
 	ViewPermissionList     Feature = "view.permission.list"
 	ManagePermissionUpdate Feature = "manage.permission.update"
@@ -185,6 +194,12 @@ var All = []Feature{
 	ViewCertList,
 	ManageCertCreate,
 	ManageCertDelete,
+	ViewUserList,
+	ManageUserDelete,
+	ViewUserLinkList,
+	ManageUserLinkCreate,
+	ManageUserLinkReset,
+	ManageUserLinkDelete,
 	ViewPermissionList,
 	ManagePermissionUpdate,
 	ManagePermissionDelete,

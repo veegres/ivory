@@ -36,6 +36,7 @@ type AuthInfo struct {
 
 type UserInfo struct {
 	Username    string                   `json:"username"`
+	Superuser   bool                     `json:"superuser"`
 	Permissions permission.PermissionMap `json:"permissions"`
 }
 

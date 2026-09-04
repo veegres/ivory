@@ -1,12 +1,14 @@
 package auth
 
 import (
+	"errors"
 	"ivory/clients/auth/basic"
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
 	"ivory/clients/storage"
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
+	"ivory/core/service/token"
 	"ivory/features/permission"
 	"path/filepath"
 	"testing"
@@ -15,6 +17,27 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang-jwt/jwt/v5"
 )
+
+type fakeUserVerifier struct {
+	users map[string]string
+}
+
+func (v *fakeUserVerifier) VerifyPassword(username string, password string) error {
+	stored, ok := v.users[username]
+	if !ok || stored != password {
+		return errors.New("credentials are not correct")
+	}
+	return nil
+}
+
+func createTestBasicProvider(t *testing.T) *basic.Provider {
+	t.Helper()
+	provider := basic.NewProvider(&fakeUserVerifier{users: map[string]string{"admin": "password123"}})
+	if err := provider.SetConfig(basic.Config{}); err != nil {
+		t.Fatalf("failed to configure basic provider: %v", err)
+	}
+	return provider
+}
 
 func createTestAuthService(t *testing.T) *Service {
 	t.Helper()
@@ -35,16 +58,11 @@ func createTestAuthService(t *testing.T) *Service {
 		t.Fatalf("failed to set default secret: %v", err)
 	}
 
-	basicProvider := basic.NewProvider()
-	if err := basicProvider.SetConfig(basic.Config{Username: "admin", Password: "password123"}); err != nil {
-		t.Fatalf("failed to configure basic provider: %v", err)
-	}
-
 	permissionService := permission.NewService(
 		permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission")),
 	)
 
-	return NewService(secretService, basicProvider, ldap.NewProvider(), oidc.NewProvider(), permissionService)
+	return NewService(token.NewService(secretService), createTestBasicProvider(t), ldap.NewProvider(), oidc.NewProvider(), permissionService)
 }
 
 func TestServiceGetSupportedTypes(t *testing.T) {
@@ -138,13 +156,7 @@ func TestServiceParseAuthToken(t *testing.T) {
 	})
 
 	t.Run("token missing the frm claim is valid but reports the parse error", func(t *testing.T) {
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"iss": "ivory",
-			"sub": "admin",
-			"iat": time.Now().Unix(),
-			"exp": time.Now().Add(time.Hour).Unix(),
-		})
-		signed, errSign := token.SignedString(s.secretService.GetByte())
+		signed, _, errSign := s.tokenService.Generate("admin", nil, time.Hour)
 		if errSign != nil {
 			t.Fatalf("failed to sign token: %v", errSign)
 		}
@@ -165,7 +177,7 @@ func TestServiceParseAuthToken(t *testing.T) {
 	})
 
 	t.Run("when no auth type is configured, the check is skipped entirely", func(t *testing.T) {
-		unconfigured := NewService(s.secretService, basic.NewProvider(), ldap.NewProvider(), oidc.NewProvider(), s.permissionService)
+		unconfigured := NewService(s.tokenService, basic.NewProvider(&fakeUserVerifier{}), ldap.NewProvider(), oidc.NewProvider(), s.permissionService)
 		valid, username, authType, err := unconfigured.ParseAuthToken("anything", nil)
 		if !valid {
 			t.Fatalf("expected valid=true when auth is disabled")

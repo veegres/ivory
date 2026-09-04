@@ -17,7 +17,9 @@ import (
 	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/features/tag"
+	"ivory/features/user"
 	"ivory/tools"
+	"log/slog"
 	"mime/multipart"
 )
 
@@ -35,6 +37,7 @@ type Service struct {
 	configService     *config.Service
 	permissionService *permission.Service
 	backupService     *backup.Service
+	userService       *user.Service
 	toolRegistry      *utils.Registry[tools.Tool, tools.Adapter]
 }
 
@@ -53,6 +56,7 @@ func NewService(
 	configService *config.Service,
 	permissionService *permission.Service,
 	backupService *backup.Service,
+	userService *user.Service,
 	toolRegistry *utils.Registry[tools.Tool, tools.Adapter],
 ) *Service {
 	return &Service{
@@ -69,6 +73,7 @@ func NewService(
 		configService:     configService,
 		permissionService: permissionService,
 		backupService:     backupService,
+		userService:       userService,
 		toolRegistry:      toolRegistry,
 	}
 }
@@ -89,9 +94,11 @@ func (s *Service) Erase() error {
 	errDeployment := s.deploymentService.DeleteAll()
 	errConfig := s.configService.DeleteAll()
 	errPerm := s.permissionService.DeleteAll()
+	errUser := s.userService.DeleteAll()
+	errUserLink := s.userService.LinkDeleteAll()
 	errTools := s.deleteAllTools()
 
-	return errors.Join(errSecret, errCred, errCert, errCluster, errTag, errQuery, errDeployment, errConfig, errPerm, errTools)
+	return errors.Join(errSecret, errCred, errCert, errCluster, errTag, errQuery, errDeployment, errConfig, errPerm, errUser, errUserLink, errTools)
 }
 
 func (s *Service) deleteAllTools() error {
@@ -115,7 +122,7 @@ func (s *Service) ChangeSecret(previousKey string, newKey string) error {
 	if errConfig != nil {
 		return errConfig
 	}
-	return nil
+	return s.userService.Reencrypt(prevSha, newSha)
 }
 
 func (s *Service) GetAppInfo(authorised bool, authEnabled bool, username string, authType string, authError string) *AppInfo {
@@ -159,12 +166,27 @@ func (s *Service) GetAppInfo(authorised bool, authEnabled bool, username string,
 	}
 }
 
+// isSuperuser reports the rights the UI should offer. Without authentication
+// there is no identity to check and everything is permitted, which is what the
+// permissions themselves already say.
+func (s *Service) isSuperuser(username string, authEnabled bool) bool {
+	if !authEnabled {
+		return true
+	}
+	isSuperuser, err := s.userService.IsSuperuser(username)
+	if err != nil {
+		slog.Error("failed to check whether the user is a superuser", "error", err)
+		return false
+	}
+	return isSuperuser
+}
+
 func (s *Service) getAuthInfo(authorised bool, authEnabled bool, username string, authType string, authError string) (bool, *UserInfo, string) {
 	if authError != "" {
 		return authorised, nil, authError
 	}
-	permissions, errPerm := s.permissionService.GetUserPermissions(authType, username, !authEnabled)
-	user := &UserInfo{Username: username, Permissions: permissions}
+	permissions, errPerm := s.permissionService.GetUserPermissions(permission.Prefix(authType), username, !authEnabled)
+	user := &UserInfo{Username: username, Superuser: s.isSuperuser(username, authEnabled), Permissions: permissions}
 	if errPerm != nil {
 		return authorised, user, errPerm.Error()
 	}

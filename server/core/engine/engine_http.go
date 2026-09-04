@@ -16,9 +16,12 @@ import (
 	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/features/tag"
+	"ivory/features/user"
 	"ivory/tools"
 	"log/slog"
 	"net/http"
+	"path"
+	"strings"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -31,9 +34,24 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	// NOTE: Serving ivory static file to web
 	if env.Config.StaticFilesPath != "" {
 		engine.Use(static.Serve(env.Config.UrlPath, static.LocalFile(env.Config.StaticFilesPath, true)))
+		userPath := path.Join(env.Config.UrlPath, user.WebPath) + "/"
+		apiPath := path.Join(env.Config.UrlPath, "api") + "/"
 		engine.NoRoute(func(context *gin.Context) {
+			requested := context.Request.URL.Path
+			// NOTE: an api call that matches nothing is answered, never redirected -
+			// a client asking for json has no use for the web page
+			if strings.HasPrefix(requested, apiPath) {
+				context.JSON(http.StatusNotFound, gin.H{"error": "there is no such api method"})
+				return
+			}
+			// NOTE: the invitation is a web route carrying the token, so it has to reach
+			// the app instead of being redirected away from the token it carries
+			if strings.HasPrefix(requested, userPath) {
+				context.File(path.Join(env.Config.StaticFilesPath, "index.html"))
+				return
+			}
 			// NOTE: if file weren't found and NoRoute come here, we need to throw 404 and prevent endless redirect
-			if context.Request.URL.Path != env.Config.UrlPath {
+			if requested != env.Config.UrlPath {
 				context.Redirect(http.StatusMovedPermanently, env.Config.UrlPath)
 			}
 		})
@@ -51,6 +69,7 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 
 	general := unsafe.Group("/", cc.Secret.ExistMiddleware())
 	generalRouter(general, fc.Auth, fc.Config)
+	userPublicRouter(general, fc.User)
 
 	safe := general.Group("/", fc.Config.InitialiseMiddleware(), fc.Auth.ValidateMiddleware(), fc.Permission.ValidateMiddleware())
 	toolsRouter(safe, fc.Permission, tc)
@@ -63,6 +82,7 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	nodeRouter(safe, fc.Permission, fc.Node)
 	tagRouter(safe, fc.Permission, fc.Tag)
 	permissionRouter(safe, fc.Permission, fc.Permission)
+	userRouter(safe, fc.Permission, fc.User)
 	queryRouter(safe, fc.Permission, fc.Query)
 	deploymentRouter(safe, fc.Permission, fc.Deployment)
 
@@ -165,6 +185,35 @@ func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.R
 	group.POST("/users/:username/approve", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionUpdate), r.ApproveUserPermission)
 	group.POST("/users/:username/reject", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionUpdate), r.RejectUserPermission)
 	group.DELETE("/users/:username", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionDelete), r.DeleteUserPermissions)
+}
+
+// userPublicRouter carries the two endpoints the invitation page needs. They
+// are public because the link is the authorization - the account it names may
+// not even exist yet - and there is no third one: a link is only ever handed
+// out by somebody signed in, or by the initial setup, which creates its
+// superuser outright.
+func userPublicRouter(g *gin.RouterGroup, r *user.Router) {
+	group := g.Group("/user/link")
+	group.POST("/verify", r.PostUserLinkVerify)
+	group.POST("/password", r.PostUserLinkPassword)
+}
+
+func userRouter(g *gin.RouterGroup, rp *permission.Router, r *user.Router) {
+	group := g.Group("/user")
+	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewUserList), r.GetUserList)
+	group.DELETE("/:username", rp.ValidateMethodMiddleware(coreConfig.ManageUserDelete), r.DeleteUser)
+	// NOTE: changing your own password needs no permission, exactly as requesting
+	// permissions does not - it is the account you are already signed in as
+	group.POST("/password", r.PostUserPassword)
+
+	// NOTE: every link endpoint holds its own permission, and inviting, resetting
+	// and revoking are three different powers - a reset takes an existing account
+	// over, which is why the kind is a route rather than a request field
+	linkGroup := group.Group("/link")
+	linkGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewUserLinkList), r.GetUserLinkList)
+	linkGroup.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageUserLinkCreate), r.PostUserLink)
+	linkGroup.POST("/reset", rp.ValidateMethodMiddleware(coreConfig.ManageUserLinkReset), r.PostUserResetLink)
+	linkGroup.DELETE("/:uuid", rp.ValidateMethodMiddleware(coreConfig.ManageUserLinkDelete), r.DeleteUserLink)
 }
 
 func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {

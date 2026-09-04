@@ -7,7 +7,9 @@ import (
 	"ivory/clients/storage"
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
+	"ivory/core/service/token"
 	"ivory/features/permission"
+	"ivory/features/user"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,13 +17,19 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+type nopVerifier struct{}
+
+func (nopVerifier) VerifyPassword(_ string, _ string) error {
+	return nil
+}
+
 type testConfigEnv struct {
-	service           *Service
-	secretService     *secret.Service
-	permissionService *permission.Service
-	basicProvider     *basic.Provider
-	ldapProvider      *ldap.Provider
-	oidcProvider      *oidc.Provider
+	service       *Service
+	userService   *user.Service
+	secretService *secret.Service
+	basicProvider *basic.Provider
+	ldapProvider  *ldap.Provider
+	oidcProvider  *oidc.Provider
 }
 
 func createTestConfigService(t *testing.T) *testConfigEnv {
@@ -65,21 +73,28 @@ func createTestConfigService(t *testing.T) *testConfigEnv {
 	permissionService := permission.NewService(
 		permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission")),
 	)
+	userService := user.NewService(
+		user.NewRepository(storage.NewDbBucket[user.User](db, "User"), storage.NewDbBucket[user.Link](db, "UserLink")),
+		encryption.NewService(),
+		secretService,
+		permissionService,
+		token.NewService(secretService),
+	)
 
-	basicProvider := basic.NewProvider()
+	basicProvider := basic.NewProvider(nopVerifier{})
 	ldapProvider := ldap.NewProvider()
 	oidcProvider := oidc.NewProvider()
 
 	configFiles := storage.NewFileStorage("config", "")
-	service := NewService(configFiles, encryption.NewService(), secretService, nil, permissionService, basicProvider, ldapProvider, oidcProvider)
+	service := NewService(configFiles, encryption.NewService(), secretService, nil, userService, basicProvider, ldapProvider, oidcProvider)
 
 	return &testConfigEnv{
-		service:           service,
-		secretService:     secretService,
-		permissionService: permissionService,
-		basicProvider:     basicProvider,
-		ldapProvider:      ldapProvider,
-		oidcProvider:      oidcProvider,
+		service:       service,
+		userService:   userService,
+		secretService: secretService,
+		basicProvider: basicProvider,
+		ldapProvider:  ldapProvider,
+		oidcProvider:  oidcProvider,
 	}
 }
 
@@ -101,15 +116,85 @@ func TestServiceSetAppConfigValidation(t *testing.T) {
 	})
 }
 
+func TestServiceSetAppConfigSuperuser(t *testing.T) {
+	t.Run("switching authentication on without a superuser is refused", func(t *testing.T) {
+		env := createTestConfigService(t)
+
+		req := NewAppConfig{AppConfig: AppConfig{Company: "Acme", Auth: AuthConfig{Basic: &basic.Config{}}}}
+		if err := env.service.SetAppConfig(req); err != ErrSuperuserRequired {
+			t.Fatalf("expected ErrSuperuserRequired, got %v", err)
+		}
+		if env.service.GetIsConfigured() {
+			t.Fatalf("expected nothing to be saved")
+		}
+	})
+
+	t.Run("the superuser named at setup is created and can sign in", func(t *testing.T) {
+		env := createTestConfigService(t)
+
+		req := NewAppConfig{
+			Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
+			AppConfig: AppConfig{Company: "Acme", Auth: AuthConfig{Basic: &basic.Config{}}},
+		}
+		if err := env.service.SetAppConfig(req); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if err := env.userService.VerifyPassword("root", "password123"); err != nil {
+			t.Fatalf("expected the superuser to be created, got %v", err)
+		}
+		hasSuperuser, errSuper := env.userService.HasSuperuser()
+		if errSuper != nil || !hasSuperuser {
+			t.Fatalf("expected a superuser, got %v (%v)", hasSuperuser, errSuper)
+		}
+	})
+
+	t.Run("a superuser that cannot be created stops the config being saved", func(t *testing.T) {
+		env := createTestConfigService(t)
+
+		req := NewAppConfig{
+			Superuser: &SuperuserRequest{Username: "root", Password: ""},
+			AppConfig: AppConfig{Company: "Acme", Auth: AuthConfig{Basic: &basic.Config{}}},
+		}
+		if err := env.service.SetAppConfig(req); err == nil {
+			t.Fatalf("expected an error for a superuser without a password")
+		}
+		if env.service.GetIsConfigured() {
+			t.Fatalf("expected nothing to be saved")
+		}
+	})
+
+	t.Run("a setup that names no superuser is fine once one exists", func(t *testing.T) {
+		env := createTestConfigService(t)
+		if _, err := env.userService.Create("root", "password123", true); err != nil {
+			t.Fatalf("failed to seed root: %v", err)
+		}
+
+		req := NewAppConfig{AppConfig: AppConfig{Company: "Acme", Auth: AuthConfig{Basic: &basic.Config{}}}}
+		if err := env.service.SetAppConfig(req); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("no authentication needs no superuser", func(t *testing.T) {
+		env := createTestConfigService(t)
+
+		req := NewAppConfig{AppConfig: AppConfig{Company: "Acme"}}
+		if err := env.service.SetAppConfig(req); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+}
+
 func TestServiceSetAndGetAppConfig(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
+		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{
-				Superusers: []string{"admin"},
-				Basic:      &basic.Config{Username: "admin", Password: "secretpw"},
+				Basic: &basic.Config{},
 			},
 		},
 	}
@@ -128,8 +213,8 @@ func TestServiceSetAndGetAppConfig(t *testing.T) {
 	if appConfig.Company != "Acme" {
 		t.Fatalf("expected company 'Acme', got %q", appConfig.Company)
 	}
-	if appConfig.Auth.Basic == nil || appConfig.Auth.Basic.Password != "secretpw" {
-		t.Fatalf("expected the decrypted password 'secretpw', got %+v", appConfig.Auth.Basic)
+	if appConfig.Auth.Basic == nil {
+		t.Fatalf("expected basic auth to stay enabled, got %+v", appConfig.Auth)
 	}
 
 	if !env.service.GetIsConfigured() {
@@ -168,8 +253,8 @@ func TestServiceSetAppConfigAlreadySetRejectsWrongSecret(t *testing.T) {
 			encryption.NewService(),
 			env.secretService,
 			nil,
-			env.permissionService,
-			basic.NewProvider(),
+			env.userService,
+			basic.NewProvider(nopVerifier{}),
 			ldap.NewProvider(),
 			oidc.NewProvider(),
 		)
@@ -187,12 +272,12 @@ func TestServiceSetAppConfigRollsBackOnAuthValidationError(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
+		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{
-				Superusers: []string{"admin"},
-				Basic:      &basic.Config{Username: "admin", Password: "pw"},
-				Ldap:       &ldap.Config{}, // invalid: all fields empty
+				Basic: &basic.Config{},
+				Ldap:  &ldap.Config{}, // invalid: all fields empty
 			},
 		},
 	}
@@ -209,11 +294,18 @@ func TestServiceReencrypt(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
+		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{
-				Superusers: []string{"admin"},
-				Basic:      &basic.Config{Username: "admin", Password: "secretpw"},
+				Basic: &basic.Config{},
+				Ldap: &ldap.Config{
+					Url:      "ldap://localhost:389",
+					BindDN:   "cn=admin",
+					BindPass: "secretpw",
+					BaseDN:   "dc=acme",
+					Filter:   "(uid=%s)",
+				},
 			},
 		},
 	}
@@ -238,8 +330,8 @@ func TestServiceReencrypt(t *testing.T) {
 		encryption.NewService(),
 		env.secretService,
 		nil,
-		env.permissionService,
-		basic.NewProvider(),
+		env.userService,
+		basic.NewProvider(nopVerifier{}),
 		ldap.NewProvider(),
 		oidc.NewProvider(),
 	)
@@ -247,8 +339,8 @@ func TestServiceReencrypt(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	if appConfig.Auth.Basic == nil || appConfig.Auth.Basic.Password != "secretpw" {
-		t.Fatalf("expected the password to still decrypt to 'secretpw' after reencryption, got %+v", appConfig.Auth.Basic)
+	if appConfig.Auth.Ldap == nil || appConfig.Auth.Ldap.BindPass != "secretpw" {
+		t.Fatalf("expected the bind password to still decrypt to 'secretpw' after reencryption, got %+v", appConfig.Auth.Ldap)
 	}
 }
 
@@ -256,11 +348,11 @@ func TestServiceDeleteAll(t *testing.T) {
 	env := createTestConfigService(t)
 
 	req := NewAppConfig{
+		Superuser: &SuperuserRequest{Username: "root", Password: "password123"},
 		AppConfig: AppConfig{
 			Company: "Acme",
 			Auth: AuthConfig{
-				Superusers: []string{"admin"},
-				Basic:      &basic.Config{Username: "admin", Password: "pw"},
+				Basic: &basic.Config{},
 			},
 		},
 	}

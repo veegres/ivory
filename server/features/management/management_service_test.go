@@ -10,6 +10,7 @@ import (
 	"ivory/core/service/cert"
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
+	"ivory/core/service/token"
 	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/features/auth"
@@ -20,6 +21,7 @@ import (
 	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/features/tag"
+	"ivory/features/user"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
@@ -122,7 +124,14 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 		permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission")),
 	)
 
-	basicProvider := basic.NewProvider()
+	userService := user.NewService(
+		user.NewRepository(storage.NewDbBucket[user.User](db, "User"), storage.NewDbBucket[user.Link](db, "UserLink")),
+		encryption.NewService(),
+		secretService,
+		permissionService,
+		token.NewService(secretService),
+	)
+	basicProvider := basic.NewProvider(userService)
 	ldapProvider := ldap.NewProvider()
 	oidcProvider := oidc.NewProvider()
 
@@ -131,13 +140,13 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 		encryption.NewService(),
 		secretService,
 		nil,
-		permissionService,
+		userService,
 		basicProvider,
 		ldapProvider,
 		oidcProvider,
 	)
 
-	authService := auth.NewService(secretService, basicProvider, ldapProvider, oidcProvider, permissionService)
+	authService := auth.NewService(token.NewService(secretService), basicProvider, ldapProvider, oidcProvider, permissionService)
 
 	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService)
 
@@ -160,6 +169,7 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 		configService,
 		permissionService,
 		backupService,
+		userService,
 		toolRegistry,
 	)
 

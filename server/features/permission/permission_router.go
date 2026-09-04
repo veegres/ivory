@@ -20,7 +20,7 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 		authEnabled := context.GetBool(config.AuthContextKey.Enabled)
 		authType := context.GetString(config.AuthContextKey.Type)
 		username := context.GetString(config.AuthContextKey.Username)
-		permissions, err := r.permissionService.GetUserPermissions(authType, username, !authEnabled)
+		permissions, err := r.permissionService.GetUserPermissions(Prefix(authType), username, !authEnabled)
 		if err != nil {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
@@ -64,7 +64,7 @@ func (r *Router) RequestUserPermission(context *gin.Context) {
 		return
 	}
 
-	err := r.permissionService.RequestUserPermissions(prefix, username, request.Permissions)
+	err := r.permissionService.RequestUserPermissions(Prefix(prefix), username, request.Permissions)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
