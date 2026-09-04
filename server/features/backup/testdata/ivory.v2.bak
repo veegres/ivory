@@ -1,4 +1,29 @@
 {
+  "users": [
+    {
+      "username": "root",
+      "authTypes": [
+        "basic",
+        "ldap",
+        "oidc"
+      ],
+      "superuser": true
+    },
+    {
+      "username": "alice",
+      "authTypes": [
+        "basic"
+      ],
+      "superuser": false
+    },
+    {
+      "username": "bob",
+      "authTypes": [
+        "ldap"
+      ],
+      "superuser": false
+    }
+  ],
   "clusters": [
     {
       "name": "prod-patroni",

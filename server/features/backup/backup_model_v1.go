@@ -8,6 +8,7 @@ import (
 	"ivory/features/query"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
+	"strings"
 )
 
 // BackupV1 represents the legacy backup format used in Ivory v1.
@@ -269,7 +270,20 @@ func (bp backupPermissionsV1) toUserPermissions() permission.UserPermissions {
 		}
 		perms[perm] = status
 	}
-	return permission.UserPermissions{Username: bp.Username, Permissions: perms}
+	return permission.UserPermissions{Username: syncUsernameV1(bp.Username), Permissions: perms}
+}
+
+// syncUsernameV1 drops the authority prefix a permission key used to be stored
+// under. A record is keyed by the username alone now - one person is one
+// identity, whichever way they sign in - and every V1 file names them
+// "basic:alice". A name carrying no known prefix is left alone.
+func syncUsernameV1(username string) string {
+	for _, prefix := range []string{"basic:", "ldap:", "oidc:", "superuser:"} {
+		if after, found := strings.CutPrefix(username, prefix); found {
+			return after
+		}
+	}
+	return username
 }
 
 // syncPermissionV1 looks up a stored permission key against the current set of

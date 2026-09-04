@@ -34,38 +34,18 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	// NOTE: Serving ivory static file to web
 	if env.Config.StaticFilesPath != "" {
 		engine.Use(static.Serve(env.Config.UrlPath, static.LocalFile(env.Config.StaticFilesPath, true)))
-		userPath := path.Join(env.Config.UrlPath, user.WebPath) + "/"
-		apiPath := path.Join(env.Config.UrlPath, "api") + "/"
-		engine.NoRoute(func(context *gin.Context) {
-			requested := context.Request.URL.Path
-			// NOTE: an api call that matches nothing is answered, never redirected -
-			// a client asking for json has no use for the web page
-			if strings.HasPrefix(requested, apiPath) {
-				context.JSON(http.StatusNotFound, gin.H{"error": "there is no such api method"})
-				return
-			}
-			// NOTE: the invitation is a web route carrying the token, so it has to reach
-			// the app instead of being redirected away from the token it carries
-			if strings.HasPrefix(requested, userPath) {
-				context.File(path.Join(env.Config.StaticFilesPath, "index.html"))
-				return
-			}
-			// NOTE: if file weren't found and NoRoute come here, we need to throw 404 and prevent endless redirect
-			if requested != env.Config.UrlPath {
-				context.Redirect(http.StatusMovedPermanently, env.Config.UrlPath)
-			}
-		})
 	}
+	engine.NoRoute(noRoute(env))
 
 	// NOTE: Setup default sub path for reverse proxies, default "/"
-	path := engine.Group(env.Config.UrlPath)
-	unsafe := path.Group("/api", gin.Recovery(), fc.Auth.SessionMiddleware())
+	root := engine.Group(env.Config.UrlPath)
+	unsafe := root.Group("/api", gin.Recovery(), fc.Auth.SessionMiddleware())
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", fc.Auth.AuthContextMiddleware(), fc.Management.GetAppInfo)
 	unsafe.POST("/logout", fc.Auth.Logout)
 
 	initial := unsafe.Group("/", cc.Secret.EmptyMiddleware())
-	initialRouter(initial, cc.Secret, fc.Management)
+	initialRouter(initial, cc.Secret)
 
 	general := unsafe.Group("/", cc.Secret.ExistMiddleware())
 	generalRouter(general, fc.Auth, fc.Config)
@@ -109,6 +89,36 @@ func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
+// noRoute sends anything Ivory does not serve back to the root, which is where
+// the app itself decides what to show. There are two exceptions and they are
+// the two that cannot survive a redirect: an api call, which asks for json and
+// has no use for the web page, and the registration page, whose token is in the
+// path a redirect would throw away.
+func noRoute(env *coreConfig.Environment) gin.HandlerFunc {
+	apiPath := path.Join(env.Config.UrlPath, "api") + "/"
+	userPath := path.Join(env.Config.UrlPath, user.WebPath) + "/"
+	indexPath := path.Join(env.Config.StaticFilesPath, "index.html")
+
+	return func(context *gin.Context) {
+		requested := context.Request.URL.Path
+		if strings.HasPrefix(requested, apiPath) {
+			context.JSON(http.StatusNotFound, gin.H{"error": "there is no such api method"})
+			return
+		}
+		if env.Config.StaticFilesPath == "" {
+			context.JSON(http.StatusNotFound, gin.H{"error": "there is no such path"})
+			return
+		}
+		// NOTE: the root itself lands here when the static server has no index to
+		// match, and redirecting it to itself is the one loop this has to avoid
+		if strings.HasPrefix(requested, userPath) || requested == env.Config.UrlPath {
+			context.File(indexPath)
+			return
+		}
+		context.Redirect(http.StatusFound, env.Config.UrlPath)
+	}
+}
+
 func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
 	g.POST("/config", rg.SetAppConfig)
 
@@ -120,11 +130,14 @@ func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
 	g.POST("/ldap/connect", ra.LdapConnect)
 }
 
-func initialRouter(g *gin.RouterGroup, rs *secret.Router, rg *management.Router) {
+// initialRouter is what a restarted Ivory offers before its secret is back.
+// There is deliberately no erase here: wiping everything is a thing only
+// somebody signed in may ask for, and whoever has lost the secret word
+// reinstalls instead.
+func initialRouter(g *gin.RouterGroup, rs *secret.Router) {
 	group := g.Group("/initial")
 	group.POST("/skip", rs.SkipSecret)
 	group.POST("/secret", rs.SetSecret)
-	group.DELETE("/erase", rg.Erase)
 }
 
 func toolsRouter(g *gin.RouterGroup, rp *permission.Router, r *tools.Router) {
@@ -187,33 +200,32 @@ func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.R
 	group.DELETE("/users/:username", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionDelete), r.DeleteUserPermissions)
 }
 
-// userPublicRouter carries the two endpoints the invitation page needs. They
-// are public because the link is the authorization - the account it names may
-// not even exist yet - and there is no third one: a link is only ever handed
-// out by somebody signed in, or by the initial setup, which creates its
-// superuser outright.
+// userPublicRouter carries the two endpoints the registration page needs. They
+// are public because the registration is the authorization - the person opening
+// it has no session and no password yet - and there is no third one: a
+// registration is only ever handed out by somebody signed in, or by the initial
+// setup, which registers its superuser with a typed password.
 func userPublicRouter(g *gin.RouterGroup, r *user.Router) {
-	group := g.Group("/user/link")
-	group.POST("/verify", r.PostUserLinkVerify)
-	group.POST("/password", r.PostUserLinkPassword)
+	group := g.Group("/user/registration")
+	group.POST("/verify", r.PostUserRegistrationVerify)
+	group.POST("/password", r.PostUserRegistrationPassword)
 }
 
 func userRouter(g *gin.RouterGroup, rp *permission.Router, r *user.Router) {
 	group := g.Group("/user")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewUserList), r.GetUserList)
+	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageUserCreate), r.PostUser)
+	group.PUT("/:username", rp.ValidateMethodMiddleware(coreConfig.ManageUserUpdate), r.PutUser)
 	group.DELETE("/:username", rp.ValidateMethodMiddleware(coreConfig.ManageUserDelete), r.DeleteUser)
 	// NOTE: changing your own password needs no permission, exactly as requesting
 	// permissions does not - it is the account you are already signed in as
 	group.POST("/password", r.PostUserPassword)
 
-	// NOTE: every link endpoint holds its own permission, and inviting, resetting
-	// and revoking are three different powers - a reset takes an existing account
-	// over, which is why the kind is a route rather than a request field
-	linkGroup := group.Group("/link")
-	linkGroup.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewUserLinkList), r.GetUserLinkList)
-	linkGroup.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageUserLinkCreate), r.PostUserLink)
-	linkGroup.POST("/reset", rp.ValidateMethodMiddleware(coreConfig.ManageUserLinkReset), r.PostUserResetLink)
-	linkGroup.DELETE("/:uuid", rp.ValidateMethodMiddleware(coreConfig.ManageUserLinkDelete), r.DeleteUserLink)
+	// NOTE: resetting somebody else's password takes their account over, which is
+	// a different power from creating a new name, so it holds a permission of its
+	// own - what it hands out is a registration like any other
+	group.POST("/:username/password/reset", rp.ValidateMethodMiddleware(coreConfig.ManageUserPasswordReset), r.PostUserPasswordReset)
+	group.DELETE("/:username/password/reset", rp.ValidateMethodMiddleware(coreConfig.ManageUserPasswordReset), r.DeleteUserPasswordReset)
 }
 
 func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {

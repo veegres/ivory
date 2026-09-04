@@ -125,7 +125,7 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 	)
 
 	userService := user.NewService(
-		user.NewRepository(storage.NewDbBucket[user.User](db, "User"), storage.NewDbBucket[user.Link](db, "UserLink")),
+		user.NewRepository(storage.NewDbBucket[user.User](db, "User")),
 		encryption.NewService(),
 		secretService,
 		permissionService,
@@ -146,9 +146,9 @@ func createTestManagementService(t *testing.T) *testManagementEnv {
 		oidcProvider,
 	)
 
-	authService := auth.NewService(token.NewService(secretService), basicProvider, ldapProvider, oidcProvider, permissionService)
+	authService := auth.NewService(token.NewService(secretService), basicProvider, ldapProvider, oidcProvider, userService)
 
-	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService)
+	backupService := backup.NewService(clusterService, queryService, permissionService, deploymentService, userService)
 
 	toolRegistry := utils.NewRegistry[tools.Tool, tools.Adapter]()
 
@@ -200,7 +200,7 @@ func TestServiceErase(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("failed to seed cluster: %v", err)
 	}
-	if _, err := env.permissionService.CreateUserPermissions("basic", "alice"); err != nil {
+	if _, err := env.permissionService.CreateUserPermissions("alice", permission.NOT_PERMITTED); err != nil {
 		t.Fatalf("failed to seed permissions: %v", err)
 	}
 
@@ -286,7 +286,7 @@ func TestServiceChangeSecretFailsWithWrongPreviousKey(t *testing.T) {
 func TestServiceGetAppInfoWhenNotConfigured(t *testing.T) {
 	env := createTestManagementService(t)
 
-	info := env.service.GetAppInfo(false, false, "", "", "")
+	info := env.service.GetAppInfo(false, false, "", "")
 
 	if info.Config.Configured {
 		t.Fatalf("expected Configured=false, got %+v", info.Config)
@@ -320,7 +320,7 @@ func TestServiceGetAppInfoWhenConfigured(t *testing.T) {
 	}
 
 	t.Run("propagates an existing auth error without looking up permissions", func(t *testing.T) {
-		info := env.service.GetAppInfo(false, true, "bob", "basic", "token expired")
+		info := env.service.GetAppInfo(false, true, "bob", "token expired")
 		if info.Config.Company != "Acme" {
 			t.Fatalf("expected company 'Acme', got %q", info.Config.Company)
 		}
@@ -333,7 +333,7 @@ func TestServiceGetAppInfoWhenConfigured(t *testing.T) {
 	})
 
 	t.Run("resolves permissions for an authorised user when auth is disabled", func(t *testing.T) {
-		info := env.service.GetAppInfo(true, false, "bob", "basic", "")
+		info := env.service.GetAppInfo(true, false, "bob", "")
 		if info.Auth.Error != "" {
 			t.Fatalf("expected no auth error, got %q", info.Auth.Error)
 		}

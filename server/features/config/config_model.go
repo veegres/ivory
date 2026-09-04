@@ -4,20 +4,23 @@ import (
 	"ivory/clients/auth/basic"
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
+	"ivory/features/user"
 )
 
 type NewAppConfig struct {
 	Secret    string    `json:"secret,omitempty"`
 	AppConfig AppConfig `json:"appConfig"`
-	// Superuser is the first user Ivory gets. Setup is the one place a password
-	// is typed on somebody else's behalf, because there is nobody yet who could
-	// be sent a link; every user after this one sets their own.
-	Superuser *SuperuserRequest `json:"superuser,omitempty"`
+	// User is the first user Ivory gets, and it is registered a superuser. Setup
+	// is the one place a password is typed on somebody else's behalf, because
+	// there is nobody yet who could be sent a registration; every user after
+	// this one sets their own.
+	User *UserSetupRequest `json:"user,omitempty"`
 }
 
-type SuperuserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type UserSetupRequest struct {
+	Username  string          `json:"username"`
+	Password  string          `json:"password"`
+	AuthTypes []user.AuthType `json:"authTypes"`
 }
 
 type AppConfig struct {

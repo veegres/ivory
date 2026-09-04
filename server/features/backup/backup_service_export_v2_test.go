@@ -6,11 +6,47 @@ import (
 	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
+	"ivory/features/user"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
+	"strings"
 	"testing"
 )
+
+// TestExportV2CarriesUsersWithoutPasswords holds the one rule a user export has
+// to keep: a backup says who somebody is and how they sign in, and never what
+// they sign in with.
+func TestExportV2CarriesUsersWithoutPasswords(t *testing.T) {
+	s := createTestBackupService(t)
+	if _, err := s.userService.CreateOutright("root", "password123", []user.AuthType{user.AuthBasic, user.AuthLdap}, true); err != nil {
+		t.Fatalf("failed to seed root: %v", err)
+	}
+
+	backupModel, err := s.exportV2()
+	if err != nil {
+		t.Fatalf("exportV2() error = %v", err)
+	}
+	if len(backupModel.Users) != 1 {
+		t.Fatalf("expected the seeded user, got %+v", backupModel.Users)
+	}
+
+	got := backupModel.Users[0]
+	if got.Username != "root" || !got.Superuser {
+		t.Errorf("got %+v, want the superuser root", got)
+	}
+	if len(got.AuthTypes) != 2 || got.AuthTypes[0] != string(user.AuthBasic) {
+		t.Errorf("got %v, want both ways of signing in", got.AuthTypes)
+	}
+
+	marshalled, errMarshal := s.Export()
+	if errMarshal != nil {
+		t.Fatalf("Export() error = %v", errMarshal)
+	}
+	if strings.Contains(string(marshalled), "password123") {
+		t.Error("the exported file carries a password")
+	}
+}
 
 func testTemplateRequest(name string) deployment.TemplateRequest {
 	return deployment.TemplateRequest{

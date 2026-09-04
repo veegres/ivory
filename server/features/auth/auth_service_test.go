@@ -9,7 +9,7 @@ import (
 	"ivory/core/service/encryption"
 	"ivory/core/service/secret"
 	"ivory/core/service/token"
-	"ivory/features/permission"
+	"ivory/features/user"
 	"path/filepath"
 	"testing"
 	"time"
@@ -18,21 +18,50 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type fakeUserVerifier struct {
-	users map[string]string
+// fakeUsers stands in for the user store on both sides of a login: the password
+// the basic provider checks, and the registration every login is measured
+// against once its provider has vouched for somebody.
+type fakeUsers struct {
+	passwords  map[string]string
+	authTypes  map[string][]user.AuthType
+	superusers map[string]bool
 }
 
-func (v *fakeUserVerifier) VerifyPassword(username string, password string) error {
-	stored, ok := v.users[username]
+func newFakeUsers() *fakeUsers {
+	return &fakeUsers{
+		passwords: map[string]string{"admin": "password123"},
+		authTypes: map[string][]user.AuthType{"admin": {user.AuthBasic}},
+	}
+}
+
+func (v *fakeUsers) VerifyPassword(username string, password string) error {
+	stored, ok := v.passwords[username]
 	if !ok || stored != password {
 		return errors.New("credentials are not correct")
 	}
 	return nil
 }
 
-func createTestBasicProvider(t *testing.T) *basic.Provider {
+func (v *fakeUsers) VerifySignIn(username string, authType user.AuthType) error {
+	allowed, ok := v.authTypes[username]
+	if !ok {
+		return errors.New("this user is not registered in ivory")
+	}
+	for _, t := range allowed {
+		if t == authType {
+			return nil
+		}
+	}
+	return errors.New("this user is not registered for this way of signing in")
+}
+
+func (v *fakeUsers) IsSuperuser(username string) (bool, error) {
+	return v.superusers[username], nil
+}
+
+func createTestBasicProvider(t *testing.T, users *fakeUsers) *basic.Provider {
 	t.Helper()
-	provider := basic.NewProvider(&fakeUserVerifier{users: map[string]string{"admin": "password123"}})
+	provider := basic.NewProvider(users)
 	if err := provider.SetConfig(basic.Config{}); err != nil {
 		t.Fatalf("failed to configure basic provider: %v", err)
 	}
@@ -40,6 +69,11 @@ func createTestBasicProvider(t *testing.T) *basic.Provider {
 }
 
 func createTestAuthService(t *testing.T) *Service {
+	t.Helper()
+	return createTestAuthServiceWith(t, newFakeUsers())
+}
+
+func createTestAuthServiceWith(t *testing.T, users *fakeUsers) *Service {
 	t.Helper()
 
 	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "test.db"), 0600, nil)
@@ -58,11 +92,7 @@ func createTestAuthService(t *testing.T) *Service {
 		t.Fatalf("failed to set default secret: %v", err)
 	}
 
-	permissionService := permission.NewService(
-		permission.NewRepository(storage.NewDbBucket[permission.PermissionMap](db, "Permission")),
-	)
-
-	return NewService(token.NewService(secretService), createTestBasicProvider(t), ldap.NewProvider(), oidc.NewProvider(), permissionService)
+	return NewService(token.NewService(secretService), createTestBasicProvider(t, users), ldap.NewProvider(), oidc.NewProvider(), users)
 }
 
 func TestServiceGetSupportedTypes(t *testing.T) {
@@ -71,6 +101,49 @@ func TestServiceGetSupportedTypes(t *testing.T) {
 	supported := s.GetSupportedTypes()
 	if len(supported) != 1 || supported[0] != BASIC {
 		t.Fatalf("expected only BASIC to be supported, got %v", supported)
+	}
+}
+
+// TestServiceGenerateTokenChecksRegistration covers the gate every login goes
+// through once its provider has vouched for somebody: a directory will happily
+// confirm a person Ivory was never told about, and a registration is what says
+// they are welcome here - and by which way of signing in.
+func TestServiceGenerateTokenChecksRegistration(t *testing.T) {
+	t.Run("a name Ivory does not hold is refused", func(t *testing.T) {
+		users := newFakeUsers()
+		users.passwords["stranger"] = "password123"
+		s := createTestAuthServiceWith(t, users)
+
+		if _, _, err := s.GenerateBasicAuthToken(basic.Login{Username: "stranger", Password: "password123"}); err == nil {
+			t.Fatalf("expected an unregistered name to be refused")
+		}
+	})
+
+	t.Run("a user registered for another way of signing in is refused", func(t *testing.T) {
+		users := newFakeUsers()
+		users.passwords["ldapper"] = "password123"
+		users.authTypes["ldapper"] = []user.AuthType{user.AuthLdap}
+		s := createTestAuthServiceWith(t, users)
+
+		if _, _, err := s.GenerateBasicAuthToken(basic.Login{Username: "ldapper", Password: "password123"}); err == nil {
+			t.Fatalf("expected a user without basic to be refused")
+		}
+	})
+}
+
+func TestServiceIsSuperuser(t *testing.T) {
+	users := newFakeUsers()
+	users.superusers = map[string]bool{"root": true}
+	s := createTestAuthServiceWith(t, users)
+
+	if !s.IsSuperuser("root") {
+		t.Fatalf("expected root to be a superuser")
+	}
+	if s.IsSuperuser("admin") {
+		t.Fatalf("expected admin not to be a superuser")
+	}
+	if s.IsSuperuser("") {
+		t.Fatalf("expected an empty username not to be a superuser")
 	}
 }
 
@@ -177,7 +250,7 @@ func TestServiceParseAuthToken(t *testing.T) {
 	})
 
 	t.Run("when no auth type is configured, the check is skipped entirely", func(t *testing.T) {
-		unconfigured := NewService(s.tokenService, basic.NewProvider(&fakeUserVerifier{}), ldap.NewProvider(), oidc.NewProvider(), s.permissionService)
+		unconfigured := NewService(s.tokenService, basic.NewProvider(newFakeUsers()), ldap.NewProvider(), oidc.NewProvider(), s.userService)
 		valid, username, authType, err := unconfigured.ParseAuthToken("anything", nil)
 		if !valid {
 			t.Fatalf("expected valid=true when auth is disabled")

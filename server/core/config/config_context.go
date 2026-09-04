@@ -6,6 +6,7 @@ var AuthContextKey = struct {
 	Authorised string
 	Username   string
 	Type       string
+	Superuser  string
 	Error      string
 	Session    string
 }{
@@ -13,6 +14,7 @@ var AuthContextKey = struct {
 	Authorised: "authorised",
 	Username:   "username",
 	Type:       "authType",
+	Superuser:  "superuser",
 	Error:      "authError",
 	Session:    "session",
 }

@@ -9,6 +9,7 @@ import (
 	"ivory/features/deployment"
 	"ivory/features/permission"
 	"ivory/features/query"
+	"ivory/features/user"
 	"log/slog"
 	"mime/multipart"
 	"strings"
@@ -30,6 +31,7 @@ type Service struct {
 	queryService      *query.Service
 	permissionService *permission.Service
 	deploymentService *deployment.Service
+	userService       *user.Service
 }
 
 func NewService(
@@ -37,12 +39,14 @@ func NewService(
 	queryService *query.Service,
 	permissionService *permission.Service,
 	deploymentService *deployment.Service,
+	userService *user.Service,
 ) *Service {
 	return &Service{
 		clusterService:    clusterService,
 		queryService:      queryService,
 		permissionService: permissionService,
 		deploymentService: deploymentService,
+		userService:       userService,
 	}
 }
 

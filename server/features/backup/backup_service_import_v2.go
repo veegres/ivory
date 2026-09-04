@@ -17,6 +17,14 @@ func (s *Service) importV2(data []byte) error {
 	}
 
 	var err error
+	// NOTE: the users come first because they are who everything else is about,
+	// and they arrive without a password - a restored user who signs in with one
+	// waits for a registration from whoever restored the file
+	for i, bu := range bkp.Users {
+		if _, errMut := s.userService.CreateOutright(bu.Username, "", bu.toAuthTypes(), bu.Superuser); errMut != nil {
+			err = errors.Join(err, fmt.Errorf("%s[%d]: %w", "user", i, errMut))
+		}
+	}
 	for i, bc := range bkp.Clusters {
 		if _, errMut := s.clusterService.Update(bc.toCluster()); errMut != nil {
 			err = errors.Join(err, fmt.Errorf("%s[%d]: %w", "cluster", i, errMut))

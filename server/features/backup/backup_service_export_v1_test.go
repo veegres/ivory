@@ -2,6 +2,7 @@ package backup
 
 import (
 	"ivory/features/cluster"
+	"ivory/features/permission"
 	"ivory/features/query"
 	"ivory/plugins/database"
 	"ivory/plugins/keeper"
@@ -42,7 +43,7 @@ func TestExportV1(t *testing.T) {
 		t.Fatalf("failed to seed etcd query: %v", err)
 	}
 
-	if _, err := s.permissionService.CreateUserPermissions("basic", "alice"); err != nil {
+	if _, err := s.permissionService.CreateUserPermissions("alice", permission.NOT_PERMITTED); err != nil {
 		t.Fatalf("failed to seed permissions: %v", err)
 	}
 
@@ -79,12 +80,12 @@ func TestExportV1(t *testing.T) {
 	t.Run("permissions are mapped for every stored user", func(t *testing.T) {
 		found := false
 		for _, p := range backupModel.Permissions {
-			if p.Username == "basic:alice" {
+			if p.Username == "alice" {
 				found = true
 			}
 		}
 		if !found {
-			t.Fatalf("expected permissions for basic:alice, got %v", backupModel.Permissions)
+			t.Fatalf("expected permissions for alice, got %v", backupModel.Permissions)
 		}
 	})
 }

@@ -6,7 +6,8 @@ import (
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
 	"ivory/core/service/token"
-	"ivory/features/permission"
+	"ivory/features/user"
+	"log/slog"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,12 +22,20 @@ var ErrInvalidAuthType = errors.New("invalid auth type")
 var ErrStateCookieNotFound = errors.New("state cookie not found")
 var ErrInvalidStateParameter = errors.New("invalid state parameter")
 
+// users is the narrow view auth takes of the user store: a provider says who
+// somebody is, and the store says whether Ivory knows that name at all and
+// whether it may be signed in with this way.
+type users interface {
+	VerifySignIn(username string, authType user.AuthType) error
+	IsSuperuser(username string) (bool, error)
+}
+
 type Service struct {
-	tokenService      *token.Service
-	basicProvider     *basic.Provider
-	ldapProvider      *ldap.Provider
-	oidcProvider      *oidc.Provider
-	permissionService *permission.Service
+	tokenService  *token.Service
+	basicProvider *basic.Provider
+	ldapProvider  *ldap.Provider
+	oidcProvider  *oidc.Provider
+	userService   users
 
 	expiration time.Duration
 }
@@ -36,14 +45,14 @@ func NewService(
 	basicProvider *basic.Provider,
 	ldapProvider *ldap.Provider,
 	oidcProvider *oidc.Provider,
-	permissionService *permission.Service,
+	userService users,
 ) *Service {
 	return &Service{
-		tokenService:      tokenService,
-		basicProvider:     basicProvider,
-		ldapProvider:      ldapProvider,
-		oidcProvider:      oidcProvider,
-		permissionService: permissionService,
+		tokenService:  tokenService,
+		basicProvider: basicProvider,
+		ldapProvider:  ldapProvider,
+		oidcProvider:  oidcProvider,
+		userService:   userService,
 
 		expiration: time.Hour,
 	}
@@ -65,6 +74,21 @@ func (s *Service) GetSupportedTypes() []AuthType {
 		supported = append(supported, LDAP)
 	}
 	return supported
+}
+
+// IsSuperuser reports the one thing about a signed-in person that no permission
+// record can overrule. A failure is answered with false: a person who cannot be
+// looked up is treated as an ordinary user, never as an administrator.
+func (s *Service) IsSuperuser(username string) bool {
+	if username == "" {
+		return false
+	}
+	superuser, err := s.userService.IsSuperuser(username)
+	if err != nil {
+		slog.Error("failed to check whether the user is a superuser", "error", err)
+		return false
+	}
+	return superuser
 }
 
 // ParseAuthTokenWithFallback tries primaryToken first and only falls back to fallbackToken if it doesn't validate.
@@ -104,10 +128,6 @@ func (s *Service) GenerateBasicAuthToken(login basic.Login) (string, *time.Time,
 	if err != nil {
 		return "", nil, err
 	}
-	_, errPerm := s.permissionService.CreateUserPermissions(BASIC.Prefix(), username)
-	if errPerm != nil {
-		return "", nil, errPerm
-	}
 	return s.generateToken(username, BASIC)
 }
 
@@ -115,10 +135,6 @@ func (s *Service) GenerateLdapAuthToken(login ldap.Login) (string, *time.Time, e
 	username, err := s.ldapProvider.Verify(login)
 	if err != nil {
 		return "", nil, err
-	}
-	_, errPerm := s.permissionService.CreateUserPermissions(LDAP.Prefix(), username)
-	if errPerm != nil {
-		return "", nil, errPerm
 	}
 	return s.generateToken(username, LDAP)
 }
@@ -128,13 +144,16 @@ func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error)
 	if err != nil {
 		return "", nil, err
 	}
-	_, errPerm := s.permissionService.CreateUserPermissions(OIDC.Prefix(), username)
-	if errPerm != nil {
-		return "", nil, errPerm
-	}
 	return s.generateToken(username, OIDC)
 }
 
+// generateToken is where a verified person becomes a session, and the last gate
+// before that: a directory may vouch for somebody Ivory was never told about,
+// and being registered - for this way of signing in - is what says they are
+// welcome here.
 func (s *Service) generateToken(subject string, authType AuthType) (string, *time.Time, error) {
+	if err := s.userService.VerifySignIn(subject, authType.User()); err != nil {
+		return "", nil, err
+	}
 	return s.tokenService.Generate(subject, jwt.MapClaims{"frm": authType}, s.expiration)
 }

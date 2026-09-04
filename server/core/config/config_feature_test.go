@@ -1,6 +1,10 @@
 package config
 
-import "testing"
+import (
+	"slices"
+	"strings"
+	"testing"
+)
 
 func TestFeatureCurrent(t *testing.T) {
 	tests := []struct {
@@ -80,4 +84,28 @@ func TestV1PermissionsResolve(t *testing.T) {
 			t.Errorf("v1 permission %q resolves to %q, which is not a feature any more", feature, current)
 		})
 	}
+}
+
+func TestWithheld(t *testing.T) {
+	t.Run("nothing is withheld when authentication is on", func(t *testing.T) {
+		if withheld := Withheld(true); len(withheld) != 0 {
+			t.Errorf("expected nothing withheld with auth enabled, got %v", withheld)
+		}
+	})
+
+	t.Run("only user and permission features are withheld without authentication", func(t *testing.T) {
+		withheld := Withheld(false)
+		if len(withheld) == 0 {
+			t.Fatal("expected the session-only features to be withheld with auth disabled")
+		}
+		for _, feature := range withheld {
+			if !slices.Contains(All, feature) {
+				t.Errorf("withheld feature %q is not a feature at all", feature)
+			}
+			name := string(feature)
+			if !strings.Contains(name, ".user.") && !strings.Contains(name, ".permission.") {
+				t.Errorf("unexpected withheld feature %q", feature)
+			}
+		}
+	})
 }

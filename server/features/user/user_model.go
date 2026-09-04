@@ -1,69 +1,91 @@
 package user
 
+import "slices"
+
 import "time"
 
 // COMMON (WEB AND SERVER)
 
-// WebPath is the web sub-path an invitation link points at, the token being the
+// WebPath is the web sub-path a registration link points at, the token being the
 // segment after it. The frontend builds the link with it, the server has to let
 // it through to the app.
 const WebPath = "user"
 
-// LinkKind is what the link does when it is spent: invite a user Ivory does not
-// have yet, or set the password of one it already has. It is stated when the
-// link is created rather than worked out when it is used, so a name that comes
-// into existence in between cannot turn an invitation into a password reset.
-type LinkKind string
+// AuthType is a way of signing in that a user was registered for. It is the
+// source of truth for the three methods: features/auth spells its own type out
+// with it rather than the two drifting apart.
+type AuthType string
 
 const (
-	LinkInvite LinkKind = "invite"
-	LinkReset  LinkKind = "reset"
+	AuthBasic AuthType = "basic"
+	AuthLdap  AuthType = "ldap"
+	AuthOidc  AuthType = "oidc"
+)
+
+var AuthTypes = []AuthType{AuthBasic, AuthLdap, AuthOidc}
+
+func (t AuthType) valid() bool {
+	return slices.Contains(AuthTypes, t)
+}
+
+// RegistrationStatus is where a user stands with the one thing Ivory holds for
+// them, their password. It is stated by the server so every screen reads the
+// same answer out of the same two fields.
+type RegistrationStatus string
+
+const (
+	RegistrationActive  RegistrationStatus = "active"
+	RegistrationPending RegistrationStatus = "pending"
+	RegistrationExpired RegistrationStatus = "expired"
+	RegistrationMissing RegistrationStatus = "missing"
 )
 
 type Response struct {
-	Username  string `json:"username"`
-	Superuser bool   `json:"superuser"`
+	Username     string             `json:"username"`
+	AuthTypes    []AuthType         `json:"authTypes"`
+	Superuser    bool               `json:"superuser"`
+	Registration *RegistrationState `json:"registration,omitempty"`
 }
 
-// LinkResponse describes an outstanding link. It never carries the token: the
-// token is shown once, when the link is created, and is not stored anywhere.
-type LinkResponse struct {
-	Id        string    `json:"id"`
-	Kind      LinkKind  `json:"kind"`
-	Username  string    `json:"username"`
-	Superuser bool      `json:"superuser"`
-	CreatedAt time.Time `json:"createdAt"`
-	ExpiresAt time.Time `json:"expiresAt"`
+type RegistrationState struct {
+	Status    RegistrationStatus `json:"status"`
+	ExpiresAt *time.Time         `json:"expiresAt,omitempty"`
 }
 
-type LinkCreatedResponse struct {
-	Id        string    `json:"id"`
-	Kind      LinkKind  `json:"kind"`
+// RegistrationResponse is the only shape carrying the token: a registration is
+// shown once, when it is issued, and is never stored to be shown again.
+type RegistrationResponse struct {
 	Token     string    `json:"token"`
 	Username  string    `json:"username"`
-	Superuser bool      `json:"superuser"`
-	CreatedAt time.Time `json:"createdAt"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-// LinkPayload is what the public page shows to the person who opened the link.
-type LinkPayload struct {
-	Kind      LinkKind  `json:"kind"`
+// CreateResponse is the user and, when one was issued along with them, the
+// registration link to hand out.
+type CreateResponse struct {
+	User         Response              `json:"user"`
+	Registration *RegistrationResponse `json:"registration,omitempty"`
+}
+
+// RegistrationPayload is what the public page shows to the person who opened
+// the link.
+type RegistrationPayload struct {
 	Username  string    `json:"username"`
-	Superuser bool      `json:"superuser"`
 	ExpiresAt time.Time `json:"expiresAt"`
 }
 
-// LinkRequest asks for an invitation. A reset asks for nothing but a username,
-// and says so through its own route, so the kind can never be smuggled past the
-// permission that guards it.
-type LinkRequest struct {
-	Username  string `json:"username" binding:"required"`
-	Superuser bool   `json:"superuser"`
+// CreateRequest carries no password: a user is created by name and by the ways
+// they may sign in, and the password is set by its owner on the page the
+// registration opens. Setup is the one exception, and it goes through the
+// config feature instead.
+type CreateRequest struct {
+	Username  string     `json:"username" binding:"required"`
+	AuthTypes []AuthType `json:"authTypes" binding:"required"`
+	Superuser bool       `json:"superuser"`
 }
 
-type LinkResetRequest struct {
-	Username string `json:"username" binding:"required"`
+type UpdateRequest struct {
+	AuthTypes []AuthType `json:"authTypes" binding:"required"`
 }
 
 type PasswordUpdateRequest struct {
@@ -71,65 +93,61 @@ type PasswordUpdateRequest struct {
 	NewPassword      string `json:"newPassword" binding:"required"`
 }
 
-type LinkVerifyRequest struct {
+type RegistrationVerifyRequest struct {
 	Token string `json:"token" binding:"required"`
 }
 
-type LinkPasswordRequest struct {
+type RegistrationPasswordRequest struct {
 	Token    string `json:"token" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 // SPECIFIC (SERVER)
 
-// User is the stored shape; Password is encrypted with the secret key and never
-// leaves the server. CreatedAt tells one account from another under the same
-// name, which is what an outstanding reset link is checked against.
+// User is the stored shape. Password is encrypted with the secret key, never
+// leaves the server, and is empty until its owner sets it. RegistrationId is
+// what makes an outstanding registration one-time and revocable: the token a
+// stranger holds is only good while it still matches. CreatedAt tells one
+// account from another under the same name.
 type User struct {
-	Username  string    `json:"username"`
-	Password  string    `json:"password"`
-	Superuser bool      `json:"superuser"`
-	CreatedAt time.Time `json:"createdAt"`
+	Username              string     `json:"username"`
+	Password              string     `json:"password"`
+	AuthTypes             []AuthType `json:"authTypes"`
+	Superuser             bool       `json:"superuser"`
+	RegistrationId        string     `json:"registrationId"`
+	RegistrationExpiresAt time.Time  `json:"registrationExpiresAt"`
+	CreatedAt             time.Time  `json:"createdAt"`
+}
+
+func (u User) allows(authType AuthType) bool {
+	return slices.Contains(u.AuthTypes, authType)
 }
 
 func (u User) toResponse() Response {
-	return Response{Username: u.Username, Superuser: u.Superuser}
-}
-
-// Link is the stored half of an invitation. The token carries the same facts
-// and its own expiration; this record is what makes the token one-time and
-// revocable, so a link that is gone from here cannot be used any more.
-type Link struct {
-	Kind      LinkKind  `json:"kind"`
-	Username  string    `json:"username"`
-	Superuser bool      `json:"superuser"`
-	CreatedAt time.Time `json:"createdAt"`
-	ExpiresAt time.Time `json:"expiresAt"`
-}
-
-func (l Link) toResponse(id string) LinkResponse {
-	return LinkResponse{
-		Id:        id,
-		Kind:      l.Kind,
-		Username:  l.Username,
-		Superuser: l.Superuser,
-		CreatedAt: l.CreatedAt,
-		ExpiresAt: l.ExpiresAt,
+	return Response{
+		Username:     u.Username,
+		AuthTypes:    u.AuthTypes,
+		Superuser:    u.Superuser,
+		Registration: u.registrationState(),
 	}
 }
 
-func (l Link) toPayload() LinkPayload {
-	return LinkPayload{Kind: l.Kind, Username: l.Username, Superuser: l.Superuser, ExpiresAt: l.ExpiresAt}
-}
-
-func (l Link) toCreatedResponse(id string, token string) LinkCreatedResponse {
-	return LinkCreatedResponse{
-		Id:        id,
-		Kind:      l.Kind,
-		Token:     token,
-		Username:  l.Username,
-		Superuser: l.Superuser,
-		CreatedAt: l.CreatedAt,
-		ExpiresAt: l.ExpiresAt,
+// registrationState answers the question the user list asks: where is this
+// person with their password. A user who cannot sign in with one is not asked
+// it at all.
+func (u User) registrationState() *RegistrationState {
+	if !u.allows(AuthBasic) {
+		return nil
 	}
+	if u.RegistrationId != "" {
+		expiresAt := u.RegistrationExpiresAt
+		if time.Now().After(expiresAt) {
+			return &RegistrationState{Status: RegistrationExpired, ExpiresAt: &expiresAt}
+		}
+		return &RegistrationState{Status: RegistrationPending, ExpiresAt: &expiresAt}
+	}
+	if u.Password == "" {
+		return &RegistrationState{Status: RegistrationMissing}
+	}
+	return &RegistrationState{Status: RegistrationActive}
 }
