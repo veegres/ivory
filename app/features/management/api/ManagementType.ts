@@ -33,6 +33,7 @@ export interface AuthInfo {
 
 export interface UserInfo {
     username: string,
+    superuser: boolean,
     permissions?: PermissionMap,
 }
 

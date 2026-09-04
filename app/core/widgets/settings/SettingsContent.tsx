@@ -1,6 +1,7 @@
 import {Box} from "@mui/material"
 
 import {Feature} from "../../../features/Feature"
+import {useRouterInfo} from "../../../features/management/api/ManagementHook"
 import {ManageAccess} from "../../../features/management/component/ManageAccess"
 import {ManageEraseButton} from "../../../features/management/component/ManageEraseButton"
 import {ManageFreeButton} from "../../../features/management/component/ManageFreeButton"
@@ -23,6 +24,8 @@ type Props = {
 
 export function SettingsContent(props: Props) {
     const {onUpdate} = props
+    const info = useRouterInfo(false)
+    const authEnabled = (info.data?.auth.supported.length ?? 0) > 0
 
     return (
         <Box sx={SX.list}>
@@ -33,8 +36,11 @@ export function SettingsContent(props: Props) {
             <List name={"Privacy and security"}>
                 <ManageAccess feature={Feature.ViewVaultList}>{renderButton(Settings.VAULT)}</ManageAccess>
                 <ManageAccess feature={Feature.ViewCertList}>{renderButton(Settings.CERTIFICATE)}</ManageAccess>
+                {/* NOTE: without authentication there is no account to change and nobody to
+                    grant anything to, so neither manager is offered at all */}
+                {authEnabled && renderButton(Settings.USER)}
+                {authEnabled && renderButton(Settings.PERMISSION)}
                 <ManageAccess feature={Feature.ManageManagementSecret}>{renderButton(Settings.SECRET)}</ManageAccess>
-                {renderButton(Settings.PERMISSION)}
             </List>
             <List name={"Danger Zone"}>
                 <ListItem
@@ -53,7 +59,7 @@ export function SettingsContent(props: Props) {
                     <ListItem
                         title={"Erase all data"}
                         description={"Once you erase all data, there is no going back. Please be certain."}
-                        button={<ManageEraseButton safe={true}/>}
+                        button={<ManageEraseButton/>}
                     />
                 </ManageAccess>
             </List>

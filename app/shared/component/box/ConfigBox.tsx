@@ -1,16 +1,19 @@
 import {HelpOutlined} from "@mui/icons-material"
-import {Alert, AlertColor, Box, Collapse, FormControl, FormLabel} from "@mui/material"
+import {Alert, Box, Collapse, FormControl, FormLabel} from "@mui/material"
 import {ReactNode, useState} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
-    box: {border: 1, borderColor: "divider", borderRadius: 1, width: "100%"},
-    form: {display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", height: "23px", margin: "10px 15px"},
+    box: {
+        display: "flex", flexDirection: "column", padding: "5px 12px",
+        border: 1, borderColor: "divider", borderRadius: 1, width: "100%"
+    },
+    form: {display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
     formAction: {position: "absolute", right: "0px"},
     formLabel: {display: "flex", gap: "4px", alignItems: "center", cursor: "pointer"},
-    child: {margin: "5px 15px 10px"},
-    alert: {flexGrow: 1, display: "flex", gap: 1, flexDirection: "column", margin: "0px 15px 8px"},
+    child: {marginTop: 2},
+    alert: {flexGrow: 1, display: "flex", gap: 1, flexDirection: "column", marginTop: 1},
     desc: {height: "100%", display: "flex", gap: 1, flexDirection: "column"},
 }
 
@@ -21,11 +24,10 @@ type Props = {
     showBody?: boolean,
     description?: ReactNode,
     recommendation?: ReactNode,
-    severity?: AlertColor,
 }
 
 export function ConfigBox(props: Props) {
-    const {description, label, showBody, renderBody, severity, recommendation, renderAction} = props
+    const {description, label, showBody, renderBody, recommendation, renderAction} = props
     const [open, setOpen] = useState(false)
     return (
         <Box sx={SX.box}>
@@ -56,7 +58,7 @@ export function ConfigBox(props: Props) {
     function renderInfo() {
         return (
             <Collapse in={open && (!!description || !!recommendation)}>
-                <Alert sx={SX.alert} icon={false} variant={"outlined"} severity={severity}>
+                <Alert sx={SX.alert} icon={false} variant={"outlined"} severity={"info"}>
                     <Box sx={SX.desc}>
                         {description && <Box>{description}</Box>}
                         {recommendation && (

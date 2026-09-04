@@ -1,9 +1,8 @@
-import {Typography} from "@mui/material"
-
 import {PermissionMap} from "../../../features/permission/api/PermissionType"
 import {PermissionsList} from "../../../features/permission/component/PermissionsList"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
+import {PageStartupGreeting} from "../../../shared/component/box/PageStartupGreeting"
 
 type Props = {
     username: string,
@@ -14,7 +13,7 @@ export function PermissionsBody(props: Props) {
     const {username, permissions} = props
     return (
         <PageStartupBox header={"Permissions"} renderFooter={renderFooter()} position={"start"} padding={"50px 0px"}>
-            <Typography variant={"h6"}>Glad to see you, {username}!</Typography>
+            <PageStartupGreeting username={username}/>
             <AlertCentered
                 severity={"warning"}
                 text={`

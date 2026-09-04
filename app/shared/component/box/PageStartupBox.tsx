@@ -9,10 +9,11 @@ import {LinearProgressStateful} from "../progress/LinearProgressStateful"
 
 const SX: SxPropsMap = {
     box: {
-        display: "flex", flexDirection: "column", alignItems: "center",
-        width: {xs: "92%", md: "30%"}, minWidth: {xs: 0, md: "500px"}, gap: 2
+        display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "450px",
+        width: {xs: "92%", md: "30%"}, minWidth: {xs: 0, md: "450px"}, gap: 2,
     },
-    header: {fontSize: "35px", fontWeight: 900, fontFamily: "monospace", margin: "20px 0", cursor: "pointer"},
+    header: {fontSize: "25px", fontWeight: 900, fontFamily: "monospace"},
+    animal: {fontSize: "45px", cursor: "pointer"},
     buttons: {display: "flex", gap: 2, width: "100%", justifyContent: "center", alignItems: "center"},
 }
 
@@ -25,15 +26,16 @@ type Props = {
 }
 
 export function PageStartupBox(props: Props) {
-    const {children, header, renderFooter, position = "center", padding = "150px 0px"} = props
+    const {children, header, renderFooter, position = "center", padding = "50px 0px"} = props
     const [animal, setAnimal] = useState(randomUnicodeAnimal())
 
     const info = useRouterInfo()
 
     return (
         <Box sx={[SX.box, {justifyContent: position, padding}]}>
-            <Box sx={SX.header} className={select.none} onClick={() => setAnimal(randomUnicodeAnimal())}>
-                {header} {animal}
+            <Box sx={SX.animal} className={select.none} onClick={() => setAnimal(randomUnicodeAnimal())}>{animal}</Box>
+            <Box sx={SX.header} className={select.none}>
+                {header}
             </Box>
             {children}
             <LinearProgressStateful loading={info.isFetching} line color={"inherit"}/>

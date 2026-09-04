@@ -4,7 +4,7 @@ import {ReactNode} from "react"
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {
-    infoAlert: {justifyContent: "center", "& .MuiAlert-message": {textAlign: "center"}},
+    infoAlert: {justifyContent: "center", "& .MuiAlert-message": {textAlign: "center"}, padding: "0px 8px"},
     neutralAlert: {color: "text.secondary", border: "1px solid", borderColor: "divider", backgroundColor: "transparent"},
 }
 

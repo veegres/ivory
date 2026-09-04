@@ -1,8 +1,7 @@
-import {Typography} from "@mui/material"
-
 import {LogoutButton} from "../../../features/auth/component/LogoutButton"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
+import {PageStartupGreeting} from "../../../shared/component/box/PageStartupGreeting"
 
 type Props = {
     username?: string,
@@ -20,7 +19,7 @@ export function PermissionsLogout(props: Props) {
     function renderPermissionProblem() {
         return (
             <>
-                <Typography variant={"h6"}>Glad to see you, {username}!</Typography>
+                <PageStartupGreeting username={username}/>
                 <AlertCentered
                     severity={"error"}
                     text={`Something went wrong, there are no permissions. Please, try to logout and login again. (${error ?? "unknown error"})`}
