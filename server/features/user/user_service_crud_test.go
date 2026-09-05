@@ -267,7 +267,7 @@ func TestServiceUpdate(t *testing.T) {
 		}
 	})
 
-	t.Run("asking for a password issues a registration", func(t *testing.T) {
+	t.Run("asking for a password waits for an explicit reset link", func(t *testing.T) {
 		env := newTestUserEnv(t)
 		if _, err := env.service.Create(CreateRequest{Username: "alice", AuthTypes: []AuthType{AuthLdap}}, ""); err != nil {
 			t.Fatalf("failed to seed alice: %v", err)
@@ -277,8 +277,19 @@ func TestServiceUpdate(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if response.Registration == nil || response.Registration.Token == "" {
-			t.Fatalf("expected a registration to hand out, got %+v", response.Registration)
+		if response.Registration != nil {
+			t.Fatalf("expected no registration to be issued by update, got %+v", response.Registration)
+		}
+		if response.User.Registration == nil || response.User.Registration.Status != RegistrationMissing {
+			t.Fatalf("expected the user to need a reset link, got %+v", response.User.Registration)
+		}
+
+		stored, errGet := env.repository.Get("alice")
+		if errGet != nil {
+			t.Fatalf("expected no error, got %v", errGet)
+		}
+		if stored.RegistrationId != "" {
+			t.Fatalf("expected no registration id until reset, got %q", stored.RegistrationId)
 		}
 	})
 
