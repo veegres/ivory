@@ -1,7 +1,7 @@
 import {ToggleButton, ToggleButtonGroup} from "@mui/material"
+
 import {Feature} from "../../../features/Feature"
 import {ManageAccess} from "../../../features/management/component/ManageAccess"
-
 import {SxPropsMap} from "../../helper/HelperType"
 
 const SX: SxPropsMap = {

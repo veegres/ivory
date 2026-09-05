@@ -12,7 +12,6 @@ import {Status} from "../api/PermissionType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center"},
-    button: {padding: "2px 5px"},
 }
 
 type Props = {
@@ -24,7 +23,7 @@ type Props = {
     count?: boolean,
 }
 
-export function PermissionsButtons(props: Props) {
+export function PermissionButtons(props: Props) {
     const {username, permissions, approve = false, reject = false, request = false, count = false} = props
     const requestRouter = useRouterPermissionRequest()
     const approveRouter = useRouterPermissionApprove()
@@ -43,7 +42,6 @@ export function PermissionsButtons(props: Props) {
         const p = getFilteredPermissions(predicate)
         if (count && p.length <= 1) return
         return <Button
-            sx={SX.button}
             color={"success"}
             loading={approveRouter.isPending}
             disabled={p.length === 0}
@@ -58,7 +56,6 @@ export function PermissionsButtons(props: Props) {
         const p = getFilteredPermissions(predicate)
         if (count && p.length <= 1) return
         return <Button
-            sx={SX.button}
             color={"warning"}
             loading={rejectRouter.isPending}
             disabled={p.length === 0}
@@ -74,7 +71,6 @@ export function PermissionsButtons(props: Props) {
         if (count && p.length <= 1) return
         return (
             <Button
-                sx={SX.button}
                 color={"secondary"}
                 loading={requestRouter.isPending}
                 disabled={p.length === 0}

@@ -10,6 +10,7 @@ import {PageErrorBox} from "../shared/component/box/PageErrorBox"
 import {AppProvider} from "../shared/provider/AppProvider"
 import {AuthProvider} from "../shared/provider/AuthProvider"
 import {SnackbarProvide} from "../shared/provider/SnackbarProvider"
+import background from "../shared/style/background.module.css"
 import scroll from "../shared/style/scroll.module.css"
 import {App} from "./App"
 
@@ -19,6 +20,7 @@ dayjs.extend(utc)
 // reserve place for scroll to avoid resizing
 document.body.classList.add(scroll.hidden)
 document.getElementById("root")!.classList.add(scroll.show)
+document.getElementById("root")!.classList.add(background.inherit)
 
 // render react app
 const container = document.getElementById("root")

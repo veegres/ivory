@@ -5,13 +5,12 @@ import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {PermissionOptions} from "../../../shared/helper/HelperUtils"
 import {Feature} from "../../Feature"
 import {Status} from "../api/PermissionType"
-import {PermissionsButtons} from "./PermissionsButtons"
+import {PermissionButtons} from "./PermissionButtons"
 
 const SX: SxPropsMap = {
     item: {
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        borderBottom: 1, borderColor: "divider", padding: "4px 8px", height: "35px",
-        "&:first-of-type": {borderTop: 1, borderColor: "divider"},
+        borderTop: 1, borderColor: "divider", padding: "4px 8px", height: "35px",
     },
     button: {padding: "2px 5px"},
     wrap: {display: "flex", alignItems: "center", gap: 1},
@@ -24,7 +23,7 @@ type Props = {
     view?: "admin" | "user",
 }
 
-export function PermissionsListItem(props: Props) {
+export function PermissionListItem(props: Props) {
     const {username, name, status, view = "user"} = props
     const options = PermissionOptions[status]
 
@@ -40,7 +39,7 @@ export function PermissionsListItem(props: Props) {
 
     function renderButton() {
         if (view === "admin") {
-            return <PermissionsButtons
+            return <PermissionButtons
                 username={username}
                 permissions={[[name, status]]}
                 approve={status === Status.NOT_PERMITTED || status === Status.PENDING}
@@ -48,7 +47,7 @@ export function PermissionsListItem(props: Props) {
             />
         }
         if (status === Status.NOT_PERMITTED) {
-            return <PermissionsButtons username={username} permissions={[[name, status]]} request={true}/>
+            return <PermissionButtons username={username} permissions={[[name, status]]} request={true}/>
         }
         return renderStatus(status)
     }

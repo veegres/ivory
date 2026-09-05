@@ -6,24 +6,28 @@ import {NoBox} from "../../../shared/component/box/NoBox"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {Feature} from "../../Feature"
 import {PermissionMap, Status} from "../api/PermissionType"
-import {PermissionsButtons} from "./PermissionsButtons"
-import {PermissionsListItem} from "./PermissionsListItem"
+import {PermissionButtons} from "./PermissionButtons"
+import {PermissionListItem} from "./PermissionListItem"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", width: "100%"},
-    header: {display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 8px"},
+    header: {
+        display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0px 8px",
+        height: "35px", position: "sticky", top: 0, backgroundImage: "var(--Paper-overlay)",
+        backgroundColor: "background.default", zIndex: 1,
+    },
     search: {display: "flex", alignItems: "center", gap: 1, flexGrow: 1, height: "27px"},
     filter: {width: "100%"},
 }
 
 type Props = {
     username: string,
-    permissions: PermissionMap,
+    permissions?: PermissionMap,
     view?: "admin" | "user",
 }
 
-export function PermissionsList(props: Props) {
-    const {permissions, username, view = "user"} = props
+export function PermissionList(props: Props) {
+    const {permissions = {}, username, view = "user"} = props
     const [search, setSearch] = useState("")
     const filtered = useMemo(handleMemoSearch, [permissions, search])
 
@@ -40,7 +44,7 @@ export function PermissionsList(props: Props) {
                         onChange={e => setSearch(e.target.value)}
                     />
                 </Box>
-                <PermissionsButtons
+                <PermissionButtons
                     username={username}
                     permissions={filtered}
                     approve={view === "admin"}
@@ -56,7 +60,7 @@ export function PermissionsList(props: Props) {
     function renderList() {
         if (filtered.length === 0) return <NoBox text={"no permissions"}/>
         return filtered.map(([name, status]) => (
-            <PermissionsListItem key={name} username={username} name={name} status={status} view={view}/>
+            <PermissionListItem key={name} username={username} name={name} status={status} view={view}/>
         ))
     }
 

@@ -1,11 +1,12 @@
 import {
+    AccountCircleTwoTone,
     BackupTwoTone,
     Block,
     CheckCircleOutlined,
     DnsTwoTone,
     FilePresentOutlined,
     HeartBrokenTwoTone,
-    HelpOutlined,
+    HourglassEmpty,
     InfoTwoTone,
     KeyTwoTone,
     LockTwoTone,
@@ -13,7 +14,6 @@ import {
     Pause,
     PeopleAltTwoTone,
     PlayArrow,
-    RuleTwoTone,
     SecurityTwoTone,
     Shield,
     UploadFileOutlined,
@@ -144,7 +144,7 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.MENU]: {name: "MENU", label: "SETTINGS", icon: <MenuOpen/>, key: "menu"},
     [Settings.VAULT]: {name: "VAULT", label: "Vault Manager", icon: <LockTwoTone/>, key: "vault"},
     [Settings.CERTIFICATE]: {name: "CERTIFICATE", label: "Certificate Manager", icon: <SecurityTwoTone/>, key: "cert"},
-    [Settings.PERMISSION]: {name: "PERMISSION", label: "Permission Manager", icon: <RuleTwoTone/>, key: "permission"},
+    [Settings.ACCOUNT]: {name: "ACCOUNT", label: "Account Manager", icon: <AccountCircleTwoTone/>, key: "account"},
     [Settings.USER]: {name: "USER", label: "User Manager", icon: <PeopleAltTwoTone/>, key: "user"},
     [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <KeyTwoTone/>, key: "secret"},
     [Settings.BACKUP]: {name: "BACKUP", label: "Backup", icon: <BackupTwoTone/>, key: "backup"},
@@ -159,7 +159,7 @@ export const QueryVarietyOptions: { [key in VarietyType]: EnumOptions } = {
 
 export const PermissionOptions: { [key in PermissionStatus]: EnumOptions } = {
     [PermissionStatus.GRANTED]: {key: "Granted", label: "Granted", icon: <CheckCircleOutlined/>, color: "success.main"},
-    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HelpOutlined/>, color: "secondary.main"},
+    [PermissionStatus.PENDING]: {key: "Pending", label: "Pending", icon: <HourglassEmpty/>, color: "secondary.main"},
     [PermissionStatus.NOT_PERMITTED]: {key: "Not permitted", label: "Not permitted", icon: <Block/>, color: "error.main"},
 }
 

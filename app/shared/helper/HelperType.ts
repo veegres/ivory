@@ -30,7 +30,7 @@ export enum Settings {
     VAULT,
     CERTIFICATE,
     SECRET,
-    PERMISSION,
+    ACCOUNT,
     USER,
     BACKUP,
     ABOUT,

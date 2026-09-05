@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
     button: {padding: "5px"},
 }
 
-export function UserAccount() {
+export function UserAccountPassword() {
     const [previousPassword, setPreviousPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
     const [repeat, setRepeat] = useState("")
@@ -67,8 +67,8 @@ export function UserAccount() {
 
     function renderDescription() {
         return (
-            "This changes the password of your Ivory user. It is the only thing you can change about " +
-            "yourself - a username is never updated, and nobody but you can set your password."
+            "Avoid using the same password across multiple accounts. " +
+            "For better security, use a unique password with letters, numbers, and special characters."
         )
     }
 
