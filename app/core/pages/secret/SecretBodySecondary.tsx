@@ -13,7 +13,7 @@ export function SecretBodySecondary() {
 
     return (
         <PageStartupBox header={"Welcome Back"} renderFooter={<SecretButton keyWord={key}/>}>
-            <Typography variant={"caption"}>
+            <Typography variant={"caption"} align={"justify"}>
                 Oops! <b>Ivory</b> was just rebooted. Please enter your <b>Secret word</b> to continue working with sensitive data.
                 There is nothing to press here if you have forgotten it: wiping everything is something only a
                 signed-in administrator can ask for, from <i>Settings</i>. Without the word, the way to start

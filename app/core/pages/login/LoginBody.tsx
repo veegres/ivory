@@ -41,9 +41,12 @@ export function LoginBody(props: Props) {
 
         return (
             <>
-                <KeyEnterInput label={"username"} onChange={(e) => setUsername(e.target.value)}/>
                 <KeyEnterInput
-                    label={"password"}
+                    label={"Username"}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+                <KeyEnterInput
+                    label={"Password"}
                     hidden
                     onChange={(e) => setPass(e.target.value)}
                     onEnterPress={() => handleLogin(UserAuthType.BASIC)}

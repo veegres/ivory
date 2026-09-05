@@ -13,7 +13,7 @@ export function SecretBodyInitial() {
 
     return (
         <PageStartupBox header={"Welcome"} renderFooter={renderFooter()}>
-            <Typography variant={"caption"}>
+            <Typography variant={"caption"} align={"justify"}>
                 Welcome to <b>Ivory</b> — your assistant for managing and troubleshooting PostgreSQL clusters.
                 To keep your sensitive data safe, we need little information from you.
                 <br/>

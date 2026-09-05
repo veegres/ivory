@@ -9,19 +9,15 @@ export function ErrorLeaderMissing() {
 }
 
 export function ErrorDbMissing() {
-    return <ErrorSmart error={"Provide Database Port to interact with it"}/>
+    return <ErrorSmart error={"Provide Database Port to send queries to the database or interact with database tools"}/>
 }
 
 export function ErrorSshMissing() {
-    return <ErrorSmart error={"Provide SSH Key and VM Port to interact with it"}/>
+    return <ErrorSmart error={"Provide SSH Key and VM Port to interact with your system"}/>
 }
 
 export function ErrorKeeperMissing() {
-    return <ErrorSmart error={"Provide Keeper Port to work with it"}/>
-}
-
-export function ErrorKeeperRequestMissing() {
-    return <ErrorSmart error={"Cannot parse Keeper Request"}/>
+    return <ErrorSmart error={"Provide Keeper Port to be able to use features like switchover, reload, reinit, config, etc"}/>
 }
 
 export function ErrorUserInfoMissing() {

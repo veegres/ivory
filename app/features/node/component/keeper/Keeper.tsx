@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {ErrorKeeperRequestMissing} from "../../../../shared/component/box/ErrorManual"
+import {ErrorKeeperMissing} from "../../../../shared/component/box/ErrorManual"
 import {HeadBox} from "../../../../shared/component/box/HeadBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {Feature} from "../../../Feature"
@@ -29,12 +29,13 @@ type Props = {
 export function Keeper(props: Props) {
     const {request, cluster, candidates, role} = props
 
+    if (!request) return <ErrorKeeperMissing/>
+
     return (
         <Box sx={SX.box}>
             <HeadBox title={"Actions"}>
                 {request && renderActions(request)}
             </HeadBox>
-            {!request && <ErrorKeeperRequestMissing/>}
             <ManageAccess feature={Feature.ViewNodeKeeperConfig} error={true}>
                 <KeeperConfig req={request}/>
             </ManageAccess>

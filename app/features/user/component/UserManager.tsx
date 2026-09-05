@@ -6,51 +6,42 @@ import {Tabs, TabsButton} from "../../../shared/component/button/TabsButton"
 import {LastElementScrolling} from "../../../shared/component/scrolling/LastElementScrolling"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {Feature} from "../../Feature"
-import {useHasAccess} from "../../management/component/ManageAccess"
-import {UserCreation} from "./UserCreation"
-import {UserCreationForm} from "./UserCreationForm"
+import {UserAccount} from "./UserAccount"
+import {UserRegistrationForm} from "./UserRegistrationForm"
 import {UserList} from "./UserList"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 2, padding: "5px 10px 0px 0px"},
 }
 
-const ACCOUNT_TAB = 0
-const USERS_TAB = 1
-const REGISTER_TAB = 2
-
-const ACCOUNT_TABS: Tabs = {
-    [ACCOUNT_TAB]: {label: "ACCOUNT"},
+const TABS: Tabs = {
+    0: {label: "ACCOUNT"},
+    1: {label: "USERS", feature: Feature.ViewUserList},
+    2: {label: "REGISTER", feature: Feature.ManageUserCreate},
 }
 
 export function UserManager() {
-    const [tab, setTab] = useState(ACCOUNT_TAB)
-    const listAccess = useHasAccess(Feature.ViewUserList)
-    const createAccess = useHasAccess(Feature.ManageUserCreate)
-
-    const tabs: Tabs = {...ACCOUNT_TABS}
-    if (listAccess === "allowed") tabs[USERS_TAB] = {label: "USERS"}
-    if (createAccess === "allowed") tabs[REGISTER_TAB] = {label: "REGISTER"}
+    const [tab, setTab] = useState(0)
 
     return (
         <LastElementScrolling>
-            {Object.keys(tabs).length > 1 && <TabsButton tabs={tabs} tab={tab} setTab={setTab}/>}
+            <TabsButton tabs={TABS} tab={tab} setTab={setTab}/>
             <Box sx={SX.box}>{renderTab()}</Box>
         </LastElementScrolling>
     )
 
     function renderTab() {
         switch (tab) {
-            case USERS_TAB: return <UserList/>
-            case REGISTER_TAB: return renderRegister()
-            default: return <UserCreation/>
+            case 1: return <UserList/>
+            case 2: return renderRegister()
+            default: return <UserAccount/>
         }
     }
 
     function renderRegister() {
         return (<>
             <AlertCentered text={renderDescription()}/>
-            <UserCreationForm/>
+            <UserRegistrationForm/>
         </>)
     }
 

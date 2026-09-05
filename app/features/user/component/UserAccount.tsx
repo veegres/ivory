@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
     button: {padding: "5px"},
 }
 
-export function UserCreation() {
+export function UserAccount() {
     const [previousPassword, setPreviousPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
     const [repeat, setRepeat] = useState("")

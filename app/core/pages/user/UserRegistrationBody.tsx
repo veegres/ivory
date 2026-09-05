@@ -40,11 +40,16 @@ export function UserRegistrationBody(props: Props) {
             <PageStartupGreeting username={registration.data?.username}/>
             <AlertCentered severity={"info"} text={renderDescription()}/>
             <AlertCentered severity={"warning"} text={renderWarning()}/>
-            <KeyEnterInput label={"Password"} value={password} hidden onChange={(e) => setPassword(e.target.value)}/>
+            <KeyEnterInput
+                label={"Password"}
+                value={password}
+                hidden={true}
+                onChange={(e) => setPassword(e.target.value)}
+            />
             <KeyEnterInput
                 label={getRepeatLabel()}
                 value={repeat}
-                hidden
+                hidden={true}
                 error={isMismatched()}
                 onChange={(e) => setRepeat(e.target.value)}
                 onEnterPress={handleSet}
