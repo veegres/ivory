@@ -32,11 +32,7 @@ type ManageProps = {
 
 type Props = SetupProps | ManageProps
 
-// UserCreate is how a user comes to exist: a username and the ways that person
-// may sign in. It is the same form on the setup page and in the user manager -
-// the difference is that setup types the password here, because there is nobody
-// yet to hand a registration link to.
-export function UserCreationForm(props: Props) {
+export function UserRegistrationForm(props: Props) {
     const setup = props.setup === true
     const [own, setOwn] = useState<UserSetupRequest>({username: "", password: "", authTypes: []})
     const [superuser, setSuperuser] = useState(false)

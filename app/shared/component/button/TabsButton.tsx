@@ -1,4 +1,6 @@
 import {ToggleButton, ToggleButtonGroup} from "@mui/material"
+import {Feature} from "../../../features/Feature"
+import {ManageAccess} from "../../../features/management/component/ManageAccess"
 
 import {SxPropsMap} from "../../helper/HelperType"
 
@@ -7,7 +9,7 @@ const SX: SxPropsMap = {
 }
 
 export interface Tabs {
-    [key: number]: {label: string}
+    [key: number]: {label: string, feature?: Feature},
 }
 
 type Props = {
@@ -24,12 +26,18 @@ export function TabsButton(props: Props) {
             sx={SX.group}
             value={tab}
             fullWidth={fullWidth}
-            exclusive
+            exclusive={true}
             onChange={(_, value) => setTab(value ?? tab)}
         >
-            {Object.entries(tabs).map(([key, value]) => (
-                <ToggleButton key={key} value={Number(key)}>{value.label}</ToggleButton>
+            {Object.entries(tabs).map(([key, tab]) => !tab.feature ? renderButton(key, tab.label) : (
+                <ManageAccess key={key} feature={tab.feature}>{renderButton(key, tab.label)}</ManageAccess>
             ))}
         </ToggleButtonGroup>
     )
+
+    function renderButton(key: string, tab: string) {
+        return (
+            <ToggleButton key={key} value={Number(key)}>{tab}</ToggleButton>
+        )
+    }
 }

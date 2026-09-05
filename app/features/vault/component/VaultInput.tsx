@@ -28,7 +28,7 @@ export const VaultInput = forwardRef<HTMLDivElement, Props>(function VaultInput(
             <InputLabel shrink>{label}</InputLabel>
             <OutlinedInput
                 sx={SX.input}
-                notched
+                notched={true}
                 label={label}
                 type={type}
                 value={value}

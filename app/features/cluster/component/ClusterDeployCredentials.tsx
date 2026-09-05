@@ -96,7 +96,6 @@ export function ClusterDeployCredentials(props: Props) {
                     onChange={(e) => onCredentialChange({...credential, username: e.target.value})}
                 />
                 <TextField
-                    type={"password"}
                     label={"Password"}
                     value={credential.password}
                     error={showErrors && !credential.password}
