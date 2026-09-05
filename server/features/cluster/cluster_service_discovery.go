@@ -39,12 +39,6 @@ func (s *Service) Detect(cluster CreateAutoRequest) (*Response, error) {
 		return nil, err
 	}
 
-	tags, errSave := s.saveTags(cluster.Name, cluster.Tags)
-	if errSave != nil {
-		return nil, errSave
-	}
-	cluster.Tags = tags
-
 	model := Request{
 		Name:  cluster.Name,
 		Nodes: nodes,
@@ -53,13 +47,11 @@ func (s *Service) Detect(cluster CreateAutoRequest) (*Response, error) {
 			Tls:     cluster.Tls,
 			Certs:   cluster.Certs,
 			Vaults:  cluster.Vaults,
-			Tags:    tags,
+			Tags:    cluster.Tags,
 		},
 	}
 
-	r, err := s.clusterRepository.Create(model)
-
-	return &r, err
+	return s.Create(model)
 }
 
 func (s *Service) Fix(name string) (*Response, error) {

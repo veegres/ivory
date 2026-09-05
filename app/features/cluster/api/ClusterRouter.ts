@@ -26,6 +26,11 @@ export const ClusterApi = {
             .get<R<Overview>>(`/cluster/overview/${name}`, {params: {host, port}})
             .then((response) => response.data.response),
     },
+    create: {
+        key: () => ["cluster", "create"],
+        fn: (cluster: Cluster) => api.post<R<Cluster>>("/cluster", cluster)
+            .then((response) => response.data.response),
+    },
     update: {
         key: () => ["cluster", "update"],
         fn: (cluster: Cluster) => api.put<R<Cluster>>("/cluster", cluster)
