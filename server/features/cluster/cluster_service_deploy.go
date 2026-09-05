@@ -164,7 +164,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 	// only the nodes that came up, would leave a failed deploy invisible and
 	// untroubleshootable.
 	logs.send("system", "updating cluster configuration")
-	if _, err := s.Update(cluster); err != nil {
+	if _, err := s.Create(cluster); err != nil {
 		s.rollbackVaults(created, logs.send)
 		return nil, false, err
 	}

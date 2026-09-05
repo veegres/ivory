@@ -62,6 +62,7 @@ export function ListRowNew(props: Props) {
                 }}
                 toggle={toggle}
                 onUpdate={clean}
+                create={true}
             />
         )
     }

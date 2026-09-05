@@ -70,6 +70,23 @@ func (r *Router) GetClusterByName(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cluster})
 }
 
+func (r *Router) PostCluster(context *gin.Context) {
+	var cluster Request
+	errParse := context.ShouldBindJSON(&cluster)
+	if errParse != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})
+		return
+	}
+
+	response, errRes := r.clusterService.Create(cluster)
+	if errRes != nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": errRes.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": response})
+}
+
 func (r *Router) PutClusterByName(context *gin.Context) {
 	var cluster Request
 	errParse := context.ShouldBindJSON(&cluster)

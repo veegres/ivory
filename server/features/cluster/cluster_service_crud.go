@@ -1,6 +1,10 @@
 package cluster
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"ivory/clients/storage"
+)
 
 func (s *Service) List() ([]Response, error) {
 	return s.clusterRepository.List()
@@ -35,14 +39,29 @@ func (s *Service) Get(cluster string) (Response, error) {
 	return s.clusterRepository.Get(cluster)
 }
 
+func (s *Service) Create(cluster Request) (*Response, error) {
+	if err := s.validateWritableCluster(cluster); err != nil {
+		return nil, err
+	}
+	if _, err := s.Get(cluster.Name); err == nil {
+		return nil, ErrClusterNameTaken
+	} else if !errors.Is(err, storage.ErrNotFound) {
+		return nil, err
+	}
+	tags, err := s.saveTags(cluster.Name, cluster.Tags)
+	if err != nil {
+		return nil, err
+	}
+	cluster.Tags = tags
+	created, errCluster := s.clusterRepository.Create(cluster)
+	if errors.Is(errCluster, storage.ErrAlreadyExists) {
+		return nil, ErrClusterNameTaken
+	}
+	return &created, errCluster
+}
+
 func (s *Service) Update(cluster Request) (*Response, error) {
-	if cluster.Name == "" {
-		return nil, ErrClusterNameEmpty
-	}
-	if cluster.Nodes == nil || len(cluster.Nodes) == 0 {
-		return nil, ErrClusterKeepersEmpty
-	}
-	if err := s.validateNodeNames(cluster.Nodes); err != nil {
+	if err := s.validateWritableCluster(cluster); err != nil {
 		return nil, err
 	}
 	tags, err := s.saveTags(cluster.Name, cluster.Tags)
@@ -64,6 +83,19 @@ func (s *Service) Delete(cluster string) error {
 
 func (s *Service) DeleteAll() error {
 	return s.clusterRepository.DeleteAll()
+}
+
+func (s *Service) validateWritableCluster(cluster Request) error {
+	if cluster.Name == "" {
+		return ErrClusterNameEmpty
+	}
+	if cluster.Nodes == nil || len(cluster.Nodes) == 0 {
+		return ErrClusterKeepersEmpty
+	}
+	if err := s.validateNodeNames(cluster.Nodes); err != nil {
+		return err
+	}
+	return nil
 }
 
 // validateNodeNames enforces the naming rules the cluster depends on: a
