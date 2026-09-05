@@ -58,9 +58,10 @@ func (s *Service) CreateOutright(username string, password string, authTypes []A
 }
 
 // Update changes the ways an existing user may sign in, and nothing else - not
-// their name, and never their superuser flag. Asking for basic issues a
-// registration; taking it away drops the password along with it, since there is
-// nothing left it could be used for.
+// their name, and never their superuser flag. Adding basic leaves the user
+// waiting for an explicit password reset link; taking it away drops the
+// password along with any outstanding link, since there is nothing left either
+// could be used for.
 func (s *Service) Update(username string, authTypes []AuthType, requester string) (*CreateResponse, error) {
 	user, errGet := s.get(username)
 	if errGet != nil {
@@ -85,13 +86,6 @@ func (s *Service) Update(username string, authTypes []AuthType, requester string
 	}
 	if errUpdate := s.userRepository.Update(*user); errUpdate != nil {
 		return nil, errUpdate
-	}
-	if !basicBefore && basicAfter {
-		registration, registered, errRegistration := s.registrationIssue(*user)
-		if errRegistration != nil {
-			return nil, errRegistration
-		}
-		return &CreateResponse{User: registered.toResponse(), Registration: registration}, nil
 	}
 	return &CreateResponse{User: user.toResponse()}, nil
 }
