@@ -34,9 +34,7 @@ export function PageStartupBox(props: Props) {
     return (
         <Box sx={[SX.box, {justifyContent: position, padding}]}>
             <Box sx={SX.animal} className={select.none} onClick={() => setAnimal(randomUnicodeAnimal())}>{animal}</Box>
-            <Box sx={SX.header} className={select.none}>
-                {header}
-            </Box>
+            <Box sx={SX.header} className={select.none}>{header}</Box>
             {children}
             <LinearProgressStateful loading={info.isFetching} line color={"inherit"}/>
             <Box sx={SX.buttons}>

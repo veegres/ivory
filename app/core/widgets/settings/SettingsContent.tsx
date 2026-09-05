@@ -31,11 +31,11 @@ export function SettingsContent(props: Props) {
                 <ListItem title={"Refetch on window focus"} button={<SettingsRefetchChanger/>}/>
             </List>
             <List name={"Privacy and security"}>
+                {renderButton(Settings.ACCOUNT)}
+                <ManageAccess feature={Feature.ViewUserList}>{renderButton(Settings.USER)}</ManageAccess>
+                <ManageAccess feature={Feature.ManageManagementSecret}>{renderButton(Settings.SECRET)}</ManageAccess>
                 <ManageAccess feature={Feature.ViewVaultList}>{renderButton(Settings.VAULT)}</ManageAccess>
                 <ManageAccess feature={Feature.ViewCertList}>{renderButton(Settings.CERTIFICATE)}</ManageAccess>
-                <ManageAccess feature={Feature.ViewUserList}>{renderButton(Settings.USER)}</ManageAccess>
-                <ManageAccess feature={Feature.ViewPermissionList}>{renderButton(Settings.PERMISSION)}</ManageAccess>
-                <ManageAccess feature={Feature.ManageManagementSecret}>{renderButton(Settings.SECRET)}</ManageAccess>
             </List>
             <List name={"Danger Zone"}>
                 <ListItem

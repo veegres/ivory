@@ -31,13 +31,13 @@ export function ManageBackup() {
     return (
         <Box sx={SX.box}>
             <AlertInformative
-                title={"Backup and Restore Your Data"}
+                title={"Backup and Restore your Data"}
                 subtitle={`
-                    Ivory backs up all clusters, permissions, and manual queries. We ensure full
+                    Ivory backs up clusters, users, permissions, and manual queries. We ensure full
                     backward compatibility for backup files across all versions.
                 `}
                 description={<>
-                    Please note that importing data may overwrite existing clusters or user
+                    Please, note that importing data may overwrite existing clusters or user
                     permissions, which could lead to data loss in the event of a conflict. For
                     security reasons, credential are not included in
                     backups and must be re-entered manually. While direct database compatibility
