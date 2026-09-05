@@ -77,7 +77,7 @@ export function UserRegistrationBody(props: Props) {
         if (registration.isError) {
             return (
                 <Tooltip title={"Open Ivory"} placement={"top"} arrow disableInteractive>
-                    <Button variant={"contained"} onClick={redirectToHome} fullWidth>GO TO IVORY</Button>
+                    <Button variant={"contained"} onClick={redirectToHome} fullWidth>BACK</Button>
                 </Tooltip>
             )
         }
