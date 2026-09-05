@@ -4,13 +4,6 @@ import "slices"
 
 import "time"
 
-// COMMON (WEB AND SERVER)
-
-// WebPath is the web sub-path a registration link points at, the token being the
-// segment after it. The frontend builds the link with it, the server has to let
-// it through to the app.
-const WebPath = "user"
-
 // AuthType is a way of signing in that a user was registered for. It is the
 // source of truth for the three methods: features/auth spells its own type out
 // with it rather than the two drifting apart.

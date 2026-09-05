@@ -20,7 +20,7 @@ import (
 	"ivory/tools"
 	"log/slog"
 	"net/http"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-contrib/static"
@@ -30,16 +30,18 @@ import (
 func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Router, tc *tools.Router) {
 	engine := gin.Default()
 	engine.UseH2C = true
+	urlPath := env.Config.UrlPath
+	apiPath := "/api"
+	staticFilesPath := env.Config.StaticFilesPath
 
 	// NOTE: Serving ivory static file to web
-	if env.Config.StaticFilesPath != "" {
-		engine.Use(static.Serve(env.Config.UrlPath, static.LocalFile(env.Config.StaticFilesPath, true)))
+	if staticFilesPath != "" {
+		spaServe(engine, urlPath, apiPath, staticFilesPath)
 	}
-	engine.NoRoute(noRoute(env))
 
 	// NOTE: Setup default sub path for reverse proxies, default "/"
 	root := engine.Group(env.Config.UrlPath)
-	unsafe := root.Group("/api", gin.Recovery(), fc.Auth.SessionMiddleware())
+	unsafe := root.Group(apiPath, gin.Recovery(), fc.Auth.SessionMiddleware())
 	unsafe.GET("/ping", pong)
 	unsafe.GET("/info", fc.Auth.AuthContextMiddleware(), fc.Management.GetAppInfo)
 	unsafe.POST("/logout", fc.Auth.Logout)
@@ -67,17 +69,17 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	deploymentRouter(safe, fc.Permission, fc.Deployment)
 
 	slog.Info("Ivory address: " + env.Config.UrlAddress)
-	slog.Info("Ivory WEB path: " + env.Config.UrlPath)
+	slog.Info("Ivory WEB path: " + urlPath)
 	slog.Info("Ivory API path: " + unsafe.BasePath())
 
 	if env.Config.TlsEnabled {
-		slog.Info("Ivory connection type: HTTPS")
+		slog.Info("Ivory WEB protocol: HTTPS")
 		err := engine.RunTLS(env.Config.UrlAddress, env.Config.CertFilePath, env.Config.CertKeyFilePath)
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		slog.Info("Ivory connection type: HTTP")
+		slog.Info("Ivory WEB protocol: HTTP")
 		err := engine.Run(env.Config.UrlAddress)
 		if err != nil {
 			panic(err)
@@ -85,38 +87,60 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	}
 }
 
-func pong(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"message": "pong"})
+func spaServe(engine *gin.Engine, urlPath, apiPath, staticFilesPath string) {
+	if urlPath[0] != '/' || apiPath[0] != '/' {
+		panic("path should contain `/` at the beginning")
+	}
+
+	// Serve static files under urlPath.
+	// For urlPath = "/ivory":
+	//   /ivory/assets/app.js -> staticFilesPath/assets/app.js
+	//   /ivory/favicon.ico   -> staticFilesPath/favicon.ico
+	engine.Use(static.Serve(urlPath, static.LocalFile(staticFilesPath, true)))
+
+	// API is served under the SPA base path.
+	// urlPath = "/":
+	//   /api/...
+	// urlPath = "/ivory":
+	//   /ivory/api/...
+	apiPathFull := urlPath + "/api"
+	if urlPath == "/" {
+		apiPathFull = "/api"
+	}
+
+	// Handle requests that weren't matched by an API route or static file.
+	engine.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+
+		// API is part of the application, but API errors must not
+		// be handled by the React SPA.
+		if path == apiPathFull || strings.HasPrefix(path, apiPathFull+"/") {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		// Only URLs belonging to the SPA should fall back to index.html.
+		// urlPath = "/":
+		//   /user/123       -> index.html
+		//   /clusters       -> index.html
+		// urlPath = "/ivory":
+		//   /user/123       -> 404
+		//   /clusters       -> 404
+		//   /ivory/user/123 -> index.html
+		//   /ivory/clusters -> index.html
+		if urlPath != "/" && path != urlPath && !strings.HasPrefix(path, urlPath+"/") {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		// Return index.html without redirecting.
+		// React Router receives the original URL.
+		c.File(filepath.Join(staticFilesPath, "index.html"))
+	})
 }
 
-// noRoute sends anything Ivory does not serve back to the root, which is where
-// the app itself decides what to show. There are two exceptions and they are
-// the two that cannot survive a redirect: an api call, which asks for json and
-// has no use for the web page, and the registration page, whose token is in the
-// path a redirect would throw away.
-func noRoute(env *coreConfig.Environment) gin.HandlerFunc {
-	apiPath := path.Join(env.Config.UrlPath, "api") + "/"
-	userPath := path.Join(env.Config.UrlPath, user.WebPath) + "/"
-	indexPath := path.Join(env.Config.StaticFilesPath, "index.html")
-
-	return func(context *gin.Context) {
-		requested := context.Request.URL.Path
-		if strings.HasPrefix(requested, apiPath) {
-			context.JSON(http.StatusNotFound, gin.H{"error": "there is no such api method"})
-			return
-		}
-		if env.Config.StaticFilesPath == "" {
-			context.JSON(http.StatusNotFound, gin.H{"error": "there is no such path"})
-			return
-		}
-		// NOTE: the root itself lands here when the static server has no index to
-		// match, and redirecting it to itself is the one loop this has to avoid
-		if strings.HasPrefix(requested, userPath) || requested == env.Config.UrlPath {
-			context.File(indexPath)
-			return
-		}
-		context.Redirect(http.StatusFound, env.Config.UrlPath)
-	}
+func pong(context *gin.Context) {
+	context.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
 func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
