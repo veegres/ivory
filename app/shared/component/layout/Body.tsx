@@ -10,7 +10,7 @@ import {SecretBodySecondary} from "../../../core/pages/secret/SecretBodySecondar
 import {UserRegistrationBody} from "../../../core/pages/user/UserRegistrationBody"
 import {AppInfo} from "../../../features/management/api/ManagementType"
 import {Status} from "../../../features/permission/api/PermissionType"
-import {getUserRegistrationRoute, redirectToHome} from "../../../features/user/api/UserUrl"
+import {getRouteTail, isHomePath, redirectToHome} from "../../helper/HelperUrl"
 import {PageErrorBox} from "../box/PageErrorBox"
 import {LogoProgress} from "../progress/LogoProgress"
 
@@ -32,8 +32,8 @@ export function Body(props: Props) {
     if (!data.config.configured || data.config.error) return <ConfigBody configured={data.config.configured} error={data.config.error}/>
 
     // 3. Check if user want to register (it has its own logic after it)
-    const registration = getUserRegistrationRoute()
-    if (registration) return renderUserRegistration(registration.token)
+    const registration = getRouteTail("/user")
+    if (registration) return renderUserRegistration(registration.tail)
 
     // 4. Check user state
     if (!data.auth.authorised) return <LoginBody supported={data.auth.supported} error={data.auth.error}/>
@@ -44,7 +44,7 @@ export function Body(props: Props) {
     }
 
     // 5. Check route, if not root go to root
-    if (!isRootPath()) return renderRoutes()
+    if (!isHomePath()) return renderRoutes()
 
     // 6. Render main body
     return <ClusterBody/>
@@ -64,8 +64,4 @@ export function Body(props: Props) {
         return <LogoProgress/>
     }
 
-    function isRootPath() {
-        const base = new URL(document.baseURI).pathname.replace(/\/$/, "")
-        return window.location.pathname === base || window.location.pathname === `${base}/`
-    }
 }
