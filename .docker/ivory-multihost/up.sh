@@ -7,6 +7,7 @@ set -euo pipefail
 
 IVORY_URL="${IVORY_URL:-http://localhost:8080}"
 IVORY_VAULT_ID="${IVORY_VAULT_ID:-}"
+IVORY_TOKEN="${IVORY_TOKEN:-}"
 NETWORK="${NETWORK:-ivory-mh}"
 SUBNET="${SUBNET:-10.0.0.0/24}"
 GATEWAY="${GATEWAY:-10.0.0.254}"
@@ -26,8 +27,13 @@ else
   echo "network $NETWORK created ($SUBNET, gateway $GATEWAY)"
 fi
 
+# IVORY_TOKEN carries the bearer token from the caller's own login when the
+# instance has auth enabled; unset it stays a no-op for an auth-off instance.
+AUTH_HEADER=()
+if [ -n "$IVORY_TOKEN" ]; then AUTH_HEADER=(-H "Authorization: Bearer $IVORY_TOKEN"); fi
+
 read -r VAULT_ID SSH_USER SSH_KEY <<<"$(
-  curl -sf -H "Cookie: session=$(cat /proc/sys/kernel/random/uuid)" "$IVORY_URL/api/vault" |
+  curl -sf -H "Cookie: session=$(cat /proc/sys/kernel/random/uuid)" "${AUTH_HEADER[@]}" "$IVORY_URL/api/vault" |
   IVORY_VAULT_ID="$IVORY_VAULT_ID" python3 -c '
 import json, os, sys
 vaults = json.load(sys.stdin)["response"]

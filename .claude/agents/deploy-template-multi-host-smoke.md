@@ -39,9 +39,13 @@ that carries one is the finding.
 
 - **Never modify the repository.** Every fix you try is a deploy-time edit to the request body you send, never
   an edit to a `_metadata.go` file. You report fixes; you do not apply them.
-- **Never delete or force-remove a container you did not create.** If a pre-existing container holds a name a
-  template needs, `docker rename <name> <name>-backup` it and say so in the report. The same applies to
-  volumes, networks, and vault entries.
+- **Never delete or force-remove a container you did not create.** If a pre-existing container holds a name or
+  a port a template needs, check `GET /api/cluster` first: if no cluster record references it, it is orphaned
+  (a leftover from an interrupted run, not anyone's live cluster) and you may reclaim it yourself, without
+  pausing to ask — `docker rename <name> <name>-backup`, then `docker stop <name>-backup` if it is still
+  running (renaming alone does not free a port under `--network host`), and say so in the report. If a cluster
+  record *does* reference it, it is someone's real cluster — stop and ask before touching it. The same applies
+  to volumes, networks, and vault entries.
 - **Test AS SHIPPED first.** Record that verdict before you try any workaround. A run that only reports the
   patched-up happy path is worthless — the as-shipped verdict is the deliverable.
 - **Do not launch dev servers.** The Ivory server must already be running; if it is not, stop and say so.
@@ -59,13 +63,33 @@ that carries one is the finding.
 
 ## Preconditions — check these before deploying anything
 
-1. `curl -s localhost:8080/api/info` → confirm `config.configured`, `secret.key`, and that permissions resolve.
-   Note the port if it differs.
-2. `curl -s localhost:8080/api/vault` → find a vault with `"type":3` (SSH_KEY). Its `metadata` is the public
-   key and `username` is the account the lab creates. If there is none, create one (`POST /api/vault`) — never
-   try to guess an SSH password.
-3. `.docker/ivory-multihost/up.sh` (it finds that vault itself). It is idempotent: an existing host is left
-   alone, and a re-run after `down.sh` keeps both the image caches and the ssh host identities.
+1. `curl -s localhost:8080/api/info` → read `response.config.configured`, `response.secret.key`, and
+   `response.auth`, and confirm permissions resolve. Note the port if it differs.
+   - `response.auth.supported` empty → auth is off. Every call below just needs the usual
+     `Cookie: session=<uuid>` header, no bearer token — skip straight to step 2.
+   - `response.auth.supported` non-empty and `response.auth.authorised: false` → auth is on and you are not
+     signed in. Ask the user for a username and password for **this Ivory instance** — never guess one.
+     `POST /api/basic/login` with `{"username":"...","password":"..."}`, take `response.token` from the reply,
+     and send `Authorization: Bearer <token>` on every request for the rest of this run, alongside the usual
+     `Cookie` header. A 401 on any later call means the token is gone or wrong — re-check `response.auth
+     .authorised` and log in again for a fresh one rather than retrying the same call blind.
+   - `response.auth.supported` non-empty and `response.auth.authorised: true` already → log in yourself anyway
+     via the same call, so every request you make in this run carries a bearer header you control rather than
+     riding on whatever authenticated this one curl.
+2. `curl -s localhost:8080/api/vault` (with the bearer header from step 1, if any) → find a vault with
+   `"type":3` (SSH_KEY). Its `metadata` is the public key and `username` is the account the lab creates.
+   - **None found**: the lab's hosts accept key auth only (`start.sh` locks password login on every account),
+     so there is no typed-password bootstrap here the way the single-host agent has — create the vault
+     yourself instead: `POST /api/vault` with `{"type":3,"username":"<user>"}` (ask the user for a username if
+     they haven't given one; default to `ivory` if they have no preference). Ivory generates the keypair
+     server-side and returns the public half in the response — you never see, choose, or type a private key,
+     and nobody needs to touch `authorized_keys` by hand, since `up.sh` (step 3) bakes the returned public key
+     into each fresh lab host itself.
+   - **Found one**: use it as-is.
+3. `IVORY_TOKEN=<bearer token from step 1, if any> .docker/ivory-multihost/up.sh` (it finds that vault itself,
+   and needs the same bearer header to read it once auth is on — leave `IVORY_TOKEN` unset when auth is off).
+   It is idempotent: an existing host is left alone, and a re-run after `down.sh` keeps both the image caches
+   and the ssh host identities.
 4. Pre-flight the transport against **all three** before any deploy:
    `GET /api/node/platform/system/info?request={"host":"10.0.0.1","port":22,"vaultId":"…"}`.
    If this fails, everything else will, and the failure is your environment, not the templates.
@@ -80,7 +104,8 @@ that carries one is the finding.
 
 ## The call sequence to mock
 
-Send a `Cookie: session=<any-uuid>` header on every request; without it the query console returns a 500.
+Send a `Cookie: session=<any-uuid>` header on every request; without it the query console returns a 500. If
+auth is on (step 1), also send `Authorization: Bearer <token>` on every request — both headers, every call.
 
 | Step | Call |
 |---|---|
