@@ -81,7 +81,10 @@ func (r *Router) GetAppInfo(context *gin.Context) {
 	username := context.GetString(config.AuthContextKey.Username)
 	authEnabled := context.GetBool(config.AuthContextKey.Enabled)
 	authorised := context.GetBool(config.AuthContextKey.Authorised)
-	authError := context.GetString(config.AuthContextKey.Error)
+	authError := ""
+	if err := context.GetError(config.AuthContextKey.Error); err != nil {
+		authError = err.Error()
+	}
 	info := r.service.GetAppInfo(authorised, authEnabled, username, authError)
 	context.JSON(http.StatusOK, gin.H{"response": info})
 }

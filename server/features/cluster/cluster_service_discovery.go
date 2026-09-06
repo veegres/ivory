@@ -35,9 +35,6 @@ func (s *Service) Detect(cluster CreateAutoRequest) (*Response, error) {
 		return nil, errOver
 	}
 	nodes := mapKeeperResponseMap(keeperNodeMap)
-	if err := s.validateNodeNames(nodes); err != nil {
-		return nil, err
-	}
 
 	model := Request{
 		Name:  cluster.Name,
