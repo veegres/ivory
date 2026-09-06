@@ -16,6 +16,7 @@ const OPTIONS: {[key in UserAuthType]: {label: string, description: string}} = {
 
 type Props = {
     value: UserAuthType[],
+    supported?: UserAuthType[],
     disabled?: boolean,
     reason?: string,
     onChange: (authTypes: UserAuthType[]) => void,
@@ -23,11 +24,12 @@ type Props = {
 }
 
 export function UserAuthTypes(props: Props) {
-    const {value, disabled, reason, onChange, size} = props
+    const {value, supported, disabled, reason, onChange, size} = props
+    const types = supported ?? Object.values(UserAuthType)
 
     return (
         <Box sx={SX.box}>
-            {Object.values(UserAuthType).map(renderToggle)}
+            {types.map(renderToggle)}
         </Box>
     )
 

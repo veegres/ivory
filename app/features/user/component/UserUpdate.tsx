@@ -65,6 +65,7 @@ export function UserUpdate(props: Props) {
         return (
             <UserAuthTypes
                 value={user.authTypes}
+                supported={info.data?.auth.supported}
                 size={"small"}
                 disabled={!!reason || updateUser.isPending}
                 reason={reason}

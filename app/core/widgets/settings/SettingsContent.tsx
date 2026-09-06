@@ -1,6 +1,7 @@
 import {Box} from "@mui/material"
 
 import {Feature} from "../../../features/Feature"
+import {useRouterInfo} from "../../../features/management/api/ManagementHook"
 import {ManageAccess} from "../../../features/management/component/ManageAccess"
 import {ManageEraseButton} from "../../../features/management/component/ManageEraseButton"
 import {ManageFreeButton} from "../../../features/management/component/ManageFreeButton"
@@ -23,6 +24,8 @@ type Props = {
 
 export function SettingsContent(props: Props) {
     const {onUpdate} = props
+    const info = useRouterInfo(false)
+    const authSupported = (info.data?.auth.supported.length ?? 0) > 0
 
     return (
         <Box sx={SX.list}>
@@ -31,7 +34,7 @@ export function SettingsContent(props: Props) {
                 <ListItem title={"Refetch on window focus"} button={<SettingsRefetchChanger/>}/>
             </List>
             <List name={"Privacy and security"}>
-                {renderButton(Settings.ACCOUNT)}
+                {authSupported && renderButton(Settings.ACCOUNT)}
                 <ManageAccess feature={Feature.ViewUserList}>{renderButton(Settings.USER)}</ManageAccess>
                 <ManageAccess feature={Feature.ManageManagementSecret}>{renderButton(Settings.SECRET)}</ManageAccess>
                 <ManageAccess feature={Feature.ViewVaultList}>{renderButton(Settings.VAULT)}</ManageAccess>
