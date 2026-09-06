@@ -82,12 +82,12 @@ export type DbModel = "OLTP" | "OLAP" | "Key-Value" | "Document" | "DCS"
 
 export const KeeperPluginOptions: { [key in KeeperPlugin]: EnumOptions & {dbPlugin: DbPlugin, stage: ReleaseStage, model: DbModel} } = {
     [KeeperPlugin.PATRONI_POSTGRES]: {name: "patroni", label: "Patroni Postgres", icon: <HeartBrokenTwoTone/>, key: "patroni_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.STABLE, model: "OLTP"},
-    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.BETA, model: "OLTP"},
-    [KeeperPlugin.NATIVE_MONGO]: {name: "mongo", label: "MongoDB", icon: <HeartBrokenTwoTone/>, key: "native_mongo", dbPlugin: DbPlugin.MONGO, stage: ReleaseStage.ALPHA, model: "Document"},
-    [KeeperPlugin.NATIVE_REDIS]: {name: "redis", label: "Redis", icon: <HeartBrokenTwoTone/>, key: "native_redis", dbPlugin: DbPlugin.REDIS, stage: ReleaseStage.ALPHA, model: "Key-Value"},
-    [KeeperPlugin.NATIVE_CLICKHOUSE]: {name: "clickhouse", label: "ClickHouse", icon: <HeartBrokenTwoTone/>, key: "native_clickhouse", dbPlugin: DbPlugin.CLICKHOUSE, stage: ReleaseStage.ALPHA, model: "OLAP"},
-    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD, stage: ReleaseStage.ALPHA, model: "DCS"},
-    [KeeperPlugin.NATIVE_ZOOKEEPER]: {name: "zookeeper", label: "ZooKeeper", icon: <HeartBrokenTwoTone/>, key: "native_zookeeper", dbPlugin: DbPlugin.ZOOKEEPER, stage: ReleaseStage.ALPHA, model: "DCS"},
+    [KeeperPlugin.NATIVE_POSTGRES]: {name: "postgres", label: "Postgres", icon: <HeartBrokenTwoTone/>, key: "native_postgres", dbPlugin: DbPlugin.POSTGRES, stage: ReleaseStage.STABLE, model: "OLTP"},
+    [KeeperPlugin.NATIVE_MONGO]: {name: "mongo", label: "MongoDB", icon: <HeartBrokenTwoTone/>, key: "native_mongo", dbPlugin: DbPlugin.MONGO, stage: ReleaseStage.BETA, model: "Document"},
+    [KeeperPlugin.NATIVE_REDIS]: {name: "redis", label: "Redis", icon: <HeartBrokenTwoTone/>, key: "native_redis", dbPlugin: DbPlugin.REDIS, stage: ReleaseStage.BETA, model: "Key-Value"},
+    [KeeperPlugin.NATIVE_CLICKHOUSE]: {name: "clickhouse", label: "ClickHouse", icon: <HeartBrokenTwoTone/>, key: "native_clickhouse", dbPlugin: DbPlugin.CLICKHOUSE, stage: ReleaseStage.BETA, model: "OLAP"},
+    [KeeperPlugin.NATIVE_ETCD]: {name: "etcd", label: "Etcd", icon: <HeartBrokenTwoTone/>, key: "native_etcd", dbPlugin: DbPlugin.ETCD, stage: ReleaseStage.BETA, model: "DCS"},
+    [KeeperPlugin.NATIVE_ZOOKEEPER]: {name: "zookeeper", label: "ZooKeeper", icon: <HeartBrokenTwoTone/>, key: "native_zookeeper", dbPlugin: DbPlugin.ZOOKEEPER, stage: ReleaseStage.BETA, model: "DCS"},
 }
 
 export const ReleaseStageOptions: { [key in ReleaseStage]: {label: string, description: string, color: "success" | "warning" | "error"} } = {
