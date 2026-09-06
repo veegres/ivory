@@ -205,6 +205,65 @@ func TestServiceUpdate(t *testing.T) {
 	})
 }
 
+func TestServiceCreate(t *testing.T) {
+	s := createTestService(t)
+	port := 5432
+
+	t.Run("creates a new cluster and tags it", func(t *testing.T) {
+		created, err := s.Create(Request{
+			Name:  "c1",
+			Nodes: []NodeConfig{{Name: "h1", Host: "h1", KeeperPort: &port}},
+			Options: Options{
+				Tags: []string{"PROD"},
+			},
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(created.Tags) != 1 || created.Tags[0] != "prod" {
+			t.Fatalf("expected the tag to be lowercased to 'prod', got %v", created.Tags)
+		}
+
+		got, errGet := s.Get("c1")
+		if errGet != nil {
+			t.Fatalf("expected no error, got %v", errGet)
+		}
+		if len(got.Nodes) != 1 || got.Nodes[0].Host != "h1" {
+			t.Fatalf("expected 1 node with host h1, got %v", got.Nodes)
+		}
+
+		clusters, errTag := s.tagService.Get("prod")
+		if errTag != nil {
+			t.Fatalf("expected no error, got %v", errTag)
+		}
+		if len(clusters) != 1 || clusters[0] != "c1" {
+			t.Fatalf("expected c1 tagged as prod, got %v", clusters)
+		}
+	})
+
+	t.Run("rejects an existing cluster name without overwriting it", func(t *testing.T) {
+		_, err := s.Create(Request{
+			Name:    "c1",
+			Nodes:   []NodeConfig{{Name: "h2", Host: "h2", KeeperPort: &port}},
+			Options: Options{Tags: []string{"staging"}},
+		})
+		if !errors.Is(err, ErrClusterNameTaken) {
+			t.Fatalf("expected ErrClusterNameTaken, got %v", err)
+		}
+
+		got, errGet := s.Get("c1")
+		if errGet != nil {
+			t.Fatalf("expected no error, got %v", errGet)
+		}
+		if len(got.Nodes) != 1 || got.Nodes[0].Host != "h1" {
+			t.Fatalf("expected the original cluster to remain, got %v", got.Nodes)
+		}
+		if _, errTag := s.tagService.Get("staging"); errTag == nil {
+			t.Fatalf("expected failed create not to retag the existing cluster")
+		}
+	})
+}
+
 func TestServiceGet(t *testing.T) {
 	s := createTestService(t)
 	if _, err := s.clusterRepository.Create(Request{Name: "c1"}); err != nil {

@@ -44,6 +44,15 @@ export function useRouterClusterUpdate(name: string, onSuccess?: () => void) {
     })
 }
 
+export function useRouterClusterCreate(onSuccess?: () => void) {
+    return useMutationAdapter({
+        mutationFn: ClusterApi.create.fn,
+        mutationKey: ClusterApi.create.key(),
+        successKeys: [ClusterApi.list.keyCommon(), TagApi.list.key()],
+        onSuccess: onSuccess,
+    })
+}
+
 export function useRouterClusterCreateAuto(onSuccess?: () => void) {
     return useMutationAdapter({
         mutationFn: ClusterApi.detect.fn,

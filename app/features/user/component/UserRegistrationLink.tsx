@@ -3,10 +3,10 @@ import {Box} from "@mui/material"
 import {AlertCentered} from "../../../shared/component/box/AlertCentered"
 import {CopyIconButton} from "../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
+import {buildRouteUrl} from "../../../shared/helper/HelperUrl"
 import {DateTimeFormatter} from "../../../shared/helper/HelperUtils"
 import {useSnackbar} from "../../../shared/provider/SnackbarProvider"
 import {UserRegistration} from "../api/UserType"
-import {buildUserRegistrationUrl} from "../api/UserUrl"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
@@ -27,7 +27,7 @@ type Props = {
 
 export function UserRegistrationLink(props: Props) {
     const {registration, reset} = props
-    const url = buildUserRegistrationUrl(registration.token)
+    const url = buildRouteUrl("/user", registration.token)
     const snackbar = useSnackbar()
 
     return (

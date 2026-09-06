@@ -15,7 +15,7 @@ export function ListClusterAdd(props: Props) {
     const {onClick, disabled = false, withLabel = false, size} = props
 
     return (
-        <ManageAccessBox feature={Feature.ManageClusterUpdate}>
+        <ManageAccessBox feature={Feature.ManageClusterCreate}>
             <TriggerButton
                 variant={withLabel ? "button_label" : "button"}
                 title={"ADD CLUSTER"}

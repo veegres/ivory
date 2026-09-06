@@ -58,6 +58,7 @@ export const UserApi = {
     registration: {
         verify: {
             key: (token: string) => ["user", "registration", "verify", token],
+            keyCommon: () => ["user", "registration", "verify"],
             fn: (token: string) => api.post<R<UserRegistrationPayload>>("/user/registration/verify", {token})
                 .then((response) => response.data.response),
         },

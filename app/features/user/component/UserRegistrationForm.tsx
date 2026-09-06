@@ -59,6 +59,7 @@ export function UserRegistrationForm(props: Props) {
             <Box sx={SX.row}>
                 <UserAuthTypes
                     value={value.authTypes}
+                    supported={setup ? undefined : info.data?.auth.supported}
                     onChange={(authTypes) => handleChange({...value, authTypes})}
                 />
                 {setup ? renderPassword() : renderCreate()}

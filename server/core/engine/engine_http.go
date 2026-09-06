@@ -43,30 +43,31 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	root := engine.Group(env.Config.UrlPath)
 	unsafe := root.Group(apiPath, gin.Recovery(), fc.Auth.SessionMiddleware())
 	unsafe.GET("/ping", pong)
-	unsafe.GET("/info", fc.Auth.AuthContextMiddleware(), fc.Management.GetAppInfo)
+	unsafe.GET("/info", fc.Auth.ValidateWithContextMiddleware(), fc.Management.GetAppInfo)
 	unsafe.POST("/logout", fc.Auth.Logout)
 
-	initial := unsafe.Group("/", cc.Secret.EmptyMiddleware())
-	initialRouter(initial, cc.Secret)
+	noSecret := unsafe.Group("/", cc.Secret.EmptyMiddleware())
+	initialRouter(noSecret, cc.Secret)
 
-	general := unsafe.Group("/", cc.Secret.ExistMiddleware())
-	generalRouter(general, fc.Auth, fc.Config)
-	userPublicRouter(general, fc.User)
+	yesSecret := unsafe.Group("/", cc.Secret.ExistMiddleware(), fc.Auth.ValidateWithContextMiddleware())
 
-	safe := general.Group("/", fc.Config.InitialiseMiddleware(), fc.Auth.ValidateMiddleware(), fc.Permission.ValidateMiddleware())
-	toolsRouter(safe, fc.Permission, tc)
+	noAuth := yesSecret.Group("/", fc.Auth.AllowMiddleware())
+	unauthenticatedRouter(noAuth, fc.Auth, fc.Config, fc.User)
 
-	managementRouter(safe, fc.Permission, cc.Secret, fc.Management)
-	vaultRouter(safe, fc.Permission, cc.Vault)
-	certRouter(safe, fc.Permission, cc.Cert)
+	yesAuth := yesSecret.Group("/", fc.Config.InitialiseMiddleware(), fc.Auth.RejectMiddleware(), fc.Permission.ValidateMiddleware())
+	toolsRouter(yesAuth, fc.Permission, tc)
 
-	clusterRouter(safe, fc.Permission, fc.Cluster)
-	nodeRouter(safe, fc.Permission, fc.Node)
-	tagRouter(safe, fc.Permission, fc.Tag)
-	permissionRouter(safe, fc.Permission, fc.Permission)
-	userRouter(safe, fc.Permission, fc.User)
-	queryRouter(safe, fc.Permission, fc.Query)
-	deploymentRouter(safe, fc.Permission, fc.Deployment)
+	managementRouter(yesAuth, fc.Permission, cc.Secret, fc.Management)
+	vaultRouter(yesAuth, fc.Permission, cc.Vault)
+	certRouter(yesAuth, fc.Permission, cc.Cert)
+
+	clusterRouter(yesAuth, fc.Permission, fc.Cluster)
+	nodeRouter(yesAuth, fc.Permission, fc.Node)
+	tagRouter(yesAuth, fc.Permission, fc.Tag)
+	permissionRouter(yesAuth, fc.Permission, fc.Permission)
+	userRouter(yesAuth, fc.Permission, fc.User)
+	queryRouter(yesAuth, fc.Permission, fc.Query)
+	deploymentRouter(yesAuth, fc.Permission, fc.Deployment)
 
 	slog.Info("Ivory address: " + env.Config.UrlAddress)
 	slog.Info("Ivory WEB path: " + urlPath)
@@ -143,15 +144,21 @@ func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
-func generalRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router) {
-	g.POST("/config", rg.SetAppConfig)
+func unauthenticatedRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router, ru *user.Router) {
+	configGroup := g.Group("/config")
+	configGroup.POST("", rg.SetAppConfig)
 
-	g.POST("/basic/login", ra.BasicLogin)
-	g.POST("/ldap/login", ra.LdapLogin)
-	g.GET("/oidc/login", ra.OidcLogin)
-	g.GET("/oidc/callback", ra.OidcCallback)
-	g.POST("/oidc/connect", ra.OidcConnect)
-	g.POST("/ldap/connect", ra.LdapConnect)
+	signGroup := g.Group("/")
+	signGroup.POST("/basic/login", ra.BasicLogin)
+	signGroup.POST("/ldap/login", ra.LdapLogin)
+	signGroup.POST("/ldap/connect", ra.LdapConnect)
+	signGroup.GET("/oidc/login", ra.OidcLogin)
+	signGroup.GET("/oidc/callback", ra.OidcCallback)
+	signGroup.POST("/oidc/connect", ra.OidcConnect)
+
+	regGroup := g.Group("/user/registration")
+	regGroup.POST("/verify", ru.PostUserRegistrationVerify)
+	regGroup.POST("/password", ru.PostUserRegistrationPassword)
 }
 
 // initialRouter is what a restarted Ivory offers before its secret is back.
@@ -188,9 +195,9 @@ func managementRouter(g *gin.RouterGroup, rp *permission.Router, rs *secret.Rout
 
 func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router) {
 	group := g.Group("/cluster")
-
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewClusterList), r.GetClusterList)
 	group.GET("/:name", rp.ValidateMethodMiddleware(coreConfig.ViewClusterItem), r.GetClusterByName)
+	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostCluster)
 	group.PUT("", rp.ValidateMethodMiddleware(coreConfig.ManageClusterUpdate), r.PutClusterByName)
 	group.DELETE("/:name", rp.ValidateMethodMiddleware(coreConfig.ManageClusterDelete), r.DeleteClusterByName)
 	group.GET("/overview/:name", rp.ValidateMethodMiddleware(coreConfig.ViewClusterOverview), r.GetClusterOverview)
@@ -222,17 +229,6 @@ func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.R
 	group.POST("/users/:username/approve", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionUpdate), r.ApproveUserPermission)
 	group.POST("/users/:username/reject", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionUpdate), r.RejectUserPermission)
 	group.DELETE("/users/:username", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionDelete), r.DeleteUserPermissions)
-}
-
-// userPublicRouter carries the two endpoints the registration page needs. They
-// are public because the registration is the authorization - the person opening
-// it has no session and no password yet - and there is no third one: a
-// registration is only ever handed out by somebody signed in, or by the initial
-// setup, which registers its superuser with a typed password.
-func userPublicRouter(g *gin.RouterGroup, r *user.Router) {
-	group := g.Group("/user/registration")
-	group.POST("/verify", r.PostUserRegistrationVerify)
-	group.POST("/password", r.PostUserRegistrationPassword)
 }
 
 func userRouter(g *gin.RouterGroup, rp *permission.Router, r *user.Router) {
