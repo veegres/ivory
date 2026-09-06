@@ -44,10 +44,6 @@ type Props = {
     onVaultChange: (type: VaultType, vaultId?: string) => void,
 }
 
-// ClusterDeployCredentials is one answer to one credential question: which
-// account, and where it comes from. It renders its three cells straight into
-// the caller's grid, so the name, the source and the fields of every credential
-// line up in the same three columns whatever source each one is on.
 export function ClusterDeployCredentials(props: Props) {
     const {type, label, mode, credential, vaultId, locked = false, optional = false, showErrors} = props
     const {onModeChange, onCredentialChange, onVaultChange} = props
@@ -97,6 +93,7 @@ export function ClusterDeployCredentials(props: Props) {
                 />
                 <TextField
                     label={"Password"}
+                    type={"password"}
                     value={credential.password}
                     error={showErrors && !credential.password}
                     onChange={(e) => onCredentialChange({...credential, password: e.target.value})}
