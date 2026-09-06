@@ -17,7 +17,7 @@ const (
 
 var AuthTypes = []AuthType{AuthBasic, AuthLdap, AuthOidc}
 
-func (t AuthType) valid() bool {
+func (t AuthType) Valid() bool {
 	return slices.Contains(AuthTypes, t)
 }
 
