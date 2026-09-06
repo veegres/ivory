@@ -105,11 +105,11 @@ func TestUserAllows(t *testing.T) {
 
 func TestAuthTypeValid(t *testing.T) {
 	for _, authType := range AuthTypes {
-		if !authType.valid() {
+		if !authType.Valid() {
 			t.Fatalf("expected %q to be valid", authType)
 		}
 	}
-	if AuthType("smoke-signals").valid() {
+	if AuthType("smoke-signals").Valid() {
 		t.Fatalf("expected an unknown way of signing in to be invalid")
 	}
 }

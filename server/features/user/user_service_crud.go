@@ -352,7 +352,7 @@ func (s *Service) validateAuthTypes(authTypes []AuthType) error {
 		return ErrAuthTypeRequired
 	}
 	for _, authType := range authTypes {
-		if !authType.valid() {
+		if !authType.Valid() {
 			return ErrAuthTypeInvalid
 		}
 	}

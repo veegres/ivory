@@ -18,6 +18,7 @@ var ErrInvalidTokenCannotParseAuthType = errors.New("invalid token: cannot parse
 var ErrNoAuthorizationToken = errors.New("no authorization token")
 var ErrInvalidAuthorizationHeader = errors.New("invalid authorisation header")
 var ErrUsernameEmpty = errors.New("username cannot be empty")
+var ErrAlreadyAuthenticated = errors.New("you are already signed in")
 var ErrInvalidAuthType = errors.New("invalid auth type")
 var ErrStateCookieNotFound = errors.New("state cookie not found")
 var ErrInvalidStateParameter = errors.New("invalid state parameter")

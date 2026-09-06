@@ -6,6 +6,7 @@ import (
 	"ivory/clients/auth/ldap"
 	"ivory/clients/auth/oidc"
 	"ivory/core/config"
+	"ivory/features/user"
 	"net/http"
 	"strings"
 	"time"
@@ -42,35 +43,48 @@ func (r *Router) SessionMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) ValidateMiddleware() gin.HandlerFunc {
+func (r *Router) AllowMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		context.Set(config.AuthContextKey.Enabled, true)
-		valid, username, authType, errParse := r.resolveAuth(context)
-		if !valid {
-			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
-			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": errParse.Error()})
+		if context.GetBool(config.AuthContextKey.Enabled) && context.GetBool(config.AuthContextKey.Authorised) {
+			context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": ErrAlreadyAuthenticated.Error()})
 			return
-		}
-		if errors.Is(errParse, ErrAuthDisabled) {
-			context.Set(config.AuthContextKey.Enabled, false)
-		} else {
-			if username == "" {
-				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrUsernameEmpty.Error()})
-				return
-			}
-			if authType == nil {
-				context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidAuthType.Error()})
-				return
-			}
-			context.Set(config.AuthContextKey.Username, username)
-			context.Set(config.AuthContextKey.Type, string(*authType))
-			context.Set(config.AuthContextKey.Superuser, r.authService.IsSuperuser(username))
 		}
 		context.Next()
 	}
 }
 
-func (r *Router) AuthContextMiddleware() gin.HandlerFunc {
+func (r *Router) RejectMiddleware() gin.HandlerFunc {
+	return func(context *gin.Context) {
+		if !context.GetBool(config.AuthContextKey.Enabled) {
+			context.Next()
+			return
+		}
+		valid := context.GetBool(config.AuthContextKey.Authorised)
+		validError := context.GetError(config.AuthContextKey.Error)
+		if !valid || validError != nil {
+			context.Header("WWW-Authenticate", "Bearer JWT realm="+r.authService.getIssuer())
+			message := ErrNoAuthorizationToken.Error()
+			if validError != nil {
+				message = validError.Error()
+			}
+			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": message})
+			return
+		}
+		username := context.GetString(config.AuthContextKey.Username)
+		if username == "" {
+			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrUsernameEmpty.Error()})
+			return
+		}
+		authType := context.GetString(config.AuthContextKey.Type)
+		if !user.AuthType(authType).Valid() {
+			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": ErrInvalidAuthType.Error()})
+			return
+		}
+		context.Next()
+	}
+}
+
+func (r *Router) ValidateWithContextMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		context.Set(config.AuthContextKey.Enabled, true)
 		valid, username, authType, errParse := r.resolveAuth(context)
@@ -79,7 +93,7 @@ func (r *Router) AuthContextMiddleware() gin.HandlerFunc {
 			context.Set(config.AuthContextKey.Enabled, false)
 		} else {
 			if errParse != nil {
-				context.Set(config.AuthContextKey.Error, errParse.Error())
+				context.Set(config.AuthContextKey.Error, errParse)
 			}
 			context.Set(config.AuthContextKey.Username, username)
 			context.Set(config.AuthContextKey.Superuser, r.authService.IsSuperuser(username))

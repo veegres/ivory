@@ -12,13 +12,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
 )
 
-func createTestRouter(t *testing.T) *Router {
+func createTestSecretService(t *testing.T) *secret.Service {
 	t.Helper()
 
 	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "test.db"), 0600, nil)
@@ -36,9 +37,23 @@ func createTestRouter(t *testing.T) *Router {
 	if err := secretService.SetDefault(); err != nil {
 		t.Fatalf("failed to set default secret: %v", err)
 	}
+	return secretService
+}
 
+func createTestRouter(t *testing.T) *Router {
+	t.Helper()
 	users := newFakeUsers()
-	authService := NewService(token.NewService(secretService), createTestBasicProvider(t, users), ldap.NewProvider(), oidc.NewProvider(), users)
+	authService := NewService(token.NewService(createTestSecretService(t)), createTestBasicProvider(t, users), ldap.NewProvider(), oidc.NewProvider(), users)
+	return NewRouter(authService, "/", false)
+}
+
+// createDisabledTestRouter builds a router with no provider configured, which is
+// how a deployment with authentication turned off looks to auth.Service:
+// GetSupportedTypes() is empty and every resolveAuth call reports ErrAuthDisabled.
+func createDisabledTestRouter(t *testing.T) *Router {
+	t.Helper()
+	users := newFakeUsers()
+	authService := NewService(token.NewService(createTestSecretService(t)), basic.NewProvider(users), ldap.NewProvider(), oidc.NewProvider(), users)
 	return NewRouter(authService, "/", false)
 }
 
@@ -51,7 +66,9 @@ func createValidToken(t *testing.T, r *Router) string {
 	return token
 }
 
-func runMiddleware(handler gin.HandlerFunc, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+// runMiddleware runs handlers in sequence over one request/context, stopping
+// early if one of them aborts - exactly how gin runs a route's middleware chain.
+func runMiddleware(authHeader string, tokenCookie string, handlers ...gin.HandlerFunc) (*httptest.ResponseRecorder, *gin.Context) {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(w)
@@ -63,17 +80,32 @@ func runMiddleware(handler gin.HandlerFunc, authHeader string, tokenCookie strin
 		context.Request.AddCookie(&http.Cookie{Name: "token", Value: tokenCookie})
 	}
 
-	handler(context)
+	for _, handler := range handlers {
+		handler(context)
+		if context.IsAborted() {
+			break
+		}
+	}
 
 	return w, context
 }
 
-func runValidateMiddleware(r *Router, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
-	return runMiddleware(r.ValidateMiddleware(), authHeader, tokenCookie)
+// runRejectMiddleware and runAllowMiddleware chain ValidateWithContextMiddleware
+// in front of the middleware under test, exactly as engine_http.go wires
+// yesSecret (ValidateWithContextMiddleware) in front of yesAuth (RejectMiddleware)
+// and noAuth (AllowMiddleware). RejectMiddleware and AllowMiddleware only read
+// context keys they never populate themselves, so testing either in isolation
+// from ValidateWithContextMiddleware does not exercise the real request path.
+func runRejectMiddleware(r *Router, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+	return runMiddleware(authHeader, tokenCookie, r.ValidateWithContextMiddleware(), r.RejectMiddleware())
+}
+
+func runAllowMiddleware(r *Router, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+	return runMiddleware(authHeader, tokenCookie, r.ValidateWithContextMiddleware(), r.AllowMiddleware())
 }
 
 func runAuthContextMiddleware(r *Router, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
-	return runMiddleware(r.AuthContextMiddleware(), authHeader, tokenCookie)
+	return runMiddleware(authHeader, tokenCookie, r.ValidateWithContextMiddleware())
 }
 
 func runSessionMiddleware(r *Router, sessionCookie string) (*httptest.ResponseRecorder, *gin.Context) {
@@ -137,12 +169,16 @@ func TestSessionMiddleware(t *testing.T) {
 	})
 }
 
-func TestValidateMiddleware(t *testing.T) {
+// TestRejectMiddleware covers the gate in front of every route that requires a
+// signed-in request (yesAuth in engine_http.go). It always runs
+// ValidateWithContextMiddleware first, matching how the router actually chains
+// the two - RejectMiddleware only reads context keys that middleware sets.
+func TestRejectMiddleware(t *testing.T) {
 	t.Run("valid header token is accepted", func(t *testing.T) {
 		r := createTestRouter(t)
 		token := createValidToken(t, r)
 
-		w, context := runValidateMiddleware(r, "Bearer "+token, "")
+		w, context := runRejectMiddleware(r, "Bearer "+token, "")
 
 		if w.Code != http.StatusOK {
 			t.Fatalf("expected status 200, got %d", w.Code)
@@ -159,7 +195,7 @@ func TestValidateMiddleware(t *testing.T) {
 		r := createTestRouter(t)
 		token := createValidToken(t, r)
 
-		w, context := runValidateMiddleware(r, "", token)
+		w, context := runRejectMiddleware(r, "", token)
 
 		if w.Code != http.StatusOK {
 			t.Fatalf("expected status 200, got %d", w.Code)
@@ -173,7 +209,7 @@ func TestValidateMiddleware(t *testing.T) {
 		r := createTestRouter(t)
 		token := createValidToken(t, r)
 
-		w, context := runValidateMiddleware(r, "Bearer garbage-token", token)
+		w, context := runRejectMiddleware(r, "Bearer garbage-token", token)
 
 		if w.Code != http.StatusOK {
 			t.Fatalf("expected fallback to cookie to succeed with status 200, got %d", w.Code)
@@ -189,7 +225,54 @@ func TestValidateMiddleware(t *testing.T) {
 	t.Run("rejects request when both header and cookie tokens are invalid", func(t *testing.T) {
 		r := createTestRouter(t)
 
-		w, context := runValidateMiddleware(r, "Bearer garbage-token", "also-garbage")
+		w, context := runRejectMiddleware(r, "Bearer garbage-token", "also-garbage")
+
+		if w.Code != http.StatusUnauthorized {
+			t.Fatalf("expected status 401, got %d", w.Code)
+		}
+		if !context.IsAborted() {
+			t.Fatalf("expected middleware to abort")
+		}
+		if w.Header().Get("WWW-Authenticate") == "" {
+			t.Fatalf("expected a WWW-Authenticate header on a rejected request")
+		}
+	})
+
+	t.Run("rejects request with no header and no cookie", func(t *testing.T) {
+		r := createTestRouter(t)
+
+		w, _ := runRejectMiddleware(r, "", "")
+
+		if w.Code != http.StatusUnauthorized {
+			t.Fatalf("expected status 401, got %d", w.Code)
+		}
+	})
+
+	// Regression test: RejectMiddleware used to skip straight to reading
+	// Username/Type without checking whether auth is enabled at all, so a
+	// deployment with authentication switched off had every protected route
+	// (cluster, node, user, ...) answer 401 "username cannot be empty" - see
+	// ValidateWithContextMiddleware, which never sets Username when it reports
+	// ErrAuthDisabled.
+	t.Run("allows every request through when auth is disabled", func(t *testing.T) {
+		r := createDisabledTestRouter(t)
+
+		w, context := runRejectMiddleware(r, "", "")
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200 when auth is disabled, got %d, body: %s", w.Code, w.Body.String())
+		}
+		if context.IsAborted() {
+			t.Fatalf("expected middleware to not abort when auth is disabled")
+		}
+	})
+
+	t.Run("authorised but empty username is rejected", func(t *testing.T) {
+		w, context := runMiddleware("", "", func(context *gin.Context) {
+			context.Set(config.AuthContextKey.Enabled, true)
+			context.Set(config.AuthContextKey.Authorised, true)
+		})
+		createTestRouter(t).RejectMiddleware()(context)
 
 		if w.Code != http.StatusUnauthorized {
 			t.Fatalf("expected status 401, got %d", w.Code)
@@ -199,13 +282,89 @@ func TestValidateMiddleware(t *testing.T) {
 		}
 	})
 
-	t.Run("rejects request with no header and no cookie", func(t *testing.T) {
-		r := createTestRouter(t)
-
-		w, _ := runValidateMiddleware(r, "", "")
+	t.Run("authorised but unrecognised auth type is rejected", func(t *testing.T) {
+		w, context := runMiddleware("", "", func(context *gin.Context) {
+			context.Set(config.AuthContextKey.Enabled, true)
+			context.Set(config.AuthContextKey.Authorised, true)
+			context.Set(config.AuthContextKey.Username, "admin")
+			context.Set(config.AuthContextKey.Type, "smoke-signals")
+		})
+		createTestRouter(t).RejectMiddleware()(context)
 
 		if w.Code != http.StatusUnauthorized {
 			t.Fatalf("expected status 401, got %d", w.Code)
+		}
+		if !context.IsAborted() {
+			t.Fatalf("expected middleware to abort")
+		}
+	})
+
+	// Regression test: an unauthorised request with no recorded Error used to
+	// dereference a nil error and panic instead of answering 401. This can
+	// only happen if RejectMiddleware runs without ValidateWithContextMiddleware
+	// ahead of it - which is exactly what the pre-fix test suite did - but the
+	// guard is cheap and turns a server crash into a clean rejection.
+	t.Run("does not panic when unauthorised with no recorded error", func(t *testing.T) {
+		w, context := runMiddleware("", "", func(context *gin.Context) {
+			context.Set(config.AuthContextKey.Enabled, true)
+			context.Set(config.AuthContextKey.Authorised, false)
+		})
+		createTestRouter(t).RejectMiddleware()(context)
+
+		if w.Code != http.StatusUnauthorized {
+			t.Fatalf("expected status 401, got %d", w.Code)
+		}
+		if !context.IsAborted() {
+			t.Fatalf("expected middleware to abort")
+		}
+	})
+}
+
+// TestAllowMiddleware covers the gate in front of every route a signed-in
+// request must not reach (noAuth in engine_http.go: login, config and
+// registration). It always runs ValidateWithContextMiddleware first for the
+// same reason TestRejectMiddleware does.
+func TestAllowMiddleware(t *testing.T) {
+	t.Run("lets an unauthenticated request through", func(t *testing.T) {
+		r := createTestRouter(t)
+
+		w, context := runAllowMiddleware(r, "", "")
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200, got %d", w.Code)
+		}
+		if context.IsAborted() {
+			t.Fatalf("expected middleware to not abort")
+		}
+	})
+
+	t.Run("aborts a request that already carries a valid session", func(t *testing.T) {
+		r := createTestRouter(t)
+		token := createValidToken(t, r)
+
+		w, context := runAllowMiddleware(r, "Bearer "+token, "")
+
+		if w.Code != http.StatusBadRequest {
+			t.Fatalf("expected status 400, got %d", w.Code)
+		}
+		if !context.IsAborted() {
+			t.Fatalf("expected middleware to abort")
+		}
+		if !strings.Contains(w.Body.String(), ErrAlreadyAuthenticated.Error()) {
+			t.Fatalf("expected the error body to mention %q, got %q", ErrAlreadyAuthenticated.Error(), w.Body.String())
+		}
+	})
+
+	t.Run("lets a request through when auth is disabled, even with a stale token", func(t *testing.T) {
+		r := createDisabledTestRouter(t)
+
+		w, context := runAllowMiddleware(r, "Bearer garbage-token", "")
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200 when auth is disabled, got %d", w.Code)
+		}
+		if context.IsAborted() {
+			t.Fatalf("expected middleware to not abort when auth is disabled")
 		}
 	})
 }
@@ -281,6 +440,22 @@ func TestAuthContextMiddleware(t *testing.T) {
 		}
 		if authorised, _ := context.Get(config.AuthContextKey.Authorised); authorised != false {
 			t.Fatalf("expected authorised false, got %v", authorised)
+		}
+	})
+
+	t.Run("reports auth disabled and never sets username when no provider is configured", func(t *testing.T) {
+		r := createDisabledTestRouter(t)
+
+		w, context := runAuthContextMiddleware(r, "", "")
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200, got %d", w.Code)
+		}
+		if enabled, _ := context.Get(config.AuthContextKey.Enabled); enabled != false {
+			t.Fatalf("expected auth enabled to be false, got %v", enabled)
+		}
+		if _, exists := context.Get(config.AuthContextKey.Username); exists {
+			t.Fatalf("expected no username to be set when auth is disabled")
 		}
 	})
 }
