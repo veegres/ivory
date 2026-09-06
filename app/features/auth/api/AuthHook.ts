@@ -1,5 +1,6 @@
 import {useMutationAdapter} from "../../../shared/hook/QueryCustom"
 import {ManagementApi} from "../../management/api/ManagementRouter"
+import {UserApi} from "../../user/api/UserRouter"
 import {AuthApi} from "./AuthRouter"
 
 export function useRouterLogin(onSuccess?: () => void) {
@@ -15,7 +16,7 @@ export function useRouterLogout() {
     return useMutationAdapter({
         mutationFn: AuthApi.logout.fn,
         mutationKey: AuthApi.logout.key(),
-        successKeys: [ManagementApi.info.key()],
+        successKeys: [ManagementApi.info.key(), UserApi.registration.verify.keyCommon()],
     })
 }
 
