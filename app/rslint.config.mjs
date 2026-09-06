@@ -1,9 +1,9 @@
-import {defineConfig, globalIgnores, reactHooksPlugin, reactPlugin, ts} from "@rslint/core"
+import {defineConfig, globalIgnores, globals, js, reactHooksPlugin, reactPlugin, ts} from "@rslint/core"
 import simpleImportSortPlugin from "eslint-plugin-simple-import-sort"
-import globals from "globals"
 
 export default defineConfig([
     globalIgnores(["node_modules/**", "build/**", "coverage/**"]),
+    js.configs.recommended,
     ts.configs.recommended,
     reactPlugin.configs.recommended,
     reactHooksPlugin.configs.recommended,
