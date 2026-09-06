@@ -15,9 +15,13 @@ image, an entrypoint that ignores an env var, or a container with no shell. That
 
 - **Never modify the repository.** Every fix you try is a deploy-time edit to the request body you send, never
   an edit to a `_metadata.go` file. You report fixes; you do not apply them.
-- **Never delete or force-remove a container you did not create.** If a pre-existing container holds a name a
-  template needs, `docker rename <name> <name>-backup` it and say so in the report. The same applies to
-  volumes, networks, and vault entries.
+- **Never delete or force-remove a container you did not create.** If a pre-existing container holds a name or
+  a port a template needs, check `GET /api/cluster` first: if no cluster record references it, it is orphaned
+  (a leftover from an interrupted run, not anyone's live cluster) and you may reclaim it yourself, without
+  pausing to ask — `docker rename <name> <name>-backup`, then `docker stop <name>-backup` if it is still
+  running (renaming alone does not free a port under `--network host`), and say so in the report. If a cluster
+  record *does* reference it, it is someone's real cluster — stop and ask before touching it. The same applies
+  to volumes, networks, and vault entries.
 - **Test AS SHIPPED first.** Record that verdict before you try any workaround. A run that only reports the
   patched-up happy path is worthless — the as-shipped verdict is the deliverable.
 - **Do not launch dev servers.** The Ivory server must already be running; if it is not, stop and say so.
@@ -35,21 +39,44 @@ image, an entrypoint that ignores an env var, or a container with no shell. That
 
 ## Preconditions — check these before deploying anything
 
-1. `curl -s localhost:8080/api/info` → confirm `config.configured`, `secret.key`, and that permissions resolve.
-   Note the port if it differs.
-2. `curl -s localhost:8080/api/vault` → find a vault with `"type":3` (SSH_KEY). Its `metadata` is the public key.
-   Confirm that key is in the target host's `~/.ssh/authorized_keys`. If there is none, create one
-   (`POST /api/vault`) and tell the user to install the key — never try to guess an SSH password.
+1. `curl -s localhost:8080/api/info` → read `response.config.configured`, `response.secret.key`, and
+   `response.auth`, and confirm permissions resolve. Note the port if it differs.
+   - `response.auth.supported` empty → auth is off. Every call below just needs the usual
+     `Cookie: session=<uuid>` header, no bearer token — skip straight to step 2.
+   - `response.auth.supported` non-empty and `response.auth.authorised: false` → auth is on and you are not
+     signed in. Ask the user for a username and password for **this Ivory instance** — never guess one.
+     `POST /api/basic/login` with `{"username":"...","password":"..."}`, take `response.token` from the reply,
+     and send `Authorization: Bearer <token>` on every request for the rest of this run, alongside the usual
+     `Cookie` header. A 401 on any later call means the token is gone or wrong — re-check `response.auth
+     .authorised` and log in again for a fresh one rather than retrying the same call blind.
+   - `response.auth.supported` non-empty and `response.auth.authorised: true` already → log in yourself anyway
+     via the same call, so every request you make in this run carries a bearer header you control rather than
+     riding on whatever authenticated this one curl.
+2. `curl -s localhost:8080/api/vault` (with the bearer header from step 1, if any) → find a vault with
+   `"type":3` (SSH_KEY).
+   - **Found one**: its `metadata` is the public key. Confirm that key is in the target host's
+     `~/.ssh/authorized_keys`, then set its id as `clusterOptions.vaults.sshKeyId` on every deploy this run —
+     never type a password once a usable key exists.
+   - **None found**: ask the user for an SSH username and password for the target host — never guess one. Use
+     that pair inline (`commonConfig.sshUser`/`sshPass`, leave `vaults.sshKeyId` empty) for your very **first**
+     deploy only. Per the deploy's own design, Ivory generates a fresh keypair itself and authorizes it on the
+     host via copy-id using that password before starting any node, then stores the generated key as a new
+     SSH_KEY vault entry — you never see, choose, or create a key yourself. Once that first deploy has run
+     (whatever its outcome), `GET /api/vault` again to find the entry Ivory just created, and reference its id
+     for every deploy after that. Never send the typed password a second time in the same run.
 3. Pre-flight the transport before any deploy:
    `GET /api/node/platform/system/info?request={"host":"…","port":22,"vaultId":"…"}`.
-   If this fails, everything else will, and the failure is your environment, not the templates.
+   If this fails, everything else will, and the failure is your environment, not the templates. When step 2
+   found no vault yet, there is nothing to preflight with — the typed password only proves itself during the
+   first deploy's own copy-id step, so run this check starting with your second deploy, once a vault id exists.
 4. `ss -ltn` — check the ports the templates want are free, and say which ones are not.
 5. Pre-pull images so a slow pull is not mistaken for a template bug — but note when a pull *fails*, because
    that is a genuine finding (see Redis in the baseline).
 
 ## The call sequence to mock
 
-Send a `Cookie: session=<any-uuid>` header on every request; without it the query console returns a 500.
+Send a `Cookie: session=<any-uuid>` header on every request; without it the query console returns a 500. If
+auth is on (step 1), also send `Authorization: Bearer <token>` on every request — both headers, every call.
 
 | Step | Call |
 |---|---|
@@ -74,7 +101,9 @@ Build the `POST /api/cluster/deploy` body the way the deploy form does:
 - **One node per command.** `name`, `keeperPort`, `dbPort` come from *that command's own* `defaults` — never
   from the plugin, never from another node. `host` and `sshPort` are supplied by you; the template never
   states them.
-- `clusterOptions.vaults.sshKeyId` set **and** `commonConfig.sshUser`/`sshPass` left empty — a vault and an
+- SSH auth is exactly one of the two, per precondition step 2: either `clusterOptions.vaults.sshKeyId` set
+  with `commonConfig.sshUser`/`sshPass` empty (a vault already existed, or this is your second deploy onward),
+  or `sshUser`/`sshPass` set with `sshKeyId` empty (no vault existed yet, first deploy only) — a vault and an
   inline pair are two answers to one question, and the server rejects both together.
 - Fill `keeperUser`/`keeperPass` and `dbUser`/`dbPass` only when the template's own `defaults` names that
   username, and use it verbatim. A template naming neither ships unauthenticated (etcd, zookeeper, mongo);
