@@ -3,7 +3,7 @@ import {Box} from "@mui/material"
 import {useRouterClusterUpdate} from "../../../../features/cluster/api/ClusterHook"
 import {useRouterClusterOverview} from "../../../../features/cluster/api/ClusterHook"
 import {NodeConfig} from "../../../../features/cluster/api/ClusterType"
-import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../../shared/component/box/AlertAlign"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {getDomain} from "../../../../shared/helper/HelperUtils"
@@ -30,11 +30,11 @@ export function Node() {
     )
 
     function renderContent() {
-        if (!activeNodeName || !activeClusterName) return <AlertCentered text={"SELECT THE NODE TO INTERACT WITH IT"}/>
+        if (!activeNodeName || !activeClusterName) return <AlertAlign text={"SELECT THE NODE TO INTERACT WITH IT"}/>
         const activeNode = overview.data?.nodes[activeNodeName]
-        if (!activeNode) return <AlertCentered text={"There is not enough information about the node!"} severity={"warning"}/>
+        if (!activeNode) return <AlertAlign text={"There is not enough information about the node!"} severity={"warning"}/>
         const {dbPort, sshPort, keeperPort} = activeNode.config
-        if (!dbPort && !keeperPort && !sshPort) return <AlertCentered text={"Specify at least one port to work with Node"} severity={"warning"}/>
+        if (!dbPort && !keeperPort && !sshPort) return <AlertAlign text={"Specify at least one port to work with Node"} severity={"warning"}/>
 
         return (
             <Box sx={SX.content}>

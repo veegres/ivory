@@ -2,7 +2,7 @@ import {Stars} from "@mui/icons-material"
 import {Box, ToggleButton, Tooltip} from "@mui/material"
 import {useState} from "react"
 
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {SimpleButton} from "../../../shared/component/button/SimpleButton"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -64,7 +64,7 @@ export function UserRegistrationForm(props: Props) {
                 />
                 {setup ? renderPassword() : renderCreate()}
             </Box>
-            {!setup && superuser && <AlertCentered severity={"warning"} text={renderSuperuserDescription()}/>}
+            {!setup && superuser && <AlertAlign severity={"warning"} text={renderSuperuserDescription()}/>}
             {registration && <UserRegistrationLink registration={registration}/>}
         </Box>
     )
@@ -103,20 +103,18 @@ export function UserRegistrationForm(props: Props) {
 
     function renderCreate() {
         return (
-            <Tooltip title={getCreateTooltip()} placement={"top"} arrow disableInteractive>
-                <Box component={"span"} sx={SX.grow}>
-                    <SimpleButton
-                        fullWidth={true}
-                        variant={"contained"}
-                        color={"primary"}
-                        loading={create.isPending}
-                        disabled={!isComplete()}
-                        onClick={handleCreate}
-                    >
-                        Register
-                    </SimpleButton>
-                </Box>
-            </Tooltip>
+            <Box sx={SX.grow}>
+                <SimpleButton
+                    fullWidth={true}
+                    variant={"contained"}
+                    color={"primary"}
+                    loading={create.isPending}
+                    disabled={!isComplete()}
+                    onClick={handleCreate}
+                >
+                    Register
+                </SimpleButton>
+            </Box>
         )
     }
 
@@ -133,13 +131,6 @@ export function UserRegistrationForm(props: Props) {
         if (setup) return "The first Ivory user is always a superuser"
         if (!allowed) return "Only a superuser can register another superuser"
         return "Superuser"
-    }
-
-    function getCreateTooltip() {
-        if (!value.username.trim()) return "A user needs a name"
-        if (value.authTypes.length === 0) return "A user needs at least one way to sign in"
-        if (value.authTypes.includes(UserAuthType.BASIC)) return "Register this user and issue their registration link"
-        return "Register this user"
     }
 
     function handleChange(next: UserSetupRequest) {

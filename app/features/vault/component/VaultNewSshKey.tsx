@@ -41,9 +41,11 @@ export function VaultNewSshKey() {
     function renderButtons() {
         return (
             <>
-                <SimpleButton disabled={!clean || createVault.isPending} onClick={handleCancel}><Cancel/></SimpleButton>
-                <SimpleButton loading={createVault.isPending} disabled={empty} onClick={handleCreate}>
-                    <AddCircle/>
+                <SimpleButton tooltip={"Cancel"} disabled={!clean || createVault.isPending} onClick={handleCancel}>
+                    <Cancel fontSize={"small"}/>
+                </SimpleButton>
+                <SimpleButton tooltip={"Generate"} loading={createVault.isPending} disabled={empty} onClick={handleCreate}>
+                    <AddCircle fontSize={"small"}/>
                 </SimpleButton>
             </>
         )

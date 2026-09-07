@@ -1,4 +1,4 @@
-import {SvgIconProps, Tooltip} from "@mui/material"
+import {SvgIconProps} from "@mui/material"
 import {cloneElement, ReactElement} from "react"
 
 import {IconButton} from "./IconButtons"
@@ -22,20 +22,20 @@ export function TriggerButton(props: Props) {
         // buttons in a toolbar all match
         const side = size ?? 32
         return (
-            <Tooltip title={title} arrow={true} placement={"top"}>
-                <SimpleButton
-                    sx={{height: `${side}px`, width: `${side}px`}}
-                    disabled={disabled}
-                    onClick={onClick}
-                >
-                    {cloneElement(icon, {sx: {fontSize: "16px"}})}
-                </SimpleButton>
-            </Tooltip>
+            <SimpleButton
+                tooltip={title}
+                sx={{height: `${side}px`, width: `${side}px`}}
+                disabled={disabled}
+                onClick={onClick}
+            >
+                {cloneElement(icon, {sx: {fontSize: "16px"}})}
+            </SimpleButton>
         )
     }
     if (variant === "button_label") {
         return (
             <SimpleButton
+                tooltip={title}
                 variant={"text"}
                 startIcon={icon}
                 disabled={disabled}

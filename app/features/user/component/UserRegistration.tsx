@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {UserRegistrationForm} from "./UserRegistrationForm"
 
@@ -12,7 +12,7 @@ const SX: SxPropsMap = {
 export function UserRegistration() {
     return (
         <Box sx={SX.box}>
-            <AlertCentered text={renderDescription()}/>
+            <AlertAlign text={renderDescription()}/>
             <UserRegistrationForm/>
         </Box>
     )

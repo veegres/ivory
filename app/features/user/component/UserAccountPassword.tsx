@@ -1,7 +1,7 @@
 import {Box, Button, Tooltip} from "@mui/material"
 import {useState} from "react"
 
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {KeyEnterInput} from "../../../shared/component/input/KeyEnterInput"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {useRouterUserPassword} from "../api/UserHook"
@@ -20,7 +20,7 @@ export function UserAccountPassword() {
 
     return (
         <Box sx={SX.box}>
-            <AlertCentered text={renderDescription()}/>
+            <AlertAlign text={renderDescription()}/>
             <Box sx={SX.inputs}>
                 <KeyEnterInput
                     label={"Current password"}

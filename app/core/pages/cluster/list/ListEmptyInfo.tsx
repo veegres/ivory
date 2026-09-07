@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 
 import {ClusterDeploy} from "../../../../features/cluster/component/ClusterDeploy"
 import {ClusterDetect} from "../../../../features/cluster/component/ClusterDetect"
-import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../../shared/component/box/AlertAlign"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {KeeperPluginOptions} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
@@ -31,7 +31,7 @@ export function ListEmptyInfo(props: Props) {
 
     return (
         <Box sx={SX.box}>
-            <AlertCentered text={getHeadline()}/>
+            <AlertAlign text={getHeadline()}/>
             <Box sx={SX.info}>
                 <Box/>
                 <Box sx={SX.buttons}>

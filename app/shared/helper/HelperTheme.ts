@@ -33,8 +33,8 @@ const LABEL = {
 // the vertical padding has to go; it is a plain height so a component with its
 // own toolbar sizing (Refresher, TriggerButton) still wins from sx.
 const BUTTON = {
-    small: {height: "26px", paddingTop: 0, paddingBottom: 0},
-    medium: {height: "32px", paddingTop: 0, paddingBottom: 0},
+    small: {height: "26px", paddingTop: 0, paddingBottom: 0, lineHeight: 1},
+    medium: {height: "32px", paddingTop: 0, paddingBottom: 0, lineHeight: 1},
 }
 
 const TAB = "36px"

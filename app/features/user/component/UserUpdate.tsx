@@ -1,8 +1,8 @@
-import { LinkOff, LockReset } from "@mui/icons-material";
+import { Delete, LinkOff, LockReset } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import { useState } from "react";
 
-import {DeleteIconButton, IconButton} from "../../../shared/component/button/IconButtons"
+import {SimpleButton} from "../../../shared/component/button/SimpleButton"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {Feature} from "../../Feature"
 import {useRouterInfo} from "../../management/api/ManagementHook"
@@ -19,7 +19,7 @@ import {UserRegistrationLink} from "./UserRegistrationLink"
 
 const SX: SxPropsMap = {
     box: {
-        display: "flex", flexDirection: "column", gap: 0.5, padding: "3px",
+        display: "flex", flexDirection: "column", gap: 0.5, paddingY: 1,
         borderTop: 1, borderBottom: 1, borderColor: "divider",
     },
     footer: {display: "flex", justifyContent: "space-between", alignItems: "center", gap: 0.5, flexWrap: "wrap"},
@@ -77,38 +77,45 @@ export function UserUpdate(props: Props) {
     function renderIssue() {
         const reason = getIssueReason()
         return (
-            <IconButton
-                icon={<LockReset/>}
+            <SimpleButton
+                size={"small"}
                 tooltip={reason ?? "Reset the password - issues a link to set a new one"}
                 disabled={!!reason}
                 loading={issueReset.isPending}
                 onClick={() => issueReset.mutate(user.username)}
-            />
+            >
+                <LockReset fontSize={"small"}/>
+            </SimpleButton>
         )
     }
 
     function renderRevoke() {
         const reason = getRevokeReason()
         return (
-            <IconButton
-                icon={<LinkOff/>}
+            <SimpleButton
+                size={"small"}
                 tooltip={reason ?? "Make the outstanding link useless straight away"}
                 disabled={!!reason}
                 loading={revokeReset.isPending}
                 onClick={() => revokeReset.mutate(user.username)}
-            />
+            >
+                <LinkOff fontSize={"small"}/>
+            </SimpleButton>
         )
     }
 
     function renderDelete() {
         const reason = getDeleteReason()
         return (
-            <DeleteIconButton
+            <SimpleButton
+                size={"small"}
                 tooltip={reason ?? "Delete this user and their permissions"}
                 disabled={!!reason}
                 loading={deleteUser.isPending}
                 onClick={() => deleteUser.mutate(user.username)}
-            />
+            >
+                <Delete fontSize={"small"}/>
+            </SimpleButton>
         )
     }
 
@@ -128,7 +135,7 @@ export function UserUpdate(props: Props) {
 
     function getRevokeReason() {
         if (resetAccess !== "allowed") return "You are not permitted to revoke links"
-        if (!isLinkOutstanding()) return "There is no link outstanding"
+        if (!isLinkIssued()) return "There is no link"
         if (user.superuser && !isSuperuser()) return "Only a superuser can revoke a superuser's link"
         return undefined
     }
@@ -140,7 +147,7 @@ export function UserUpdate(props: Props) {
         return undefined
     }
 
-    function isLinkOutstanding() {
+    function isLinkIssued() {
         const status = user.registration?.status
         return status === UserRegistrationStatus.PENDING || status === UserRegistrationStatus.EXPIRED
     }

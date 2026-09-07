@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 
 import {PermissionMap} from "../../../features/permission/api/PermissionType"
 import {PermissionList} from "../../../features/permission/component/PermissionList"
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {PageStartupGreeting} from "../../../shared/component/box/PageStartupGreeting"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
@@ -22,7 +22,7 @@ export function PermissionsBody(props: Props) {
     return (
         <PageStartupBox header={"Permissions"} renderFooter={renderFooter()} position={"start"} padding={"15px 0px"}>
             <PageStartupGreeting username={username}/>
-            <AlertCentered
+            <AlertAlign
                 severity={"warning"}
                 text={`
                 You don't have any permissions yet. Request them here, then wait for an authorised

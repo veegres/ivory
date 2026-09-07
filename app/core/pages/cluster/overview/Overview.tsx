@@ -2,7 +2,7 @@ import {Alert, Box, Collapse, Divider, Tab, Tabs} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {useRouterClusterList, useRouterClusterOverview} from "../../../../features/cluster/api/ClusterHook"
-import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../../shared/component/box/AlertAlign"
 import {ErrorSmart} from "../../../../shared/component/box/ErrorSmart"
 import {PageMainBox} from "../../../../shared/component/box/PageMainBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
@@ -14,11 +14,12 @@ import {OverviewNodes} from "./OverviewNodes"
 
 const SX: SxPropsMap = {
     box: {display: "flex", flexDirection: "column", gap: 1},
-    headBox: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1},
+    main: {display: "flex", flexDirection: "column", gap: 1},
+    body: {display: "flex", flexDirection: "column"},
+    head: {display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 1},
     tabs: {flexGrow: 1},
     chip: {margin: "auto 0", borderRadius: "4px"},
     settingsBox: {height: "100%", display: "flex", flexDirection: "column"},
-    mainBox: {display: "flex", flexDirection: "column"},
     leftMainBlock: {flexGrow: 1, overflowX: "auto"},
     divider: {margin: "10px 0", fontSize: "15px", color: "text.secondary"},
     collapse: {height: "100%"},
@@ -42,7 +43,7 @@ export function Overview() {
     return (
         <PageMainBox withPadding={true} visible={!!activeCluster || !!clusters.data?.length}>
             <Box sx={SX.box}>
-                <Box sx={SX.headBox}>
+                <Box sx={SX.head}>
                     <Tabs sx={SX.tabs} value={0} role={"tab"}>
                         <Tab value={0} label={"Overview"}/>
                     </Tabs>
@@ -51,7 +52,7 @@ export function Overview() {
                 <Collapse in={infoOpen}>
                     <Alert severity={"info"} onClose={() => setInfoOpen(false)}>{renderInfo()}</Alert>
                 </Collapse>
-                <Box sx={SX.mainBox}>
+                <Box sx={SX.body}>
                     <Box sx={SX.leftMainBlock}>{renderMainBlock()}</Box>
                     <Box>{renderConfigBlock()}</Box>
                 </Box>
@@ -60,12 +61,14 @@ export function Overview() {
     )
 
     function renderMainBlock() {
-        if (!activeCluster) return <AlertCentered text={"SELECT THE CLUSTER TO SEE ITS OVERVIEW"}/>
-        if (!activeCluster) return <AlertCentered text={"Selected cluster in not in the list"} severity={"warning"}/>
-        return <>
-            {overview.error && <ErrorSmart error={overview.error}/>}
-            <OverviewNodes cluster={activeCluster} nodes={overview.data?.nodes}/>
-        </>
+        if (!activeCluster) return <AlertAlign text={"SELECT THE CLUSTER TO SEE ITS OVERVIEW"}/>
+        if (!activeCluster) return <AlertAlign text={"Selected cluster in not in the list"} severity={"warning"}/>
+        return (
+            <Box sx={SX.main}>
+                {overview.error && <ErrorSmart error={overview.error}/>}
+                <OverviewNodes cluster={activeCluster} nodes={overview.data?.nodes}/>
+            </Box>
+        )
     }
 
     function renderActions() {

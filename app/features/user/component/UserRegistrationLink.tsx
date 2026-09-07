@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {CopyIconButton} from "../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {buildRouteUrl} from "../../../shared/helper/HelperUrl"
@@ -9,7 +9,7 @@ import {useSnackbar} from "../../../shared/provider/SnackbarProvider"
 import {UserRegistration} from "../api/UserType"
 
 const SX: SxPropsMap = {
-    box: {display: "flex", flexDirection: "column", gap: 1},
+    box: {display: "flex", flexDirection: "column", gap: 0.5},
     field: {
         display: "flex", alignItems: "center", gap: 1, height: "40px", padding: "0px 4px 0px 12px",
         border: 1, borderColor: "divider", borderRadius: 1,
@@ -36,7 +36,7 @@ export function UserRegistrationLink(props: Props) {
                 <Box sx={SX.link} title={url}>{url}</Box>
                 <CopyIconButton tooltip={"Copy the link to your clipboard"} onClick={handleCopy}/>
             </Box>
-            <AlertCentered severity={"warning"} text={renderWarning()}/>
+            <AlertAlign align={"justify"} text={renderWarning()}/>
         </Box>
     )
 

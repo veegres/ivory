@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 import {useMemo, useState} from "react"
 
 import {Cluster} from "../../../../features/cluster/api/ClusterType"
-import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../../shared/component/box/AlertAlign"
 import {ActionsLoader} from "../../../../shared/component/progress/ActionsLoader"
 import {SkeletonRows} from "../../../../shared/component/progress/SkeletonRows"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
@@ -83,7 +83,7 @@ export function ListTable(props: Props) {
         return (
             <Box sx={SX.empty}>
                 {search ? (
-                    <AlertCentered text={"There are no clusters that match your filter"}/>
+                    <AlertAlign text={"There are no clusters that match your filter"}/>
                 ) : (
                     <ListEmptyInfo
                         onAddManually={() => setShowNewElement(true)}

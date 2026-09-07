@@ -4,7 +4,7 @@ import {ChangeEvent, useState} from "react"
 import {LdapConfig, OidcConfig} from "../../../../features/config/api/ConfigType"
 import {UserAuthType, UserSetupRequest} from "../../../../features/user/api/UserType"
 import {UserRegistrationForm} from "../../../../features/user/component/UserRegistrationForm"
-import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../../shared/component/box/AlertAlign"
 import {ConfigBox} from "../../../../shared/component/box/ConfigBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {ConfigAuthBasic} from "./ConfigAuthBasic"
@@ -85,7 +85,7 @@ export function ConfigAuth(props: Props) {
     function renderSuperuser() {
         return (
             <Box sx={SX.gap}>
-                <AlertCentered text={renderSuperuserDescription()}/>
+                <AlertAlign text={renderSuperuserDescription()}/>
                 <UserRegistrationForm setup value={user} onChange={onUserChange}/>
             </Box>
         )

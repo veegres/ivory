@@ -43,9 +43,11 @@ export function VaultNewPassword(props: Props) {
     function renderButtons() {
         return (
             <>
-                <SimpleButton disabled={!clean || createVault.isPending} onClick={handleCancel}><Cancel/></SimpleButton>
-                <SimpleButton loading={createVault.isPending} disabled={empty} onClick={handleCreate}>
-                    <CheckCircle/>
+                <SimpleButton tooltip={"Cancel"} disabled={!clean || createVault.isPending} onClick={handleCancel}>
+                    <Cancel fontSize={"small"}/>
+                </SimpleButton>
+                <SimpleButton tooltip={"Create"} loading={createVault.isPending} disabled={empty} onClick={handleCreate}>
+                    <CheckCircle fontSize={"small"}/>
                 </SimpleButton>
             </>
         )

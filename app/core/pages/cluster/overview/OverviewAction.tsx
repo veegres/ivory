@@ -72,13 +72,9 @@ export function OverviewAction(props: Props) {
 
     function renderRefresh() {
         return (
-            <Tooltip title={"Refresh"} placement={"top"} arrow={true}>
-                <Box component={"span"}>
-                    <SimpleButton loading={overview.isFetching} onClick={() => overview.refetch()}>
-                        <Cached/>
-                    </SimpleButton>
-                </Box>
-            </Tooltip>
+            <SimpleButton tooltip={"Refresh"} loading={overview.isFetching} onClick={() => overview.refetch()}>
+                <Cached fontSize={"small"}/>
+            </SimpleButton>
         )
     }
 }

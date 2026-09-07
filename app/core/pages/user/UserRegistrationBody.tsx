@@ -4,7 +4,7 @@ import {useState} from "react"
 import {useRouterLogin} from "../../../features/auth/api/AuthHook"
 import {useRouterUserRegistrationPassword, useRouterUserRegistrationVerify} from "../../../features/user/api/UserHook"
 import {UserAuthType} from "../../../features/user/api/UserType"
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {ErrorSmart} from "../../../shared/component/box/ErrorSmart"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {PageStartupGreeting} from "../../../shared/component/box/PageStartupGreeting"
@@ -38,8 +38,8 @@ export function UserRegistrationBody(props: Props) {
         if (registration.isError) return <ErrorSmart error={registration.error}/>
         return (<>
             <PageStartupGreeting username={registration.data?.username}/>
-            <AlertCentered severity={"info"} text={renderDescription()}/>
-            <AlertCentered severity={"warning"} text={renderWarning()}/>
+            <AlertAlign align={"justify"} text={renderDescription()}/>
+            <AlertAlign severity={"warning"} text={renderWarning()}/>
             <KeyEnterInput
                 label={"Password"}
                 value={password}

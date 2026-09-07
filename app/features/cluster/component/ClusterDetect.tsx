@@ -2,7 +2,7 @@ import {AutoFixHigh} from "@mui/icons-material"
 import {Box, Button, TextField} from "@mui/material"
 import {useCallback, useEffect, useState} from "react"
 
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {PaperBlue} from "../../../shared/component/box/PaperBlue"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
@@ -80,7 +80,7 @@ export function ClusterDetect(props: Props) {
     function renderInfo() {
         return (
             <PaperBlue>
-                <AlertCentered text={
+                <AlertAlign text={
                     "Host, name, and ports come from the keeper, not your platform - if ports are mapped " +
                     "or forwarded, they may differ from what you'd expect"
                 }/>
