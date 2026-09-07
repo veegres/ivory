@@ -80,6 +80,60 @@ func TestMapNode(t *testing.T) {
 	}
 }
 
+func TestMapTags(t *testing.T) {
+	tests := []struct {
+		name     string
+		fields   map[string]string
+		role     keeper.Role
+		expected map[string]any
+	}{
+		{
+			name:     "master reports its replica count",
+			fields:   map[string]string{"redis_version": "7.2.4", "used_memory_human": "1.51M", "connected_slaves": "2"},
+			role:     keeper.Leader,
+			expected: map[string]any{"version": "7.2.4", "memory": "1.51M", "replicas": "2"},
+		},
+		{
+			name: "replica reports the master it follows and the link to it",
+			fields: map[string]string{
+				"redis_version": "7.2.4", "used_memory_human": "1.51M", "connected_slaves": "0",
+				"master_link_status": "down", "master_host": "10.0.0.1", "master_port": "6379",
+			},
+			role:     keeper.Replica,
+			expected: map[string]any{"version": "7.2.4", "memory": "1.51M", "link": "down", "master": "10.0.0.1:6379"},
+		},
+		{
+			name:     "nothing to report stays nil",
+			fields:   map[string]string{},
+			role:     keeper.Leader,
+			expected: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tags := mapTags(tt.fields, tt.role)
+			if tt.expected == nil {
+				if tags != nil {
+					t.Fatalf("expected no tags, got %v", *tags)
+				}
+				return
+			}
+			if tags == nil {
+				t.Fatal("expected tags, got nil")
+			}
+			if len(*tags) != len(tt.expected) {
+				t.Errorf("expected %d tags, got %v", len(tt.expected), *tags)
+			}
+			for key, value := range tt.expected {
+				if (*tags)[key] != value {
+					t.Errorf("expected tag %q to be %v, got %v", key, value, (*tags)[key])
+				}
+			}
+		})
+	}
+}
+
 func TestListRequiresCredentials(t *testing.T) {
 	adapter := NewPlugin()
 	request := keeper.Request{Host: "localhost", Port: 6379}

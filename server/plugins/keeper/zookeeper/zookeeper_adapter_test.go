@@ -60,7 +60,7 @@ func TestMapNode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := mapNode("zk1", 2181, tt.state)
+			response := mapNode("zk1", 2181, tt.state, map[string]string{})
 			if response.Role != tt.expectedRole {
 				t.Errorf("expected role %v, got %v", tt.expectedRole, response.Role)
 			}
@@ -84,6 +84,87 @@ func TestMapNode(t *testing.T) {
 			}
 			if response.DiscoveredDbPort == nil || *response.DiscoveredDbPort != 2181 {
 				t.Errorf("expected discovered db port 2181, got %v", response.DiscoveredDbPort)
+			}
+		})
+	}
+}
+
+func TestMapTags(t *testing.T) {
+	tests := []struct {
+		name     string
+		state    string
+		fields   map[string]string
+		expected map[string]any
+	}{
+		{
+			name:  "leader reports how much of its ensemble is synced",
+			state: "leader",
+			fields: map[string]string{
+				"zk_version": "3.9.1-abc123, built on 2023-10-01", "zk_znode_count": "1204",
+				"zk_num_alive_connections": "6", "zk_synced_followers": "2", "zk_followers": "2",
+			},
+			expected: map[string]any{"version": "3.9.1", "znodes": "1204", "connections": "6", "syncedFollowers": "2/2"},
+		},
+		{
+			name:     "follower states no server state of its own",
+			state:    "follower",
+			fields:   map[string]string{"zk_version": "3.9.1", "zk_znode_count": "1204"},
+			expected: map[string]any{"version": "3.9.1", "znodes": "1204"},
+		},
+		{
+			name:     "observer is told apart from a voting follower",
+			state:    "observer",
+			fields:   map[string]string{"zk_znode_count": "1204"},
+			expected: map[string]any{"serverState": "observer", "znodes": "1204"},
+		},
+		{
+			name:     "standalone is told apart from an elected leader",
+			state:    "standalone",
+			fields:   map[string]string{},
+			expected: map[string]any{"serverState": "standalone"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tags := mapTags(tt.state, tt.fields)
+			if tags == nil {
+				t.Fatal("expected tags, got nil")
+			}
+			if len(*tags) != len(tt.expected) {
+				t.Errorf("expected %d tags, got %v", len(tt.expected), *tags)
+			}
+			for key, value := range tt.expected {
+				if (*tags)[key] != value {
+					t.Errorf("expected tag %q to be %v, got %v", key, value, (*tags)[key])
+				}
+			}
+		})
+	}
+
+	t.Run("nothing to report stays nil", func(t *testing.T) {
+		if tags := mapTags("leader", map[string]string{}); tags != nil {
+			t.Errorf("expected no tags, got %v", *tags)
+		}
+	})
+}
+
+func TestShortVersion(t *testing.T) {
+	tests := []struct {
+		name     string
+		version  string
+		expected string
+	}{
+		{"build hash and date are dropped", "3.9.1-abc123, built on 2023-10-01", "3.9.1"},
+		{"comma alone is dropped", "3.8.0, built on 2022-02-25", "3.8.0"},
+		{"a bare version survives", "3.9.1", "3.9.1"},
+		{"empty stays empty", "", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if version := shortVersion(tt.version); version != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, version)
 			}
 		})
 	}

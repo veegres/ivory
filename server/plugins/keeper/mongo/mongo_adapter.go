@@ -7,6 +7,7 @@ import (
 	"ivory/plugins/keeper"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -235,12 +236,41 @@ func mapStatus(status *replSetStatus) []keeper.Response {
 
 	responses := make([]keeper.Response, 0, len(status.Members))
 	for _, m := range status.Members {
-		responses = append(responses, mapMember(m, primaryTime, havePrimary))
+		responses = append(responses, mapMember(m, status.Set, primaryTime, havePrimary))
 	}
 	return responses
 }
 
-func mapMember(m replSetMember, primaryTime time.Time, havePrimary bool) keeper.Response {
+// mapTags reports what replSetGetStatus knows about a member that Role/State
+// cannot carry. mapRoleState collapses every member that is neither primary nor
+// secondary onto Unknown, so an arbiter (which votes but holds no data and can
+// never be elected) reads the same as a member mongo could not classify at all -
+// memberState is what tells those apart, and it is reported only when it adds
+// something the role does not already say. The set name is here because a node
+// pointed at the wrong replica set is otherwise a healthy-looking cluster of
+// one, and the sync source because a secondary chained off another secondary
+// inherits its lag without anything else on the row hinting why.
+func mapTags(m replSetMember, set string) *map[string]any {
+	tags := map[string]any{}
+	if set != "" {
+		tags["replicaSet"] = set
+	}
+	if m.StateStr != "" && m.StateStr != "PRIMARY" && m.StateStr != "SECONDARY" {
+		tags["memberState"] = m.StateStr
+	}
+	if m.SyncSourceHost != "" {
+		tags["syncSource"] = m.SyncSourceHost
+	}
+	if m.PingMs > 0 {
+		tags["ping"] = strconv.FormatInt(m.PingMs, 10) + "ms"
+	}
+	if len(tags) == 0 {
+		return nil
+	}
+	return &tags
+}
+
+func mapMember(m replSetMember, set string, primaryTime time.Time, havePrimary bool) keeper.Response {
 	role, state := mapRoleState(m.StateStr, m.Health)
 
 	var lag int64
@@ -258,6 +288,7 @@ func mapMember(m replSetMember, primaryTime time.Time, havePrimary bool) keeper.
 		State:  state,
 		Role:   role,
 		Lag:    lag,
+		Tags:   mapTags(m, set),
 	}
 
 	host, port, errSplit := net.SplitHostPort(m.Name)

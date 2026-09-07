@@ -34,7 +34,7 @@ func TestMapNode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := mapNode(tt.host, tt.port, tt.inRecovery, tt.lag)
+			response := mapNode(tt.host, tt.port, tt.inRecovery, tt.lag, nodeStats{})
 			if response.Role != tt.expectedRole {
 				t.Errorf("expected role %v, got %v", tt.expectedRole, response.Role)
 			}
@@ -61,6 +61,57 @@ func TestMapNode(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMapTags(t *testing.T) {
+	tests := []struct {
+		name     string
+		role     keeper.Role
+		stats    nodeStats
+		expected map[string]any
+	}{
+		{
+			name:     "primary reports the standbys only it can see",
+			role:     keeper.Leader,
+			stats:    nodeStats{Version: "16.2", Connections: 90, MaxConnections: 100, Replicas: 2},
+			expected: map[string]any{"version": "16.2", "connections": "90/100", "replicas": 2},
+		},
+		{
+			name:     "replica reports no standby count of its own",
+			role:     keeper.Replica,
+			stats:    nodeStats{Version: "16.2", Connections: 4, MaxConnections: 100},
+			expected: map[string]any{"version": "16.2", "connections": "4/100"},
+		},
+		{
+			name:     "a primary with no standby still says so",
+			role:     keeper.Leader,
+			stats:    nodeStats{Version: "16.2", Connections: 1, MaxConnections: 100, Replicas: 0},
+			expected: map[string]any{"version": "16.2", "connections": "1/100", "replicas": 0},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tags := mapTags(tt.role, tt.stats)
+			if tags == nil {
+				t.Fatal("expected tags, got nil")
+			}
+			if len(*tags) != len(tt.expected) {
+				t.Errorf("expected %d tags, got %v", len(tt.expected), *tags)
+			}
+			for key, value := range tt.expected {
+				if (*tags)[key] != value {
+					t.Errorf("expected tag %q to be %v, got %v", key, value, (*tags)[key])
+				}
+			}
+		})
+	}
+
+	t.Run("a node that answered nothing stays nil", func(t *testing.T) {
+		if tags := mapTags(keeper.Replica, nodeStats{}); tags != nil {
+			t.Errorf("expected no tags, got %v", *tags)
+		}
+	})
 }
 
 func TestMapSyncStandby(t *testing.T) {

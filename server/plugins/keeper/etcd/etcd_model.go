@@ -13,6 +13,9 @@ type member struct {
 type endpointStatus struct {
 	Leader    uint64
 	RaftIndex uint64
+	RaftTerm  uint64
+	Version   string
+	DbSize    int64
 	Err       error
 }
 

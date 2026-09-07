@@ -42,7 +42,11 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
-	info, errInfo := client.Info(ctx, "replication").Result()
+	// NOTE: INFO with no section returns redis' default section set, which
+	// carries the server and memory fields the node's tags report alongside the
+	// replication ones its role is read from - one round trip on every redis
+	// version, unlike naming several sections, which only redis 7 accepts.
+	info, errInfo := client.Info(ctx).Result()
 	if errInfo != nil {
 		return nil, http.StatusBadRequest, errInfo
 	}
@@ -209,8 +213,41 @@ func mapNode(host string, port int, fields map[string]string) keeper.Response {
 		State:                keeper.StateRunning,
 		Role:                 role,
 		Lag:                  lag,
+		Tags:                 mapTags(fields, role),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,
 	}
+}
+
+// mapTags reports what INFO carries that Role/State/Lag cannot say. A replica
+// names the master it actually follows and whether that link is up: Lag only
+// measures how long ago the last byte arrived, so a replica whose link went
+// down seconds ago and one that was never able to connect are indistinguishable
+// without it. A master names how many replicas are attached, which is the only
+// place a replica missing from the cluster shows up at all. Memory is here
+// because reaching maxmemory is what turns a healthy-looking redis into one
+// refusing writes.
+func mapTags(fields map[string]string, role keeper.Role) *map[string]any {
+	tags := map[string]any{}
+	if version := fields["redis_version"]; version != "" {
+		tags["version"] = version
+	}
+	if memory := fields["used_memory_human"]; memory != "" {
+		tags["memory"] = memory
+	}
+	if role == keeper.Replica {
+		if link := fields["master_link_status"]; link != "" {
+			tags["link"] = link
+		}
+		if masterHost := fields["master_host"]; masterHost != "" {
+			tags["master"] = masterHost + ":" + fields["master_port"]
+		}
+	} else if replicas := fields["connected_slaves"]; replicas != "" {
+		tags["replicas"] = replicas
+	}
+	if len(tags) == 0 {
+		return nil
+	}
+	return &tags
 }
