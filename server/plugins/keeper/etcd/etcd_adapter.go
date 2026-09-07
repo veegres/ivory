@@ -59,7 +59,13 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 			errs = errors.Join(errs, fmt.Errorf("member %q is unreachable: %w", m.Name, errStatus))
 			continue
 		}
-		statuses[m.ID] = endpointStatus{Leader: status.Leader, RaftIndex: status.RaftIndex}
+		statuses[m.ID] = endpointStatus{
+			Leader:    status.Leader,
+			RaftIndex: status.RaftIndex,
+			RaftTerm:  status.RaftTerm,
+			Version:   status.Version,
+			DbSize:    status.DbSize,
+		}
 	}
 
 	status := http.StatusOK
@@ -260,6 +266,43 @@ func findLeader(statuses map[uint64]endpointStatus) (uint64, uint64) {
 	return leaderID, 0
 }
 
+// mapTags reports the per-member facts etcd's own status carries that
+// Role/State/Lag cannot express: a learner does not vote and can never be
+// elected, a version that differs from its peers' is a half-finished rolling
+// upgrade, a db size approaching the backend quota is what makes a cluster go
+// read-only, and a raft term behind the rest is a member that missed an
+// election. An unreachable member reports a zero status, and every field is
+// omitted rather than printed as a zero.
+func mapTags(m member, status endpointStatus) *map[string]any {
+	tags := map[string]any{}
+	if m.IsLearner {
+		tags["learner"] = true
+	}
+	if status.Version != "" {
+		tags["version"] = status.Version
+	}
+	if status.DbSize > 0 {
+		tags["dbSize"] = formatDbSize(status.DbSize)
+	}
+	if status.RaftTerm > 0 {
+		tags["raftTerm"] = status.RaftTerm
+	}
+	if len(tags) == 0 {
+		return nil
+	}
+	return &tags
+}
+
+// formatDbSize reports KiB below a megabyte: a freshly bootstrapped etcd holds
+// about 20 KiB, which as megabytes reads "0.0 MiB" and looks like a node that
+// failed to answer rather than a healthy empty one.
+func formatDbSize(bytes int64) string {
+	if bytes >= 1024*1024 {
+		return fmt.Sprintf("%.1f MiB", float64(bytes)/(1024*1024))
+	}
+	return fmt.Sprintf("%.0f KiB", float64(bytes)/1024)
+}
+
 func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex uint64) keeper.Response {
 	name := m.Name
 	var keeperStatus keeper.Status = keeper.Active
@@ -283,18 +326,13 @@ func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex
 		}
 	}
 
-	var tags *map[string]any
-	if m.IsLearner {
-		tags = &map[string]any{"learner": true}
-	}
-
 	response := keeper.Response{
 		Key:            &name,
 		Status:         &keeperStatus,
 		State:          state,
 		Role:           role,
 		Lag:            lag,
-		Tags:           tags,
+		Tags:           mapTags(m, status),
 		DiscoveredName: &name,
 	}
 

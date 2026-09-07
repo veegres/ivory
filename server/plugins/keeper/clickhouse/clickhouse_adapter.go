@@ -91,9 +91,50 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		return nil, http.StatusBadRequest, errQueue
 	}
 
+	// NOTE: macros are the node's tags, not its health, so a failure to read
+	// them must not turn a running node into a failed one on the overview -
+	// unlike the two queries above, whose answers are the node's state. It is
+	// still reported rather than dropped, since the only way to lose these is a
+	// grant the keeper user is missing.
+	macros, errMacros := queryMacros(ctx, conn)
+
 	response := mapNode(request.Host, request.Port, isReadonly > 0, absoluteDelay)
 	response.Warnings = replicaWarnings(activeReplicas, totalReplicas, stuckCount, sampleError)
+	response.Tags = macros
+	if errMacros != nil {
+		response.Warnings = append(response.Warnings, "cannot read system.macros: "+firstLine(errMacros.Error()))
+	}
 	return []keeper.Response{response}, http.StatusOK, nil
+}
+
+// queryMacros reads system.macros, clickhouse's own per-node identity: the
+// {shard}/{replica}/{cluster} substitutions every replicated table's zookeeper
+// path is written with, so two nodes disagreeing about which shard they serve
+// is visible on the overview instead of only inside a CREATE TABLE statement.
+// They are reported as tags verbatim, the same passthrough patroni member tags
+// get, since a macro set is whatever the operator defined it to be.
+func queryMacros(ctx context.Context, conn driver.Conn) (*map[string]any, error) {
+	rows, err := conn.Query(ctx, `SELECT macro, substitution FROM system.macros ORDER BY macro`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	macros := map[string]any{}
+	for rows.Next() {
+		var macro, substitution string
+		if errScan := rows.Scan(&macro, &substitution); errScan != nil {
+			return nil, errScan
+		}
+		macros[macro] = substitution
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	if len(macros) == 0 {
+		return nil, nil
+	}
+	return &macros, nil
 }
 
 // replicaWarnings turns the two independent connectivity signals system.replicas

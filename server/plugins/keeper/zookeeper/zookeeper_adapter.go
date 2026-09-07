@@ -50,7 +50,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		return nil, http.StatusBadRequest, ErrCommandNotAvailable
 	}
 
-	return []keeper.Response{mapNode(request.Host, request.Port, state)}, http.StatusOK, nil
+	return []keeper.Response{mapNode(request.Host, request.Port, state, fields)}, http.StatusOK, nil
 }
 
 func (p *Plugin) Config(request keeper.Request) (any, int, error) {
@@ -138,7 +138,7 @@ func parseLines(output string, sep string) map[string]string {
 // or postgres' WAL position, mntr reports no per-follower offset a member
 // can read about itself - only leader-side aggregates like
 // zk_synced_followers, which isn't a per-member lag figure.
-func mapNode(host string, port int, state string) keeper.Response {
+func mapNode(host string, port int, state string, fields map[string]string) keeper.Response {
 	var role keeper.Role = keeper.Unknown
 	switch state {
 	case "leader", "standalone":
@@ -153,8 +153,54 @@ func mapNode(host string, port int, state string) keeper.Response {
 		Status:               &status,
 		State:                keeper.StateRunning,
 		Role:                 role,
+		Tags:                 mapTags(state, fields),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,
 	}
+}
+
+// mapTags reports the mntr metrics that say something Role/State cannot. A
+// standalone server is reported as a leader because it is the only node that
+// accepts writes, and an observer as a replica because it never accepts them -
+// but a standalone node that was meant to join an ensemble, and an observer
+// that was meant to vote, are both configuration mistakes that read as a
+// healthy cluster without serverState. The leader's follower counts are the one
+// place a member that dropped out of the quorum is visible, since every
+// zookeeper node otherwise only ever describes itself.
+func mapTags(state string, fields map[string]string) *map[string]any {
+	tags := map[string]any{}
+	if state != "leader" && state != "follower" {
+		tags["serverState"] = state
+	}
+	if version := fields["zk_version"]; version != "" {
+		tags["version"] = shortVersion(version)
+	}
+	if znodes := fields["zk_znode_count"]; znodes != "" {
+		tags["znodes"] = znodes
+	}
+	if connections := fields["zk_num_alive_connections"]; connections != "" {
+		tags["connections"] = connections
+	}
+	if synced := fields["zk_synced_followers"]; synced != "" {
+		if followers := fields["zk_followers"]; followers != "" {
+			tags["syncedFollowers"] = synced + "/" + followers
+		} else {
+			tags["syncedFollowers"] = synced
+		}
+	}
+	if len(tags) == 0 {
+		return nil
+	}
+	return &tags
+}
+
+// shortVersion keeps the release number alone: zk_version reports the build
+// hash and build date after it ("3.9.1-abc123, built on ..."), which says
+// nothing a reader comparing one node against another needs.
+func shortVersion(version string) string {
+	if i := strings.IndexAny(version, "-,"); i >= 0 {
+		return version[:i]
+	}
+	return version
 }

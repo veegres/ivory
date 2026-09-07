@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"ivory/clients/http"
 	"ivory/plugins/keeper"
+	"maps"
 	nethttp "net/http"
 	"net/url"
 	"strconv"
@@ -56,7 +57,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 			PendingRestart:       patroniInstance.PendingRestart,
 			ScheduledRestart:     p.mapRestart(patroniInstance.ScheduledRestart),
 			ScheduledSwitchover:  p.mapSwitchover(host, response.ScheduledSwitchover),
-			Tags:                 patroniInstance.Tags,
+			Tags:                 p.mapTags(patroniInstance),
 			DiscoveredHost:       &patroniInstance.Host,
 			DiscoveredName:       &patroniInstance.Name,
 			DiscoveredDbPort:     &patroniInstance.Port,
@@ -65,6 +66,26 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	}
 
 	return overview, status, err
+}
+
+// mapTags reports the member's own patroni tags (nofailover, nosync, ...)
+// alongside its timeline. A replica left on an older timeline than the leader
+// diverged at some past failover and will never catch up on its own, which
+// neither its state (running) nor its lag (measured against a history it is no
+// longer on) reveals. A member tag patroni itself named "timeline" loses to
+// the real one.
+func (p *Plugin) mapTags(i instance) *map[string]any {
+	tags := map[string]any{}
+	if i.Tags != nil {
+		maps.Copy(tags, *i.Tags)
+	}
+	if i.Timeline > 0 {
+		tags["timeline"] = i.Timeline
+	}
+	if len(tags) == 0 {
+		return nil
+	}
+	return &tags
 }
 
 func (p *Plugin) mapLag(lag json.RawMessage) int64 {

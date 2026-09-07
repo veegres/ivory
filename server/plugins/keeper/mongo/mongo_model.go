@@ -16,6 +16,13 @@ type replSetMember struct {
 	StateStr   string    `bson:"stateStr"`
 	Health     float64   `bson:"health"`
 	OptimeDate time.Time `bson:"optimeDate"`
+	// SyncSourceHost is the member this one actually replicates from, which is
+	// not necessarily the primary - mongo lets a secondary chain off another
+	// secondary, so a whole branch of the set can fall behind together.
+	SyncSourceHost string `bson:"syncSourceHost"`
+	// PingMs is the round trip time of the last heartbeat, reported only for
+	// peers - the member describing itself has nothing to ping.
+	PingMs int64 `bson:"pingMs"`
 	// Self is true only on the entry describing the connection's own node,
 	// used to find "am I currently the primary" without a separate command.
 	Self bool `bson:"self"`

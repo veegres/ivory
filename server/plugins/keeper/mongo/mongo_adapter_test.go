@@ -98,6 +98,57 @@ func TestMapStatusNoPrimary(t *testing.T) {
 	}
 }
 
+func TestMapTags(t *testing.T) {
+	tests := []struct {
+		name     string
+		member   replSetMember
+		set      string
+		expected map[string]any
+	}{
+		{
+			name:     "secondary states only what its role does not say",
+			member:   replSetMember{Name: "mongo2:27017", StateStr: "SECONDARY", SyncSourceHost: "mongo1:27017", PingMs: 3},
+			set:      "rs0",
+			expected: map[string]any{"replicaSet": "rs0", "syncSource": "mongo1:27017", "ping": "3ms"},
+		},
+		{
+			name:     "arbiter is told apart from a member mongo could not classify",
+			member:   replSetMember{Name: "mongo3:27017", StateStr: "ARBITER"},
+			set:      "rs0",
+			expected: map[string]any{"replicaSet": "rs0", "memberState": "ARBITER"},
+		},
+		{
+			name:     "self reports no ping it never measured",
+			member:   replSetMember{Name: "mongo1:27017", StateStr: "PRIMARY", Self: true},
+			set:      "rs0",
+			expected: map[string]any{"replicaSet": "rs0"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tags := mapTags(tt.member, tt.set)
+			if tags == nil {
+				t.Fatal("expected tags, got nil")
+			}
+			if len(*tags) != len(tt.expected) {
+				t.Errorf("expected %d tags, got %v", len(tt.expected), *tags)
+			}
+			for key, value := range tt.expected {
+				if (*tags)[key] != value {
+					t.Errorf("expected tag %q to be %v, got %v", key, value, (*tags)[key])
+				}
+			}
+		})
+	}
+
+	t.Run("nothing to report stays nil", func(t *testing.T) {
+		if tags := mapTags(replSetMember{StateStr: "PRIMARY"}, ""); tags != nil {
+			t.Errorf("expected no tags, got %v", *tags)
+		}
+	})
+}
+
 func TestSelfMember(t *testing.T) {
 	status := &replSetStatus{
 		Members: []replSetMember{

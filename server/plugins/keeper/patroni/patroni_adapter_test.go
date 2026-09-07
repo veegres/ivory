@@ -72,6 +72,45 @@ func TestClient_Overview_Mapping(t *testing.T) {
 	})
 }
 
+func TestClient_mapTags(t *testing.T) {
+	plugin := &Plugin{}
+
+	t.Run("member tags keep their own keys alongside the timeline", func(t *testing.T) {
+		memberTags := map[string]any{"nofailover": true, "clonefrom": false}
+		tags := plugin.mapTags(instance{Tags: &memberTags, Timeline: 4})
+		if tags == nil {
+			t.Fatal("expected tags, got nil")
+		}
+		if (*tags)["nofailover"] != true || (*tags)["clonefrom"] != false {
+			t.Errorf("expected member tags to survive, got %v", *tags)
+		}
+		if (*tags)["timeline"] != 4 {
+			t.Errorf("expected timeline 4, got %v", (*tags)["timeline"])
+		}
+	})
+
+	t.Run("member tags are not mutated", func(t *testing.T) {
+		memberTags := map[string]any{"nofailover": true}
+		plugin.mapTags(instance{Tags: &memberTags, Timeline: 4})
+		if _, ok := memberTags["timeline"]; ok {
+			t.Errorf("expected patroni's own map to be left alone, got %v", memberTags)
+		}
+	})
+
+	t.Run("timeline alone is reported without member tags", func(t *testing.T) {
+		tags := plugin.mapTags(instance{Timeline: 2})
+		if tags == nil || (*tags)["timeline"] != 2 {
+			t.Errorf("expected timeline 2, got %v", tags)
+		}
+	})
+
+	t.Run("nothing to report stays nil", func(t *testing.T) {
+		if tags := plugin.mapTags(instance{}); tags != nil {
+			t.Errorf("expected no tags, got %v", *tags)
+		}
+	})
+}
+
 func TestClient_mapLag(t *testing.T) {
 	client := &Plugin{}
 

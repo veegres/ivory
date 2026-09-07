@@ -7,6 +7,67 @@ import (
 	"testing"
 )
 
+func TestMapTags(t *testing.T) {
+	tests := []struct {
+		name     string
+		member   member
+		status   endpointStatus
+		expected map[string]any
+	}{
+		{
+			name:     "reachable voting member",
+			member:   member{ID: 1, Name: "etcd1"},
+			status:   endpointStatus{Version: "3.5.9", DbSize: 20 * 1024 * 1024, RaftTerm: 7},
+			expected: map[string]any{"version": "3.5.9", "dbSize": "20.0 MiB", "raftTerm": uint64(7)},
+		},
+		{
+			name:     "learner is flagged",
+			member:   member{ID: 2, Name: "etcd2", IsLearner: true},
+			status:   endpointStatus{Version: "3.5.9", RaftTerm: 7},
+			expected: map[string]any{"learner": true, "version": "3.5.9", "raftTerm": uint64(7)},
+		},
+		{
+			name:     "a freshly bootstrapped backend reads as kilobytes, not 0.0 MiB",
+			member:   member{ID: 4, Name: "etcd4"},
+			status:   endpointStatus{DbSize: 20 * 1024},
+			expected: map[string]any{"dbSize": "20 KiB"},
+		},
+		{
+			name:     "unreachable member reports nothing it cannot know",
+			member:   member{ID: 3, Name: "etcd3"},
+			status:   endpointStatus{Err: errors.New("unreachable")},
+			expected: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assertTags(t, mapTags(tt.member, tt.status), tt.expected)
+		})
+	}
+}
+
+func assertTags(t *testing.T, tags *map[string]any, expected map[string]any) {
+	t.Helper()
+	if expected == nil {
+		if tags != nil {
+			t.Fatalf("expected no tags, got %v", *tags)
+		}
+		return
+	}
+	if tags == nil {
+		t.Fatal("expected tags, got nil")
+	}
+	if len(*tags) != len(expected) {
+		t.Errorf("expected %d tags, got %v", len(expected), *tags)
+	}
+	for key, value := range expected {
+		if (*tags)[key] != value {
+			t.Errorf("expected tag %q to be %v, got %v", key, value, (*tags)[key])
+		}
+	}
+}
+
 func TestMapMembers(t *testing.T) {
 	members := []member{
 		{ID: 1, Name: "etcd1", ClientURLs: []string{"http://etcd1:2379"}},
