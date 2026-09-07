@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/plugins/keeper"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -54,6 +55,50 @@ func TestMapNode(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestReplicaWarnings pins the two independent connectivity signals a real
+// cluster showed (see clickhouse_adapter.go's List doc): a dropped
+// coordination-store session moves active_replicas below total_replicas even
+// though nothing is stuck, and a stuck data fetch leaves every session
+// healthy while system.replication_queue accumulates a genuine error -
+// either can fire alone, and a healthy cluster with no replicated tables yet
+// (total_replicas == 0) reports neither.
+func TestReplicaWarnings(t *testing.T) {
+	tests := []struct {
+		name                          string
+		activeReplicas, totalReplicas uint32
+		stuckCount                    uint64
+		sampleError                   string
+		expectedCount                 int
+	}{
+		{name: "no replicated tables yet", activeReplicas: 0, totalReplicas: 0, stuckCount: 0, expectedCount: 0},
+		{name: "every replica has a session and nothing is stuck", activeReplicas: 3, totalReplicas: 3, stuckCount: 0, expectedCount: 0},
+		{name: "a replica dropped its coordination-store session", activeReplicas: 2, totalReplicas: 3, stuckCount: 0, expectedCount: 1},
+		{name: "sessions are fine but a fetch is stuck", activeReplicas: 3, totalReplicas: 3, stuckCount: 1, sampleError: "Connection refused", expectedCount: 1},
+		{name: "both at once", activeReplicas: 1, totalReplicas: 3, stuckCount: 2, sampleError: "DNS_ERROR", expectedCount: 2},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			warnings := replicaWarnings(tt.activeReplicas, tt.totalReplicas, tt.stuckCount, tt.sampleError)
+			if len(warnings) != tt.expectedCount {
+				t.Fatalf("expected %d warning(s), got %v", tt.expectedCount, warnings)
+			}
+			if tt.stuckCount > 0 && !containsSubstring(warnings, tt.sampleError) {
+				t.Errorf("expected the stuck-queue warning to surface the real error %q, got %v", tt.sampleError, warnings)
+			}
+		})
+	}
+}
+
+func containsSubstring(warnings []string, substr string) bool {
+	for _, w := range warnings {
+		if strings.Contains(w, substr) {
+			return true
+		}
+	}
+	return false
 }
 
 func TestListRequiresCredentials(t *testing.T) {

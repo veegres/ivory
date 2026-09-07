@@ -111,6 +111,14 @@ type Response struct {
 	// member reports (e.g. Patroni member tags), surfaced to the UI as-is
 	// without Ivory interpreting their meaning.
 	Tags *map[string]any `json:"tags"`
+	// Warnings is this member's own view of problems it can see that Ivory
+	// itself cannot infer from State/Role alone (e.g. clickhouse reporting
+	// that a peer has no active session with the coordination store, or that
+	// its replication queue is stuck on a genuine fetch failure). Nil for an
+	// adapter with nothing engine-specific to add; cluster.addOverviewWarnings
+	// appends it onto the node's own Warnings alongside Ivory's generic
+	// drift checks.
+	Warnings []string `json:"warnings"`
 
 	// Discovered Topology (Crucial for Auto-Creation)
 	//

@@ -115,6 +115,16 @@ func TestDefaultTemplates(t *testing.T) {
 				if !strings.Contains(command.Command, string(keeper.VarDcs)) {
 					t.Errorf("command %d does not point its coordinator list at {{dcs}}", i)
 				}
+				// NOTE: the remote_servers cluster is named after Ivory's own
+				// cluster, not a fixed literal, so system.clusters on any node
+				// can be read directly against the cluster Ivory shows for
+				// that name
+				if !strings.Contains(command.Command, "<"+string(keeper.VarCluster)+">") || !strings.Contains(command.Command, "</"+string(keeper.VarCluster)+">") {
+					t.Errorf("command %d does not name its remote_servers cluster after {{cluster}}", i)
+				}
+				if strings.Contains(command.Command, "ivory_cluster") {
+					t.Errorf("command %d still hardcodes a cluster name instead of {{cluster}}", i)
+				}
 			}
 			if singleHost {
 				assertSingleHostPorts(t, template)

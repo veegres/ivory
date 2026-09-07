@@ -3,10 +3,12 @@ package clickhouse
 import (
 	"context"
 	"errors"
+	"fmt"
 	"ivory/clients/clickhouse"
 	"ivory/plugins/keeper"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
@@ -47,17 +49,85 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	defer cancel()
 
 	// NOTE: system.replicas has one row per replicated table; a node with no
-	// replicated tables at all returns zero rows, and ClickHouse's max()
-	// over zero rows is 0 for both columns - which is exactly "not
-	// read-only, no delay", the right default for a standalone node.
+	// replicated tables at all returns zero rows, and ClickHouse's max()/min()
+	// over zero rows is 0 for every column here - which is exactly "not
+	// read-only, no delay, nothing to compare active replicas against", the
+	// right default for a standalone node.
+	//
+	// active_replicas/total_replicas (via min()/max() across every replicated
+	// table on this node) reports a peer that has lost its session with the
+	// coordination store - a crashed or partitioned node. It is a distinct
+	// signal from the replication queue below: confirmed live (see
+	// clickhouse_adapter's connectivity investigation this session) by
+	// stopping a healthy replica's container - active_replicas dropped inside
+	// 5s - and separately by leaving a replica's own session healthy but its
+	// interserver HTTP port unreachable, where active_replicas stayed
+	// unchanged because the coordination-store session was never affected.
 	var isReadonly uint8
 	var absoluteDelay uint64
-	errQuery := conn.QueryRow(ctx, `SELECT max(is_readonly), max(absolute_delay) FROM system.replicas`).Scan(&isReadonly, &absoluteDelay)
-	if errQuery != nil {
-		return nil, http.StatusBadRequest, errQuery
+	var activeReplicas, totalReplicas uint32
+	errReplicas := conn.QueryRow(ctx, `
+		SELECT max(is_readonly), max(absolute_delay), min(active_replicas), max(total_replicas)
+		FROM system.replicas`,
+	).Scan(&isReadonly, &absoluteDelay, &activeReplicas, &totalReplicas)
+	if errReplicas != nil {
+		return nil, http.StatusBadRequest, errReplicas
 	}
 
-	return []keeper.Response{mapNode(request.Host, request.Port, isReadonly > 0, absoluteDelay)}, http.StatusOK, nil
+	// NOTE: last_exception is set only once a queued fetch/merge has actually
+	// failed and been retried - never while one is merely in flight - so a
+	// table still catching up after a fresh deploy reports nothing here. This
+	// is what catches a replica whose coordination-store session is fine but
+	// whose interserver data path is broken (the exact shape of the
+	// unpublished-9009 bug this template shipped with): active_replicas alone
+	// missed it entirely, because the session it measures was never affected.
+	var stuckCount uint64
+	var sampleError string
+	errQueue := conn.QueryRow(ctx, `
+		SELECT count(), any(last_exception) FROM system.replication_queue
+		WHERE last_exception != ''`,
+	).Scan(&stuckCount, &sampleError)
+	if errQueue != nil {
+		return nil, http.StatusBadRequest, errQueue
+	}
+
+	response := mapNode(request.Host, request.Port, isReadonly > 0, absoluteDelay)
+	response.Warnings = replicaWarnings(activeReplicas, totalReplicas, stuckCount, sampleError)
+	return []keeper.Response{response}, http.StatusOK, nil
+}
+
+// replicaWarnings turns the two independent connectivity signals system.replicas
+// and system.replication_queue actually carry into the same short-sentence
+// warnings the rest of Ivory's overview uses - a peer that dropped its
+// coordination-store session, and a peer whose data never crosses despite that
+// session being fine. Either can fire alone, and a healthy cluster reports
+// neither.
+func replicaWarnings(activeReplicas, totalReplicas uint32, stuckCount uint64, sampleError string) []string {
+	var warnings []string
+	if totalReplicas > 0 && activeReplicas < totalReplicas {
+		warnings = append(warnings, fmt.Sprintf(
+			"%d of %d cluster replicas have no active session with the coordination store",
+			totalReplicas-activeReplicas, totalReplicas))
+	}
+	if stuckCount > 0 {
+		warnings = append(warnings, fmt.Sprintf(
+			"replication queue has %d stuck task(s): %s", stuckCount, firstLine(sampleError)))
+	}
+	return warnings
+}
+
+// firstLine trims a clickhouse exception down to the one line worth reading -
+// last_exception carries its own multi-thousand-character C++ stack trace
+// after ", Stack trace", confirmed live against a genuinely stuck fetch (see
+// List's doc), and neither belongs in a one-line cluster warning.
+func firstLine(text string) string {
+	if i := strings.Index(text, ", Stack trace"); i >= 0 {
+		text = text[:i]
+	}
+	if i := strings.IndexByte(text, '\n'); i >= 0 {
+		text = text[:i]
+	}
+	return text
 }
 
 func (p *Plugin) Config(request keeper.Request) (any, int, error) {
