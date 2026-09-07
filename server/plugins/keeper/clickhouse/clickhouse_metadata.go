@@ -34,6 +34,16 @@ func (p *Plugin) HasLeader() bool { return false }
 // which hosts those are - and <macros> gives replicated tables a stable
 // per-replica identity for ON CLUSTER / {replica}.
 //
+// <remote_servers> names its cluster {{cluster}} - Ivory's own cluster name -
+// rather than a fixed "ivory_cluster": Ivory and clickhouse both organize
+// nodes as a named cluster, and giving clickhouse's the same name is what
+// lets `SELECT * FROM system.clusters WHERE cluster = '<name>'` on any node
+// be read against the cluster Ivory shows for that name, with nothing to
+// translate. It is substituted verbatim into an XML element name, so a
+// cluster name that is not a valid one (spaces, a leading digit, `<`) breaks
+// the generated config - visible in the deploy preview before it runs, the
+// same trust placed in {{dcs}} below.
+//
 // The script is the image's arguments behind --entrypoint sh, not a tail after
 // the image, because the image's own entrypoint ends in exec "$@": a script
 // passed the ordinary way is the last thing it runs, so the config file would
@@ -103,13 +113,13 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
 <clickhouse>
   <interserver_http_host>{{host}}</interserver_http_host>
   <remote_servers>
-    <ivory_cluster>
+    <{{cluster}}>
       <shard>
         <replica><host>10.0.0.1</host><port>9000</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>10.0.0.2</host><port>9000</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>10.0.0.3</host><port>9000</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
       </shard>
-    </ivory_cluster>
+    </{{cluster}}>
   </remote_servers>
   <zookeeper>
 {{dcs}}
@@ -157,13 +167,13 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
   <postgresql_port>9005</postgresql_port>
   <interserver_http_host>{{host}}</interserver_http_host>
   <remote_servers>
-    <ivory_cluster>
+    <{{cluster}}>
       <shard>
         <replica><host>{{host}}</host><port>9000</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>{{host}}</host><port>9001</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>{{host}}</host><port>9002</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
       </shard>
-    </ivory_cluster>
+    </{{cluster}}>
   </remote_servers>
   <zookeeper>
 {{dcs}}
@@ -194,13 +204,13 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
   <postgresql_port>9015</postgresql_port>
   <interserver_http_host>{{host}}</interserver_http_host>
   <remote_servers>
-    <ivory_cluster>
+    <{{cluster}}>
       <shard>
         <replica><host>{{host}}</host><port>9000</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>{{host}}</host><port>9001</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>{{host}}</host><port>9002</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
       </shard>
-    </ivory_cluster>
+    </{{cluster}}>
   </remote_servers>
   <zookeeper>
 {{dcs}}
@@ -231,13 +241,13 @@ cat > /etc/clickhouse-server/config.d/ivory-cluster.xml <<IVORYEOF
   <postgresql_port>9025</postgresql_port>
   <interserver_http_host>{{host}}</interserver_http_host>
   <remote_servers>
-    <ivory_cluster>
+    <{{cluster}}>
       <shard>
         <replica><host>{{host}}</host><port>9000</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>{{host}}</host><port>9001</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
         <replica><host>{{host}}</host><port>9002</port><user>$CLICKHOUSE_USER</user><password>$CLICKHOUSE_PASSWORD</password></replica>
       </shard>
-    </ivory_cluster>
+    </{{cluster}}>
   </remote_servers>
   <zookeeper>
 {{dcs}}

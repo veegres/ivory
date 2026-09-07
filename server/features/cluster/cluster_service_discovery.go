@@ -350,6 +350,11 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, hasLeader bool) {
 			if !s.isPortEqual(cn.Config.DbPort, cn.Keeper.DiscoveredDbPort) {
 				cn.Warnings = append(cn.Warnings, "database port in keeper response and cluster configuration mismatch")
 			}
+			// NOTE: the adapter's own warnings (e.g. clickhouse reporting a
+			// peer with no active coordination-store session, or a stuck
+			// replication queue) - Ivory has no engine-specific way to see
+			// these itself, so it only ever passes them through
+			cn.Warnings = append(cn.Warnings, cn.Keeper.Warnings...)
 		} else {
 			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
