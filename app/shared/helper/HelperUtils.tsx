@@ -391,8 +391,8 @@ export const getErrorMessage = (error: any): string => {
     return message
 }
 
-export const getPostgresUrl = (con: QueryConnection) => {
-    return `postgres://${con.db.host}:${con.db.port}/${con.db.name ?? "postgres"}`
+export const getDatabaseUrl = (con: QueryConnection) => {
+    return `${con.db.plugin.toLowerCase()}://${con.db.host}:${con.db.port}/${con.db.name ?? "default"}`
 }
 
 // CodeMirror theme

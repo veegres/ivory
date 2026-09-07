@@ -5,7 +5,7 @@ import {useMemo, useState} from "react"
 import {Refresher} from "../../../core/widgets/browser/Refresher"
 import {MenuButton} from "../../../shared/component/button/MenuButton"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
-import {getPostgresUrl} from "../../../shared/helper/HelperUtils"
+import {getDatabaseUrl} from "../../../shared/helper/HelperUtils"
 import {useRouterQueryRun} from "../api/QueryHook"
 import {QueryApi} from "../api/QueryRouter"
 import {Connection, VarietyType} from "../api/QueryType"
@@ -58,7 +58,7 @@ export function QueryRun(props: Props) {
         return (
             <Box sx={SX.info}>
                 <QueryResponseInfo
-                    url={getPostgresUrl(connection)}
+                    url={getDatabaseUrl(connection)}
                     options={!error ? data?.options : undefined}
                     time={{start: !error ? data?.startTime : undefined, end: !error ? data?.endTime : undefined}}
                 />
