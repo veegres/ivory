@@ -79,20 +79,23 @@ func parseCommand(query string) (*command, error) {
 		return nil, ErrEmptyCommand
 	}
 
-	dot := strings.IndexByte(trimmed, '.')
+	// NOTE: the collection is everything before the LAST dot preceding the call,
+	// not the first: a mongo collection name may itself contain dots, and the
+	// ones worth querying by hand do - system.profile holds the profiler's slow
+	// queries. A verb never contains one, so the last dot is the boundary. The
+	// opening paren is found first because it bounds where that dot can be.
+	open := strings.IndexByte(trimmed, '(')
+	if open <= 0 || !strings.HasSuffix(trimmed, ")") {
+		return nil, ErrInvalidSyntax
+	}
+	dot := strings.LastIndexByte(trimmed[:open], '.')
 	if dot <= 0 {
 		return nil, ErrInvalidSyntax
 	}
 	collection := trimmed[:dot]
-	rest := trimmed[dot+1:]
+	verb := trimmed[dot+1 : open]
 
-	open := strings.IndexByte(rest, '(')
-	if open <= 0 || !strings.HasSuffix(rest, ")") {
-		return nil, ErrInvalidSyntax
-	}
-	verb := rest[:open]
-
-	args, errSplit := splitArgs(rest[open+1 : len(rest)-1])
+	args, errSplit := splitArgs(trimmed[open+1 : len(trimmed)-1])
 	if errSplit != nil {
 		return nil, errSplit
 	}
@@ -171,7 +174,12 @@ func (a *Adapter) executeDbVerb(ctx context.Context, client *mongoclient.Client,
 	if len(cmd.Args) != 1 {
 		return nil, nil, fmt.Errorf("%w: runCommand expects 1 argument (command document)", ErrWrongArgumentCount)
 	}
-	var doc bson.M
+	// NOTE: decoded as an ordered bson.D, not a bson.M: mongo reads the command
+	// name off the FIRST field of the document, and a map's fields are
+	// marshalled in whatever order Go happens to iterate it, so a command
+	// carrying any option beside its name ({currentOp: 1, secs_running: ...})
+	// would be rejected as an unknown command on some runs and work on others.
+	var doc bson.D
 	if errDecode := decodeArg(cmd.arg(0), &doc); errDecode != nil {
 		return nil, nil, errDecode
 	}
