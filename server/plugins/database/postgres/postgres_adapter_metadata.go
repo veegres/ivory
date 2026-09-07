@@ -167,6 +167,66 @@ func (a *Adapter) SystemRequests() []database.SystemRequest {
 			Description: "Shows invalid indexes. It can happen when concurrent index creation failed. It means that postgres doesn't use this index. You need to reindex it concurrently.",
 			Query:       DefaultIndexInvalid,
 		},
+		{
+			Name: "Replication slots", Type: database.REPLICATION,
+			Description: "Shows every replication slot with the amount of WAL it is holding on to. An inactive slot never stops retaining WAL, so it is the usual reason a primary's disk fills up after a replica was removed or has been down for a while. wal_status and safe_wal_size need PostgreSQL 13 or later.",
+			Varieties:   []database.SystemRequestVariety{database.MasterOnly},
+			Query:       DefaultReplicationSlots,
+		},
+		{
+			Name: "Blocking sessions", Type: database.ACTIVITY,
+			Description: "Shows every waiting session next to the session actually holding the lock it wants. blocking_state 'idle in transaction' means the blocker is not doing any work at all and is only holding the lock open.",
+			Query:       DefaultBlockingSessions,
+		},
+		{
+			Name: "Long transactions", Type: database.ACTIVITY,
+			Description: "Shows transactions open for more than a minute, including idle ones. A long open transaction holds back the xmin horizon, which stops vacuum from cleaning dead tuples anywhere in the database.",
+			Query:       DefaultLongTransactions,
+		},
+		{
+			Name: "Cache hit ratio", Type: database.STATISTIC,
+			Description: "Shows how much of the table reads were served from shared buffers instead of disk, since the last statistics reset. A ratio that drops well below the usual figure for this database means the working set no longer fits.",
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultCacheHitRatio,
+		},
+		{
+			Name: "Vacuum progress", Type: database.BLOAT,
+			Description: "Shows how far every running vacuum has got, table by table. It is what tells a vacuum that is slowly working through a large table apart from one that is stuck.",
+			Query:       DefaultVacuumProgress,
+		},
+		{
+			Name: "Settings pending restart", Type: database.OTHER,
+			Description: "Shows settings that were changed in a config file but need a restart to take effect, so the running server is not using the value the file states.",
+			Query:       DefaultSettingsPendingRestart,
+		},
+		{
+			Name: "Checkpoints and background writer", Type: database.STATISTIC,
+			Description: "Shows background writer counters, and on PostgreSQL 16 and earlier the checkpoint counters too - checkpoints triggered by WAL volume rather than by the timeout mean max_wal_size is too small for the write rate, which shows up as periodic write stalls. From PostgreSQL 17 those counters live in pg_stat_checkpointer instead.",
+			Query:       DefaultCheckpoints,
+		},
+		{
+			Name: "WAL archiver", Type: database.REPLICATION,
+			Description: "Shows whether WAL archiving is keeping up and what it last failed on. A failing archiver retains WAL on disk indefinitely and silently invalidates the backups taken from it.",
+			Query:       DefaultArchiver,
+		},
+		{
+			Name: "Sequential scans", Type: database.STATISTIC,
+			Description: "Shows the tables read sequentially most often, with how many rows those scans read. A large table with many sequential scans and few index scans is usually a missing index.",
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultSequentialScans,
+		},
+		{
+			Name: "Replica status", Type: database.REPLICATION,
+			Description: "Shows what this standby has received against what it has replayed, and whether replay is paused. Received but not replayed is a standby that is connected and still falling behind, which the primary's own view cannot show.",
+			Varieties:   []database.SystemRequestVariety{database.ReplicaRecommended},
+			Query:       DefaultReplicaStatus,
+		},
+		{
+			Name: "Queries by total time", Type: database.STATISTIC,
+			Description: "Shows the queries that consumed the most execution time overall, which is usually a cheap query run very often rather than the slow one being hunted. Requires the pg_stat_statements extension to be installed and loaded.",
+			Varieties:   []database.SystemRequestVariety{database.DatabaseSensitive},
+			Query:       DefaultStatementsByTime,
+		},
 	}
 }
 
@@ -448,11 +508,129 @@ WHERE s.idx_scan = 0
   AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_inherits inh WHERE inh.inhrelid = s.indexrelid)
 ORDER BY pg_relation_size(s.indexrelid) DESC;`
 
-const DefaultIndexInvalid = `SELECT 
-    oid, 
+const DefaultIndexInvalid = `SELECT
+    oid,
     indrelid::regclass AS table_name,
-    relname AS index, 
-    indisvalid AS valid 
-FROM pg_class, pg_index 
-WHERE pg_index.indisvalid = false 
+    relname AS index,
+    indisvalid AS valid
+FROM pg_class, pg_index
+WHERE pg_index.indisvalid = false
   AND pg_index.indexrelid = pg_class.oid;`
+
+const DefaultReplicationSlots = `SELECT
+    slot_name,
+    slot_type,
+    database,
+    active,
+    active_pid,
+    restart_lsn,
+    pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)) AS retained_wal,
+    wal_status,
+    pg_size_pretty(safe_wal_size) AS safe_wal_size
+FROM pg_replication_slots
+ORDER BY pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn) DESC NULLS LAST;`
+
+const DefaultBlockingSessions = `SELECT
+    blocked.pid AS blocked_pid,
+    blocked.usename AS blocked_user,
+    (now() - blocked.query_start)::text AS blocked_for,
+    blocked.wait_event_type || '.' || blocked.wait_event AS waiting_on,
+    blocked.query AS blocked_query,
+    blocking.pid AS blocking_pid,
+    blocking.usename AS blocking_user,
+    blocking.state AS blocking_state,
+    (now() - blocking.state_change)::text AS blocking_state_age,
+    blocking.query AS blocking_query
+FROM pg_stat_activity blocked
+    JOIN LATERAL unnest(pg_blocking_pids(blocked.pid)) AS blocking_pid ON true
+    JOIN pg_stat_activity blocking ON blocking.pid = blocking_pid
+ORDER BY blocked.query_start;`
+
+const DefaultLongTransactions = `SELECT
+    pid,
+    state,
+    usename AS username,
+    application_name AS application,
+    (now() - xact_start)::text AS transaction_age,
+    (now() - state_change)::text AS state_age,
+    wait_event_type || '.' || wait_event AS wait,
+    backend_xmin::text AS holding_snapshot,
+    query
+FROM pg_stat_activity
+WHERE xact_start IS NOT NULL
+  AND backend_type = 'client backend'
+  AND now() - xact_start > interval '1 minute'
+ORDER BY xact_start;`
+
+const DefaultCacheHitRatio = `SELECT
+    sum(heap_blks_read) AS disk_reads,
+    sum(heap_blks_hit) AS cache_hits,
+    round(100.0 * sum(heap_blks_hit) / nullif(sum(heap_blks_hit) + sum(heap_blks_read), 0), 2) AS cache_hit_percent
+FROM pg_statio_user_tables;`
+
+const DefaultVacuumProgress = `SELECT
+    p.pid,
+    p.datname AS database,
+    p.relid::regclass AS table_name,
+    p.phase,
+    pg_size_pretty(p.heap_blks_total * current_setting('block_size')::bigint) AS table_size,
+    round(100 * p.heap_blks_scanned / nullif(p.heap_blks_total, 0), 2) AS scanned_percent,
+    p.index_vacuum_count,
+    a.query
+FROM pg_stat_progress_vacuum p
+    LEFT JOIN pg_stat_activity a ON a.pid = p.pid;`
+
+const DefaultSettingsPendingRestart = `SELECT
+    name,
+    setting,
+    unit,
+    source,
+    sourcefile,
+    sourceline
+FROM pg_settings
+WHERE pending_restart
+ORDER BY name;`
+
+const DefaultCheckpoints = `SELECT * FROM pg_stat_bgwriter;`
+
+const DefaultArchiver = `SELECT
+    archived_count,
+    last_archived_wal,
+    last_archived_time,
+    failed_count,
+    last_failed_wal,
+    last_failed_time,
+    stats_reset
+FROM pg_stat_archiver;`
+
+const DefaultSequentialScans = `SELECT
+    schemaname AS schema_name,
+    relname AS table_name,
+    seq_scan,
+    seq_tup_read,
+    idx_scan,
+    n_live_tup AS live_tuples,
+    pg_size_pretty(pg_relation_size(relid)) AS table_size
+FROM pg_stat_user_tables
+WHERE seq_scan > 0
+ORDER BY seq_tup_read DESC
+LIMIT 50;`
+
+const DefaultReplicaStatus = `SELECT
+    pg_is_in_recovery() AS in_recovery,
+    pg_last_wal_receive_lsn()::text AS received_lsn,
+    pg_last_wal_replay_lsn()::text AS replayed_lsn,
+    pg_size_pretty(pg_wal_lsn_diff(pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn())) AS replay_backlog,
+    pg_last_xact_replay_timestamp() AS last_replayed_at,
+    (now() - pg_last_xact_replay_timestamp())::text AS replay_delay,
+    pg_is_wal_replay_paused() AS replay_paused;`
+
+const DefaultStatementsByTime = `SELECT
+    calls,
+    round(total_exec_time::numeric, 2) AS total_ms,
+    round(mean_exec_time::numeric, 2) AS mean_ms,
+    rows,
+    query
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC
+LIMIT 50;`

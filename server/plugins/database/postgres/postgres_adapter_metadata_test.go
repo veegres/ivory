@@ -39,10 +39,18 @@ func TestSystemRequestsCatalog(t *testing.T) {
 	if len(requests) == 0 {
 		t.Fatal("expected at least one system request")
 	}
+	// NOTE: a name is what seeding matches an already-stored system query
+	// against (see query.Service.initializeSystemQueries), so two requests
+	// sharing one would leave the second permanently unseeded.
+	seen := map[string]bool{}
 	for _, request := range requests {
 		if request.Name == "" {
 			t.Errorf("system request has empty name: %+v", request)
 		}
+		if seen[request.Name] {
+			t.Errorf("system request name %q is used twice", request.Name)
+		}
+		seen[request.Name] = true
 		if request.Query == "" {
 			t.Errorf("system request %q has empty query", request.Name)
 		}

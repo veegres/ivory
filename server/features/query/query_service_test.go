@@ -172,6 +172,78 @@ func createTestQueryService(t *testing.T, adapter *fakeDatabaseAdapter) *testQue
 	return &testQueryEnv{service: service, vaultService: vaultService, certService: certService, adapter: adapter}
 }
 
+func TestServiceInitializeSystemQueries(t *testing.T) {
+	adapter := &fakeDatabaseAdapter{systemRequests: []database.SystemRequest{
+		{Name: "Active queries", Query: "SELECT 1"},
+	}}
+	env := createTestQueryService(t, adapter)
+
+	t.Run("shipped queries are seeded on first start", func(t *testing.T) {
+		assertSystemQueryNames(t, env, "Active queries")
+	})
+
+	t.Run("a query added in a later release reaches an existing installation", func(t *testing.T) {
+		adapter.systemRequests = append(adapter.systemRequests, database.SystemRequest{Name: "Replication slots", Query: "SELECT 2"})
+		if err := env.service.initializeSystemQueries(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		assertSystemQueryNames(t, env, "Active queries", "Replication slots")
+	})
+
+	t.Run("re-seeding neither duplicates nor overwrites an edited query", func(t *testing.T) {
+		list, err := env.service.repository.List()
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		for _, query := range list {
+			if query.Name != "Active queries" {
+				continue
+			}
+			query.Custom = "SELECT edited"
+			if _, _, errUpdate := env.service.repository.Update(query.Id, query); errUpdate != nil {
+				t.Fatalf("expected no error, got %v", errUpdate)
+			}
+		}
+
+		if err := env.service.initializeSystemQueries(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		assertSystemQueryNames(t, env, "Active queries", "Replication slots")
+		updated, errList := env.service.repository.List()
+		if errList != nil {
+			t.Fatalf("expected no error, got %v", errList)
+		}
+		for _, query := range updated {
+			if query.Name == "Active queries" && query.Custom != "SELECT edited" {
+				t.Errorf("expected the edit to survive re-seeding, got %q", query.Custom)
+			}
+		}
+	})
+}
+
+func assertSystemQueryNames(t *testing.T, env *testQueryEnv, expected ...string) {
+	t.Helper()
+	list, err := env.service.repository.List()
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	counts := map[string]int{}
+	for _, query := range list {
+		if query.Creation == System {
+			counts[query.Name]++
+		}
+	}
+	if len(counts) != len(expected) {
+		t.Fatalf("expected system queries %v, got %v", expected, counts)
+	}
+	for _, name := range expected {
+		if counts[name] != 1 {
+			t.Errorf("expected exactly one %q system query, got %d", name, counts[name])
+		}
+	}
+}
+
 func TestServiceGetApplicationName(t *testing.T) {
 	env := createTestQueryService(t, nil)
 	got := env.service.GetApplicationName("abcdefghij")

@@ -86,28 +86,38 @@ func TestRepositoryListByFilter(t *testing.T) {
 	}
 }
 
-func TestRepositoryHasSystemQueriesForPlugin(t *testing.T) {
+func TestRepositorySystemQueryNamesForPlugin(t *testing.T) {
 	repository := createTestRepository(t)
 	createQuery(t, repository, "pg-legacy", ACTIVITY, "", System)
 	createQuery(t, repository, "etcd-manual", ACTIVITY, database.ETCD, Manual)
 
 	t.Run("legacy empty plugin counts as postgres", func(t *testing.T) {
-		exists, err := repository.HasSystemQueriesForPlugin(database.POSTGRES)
+		names, err := repository.SystemQueryNamesForPlugin(database.POSTGRES)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if !exists {
-			t.Error("expected postgres system queries to exist")
+		if !names["pg-legacy"] {
+			t.Errorf("expected postgres system query to be named, got %v", names)
 		}
 	})
 
 	t.Run("manual queries do not count", func(t *testing.T) {
-		exists, err := repository.HasSystemQueriesForPlugin(database.ETCD)
+		names, err := repository.SystemQueryNamesForPlugin(database.ETCD)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if exists {
-			t.Error("expected no etcd system queries")
+		if len(names) != 0 {
+			t.Errorf("expected no etcd system queries, got %v", names)
+		}
+	})
+
+	t.Run("a query this plugin does not have is absent", func(t *testing.T) {
+		names, err := repository.SystemQueryNamesForPlugin(database.POSTGRES)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if names["Replication slots"] {
+			t.Error("expected an unseeded query name to be absent")
 		}
 	})
 }

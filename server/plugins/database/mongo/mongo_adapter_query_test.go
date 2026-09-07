@@ -40,6 +40,11 @@ func TestParseCommand(t *testing.T) {
 			query:    "  users.find({});  \n",
 			expected: command{Collection: "users", Verb: "find", Args: []string{"{}"}},
 		},
+		{
+			name:     "collection name containing a dot keeps the whole name",
+			query:    `system.profile.find({"millis": {"$gt": 100}})`,
+			expected: command{Collection: "system.profile", Verb: "find", Args: []string{`{"millis": {"$gt": 100}}`}},
+		},
 		{name: "empty query", query: "   ", expectedErr: ErrEmptyCommand},
 		{name: "missing dot", query: "find({})", expectedErr: ErrInvalidSyntax},
 		{name: "missing parens", query: "users.find", expectedErr: ErrInvalidSyntax},
@@ -121,6 +126,26 @@ func TestDecodeArg(t *testing.T) {
 	}
 	if empty != nil {
 		t.Errorf("expected out to be left untouched for a blank argument, got %v", empty)
+	}
+}
+
+// TestDecodeArgKeepsCommandFieldFirst covers what executeDbVerb depends on:
+// mongo reads a command's name off the first field of the document, so a
+// runCommand carrying options beside its name only works while decoding
+// preserves the order they were written in.
+func TestDecodeArgKeepsCommandFieldFirst(t *testing.T) {
+	var doc bson.D
+	if err := decodeArg(`{"currentOp": 1, "secs_running": {"$gt": 5}}`, &doc); err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(doc) != 2 {
+		t.Fatalf("expected 2 fields, got %v", doc)
+	}
+	if doc[0].Key != "currentOp" {
+		t.Errorf("expected the command name first, got %q", doc[0].Key)
+	}
+	if doc[1].Key != "secs_running" {
+		t.Errorf("expected the option second, got %q", doc[1].Key)
 	}
 }
 
