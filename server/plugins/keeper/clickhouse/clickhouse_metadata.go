@@ -68,12 +68,31 @@ func (p *Plugin) HasLeader() bool { return false }
 // command itself sets, never interpolated: this heredoc is parsed by a shell
 // the command starts, where a password holding a `$` or a backtick would be
 // expanded or executed.
+//
+// -p 9009:9009 publishes the interserver HTTP port the config above
+// advertises via interserver_http_host. It is literal, not {{dbPort}}-derived
+// or config-overridden, because this template never repoints the image's
+// fixed 9009 default the way the single-host commands do for their three
+// colliding ports - one node per host has no collision to avoid. Without it a
+// replica's fetch of another's part is refused, every node stays reachable
+// for writes and lookups, and Ivory's own overview sees nothing wrong: the
+// gap only shows up as data that silently never crosses hosts.
+//
+// CREATE ... ON CLUSTER hangs on every node regardless of the port above -
+// docker's -p publishing never makes a container's own network interface
+// equal the host address advertised in <remote_servers>, so no replica ever
+// recognizes itself in the cluster's host list and the DDLWorker refuses
+// every task. This is intrinsic to bridge networking plus port publishing,
+// not a value this command could pass differently, so it is called out in the
+// template description instead: create a ReplicatedMergeTree table on each
+// node directly, without ON CLUSTER.
 
 const deployMultiHost = `docker run -d
   --name {{name}}
   --hostname {{host}}
   --restart unless-stopped
   -p {{dbPort}}:{{dbPort}}
+  -p 9009:9009
   -v /data/clickhouse:/var/lib/clickhouse
   -e CLICKHOUSE_USER="{{dbUser}}"
   -e CLICKHOUSE_PASSWORD="{{dbPass}}"

@@ -124,6 +124,12 @@ func TestDefaultTemplates(t *testing.T) {
 				if !strings.Contains(command.Command, "<replica><host>10.0.0.1</host>") {
 					t.Errorf("command %d is missing the shard's replica list", i)
 				}
+				// NOTE: interserver_http_host above advertises this port; left
+				// unpublished, a replica's fetch of another's part is refused
+				// while every other check keeps reporting the cluster healthy
+				if !strings.Contains(command.Command, "-p 9009:9009") {
+					t.Errorf("command %d does not publish the interserver HTTP port", i)
+				}
 			}
 		})
 	}
