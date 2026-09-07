@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
 import {SxPropsMap} from "../../helper/HelperType"
-import {AlertCentered} from "./AlertCentered"
+import {AlertAlign} from "./AlertAlign"
 
 const SX: SxPropsMap = {
     text: {display: "flex", flexDirection: "column", gap: 1, textAlign: "center", fontSize: "16px"},
@@ -18,7 +18,7 @@ type Props = {
 
 export function AlertInformative(props: Props) {
     return (
-        <AlertCentered text={renderText()}/>
+        <AlertAlign text={renderText()}/>
     )
 
     function renderText() {

@@ -1,5 +1,4 @@
 import {AutoFixHigh} from "@mui/icons-material"
-import {Box, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {useRouterClusterFix} from "../../../../features/cluster/api/ClusterHook"
@@ -19,13 +18,9 @@ export function OverviewNodesClusterFix(props: Props) {
 
     return (
         <ManageAccess feature={Feature.ManageClusterUpdate}>
-            <Tooltip title={"Fix Cluster"} placement={"top"} arrow={true}>
-                <Box component={"span"}>
-                    <SimpleButton loading={autoFix.isPending} onClick={() => setOpen(true)}>
-                        <AutoFixHigh/>
-                    </SimpleButton>
-                </Box>
-            </Tooltip>
+            <SimpleButton tooltip={"Fix Cluster"} loading={autoFix.isPending} onClick={() => setOpen(true)}>
+                <AutoFixHigh fontSize={"small"}/>
+            </SimpleButton>
             <AlertDialog
                 open={open}
                 title={"Fix Cluster"}

@@ -5,7 +5,7 @@ import {UserAuthType} from "../api/UserType"
 
 const SX: SxPropsMap = {
     box: {display: "flex", alignItems: "center", gap: 0.5},
-    toggle: {padding: "3px 10px", whiteSpace: "nowrap"},
+    toggle: {whiteSpace: "nowrap"},
 }
 
 const OPTIONS: {[key in UserAuthType]: {label: string, description: string}} = {

@@ -1,5 +1,5 @@
 import {LogoutButton} from "../../../features/auth/component/LogoutButton"
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {PageStartupBox} from "../../../shared/component/box/PageStartupBox"
 import {PageStartupGreeting} from "../../../shared/component/box/PageStartupGreeting"
 
@@ -20,7 +20,7 @@ export function PermissionsLogout(props: Props) {
         return (
             <>
                 <PageStartupGreeting username={username}/>
-                <AlertCentered
+                <AlertAlign
                     severity={"error"}
                     text={`Something went wrong, there are no permissions. Please, try to logout and login again. (${error ?? "unknown error"})`}
                 />
@@ -30,7 +30,7 @@ export function PermissionsLogout(props: Props) {
 
     function renderUsernameProblem() {
         return (
-            <AlertCentered
+            <AlertAlign
                 severity={"error"}
                 text={`Something went wrong, there is no user information. Please, try to logout and login again. (${error ?? "unknown error"})`}
             />

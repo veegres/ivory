@@ -49,11 +49,9 @@ export function QueryActivity(props: Props) {
                         <Box sx={SX.count}>{error || !data ? "-" : data.rows.length - 1}</Box>
                     </Tooltip>
                     <Refresher queryKeys={[QueryApi.activity.key()]} defaultPeriod={["5s", 5000]}/>
-                    <Tooltip title={!open ? "Show Queries" : "Hide Queries"} placement={"top"} disableInteractive>
-                        <SimpleButton onClick={() => setOpen(!open)}>
-                            {open ? <ArrowDropUp sx={SX.icon}/> : <ArrowDropDown sx={SX.icon}/>}
-                        </SimpleButton>
-                    </Tooltip>
+                    <SimpleButton tooltip={!open ? "Show Queries" : "Hide Queries"} onClick={() => setOpen(!open)}>
+                        {open ? <ArrowDropUp sx={SX.icon}/> : <ArrowDropDown sx={SX.icon}/>}
+                    </SimpleButton>
                 </Box>
             </HeadBox>
             <Collapse in={open}>

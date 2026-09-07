@@ -5,7 +5,7 @@ import {Certs} from "../../../features/cert/component/Certs"
 import {ManageBackup} from "../../../features/management/component/ManageBackup"
 import {ManageSecret} from "../../../features/management/component/ManageSecret"
 import {Vault} from "../../../features/vault/component/Vault"
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {DialogScreen} from "../../../shared/component/box/DialogScreen"
 import {DialogButton} from "../../../shared/component/button/DialogButton"
 import {Settings as SettingsType} from "../../../shared/helper/HelperType"
@@ -50,7 +50,7 @@ export function Settings() {
             case SettingsType.ABOUT:
                 return <SettingsAbout/>
             default:
-                return <AlertCentered text={"Not implemented yet"}/>
+                return <AlertAlign text={"Not implemented yet"}/>
         }
     }
 }

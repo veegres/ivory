@@ -1,6 +1,6 @@
 import {Box, ToggleButton, ToggleButtonGroup} from "@mui/material"
 
-import {AlertCentered} from "../../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../../shared/component/box/AlertAlign"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
@@ -16,7 +16,7 @@ export function ConfigAuthBasic(props: Props) {
     const {enabled, onChange} = props
     return (
         <Box sx={SX.box}>
-            <AlertCentered text={renderDescription()}/>
+            <AlertAlign text={renderDescription()}/>
             <ToggleButtonGroup value={enabled} exclusive fullWidth>
                 <ToggleButton value={true} onClick={() => onChange(true)}>Enabled</ToggleButton>
                 <ToggleButton value={false} onClick={() => onChange(false)}>Disabled</ToggleButton>

@@ -5,7 +5,7 @@ import {UserRegistrationStatus} from "../api/UserType"
 
 const STATUS: {[key in UserRegistrationStatus]: {label: string, color: string}} = {
     [UserRegistrationStatus.ACTIVE]: {label: "registered", color: "success"},
-    [UserRegistrationStatus.PENDING]: {label: "link outstanding", color: "info"},
+    [UserRegistrationStatus.PENDING]: {label: "link issued", color: "info"},
     [UserRegistrationStatus.EXPIRED]: {label: "link expired", color: "warning"},
     [UserRegistrationStatus.MISSING]: {label: "no password", color: "inherit"},
 }

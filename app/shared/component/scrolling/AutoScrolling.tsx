@@ -61,11 +61,17 @@ export function AutoScrolling(props: Props) {
 
     function renderButton(tooltip: string, icon: ReactElement, onClick: () => void) {
         return (
-            <Tooltip title={tooltip} placement={"bottom"} arrow={true}>
-                <SimpleButton sx={SX.button} color={"inherit"} variant={"outlined"} size={"small"} onClick={onClick}>
-                    {icon}
-                </SimpleButton>
-            </Tooltip>
+            <SimpleButton
+                tooltip={tooltip}
+                placement={"bottom"}
+                sx={SX.button}
+                color={"inherit"}
+                variant={"outlined"}
+                size={"small"}
+                onClick={onClick}
+            >
+                {icon}
+            </SimpleButton>
         )
     }
 

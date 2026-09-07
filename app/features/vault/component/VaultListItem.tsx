@@ -46,13 +46,21 @@ export function VaultListItem(props: Props) {
             <>
                 <ManageAccess feature={Feature.ManageVaultUpdate}>
                     {isSshKey ? (
-                        <SimpleButton onClick={handleCopy}><ContentCopy/></SimpleButton>
+                        <SimpleButton tooltip={"Copy the public key"} onClick={handleCopy}><ContentCopy fontSize={"small"}/></SimpleButton>
                     ) : (
-                        <SimpleButton onClick={() => setEdit(true)} disabled={deleteVault.isPending}><Edit/></SimpleButton>
+                        <SimpleButton
+                            tooltip={"Edit"}
+                            onClick={() => setEdit(true)}
+                            disabled={deleteVault.isPending}
+                        >
+                            <Edit fontSize={"small"}/>
+                        </SimpleButton>
                     )}
                 </ManageAccess>
                 <ManageAccess feature={Feature.ManageVaultDelete}>
-                    <SimpleButton loading={deleteVault.isPending} onClick={handleDelete}><Delete/></SimpleButton>
+                    <SimpleButton tooltip={"Delete"} loading={deleteVault.isPending} onClick={handleDelete}>
+                        <Delete fontSize={"small"}/>
+                    </SimpleButton>
                 </ManageAccess>
             </>
         )
@@ -61,8 +69,12 @@ export function VaultListItem(props: Props) {
     function renderWriteButtons() {
         return (
             <>
-                <SimpleButton onClick={() => setEdit(false)} disabled={updateVault.isPending}><Cancel/></SimpleButton>
-                <SimpleButton loading={updateVault.isPending} onClick={handleUpdate} disabled={empty}><CheckCircle/></SimpleButton>
+                <SimpleButton tooltip={"Cancel"} onClick={() => setEdit(false)} disabled={updateVault.isPending}>
+                    <Cancel fontSize={"small"}/>
+                </SimpleButton>
+                <SimpleButton tooltip={"Save"} loading={updateVault.isPending} onClick={handleUpdate} disabled={empty}>
+                    <CheckCircle fontSize={"small"}/>
+                </SimpleButton>
             </>
         )
     }

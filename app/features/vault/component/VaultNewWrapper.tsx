@@ -1,7 +1,7 @@
 import {Box} from "@mui/material"
 import {ReactNode} from "react"
 
-import {AlertCentered} from "../../../shared/component/box/AlertCentered"
+import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 
 const SX: SxPropsMap = {
@@ -17,7 +17,7 @@ export function VaultNewWrapper(props: Props) {
     const {description, children} = props
     return (
         <Box sx={SX.box}>
-            <AlertCentered text={description}/>
+            <AlertAlign text={description}/>
             {children}
         </Box>
     )
