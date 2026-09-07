@@ -152,6 +152,15 @@ func TestServiceUpdate(t *testing.T) {
 		}
 	})
 
+	t.Run("the same node name is allowed across different clusters", func(t *testing.T) {
+		if _, err := s.Update(Request{Name: "shared-name-a", Nodes: []NodeConfig{{Name: "n1", Host: "h1", KeeperPort: &port}}}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if _, err := s.Update(Request{Name: "shared-name-b", Nodes: []NodeConfig{{Name: "n1", Host: "h2", KeeperPort: &port}}}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
 	t.Run("creates a new cluster and tags it", func(t *testing.T) {
 		created, err := s.Update(Request{
 			Name:  "c1",
