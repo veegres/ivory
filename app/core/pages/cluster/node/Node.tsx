@@ -38,15 +38,15 @@ export function Node() {
 
         return (
             <Box sx={SX.content}>
-                <NodeHead node={activeNode} loading={updateCluster.isPending} onUpdate={(c) => handleUpdateNode(c, activeNode.config.host)}/>
+                <NodeHead node={activeNode} loading={updateCluster.isPending} onUpdate={(c) => handleUpdateNode(c, activeNode.config.name)}/>
                 <NodeMain cluster={activeCluster} node={activeNode}/>
             </Box>
         )
     }
 
-    function handleUpdateNode(config: NodeConfig, host: string) {
+    function handleUpdateNode(config: NodeConfig, name: string) {
         if (!activeCluster) return
-        const nodes = activeCluster.nodes.map(n => n.host === host ? config : n)
+        const nodes = activeCluster.nodes.map(n => n.name === name ? config : n)
         updateCluster.mutate({...activeCluster, nodes})
         // NOTE: this should be done only on success, but it is ok for now, can be improved later
         useStoreAction.setNode(getDomain(config, true))
