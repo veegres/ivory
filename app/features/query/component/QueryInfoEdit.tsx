@@ -10,7 +10,7 @@ import {QueryBoxInfo} from "./QueryBoxInfo"
 const SX: SxPropsMap = {
     input: {fontSize: "inherit", padding: "0"},
     params: {fontSize: "inherit"},
-    varieties: {lineHeight: "1.33", padding: "0px 6px"},
+    varieties: {lineHeight: "1", padding: "0px 6px"},
 }
 
 type Props = {
@@ -23,7 +23,7 @@ export function QueryInfoEdit(props: Props) {
 
     return (
         <QueryBoxInfo
-            type={query.type!}
+            type={query.type}
             editable={true}
             renderVarieties={renderVarietiesToggles()}
             renderDescription={renderDescription()}
