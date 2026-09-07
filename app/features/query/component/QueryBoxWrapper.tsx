@@ -5,7 +5,7 @@ import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {SxPropsFormatter} from "../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
-    box: {padding: "10px", background: "rgba(145,145,145,0.1)", borderRadius: "10px", minHeight: "40px"},
+    box: {padding: 1, background: "rgba(145,145,145,0.1)", borderRadius: 1, minHeight: "40px"},
     edit: {outline: 1, outlineColor: "divider"},
     hover: {":hover": {outlineColor: "text.secondary"}},
     focus: {outlineColor: "primary.main"},
