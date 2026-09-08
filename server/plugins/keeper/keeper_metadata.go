@@ -7,6 +7,20 @@ import (
 	"slices"
 )
 
+// ReplicationModel is the replication paradigm an engine follows. It cannot be
+// inferred from SupportedFeatures: zookeeper declares neither switchover nor
+// failover and still elects one leader.
+type ReplicationModel string
+
+const (
+	// SingleLeader means one member at a time accepts writes and the others
+	// follow it, so exactly one Leader is expected and none is a fault.
+	SingleLeader ReplicationModel = "single-leader"
+	// MultiLeader means every member accepts writes and converges with the
+	// others, so there is no leader to miss, elect or move.
+	MultiLeader ReplicationModel = "multi-leader"
+)
+
 // Metadata is implemented by keeper plugins to describe themselves without
 // touching a running keeper. It deliberately says nothing about how the engine
 // is deployed: deployment is a command the user writes, stored as a template.
@@ -15,9 +29,9 @@ type Metadata interface {
 	// plugin knows about, whether it supports it. A feature absent from the
 	// map is not a keeper capability at all and is left unrestricted.
 	SupportedFeatures() map[config.Feature]bool
-	// HasLeader reports whether the engine elects a single primary at all, so
-	// a consumer can tell a missing leader from an engine that has none.
-	HasLeader() bool
+	// ReplicationModel reports which replication paradigm the engine follows,
+	// so a consumer can tell a missing leader from an engine that never has one.
+	ReplicationModel() ReplicationModel
 	// DefaultTemplates returns the ready-to-copy deployments Ivory ships for
 	// this engine, one set per platform it supports. It lives on the plugin
 	// rather than in a central catalog for the same reason

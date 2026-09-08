@@ -23,8 +23,8 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 		keeperNodeMap, connectionErrors, requestError = s.getKeeperListByOne(host, port, cluster.Options)
 	}
 
-	hasLeader := s.nodeService.KeeperHasLeader(cluster.Plugins.Keeper)
-	resultNodeMap := s.buildOverviewNodes(cluster.Nodes, keeperNodeMap, connectionErrors, requestError, hasLeader)
+	replication := s.nodeService.KeeperReplicationModel(cluster.Plugins.Keeper)
+	resultNodeMap := s.buildOverviewNodes(cluster.Nodes, keeperNodeMap, connectionErrors, requestError, replication)
 	supportedFeatures := s.getSupportedFeatures(cluster.Plugins.Keeper, cluster.Plugins.Database)
 	return &Overview{resultNodeMap, supportedFeatures}, nil
 }
@@ -201,7 +201,7 @@ func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Opti
 	return responses, connectionErrors, nil
 }
 
-func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[string]node.KeeperOneResponse, connectionErrors map[string]error, requestError error, hasLeader bool) map[string]Node {
+func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[string]node.KeeperOneResponse, connectionErrors map[string]error, requestError error, replication node.KeeperReplicationModel) map[string]Node {
 	resultNodeMap := s.getConfiguredNodeMap(configs, connectionErrors, requestError)
 	// NOTE: two passes, because one of these describes a node and the other only
 	// describes an attribute of one. Merging them together would leave the
@@ -218,7 +218,7 @@ func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[strin
 			s.mergeKeeperSync(resultNodeMap, kn)
 		}
 	}
-	s.addOverviewWarnings(resultNodeMap, hasLeader)
+	s.addOverviewWarnings(resultNodeMap, replication)
 	return resultNodeMap
 }
 
@@ -337,10 +337,10 @@ func (s *Service) resolveConfigByHost(nodeMap map[string]Node, host string) (Nod
 	return NodeConfig{}, false
 }
 
-// addOverviewWarnings annotates each node. hasLeader says whether the engine
-// elects a single primary at all: where it does not, no node reports one and
-// warning that none was found would fire on every healthy cluster.
-func (s *Service) addOverviewWarnings(nodeMap map[string]Node, hasLeader bool) {
+// addOverviewWarnings annotates each node. replication says which paradigm the
+// engine follows: under multi-leader no node reports a leader and every node
+// accepts writes, so both leader warnings would fire on every healthy cluster.
+func (s *Service) addOverviewWarnings(nodeMap map[string]Node, replication node.KeeperReplicationModel) {
 	leaderKeys := make([]string, 0)
 	for nodeKey, cn := range nodeMap {
 		// NOTE: the port check runs only against a keeper that answered - the
@@ -364,7 +364,7 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, hasLeader bool) {
 		}
 		nodeMap[nodeKey] = cn
 	}
-	if !hasLeader {
+	if replication != node.KeeperSingleLeader {
 		return
 	}
 	switch {

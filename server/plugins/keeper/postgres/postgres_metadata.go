@@ -23,7 +23,7 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (p *Plugin) HasLeader() bool { return true }
+func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
 // A replica rebases from the leader before postgres ever starts: streaming
 // replication ships changes to an existing copy, it cannot build the initial

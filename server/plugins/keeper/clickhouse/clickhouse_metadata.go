@@ -25,7 +25,7 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 
 // Every replica accepts writes and they coordinate through ClickHouse
 // Keeper/ZooKeeper, so there is no leader to elect.
-func (p *Plugin) HasLeader() bool { return false }
+func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.MultiLeader }
 
 // Every node runs the same command, including the first: clickhouse has no
 // leader/replica asymmetry. The startup script writes a cluster config file and

@@ -30,6 +30,12 @@ const DefaultPlatform = platform.Docker
 type KeeperStatus = keeper.Status
 type KeeperRole = keeper.Role
 type KeeperState = keeper.State
+type KeeperReplicationModel = keeper.ReplicationModel
+
+const (
+	KeeperSingleLeader = keeper.SingleLeader
+	KeeperMultiLeader  = keeper.MultiLeader
+)
 
 const (
 	KeeperRoleLeader  KeeperRole = "leader"

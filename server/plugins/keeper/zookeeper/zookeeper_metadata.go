@@ -23,7 +23,7 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (p *Plugin) HasLeader() bool { return true }
+func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
 // ZOO_MY_ID is written literally per command: zookeeper needs a genuinely
 // unique small integer per member, which no host-derived value can provide -

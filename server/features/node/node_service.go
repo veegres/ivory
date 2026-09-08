@@ -65,15 +65,15 @@ func (s *Service) ValidateKeeperPlugin(t keeper.PluginType) error {
 	return err
 }
 
-// KeeperHasLeader reports whether the keeper elects a single primary at all.
-// An unknown plugin is treated as electing one: that is what every keeper but
-// clickhouse does, and it keeps a warning rather than silently dropping it.
-func (s *Service) KeeperHasLeader(t keeper.PluginType) bool {
+// KeeperReplicationModel reports which replication paradigm the keeper follows.
+// An unknown plugin is treated as single-leader: that is what every keeper but
+// clickhouse is, and it keeps a warning rather than silently dropping it.
+func (s *Service) KeeperReplicationModel(t keeper.PluginType) keeper.ReplicationModel {
 	c, e := s.keeperRegistry.Get(t)
 	if e != nil {
-		return true
+		return keeper.SingleLeader
 	}
-	return c.HasLeader()
+	return c.ReplicationModel()
 }
 
 // PlatformSupportedFeatures reports what the platform itself can be asked
