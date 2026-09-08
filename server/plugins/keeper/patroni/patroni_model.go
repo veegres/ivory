@@ -7,6 +7,8 @@ import "encoding/json"
 // SPECIFIC (SERVER)
 
 type cluster struct {
+	// Scope is patroni's own name for the cluster. Patroni added it to /cluster in 3.0.4
+	Scope               string               `json:"scope"`
 	Members             []instance           `json:"members"`
 	ScheduledSwitchover *scheduledSwitchover `json:"scheduled_switchover"`
 	Pause               bool                 `json:"pause"`

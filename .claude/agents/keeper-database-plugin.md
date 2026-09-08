@@ -52,26 +52,64 @@ that arrived on `keeper.Request`. That is not discovery, it is echoing Ivory's o
 itself, and it silently defeats every drift check downstream. If the engine cannot tell you a value, leave it
 nil. `nil` is honest; an echo is a forged witness.
 
-Known violations of exactly this, as of writing — verify before repeating them, and treat them as bugs to fix,
-never as precedent to copy:
+**Ivory asks about a named cluster, not about a node.** `keeper.Request.Cluster` carries the name Ivory knows
+the cluster by, so an adapter asks its engine about *that* cluster rather than about whatever the node it
+reached happens to know. This is the difference between a question with one answer and a question with none:
+a clickhouse node's `system.clusters` holds every `<remote_servers>` entry it was configured with, plus the
+`test_shard_localhost` ones a stock build ships, so *"which cluster are you in"* is unanswerable for a node
+serving several, while *"who is in this one"* is exact. Reading the node's own `{cluster}` macro instead
+answers the first question and answers it wrong. An adapter must tolerate an empty name — a single-node
+action invoked outside any cluster — by reporting the node it was asked about and no membership.
 
-| Plugin | Where | What it does |
+**Inside `List`, the cluster comes first and the node second.** They are different questions and the first
+outranks the second: a node can be perfectly healthy and still not be in the cluster on screen.
+
+**Every keeper enumerates today.** Match a new plugin against these rather than inventing a shape:
+
+| Plugin | Who is in the cluster | Cluster name it reports |
 |---|---|---|
-| `clickhouse` | `clickhouse_adapter.go` `mapNode(request.Host, request.Port, …)` | echoes the configured endpoint as discovery |
-| `zookeeper` | `zookeeper_adapter.go` `mapNode` | same |
-| `redis` | `redis_adapter.go` `mapNode` | same |
-| `postgres` | `postgres_adapter.go` (self node only) | same; its `pg_stat_replication` standby mapping *is* real discovery |
+| `patroni` | `GET /cluster` — every member, with real state | `scope` (patroni 3.0.4+) |
+| `etcd` | `MemberList`, then `Status` per member | `MemberList` header cluster id |
+| `mongo` | `replSetGetStatus` members | replica-set name |
+| `clickhouse` | `system.clusters` for the name Ivory passed | — (it was asked, so echoing is not discovery) |
+| `postgres` | `pg_stat_replication` from the primary, `pg_stat_wal_receiver` from a standby | — |
+| `redis` | the master's `slaveN:` lines, a replica's `master_host`/`master_port` | — |
+| `zookeeper` | `conf` `server.N` lines that carry a client port | sorted ensemble quorum endpoints |
 
-Membership-reporting today: `etcd`, `patroni`, `mongo`. Everything else fails goal 1.
+**A member nothing contacted reports `keeper.StateUnknown` and a `-1` lag.** It claims a topology and no
+liveness. `addKeeperResponsesToMap` treats exactly that as hearsay and lets the node's own answer replace it
+whichever order the two arrive in, so a peer's account can never mask what a node said about itself. Never
+invent `running` for such a peer, and never borrow `StateUnreachable`, which asserts that something tried and
+failed.
 
-**Where an engine genuinely cannot enumerate members, it can still assert identity.** A cluster name, a
-replica-set name, a coordination-store ensemble plus root path — anything the engine knows about *which*
-cluster this node belongs to. Two nodes that disagree on it are provably not one cluster, which catches the
-pasted-foreign-node case even without a member list. Report it as a tag at minimum, as a warning when it can
-be compared. Prefer the source replication actually uses over the source that merely describes intent — for
-clickhouse that means the coordination store (`system.zookeeper` under a replicated table's `zookeeper_path`),
-**not** `system.clusters`, which is only the declared `remote_servers` config, is never consulted by
-replication, and is equally happy to be empty on a healthy cluster or complete on a broken one.
+**Claim a role only where the engine settles it.** The replicas attached to a master certainly are replicas.
+The server a replica *follows* may itself be a replica — redis and postgres both allow chaining — so that
+direction reports `Unknown`; guessing `Leader` there puts a second leader on the overview and fires the
+multiple-leader warning on a healthy cluster.
+
+**A wrong member list is worse than none.** It invents nodes that match no configuration and warns about
+every one of them. Where a peer's address can only be guessed, do not enumerate: zookeeper's single-host
+template writes `server.N` lines with no client port, and the client port is the only part Ivory connects to,
+so under that template it reports no members at all and falls back to `DiscoveredCluster`.
+
+**`DiscoveredCluster` covers the one case membership cannot see, and nothing else.** A stranger whose own
+cluster has exactly one member is absent from nobody's member list, so the only thing that contradicts it is
+naming a different cluster from every other configured node. `cluster.Service.addClusterWarnings` warns on
+each node that reported one, naming that node's own answer rather than deciding which group is the real
+cluster. It is **never** taken from `Request`: that would make every node agree by construction. Do not
+propose it as an alternative to enumeration — it is a supplement, and a plugin that reports it instead of
+members has not done goal 1.
+
+**The hard rule still stands** for every node other than the one answering: never populate `Discovered*` by
+copying back what arrived on `keeper.Request`. For the answering node that address is what just answered, so
+it is evidence rather than an echo; for anybody else it is a forged witness. If the engine cannot tell you a
+value, leave it nil.
+
+**Pick the source that matches the question.** For *membership* the declared topology is the right answer:
+clickhouse's `system.clusters` names who is supposed to be in the cluster, which is exactly what was asked.
+For *health* it is the wrong source — it is never consulted by replication and is equally happy to be
+complete on a broken cluster — so read health from what replication actually uses (`system.replicas`,
+`system.replication_queue`, the coordination store). Do not mix the two up.
 
 ### 2. Healthiness — is it alive, and what is wrong with it
 
@@ -178,13 +216,12 @@ failover, which is exactly why this is its own method.
 
 ### Under `MultiLeader`
 
-- **Integrity — this is where it gets hard, and where the current failure lives.** There is no leader whose
-  member list implicitly defines the cluster, so membership has to come from the shared layer the members
-  actually coordinate through, or from the engine's own peer registry. This is precisely the step
-  `clickhouse` skips today by self-reporting, and skipping it is why a node from a foreign cluster is accepted
-  in silence. **A multi-leader plugin must work harder on goal 1, not less** — and where membership genuinely
-  cannot be enumerated, it must at minimum assert cluster *identity* so two clusters cannot be merged
-  unnoticed.
+- **Integrity — this is where it is hardest.** There is no leader whose member list implicitly defines the
+  cluster, so membership has to come from the shared layer the members actually coordinate through, or from
+  the engine's own peer registry. `clickhouse` answers it with the `<remote_servers>` entry named by the
+  cluster Ivory asked about, and warns when the node declares no such entry; for as long as it did neither
+  and merely described itself, a node from a foreign cluster was accepted in silence. **A multi-leader plugin
+  must work harder on goal 1, not less** — there is no leader whose view can stand in for the cluster's.
 - **Healthiness** — the failure mode is not "fell behind the leader" but **"stopped accepting writes"** or
   "stopped converging". A read-only member is the multi-leader equivalent of a dead one and should be
   reflected in `State`, not buried in a tag. Convergence backlog (a replication or distribution queue that is
@@ -222,8 +259,8 @@ edit, do not "fix while you're there", do not commit. Findings only.
 
 Ground every finding in a **failure scenario**: the concrete state that produces the wrong screen. "Echoes
 configured host" is not a finding; "a node from another cluster added to this cluster renders as a healthy
-Replica with zero warnings, because `mapNode` reports `request.Host` as `DiscoveredHost` and the only two
-integrity checks both key off discovery" is.
+Replica with zero warnings, because `mapNode` reports `request.Host` as `DiscoveredHost`, the plugin reports
+no `DiscoveredCluster`, and every integrity check keys off one or the other" is.
 
 ### ADD or FIX — write the code
 
@@ -286,23 +323,103 @@ Do not report these. They are deliberate, and reporting them costs the reader mo
 
 ## Report
 
-Open with a one-line verdict per goal, then the detail. Be specific about what you actually verified versus
-what you reasoned about from source.
+The report exists so a reader who has never opened the plugin can tell what it actually does, and so the
+person who knows one engine well can check it. Lead with the verdict, then the tables — the tables are the
+part that gets read.
+
+Be specific about what you **verified** (ran, executed, read the output of) versus what you **reasoned about
+from source**. Never present the second as the first.
 
 ```
 PLUGIN: <engine> (keeper | database | both)
 
-1. INTEGRITY        PASS | FAIL | PARTIAL — <one line: can a foreign node be added unnoticed?>
-2. HEALTHINESS      PASS | FAIL | PARTIAL — <one line>
-3. INFORMATIVENESS  PASS | FAIL | PARTIAL — <one line: what it reports, what it skips and why>
-4. ACTIONS          PASS | FAIL | PARTIAL — <one line: methods complete? features honest?>
-
-FINDINGS  (most severe first; each with file:line and a concrete failure scenario)
-
-WHAT I VERIFIED     <commands run, tests executed, output seen>
-WHAT I DID NOT      <live-engine behaviour not exercised, and what it would take>
-RECOMMENDED NEXT    <smallest change that raises the lowest passing goal>
+1. INTEGRITY        PASS | FAIL | PARTIAL — can a node from another cluster be added unnoticed?
+2. HEALTHINESS      PASS | FAIL | PARTIAL — one line
+3. INFORMATIVENESS  PASS | FAIL | PARTIAL — what it reports, what it skips and why
+4. ACTIONS          PASS | FAIL | PARTIAL — methods complete? does SupportedFeatures agree with them?
 ```
 
-For an ADD run, replace the findings block with what you built, the test output, and every checklist step you
-completed — naming explicitly any you skipped and why.
+### Keeper plugin — the cluster it answers for
+
+The integrity table comes first, because goal 1 outranks the rest. One line each, naming the actual query,
+endpoint or command:
+
+| Question | How this plugin answers it |
+|---|---|
+| Who is in the cluster? | e.g. `GET /cluster` → one member per row |
+| How is the cluster selected? | `request.Cluster`, a macro, implicit (the endpoint serves one cluster) |
+| Which cluster does the node say it is in? | `DiscoveredCluster` source, or — |
+| What can a peer's entry claim? | address only / address + role / full state |
+| Can a stranger be added unnoticed? | the honest answer, and under which topology |
+
+### Keeper plugin — all twelve methods
+
+Every method, in interface order, no omissions — an unsupported one is a row saying so, not a missing row.
+One line each; name the call, not the concept.
+
+| Method | How it works |
+|---|---|
+| `List` | |
+| `Config` | |
+| `ConfigUpdate` | |
+| `Switchover` | |
+| `DeleteSwitchover` | |
+| `Reinitialize` | |
+| `Restart` | |
+| `DeleteRestart` | |
+| `Reload` | |
+| `Failover` | |
+| `Activate` | |
+| `Pause` | |
+
+Write `ErrNotSupported — <why, in a few words>` for the ones the engine genuinely cannot do, and say whether
+`SupportedFeatures()` agrees **in both directions**: a feature declared true whose method returns
+`ErrNotSupported` is a permanently failing button, and one declared false whose method works hides something
+that exists.
+
+### Keeper plugin — what a node reports
+
+| Field | Source | Notes |
+|---|---|---|
+| `State` | | observed, or assumed? |
+| `Role` | | |
+| `Lag` | | **name the unit** — it is not comparable across plugins |
+| `Sync` | | or "engine has no concept" |
+| `Tags` | | list the keys |
+| `Warnings` | | what the engine can see that Ivory cannot |
+| `ReplicationModel` | `SingleLeader` \| `MultiLeader` | and why |
+
+Also state the shipped templates: how many, which platforms, which accounts their `Defaults` name.
+
+### Database plugin
+
+| Interface | Status |
+|---|---|
+| `QueryExecutor` | |
+| `SchemaInquirer` | |
+| `SessionManager` | |
+| `MetadataProvider` | |
+
+`ErrNotSupported` is a complete answer here too — say *why* the engine has nothing to map the operation onto,
+the way clickhouse's `SessionManager` does (a `query_id` string where the interface needs an int pid).
+
+Then every query template the plugin ships, and for an ADD/FIX run mark which ones are **new**:
+
+| Query | Type | What it answers |
+|---|---|---|
+| e.g. Replica set status | `REPLICATION` | every member's state, health and last applied optime |
+
+Note any that are `DatabaseSensitive`, take `Params`, or must be run against a particular database — a
+template that silently needs `admin` is a template that fails for whoever tries it first.
+
+### Closing
+
+```
+FINDINGS         most severe first; file:line and a concrete failure scenario for each
+WHAT I VERIFIED  commands run, tests executed, output seen
+WHAT I DID NOT   live-engine behaviour not exercised, and what it would take
+RECOMMENDED NEXT the smallest change that raises the lowest-scoring goal
+```
+
+For an ADD or FIX run, replace FINDINGS with what you built and the test output, and name every checklist
+step you skipped along with why.

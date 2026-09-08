@@ -71,9 +71,13 @@ type KeeperResponse struct {
 	DiscoveredName       *string                    `json:"discoveredName"`
 	DiscoveredKeeperPort *int                       `json:"discoveredKeeperPort"`
 	DiscoveredDbPort     *int                       `json:"discoveredDbPort"`
+	DiscoveredCluster    *string                    `json:"discoveredCluster"`
 }
 
 type KeeperOptions struct {
+	// Cluster is the name Ivory knows the cluster by, passed down so an adapter
+	// can ask its engine about that cluster specifically (see keeper.Request).
+	Cluster string       `json:"cluster" form:"cluster"`
 	Plugin  KeeperPlugin `json:"plugin" form:"plugin"`
 	VaultId *uuid.UUID   `json:"vaultId" form:"vaultId"`
 	Certs   *cert.Certs  `json:"certs" form:"certs"`
@@ -265,6 +269,7 @@ func mapKeeperResponse(r keeper.Response) KeeperResponse {
 		DiscoveredName:       r.DiscoveredName,
 		DiscoveredKeeperPort: r.DiscoveredKeeperPort,
 		DiscoveredDbPort:     r.DiscoveredDbPort,
+		DiscoveredCluster:    r.DiscoveredCluster,
 	}
 }
 

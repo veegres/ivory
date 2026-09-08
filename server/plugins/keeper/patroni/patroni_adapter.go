@@ -36,6 +36,11 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		keeperStatus = keeper.Paused
 	}
 
+	var scope *string
+	if response.Scope != "" {
+		scope = &response.Scope
+	}
+
 	for _, patroniInstance := range response.Members {
 		parsed, errParse := url.Parse(patroniInstance.ApiUrl)
 		if errParse != nil {
@@ -62,6 +67,10 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 			DiscoveredName:       &patroniInstance.Name,
 			DiscoveredDbPort:     &patroniInstance.Port,
 			DiscoveredKeeperPort: &port,
+			// NOTE: /cluster already names every member, so this is only for the
+			// stranger that membership cannot see - a patroni whose own cluster
+			// has one member is absent from nobody's member list.
+			DiscoveredCluster: scope,
 		})
 	}
 

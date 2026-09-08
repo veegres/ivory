@@ -20,7 +20,7 @@ func (s *Service) KeeperNodeListMulti(r KeeperMultiRequest) ([]KeeperMultiRespon
 		wg.Add(1)
 		go func(i int, conn KeeperConnection) {
 			defer wg.Done()
-			r := keeper.Request{Host: conn.Host, Port: conn.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred}
+			r := keeper.Request{Cluster: r.Cluster, Host: conn.Host, Port: conn.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred}
 			response, statusCode, err := client.List(r)
 			var errorMessage string
 			if err != nil {
@@ -47,7 +47,7 @@ func (s *Service) KeeperNodeList(r KeeperOneRequest) ([]KeeperOneResponse, int, 
 	// can report a degraded-but-useful response (e.g. postgres starting up)
 	// alongside the error that caused it; callers rely on getting both so the
 	// error still ends up in the node's warnings instead of being discarded.
-	responses, status, err := client.List(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	responses, status, err := client.List(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 	result := make([]KeeperOneResponse, len(responses))
 	for i, resp := range responses {
 		result[i] = mapKeeperResponse(resp)
@@ -60,7 +60,7 @@ func (s *Service) KeeperConfigGet(r KeeperOneRequest) (any, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Config(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Config(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperConfigUpdate(r KeeperOneRequest) (any, int, error) {
@@ -68,7 +68,7 @@ func (s *Service) KeeperConfigUpdate(r KeeperOneRequest) (any, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.ConfigUpdate(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.ConfigUpdate(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperSwitchover(r KeeperOneRequest) (*string, int, error) {
@@ -76,7 +76,7 @@ func (s *Service) KeeperSwitchover(r KeeperOneRequest) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Switchover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Switchover(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperSwitchoverDelete(r KeeperOneRequest) (*string, int, error) {
@@ -84,7 +84,7 @@ func (s *Service) KeeperSwitchoverDelete(r KeeperOneRequest) (*string, int, erro
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.DeleteSwitchover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.DeleteSwitchover(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperReinitialize(r KeeperOneRequest) (*string, int, error) {
@@ -92,7 +92,7 @@ func (s *Service) KeeperReinitialize(r KeeperOneRequest) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Reinitialize(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Reinitialize(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperRestart(r KeeperOneRequest) (*string, int, error) {
@@ -100,7 +100,7 @@ func (s *Service) KeeperRestart(r KeeperOneRequest) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Restart(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Restart(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperRestartDelete(r KeeperOneRequest) (*string, int, error) {
@@ -108,7 +108,7 @@ func (s *Service) KeeperRestartDelete(r KeeperOneRequest) (*string, int, error) 
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.DeleteRestart(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.DeleteRestart(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperReload(r KeeperOneRequest) (*string, int, error) {
@@ -116,7 +116,7 @@ func (s *Service) KeeperReload(r KeeperOneRequest) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Reload(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Reload(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperFailover(r KeeperOneRequest) (*string, int, error) {
@@ -124,7 +124,7 @@ func (s *Service) KeeperFailover(r KeeperOneRequest) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Failover(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Failover(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperActivate(r KeeperOneRequest) (*string, int, error) {
@@ -132,7 +132,7 @@ func (s *Service) KeeperActivate(r KeeperOneRequest) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Activate(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Activate(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }
 
 func (s *Service) KeeperPause(r KeeperOneRequest) (*string, int, error) {
@@ -140,5 +140,5 @@ func (s *Service) KeeperPause(r KeeperOneRequest) (*string, int, error) {
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
-	return client.Pause(keeper.Request{Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
+	return client.Pause(keeper.Request{Cluster: r.Cluster, Host: r.Host, Port: r.Port, Body: r.Body, TlsConfig: tlsConfig, Credentials: cred})
 }

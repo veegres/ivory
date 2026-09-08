@@ -258,7 +258,7 @@ func TestService_getKeeperListByManyAll_KeepsResponseAlongsideError(t *testing.T
 	s := &Service{nodeService: node.NewService(nil, keeperRegistry, nil, nil, nil)}
 
 	configs := []NodeConfig{{Host: host, KeeperPort: &port}}
-	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{Plugins: Plugins{Keeper: "fake"}})
+	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll("test", configs, Options{Plugins: Plugins{Keeper: "fake"}})
 	nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err, node.KeeperSingleLeader)
 
 	nodeKey := "db1:8008"
@@ -333,7 +333,7 @@ func TestService_getKeeperListByManyAll_PrefersLeaderReportedSyncData(t *testing
 		{Host: db1, KeeperPort: &port, DbPort: &port},
 	}
 
-	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{Plugins: Plugins{Keeper: "fake"}})
+	keeperNodes, connectionErrors, err := s.getKeeperListByManyAll("test", configs, Options{Plugins: Plugins{Keeper: "fake"}})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -393,7 +393,7 @@ func TestService_getKeeperListByLeader(t *testing.T) {
 			{Host: db3, KeeperPort: &port, DbPort: &port},
 		}
 
-		keeperNodes, err := s.getKeeperListByLeader(configs, Options{Plugins: Plugins{Keeper: "fake"}})
+		keeperNodes, err := s.getKeeperListByLeader("test", configs, Options{Plugins: Plugins{Keeper: "fake"}})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -422,7 +422,7 @@ func TestService_getKeeperListByLeader(t *testing.T) {
 			{Host: db2, KeeperPort: &port, DbPort: &port},
 		}
 
-		keeperNodes, err := s.getKeeperListByLeader(configs, Options{Plugins: Plugins{Keeper: "fake"}})
+		keeperNodes, err := s.getKeeperListByLeader("test", configs, Options{Plugins: Plugins{Keeper: "fake"}})
 		if !errors.Is(err, ErrNoLeaderFound) {
 			t.Fatalf("expected ErrNoLeaderFound, got %v", err)
 		}
@@ -709,7 +709,7 @@ func TestService_getKeeperListAutoMerge(t *testing.T) {
 
 	t.Run("should return concrete errors when no configured nodes can be requested", func(t *testing.T) {
 		configs := []NodeConfig{{Host: "db1"}}
-		keeperNodes, connectionErrors, err := s.getKeeperListByManyAll(configs, Options{})
+		keeperNodes, connectionErrors, err := s.getKeeperListByManyAll("test", configs, Options{})
 		nodes := s.buildOverviewNodes(configs, keeperNodes, connectionErrors, err, node.KeeperSingleLeader)
 
 		if len(nodes) != 1 {
@@ -722,4 +722,123 @@ func TestService_getKeeperListAutoMerge(t *testing.T) {
 			t.Fatalf("Expected concrete db1 warning, got %v", nodes["db1"].Warnings)
 		}
 	})
+}
+
+// TestService_addClusterWarnings covers the one integrity check available to an
+// engine that only ever describes the node answering: a node pasted in from
+// another cluster answers for itself perfectly well and is missing from no
+// membership list, so a disagreement about which cluster it belongs to is the
+// only thing that contradicts it.
+func TestService_addClusterWarnings(t *testing.T) {
+	s := &Service{}
+	ours := "prod"
+	theirs := "staging"
+	empty := ""
+
+	tests := []struct {
+		name     string
+		nodes    map[string]Node
+		expected map[string]int
+	}{
+		{
+			name: "one cluster is not a mismatch",
+			nodes: map[string]Node{
+				"ch1:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &ours}},
+				"ch2:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &ours}},
+			},
+			expected: map[string]int{"ch1:9000": 0, "ch2:9000": 0},
+		},
+		{
+			name: "a node from another cluster is warned about, and so is every node it disagrees with",
+			nodes: map[string]Node{
+				"ch1:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &ours}},
+				"ch2:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &theirs}},
+			},
+			expected: map[string]int{"ch1:9000": 1, "ch2:9000": 1},
+		},
+		{
+			name: "a node whose engine reports no cluster is never blamed for it",
+			nodes: map[string]Node{
+				"ch1:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &ours}},
+				"ch2:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &theirs}},
+				"ch3:9000": {Keeper: node.KeeperOneResponse{}},
+				"ch4:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &empty}},
+			},
+			expected: map[string]int{"ch1:9000": 1, "ch2:9000": 1, "ch3:9000": 0, "ch4:9000": 0},
+		},
+		{
+			name: "a single node cannot disagree with anyone",
+			nodes: map[string]Node{
+				"ch1:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &ours}},
+			},
+			expected: map[string]int{"ch1:9000": 0},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s.addClusterWarnings(tt.nodes)
+			for nodeKey, count := range tt.expected {
+				if got := len(tt.nodes[nodeKey].Warnings); got != count {
+					t.Errorf("expected %d warnings for %s, got %v", count, nodeKey, tt.nodes[nodeKey].Warnings)
+				}
+			}
+		})
+	}
+}
+
+// TestService_addClusterWarnings_NamesEachNodesOwnCluster pins that the warning
+// carries the node's own answer rather than a verdict on which of the two
+// groups is the real cluster. Ivory cannot know which one the user meant, and
+// naming both is what lets them see the odd one out.
+func TestService_addClusterWarnings_NamesEachNodesOwnCluster(t *testing.T) {
+	s := &Service{}
+	ours := "prod"
+	theirs := "staging"
+	nodes := map[string]Node{
+		"ch1:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &ours}},
+		"ch2:9000": {Keeper: node.KeeperOneResponse{DiscoveredCluster: &theirs}},
+	}
+
+	s.addClusterWarnings(nodes)
+
+	if !strings.Contains(nodes["ch1:9000"].Warnings[0], `"prod"`) {
+		t.Errorf("expected ch1 to name its own cluster, got %v", nodes["ch1:9000"].Warnings)
+	}
+	if !strings.Contains(nodes["ch2:9000"].Warnings[0], `"staging"`) {
+		t.Errorf("expected ch2 to name its own cluster, got %v", nodes["ch2:9000"].Warnings)
+	}
+}
+
+// TestService_addKeeperResponsesToMap_OwnAnswerBeatsHearsay covers a member
+// reported twice: once by the node itself and once by a peer that only read it
+// out of a membership list. Without a preference the winner was whichever
+// response the range reached first, so a node could render with the unknown
+// state a config file vouched for while its own answer was dropped.
+func TestService_addKeeperResponsesToMap_OwnAnswerBeatsHearsay(t *testing.T) {
+	s := &Service{}
+	host := "ch2"
+	port := 9000
+	hearsay := node.KeeperOneResponse{State: keeper.StateUnknown, Role: keeper.Replica, DiscoveredHost: &host, DiscoveredKeeperPort: &port}
+	own := node.KeeperOneResponse{State: keeper.StateRunning, Role: keeper.Replica, DiscoveredHost: &host, DiscoveredKeeperPort: &port}
+
+	tests := []struct {
+		name  string
+		order [][]node.KeeperOneResponse
+	}{
+		{name: "hearsay arrives first", order: [][]node.KeeperOneResponse{{hearsay}, {own}}},
+		{name: "the node's own answer arrives first", order: [][]node.KeeperOneResponse{{own}, {hearsay}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nodeMap := make(map[string]node.KeeperOneResponse)
+			for _, responses := range tt.order {
+				s.addKeeperResponsesToMap(nodeMap, responses)
+			}
+			if nodeMap["ch2:9000"].State != keeper.StateRunning {
+				t.Errorf("expected the node's own answer to win, got state %q", nodeMap["ch2:9000"].State)
+			}
+		})
+	}
 }

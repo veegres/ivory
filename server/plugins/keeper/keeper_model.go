@@ -161,6 +161,20 @@ type Response struct {
 	// rules as DiscoveredKeeperPort above (nil if the adapter can't
 	// determine it from the keeper's own response).
 	DiscoveredDbPort *int `json:"discoveredDbPort"`
+	// DiscoveredCluster is the engine's own name for the cluster this member
+	// belongs to - an etcd cluster id, a mongo replica-set name, a zookeeper
+	// ensemble. Membership is the real integrity check and every plugin that can
+	// enumerate does so; this covers the one case enumeration cannot see. A
+	// stranger whose own cluster has exactly one member is absent from nobody's
+	// member list, so the only thing that contradicts it is naming a different
+	// cluster from every other configured node.
+	//
+	// Nil where the engine names no cluster, and never taken from Request: the
+	// name Ivory asked about is not something the node reported, and handing it
+	// back would make every node agree by construction. An engine that can be
+	// asked about a named cluster directly (clickhouse) reports membership for
+	// that name instead, and warns when it declares no such cluster.
+	DiscoveredCluster *string `json:"discoveredCluster"`
 }
 
 // ScheduledSwitchover describes a pending, not-yet-performed switchover.
@@ -177,9 +191,12 @@ type ScheduledRestart struct {
 
 // SPECIFIC (SERVER)
 
-// Request is the input to every Adapter method: the keeper's endpoint,
-// optional credentials/TLS to reach it, and an operation-specific body.
+// Request is the input to every Adapter method: the cluster being asked
+// about, the keeper's endpoint, optional credentials/TLS to reach it, and an
+// operation-specific body.
 type Request struct {
+	// Cluster is the name Ivory knows this cluster by
+	Cluster     string       `json:"cluster" form:"cluster"`
 	Host        string       `json:"host" form:"host"`
 	Port        int          `json:"port" form:"port"`
 	Credentials *Credentials `json:"credentials" form:"credentials"`

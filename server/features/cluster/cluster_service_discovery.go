@@ -18,9 +18,9 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 
 	// NOTE: if host is not set, search manually only for this host
 	if host == "" {
-		keeperNodeMap, connectionErrors, requestError = s.getKeeperListByManyAll(cluster.Nodes, cluster.Options)
+		keeperNodeMap, connectionErrors, requestError = s.getKeeperListByManyAll(cluster.Name, cluster.Nodes, cluster.Options)
 	} else {
-		keeperNodeMap, connectionErrors, requestError = s.getKeeperListByOne(host, port, cluster.Options)
+		keeperNodeMap, connectionErrors, requestError = s.getKeeperListByOne(cluster.Name, host, port, cluster.Options)
 	}
 
 	replication := s.nodeService.KeeperReplicationModel(cluster.Plugins.Keeper)
@@ -30,7 +30,7 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 }
 
 func (s *Service) Detect(cluster CreateAutoRequest) (*Response, error) {
-	keeperNodeMap, _, errOver := s.getKeeperListByOne(cluster.Host, cluster.Port, cluster.Options)
+	keeperNodeMap, _, errOver := s.getKeeperListByOne(cluster.Name, cluster.Host, cluster.Port, cluster.Options)
 	if errOver != nil {
 		return nil, errOver
 	}
@@ -56,7 +56,7 @@ func (s *Service) Fix(name string) (*Response, error) {
 	if clusterError != nil {
 		return nil, clusterError
 	}
-	keeperNodes, err := s.getKeeperListByLeader(cluster.Nodes, cluster.Options)
+	keeperNodes, err := s.getKeeperListByLeader(cluster.Name, cluster.Nodes, cluster.Options)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *Service) Fix(name string) (*Response, error) {
 	return (*Response)(&model), s.clusterRepository.Update(model)
 }
 
-func (s *Service) getKeeperListByOne(host string, port int, cluster Options) (map[string]node.KeeperOneResponse, map[string]error, error) {
+func (s *Service) getKeeperListByOne(name string, host string, port int, cluster Options) (map[string]node.KeeperOneResponse, map[string]error, error) {
 	var certs *cert.Certs
 	// NOTE: we want to rewrite `nil` only if tls is enabled
 	if cluster.Tls.Keeper {
@@ -89,6 +89,7 @@ func (s *Service) getKeeperListByOne(host string, port int, cluster Options) (ma
 	request := node.KeeperOneRequest{
 		KeeperConnection: con,
 		KeeperOptions: node.KeeperOptions{
+			Cluster: name,
 			Plugin:  cluster.Plugins.Keeper,
 			VaultId: cluster.Vaults.KeeperId,
 			Certs:   certs,
@@ -105,8 +106,8 @@ func (s *Service) getKeeperListByOne(host string, port int, cluster Options) (ma
 	return nodeMap, connectionErrors, errOver
 }
 
-func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) (map[string]node.KeeperOneResponse, map[string]error, error) {
-	responses, connectionErrors, err := s.getKeeperListByManyResponse(configs, cluster)
+func (s *Service) getKeeperListByManyAll(name string, configs []NodeConfig, cluster Options) (map[string]node.KeeperOneResponse, map[string]error, error) {
+	responses, connectionErrors, err := s.getKeeperListByManyResponse(name, configs, cluster)
 	if err != nil {
 		return nil, connectionErrors, err
 	}
@@ -133,8 +134,8 @@ func (s *Service) getKeeperListByManyAll(configs []NodeConfig, cluster Options) 
 	return keeperNodeMap, connectionErrors, requestErrs
 }
 
-func (s *Service) getKeeperListByLeader(configs []NodeConfig, cluster Options) ([]node.KeeperOneResponse, error) {
-	responses, _, err := s.getKeeperListByManyResponse(configs, cluster)
+func (s *Service) getKeeperListByLeader(name string, configs []NodeConfig, cluster Options) ([]node.KeeperOneResponse, error) {
+	responses, _, err := s.getKeeperListByManyResponse(name, configs, cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +162,7 @@ func (s *Service) hasLeaderEntry(responses []node.KeeperOneResponse) bool {
 	return false
 }
 
-func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Options) ([]node.KeeperMultiResponse, map[string]error, error) {
+func (s *Service) getKeeperListByManyResponse(name string, configs []NodeConfig, cluster Options) ([]node.KeeperMultiResponse, map[string]error, error) {
 	connections := make([]node.KeeperConnection, 0)
 	connectionErrors := make(map[string]error)
 	for _, config := range configs {
@@ -188,6 +189,7 @@ func (s *Service) getKeeperListByManyResponse(configs []NodeConfig, cluster Opti
 	request := node.KeeperMultiRequest{
 		Connections: connections,
 		KeeperOptions: node.KeeperOptions{
+			Cluster: name,
 			Plugin:  cluster.Plugins.Keeper,
 			VaultId: cluster.Vaults.KeeperId,
 			Certs:   certs,
@@ -219,6 +221,7 @@ func (s *Service) buildOverviewNodes(configs []NodeConfig, keeperNodes map[strin
 		}
 	}
 	s.addOverviewWarnings(resultNodeMap, replication)
+	s.addClusterWarnings(resultNodeMap)
 	return resultNodeMap
 }
 
@@ -382,17 +385,63 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, replication node.
 	}
 }
 
+// addClusterWarnings warns when the configured nodes do not all report the same
+// engine-level cluster. Membership is the main integrity check and most keepers
+// answer it; this covers what membership cannot see - a stranger whose own
+// cluster has exactly one member is absent from no member list, so the only
+// thing contradicting it is naming a different cluster from everyone else. Each
+// warned node names its own answer rather than Ivory picking which group is the
+// real cluster, and a node whose engine names no cluster is left alone.
+func (s *Service) addClusterWarnings(nodeMap map[string]Node) {
+	clusters := make(map[string]bool)
+	for _, cn := range nodeMap {
+		if name, ok := s.getDiscoveredCluster(cn); ok {
+			clusters[name] = true
+		}
+	}
+	if len(clusters) < 2 {
+		return
+	}
+	for nodeKey, cn := range nodeMap {
+		name, ok := s.getDiscoveredCluster(cn)
+		if !ok {
+			continue
+		}
+		cn.Warnings = append(cn.Warnings, fmt.Sprintf(
+			"cluster configuration contains nodes from more than one cluster; this node belongs to %q", name))
+		nodeMap[nodeKey] = cn
+	}
+}
+
+func (s *Service) getDiscoveredCluster(n Node) (string, bool) {
+	if n.Keeper.DiscoveredCluster == nil || *n.Keeper.DiscoveredCluster == "" {
+		return "", false
+	}
+	return *n.Keeper.DiscoveredCluster, true
+}
+
 func (s *Service) addKeeperResponsesToMap(nodeMap map[string]node.KeeperOneResponse, nodes []node.KeeperOneResponse) {
 	for _, n := range nodes {
 		nodeKey, ok := s.getResponseKey(n)
 		if !ok {
 			continue
 		}
-		if _, exists := nodeMap[nodeKey]; exists {
+		if existing, exists := nodeMap[nodeKey]; exists && !s.isHearsay(existing) {
 			continue
 		}
 		nodeMap[nodeKey] = n
 	}
+}
+
+// isHearsay reports whether a response is another node's account of a member
+// rather than that member's own answer: a peer read out of a membership list
+// (clickhouse's remote_servers) that nothing has actually reached, so it can
+// state no state. It is the only entry a later response may replace - a node's
+// own answer about itself has to beat hearsay about it whichever order the two
+// happen to arrive in, and without this the first responding node's view of
+// every peer would win on map order alone.
+func (s *Service) isHearsay(n node.KeeperOneResponse) bool {
+	return n.State == node.KeeperStateUnknown
 }
 
 // getResponseKey identifies the member a keeper response is about, for dedup

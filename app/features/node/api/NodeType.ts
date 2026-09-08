@@ -83,6 +83,7 @@ export interface KeeperResponse {
     discoveredName?: string,
     discoveredKeeperPort?: number,
     discoveredDbPort?: number,
+    discoveredCluster?: string,
 }
 
 export interface ScheduledSwitchover {
@@ -96,6 +97,7 @@ export interface ScheduledRestart {
 }
 
 export interface KeeperOneRequest extends KeeperConnection {
+    cluster?: string,
     plugin: KeeperPlugin,
     vaultId?: string,
     certs?: Certs,

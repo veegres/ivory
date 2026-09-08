@@ -226,3 +226,45 @@ func TestListConnectFailure(t *testing.T) {
 		t.Error("expected an error for an unspecified host/port")
 	}
 }
+
+// TestSetName covers mongo's own name for the cluster a member belongs to. It
+// is what contradicts a node borrowed from a single-member replica set, which
+// names itself and nothing else and so is missing from no member list.
+func TestSetName(t *testing.T) {
+	tests := []struct {
+		name     string
+		set      string
+		expected string
+	}{
+		{name: "a named replica set", set: "rs0", expected: "rs0"},
+		{name: "a member reporting no set at all", set: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := setName(tt.set)
+			if tt.expected == "" {
+				if got != nil {
+					t.Fatalf("expected no set name, got %q", *got)
+				}
+				return
+			}
+			if got == nil || *got != tt.expected {
+				t.Errorf("expected set name %q, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
+// TestMapMemberReportsSetName pins that the set reaches the response, since it
+// is the only field on it that says anything about the cluster rather than
+// about this one member.
+func TestMapMemberReportsSetName(t *testing.T) {
+	member := replSetMember{Name: "mongo1:27017", StateStr: "PRIMARY", Health: 1}
+
+	response := mapMember(member, "rs0", time.Time{}, false)
+
+	if response.DiscoveredCluster == nil || *response.DiscoveredCluster != "rs0" {
+		t.Errorf("expected discovered cluster rs0, got %v", response.DiscoveredCluster)
+	}
+}

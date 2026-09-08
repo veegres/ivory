@@ -6,6 +6,7 @@ import (
 	"ivory/clients/zookeeper"
 	"ivory/plugins/keeper"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -39,8 +40,18 @@ func NewPlugin() *Plugin {
 func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
+	config := zookeeper.Config{Host: request.Host, Port: request.Port}
 
-	output, err := zookeeper.FourLetterCommand(ctx, zookeeper.Config{Host: request.Host, Port: request.Port}, "mntr")
+	// NOTE: the cluster first, and on its own round trip: mntr describes nothing
+	// but the node answering, so the ensemble has to come out of conf. It is
+	// best-effort - a whitelist that omits "conf" must cost the membership check
+	// rather than the node.
+	var ensemble map[string]string
+	if conf, errConf := zookeeper.FourLetterCommand(ctx, config, "conf"); errConf == nil {
+		ensemble = parseLines(conf, "=")
+	}
+
+	output, err := zookeeper.FourLetterCommand(ctx, config, "mntr")
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
@@ -50,7 +61,121 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		return nil, http.StatusBadRequest, ErrCommandNotAvailable
 	}
 
-	return []keeper.Response{mapNode(request.Host, request.Port, state, fields)}, http.StatusOK, nil
+	response := mapNode(request.Host, request.Port, state, fields)
+	response.DiscoveredCluster = ensembleIdentity(ensemble)
+	return append([]keeper.Response{response}, mapEnsembleMembers(ensemble)...), http.StatusOK, nil
+}
+
+// mapEnsembleMembers reports the other servers of this node's ensemble, one per
+// server.N line, so a single node can answer for the cluster the way patroni's
+// /cluster does.
+//
+// Only a member whose line carries a client port can be reported, because that
+// is the port Ivory reaches a zookeeper on and the rest of the line is the
+// quorum and election pair, which it does not. The multi-host template writes
+// ";2181" and so enumerates; the single-host one leaves it off and gives each
+// node its own clientPort instead, so there it reports no members at all and
+// ensembleIdentity is what catches a node from elsewhere. Guessing the missing
+// port would invent nodes matching no configuration.
+//
+// A member states no role and no state: nothing contacted it, and which one
+// holds the election is not in this node's conf. Every configured node reports
+// both from its own mntr when Ivory polls it.
+func mapEnsembleMembers(settings map[string]string) []keeper.Response {
+	self := "server." + settings["serverId"]
+	members := make([]keeper.Response, 0)
+	for _, key := range sortedServerKeys(settings) {
+		if key == self {
+			continue
+		}
+		host, port, ok := memberEndpoint(settings[key])
+		if !ok {
+			continue
+		}
+		key := host + ":" + strconv.Itoa(port)
+		members = append(members, keeper.Response{
+			Key:                  &key,
+			State:                keeper.StateUnknown,
+			Role:                 keeper.Unknown,
+			Lag:                  -1,
+			DiscoveredHost:       &host,
+			DiscoveredKeeperPort: &port,
+			DiscoveredDbPort:     &port,
+		})
+	}
+	if len(members) == 0 {
+		return nil
+	}
+	return members
+}
+
+// memberEndpoint reads the client endpoint out of a
+// "host:2888:3888:participant;0.0.0.0:2181" server entry. Everything before the
+// ";" is the quorum and election pair, which Ivory never connects to; the part
+// after it is the client address, written either as a bare port or as
+// address:port. An entry without it is not addressable and reports nothing.
+func memberEndpoint(server string) (string, int, bool) {
+	host, client, found := strings.Cut(server, ";")
+	if !found {
+		return "", 0, false
+	}
+	if i := strings.IndexByte(host, ':'); i >= 0 {
+		host = host[:i]
+	}
+	if i := strings.LastIndexByte(client, ':'); i >= 0 {
+		client = client[i+1:]
+	}
+	port, err := strconv.Atoi(client)
+	if host == "" || err != nil || port <= 0 {
+		return "", 0, false
+	}
+	return host, port, true
+}
+
+func sortedServerKeys(settings map[string]string) []string {
+	keys := make([]string, 0)
+	for key := range settings {
+		if strings.HasPrefix(key, "server.") {
+			keys = append(keys, key)
+		}
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// ensembleIdentity reports the ensemble a node belongs to as the sorted list of
+// its members' quorum endpoints. Every node of one ensemble is configured with
+// the same server.N lines and a node from another ensemble never is, so where
+// mapEnsembleMembers cannot address the members - a single-host ensemble, whose
+// lines carry no client port - this is still enough to tell a stranger from a
+// member. It costs nothing extra: the conf it reads was already fetched.
+func ensembleIdentity(settings map[string]string) *string {
+	endpoints := make([]string, 0)
+	for _, key := range sortedServerKeys(settings) {
+		endpoints = append(endpoints, quorumEndpoint(settings[key]))
+	}
+	if len(endpoints) == 0 {
+		return nil
+	}
+	sort.Strings(endpoints)
+	identity := strings.Join(endpoints, ",")
+	return &identity
+}
+
+// quorumEndpoint trims a "host:2888:3888:participant;0.0.0.0:2181" entry down
+// to the host:quorumPort every member writes identically. The role and the
+// client-address suffix are dropped because a node states them for itself -
+// zookeeper writes its own line with 0.0.0.0 - so keeping them would make one
+// ensemble look like as many ensembles as it has members.
+func quorumEndpoint(server string) string {
+	if i := strings.IndexByte(server, ';'); i >= 0 {
+		server = server[:i]
+	}
+	parts := strings.Split(server, ":")
+	if len(parts) < 2 {
+		return server
+	}
+	return parts[0] + ":" + parts[1]
 }
 
 func (p *Plugin) Config(request keeper.Request) (any, int, error) {

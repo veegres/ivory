@@ -72,7 +72,21 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	if errs != nil {
 		status = http.StatusServiceUnavailable
 	}
-	return mapMembers(members, statuses), status, errs
+
+	responses := mapMembers(members, statuses)
+	// NOTE: the cluster id belongs to the reply as a whole rather than to any
+	// one member, which is why it is applied here instead of inside mapMember.
+	// Enumerating members already catches a node borrowed from another etcd of
+	// several - its own peers show up as nodes nobody configured - but not one
+	// borrowed from a single-node cluster, which reports itself and nothing
+	// else. The id is what contradicts that one.
+	if clusterId := memberList.Header.GetClusterId(); clusterId != 0 {
+		identity := strconv.FormatUint(clusterId, 10)
+		for i := range responses {
+			responses[i].DiscoveredCluster = &identity
+		}
+	}
+	return responses, status, errs
 }
 
 func (p *Plugin) Switchover(request keeper.Request) (*string, int, error) {
