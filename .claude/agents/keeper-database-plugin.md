@@ -73,8 +73,16 @@ outranks the second: a node can be perfectly healthy and still not be in the clu
 | `mongo` | `replSetGetStatus` members | replica-set name |
 | `clickhouse` | `system.clusters` for the name Ivory passed | — (it was asked, so echoing is not discovery) |
 | `postgres` | `pg_stat_replication` from the primary, `pg_stat_wal_receiver` from a standby | — |
-| `redis` | the master's `slaveN:` lines, a replica's `master_host`/`master_port` | — |
+| `redis` | a replica's `master_host`/`master_port` only — a master's `slaveN:` ip is socket-observed, not an address | — |
 | `zookeeper` | `conf` `server.N` lines that carry a client port | sorted ensemble quorum endpoints |
+
+**An address the engine observed off a socket is a guess; only one it was configured with is an address Ivory
+could also connect to.** Enumerate from the configured side, never the observed one. A replica's `master_host`
+comes out of its own `replicaof`, so it is usable; the ip on a master's `slaveN:` line is wherever the master
+saw the connection arrive from — `::1` under host networking, the docker gateway under a bridge — so it is
+not. Postgres draws the same line inside one engine: it keys standbys by `application_name` and never by
+`pg_stat_replication.client_addr`. Where only the observed side exists, report a count or a tag instead of a
+node, and say so in the audit rather than enumerating.
 
 **A member nothing contacted reports `keeper.StateUnknown` and a `-1` lag.** It claims a topology and no
 liveness. `addKeeperResponsesToMap` treats exactly that as hearsay and lets the node's own answer replace it
