@@ -41,6 +41,16 @@ export function KeeperRestartButton(props: Props) {
                 loading={restart.isPending}
                 onClick={handleClick}
             >
+                <ManageAccess feature={Feature.ManageNodeKeeperRestartSchedule}>
+                    {renderSchedule()}
+                </ManageAccess>
+            </AlertButton>
+        </ManageAccess>
+    )
+
+    function renderSchedule() {
+        return (
+            <>
                 <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
                 <FormControlLabel
                     sx={SX.pending}
@@ -49,9 +59,9 @@ export function KeeperRestartButton(props: Props) {
                     control={<Switch checked={pending} onClick={() => setPending(!pending)}/>}
                     label={renderLabel()}
                 />
-            </AlertButton>
-        </ManageAccess>
-    )
+            </>
+        )
+    }
 
     function renderLabel() {
         return (

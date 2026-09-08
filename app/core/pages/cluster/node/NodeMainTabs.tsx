@@ -1,18 +1,18 @@
 import {Link} from "@mui/material"
 import {ReactNode} from "react"
 
-import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
+import {Cluster, Node, NodeOverview} from "../../../../features/cluster/api/ClusterType"
 import {NodeTabType} from "../../../../features/node/api/NodeType"
 import {Container} from "../../../../features/node/component/container/Container"
 import {Keeper} from "../../../../features/node/component/keeper/Keeper"
 import {System} from "../../../../features/node/component/system/System"
-import {getKeeperOneRequest, getPlatformConnection, getQueryConnection} from "../../../../shared/helper/HelperUtils"
+import {getKeeperCandidates, getKeeperOneRequest, getPlatformConnection, getQueryConnection} from "../../../../shared/helper/HelperUtils"
 import {NodeMainQueries} from "./NodeMainQueries"
 import {NodeMainTools} from "./NodeMainTools"
 
 interface NodeTab {
     label: string,
-    body: (cluster: Cluster, node: Node) => ReactNode,
+    body: (cluster: Cluster, node: Node, nodes?: NodeOverview) => ReactNode,
     info?: ReactNode,
     actions?: ReactNode,
 }
@@ -49,18 +49,19 @@ export const NODE_TABS: { [key in NodeTabType]: NodeTab } = {
     },
     [NodeTabType.KEEPER]: {
         label: "Keeper",
-        body: (c: Cluster, n: Node) => (
+        body: (c: Cluster, n: Node, nodes?: NodeOverview) => (
             <Keeper
                 request={getKeeperOneRequest(c, n.config.host, n.config.keeperPort)}
                 cluster={c.name}
-                candidates={c.nodes.map(node => node.host)}
-                role={n.keeper.role}
+                keeper={n.keeper}
+                candidates={getKeeperCandidates(nodes)}
             />
         ),
         info: <>
             Control over your cluster management system (e.g. Patroni) — Ivory calls it keeper.
             The actions let you reload or restart the keeper, reinitialise a replica, perform a switchover
-            or failover, and schedule such operations for a later time. Below the actions you can adjust
+            or failover, and schedule such operations for a later time — an action, or a part of one such as
+            the schedule, that the keeper cannot perform is not shown. Below the actions you can adjust
             the cluster configuration: any change is applied to all cluster nodes as a patch update —
             instead of rewriting the entire configuration only the settings you provide are changed, and
             setting one to <b>null</b> removes it. Keep in mind that modifying certain parameters may

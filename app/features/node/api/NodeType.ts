@@ -96,6 +96,14 @@ export interface ScheduledRestart {
     pendingRestart: boolean,
 }
 
+// KeeperCandidate is one switchover option: the name the keeper knows the
+// member by, shown as host:port because a single-host cluster's nodes all
+// answer on the same host.
+export interface KeeperCandidate {
+    name: string,
+    label: string,
+}
+
 export interface KeeperOneRequest extends KeeperConnection {
     cluster?: string,
     plugin: KeeperPlugin,

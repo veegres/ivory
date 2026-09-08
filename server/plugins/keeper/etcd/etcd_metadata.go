@@ -11,15 +11,17 @@ var _ keeper.Metadata = (*Plugin)(nil)
 
 func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	return map[config.Feature]bool{
-		config.ViewNodeKeeperOverview:       true,
-		config.ViewNodeKeeperConfig:         false,
-		config.ManageNodeKeeperConfigUpdate: false,
-		config.ManageNodeKeeperSwitchover:   true,
-		config.ManageNodeKeeperReinitialize: false,
-		config.ManageNodeKeeperRestart:      false,
-		config.ManageNodeKeeperReload:       false,
-		config.ManageNodeKeeperFailover:     false,
-		config.ManageNodeKeeperActivation:   false,
+		config.ViewNodeKeeperOverview:             true,
+		config.ViewNodeKeeperConfig:               false,
+		config.ManageNodeKeeperConfigUpdate:       false,
+		config.ManageNodeKeeperSwitchover:         true,
+		config.ManageNodeKeeperSwitchoverSchedule: false,
+		config.ManageNodeKeeperReinitialize:       false,
+		config.ManageNodeKeeperRestart:            false,
+		config.ManageNodeKeeperRestartSchedule:    false,
+		config.ManageNodeKeeperReload:             false,
+		config.ManageNodeKeeperFailover:           false,
+		config.ManageNodeKeeperActivation:         false,
 	}
 }
 

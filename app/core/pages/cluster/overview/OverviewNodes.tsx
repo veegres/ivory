@@ -2,7 +2,7 @@ import {Box} from "@mui/material"
 
 import {Cluster, NodeOverview} from "../../../../features/cluster/api/ClusterType"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {getInitialNode,getNodeConfig} from "../../../../shared/helper/HelperUtils"
+import {getInitialNode, getKeeperCandidates, getNodeConfig} from "../../../../shared/helper/HelperUtils"
 import {useStore} from "../../../../shared/provider/StoreProvider"
 import {OverviewNodesRow} from "./OverviewNodesRow"
 
@@ -20,10 +20,7 @@ export function OverviewNodes(props: Props) {
     const {cluster} = props
     const nodes = props.nodes ?? cluster.nodesOverview
     const activeNode = useStore(s => s.activeNode[cluster.name])
-    const candidates = Object.values(nodes ?? {})
-        .filter(node => !!node)
-        .filter(node => node.keeper.role === "replica")
-        .map(node => node.config)
+    const candidates = getKeeperCandidates(nodes)
 
     return (
         <Box sx={SX.box}>

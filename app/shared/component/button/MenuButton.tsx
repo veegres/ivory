@@ -31,7 +31,7 @@ export function MenuButton(props: Props) {
             <Collapse sx={SX.collapse} in={realOpen} orientation={"horizontal"}>
                 <Box sx={SX.paper}>{children}</Box>
             </Collapse>
-            <MoreIconButton size={size} onClick={() =>  onClick(!realOpen)}/>
+            <MoreIconButton size={size} onClick={() => onClick(!realOpen)}/>
         </Box>
     )
 

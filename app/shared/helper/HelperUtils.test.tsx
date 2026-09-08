@@ -4,7 +4,7 @@ import {AxiosError} from "axios"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 
-import {NodeConfig} from "../../features/cluster/api/ClusterType"
+import {Node, NodeConfig, NodeOverview} from "../../features/cluster/api/ClusterType"
 import {DeployVar} from "../../features/node/api/NodeType"
 import {
     DateTimeFormatter,
@@ -13,6 +13,7 @@ import {
     getDomains,
     getEditedNodeConfigs,
     getErrorMessage,
+    getKeeperCandidates,
     getNodeConfig,
     getNodeConfigs,
     getPlaceholders,
@@ -359,5 +360,34 @@ describe("getErrorMessage", () => {
     it("should return unknown for unhandled error types", () => {
         const error = {someField: "value"}
         expect(getErrorMessage(error)).toBe("unknown")
+    })
+})
+
+describe("getKeeperCandidates", () => {
+    const node = (host: string, role: Node["keeper"]["role"], key?: string, keeperPort?: number): Node => ({
+        config: {name: host, host, keeperPort},
+        keeper: {key, state: "running", role, sync: false, lag: 0, pendingRestart: false},
+        warnings: [],
+    })
+
+    it("should offer every replica, named by the key the keeper knows it by", () => {
+        const nodes: NodeOverview = {
+            a: node("localhost", "leader", "etcd1", 2379),
+            b: node("localhost", "replica", "etcd2", 2381),
+            c: node("localhost", "replica", "etcd3", 2383),
+        }
+        expect(getKeeperCandidates(nodes)).toEqual([
+            {name: "etcd2", label: "localhost:2381"},
+            {name: "etcd3", label: "localhost:2383"},
+        ])
+    })
+
+    it("should fall back to the host when the keeper reported no key", () => {
+        const nodes: NodeOverview = {a: node("replica.local", "replica", undefined, 8008)}
+        expect(getKeeperCandidates(nodes)).toEqual([{name: "replica.local", label: "replica.local:8008"}])
+    })
+
+    it("should return an empty list when there are no nodes", () => {
+        expect(getKeeperCandidates(undefined)).toEqual([])
     })
 })

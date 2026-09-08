@@ -28,6 +28,7 @@ import {Node, NodeConfig, NodeOverview, Options} from "../../features/cluster/ap
 import {
     DeployVar,
     DeployVarScope,
+    KeeperCandidate,
     KeeperConnection,
     KeeperOneRequest,
     KeeperPlugin,
@@ -200,6 +201,18 @@ export function getKeeperOneRequest(options: Options, host: string, port?: numbe
     const vaultId = options.vaults.keeperId
     const certs = options.tls.keeper ? options.certs : undefined
     return {...con, certs, vaultId, plugin: options.plugins.keeper}
+}
+
+// A candidate is named by the key the keeper knows the member by - patroni and
+// etcd both identify members by their own name, never by an address - and
+// labelled by host:port, since every node of a single-host cluster reads as
+// "localhost" otherwise. A node the keeper reported no key for falls back to
+// its host, the same default the rest of the app applies to an unnamed node.
+export const getKeeperCandidates = (nodes?: NodeOverview): KeeperCandidate[] => {
+    return Object.values(nodes ?? {})
+        .filter(node => !!node)
+        .filter(node => node.keeper.role === "replica")
+        .map(node => ({name: node.keeper.key ?? node.config.host, label: getDomain(node.config, true)}))
 }
 
 export const getDomain = (config: NodeConfig, simple: boolean = false) => {
