@@ -1,4 +1,5 @@
 import {ThemeOptions} from "@mui/material"
+import type {} from "@mui/x-date-pickers/themeAugmentation"
 
 // NOTE: a field's height is its input line plus the vertical padding only - the
 // outlined border lives on an absolutely positioned fieldset and adds nothing.
@@ -68,6 +69,21 @@ export const ThemeComponents: ThemeOptions["components"] = {
             },
         },
     },
+    // NOTE: date/time pickers (DateTimeField and friends) don't render through
+    // MuiOutlinedInput at all - MUI X ships its own MuiPickersOutlinedInput /
+    // MuiPickersInputBase pair with its own 14px/16.5px defaults, so it needs
+    // the same padding mirrored here rather than inheriting it.
+    MuiPickersOutlinedInput: {
+        styleOverrides: {
+            root: {
+                paddingLeft: PAD,
+                paddingRight: PAD,
+                "& .MuiPickersOutlinedInput-notchedOutline": {paddingLeft: NOTCH},
+                ...getPickerInputSize("medium"),
+                "&.MuiPickersInputBase-inputSizeSmall": getPickerInputSize("small"),
+            },
+        },
+    },
     MuiInputLabel: {
         styleOverrides: {
             root: {
@@ -128,6 +144,17 @@ function getInputSize(size: Size) {
             padding: `${pad} ${PAD}`,
             "& .MuiOutlinedInput-input": {height: "auto", padding: 0},
         },
+    }
+}
+
+// NOTE: unlike .MuiOutlinedInput-input, the sections container has no
+// content-box override of its own, so it stays border-box (inherited from
+// CssBaseline) - setting an explicit height here alongside padding would
+// clip the box down to that height instead of growing by the padding.
+function getPickerInputSize(size: Size) {
+    const {pad} = SIZE[size]
+    return {
+        "& .MuiPickersInputBase-sectionsContainer": {padding: `${pad} 0`},
     }
 }
 
