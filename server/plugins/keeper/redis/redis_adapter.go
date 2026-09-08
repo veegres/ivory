@@ -7,6 +7,7 @@ import (
 	"ivory/plugins/keeper"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -51,8 +52,121 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		return nil, http.StatusBadRequest, errInfo
 	}
 
-	response := mapNode(request.Host, request.Port, parseInfo(info))
-	return []keeper.Response{response}, http.StatusOK, nil
+	fields := parseInfo(info)
+	// NOTE: the cluster first - who else is in it - then this node's own state.
+	// Which half a node can answer follows from its role: a master names every
+	// replica attached to it, a replica names the master it follows. Between
+	// them a node borrowed from another redis is contradicted, because the
+	// partner it names is one nobody configured.
+	members := mapMembers(fields)
+	response := mapNode(request.Host, request.Port, fields)
+	return append([]keeper.Response{response}, members...), http.StatusOK, nil
+}
+
+// mapMembers reports the other end(s) of this node's replication, read out of
+// the same INFO the node's own state came from.
+func mapMembers(fields map[string]string) []keeper.Response {
+	if fields["role"] == "slave" {
+		if master, ok := mapMaster(fields); ok {
+			return []keeper.Response{master}
+		}
+		return nil
+	}
+	return mapReplicas(fields)
+}
+
+// mapMaster reports the server this replica follows, taken from master_host/
+// master_port - the address out of its own replicaof, so it is what Ivory would
+// connect to rather than something observed off a socket.
+//
+// It claims no role. A replica usually follows the master, but redis allows a
+// replica of a replica, so Leader would be a guess and a wrong one puts a second
+// leader on the overview. The node's own poll reports its real role anyway; this
+// response exists to say the node is there at all.
+func mapMaster(fields map[string]string) (keeper.Response, bool) {
+	host := fields["master_host"]
+	port, err := strconv.Atoi(fields["master_port"])
+	if host == "" || err != nil || port <= 0 {
+		return keeper.Response{}, false
+	}
+	key := host + ":" + strconv.Itoa(port)
+	return keeper.Response{
+		Key:                  &key,
+		State:                keeper.StateUnknown,
+		Role:                 keeper.Unknown,
+		Lag:                  -1,
+		DiscoveredHost:       &host,
+		DiscoveredKeeperPort: &port,
+		DiscoveredDbPort:     &port,
+	}, true
+}
+
+// mapReplicas reports the replicas attached to this master, one per slaveN:
+// line. Unlike the master direction these are certainly replicas, so they say
+// so; their state is left unknown because "online" is the master's view of the
+// link rather than a report from the node, and each of them answers for itself
+// when Ivory polls it.
+//
+// connected_slaves gives the count and the order, so the lines are read by index
+// rather than by scanning every key that starts with "slave".
+func mapReplicas(fields map[string]string) []keeper.Response {
+	count, err := strconv.Atoi(fields["connected_slaves"])
+	if err != nil || count <= 0 {
+		return nil
+	}
+	var replicas []keeper.Response
+	for i := 0; i < count; i++ {
+		entry, ok := fields["slave"+strconv.Itoa(i)]
+		if !ok {
+			continue
+		}
+		host, port, parsed := parseReplicaEntry(entry)
+		if !parsed {
+			continue
+		}
+		key := host + ":" + strconv.Itoa(port)
+		replicas = append(replicas, keeper.Response{
+			Key:                  &key,
+			State:                keeper.StateUnknown,
+			Role:                 keeper.Replica,
+			Lag:                  -1,
+			DiscoveredHost:       &host,
+			DiscoveredKeeperPort: &port,
+			DiscoveredDbPort:     &port,
+		})
+	}
+	return replicas
+}
+
+// parseReplicaEntry reads one "ip=10.0.0.2,port=6379,state=online,..." line.
+// The ip is the address the master observed the replication connection arrive
+// from, which is the same contract every other keeper reports under - patroni
+// hands back the host out of each member's api_url - so a deployment whose
+// replicas reach the master by an address Ivory does not know is a mismatch
+// worth showing rather than one worth hiding.
+func parseReplicaEntry(entry string) (string, int, bool) {
+	var host string
+	var port int
+	for _, part := range strings.Split(entry, ",") {
+		key, value, ok := strings.Cut(part, "=")
+		if !ok {
+			continue
+		}
+		switch key {
+		case "ip":
+			host = value
+		case "port":
+			parsed, errPort := strconv.Atoi(value)
+			if errPort != nil {
+				return "", 0, false
+			}
+			port = parsed
+		}
+	}
+	if host == "" || port <= 0 {
+		return "", 0, false
+	}
+	return host, port, true
 }
 
 func (p *Plugin) Config(request keeper.Request) (any, int, error) {

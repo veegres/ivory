@@ -48,6 +48,12 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 	defer cancel()
 
+	// NOTE: the cluster is asked about first, and separately, because it is a
+	// different question from anything below: those describe this one node, this
+	// describes what Ivory's cluster is made of. A node can be perfectly healthy
+	// and still not be in the cluster on screen.
+	peers, declared, errPeers := queryClusterPeers(ctx, conn, request.Cluster)
+
 	// NOTE: system.replicas has one row per replicated table; a node with no
 	// replicated tables at all returns zero rows, and ClickHouse's max()/min()
 	// over zero rows is 0 for every column here - which is exactly "not
@@ -104,7 +110,77 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	if errMacros != nil {
 		response.Warnings = append(response.Warnings, "cannot read system.macros: "+firstLine(errMacros.Error()))
 	}
-	return []keeper.Response{response}, http.StatusOK, nil
+	response.Warnings = append(response.Warnings, membershipWarnings(request.Cluster, declared, errPeers)...)
+	return append([]keeper.Response{response}, peers...), http.StatusOK, nil
+}
+
+// membershipWarnings reports what could not be established about the cluster,
+// which is a different failure from anything wrong with the node. A node
+// declaring no <remote_servers> entry under the name Ivory asked about cannot
+// confirm it is in that cluster at all - it may well be in three others - and
+// saying so beats rendering one node as a whole healthy cluster.
+func membershipWarnings(cluster string, declared bool, err error) []string {
+	switch {
+	case cluster == "":
+		return nil
+	case err != nil:
+		return []string{"cannot read system.clusters: " + firstLine(err.Error())}
+	case !declared:
+		return []string{fmt.Sprintf("this node is not in the cluster %q", cluster)}
+	}
+	return nil
+}
+
+// queryClusterPeers reports the other members of the cluster Ivory asked about,
+// read from the <remote_servers> entry of that name. The name has to be supplied
+// by Ivory rather than read off the node, because one clickhouse node belongs to
+// as many clusters as it was configured with - system.clusters holds every entry
+// it was given, plus the test_shard_localhost ones a stock clickhouse ships - so
+// "which cluster are you in" has no single answer where "who is in this one"
+// does. Reading the node's own {cluster} macro instead answers the first
+// question, and answers it wrong whenever the node serves more than one cluster.
+//
+// This is what lets one node answer for the whole cluster the way patroni's
+// /cluster does. host_name/port are the address Ivory itself connects on:
+// remote_servers is how the replicas reach each other, so it names the native
+// protocol endpoint. The local row is skipped because the node's own response
+// already covers it, and with a state this one cannot have - a peer here was
+// read out of a config file, never contacted.
+//
+// The second return distinguishes a cluster the node has never heard of from one
+// whose only member is the node itself; both yield no peers and they are not the
+// same answer.
+func queryClusterPeers(ctx context.Context, conn driver.Conn, cluster string) ([]keeper.Response, bool, error) {
+	if cluster == "" {
+		return nil, false, nil
+	}
+	rows, err := conn.Query(ctx, `
+		SELECT host_name, port, is_local FROM system.clusters
+		WHERE cluster = ?
+		ORDER BY shard_num, replica_num`, cluster)
+	if err != nil {
+		return nil, false, err
+	}
+	defer rows.Close()
+
+	var peers []keeper.Response
+	declared := false
+	for rows.Next() {
+		var host string
+		var port uint16
+		var isLocal uint8
+		if errScan := rows.Scan(&host, &port, &isLocal); errScan != nil {
+			return nil, false, errScan
+		}
+		declared = true
+		if isLocal == 0 {
+			peers = append(peers, mapPeer(host, int(port)))
+		}
+	}
+	if rows.Err() != nil {
+		return nil, false, rows.Err()
+	}
+	return peers, declared, nil
 }
 
 // queryMacros reads system.macros, clickhouse's own per-node identity: the
@@ -275,6 +351,23 @@ func (p *Plugin) connect(request keeper.Request) (driver.Conn, error) {
 		TLS:      request.TlsConfig,
 	})
 	return conn, err
+}
+
+// mapPeer reports a member named by another node's <remote_servers> and never
+// contacted. It claims Replica because that is what every member of a
+// multi-leader engine is by topology, and StateUnknown with an unknown lag
+// because liveness is the one thing a config file cannot vouch for.
+func mapPeer(host string, port int) keeper.Response {
+	key := host + ":" + strconv.Itoa(port)
+	return keeper.Response{
+		Key:                  &key,
+		State:                keeper.StateUnknown,
+		Role:                 keeper.Replica,
+		Lag:                  -1,
+		DiscoveredHost:       &host,
+		DiscoveredKeeperPort: &port,
+		DiscoveredDbPort:     &port,
+	}
 }
 
 func mapNode(host string, port int, readonly bool, absoluteDelay uint64) keeper.Response {

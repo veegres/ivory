@@ -175,3 +175,91 @@ func TestUnsupportedOperations(t *testing.T) {
 		})
 	}
 }
+
+// TestMembershipWarnings covers what the node could not establish about the
+// cluster, which is a separate failure from anything wrong with the node. The
+// case that matters is a node declaring no <remote_servers> entry under the
+// name Ivory asked about: it may be a healthy member of three other clusters,
+// and rendering it as this one would be the exact silent acceptance the cluster
+// name was passed down to prevent.
+func TestMembershipWarnings(t *testing.T) {
+	tests := []struct {
+		name     string
+		cluster  string
+		declared bool
+		err      error
+		expected string
+	}{
+		{
+			name:     "a node that declares the cluster says nothing",
+			cluster:  "prod",
+			declared: true,
+		},
+		{
+			name:     "a node that has never heard of the cluster says so",
+			cluster:  "prod",
+			expected: `this node is not in the cluster "prod"`,
+		},
+		{
+			name:     "a cluster that could not be read at all is reported as that, not as absent",
+			cluster:  "prod",
+			err:      errors.New("Not enough privileges"),
+			expected: "cannot read system.clusters: Not enough privileges",
+		},
+		{
+			name: "a single-node action outside any cluster is asked nothing and answers nothing",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			warnings := membershipWarnings(tt.cluster, tt.declared, tt.err)
+			if tt.expected == "" {
+				if len(warnings) != 0 {
+					t.Fatalf("expected no warnings, got %v", warnings)
+				}
+				return
+			}
+			if len(warnings) != 1 || warnings[0] != tt.expected {
+				t.Errorf("expected warning %q, got %v", tt.expected, warnings)
+			}
+		})
+	}
+}
+
+// TestMapPeer pins what a member read out of <remote_servers> may and may not
+// claim. It is the address Ivory would reach the peer on, so it carries a host
+// and both ports; nothing contacted it, so it carries no state and no lag. It
+// names no cluster either - the name came from Ivory, and handing it back would
+// be an echo rather than anything the node discovered.
+func TestMapPeer(t *testing.T) {
+	peer := mapPeer("10.0.0.2", 9000)
+
+	if peer.State != keeper.StateUnknown {
+		t.Errorf("a config file cannot vouch for liveness, expected unknown state, got %q", peer.State)
+	}
+	if peer.Role != keeper.Replica {
+		t.Errorf("every member of a multi-leader engine is a replica, got %q", peer.Role)
+	}
+	if peer.Lag != -1 {
+		t.Errorf("expected unknown lag -1, got %d", peer.Lag)
+	}
+	if peer.Status != nil {
+		t.Errorf("expected no keeper status, got %v", *peer.Status)
+	}
+	if peer.DiscoveredCluster != nil {
+		t.Errorf("expected no discovered cluster, got %q", *peer.DiscoveredCluster)
+	}
+	if peer.DiscoveredHost == nil || *peer.DiscoveredHost != "10.0.0.2" {
+		t.Errorf("expected discovered host 10.0.0.2, got %v", peer.DiscoveredHost)
+	}
+	if peer.DiscoveredKeeperPort == nil || *peer.DiscoveredKeeperPort != 9000 {
+		t.Errorf("expected discovered keeper port 9000, got %v", peer.DiscoveredKeeperPort)
+	}
+	if peer.DiscoveredDbPort == nil || *peer.DiscoveredDbPort != 9000 {
+		t.Errorf("expected discovered db port 9000, got %v", peer.DiscoveredDbPort)
+	}
+	if peer.Key == nil || *peer.Key != "10.0.0.2:9000" {
+		t.Errorf("expected key 10.0.0.2:9000, got %v", peer.Key)
+	}
+}

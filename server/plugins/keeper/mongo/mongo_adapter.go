@@ -270,6 +270,18 @@ func mapTags(m replSetMember, set string) *map[string]any {
 	return &tags
 }
 
+// setName reports the replica set every member of one mongo cluster names.
+// Unlike etcd's generated cluster id it is chosen by the operator, so two
+// unrelated deployments that both took the default rs0 look alike - it catches
+// a stranger from a differently named set, and claims nothing about one that
+// happens to share the name.
+func setName(set string) *string {
+	if set == "" {
+		return nil
+	}
+	return &set
+}
+
 func mapMember(m replSetMember, set string, primaryTime time.Time, havePrimary bool) keeper.Response {
 	role, state := mapRoleState(m.StateStr, m.Health)
 
@@ -289,6 +301,10 @@ func mapMember(m replSetMember, set string, primaryTime time.Time, havePrimary b
 		Role:   role,
 		Lag:    lag,
 		Tags:   mapTags(m, set),
+		// NOTE: enumerating members catches a node borrowed from another replica
+		// set of several, but not one borrowed from a single-member set, which
+		// names itself and nothing else. The set name contradicts that one.
+		DiscoveredCluster: setName(set),
 	}
 
 	host, port, errSplit := net.SplitHostPort(m.Name)

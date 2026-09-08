@@ -42,6 +42,13 @@ const listQuery = `SELECT pg_is_in_recovery(),
        current_setting('max_connections')::int,
        (SELECT count(*) FROM pg_stat_replication)::int`
 
+// primaryQuery reads the far end of this standby's replication connection.
+// sender_host/sender_port come from primary_conninfo rather than from the
+// socket, so they are an address Ivory can use; rows with neither are skipped
+// because a standby that is not streaming has no partner to report.
+const primaryQuery = `SELECT sender_host, sender_port FROM pg_stat_wal_receiver
+WHERE sender_host IS NOT NULL AND sender_port IS NOT NULL`
+
 // syncStandbyQuery reads the primary's live view of connected standbys.
 // sync_state is only ever populated on the primary's own connection - a
 // standby has no way to determine its own synchronous status by querying
@@ -96,11 +103,52 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		}
 		return nil, http.StatusBadRequest, err
 	}
-	responses := []keeper.Response{mapNode(request.Host, request.Port, inRecovery, lag, stats)}
-	if !inRecovery {
-		responses = append(responses, p.listSyncStandbys(request)...)
+	// NOTE: the two halves of the membership picture, and which one this node
+	// can answer depends on the role it just reported: a primary names the
+	// standbys connected to it, a standby names the server it streams from.
+	// Between them a node belonging to some other postgres is contradicted -
+	// it names a partner nobody configured.
+	var members []keeper.Response
+	if inRecovery {
+		members = p.listPrimary(request)
+	} else {
+		members = p.listSyncStandbys(request)
 	}
-	return responses, http.StatusOK, nil
+
+	response := mapNode(request.Host, request.Port, inRecovery, lag, stats)
+	return append([]keeper.Response{response}, members...), http.StatusOK, nil
+}
+
+// listPrimary reports the server this standby actually streams from. The
+// address is the one out of primary_conninfo, so it is what Ivory would connect
+// to rather than a socket address something observed, which is what makes it
+// safe to report as a node at all.
+//
+// It is best-effort: pg_stat_wal_receiver shows its rows only to superusers and
+// pg_read_all_stats, and losing a membership check must not cost the node.
+//
+// It claims no role. A standby usually streams from the primary, but postgres
+// allows cascading, where the sender is another standby - so Leader would be a
+// guess, and a wrong one puts a second leader on the overview. Every configured
+// node reports its own role from its own connection anyway; this response exists
+// to say the node is there at all.
+func (p *Plugin) listPrimary(request keeper.Request) []keeper.Response {
+	var members []keeper.Response
+	err := p.query(request, primaryQuery, func(rows pgx.Rows) error {
+		for rows.Next() {
+			var host string
+			var port int
+			if errScan := rows.Scan(&host, &port); errScan != nil {
+				return errScan
+			}
+			members = append(members, mapSender(host, port))
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil
+	}
+	return members
 }
 
 // listSyncStandbys reports every standby currently connected to this
@@ -330,6 +378,23 @@ func mapSyncStandby(name string, syncState string) keeper.Response {
 	return keeper.Response{
 		Sync:           syncState == "sync" || syncState == "quorum",
 		DiscoveredName: &name,
+	}
+}
+
+// mapSender reports a node seen only as the far end of a replication
+// connection: its address is known and nothing else is, so it states an unknown
+// state, an unknown role and an unknown lag rather than borrowing any of them
+// from the node that named it.
+func mapSender(host string, port int) keeper.Response {
+	key := host + ":" + strconv.Itoa(port)
+	return keeper.Response{
+		Key:                  &key,
+		State:                keeper.StateUnknown,
+		Role:                 keeper.Unknown,
+		Lag:                  -1,
+		DiscoveredHost:       &host,
+		DiscoveredKeeperPort: &port,
+		DiscoveredDbPort:     &port,
 	}
 }
 
