@@ -31,7 +31,7 @@ const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
 //
 // The remaining columns are the node's tags (see mapTags). They are read in
 // this query rather than one of their own because a second round trip per node
-// per poll would buy nothing: all three are views any role may read on the
+// per poll would buy nothing: both are views any role may read on the
 // connection this query has already opened.
 const listQuery = `SELECT pg_is_in_recovery(),
        CASE WHEN pg_is_in_recovery()
@@ -39,8 +39,7 @@ const listQuery = `SELECT pg_is_in_recovery(),
             ELSE 0 END,
        split_part(current_setting('server_version'), ' ', 1),
        (SELECT count(*) FROM pg_stat_activity)::int,
-       current_setting('max_connections')::int,
-       (SELECT count(*) FROM pg_stat_replication)::int`
+       current_setting('max_connections')::int`
 
 // primaryQuery reads the far end of this standby's replication connection.
 // sender_host/sender_port come from primary_conninfo rather than from the
@@ -92,7 +91,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	var lag int64
 	var stats nodeStats
 	err := p.queryRow(request, listQuery, func(row pgx.Row) error {
-		return row.Scan(&inRecovery, &lag, &stats.Version, &stats.Connections, &stats.MaxConnections, &stats.Replicas)
+		return row.Scan(&inRecovery, &lag, &stats.Version, &stats.Connections, &stats.MaxConnections)
 	})
 	if err != nil {
 		if state, ok := mapUnavailableState(err); ok {
@@ -413,7 +412,7 @@ func mapNode(host string, port int, inRecovery bool, lag int64, stats nodeStats)
 		State:                keeper.StateRunning,
 		Role:                 role,
 		Lag:                  lag,
-		Tags:                 mapTags(role, stats),
+		Tags:                 mapTags(stats),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,
@@ -424,21 +423,15 @@ func mapNode(host string, port int, inRecovery bool, lag int64, stats nodeStats)
 // healthy actually is one. Connections are shown against max_connections
 // because the number alone says nothing - the same 90 sessions are unremarkable
 // on one node and the last ten before every new connection is refused on
-// another. A primary's standby count is the only thing here it cannot see about
-// itself: a replica that stopped streaming keeps reporting itself running, and
-// the primary's own pg_stat_replication is where it goes missing. A replica's
-// count is left off rather than printed as zero, since a replica has no
-// standbys to lose unless someone cascaded one behind it.
-func mapTags(role keeper.Role, stats nodeStats) *map[string]any {
+// another. A standby count is not here: the overview already draws one row per
+// standby, so printing how many there are restated it on every poll.
+func mapTags(stats nodeStats) *map[string]any {
 	tags := map[string]any{}
 	if stats.Version != "" {
 		tags["version"] = stats.Version
 	}
 	if stats.MaxConnections > 0 {
 		tags["connections"] = strconv.Itoa(stats.Connections) + "/" + strconv.Itoa(stats.MaxConnections)
-	}
-	if role == keeper.Leader {
-		tags["replicas"] = stats.Replicas
 	}
 	if len(tags) == 0 {
 		return nil

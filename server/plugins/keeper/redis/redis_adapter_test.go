@@ -94,13 +94,13 @@ func TestMapTags(t *testing.T) {
 			expected: map[string]any{"version": "7.2.4", "memory": "1.51M", "replicas": "2"},
 		},
 		{
-			name: "replica reports the master it follows and the link to it",
+			name: "a replica states neither the link nor the master it follows",
 			fields: map[string]string{
 				"redis_version": "7.2.4", "used_memory_human": "1.51M", "connected_slaves": "0",
 				"master_link_status": "down", "master_host": "10.0.0.1", "master_port": "6379",
 			},
 			role:     keeper.Replica,
-			expected: map[string]any{"version": "7.2.4", "memory": "1.51M", "link": "down", "master": "10.0.0.1:6379"},
+			expected: map[string]any{"version": "7.2.4", "memory": "1.51M"},
 		},
 		{
 			name:     "nothing to report stays nil",
@@ -128,6 +128,54 @@ func TestMapTags(t *testing.T) {
 			for key, value := range tt.expected {
 				if (*tags)[key] != value {
 					t.Errorf("expected tag %q to be %v, got %v", key, value, (*tags)[key])
+				}
+			}
+		})
+	}
+}
+
+// TestLinkWarnings pins that a broken replication link is a warning rather than
+// a tag: the node still reports itself running, and Lag only measures how long
+// ago the last byte arrived, so nothing else on the row shows it.
+func TestLinkWarnings(t *testing.T) {
+	tests := []struct {
+		name     string
+		fields   map[string]string
+		role     keeper.Role
+		expected []string
+	}{
+		{
+			name:     "a replica whose link is down warns",
+			fields:   map[string]string{"master_link_status": "down"},
+			role:     keeper.Replica,
+			expected: []string{"replication link to the master is down"},
+		},
+		{
+			name:   "a replica whose link is up says nothing",
+			fields: map[string]string{"master_link_status": "up"},
+			role:   keeper.Replica,
+		},
+		{
+			name:   "a master has no link to report",
+			fields: map[string]string{"master_link_status": "down"},
+			role:   keeper.Leader,
+		},
+		{
+			name:   "a replica that reported no link status is not guessed at",
+			fields: map[string]string{},
+			role:   keeper.Replica,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			warnings := linkWarnings(tt.fields, tt.role)
+			if len(warnings) != len(tt.expected) {
+				t.Fatalf("expected %v, got %v", tt.expected, warnings)
+			}
+			for i, want := range tt.expected {
+				if warnings[i] != want {
+					t.Errorf("expected warning %q, got %q", want, warnings[i])
 				}
 			}
 		})

@@ -148,7 +148,33 @@ complete on a broken cluster — so read health from what replication actually u
 - **`Tags` is an opaque passthrough.** Whatever the engine calls its own per-node facts, verbatim, without
   Ivory interpreting them. Good tags are the ones that answer a question `State`/`Role`/`Lag` structurally
   cannot: which shard this node serves, whether it is a non-voting learner, what version it runs mid-upgrade,
-  how big its backend has grown against a quota, which peer it syncs from.
+  how big its backend has grown against a quota.
+- **A tag must not restate what the overview already draws.** `Role`, `State`, `Lag`, `Sync`, `Status` and
+  `DiscoveredCluster` are rendered fields, and the set of rows is one too, so a tag repeating any of it is
+  noise on every healthy row. Audit for this: redis' `master` (the topology the rows draw), mongo's
+  `replicaSet` (`DiscoveredCluster`) and postgres' `replicas` (a count of rows already on screen) were all
+  removed, the last taking a `pg_stat_replication` subquery out of every poll with it.
+- **A fault is a warning — not a tag, and not a state.** A tag reading `up` on every healthy node carries
+  nothing and buries the one case that matters; redis reports a master link that is not `up` through
+  `linkWarnings`. `State` is the process lifecycle, so a node that answered and serves reads is `running`
+  however badly its replication is doing — clickhouse mapping `is_readonly` onto `StateStopping` claimed a
+  serving node was shutting down, and is now a warning.
+- **A per-member probe needs its own deadline.** Where `List` fans out to every member (etcd's `Status` per
+  member), one shared context makes a dead member spend the budget the members after it need: they come back
+  `context deadline exceeded` and are reported unreachable too, so stopping one etcd node of three showed two
+  as dead. Give each probe its own timeout and run them concurrently, so the whole list costs one timeout
+  rather than one per member.
+- **One member's outage is not the answering node's error.** Report it as that member's own `State` plus its
+  own `Warnings`; returning an error for the whole `List` blames the node Ivory asked, which then carries a
+  "failed to get Keeper response" naming somebody else's outage.
+- **Weigh what a tag costs.** Count the round trips `List` makes and ask what each one is for. Everything etcd
+  tags rides the `Status` reply `Role`/`State` already need; postgres' ride `listQuery`. Clickhouse's macros
+  cost a fourth query every poll to re-read operator config that never changes between polls — dropped. Free
+  information clears a low bar; information worth its own request clears a high one, and static config never
+  does.
+- **Where a tag is the right channel but one value is unremarkable, report only the other.** Mongo names
+  `syncSource` only when it is not the primary, `memberState` only for a member that is neither primary nor
+  secondary; etcd names `learner` only when true.
 - **Format a tag so a healthy value never reads as a broken one.** A fresh etcd backend printed as `0.0 MiB`
   looks like a failed read; `20 KiB` looks like what it is. Check every unit boundary you introduce.
 - **`Lag` units are per-plugin and are never comparable across plugins.** Do not normalize them; do document

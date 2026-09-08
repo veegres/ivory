@@ -11,21 +11,20 @@ import (
 func TestMapNode(t *testing.T) {
 	tests := []struct {
 		name          string
-		readonly      bool
 		absoluteDelay uint64
 		expectedState keeper.State
 		expectedRole  keeper.Role
 		expectedLag   int64
 	}{
-		{name: "healthy node is a running replica", readonly: false, absoluteDelay: 0, expectedState: keeper.StateRunning, expectedRole: keeper.Replica, expectedLag: 0},
-		// NOTE: still a replica - the node answered, so what it is stays
-		// known; only its state changes
-		{name: "readonly node stays a replica", readonly: true, absoluteDelay: 12, expectedState: keeper.StateStopping, expectedRole: keeper.Replica, expectedLag: 12},
+		{name: "healthy node is a running replica", absoluteDelay: 0, expectedState: keeper.StateRunning, expectedRole: keeper.Replica, expectedLag: 0},
+		// NOTE: a node that answered is running whatever its replication is
+		// doing - it serves reads - so a delay changes neither state nor role.
+		{name: "a lagging node is still a running replica", absoluteDelay: 12, expectedState: keeper.StateRunning, expectedRole: keeper.Replica, expectedLag: 12},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := mapNode("ch1", 9000, tt.readonly, tt.absoluteDelay)
+			response := mapNode("ch1", 9000, tt.absoluteDelay)
 			if response.State != tt.expectedState {
 				t.Errorf("expected state %q, got %q", tt.expectedState, response.State)
 			}
@@ -67,6 +66,7 @@ func TestMapNode(t *testing.T) {
 func TestReplicaWarnings(t *testing.T) {
 	tests := []struct {
 		name                          string
+		readonly                      bool
 		activeReplicas, totalReplicas uint32
 		stuckCount                    uint64
 		sampleError                   string
@@ -77,11 +77,15 @@ func TestReplicaWarnings(t *testing.T) {
 		{name: "a replica dropped its coordination-store session", activeReplicas: 2, totalReplicas: 3, stuckCount: 0, expectedCount: 1},
 		{name: "sessions are fine but a fetch is stuck", activeReplicas: 3, totalReplicas: 3, stuckCount: 1, sampleError: "Connection refused", expectedCount: 1},
 		{name: "both at once", activeReplicas: 1, totalReplicas: 3, stuckCount: 2, sampleError: "DNS_ERROR", expectedCount: 2},
+		// A read-only node is running and serving reads, so it is a warning
+		// rather than a state - the same call redis makes for a dead link.
+		{name: "read-only tables warn without changing the state", readonly: true, activeReplicas: 3, totalReplicas: 3, stuckCount: 0, expectedCount: 1},
+		{name: "read-only on top of a lost session is two warnings", readonly: true, activeReplicas: 2, totalReplicas: 3, stuckCount: 0, expectedCount: 2},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			warnings := replicaWarnings(tt.activeReplicas, tt.totalReplicas, tt.stuckCount, tt.sampleError)
+			warnings := replicaWarnings(tt.readonly, tt.activeReplicas, tt.totalReplicas, tt.stuckCount, tt.sampleError)
 			if len(warnings) != tt.expectedCount {
 				t.Fatalf("expected %d warning(s), got %v", tt.expectedCount, warnings)
 			}

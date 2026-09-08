@@ -6,5 +6,4 @@ type nodeStats struct {
 	Version        string
 	Connections    int
 	MaxConnections int
-	Replicas       int
 }

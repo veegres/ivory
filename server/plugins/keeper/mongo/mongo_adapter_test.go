@@ -100,34 +100,40 @@ func TestMapStatusNoPrimary(t *testing.T) {
 
 func TestMapTags(t *testing.T) {
 	tests := []struct {
-		name     string
-		member   replSetMember
-		set      string
-		expected map[string]any
+		name        string
+		member      replSetMember
+		primaryName string
+		expected    map[string]any
 	}{
 		{
-			name:     "secondary states only what its role does not say",
-			member:   replSetMember{Name: "mongo2:27017", StateStr: "SECONDARY", SyncSourceHost: "mongo1:27017", PingMs: 3},
-			set:      "rs0",
-			expected: map[string]any{"replicaSet": "rs0", "syncSource": "mongo1:27017", "ping": "3ms"},
+			name:        "a secondary replicating from the primary states only its ping",
+			member:      replSetMember{Name: "mongo2:27017", StateStr: "SECONDARY", SyncSourceHost: "mongo1:27017", PingMs: 3},
+			primaryName: "mongo1:27017",
+			expected:    map[string]any{"ping": "3ms"},
 		},
 		{
-			name:     "arbiter is told apart from a member mongo could not classify",
-			member:   replSetMember{Name: "mongo3:27017", StateStr: "ARBITER"},
-			set:      "rs0",
-			expected: map[string]any{"replicaSet": "rs0", "memberState": "ARBITER"},
+			name:        "a secondary chained off another secondary names its sync source",
+			member:      replSetMember{Name: "mongo3:27017", StateStr: "SECONDARY", SyncSourceHost: "mongo2:27017", PingMs: 3},
+			primaryName: "mongo1:27017",
+			expected:    map[string]any{"syncSource": "mongo2:27017", "ping": "3ms"},
 		},
 		{
-			name:     "self reports no ping it never measured",
-			member:   replSetMember{Name: "mongo1:27017", StateStr: "PRIMARY", Self: true},
-			set:      "rs0",
-			expected: map[string]any{"replicaSet": "rs0"},
+			name:        "with no primary at all a sync source is worth showing",
+			member:      replSetMember{Name: "mongo2:27017", StateStr: "SECONDARY", SyncSourceHost: "mongo1:27017"},
+			primaryName: "",
+			expected:    map[string]any{"syncSource": "mongo1:27017"},
+		},
+		{
+			name:        "arbiter is told apart from a member mongo could not classify",
+			member:      replSetMember{Name: "mongo3:27017", StateStr: "ARBITER"},
+			primaryName: "mongo1:27017",
+			expected:    map[string]any{"memberState": "ARBITER"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tags := mapTags(tt.member, tt.set)
+			tags := mapTags(tt.member, tt.primaryName)
 			if tags == nil {
 				t.Fatal("expected tags, got nil")
 			}
@@ -144,6 +150,15 @@ func TestMapTags(t *testing.T) {
 
 	t.Run("nothing to report stays nil", func(t *testing.T) {
 		if tags := mapTags(replSetMember{StateStr: "PRIMARY"}, ""); tags != nil {
+			t.Errorf("expected no tags, got %v", *tags)
+		}
+	})
+
+	// The set name is DiscoveredCluster, which addClusterWarnings checks every
+	// node against, so repeating it on every row said nothing new.
+	t.Run("the replica set is not a tag", func(t *testing.T) {
+		tags := mapTags(replSetMember{Name: "mongo1:27017", StateStr: "PRIMARY", Self: true}, "mongo1:27017")
+		if tags != nil {
 			t.Errorf("expected no tags, got %v", *tags)
 		}
 	})
@@ -262,7 +277,7 @@ func TestSetName(t *testing.T) {
 func TestMapMemberReportsSetName(t *testing.T) {
 	member := replSetMember{Name: "mongo1:27017", StateStr: "PRIMARY", Health: 1}
 
-	response := mapMember(member, "rs0", time.Time{}, false)
+	response := mapMember(member, "rs0", replSetMember{}, false)
 
 	if response.DiscoveredCluster == nil || *response.DiscoveredCluster != "rs0" {
 		t.Errorf("expected discovered cluster rs0, got %v", response.DiscoveredCluster)
