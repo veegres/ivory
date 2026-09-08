@@ -121,19 +121,91 @@ complete on a broken cluster — so read health from what replication actually u
 
 ### 2. Healthiness — is it alive, and what is wrong with it
 
-`State` (`running` / `starting` / `stopping` / `unreachable` / `unknown`) plus `Warnings`.
+`State` plus `Warnings`.
 
-- **State must be observed, never assumed.** A successful TCP connect is not `running`. If the engine has a
-  readiness or read-only notion, that is what `State` reflects.
+#### How `State` is treated in the overview
+
+`State` answers exactly one question: **is this node alive and serving, as far as somebody actually looked.**
+It is a process lifecycle — `running`, `starting`, `restarting`, `stopping`, `stopped`, `failed`,
+`unreachable`, `unknown` — and nothing else belongs in it.
+
+- **Observed, never assumed.** A successful TCP connect is not `running`. If the engine has a readiness notion,
+  that is what `State` reflects.
+- **Broken replication is not a state.** A node that answers and serves reads is `running` however badly its
+  replication is doing; what is wrong goes in `Warnings`. Redis reports a dead master link through
+  `linkWarnings`; clickhouse's `is_readonly` used to map onto `StateStopping`, which claimed a serving node was
+  shutting down, and is a warning now too.
+- **`unknown` means nobody observed this node's liveness.** It is what a peer's member list produces: a node
+  read out of another node's configuration and never contacted. It always travels with `Lag: -1`, and
+  `addKeeperResponsesToMap` treats exactly that pair as hearsay, so the node's own answer replaces it
+  whichever order the two arrive in. Never invent `running` for such a peer.
+- **`unreachable` asserts that something tried and failed**, so only whoever tried may state it. An adapter may,
+  for a member it probed itself (etcd's per-member `Status`). An adapter may **not** borrow it for a member it
+  merely read out of a config — that is `unknown`.
+- **What a node *is* may come from a peer; whether it is *alive* may not.** Role and membership are topology,
+  and patroni reporting every member from whichever node answers is exactly right. Liveness is Ivory's own
+  observation, and a peer describing a node it can still see must never be able to state it.
+  `cluster.Service.markUnansweredNodes` holds that line: a connection that returned an error and produced no
+  response at all has its node's `State` corrected to `unreachable` and its `Lag` to `-1`, **while its role and
+  everything else a peer said stay**. Without it a stopped clickhouse node kept the `replica` its peers list in
+  `system.clusters` and read as running. It lives in `getKeeperListByManyAll` because that is the only place
+  both halves are known: which connection failed, and whether that node answered anyway.
+- **A node that answered keeps the state it observed about itself**, even when the call also returned an error.
+  Postgres replies `"the database system is starting up"` as a response *plus* an error, and `starting` says
+  more than `unreachable` can; the error becomes that node's warning. Only a connection that produced nothing
+  at all counts as unreached.
+- **A node no peer mentioned and Ivory could not reach** has no entry to correct, and `addOverviewWarnings`
+  gives it the full `unreachable`/`RoleUnknown` placeholder plus `"node was not found in Keeper response"`.
+
+#### The eight states, and what each one claims
+
+Every adapter maps its own engine vocabulary onto this fixed set, so the overview only ever has to understand
+these. Pick by **what is claimed**, not by what sounds closest.
+
+| Value | Claims | Reached by, in practice |
+|---|---|---|
+| `running` | answered, and serving | patroni `running`/`streaming`/`in archive recovery`; mongo `PRIMARY`/`SECONDARY`/`ARBITER`; a probe that succeeded |
+| `starting` | coming up, not serving yet | patroni `starting`/`creating replica`/`initializing new cluster`; postgres `57P03` "starting up"; mongo `STARTUP`/`STARTUP2`; an etcd member with no client urls yet |
+| `restarting` | deliberately cycling | patroni `restarting`; mongo `RECOVERING`/`ROLLBACK` |
+| `stopping` | shutting down | patroni `stopping`; postgres `57P03` whose message says "shutting down" |
+| `stopped` | down, and the keeper still knows it | patroni `stopped`; mongo `REMOVED` |
+| `failed` | the engine says it failed | patroni `crashed`/`start failed`/`initdb failed`/`custom bootstrap failed` |
+| `unreachable` | somebody tried to reach it and could not | etcd, for a member whose own `Status` probe errored; mongo `DOWN` or `health == 0`; Ivory's `markUnansweredNodes` |
+| `unknown` | nobody looked, or the engine said something we do not recognize | a member read out of a peer's config (with `Lag: -1`); an adapter's `default:` branch for an unmapped engine state |
+
+Only patroni reaches most of these, and that is fine — a plugin uses what its engine can actually distinguish
+(redis and zookeeper only ever emit `running` and `unknown`). What is not fine is reaching for a value whose
+claim the engine did not make: `failed` because a query errored, `stopping` because a replica went read-only,
+`running` because a TCP connect succeeded.
+
+**A per-member probe needs its own deadline.** Where `List` fans out to every member (etcd's `Status` per
+member), one shared context makes a dead member spend the budget the members after it need: they come back
+`context deadline exceeded`, which reads as `unreachable`, so stopping one etcd node of three showed two as
+dead. Give each probe its own timeout and run them concurrently — the whole list then costs one timeout rather
+than one per member.
+
+| Who is speaking | May set | Never sets |
+|---|---|---|
+| the node itself, answering | any lifecycle state it observed about itself | — |
+| an adapter, about a member it probed | `running`, `unreachable`, whatever it saw | — |
+| an adapter, about a member read from a config | `unknown`, with `Lag: -1` | `running`, `unreachable` |
+| Ivory, `markUnansweredNodes` | `unreachable`, when the connection produced nothing | a role — that stays the peer's |
+
+#### `Warnings`
+
 - **`Warnings` is the channel for what only the engine can see** — a lost coordination-store session, a
   replication queue stuck on a real failure, a peer that answers but cannot fetch. Ivory has no engine-specific
   way to notice these, so it only ever passes them through (`addOverviewWarnings` appends them onto the node's
   own warnings). A plugin that knows something is wrong and does not say so has failed this goal even if every
   field is populated.
+- **A fault belongs to the node it happened to.** Report it as that member's own `State` plus its own
+  `Warnings`; returning an error for the whole `List` blames the node Ivory asked, which then carries a
+  "failed to get Keeper response" naming somebody else's outage. Etcd did exactly that until a member's reason
+  moved onto its own row.
 - **A best-effort read must not become a health verdict.** If a query that only feeds tags or warnings fails,
-  degrade it to a warning; do not fail the node. `clickhouse`'s `queryMacros` handling is the reference
-  implementation of this: its two health queries hard-fail the call, the macros read does not, and its failure
-  is reported as a warning instead of being dropped. Copy that shape.
+  degrade it to a warning; do not fail the node. Clickhouse is the reference: its two health queries
+  (`system.replicas`, `system.replication_queue`) hard-fail the call, while a failed `queryClusterPeers` is
+  reported through `membershipWarnings` and leaves the node's own state intact. Copy that shape.
 
 ### 3. Informativeness — say what you can, skip what you can't
 
@@ -141,10 +213,62 @@ complete on a broken cluster — so read health from what replication actually u
 
 - **Skipping is a legitimate answer; fabricating is not.** A wrong lag is worse than no lag. `Lag` of `-1`
   means unknown. `Tags` of `nil` means nothing to report.
-- **`Unknown` as a `Role` is a fault claim** — it asserts Ivory could not tell, and consumers are entitled to
-  treat it as a problem. An engine with no leader concept reports its members as `Replica`, which is what they
-  are, and answers `ReplicationModel() == keeper.MultiLeader` so the leader warnings never fire on a healthy
-  cluster. See **The two replication paradigms** below — it changes what all four goals mean.
+
+Each field below carries the same split `State` does: **topology a peer may report, versus an observation only
+the node itself or Ivory may make.** Get that wrong and the overview renders a confident, detailed, wrong
+picture — which is worse than a sparse one.
+
+#### `Role` — leader / replica / unknown
+
+- **`Unknown` is a fault claim, not a shrug.** It asserts Ivory could not tell, and consumers are entitled to
+  treat it as a problem. Never use it to mean "this engine has no leaders".
+- **An engine with no leader concept reports `Replica`**, which is what its members are, and answers
+  `ReplicationModel() == keeper.MultiLeader` so the leader warnings never fire on a healthy cluster. See
+  **The two replication paradigms** below.
+- **Claim a role only where the engine settles it.** The replicas attached to a master certainly are replicas.
+  The server a replica *follows* may itself be a replica — redis and postgres both allow chaining — so that
+  direction reports `Unknown` rather than putting a second leader on the overview.
+- **A peer may report a role, and that is legitimate**, exactly as patroni reports every member from whichever
+  node answers. Role is topology. It survives even when Ivory cannot reach the node — `markUnansweredNodes`
+  corrects that node's `State`, never its `Role`.
+- Only `addOverviewWarnings` counts leaders, and it warns on both zero and more than one, so a guessed
+  `Leader` is not a cosmetic error: it silences the "no leader" warning or invents a split brain.
+
+#### `Lag` — how far behind, or `-1`
+
+- **`-1` means unknown, and `0` is a claim of being caught up.** Never default to `0`; that is the one value
+  that reads as healthy.
+- **A leader reports `0`.** Lag is only meaningful for a replica.
+- **The unit is the adapter's own** — patroni's `/cluster` value, postgres' `pg_wal_lsn_diff` in bytes, redis'
+  seconds since the last byte from its master, clickhouse's `absolute_delay`, mongo's optime difference in
+  seconds. Compare within one plugin, never across. Say which unit in the report.
+- **A lag is an observation, so it never survives its node.** A member nothing contacted carries `-1`
+  alongside `unknown`, and `markUnansweredNodes` resets `Lag` to `-1` when it corrects a state — a `0` read
+  off a peer for a node nobody can reach is exactly the wrong thing to show.
+- **A lag the engine cannot honestly measure is `-1`, not a computed stand-in.** Redis reports seconds since
+  last contact rather than bytes because a replica has no cheap way to learn its byte distance.
+
+#### `Sync` — in the synchronous set, or not
+
+- **`false` is the correct answer for every engine without a synchronous-replica concept**, and for every
+  `Leader`/`Unknown`. It is not a gap to fill.
+- **Only the leader can answer it.** A standby cannot determine its own synchronous status, which is why
+  postgres reads `sync_state` from the primary's `pg_stat_replication` and merges it onto the node separately
+  (`mergeKeeperSync`). An adapter that answers `Sync` from a replica's own connection is guessing.
+
+#### The remaining fields
+
+| Field | Who may set it | Rule |
+|---|---|---|
+| `Key` | the keeper | The keeper's own identifier for the member, opaque to everyone else. It is what an action refers back to (a switchover names the current leader's key). Never parse or derive anything from it. |
+| `Status` | the keeper | `ACTIVE`/`PAUSED` for the whole keeper's failover management, not for one member. `nil` where the engine has no such notion — do not default it to `ACTIVE` to fill the column. |
+| `PendingRestart` | the keeper | Only where the engine actually tracks a config change awaiting a restart. `false` otherwise; it is not "unknown". |
+| `ScheduledSwitchover` | the keeper | Set only on the member a pending switchover would move the leader *away from*; `nil` on every other member. |
+| `ScheduledRestart` | the keeper | That member's own pending restart schedule; `nil` otherwise. |
+| `Discovered*` | discovery only | Ground truth from the engine, and the witness every drift check depends on. **Never** populated by copying back what arrived on `keeper.Request` — see goal 1. `DiscoveredName` only where the engine has a real member name of its own; an engine that identifies members by `host:port` leaves it nil so the node falls back to its host. |
+
+#### `Tags`
+
 - **`Tags` is an opaque passthrough.** Whatever the engine calls its own per-node facts, verbatim, without
   Ivory interpreting them. Good tags are the ones that answer a question `State`/`Role`/`Lag` structurally
   cannot: which shard this node serves, whether it is a non-voting learner, what version it runs mid-upgrade,
@@ -154,19 +278,9 @@ complete on a broken cluster — so read health from what replication actually u
   noise on every healthy row. Audit for this: redis' `master` (the topology the rows draw), mongo's
   `replicaSet` (`DiscoveredCluster`) and postgres' `replicas` (a count of rows already on screen) were all
   removed, the last taking a `pg_stat_replication` subquery out of every poll with it.
-- **A fault is a warning — not a tag, and not a state.** A tag reading `up` on every healthy node carries
-  nothing and buries the one case that matters; redis reports a master link that is not `up` through
-  `linkWarnings`. `State` is the process lifecycle, so a node that answered and serves reads is `running`
-  however badly its replication is doing — clickhouse mapping `is_readonly` onto `StateStopping` claimed a
-  serving node was shutting down, and is now a warning.
-- **A per-member probe needs its own deadline.** Where `List` fans out to every member (etcd's `Status` per
-  member), one shared context makes a dead member spend the budget the members after it need: they come back
-  `context deadline exceeded` and are reported unreachable too, so stopping one etcd node of three showed two
-  as dead. Give each probe its own timeout and run them concurrently, so the whole list costs one timeout
-  rather than one per member.
-- **One member's outage is not the answering node's error.** Report it as that member's own `State` plus its
-  own `Warnings`; returning an error for the whole `List` blames the node Ivory asked, which then carries a
-  "failed to get Keeper response" naming somebody else's outage.
+- **A fault is a warning, not a tag.** A tag reading `up` on every healthy node carries nothing and buries the
+  one case that matters; redis reports a master link that is not `up` through `linkWarnings`. It is not a
+  `State` either — see **How `State` is treated in the overview** above.
 - **Weigh what a tag costs.** Count the round trips `List` makes and ask what each one is for. Everything etcd
   tags rides the `Status` reply `Role`/`State` already need; postgres' ride `listQuery`. Clickhouse's macros
   cost a fourth query every poll to re-read operator config that never changes between polls — dropped. Free
@@ -415,13 +529,18 @@ that exists.
 
 | Field | Source | Notes |
 |---|---|---|
-| `State` | | observed, or assumed? |
-| `Role` | | |
-| `Lag` | | **name the unit** — it is not comparable across plugins |
+| `State` | | which of the eight it can reach, and **observed or assumed?** |
+| `Role` | | and where it declines to guess one |
+| `Lag` | | **name the unit** — it is not comparable across plugins; and when it is `-1` |
 | `Sync` | | or "engine has no concept" |
-| `Tags` | | list the keys |
+| `Status` | | `ACTIVE`/`PAUSED`, or `nil` where the engine has no such notion |
+| `Tags` | | list the keys, and say which reply each rides — a tag that costs its own request must justify it |
 | `Warnings` | | what the engine can see that Ivory cannot |
+| `Discovered*` | | which are populated, and confirm none echoes `keeper.Request` |
 | `ReplicationModel` | `SingleLeader` \| `MultiLeader` | and why |
+
+Call out explicitly anything the plugin reports about a member it did **not** contact: that must be `unknown`
+with `Lag: -1`, never `running` and never `unreachable`.
 
 Also state the shipped templates: how many, which platforms, which accounts their `Defaults` name.
 
