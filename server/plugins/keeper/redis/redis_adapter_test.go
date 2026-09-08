@@ -209,10 +209,12 @@ func TestUnsupportedOperations(t *testing.T) {
 	}
 }
 
-// TestMapMembers covers the half of the cluster each node can answer for. It is
-// what stops a node borrowed from another redis being accepted in silence: the
-// partner it names is one nobody configured, so it surfaces as a node found in
-// the keeper response but missing from the cluster.
+// TestMapMembers covers the one direction a redis node can be believed about:
+// the master a replica names comes out of its own replicaof, so it is an
+// address somebody configured. It is what stops a node borrowed from another
+// redis being accepted in silence - the master it names is one nobody
+// configured, so it surfaces as a node found in the keeper response but
+// missing from the cluster.
 func TestMapMembers(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -225,16 +227,6 @@ func TestMapMembers(t *testing.T) {
 			expected: []string{"10.0.0.1:6379"},
 		},
 		{
-			name: "a master names every replica attached to it",
-			fields: map[string]string{
-				"role":             "master",
-				"connected_slaves": "2",
-				"slave0":           "ip=10.0.0.2,port=6379,state=online,offset=1,lag=0",
-				"slave1":           "ip=10.0.0.3,port=6379,state=online,offset=1,lag=0",
-			},
-			expected: []string{"10.0.0.2:6379", "10.0.0.3:6379"},
-		},
-		{
 			name:   "a master with no replicas names nobody",
 			fields: map[string]string{"role": "master", "connected_slaves": "0"},
 		},
@@ -243,13 +235,8 @@ func TestMapMembers(t *testing.T) {
 			fields: map[string]string{"role": "slave"},
 		},
 		{
-			name: "a slaveN line the master counted but did not emit is skipped, not invented",
-			fields: map[string]string{
-				"role":             "master",
-				"connected_slaves": "2",
-				"slave0":           "ip=10.0.0.2,port=6379,state=online",
-			},
-			expected: []string{"10.0.0.2:6379"},
+			name:   "an unparseable master port is dropped rather than defaulted",
+			fields: map[string]string{"role": "slave", "master_host": "10.0.0.1", "master_port": "six"},
 		},
 	}
 
@@ -274,52 +261,43 @@ func TestMapMembers(t *testing.T) {
 	}
 }
 
-// TestMapMembersRoleClaims pins the asymmetry between the two directions: a
-// master's replicas are certainly replicas, while the server a replica follows
-// may itself be a replica, since redis allows a replica of a replica. Claiming
-// Leader there would put a second leader on the overview.
-func TestMapMembersRoleClaims(t *testing.T) {
+// TestMapMembersClaimsNoRoleForTheMaster pins why the one direction reported
+// still claims nothing: a replica usually follows the master, but redis allows
+// a replica of a replica, so Leader would be a guess and a wrong one puts a
+// second leader on the overview.
+func TestMapMembersClaimsNoRoleForTheMaster(t *testing.T) {
 	master := mapMembers(map[string]string{"role": "slave", "master_host": "10.0.0.1", "master_port": "6379"})
 	if master[0].Role != keeper.Unknown {
 		t.Errorf("a chained replica makes the master a guess, expected unknown role, got %q", master[0].Role)
 	}
+}
 
-	replicas := mapMembers(map[string]string{
-		"role": "master", "connected_slaves": "1", "slave0": "ip=10.0.0.2,port=6379,state=online",
+// TestMapMembersDoesNotEnumerateReplicas pins the deliberate gap: the ip on a
+// slaveN: line is the source address the master observed, so under the shipped
+// single-host template it is ::1 and under bridge networking the docker
+// gateway. Reporting those invented three nodes nobody configured and warned
+// about each one, which is worse than reporting no member list at all.
+func TestMapMembersDoesNotEnumerateReplicas(t *testing.T) {
+	members := mapMembers(map[string]string{
+		"role":             "master",
+		"connected_slaves": "2",
+		"slave0":           "ip=::1,port=6380,state=online,offset=1,lag=0",
+		"slave1":           "ip=::1,port=6381,state=online,offset=1,lag=0",
 	})
-	if replicas[0].Role != keeper.Replica {
-		t.Errorf("a node attached to this master is certainly a replica, got %q", replicas[0].Role)
+	if len(members) != 0 {
+		t.Errorf("a master must name no replicas, got %v", members)
 	}
 }
 
-func TestParseReplicaEntry(t *testing.T) {
-	tests := []struct {
-		name   string
-		entry  string
-		host   string
-		port   int
-		parsed bool
-	}{
-		{name: "a connected replica", entry: "ip=10.0.0.2,port=6379,state=online,offset=1,lag=0", host: "10.0.0.2", port: 6379, parsed: true},
-		{name: "fields in another order", entry: "port=6380,state=online,ip=10.0.0.9", host: "10.0.0.9", port: 6380, parsed: true},
-		{name: "no port", entry: "ip=10.0.0.2,state=online"},
-		{name: "no ip", entry: "port=6379,state=online"},
-		{name: "an unparseable port is dropped rather than defaulted", entry: "ip=10.0.0.2,port=six"},
-		{name: "empty", entry: ""},
+// TestMapTagsReportsReplicaCount pins what replaced the replica list: the count
+// is the only honest thing a master can say about its replicas, and it is the
+// one place a replica missing from the cluster shows up at all.
+func TestMapTagsReportsReplicaCount(t *testing.T) {
+	tags := mapTags(map[string]string{"connected_slaves": "2"}, keeper.Leader)
+	if tags == nil {
+		t.Fatal("expected tags, got nil")
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			host, port, parsed := parseReplicaEntry(tt.entry)
-			if parsed != tt.parsed {
-				t.Fatalf("expected parsed %v, got %v", tt.parsed, parsed)
-			}
-			if !parsed {
-				return
-			}
-			if host != tt.host || port != tt.port {
-				t.Errorf("expected %s:%d, got %s:%d", tt.host, tt.port, host, port)
-			}
-		})
+	if (*tags)["replicas"] != "2" {
+		t.Errorf("expected replicas tag %q, got %v", "2", (*tags)["replicas"])
 	}
 }
