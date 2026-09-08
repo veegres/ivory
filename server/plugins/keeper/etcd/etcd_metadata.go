@@ -23,7 +23,7 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (p *Plugin) HasLeader() bool { return true }
+func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
 // The peer port, the member list and every other value only the operator knows
 // are written literally: they are plain text to read and edit, not variables.

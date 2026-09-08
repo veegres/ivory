@@ -23,7 +23,7 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (p *Plugin) HasLeader() bool { return true }
+func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
 // The DCS address comes in through {{dcs}}: patroni coordinates through a store
 // the user already runs, so only they know where it is, and it is one address

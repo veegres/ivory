@@ -23,7 +23,7 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 	}
 }
 
-func (p *Plugin) HasLeader() bool { return true }
+func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
 // Every member starts as a plain mongod that already knows its replica set
 // name; who becomes primary is decided later, by deployInitiate. The official
