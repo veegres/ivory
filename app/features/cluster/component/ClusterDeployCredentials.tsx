@@ -136,6 +136,6 @@ export function ClusterDeployCredentials(props: Props) {
     }
 
     function getModes(): CredentialMode[] {
-        return optional ? ["vault", "new", "none"] : ["vault", "new"]
+        return optional && !locked ? ["vault", "new", "none"] : ["vault", "new"]
     }
 }
