@@ -17,9 +17,13 @@ func TestSupportedFeaturesExclusions(t *testing.T) {
 		}
 	}
 
+	// etcd moves the leader when MoveLeader is called and has nothing to
+	// schedule it with, so both schedule features stay off while the
+	// switchover itself is supported.
 	excluded := []config.Feature{
-		config.ViewNodeKeeperConfig, config.ManageNodeKeeperConfigUpdate, config.ManageNodeKeeperReinitialize,
-		config.ManageNodeKeeperRestart, config.ManageNodeKeeperReload, config.ManageNodeKeeperFailover, config.ManageNodeKeeperActivation,
+		config.ViewNodeKeeperConfig, config.ManageNodeKeeperConfigUpdate, config.ManageNodeKeeperSwitchoverSchedule,
+		config.ManageNodeKeeperReinitialize, config.ManageNodeKeeperRestart, config.ManageNodeKeeperRestartSchedule,
+		config.ManageNodeKeeperReload, config.ManageNodeKeeperFailover, config.ManageNodeKeeperActivation,
 	}
 	for _, feature := range excluded {
 		if features[feature] {

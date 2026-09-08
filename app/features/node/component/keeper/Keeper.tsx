@@ -5,7 +5,7 @@ import {HeadBox} from "../../../../shared/component/box/HeadBox"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
 import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
-import {KeeperOneRequest, Role} from "../../api/NodeType"
+import {KeeperCandidate, KeeperOneRequest, KeeperOneResponse} from "../../api/NodeType"
 import {KeeperConfig} from "./KeeperConfig"
 import {KeeperFailoverButton} from "./KeeperFailoverButton"
 import {KeeperReinitButton} from "./KeeperReinitButton"
@@ -22,12 +22,12 @@ const SX: SxPropsMap = {
 type Props = {
     request?: KeeperOneRequest,
     cluster: string,
-    candidates: string[],
-    role: Role,
+    keeper: KeeperOneResponse,
+    candidates: KeeperCandidate[],
 }
 
 export function Keeper(props: Props) {
-    const {request, cluster, candidates, role} = props
+    const {request, cluster, keeper, candidates} = props
 
     if (!request) return <ErrorKeeperMissing/>
 
@@ -48,9 +48,20 @@ export function Keeper(props: Props) {
                 <KeeperReloadButton request={request} cluster={cluster}/>
                 <KeeperRestartButton request={request} cluster={cluster}/>
                 <KeeperReinitButton request={request} cluster={cluster}/>
-                <KeeperSwitchoverButton request={request} cluster={cluster} candidates={candidates}/>
-                <KeeperFailoverButton request={request} cluster={cluster} role={role}/>
-                <KeeperScheduleButton request={request} cluster={cluster}/>
+                <KeeperSwitchoverButton
+                    request={request}
+                    cluster={cluster}
+                    candidates={candidates}
+                    role={keeper.role}
+                    leaderKey={keeper.key}
+                />
+                <KeeperFailoverButton request={request} cluster={cluster} role={keeper.role}/>
+                <KeeperScheduleButton
+                    request={request}
+                    cluster={cluster}
+                    switchover={keeper.scheduledSwitchover}
+                    restart={keeper.scheduledRestart}
+                />
             </Box>
         )
     }

@@ -7,20 +7,21 @@ import {ScheduleInput} from "../../../../shared/component/input/ScheduleInput"
 import {Feature} from "../../../Feature"
 import {ManageAccess} from "../../../management/component/ManageAccess"
 import {useRouterNodeSwitchover} from "../../api/NodeHook"
-import {KeeperOneRequest} from "../../api/NodeType"
+import {KeeperCandidate, KeeperOneRequest, Role} from "../../api/NodeType"
 
 type Props = {
     cluster: string,
     request: KeeperOneRequest,
-    candidates: string[],
+    candidates: KeeperCandidate[],
+    role: Role,
     leaderKey?: string,
     size?: "small" | "medium",
 }
 
 export function KeeperSwitchoverButton(props: Props) {
-    const {request, candidates, cluster, leaderKey, size} = props
+    const {request, candidates, cluster, role, leaderKey, size} = props
 
-    const [candidate, setCandidates] = useState<string>()
+    const [candidate, setCandidate] = useState<string>()
     const [schedule, setSchedule] = useState<Dayjs>()
     const switchover = useRouterNodeSwitchover(cluster)
     // NOTE: in patroni we cannot use host for leader and candidate, we need to send patroni.name (key)
@@ -35,11 +36,14 @@ export function KeeperSwitchoverButton(props: Props) {
                 title={`Make a switchover of ${request.host}?`}
                 description={`It will change the leader of your cluster that will cause some downtime. If you don't choose
                  candidate, the candidate will be chosen randomly.`}
+                disabled={role !== "leader"}
                 loading={switchover.isPending}
                 onClick={handleClick}
             >
                 {renderCandidates()}
-                <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
+                <ManageAccess feature={Feature.ManageNodeKeeperSwitchoverSchedule}>
+                    <ScheduleInput onChange={(v) => setSchedule(v ?? undefined)} value={schedule ?? null}/>
+                </ManageAccess>
             </AlertButton>
         </ManageAccess>
     )
@@ -52,13 +56,13 @@ export function KeeperSwitchoverButton(props: Props) {
                     labelId={"select-switchover"}
                     label={"Candidate"}
                     value={candidate}
-                    onChange={(e) => setCandidates(e.target.value)}
+                    onChange={(e) => setCandidate(e.target.value)}
                     fullWidth={true}
                     variant={"outlined"}
                 >
                     <MenuItem value={undefined}><em>none (will be chosen randomly)</em></MenuItem>
-                    {candidates.map(host => (
-                        <MenuItem key={host} value={host}>{host}</MenuItem>
+                    {candidates.map(({name, label}) => (
+                        <MenuItem key={name} value={name}>{label}</MenuItem>
                     ))}
                 </Select>
             </FormControl>
@@ -68,6 +72,6 @@ export function KeeperSwitchoverButton(props: Props) {
     function handleClick() {
         switchover.mutate({...request, body})
         setSchedule(undefined)
-        setCandidates(undefined)
+        setCandidate(undefined)
     }
 }

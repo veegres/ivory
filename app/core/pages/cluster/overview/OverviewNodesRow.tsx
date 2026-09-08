@@ -1,7 +1,8 @@
 import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Tooltip} from "@mui/material"
 
-import {Cluster, Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
+import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
+import {KeeperCandidate} from "../../../../features/node/api/NodeType"
 import {KeeperFailoverButton} from "../../../../features/node/component/keeper/KeeperFailoverButton"
 import {KeeperReinitButton} from "../../../../features/node/component/keeper/KeeperReinitButton"
 import {KeeperReloadButton} from "../../../../features/node/component/keeper/KeeperReloadButton"
@@ -43,7 +44,7 @@ type Props = {
     node: Node,
     nodeKey: string,
     cluster: Cluster,
-    candidates: NodeConfig[],
+    candidates: KeeperCandidate[],
     checked: boolean,
     error?: boolean,
 }
@@ -183,7 +184,7 @@ export function OverviewNodesRow(props: Props) {
         if (!keeperRequest) return
         switch (role) {
             case "replica": return <KeeperReinitButton size={"small"} request={keeperRequest} cluster={cluster.name}/>
-            case "leader": return <KeeperSwitchoverButton size={"small"} request={keeperRequest} cluster={cluster.name} candidates={candidates.map(c => c.host)} leaderKey={node.keeper.key}/>
+            case "leader": return <KeeperSwitchoverButton size={"small"} request={keeperRequest} cluster={cluster.name} candidates={candidates} role={role} leaderKey={node.keeper.key}/>
             default: return
         }
     }

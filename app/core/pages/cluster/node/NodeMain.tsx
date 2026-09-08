@@ -1,6 +1,6 @@
 import {Box} from "@mui/material"
 
-import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
+import {Cluster, Node, NodeOverview} from "../../../../features/cluster/api/ClusterType"
 import {NodeApi} from "../../../../features/node/api/NodeRouter"
 import {NodeTabType} from "../../../../features/node/api/NodeType"
 import {useRouterQueryDatabase, useRouterQuerySchemas} from "../../../../features/query/api/QueryHook"
@@ -24,10 +24,11 @@ const SX: SxPropsMap = {
 type Props = {
     cluster: Cluster,
     node: Node,
+    nodes?: NodeOverview,
 }
 
 export function NodeMain(props: Props) {
-    const {cluster, node} = props
+    const {cluster, node, nodes} = props
     const nodeState = useStore(s => s.nodeState)
     const {dbName, dbSchema} = useStore(s => s.nodeState)
     const {setDbName, setDbSchema} = useStoreAction
@@ -38,7 +39,7 @@ export function NodeMain(props: Props) {
     return (
         <Box sx={SX.main}>
             <NodeMainTabsHead info={info} tab={tab} renderActions={renderActions()}/>
-            <Box sx={SX.body}>{body(cluster, node)}</Box>
+            <Box sx={SX.body}>{body(cluster, node, nodes)}</Box>
         </Box>
     )
 

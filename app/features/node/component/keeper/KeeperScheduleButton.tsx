@@ -6,7 +6,7 @@ import {NoBox} from "../../../../shared/component/box/NoBox"
 import {AlertButton} from "../../../../shared/component/button/AlertButton"
 import {DateTimeFormatter} from "../../../../shared/helper/HelperUtils"
 import {Feature} from "../../../Feature"
-import {ManageAccess} from "../../../management/component/ManageAccess"
+import {ManageAccess, useHasAccess} from "../../../management/component/ManageAccess"
 import {useRouterNodeRestartDelete, useRouterNodeSwitchoverDelete} from "../../api/NodeHook"
 import {KeeperOneRequest, ScheduledRestart, ScheduledSwitchover} from "../../api/NodeType"
 
@@ -23,6 +23,12 @@ export function KeeperScheduleButton(props: Props) {
 
     const deleteRestart = useRouterNodeRestartDelete(cluster)
     const deleteSwitchover = useRouterNodeSwitchoverDelete(cluster)
+    const switchoverAccess = useHasAccess(Feature.ManageNodeKeeperSwitchoverSchedule)
+    const restartAccess = useHasAccess(Feature.ManageNodeKeeperRestartSchedule)
+
+    // NOTE: a keeper that schedules neither operation can never have a schedule
+    // to show or delete, so the button is hidden rather than permanently empty
+    if (switchoverAccess !== "allowed" && restartAccess !== "allowed") return
 
     return (
         <AlertButton

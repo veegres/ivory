@@ -12,7 +12,8 @@ func TestSupportedFeaturesAllSupported(t *testing.T) {
 
 	all := []config.Feature{
 		config.ViewNodeKeeperOverview, config.ViewNodeKeeperConfig, config.ManageNodeKeeperConfigUpdate,
-		config.ManageNodeKeeperSwitchover, config.ManageNodeKeeperReinitialize, config.ManageNodeKeeperRestart,
+		config.ManageNodeKeeperSwitchover, config.ManageNodeKeeperSwitchoverSchedule,
+		config.ManageNodeKeeperReinitialize, config.ManageNodeKeeperRestart, config.ManageNodeKeeperRestartSchedule,
 		config.ManageNodeKeeperReload, config.ManageNodeKeeperFailover, config.ManageNodeKeeperActivation,
 	}
 	for _, feature := range all {

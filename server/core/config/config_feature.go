@@ -23,9 +23,12 @@ const (
 	ManageNodeKeeperSwitchover   Feature = "manage.node.keeper.switchover"
 	ManageNodeKeeperReinitialize Feature = "manage.node.keeper.reinitialize"
 	ManageNodeKeeperRestart      Feature = "manage.node.keeper.restart"
-	ManageNodeKeeperReload       Feature = "manage.node.keeper.reload"
-	ManageNodeKeeperFailover     Feature = "manage.node.keeper.failover"
-	ManageNodeKeeperActivation   Feature = "manage.node.keeper.activation"
+	// Scheduling is its own feature because only patroni takes a time for these.
+	ManageNodeKeeperSwitchoverSchedule Feature = "manage.node.keeper.switchover.schedule"
+	ManageNodeKeeperRestartSchedule    Feature = "manage.node.keeper.restart.schedule"
+	ManageNodeKeeperReload             Feature = "manage.node.keeper.reload"
+	ManageNodeKeeperFailover           Feature = "manage.node.keeper.failover"
+	ManageNodeKeeperActivation         Feature = "manage.node.keeper.activation"
 
 	ViewNodeSystem              Feature = "view.node.system"
 	ManageNodeSystem            Feature = "manage.node.system"
@@ -189,8 +192,10 @@ var All = []Feature{
 	ManageNodeSystem,
 	ManageNodeKeeperConfigUpdate,
 	ManageNodeKeeperSwitchover,
+	ManageNodeKeeperSwitchoverSchedule,
 	ManageNodeKeeperReinitialize,
 	ManageNodeKeeperRestart,
+	ManageNodeKeeperRestartSchedule,
 	ManageNodeKeeperReload,
 	ManageNodeKeeperFailover,
 	ManageNodeKeeperActivation,
