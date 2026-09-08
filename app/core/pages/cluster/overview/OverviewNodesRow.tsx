@@ -2,6 +2,8 @@ import {ErrorOutlineRounded, WarningAmberRounded} from "@mui/icons-material"
 import {Box, Tooltip} from "@mui/material"
 
 import {Cluster, Node} from "../../../../features/cluster/api/ClusterType"
+import {Feature} from "../../../../features/Feature"
+import {useHasAnyAccess} from "../../../../features/management/component/ManageAccess"
 import {KeeperCandidate} from "../../../../features/node/api/NodeType"
 import {KeeperFailoverButton} from "../../../../features/node/component/keeper/KeeperFailoverButton"
 import {KeeperReinitButton} from "../../../../features/node/component/keeper/KeeperReinitButton"
@@ -40,6 +42,14 @@ const SX: SxPropsMap = {
     title: {fontFamily: "monospace", textTransform: "uppercase"},
 }
 
+const MENU_FEATURES = [
+    Feature.ManageNodeKeeperSwitchoverSchedule,
+    Feature.ManageNodeKeeperRestartSchedule,
+    Feature.ManageNodeKeeperFailover,
+    Feature.ManageNodeKeeperRestart,
+    Feature.ManageNodeKeeperReload,
+]
+
 type Props = {
     node: Node,
     nodeKey: string,
@@ -56,6 +66,7 @@ export function OverviewNodesRow(props: Props) {
 
     const {setNode} = useStoreAction
     const keeperRequest = getKeeperOneRequest(cluster, config.host, config.keeperPort)
+    const hasMenuButtons = useHasAnyAccess(MENU_FEATURES)
 
     return (
         <Box
@@ -171,7 +182,7 @@ export function OverviewNodesRow(props: Props) {
     function renderMenuButtons() {
         if (role === "unknown" || !keeperRequest) return
         return (
-            <MenuButton size={27}>
+            <MenuButton size={27} disabled={!hasMenuButtons}>
                 <KeeperScheduleButton size={"small"} request={keeperRequest} cluster={cluster.name} switchover={scheduledSwitchover} restart={scheduledRestart}/>
                 <KeeperFailoverButton size={"small"} request={keeperRequest} cluster={cluster.name} role={role}/>
                 <KeeperRestartButton size={"small"} request={keeperRequest} cluster={cluster.name}/>

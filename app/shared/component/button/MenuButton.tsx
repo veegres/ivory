@@ -18,20 +18,21 @@ type Props = {
     open?: boolean,
     onChange?: (o: boolean) => void,
     size?: number,
+    disabled?: boolean,
 }
 
 export function MenuButton(props: Props) {
-    const {children, size, open, onChange} = props
+    const {children, size, open, onChange, disabled} = props
     const [internalOpen, internalSetOpen] = useState(false)
     const isControlled = open !== undefined
-    const realOpen = isControlled ? open : internalOpen
+    const realOpen = !disabled && (isControlled ? open : internalOpen)
 
     return (
         <Box sx={SX.box}>
             <Collapse sx={SX.collapse} in={realOpen} orientation={"horizontal"}>
                 <Box sx={SX.paper}>{children}</Box>
             </Collapse>
-            <MoreIconButton size={size} onClick={() => onClick(!realOpen)}/>
+            <MoreIconButton size={size} disabled={disabled} onClick={() => onClick(!realOpen)}/>
         </Box>
     )
 
