@@ -215,28 +215,29 @@ func selfMember(status *replSetStatus) (replSetMember, bool) {
 	return replSetMember{}, false
 }
 
-// primaryOptime finds the current primary's optimeDate, used to compute
-// every secondary's lag - mongo reports no ready-made per-member lag value
-// the way patroni's /cluster does, only the raw optime each member last
-// applied.
-func primaryOptime(status *replSetStatus) (time.Time, bool) {
+// primaryMember finds the current primary. Its optimeDate is what every
+// secondary's lag is measured against - mongo reports no ready-made per-member
+// lag value the way patroni's /cluster does, only the raw optime each member
+// last applied - and its name is what tells an ordinary secondary from one
+// chained off another secondary.
+func primaryMember(status *replSetStatus) (replSetMember, bool) {
 	for _, m := range status.Members {
 		if m.StateStr == "PRIMARY" {
-			return m.OptimeDate, true
+			return m, true
 		}
 	}
-	return time.Time{}, false
+	return replSetMember{}, false
 }
 
 // mapStatus turns one replSetGetStatus reply into a Response per member,
 // the same "whole cluster view from one connection" shape Patroni's
 // /cluster and etcd's member list already return.
 func mapStatus(status *replSetStatus) []keeper.Response {
-	primaryTime, havePrimary := primaryOptime(status)
+	primary, havePrimary := primaryMember(status)
 
 	responses := make([]keeper.Response, 0, len(status.Members))
 	for _, m := range status.Members {
-		responses = append(responses, mapMember(m, status.Set, primaryTime, havePrimary))
+		responses = append(responses, mapMember(m, status.Set, primary, havePrimary))
 	}
 	return responses
 }
@@ -245,20 +246,18 @@ func mapStatus(status *replSetStatus) []keeper.Response {
 // cannot carry. mapRoleState collapses every member that is neither primary nor
 // secondary onto Unknown, so an arbiter (which votes but holds no data and can
 // never be elected) reads the same as a member mongo could not classify at all -
-// memberState is what tells those apart, and it is reported only when it adds
-// something the role does not already say. The set name is here because a node
-// pointed at the wrong replica set is otherwise a healthy-looking cluster of
-// one, and the sync source because a secondary chained off another secondary
-// inherits its lag without anything else on the row hinting why.
-func mapTags(m replSetMember, set string) *map[string]any {
+// memberState is what tells those apart. syncSource is reported only when it is
+// not the primary: a secondary chained off another secondary inherits its lag
+// with nothing on the row hinting why, while one replicating from the primary
+// restates the topology the overview already draws. The set name is not a tag
+// at all - it is DiscoveredCluster, which addClusterWarnings already checks
+// every node against.
+func mapTags(m replSetMember, primaryName string) *map[string]any {
 	tags := map[string]any{}
-	if set != "" {
-		tags["replicaSet"] = set
-	}
 	if m.StateStr != "" && m.StateStr != "PRIMARY" && m.StateStr != "SECONDARY" {
 		tags["memberState"] = m.StateStr
 	}
-	if m.SyncSourceHost != "" {
+	if m.SyncSourceHost != "" && m.SyncSourceHost != primaryName {
 		tags["syncSource"] = m.SyncSourceHost
 	}
 	if m.PingMs > 0 {
@@ -282,12 +281,12 @@ func setName(set string) *string {
 	return &set
 }
 
-func mapMember(m replSetMember, set string, primaryTime time.Time, havePrimary bool) keeper.Response {
+func mapMember(m replSetMember, set string, primary replSetMember, havePrimary bool) keeper.Response {
 	role, state := mapRoleState(m.StateStr, m.Health)
 
 	var lag int64
 	if role == keeper.Replica && havePrimary {
-		if diff := primaryTime.Sub(m.OptimeDate).Seconds(); diff > 0 {
+		if diff := primary.OptimeDate.Sub(m.OptimeDate).Seconds(); diff > 0 {
 			lag = int64(diff)
 		}
 	}
@@ -300,7 +299,7 @@ func mapMember(m replSetMember, set string, primaryTime time.Time, havePrimary b
 		State:  state,
 		Role:   role,
 		Lag:    lag,
-		Tags:   mapTags(m, set),
+		Tags:   mapTags(m, primary.Name),
 		// NOTE: enumerating members catches a node borrowed from another replica
 		// set of several, but not one borrowed from a single-member set, which
 		// names itself and nothing else. The set name contradicts that one.

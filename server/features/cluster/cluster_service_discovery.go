@@ -131,7 +131,37 @@ func (s *Service) getKeeperListByManyAll(name string, configs []NodeConfig, clus
 	for _, response := range responses {
 		s.addKeeperResponsesToMap(keeperNodeMap, response.Response)
 	}
+	s.markUnansweredNodes(keeperNodeMap, responses)
 	return keeperNodeMap, connectionErrors, requestErrs
+}
+
+// markUnansweredNodes corrects the state of a node Ivory could not get an
+// answer out of. What it is - a replica, a member of this cluster - is a
+// topology fact a peer may report, exactly as patroni reports every member from
+// whichever node answers, so the role stays. Whether it is alive is not: that is
+// Ivory's own observation, and a peer describing a node it can still see must
+// never be able to state it. Without this a stopped clickhouse node kept the
+// "replica" its peers list in system.clusters and read as running.
+//
+// A node that answered is left alone even when the call also returned an error:
+// postgres replies "the database system is starting up" that way, and starting
+// is a state it observed about itself. Only a connection that produced nothing
+// at all counts as unreached. A node no peer mentioned either has no entry here
+// and gets the full placeholder from addOverviewWarnings.
+func (s *Service) markUnansweredNodes(nodeMap map[string]node.KeeperOneResponse, responses []node.KeeperMultiResponse) {
+	for _, response := range responses {
+		if response.Error == "" || len(response.Response) > 0 {
+			continue
+		}
+		nodeKey := s.getNodeKey(response.Connection.Host, &response.Connection.Port)
+		entry, exists := nodeMap[nodeKey]
+		if !exists {
+			continue
+		}
+		entry.State = node.KeeperStateUnreachable
+		entry.Lag = -1
+		nodeMap[nodeKey] = entry
+	}
 }
 
 func (s *Service) getKeeperListByLeader(name string, configs []NodeConfig, cluster Options) ([]node.KeeperOneResponse, error) {

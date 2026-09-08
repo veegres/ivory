@@ -842,3 +842,77 @@ func TestService_addKeeperResponsesToMap_OwnAnswerBeatsHearsay(t *testing.T) {
 		})
 	}
 }
+
+// TestService_markUnansweredNodes covers the case a live clickhouse cluster
+// showed: a node that is down still appears in every peer's system.clusters, so
+// its row arrived describing a running replica and read as healthy. The role is
+// a topology fact a peer may report and stays; the state is Ivory's own and is
+// corrected.
+func TestService_markUnansweredNodes(t *testing.T) {
+	service := &Service{}
+	nodeMap := map[string]node.KeeperOneResponse{
+		"localhost:9000": {State: keeper.StateRunning, Role: keeper.Replica, Lag: 0},
+		"localhost:9001": {State: keeper.StateRunning, Role: keeper.Replica, Lag: 0},
+	}
+	responses := []node.KeeperMultiResponse{
+		{Connection: node.KeeperConnection{Host: "localhost", Port: 9000}, Error: "connection refused"},
+		{Connection: node.KeeperConnection{Host: "localhost", Port: 9001}, Response: []node.KeeperResponse{{State: keeper.StateRunning}}},
+	}
+
+	service.markUnansweredNodes(nodeMap, responses)
+
+	down := nodeMap["localhost:9000"]
+	if down.State != node.KeeperStateUnreachable {
+		t.Errorf("a node Ivory got no answer from must be unreachable, got %q", down.State)
+	}
+	if down.Role != keeper.Replica {
+		t.Errorf("what a peer says the node is stays, got role %q", down.Role)
+	}
+	if down.Lag != -1 {
+		t.Errorf("a lag read off a peer is not this node's, expected -1, got %d", down.Lag)
+	}
+
+	if up := nodeMap["localhost:9001"]; up.State != keeper.StateRunning {
+		t.Errorf("a node that answered must be left alone, got %q", up.State)
+	}
+}
+
+// TestService_markUnansweredNodes_KeepsAStateTheNodeObserved pins the limit:
+// postgres answers "the database system is starting up" as a response plus an
+// error, so the call errored but the node did observe its own state. Starting
+// says more than unreachable can, and the error is already a warning.
+func TestService_markUnansweredNodes_KeepsAStateTheNodeObserved(t *testing.T) {
+	service := &Service{}
+	nodeMap := map[string]node.KeeperOneResponse{
+		"pg2:5432": {State: keeper.StateStarting, Role: keeper.Unknown},
+	}
+	responses := []node.KeeperMultiResponse{{
+		Connection: node.KeeperConnection{Host: "pg2", Port: 5432},
+		Response:   []node.KeeperResponse{{State: keeper.StateStarting}},
+		Error:      "the database system is starting up",
+	}}
+
+	service.markUnansweredNodes(nodeMap, responses)
+
+	if got := nodeMap["pg2:5432"].State; got != keeper.StateStarting {
+		t.Errorf("a node that answered about itself keeps its state, got %q", got)
+	}
+}
+
+// TestService_markUnansweredNodes_LeavesAnUnmentionedNode pins that a node no
+// peer described gets no synthetic entry here - addOverviewWarnings owns that
+// case and gives it the full unreachable placeholder.
+func TestService_markUnansweredNodes_LeavesAnUnmentionedNode(t *testing.T) {
+	service := &Service{}
+	nodeMap := map[string]node.KeeperOneResponse{}
+	responses := []node.KeeperMultiResponse{{
+		Connection: node.KeeperConnection{Host: "gone", Port: 9000},
+		Error:      "connection refused",
+	}}
+
+	service.markUnansweredNodes(nodeMap, responses)
+
+	if len(nodeMap) != 0 {
+		t.Errorf("expected no entry to be invented, got %v", nodeMap)
+	}
+}

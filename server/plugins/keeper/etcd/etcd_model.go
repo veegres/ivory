@@ -15,7 +15,6 @@ type endpointStatus struct {
 	RaftIndex uint64
 	RaftTerm  uint64
 	Version   string
-	DbSize    int64
 	Err       error
 }
 

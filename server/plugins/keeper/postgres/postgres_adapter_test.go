@@ -66,33 +66,24 @@ func TestMapNode(t *testing.T) {
 func TestMapTags(t *testing.T) {
 	tests := []struct {
 		name     string
-		role     keeper.Role
 		stats    nodeStats
 		expected map[string]any
 	}{
 		{
-			name:     "primary reports the standbys only it can see",
-			role:     keeper.Leader,
-			stats:    nodeStats{Version: "16.2", Connections: 90, MaxConnections: 100, Replicas: 2},
-			expected: map[string]any{"version": "16.2", "connections": "90/100", "replicas": 2},
+			name:     "a node reports its version and connection headroom",
+			stats:    nodeStats{Version: "16.2", Connections: 90, MaxConnections: 100},
+			expected: map[string]any{"version": "16.2", "connections": "90/100"},
 		},
 		{
-			name:     "replica reports no standby count of its own",
-			role:     keeper.Replica,
+			name:     "role changes nothing about what is reported",
 			stats:    nodeStats{Version: "16.2", Connections: 4, MaxConnections: 100},
 			expected: map[string]any{"version": "16.2", "connections": "4/100"},
-		},
-		{
-			name:     "a primary with no standby still says so",
-			role:     keeper.Leader,
-			stats:    nodeStats{Version: "16.2", Connections: 1, MaxConnections: 100, Replicas: 0},
-			expected: map[string]any{"version": "16.2", "connections": "1/100", "replicas": 0},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tags := mapTags(tt.role, tt.stats)
+			tags := mapTags(tt.stats)
 			if tags == nil {
 				t.Fatal("expected tags, got nil")
 			}
@@ -108,8 +99,17 @@ func TestMapTags(t *testing.T) {
 	}
 
 	t.Run("a node that answered nothing stays nil", func(t *testing.T) {
-		if tags := mapTags(keeper.Replica, nodeStats{}); tags != nil {
+		if tags := mapTags(nodeStats{}); tags != nil {
 			t.Errorf("expected no tags, got %v", *tags)
+		}
+	})
+
+	// The overview already draws one row per standby, so a count of them
+	// restated what was on screen on every poll.
+	t.Run("a standby count is not a tag", func(t *testing.T) {
+		tags := mapTags(nodeStats{Version: "16.2", Connections: 1, MaxConnections: 100})
+		if _, ok := (*tags)["replicas"]; ok {
+			t.Errorf("expected no replicas tag, got %v", *tags)
 		}
 	})
 }

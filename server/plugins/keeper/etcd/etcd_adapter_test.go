@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ivory/plugins/keeper"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -17,8 +18,8 @@ func TestMapTags(t *testing.T) {
 		{
 			name:     "reachable voting member",
 			member:   member{ID: 1, Name: "etcd1"},
-			status:   endpointStatus{Version: "3.5.9", DbSize: 20 * 1024 * 1024, RaftTerm: 7},
-			expected: map[string]any{"version": "3.5.9", "dbSize": "20.0 MiB", "raftTerm": uint64(7)},
+			status:   endpointStatus{Version: "3.5.9", RaftTerm: 7},
+			expected: map[string]any{"version": "3.5.9", "raftTerm": uint64(7)},
 		},
 		{
 			name:     "learner is flagged",
@@ -27,10 +28,12 @@ func TestMapTags(t *testing.T) {
 			expected: map[string]any{"learner": true, "version": "3.5.9", "raftTerm": uint64(7)},
 		},
 		{
-			name:     "a freshly bootstrapped backend reads as kilobytes, not 0.0 MiB",
+			// Ivory does not know the backend quota, so a size on its own says
+			// nothing about the read-only alarm it would warn of.
+			name:     "the backend size is not a tag",
 			member:   member{ID: 4, Name: "etcd4"},
-			status:   endpointStatus{DbSize: 20 * 1024},
-			expected: map[string]any{"dbSize": "20 KiB"},
+			status:   endpointStatus{Version: "3.5.9"},
+			expected: map[string]any{"version": "3.5.9"},
 		},
 		{
 			name:     "unreachable member reports nothing it cannot know",
@@ -322,5 +325,26 @@ func TestUnsupportedOperations(t *testing.T) {
 				t.Errorf("expected ErrNotSupported, got %v", err)
 			}
 		})
+	}
+}
+
+// TestMapMemberCarriesItsOwnFailure pins that a member Ivory could not reach
+// explains itself on its own row. The reason used to be returned as an error
+// for the whole List, which made every healthy node Ivory asked carry a
+// "failed to get Keeper response" naming somebody else's outage.
+func TestMapMemberCarriesItsOwnFailure(t *testing.T) {
+	down := member{ID: 3, Name: "etcd3", ClientURLs: []string{"http://etcd3:2379"}}
+	response := mapMember(down, endpointStatus{Err: errors.New("connection refused")}, 1, 100)
+
+	if response.State != keeper.StateUnreachable {
+		t.Errorf("expected unreachable, got %q", response.State)
+	}
+	if len(response.Warnings) != 1 || !strings.Contains(response.Warnings[0], "connection refused") {
+		t.Errorf("expected the member to carry its own reason, got %v", response.Warnings)
+	}
+
+	up := member{ID: 1, Name: "etcd1", ClientURLs: []string{"http://etcd1:2379"}}
+	if warnings := mapMember(up, endpointStatus{RaftIndex: 100}, 1, 100).Warnings; warnings != nil {
+		t.Errorf("a member that answered warns about nothing, got %v", warnings)
 	}
 }

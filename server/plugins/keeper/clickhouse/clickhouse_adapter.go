@@ -97,19 +97,8 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		return nil, http.StatusBadRequest, errQueue
 	}
 
-	// NOTE: macros are the node's tags, not its health, so a failure to read
-	// them must not turn a running node into a failed one on the overview -
-	// unlike the two queries above, whose answers are the node's state. It is
-	// still reported rather than dropped, since the only way to lose these is a
-	// grant the keeper user is missing.
-	macros, errMacros := queryMacros(ctx, conn)
-
-	response := mapNode(request.Host, request.Port, isReadonly > 0, absoluteDelay)
-	response.Warnings = replicaWarnings(activeReplicas, totalReplicas, stuckCount, sampleError)
-	response.Tags = macros
-	if errMacros != nil {
-		response.Warnings = append(response.Warnings, "cannot read system.macros: "+firstLine(errMacros.Error()))
-	}
+	response := mapNode(request.Host, request.Port, absoluteDelay)
+	response.Warnings = replicaWarnings(isReadonly > 0, activeReplicas, totalReplicas, stuckCount, sampleError)
 	response.Warnings = append(response.Warnings, membershipWarnings(request.Cluster, declared, errPeers)...)
 	return append([]keeper.Response{response}, peers...), http.StatusOK, nil
 }
@@ -183,44 +172,17 @@ func queryClusterPeers(ctx context.Context, conn driver.Conn, cluster string) ([
 	return peers, declared, nil
 }
 
-// queryMacros reads system.macros, clickhouse's own per-node identity: the
-// {shard}/{replica}/{cluster} substitutions every replicated table's zookeeper
-// path is written with, so two nodes disagreeing about which shard they serve
-// is visible on the overview instead of only inside a CREATE TABLE statement.
-// They are reported as tags verbatim, the same passthrough patroni member tags
-// get, since a macro set is whatever the operator defined it to be.
-func queryMacros(ctx context.Context, conn driver.Conn) (*map[string]any, error) {
-	rows, err := conn.Query(ctx, `SELECT macro, substitution FROM system.macros ORDER BY macro`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	macros := map[string]any{}
-	for rows.Next() {
-		var macro, substitution string
-		if errScan := rows.Scan(&macro, &substitution); errScan != nil {
-			return nil, errScan
-		}
-		macros[macro] = substitution
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-	if len(macros) == 0 {
-		return nil, nil
-	}
-	return &macros, nil
-}
-
 // replicaWarnings turns the two independent connectivity signals system.replicas
 // and system.replication_queue actually carry into the same short-sentence
 // warnings the rest of Ivory's overview uses - a peer that dropped its
 // coordination-store session, and a peer whose data never crosses despite that
 // session being fine. Either can fire alone, and a healthy cluster reports
 // neither.
-func replicaWarnings(activeReplicas, totalReplicas uint32, stuckCount uint64, sampleError string) []string {
+func replicaWarnings(readonly bool, activeReplicas, totalReplicas uint32, stuckCount uint64, sampleError string) []string {
 	var warnings []string
+	if readonly {
+		warnings = append(warnings, "replicated tables are read-only, usually a lost session with the coordination store")
+	}
 	if totalReplicas > 0 && activeReplicas < totalReplicas {
 		warnings = append(warnings, fmt.Sprintf(
 			"%d of %d cluster replicas have no active session with the coordination store",
@@ -370,17 +332,16 @@ func mapPeer(host string, port int) keeper.Response {
 	}
 }
 
-func mapNode(host string, port int, readonly bool, absoluteDelay uint64) keeper.Response {
-	state := keeper.StateRunning
-	if readonly {
-		state = keeper.StateStopping
-	}
+// mapNode reports a node that answered as running. A replica whose replicated
+// tables have gone read-only is still running - it serves reads - so that is a
+// warning rather than a state, the same call redis makes for a dead master link.
+func mapNode(host string, port int, absoluteDelay uint64) keeper.Response {
 	var status keeper.Status = keeper.Active
 	key := host + ":" + strconv.Itoa(port)
 	return keeper.Response{
 		Key:                  &key,
 		Status:               &status,
-		State:                state,
+		State:                keeper.StateRunning,
 		Role:                 keeper.Replica,
 		Lag:                  int64(absoluteDelay),
 		DiscoveredHost:       &host,

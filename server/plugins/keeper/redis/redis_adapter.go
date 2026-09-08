@@ -260,6 +260,7 @@ func mapNode(host string, port int, fields map[string]string) keeper.Response {
 		State:                keeper.StateRunning,
 		Role:                 role,
 		Lag:                  lag,
+		Warnings:             linkWarnings(fields, role),
 		Tags:                 mapTags(fields, role),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
@@ -267,14 +268,29 @@ func mapNode(host string, port int, fields map[string]string) keeper.Response {
 	}
 }
 
-// mapTags reports what INFO carries that Role/State/Lag cannot say. A replica
-// names the master it actually follows and whether that link is up: Lag only
-// measures how long ago the last byte arrived, so a replica whose link went
-// down seconds ago and one that was never able to connect are indistinguishable
-// without it. A master names how many replicas are attached, which is the only
-// place a replica missing from the cluster shows up at all. Memory is here
-// because reaching maxmemory is what turns a healthy-looking redis into one
-// refusing writes.
+// linkWarnings reports a replica whose replication link to its master is not
+// up. Nothing else on the row shows it: the node is running, and Lag measures
+// how long ago the last byte arrived, so a link that dropped a second ago and
+// one that never connected at all look the same.
+func linkWarnings(fields map[string]string, role keeper.Role) []string {
+	if role != keeper.Replica {
+		return nil
+	}
+	link := fields["master_link_status"]
+	if link == "" || link == "up" {
+		return nil
+	}
+	return []string{"replication link to the master is " + link}
+}
+
+// mapTags reports what INFO carries that Role/State/Lag cannot say. The master
+// a replica follows is not here: the overview already draws who follows whom,
+// and a master nobody configured is already a warning. A broken link to it is
+// not here either - that is a fault, so it is a warning (see linkWarnings). A
+// master names how many replicas are attached, which is the only place a
+// replica missing from the cluster shows up at all. Memory is here because
+// reaching maxmemory is what turns a healthy-looking redis into one refusing
+// writes.
 func mapTags(fields map[string]string, role keeper.Role) *map[string]any {
 	tags := map[string]any{}
 	if version := fields["redis_version"]; version != "" {
@@ -283,15 +299,10 @@ func mapTags(fields map[string]string, role keeper.Role) *map[string]any {
 	if memory := fields["used_memory_human"]; memory != "" {
 		tags["memory"] = memory
 	}
-	if role == keeper.Replica {
-		if link := fields["master_link_status"]; link != "" {
-			tags["link"] = link
+	if role == keeper.Leader {
+		if replicas := fields["connected_slaves"]; replicas != "" {
+			tags["replicas"] = replicas
 		}
-		if masterHost := fields["master_host"]; masterHost != "" {
-			tags["master"] = masterHost + ":" + fields["master_port"]
-		}
-	} else if replicas := fields["connected_slaves"]; replicas != "" {
-		tags["replicas"] = replicas
 	}
 	if len(tags) == 0 {
 		return nil

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 )
 
 var ErrScheduleNotSupported = errors.New("scheduled switchover is not supported by etcd")
@@ -43,37 +44,15 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	}
 
 	members := make([]member, 0, len(memberList.Members))
-	statuses := make(map[uint64]endpointStatus, len(memberList.Members))
-	// NOTE: a single unreachable member must not fail the whole overview, but
-	// its error must still make it back to the caller (not just the
-	// "unreachable" state) so it ends up in the node's warnings.
-	var errs error
 	for _, m := range memberList.Members {
 		members = append(members, member{ID: m.ID, Name: m.Name, ClientURLs: m.ClientURLs, IsLearner: m.IsLearner})
-		if len(m.ClientURLs) == 0 {
-			continue
-		}
-		status, errStatus := client.Status(ctx, m.ClientURLs[0])
-		if errStatus != nil {
-			statuses[m.ID] = endpointStatus{Err: errStatus}
-			errs = errors.Join(errs, fmt.Errorf("member %q is unreachable: %w", m.Name, errStatus))
-			continue
-		}
-		statuses[m.ID] = endpointStatus{
-			Leader:    status.Leader,
-			RaftIndex: status.RaftIndex,
-			RaftTerm:  status.RaftTerm,
-			Version:   status.Version,
-			DbSize:    status.DbSize,
-		}
 	}
 
-	status := http.StatusOK
-	if errs != nil {
-		status = http.StatusServiceUnavailable
-	}
-
-	responses := mapMembers(members, statuses)
+	// NOTE: a member that is down is reported as unreachable on its own row,
+	// with the reason in its own warnings - it is not an error of the node that
+	// answered. Returning one made every healthy node Ivory asked carry a
+	// "failed to get Keeper response" naming somebody else's outage.
+	responses := mapMembers(members, p.probeMembers(client, members))
 	// NOTE: the cluster id belongs to the reply as a whole rather than to any
 	// one member, which is why it is applied here instead of inside mapMember.
 	// Enumerating members already catches a node borrowed from another etcd of
@@ -86,7 +65,45 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 			responses[i].DiscoveredCluster = &identity
 		}
 	}
-	return responses, status, errs
+	return responses, http.StatusOK, nil
+}
+
+// probeMembers asks every member for its own status. Each probe gets its own
+// timeout and they run concurrently: they used to share one deadline with
+// MemberList, so a member that was down spent the budget the members probed
+// after it needed, and those came back "context deadline exceeded" - which
+// mapMember reads as unreachable. Stopping one etcd node of three therefore
+// showed two of them as dead.
+func (p *Plugin) probeMembers(client *connection, members []member) map[uint64]endpointStatus {
+	statuses := make(map[uint64]endpointStatus, len(members))
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	for _, m := range members {
+		if len(m.ClientURLs) == 0 {
+			continue
+		}
+		wg.Add(1)
+		go func(m member) {
+			defer wg.Done()
+			ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+			defer cancel()
+			status, err := client.Status(ctx, m.ClientURLs[0])
+			result := endpointStatus{Err: err}
+			if err == nil {
+				result = endpointStatus{
+					Leader:    status.Leader,
+					RaftIndex: status.RaftIndex,
+					RaftTerm:  status.RaftTerm,
+					Version:   status.Version,
+				}
+			}
+			mu.Lock()
+			statuses[m.ID] = result
+			mu.Unlock()
+		}(m)
+	}
+	wg.Wait()
+	return statuses
 }
 
 func (p *Plugin) Switchover(request keeper.Request) (*string, int, error) {
@@ -283,10 +300,12 @@ func findLeader(statuses map[uint64]endpointStatus) (uint64, uint64) {
 // mapTags reports the per-member facts etcd's own status carries that
 // Role/State/Lag cannot express: a learner does not vote and can never be
 // elected, a version that differs from its peers' is a half-finished rolling
-// upgrade, a db size approaching the backend quota is what makes a cluster go
-// read-only, and a raft term behind the rest is a member that missed an
-// election. An unreachable member reports a zero status, and every field is
-// omitted rather than printed as a zero.
+// upgrade, and a raft term behind the rest is a member that missed an election.
+// All three come off the Status reply that Role and State are already read
+// from, so none of them costs a request. The db size is not here: Ivory does
+// not know the backend quota, so the number alone says nothing about the one
+// failure it would warn of. An unreachable member reports a zero status, and
+// every field is omitted rather than printed as a zero.
 func mapTags(m member, status endpointStatus) *map[string]any {
 	tags := map[string]any{}
 	if m.IsLearner {
@@ -295,9 +314,6 @@ func mapTags(m member, status endpointStatus) *map[string]any {
 	if status.Version != "" {
 		tags["version"] = status.Version
 	}
-	if status.DbSize > 0 {
-		tags["dbSize"] = formatDbSize(status.DbSize)
-	}
 	if status.RaftTerm > 0 {
 		tags["raftTerm"] = status.RaftTerm
 	}
@@ -305,16 +321,6 @@ func mapTags(m member, status endpointStatus) *map[string]any {
 		return nil
 	}
 	return &tags
-}
-
-// formatDbSize reports KiB below a megabyte: a freshly bootstrapped etcd holds
-// about 20 KiB, which as megabytes reads "0.0 MiB" and looks like a node that
-// failed to answer rather than a healthy empty one.
-func formatDbSize(bytes int64) string {
-	if bytes >= 1024*1024 {
-		return fmt.Sprintf("%.1f MiB", float64(bytes)/(1024*1024))
-	}
-	return fmt.Sprintf("%.0f KiB", float64(bytes)/1024)
 }
 
 func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex uint64) keeper.Response {
@@ -348,6 +354,9 @@ func mapMember(m member, status endpointStatus, leaderID uint64, leaderRaftIndex
 		Lag:            lag,
 		Tags:           mapTags(m, status),
 		DiscoveredName: &name,
+	}
+	if status.Err != nil {
+		response.Warnings = []string{"member is unreachable: " + status.Err.Error()}
 	}
 
 	if len(m.ClientURLs) > 0 {
