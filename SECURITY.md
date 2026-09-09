@@ -10,7 +10,8 @@ Supported versions with security updates.
 | 1.1.x   | :triangular_flag_on_post: [no] |
 | 1.2.x   | :triangular_flag_on_post: [no] |
 | 1.3.x   | :triangular_flag_on_post: [no] |
-| 1.4.x   | :checkered_flag: [yes]         |
+| 1.4.x   | :triangular_flag_on_post: [no] |
+| 2.0.x   | :checkered_flag: [yes]         |
 
 ## Backward compatibility
 
@@ -28,6 +29,8 @@ to update.
 | 1.2.0 | 1.3.0 | :cloud_with_lightning: [no] |
 | 1.3.0 | 1.3.8 | :sunny: [yes]               |
 | 1.3.8 | 1.4.0 | :cloud_with_lightning: [no] |
+| 1.4.0 | 1.4.2 | :sunny: [yes]               |
+| 1.4.2 | 2.0.0 | :cloud_with_lightning: [no] |
 
 ## Reporting a Vulnerability
 
