@@ -89,18 +89,18 @@ rework:
 ## Get started
 
 1. Start the docker container
-    - **v1 (latest)**
+    - **v2** — check the
         - 🐳 **Docker Hub** `docker run -p 80:80 --restart always veegres/ivory`
         - 📦 **GitHub Container registry** `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
-    - **v2 (alpha)** — check the
-      [Releases page](https://github.com/veegres/ivory/releases) for the current tag
-        - 🐳 **Docker Hub** `docker run -p 80:80 --restart always veegres/ivory:v2.0.0-alpha.1`
-        - 📦 **GitHub Container registry** `docker run -p 80:80 --restart always ghcr.io/veegres/ivory:v2.0.0-alpha.1`
-2. Go to http://localhost:80
-3. Complete the initial setup wizard (authentication, secret key)
-4. Add your first cluster — **manual** (all node addresses), **auto-detect** (one address, Ivory
+    - **v1 (latest)**
+        - 🐳 **Docker Hub** `docker run -p 80:80 --restart always veegres/ivory:v1.4.2`
+        - 📦 **GitHub Container registry** `docker run -p 80:80 --restart always ghcr.io/veegres/ivory:v1.4.2`
+   
+3. Go to http://localhost:80
+4. Complete the initial setup wizard (authentication, secret key)
+5. Add your first cluster — **manual** (all node addresses), **auto-detect** (one address, Ivory
    finds the rest), or **[deploy](.doc/deployment.md)** a new one from a template
-5. Start monitoring
+6. Start monitoring
 
 ![Demo](.doc/images/demo.png)
 
