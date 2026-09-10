@@ -1,9 +1,11 @@
 <div style="text-align: center;" align="center">
-   <img src="app/shared/assets/ivory.png" alt="logo" />
+   <img src="app/shared/assets/ivory.png" alt="Ivory - open source database cluster management UI" />
 
 # Ivory
 
 ### Deploy it. Watch it. Fix it. Anywhere.
+
+**Open-source web UI for high-availability database clusters — PostgreSQL & Patroni, etcd, Redis, ClickHouse, MongoDB and ZooKeeper.**
 
    <img src="https://img.shields.io/github/deployments/veegres/ivory/production?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fveegres%2Fivory%2Fdeployments%2Fproduction" alt="deployment" />
    <img src="https://img.shields.io/docker/v/veegres/ivory/latest?label=stable&style=flat-square&link=https%3A%2F%2Fhub.docker.com%2Fr%2Fveegres%2Fivory" alt="stable version" />
@@ -13,15 +15,22 @@
 
 <br>
 
-Ivory is an open-source database cluster management tool built around the concept of a **Keeper** — a generic
-management layer responsible for cluster manipulations. A Keeper can be a standalone agent running beside the 
-database or a management system embedded directly in the database engine. As an example - [Patroni](https://patroni.readthedocs.io/)
-the Keeper implementation for PostgreSQL.
+**Ivory is a self-hosted, open-source database cluster management tool that puts control in your pocket.**
+One web UI to **deploy a cluster**, watch its **health and replication lag**, run a **switchover or failover**,
+open a **SQL query console**, control **containers over SSH**, and read **VM metrics and logs** — from your
+browser or your phone, without dropping into the CLI for every task.
 
-It is designed for developers and DBAs who want a single UI to operate, troubleshoot, and deploy high-availability
-database clusters — without dropping into the CLI for every task.
+It is built around the concept of a **Keeper** — a generic management layer responsible for cluster
+manipulations. A Keeper can be a standalone agent running beside the database, or a management system
+embedded directly in the database engine. [Patroni](https://patroni.readthedocs.io/) is the Keeper
+implementation for PostgreSQL, and the one Ivory was originally built around.
 
-Ivory can run as a local tool on your laptop or as a shared service on a VM for team use.
+Ivory is designed for **DBAs, SRE and backend developers** who operate high-availability database clusters and
+want a single UI to run, troubleshoot and deploy them — including from a phone, when you are away from your
+laptop. It runs as a local tool on your machine or as a shared service on a VM for team use, ships as a single
+Docker container, and stores everything itself: **no agent on your hosts, no orchestrator, no cloud account.**
+
+**Contents** — [Features](#features) · [Get started](#get-started) · [Supported databases](#supported-databases-and-keepers) · [Documentation](#documentation) · [FAQ](#faq) · [Contributing](#contribution)
 
 ---
 
@@ -55,7 +64,7 @@ rework:
 
 ## Features
 
-**Deployment**
+**Deployment — spin up a high-availability cluster over plain SSH**
 
 - [Deploying a cluster](.doc/deployment.md#deploying-a-cluster) — over SSH, with no orchestrator or agent
 - [Deploying a single cluster node](.doc/deployment.md#deploying-a-single-cluster-node) — add or rebuild one node of an existing cluster
@@ -64,49 +73,51 @@ rework:
     - **Multi host** — one node per machine, the usual layout for a real cluster
     - **Single host** — the whole cluster on one machine, for trying it out locally or on a test VM
 
-**Cluster management**
+**Cluster management — HA operations from the browser**
 
 - [Cluster list](.doc/clusters.md) — register manually, auto-detect from one address, or deploy
 - [Cluster health](.doc/overview.md) — node roles, replication lag, pending restarts, warnings
 - [HA operations](.doc/overview.md#ha-operations) — switchover, failover, reinitialise, restart, reload, pause
 - [Database configuration](.doc/node.md#configuration) — view and patch settings per node
 
-**Node operations**
+**Node operations — the machine and the container behind each node**
 
 - [Container lifecycle](.doc/node.md#container) — deploy, start, stop, restart, remove, logs
 - [Keeper operations per node](.doc/node.md#keeper) — the same HA actions in a full-page view
 - [VM metrics](.doc/node.md#system) — CPU, memory, network and processes on the host
 - [Log streaming](.doc/node.md#logs) — any file on the host, or container output
 
-**Database troubleshooting**
+**Database troubleshooting — query console and maintenance tools**
 
 - [Query builder](.doc/node.md#database) — saved SQL queries for monitoring and diagnostics
 - [Database tools](.doc/node.md#tools) — engine-specific maintenance tools, run as background jobs with live output:
     - **Postgres** — [pgcompacttable](.doc/pg_compacttable.md), reduces table and index bloat without heavy locks
 
+**Access control and operations**
+
+- [Authentication](.doc/authentication.md) — Basic, LDAP and OIDC/SSO, with granular per-user permissions
+- [Configuration](.doc/configuration.md) — data persistence, upgrades, TLS, reverse-proxy sub-path
+
 ---
 
 ## Get started
 
-1. Start the docker container
-    - **v2** — check the
-        - 🐳 **Docker Hub** `docker run -p 80:80 --restart always veegres/ivory`
-        - 📦 **GitHub Container registry** `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
-    - **v1 (latest)**
-        - 🐳 **Docker Hub** `docker run -p 80:80 --restart always veegres/ivory:v1.4.2`
-        - 📦 **GitHub Container registry** `docker run -p 80:80 --restart always ghcr.io/veegres/ivory:v1.4.2`
-   
-3. Go to http://localhost:80
-4. Complete the initial setup wizard (authentication, secret key)
-5. Add your first cluster — **manual** (all node addresses), **auto-detect** (one address, Ivory
-   finds the rest), or **[deploy](.doc/deployment.md)** a new one from a template
-6. Start monitoring
+Ivory ships as one Docker image with no external dependencies.
 
-![Demo](.doc/images/demo.png)
+1. Start the docker container
+    - 🐳 **Docker Hub** `docker run -p 80:80 --restart always veegres/ivory`
+    - 📦 **GitHub Container registry** `docker run -p 80:80 --restart always ghcr.io/veegres/ivory`
+2. Go to http://localhost:80
+3. Complete the initial setup wizard (authentication, secret key)
+4. Add your first cluster — **manual** (all node addresses), **auto-detect** (one address, Ivory
+   finds the rest), or **[deploy](.doc/deployment.md)** a new one from a template
+5. Start monitoring
+
+![Ivory web UI showing a PostgreSQL Patroni cluster overview with node roles and replication lag](.doc/images/demo.png)
 
 ---
 
-### Supported Keepers
+## Supported databases and keepers
 
 | Keeper                                     | Database   | Stage  | Why                                                                                                                                                                  |
 |--------------------------------------------|------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -123,83 +134,51 @@ day, and Ivory exists to simplify that routine first. Broader support grows from
 
 ---
 
+## Documentation
+
+| Page                                         | What's in it                                                       |
+|----------------------------------------------|--------------------------------------------------------------------|
+| [Clusters](.doc/clusters.md)                 | Adding clusters manually, auto-detection, tags and filtering        |
+| [Overview](.doc/overview.md)                 | What a Keeper is, cluster health, HA operations                     |
+| [Node](.doc/node.md)                         | System, Container, Keeper, Database and Tools tabs                  |
+| [Deployment](.doc/deployment.md)             | Deploy a cluster or one node, deployment templates, variables       |
+| [Authentication](.doc/authentication.md)     | Basic / LDAP / OIDC, users, superusers, permissions                 |
+| [Configuration](.doc/configuration.md)       | Data persistence, upgrades, environment variables, TLS, sub-path    |
+| [pgcompacttable](.doc/pg_compacttable.md)    | Reducing Postgres table and index bloat from the UI                 |
+
+---
+
 ## FAQ
 
-### How to update to a new version?
+**How do I upgrade to a new version?**
+Back up your configuration from the Settings page and restore it in the new version — the format is
+backward compatible. Mounting the data directory between containers works too, but reliably only for patch
+releases. See [Configuration → Upgrading](.doc/configuration.md#upgrading-to-a-new-version).
 
-Ivory now provides Backup/Restore functionality for migrating your data between versions. You can backup your
-configuration (users, clusters, queries, permissions) from the Settings page and restore it in a new version. A backup
-says who your users are and how they sign in, and never carries a password - after a restore, hand everybody who signs
-in with one a fresh registration link. The backup format is backward compatible and designed to work across different
-versions.
+**Where does Ivory store its data?**
+In `/opt/ivory/data`, backed by a Docker volume. Bind-mount it, or use `--volumes-from`, to keep data across
+different containers. See [Configuration → Data and Persistence](.doc/configuration.md#data-and-persistence).
 
-Alternatively, you can mount the data directory between containers (see instructions below), though this approach
-typically works only for patch releases. For minor and major version updates, always check the
-[backward compatibility page](SECURITY.md) and prefer using the Backup/Restore feature for safer migration.
+**Does Ivory need an agent on my database hosts?**
+No. It talks to the Keeper's API, to the database directly, and to the host over SSH.
 
-### How Ivory stores the data?
+**How does authentication work?**
+Ivory runs with or without it. With it, everybody who signs in is an Ivory user first — you register a username
+and choose whether they sign in with a password, LDAP or SSO, and a password is always set by the person
+themselves through a one-time link. See [Authentication](.doc/authentication.md).
 
-All Ivory data is located inside `/opt/ivory/data` directory. Ivory has a docker volume, it means that you won't lose it
-if your container is going to be rebooted. But you need to consider mounting this directory to your local disk if you
-want to save the data between different containers
-`--mount type=bind,source=YOUR_LOCAL_PATH,target=/opt/ivory/data`, or you can mount volume of the old container to the
-new one by docker flag `--volumes-from`
+**Are my credentials safe?**
+Every secret — SSH keys, database passwords, LDAP and OIDC client secrets — is encrypted with the secret word
+you choose during setup.
 
-### How to use authentication?
+**Can I run Ivory behind a reverse proxy or under HTTPS?**
+Yes — `IVORY_URL_PATH` for a sub-path, `IVORY_CERT_FILE_PATH` and `IVORY_CERT_KEY_FILE_PATH` for TLS. See
+[Configuration → Environment Variables](.doc/configuration.md#environment-variables).
 
-Ivory can work with or without authentication. It will ask you to configure it during the initial setup. Ivory supports
-multiple authentication methods:
+**Does it work on a phone?**
+Yes. The v2 UI is mobile friendly, so you can check cluster health and run HA operations from your phone.
 
-- **Basic** - Username and password authentication against the Ivory users
-- **LDAP** - Integration with LDAP directories
-- **OIDC/SSO** - Single Sign-On via OpenID Connect
-
-Whichever of them you switch on, everybody who signs in is an Ivory user first. From the _User Manager_ in the
-Settings page you register a username and pick which of the three ways that person may sign in with; a name your
-directory knows but Ivory does not is refused, so an unexpected LDAP account cannot walk in under a name somebody else
-holds. Registering somebody for a password issues a one-time link instead of asking you to type one: the person opens
-it, sets their own password and is signed in straight away. The link works once, expires within hours and can be
-revoked at any time, so hand it only to the person it names. The **superuser** who sets Ivory up is the one exception -
-their password is typed during the initial setup, since there is nobody yet to send a link to. Passwords are encrypted
-with your secret word and stored inside Ivory.
-
-A **superuser** always holds every permission and cannot have any of them taken away, which is what guarantees Ivory
-stays administrable; only a superuser can register, change or delete another one, and there is always at least one.
-Nobody can delete themselves. A username is never changed and the superuser flag is never taken back - what you can
-change about an existing user is which ways they sign in, and the single thing they can change about themselves is
-their own password, from the same _User Manager_. Deleting a user removes their permissions too.
-
-A forgotten password is answered the same way: from the _User Manager_ you **reset** the person's password, which hands
-them a new one-time link, keeping their user and everything it was granted - the password they already have keeps
-working until they use it. Nobody ever types somebody else's password, and only a superuser can reset a superuser's.
-
-Running Ivory **without authentication** switches all of this off: there is no account to change and nobody to grant
-anything to, so neither the _User Manager_ nor the _Permission Manager_ is offered at all.
-
-You can safely provide your secrets to Ivory for SSO and LDAP configuration. Ivory encrypts all secrets using your
-secret word. Therefore, make sure to select the appropriate application configuration in your SSO provider. As well,
-Ivory requires the _profile_ or _email_ scopes from the SSO provider in order to retrieve user information.
-
-Additionally, Ivory includes a comprehensive permission system that allows you to control access at a granular level
-(view/manage clusters, execute queries, manage configurations, etc.). You can manage user permissions from the Settings
-page after authentication is enabled.
-
-Usually you don't want to use authentication when working with Ivory locally, but it is recommended when deploying it in
-shared environments or VMs.
-
-### How to run Ivory under a sub path?
-
-Ivory offers a special environment variable, `IVORY_URL_PATH`, designed for use when running the service behind a
-reverse proxy under a sub-path. It's important to note that the path must start with a leading slash, such as `/ivory`.
-Example: `docker run -p 80:80 -env IVORY_URL_PATH=/ivory --restart always veegres/ivory`
-
-### How to run Ivory under TLS?
-
-You need to specify two environment variables `IVORY_CERT_FILE_PATH` and `IVORY_CERT_KEY_FILE_PATH`. Because it is a
-docker environment, you need to mount these files first and then provide these variables with paths. Recommended path
-inside container is `/opt/certs`. Note that Ivory changes port to 443 when you have provided both paths. Example: `docker run -p 443:443 --mount type=bind,source=YOUR_CERTS_PATH,target=/opt/certs
---env IVORY_CERT_FILE_PATH=/opt/certs/YOUR_CERT_NAME.crt --env IVORY_CERT_KEY_FILE_PATH=/opt/certs/YOUR_KEY_NAME.key
---restart always veegres/ivory`
+---
 
 ## Contribution
 
@@ -211,3 +190,10 @@ If you're interested in contributing to the Ivory project, consider these option
 - [Setup Local Environment](.docker/ivory-dev/README.md)
 - [Build Frontend](app/README.md)
 - [Build Backend](server/README.md)
+
+---
+
+<sub>Ivory is an open-source, self-hosted GUI and web dashboard for database cluster management and monitoring:
+PostgreSQL high availability with Patroni, plain PostgreSQL, etcd, Redis, ClickHouse, MongoDB and ZooKeeper —
+covering cluster deployment over SSH, failover and switchover, replication lag monitoring, SQL query console,
+Docker container management and VM metrics, in a single Docker container.</sub>
