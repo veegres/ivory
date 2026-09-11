@@ -15,7 +15,7 @@ const SX: SxPropsMap = {
 }
 
 const style: StylePropsMap = {
-    img: {zIndex: 1, opacity: 0.7, filter: "grayscale(100%)"},
+    img: {zIndex: 1, opacity: 0.7, filter: "grayscale(80%)"},
 }
 
 export function LogoProgress() {
