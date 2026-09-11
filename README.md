@@ -1,5 +1,5 @@
 <div style="text-align: center;" align="center">
-   <img src="app/shared/assets/ivory.png" alt="Ivory - open source database cluster management UI" />
+   <img src="app/shared/assets/ivory.png" alt="Ivory - open source database cluster management UI" height="200" width="200" />
 
 # Ivory
 
