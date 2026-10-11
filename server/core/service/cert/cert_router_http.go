@@ -8,15 +8,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Router struct {
+type HttpRouter struct {
 	certService *Service
 }
 
-func NewRouter(certService *Service) *Router {
-	return &Router{certService: certService}
+func NewHttpRouter(certService *Service) *HttpRouter {
+	return &HttpRouter{certService: certService}
 }
 
-func (r *Router) GetCertList(context *gin.Context) {
+func (r *HttpRouter) GetCertList(context *gin.Context) {
 	certType := context.Request.URL.Query().Get("type")
 
 	var err error
@@ -40,7 +40,7 @@ func (r *Router) GetCertList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
-func (r *Router) DeleteCert(context *gin.Context) {
+func (r *HttpRouter) DeleteCert(context *gin.Context) {
 	certUuid, errParse := uuid.Parse(context.Param("uuid"))
 	if errParse != nil {
 		context.JSON(http.StatusNotFound, gin.H{"error": errParse.Error()})
@@ -54,7 +54,7 @@ func (r *Router) DeleteCert(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "deleted"})
 }
 
-func (r *Router) PostUploadCert(context *gin.Context) {
+func (r *HttpRouter) PostUploadCert(context *gin.Context) {
 	certType, errParse := strconv.ParseInt(context.PostForm("type"), 10, 8)
 	if errParse != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
@@ -84,7 +84,7 @@ func (r *Router) PostUploadCert(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cert})
 }
 
-func (r *Router) PostAddCert(context *gin.Context) {
+func (r *HttpRouter) PostAddCert(context *gin.Context) {
 	var certRequest CertAddRequest
 	parseErr := context.ShouldBindJSON(&certRequest)
 	if parseErr != nil {

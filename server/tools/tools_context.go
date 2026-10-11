@@ -8,13 +8,13 @@ import (
 	"ivory/tools/pg_compacttable"
 )
 
-type Router struct {
-	PgCompactTable *pg_compacttable.Router
+type HttpRouter struct {
+	PgCompactTable *pg_compacttable.HttpRouter
 }
 
 type Context struct {
-	Registry *utils.Registry[Tool, Adapter]
-	Router   *Router
+	Registry   *utils.Registry[Tool, Adapter]
+	HttpRouter *HttpRouter
 }
 
 func NewContext(
@@ -34,8 +34,8 @@ func NewContext(
 
 	return &Context{
 		Registry: toolRegistry,
-		Router: &Router{
-			PgCompactTable: pg_compacttable.NewRouter(pgCompactTableService),
+		HttpRouter: &HttpRouter{
+			PgCompactTable: pg_compacttable.NewHttpRouter(pgCompactTableService),
 		},
 	}
 }

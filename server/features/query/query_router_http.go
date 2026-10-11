@@ -7,22 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Router struct {
+type HttpRouter struct {
 	service       *Service
 	configService *config.Service
 }
 
-func NewRouter(
+func NewHttpRouter(
 	service *Service,
 	configService *config.Service,
-) *Router {
-	return &Router{
+) *HttpRouter {
+	return &HttpRouter{
 		service:       service,
 		configService: configService,
 	}
 }
 
-func (r *Router) withQueryContext(ctx *gin.Context, con Connection, handle func(Context)) {
+func (r *HttpRouter) withQueryContext(ctx *gin.Context, con Connection, handle func(Context)) {
 	session, errSession := ctx.Cookie("session")
 	if errSession != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": errSession.Error()})

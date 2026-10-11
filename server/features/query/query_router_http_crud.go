@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *Router) PutQuery(context *gin.Context) {
+func (r *HttpRouter) PutQuery(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -29,7 +29,7 @@ func (r *Router) PutQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *Router) PostQuery(context *gin.Context) {
+func (r *HttpRouter) PostQuery(context *gin.Context) {
 	var query Request
 	errBind := context.ShouldBindJSON(&query)
 	if errBind != nil {
@@ -44,7 +44,7 @@ func (r *Router) PostQuery(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *Router) GetQueryList(context *gin.Context) {
+func (r *HttpRouter) GetQueryList(context *gin.Context) {
 	queryTypeStr := context.Request.URL.Query().Get("type")
 	pluginStr := context.Request.URL.Query().Get("plugin")
 
@@ -74,7 +74,7 @@ func (r *Router) GetQueryList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": queryList})
 }
 
-func (r *Router) DeleteQuery(context *gin.Context) {
+func (r *HttpRouter) DeleteQuery(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})

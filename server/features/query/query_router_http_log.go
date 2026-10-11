@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (r *Router) GetQueryLog(context *gin.Context) {
+func (r *HttpRouter) GetQueryLog(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -21,7 +21,7 @@ func (r *Router) GetQueryLog(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *Router) DeleteQueryLog(context *gin.Context) {
+func (r *HttpRouter) DeleteQueryLog(context *gin.Context) {
 	queryUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})

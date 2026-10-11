@@ -10,15 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Router struct {
+type HttpRouter struct {
 	bloatService *Service
 }
 
-func NewRouter(bloatService *Service) *Router {
-	return &Router{bloatService: bloatService}
+func NewHttpRouter(bloatService *Service) *HttpRouter {
+	return &HttpRouter{bloatService: bloatService}
 }
 
-func (r *Router) GetBloatLogs(context *gin.Context) {
+func (r *HttpRouter) GetBloatLogs(context *gin.Context) {
 	jobUuid, errUuid := uuid.Parse(context.Param("uuid"))
 	if errUuid != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errUuid.Error()})
@@ -35,7 +35,7 @@ func (r *Router) GetBloatLogs(context *gin.Context) {
 	context.File(path)
 }
 
-func (r *Router) GetBloatList(context *gin.Context) {
+func (r *HttpRouter) GetBloatList(context *gin.Context) {
 	list, err := r.bloatService.List()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -44,7 +44,7 @@ func (r *Router) GetBloatList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
-func (r *Router) GetBloatListByCluster(context *gin.Context) {
+func (r *HttpRouter) GetBloatListByCluster(context *gin.Context) {
 	cluster := context.Param("name")
 	list, err := r.bloatService.ListByCluster(cluster)
 	if err != nil {
@@ -54,7 +54,7 @@ func (r *Router) GetBloatListByCluster(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
-func (r *Router) GetBloat(context *gin.Context) {
+func (r *HttpRouter) GetBloat(context *gin.Context) {
 	jobUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -68,7 +68,7 @@ func (r *Router) GetBloat(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": compactTable})
 }
 
-func (r *Router) PostJobStart(context *gin.Context) {
+func (r *HttpRouter) PostJobStart(context *gin.Context) {
 	var request RunRequest
 	parseErr := context.ShouldBindJSON(&request)
 	if parseErr != nil {
@@ -141,7 +141,7 @@ func (r *Router) PostJobStart(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": model})
 }
 
-func (r *Router) PostJobStop(context *gin.Context) {
+func (r *HttpRouter) PostJobStop(context *gin.Context) {
 	jobUuid, errUuid := uuid.Parse(context.Param("uuid"))
 	if errUuid != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errUuid.Error()})
@@ -154,7 +154,7 @@ func (r *Router) PostJobStop(context *gin.Context) {
 	}
 }
 
-func (r *Router) DeleteJob(context *gin.Context) {
+func (r *HttpRouter) DeleteJob(context *gin.Context) {
 	jobUuid, errUuid := uuid.Parse(context.Param("uuid"))
 	if errUuid != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errUuid.Error()})
@@ -168,7 +168,7 @@ func (r *Router) DeleteJob(context *gin.Context) {
 	}
 }
 
-func (r *Router) GetJobStream(context *gin.Context) {
+func (r *HttpRouter) GetJobStream(context *gin.Context) {
 	// notify proxy that it shouldn't enable any caching
 	context.Writer.Header().Set("Cache-Control", "no-transform")
 	// force using correct event-stream if there is no proxy

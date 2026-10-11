@@ -6,15 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Router struct {
+type HttpRouter struct {
 	service *Service
 }
 
-func NewRouter(service *Service) *Router {
-	return &Router{service: service}
+func NewHttpRouter(service *Service) *HttpRouter {
+	return &HttpRouter{service: service}
 }
 
-func (r *Router) InitialiseMiddleware() gin.HandlerFunc {
+func (r *HttpRouter) InitialiseMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		_, err := r.service.GetAppConfig()
 		if err != nil {
@@ -25,7 +25,7 @@ func (r *Router) InitialiseMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (r *Router) SetAppConfig(context *gin.Context) {
+func (r *HttpRouter) SetAppConfig(context *gin.Context) {
 	var appConfig NewAppConfig
 	errBind := context.ShouldBindJSON(&appConfig)
 	if errBind != nil {

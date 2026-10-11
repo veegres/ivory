@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (r *Router) PostExecuteTemplateQuery(context *gin.Context) {
+func (r *HttpRouter) PostExecuteTemplateQuery(context *gin.Context) {
 	var req TemplateRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -31,7 +31,7 @@ func (r *Router) PostExecuteTemplateQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostExecuteConsoleQuery(context *gin.Context) {
+func (r *HttpRouter) PostExecuteConsoleQuery(context *gin.Context) {
 	var req ConsoleRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -56,7 +56,7 @@ func (r *Router) PostExecuteConsoleQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostActivityQuery(context *gin.Context) {
+func (r *HttpRouter) PostActivityQuery(context *gin.Context) {
 	var req Connection
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -75,7 +75,7 @@ func (r *Router) PostActivityQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostDatabasesQuery(context *gin.Context) {
+func (r *HttpRouter) PostDatabasesQuery(context *gin.Context) {
 	var req DatabasesRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -94,7 +94,7 @@ func (r *Router) PostDatabasesQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostSchemasQuery(context *gin.Context) {
+func (r *HttpRouter) PostSchemasQuery(context *gin.Context) {
 	var req SchemasRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -113,7 +113,7 @@ func (r *Router) PostSchemasQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostTablesQuery(context *gin.Context) {
+func (r *HttpRouter) PostTablesQuery(context *gin.Context) {
 	var req TablesRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -132,7 +132,7 @@ func (r *Router) PostTablesQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostChartQuery(context *gin.Context) {
+func (r *HttpRouter) PostChartQuery(context *gin.Context) {
 	var req ChartRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -151,7 +151,7 @@ func (r *Router) PostChartQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostCancelQuery(context *gin.Context) {
+func (r *HttpRouter) PostCancelQuery(context *gin.Context) {
 	var req KillRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
@@ -170,7 +170,7 @@ func (r *Router) PostCancelQuery(context *gin.Context) {
 	})
 }
 
-func (r *Router) PostTerminateQuery(context *gin.Context) {
+func (r *HttpRouter) PostTerminateQuery(context *gin.Context) {
 	var req KillRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {

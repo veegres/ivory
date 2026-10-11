@@ -8,15 +8,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Router struct {
+type HttpRouter struct {
 	service *Service
 }
 
-func NewRouter(service *Service) *Router {
-	return &Router{service: service}
+func NewHttpRouter(service *Service) *HttpRouter {
+	return &HttpRouter{service: service}
 }
 
-func (r *Router) GetDeploymentTemplateList(context *gin.Context) {
+func (r *HttpRouter) GetDeploymentTemplateList(context *gin.Context) {
 	var criteria ListRequest
 	if err := context.ShouldBindQuery(&criteria); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -30,7 +30,7 @@ func (r *Router) GetDeploymentTemplateList(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": list})
 }
 
-func (r *Router) PostDeploymentTemplate(context *gin.Context) {
+func (r *HttpRouter) PostDeploymentTemplate(context *gin.Context) {
 	var request TemplateRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -44,7 +44,7 @@ func (r *Router) PostDeploymentTemplate(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *Router) PutDeploymentTemplate(context *gin.Context) {
+func (r *HttpRouter) PutDeploymentTemplate(context *gin.Context) {
 	id, err := parseTemplateId(context)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -63,7 +63,7 @@ func (r *Router) PutDeploymentTemplate(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func (r *Router) DeleteDeploymentTemplate(context *gin.Context) {
+func (r *HttpRouter) DeleteDeploymentTemplate(context *gin.Context) {
 	id, err := parseTemplateId(context)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

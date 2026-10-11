@@ -20,7 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func createTestConfigRouter(t *testing.T) *Router {
+func createTestConfigRouter(t *testing.T) *HttpRouter {
 	t.Helper()
 
 	tmpDir, errDir := os.MkdirTemp("", "config-router-test-*")
@@ -74,10 +74,10 @@ func createTestConfigRouter(t *testing.T) *Router {
 		ldap.NewProvider(),
 		oidc.NewProvider(),
 	)
-	return NewRouter(service)
+	return NewHttpRouter(service)
 }
 
-func runInitialiseMiddleware(r *Router) (*httptest.ResponseRecorder, *gin.Context) {
+func runInitialiseMiddleware(r *HttpRouter) (*httptest.ResponseRecorder, *gin.Context) {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(w)

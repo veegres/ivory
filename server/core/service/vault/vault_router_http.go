@@ -8,15 +8,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Router struct {
+type HttpRouter struct {
 	vaultService *Service
 }
 
-func NewRouter(vaultService *Service) *Router {
-	return &Router{vaultService: vaultService}
+func NewHttpRouter(vaultService *Service) *HttpRouter {
+	return &HttpRouter{vaultService: vaultService}
 }
 
-func (r *Router) GetVaultList(context *gin.Context) {
+func (r *HttpRouter) GetVaultList(context *gin.Context) {
 	stringType := context.Request.URL.Query().Get("type")
 	if stringType != "" {
 		number, errAtoi := strconv.Atoi(stringType)
@@ -41,7 +41,7 @@ func (r *Router) GetVaultList(context *gin.Context) {
 	}
 }
 
-func (r *Router) PostVault(context *gin.Context) {
+func (r *HttpRouter) PostVault(context *gin.Context) {
 	var vault Vault
 	errBind := context.ShouldBindJSON(&vault)
 	if errBind != nil {
@@ -58,7 +58,7 @@ func (r *Router) PostVault(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": gin.H{"key": key.String(), "vault": cred}})
 }
 
-func (r *Router) PatchVault(context *gin.Context) {
+func (r *HttpRouter) PatchVault(context *gin.Context) {
 	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
@@ -81,7 +81,7 @@ func (r *Router) PatchVault(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": cred})
 }
 
-func (r *Router) DeleteVault(context *gin.Context) {
+func (r *HttpRouter) DeleteVault(context *gin.Context) {
 	credUuid, parseErr := uuid.Parse(context.Param("uuid"))
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})
