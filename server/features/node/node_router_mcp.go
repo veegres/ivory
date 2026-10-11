@@ -2,7 +2,9 @@ package node
 
 import (
 	"context"
+	"errors"
 	"ivory/core/service/job"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -12,8 +14,7 @@ import (
 // in core/engine, beside the route table.
 //
 // A tool's structured result may be any JSON value, not only an object, so a
-// handler hands back the service's own type. The one exception is RouterLogsResponse,
-// which carries something the service does not return.
+// handler hands back the service's own type.
 type McpRouter struct {
 	service *Service
 }
@@ -23,24 +24,36 @@ func NewMcpRouter(service *Service) *McpRouter {
 }
 
 // collectLogs drains a streaming service method into a bounded result, the way
-// handleStreamRequest drains it into an SSE response. The request context is
-// the backstop: a job that never ends is cut off when the client goes away
-// rather than holding the tool open forever.
+// handleStreamRequest drains it into an SSE response. The services report a
+// failure down the stream rather than returning it: a message before the
+// stream opens is a request refused outright, and the one following a FAILED
+// status is why the job died, so either becomes the tool's error. The request
+// context is the backstop for a job that never ends.
 func (r *McpRouter) collectLogs(
 	ctx context.Context,
 	stream func(job.SubscriberID, <-chan struct{}, func(job.Message)),
-) RouterLogsResponse {
+) ([]string, error) {
 	lines := make([]string, 0)
-	notes := make([]string, 0)
+	opened, failed := false, false
+	reason := ""
 	stream(job.SubscriberID(uuid.New().String()), ctx.Done(), func(event job.Message) {
 		switch event.Type {
+		case job.STREAM:
+			opened = true
+		case job.STATUS:
+			failed = failed || event.Message == job.FAILED.String()
+		case job.SERVER:
+			if reason == "" && (!opened || failed) {
+				reason = event.Message
+			}
 		case job.LOG:
 			lines = append(lines, event.Message)
-		case job.SERVER:
-			notes = append(notes, event.Message)
 		}
 	})
-	return RouterLogsResponse{Lines: lines, Notes: notes}
+	if !opened || failed {
+		return nil, errors.New(strings.Join(append([]string{reason}, lines...), "\n"))
+	}
+	return lines, nil
 }
 
 // boundedLogs is what a tool reads: a tail rather than a live stream, because

@@ -106,8 +106,6 @@ func TestServiceCreateUserPermissions(t *testing.T) {
 	})
 }
 
-// TestServiceCreateUserPermissionsRenamesStoredFeatures covers a permission map
-
 // TestServiceCreateUserPermissionsDropsUnknownStoredFeatures covers a record
 // holding a key that is not a feature any more - removed, or renamed since it
 // was written. Nothing forwards it: the key is dropped and the current feature

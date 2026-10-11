@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/google/uuid"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -20,7 +22,7 @@ import (
 // engine_http.go. It does for tools exactly what that file does for routes:
 // declares each one next to the permission that gates it and the feature
 // router that serves it. Every feature keeps its own MCP implementation in its
-// own package, in <feature>_mcp.go, beside the router it already has.
+// own package, in <feature>_router_mcp.go, beside the router it already has.
 //
 // The one structural difference is when the table runs. A route is registered
 // once at startup; a tool list belongs to one caller, so these functions run
@@ -28,12 +30,7 @@ import (
 
 // maxMcpRequestBodyBytes bounds one JSON-RPC request. Tool arguments are
 // command text and query text, not uploads.
-
-// maxMcpRequestBodyBytes bounds one JSON-RPC request. Tool arguments are
-// command text and query text, not uploads.
 const maxMcpRequestBodyBytes = 4 << 20
-
-// mcpServerName is how Ivory introduces itself to an MCP client.
 
 // mcpServerName is how Ivory introduces itself to an MCP client.
 const mcpServerName = "ivory"
@@ -52,8 +49,6 @@ identify the leader and the candidate by the keeper's own member key, which
 the overview reports as each node's keeper.key.
 
 Only the tools this user holds permission for are listed.`
-
-// mcpRegistrar builds one caller's server.
 
 // NewMcpServer builds the MCP engine, the way NewHttpServer builds the http
 // one. It returns the handler engine_http.go mounts, since MCP rides the same
@@ -86,16 +81,13 @@ func NewMcpServer(env *coreConfig.Environment, mr *features.McpRouter) gin.Handl
 	}
 }
 
-// mcpRequestContext carries what the middlewares already worked out down to
-// the SDK, which hands the server builder an *http.Request and nothing else.
-
 // newMcpServer is the per-caller equivalent of the route table: it declares
 // every tool group, and each group drops the tools this caller may not call.
 func newMcpServer(ctx context.Context, mr *features.McpRouter, version string) *mcpsdk.Server {
 	r := &mcpRegistrar{
 		server: mcpsdk.NewServer(
 			&mcpsdk.Implementation{Name: mcpServerName, Version: version},
-			&mcpsdk.ServerOptions{Instructions: mcpInstructions},
+			&mcpsdk.ServerOptions{Instructions: mcpInstructions, SchemaCache: mcpResolvedSchemas},
 		),
 		permissions: mcpPermissionsFrom(ctx),
 	}
@@ -109,9 +101,6 @@ func newMcpServer(ctx context.Context, mr *features.McpRouter, version string) *
 
 	return r.server
 }
-
-// managementTools holds the one tool behind no permission, mirroring the
-// unguarded /info route.
 
 // managementTools holds the one tool behind no permission, mirroring the
 // unguarded /info route.
@@ -184,9 +173,6 @@ func clusterTools(r *mcpRegistrar, mr *features.McpRouter) {
 		Annotations: destructive,
 	}, mr.Cluster.ClusterDeploy)
 }
-
-// nodeTools covers all three halves of a node, the way nodeRouter does:
-// the keeper managing it, the host it runs on, and the containers on that host.
 
 // nodeTools covers all three halves of a node, the way nodeRouter does:
 // the keeper managing it, the host it runs on, and the containers on that host.
@@ -528,9 +514,6 @@ func mcpPermissionsFrom(ctx context.Context) permission.PermissionMap {
 	return permission.PermissionMap{}
 }
 
-// newMcpServer is the per-caller equivalent of the route table: it declares
-// every tool group, and each group drops the tools this caller may not call.
-
 // mcpRegistrar builds one caller's server.
 type mcpRegistrar struct {
 	server      *mcpsdk.Server
@@ -545,11 +528,6 @@ func (r *mcpRegistrar) granted(feature coreConfig.Feature) bool {
 // tool the user may not call is never offered - the equivalent of
 // ValidateMethodMiddleware on a route, decided per tool instead. It is a free
 // function because Go does not allow a method to introduce type parameters.
-
-// addTool registers a tool only when the caller's map grants its feature, so a
-// tool the user may not call is never offered - the equivalent of
-// ValidateMethodMiddleware on a route, decided per tool instead. It is a free
-// function because Go does not allow a method to introduce type parameters.
 func addTool[In, Out any](r *mcpRegistrar, feature coreConfig.Feature, tool *mcpsdk.Tool, handler mcpsdk.ToolHandlerFor[In, Out]) {
 	if !r.granted(feature) {
 		return
@@ -559,11 +537,9 @@ func addTool[In, Out any](r *mcpRegistrar, feature coreConfig.Feature, tool *mcp
 
 // addToolUngated fills in both schemas before handing the tool over. The SDK
 // infers them itself only when they are nil, and its inference has no hook for
-// mcpTypeSchemas, so they are built here instead.
-
-// addToolUngated fills in both schemas before handing the tool over. The SDK
-// infers them itself only when they are nil, and its inference has no hook for
-// mcpTypeSchemas, so they are built here instead.
+// mcpTypeSchemas, so they are built here instead. The input then goes through
+// gin's own validator, the one ShouldBindJSON runs, because a schema can say a
+// field must be present but not that it must be non-zero.
 func addToolUngated[In, Out any](r *mcpRegistrar, tool *mcpsdk.Tool, handler mcpsdk.ToolHandlerFor[In, Out]) {
 	if tool.InputSchema == nil {
 		tool.InputSchema = mcpSchemaFor[In](tool.Name)
@@ -571,13 +547,14 @@ func addToolUngated[In, Out any](r *mcpRegistrar, tool *mcpsdk.Tool, handler mcp
 	if tool.OutputSchema == nil {
 		tool.OutputSchema = mcpSchemaFor[Out](tool.Name)
 	}
-	mcpsdk.AddTool(r.server, tool, handler)
+	mcpsdk.AddTool(r.server, tool, func(ctx context.Context, req *mcpsdk.CallToolRequest, in In) (*mcpsdk.CallToolResult, Out, error) {
+		if err := binding.Validator.ValidateStruct(in); err != nil {
+			var zero Out
+			return nil, zero, err
+		}
+		return handler(ctx, req, in)
+	})
 }
-
-// mcpTypeSchemas corrects the types reflection cannot read off a Go type
-// alone. uuid.UUID is a [16]byte, so inference calls it an array, while it
-// marshals as a string - the SDK then rejects Ivory's own vault ids against
-// the schema it generated for them.
 
 // hintFalse and hintTrue back the annotation pointers below; the SDK only
 // reads them.
@@ -590,10 +567,6 @@ var (
 	destructive = &mcpsdk.ToolAnnotations{DestructiveHint: &hintTrue}
 )
 
-// NewMcpServer builds the MCP engine, the way NewHttpServer builds the http
-// one. It returns the handler engine_http.go mounts, since MCP rides the same
-// listener rather than opening one of its own.
-
 // mcpTypeSchemas corrects the types reflection cannot read off a Go type
 // alone. uuid.UUID is a [16]byte, so inference calls it an array, while it
 // marshals as a string - the SDK then rejects Ivory's own vault ids against
@@ -603,13 +576,26 @@ var mcpTypeSchemas = map[reflect.Type]*jsonschema.Schema{
 	reflect.TypeFor[*uuid.UUID](): {Type: "string"},
 }
 
+// mcpSchemas and mcpResolvedSchemas exist because a stateless server is built
+// per request: a schema depends only on its Go type, so it is reflected once
+// and then shared, and the SDK resolves each shared pointer once too.
+var (
+	mcpSchemas         sync.Map
+	mcpResolvedSchemas = mcpsdk.NewSchemaCache()
+)
+
 func mcpSchemaFor[T any](name string) *jsonschema.Schema {
+	goType := reflect.TypeFor[T]()
+	if cached, ok := mcpSchemas.Load(goType); ok {
+		return cached.(*jsonschema.Schema)
+	}
 	schema, err := jsonschema.For[T](&jsonschema.ForOptions{TypeSchemas: mcpTypeSchemas})
 	if err != nil {
 		panic(fmt.Sprintf("mcp: tool %q: %v", name, err))
 	}
-	mcpRequired(reflect.TypeFor[T](), schema)
-	return schema
+	mcpRequired(goType, schema)
+	cached, _ := mcpSchemas.LoadOrStore(goType, schema)
+	return cached.(*jsonschema.Schema)
 }
 
 // mcpRequired rewrites an inferred schema's required list to match what the
@@ -617,16 +603,7 @@ func mcpSchemaFor[T any](name string) *jsonschema.Schema {
 // Ivory's models spell them all out without omitempty, but gin binds an absent
 // field to its zero value unless the struct says binding:"required" - so the
 // MCP engine was refusing requests the REST API accepts, and an agent had to
-// send "body": null to read a keeper config. The features' own validation
-// still speaks for the rest, naming the field it wants.
-
-// mcpRequired rewrites an inferred schema's required list to match what the
-// http engine actually requires. Inference marks every field required because
-// Ivory's models spell them all out without omitempty, but gin binds an absent
-// field to its zero value unless the struct says binding:"required" - so the
-// MCP engine was refusing requests the REST API accepts, and an agent had to
-// send "body": null to read a keeper config. The features' own validation
-// still speaks for the rest, naming the field it wants.
+// send "body": null to read a keeper config.
 func mcpRequired(goType reflect.Type, schema *jsonschema.Schema) {
 	if schema == nil {
 		return
@@ -652,9 +629,6 @@ func mcpRequired(goType reflect.Type, schema *jsonschema.Schema) {
 		mcpRequired(goType.Elem(), schema.AdditionalProperties)
 	}
 }
-
-// collectRequired walks one struct level, following embedded fields into the
-// same schema because their json fields are flattened there.
 
 // collectRequired walks one struct level, following embedded fields into the
 // same schema because their json fields are flattened there.
@@ -707,6 +681,3 @@ func jsonName(field reflect.StructField) string {
 	}
 	return field.Name
 }
-
-// hintFalse and hintTrue back the annotation pointers below; the SDK only
-// reads them.

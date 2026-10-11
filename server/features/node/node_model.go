@@ -242,15 +242,6 @@ type PlatformInfoRequest = PlatformVaultConnection
 
 type PlatformInfoResponse = []InfoItem
 
-// RouterLogsResponse is a bounded log read. It is its own type because the log services
-// report a failure by pushing it down the stream rather than returning an
-// error, so the lines and that commentary arrive together and both have to
-// reach the caller.
-type RouterLogsResponse struct {
-	Lines []string `json:"lines"`
-	Notes []string `json:"notes,omitempty"`
-}
-
 // SPECIFIC (SERVER)
 
 func mapKeeperResponse(r keeper.Response) KeeperResponse {

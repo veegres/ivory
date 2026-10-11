@@ -39,11 +39,6 @@ func (r *HttpRouter) PostExecuteConsoleQuery(context *gin.Context) {
 		return
 	}
 
-	if req.Query == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "query is required"})
-		return
-	}
-
 	r.withQueryContext(context, req.Connection, func(queryContext Context) {
 		res, err := r.service.ConsoleQuery(queryContext, req.Query, req.Options)
 

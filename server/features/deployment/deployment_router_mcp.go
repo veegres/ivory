@@ -2,9 +2,7 @@ package deployment
 
 import (
 	"context"
-	"errors"
 
-	"github.com/google/uuid"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -36,7 +34,7 @@ func (r *McpRouter) TemplateCreate(ctx context.Context, req *mcp.CallToolRequest
 }
 
 func (r *McpRouter) TemplateUpdate(ctx context.Context, req *mcp.CallToolRequest, in RouterUpdateRequest) (*mcp.CallToolResult, *Template, error) {
-	id, err := parseMcpTemplateId(in.Id)
+	id, err := parseTemplateId(in.Id)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,7 +46,7 @@ func (r *McpRouter) TemplateUpdate(ctx context.Context, req *mcp.CallToolRequest
 }
 
 func (r *McpRouter) TemplateDelete(ctx context.Context, req *mcp.CallToolRequest, in RouterIdRequest) (*mcp.CallToolResult, string, error) {
-	id, err := parseMcpTemplateId(in.Id)
+	id, err := parseTemplateId(in.Id)
 	if err != nil {
 		return nil, "", err
 	}
@@ -56,18 +54,4 @@ func (r *McpRouter) TemplateDelete(ctx context.Context, req *mcp.CallToolRequest
 		return nil, "", err
 	}
 	return nil, "deleted", nil
-}
-
-// parseMcpTemplateId is parseTemplateId for a tool argument rather than a url
-// parameter: a shipped template's synthetic id says why it is refused instead
-// of failing as an unparseable uuid.
-func parseMcpTemplateId(param string) (uuid.UUID, error) {
-	if isDefaultId(param) {
-		return uuid.Nil, ErrTemplateReadOnly
-	}
-	id, err := uuid.Parse(param)
-	if err != nil {
-		return uuid.Nil, errors.New("invalid template id")
-	}
-	return id, nil
 }

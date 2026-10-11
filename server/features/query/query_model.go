@@ -96,7 +96,7 @@ type RouterTemplateRequest struct {
 type RouterConsoleRequest struct {
 	Connection Connection `json:"connection"`
 	Options    *DbOptions `json:"options"`
-	Query      string     `json:"query"`
+	Query      string     `json:"query" binding:"required"`
 }
 
 type RouterKillRequest struct {
