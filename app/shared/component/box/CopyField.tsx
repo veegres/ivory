@@ -1,8 +1,7 @@
 import {Box} from "@mui/material"
 
 import {SxPropsMap} from "../../helper/HelperType"
-import {useSnackbar} from "../../provider/SnackbarProvider"
-import {CopyIconButton} from "../button/IconButtons"
+import {CopyButton} from "../button/CopyButton"
 
 const SX: SxPropsMap = {
     field: {
@@ -27,18 +26,11 @@ type Props = {
 // hand. Several lines of code belong in a CodeField instead.
 export function CopyField(props: Props) {
     const {value, tooltip, message} = props
-    const snackbar = useSnackbar()
 
     return (
         <Box sx={SX.field}>
             <Box sx={SX.value} title={value}>{value}</Box>
-            <CopyIconButton tooltip={tooltip ?? "Copy to your clipboard"} onClick={handleCopy}/>
+            <CopyButton value={value} tooltip={tooltip} message={message}/>
         </Box>
     )
-
-    function handleCopy() {
-        navigator.clipboard.writeText(value).then(() => {
-            snackbar(message ?? "Copied to clipboard!", "info")
-        })
-    }
 }

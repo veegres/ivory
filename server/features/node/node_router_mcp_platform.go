@@ -33,11 +33,15 @@ func (r *McpRouter) SystemInfo(ctx context.Context, req *mcp.CallToolRequest, in
 	return nil, info, nil
 }
 
-func (r *McpRouter) SystemLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, RouterLogsResponse, error) {
+func (r *McpRouter) SystemLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, []string, error) {
 	request := boundedLogs(in)
-	return nil, r.collectLogs(ctx, func(id job.SubscriberID, close <-chan struct{}, send func(job.Message)) {
+	lines, err := r.collectLogs(ctx, func(id job.SubscriberID, close <-chan struct{}, send func(job.Message)) {
 		r.service.PlatformSystemLogs(request, id, close, send)
-	}), nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return nil, lines, nil
 }
 
 func (r *McpRouter) SystemCopyId(ctx context.Context, req *mcp.CallToolRequest, in PlatformCopyIdRequest) (*mcp.CallToolResult, string, error) {
@@ -58,11 +62,15 @@ func (r *McpRouter) ContainerList(ctx context.Context, req *mcp.CallToolRequest,
 	return nil, names, nil
 }
 
-func (r *McpRouter) ContainerLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, RouterLogsResponse, error) {
+func (r *McpRouter) ContainerLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, []string, error) {
 	request := boundedLogs(in)
-	return nil, r.collectLogs(ctx, func(id job.SubscriberID, close <-chan struct{}, send func(job.Message)) {
+	lines, err := r.collectLogs(ctx, func(id job.SubscriberID, close <-chan struct{}, send func(job.Message)) {
 		r.service.PlatformContainerLogs(request, id, close, send)
-	}), nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return nil, lines, nil
 }
 
 func (r *McpRouter) ContainerMetrics(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, *PlatformMetricsResponse, error) {

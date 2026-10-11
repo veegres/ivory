@@ -2,6 +2,8 @@ package query
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"ivory/core/config"
 
@@ -27,13 +29,14 @@ func NewMcpRouter(service *Service) *McpRouter {
 }
 
 // queryContext is withQueryContext for the MCP engine. The session only ever
-// becomes the connection's application_name, and an MCP client carries no
-// browser session, so the caller's own name is what shows up in the engine's
-// activity view.
+// becomes the connection's application_name, which keeps seven characters of
+// it, so it is a hash of the caller's name: a prefix of the name itself would
+// merge everyone whose names start alike into one activity view.
 func (r *McpRouter) queryContext(ctx context.Context, connection Connection) Context {
-	session := config.McpCallerFrom(ctx).Username
-	if session == "" {
-		session = "mcp"
+	session := "mcp"
+	if username := config.McpCallerFrom(ctx).Username; username != "" {
+		sum := sha256.Sum256([]byte(username))
+		session = hex.EncodeToString(sum[:])
 	}
 	return Context{Connection: connection, Session: session}
 }

@@ -21,13 +21,6 @@ func NewMcpRouter(clusterService *Service) *McpRouter {
 }
 
 func (r *McpRouter) ClusterList(ctx context.Context, req *mcp.CallToolRequest, in SearchRequest) (*mcp.CallToolResult, []Response, error) {
-	if len(in.Tags) == 0 && in.Keeper == nil && in.Database == nil {
-		list, err := r.clusterService.List()
-		if err != nil {
-			return nil, nil, err
-		}
-		return nil, list, nil
-	}
 	list, err := r.clusterService.Search(in)
 	if err != nil {
 		return nil, nil, err

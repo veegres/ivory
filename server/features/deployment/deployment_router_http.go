@@ -45,7 +45,7 @@ func (r *HttpRouter) PostDeploymentTemplate(context *gin.Context) {
 }
 
 func (r *HttpRouter) PutDeploymentTemplate(context *gin.Context) {
-	id, err := parseTemplateId(context)
+	id, err := parseTemplateId(context.Param("uuid"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -64,7 +64,7 @@ func (r *HttpRouter) PutDeploymentTemplate(context *gin.Context) {
 }
 
 func (r *HttpRouter) DeleteDeploymentTemplate(context *gin.Context) {
-	id, err := parseTemplateId(context)
+	id, err := parseTemplateId(context.Param("uuid"))
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -79,8 +79,7 @@ func (r *HttpRouter) DeleteDeploymentTemplate(context *gin.Context) {
 // parseTemplateId turns a shipped template's synthetic id into the read-only
 // error rather than an unhelpful uuid parse failure, so a write aimed at one
 // says why it is refused.
-func parseTemplateId(context *gin.Context) (uuid.UUID, error) {
-	param := context.Param("uuid")
+func parseTemplateId(param string) (uuid.UUID, error) {
 	if isDefaultId(param) {
 		return uuid.Nil, ErrTemplateReadOnly
 	}
