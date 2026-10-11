@@ -67,20 +67,22 @@ func NewMcpServer(env *coreConfig.Environment, mr *features.McpRouter) gin.Handl
 			// Stateless rebuilds the server per request, which is what keeps
 			// the tool list honest: a stateful session would pin it to the
 			// permissions the caller held when they connected.
-			Stateless:    true,
-			JSONResponse: true,
-			// The session cookie is a valid credential here, so a browser page
-			// could otherwise drive tool calls cross-origin. Non-browser
-			// clients send no Origin and are unaffected.
-			CrossOriginProtection:        http.NewCrossOriginProtection(),
+			Stateless:                    true,
+			JSONResponse:                 true,
 			MaxRequestBodyBytes:          maxMcpRequestBodyBytes,
 			PropagateRequestCancellation: true,
 		},
 	)
 
+	// The session cookie is a valid credential here, so a browser page could
+	// otherwise drive tool calls cross-origin. Non-browser clients send no
+	// Origin and are unaffected. This wraps the handler rather than setting the
+	// SDK's own option, which is deprecated and ignores a deny handler.
+	protected := http.NewCrossOriginProtection().Handler(handler)
+
 	return func(context *gin.Context) {
 		request := context.Request.WithContext(mcpRequestContext(context))
-		handler.ServeHTTP(context.Writer, request)
+		protected.ServeHTTP(context.Writer, request)
 	}
 }
 
