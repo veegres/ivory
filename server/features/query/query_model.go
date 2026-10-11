@@ -151,9 +151,6 @@ type DbResponse struct {
 	Options   *DbOptions `json:"options"`
 }
 
-// RouterListRequest, RouterIdRequest and RouterUpdateRequest carry what
-// the http routes take from the url path and query string. They exist because
-// a tool has arguments and no url, not to restate a model.
 type RouterListRequest struct {
 	Type   *Type     `json:"type,omitempty" jsonschema:"only queries of this category"`
 	Plugin *DbPlugin `json:"plugin,omitempty" jsonschema:"only queries for this database engine"`
