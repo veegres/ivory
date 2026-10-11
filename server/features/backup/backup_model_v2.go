@@ -421,12 +421,15 @@ func syncUsernameV2(username string) string {
 	return username
 }
 
-// syncPermissionV2 looks up a stored permission key against the current set of
-// valid features, resolving one saved under a name that has since been renamed;
-// its input is a plain string (the backup's map key), not a named local type,
-// so unlike its siblings it cannot become a method.
+// syncPermissionV2 looks up a stored permission key against the current set
+// of valid features. A key that is not one of them any more - removed, or
+// renamed since the file was written - is reported as invalid and dropped by
+// the caller: the grant is not carried over, and whoever restored the file
+// grants it again by its current name. Its input is a plain string (the
+// backup's map key), not a named local type, so unlike its siblings it cannot
+// become a method.
 func syncPermissionV2(p string) (config.Feature, error) {
-	stored := config.Feature(p).Current()
+	stored := config.Feature(p)
 	for _, validFeature := range config.All {
 		if validFeature == stored {
 			return validFeature, nil

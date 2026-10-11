@@ -263,8 +263,11 @@ func TestImportV1FromFrozenFile(t *testing.T) {
 		if alice == nil {
 			t.Fatalf("expected the file's user, got %v", permissions)
 		}
-		if alice[config.ViewNodeSystem] != permission.GRANTED {
-			t.Errorf("view.node.platform did not resolve to %s: got %v", config.ViewNodeSystem, alice[config.ViewNodeSystem])
+		// the file grants "view.node.platform", which was renamed since: the
+		// grant is dropped rather than forwarded, and is granted again by its
+		// current name after the restore
+		if alice[config.ViewNodeSystem] == permission.GRANTED {
+			t.Errorf("the renamed key was forwarded to %s instead of being dropped", config.ViewNodeSystem)
 		}
 		if alice[config.ViewClusterList] != permission.PENDING {
 			t.Errorf("got %v for view.cluster.list, want pending", alice[config.ViewClusterList])

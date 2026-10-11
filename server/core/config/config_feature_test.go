@@ -6,82 +6,48 @@ import (
 	"testing"
 )
 
-func TestFeatureCurrent(t *testing.T) {
-	tests := []struct {
-		name     string
-		stored   Feature
-		expected Feature
-	}{
-		{name: "a renamed feature resolves to its current name", stored: "view.node.platform", expected: ViewNodeSystem},
-		{name: "its manage counterpart resolves too", stored: "manage.node.platform", expected: ManageNodeSystem},
-		{name: "a current feature is left untouched", stored: ViewClusterList, expected: ViewClusterList},
-		{name: "an unknown feature is left untouched", stored: "view.node.nonsense", expected: "view.node.nonsense"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.stored.Current(); got != tt.expected {
-				t.Errorf("Current() = %q, want %q", got, tt.expected)
-			}
-		})
-	}
-}
-
-// TestRenamedFeaturesResolveToKnownFeatures keeps the rename table honest: a
-// target dropped from All would silently turn every stored grant for it into an
-// invalid feature, which is exactly what the table exists to prevent.
-func TestRenamedFeaturesResolveToKnownFeatures(t *testing.T) {
-	for stored, current := range renamedFeatures {
-		found := false
-		for _, feature := range All {
-			if feature == current {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("feature %q renames to %q, which is not in All", stored, current)
-		}
-		if _, ok := renamedFeatures[current]; ok {
-			t.Errorf("feature %q renames to %q, which is itself renamed", stored, current)
-		}
-	}
-}
-
-// TestV1PermissionsResolve pins every permission key v1.4.2 wrote to disk -
-// into the same Permission bucket an upgrade reads, and into every v1 backup
-// file. A key that no longer resolves is not a missing entry in a table: it is
-// a granted admin losing that permission on the first startup after the
-// upgrade, since normalizeDatabase rewrites what it cannot recognise.
-func TestV1PermissionsResolve(t *testing.T) {
-	stored := []Feature{
+// TestV1PermissionsStillRecognised splits every permission key v1.4.2 wrote to
+// disk into the ones that are still features and the ones that are not. A key
+// in the first group must keep resolving, or an upgrade silently drops a grant
+// that never changed name. A key in the second group is meant to be dropped:
+// the feature was renamed, nothing forwards the old name any more, and whoever
+// upgrades grants it again under the name it goes by now.
+func TestV1PermissionsStillRecognised(t *testing.T) {
+	unchanged := []Feature{
 		"view.cluster.list", "view.cluster.item", "view.cluster.overview",
 		"manage.cluster.create", "manage.cluster.update", "manage.cluster.delete",
 		"view.tag.list",
+		"view.query.log.list", "manage.query.log.delete",
+		"view.cert.list", "manage.cert.create", "manage.cert.delete",
+		"view.permission.list", "manage.permission.update", "manage.permission.delete",
+		"view.management.secret", "manage.management.secret", "manage.management.erase",
+		"manage.management.free", "manage.management.backup",
+	}
+	renamedSince := []Feature{
+		"view.node.platform", "manage.node.platform",
 		"view.instance.overview", "view.instance.config", "manage.instance.config.update",
 		"manage.instance.switchover", "manage.instance.reinitialize", "manage.instance.restart",
 		"manage.instance.reload", "manage.instance.failover", "manage.instance.activation",
 		"view.query.list", "manage.query.create", "manage.query.update", "manage.query.delete",
 		"view.query.execute.info", "view.query.execute.chart", "manage.query.execute.template",
 		"manage.query.execute.console", "manage.query.execute.cancel", "manage.query.execute.terminate",
-		"view.query.log.list", "manage.query.log.delete",
 		"view.password.list", "manage.password.create", "manage.password.update", "manage.password.delete",
-		"view.cert.list", "manage.cert.create", "manage.cert.delete",
-		"view.permission.list", "manage.permission.update", "manage.permission.delete",
 		"view.bloat.list", "view.bloat.item", "view.bloat.logs", "manage.bloat.job",
-		"view.management.secret", "manage.management.secret", "manage.management.erase",
-		"manage.management.free", "manage.management.backup",
 	}
 
-	for _, feature := range stored {
-		t.Run(string(feature), func(t *testing.T) {
-			current := feature.Current()
-			for _, known := range All {
-				if known == current {
-					return
-				}
+	for _, feature := range unchanged {
+		t.Run("kept: "+string(feature), func(t *testing.T) {
+			if !slices.Contains(All, feature) {
+				t.Errorf("v1 permission %q is not a feature any more, so an upgrade would drop a grant that never changed name", feature)
 			}
-			t.Errorf("v1 permission %q resolves to %q, which is not a feature any more", feature, current)
+		})
+	}
+
+	for _, feature := range renamedSince {
+		t.Run("dropped: "+string(feature), func(t *testing.T) {
+			if slices.Contains(All, feature) {
+				t.Errorf("v1 permission %q is in All, so it was never renamed and belongs in the kept group", feature)
+			}
 		})
 	}
 }

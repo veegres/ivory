@@ -107,10 +107,12 @@ func TestServiceCreateUserPermissions(t *testing.T) {
 }
 
 // TestServiceCreateUserPermissionsRenamesStoredFeatures covers a permission map
-// stored before view.node.platform became view.node.system: filling a record in
-// must carry the grant over to the new key rather than dropping it and
-// resetting the user to the default status.
-func TestServiceCreateUserPermissionsRenamesStoredFeatures(t *testing.T) {
+
+// TestServiceCreateUserPermissionsDropsUnknownStoredFeatures covers a record
+// holding a key that is not a feature any more - removed, or renamed since it
+// was written. Nothing forwards it: the key is dropped and the current feature
+// falls back to the default, which the user then grants again by its new name.
+func TestServiceCreateUserPermissionsDropsUnknownStoredFeatures(t *testing.T) {
 	s := createTestPermissionService(t)
 	if _, err := s.CreateUserPermissions("alice", NOT_PERMITTED); err != nil {
 		t.Fatalf("failed to seed alice: %v", err)
@@ -134,11 +136,11 @@ func TestServiceCreateUserPermissionsRenamesStoredFeatures(t *testing.T) {
 	if errGet != nil {
 		t.Fatalf("expected no error, got %v", errGet)
 	}
-	if perms[config.ViewNodeSystem] != GRANTED {
-		t.Fatalf("expected the renamed feature to keep its grant, got %v", perms[config.ViewNodeSystem])
+	if perms[config.ViewNodeSystem] != NOT_PERMITTED {
+		t.Errorf("the dropped grant leaked into %s: got %v", config.ViewNodeSystem, perms[config.ViewNodeSystem])
 	}
 	if _, ok := perms["view.node.platform"]; ok {
-		t.Fatal("expected the old key to be gone after normalization")
+		t.Error("expected the key that is no longer a feature to be gone after normalization")
 	}
 }
 
@@ -358,50 +360,5 @@ func TestServiceDeleteAll(t *testing.T) {
 	}
 	if len(all) != 0 {
 		t.Fatalf("expected no users, got %v", all)
-	}
-}
-
-func TestPermissionMapRenamed(t *testing.T) {
-	tests := []struct {
-		name     string
-		stored   PermissionMap
-		expected PermissionMap
-	}{
-		{
-			name:     "a renamed key carries its status over",
-			stored:   PermissionMap{"view.node.platform": GRANTED},
-			expected: PermissionMap{config.ViewNodeSystem: GRANTED},
-		},
-		{
-			name:     "a current key is left alone",
-			stored:   PermissionMap{config.ViewClusterList: PENDING},
-			expected: PermissionMap{config.ViewClusterList: PENDING},
-		},
-		{
-			// NOTE: map iteration order is random, so the current key has to win
-			// deterministically rather than by whichever is visited last
-			name:     "the current key wins over the old one",
-			stored:   PermissionMap{"view.node.platform": GRANTED, config.ViewNodeSystem: NOT_PERMITTED},
-			expected: PermissionMap{config.ViewNodeSystem: NOT_PERMITTED},
-		},
-		{
-			name:     "an unknown key is passed through untouched",
-			stored:   PermissionMap{"view.node.nonsense": GRANTED},
-			expected: PermissionMap{"view.node.nonsense": GRANTED},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.stored.renamed()
-			if len(got) != len(tt.expected) {
-				t.Fatalf("renamed() = %v, want %v", got, tt.expected)
-			}
-			for feature, status := range tt.expected {
-				if got[feature] != status {
-					t.Errorf("renamed()[%q] = %v, want %v", feature, got[feature], status)
-				}
-			}
-		})
 	}
 }
