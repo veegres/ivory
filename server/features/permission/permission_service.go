@@ -78,9 +78,8 @@ func (s *Service) CreateUserPermissions(username string, defaultStatus Status) (
 	}
 
 	permissions := make(PermissionMap, len(config.All))
-	renamed := existing.renamed()
 	for _, feature := range config.All {
-		if status, ok := renamed[feature]; ok {
+		if status, ok := existing[feature]; ok {
 			permissions[feature] = status
 		} else {
 			permissions[feature] = defaultStatus

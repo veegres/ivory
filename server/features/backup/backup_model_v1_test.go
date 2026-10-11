@@ -18,16 +18,16 @@ func TestSyncPermissionV1(t *testing.T) {
 			expected: config.ViewClusterList,
 		},
 		{
-			// NOTE: a backup written before the rename is the one live source of
-			// the old keys, so importing one must not silently drop the grant
-			name:     "a renamed key resolves to its current feature",
-			stored:   "view.node.platform",
-			expected: config.ViewNodeSystem,
+			// NOTE: nothing forwards a renamed key any more - the grant is
+			// dropped and granted again by its current name after the restore
+			name:   "a key renamed since the file was written is rejected",
+			stored: "view.node.platform",
+			err:    ErrInvalidFeature,
 		},
 		{
-			name:     "another renamed key resolves to its current feature",
-			stored:   "manage.node.platform",
-			expected: config.ManageNodeSystem,
+			name:   "so is its manage counterpart",
+			stored: "manage.node.platform",
+			err:    ErrInvalidFeature,
 		},
 		{
 			name:   "an unknown key is rejected",
