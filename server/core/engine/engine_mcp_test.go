@@ -22,6 +22,8 @@ import (
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
 	"ivory/tools"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"slices"
@@ -29,6 +31,7 @@ import (
 	"testing"
 
 	"github.com/boltdb/bolt"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -372,6 +375,62 @@ func TestEveryFeatureIsWiredIn(t *testing.T) {
 				if ok && strings.Contains(text.Text, `validating "arguments"`) {
 					t.Errorf("arguments were refused before reaching the feature: %s", text.Text)
 				}
+			}
+		})
+	}
+}
+
+// TestMcpCrossOriginProtection covers the one thing the in-memory transport
+// cannot reach: the endpoint is reached over http, and Ivory's session cookie
+// is a valid credential on it, so a browser page must not be able to drive
+// tool calls from another origin. Non-browser MCP clients send neither header
+// and have to keep working.
+func TestMcpCrossOriginProtection(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.POST("/mcp", NewMcpServer(
+		&coreConfig.Environment{Version: coreConfig.Version{Label: "test"}},
+		createTestMcpRouter(t),
+	))
+
+	body := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2026-07-28","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}`
+
+	tests := []struct {
+		name      string
+		headers   map[string]string
+		forbidden bool
+	}{
+		{
+			name:      "a cross-site browser request is refused",
+			headers:   map[string]string{"Sec-Fetch-Site": "cross-site", "Origin": "https://evil.example"},
+			forbidden: true,
+		},
+		{
+			name:    "a non-browser client sends neither header and is allowed",
+			headers: map[string]string{},
+		},
+		{
+			name:    "a same-origin browser request is allowed",
+			headers: map[string]string{"Sec-Fetch-Site": "same-origin"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPost, "/mcp", strings.NewReader(body))
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("Accept", "application/json, text/event-stream")
+			for name, value := range test.headers {
+				request.Header.Set(name, value)
+			}
+			recorder := httptest.NewRecorder()
+			engine.ServeHTTP(recorder, request)
+
+			if test.forbidden && recorder.Code != http.StatusForbidden {
+				t.Errorf("status = %d, want 403 for a cross-origin request", recorder.Code)
+			}
+			if !test.forbidden && recorder.Code == http.StatusForbidden {
+				t.Errorf("status = 403, want the request to reach the mcp handler")
 			}
 		})
 	}
