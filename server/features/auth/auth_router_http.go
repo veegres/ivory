@@ -295,3 +295,21 @@ func (r *HttpRouter) setCookieState(context *gin.Context, value string) {
 	}
 	context.SetCookie("state", value, 600, path+"/api/oidc", "", r.tlsEnabled, true)
 }
+
+// PostAuthToken hands the caller a fresh session token for a client that cannot
+// carry Ivory's cookie - an MCP client reaching /api/mcp. It needs no permission
+// for the same reason changing your own password does not: it is the account you
+// are already signed in as. It deliberately writes no cookie, so minting a token
+// for an agent leaves the browser's own session exactly as it was.
+func (r *HttpRouter) PostAuthToken(context *gin.Context) {
+	username := context.GetString(config.AuthContextKey.Username)
+	callerType := AuthType(context.GetString(config.AuthContextKey.Type))
+
+	token, exp, errToken := r.authService.GenerateSessionToken(username, callerType)
+	if errToken != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errToken.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"response": RouterTokenResponse{Token: token, ExpiresAt: *exp}})
+}

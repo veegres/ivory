@@ -33,6 +33,7 @@ export enum Settings {
     ACCOUNT,
     USER,
     BACKUP,
+    MCP,
     ABOUT,
 }
 

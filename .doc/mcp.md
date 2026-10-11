@@ -14,13 +14,57 @@ the saved diagnostic queries — becomes readable in one conversation instead of
 
 Authentication is a bearer token: Ivory's ordinary session JWT, sent in the `Authorization` header.
 
-1. Sign in and take the token out of the login response:
+**The quickest way is the web UI.** Open **Settings → Integrations → MCP Server**: it shows the endpoint
+for this install, generates a token on request, and gives you a ready-to-copy config with both already
+filled in — pick your client from the list. It covers Claude Code (the `claude mcp add` command and
+`.mcp.json`), Cursor, VS Code, Codex, Antigravity, IntelliJ IDEA and Claude Desktop, plus a plain
+transport/url/header summary for anything else that speaks streamable HTTP.
+
+Before you generate a token the config shows `{{auth_token}}`, highlighted exactly the way an unanswered
+variable is in a deployment preview — one glance says which part is not real yet. Generate a token and it
+is written in. Where a client reads the token out of an environment variable rather than inline — Codex,
+and the `mcp-remote` bridge the two desktop clients use — the screen offers the matching
+`export IVORY_TOKEN=…` to copy beside the config.
+
+The shapes are not interchangeable, which is why each client gets its own rather than one block with the
+hostname swapped:
+
+| client | file | shape |
+|---|---|---|
+| Claude Code | `.mcp.json` | `mcpServers`, `type` + `url` + `headers` |
+| Cursor | `.cursor/mcp.json` | `mcpServers`, `url` + `headers` |
+| VS Code | `.vscode/mcp.json` | **`servers`**, not `mcpServers` |
+| Codex | `~/.codex/config.toml` | **TOML**, and `bearer_token_env_var` names an env var instead of carrying the token |
+| Antigravity | `.agents/mcp_config.json` | **`serverUrl`** — its docs say `url` is not supported |
+| IntelliJ IDEA | Settings → Tools → AI Assistant → MCP | takes a remote `url` but documents no `headers` on it, so with auth on it goes through `mcp-remote` |
+| Claude Desktop | `claude_desktop_config.json` | speaks no HTTP at all; goes through the `mcp-remote` bridge |
+
+To do it by hand instead:
+
+1. Mint a token. Signed in to the UI, ask for one for the session you already hold:
+
+   ```bash
+   curl -sX POST http://localhost/api/auth/token \
+     -H "Authorization: Bearer $OLD_TOKEN" | jq -r .response.token
+   ```
+
+   Or take one out of a fresh login:
 
    ```bash
    TOKEN=$(curl -sX POST http://localhost/api/basic/login \
      -H 'Content-Type: application/json' \
      -d '{"username":"alice","password":"..."}' | jq -r .response.token)
    ```
+
+   `POST /api/auth/token` needs no permission — it is the account you are already signed in as — and it
+   re-checks that the account is still registered, so a user deleted since they signed in cannot keep
+   minting. It writes no cookie, so generating a token for an agent leaves your browser session alone.
+
+   **A minted token says it came from a session.** Its `frm` claim reads `session` rather than the
+   `basic`/`ldap`/`oidc` a login would put there, so it is told apart from the token that asked for it.
+   It is never offered as a way of signing in — a login screen lists the configured providers, and this
+   is not one of them — and because no user is registered for it, **a session token cannot mint another
+   one**. Only a login can, which is what keeps the hour below from being extended forever.
 
 2. Point a client at the endpoint with that token. For Claude Code:
 
@@ -43,9 +87,11 @@ Authentication is a bearer token: Ivory's ordinary session JWT, sent in the `Aut
    }
    ```
 
-> **The token lasts one hour.** Ivory's session tokens expire after an hour and there is no refresh
-> mechanism, so a long agent session will start failing with `401` and the token has to be replaced.
-> Issue a fresh one the same way.
+> **The token lasts one hour.** Ivory's session tokens expire after an hour and nothing refreshes them
+> in place, so a long agent session will start failing with `401`. Replacing it is a click in
+> **Settings → Integrations → MCP Server** — generate another and update the client — but it is still a
+> manual step, and an agent cannot do it for itself: the token it holds came from a session and will not
+> mint a successor.
 
 When Ivory runs with authentication switched off, no token is needed and every tool is available —
 the same as the REST API, which is already unauthenticated in that mode.
@@ -70,8 +116,8 @@ ones that can break something are marked destructive.
 ## Tools
 
 **Each tool takes the same arguments as the REST route it mirrors.** A tool lives in the feature it
-belongs to (`cluster_mcp.go`, `node_mcp.go`, …) and speaks that feature's own request shape, so there is
-one contract behind two transports. Only `cluster` tools are addressed by cluster name; `node` and
+belongs to (`cluster_router_mcp.go`, `node_router_mcp.go`, …) and speaks that feature's own request
+shape, so there is one contract behind two transports. Only `cluster` tools are addressed by cluster name; `node` and
 `query` tools are addressed the way the web UI addresses them — by host, port and vault id.
 
 So the usual flow is two steps, exactly as the UI does it:
@@ -225,9 +271,11 @@ MCP is a second engine beside the http one, not a feature of its own:
   next to the permission that gates it and the feature router that serves it — the same thing the route
   table does — and it builds the transport. `main.go` creates it and hands it to the http engine, which
   mounts it at `/api/mcp`.
-- Each feature keeps its own MCP implementation in its own package, in `<feature>_mcp.go`, beside the
-  router it already has: `cluster_mcp.go`, `node_mcp.go` (plus `node_mcp_keeper.go` /
-  `node_mcp_platform.go`), `query_mcp.go`, `deployment_mcp.go`, `tag_mcp.go`, `management_mcp.go`.
+- Each feature keeps its own MCP implementation in its own package, in `<feature>_router_mcp.go`, beside
+  the http router it already has: `cluster_router_mcp.go`, `node_router_mcp.go` (plus
+  `node_router_mcp_keeper.go` / `node_router_mcp_platform.go`), `query_router_mcp.go`,
+  `deployment_router_mcp.go`, `tag_router_mcp.go`, `management_router_mcp.go`. Both transports share the
+  request and response types, named `Router***Request`/`Router***Response`.
 - Only `cluster` resolves a cluster into connections, because only `cluster` imports `node` and `query`.
   That is why node and query tools are addressed directly.
 

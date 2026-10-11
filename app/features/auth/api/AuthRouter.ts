@@ -2,6 +2,7 @@ import {api} from "../../Api"
 import {AuthConfigObject} from "../../config/api/ConfigType"
 import {R} from "../../management/api/ManagementType"
 import {UserAuthType} from "../../user/api/UserType"
+import {AuthToken} from "./AuthType"
 
 export const AuthApi = {
     login: {
@@ -20,6 +21,11 @@ export const AuthApi = {
         key: () => ["connect"],
         fn: (data: {type: UserAuthType, config: AuthConfigObject}) => api
             .post<R<any>>(`/${data.type}/connect`, data.config)
+            .then((response) => response.data.response),
+    },
+    token: {
+        key: () => ["auth", "token"],
+        fn: () => api.post<R<AuthToken>>("/auth/token")
             .then((response) => response.data.response),
     },
     logout: {

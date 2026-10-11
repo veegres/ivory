@@ -12,6 +12,13 @@ export function useRouterLogin(onSuccess?: () => void) {
     })
 }
 
+export function useRouterAuthToken() {
+    return useMutationAdapter({
+        mutationFn: AuthApi.token.fn,
+        mutationKey: AuthApi.token.key(),
+    })
+}
+
 export function useRouterLogout() {
     return useMutationAdapter({
         mutationFn: AuthApi.logout.fn,

@@ -10,8 +10,8 @@ import (
 // COMMON (WEB AND SERVER)
 
 type RouterResponse struct {
-	RouterResponse any `json:"response"`
-	Error          any `json:"error"`
+	Response any `json:"response"`
+	Error    any `json:"error"`
 }
 
 type AppInfo struct {
