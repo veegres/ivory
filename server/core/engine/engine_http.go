@@ -55,6 +55,7 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.HttpRouter, fc *feature
 	unauthenticatedRouter(noAuth, fc.Auth, fc.Config, fc.User)
 
 	yesAuth := yesSecret.Group("/", fc.Config.InitialiseMiddleware(), fc.Auth.RejectMiddleware(), fc.Permission.ValidateMiddleware())
+	authRouter(yesAuth, fc.Auth)
 	toolsRouter(yesAuth, fc.Permission, tc)
 
 	managementRouter(yesAuth, fc.Permission, cc.Secret, fc.Management)
@@ -170,6 +171,14 @@ func initialRouter(g *gin.RouterGroup, rs *secret.HttpRouter) {
 	group := g.Group("/initial")
 	group.POST("/skip", rs.SkipSecret)
 	group.POST("/secret", rs.SetSecret)
+}
+
+// authRouter is what somebody already signed in may ask about their own
+// session. Minting a token holds no permission for the same reason changing
+// your own password holds none.
+func authRouter(g *gin.RouterGroup, r *auth.HttpRouter) {
+	group := g.Group("/auth")
+	group.POST("/token", r.PostAuthToken)
 }
 
 func toolsRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *tools.HttpRouter) {

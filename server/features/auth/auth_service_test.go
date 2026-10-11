@@ -317,3 +317,78 @@ func TestServiceGenerateLdapAndOidcAuthToken(t *testing.T) {
 		}
 	})
 }
+
+// TestServiceGenerateSessionToken covers minting a token for a session that
+// already exists - what the MCP connection screen hands to an agent. The token
+// says it came from a session, and because nobody is registered for that, the
+// same gate that refuses a deleted user also refuses a minted token asking for
+// another one.
+func TestServiceGenerateSessionToken(t *testing.T) {
+	t.Run("the minted token says it came from a session", func(t *testing.T) {
+		s := createTestAuthService(t)
+
+		minted, exp, err := s.GenerateSessionToken("admin", BASIC)
+		if err != nil {
+			t.Fatalf("expected a token, got %v", err)
+		}
+		if exp == nil || !exp.After(time.Now()) {
+			t.Fatalf("expected an expiry in the future, got %v", exp)
+		}
+
+		valid, username, authType, errParse := s.ParseAuthToken(minted, nil)
+		if !valid || errParse != nil {
+			t.Fatalf("expected the minted token to parse, got valid=%v err=%v", valid, errParse)
+		}
+		if username != "admin" {
+			t.Fatalf("expected the token to name admin, got %q", username)
+		}
+		if authType == nil || *authType != SESSION {
+			t.Fatalf("expected the token to carry SESSION, got %v", authType)
+		}
+	})
+
+	t.Run("a session token cannot mint another", func(t *testing.T) {
+		s := createTestAuthService(t)
+
+		if _, _, err := s.GenerateSessionToken("admin", SESSION); err == nil {
+			t.Fatalf("expected a token already minted from a session to be refused")
+		}
+	})
+
+	t.Run("a user deleted since they signed in cannot mint", func(t *testing.T) {
+		users := newFakeUsers()
+		s := createTestAuthServiceWith(t, users)
+		delete(users.authTypes, "admin")
+
+		if _, _, err := s.GenerateSessionToken("admin", BASIC); err == nil {
+			t.Fatalf("expected a deleted user to be refused")
+		}
+	})
+
+	t.Run("a user barred from this way of signing in cannot mint", func(t *testing.T) {
+		users := newFakeUsers()
+		users.authTypes["admin"] = []user.AuthType{user.AuthLdap}
+		s := createTestAuthServiceWith(t, users)
+
+		if _, _, err := s.GenerateSessionToken("admin", BASIC); err == nil {
+			t.Fatalf("expected a user without basic to be refused")
+		}
+	})
+
+	t.Run("an empty username is refused", func(t *testing.T) {
+		s := createTestAuthService(t)
+
+		if _, _, err := s.GenerateSessionToken("", BASIC); err != ErrUsernameEmpty {
+			t.Fatalf("expected ErrUsernameEmpty, got %v", err)
+		}
+	})
+
+	t.Run("with auth disabled there is no session to mint from", func(t *testing.T) {
+		s := createTestAuthService(t)
+		unconfigured := NewService(s.tokenService, basic.NewProvider(newFakeUsers()), ldap.NewProvider(), oidc.NewProvider(), s.userService)
+
+		if _, _, err := unconfigured.GenerateSessionToken("admin", BASIC); err != ErrAuthDisabled {
+			t.Fatalf("expected ErrAuthDisabled, got %v", err)
+		}
+	})
+}

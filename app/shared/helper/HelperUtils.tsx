@@ -16,6 +16,7 @@ import {
     PlayArrow,
     SecurityTwoTone,
     Shield,
+    SmartToyTwoTone,
     UploadFileOutlined,
 } from "@mui/icons-material"
 import {SxProps, Theme} from "@mui/material"
@@ -149,6 +150,7 @@ export const SettingOptions: { [key in Settings]: EnumOptions } = {
     [Settings.USER]: {name: "USER", label: "User Manager", icon: <PeopleAltTwoTone/>, key: "user"},
     [Settings.SECRET]: {name: "SECRET", label: "Secret Manager", icon: <KeyTwoTone/>, key: "secret"},
     [Settings.BACKUP]: {name: "BACKUP", label: "Backup", icon: <BackupTwoTone/>, key: "backup"},
+    [Settings.MCP]: {name: "MCP", label: "MCP Server", icon: <SmartToyTwoTone/>, key: "mcp"},
     [Settings.ABOUT]: {name: "ABOUT", label: "About", icon: <InfoTwoTone/>, key: "about"},
 }
 

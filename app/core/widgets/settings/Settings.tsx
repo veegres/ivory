@@ -13,6 +13,7 @@ import {SettingOptions} from "../../../shared/helper/HelperUtils"
 import {SettingsAbout} from "./SettingsAbout"
 import {SettingsAccount} from "./SettingsAccount"
 import {SettingsContent} from "./SettingsContent"
+import {SettingsMcp} from "./SettingsMcp"
 import {SettingsUser} from "./SettingsUser"
 
 export function Settings() {
@@ -47,6 +48,8 @@ export function Settings() {
                 return <SettingsUser/>
             case SettingsType.BACKUP:
                 return <ManageBackup/>
+            case SettingsType.MCP:
+                return <SettingsMcp/>
             case SettingsType.ABOUT:
                 return <SettingsAbout/>
             default:

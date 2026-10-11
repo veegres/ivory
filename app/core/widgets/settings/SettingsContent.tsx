@@ -40,6 +40,9 @@ export function SettingsContent(props: Props) {
                 <ManageAccess feature={Feature.ViewVaultList}>{renderButton(Settings.VAULT)}</ManageAccess>
                 <ManageAccess feature={Feature.ViewCertList}>{renderButton(Settings.CERTIFICATE)}</ManageAccess>
             </List>
+            <List name={"Integrations"}>
+                {renderButton(Settings.MCP)}
+            </List>
             <List name={"Danger Zone"}>
                 <ListItem
                     title={"Clear cache"}

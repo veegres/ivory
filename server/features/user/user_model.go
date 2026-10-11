@@ -10,12 +10,13 @@ import "time"
 type AuthType string
 
 const (
-	AuthBasic AuthType = "basic"
-	AuthLdap  AuthType = "ldap"
-	AuthOidc  AuthType = "oidc"
+	AuthBasic   AuthType = "basic"
+	AuthLdap    AuthType = "ldap"
+	AuthOidc    AuthType = "oidc"
+	AuthSession AuthType = "session"
 )
 
-var AuthTypes = []AuthType{AuthBasic, AuthLdap, AuthOidc}
+var AuthTypes = []AuthType{AuthBasic, AuthLdap, AuthOidc, AuthSession}
 
 func (t AuthType) Valid() bool {
 	return slices.Contains(AuthTypes, t)
