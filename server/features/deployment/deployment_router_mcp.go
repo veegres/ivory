@@ -16,18 +16,6 @@ func NewMcpRouter(service *Service) *McpRouter {
 	return &McpRouter{service: service}
 }
 
-// McpTemplateIdRequest and McpTemplateUpdateRequest carry what the http routes
-// take from the url path. They exist because a tool has arguments and no path,
-// not to restate a model.
-type McpTemplateIdRequest struct {
-	Id string `json:"id" binding:"required" jsonschema:"uuid of the template"`
-}
-
-type McpTemplateUpdateRequest struct {
-	Id       string          `json:"id" binding:"required" jsonschema:"uuid of the template to overwrite; a shipped template's id is refused, they are read-only"`
-	Template TemplateRequest `json:"template" binding:"required" jsonschema:"the new template definition"`
-}
-
 // TemplateList returns the shipped templates alongside the stored ones, the
 // way the template screen lists them: the shipped half is computed from the
 // keeper plugins on every request rather than stored.
@@ -47,7 +35,7 @@ func (r *McpRouter) TemplateCreate(ctx context.Context, req *mcp.CallToolRequest
 	return nil, created, nil
 }
 
-func (r *McpRouter) TemplateUpdate(ctx context.Context, req *mcp.CallToolRequest, in McpTemplateUpdateRequest) (*mcp.CallToolResult, *Template, error) {
+func (r *McpRouter) TemplateUpdate(ctx context.Context, req *mcp.CallToolRequest, in RouterUpdateRequest) (*mcp.CallToolResult, *Template, error) {
 	id, err := parseMcpTemplateId(in.Id)
 	if err != nil {
 		return nil, nil, err
@@ -59,7 +47,7 @@ func (r *McpRouter) TemplateUpdate(ctx context.Context, req *mcp.CallToolRequest
 	return nil, updated, nil
 }
 
-func (r *McpRouter) TemplateDelete(ctx context.Context, req *mcp.CallToolRequest, in McpTemplateIdRequest) (*mcp.CallToolResult, string, error) {
+func (r *McpRouter) TemplateDelete(ctx context.Context, req *mcp.CallToolRequest, in RouterIdRequest) (*mcp.CallToolResult, string, error) {
 	id, err := parseMcpTemplateId(in.Id)
 	if err != nil {
 		return nil, "", err

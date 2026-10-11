@@ -28,7 +28,7 @@ const (
 	CLIENT_KEY
 )
 
-type CertAddRequest struct {
+type RouterAddRequest struct {
 	Path string   `json:"path"`
 	Type CertType `json:"type"`
 }

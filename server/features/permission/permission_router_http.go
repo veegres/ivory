@@ -61,7 +61,7 @@ func (r *HttpRouter) GetAllUserPermissions(context *gin.Context) {
 
 func (r *HttpRouter) RequestUserPermission(context *gin.Context) {
 	username := context.GetString(config.AuthContextKey.Username)
-	var request PermissionRequest
+	var request RouterPermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -83,7 +83,7 @@ func (r *HttpRouter) ApproveUserPermission(context *gin.Context) {
 		return
 	}
 
-	var request PermissionRequest
+	var request RouterPermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -105,7 +105,7 @@ func (r *HttpRouter) RejectUserPermission(context *gin.Context) {
 		return
 	}
 
-	var request PermissionRequest
+	var request RouterPermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

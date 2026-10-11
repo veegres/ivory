@@ -52,7 +52,7 @@ func (r *HttpRouter) SkipSecret(context *gin.Context) {
 }
 
 func (r *HttpRouter) SetSecret(context *gin.Context) {
-	var body SecretSetRequest
+	var body RouterSetRequest
 	errBind := context.ShouldBindJSON(&body)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "body isn't correct"})

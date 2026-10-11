@@ -26,23 +26,6 @@ func NewMcpRouter(service *Service) *McpRouter {
 	return &McpRouter{service: service}
 }
 
-// McpQueryListRequest, McpQueryIdRequest and McpQueryUpdateRequest carry what
-// the http routes take from the url path and query string. They exist because
-// a tool has arguments and no url, not to restate a model.
-type McpQueryListRequest struct {
-	Type   *Type     `json:"type,omitempty" jsonschema:"only queries of this category"`
-	Plugin *DbPlugin `json:"plugin,omitempty" jsonschema:"only queries for this database engine"`
-}
-
-type McpQueryIdRequest struct {
-	Id string `json:"id" binding:"required" jsonschema:"uuid of the saved query"`
-}
-
-type McpQueryUpdateRequest struct {
-	Id    string  `json:"id" binding:"required" jsonschema:"uuid of the saved query to overwrite"`
-	Query Request `json:"query" binding:"required" jsonschema:"the new query definition"`
-}
-
 // queryContext is withQueryContext for the MCP engine. The session only ever
 // becomes the connection's application_name, and an MCP client carries no
 // browser session, so the caller's own name is what shows up in the engine's

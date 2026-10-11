@@ -87,39 +87,39 @@ type Connection struct {
 	VaultId *uuid.UUID  `json:"vaultId"`
 }
 
-type TemplateRequest struct {
+type RouterTemplateRequest struct {
 	Connection Connection `json:"connection"`
 	Options    *DbOptions `json:"options"`
 	QueryUuid  *uuid.UUID `json:"queryUuid"`
 }
 
-type ConsoleRequest struct {
+type RouterConsoleRequest struct {
 	Connection Connection `json:"connection"`
 	Options    *DbOptions `json:"options"`
 	Query      string     `json:"query"`
 }
 
-type KillRequest struct {
+type RouterKillRequest struct {
 	Connection Connection `json:"connection"`
 	Pid        int        `json:"pid"`
 }
 
-type ChartRequest struct {
+type RouterChartRequest struct {
 	Connection Connection `json:"connection"`
 	Type       ChartType  `json:"type"`
 }
 
-type DatabasesRequest struct {
+type RouterDatabasesRequest struct {
 	Connection Connection `json:"connection"`
 	Name       string     `json:"name"`
 }
 
-type SchemasRequest struct {
+type RouterSchemasRequest struct {
 	Connection Connection `json:"connection"`
 	Name       string     `json:"name"`
 }
 
-type TablesRequest struct {
+type RouterTablesRequest struct {
 	Connection Connection `json:"connection"`
 	Schema     string     `json:"schema"`
 	Name       string     `json:"name"`
@@ -149,6 +149,21 @@ type DbResponse struct {
 	EndTime   int64      `json:"endTime"`
 	Url       string     `json:"url"`
 	Options   *DbOptions `json:"options"`
+}
+
+// RouterListRequest, RouterIdRequest and RouterUpdateRequest carry what
+// the http routes take from the url path and query string. They exist because
+// a tool has arguments and no url, not to restate a model.
+type RouterListRequest struct {
+	Type   *Type     `json:"type,omitempty" jsonschema:"only queries of this category"`
+	Plugin *DbPlugin `json:"plugin,omitempty" jsonschema:"only queries for this database engine"`
+}
+type RouterIdRequest struct {
+	Id string `json:"id" binding:"required" jsonschema:"uuid of the saved query"`
+}
+type RouterUpdateRequest struct {
+	Id    string  `json:"id" binding:"required" jsonschema:"uuid of the saved query to overwrite"`
+	Query Request `json:"query" binding:"required" jsonschema:"the new query definition"`
 }
 
 // SPECIFIC (SERVER)

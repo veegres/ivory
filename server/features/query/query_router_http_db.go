@@ -7,7 +7,7 @@ import (
 )
 
 func (r *HttpRouter) PostExecuteTemplateQuery(context *gin.Context) {
-	var req TemplateRequest
+	var req RouterTemplateRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -32,7 +32,7 @@ func (r *HttpRouter) PostExecuteTemplateQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostExecuteConsoleQuery(context *gin.Context) {
-	var req ConsoleRequest
+	var req RouterConsoleRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -76,7 +76,7 @@ func (r *HttpRouter) PostActivityQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostDatabasesQuery(context *gin.Context) {
-	var req DatabasesRequest
+	var req RouterDatabasesRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -95,7 +95,7 @@ func (r *HttpRouter) PostDatabasesQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostSchemasQuery(context *gin.Context) {
-	var req SchemasRequest
+	var req RouterSchemasRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -114,7 +114,7 @@ func (r *HttpRouter) PostSchemasQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostTablesQuery(context *gin.Context) {
-	var req TablesRequest
+	var req RouterTablesRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -133,7 +133,7 @@ func (r *HttpRouter) PostTablesQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostChartQuery(context *gin.Context) {
-	var req ChartRequest
+	var req RouterChartRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -152,7 +152,7 @@ func (r *HttpRouter) PostChartQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostCancelQuery(context *gin.Context) {
-	var req KillRequest
+	var req RouterKillRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
@@ -171,7 +171,7 @@ func (r *HttpRouter) PostCancelQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostTerminateQuery(context *gin.Context) {
-	var req KillRequest
+	var req RouterKillRequest
 	errBind := context.ShouldBindJSON(&req)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})

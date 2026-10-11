@@ -56,7 +56,7 @@ type UserPermissions struct {
 
 // SPECIFIC (SERVER)
 
-type PermissionRequest struct {
+type RouterPermissionRequest struct {
 	Permissions []config.Feature `json:"permissions" binding:"required"`
 }
 

@@ -77,20 +77,20 @@ type CreateRequest struct {
 	Superuser bool       `json:"superuser"`
 }
 
-type UpdateRequest struct {
+type RouterUpdateRequest struct {
 	AuthTypes []AuthType `json:"authTypes" binding:"required"`
 }
 
-type PasswordUpdateRequest struct {
+type RouterPasswordUpdateRequest struct {
 	PreviousPassword string `json:"previousPassword" binding:"required"`
 	NewPassword      string `json:"newPassword" binding:"required"`
 }
 
-type RegistrationVerifyRequest struct {
+type RouterRegistrationVerifyRequest struct {
 	Token string `json:"token" binding:"required"`
 }
 
-type RegistrationPasswordRequest struct {
+type RouterRegistrationPasswordRequest struct {
 	Token    string `json:"token" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }

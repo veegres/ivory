@@ -12,7 +12,7 @@ import (
 // in core/engine, beside the route table.
 //
 // A tool's structured result may be any JSON value, not only an object, so a
-// handler hands back the service's own type. The one exception is McpLogs,
+// handler hands back the service's own type. The one exception is RouterLogsResponse,
 // which carries something the service does not return.
 type McpRouter struct {
 	service *Service
@@ -22,15 +22,6 @@ func NewMcpRouter(service *Service) *McpRouter {
 	return &McpRouter{service: service}
 }
 
-// McpLogs is a bounded log read. It is its own type because the log services
-// report a failure by pushing it down the stream rather than returning an
-// error, so the lines and that commentary arrive together and both have to
-// reach the caller.
-type McpLogs struct {
-	Lines []string `json:"lines"`
-	Notes []string `json:"notes,omitempty"`
-}
-
 // collectLogs drains a streaming service method into a bounded result, the way
 // handleStreamRequest drains it into an SSE response. The request context is
 // the backstop: a job that never ends is cut off when the client goes away
@@ -38,7 +29,7 @@ type McpLogs struct {
 func (r *McpRouter) collectLogs(
 	ctx context.Context,
 	stream func(job.SubscriberID, <-chan struct{}, func(job.Message)),
-) McpLogs {
+) RouterLogsResponse {
 	lines := make([]string, 0)
 	notes := make([]string, 0)
 	stream(job.SubscriberID(uuid.New().String()), ctx.Done(), func(event job.Message) {
@@ -49,7 +40,7 @@ func (r *McpRouter) collectLogs(
 			notes = append(notes, event.Message)
 		}
 	})
-	return McpLogs{Lines: lines, Notes: notes}
+	return RouterLogsResponse{Lines: lines, Notes: notes}
 }
 
 // boundedLogs is what a tool reads: a tail rather than a live stream, because
