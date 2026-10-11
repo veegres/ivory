@@ -1,0 +1,378 @@
+package engine
+
+import (
+	"context"
+	"encoding/json"
+	"ivory/clients/console/ssh"
+	"ivory/clients/storage"
+	coreConfig "ivory/core/config"
+	"ivory/core/service/cert"
+	"ivory/core/service/encryption"
+	"ivory/core/service/secret"
+	"ivory/core/service/vault"
+	"ivory/core/utils"
+	"ivory/features"
+	"ivory/features/cluster"
+	"ivory/features/deployment"
+	"ivory/features/node"
+	"ivory/features/permission"
+	"ivory/features/query"
+	"ivory/features/tag"
+	"ivory/plugins/database"
+	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
+	"ivory/tools"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
+	"testing"
+
+	"github.com/boltdb/bolt"
+	"github.com/google/uuid"
+	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
+)
+
+// createTestMcpRouter wires each feature's MCP router against a temporary
+// database, the way management_service_test.go wires its services. The plugin
+// registries are empty, so nothing here can reach a host.
+func createTestMcpRouter(t *testing.T) *features.McpRouter {
+	t.Helper()
+
+	tmpDir, errDir := os.MkdirTemp("", "engine-mcp-test-*")
+	if errDir != nil {
+		t.Fatalf("failed to create temp dir: %v", errDir)
+	}
+	t.Cleanup(func() { os.RemoveAll(tmpDir) })
+
+	db, errOpen := bolt.Open(filepath.Join(tmpDir, "test.db"), 0600, nil)
+	if errOpen != nil {
+		t.Fatalf("failed to open test database: %v", errOpen)
+	}
+	t.Cleanup(func() { db.Close() })
+
+	oldWd, errWd := os.Getwd()
+	if errWd != nil {
+		t.Fatalf("failed to get working dir: %v", errWd)
+	}
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to chdir: %v", err)
+	}
+	t.Cleanup(func() { os.Chdir(oldWd) })
+
+	secretService := secret.NewService(
+		secret.NewRepository(storage.NewDbBucket[string](db, "Secret")),
+		encryption.NewService(),
+	)
+	if err := secretService.SetDefault(); err != nil {
+		t.Fatalf("failed to set default secret: %v", err)
+	}
+	vaultService := vault.NewService(
+		vault.NewRepository(storage.NewDbBucket[vault.Vault](db, "Vault")),
+		ssh.NewClient(),
+		secretService,
+		encryption.NewService(),
+	)
+	certService := cert.NewService(
+		cert.NewRepository(storage.NewDbBucket[cert.Cert](db, "Cert"), storage.NewFileStorage("cert", "")),
+	)
+	tagService := tag.NewService(tag.NewRepository(storage.NewDbBucket[[]string](db, "Tag")))
+	queryService := query.NewService(
+		query.NewRepository(storage.NewDbBucket[query.Response](db, "Query"), storage.NewFileStorage("query-logs", ".log")),
+		utils.NewRegistry[database.PluginType, database.Adapter](),
+		vaultService,
+		certService,
+		"ivory",
+	)
+	deploymentService := deployment.NewService(
+		deployment.NewRepository(storage.NewDbBucket[deployment.Template](db, "DeploymentTemplate")),
+		utils.NewRegistry[keeper.PluginType, keeper.Plugin](),
+		utils.NewRegistry[platform.PluginType, platform.Plugin](),
+	)
+	nodeService := node.NewService(
+		utils.NewRegistry[platform.PluginType, platform.Plugin](),
+		utils.NewRegistry[keeper.PluginType, keeper.Plugin](),
+		vaultService,
+		certService,
+		nil,
+	)
+	clusterService := cluster.NewService(
+		cluster.NewRepository(storage.NewDbBucket[cluster.Response](db, "Cluster")),
+		nodeService,
+		tagService,
+		queryService,
+		vaultService,
+		utils.NewRegistry[tools.Tool, tools.Adapter](),
+	)
+
+	sshVault := uuid.New()
+	port := func(value int) *int { return &value }
+	if _, err := clusterService.Create(cluster.Request{
+		Name:  "prod",
+		Nodes: []cluster.NodeConfig{{Name: "pg1", Host: "10.0.0.1", SshPort: port(22), KeeperPort: port(8008), DbPort: port(5432)}},
+		Options: cluster.Options{
+			Plugins: cluster.Plugins{Keeper: "patroni", Database: "postgres"},
+			Vaults:  cluster.Vaults{SshKeyId: &sshVault},
+		},
+	}); err != nil {
+		t.Fatalf("failed to store the test cluster: %v", err)
+	}
+
+	return &features.McpRouter{
+		Cluster:    cluster.NewMcpRouter(clusterService),
+		Node:       node.NewMcpRouter(nodeService),
+		Tag:        tag.NewMcpRouter(tagService),
+		Query:      query.NewMcpRouter(queryService),
+		Deployment: deployment.NewMcpRouter(deploymentService),
+		Management: nil,
+	}
+}
+
+func mcpContextWith(features ...coreConfig.Feature) context.Context {
+	permissions := make(permission.PermissionMap, len(features))
+	for _, feature := range features {
+		permissions[feature] = permission.GRANTED
+	}
+	return withMcpPermissions(context.Background(), permissions)
+}
+
+// session connects a client to the server this caller is given.
+func session(t *testing.T, mr *features.McpRouter, ctx context.Context) *mcpsdk.ClientSession {
+	t.Helper()
+	serverTransport, clientTransport := mcpsdk.NewInMemoryTransports()
+	server := newMcpServer(ctx, mr, "test")
+	go func() { _ = server.Run(context.Background(), serverTransport) }()
+
+	clientSession, err := mcpsdk.NewClient(&mcpsdk.Implementation{Name: "test", Version: "v0"}, nil).
+		Connect(context.Background(), clientTransport, nil)
+	if err != nil {
+		t.Fatalf("connect: %v", err)
+	}
+	t.Cleanup(func() { clientSession.Close() })
+	return clientSession
+}
+
+func offeredTools(t *testing.T, mr *features.McpRouter, ctx context.Context) []*mcpsdk.Tool {
+	t.Helper()
+	result, err := session(t, mr, ctx).ListTools(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("list tools: %v", err)
+	}
+	return result.Tools
+}
+
+func listTools(t *testing.T, mr *features.McpRouter, ctx context.Context) []string {
+	t.Helper()
+	tools := offeredTools(t, mr, ctx)
+	names := make([]string, 0, len(tools))
+	for _, tool := range tools {
+		names = append(names, tool.Name)
+	}
+	slices.Sort(names)
+	return names
+}
+
+func viewFeatures() []coreConfig.Feature {
+	features := make([]coreConfig.Feature, 0)
+	for _, feature := range coreConfig.All {
+		if strings.HasPrefix(string(feature), "view.") {
+			features = append(features, feature)
+		}
+	}
+	return features
+}
+
+func TestMcpToolsAreGatedByPermission(t *testing.T) {
+	mr := createTestMcpRouter(t)
+
+	t.Run("a caller holding nothing is offered only the ungated tool", func(t *testing.T) {
+		names := listTools(t, mr, mcpContextWith())
+		if !slices.Equal(names, []string{"ivory_app_info"}) {
+			t.Errorf("tools = %v, want only ivory_app_info", names)
+		}
+	})
+
+	t.Run("one feature offers only the tools it covers", func(t *testing.T) {
+		names := listTools(t, mr, mcpContextWith(coreConfig.ViewClusterList))
+		if !slices.Equal(names, []string{"ivory_app_info", "ivory_cluster_list"}) {
+			t.Errorf("tools = %v, want app_info and cluster_list", names)
+		}
+	})
+
+	t.Run("every tool a view-only caller is offered declares itself read-only", func(t *testing.T) {
+		tools := offeredTools(t, mr, mcpContextWith(viewFeatures()...))
+		if len(tools) == 0 {
+			t.Fatal("a caller holding every view feature was offered nothing")
+		}
+		for _, tool := range tools {
+			if tool.Annotations == nil || !tool.Annotations.ReadOnlyHint {
+				t.Errorf("tool %q is reachable with only view permissions but is not annotated read-only", tool.Name)
+			}
+		}
+	})
+
+	t.Run("every mutating tool needs a manage feature", func(t *testing.T) {
+		view := listTools(t, mr, mcpContextWith(viewFeatures()...))
+		for _, tool := range offeredTools(t, mr, mcpContextWith(coreConfig.All...)) {
+			if tool.Annotations != nil && tool.Annotations.ReadOnlyHint {
+				continue
+			}
+			if slices.Contains(view, tool.Name) {
+				t.Errorf("mutating tool %q is reachable with view permissions alone", tool.Name)
+			}
+		}
+	})
+
+	t.Run("granting everything offers every tool, each one gated by a real feature", func(t *testing.T) {
+		all := listTools(t, mr, mcpContextWith(coreConfig.All...))
+		if len(all) < 40 {
+			t.Fatalf("only %d tools registered, expected the full surface", len(all))
+		}
+
+		// Granting one feature at a time and unioning the result proves every
+		// tool hangs off a feature that is actually in config.All: a tool gated
+		// by anything else could never appear in a single-feature server.
+		union := make(map[string]bool)
+		for _, feature := range coreConfig.All {
+			for _, name := range listTools(t, mr, mcpContextWith(feature)) {
+				union[name] = true
+			}
+		}
+		for _, name := range all {
+			if !union[name] {
+				t.Errorf("tool %q is gated by a feature that is not in config.All", name)
+			}
+		}
+	})
+}
+
+// TestMcpSchemasAcceptIvorysOwnTypes guards the two corrections mcpSchemaFor
+// makes. Both were real failures: a uuid.UUID is a [16]byte, so an inferred
+// schema calls it an array and rejects the vault ids Ivory writes itself; and
+// Ivory's models carry no omitempty, so every nullable pointer came back
+// required and an agent had to spell out explicit nulls to say "none".
+func TestMcpSchemasAcceptIvorysOwnTypes(t *testing.T) {
+	mr := createTestMcpRouter(t)
+	ctx := context.Background()
+
+	t.Run("a vault id passes as a uuid string, and nullable fields may be omitted", func(t *testing.T) {
+		clientSession := session(t, mr, mcpContextWith(coreConfig.ManageClusterCreate))
+		result, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{
+			Name: "ivory_cluster_create",
+			Arguments: map[string]any{
+				"name": "staging",
+				"nodes": []any{
+					map[string]any{"name": "pg1", "host": "10.0.1.1", "sshPort": 22, "keeperPort": 8008, "dbPort": 5432},
+				},
+				"plugins": map[string]any{"keeper": "patroni", "database": "postgres"},
+				"tls":     map[string]any{"keeper": false, "database": false},
+				"certs":   map[string]any{},
+				"vaults":  map[string]any{"sshKeyId": "b6686f05-5beb-40c2-9d25-600fc81ea5d7"},
+			},
+		})
+		if err != nil {
+			t.Fatalf("call: %v", err)
+		}
+		if result.IsError {
+			for _, content := range result.Content {
+				if text, ok := content.(*mcpsdk.TextContent); ok {
+					t.Fatalf("the schema refused Ivory's own shapes: %s", text.Text)
+				}
+			}
+			t.Fatal("the schema refused Ivory's own shapes")
+		}
+	})
+
+	t.Run("a uuid comes back out as a string too", func(t *testing.T) {
+		clientSession := session(t, mr, mcpContextWith(coreConfig.ViewClusterItem))
+		result, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{
+			Name:      "ivory_cluster_get",
+			Arguments: map[string]any{"name": "prod"},
+		})
+		if err != nil {
+			t.Fatalf("call: %v", err)
+		}
+		if result.IsError {
+			t.Fatalf("output validation refused the stored cluster: %v", result.Content)
+		}
+
+		// The result is the feature's own cluster.Response, not a wrapper
+		// around it: a tool's structured result may be any JSON value.
+		encoded, _ := json.Marshal(result.StructuredContent)
+		var out struct {
+			Name   string `json:"name"`
+			Vaults struct {
+				SshKeyId string `json:"sshKeyId"`
+			} `json:"vaults"`
+		}
+		if err := json.Unmarshal(encoded, &out); err != nil {
+			t.Fatalf("a vault id did not come back as a string: %v", err)
+		}
+		if out.Name != "prod" || out.Vaults.SshKeyId == "" {
+			t.Errorf("cluster = %+v", out)
+		}
+	})
+
+	t.Run("a required argument the request states is still refused", func(t *testing.T) {
+		clientSession := session(t, mr, mcpContextWith(coreConfig.ViewClusterItem))
+		result, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{Name: "ivory_cluster_get", Arguments: map[string]any{}})
+		if err != nil {
+			t.Fatalf("call: %v", err)
+		}
+		if !result.IsError {
+			t.Error("expected a schema error when the cluster name is omitted")
+		}
+	})
+}
+
+// TestEveryFeatureIsWiredIn calls one representative tool per feature through
+// a real session. The plugin registries are empty, so none of these can reach
+// a host - what the test proves is that each feature's McpRouter is bound to
+// the tool table and that its arguments bind, which is the part engine_mcp.go
+// owns. A mis-wired feature fails here rather than in front of an agent.
+func TestEveryFeatureIsWiredIn(t *testing.T) {
+	mr := createTestMcpRouter(t)
+	ctx := context.Background()
+	clientSession := session(t, mr, mcpContextWith(coreConfig.All...))
+
+	connection := map[string]any{"host": "10.0.0.1", "port": 8008, "vaultId": uuid.New().String(), "platform": "docker"}
+
+	calls := []struct {
+		feature   string
+		tool      string
+		arguments map[string]any
+	}{
+		{"cluster", "ivory_cluster_list", map[string]any{}},
+		{"tag", "ivory_tag_list", map[string]any{}},
+		{"node/keeper", "ivory_keeper_node_list", map[string]any{
+			"host": "10.0.0.1", "port": 8008, "cluster": "prod", "plugin": "patroni",
+		}},
+		{"node/system", "ivory_system_info", connection},
+		{"node/container", "ivory_container_list", connection},
+		{"query/crud", "ivory_query_list", map[string]any{}},
+		{"query/db", "ivory_query_databases", map[string]any{
+			"name": "",
+			"connection": map[string]any{
+				"db": map[string]any{"plugin": "postgres", "host": "10.0.0.1", "port": 5432},
+			},
+		}},
+		{"deployment", "ivory_deployment_template_list", map[string]any{}},
+	}
+
+	for _, call := range calls {
+		t.Run(call.feature+" answers "+call.tool, func(t *testing.T) {
+			result, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{Name: call.tool, Arguments: call.arguments})
+			if err != nil {
+				t.Fatalf("the tool could not be called at all: %v", err)
+			}
+			// An error from the plugin boundary is fine; a schema error is not,
+			// because it means the arguments never reached the feature.
+			for _, content := range result.Content {
+				text, ok := content.(*mcpsdk.TextContent)
+				if ok && strings.Contains(text.Text, `validating "arguments"`) {
+					t.Errorf("arguments were refused before reaching the feature: %s", text.Text)
+				}
+			}
+		})
+	}
+}

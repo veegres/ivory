@@ -40,8 +40,21 @@ type Router struct {
 	User       *user.Router
 }
 
+// McpRouter is the MCP engine's half of every feature, the way Router is the
+// http engine's. Each entry is that feature's own <feature>_mcp.go; which
+// tools exist and what gates them is declared in core/engine/engine_mcp.go.
+type McpRouter struct {
+	Cluster    *cluster.McpRouter
+	Node       *node.McpRouter
+	Tag        *tag.McpRouter
+	Query      *query.McpRouter
+	Deployment *deployment.McpRouter
+	Management *management.McpRouter
+}
+
 type Context struct {
-	Router *Router
+	Router    *Router
+	McpRouter *McpRouter
 }
 
 func NewContext(
@@ -116,8 +129,15 @@ func NewContext(
 		userService,
 		toolRegistry,
 	)
-
 	return &Context{
+		McpRouter: &McpRouter{
+			Cluster:    cluster.NewMcpRouter(clusterService),
+			Node:       node.NewMcpRouter(nodeService),
+			Tag:        tag.NewMcpRouter(tagService),
+			Query:      query.NewMcpRouter(queryService),
+			Deployment: deployment.NewMcpRouter(deploymentService),
+			Management: management.NewMcpRouter(managementService),
+		},
 		Router: &Router{
 			Auth:       auth.NewRouter(authService, env.Config.UrlPath, env.Config.TlsEnabled),
 			Cluster:    cluster.NewRouter(clusterService),
