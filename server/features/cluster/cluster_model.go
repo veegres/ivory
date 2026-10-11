@@ -120,9 +120,9 @@ type CommonConfig struct {
 // to cluster names before hitting the repository; Keeper and Database are
 // passed through as-is. A nil/empty field is skipped (no restriction).
 type SearchRequest struct {
-	Tags     []string
-	Keeper   *node.KeeperPlugin
-	Database *query.DbPlugin
+	Tags     []string           `json:"tags,omitempty"`
+	Keeper   *node.KeeperPlugin `json:"keeper,omitempty"`
+	Database *query.DbPlugin    `json:"database,omitempty"`
 }
 
 // SearchCriteria narrows List down to matching clusters. A nil field is

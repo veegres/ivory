@@ -29,14 +29,14 @@ func (r *Router) ValidateMiddleware() gin.HandlerFunc {
 			context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
 		}
-		context.Set("permissions", permissions)
+		context.Set(config.PermissionContextKey, permissions)
 		context.Next()
 	}
 }
 
 func (r *Router) ValidateMethodMiddleware(feature config.Feature) gin.HandlerFunc {
 	return func(context *gin.Context) {
-		if val, ok := context.Get("permissions"); ok {
+		if val, ok := context.Get(config.PermissionContextKey); ok {
 			permissions := val.(PermissionMap)
 			if permissions[feature] != GRANTED {
 				context.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": string(feature) + " is not permitted"})

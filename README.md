@@ -97,6 +97,7 @@ rework:
 
 - [Authentication](.doc/authentication.md) — Basic, LDAP and OIDC/SSO, with granular per-user permissions
 - [Configuration](.doc/configuration.md) — data persistence, upgrades, TLS, reverse-proxy sub-path
+- [MCP server](.doc/mcp.md) — expose Ivory to an AI agent, gated by the same per-user permissions
 
 ---
 
@@ -145,6 +146,7 @@ day, and Ivory exists to simplify that routine first. Broader support grows from
 | [Authentication](.doc/authentication.md)     | Basic / LDAP / OIDC, users, superusers, permissions                 |
 | [Configuration](.doc/configuration.md)       | Data persistence, upgrades, environment variables, TLS, sub-path    |
 | [pgcompacttable](.doc/pg_compacttable.md)    | Reducing Postgres table and index bloat from the UI                 |
+| [MCP server](.doc/mcp.md)                    | Connecting an AI agent, the tool list, permissions and blast radius |
 
 ---
 

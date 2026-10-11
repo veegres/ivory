@@ -27,7 +27,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Router, tc *tools.Router) {
+func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Router, mc gin.HandlerFunc, tc *tools.Router) {
 	engine := gin.Default()
 	engine.UseH2C = true
 	urlPath := env.Config.UrlPath
@@ -68,6 +68,7 @@ func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Ro
 	userRouter(yesAuth, fc.Permission, fc.User)
 	queryRouter(yesAuth, fc.Permission, fc.Query)
 	deploymentRouter(yesAuth, fc.Permission, fc.Deployment)
+	mcpRouter(yesAuth, mc)
 
 	slog.Info("Ivory address: " + env.Config.UrlAddress)
 	slog.Info("Ivory WEB path: " + urlPath)
@@ -291,6 +292,19 @@ func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
 
 	containerKeeperGroup := containerGroup.Group("/keeper")
 	containerKeeperGroup.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageNodePlatformContainer), r.PostNodeKeeperDeploy)
+}
+
+// mcpRouter mounts the Model Context Protocol endpoint. It takes no
+// ValidateMethodMiddleware: one endpoint serves every tool, so the feature
+// varies per call rather than per route and each tool is gated against the
+// permission map ValidateMiddleware already put on the context - the same
+// exception /permission/request and /user/password take. The tools themselves
+// are declared in engine_mcp.go, beside this table.
+func mcpRouter(g *gin.RouterGroup, handler gin.HandlerFunc) {
+	group := g.Group("/mcp")
+	group.POST("", handler)
+	group.GET("", handler)
+	group.DELETE("", handler)
 }
 
 func deploymentRouter(g *gin.RouterGroup, rp *permission.Router, r *deployment.Router) {
