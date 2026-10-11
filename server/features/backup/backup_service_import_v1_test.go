@@ -246,10 +246,10 @@ func TestImportV1FromFrozenFile(t *testing.T) {
 		}
 	})
 
-	// NOTE: a permission key is stored as its string, so a renamed feature has
-	// to be resolved on the way in or every grant written under the old name
-	// silently resets
-	t.Run("a renamed feature key resolves and an unknown one is dropped", func(t *testing.T) {
+	// NOTE: a permission key is stored as its string, so renaming a feature
+	// invalidates every grant already written under the old name. They are
+	// dropped rather than forwarded, and granted again by the current name
+	t.Run("a renamed feature key is dropped along with an unknown one", func(t *testing.T) {
 		permissions, err := s.permissionService.GetAllUserPermissions()
 		if err != nil {
 			t.Fatalf("GetAllUserPermissions() error = %v", err)

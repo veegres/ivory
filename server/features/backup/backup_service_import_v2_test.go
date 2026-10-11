@@ -443,7 +443,7 @@ func TestImportV2FromFrozenFile(t *testing.T) {
 		}
 	})
 
-	t.Run("a renamed feature key resolves and an unknown one is dropped", func(t *testing.T) {
+	t.Run("a renamed feature key is dropped along with an unknown one", func(t *testing.T) {
 		permissions, err := s.permissionService.GetAllUserPermissions()
 		if err != nil {
 			t.Fatalf("GetAllUserPermissions() error = %v", err)
