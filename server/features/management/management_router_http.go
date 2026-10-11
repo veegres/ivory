@@ -8,15 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Router struct {
+type HttpRouter struct {
 	service *Service
 }
 
-func NewRouter(service *Service) *Router {
-	return &Router{service: service}
+func NewHttpRouter(service *Service) *HttpRouter {
+	return &HttpRouter{service: service}
 }
 
-func (r *Router) Erase(context *gin.Context) {
+func (r *HttpRouter) Erase(context *gin.Context) {
 	err := r.service.Erase()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -26,7 +26,7 @@ func (r *Router) Erase(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "all data was erased"})
 }
 
-func (r *Router) Free(context *gin.Context) {
+func (r *HttpRouter) Free(context *gin.Context) {
 	err := r.service.Free()
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -36,7 +36,7 @@ func (r *Router) Free(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "data is cleaned"})
 }
 
-func (r *Router) Import(context *gin.Context) {
+func (r *HttpRouter) Import(context *gin.Context) {
 	file, errFile := context.FormFile("file")
 	if errFile != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errFile.Error()})
@@ -50,7 +50,7 @@ func (r *Router) Import(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "data is imported"})
 }
 
-func (r *Router) Export(context *gin.Context) {
+func (r *HttpRouter) Export(context *gin.Context) {
 	fileName := r.service.BackupFileName()
 	context.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
 	context.Header("Content-Type", "application/json")
@@ -62,7 +62,7 @@ func (r *Router) Export(context *gin.Context) {
 	_, _ = context.Writer.Write(data)
 }
 
-func (r *Router) ChangeSecret(context *gin.Context) {
+func (r *HttpRouter) ChangeSecret(context *gin.Context) {
 	var request SecretUpdateRequest
 	errBind := context.ShouldBindJSON(&request)
 	if errBind != nil {
@@ -77,7 +77,7 @@ func (r *Router) ChangeSecret(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"response": "the secret was changed"})
 }
 
-func (r *Router) GetAppInfo(context *gin.Context) {
+func (r *HttpRouter) GetAppInfo(context *gin.Context) {
 	username := context.GetString(config.AuthContextKey.Username)
 	authEnabled := context.GetBool(config.AuthContextKey.Enabled)
 	authorised := context.GetBool(config.AuthContextKey.Authorised)

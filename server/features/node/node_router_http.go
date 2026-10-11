@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Router struct {
+type HttpRouter struct {
 	service *Service
 }
 
-func NewRouter(service *Service) *Router {
-	return &Router{service: service}
+func NewHttpRouter(service *Service) *HttpRouter {
+	return &HttpRouter{service: service}
 }
 
 func handleKeeperParamRequest[T any](context *gin.Context, action func(node KeeperOneRequest) (T, int, error)) {

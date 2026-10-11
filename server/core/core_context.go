@@ -16,15 +16,15 @@ type Service struct {
 	Cert  *cert.Service
 }
 
-type Router struct {
-	Vault  *vault.Router
-	Cert   *cert.Router
-	Secret *secret.Router
+type HttpRouter struct {
+	Vault  *vault.HttpRouter
+	Cert   *cert.HttpRouter
+	Secret *secret.HttpRouter
 }
 
 type Context struct {
-	Service *Service
-	Router  *Router
+	Service    *Service
+	HttpRouter *HttpRouter
 }
 
 // NewContext TODO probably we should move User, Permission and Auth to this folder it looks like core more - think
@@ -54,10 +54,10 @@ func NewContext(sshClient *ssh.Client) *Context {
 			Job:   jobService,
 			Cert:  certService,
 		},
-		Router: &Router{
-			Vault:  vault.NewRouter(vaultService),
-			Cert:   cert.NewRouter(certService),
-			Secret: secret.NewRouter(secretService),
+		HttpRouter: &HttpRouter{
+			Vault:  vault.NewHttpRouter(vaultService),
+			Cert:   cert.NewHttpRouter(certService),
+			Secret: secret.NewHttpRouter(secretService),
 		},
 	}
 }

@@ -27,7 +27,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewHttpServer(env *coreConfig.Environment, cc *core.Router, fc *features.Router, mc gin.HandlerFunc, tc *tools.Router) {
+func NewHttpServer(env *coreConfig.Environment, cc *core.HttpRouter, fc *features.HttpRouter, mc gin.HandlerFunc, tc *tools.HttpRouter) {
 	engine := gin.Default()
 	engine.UseH2C = true
 	urlPath := env.Config.UrlPath
@@ -145,7 +145,7 @@ func pong(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
-func unauthenticatedRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Router, ru *user.Router) {
+func unauthenticatedRouter(g *gin.RouterGroup, ra *auth.HttpRouter, rg *config.HttpRouter, ru *user.HttpRouter) {
 	configGroup := g.Group("/config")
 	configGroup.POST("", rg.SetAppConfig)
 
@@ -166,13 +166,13 @@ func unauthenticatedRouter(g *gin.RouterGroup, ra *auth.Router, rg *config.Route
 // There is deliberately no erase here: wiping everything is a thing only
 // somebody signed in may ask for, and whoever has lost the secret word
 // reinstalls instead.
-func initialRouter(g *gin.RouterGroup, rs *secret.Router) {
+func initialRouter(g *gin.RouterGroup, rs *secret.HttpRouter) {
 	group := g.Group("/initial")
 	group.POST("/skip", rs.SkipSecret)
 	group.POST("/secret", rs.SetSecret)
 }
 
-func toolsRouter(g *gin.RouterGroup, rp *permission.Router, r *tools.Router) {
+func toolsRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *tools.HttpRouter) {
 	group := g.Group("/tool")
 	group.GET("/bloat", rp.ValidateMethodMiddleware(coreConfig.ViewToolPgCompactTableList), r.PgCompactTable.GetBloatList)
 	group.GET("/bloat/cluster/:name", rp.ValidateMethodMiddleware(coreConfig.ViewToolPgCompactTableList), r.PgCompactTable.GetBloatListByCluster)
@@ -184,7 +184,7 @@ func toolsRouter(g *gin.RouterGroup, rp *permission.Router, r *tools.Router) {
 	group.DELETE("/bloat/job/:uuid/delete", rp.ValidateMethodMiddleware(coreConfig.ManageToolPgCompactTableJob), r.PgCompactTable.DeleteJob)
 }
 
-func managementRouter(g *gin.RouterGroup, rp *permission.Router, rs *secret.Router, rm *management.Router) {
+func managementRouter(g *gin.RouterGroup, rp *permission.HttpRouter, rs *secret.HttpRouter, rm *management.HttpRouter) {
 	group := g.Group("/management")
 	group.GET("/secret", rp.ValidateMethodMiddleware(coreConfig.ViewManagementSecret), rs.GetSecretStatus)
 	group.POST("/secret", rp.ValidateMethodMiddleware(coreConfig.ManageManagementSecret), rm.ChangeSecret)
@@ -194,7 +194,7 @@ func managementRouter(g *gin.RouterGroup, rp *permission.Router, rs *secret.Rout
 	group.POST("/import", rp.ValidateMethodMiddleware(coreConfig.ManageManagementBackup), rm.Import)
 }
 
-func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router) {
+func clusterRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *cluster.HttpRouter) {
 	group := g.Group("/cluster")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewClusterList), r.GetClusterList)
 	group.GET("/:name", rp.ValidateMethodMiddleware(coreConfig.ViewClusterItem), r.GetClusterByName)
@@ -207,7 +207,7 @@ func clusterRouter(g *gin.RouterGroup, rp *permission.Router, r *cluster.Router)
 	group.POST("/deploy", rp.ValidateMethodMiddleware(coreConfig.ManageClusterCreate), r.PostClusterDeploy)
 }
 
-func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {
+func certRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *cert.HttpRouter) {
 	group := g.Group("/cert")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewCertList), r.GetCertList)
 	group.POST("/upload", rp.ValidateMethodMiddleware(coreConfig.ManageCertCreate), r.PostUploadCert)
@@ -215,7 +215,7 @@ func certRouter(g *gin.RouterGroup, rp *permission.Router, r *cert.Router) {
 	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(coreConfig.ManageCertDelete), r.DeleteCert)
 }
 
-func vaultRouter(g *gin.RouterGroup, rp *permission.Router, r *vault.Router) {
+func vaultRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *vault.HttpRouter) {
 	group := g.Group("/vault")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewVaultList), r.GetVaultList)
 	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageVaultCreate), r.PostVault)
@@ -223,7 +223,7 @@ func vaultRouter(g *gin.RouterGroup, rp *permission.Router, r *vault.Router) {
 	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(coreConfig.ManageVaultDelete), r.DeleteVault)
 }
 
-func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.Router) {
+func permissionRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *permission.HttpRouter) {
 	group := g.Group("/permission")
 	group.POST("/request", r.RequestUserPermission)
 	group.GET("/users", rp.ValidateMethodMiddleware(coreConfig.ViewPermissionList), r.GetAllUserPermissions)
@@ -232,7 +232,7 @@ func permissionRouter(g *gin.RouterGroup, rp *permission.Router, r *permission.R
 	group.DELETE("/users/:username", rp.ValidateMethodMiddleware(coreConfig.ManagePermissionDelete), r.DeleteUserPermissions)
 }
 
-func userRouter(g *gin.RouterGroup, rp *permission.Router, r *user.Router) {
+func userRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *user.HttpRouter) {
 	group := g.Group("/user")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewUserList), r.GetUserList)
 	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageUserCreate), r.PostUser)
@@ -249,12 +249,12 @@ func userRouter(g *gin.RouterGroup, rp *permission.Router, r *user.Router) {
 	group.DELETE("/:username/password/reset", rp.ValidateMethodMiddleware(coreConfig.ManageUserPasswordReset), r.DeleteUserPasswordReset)
 }
 
-func tagRouter(g *gin.RouterGroup, rp *permission.Router, r *tag.Router) {
+func tagRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *tag.HttpRouter) {
 	group := g.Group("/tag")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewTagList), r.GetTagList)
 }
 
-func nodeRouter(g *gin.RouterGroup, rp *permission.Router, r *node.Router) {
+func nodeRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *node.HttpRouter) {
 	group := g.Group("/node")
 
 	keeperGroup := group.Group("/keeper")
@@ -307,7 +307,7 @@ func mcpRouter(g *gin.RouterGroup, handler gin.HandlerFunc) {
 	group.DELETE("", handler)
 }
 
-func deploymentRouter(g *gin.RouterGroup, rp *permission.Router, r *deployment.Router) {
+func deploymentRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *deployment.HttpRouter) {
 	group := g.Group("/deployment/template")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewDeploymentTemplateList), r.GetDeploymentTemplateList)
 	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageDeploymentTemplateCreate), r.PostDeploymentTemplate)
@@ -315,7 +315,7 @@ func deploymentRouter(g *gin.RouterGroup, rp *permission.Router, r *deployment.R
 	group.DELETE("/:uuid", rp.ValidateMethodMiddleware(coreConfig.ManageDeploymentTemplateDelete), r.DeleteDeploymentTemplate)
 }
 
-func queryRouter(g *gin.RouterGroup, rp *permission.Router, r *query.Router) {
+func queryRouter(g *gin.RouterGroup, rp *permission.HttpRouter, r *query.HttpRouter) {
 	group := g.Group("/query")
 	group.GET("", rp.ValidateMethodMiddleware(coreConfig.ViewQueryCrudList), r.GetQueryList)
 	group.POST("", rp.ValidateMethodMiddleware(coreConfig.ManageQueryCrudCreate), r.PostQuery)

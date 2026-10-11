@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func createTestRouter(t *testing.T) *Router {
+func createTestRouter(t *testing.T) *HttpRouter {
 	t.Helper()
 
 	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "test.db"), 0600, nil)
@@ -27,7 +27,7 @@ func createTestRouter(t *testing.T) *Router {
 		NewRepository(storage.NewDbBucket[string](db, "Secret")),
 		encryption.NewService(),
 	)
-	return NewRouter(service)
+	return NewHttpRouter(service)
 }
 
 func runMiddleware(handler gin.HandlerFunc) (*httptest.ResponseRecorder, *gin.Context) {

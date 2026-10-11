@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func createTestPermissionRouter(t *testing.T) *Router {
+func createTestPermissionRouter(t *testing.T) *HttpRouter {
 	t.Helper()
 
 	db, errOpen := bolt.Open(filepath.Join(t.TempDir(), "test.db"), 0600, nil)
@@ -25,10 +25,10 @@ func createTestPermissionRouter(t *testing.T) *Router {
 	})
 
 	service := NewService(NewRepository(storage.NewDbBucket[PermissionMap](db, "Permission")))
-	return NewRouter(service)
+	return NewHttpRouter(service)
 }
 
-func runValidateMiddleware(r *Router, authEnabled bool, superuser bool, username string) (*httptest.ResponseRecorder, *gin.Context) {
+func runValidateMiddleware(r *HttpRouter, authEnabled bool, superuser bool, username string) (*httptest.ResponseRecorder, *gin.Context) {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(w)
@@ -155,7 +155,7 @@ func runValidateMethodMiddleware(feature config.Feature, seedPermissions *Permis
 		context.Set("permissions", *seedPermissions)
 	}
 
-	r := &Router{}
+	r := &HttpRouter{}
 	r.ValidateMethodMiddleware(feature)(context)
 
 	return w, context

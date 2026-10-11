@@ -27,17 +27,17 @@ import (
 	"ivory/tools"
 )
 
-type Router struct {
-	Auth       *auth.Router
-	Cluster    *cluster.Router
-	Permission *permission.Router
-	Tag        *tag.Router
-	Node       *node.Router
-	Query      *query.Router
-	Deployment *deployment.Router
-	Management *management.Router
-	Config     *config.Router
-	User       *user.Router
+type HttpRouter struct {
+	Auth       *auth.HttpRouter
+	Cluster    *cluster.HttpRouter
+	Permission *permission.HttpRouter
+	Tag        *tag.HttpRouter
+	Node       *node.HttpRouter
+	Query      *query.HttpRouter
+	Deployment *deployment.HttpRouter
+	Management *management.HttpRouter
+	Config     *config.HttpRouter
+	User       *user.HttpRouter
 }
 
 // McpRouter is the MCP engine's half of every feature, the way Router is the
@@ -53,8 +53,8 @@ type McpRouter struct {
 }
 
 type Context struct {
-	Router    *Router
-	McpRouter *McpRouter
+	HttpRouter *HttpRouter
+	McpRouter  *McpRouter
 }
 
 func NewContext(
@@ -138,17 +138,17 @@ func NewContext(
 			Deployment: deployment.NewMcpRouter(deploymentService),
 			Management: management.NewMcpRouter(managementService),
 		},
-		Router: &Router{
-			Auth:       auth.NewRouter(authService, env.Config.UrlPath, env.Config.TlsEnabled),
-			Cluster:    cluster.NewRouter(clusterService),
-			Permission: permission.NewRouter(permissionService),
-			Tag:        tag.NewRouter(tagService),
-			Node:       node.NewRouter(nodeService),
-			Query:      query.NewRouter(queryService, configService),
-			Deployment: deployment.NewRouter(deploymentService),
-			Management: management.NewRouter(managementService),
-			Config:     config.NewRouter(configService),
-			User:       user.NewRouter(userService),
+		HttpRouter: &HttpRouter{
+			Auth:       auth.NewHttpRouter(authService, env.Config.UrlPath, env.Config.TlsEnabled),
+			Cluster:    cluster.NewHttpRouter(clusterService),
+			Permission: permission.NewHttpRouter(permissionService),
+			Tag:        tag.NewHttpRouter(tagService),
+			Node:       node.NewHttpRouter(nodeService),
+			Query:      query.NewHttpRouter(queryService, configService),
+			Deployment: deployment.NewHttpRouter(deploymentService),
+			Management: management.NewHttpRouter(managementService),
+			Config:     config.NewHttpRouter(configService),
+			User:       user.NewHttpRouter(userService),
 		},
 	}
 }

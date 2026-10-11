@@ -40,24 +40,24 @@ func createTestSecretService(t *testing.T) *secret.Service {
 	return secretService
 }
 
-func createTestRouter(t *testing.T) *Router {
+func createTestRouter(t *testing.T) *HttpRouter {
 	t.Helper()
 	users := newFakeUsers()
 	authService := NewService(token.NewService(createTestSecretService(t)), createTestBasicProvider(t, users), ldap.NewProvider(), oidc.NewProvider(), users)
-	return NewRouter(authService, "/", false)
+	return NewHttpRouter(authService, "/", false)
 }
 
 // createDisabledTestRouter builds a router with no provider configured, which is
 // how a deployment with authentication turned off looks to auth.Service:
 // GetSupportedTypes() is empty and every resolveAuth call reports ErrAuthDisabled.
-func createDisabledTestRouter(t *testing.T) *Router {
+func createDisabledTestRouter(t *testing.T) *HttpRouter {
 	t.Helper()
 	users := newFakeUsers()
 	authService := NewService(token.NewService(createTestSecretService(t)), basic.NewProvider(users), ldap.NewProvider(), oidc.NewProvider(), users)
-	return NewRouter(authService, "/", false)
+	return NewHttpRouter(authService, "/", false)
 }
 
-func createValidToken(t *testing.T, r *Router) string {
+func createValidToken(t *testing.T, r *HttpRouter) string {
 	t.Helper()
 	token, _, err := r.authService.GenerateBasicAuthToken(basic.Login{Username: "admin", Password: "password123"})
 	if err != nil {
@@ -96,19 +96,19 @@ func runMiddleware(authHeader string, tokenCookie string, handlers ...gin.Handle
 // and noAuth (AllowMiddleware). RejectMiddleware and AllowMiddleware only read
 // context keys they never populate themselves, so testing either in isolation
 // from ValidateWithContextMiddleware does not exercise the real request path.
-func runRejectMiddleware(r *Router, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+func runRejectMiddleware(r *HttpRouter, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
 	return runMiddleware(authHeader, tokenCookie, r.ValidateWithContextMiddleware(), r.RejectMiddleware())
 }
 
-func runAllowMiddleware(r *Router, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+func runAllowMiddleware(r *HttpRouter, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
 	return runMiddleware(authHeader, tokenCookie, r.ValidateWithContextMiddleware(), r.AllowMiddleware())
 }
 
-func runAuthContextMiddleware(r *Router, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+func runAuthContextMiddleware(r *HttpRouter, authHeader string, tokenCookie string) (*httptest.ResponseRecorder, *gin.Context) {
 	return runMiddleware(authHeader, tokenCookie, r.ValidateWithContextMiddleware())
 }
 
-func runSessionMiddleware(r *Router, sessionCookie string) (*httptest.ResponseRecorder, *gin.Context) {
+func runSessionMiddleware(r *HttpRouter, sessionCookie string) (*httptest.ResponseRecorder, *gin.Context) {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	context, _ := gin.CreateTestContext(w)
