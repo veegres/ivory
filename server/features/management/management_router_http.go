@@ -63,7 +63,7 @@ func (r *HttpRouter) Export(context *gin.Context) {
 }
 
 func (r *HttpRouter) ChangeSecret(context *gin.Context) {
-	var request SecretUpdateRequest
+	var request RouterSecretUpdateRequest
 	errBind := context.ShouldBindJSON(&request)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})

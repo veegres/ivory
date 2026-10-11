@@ -33,7 +33,7 @@ func (r *McpRouter) SystemInfo(ctx context.Context, req *mcp.CallToolRequest, in
 	return nil, info, nil
 }
 
-func (r *McpRouter) SystemLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, McpLogs, error) {
+func (r *McpRouter) SystemLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, RouterLogsResponse, error) {
 	request := boundedLogs(in)
 	return nil, r.collectLogs(ctx, func(id job.SubscriberID, close <-chan struct{}, send func(job.Message)) {
 		r.service.PlatformSystemLogs(request, id, close, send)
@@ -58,7 +58,7 @@ func (r *McpRouter) ContainerList(ctx context.Context, req *mcp.CallToolRequest,
 	return nil, names, nil
 }
 
-func (r *McpRouter) ContainerLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, McpLogs, error) {
+func (r *McpRouter) ContainerLogs(ctx context.Context, req *mcp.CallToolRequest, in PlatformLogsRequest) (*mcp.CallToolResult, RouterLogsResponse, error) {
 	request := boundedLogs(in)
 	return nil, r.collectLogs(ctx, func(id job.SubscriberID, close <-chan struct{}, send func(job.Message)) {
 		r.service.PlatformContainerLogs(request, id, close, send)
@@ -73,26 +73,26 @@ func (r *McpRouter) ContainerMetrics(ctx context.Context, req *mcp.CallToolReque
 	return nil, metrics, nil
 }
 
-func (r *McpRouter) ContainerStart(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, PlatformResponse, error) {
+func (r *McpRouter) ContainerStart(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, RouterPlatformResponse, error) {
 	return r.containerCall(r.service.PlatformContainerStart, in)
 }
 
-func (r *McpRouter) ContainerStop(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, PlatformResponse, error) {
+func (r *McpRouter) ContainerStop(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, RouterPlatformResponse, error) {
 	return r.containerCall(r.service.PlatformContainerStop, in)
 }
 
-func (r *McpRouter) ContainerRestart(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, PlatformResponse, error) {
+func (r *McpRouter) ContainerRestart(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, RouterPlatformResponse, error) {
 	return r.containerCall(r.service.PlatformContainerRestart, in)
 }
 
-func (r *McpRouter) ContainerDown(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, PlatformResponse, error) {
+func (r *McpRouter) ContainerDown(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, RouterPlatformResponse, error) {
 	return r.containerCall(r.service.PlatformContainerDown, in)
 }
 
 func (r *McpRouter) containerCall(
 	action func(PlatformActionRequest) ([]string, error),
 	in PlatformActionRequest,
-) (*mcp.CallToolResult, PlatformResponse, error) {
+) (*mcp.CallToolResult, RouterPlatformResponse, error) {
 	output, err := action(in)
 	if err != nil {
 		return nil, nil, err
@@ -100,7 +100,7 @@ func (r *McpRouter) containerCall(
 	return nil, output, nil
 }
 
-func (r *McpRouter) ContainerUp(ctx context.Context, req *mcp.CallToolRequest, in PlatformUpRequest) (*mcp.CallToolResult, PlatformResponse, error) {
+func (r *McpRouter) ContainerUp(ctx context.Context, req *mcp.CallToolRequest, in PlatformUpRequest) (*mcp.CallToolResult, RouterPlatformResponse, error) {
 	output, err := r.service.PlatformContainerUp(in)
 	if err != nil {
 		return nil, nil, err
@@ -108,7 +108,7 @@ func (r *McpRouter) ContainerUp(ctx context.Context, req *mcp.CallToolRequest, i
 	return nil, output, nil
 }
 
-func (r *McpRouter) ContainerExec(ctx context.Context, req *mcp.CallToolRequest, in PlatformExecRequest) (*mcp.CallToolResult, PlatformResponse, error) {
+func (r *McpRouter) ContainerExec(ctx context.Context, req *mcp.CallToolRequest, in PlatformExecRequest) (*mcp.CallToolResult, RouterPlatformResponse, error) {
 	output, err := r.service.PlatformContainerExec(in)
 	if err != nil {
 		return nil, nil, err

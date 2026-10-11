@@ -85,7 +85,7 @@ func (r *HttpRouter) PostUploadCert(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostAddCert(context *gin.Context) {
-	var certRequest CertAddRequest
+	var certRequest RouterAddRequest
 	parseErr := context.ShouldBindJSON(&certRequest)
 	if parseErr != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": parseErr.Error()})

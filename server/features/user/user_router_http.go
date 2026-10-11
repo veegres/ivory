@@ -39,7 +39,7 @@ func (r *HttpRouter) PostUser(context *gin.Context) {
 }
 
 func (r *HttpRouter) PutUser(context *gin.Context) {
-	var request UpdateRequest
+	var request RouterUpdateRequest
 	if errBind := context.ShouldBindJSON(&request); errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
@@ -62,7 +62,7 @@ func (r *HttpRouter) DeleteUser(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostUserPassword(context *gin.Context) {
-	var request PasswordUpdateRequest
+	var request RouterPasswordUpdateRequest
 	if errBind := context.ShouldBindJSON(&request); errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
@@ -94,7 +94,7 @@ func (r *HttpRouter) DeleteUserPasswordReset(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostUserRegistrationVerify(context *gin.Context) {
-	var request RegistrationVerifyRequest
+	var request RouterRegistrationVerifyRequest
 	if errBind := context.ShouldBindJSON(&request); errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
@@ -108,7 +108,7 @@ func (r *HttpRouter) PostUserRegistrationVerify(context *gin.Context) {
 }
 
 func (r *HttpRouter) PostUserRegistrationPassword(context *gin.Context) {
-	var request RegistrationPasswordRequest
+	var request RouterRegistrationPasswordRequest
 	if errBind := context.ShouldBindJSON(&request); errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return

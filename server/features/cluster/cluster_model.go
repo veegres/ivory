@@ -135,6 +135,44 @@ type SearchCriteria struct {
 	Database *query.DbPlugin
 }
 
+// RouterNameRequest and RouterDeployRequest carry what the http route takes
+// from the url path. They exist because a tool's arguments are one typed
+// object and there is no path to read a name out of - not to restate a model.
+type RouterNameRequest struct {
+	Name string `json:"name" binding:"required" jsonschema:"name of the cluster as registered in Ivory"`
+}
+
+// RouterDeployRequest is DeployRequest with CommonConfig's inline credentials left
+// out: a deploy names vault entries instead, so no password passes through the
+// agent's context. Deploy refuses a vault id beside an inline pair anyway.
+type RouterDeployRequest struct {
+	Cluster  string              `json:"cluster" binding:"required" jsonschema:"name to register the new cluster under"`
+	Dcs      string              `json:"dcs,omitempty" jsonschema:"address of the coordination store the whole deployment registers with, substituted for {{dcs}}"`
+	Parallel bool                `json:"parallel,omitempty" jsonschema:"deploy every node at once instead of in order"`
+	Platform node.PlatformPlugin `json:"platform" binding:"required" jsonschema:"deployment target, e.g. docker"`
+	Nodes    []DeployNode        `json:"nodes" binding:"required" jsonschema:"one entry per node: its name, host, ssh/keeper/database ports, the command that deploys it and that command's post-scripts"`
+	Options  Options             `json:"options" jsonschema:"keeper and database plugins, TLS flags, certificates, tags, and the vault ids holding the ssh key and the keeper/database credentials"`
+}
+
+// RouterDeployResponse is its own type because Deploy answers two things at once: what
+// happened, and whether all of it worked. Complete is every node up and every
+// post-script run; a false here with no error is a partial deploy, and the
+// cluster is registered with all of its nodes either way.
+type RouterDeployResponse struct {
+	Logs     []string `json:"logs"`
+	Complete bool     `json:"complete"`
+}
+
+func (in RouterDeployRequest) toDeployRequest() DeployRequest {
+	return DeployRequest{
+		Parallel:       in.Parallel,
+		Nodes:          in.Nodes,
+		Platform:       in.Platform,
+		CommonConfig:   CommonConfig{Cluster: in.Cluster, Dcs: in.Dcs},
+		ClusterOptions: in.Options,
+	}
+}
+
 // SPECIFIC (SERVER)
 
 func mapKeeperResponse(r node.KeeperOneResponse) NodeConfig {

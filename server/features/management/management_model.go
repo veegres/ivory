@@ -9,9 +9,9 @@ import (
 
 // COMMON (WEB AND SERVER)
 
-type Response struct {
-	Response any `json:"response"`
-	Error    any `json:"error"`
+type RouterResponse struct {
+	RouterResponse any `json:"response"`
+	Error          any `json:"error"`
 }
 
 type AppInfo struct {
@@ -40,7 +40,7 @@ type UserInfo struct {
 	Permissions permission.PermissionMap `json:"permissions"`
 }
 
-type SecretUpdateRequest struct {
+type RouterSecretUpdateRequest struct {
 	PreviousKey string `json:"previousKey"`
 	NewKey      string `json:"newKey"`
 }

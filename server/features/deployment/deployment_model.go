@@ -201,3 +201,14 @@ func (r TemplateRequest) toTemplate(id uuid.UUID, createdAt int64) Template {
 		CreatedAt:   createdAt,
 	}
 }
+
+// RouterIdRequest and RouterUpdateRequest carry what the http routes
+// take from the url path. They exist because a tool has arguments and no path,
+// not to restate a model.
+type RouterIdRequest struct {
+	Id string `json:"id" binding:"required" jsonschema:"uuid of the template"`
+}
+type RouterUpdateRequest struct {
+	Id       string          `json:"id" binding:"required" jsonschema:"uuid of the template to overwrite; a shipped template's id is refused, they are read-only"`
+	Template TemplateRequest `json:"template" binding:"required" jsonschema:"the new template definition"`
+}

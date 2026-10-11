@@ -7,7 +7,7 @@ type SecretStatus struct {
 	Ref bool `json:"ref"`
 }
 
-type SecretSetRequest struct {
+type RouterSetRequest struct {
 	Key string `json:"key"`
 }
 
