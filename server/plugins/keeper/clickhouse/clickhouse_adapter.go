@@ -97,7 +97,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 		return nil, http.StatusBadRequest, errQueue
 	}
 
-	response := mapNode(request.Host, request.Port, absoluteDelay)
+	response := mapNode(request.Host, request.Port, absoluteDelay, isReadonly > 0)
 	response.Warnings = replicaWarnings(isReadonly > 0, activeReplicas, totalReplicas, stuckCount, sampleError)
 	response.Warnings = append(response.Warnings, membershipWarnings(request.Cluster, declared, errPeers)...)
 	return append([]keeper.Response{response}, peers...), http.StatusOK, nil
@@ -335,15 +335,22 @@ func mapPeer(host string, port int) keeper.Response {
 // mapNode reports a node that answered as running. A replica whose replicated
 // tables have gone read-only is still running - it serves reads - so that is a
 // warning rather than a state, the same call redis makes for a dead master link.
-func mapNode(host string, port int, absoluteDelay uint64) keeper.Response {
+// Its lag is unknown, though: a read-only replica never loaded its queue, so
+// clickhouse measures absolute_delay from a zero timestamp and reports the
+// current unix time.
+func mapNode(host string, port int, absoluteDelay uint64, readonly bool) keeper.Response {
 	var status keeper.Status = keeper.Active
 	key := host + ":" + strconv.Itoa(port)
+	lag := int64(absoluteDelay)
+	if readonly {
+		lag = -1
+	}
 	return keeper.Response{
 		Key:                  &key,
 		Status:               &status,
 		State:                keeper.StateRunning,
 		Role:                 keeper.Replica,
-		Lag:                  int64(absoluteDelay),
+		Lag:                  lag,
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,
