@@ -20,6 +20,7 @@ var ErrInvalidAuthorizationHeader = errors.New("invalid authorisation header")
 var ErrUsernameEmpty = errors.New("username cannot be empty")
 var ErrAlreadyAuthenticated = errors.New("you are already signed in")
 var ErrInvalidAuthType = errors.New("invalid auth type")
+var ErrSessionCannotMint = errors.New("a token issued from a session cannot issue another, sign in again")
 var ErrStateCookieNotFound = errors.New("state cookie not found")
 var ErrInvalidStateParameter = errors.New("invalid state parameter")
 
@@ -148,15 +149,7 @@ func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error)
 	return s.generateToken(username, OIDC)
 }
 
-// GenerateSessionToken issues a fresh token to somebody already holding a valid
-// one, for a client that cannot carry Ivory's cookie - an MCP client. The token
-// it hands back says it came from a session rather than from a login, so it is
-// told apart from the token that asked for it.
-//
-// What gets verified is the way the caller actually signed in, not what the new
-// token will say: nobody is registered for AuthSession, so a token already
-// marked that way is refused here, and a user deleted - or barred from this way
-// of signing in - since they signed in cannot mint past that gate either.
+// GenerateSessionToken mints a token from a login session, never from a minted one, so expiry stays the only revocation.
 func (s *Service) GenerateSessionToken(username string, callerType AuthType) (string, *time.Time, error) {
 	if len(s.GetSupportedTypes()) == 0 {
 		return "", nil, ErrAuthDisabled
@@ -164,10 +157,13 @@ func (s *Service) GenerateSessionToken(username string, callerType AuthType) (st
 	if username == "" {
 		return "", nil, ErrUsernameEmpty
 	}
+	if callerType == SESSION {
+		return "", nil, ErrSessionCannotMint
+	}
 	if err := s.userService.VerifySignIn(username, callerType); err != nil {
 		return "", nil, err
 	}
-	return s.tokenService.Generate(username, jwt.MapClaims{"frm": SESSION}, s.expiration)
+	return s.tokenService.Generate(username, jwt.MapClaims{"frm": SESSION, "aud": AudienceMcp}, s.expiration)
 }
 
 // generateToken is where a verified person becomes a session, and the last gate

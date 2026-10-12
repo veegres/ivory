@@ -18,6 +18,13 @@ const (
 	SESSION = user.AuthSession
 )
 
+// Audience is what a minted session token was issued for, carried in its aud claim.
+type Audience string
+
+const (
+	AudienceMcp Audience = "mcp"
+)
+
 // RouterTokenResponse is a freshly minted session token and the moment it dies.
 // It mirrors user.RegistrationResponse because it is the same kind of answer: a
 // token is shown once, when it is issued, and Ivory never stores it to show
