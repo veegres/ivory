@@ -1,8 +1,8 @@
 package basic
 
 type Login struct {
-	Username string `form:"username" json:"username,omitempty"`
-	Password string `form:"password" json:"password,omitempty"`
+	Username string `form:"username" json:"username,omitempty" binding:"required"`
+	Password string `form:"password" json:"password,omitempty" binding:"required"`
 }
 
 // Config carries no credentials on purpose: basic auth authenticates against

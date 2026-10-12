@@ -11,8 +11,8 @@ import (
 // COMMON (WEB AND SERVER)
 
 type KeeperConnection struct {
-	Host string `json:"host" form:"host"`
-	Port int    `json:"port" form:"port"`
+	Host string `json:"host" form:"host" binding:"required,notblank"`
+	Port int    `json:"port" form:"port" binding:"required,min=1,max=65535"`
 }
 
 // KeeperPlugin and KeeperStatus/KeeperRole/KeeperState are kept as aliases so
@@ -78,7 +78,7 @@ type KeeperOptions struct {
 	// Cluster is the name Ivory knows the cluster by, passed down so an adapter
 	// can ask its engine about that cluster specifically (see keeper.Request).
 	Cluster string       `json:"cluster" form:"cluster"`
-	Plugin  KeeperPlugin `json:"plugin" form:"plugin"`
+	Plugin  KeeperPlugin `json:"plugin" form:"plugin" binding:"required,valid"`
 	VaultId *uuid.UUID   `json:"vaultId" form:"vaultId"`
 	Certs   *cert.Certs  `json:"certs" form:"certs"`
 }
@@ -125,12 +125,12 @@ type PlatformMetrics struct {
 }
 
 type PlatformVaultConnection struct {
-	Host    string    `json:"host" form:"host" binding:"required"`
-	Port    int       `json:"port" form:"port" binding:"required"`
+	Host    string    `json:"host" form:"host" binding:"required,notblank"`
+	Port    int       `json:"port" form:"port" binding:"required,min=1,max=65535"`
 	VaultId uuid.UUID `json:"vaultId" form:"vaultId" binding:"required"`
 	// Platform selects the adapter; empty means DefaultPlatform, so clusters
 	// stored before platforms were selectable keep resolving.
-	Platform PlatformPlugin `json:"platform" form:"platform"`
+	Platform PlatformPlugin `json:"platform" form:"platform" binding:"omitempty,valid"`
 }
 
 // PlatformOrDefault resolves the adapter key, defaulting to DefaultPlatform.
@@ -142,11 +142,11 @@ func (c PlatformVaultConnection) PlatformOrDefault() PlatformPlugin {
 }
 
 type PlatformCredConnection struct {
-	Host     string         `json:"host" form:"host"`
-	Port     int            `json:"port" form:"port"`
-	Username string         `json:"username" form:"username"`
-	Password string         `json:"password" form:"password"`
-	Platform PlatformPlugin `json:"platform" form:"platform" binding:"required"`
+	Host     string         `json:"host" form:"host" binding:"required,notblank"`
+	Port     int            `json:"port" form:"port" binding:"required,min=1,max=65535"`
+	Username string         `json:"username" form:"username" binding:"required,notblank"`
+	Password string         `json:"password" form:"password" binding:"required"`
+	Platform PlatformPlugin `json:"platform" form:"platform" binding:"required,valid"`
 }
 
 type PlatformMetricsRequest = PlatformVaultConnection
@@ -155,7 +155,7 @@ type PlatformMetricsResponse = PlatformMetrics
 
 type PlatformCopyIdRequest struct {
 	PlatformCredConnection
-	PublicKey string `json:"publicKey"`
+	PublicKey string `json:"publicKey" binding:"required,notblank"`
 }
 
 // PlatformUpRequest is the low-level deployment primitive: Command is the
@@ -165,7 +165,7 @@ type PlatformCopyIdRequest struct {
 type PlatformUpRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
 	Vaults     Vaults                  `json:"vaults" form:"vaults" binding:"required"`
-	Command    string                  `json:"command" form:"command" binding:"required"`
+	Command    string                  `json:"command" form:"command" binding:"required,notblank"`
 	Values     keeper.Values           `json:"values" form:"values"`
 }
 
@@ -182,23 +182,23 @@ type Vaults struct {
 // a template interpolated with Values plus the vault credentials, like
 // PlatformUpRequest.
 type PlatformExecRequest struct {
-	Name       string                  `json:"name" binding:"required"`
+	Name       string                  `json:"name" binding:"required,notblank"`
 	Connection PlatformVaultConnection `json:"connection" binding:"required"`
 	Vaults     Vaults                  `json:"vaults" binding:"required"`
-	Command    string                  `json:"command" binding:"required"`
+	Command    string                  `json:"command" binding:"required,notblank"`
 	Values     keeper.Values           `json:"values"`
 }
 
 // KeeperDeployRequest deploys one node. It is deliberately flat: node owns no
 // node struct of its own, and Host/ssh port come from Connection.
 type KeeperDeployRequest struct {
-	Plugin      KeeperPlugin            `json:"plugin" form:"plugin" binding:"required"`
+	Plugin      KeeperPlugin            `json:"plugin" form:"plugin" binding:"required,valid"`
 	Cluster     string                  `json:"cluster" form:"cluster"`
 	Dcs         string                  `json:"dcs" form:"dcs"`
-	Name        string                  `json:"name" form:"name" binding:"required"`
-	KeeperPort  int                     `json:"keeperPort" form:"keeperPort"`
-	DbPort      int                     `json:"dbPort" form:"dbPort"`
-	Command     string                  `json:"command" form:"command" binding:"required"`
+	Name        string                  `json:"name" form:"name" binding:"required,notblank"`
+	KeeperPort  int                     `json:"keeperPort" form:"keeperPort" binding:"required,min=1,max=65535"`
+	DbPort      int                     `json:"dbPort" form:"dbPort" binding:"required,min=1,max=65535"`
+	Command     string                  `json:"command" form:"command" binding:"required,notblank"`
 	PostScripts []string                `json:"postScripts" form:"postScripts"`
 	Connection  PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
 	Vaults      Vaults                  `json:"vaults" form:"vaults" binding:"required"`
@@ -206,14 +206,14 @@ type KeeperDeployRequest struct {
 
 type PlatformLogsRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Path       string                  `json:"path" form:"path" binding:"required"`
-	Tail       int                     `json:"tail" form:"tail"`
+	Path       string                  `json:"path" form:"path" binding:"required,notblank"`
+	Tail       int                     `json:"tail" form:"tail" binding:"min=0"`
 	Follow     bool                    `json:"follow" form:"follow"`
 }
 
 type PlatformActionRequest struct {
 	Connection PlatformVaultConnection `json:"connection" form:"connection" binding:"required"`
-	Name       string                  `json:"name" form:"name" binding:"required"`
+	Name       string                  `json:"name" form:"name" binding:"required,notblank"`
 }
 
 type RouterPlatformResponse = []string

@@ -73,13 +73,13 @@ type RegistrationPayload struct {
 // registration opens. Setup is the one exception, and it goes through the
 // config feature instead.
 type CreateRequest struct {
-	Username  string     `json:"username" binding:"required"`
-	AuthTypes []AuthType `json:"authTypes" binding:"required"`
+	Username  string     `json:"username" binding:"required,notblank"`
+	AuthTypes []AuthType `json:"authTypes" binding:"required,min=1,dive,valid,ne=session"`
 	Superuser bool       `json:"superuser"`
 }
 
 type RouterUpdateRequest struct {
-	AuthTypes []AuthType `json:"authTypes" binding:"required"`
+	AuthTypes []AuthType `json:"authTypes" binding:"required,min=1,dive,valid,ne=session"`
 }
 
 type RouterPasswordUpdateRequest struct {

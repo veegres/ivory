@@ -40,7 +40,7 @@ type UserPermissions struct {
 // SPECIFIC (SERVER)
 
 type RouterPermissionRequest struct {
-	Permissions []config.Feature `json:"permissions" binding:"required"`
+	Permissions []config.Feature `json:"permissions" binding:"required,min=1,dive,valid"`
 }
 
 // UserPermissionsMap is a map where the key is username/email and value is the permissions map

@@ -7,11 +7,7 @@ import (
 )
 
 func (r *McpRouter) QueryLogGet(ctx context.Context, req *mcp.CallToolRequest, in RouterIdRequest) (*mcp.CallToolResult, []DbResponse, error) {
-	id, err := r.queryId(in.Id)
-	if err != nil {
-		return nil, nil, err
-	}
-	results, err := r.service.GetLog(id)
+	results, err := r.service.GetLog(in.Id)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -19,11 +15,7 @@ func (r *McpRouter) QueryLogGet(ctx context.Context, req *mcp.CallToolRequest, i
 }
 
 func (r *McpRouter) QueryLogDelete(ctx context.Context, req *mcp.CallToolRequest, in RouterIdRequest) (*mcp.CallToolResult, string, error) {
-	id, err := r.queryId(in.Id)
-	if err != nil {
-		return nil, "", err
-	}
-	if err := r.service.DeleteLog(id); err != nil {
+	if err := r.service.DeleteLog(in.Id); err != nil {
 		return nil, "", err
 	}
 	return nil, "deleted", nil

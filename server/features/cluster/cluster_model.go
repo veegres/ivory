@@ -21,15 +21,15 @@ type NodeConfig struct {
 	// every write (see Service.validateNodeNames). Host stays the connection
 	// identity that keeper-reported nodes are matched against, so the two are
 	// deliberately separate.
-	Name       string `json:"name" form:"name"`
-	Host       string `json:"host" form:"host"`
-	SshPort    *int   `json:"sshPort" form:"sshPort"`
-	KeeperPort *int   `json:"keeperPort" form:"keeperPort"`
-	DbPort     *int   `json:"dbPort" form:"dbPort"`
+	Name       string `json:"name" form:"name" binding:"required,notblank"`
+	Host       string `json:"host" form:"host" binding:"required,notblank"`
+	SshPort    *int   `json:"sshPort" form:"sshPort" binding:"omitempty,min=1,max=65535"`
+	KeeperPort *int   `json:"keeperPort" form:"keeperPort" binding:"omitempty,min=1,max=65535"`
+	DbPort     *int   `json:"dbPort" form:"dbPort" binding:"omitempty,min=1,max=65535"`
 }
 
 type Options struct {
-	Plugins Plugins    `json:"plugins"`
+	Plugins Plugins    `json:"plugins" binding:"required"`
 	Tls     Tls        `json:"tls"`
 	Certs   cert.Certs `json:"certs"`
 	Vaults  Vaults     `json:"vaults"`
@@ -37,8 +37,8 @@ type Options struct {
 }
 
 type Request struct {
-	Name  string       `json:"name"`
-	Nodes []NodeConfig `json:"nodes"`
+	Name  string       `json:"name" binding:"required,notblank"`
+	Nodes []NodeConfig `json:"nodes" binding:"required,min=1,dive"`
 	Options
 }
 
@@ -54,8 +54,8 @@ type Tls struct {
 }
 
 type Plugins struct {
-	Keeper   node.KeeperPlugin `json:"keeper"`
-	Database query.DbPlugin    `json:"database"`
+	Keeper   node.KeeperPlugin `json:"keeper" binding:"required,valid"`
+	Database query.DbPlugin    `json:"database" binding:"required,valid"`
 }
 
 type Vaults struct {
@@ -76,9 +76,9 @@ type Overview struct {
 }
 
 type CreateAutoRequest struct {
-	Name string `json:"name"`
-	Host string `json:"host"`
-	Port int    `json:"port"`
+	Name string `json:"name" binding:"required,notblank"`
+	Host string `json:"host" binding:"required,notblank"`
+	Port int    `json:"port" binding:"required,min=1,max=65535"`
 	Options
 }
 
@@ -87,8 +87,8 @@ type CreateAutoRequest struct {
 // keeper plugin.
 type DeployRequest struct {
 	Parallel       bool                `json:"parallel"`
-	Nodes          []DeployNode        `json:"nodes"`
-	Platform       node.PlatformPlugin `json:"platform"`
+	Nodes          []DeployNode        `json:"nodes" binding:"required,min=1,dive"`
+	Platform       node.PlatformPlugin `json:"platform" binding:"required,valid"`
 	CommonConfig   CommonConfig        `json:"commonConfig"`
 	ClusterOptions Options             `json:"clusterOptions"`
 }
@@ -97,12 +97,12 @@ type DeployRequest struct {
 // of one request only - the command is never persisted on the cluster.
 type DeployNode struct {
 	NodeConfig
-	Command     string   `json:"command"`
+	Command     string   `json:"command" binding:"required,notblank"`
 	PostScripts []string `json:"postScripts"`
 }
 
 type CommonConfig struct {
-	Cluster string `json:"cluster"`
+	Cluster string `json:"cluster" binding:"required,notblank"`
 	// Dcs is the address of the coordination store the whole deployment runs
 	// against, resolved into {{dcs}}. It is one answer for the cluster rather
 	// than a per-node field, and it is never stored on the cluster: like the
@@ -121,8 +121,8 @@ type CommonConfig struct {
 // passed through as-is. A nil/empty field is skipped (no restriction).
 type SearchRequest struct {
 	Tags     []string           `json:"tags,omitempty"`
-	Keeper   *node.KeeperPlugin `json:"keeper,omitempty"`
-	Database *query.DbPlugin    `json:"database,omitempty"`
+	Keeper   *node.KeeperPlugin `json:"keeper,omitempty" binding:"omitempty,valid"`
+	Database *query.DbPlugin    `json:"database,omitempty" binding:"omitempty,valid"`
 }
 
 // SearchCriteria narrows List down to matching clusters. A nil field is
@@ -139,19 +139,19 @@ type SearchCriteria struct {
 // from the url path. They exist because a tool's arguments are one typed
 // object and there is no path to read a name out of - not to restate a model.
 type RouterNameRequest struct {
-	Name string `json:"name" binding:"required" jsonschema:"name of the cluster as registered in Ivory"`
+	Name string `json:"name" binding:"required,notblank" jsonschema:"name of the cluster as registered in Ivory"`
 }
 
 // RouterDeployRequest is DeployRequest with CommonConfig's inline credentials left
 // out: a deploy names vault entries instead, so no password passes through the
 // agent's context. Deploy refuses a vault id beside an inline pair anyway.
 type RouterDeployRequest struct {
-	Cluster  string              `json:"cluster" binding:"required" jsonschema:"name to register the new cluster under"`
+	Cluster  string              `json:"cluster" binding:"required,notblank" jsonschema:"name to register the new cluster under"`
 	Dcs      string              `json:"dcs,omitempty" jsonschema:"address of the coordination store the whole deployment registers with, substituted for {{dcs}}"`
 	Parallel bool                `json:"parallel,omitempty" jsonschema:"deploy every node at once instead of in order"`
-	Platform node.PlatformPlugin `json:"platform" binding:"required" jsonschema:"deployment target, e.g. docker"`
-	Nodes    []DeployNode        `json:"nodes" binding:"required" jsonschema:"one entry per node: its name, host, ssh/keeper/database ports, the command that deploys it and that command's post-scripts"`
-	Options  Options             `json:"options" jsonschema:"keeper and database plugins, TLS flags, certificates, tags, and the vault ids holding the ssh key and the keeper/database credentials"`
+	Platform node.PlatformPlugin `json:"platform" binding:"required,valid" jsonschema:"deployment target, e.g. docker"`
+	Nodes    []DeployNode        `json:"nodes" binding:"required,min=1,dive" jsonschema:"one entry per node: its name, host, ssh/keeper/database ports, the command that deploys it and that command's post-scripts"`
+	Options  Options             `json:"options" binding:"required" jsonschema:"keeper and database plugins, TLS flags, certificates, tags, and the vault ids holding the ssh key and the keeper/database credentials"`
 }
 
 // RouterDeployResponse is its own type because Deploy answers two things at once: what

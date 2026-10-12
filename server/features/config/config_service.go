@@ -15,7 +15,6 @@ import (
 
 var ErrConfigNotSpecified = errors.New("config is not specified")
 var ErrConfigAlreadySet = errors.New("config is already set; to change it, you need to provide the correct secret")
-var ErrCompanyNameEmpty = errors.New("company name cannot be empty")
 var ErrSuperuserRequired = errors.New("a superuser is required to enable authentication")
 var ErrSuperuserPasswordRequired = errors.New("a superuser registered for basic auth needs a password")
 
@@ -133,9 +132,6 @@ func (s *Service) SetAppConfig(newAppConfig NewAppConfig) error {
 		return ErrConfigAlreadySet
 	}
 	appConfig := newAppConfig.AppConfig
-	if appConfig.Company == "" {
-		return ErrCompanyNameEmpty
-	}
 
 	errValid := s.setAuthConfig(appConfig.Auth)
 	if errValid != nil {

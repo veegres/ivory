@@ -1,12 +1,12 @@
 package node
 
 import (
-	"encoding/json"
 	"ivory/core/config"
 	"ivory/core/service/job"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type HttpRouter struct {
@@ -20,7 +20,7 @@ func NewHttpRouter(service *Service) *HttpRouter {
 func handleKeeperParamRequest[T any](context *gin.Context, action func(node KeeperOneRequest) (T, int, error)) {
 	query := context.Query("request")
 	var node KeeperOneRequest
-	errBind := json.Unmarshal([]byte(query), &node)
+	errBind := binding.JSON.BindBody([]byte(query), &node)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
@@ -51,7 +51,7 @@ func handleKeeperBodyRequest[T any](context *gin.Context, action func(node Keepe
 func handlePlatformParamRequest[R any, T any](context *gin.Context, action func(request R) (T, error)) {
 	query := context.Query("request")
 	var request R
-	errBind := json.Unmarshal([]byte(query), &request)
+	errBind := binding.JSON.BindBody([]byte(query), &request)
 	if errBind != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
 		return
@@ -86,7 +86,7 @@ func handleStreamRequest[R any](context *gin.Context, action func(request R, sub
 
 	query := context.Query("request")
 	var request R
-	if err := json.Unmarshal([]byte(query), &request); err != nil {
+	if err := binding.JSON.BindBody([]byte(query), &request); err != nil {
 		context.SSEvent(job.SERVER.String(), "Streaming failed: "+err.Error())
 		return
 	}

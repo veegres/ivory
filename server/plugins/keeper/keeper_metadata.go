@@ -54,7 +54,7 @@ type DeploymentTemplate struct {
 // DeploymentCommand is one node's deployment. It has no identity beyond its
 // position: which node it lands on is chosen at deploy time.
 type DeploymentCommand struct {
-	Command string `json:"command"`
+	Command string `json:"command" binding:"required,notblank"`
 	// PostScripts run inside the deployment once the batch is up, in order,
 	// each as its own execution. It is a list rather than one script because
 	// nothing may assume a shell: the images these run in are increasingly
@@ -84,9 +84,9 @@ type DeploymentCommand struct {
 type DeploymentCommandDefaults struct {
 	Name       string `json:"name"`
 	Host       string `json:"host"`
-	SshPort    int    `json:"sshPort"`
-	KeeperPort int    `json:"keeperPort"`
-	DbPort     int    `json:"dbPort"`
+	SshPort    int    `json:"sshPort" binding:"omitempty,min=1,max=65535"`
+	KeeperPort int    `json:"keeperPort" binding:"omitempty,min=1,max=65535"`
+	DbPort     int    `json:"dbPort" binding:"omitempty,min=1,max=65535"`
 }
 
 // DeploymentTemplateDefaults is what a template fills the deploy screen's

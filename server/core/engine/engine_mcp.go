@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	coreConfig "ivory/core/config"
+	"ivory/core/utils"
 	"ivory/features"
 	"ivory/features/permission"
+	"ivory/plugins/database"
+	"ivory/plugins/keeper"
+	"ivory/plugins/platform"
 	"net/http"
 	"reflect"
 	"strings"
@@ -84,6 +88,7 @@ func NewMcpServer(env *coreConfig.Environment, mr *features.McpRouter) gin.Handl
 // newMcpServer is the per-caller equivalent of the route table: it declares
 // every tool group, and each group drops the tools this caller may not call.
 func newMcpServer(ctx context.Context, mr *features.McpRouter, version string) *mcpsdk.Server {
+	utils.RegisterValidators()
 	r := &mcpRegistrar{
 		server: mcpsdk.NewServer(
 			&mcpsdk.Implementation{Name: mcpServerName, Version: version},
@@ -570,10 +575,25 @@ var (
 // mcpTypeSchemas corrects the types reflection cannot read off a Go type
 // alone. uuid.UUID is a [16]byte, so inference calls it an array, while it
 // marshals as a string - the SDK then rejects Ivory's own vault ids against
-// the schema it generated for them.
+// the schema it generated for them. The rich types list their legal values,
+// the same ones their Valid method accepts, so an agent reads them instead of
+// guessing.
 var mcpTypeSchemas = map[reflect.Type]*jsonschema.Schema{
-	reflect.TypeFor[uuid.UUID]():  {Type: "string"},
-	reflect.TypeFor[*uuid.UUID](): {Type: "string"},
+	reflect.TypeFor[uuid.UUID]():                      {Type: "string", Format: "uuid"},
+	reflect.TypeFor[keeper.PluginType]():              mcpEnum("string", keeper.PluginTypes),
+	reflect.TypeFor[database.PluginType]():            mcpEnum("string", database.PluginTypes),
+	reflect.TypeFor[platform.PluginType]():            mcpEnum("string", []platform.PluginType{platform.Docker}),
+	reflect.TypeFor[database.SystemChartType]():       mcpEnum("string", database.SystemChartTypes),
+	reflect.TypeFor[database.SystemRequestCategory](): mcpEnum("integer", []database.SystemRequestCategory{database.BLOAT, database.ACTIVITY, database.REPLICATION, database.STATISTIC, database.OTHER}),
+	reflect.TypeFor[database.SystemRequestVariety]():  mcpEnum("integer", []database.SystemRequestVariety{database.DatabaseSensitive, database.MasterOnly, database.ReplicaRecommended}),
+}
+
+func mcpEnum[T any](schemaType string, values []T) *jsonschema.Schema {
+	enum := make([]any, 0, len(values))
+	for _, value := range values {
+		enum = append(enum, value)
+	}
+	return &jsonschema.Schema{Type: schemaType, Enum: enum}
 }
 
 // mcpSchemas and mcpResolvedSchemas exist because a stateless server is built

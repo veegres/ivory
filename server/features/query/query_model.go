@@ -48,12 +48,12 @@ const (
 )
 
 type Request struct {
-	Name        string        `json:"name"`
-	Type        *Type         `json:"type"`
-	Plugin      DbPlugin      `json:"plugin"`
+	Name        string        `json:"name" binding:"required,notblank"`
+	Type        *Type         `json:"type" binding:"required,valid"`
+	Plugin      DbPlugin      `json:"plugin" binding:"omitempty,valid"`
 	Description *string       `json:"description"`
-	Query       string        `json:"query"`
-	Varieties   []VarietyType `json:"varieties"`
+	Query       string        `json:"query" binding:"required,notblank"`
+	Varieties   []VarietyType `json:"varieties" binding:"dive,valid"`
 	Params      []string      `json:"params"`
 }
 
@@ -74,53 +74,53 @@ type Response struct {
 type DbPlugin = database.PluginType
 
 type DbConfig struct {
-	Plugin DbPlugin `json:"plugin"`
-	Host   string   `json:"host"`
-	Port   int      `json:"port"`
+	Plugin DbPlugin `json:"plugin" binding:"required,valid"`
+	Host   string   `json:"host" binding:"required,notblank"`
+	Port   int      `json:"port" binding:"required,min=1,max=65535"`
 	Name   *string  `json:"name"`
 	Schema *string  `json:"schema"`
 }
 
 type Connection struct {
-	Db      DbConfig    `json:"db"`
+	Db      DbConfig    `json:"db" binding:"required"`
 	Certs   *cert.Certs `json:"certs"`
 	VaultId *uuid.UUID  `json:"vaultId"`
 }
 
 type RouterTemplateRequest struct {
-	Connection Connection `json:"connection"`
+	Connection Connection `json:"connection" binding:"required"`
 	Options    *DbOptions `json:"options"`
-	QueryUuid  *uuid.UUID `json:"queryUuid"`
+	QueryUuid  uuid.UUID  `json:"queryUuid" binding:"required"`
 }
 
 type RouterConsoleRequest struct {
-	Connection Connection `json:"connection"`
+	Connection Connection `json:"connection" binding:"required"`
 	Options    *DbOptions `json:"options"`
-	Query      string     `json:"query" binding:"required"`
+	Query      string     `json:"query" binding:"required,notblank"`
 }
 
 type RouterKillRequest struct {
-	Connection Connection `json:"connection"`
-	Pid        int        `json:"pid"`
+	Connection Connection `json:"connection" binding:"required"`
+	Pid        int        `json:"pid" binding:"required,min=1"`
 }
 
 type RouterChartRequest struct {
-	Connection Connection `json:"connection"`
-	Type       ChartType  `json:"type"`
+	Connection Connection `json:"connection" binding:"required"`
+	Type       ChartType  `json:"type" binding:"required,valid"`
 }
 
 type RouterDatabasesRequest struct {
-	Connection Connection `json:"connection"`
+	Connection Connection `json:"connection" binding:"required"`
 	Name       string     `json:"name"`
 }
 
 type RouterSchemasRequest struct {
-	Connection Connection `json:"connection"`
+	Connection Connection `json:"connection" binding:"required"`
 	Name       string     `json:"name"`
 }
 
 type RouterTablesRequest struct {
-	Connection Connection `json:"connection"`
+	Connection Connection `json:"connection" binding:"required"`
 	Schema     string     `json:"schema"`
 	Name       string     `json:"name"`
 }
@@ -152,15 +152,15 @@ type DbResponse struct {
 }
 
 type RouterListRequest struct {
-	Type   *Type     `json:"type,omitempty" jsonschema:"only queries of this category"`
-	Plugin *DbPlugin `json:"plugin,omitempty" jsonschema:"only queries for this database engine"`
+	Type   *Type     `json:"type,omitempty" form:"type" binding:"omitempty,valid" jsonschema:"only queries of this category"`
+	Plugin *DbPlugin `json:"plugin,omitempty" form:"plugin" binding:"omitempty,valid" jsonschema:"only queries for this database engine"`
 }
 type RouterIdRequest struct {
-	Id string `json:"id" binding:"required" jsonschema:"uuid of the saved query"`
+	Id uuid.UUID `json:"id" binding:"required" jsonschema:"uuid of the saved query"`
 }
 type RouterUpdateRequest struct {
-	Id    string  `json:"id" binding:"required" jsonschema:"uuid of the saved query to overwrite"`
-	Query Request `json:"query" binding:"required" jsonschema:"the new query definition"`
+	Id    uuid.UUID `json:"id" binding:"required" jsonschema:"uuid of the saved query to overwrite"`
+	Query Request   `json:"query" binding:"required" jsonschema:"the new query definition"`
 }
 
 // SPECIFIC (SERVER)

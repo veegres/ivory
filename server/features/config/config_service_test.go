@@ -105,17 +105,6 @@ func TestServiceGetIsConfiguredInitiallyFalse(t *testing.T) {
 	}
 }
 
-func TestServiceSetAppConfigValidation(t *testing.T) {
-	env := createTestConfigService(t)
-
-	t.Run("empty company name is rejected", func(t *testing.T) {
-		err := env.service.SetAppConfig(NewAppConfig{AppConfig: AppConfig{Company: ""}})
-		if err != ErrCompanyNameEmpty {
-			t.Fatalf("expected ErrCompanyNameEmpty, got %v", err)
-		}
-	})
-}
-
 func TestServiceSetAppConfigSuperuser(t *testing.T) {
 	t.Run("switching authentication on without a superuser is refused", func(t *testing.T) {
 		env := createTestConfigService(t)

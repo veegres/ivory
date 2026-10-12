@@ -23,11 +23,7 @@ func (r *McpRouter) QueryCreate(ctx context.Context, req *mcp.CallToolRequest, i
 }
 
 func (r *McpRouter) QueryUpdate(ctx context.Context, req *mcp.CallToolRequest, in RouterUpdateRequest) (*mcp.CallToolResult, *Response, error) {
-	id, err := r.queryId(in.Id)
-	if err != nil {
-		return nil, nil, err
-	}
-	_, updated, err := r.service.Update(id, in.Query)
+	_, updated, err := r.service.Update(in.Id, in.Query)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -35,11 +31,7 @@ func (r *McpRouter) QueryUpdate(ctx context.Context, req *mcp.CallToolRequest, i
 }
 
 func (r *McpRouter) QueryDelete(ctx context.Context, req *mcp.CallToolRequest, in RouterIdRequest) (*mcp.CallToolResult, string, error) {
-	id, err := r.queryId(in.Id)
-	if err != nil {
-		return nil, "", err
-	}
-	if err := r.service.Delete(id); err != nil {
+	if err := r.service.Delete(in.Id); err != nil {
 		return nil, "", err
 	}
 	return nil, "deleted", nil

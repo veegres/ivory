@@ -68,10 +68,6 @@ func (s *Service) PlatformSystemLogs(r PlatformLogsRequest, subscriberID job.Sub
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
 		return
 	}
-	if r.Path == "" {
-		send(job.Message{Type: job.SERVER, Message: "path cannot be empty"})
-		return
-	}
 	s.streamCommand(plugin.Logs(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)
 }
 
@@ -214,10 +210,6 @@ func (s *Service) PlatformContainerLogs(r PlatformLogsRequest, subscriberID job.
 	plugin, conn, err := s.getPlatformPlugin(r.Connection)
 	if err != nil {
 		send(job.Message{Type: job.SERVER, Message: err.Error()})
-		return
-	}
-	if r.Path == "" {
-		send(job.Message{Type: job.SERVER, Message: "path cannot be empty"})
 		return
 	}
 	s.streamCommand(plugin.LogsContainer(conn, r.Path, r.Tail, r.Follow), subscriberID, close, send)

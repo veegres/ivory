@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"crypto/tls"
+	"slices"
 )
 
 // COMMON (WEB AND SERVER)
@@ -19,8 +20,14 @@ const (
 	NATIVE_MONGO      PluginType = "native_mongo"
 )
 
+var PluginTypes = []PluginType{PATRONI_POSTGRES, NATIVE_POSTGRES, NATIVE_ETCD, NATIVE_REDIS, NATIVE_CLICKHOUSE, NATIVE_ZOOKEEPER, NATIVE_MONGO}
+
 func (p PluginType) String() string {
 	return string(p)
+}
+
+func (p PluginType) Valid() bool {
+	return slices.Contains(PluginTypes, p)
 }
 
 // Status reports whether a keeper is actively managing failover/switchover

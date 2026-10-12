@@ -28,9 +28,13 @@ const (
 	CLIENT_KEY
 )
 
+func (t CertType) Valid() bool {
+	return t >= CLIENT_CA && t <= CLIENT_KEY
+}
+
 type RouterAddRequest struct {
-	Path string   `json:"path"`
-	Type CertType `json:"type"`
+	Path string   `json:"path" binding:"required,notblank"`
+	Type CertType `json:"type" binding:"valid"`
 }
 
 type Certs struct {

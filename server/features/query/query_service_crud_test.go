@@ -160,6 +160,12 @@ func TestServiceUpdateSystemQueryRestrictions(t *testing.T) {
 		}
 	})
 
+	t.Run("leaving the type and description out does not panic", func(t *testing.T) {
+		if _, _, err := s.Update(*id, Request{Name: "sys-query", Query: "select 2"}); err != ErrDescriptionChangeNotAllowed {
+			t.Fatalf("expected ErrDescriptionChangeNotAllowed, got %v", err)
+		}
+	})
+
 	t.Run("custom query text can still be updated", func(t *testing.T) {
 		_, updated, errUpdate := s.Update(*id, Request{Name: "sys-query", Type: &bloatType, Description: &desc, Query: "select 2"})
 		if errUpdate != nil {

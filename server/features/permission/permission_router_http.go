@@ -78,10 +78,6 @@ func (r *HttpRouter) RequestUserPermission(context *gin.Context) {
 
 func (r *HttpRouter) ApproveUserPermission(context *gin.Context) {
 	username := context.Param("username")
-	if username == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
-		return
-	}
 
 	var request RouterPermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
@@ -100,10 +96,6 @@ func (r *HttpRouter) ApproveUserPermission(context *gin.Context) {
 
 func (r *HttpRouter) RejectUserPermission(context *gin.Context) {
 	username := context.Param("username")
-	if username == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
-		return
-	}
 
 	var request RouterPermissionRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
@@ -122,10 +114,6 @@ func (r *HttpRouter) RejectUserPermission(context *gin.Context) {
 
 func (r *HttpRouter) DeleteUserPermissions(context *gin.Context) {
 	username := context.Param("username")
-	if username == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "username is required"})
-		return
-	}
 
 	err := r.permissionService.DeleteUserPermissions(username)
 	if err != nil {

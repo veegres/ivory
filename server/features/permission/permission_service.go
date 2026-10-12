@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"ivory/clients/storage"
 	"ivory/core/config"
-	"slices"
 	"sort"
 )
 
@@ -121,10 +120,6 @@ func (s *Service) UpdateUserPermissions(username string, permissions PermissionM
 	return s.permissionRepository.CreateOrUpdate(username, permissions)
 }
 
-func (s *Service) isValidFeature(feature config.Feature) bool {
-	return slices.Contains(config.All, feature)
-}
-
 func (s *Service) getAllPermissionsWithStatus(status Status) PermissionMap {
 	permissions := make(PermissionMap)
 	for _, feature := range config.All {
@@ -148,7 +143,7 @@ func (s *Service) updateUserPermission(username string, feature config.Feature, 
 	if username == "" {
 		return ErrUsernameCannotBeEmpty
 	}
-	if !s.isValidFeature(feature) {
+	if !feature.Valid() {
 		return ErrInvalidFeature
 	}
 

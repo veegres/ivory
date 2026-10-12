@@ -1,8 +1,12 @@
 package cluster
 
 import (
+	"ivory/core/utils"
 	"ivory/features/node"
+	"strings"
 	"testing"
+
+	"github.com/gin-gonic/gin/binding"
 )
 
 // TestWithNodeNamesDisambiguatesSharedHosts covers a cluster stored before
@@ -164,5 +168,84 @@ func TestMapKeeperResponseMapIsOrdered(t *testing.T) {
 				t.Errorf("port %d: expected name %q, got %q", *n.KeeperPort, name, n.Name)
 			}
 		}
+	}
+}
+
+// TestRequestBinding covers the shape rules the request types state in their
+// binding tags, which every route and tool runs before a service sees them.
+func TestRequestBinding(t *testing.T) {
+	zero, outOfRange := 0, 70000
+
+	validRequest := func() Request {
+		return Request{
+			Name:    "prod",
+			Nodes:   []NodeConfig{{Name: "pg1", Host: "10.0.0.1"}},
+			Options: Options{Plugins: Plugins{Keeper: "patroni_postgres", Database: "postgres"}},
+		}
+	}
+
+	tests := []struct {
+		name   string
+		modify func(r *Request)
+		want   string
+	}{
+		{name: "a complete request passes", modify: func(r *Request) {}},
+		{name: "ports may be left out", modify: func(r *Request) { r.Nodes[0].SshPort = nil }},
+		{name: "cluster name is required", modify: func(r *Request) { r.Name = " " }, want: "'Request.Name' Error:Field validation for 'Name' failed on the 'notblank' tag"},
+		{name: "at least one node", modify: func(r *Request) { r.Nodes = []NodeConfig{} }, want: "'Request.Nodes' Error:Field validation for 'Nodes' failed on the 'min' tag"},
+		{name: "a node names itself", modify: func(r *Request) { r.Nodes[0].Name = "" }, want: "'Request.Nodes[0].Name' Error:Field validation for 'Name' failed on the 'required' tag"},
+		{name: "a node names its host", modify: func(r *Request) { r.Nodes[0].Host = "" }, want: "'Request.Nodes[0].Host' Error:Field validation for 'Host' failed on the 'required' tag"},
+		{name: "a stated port must be a port", modify: func(r *Request) { r.Nodes[0].DbPort = &outOfRange }, want: "'Request.Nodes[0].DbPort' Error:Field validation for 'DbPort' failed on the 'max' tag"},
+		{name: "a stated zero port is refused", modify: func(r *Request) { r.Nodes[0].KeeperPort = &zero }, want: "'Request.Nodes[0].KeeperPort' Error:Field validation for 'KeeperPort' failed on the 'min' tag"},
+		{name: "unknown keeper plugin", modify: func(r *Request) { r.Plugins.Keeper = "pgpool" }, want: "'Request.Options.Plugins.Keeper' Error:Field validation for 'Keeper' failed on the 'valid' tag"},
+		{name: "database plugin is required", modify: func(r *Request) { r.Plugins.Database = "" }, want: "'Request.Options.Plugins.Database' Error:Field validation for 'Database' failed on the 'required' tag"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			request := validRequest()
+			test.modify(&request)
+			assertBinding(t, &request, test.want)
+		})
+	}
+}
+
+// TestDeployRequestBinding holds what Deploy used to check by hand before it
+// started: a cluster name, at least one node, and a platform it knows.
+func TestDeployRequestBinding(t *testing.T) {
+	tests := []struct {
+		name   string
+		modify func(r *DeployRequest)
+		want   string
+	}{
+		{name: "a complete request passes", modify: func(r *DeployRequest) {}},
+		{name: "cluster name not provided", modify: func(r *DeployRequest) { r.CommonConfig.Cluster = "" }, want: "'DeployRequest.CommonConfig.Cluster' Error:Field validation for 'Cluster' failed on the 'required' tag"},
+		{name: "no nodes provided", modify: func(r *DeployRequest) { r.Nodes = nil }, want: "'DeployRequest.Nodes' Error:Field validation for 'Nodes' failed on the 'required' tag"},
+		{name: "platform not provided", modify: func(r *DeployRequest) { r.Platform = "" }, want: "'DeployRequest.Platform' Error:Field validation for 'Platform' failed on the 'required' tag"},
+		{name: "unknown platform", modify: func(r *DeployRequest) { r.Platform = "k8s" }, want: "'DeployRequest.Platform' Error:Field validation for 'Platform' failed on the 'valid' tag"},
+		{name: "blank command", modify: func(r *DeployRequest) { r.Nodes[0].Command = "  " }, want: "'DeployRequest.Nodes[0].Command' Error:Field validation for 'Command' failed on the 'notblank' tag"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			request := validDeployRequest()
+			test.modify(&request)
+			assertBinding(t, &request, test.want)
+		})
+	}
+}
+
+func assertBinding(t *testing.T, request any, want string) {
+	t.Helper()
+	utils.RegisterValidators()
+	err := binding.Validator.ValidateStruct(request)
+	if want == "" {
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		return
+	}
+	if err == nil || !strings.Contains(err.Error(), want) {
+		t.Fatalf("expected an error containing %q, got %v", want, err)
 	}
 }
