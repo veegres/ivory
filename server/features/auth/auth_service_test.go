@@ -326,7 +326,7 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 	t.Run("the minted token says it came from a session", func(t *testing.T) {
 		s := createTestAuthService(t)
 
-		minted, exp, err := s.GenerateSessionToken("admin", BASIC)
+		minted, exp, err := s.GenerateSessionToken("admin", BASIC, time.Hour)
 		if err != nil {
 			t.Fatalf("expected a token, got %v", err)
 		}
@@ -346,10 +346,22 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 		}
 	})
 
+	t.Run("the minted token lives as long as it was asked to", func(t *testing.T) {
+		s := createTestAuthService(t)
+
+		_, exp, err := s.GenerateSessionToken("admin", BASIC, 30*24*time.Hour)
+		if err != nil {
+			t.Fatalf("expected a token, got %v", err)
+		}
+		if remaining := time.Until(*exp); remaining < 30*24*time.Hour-time.Minute || remaining > 30*24*time.Hour {
+			t.Fatalf("expected the token to live 30 days, got %v", remaining)
+		}
+	})
+
 	t.Run("the minted token says it was issued for mcp", func(t *testing.T) {
 		s := createTestAuthService(t)
 
-		minted, _, err := s.GenerateSessionToken("admin", BASIC)
+		minted, _, err := s.GenerateSessionToken("admin", BASIC, time.Hour)
 		if err != nil {
 			t.Fatalf("expected a token, got %v", err)
 		}
@@ -382,7 +394,7 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 	t.Run("a session token cannot mint another", func(t *testing.T) {
 		s := createTestAuthService(t)
 
-		if _, _, err := s.GenerateSessionToken("admin", SESSION); err != ErrSessionCannotMint {
+		if _, _, err := s.GenerateSessionToken("admin", SESSION, time.Hour); err != ErrSessionCannotMint {
 			t.Fatalf("expected ErrSessionCannotMint, got %v", err)
 		}
 	})
@@ -392,7 +404,7 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 		s := createTestAuthServiceWith(t, users)
 		delete(users.authTypes, "admin")
 
-		if _, _, err := s.GenerateSessionToken("admin", BASIC); err == nil {
+		if _, _, err := s.GenerateSessionToken("admin", BASIC, time.Hour); err == nil {
 			t.Fatalf("expected a deleted user to be refused")
 		}
 	})
@@ -402,7 +414,7 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 		users.authTypes["admin"] = []user.AuthType{user.AuthLdap}
 		s := createTestAuthServiceWith(t, users)
 
-		if _, _, err := s.GenerateSessionToken("admin", BASIC); err == nil {
+		if _, _, err := s.GenerateSessionToken("admin", BASIC, time.Hour); err == nil {
 			t.Fatalf("expected a user without basic to be refused")
 		}
 	})
@@ -410,7 +422,7 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 	t.Run("an empty username is refused", func(t *testing.T) {
 		s := createTestAuthService(t)
 
-		if _, _, err := s.GenerateSessionToken("", BASIC); err != ErrUsernameEmpty {
+		if _, _, err := s.GenerateSessionToken("", BASIC, time.Hour); err != ErrUsernameEmpty {
 			t.Fatalf("expected ErrUsernameEmpty, got %v", err)
 		}
 	})
@@ -419,8 +431,80 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 		s := createTestAuthService(t)
 		unconfigured := NewService(s.tokenService, basic.NewProvider(newFakeUsers()), ldap.NewProvider(), oidc.NewProvider(), s.userService)
 
-		if _, _, err := unconfigured.GenerateSessionToken("admin", BASIC); err != ErrAuthDisabled {
+		if _, _, err := unconfigured.GenerateSessionToken("admin", BASIC, time.Hour); err != ErrAuthDisabled {
 			t.Fatalf("expected ErrAuthDisabled, got %v", err)
+		}
+	})
+}
+
+// TestServiceRefreshToken covers the browser cookie renewing itself: a login
+// token is renewed in the last half of its life, and a minted one never is.
+func TestServiceRefreshToken(t *testing.T) {
+	t.Run("a fresh login token is not renewed yet", func(t *testing.T) {
+		s := createTestAuthService(t)
+		raw, _, err := s.tokenService.Generate("admin", jwt.MapClaims{"frm": BASIC}, time.Hour)
+		if err != nil {
+			t.Fatalf("failed to generate token: %v", err)
+		}
+
+		renewed, exp, errRefresh := s.RefreshToken(raw)
+		if errRefresh != nil || renewed != "" || exp != nil {
+			t.Fatalf("expected no renewal, got %q %v %v", renewed, exp, errRefresh)
+		}
+	})
+
+	t.Run("a login token in the last half of its life is renewed with the same identity", func(t *testing.T) {
+		s := createTestAuthService(t)
+		raw, _, err := s.tokenService.Generate("admin", jwt.MapClaims{"frm": BASIC}, 10*time.Minute)
+		if err != nil {
+			t.Fatalf("failed to generate token: %v", err)
+		}
+
+		renewed, exp, errRefresh := s.RefreshToken(raw)
+		if errRefresh != nil || renewed == "" {
+			t.Fatalf("expected a renewed token, got %q %v", renewed, errRefresh)
+		}
+		if exp == nil || time.Until(*exp) < s.expiration-time.Minute {
+			t.Fatalf("expected a full lifetime on the renewed token, got %v", exp)
+		}
+		valid, username, authType, errParse := s.ParseAuthToken(renewed, nil)
+		if !valid || errParse != nil || username != "admin" || authType == nil || *authType != BASIC {
+			t.Fatalf("expected admin/basic, got valid=%v user=%q type=%v err=%v", valid, username, authType, errParse)
+		}
+	})
+
+	t.Run("a minted session token is never renewed", func(t *testing.T) {
+		s := createTestAuthService(t)
+		raw, _, err := s.tokenService.Generate("admin", jwt.MapClaims{"frm": SESSION}, time.Minute)
+		if err != nil {
+			t.Fatalf("failed to generate token: %v", err)
+		}
+
+		renewed, exp, errRefresh := s.RefreshToken(raw)
+		if errRefresh != nil || renewed != "" || exp != nil {
+			t.Fatalf("expected no renewal, got %q %v %v", renewed, exp, errRefresh)
+		}
+	})
+
+	t.Run("a user deleted since they signed in is not renewed", func(t *testing.T) {
+		users := newFakeUsers()
+		s := createTestAuthServiceWith(t, users)
+		raw, _, err := s.tokenService.Generate("admin", jwt.MapClaims{"frm": BASIC}, time.Minute)
+		if err != nil {
+			t.Fatalf("failed to generate token: %v", err)
+		}
+		delete(users.authTypes, "admin")
+
+		if renewed, _, errRefresh := s.RefreshToken(raw); errRefresh == nil || renewed != "" {
+			t.Fatalf("expected a deleted user to be refused, got %q %v", renewed, errRefresh)
+		}
+	})
+
+	t.Run("an invalid token is refused", func(t *testing.T) {
+		s := createTestAuthService(t)
+
+		if _, _, errRefresh := s.RefreshToken("not-a-token"); errRefresh == nil {
+			t.Fatalf("expected an error")
 		}
 	})
 }

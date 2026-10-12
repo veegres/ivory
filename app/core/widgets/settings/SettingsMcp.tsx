@@ -1,4 +1,4 @@
-import {Box, Button, FormControl, InputLabel, MenuItem, Select} from "@mui/material"
+import {Box, FormControl, InputLabel, MenuItem, Select, ToggleButton, Tooltip} from "@mui/material"
 import {useState} from "react"
 
 import {useRouterAuthToken} from "../../../features/auth/api/AuthHook"
@@ -6,6 +6,7 @@ import {useRouterInfo} from "../../../features/management/api/ManagementHook"
 import {AlertAlign} from "../../../shared/component/box/AlertAlign"
 import {CopyField} from "../../../shared/component/box/CopyField"
 import {TitleBox} from "../../../shared/component/box/TitleBox"
+import {SimpleButton} from "../../../shared/component/button/SimpleButton"
 import {CodeField} from "../../../shared/component/input/CodeField"
 import {SxPropsMap} from "../../../shared/helper/HelperType"
 import {buildRouteUrl} from "../../../shared/helper/HelperUrl"
@@ -14,8 +15,21 @@ import {DateTimeFormatter} from "../../../shared/helper/HelperUtils"
 const SX: SxPropsMap = {
     scroll: {display: "flex", flexDirection: "column", padding: "0px 15px", gap: 2},
     section: {display: "flex", flexDirection: "column", gap: 1, padding: "4px 6px"},
-    action: {display: "flex", justifyContent: "center"},
+    row: {display: "flex", alignItems: "center", gap: 1},
+    toggles: {display: "flex", alignItems: "center", gap: 0.5},
+    toggle: {whiteSpace: "nowrap"},
+    grow: {flexGrow: 1, minWidth: "150px"},
 }
+
+const HOUR = 60 * 60
+const DAY = 24 * HOUR
+const EXPIRATIONS = [
+    {label: "1h", description: "Expires in 1 hour", value: HOUR},
+    {label: "6h", description: "Expires in 6 hours", value: 6 * HOUR},
+    {label: "1d", description: "Expires in 1 day", value: DAY},
+    {label: "15d", description: "Expires in 15 days", value: 15 * DAY},
+    {label: "30d", description: "Expires in 30 days", value: 30 * DAY},
+]
 
 // TOKEN_PLACEHOLDER stands in the config until a token has been generated. It
 // is the same {{...}} shape a deployment command uses for a value nobody has
@@ -181,6 +195,7 @@ export function SettingsMcp() {
     const info = useRouterInfo(false)
     const token = useRouterAuthToken()
     const [client, setClient] = useState<ClientKey>("claude-code")
+    const [expiresIn, setExpiresIn] = useState(HOUR)
     const authEnabled = (info.data?.auth.supported.length ?? 0) > 0
     const url = buildRouteUrl("/api/mcp")
     const entry = getClient()
@@ -229,12 +244,47 @@ export function SettingsMcp() {
     }
 
     function renderTokenButton() {
-        return (
-            <Box sx={SX.action}>
-                <Button variant={"outlined"} loading={token.isPending} onClick={handleGenerate}>
-                    Generate token
-                </Button>
+        return (<>
+            <Box sx={SX.row}>
+                <Box sx={SX.toggles}>{EXPIRATIONS.map(renderExpiration)}</Box>
+                <Box sx={SX.grow}>
+                    <SimpleButton
+                        fullWidth={true}
+                        variant={"contained"}
+                        color={"primary"}
+                        loading={token.isPending}
+                        onClick={handleGenerate}
+                    >
+                        Generate token
+                    </SimpleButton>
+                </Box>
             </Box>
+            <AlertAlign align={"justify"} severity={"info"} text={renderExpirationHint()}/>
+        </>)
+    }
+
+    function renderExpirationHint() {
+        return (<>
+            Ivory <b>cannot revoke</b> a token once it is issued - it stays valid until it expires, even
+            if it leaks. Choose the <b>shortest expiration</b> your agent needs, and be cautious with the
+            longer ones.
+        </>)
+    }
+
+    function renderExpiration(option: typeof EXPIRATIONS[number]) {
+        return (
+            <Tooltip key={option.value} title={option.description} placement={"top"} arrow disableInteractive>
+                <Box component={"span"}>
+                    <ToggleButton
+                        sx={SX.toggle}
+                        value={option.value}
+                        selected={expiresIn === option.value}
+                        onClick={() => setExpiresIn(option.value)}
+                    >
+                        {option.label}
+                    </ToggleButton>
+                </Box>
+            </Tooltip>
         )
     }
 
@@ -296,7 +346,7 @@ export function SettingsMcp() {
     }
 
     function handleGenerate() {
-        token.mutate()
+        token.mutate({expiresIn})
     }
 
     function getClient() {

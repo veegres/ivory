@@ -7,6 +7,7 @@ import (
 	"ivory/clients/auth/oidc"
 	"ivory/core/config"
 	"ivory/features/user"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -89,6 +90,9 @@ func (r *HttpRouter) ValidateWithContextMiddleware() gin.HandlerFunc {
 		context.Set(config.AuthContextKey.Enabled, true)
 		valid, username, authType, errParse := r.resolveAuth(context)
 		context.Set(config.AuthContextKey.Authorised, valid)
+		if valid && errParse == nil {
+			r.refreshCookieToken(context)
+		}
 		if errors.Is(errParse, ErrAuthDisabled) {
 			context.Set(config.AuthContextKey.Enabled, false)
 		} else {
@@ -109,6 +113,28 @@ func (r *HttpRouter) resolveAuth(context *gin.Context) (bool, string, *AuthType,
 	headerToken, errHeader := r.getHeaderToken(context)
 	cookieToken, errCookie := r.getCookieToken(context)
 	return r.authService.ParseAuthTokenWithFallback(headerToken, errHeader, cookieToken, errCookie)
+}
+
+// refreshCookieToken renews only a token that arrived in the cookie; one sent in the header is never touched.
+func (r *HttpRouter) refreshCookieToken(context *gin.Context) {
+	headerToken, errHeader := r.getHeaderToken(context)
+	if errHeader == nil {
+		if valid, _, _, _ := r.authService.ParseAuthToken(headerToken, nil); valid {
+			return
+		}
+	}
+	cookieToken, errCookie := r.getCookieToken(context)
+	if errCookie != nil {
+		return
+	}
+	token, exp, errRefresh := r.authService.RefreshToken(cookieToken)
+	if errRefresh != nil {
+		slog.Warn("failed to refresh the session cookie", "error", errRefresh)
+		return
+	}
+	if token != "" {
+		r.setCookieToken(context, token, exp)
+	}
 }
 
 func (r *HttpRouter) getHeaderToken(context *gin.Context) (string, error) {
@@ -304,8 +330,14 @@ func (r *HttpRouter) setCookieState(context *gin.Context, value string) {
 func (r *HttpRouter) PostAuthToken(context *gin.Context) {
 	username := context.GetString(config.AuthContextKey.Username)
 	callerType := AuthType(context.GetString(config.AuthContextKey.Type))
+	var request RouterTokenRequest
+	if errBind := context.ShouldBindJSON(&request); errBind != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": errBind.Error()})
+		return
+	}
 
-	token, exp, errToken := r.authService.GenerateSessionToken(username, callerType)
+	expiration := time.Duration(request.ExpiresIn) * time.Second
+	token, exp, errToken := r.authService.GenerateSessionToken(username, callerType, expiration)
 	if errToken != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": errToken.Error()})
 		return
