@@ -12,6 +12,7 @@ func TestMapNode(t *testing.T) {
 	tests := []struct {
 		name          string
 		absoluteDelay uint64
+		readonly      bool
 		expectedState keeper.State
 		expectedRole  keeper.Role
 		expectedLag   int64
@@ -20,11 +21,14 @@ func TestMapNode(t *testing.T) {
 		// NOTE: a node that answered is running whatever its replication is
 		// doing - it serves reads - so a delay changes neither state nor role.
 		{name: "a lagging node is still a running replica", absoluteDelay: 12, expectedState: keeper.StateRunning, expectedRole: keeper.Replica, expectedLag: 12},
+		// NOTE: a read-only replica reports the current unix time as its
+		// absolute_delay, which is no lag at all.
+		{name: "a read-only node still runs but its lag is unknown", absoluteDelay: 1791797896, readonly: true, expectedState: keeper.StateRunning, expectedRole: keeper.Replica, expectedLag: -1},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			response := mapNode("ch1", 9000, tt.absoluteDelay)
+			response := mapNode("ch1", 9000, tt.absoluteDelay, tt.readonly)
 			if response.State != tt.expectedState {
 				t.Errorf("expected state %q, got %q", tt.expectedState, response.State)
 			}
