@@ -389,7 +389,7 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, replication node.
 			// these itself, so it only ever passes them through
 			cn.Warnings = append(cn.Warnings, cn.Keeper.Warnings...)
 		} else {
-			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable}
+			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable, Lag: -1}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
 		}
 		if cn.Keeper.Role == node.KeeperRoleLeader {

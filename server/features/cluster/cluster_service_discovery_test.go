@@ -666,6 +666,9 @@ func TestService_addOverviewWarnings_UnreachableNodeHasNoPortMismatch(t *testing
 	if nodes["patroni2:8008"].Keeper.State != node.KeeperStateUnreachable {
 		t.Fatalf("Expected patroni2 to stay unreachable, got %v", nodes["patroni2:8008"].Keeper.State)
 	}
+	if nodes["patroni2:8008"].Keeper.Lag != -1 {
+		t.Fatalf("Expected patroni2 to report an unknown lag of -1, got %v", nodes["patroni2:8008"].Keeper.Lag)
+	}
 }
 
 func TestService_addOverviewWarnings_NoLeaderFound(t *testing.T) {
