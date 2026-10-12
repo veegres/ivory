@@ -354,6 +354,19 @@ func TestMcpSchemasAcceptIvorysOwnTypes(t *testing.T) {
 		}
 	})
 
+	t.Run("every output schema marshals as an object, never the boolean an any output reflects to", func(t *testing.T) {
+		for _, tool := range offeredTools(t, mr, mcpContextWith(coreConfig.All...)) {
+			if tool.OutputSchema == nil {
+				continue
+			}
+			encoded, _ := json.Marshal(tool.OutputSchema)
+			var schema map[string]any
+			if err := json.Unmarshal(encoded, &schema); err != nil {
+				t.Errorf("tool %q output schema is not a JSON object: %s", tool.Name, encoded)
+			}
+		}
+	})
+
 	t.Run("a required argument the request states is still refused", func(t *testing.T) {
 		clientSession := session(t, mr, mcpContextWith(coreConfig.ViewClusterItem))
 		result, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{Name: "ivory_cluster_get", Arguments: map[string]any{}})
