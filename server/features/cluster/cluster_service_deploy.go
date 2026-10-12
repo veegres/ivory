@@ -41,17 +41,6 @@ func (l *deployLogs) list() []string {
 // operator's own command killed is not one, and the logs are the report.
 func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 	// 1. Validation & Preparation
-	if r.CommonConfig.Cluster == "" {
-		return nil, false, ErrClusterNameNotProvided
-	}
-	if len(r.Nodes) == 0 {
-		return nil, false, ErrClusterNodesNotProvided
-	}
-
-	if r.Platform == "" {
-		return nil, false, ErrClusterPlatformNotProvided
-	}
-
 	if err := s.nodeService.ValidateKeeperPlugin(r.ClusterOptions.Plugins.Keeper); err != nil {
 		return nil, false, err
 	}

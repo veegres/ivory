@@ -7,6 +7,10 @@ const (
 	Docker PluginType = "docker"
 )
 
+func (p PluginType) Valid() bool {
+	return p == Docker
+}
+
 // Metrics is a snapshot of resource usage for a node or a single container.
 type Metrics struct {
 	Cpu     CpuMetrics     `json:"cpu"`

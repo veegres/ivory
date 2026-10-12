@@ -3,7 +3,6 @@ package query
 import (
 	"ivory/plugins/database"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -45,28 +44,20 @@ func (r *HttpRouter) PostQuery(context *gin.Context) {
 }
 
 func (r *HttpRouter) GetQueryList(context *gin.Context) {
-	queryTypeStr := context.Request.URL.Query().Get("type")
-	pluginStr := context.Request.URL.Query().Get("plugin")
-
-	var queryType *Type
-	if queryTypeStr != "" {
-		number, errParse := strconv.ParseInt(queryTypeStr, 10, 8)
-		if errParse != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": errParse.Error()})
-			return
-		}
-		t := Type(number)
-		queryType = &t
+	var request RouterListRequest
+	if err := context.ShouldBindQuery(&request); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	// NOTE: when the plugin is not provided, filter to postgres so clients
 	// that predate multi-plugin queries keep seeing exactly what they saw
-	plugin := database.POSTGRES
-	if pluginStr != "" {
-		plugin = DbPlugin(pluginStr)
+	if request.Plugin == nil {
+		plugin := database.POSTGRES
+		request.Plugin = &plugin
 	}
 
-	queryList, err := r.service.GetList(queryType, &plugin)
+	queryList, err := r.service.GetList(request.Type, request.Plugin)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

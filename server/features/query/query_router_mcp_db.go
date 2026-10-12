@@ -15,10 +15,7 @@ func (r *McpRouter) QueryConsole(ctx context.Context, req *mcp.CallToolRequest, 
 }
 
 func (r *McpRouter) QueryTemplate(ctx context.Context, req *mcp.CallToolRequest, in RouterTemplateRequest) (*mcp.CallToolResult, *DbResponse, error) {
-	if in.QueryUuid == nil {
-		return nil, nil, ErrQueryUuidRequired
-	}
-	result, err := r.service.TemplateQuery(r.queryContext(ctx, in.Connection), *in.QueryUuid, in.Options)
+	result, err := r.service.TemplateQuery(r.queryContext(ctx, in.Connection), in.QueryUuid, in.Options)
 	if err != nil {
 		return nil, nil, err
 	}

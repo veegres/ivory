@@ -21,7 +21,7 @@ type Response struct {
 }
 
 type RunRequest struct {
-	Cluster string          `json:"cluster"`
+	Cluster string          `json:"cluster" binding:"required,notblank"`
 	Db      database.Config `json:"db"`
 	VaultId *uuid.UUID      `json:"vaultId"`
 	Target  *Target         `json:"target"`

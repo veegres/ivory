@@ -18,13 +18,13 @@ type NewAppConfig struct {
 }
 
 type UserSetupRequest struct {
-	Username  string          `json:"username"`
+	Username  string          `json:"username" binding:"required,notblank"`
 	Password  string          `json:"password"`
-	AuthTypes []user.AuthType `json:"authTypes"`
+	AuthTypes []user.AuthType `json:"authTypes" binding:"required,min=1,dive,valid,ne=session"`
 }
 
 type AppConfig struct {
-	Company string     `json:"company"`
+	Company string     `json:"company" binding:"required,notblank"`
 	Auth    AuthConfig `json:"auth"`
 }
 

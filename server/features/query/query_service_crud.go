@@ -55,10 +55,10 @@ func (s *Service) Update(key uuid.UUID, query Request) (*uuid.UUID, *Response, e
 		if query.Name != currentQuery.Name {
 			return nil, nil, ErrNameChangeNotAllowed
 		}
-		if *query.Type != currentQuery.Type {
+		if query.Type != nil && *query.Type != currentQuery.Type {
 			return nil, nil, ErrTypeChangeNotAllowed
 		}
-		if *query.Description != *currentQuery.Description {
+		if !s.sameDescription(query.Description, currentQuery.Description) {
 			return nil, nil, ErrDescriptionChangeNotAllowed
 		}
 
@@ -129,4 +129,11 @@ func (s *Service) DeleteAll() error {
 	errDel := s.repository.DeleteAll()
 	errDefQueries := s.initializeSystemQueries()
 	return errors.Join(errLog, errDel, errDefQueries)
+}
+
+func (s *Service) sameDescription(a *string, b *string) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
 }

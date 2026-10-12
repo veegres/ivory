@@ -10,7 +10,9 @@ import (
 	"ivory/core/service/vault"
 	"ivory/core/utils"
 	"ivory/features/node"
+	"ivory/features/query"
 	"ivory/features/tag"
+	"ivory/plugins/database"
 	"ivory/plugins/keeper"
 	"ivory/plugins/keeper/etcd"
 	"ivory/plugins/keeper/patroni"
@@ -107,7 +109,7 @@ func validDeployRequest() DeployRequest {
 			DbUser:  "postgres",
 			DbPass:  "secret",
 		},
-		ClusterOptions: Options{Plugins: Plugins{Keeper: node.KeeperPlugin(keeper.PATRONI_POSTGRES)}},
+		ClusterOptions: Options{Plugins: Plugins{Keeper: node.KeeperPlugin(keeper.PATRONI_POSTGRES), Database: query.DbPlugin(database.POSTGRES)}},
 	}
 }
 
@@ -122,39 +124,6 @@ func etcdDeployRequest() DeployRequest {
 }
 
 func TestService_Deploy_ValidationErrors(t *testing.T) {
-	t.Run("cluster name not provided", func(t *testing.T) {
-		s := newDeployTestService(t)
-		r := validDeployRequest()
-		r.CommonConfig.Cluster = ""
-
-		_, _, err := s.Deploy(r)
-		if !errors.Is(err, ErrClusterNameNotProvided) {
-			t.Fatalf("expected ErrClusterNameNotProvided, got %v", err)
-		}
-	})
-
-	t.Run("no nodes provided", func(t *testing.T) {
-		s := newDeployTestService(t)
-		r := validDeployRequest()
-		r.Nodes = nil
-
-		_, _, err := s.Deploy(r)
-		if !errors.Is(err, ErrClusterNodesNotProvided) {
-			t.Fatalf("expected ErrClusterNodesNotProvided, got %v", err)
-		}
-	})
-
-	t.Run("platform not provided", func(t *testing.T) {
-		s := newDeployTestService(t)
-		r := validDeployRequest()
-		r.Platform = ""
-
-		_, _, err := s.Deploy(r)
-		if !errors.Is(err, ErrClusterPlatformNotProvided) {
-			t.Fatalf("expected ErrClusterPlatformNotProvided, got %v", err)
-		}
-	})
-
 	t.Run("node name not provided", func(t *testing.T) {
 		s := newDeployTestService(t)
 		r := validDeployRequest()

@@ -2,6 +2,7 @@ package database
 
 import (
 	"crypto/tls"
+	"slices"
 )
 
 // COMMON (WEB AND SERVER)
@@ -18,15 +19,21 @@ const (
 	MONGO      PluginType = "mongo"
 )
 
+var PluginTypes = []PluginType{POSTGRES, ETCD, REDIS, CLICKHOUSE, ZOOKEEPER, MONGO}
+
 func (p PluginType) String() string {
 	return string(p)
 }
 
+func (p PluginType) Valid() bool {
+	return slices.Contains(PluginTypes, p)
+}
+
 // Config is the persisted, user-facing database connection configuration.
 type Config struct {
-	Plugin PluginType `json:"plugin"`
-	Host   string     `json:"host"`
-	Port   int        `json:"port"`
+	Plugin PluginType `json:"plugin" binding:"omitempty,valid"`
+	Host   string     `json:"host" binding:"required,notblank"`
+	Port   int        `json:"port" binding:"required,min=1,max=65535"`
 	Name   *string    `json:"name"`
 	Schema *string    `json:"schema"`
 }
@@ -103,6 +110,10 @@ const (
 	OTHER
 )
 
+func (c SystemRequestCategory) Valid() bool {
+	return c >= BLOAT && c <= OTHER
+}
+
 // SystemRequestVariety flags a SystemRequest's applicability, e.g. whether it
 // only makes sense on the primary or needs a specific database selected.
 type SystemRequestVariety int8
@@ -113,19 +124,29 @@ const (
 	ReplicaRecommended
 )
 
+func (v SystemRequestVariety) Valid() bool {
+	return v >= DatabaseSensitive && v <= ReplicaRecommended
+}
+
 // SystemChartType identifies one of the built-in dashboard charts.
 type SystemChartType string
 
 const (
 	Databases      SystemChartType = "Databases"
-	Connections                    = "Connections"
-	DatabaseSize                   = "Database Size"
-	DatabaseUptime                 = "Database Uptime"
-	Schemas                        = "Schemas"
-	TablesSize                     = "Tables Size"
-	IndexesSize                    = "Indexes Size"
-	TotalSize                      = "Total Size"
+	Connections    SystemChartType = "Connections"
+	DatabaseSize   SystemChartType = "Database Size"
+	DatabaseUptime SystemChartType = "Database Uptime"
+	Schemas        SystemChartType = "Schemas"
+	TablesSize     SystemChartType = "Tables Size"
+	IndexesSize    SystemChartType = "Indexes Size"
+	TotalSize      SystemChartType = "Total Size"
 )
+
+var SystemChartTypes = []SystemChartType{Databases, Connections, DatabaseSize, DatabaseUptime, Schemas, TablesSize, IndexesSize, TotalSize}
+
+func (c SystemChartType) Valid() bool {
+	return slices.Contains(SystemChartTypes, c)
+}
 
 // SystemRequest is one built-in, ready-made query a database plugin ships,
 // shown to the user as a shortcut instead of writing the query by hand.

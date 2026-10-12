@@ -84,17 +84,17 @@ type CommandDefaults = keeper.DeploymentCommandDefaults
 type TemplateDefaults = keeper.DeploymentTemplateDefaults
 
 type TemplateRequest struct {
-	Name        string            `json:"name"`
+	Name        string            `json:"name" binding:"required,notblank"`
 	Description string            `json:"description"`
-	Keeper      KeeperPlugin      `json:"keeper"`
-	Platform    PlatformPlugin    `json:"platform"`
+	Keeper      KeeperPlugin      `json:"keeper" binding:"required,valid"`
+	Platform    PlatformPlugin    `json:"platform" binding:"required,valid"`
 	Defaults    TemplateDefaults  `json:"defaults"`
-	Commands    []TemplateCommand `json:"commands"`
+	Commands    []TemplateCommand `json:"commands" binding:"required,min=1,dive"`
 }
 
 type ListRequest struct {
-	Keeper   *KeeperPlugin   `json:"keeper" form:"keeper"`
-	Platform *PlatformPlugin `json:"platform" form:"platform"`
+	Keeper   *KeeperPlugin   `json:"keeper" form:"keeper" binding:"omitempty,valid"`
+	Platform *PlatformPlugin `json:"platform" form:"platform" binding:"omitempty,valid"`
 }
 
 func isDefaultId(id string) bool {

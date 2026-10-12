@@ -75,3 +75,16 @@ func TestFeaturesWithheldWithoutAuth(t *testing.T) {
 		}
 	})
 }
+
+func TestFeatureValid(t *testing.T) {
+	for _, feature := range All {
+		if !feature.Valid() {
+			t.Errorf("%s should be valid", feature)
+		}
+	}
+	for _, feature := range []Feature{"", "view.cluster", "manage.everything"} {
+		if feature.Valid() {
+			t.Errorf("%q should not be valid", feature)
+		}
+	}
+}

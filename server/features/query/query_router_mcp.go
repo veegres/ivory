@@ -4,15 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"ivory/core/config"
-
-	"github.com/google/uuid"
 )
-
-// ErrQueryUuidRequired is the rule PostExecuteTemplateQuery states inline: a
-// template query names the saved query it runs.
-var ErrQueryUuidRequired = errors.New("queryUuid is required")
 
 // McpRouter is this feature's half of the MCP engine, the way Router is its
 // half of the http one. Which tools exist and what each one needs is declared
@@ -39,8 +32,4 @@ func (r *McpRouter) queryContext(ctx context.Context, connection Connection) Con
 		session = hex.EncodeToString(sum[:])
 	}
 	return Context{Connection: connection, Session: session}
-}
-
-func (r *McpRouter) queryId(id string) (uuid.UUID, error) {
-	return uuid.Parse(id)
 }

@@ -1,8 +1,14 @@
 package config
 
+import "slices"
+
 // COMMON (WEB AND SERVER)
 
 type Feature string
+
+func (f Feature) Valid() bool {
+	return slices.Contains(All, f)
+}
 
 const (
 	// Cluster features

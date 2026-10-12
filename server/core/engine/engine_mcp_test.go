@@ -114,7 +114,7 @@ func createTestMcpRouter(t *testing.T) *features.McpRouter {
 		Name:  "prod",
 		Nodes: []cluster.NodeConfig{{Name: "pg1", Host: "10.0.0.1", SshPort: port(22), KeeperPort: port(8008), DbPort: port(5432)}},
 		Options: cluster.Options{
-			Plugins: cluster.Plugins{Keeper: "patroni", Database: "postgres"},
+			Plugins: cluster.Plugins{Keeper: "patroni_postgres", Database: "postgres"},
 			Vaults:  cluster.Vaults{SshKeyId: &sshVault},
 		},
 	}); err != nil {
@@ -267,7 +267,7 @@ func TestMcpSchemasAcceptIvorysOwnTypes(t *testing.T) {
 				"nodes": []any{
 					map[string]any{"name": "pg1", "host": "10.0.1.1", "sshPort": 22, "keeperPort": 8008, "dbPort": 5432},
 				},
-				"plugins": map[string]any{"keeper": "patroni", "database": "postgres"},
+				"plugins": map[string]any{"keeper": "patroni_postgres", "database": "postgres"},
 				"tls":     map[string]any{"keeper": false, "database": false},
 				"certs":   map[string]any{},
 				"vaults":  map[string]any{"sshKeyId": "b6686f05-5beb-40c2-9d25-600fc81ea5d7"},
@@ -316,6 +316,44 @@ func TestMcpSchemasAcceptIvorysOwnTypes(t *testing.T) {
 		}
 	})
 
+	t.Run("a rich type lists its values, and an integer one binds", func(t *testing.T) {
+		var schema any
+		for _, tool := range offeredTools(t, mr, mcpContextWith(coreConfig.ManageQueryCrudCreate)) {
+			if tool.Name == "ivory_query_create" {
+				schema = tool.InputSchema
+			}
+		}
+		encoded, _ := json.Marshal(schema)
+		for _, want := range []string{`"postgres"`, `"clickhouse"`, `"enum":[0,1,2,3,4]`} {
+			if !strings.Contains(string(encoded), want) {
+				t.Errorf("ivory_query_create schema does not list %s: %s", want, encoded)
+			}
+		}
+
+		clientSession := session(t, mr, mcpContextWith(coreConfig.ManageQueryCrudCreate))
+		result, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{
+			Name:      "ivory_query_create",
+			Arguments: map[string]any{"name": "bloat", "type": 1, "plugin": "postgres", "query": "select 1", "description": nil, "varieties": []any{0}, "params": nil},
+		})
+		if err != nil {
+			t.Fatalf("call: %v", err)
+		}
+		if result.IsError {
+			t.Fatalf("a legal category and plugin were refused: %v", result.Content)
+		}
+
+		refused, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{
+			Name:      "ivory_query_create",
+			Arguments: map[string]any{"name": "bloat", "type": 1, "plugin": "oracle", "query": "select 1"},
+		})
+		if err != nil {
+			t.Fatalf("call: %v", err)
+		}
+		if !refused.IsError {
+			t.Error("expected an unknown plugin to be refused")
+		}
+	})
+
 	t.Run("a required argument the request states is still refused", func(t *testing.T) {
 		clientSession := session(t, mr, mcpContextWith(coreConfig.ViewClusterItem))
 		result, err := clientSession.CallTool(ctx, &mcpsdk.CallToolParams{Name: "ivory_cluster_get", Arguments: map[string]any{}})
@@ -348,7 +386,7 @@ func TestEveryFeatureIsWiredIn(t *testing.T) {
 		{"cluster", "ivory_cluster_list", map[string]any{}},
 		{"tag", "ivory_tag_list", map[string]any{}},
 		{"node/keeper", "ivory_keeper_node_list", map[string]any{
-			"host": "10.0.0.1", "port": 8008, "cluster": "prod", "plugin": "patroni",
+			"host": "10.0.0.1", "port": 8008, "cluster": "prod", "plugin": "patroni_postgres",
 		}},
 		{"node/system", "ivory_system_info", connection},
 		{"node/container", "ivory_container_list", connection},

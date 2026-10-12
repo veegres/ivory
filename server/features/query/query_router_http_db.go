@@ -14,13 +14,8 @@ func (r *HttpRouter) PostExecuteTemplateQuery(context *gin.Context) {
 		return
 	}
 
-	if req.QueryUuid == nil || req.QueryUuid.String() == "" {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "queryUuid is required"})
-		return
-	}
-
 	r.withQueryContext(context, req.Connection, func(queryContext Context) {
-		res, err := r.service.TemplateQuery(queryContext, *req.QueryUuid, req.Options)
+		res, err := r.service.TemplateQuery(queryContext, req.QueryUuid, req.Options)
 
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

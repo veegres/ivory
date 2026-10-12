@@ -14,15 +14,12 @@ func NewMcpRouter(service *Service) *McpRouter {
 	return &McpRouter{service: service}
 }
 
-// TemplateList returns the shipped templates alongside the stored ones, the
-// way the template screen lists them: the shipped half is computed from the
-// keeper plugins on every request rather than stored.
 func (r *McpRouter) TemplateList(ctx context.Context, req *mcp.CallToolRequest, in ListRequest) (*mcp.CallToolResult, []Template, error) {
-	stored, err := r.service.List(in)
+	list, err := r.service.List(in)
 	if err != nil {
 		return nil, nil, err
 	}
-	return nil, append(r.service.Defaults(in), stored...), nil
+	return nil, list, nil
 }
 
 func (r *McpRouter) TemplateCreate(ctx context.Context, req *mcp.CallToolRequest, in TemplateRequest) (*mcp.CallToolResult, *Template, error) {

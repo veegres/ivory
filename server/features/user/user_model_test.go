@@ -1,8 +1,12 @@
 package user
 
 import (
+	"ivory/core/utils"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin/binding"
 )
 
 func TestUserToResponse(t *testing.T) {
@@ -116,4 +120,37 @@ func TestAuthTypeValid(t *testing.T) {
 
 func statusPtr(status RegistrationStatus) *RegistrationStatus {
 	return &status
+}
+
+func TestRequestBinding(t *testing.T) {
+	utils.RegisterValidators()
+	tests := []struct {
+		name    string
+		request any
+		want    string
+	}{
+		{name: "create passes", request: &CreateRequest{Username: "alice", AuthTypes: []AuthType{AuthBasic, AuthOidc}}},
+		{name: "create needs a username", request: &CreateRequest{Username: " ", AuthTypes: []AuthType{AuthBasic}}, want: "'CreateRequest.Username' Error:Field validation for 'Username' failed on the 'notblank' tag"},
+		{name: "create needs an auth type", request: &CreateRequest{Username: "alice", AuthTypes: []AuthType{}}, want: "'CreateRequest.AuthTypes' Error:Field validation for 'AuthTypes' failed on the 'min' tag"},
+		{name: "create refuses an unknown auth type", request: &CreateRequest{Username: "alice", AuthTypes: []AuthType{"kerberos"}}, want: "'CreateRequest.AuthTypes[0]' Error:Field validation for 'AuthTypes[0]' failed on the 'valid' tag"},
+		{name: "nobody is registered for a minted session", request: &CreateRequest{Username: "alice", AuthTypes: []AuthType{AuthSession}}, want: "'CreateRequest.AuthTypes[0]' Error:Field validation for 'AuthTypes[0]' failed on the 'ne' tag"},
+		{name: "update refuses a minted session too", request: &RouterUpdateRequest{AuthTypes: []AuthType{AuthLdap, AuthSession}}, want: "'RouterUpdateRequest.AuthTypes[1]' Error:Field validation for 'AuthTypes[1]' failed on the 'ne' tag"},
+		{name: "password update needs both passwords", request: &RouterPasswordUpdateRequest{NewPassword: "x"}, want: "'RouterPasswordUpdateRequest.PreviousPassword' Error:Field validation for 'PreviousPassword' failed on the 'required' tag"},
+		{name: "registration needs a token", request: &RouterRegistrationPasswordRequest{Password: "x"}, want: "'RouterRegistrationPasswordRequest.Token' Error:Field validation for 'Token' failed on the 'required' tag"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := binding.Validator.ValidateStruct(test.request)
+			if test.want == "" {
+				if err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return
+			}
+			if err == nil || !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("expected an error containing %q, got %v", test.want, err)
+			}
+		})
+	}
 }

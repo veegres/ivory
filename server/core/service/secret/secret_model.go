@@ -8,7 +8,7 @@ type SecretStatus struct {
 }
 
 type RouterSetRequest struct {
-	Key string `json:"key"`
+	Key string `json:"key" binding:"required"`
 }
 
 // SPECIFIC (SERVER)

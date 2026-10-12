@@ -15,12 +15,9 @@ import (
 
 var ErrClusterNameEmpty = errors.New("cluster name cannot be empty")
 var ErrClusterKeepersEmpty = errors.New("cluster keepers cannot be empty")
-var ErrClusterNameNotProvided = errors.New("cluster name not provided")
-var ErrClusterNodesNotProvided = errors.New("cluster nodes not provided")
 var ErrClusterNodeNameNotProvided = errors.New("cluster node name not provided")
 var ErrClusterNodeNameNotUnique = errors.New("cluster node name is not unique")
 var ErrClusterNodePortsNotProvided = errors.New("cluster node keeper, database and ssh ports are all required")
-var ErrClusterPlatformNotProvided = errors.New("cluster platform not provided")
 var ErrSshCredentialsRequired = errors.New("ssh credentials are required")
 var ErrKeeperCredentialsIncomplete = errors.New("provide both a keeper username and password, or neither")
 var ErrDatabaseCredentialsIncomplete = errors.New("provide both a database username and password, or neither")

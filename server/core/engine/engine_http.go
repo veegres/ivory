@@ -6,6 +6,7 @@ import (
 	"ivory/core/service/cert"
 	"ivory/core/service/secret"
 	"ivory/core/service/vault"
+	"ivory/core/utils"
 	"ivory/features"
 	"ivory/features/auth"
 	"ivory/features/cluster"
@@ -28,6 +29,7 @@ import (
 )
 
 func NewHttpServer(env *coreConfig.Environment, cc *core.HttpRouter, fc *features.HttpRouter, mc gin.HandlerFunc, tc *tools.HttpRouter) {
+	utils.RegisterValidators()
 	engine := gin.Default()
 	engine.UseH2C = true
 	urlPath := env.Config.UrlPath
