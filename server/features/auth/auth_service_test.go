@@ -320,9 +320,8 @@ func TestServiceGenerateLdapAndOidcAuthToken(t *testing.T) {
 
 // TestServiceGenerateSessionToken covers minting a token for a session that
 // already exists - what the MCP connection screen hands to an agent. The token
-// says it came from a session, and because nobody is registered for that, the
-// same gate that refuses a deleted user also refuses a minted token asking for
-// another one.
+// says it came from a session, and a token that says so is refused outright
+// when it asks for another one.
 func TestServiceGenerateSessionToken(t *testing.T) {
 	t.Run("the minted token says it came from a session", func(t *testing.T) {
 		s := createTestAuthService(t)
@@ -347,11 +346,44 @@ func TestServiceGenerateSessionToken(t *testing.T) {
 		}
 	})
 
+	t.Run("the minted token says it was issued for mcp", func(t *testing.T) {
+		s := createTestAuthService(t)
+
+		minted, _, err := s.GenerateSessionToken("admin", BASIC)
+		if err != nil {
+			t.Fatalf("expected a token, got %v", err)
+		}
+		claims, errParse := s.tokenService.Parse(minted)
+		if errParse != nil {
+			t.Fatalf("expected the minted token to parse, got %v", errParse)
+		}
+		audience, errAudience := claims.GetAudience()
+		if errAudience != nil || len(audience) != 1 || audience[0] != string(AudienceMcp) {
+			t.Fatalf("expected aud to be [%q], got %v (err %v)", AudienceMcp, audience, errAudience)
+		}
+	})
+
+	t.Run("a login token names no audience", func(t *testing.T) {
+		s := createTestAuthService(t)
+
+		login, _, err := s.GenerateBasicAuthToken(basic.Login{Username: "admin", Password: "password123"})
+		if err != nil {
+			t.Fatalf("expected a token, got %v", err)
+		}
+		claims, errParse := s.tokenService.Parse(login)
+		if errParse != nil {
+			t.Fatalf("expected the login token to parse, got %v", errParse)
+		}
+		if _, ok := claims["aud"]; ok {
+			t.Fatalf("expected no aud claim on a login token, got %v", claims["aud"])
+		}
+	})
+
 	t.Run("a session token cannot mint another", func(t *testing.T) {
 		s := createTestAuthService(t)
 
-		if _, _, err := s.GenerateSessionToken("admin", SESSION); err == nil {
-			t.Fatalf("expected a token already minted from a session to be refused")
+		if _, _, err := s.GenerateSessionToken("admin", SESSION); err != ErrSessionCannotMint {
+			t.Fatalf("expected ErrSessionCannotMint, got %v", err)
 		}
 	})
 
