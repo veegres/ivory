@@ -549,7 +549,9 @@ func addToolUngated[In, Out any](r *mcpRegistrar, tool *mcpsdk.Tool, handler mcp
 	if tool.InputSchema == nil {
 		tool.InputSchema = mcpSchemaFor[In](tool.Name)
 	}
-	if tool.OutputSchema == nil {
+	// An `any` output reflects to the empty schema, which marshals as `true` -
+	// not an object, so clients reject the whole tools/list over it.
+	if tool.OutputSchema == nil && reflect.TypeFor[Out]() != reflect.TypeFor[any]() {
 		tool.OutputSchema = mcpSchemaFor[Out](tool.Name)
 	}
 	mcpsdk.AddTool(r.server, tool, func(ctx context.Context, req *mcpsdk.CallToolRequest, in In) (*mcpsdk.CallToolResult, Out, error) {
