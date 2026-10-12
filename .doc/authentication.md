@@ -24,11 +24,23 @@ or SSO account cannot walk in under a name somebody else holds.
 
 **Nobody ever types somebody else's password.** Registering somebody for basic auth issues a
 one-time link instead: the person opens it, sets their own password, and is signed in straight away.
-The link works once, expires within hours, and can be revoked at any time — hand it only to the
+The link works once, expires after 12 hours, and can be revoked at any time — hand it only to the
 person it names.
 
 The **superuser** who sets Ivory up is the one exception: their password is typed during the initial
 setup, since there is nobody yet to send a link to.
+
+## Staying Signed In
+
+Signing in gives the browser a session that lasts **one hour**. While you keep working, Ivory renews it
+in the background once it is past its first half, so an active session never logs you out; between half
+an hour and an hour of inactivity does. Each renewal checks again that you are still registered for the way you
+signed in, so a user deleted or barred from that method stops being renewed.
+
+A session is not stored anywhere, so it cannot be ended remotely: deleting a user, changing a password
+or signing out elsewhere leaves a session already issued valid until it expires unused. Tokens for
+AI agents work differently — they last as long as you chose and are never renewed, see
+[MCP server](mcp.md).
 
 ## Superusers
 

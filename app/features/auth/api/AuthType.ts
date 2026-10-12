@@ -4,3 +4,8 @@ export interface AuthToken {
     token: string,
     expiresAt: string,
 }
+
+// AuthTokenRequest is how long the minted token lives, in seconds - the server takes at most 30 days.
+export interface AuthTokenRequest {
+    expiresIn: number,
+}

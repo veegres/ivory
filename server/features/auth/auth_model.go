@@ -25,6 +25,11 @@ const (
 	AudienceMcp Audience = "mcp"
 )
 
+// RouterTokenRequest is how long a minted session token lives, in seconds: at most 30 days, never forever.
+type RouterTokenRequest struct {
+	ExpiresIn int64 `json:"expiresIn" binding:"required,min=1,max=2592000"`
+}
+
 // RouterTokenResponse is a freshly minted session token and the moment it dies.
 // It mirrors user.RegistrationResponse because it is the same kind of answer: a
 // token is shown once, when it is issued, and Ivory never stores it to show

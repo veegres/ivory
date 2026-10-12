@@ -14,9 +14,11 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func createTestSecretService(t *testing.T) *secret.Service {
@@ -456,6 +458,74 @@ func TestAuthContextMiddleware(t *testing.T) {
 		}
 		if _, exists := context.Get(config.AuthContextKey.Username); exists {
 			t.Fatalf("expected no username to be set when auth is disabled")
+		}
+	})
+}
+
+// TestValidateMiddlewareRefreshesCookie covers the browser session renewing
+// itself: only a token carried by the cookie is renewed, and only once it is
+// in the last half of its life.
+func TestValidateMiddlewareRefreshesCookie(t *testing.T) {
+	dueToken := func(t *testing.T, r *HttpRouter) string {
+		t.Helper()
+		raw, _, err := r.authService.tokenService.Generate("admin", jwt.MapClaims{"frm": BASIC}, 10*time.Minute)
+		if err != nil {
+			t.Fatalf("failed to generate token: %v", err)
+		}
+		return raw
+	}
+	tokenCookie := func(w *httptest.ResponseRecorder) *http.Cookie {
+		for _, c := range w.Result().Cookies() {
+			if c.Name == "token" {
+				return c
+			}
+		}
+		return nil
+	}
+
+	t.Run("a cookie token that is due is renewed", func(t *testing.T) {
+		r := createTestRouter(t)
+		raw := dueToken(t, r)
+
+		w, _ := runAuthContextMiddleware(r, "", raw)
+
+		cookie := tokenCookie(w)
+		if cookie == nil || cookie.Value == "" || cookie.Value == raw {
+			t.Fatalf("expected a renewed token cookie, got %v", cookie)
+		}
+		if valid, username, _, err := r.authService.ParseAuthToken(cookie.Value, nil); !valid || err != nil || username != "admin" {
+			t.Fatalf("expected the renewed cookie to name admin, got valid=%v user=%q err=%v", valid, username, err)
+		}
+	})
+
+	t.Run("a fresh cookie token is left alone", func(t *testing.T) {
+		r := createTestRouter(t)
+
+		w, _ := runAuthContextMiddleware(r, "", createValidToken(t, r))
+
+		if cookie := tokenCookie(w); cookie != nil {
+			t.Fatalf("expected no token cookie, got %v", cookie)
+		}
+	})
+
+	t.Run("a token sent in the header is never renewed", func(t *testing.T) {
+		r := createTestRouter(t)
+		raw := dueToken(t, r)
+
+		w, _ := runAuthContextMiddleware(r, "Bearer "+raw, raw)
+
+		if cookie := tokenCookie(w); cookie != nil {
+			t.Fatalf("expected no token cookie, got %v", cookie)
+		}
+	})
+
+	t.Run("an invalid cookie token is not renewed", func(t *testing.T) {
+		r := createTestRouter(t)
+
+		w, _ := runAuthContextMiddleware(r, "", "garbage")
+
+		if cookie := tokenCookie(w); cookie != nil {
+			t.Fatalf("expected no token cookie, got %v", cookie)
 		}
 	})
 }

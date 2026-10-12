@@ -150,7 +150,7 @@ func (s *Service) GenerateOidcAuthToken(code string) (string, *time.Time, error)
 }
 
 // GenerateSessionToken mints a token from a login session, never from a minted one, so expiry stays the only revocation.
-func (s *Service) GenerateSessionToken(username string, callerType AuthType) (string, *time.Time, error) {
+func (s *Service) GenerateSessionToken(username string, callerType AuthType, expiration time.Duration) (string, *time.Time, error) {
 	if len(s.GetSupportedTypes()) == 0 {
 		return "", nil, ErrAuthDisabled
 	}
@@ -163,7 +163,34 @@ func (s *Service) GenerateSessionToken(username string, callerType AuthType) (st
 	if err := s.userService.VerifySignIn(username, callerType); err != nil {
 		return "", nil, err
 	}
-	return s.tokenService.Generate(username, jwt.MapClaims{"frm": SESSION, "aud": AudienceMcp}, s.expiration)
+	return s.tokenService.Generate(username, jwt.MapClaims{"frm": SESSION, "aud": AudienceMcp}, expiration)
+}
+
+// RefreshToken renews a login token in the last half of its life and answers "" otherwise; a minted token is never renewed.
+func (s *Service) RefreshToken(rawToken string) (string, *time.Time, error) {
+	claims, errParse := s.tokenService.Parse(rawToken)
+	if errParse != nil {
+		return "", nil, errParse
+	}
+	frm, ok := claims["frm"].(string)
+	if !ok {
+		return "", nil, ErrInvalidTokenCannotParseAuthType
+	}
+	if AuthType(frm) == SESSION {
+		return "", nil, nil
+	}
+	exp, errExp := claims.GetExpirationTime()
+	if errExp != nil || exp == nil {
+		return "", nil, token.ErrInvalidToken
+	}
+	if time.Until(exp.Time) > s.expiration/2 {
+		return "", nil, nil
+	}
+	username, errUsername := claims.GetSubject()
+	if errUsername != nil {
+		return "", nil, errUsername
+	}
+	return s.generateToken(username, AuthType(frm))
 }
 
 // generateToken is where a verified person becomes a session, and the last gate

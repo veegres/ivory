@@ -15,12 +15,13 @@ the saved diagnostic queries — becomes readable in one conversation instead of
 Authentication is a bearer token: Ivory's ordinary session JWT, sent in the `Authorization` header.
 
 **The quickest way is the web UI.** Open **Settings → Integrations → MCP Server**: it shows the endpoint
-for this install, generates a token on request, and gives you a ready-to-copy config with both already
+for this install, generates a token on request for the lifetime you pick — 1 hour, 6 hours, 1 day,
+15 days or 30 days — and gives you a ready-to-copy config with both already
 filled in — pick your client from the list. It covers Claude Code (the `claude mcp add` command and
 `.mcp.json`), Cursor, VS Code, Codex, Antigravity, IntelliJ IDEA and Claude Desktop, plus a plain
 transport/url/header summary for anything else that speaks streamable HTTP.
 
-Before you generate a token the config shows `{{auth_token}}`, highlighted exactly the way an unanswered
+Before you generate a token the config shows `{{ivory_token}}`, highlighted exactly the way an unanswered
 variable is in a deployment preview — one glance says which part is not real yet. Generate a token and it
 is written in. Where a client reads the token out of an environment variable rather than inline — Codex,
 and the `mcp-remote` bridge the two desktop clients use — the screen offers the matching
@@ -41,14 +42,17 @@ hostname swapped:
 
 To do it by hand instead:
 
-1. Mint a token. Signed in to the UI, ask for one for the session you already hold:
+1. Mint a token. Signed in to the UI, ask for one for the session you already hold, saying how long it
+   should live in seconds — anything up to 30 days (`2592000`), never unlimited:
 
    ```bash
    curl -sX POST http://localhost/api/auth/token \
-     -H "Authorization: Bearer $OLD_TOKEN" | jq -r .response.token
+     -H "Authorization: Bearer $OLD_TOKEN" \
+     -H 'Content-Type: application/json' \
+     -d '{"expiresIn": 86400}' | jq -r .response.token
    ```
 
-   Or take one out of a fresh login:
+   Or take one out of a fresh login, which always lasts one hour:
 
    ```bash
    TOKEN=$(curl -sX POST http://localhost/api/basic/login \
@@ -64,7 +68,7 @@ To do it by hand instead:
    `basic`/`ldap`/`oidc` a login would put there, so it is told apart from the token that asked for it.
    It is never offered as a way of signing in — a login screen lists the configured providers, and this
    is not one of them — and because no user is registered for it, **a session token cannot mint another
-   one**. Only a login can, which is what keeps the hour below from being extended forever.
+   one**. Only a login can, which is what keeps the lifetime you chose from being extended forever.
 
 2. Point a client at the endpoint with that token. For Claude Code:
 
@@ -87,11 +91,15 @@ To do it by hand instead:
    }
    ```
 
-> **The token lasts one hour.** Ivory's session tokens expire after an hour and nothing refreshes them
-> in place, so a long agent session will start failing with `401`. Replacing it is a click in
-> **Settings → Integrations → MCP Server** — generate another and update the client — but it is still a
-> manual step, and an agent cannot do it for itself: the token it holds came from a session and will not
-> mint a successor.
+> **The token lives exactly as long as you chose, and cannot be revoked.** Ivory stores no tokens, so
+> once one is issued it stays valid until it expires — deleting the user, changing their password or
+> signing out does not end it early. Pick the shortest lifetime the agent needs, and treat a 30-day token
+> like a password that cannot be changed for a month.
+>
+> Nothing refreshes it either: a token sent in the `Authorization` header is never renewed, so when it
+> expires the agent starts failing with `401`. Replacing it is a click in
+> **Settings → Integrations → MCP Server** — generate another and update the client — but an agent cannot
+> do it for itself: the token it holds came from a session and will not mint a successor.
 
 When Ivory runs with authentication switched off, no token is needed and every tool is available —
 the same as the REST API, which is already unauthenticated in that mode.
