@@ -207,6 +207,6 @@ export function useRouterNodeKeeperDeploy(connection: PlatformVaultConnection, o
         mutationFn: NodeApi.container.keeper.deploy.fn,
         mutationKey: NodeApi.container.keeper.deploy.key(),
         successKeys: [NodeApi.container.list.key(connection), activeClusterKey],
-        onSuccess: (_, data) => onSuccess ? onSuccess(data) : void 0,
+        onSuccess: (_, data) => onSuccess ? onSuccess(data.logs) : void 0,
     })
 }

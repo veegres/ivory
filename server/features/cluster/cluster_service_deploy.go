@@ -8,7 +8,6 @@ import (
 	"ivory/features/node"
 	"slices"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,15 +33,13 @@ func (l *deployLogs) list() []string {
 	return l.logs
 }
 
-// Deploy reports whether the batch completed as well as its logs: complete
-// means every node came up and every post-script ran, which is what separates a
-// deploy the caller can answer 200 to from one it has to flag. An error is
+// Deploy reports the stage every node reached as well as its logs. An error is
 // what Ivory itself rejected before anything started; a container the
-// operator's own command killed is not one, and the logs are the report.
-func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
+// operator's own command killed is not one, and its node is left registered.
+func (s *Service) Deploy(r DeployRequest) (DeployResponse, error) {
 	// 1. Validation & Preparation
 	if err := s.nodeService.ValidateKeeperPlugin(r.ClusterOptions.Plugins.Keeper); err != nil {
-		return nil, false, err
+		return DeployResponse{}, err
 	}
 
 	cluster := Request{
@@ -52,24 +49,24 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 	}
 
 	if err := s.validateNodeNames(cluster.Nodes); err != nil {
-		return nil, false, err
+		return DeployResponse{}, err
 	}
 	if err := s.validateNodePorts(cluster.Nodes); err != nil {
-		return nil, false, err
+		return DeployResponse{}, err
 	}
 	// NOTE: a vault and a pair of inline credentials are two answers to one
 	// question - rather than pick one silently, say that only one was asked for
 	if cluster.Vaults.SshKeyId != nil && (r.CommonConfig.SshUser != "" || r.CommonConfig.SshPass != "") {
-		return nil, false, ErrSshCredentialsAmbiguous
+		return DeployResponse{}, ErrSshCredentialsAmbiguous
 	}
 	if cluster.Vaults.KeeperId != nil && (r.CommonConfig.KeeperUser != "" || r.CommonConfig.KeeperPass != "") {
-		return nil, false, ErrKeeperCredentialsAmbiguous
+		return DeployResponse{}, ErrKeeperCredentialsAmbiguous
 	}
 	if cluster.Vaults.DatabaseId != nil && (r.CommonConfig.DbUser != "" || r.CommonConfig.DbPass != "") {
-		return nil, false, ErrDatabaseCredentialsAmbiguous
+		return DeployResponse{}, ErrDatabaseCredentialsAmbiguous
 	}
 	if cluster.Vaults.SshKeyId == nil && (r.CommonConfig.SshUser == "" || r.CommonConfig.SshPass == "") {
-		return nil, false, ErrSshCredentialsRequired
+		return DeployResponse{}, ErrSshCredentialsRequired
 	}
 	// NOTE: whether a deployment has keeper or database credentials at all is
 	// the user's answer, not the engine's - the template names a default
@@ -77,15 +74,15 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 	// left to check is that the answer is whole: half a pair would be stored
 	// as a vault entry that authenticates nothing.
 	if isHalfCredential(r.CommonConfig.KeeperUser, r.CommonConfig.KeeperPass) {
-		return nil, false, ErrKeeperCredentialsIncomplete
+		return DeployResponse{}, ErrKeeperCredentialsIncomplete
 	}
 	if isHalfCredential(r.CommonConfig.DbUser, r.CommonConfig.DbPass) {
-		return nil, false, ErrDatabaseCredentialsIncomplete
+		return DeployResponse{}, ErrDatabaseCredentialsIncomplete
 	}
 	if _, e := s.Get(cluster.Name); e == nil {
-		return nil, false, ErrClusterNameTaken
+		return DeployResponse{}, ErrClusterNameTaken
 	} else if !errors.Is(e, storage.ErrNotFound) {
-		return nil, false, e
+		return DeployResponse{}, e
 	}
 
 	logs := &deployLogs{}
@@ -102,17 +99,17 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 		id, v, err := s.vaultService.Create(sshVault)
 		if err != nil {
 			s.rollbackVaults(created, logs.send)
-			return nil, false, err
+			return DeployResponse{}, err
 		}
 		cluster.Vaults.SshKeyId = id
 		created = append(created, *id)
 		if v.Metadata == nil {
 			s.rollbackVaults(created, logs.send)
-			return nil, false, ErrSshKeyVaultMissingMetadata
+			return DeployResponse{}, ErrSshKeyVaultMissingMetadata
 		}
 		if err := s.authorizeSshKey(r, *v.Metadata, logs.send); err != nil {
 			s.rollbackVaults(created, logs.send)
-			return nil, false, err
+			return DeployResponse{}, err
 		}
 	}
 
@@ -127,7 +124,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 		id, _, err := s.vaultService.Create(keeperVault)
 		if err != nil {
 			s.rollbackVaults(created, logs.send)
-			return nil, false, err
+			return DeployResponse{}, err
 		}
 		cluster.Vaults.KeeperId = id
 		created = append(created, *id)
@@ -140,7 +137,7 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 		id, _, err := s.vaultService.Create(dbVault)
 		if err != nil {
 			s.rollbackVaults(created, logs.send)
-			return nil, false, err
+			return DeployResponse{}, err
 		}
 		cluster.Vaults.DatabaseId = id
 		created = append(created, *id)
@@ -155,50 +152,53 @@ func (s *Service) Deploy(r DeployRequest) ([]string, bool, error) {
 	logs.send("system", "updating cluster configuration")
 	if _, err := s.Create(cluster); err != nil {
 		s.rollbackVaults(created, logs.send)
-		return nil, false, err
+		return DeployResponse{}, err
 	}
 
 	// 6. Deploy every node by running its own command; the cluster owns only
 	// the batch orchestration (parallel/sequential, aggregated timestamped
 	// logs) while node executes the individual deployment.
-	var up atomic.Int32
+	steps := make(map[string]node.DeploySteps, len(r.Nodes))
+	var mu sync.Mutex
+	deploy := func(dn DeployNode) {
+		result := s.deployRun(cluster, dn, r.Platform, r.CommonConfig.Dcs, logs.send)
+		mu.Lock()
+		steps[dn.Name] = node.DeploySteps{Deploy: result, Initialize: node.DeployResultSkipped}
+		mu.Unlock()
+	}
 	if r.Parallel {
 		var wg sync.WaitGroup
 		for _, deployNode := range r.Nodes {
 			wg.Add(1)
 			go func(dn DeployNode) {
 				defer wg.Done()
-				if s.deployNode(cluster, dn, r.Platform, r.CommonConfig.Dcs, logs.send) {
-					up.Add(1)
-				}
+				deploy(dn)
 			}(deployNode)
 		}
 		wg.Wait()
 	} else {
 		for _, deployNode := range r.Nodes {
-			if s.deployNode(cluster, deployNode, r.Platform, r.CommonConfig.Dcs, logs.send) {
-				up.Add(1)
-			}
+			deploy(deployNode)
 		}
 	}
-	deployed := int(up.Load()) == len(r.Nodes)
-	if !deployed {
+	failed := s.countFailedDeploys(steps)
+	if failed > 0 {
 		logs.send("system", fmt.Sprintf(
 			"%d of %d node(s) deployed: the cluster is registered, open the ones that failed to see why",
-			up.Load(), len(r.Nodes)))
+			len(r.Nodes)-failed, len(r.Nodes)))
 	}
 
 	// 7. Post-scripts run after every node is up, in node order - a script
 	// that needs the whole cluster running (etcd's auth enable, mongo's
-	// rs.initiate) therefore belongs on the last node.
-	initialized := deployed
-	if deployed {
-		initialized = s.postDeploy(cluster, r.Nodes, r.Platform, r.CommonConfig.Dcs, logs.send) == 0
+	// rs.initiate) therefore belongs on the last node. Otherwise every node's
+	// initialize step stays skipped.
+	if failed == 0 {
+		s.deployInitialize(cluster, r.Nodes, r.Platform, r.CommonConfig.Dcs, steps, logs.send)
 	} else if slices.ContainsFunc(r.Nodes, func(n DeployNode) bool { return len(n.PostScripts) > 0 }) {
 		logs.send("system", "skipping post-deploy initialization: not every node deployed successfully")
 	}
 
-	return logs.list(), deployed && initialized, nil
+	return DeployResponse{Logs: logs.list(), Nodes: steps}, nil
 }
 
 // validateNodePorts requires every endpoint a deploy needs to be stated: a
@@ -245,7 +245,7 @@ func (s *Service) authorizeSshKey(r DeployRequest, publicKey string, logsSend fu
 
 // sshTargets is every distinct host and ssh port this deploy has to reach.
 // Several nodes of one cluster may share a VM, and a key only has to be
-// installed on it once; a node with no host is left to deployNode, which
+// installed on it once; a node with no host is left to deployRun, which
 // reports that itself.
 func (s *Service) sshTargets(r DeployRequest) []node.PlatformCredConnection {
 	seen := make(map[string]bool, len(r.Nodes))
@@ -283,67 +283,81 @@ func (s *Service) rollbackVaults(ids []uuid.UUID, logsSend func(ctx string, msg 
 	}
 }
 
-// postDeploy runs every node's post-script and returns how many of them failed.
-// A failure does not abort the batch - the nodes are already up - but it has to
-// be stated: a post script is what turns running processes into an initialized
-// cluster (etcd's auth enable, mongo's rs.initiate), so a deploy whose scripts
-// all failed otherwise reads as a success.
-func (s *Service) postDeploy(cluster Request, nodes []DeployNode, platform node.PlatformPlugin, dcs string, logsSend func(ctx string, msg string)) int {
-	failed := 0
-	total := 0
+// deployInitialize runs every node's post-scripts and records how its
+// initialize step ended. A failure does not abort the batch - the nodes are
+// already up - but it has to be stated: a post script is what turns running
+// processes into an initialized cluster (etcd's auth enable, mongo's
+// rs.initiate), so a deploy whose scripts all failed otherwise reads as a
+// success.
+func (s *Service) deployInitialize(cluster Request, nodes []DeployNode, platform node.PlatformPlugin, dcs string, steps map[string]node.DeploySteps, logsSend func(ctx string, msg string)) {
+	failed, total := 0, 0
 	for _, n := range nodes {
-		if len(n.PostScripts) == 0 {
-			continue
-		}
-		total++
 		nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
-		logsSend(nodeKey, "running post-deploy initialization")
-		logs, err := s.nodeService.KeeperPostDeploy(s.mapDeployRequest(cluster, n, platform, dcs))
+		ran := len(n.PostScripts) > 0
+		if ran {
+			total++
+			logsSend(nodeKey, "running post-deploy initialization")
+		}
+		logs, result := s.nodeService.KeeperDeployInitialize(s.mapDeployRequest(cluster, n, platform, dcs))
 		for _, log := range logs {
 			logsSend(nodeKey, log)
 		}
-		if err != nil {
+		steps[n.Name] = node.DeploySteps{Deploy: node.DeployResultDone, Initialize: result}
+		switch {
+		case result == node.DeployResultFailed:
 			failed++
 			logsSend(nodeKey, "post-deploy initialization did not complete")
-			continue
+		case ran:
+			logsSend(nodeKey, "post-deploy initialization finished")
 		}
-		logsSend(nodeKey, "post-deploy initialization finished")
 	}
 	if failed > 0 {
 		logsSend("system", fmt.Sprintf(
 			"post-deploy initialization failed on %d of %d node(s): the cluster is registered and running, but not initialized",
 			failed, total))
 	}
-	return failed
 }
 
-// deployNode deploys one node by delegating to node's KeeperDeployUp; it only
+func (s *Service) countFailedDeploys(steps map[string]node.DeploySteps) int {
+	count := 0
+	for _, step := range steps {
+		if step.Deploy == node.DeployResultFailed {
+			count++
+		}
+	}
+	return count
+}
+
+// deployRun deploys one node by delegating to node's KeeperDeployRun; it only
 // adds the cluster-level concerns of resolving the node's vault-backed
-// connection and aggregating timestamped logs for the batch.
-func (s *Service) deployNode(cluster Request, n DeployNode, platform node.PlatformPlugin, dcs string, logsSend func(ctx string, msg string)) bool {
+// connection and aggregating timestamped logs for the batch. Within a cluster
+// a node Ivory refused is as failed as one whose command failed, since the
+// cluster is registered either way.
+func (s *Service) deployRun(cluster Request, n DeployNode, platform node.PlatformPlugin, dcs string, logsSend func(ctx string, msg string)) node.DeployResult {
 	nodeKey := s.getNodeKey(n.Host, n.KeeperPort)
 
 	if n.Host == "" {
 		logsSend(nodeKey, "deploy failed: host not provided for node")
-		return false
+		return node.DeployResultFailed
 	}
 	if cluster.Vaults.SshKeyId == nil {
 		logsSend(nodeKey, "deploy failed: ssh key id not provided for node")
-		return false
+		return node.DeployResultFailed
 	}
 
 	logsSend(nodeKey, "deploy started")
 	// NOTE: even if connection was closed we do not want to stop deployment
-	res, err := s.nodeService.KeeperDeployUp(s.mapDeployRequest(cluster, n, platform, dcs))
-	if err != nil {
-		logsSend(nodeKey, fmt.Sprintf("deploy failed: %v", err))
-		return false
-	}
-	for _, log := range res {
+	logs, result, err := s.nodeService.KeeperDeployRun(s.mapDeployRequest(cluster, n, platform, dcs))
+	for _, log := range logs {
 		logsSend(nodeKey, log)
 	}
-	logsSend(nodeKey, "deploy finished")
-	return true
+	if err != nil {
+		logsSend(nodeKey, fmt.Sprintf("deploy failed: %v", err))
+	}
+	if result == node.DeployResultDone {
+		logsSend(nodeKey, "deploy finished")
+	}
+	return result
 }
 
 // mapDeployRequest builds node's flat deploy request for one node; both the

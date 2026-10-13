@@ -91,10 +91,10 @@ func (r *McpRouter) ClusterFix(ctx context.Context, req *mcp.CallToolRequest, in
 	return nil, fixed, nil
 }
 
-func (r *McpRouter) ClusterDeploy(ctx context.Context, req *mcp.CallToolRequest, in RouterDeployRequest) (*mcp.CallToolResult, RouterDeployResponse, error) {
-	logs, complete, err := r.clusterService.Deploy(in.toDeployRequest())
+func (r *McpRouter) ClusterDeploy(ctx context.Context, req *mcp.CallToolRequest, in RouterDeployRequest) (*mcp.CallToolResult, *DeployResponse, error) {
+	response, err := r.clusterService.Deploy(in.toDeployRequest())
 	if err != nil {
-		return nil, RouterDeployResponse{}, err
+		return nil, nil, err
 	}
-	return nil, RouterDeployResponse{Logs: logs, Complete: complete}, nil
+	return nil, &response, nil
 }
