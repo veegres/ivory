@@ -8,6 +8,7 @@ import (
 	"io"
 	"ivory/clients"
 	"log/slog"
+	"net"
 	nethttp "net/http"
 	"reflect"
 	"strconv"
@@ -49,7 +50,8 @@ func (c *Client) Send(req Request) (*nethttp.Response, error) {
 		protocol = "https"
 	}
 
-	transport := &nethttp.Transport{TLSClientConfig: req.TLSConfig}
+	dialer := &net.Dialer{Timeout: clients.IntegrationDialTimeout}
+	transport := &nethttp.Transport{TLSClientConfig: req.TLSConfig, DialContext: dialer.DialContext}
 	httpClient := &nethttp.Client{Transport: transport, Timeout: req.Timeout}
 
 	domain := req.Host + ":" + strconv.Itoa(req.Port)

@@ -2,18 +2,20 @@ package clients
 
 import "time"
 
-// IntegrationTimeout is the shared network timeout for clients that talk to
-// same-host / local-network services (etcd, postgres, patroni's HTTP API). A
-// healthy round-trip on that kind of deployment is well under 100ms, so this
-// stays short enough to fail fast on an unreachable node instead of stalling
-// requests for several seconds.
-const IntegrationTimeout = 300 * time.Millisecond
+// IntegrationDialTimeout bounds only the tcp connect to a database or keeper
+// node, so an unreachable node still fails fast. It applies where Ivory owns
+// the dialer; a driver whose dial also covers tls and auth gets
+// IntegrationTimeout instead, since those take several round trips.
+const IntegrationDialTimeout = 1 * time.Second
 
-// SshTimeout bounds an ssh connection attempt. It is its own constant because
-// ssh is the one client that reaches a machine the operator chose rather than a
-// service beside the database - a remote datacenter or a VPN hop away - and
-// x/crypto/ssh spends it on the key exchange as well as the dial, so it has to
-// cover several round trips, not one.
+// IntegrationTimeout bounds a whole request to a database or keeper node. It is
+// not a local-network budget: Ivory may sit a VPN hop away from the cluster, and
+// a request it abandons keeps running on the node, so giving up too early piles
+// work onto a keeper rather than sparing it.
+const IntegrationTimeout = 5 * time.Second
+
+// SshTimeout bounds an ssh connection attempt. x/crypto/ssh spends it on the
+// key exchange as well as the dial, so it has to cover several round trips.
 const SshTimeout = 5 * time.Second
 
 // ExternalTimeout is the shared network timeout for clients that talk to
