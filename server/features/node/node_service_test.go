@@ -38,6 +38,7 @@ func (f *fakeKeeperMetadata) SupportedFeatures() map[config.Feature]bool {
 }
 
 func (f *fakeKeeperMetadata) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
+func (f *fakeKeeperMetadata) Lag() keeper.Lag                           { return keeper.Lag{} }
 
 func (f *fakeKeeperMetadata) DefaultTemplates() []keeper.DeploymentTemplate {
 	return nil
@@ -111,6 +112,16 @@ func TestServiceSupportedFeatures(t *testing.T) {
 		features := s.SupportedFeatures("unknown")
 		if len(features) != 0 {
 			t.Fatalf("expected an empty map, got %v", features)
+		}
+	})
+}
+
+func TestServiceKeeperLag(t *testing.T) {
+	s, _ := createTestNodeService(t)
+
+	t.Run("unknown plugin has no unit and no threshold", func(t *testing.T) {
+		if lag := s.KeeperLag("unknown"); lag != (keeper.Lag{}) {
+			t.Fatalf("expected an empty lag, got %+v", lag)
 		}
 	})
 }

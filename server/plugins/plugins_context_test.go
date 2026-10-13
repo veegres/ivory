@@ -24,3 +24,18 @@ func TestKeeperScheduleFeaturesAgreeWithTheirOperation(t *testing.T) {
 		})
 	}
 }
+
+// TestKeeperLagIsReadable holds every keeper to stating what its lag counts.
+func TestKeeperLagIsReadable(t *testing.T) {
+	for plugin, adapter := range NewContext(nil, nil).KeeperRegistry.All() {
+		t.Run(string(plugin), func(t *testing.T) {
+			lag := adapter.Lag()
+			if lag.Unit == "" {
+				t.Error("lag unit is not declared")
+			}
+			if lag.Threshold < 0 {
+				t.Errorf("threshold %d is negative", lag.Threshold)
+			}
+		})
+	}
+}

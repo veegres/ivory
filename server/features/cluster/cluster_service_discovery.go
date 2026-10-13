@@ -27,8 +27,10 @@ func (s *Service) Overview(name string, host string, port int) (*Overview, error
 
 	replication := s.nodeService.KeeperReplicationModel(cluster.Plugins.Keeper)
 	resultNodeMap := s.buildOverviewNodes(cluster.Nodes, keeperNodeMap, connectionErrors, requestError, replication)
+	lag := s.nodeService.KeeperLag(cluster.Plugins.Keeper)
+	s.addLagWarnings(resultNodeMap, lag)
 	supportedFeatures := s.getSupportedFeatures(cluster.Plugins.Keeper, cluster.Plugins.Database)
-	return &Overview{resultNodeMap, supportedFeatures}, nil
+	return &Overview{resultNodeMap, supportedFeatures, lag}, nil
 }
 
 func (s *Service) Detect(cluster CreateAutoRequest) (*Response, error) {
@@ -385,11 +387,6 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, replication node.
 			if !s.isPortEqual(cn.Config.DbPort, cn.Keeper.DiscoveredDbPort) {
 				cn.Warnings = append(cn.Warnings, "database port in keeper response and cluster configuration mismatch")
 			}
-			// NOTE: the adapter's own warnings (e.g. clickhouse reporting a
-			// peer with no active coordination-store session, or a stuck
-			// replication queue) - Ivory has no engine-specific way to see
-			// these itself, so it only ever passes them through
-			cn.Warnings = append(cn.Warnings, cn.Keeper.Warnings...)
 		} else {
 			cn.Keeper = node.KeeperOneResponse{Role: node.KeeperRoleUnknown, State: node.KeeperStateUnreachable, Lag: -1}
 			cn.Warnings = append(cn.Warnings, "node was not found in Keeper response")
@@ -414,6 +411,22 @@ func (s *Service) addOverviewWarnings(nodeMap map[string]Node, replication node.
 			n.Warnings = append(n.Warnings, "multiple leader nodes were found in Keeper response")
 			nodeMap[nodeKey] = n
 		}
+	}
+}
+
+// addLagWarnings warns on a replica whose lag is past its plugin's threshold.
+// A plugin whose lag is never measured declares no threshold and never warns.
+func (s *Service) addLagWarnings(nodeMap map[string]Node, lag node.KeeperLag) {
+	if lag.Threshold <= 0 {
+		return
+	}
+	for nodeKey, n := range nodeMap {
+		if n.Keeper.Role != node.KeeperRoleReplica || n.Keeper.Lag <= lag.Threshold {
+			continue
+		}
+		n.Warnings = append(n.Warnings, fmt.Sprintf("replication lag %s is past Ivory's threshold of %s",
+			lag.Unit.Format(n.Keeper.Lag), lag.Unit.Format(lag.Threshold)))
+		nodeMap[nodeKey] = n
 	}
 }
 

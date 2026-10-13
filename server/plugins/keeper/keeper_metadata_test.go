@@ -192,3 +192,25 @@ func TestUnknownPlaceholders(t *testing.T) {
 		})
 	}
 }
+
+func TestLagUnitFormat(t *testing.T) {
+	tests := []struct {
+		unit     LagUnit
+		lag      int64
+		expected string
+	}{
+		{unit: LagBytes, lag: 512, expected: "512 B"},
+		{unit: LagBytes, lag: 1024 * 1024, expected: "1.0 MiB"},
+		{unit: LagBytes, lag: 3 * 1024 * 1024 * 1024 / 2, expected: "1.5 GiB"},
+		{unit: LagSeconds, lag: 301, expected: "301s"},
+		{unit: LagEntries, lag: 5001, expected: "5001 entries"},
+		{unit: "", lag: 7, expected: "7"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.expected, func(t *testing.T) {
+			if got := tt.unit.Format(tt.lag); got != tt.expected {
+				t.Errorf("Format(%d) = %q, want %q", tt.lag, got, tt.expected)
+			}
+		})
+	}
+}

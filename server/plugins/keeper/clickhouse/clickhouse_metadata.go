@@ -29,6 +29,10 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 // Keeper/ZooKeeper, so there is no leader to elect.
 func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.MultiLeader }
 
+func (p *Plugin) Lag() keeper.Lag {
+	return keeper.Lag{Unit: keeper.LagSeconds, Threshold: 30}
+}
+
 // Every node runs the same command, including the first: clickhouse has no
 // leader/replica asymmetry. The startup script writes a cluster config file and
 // then hands off to the image's own entrypoint. Both the shard's replica list

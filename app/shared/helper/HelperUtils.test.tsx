@@ -21,6 +21,7 @@ import {
     getUnknownPlaceholders,
     interpolateCommand,
     isConnectionEqual,
+    LagFormatter,
     randomUnicodeAnimal,
     SizeFormatter,
     SxPropsFormatter
@@ -310,6 +311,48 @@ describe("SizeFormatter", () => {
         it("should handle zero bytes", () => {
             const result = SizeFormatter.pretty(0)
             expect(result).toContain("B")
+        })
+    })
+})
+
+describe("LagFormatter", () => {
+    const bytes = {unit: "bytes", threshold: 1024} as const
+    const seconds = {unit: "seconds", threshold: 300} as const
+    const entries = {unit: "entries", threshold: 0} as const
+
+    describe("pretty", () => {
+        it("should report a negative lag as unknown whatever the unit", () => {
+            expect(LagFormatter.pretty(-1, bytes)).toBe("unknown")
+            expect(LagFormatter.pretty(-1)).toBe("unknown")
+        })
+
+        it("should format lag in its own unit", () => {
+            expect(LagFormatter.pretty(2048, bytes)).toContain("K")
+            expect(LagFormatter.pretty(45, seconds)).toBe("45s")
+            expect(LagFormatter.pretty(3725, seconds)).toBe("1h 2m")
+            expect(LagFormatter.pretty(0, seconds)).toBe("0s")
+            expect(LagFormatter.pretty(5000, entries)).toBe("5K entries")
+        })
+
+        it("should print the bare number when the unit is not known", () => {
+            expect(LagFormatter.pretty(42)).toBe("42")
+        })
+    })
+
+    describe("color", () => {
+        it("should be success when caught up", () => {
+            expect(LagFormatter.color(0, bytes)).toBe("success")
+        })
+
+        it("should be error only past the engine threshold", () => {
+            expect(LagFormatter.color(1024, bytes)).toBe("default")
+            expect(LagFormatter.color(1025, bytes)).toBe("error")
+        })
+
+        it("should never be error without a threshold", () => {
+            expect(LagFormatter.color(1_000_000, entries)).toBe("default")
+            expect(LagFormatter.color(1_000_000)).toBe("default")
+            expect(LagFormatter.color(-1, bytes)).toBe("default")
         })
     })
 })

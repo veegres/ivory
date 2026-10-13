@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"ivory/core/config"
 	"ivory/plugins/platform"
 	"regexp"
@@ -21,6 +22,49 @@ const (
 	MultiLeader ReplicationModel = "multi-leader"
 )
 
+// LagUnit is what Response.Lag counts for a plugin: engines measure replication
+// lag in different things, so a number alone cannot be read or compared.
+type LagUnit string
+
+const (
+	LagBytes   LagUnit = "bytes"
+	LagSeconds LagUnit = "seconds"
+	LagEntries LagUnit = "entries"
+)
+
+// Format renders a lag value in its own unit.
+func (u LagUnit) Format(lag int64) string {
+	switch u {
+	case LagBytes:
+		value, suffix := float64(lag), "B"
+		for _, next := range []string{"KiB", "MiB", "GiB", "TiB"} {
+			if value < 1024 {
+				break
+			}
+			value, suffix = value/1024, next
+		}
+		if suffix == "B" {
+			return fmt.Sprintf("%d B", lag)
+		}
+		return fmt.Sprintf("%.1f %s", value, suffix)
+	case LagSeconds:
+		return fmt.Sprintf("%ds", lag)
+	case LagEntries:
+		return fmt.Sprintf("%d entries", lag)
+	default:
+		return fmt.Sprintf("%d", lag)
+	}
+}
+
+// Lag says how to read a plugin's Response.Lag: what it counts, and Ivory's own
+// default past which a replica is worth checking. It is separate from any line
+// the engine draws itself, which an adapter reports through Warnings. A zero
+// Threshold is only for a plugin whose lag is never measured.
+type Lag struct {
+	Unit      LagUnit `json:"unit"`
+	Threshold int64   `json:"threshold"`
+}
+
 // Metadata is implemented by keeper plugins to describe themselves without
 // touching a running keeper. It deliberately says nothing about how the engine
 // is deployed: deployment is a command the user writes, stored as a template.
@@ -32,6 +76,9 @@ type Metadata interface {
 	// ReplicationModel reports which replication paradigm the engine follows,
 	// so a consumer can tell a missing leader from an engine that never has one.
 	ReplicationModel() ReplicationModel
+	// Lag reports what Response.Lag counts and where a lagging replica is
+	// worth checking.
+	Lag() Lag
 	// DefaultTemplates returns the ready-to-copy deployments Ivory ships for
 	// this engine, one set per platform it supports. It lives on the plugin
 	// rather than in a central catalog for the same reason

@@ -27,6 +27,10 @@ func (p *Plugin) SupportedFeatures() map[config.Feature]bool {
 
 func (p *Plugin) ReplicationModel() keeper.ReplicationModel { return keeper.SingleLeader }
 
+func (p *Plugin) Lag() keeper.Lag {
+	return keeper.Lag{Unit: keeper.LagEntries, Threshold: 1000}
+}
+
 // The peer port, the member list and every other value only the operator knows
 // are written literally: they are plain text to read and edit, not variables.
 // Only the node's own identity and endpoints are interpolated.

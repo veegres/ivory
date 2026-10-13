@@ -114,7 +114,7 @@ export function ListRow(props: Props) {
         let warning = false
         const colors = Object.values(overview.data?.nodes ?? {}).reduce(
             (map, node) => {
-                if (node.warnings.length > 0) warning = true
+                if (node.warnings.length > 0 || (node.keeper.warnings?.length ?? 0) > 0) warning = true
                 const d = getDomain(node.config, !editable)
                 map[d] = NodeColor[node.keeper.role].label
                 return map

@@ -48,9 +48,11 @@ const mcpInstructions = `Ivory manages high-availability database clusters.
 
 Start with ivory_cluster_list to see the registered clusters, then
 ivory_cluster_overview for one cluster's health: every node's role, state,
-replication lag, pending restarts and the warnings Ivory derived from
-comparing the keeper's own answer against the stored configuration. Those
-warnings are the fastest route to a diagnosis. When a node cannot be reached,
+replication lag (in the unit lag.unit names), pending restarts and two kinds
+of warnings: a node's warnings are Ivory's own, derived from comparing the
+keeper's answer against the stored configuration and from Ivory's lag
+threshold; keeper.warnings are what the engine itself reported. Both are the
+fastest route to a diagnosis. When a node cannot be reached,
 ivory_cluster_check says, for every node at once and for each of its keeper,
 platform and database connections, whether it breaks at the vault, the
 certificate or the connection itself.
@@ -148,10 +150,10 @@ func clusterTools(r *mcpRegistrar, mr *features.McpRouter) {
 
 	addTool(r, coreConfig.ViewClusterOverview, &mcpsdk.Tool{
 		Name: "ivory_cluster_overview",
-		Description: "Live health of every node in a cluster: role, state, replication lag, sync status, pending restarts, " +
-			"keeper member key, plus the warnings Ivory derives by comparing what the keeper reports against the stored " +
-			"configuration (a missing leader, two leaders, a node the keeper does not know, a node belonging to a different " +
-			"cluster). Read this before diagnosing anything. Pass a keeper host and port to see only what that one endpoint reports.",
+		Description: "Live health of every node in a cluster: role, state, replication lag (unit and Ivory's threshold in lag), sync status, " +
+			"pending restarts, keeper member key, plus two kinds of warnings: a node's warnings are Ivory's own, derived by comparing " +
+			"what the keeper reports against the stored configuration (a missing leader, two leaders, a node the keeper does not know, " +
+			"a node belonging to a different cluster) or from a lag past Ivory's threshold; keeper.warnings are what the engine itself reported. Read this before diagnosing anything. Pass a keeper host and port to see only what that one endpoint reports.",
 		Annotations: readOnly,
 	}, mr.Cluster.ClusterOverview)
 

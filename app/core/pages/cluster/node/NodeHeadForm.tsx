@@ -2,12 +2,12 @@ import {Box, TextField} from "@mui/material"
 import {useState} from "react"
 
 import {Node, NodeConfig} from "../../../../features/cluster/api/ClusterType"
-import {KeeperStatus} from "../../../../features/node/api/NodeType"
+import {KeeperLag, KeeperStatus} from "../../../../features/node/api/NodeType"
 import {InfoColorBox} from "../../../../shared/component/box/InfoColorBox"
 import {InfoStatusItem, InfoStatusList} from "../../../../shared/component/box/InfoStatusList"
 import {CancelIconButton, EditIconButton, SaveIconButton} from "../../../../shared/component/button/IconButtons"
 import {SxPropsMap} from "../../../../shared/helper/HelperType"
-import {KeeperStateOptions, SizeFormatter} from "../../../../shared/helper/HelperUtils"
+import {KeeperStateOptions, LagFormatter} from "../../../../shared/helper/HelperUtils"
 
 const SX: SxPropsMap = {
     box: {display: "flex", width: "100%", padding: "4px", gap: 1.5, alignItems: "center", flex: "11 1 min(700px, 100%)"},
@@ -22,12 +22,13 @@ const SX: SxPropsMap = {
 
 type Props = {
     node: Node,
+    lag?: KeeperLag,
     loading?: boolean,
     onUpdate?: (config: NodeConfig) => void,
 }
 
 export function NodeHeadForm(props: Props) {
-    const {node, onUpdate, loading} = props
+    const {node, lag, onUpdate, loading} = props
     const [edit, setEdit] = useState(false)
     const [config, setConfig] = useState(node.config)
 
@@ -36,9 +37,8 @@ export function NodeHeadForm(props: Props) {
     const stateColor = isPaused ? "warning" : KeeperStateOptions[stateStr].color
 
     const isReplica = node.keeper.role === "replica"
-    const isLagKnown = node.keeper.lag >= 0
-    const lagValue = !isReplica ? "N/A" : (isLagKnown ? SizeFormatter.pretty(node.keeper.lag) : "unknown")
-    const lagColor = !isReplica || !isLagKnown ? "default" : (node.keeper.lag > 100 * 1024 * 1024 ? "error" : (node.keeper.lag > 0 ? "warning" : "success"))
+    const lagValue = isReplica ? LagFormatter.pretty(node.keeper.lag, lag) : "N/A"
+    const lagColor = isReplica ? LagFormatter.color(node.keeper.lag, lag) : "default"
 
     const syncText = isReplica && node.keeper.sync ? "sync" : "async"
     const syncColor = "secondary"

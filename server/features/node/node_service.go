@@ -77,6 +77,16 @@ func (s *Service) KeeperReplicationModel(t keeper.PluginType) keeper.Replication
 	return c.ReplicationModel()
 }
 
+// KeeperLag reports how to read the keeper's lag; an unknown plugin has no unit
+// and no threshold.
+func (s *Service) KeeperLag(t keeper.PluginType) keeper.Lag {
+	c, e := s.keeperRegistry.Get(t)
+	if e != nil {
+		return keeper.Lag{}
+	}
+	return c.Lag()
+}
+
 // PlatformSupportedFeatures reports what the platform itself can be asked
 // for, which is a separate question from what the keeper supports: a platform
 // that only ever addresses a scheduler has no node of its own to show.

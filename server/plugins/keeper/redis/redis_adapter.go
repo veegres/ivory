@@ -3,9 +3,11 @@ package redis
 import (
 	"context"
 	"errors"
+	"fmt"
 	"ivory/clients/redis"
 	"ivory/plugins/keeper"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -259,7 +261,7 @@ func mapNode(host string, port int, fields map[string]string) keeper.Response {
 		State:                state,
 		Role:                 role,
 		Lag:                  lag,
-		Warnings:             append(linkWarnings(fields, role), persistenceWarnings(fields)...),
+		Warnings:             slices.Concat(linkWarnings(fields, role), persistenceWarnings(fields), replicaQuorumWarnings(fields, role)),
 		Tags:                 mapTags(fields, role),
 		DiscoveredHost:       &host,
 		DiscoveredKeeperPort: &port,
@@ -300,6 +302,25 @@ func persistenceWarnings(fields map[string]string) []string {
 		warnings = append(warnings, "full resync from the master is in progress")
 	}
 	return warnings
+}
+
+// replicaQuorumWarnings reports a master's replicas past min-replicas-max-lag.
+// INFO names min_slaves_good_slaves only when min-replicas-to-write is set, so
+// its presence means the quorum is in force: a replica past the lag no longer
+// counts towards it, and with none left the master refuses writes.
+func replicaQuorumWarnings(fields map[string]string, role keeper.Role) []string {
+	good, errGood := strconv.Atoi(fields["min_slaves_good_slaves"])
+	if role != keeper.Leader || errGood != nil {
+		return nil
+	}
+	if good == 0 {
+		return []string{"no replica is within min-replicas-max-lag, the master refuses writes (min-replicas-to-write)"}
+	}
+	connected, errConnected := strconv.Atoi(fields["connected_slaves"])
+	if errConnected == nil && good < connected {
+		return []string{fmt.Sprintf("%d of %d replicas are past min-replicas-max-lag and do not count towards min-replicas-to-write", connected-good, connected)}
+	}
+	return nil
 }
 
 // linkWarnings reports a replica whose replication link to its master is not

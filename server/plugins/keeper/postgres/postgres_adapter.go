@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"fmt"
 	"ivory/clients/postgres"
 	"ivory/plugins/keeper"
 	"net/http"
@@ -29,8 +30,11 @@ const configQuery = `SELECT name, setting FROM pg_settings ORDER BY name`
 // the difference between received and replayed wal in bytes. NOTE: the lag
 // unit differs from patroni, which reports its own /cluster lag value.
 //
-// The middle columns are the node's tags (see mapTags), the last says whether
-// a standby is streaming at all. They are read in
+// The middle columns are the node's tags (see mapTags), the next says whether
+// a standby is streaming at all, and the last two name the replication slots
+// postgres itself has put past max_slot_wal_keep_size. wal_status is read
+// through to_jsonb because the column only exists from postgres 13, and a
+// missing one must cost the warning rather than the node. They are read in
 // this query rather than one of their own because a second round trip per node
 // per poll would buy nothing: both are views any role may read on the
 // connection this query has already opened.
@@ -41,7 +45,9 @@ const listQuery = `SELECT pg_is_in_recovery(),
        split_part(current_setting('server_version'), ' ', 1),
        (SELECT count(*) FROM pg_stat_activity)::int,
        current_setting('max_connections')::int,
-       EXISTS (SELECT 1 FROM pg_stat_wal_receiver)`
+       EXISTS (SELECT 1 FROM pg_stat_wal_receiver),
+       ARRAY(SELECT s.slot_name::text FROM pg_replication_slots s WHERE to_jsonb(s)->>'wal_status' = 'unreserved'),
+       ARRAY(SELECT s.slot_name::text FROM pg_replication_slots s WHERE to_jsonb(s)->>'wal_status' = 'lost')`
 
 // primaryQuery reads the far end of this standby's replication connection.
 // sender_host/sender_port come from primary_conninfo rather than from the
@@ -96,7 +102,7 @@ func (p *Plugin) List(request keeper.Request) ([]keeper.Response, int, error) {
 	var errMembers error
 	// NOTE: one connection for both questions, so a poll costs one handshake.
 	err := p.withConnection(request, func(ctx context.Context, conn *pgx.Conn) error {
-		errList := conn.QueryRow(ctx, listQuery).Scan(&inRecovery, &lag, &stats.Version, &stats.Connections, &stats.MaxConnections, &stats.Receiving)
+		errList := conn.QueryRow(ctx, listQuery).Scan(&inRecovery, &lag, &stats.Version, &stats.Connections, &stats.MaxConnections, &stats.Receiving, &stats.UnreservedSlots, &stats.LostSlots)
 		if errList != nil {
 			return errList
 		}
@@ -421,6 +427,7 @@ func mapNode(host string, port int, inRecovery bool, lag int64, stats nodeStats)
 	} else {
 		lag = 0
 	}
+	warnings = append(warnings, slotWarnings(stats)...)
 	var status keeper.Status = keeper.Active
 	key := host + ":" + strconv.Itoa(port)
 	return keeper.Response{
@@ -435,6 +442,22 @@ func mapNode(host string, port int, inRecovery bool, lag int64, stats nodeStats)
 		DiscoveredKeeperPort: &port,
 		DiscoveredDbPort:     &port,
 	}
+}
+
+// slotWarnings reports the slots postgres itself gave up on: past
+// max_slot_wal_keep_size a slot's WAL is removed at the next checkpoint, and
+// once it is gone the standby reading that slot can only be rebuilt.
+func slotWarnings(stats nodeStats) []string {
+	var warnings []string
+	if len(stats.UnreservedSlots) > 0 {
+		warnings = append(warnings, fmt.Sprintf("replication slot(s) %s are past max_slot_wal_keep_size, their WAL is removed at the next checkpoint",
+			strings.Join(stats.UnreservedSlots, ", ")))
+	}
+	if len(stats.LostSlots) > 0 {
+		warnings = append(warnings, fmt.Sprintf("replication slot(s) %s lost WAL their standby needs, it has to be rebuilt",
+			strings.Join(stats.LostSlots, ", ")))
+	}
+	return warnings
 }
 
 // mapTags reports the node facts that decide whether a cluster Ivory calls

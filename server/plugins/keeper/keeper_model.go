@@ -122,9 +122,9 @@ type Response struct {
 	// itself cannot infer from State/Role alone (e.g. clickhouse reporting
 	// that a peer has no active session with the coordination store, or that
 	// its replication queue is stuck on a genuine fetch failure). Nil for an
-	// adapter with nothing engine-specific to add; cluster.addOverviewWarnings
-	// appends it onto the node's own Warnings alongside Ivory's generic
-	// drift checks.
+	// adapter with nothing engine-specific to add. They stay apart from the
+	// overview node's own Warnings, which are Ivory's, so a reader can tell
+	// who raised which.
 	Warnings []string `json:"warnings"`
 
 	// Discovered Topology (Crucial for Auto-Creation)
