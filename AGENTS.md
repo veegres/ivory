@@ -141,7 +141,7 @@ A new database engine is added as a keeper plugin, a database plugin, or both �
 3. Add a selector item in `core/widgets/options/OptionsPlugins.tsx` (`renderKeeperItem(...)` / a plain `<MenuItem>`) — this is a manual list, not compiler-checked, so it's easy to forget; skipping it leaves the new plugin silently unselectable in the UI even though everything else compiles.
 4. Run the Mandatory Check (`cd app && npm run lint && npm run build`) plus any affected `npm test`.
 
-**Docs**: add a row to the "Supported Keepers" table in `README.md` (Keeper / Database / Stage / Why) — new plugins normally start at `ALPHA`.
+**Docs**: add a row to the "Supported databases and keepers" table in `README.md` (Keeper / Database / Stage) — new plugins normally start at `ALPHA` — and its reason to the "Why These Databases" table in `.doc/about.md`.
 
 ## Nomenclature
 - **Node**: Refers to a single server entity (Hardware + Software).

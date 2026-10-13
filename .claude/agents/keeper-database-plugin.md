@@ -466,7 +466,7 @@ no `DiscoveredCluster`, and every integrity check keys off one or the other" is.
 Follow the ordered checklist in `CLAUDE.md`'s "Adding a New Keeper or Database Plugin" section. It is complete
 and it is the spec; do not improvise a different order. In outline: client wrapper (only if no existing client
 speaks the protocol) → keeper plugin → database plugin → register once in `plugins/plugins_context.go` →
-tests → the four frontend steps → README row.
+tests → the four frontend steps → README row and `.doc/about.md` reason.
 
 The frontend steps are easy to half-do. Steps 1 and 2 are compiler-enforced (mapped types fail
 `npm run build`); **step 3 — a selector item in `core/widgets/options/OptionsPlugins.tsx` — is a manual list

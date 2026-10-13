@@ -8,6 +8,12 @@ It is the troubleshooting surface that benefits most: everything Ivory already k
 node roles, replication lag, pending restarts, its own drift warnings, VM metrics, container logs and
 the saved diagnostic queries — becomes readable in one conversation instead of one screen at a time.
 
+![An AI agent connected to Ivory over MCP, listing the active queries across every Postgres node and a table of all registered clusters with their health](images/mcp_example.png)
+
+*Asked in plain words, the agent finds a long-running `pg_sleep` on one Patroni replica across six Postgres
+nodes, offers `ivory_query_cancel`/`ivory_query_terminate` to stop it, and then summarises every registered
+cluster — keeper, ports, credentials and health — including one that is down and one misnamed duplicate.*
+
 ---
 
 ## Connecting a client
