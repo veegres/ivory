@@ -7,6 +7,7 @@ import {
     KeeperOneResponse,
     PlatformActionRequest,
     PlatformInfoResponse,
+    PlatformInspectResponse,
     PlatformLogsRequest,
     PlatformMetricsResponse,
     PlatformProcessesResponse,
@@ -114,6 +115,11 @@ export const NodeApi = {
         metrics: {
             key: (request: PlatformActionRequest) => ["node", "platform", "container", "metrics", request.connection.host, request.name],
             fn: (request: PlatformActionRequest) => api.get<R<PlatformMetricsResponse>>("/node/platform/container/metrics", {params: {request: JSON.stringify(request)}})
+                .then((response) => response.data.response),
+        },
+        inspect: {
+            key: (request: PlatformActionRequest) => ["node", "platform", "container", "inspect", request.connection.host, request.name],
+            fn: (request: PlatformActionRequest) => api.get<R<PlatformInspectResponse>>("/node/platform/container/inspect", {params: {request: JSON.stringify(request)}})
                 .then((response) => response.data.response),
         },
         up: {

@@ -1,5 +1,7 @@
 package platform
 
+import "time"
+
 // PluginType identifies which platform adapter a deployment target uses.
 type PluginType string
 
@@ -56,4 +58,20 @@ type Process struct {
 	MemoryBytes uint64  `json:"memoryBytes"`
 	MemPercent  float64 `json:"memPercent"`
 	CpuPercent  float64 `json:"cpuPercent"`
+}
+
+// ContainerInspect is how one container was started and how it last ended. It
+// never carries the container's environment or arguments: those hold the
+// credentials Ivory interpolated into the deployment command.
+type ContainerInspect struct {
+	Status        string    `json:"status"`
+	ExitCode      int       `json:"exitCode"`
+	OomKilled     bool      `json:"oomKilled"`
+	Error         string    `json:"error,omitempty"`
+	StartedAt     time.Time `json:"startedAt,omitzero"`
+	FinishedAt    time.Time `json:"finishedAt,omitzero"`
+	RestartCount  int       `json:"restartCount"`
+	RestartPolicy string    `json:"restartPolicy"`
+	NetworkMode   string    `json:"networkMode"`
+	Image         string    `json:"image"`
 }

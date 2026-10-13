@@ -14,6 +14,7 @@ var ErrInvalidCpuMetrics = errors.New("invalid cpu metrics output")
 var ErrInvalidMemoryMetrics = errors.New("invalid memory metrics output")
 var ErrInvalidNetworkMetrics = errors.New("invalid network metrics output")
 var ErrInvalidContainerMetrics = errors.New("invalid container metrics output")
+var ErrInvalidContainerInspect = errors.New("invalid container inspect output")
 var ErrContainerNotRunning = errors.New("container is stopped or does not exist")
 var ErrInvalidProcesses = errors.New("invalid processes output")
 
@@ -82,4 +83,7 @@ type Container interface {
 	LogsContainer(connection Connection, name string, tail int, follow bool) console.Command
 	// MetricsContainer returns the named container's current CPU/memory/network usage.
 	MetricsContainer(connection Connection, name string) (*Metrics, error)
+	// InspectContainer returns the named container's lifecycle state and how it
+	// was started, stopped or not.
+	InspectContainer(connection Connection, name string) (*ContainerInspect, error)
 }

@@ -57,6 +57,10 @@ func (r *McpRouter) ContainerMetrics(ctx context.Context, req *mcp.CallToolReque
 	return handlePlatformRequest(in, r.service.PlatformContainerMetrics)
 }
 
+func (r *McpRouter) ContainerInspect(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, RouterPlatformResponse[*PlatformInspectResponse], error) {
+	return handlePlatformRequest(in, r.service.PlatformContainerInspect)
+}
+
 func (r *McpRouter) ContainerStart(ctx context.Context, req *mcp.CallToolRequest, in PlatformActionRequest) (*mcp.CallToolResult, RouterPlatformResponse[[]string], error) {
 	return handlePlatformRequest(in, r.service.PlatformContainerStart)
 }

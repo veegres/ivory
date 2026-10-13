@@ -4,6 +4,7 @@ import (
 	"ivory/core/service/cert"
 	"ivory/plugins/keeper"
 	"ivory/plugins/platform"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -152,6 +153,19 @@ type PlatformCredConnection struct {
 type PlatformMetricsRequest = PlatformVaultConnection
 
 type PlatformMetricsResponse = PlatformMetrics
+
+type PlatformInspectResponse struct {
+	Status        string    `json:"status"`
+	ExitCode      int       `json:"exitCode"`
+	OomKilled     bool      `json:"oomKilled"`
+	Error         string    `json:"error,omitempty"`
+	StartedAt     time.Time `json:"startedAt,omitzero"`
+	FinishedAt    time.Time `json:"finishedAt,omitzero"`
+	RestartCount  int       `json:"restartCount"`
+	RestartPolicy string    `json:"restartPolicy"`
+	NetworkMode   string    `json:"networkMode"`
+	Image         string    `json:"image"`
+}
 
 type PlatformCopyIdRequest struct {
 	PlatformCredConnection
@@ -329,6 +343,24 @@ func mapPlatformMetrics(m *platform.Metrics) *PlatformMetrics {
 		Cpu:     CpuMetrics{TotalTicks: m.Cpu.TotalTicks, IdleTicks: m.Cpu.IdleTicks},
 		Memory:  MemoryMetrics{TotalBytes: m.Memory.TotalBytes, AvailableBytes: m.Memory.AvailableBytes},
 		Network: NetworkMetrics{ReceivedBytes: m.Network.ReceivedBytes, TransmittedBytes: m.Network.TransmittedBytes},
+	}
+}
+
+func mapPlatformInspect(i *platform.ContainerInspect) *PlatformInspectResponse {
+	if i == nil {
+		return nil
+	}
+	return &PlatformInspectResponse{
+		Status:        i.Status,
+		ExitCode:      i.ExitCode,
+		OomKilled:     i.OomKilled,
+		Error:         i.Error,
+		StartedAt:     i.StartedAt,
+		FinishedAt:    i.FinishedAt,
+		RestartCount:  i.RestartCount,
+		RestartPolicy: i.RestartPolicy,
+		NetworkMode:   i.NetworkMode,
+		Image:         i.Image,
 	}
 }
 
