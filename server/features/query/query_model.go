@@ -3,6 +3,7 @@ package query
 import (
 	"ivory/core/service/cert"
 	"ivory/plugins/database"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -183,6 +184,30 @@ func mapSystemRequest(plugin DbPlugin, req database.SystemRequest) Request {
 		Varieties:   v,
 		Params:      req.Params,
 	}
+}
+
+// withShipped brings a stored system query up to the version a plugin ships now.
+// Description and type are not the user's to change, so they always follow;
+// Default is the shipped text, so a reset restores the current one. The text,
+// params and varieties follow only while the user has not edited the query.
+func (r Response) withShipped(shipped Request) (Response, bool) {
+	updated := r
+	updated.Type = *shipped.Type
+	updated.Description = shipped.Description
+	updated.Default = shipped.Query
+	if r.Custom == r.Default {
+		updated.Custom = shipped.Query
+		updated.Params = shipped.Params
+		updated.Varieties = shipped.Varieties
+	}
+	changed := updated.Type != r.Type ||
+		updated.Default != r.Default ||
+		updated.Custom != r.Custom ||
+		!slices.Equal(updated.Params, r.Params) ||
+		!slices.Equal(updated.Varieties, r.Varieties) ||
+		(updated.Description == nil) != (r.Description == nil) ||
+		(updated.Description != nil && r.Description != nil && *updated.Description != *r.Description)
+	return updated, changed
 }
 
 func (c DbConfig) toDatabaseConfig() database.Config {
